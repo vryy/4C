@@ -157,16 +157,16 @@ void FSI::MonolithicStructureSplit::SetupSystem()
   aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap()));
 
   // get the PCITER from inputfile
-  vector<int> pciter;
-  vector<double> pcomega;
-  vector<int> spciter;
-  vector<double> spcomega;
-  vector<int> fpciter;
-  vector<double> fpcomega;
-  vector<int> apciter;
-  vector<double> apcomega;
-  vector<string> blocksmoother;
-  vector<double> schuromega;
+  std::vector<int> pciter;
+  std::vector<double> pcomega;
+  std::vector<int> spciter;
+  std::vector<double> spcomega;
+  std::vector<int> fpciter;
+  std::vector<double> fpcomega;
+  std::vector<int> apciter;
+  std::vector<double> apcomega;
+  std::vector<std::string> blocksmoother;
+  std::vector<double> schuromega;
   {
     int    word1;
     double word2;
@@ -203,7 +203,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
         apcomega.push_back(word2);
     }
     {
-      string word;
+      std::string word;
       std::istringstream blocksmootherstream(Teuchos::getNumericStringParameter(fsidyn,"BLOCKSMOOTHER"));
       while (blocksmootherstream >> word)
         blocksmoother.push_back(word);
@@ -1273,7 +1273,7 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
   const double stiparam = StructureField()->TimIntParam();
 
   // some scaling factors for fluid
-  const double timescale = FluidField().TimeScaling();
+//  const double timescale = FluidField().TimeScaling();
 
   // some often re-used vectors
   Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::null;     // stores intermediate result of terms (3)-(8)
@@ -1324,7 +1324,7 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
   tmpvec = rcp(new Epetra_Vector(*structureresidual));
   // ---------End of term (3)
 
-  /* Commented out terms (4) to (6) sinve they tend to introdcue oscillations
+  /* Commented out terms (4) to (6) since they tend to introduce oscillations
    * in the Lagrange multiplier field for certain material properties of the
    * structure
    *                                                    Matthias Mayr 11/2012

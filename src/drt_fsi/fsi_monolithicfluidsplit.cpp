@@ -136,16 +136,16 @@ void FSI::MonolithicFluidSplit::SetupSystem()
 
   aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap()));
 
-  vector<int> pciter;
-  vector<double> pcomega;
-  vector<int> spciter;
-  vector<double> spcomega;
-  vector<int> fpciter;
-  vector<double> fpcomega;
-  vector<int> apciter;
-  vector<double> apcomega;
-  vector<string> blocksmoother;
-  vector<double> schuromega;
+  std::vector<int> pciter;
+  std::vector<double> pcomega;
+  std::vector<int> spciter;
+  std::vector<double> spcomega;
+  std::vector<int> fpciter;
+  std::vector<double> fpcomega;
+  std::vector<int> apciter;
+  std::vector<double> apcomega;
+  std::vector<std::string> blocksmoother;
+  std::vector<double> schuromega;
   {
     int    word1;
     double word2;
@@ -182,7 +182,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
         apcomega.push_back(word2);
     }
     {
-      string word;
+      std::string word;
       std::istringstream blocksmootherstream(Teuchos::getNumericStringParameter(fsidyn,"BLOCKSMOOTHER"));
       while (blocksmootherstream >> word)
         blocksmoother.push_back(word);
@@ -1050,7 +1050,7 @@ void FSI::MonolithicFluidSplit::SetupVector(Epetra_Vector &f,
     if (lambda_ != Teuchos::null)
     {
       Teuchos::RCP<Epetra_Vector> lambdaglobal = StructureField()->Interface()->InsertFSICondVector(FluidToStruct(lambda_));
-      modsv->Update((stiparam-(ftiparam*(1.0-stiparam))/(1.0-ftiparam)), *lambdaglobal, 1.0);
+      modsv->Update(stiparam-(ftiparam*(1.0-stiparam))/(1.0-ftiparam), *lambdaglobal, 1.0);
     }
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modsv->Map(),true));
