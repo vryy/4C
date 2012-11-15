@@ -374,6 +374,11 @@ int DRT::ELEMENTS::So_weg6::Evaluate(ParameterList& params,
         MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
         comix->SetupHistory(NUMGPT_WEG6);
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_growth)
+      {
+        MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
+        grow->ResetGrowth(NUMGPT_WEG6);
+      }
       // Reset prestress
       if (pstype_==INPAR::STR::prestress_mulf)
       {

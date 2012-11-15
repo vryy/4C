@@ -199,7 +199,7 @@ steps 25 nnodes 5
   // error: diference of the measured to the calculated curve
   error_  = 1.0E6;
   error_o_= 1.0E6;
-  // 
+  //
   error_grad_  = 1.0E6;
   error_grad_o_= 1.0E6;
 
@@ -207,7 +207,7 @@ steps 25 nnodes 5
   mu_ = iap.get<double>("INV_INITREG");
   mu_o_ = mu_;
   kappa_multi_=1.0;
-  
+
   // update strategy for mu
   switch(DRT::INPUT::IntegralValue<INPAR::STR::RegStratUpdate>(iap,"UPDATE_REG"))
    {
@@ -374,12 +374,12 @@ void STR::GenInvAnalysis::NPIntegrate()
   const int gmyrank  = gcomm->MyPID();
   const int groupid  = group->GroupId();
   const int ngroup   = group->NumGroups();
-  
+
   // make some plausability checks:
   //  np_+1 must divide by the number of groups (np_+1) % ngroup = 0
   if ( (np_+1)%ngroup != 0)
     dserror("# material parameters + 1 (%d) must divide by # groups (%d)",np_+1,ngroup);
-  
+
   // group 0 does the unpermuted solution
   // groups 1 to np_ do the permuted versions
   // proc 0 of group 0 (which is also gproc 0) does the optimization step
@@ -456,11 +456,11 @@ void STR::GenInvAnalysis::NPIntegrate()
       // these are different for every group
       lcomm->Broadcast(&p_cur[0],p_cur.Length(),0);
       SetParameters(p_cur);
-      
+
       // compute nonlinear problem and obtain computed displacements
       // output at the last step
       Epetra_SerialDenseVector cvector;
-      cvector = CalcCvector(outputtofile,group); 
+      cvector = CalcCvector(outputtofile,group);
       // output cvector is on lmyrank=0 of every group
       // all other procs have zero vectors of the same size here
       // communicate cvectors to gmyrank 0 and put into cmatrix
@@ -470,7 +470,7 @@ void STR::GenInvAnalysis::NPIntegrate()
         int sender=0;
         if (lmyrank==0 && groupid==j) ssender = gmyrank;
         gcomm->SumAll(&ssender,&sender,1);
-        int n[2]; 
+        int n[2];
         n[0] = cvector.Length();
         n[1] = i;
         gcomm->Broadcast(n,2,sender);
@@ -485,7 +485,7 @@ void STR::GenInvAnalysis::NPIntegrate()
             cmatrix(k,ii) = sendbuff[k];
         }
       }
-      
+
       // reset discretization to blank
       ParameterList p;
       p.set("action","calc_struct_reset_discretization");
@@ -686,7 +686,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 
     // get the displacements of the monitored timesteps
     {
-      if (abs(time-timesteps_[writestep]) < 1.0e-12)
+      if (abs(time-timesteps_[writestep]) < 1.0e-7)
       {
         Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(sti_->DisNew()));
         if (!myrank)
@@ -694,10 +694,15 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
             cvector[writestep*ndofs_+j] = cvector_arg[j];
         writestep+=1;
       }
+
+      // check if timestepsize is smaller than the tolerance above
+      double deltat = sti_->GetTimeStepSize();
+      if (deltat < 1.0e-7)
+        dserror("your time step size is too small, you will have problems with the monitored steps, thus adapt the tolerance");
     }
   }
 
-  if (!writestep*ndofs_==nmp_) dserror("# of monitored timesteps does not match # of timesteps extracted from the simulation ");
+  if (!(writestep*ndofs_==nmp_)) dserror("# of monitored timesteps does not match # of timesteps extracted from the simulation ");
 
   return cvector;
 }
@@ -717,7 +722,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
   //const int ngroup   = group->NumGroups();
 
   // get input parameter lists (ioflags as deep copy to modify it)
-  Teuchos::ParameterList ioflags = DRT::Problem::Instance()->IOParams(); 
+  Teuchos::ParameterList ioflags = DRT::Problem::Instance()->IOParams();
   if (groupid != 0) ioflags.set("STDOUTEVRY",0);
 
   const Teuchos::ParameterList& sdyn
@@ -732,7 +737,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
   if (sti_ == Teuchos::null) dserror("Failed in creating integrator.");
   fflush(stdout);
   gcomm->Barrier();
-  
+
   // initialize time loop / Attention the Functions give back the
   // time and the step not timen and stepn value that is why we have
   // to use < instead of <= for the while loop
@@ -776,7 +781,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
 
     // get the displacements of the monitored timesteps
     {
-      if (abs(time-timesteps_[writestep]) < 1.0e-12)
+      if (abs(time-timesteps_[writestep]) < 1.0e-7)
       {
         Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(sti_->DisNew()));
         if (!lmyrank)
@@ -784,10 +789,15 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
             cvector[writestep*ndofs_+j] = cvector_arg[j];
         writestep+=1;
       }
+
+      // check if timestepsize is smaller than the tolerance above
+      double deltat = sti_->GetTimeStepSize();
+      if (deltat < 1.0e-7)
+        dserror("your time step size is too small, you will have problems with the monitored steps, thus adapt the tolerance");
     }
   }
 
-  if (!writestep*ndofs_==nmp_) dserror("# of monitored timesteps does not match # of timesteps extracted from the simulation ");
+  if (!(writestep*ndofs_==nmp_)) dserror("# of monitored timesteps does not match # of timesteps extracted from the simulation ");
 
   return cvector;
 }
@@ -845,7 +855,7 @@ void STR::GenInvAnalysis::PrintStorage(Epetra_SerialDenseMatrix cmatrix, Epetra_
   // storing current material parameter increments
   p_s_.Reshape(numb_run_+1,  np_);
   delta_p_s_.Reshape(numb_run_+1,  np_);
-  for (int i=0; i<np_; i++) 
+  for (int i=0; i<np_; i++)
   {
     p_s_(numb_run_, i)=p_(i);
     delta_p_s_(numb_run_, i)=delta_p(i);

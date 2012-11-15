@@ -678,6 +678,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(ParameterList&           params,
         MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
         comix->SetupHistory(NUMGPT_SOH8);
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_growth)
+      {
+        MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
+        grow->ResetGrowth(NUMGPT_SOH8);
+      }
       // Reset prestress
       if (pstype_==INPAR::STR::prestress_mulf)
       {

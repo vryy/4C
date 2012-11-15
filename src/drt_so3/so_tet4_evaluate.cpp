@@ -476,6 +476,11 @@ int DRT::ELEMENTS::So_tet4::Evaluate(ParameterList&           params,
         MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
         comix->SetupHistory(NUMGPT_SOTET4);
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_growth)
+      {
+        MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
+        grow->ResetGrowth(NUMGPT_SOTET4);
+      }
       // Reset prestress
       if (pstype_==INPAR::STR::prestress_mulf)
       {

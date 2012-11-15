@@ -159,6 +159,12 @@ namespace MAT
       DRT::INPUT::LineDefinition* linedef ///< definition of element line
     );
 
+    /// Resest growth variables to start values
+    void ResetGrowth
+    (
+      const int numgp   ///< number of Gauss points
+    );
+
     /// Update
     void Update();
 

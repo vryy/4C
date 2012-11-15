@@ -22,7 +22,6 @@ Maintainer: Susanna Tinkl
 *----------------------------------------------------------------------*/
 
 
-#include <vector>
 #include "growth_ip.H"
 #include "elasthyper.H"
 #include "holzapfelcardiovascular.H"
@@ -138,10 +137,10 @@ void MAT::Growth::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)         02/10|
  *----------------------------------------------------------------------*/
-void MAT::Growth::Unpack(const vector<char>& data)
+void MAT::Growth::Unpack(const std::vector<char>& data)
 {
   isinit_=true;
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -172,9 +171,9 @@ void MAT::Growth::Unpack(const vector<char>& data)
   }
 
   // unpack growth internal variables
-  theta_ = Teuchos::rcp(new vector<double> (numgp));
-  thetaold_ = Teuchos::rcp(new vector<double> (numgp));
-  mandel_ = Teuchos::rcp(new vector<double> (numgp));
+  theta_ = Teuchos::rcp(new std::vector<double> (numgp));
+  thetaold_ = Teuchos::rcp(new std::vector<double> (numgp));
+  mandel_ = Teuchos::rcp(new std::vector<double> (numgp));
   for (int gp = 0; gp < numgp; ++gp) {
     double a;
     ExtractfromPack(position,data,a);
@@ -186,7 +185,7 @@ void MAT::Growth::Unpack(const vector<char>& data)
   }
 
   // Unpack data of elastic material (these lines are copied from drt_element.cpp)
-  vector<char> dataelastic;
+  std::vector<char> dataelastic;
   ExtractfromPack(position,data,dataelastic);
   if (dataelastic.size()>0) {
     DRT::ParObject* o = DRT::UTILS::Factory(dataelastic);  // Unpack is done here
@@ -213,9 +212,9 @@ void MAT::Growth::Unpack(const vector<char>& data)
  *----------------------------------------------------------------------*/
 void MAT::Growth::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
 {
-  theta_ = Teuchos::rcp(new vector<double> (numgp));
-  thetaold_ = Teuchos::rcp(new vector<double> (numgp));
-  mandel_ = Teuchos::rcp(new vector<double> (numgp));
+  theta_ = Teuchos::rcp(new std::vector<double> (numgp));
+  thetaold_ = Teuchos::rcp(new std::vector<double> (numgp));
+  mandel_ = Teuchos::rcp(new std::vector<double> (numgp));
   for (int j=0; j<numgp; ++j)
   {
     theta_->at(j) = 1.0;
@@ -238,6 +237,19 @@ void MAT::Growth::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
 
   isinit_ = true;
   return;
+}
+
+/*----------------------------------------------------------------------*
+ |  ResetGrowth                                   (public)         11/12|
+ *----------------------------------------------------------------------*/
+void MAT::Growth::ResetGrowth(const int numgp)
+{
+  for (int j=0; j<numgp; ++j)
+  {
+    theta_->at(j) = 1.0;
+    thetaold_->at(j) = 1.0;
+    mandel_->at(j) = 0.0;
+  }
 }
 
 /*----------------------------------------------------------------------*
@@ -564,18 +576,18 @@ void MAT::GrowthOutputToGmsh
     const DRT::Element* actele = dis->lColElement(iele);
 
     // build current configuration
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
     actele->LocationVector(*dis,lm,lmowner,lmstride);
     Teuchos::RCP<const Epetra_Vector> disp = dis->GetState("displacement");
-    vector<double> mydisp(lm.size(),0);
+    std::vector<double> mydisp(lm.size(),0);
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
     RCP<MAT::Material> mat = actele->Material();
     MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
-    Teuchos::RCP<vector<double> > mandel = grow->Getmandel();
-    Teuchos::RCP<vector<double> > theta = grow->Gettheta();
+    Teuchos::RCP<std::vector<double> > mandel = grow->Getmandel();
+    Teuchos::RCP<std::vector<double> > theta = grow->Gettheta();
 
     // material plot at gauss points
     int ngp = grow->Gettheta()->size();
@@ -620,6 +632,7 @@ void MAT::GrowthOutputToGmsh
     }
     default:
       dserror("unknown element in ConstraintMixtureOutputToGmsh");
+      break;
     }
 
     const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule_);
