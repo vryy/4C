@@ -411,7 +411,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
     elevector1.Size(eledim);
 
     // set action in order to calculate the integrated divergence operator via an Evaluate()-call
-    ParameterList params;
+    Teuchos::ParameterList params;
     params.set<int>("action",FLD::calc_divop);
 
     // call the element specific evaluate method
