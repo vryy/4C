@@ -6,9 +6,9 @@
 //
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
-FSI:        iter_monolithicfluidsplit
-Fluid:      Gen_Alpha with constant_acceleration_predictor
-Structure:  GenAlpha with ConstVel
+FSI:            iter_monolithicfluidsplit
+Fluid:          Gen_Alpha with constant_acceleration_predictor
+Structure:      GenAlpha with ConstVel
 ==> comparison to analytical solution
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    4
@@ -16,12 +16,7 @@ Structure:  GenAlpha with ConstVel
 DIM           3
 --------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        classic_lin
-LINEAR_SOLVER                   3
-MAXTIME                         4
-NUMSTEP                         41
-NUM_INITSTEP                    0
-RESULTSEVRY                     1
-TIMESTEP                        0.1
+LINEAR_SOLVER                   1
 -----------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   1
 NUMALEDIS                       1
@@ -38,48 +33,32 @@ CONVTOL                         1e-06
 GAMMA                           0.5
 INITIALFIELD                    zero_field
 ITEMAX                          10
-LINEAR_SOLVER                   2
-MAXTIME                         1000
+LINEAR_SOLVER                   1
 NEUMANNINFLOW                   no
 NONLINITER                      fixed_point_like
-NUMSTASTEPS                     0
-NUMSTEP                         1
 PHYSICAL_TYPE                   Incompressible
-PREDICTOR                       steady_state_predictor
-RESTARTEVRY                     1
-STARTINGALGO                    One_Step_Theta
-START_THETA                     1
-THETA                           0.66
+PREDICTOR                       constant_acceleration_predictor
 TIMEINTEGR                      Np_Gen_Alpha
 TIMESTEP                        0.01
-UPRES                           1
 --------------------------------------------------------FSI DYNAMIC
 BASETOL                         0.001
 CONVTOL                         1e-06
 COUPALGO                        iter_monolithicfluidsplit
 COUPMETHOD                      conforming
-COUPVARIABLE                    Displacement
-ENERGYCHECK                     No
 ITEMAX                          10
 LINEARBLOCKSOLVER               PreconditionedKrylov
-MAXTIME                         100
+MAXTIME                         1
 NORMCOMBI_RESFINC               And
 NORM_INC                        Rel
 NORM_RESF                       Rel
 NUMSTEP                         10
 RELAX                           1
-RESTARTEVRY                     1
-SCHUROMEGA                      0.001 0.01 0.1
+RESTARTEVRY                     2
 SECONDORDER                     yes
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                No
 TIMESTEP                        0.1
-TOLENCHECK                      1e-06
 UPRES                           1
----------------------------------------------FSI DYNAMIC/CONSTRAINT
-ALPHA                           0.8
-PRECONDITIONER                  Simple
-SIMPLEITER                      2
 --------------------------------------------------------PROBLEM TYP
 NUMFIELD                        3
 PROBLEMTYP                      Fluid_Structure_Interaction
@@ -87,25 +66,16 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 -------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
-EIGEN                           0
 ITERNORM                        L2
-ITWANT                          0
 LINEAR_SOLVER                   1
-LOADLIN                         no
 LUMPMASS                        No
 MAXITER                         50
-MAXTIME                         5
 MINITER                         0
-MODIFIEDEXPLEULER               Yes
 NLNSOL                          fullnewton
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
 NORM_RESF                       Abs
-NUMSTEP                         200
-PREDICT                         ConstDisVelAcc
-RESTARTEVRY                     1
-RESULTSEVRY                     1
-TIMESTEP                        0.05
+PREDICT                         ConstVel
 TOLDISP                         1e-10
 TOLRES                          1e-08
 ----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
@@ -114,13 +84,7 @@ ALPHA_M                         0.5
 BETA                            0.25
 GAMMA                           0.5
 GENAVG                          ImrLike
-------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
-THETA                           0.5
 -----------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK
------------------------------------------------------------SOLVER 2
-SOLVER                          UMFPACK
------------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2000000 NUE 0.3 DENS 7.8e-4 THEXPANS 0.0
@@ -261,5 +225,8 @@ NODE 24  	COORD	2.5000000000000000e+00	5.0000000000000000e-01	5.0000000000000000
 FLUID DIS fluid NODE 5 QUANTITY velx VALUE -2.0 TOLERANCE 1e-8
 FLUID DIS fluid NODE 16 QUANTITY pressure VALUE 4.0 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE -1.0 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambdax VALUE 2.615e+01 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambday VALUE 2.05728296296296342e+01 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambdaz VALUE 2.05728296296296342e+01 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END
