@@ -267,7 +267,7 @@ bool DRT::INPUT::NamedVariableVectorComponent<type>::Read(DRT::INPUT::LineDefini
 {
   // Find expexted vector on line. It has to be read already!
 
-  int length;
+  int length=0;
   definition.ExtractInt(lengthdef_,length);
   this->values_.resize(length);
 

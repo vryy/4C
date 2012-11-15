@@ -623,9 +623,6 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
   // [CenterOfMass BorderNodes)
   // -------------------------------------------------------------------
 
-  int nearest_nd_from_right = border_nodes_coords.begin()->first;
-  int nearest_nd_from_left  = border_nodes_coords.begin()->first;
-
   // get the dimension of the node
   const int dim = 3;
 
@@ -724,7 +721,6 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
             if (diff.Norm2() <= diff_error_l)
             {
               diff_error_l = diff.Norm2();
-              nearest_nd_from_left = it->first;
               R_l = border_raduis;
               v_left = c_bnd;
             }
@@ -734,7 +730,6 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
             if (diff.Norm2() <= diff_error_r)
             {
               diff_error_r = diff.Norm2();
-              nearest_nd_from_right= it->first;
               R_r = border_raduis;
               v_right= c_bnd;
             }

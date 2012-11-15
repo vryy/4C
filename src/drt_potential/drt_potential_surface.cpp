@@ -761,7 +761,6 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1(
            LINALG::Matrix<3,1>  potderiv1;
            LINALG::Matrix<3,3>  potderiv2;
 
-           bool validContribution = false;
            // contact
            //fabs(cond->GetDouble("exvollength")) > 1e-7
            //was soll das sein?
@@ -778,7 +777,6 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1(
              x_pot_gp_con.Update( (-1.0)*exvollength, n_pot_gp, 1.0);
 
              EvaluatePotentialfromCondition_Approx1(cond, x_gp_con, x_pot_gp_con, potderiv1, potderiv2);
-             validContribution = DetermineValidContribution(x_gp_con, x_pot_gp_con, n_gp, n_pot_gp);
            }
            else
            {
@@ -1466,6 +1464,7 @@ void POTENTIAL::SurfacePotential::computeFandK(
               break;
             default:
                dserror("unknown number of nodes for gaussrule initialization");
+               break;
          }
          const DRT::UTILS::IntegrationPoints1D intpoints_pot(rule_pot);
          //----------------------------------------------------------------------
@@ -1918,6 +1917,7 @@ void POTENTIAL::SurfacePotential::GetGaussRule2D(
       break;
     default:
       dserror("unknown number of nodes for gaussrule initialization");
+      break;
   }
   return;
 }

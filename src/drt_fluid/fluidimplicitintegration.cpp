@@ -761,6 +761,7 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
         break;
       default:
         dserror("parameter out of range: IOP\n");
+        break;
       } /* end of switch(timealgo) */
     }
 
@@ -5049,6 +5050,7 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
   break;
   default:
     dserror("Cannot calculate error. Unknown type of analytical test problem");
+    break;
   }
   return;
 } // end EvaluateErrorComparedToAnalyticalSol
@@ -6197,6 +6199,7 @@ void FLD::FluidImplicitTimeInt::SetInitialPorosityField(
   }
   default:
     dserror("Unknown option for initial field: %d", init);
+    break;
   } // switch(init)
 
   return;

@@ -973,13 +973,13 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
     //------------------------------------------------------------
     const Epetra_Map* rmap = NULL;
-    const Epetra_Map* dmap = NULL;
+    //const Epetra_Map* dmap = NULL;
 
     RCP<Epetra_FECrsMatrix> sysmat_FE;
     if (xfluid_.alesysmat_ != Teuchos::null)
     {
       rmap = &(xfluid_.alesysmat_->OperatorRangeMap());
-      dmap = rmap;
+      //dmap = rmap;
       sysmat_FE = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,*rmap,256,false));
     }
     else dserror("alesysmat is NULL!");
