@@ -6,21 +6,14 @@
 //
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
-FSI:                            iter_monolithicstructuresplit
-Fluid: BDF2 with constant_acceleration_predictor
-Structure: OneStepTheta with ConstVel
+FSI:            iter_monolithicstructuresplit
+Fluid:          BDF2 with constant_acceleration_predictor
+Structure:      OneStepTheta with ConstVel
 ----------------------------------------------------------------PROBLEM SIZE
-//ELEMENTS                      4
-//NODES                         24
 DIM                             3
 -----------------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        classic_lin
-LINEAR_SOLVER                   3
-MAXTIME                         4
-NUMSTEP                         41
-NUM_INITSTEP                    0
-RESULTSEVRY                     1
-TIMESTEP                        0.1
+LINEAR_SOLVER                   1
 --------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   1
 NUMALEDIS                       1
@@ -34,46 +27,35 @@ CONVFORM                        convective
 CONVTOL                         1e-06
 INITIALFIELD                    zero_field
 ITEMAX                          10
-LINEAR_SOLVER                   2
-MAXTIME                         1000
-NEUMANNINFLOW                   no
+LINEAR_SOLVER                   1
+NEUMANNINFLOW                   yes
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
-NUMSTEP                         1
 PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       constant_increment_predictor
-RESTARTEVRY                     1
-STARTINGALGO                    One_Step_Theta
-START_THETA                     1
 TIMEINTEGR                      BDF2
-TIMESTEP                        0.01
 UPRES                           1
 -----------------------------------------------------------------FSI DYNAMIC
 BASETOL                         0.001
 CONVTOL                         1e-10
 COUPALGO                        iter_monolithicstructuresplit
 COUPMETHOD                      conforming
-COUPVARIABLE                    Displacement
 ENERGYCHECK                     No
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
-MAXTIME                         100
+MAXTIME                         1
 NORMCOMBI_RESFINC               And
 NORM_INC                        Rel
 NORM_RESF                       Rel
 NUMSTEP                         10
 RELAX                           1
-RESTARTEVRY                     1
+RESTARTEVRY                     2
 SECONDORDER                     yes
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                No
 TIMESTEP                        0.1
 TOLENCHECK                      1e-06
 UPRES                           1
-------------------------------------------------------FSI DYNAMIC/CONSTRAINT
-ALPHA                           0.8
-PRECONDITIONER                  Simple
-SIMPLEITER                      2
 -----------------------------------------------------------------PROBLEM TYP
 NUMFIELD                        3
 PROBLEMTYP                      Fluid_Structure_Interaction
@@ -81,34 +63,23 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
-EIGEN                           0
 ITERNORM                        L2
 ITWANT                          0
 LINEAR_SOLVER                   1
-LOADLIN                         no
 LUMPMASS                        No
 MAXITER                         50
-MAXTIME                         5
 MINITER                         0
 MODIFIEDEXPLEULER               Yes
 NLNSOL                          fullnewton
 NORMCOMBI_RESFDISP              And
 NORM_DISP                       Abs
 NORM_RESF                       Abs
-NUMSTEP                         200
 PREDICT                         ConstAcc
-RESTARTEVRY                     1
-RESULTSEVRY                     1
-TIMESTEP                        0.05
 TOLDISP                         1e-10
 TOLRES                          1e-08
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 3
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2000000 NUE 0.3 DENS 7.8e-4 THEXPANS 0.0
@@ -118,13 +89,6 @@ MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 1.0 THEXPANS 0.0
 SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t t1 0.0 t2 100.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         3
 NDLINE                          0
@@ -246,7 +210,13 @@ NODE 24 COORD 2.5000000000000000e+00 5.0000000000000000e-01 5.0000000000000000e-
 3 FLUID3 HEX8 5 6 7 8 9 10 11 12 MAT 2 NA ALE GP 2 2 2
 4 FLUID3 HEX8 9 10 11 12 13 14 15 16 MAT 2 NA ALE GP 2 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 16 QUANTITY velx VALUE 1.0 TOLERANCE 1e-7
+ALE DIS ale NODE  5 QUANTITY dispx VALUE 1.66666666666666630e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 16 QUANTITY velx VALUE 1.0 TOLERANCE 1e-8
+FLUID DIS fluid NODE 16 QUANTITY pressure VALUE 7.86293543235609032e-04 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 20 QUANTITY dispx VALUE 0.5 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE 0.5 TOLERANCE 1e-8
+FSI NODE 19 QUANTITY lambdax VALUE 1.96573468788026047e-04 TOLERANCE 1e-8
+FSI NODE 19 QUANTITY lambday VALUE -4.21236093170710313e-05 TOLERANCE 1e-8
+FSI NODE 19 QUANTITY lambdaz VALUE 4.21218646893883476e-05 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END
