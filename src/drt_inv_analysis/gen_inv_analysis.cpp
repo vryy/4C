@@ -223,6 +223,7 @@ steps 25 nnodes 5
      break;
      default:
        dserror("Unknown update strategy for regularization parameter! Fix your input file");
+		  break;
    }
 
   check_neg_params_ = DRT::INPUT::IntegralValue<int>(iap,"PARAM_BOUNDS");
