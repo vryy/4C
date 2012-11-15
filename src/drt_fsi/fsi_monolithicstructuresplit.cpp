@@ -81,7 +81,7 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,
     dserror("Could not remove structural interface Dirichlet conditions from structure DBC map.");
 #endif
 
-  sggtransform_  = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  sggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
   sgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
   sigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
   aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
@@ -95,14 +95,14 @@ FSI::MonolithicStructureSplit::MonolithicStructureSplit(const Epetra_Comm& comm,
   fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 
   // Recovery of Lagrange multiplier happens on structure field
-  lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap(),true));
-  ddiinc_ = Teuchos::null;
+  lambda_   = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap(),true));
+  ddiinc_   = Teuchos::null;
   soliprev_ = Teuchos::null;
-  ddginc_ = Teuchos::null;
-  duginc_ = Teuchos::null;
+  ddginc_   = Teuchos::null;
+  duginc_   = Teuchos::null;
   disgprev_ = Teuchos::null;
-  sgiprev_ = Teuchos::null;
-  sggprev_ = Teuchos::null;
+  sgiprev_  = Teuchos::null;
+  sggprev_  = Teuchos::null;
 
   return;
 }
@@ -1313,10 +1313,9 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
    *
    *                                                 Matthias Mayr (10/2012)
    */
-  int err = 0;
+
   // ---------Addressing term (1)
-  err = lambda_->Update(stiparam,*lambda_,0.0);
-  if (err!=0) { dserror("Failed!"); }
+  lambda_->Update(stiparam,*lambda_,0.0);
   // ---------End of term (1)
 
   // ---------Addressing term (3)
@@ -1330,36 +1329,29 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
    *                                                    Matthias Mayr 11/2012
   // ---------Addressing term (4)
   auxvec = Teuchos::rcp(new Epetra_Vector(sgiprev_->RangeMap(),true));
-  err = sgiprev_->Apply(*ddiinc_,*auxvec);
-  if (err!=0) { dserror("Failed!"); }
-  err = tmpvec->Update(-1.0,*auxvec,1.0);
-  if (err!=0) { dserror("Failed!"); }
+  sgiprev_->Apply(*ddiinc_,*auxvec);
+  tmpvec->Update(-1.0,*auxvec,1.0);
   // ---------End of term (4)
 
   // ---------Addressing term (5)
   auxvec = Teuchos::rcp(new Epetra_Vector(sggprev_->RangeMap(),true));
-  err = sggprev_->Apply(*FluidToStruct(duginc_),*auxvec);
-  if (err!=0) { dserror("Failed!"); }
-  err = tmpvec->Update(-1.0/timescale,*auxvec,1.0);
-  if (err!=0) { dserror("Failed!"); }
+  sggprev_->Apply(*FluidToStruct(duginc_),*auxvec);
+  tmpvec->Update(-1.0/timescale,*auxvec,1.0);
   // ---------End of term (5)
 
   //---------Addressing term (6)
   if (firstcall_)
   {
     auxvec = Teuchos::rcp(new Epetra_Vector(sggprev_->RangeMap(),true));
-    err = sggprev_->Apply(*FluidToStruct(FluidField().ExtractInterfaceVeln()),*auxvec);
-    if (err!=0) { dserror("Failed!"); }
-    err = tmpvec->Update(-Dt(),*auxvec,1.0);
-    if (err!=0) { dserror("Failed!"); }
+    sggprev_->Apply(*FluidToStruct(FluidField().ExtractInterfaceVeln()),*auxvec);
+    tmpvec->Update(-Dt(),*auxvec,1.0);
   }
   // ---------End of term (6)
    *
    */
 
   // ---------Addressing term (2)
-  err = lambda_->Update(1.0,*tmpvec,1.0);
-  if (err!=0) { dserror("Failed!"); }
+  lambda_->Update(1.0,*tmpvec,1.0);
   // ---------End of term (2)
 
   // finally, divide by -(1.-stiparam) which is common to all terms
