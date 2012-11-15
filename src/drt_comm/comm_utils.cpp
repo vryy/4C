@@ -89,7 +89,7 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
 
         while (layout)
         {
-          string s;
+          std::string s;
           if (!getline( layout, s, ',' )) break;
           grouplayout.push_back( atoi(s.c_str()) );
           sumprocs += atoi(s.c_str());
@@ -324,7 +324,7 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
   int sbcaster = -1;
   int bcaster = -1;
   int numfield = 0;
-  vector<int> numdis;
+  std::vector<int> numdis;
   // only proc 0 of group bgroup
   if (group->GroupId()==bgroup && lcomm->MyPID()==0) 
   {
@@ -345,10 +345,10 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
   {
 //    for (int j=0; j<numdis[i]; ++j)
 //    {
-      RCP<DRT::Discretization> dis = Teuchos::null;
-      string name;
-      string distype;
-      vector<char> data;
+      Teuchos::RCP<DRT::Discretization> dis = Teuchos::null;
+      std::string name;
+      std::string distype;
+      std::vector<char> data;
       if (gcomm->MyPID()==bcaster) 
       {
         DRT::Container cont;
@@ -372,19 +372,19 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
         Epetra_Map source(-1,snummyelements,&myelements,0,*gcomm);
         Epetra_Map target(-1,rnummyelements,&myelements,0,*gcomm);
         DRT::Exporter exporter(source,target,*gcomm);
-        map<int,vector<char> > smap;
+        std::map<int,std::vector<char> > smap;
         if (gcomm->MyPID()==bcaster) smap[0] = data;
         exporter.Export<char>(smap);
         data = smap[0];
       }
       DRT::Container cont;
-      vector<char> singledata;
-      vector<char>::size_type index = 0;
+      std::vector<char> singledata;
+      std::vector<char>::size_type index = 0;
       cont.ExtractfromPack(index,data,singledata);
       cont.Unpack(singledata);
-      const string* rname = cont.Get<string>("disname");
+      const std::string* rname = cont.Get<string>("disname");
       name = *rname;
-      const string* rdistype = cont.Get<string>("distype");
+      const std::string* rdistype = cont.Get<string>("distype");
       distype = *rdistype;
       // allocate or get the discretization
       if (group->GroupId()==bgroup) 
@@ -419,7 +419,7 @@ void COMM_UTILS::BroadcastDiscretizations(const int bgroup)
         }
         if (group->GroupId()==k)
         {
-          const string disname = dis->Name();
+          const std::string disname = dis->Name();
           problem->AddDis(disname,dis);
         }
         gcomm->Barrier();
@@ -443,10 +443,10 @@ void COMM_UTILS::NPDuplicateDiscretization(
 {
   Teuchos::RCP<Epetra_Comm> lcomm = group->LocalComm();
 
-  vector<int> sbcaster(2,-1);
-  vector<int> bcaster(2,-1);
-  vector<int> sgsize(2,-1);
-  vector<int> gsize(2,-1);
+  std::vector<int> sbcaster(2,-1);
+  std::vector<int> bcaster(2,-1);
+  std::vector<int> sgsize(2,-1);
+  std::vector<int> gsize(2,-1);
   if (group->GroupId()==sgroup && lcomm->MyPID()==0)
   {
     sbcaster[0] = icomm->MyPID();
@@ -462,9 +462,9 @@ void COMM_UTILS::NPDuplicateDiscretization(
   //printf("proc %d sgroup %d rgroup %d bcaster %d %d gsize %d %d\n",icomm->MyPID(),sgroup,rgroup,bcaster[0],bcaster[1],gsize[0],gsize[1]);
 
   // create a common discretization that we then fill with all stuff from sender group
-  string name = dis->Name();  
-  string type = DRT::Problem::Instance()->SpatialApproximation();
-  RCP<DRT::Discretization> commondis;
+  std::string name = dis->Name();
+  std::string type = DRT::Problem::Instance()->SpatialApproximation();
+  Teuchos::RCP<DRT::Discretization> commondis;
   if (type=="Nurbs")
   {
     commondis = Teuchos::rcp(new DRT::NURBS::NurbsDiscretization(name,icomm));
@@ -476,9 +476,9 @@ void COMM_UTILS::NPDuplicateDiscretization(
   // --------------------------------------
   // sender group fills commondis with elements and nodes and conditions
   // note that conditions are fully redundant
-  map<int,vector<char> >        condmap;
-  map<int,RCP<DRT::Container> > condnamemap;
-  vector<int>                   myrowelements;
+  std::map<int,std::vector<char> >            condmap;
+  std::map<int,Teuchos::RCP<DRT::Container> > condnamemap;
+  std::vector<int>                            myrowelements;
   if (group->GroupId()==sgroup)
   {
     if (!dis->Filled()) dis->FillComplete(false,false,false);
@@ -491,7 +491,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
       myrowelements[i] = dis->ElementRowMap()->GID(i);
       DRT::Element* ele = dis->lRowElement(i);
       if (myrowelements[i] != ele->Id()) dserror("Element global id mismatch");
-      RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
+      Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
       newele->SetOwner(icomm->MyPID());
       commondis->AddElement(newele);
     }
@@ -499,18 +499,18 @@ void COMM_UTILS::NPDuplicateDiscretization(
     for (int i=0; i<dis->NodeRowMap()->NumMyElements(); ++i)
     {
       DRT::Node* node = dis->lRowNode(i);
-      RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
+      Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
       newnode->SetOwner(icomm->MyPID());
       commondis->AddNode(newnode);
     }
     // loop conditions
-    vector<string> condnames;
+    std::vector<string> condnames;
     dis->GetConditionNames(condnames);
     for (int i=0; i<(int)condnames.size(); ++i)
     {
-      vector<DRT::Condition*> conds;
+      std::vector<DRT::Condition*> conds;
       dis->GetCondition(condnames[i],conds);
-      RCP<vector<char> > data = dis->PackCondition(condnames[i]);
+      Teuchos::RCP<std::vector<char> > data = dis->PackCondition(condnames[i]);
       if (lcomm->MyPID()==0) 
       {
         condmap[i] = *data;
@@ -525,7 +525,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
   // conditions have to be fully redundant, need to copy to all procs in intercomm
   {
     int nummyelements = (int)condmap.size();
-    vector<int> myelements(nummyelements,-1);
+    std::vector<int> myelements(nummyelements,-1);
     for (int i=0; i<nummyelements; ++i) myelements[i] = i;
     Epetra_Map smap(-1,nummyelements,&myelements[0],0,*icomm);
     nummyelements = smap.NumGlobalElements();
@@ -540,11 +540,11 @@ void COMM_UTILS::NPDuplicateDiscretization(
   // all rgroup procs loop and add condition to their dis and to the commondis
   if (group->GroupId()==rgroup)
   {
-    map<int,vector<char> >::iterator fool1 = condmap.begin();
-    map<int,RCP<DRT::Container> >::iterator fool2 = condnamemap.begin();
+    std::map<int,std::vector<char> >::iterator fool1 = condmap.begin();
+    std::map<int,Teuchos::RCP<DRT::Container> >::iterator fool2 = condnamemap.begin();
     for ( ; fool1 != condmap.end(); ++fool1)
     {
-      const string* name = fool2->second->Get<string>("condname");
+      const std::string* name = fool2->second->Get<string>("condname");
       commondis->UnPackCondition(Teuchos::rcp(&(fool1->second),false),*name);
       dis->UnPackCondition(Teuchos::rcp(&(fool1->second),false),*name);
       ++fool2;
@@ -553,10 +553,10 @@ void COMM_UTILS::NPDuplicateDiscretization(
   
   //-------------------------------------- finalize the commondis
   {
-    RCP<Epetra_Map> roweles = Teuchos::rcp(new Epetra_Map(-1,(int)myrowelements.size(),&myrowelements[0],-1,*icomm));
-    RCP<Epetra_Map> coleles;
-    RCP<Epetra_Map> rownodes;
-    RCP<Epetra_Map> colnodes;
+    Teuchos::RCP<Epetra_Map> roweles = Teuchos::rcp(new Epetra_Map(-1,(int)myrowelements.size(),&myrowelements[0],-1,*icomm));
+    Teuchos::RCP<Epetra_Map> coleles;
+    Teuchos::RCP<Epetra_Map> rownodes;
+    Teuchos::RCP<Epetra_Map> colnodes;
     DRT::UTILS::PartUsingParMetis(commondis,roweles,rownodes,colnodes,icomm,false);
     commondis->BuildElementRowColumn(*rownodes,*colnodes,roweles,coleles);
     commondis->ExportRowNodes(*rownodes);
@@ -567,7 +567,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
   }
   
   //-------------------------------------- build a target rowmap for elements
-  vector<int> targetgids;
+  std::vector<int> targetgids;
   {
     const Epetra_Map* elerowmap = commondis->ElementRowMap();
     int nummyelements = elerowmap->NumMyElements();
@@ -596,7 +596,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
       int nrecv = nummyelements;
       icomm->Broadcast(&nrecv,1,proc);
       // allocate recv buffer
-      vector<int> recvbuff(nrecv,0);
+      std::vector<int> recvbuff(nrecv,0);
       if (icomm->MyPID()==proc)
         for (int i=0; i<nrecv; ++i)
           recvbuff[i] = myglobalelements[i];
@@ -647,7 +647,7 @@ void COMM_UTILS::NPDuplicateDiscretization(
       int nrecv = nummyelements;
       icomm->Broadcast(&nrecv,1,proc);
       // allocate recv buffer
-      vector<int> recvbuff(nrecv,0);
+      std::vector<int> recvbuff(nrecv,0);
       if (icomm->MyPID()==proc)
         for (int i=0; i<nrecv; ++i)
           recvbuff[i] = myglobalelements[i];
@@ -679,14 +679,14 @@ void COMM_UTILS::NPDuplicateDiscretization(
     for (int i=0; i<targetrowele.NumMyElements(); ++i)
     {
       DRT::Element* ele = commondis->gElement(targetrowele.GID(i));
-      RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
+      Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
       newele->SetOwner(lcomm->MyPID());
       dis->AddElement(newele);
     }
     for (int i=0; i<targetrownode.NumMyElements(); ++i)
     {
       DRT::Node* node = commondis->gNode(targetrownode.GID(i));
-      RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
+      Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(node->Clone());
       newnode->SetOwner(lcomm->MyPID());
       dis->AddNode(newnode);
     }
@@ -695,10 +695,10 @@ void COMM_UTILS::NPDuplicateDiscretization(
   //------------------------------------------- complete the discretization on the rgroup
   if (group->GroupId()==rgroup)
   {
-    RCP<Epetra_Map> roweles = Teuchos::rcp(new Epetra_Map(-1,targetrowele.NumMyElements(),targetrowele.MyGlobalElements(),-1,*lcomm));
-    RCP<Epetra_Map> coleles;
-    RCP<Epetra_Map> rownodes;
-    RCP<Epetra_Map> colnodes;
+    Teuchos::RCP<Epetra_Map> roweles = Teuchos::rcp(new Epetra_Map(-1,targetrowele.NumMyElements(),targetrowele.MyGlobalElements(),-1,*lcomm));
+    Teuchos::RCP<Epetra_Map> coleles;
+    Teuchos::RCP<Epetra_Map> rownodes;
+    Teuchos::RCP<Epetra_Map> colnodes;
     DRT::UTILS::PartUsingParMetis(dis,roweles,rownodes,colnodes,lcomm,false);
     dis->BuildElementRowColumn(*rownodes,*colnodes,roweles,coleles);
     dis->ExportRowNodes(*rownodes);

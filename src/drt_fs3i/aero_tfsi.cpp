@@ -116,12 +116,12 @@ void FS3I::AeroTFSI::Timeloop()
     Teuchos::RCP<Epetra_Vector> ivelnRestart = aerocoupling_->StrExtractInterfaceVal(tsi_->StructureField()->ExtractVeln());
     Teuchos::RCP<Epetra_Vector> ithermoloadRestart = aerocoupling_->ThrExtractInterfaceVal(tsi_->ThermoField()->ExtractTempn());
 
-    vector<double> aerosenddataRestart;
+    std::vector<double> aerosenddataRestart;
     aerocoupling_->PackData(idispnRestart, ithermoloadRestart, aerosenddataRestart);
     SendAeroData(aerosenddataRestart);
   }
 
-  vector<double> timestep(1);
+  std::vector<double> timestep(1);
   // get the first time step from INCA; timen_ and dt has to be set correctly
   GetTimeStep(timestep);
   SetInitialTimeStepAndTime(timestep);
@@ -130,12 +130,12 @@ void FS3I::AeroTFSI::Timeloop()
   while (tsi_->NotFinished())
   {
     // receive data from INCA and make it available on all BACI procs
-    vector<double> aerodata;
+    std::vector<double> aerodata;
     ReceiveAeroData(aerodata);
 
     //fill data from INCA into suitable variables
-    map<int, map<int, LINALG::Matrix<3,1> > > aerocoords;
-    map<int, map<int, LINALG::Matrix<4,1> > > aeroforces;
+    std::map<int, std::map<int, LINALG::Matrix<3,1> > > aerocoords;
+    std::map<int, std::map<int, LINALG::Matrix<4,1> > > aeroforces;
     SplitData(aerodata, aerocoords, aeroforces);
 
     //get new vectors for mapping the fluid interface data
@@ -171,7 +171,7 @@ void FS3I::AeroTFSI::Timeloop()
       // extract interface temperatures
       ithermoload = aerocoupling_->ThrExtractInterfaceVal(tsi_->ThermoField()->ExtractTempnp());
 
-      vector<double> aerosenddata;
+      std::vector<double> aerosenddata;
       aerocoupling_->PackData(idispn, ithermoload, aerosenddata);
 
       SendAeroData(aerosenddata);
@@ -266,7 +266,7 @@ void FS3I::AeroTFSI::SolveTSIstep()
  | Receive time step from INCA via MPI                      ghamm 12/11 |
  *----------------------------------------------------------------------*/
 void FS3I::AeroTFSI::GetTimeStep(
-  vector<double>& timestep
+  std::vector<double>& timestep
   )
 {
   MPI_Barrier(intercomm_);
@@ -289,7 +289,7 @@ void FS3I::AeroTFSI::GetTimeStep(
  | apply time step from INCA to BACI                        ghamm 12/11 |
  *----------------------------------------------------------------------*/
 void FS3I::AeroTFSI::SetTimeStep(
-  vector<double>& timestepsize
+  std::vector<double>& timestepsize
   )
 {
   tsi_->StructureField()->SetTimeStepSize(timestepsize[0]);
@@ -306,7 +306,7 @@ void FS3I::AeroTFSI::SetTimeStep(
  | apply first time step and adapt time                     ghamm 12/11 |
  *----------------------------------------------------------------------*/
 void FS3I::AeroTFSI::SetInitialTimeStepAndTime(
-  vector<double>& timestepsize
+  std::vector<double>& timestepsize
   )
 {
   tsi_->StructureField()->SetInitialTimeStepAndTime(timestepsize[0]);
@@ -323,7 +323,7 @@ void FS3I::AeroTFSI::SetInitialTimeStepAndTime(
  | communication with AERO-code to receive the interface forces         |
  *----------------------------------------------------------------------*/
 void FS3I::AeroTFSI::ReceiveAeroData(
-  vector<double>& aerodata
+  std::vector<double>& aerodata
   )
 {
   // ==================================================================
@@ -367,9 +367,9 @@ void FS3I::AeroTFSI::ReceiveAeroData(
  | cast data from INCA in a different format                ghamm 12/11 |
  *----------------------------------------------------------------------*/
 void FS3I::AeroTFSI::SplitData(
-  vector<double> aerodata,
-  map<int, map<int, LINALG::Matrix<3,1> > >& aerocoords,
-  map<int, map<int, LINALG::Matrix<4,1> > >& aeroforces
+  std::vector<double> aerodata,
+  std::map<int, std::map<int, LINALG::Matrix<3,1> > >& aerocoords,
+  std::map<int, std::map<int, LINALG::Matrix<4,1> > >& aeroforces
   )
 {
   int length = aerodata.size();
@@ -400,7 +400,7 @@ void FS3I::AeroTFSI::SplitData(
  | communication with AERO-code to send interface data      ghamm 12/11 |
  *----------------------------------------------------------------------*/
 void FS3I::AeroTFSI::SendAeroData(
-  vector<double>& aerosenddata
+  std::vector<double>& aerosenddata
   )
 {
   // ==================================================================

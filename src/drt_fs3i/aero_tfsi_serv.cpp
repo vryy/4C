@@ -44,15 +44,15 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
     dserror("Coupling with Aero code is only implemented for 3D problems!!");
 
   // declare struct objects in interface
-  map<int, map<int, RCP<DRT::Element> > > structelements;
-  map<int, map<int, DRT::Node*> > dummy2;  // dummy map
-  map<int, map<int, DRT::Node*> > structgnodes; // col map of structure nodes
+  std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > > structelements;
+  std::map<int, std::map<int, DRT::Node*> > dummy2;  // dummy map
+  std::map<int, std::map<int, DRT::Node*> > structgnodes; // col map of structure nodes
 
   //initialize struct objects in interface
   DRT::UTILS::FindConditionObjects(*structdis, dummy2, structgnodes, structelements,"FSICoupling");
 
-  map<int, map<int, RCP<DRT::Element> > >::iterator meit;
-  map<int, RCP<DRT::Element> >::iterator eit;
+  std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > >::iterator meit;
+  std::map<int, Teuchos::RCP<DRT::Element> >::iterator eit;
 
   int max_id = 0;
   //determine number of coupling surfaces
@@ -79,17 +79,17 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
   RCP<Epetra_Comm> com = Teuchos::rcp(structdis->Comm().Clone());
   // structure
   const string discret_name1 = "istructdis";
-  RCP<DRT::Discretization> istructnewdis = Teuchos::rcp(new DRT::Discretization(discret_name1,com));
+  Teuchos::RCP<DRT::Discretization> istructnewdis = Teuchos::rcp(new DRT::Discretization(discret_name1,com));
   const int myrank = istructnewdis->Comm().MyPID();
   // thermo
   const string discret_name2 = "ithermodis";
-  RCP<DRT::Discretization> ithermonewdis = Teuchos::rcp(new DRT::Discretization(discret_name2,com));
+  Teuchos::RCP<DRT::Discretization> ithermonewdis = Teuchos::rcp(new DRT::Discretization(discret_name2,com));
 
   
-  map<int, map<int, DRT::Node*> >::iterator mnit;
-  map<int, DRT::Node* >::iterator nit;
+  std::map<int, std::map<int, DRT::Node*> >::iterator mnit;
+  std::map<int, DRT::Node* >::iterator nit;
 
-  vector<int> nodeids;
+  std::vector<int> nodeids;
   //nodes filled in new interface discretizations
   for ( mnit=structgnodes.begin(); mnit != structgnodes.end(); mnit++ )
   {
@@ -105,19 +105,19 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
     }
   }
   //row node map of struct interface
-  RCP<Epetra_Map> istructnoderowmap = Teuchos::rcp(new Epetra_Map(-1,nodeids.size(),&nodeids[0],0,istructnewdis->Comm()));
+  Teuchos::RCP<Epetra_Map> istructnoderowmap = Teuchos::rcp(new Epetra_Map(-1,nodeids.size(),&nodeids[0],0,istructnewdis->Comm()));
   //fully overlapping node map
-  RCP<Epetra_Map> istructrednodecolmap =  LINALG::AllreduceEMap(*istructnoderowmap);
+  Teuchos::RCP<Epetra_Map> istructrednodecolmap =  LINALG::AllreduceEMap(*istructnoderowmap);
 
   //row node map of thermo interface
-  RCP<Epetra_Map> ithermonoderowmap = Teuchos::rcp(new Epetra_Map(-1,nodeids.size(),&nodeids[0],0,istructnewdis->Comm()));
+  Teuchos::RCP<Epetra_Map> ithermonoderowmap = Teuchos::rcp(new Epetra_Map(-1,nodeids.size(),&nodeids[0],0,istructnewdis->Comm()));
   //fully overlapping node map
-  RCP<Epetra_Map> ithermorednodecolmap =  LINALG::AllreduceEMap(*ithermonoderowmap);
+  Teuchos::RCP<Epetra_Map> ithermorednodecolmap =  LINALG::AllreduceEMap(*ithermonoderowmap);
 
 
   //care about eles in the interface
-  vector<int> eleids;
-  map<int, vector<int> > interfaceeleids;
+  std::vector<int> eleids;
+  std::map<int, std::vector<int> > interfaceeleids;
   //eles filled in new interface discretizations
   for ( meit=structelements.begin(); meit != structelements.end(); meit++ )
   {
@@ -131,12 +131,12 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
         eleids.push_back( (*eit).second->Id() );
 
         // structural surface elements cannot be distributed --> Bele3 element is used
-        RCP<DRT::Element> istructele = DRT::UTILS::Factory("BELE3","Polynomial", (*eit).second->Id(), (*eit).second->Owner());
+        Teuchos::RCP<DRT::Element> istructele = DRT::UTILS::Factory("BELE3","Polynomial", (*eit).second->Id(), (*eit).second->Owner());
         istructele->SetNodeIds( ((*eit).second->NumNode()), ((*eit).second->NodeIds()) );
         istructnewdis->AddElement( istructele );
         // thermo interface elements
 #ifdef D_THERMO
-        RCP<DRT::Element> ithermoele = DRT::UTILS::Factory("THERMO","Polynomial", (*eit).second->Id(), (*eit).second->Owner());
+        Teuchos::RCP<DRT::Element> ithermoele = DRT::UTILS::Factory("THERMO","Polynomial", (*eit).second->Id(), (*eit).second->Owner());
         ithermoele->SetNodeIds( ((*eit).second->NumNode()), ((*eit).second->NodeIds()) );
         Teuchos::rcp_dynamic_cast<DRT::ELEMENTS::Thermo>(ithermoele,true)->SetDisType( istructele->Shape() );
         ithermonewdis->AddElement( ithermoele );
@@ -148,14 +148,14 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
   }
 
   //row ele map of structural interface
-  RCP<Epetra_Map> istructelerowmap = Teuchos::rcp(new Epetra_Map(-1,eleids.size(),&eleids[0],0,istructnewdis->Comm()));
+  Teuchos::RCP<Epetra_Map> istructelerowmap = Teuchos::rcp(new Epetra_Map(-1,eleids.size(),&eleids[0],0,istructnewdis->Comm()));
   //fully overlapping ele map
-  RCP<Epetra_Map> istructredelecolmap =  LINALG::AllreduceEMap(*istructelerowmap);
+  Teuchos::RCP<Epetra_Map> istructredelecolmap =  LINALG::AllreduceEMap(*istructelerowmap);
 
   //row ele map of thermo interface
-  RCP<Epetra_Map> ithermoelerowmap = Teuchos::rcp(new Epetra_Map(-1,eleids.size(),&eleids[0],0,istructnewdis->Comm()));
+  Teuchos::RCP<Epetra_Map> ithermoelerowmap = Teuchos::rcp(new Epetra_Map(-1,eleids.size(),&eleids[0],0,istructnewdis->Comm()));
   //fully overlapping ele map
-  RCP<Epetra_Map> ithermoredelecolmap =  LINALG::AllreduceEMap(*ithermoelerowmap);
+  Teuchos::RCP<Epetra_Map> ithermoredelecolmap =  LINALG::AllreduceEMap(*ithermoelerowmap);
 
   //do the fully overlapping ghosting of the structural TFSI interface to have everything redundant
   istructnewdis->ExportColumnNodes(*istructrednodecolmap);
@@ -171,7 +171,7 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
     parallel = true;
 
   //dofs of the original discretizations are used to set same dofs for the new interface discretization
-  RCP<DRT::DofSet> newdofset1=Teuchos::rcp(new DRT::TransparentDofSet(structdis,parallel));
+  Teuchos::RCP<DRT::DofSet> newdofset1=Teuchos::rcp(new DRT::TransparentDofSet(structdis,parallel));
   istructnewdis->ReplaceDofSet(newdofset1);
   newdofset1=null;
 
@@ -180,7 +180,7 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
 
 
   //dofs of the original discretizations are used to set same dofs for the new interface discretization
-  RCP<DRT::DofSet> newdofset2=Teuchos::rcp(new DRT::TransparentDofSet(thermodis,parallel));
+  Teuchos::RCP<DRT::DofSet> newdofset2=Teuchos::rcp(new DRT::TransparentDofSet(thermodis,parallel));
   ithermonewdis->ReplaceDofSet(newdofset2);
   newdofset2=null;
 
@@ -195,8 +195,8 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
   ithermodofredumap_ =  LINALG::AllreduceEMap(*(ithermodis_->DofRowMap()));
 
   //storage of the redundant structural interface elements for each single interface
-  map<int, RCP<Epetra_Map> > singleinterfstructelerowmap;
-  map<int, RCP<Epetra_Map> > singleinterfstructredelecolmap;
+  std::map<int, Teuchos::RCP<Epetra_Map> > singleinterfstructelerowmap;
+  std::map<int, Teuchos::RCP<Epetra_Map> > singleinterfstructredelecolmap;
   for(int interf=0; interf<(maxid_+1); interf++)
   {
     //row ele map of each single structural interface
@@ -225,7 +225,7 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
     int gid = istructnoderowmap->GID(myl);
     const DRT::Node* node = istructdis_->gNode(gid);
 
-    vector<int> lm;
+    std::vector<int> lm;
     lm.reserve(3);
     // extract global dof ids
     istructdis_->Dof(node, lm);
@@ -256,10 +256,10 @@ std::map<int,LINALG::Matrix<3,1> > FS3I::UTILS::AeroCouplingUtils::CurrentInterf
 )
 {
   std::map<int,LINALG::Matrix<3,1> > currentpositions;
-  map<int, Teuchos::RCP<DRT::Element> >::const_iterator eleiter;
+  std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator eleiter;
 
   // multiple interfaces
-  map<int, map<int, Teuchos::RCP<DRT::Element> > >::const_iterator interfaceiter;
+  std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > >::const_iterator interfaceiter;
 
   //loop over all elements in the interface due to fully redundant storage
   for (interfaceiter = structreduelements_.begin(); interfaceiter != structreduelements_.end(); interfaceiter++)
@@ -275,11 +275,11 @@ std::map<int,LINALG::Matrix<3,1> > FS3I::UTILS::AeroCouplingUtils::CurrentInterf
       {
         const int gid = n[j];
         const DRT::Node* node = istructdis_->gNode(gid);
-        vector<int> lm;
+        std::vector<int> lm;
         lm.reserve(3);
         // extract global dof ids
         istructdis_->Dof(node, lm);
-        vector<double> mydisp(3);
+        std::vector<double> mydisp(3);
         LINALG::Matrix<3,1> currpos;
 
         DRT::UTILS::ExtractMyValues(*redudisp,mydisp,lm);
@@ -302,8 +302,8 @@ std::map<int,LINALG::Matrix<3,1> > FS3I::UTILS::AeroCouplingUtils::CurrentInterf
 void FS3I::UTILS::AeroCouplingUtils::ProjectForceOnStruct
 (
   Teuchos::RCP<Epetra_Vector> idispn,
-  map<int, map<int, LINALG::Matrix<3,1> > >& aerocoords,
-  map<int, map<int, LINALG::Matrix<4,1> > >& aeroforces,
+  std::map<int, std::map<int, LINALG::Matrix<3,1> > >& aerocoords,
+  std::map<int, std::map<int, LINALG::Matrix<4,1> > >& aeroforces,
   Teuchos::RCP<Epetra_Vector> iforce,
   Teuchos::RCP<Epetra_Vector> ithermoload
 )
@@ -319,7 +319,7 @@ void FS3I::UTILS::AeroCouplingUtils::ProjectForceOnStruct
   //projection of the aero forces onto the closest element of each structural interface
   for(int interf=0; interf<(maxid_+1); interf++)
   {
-    map<int, LINALG::Matrix<3,1> >::iterator forcesiter;
+    std::map<int, LINALG::Matrix<3,1> >::iterator forcesiter;
     for(forcesiter = aerocoords[interf].begin(); forcesiter != aerocoords[interf].end(); ++forcesiter)
     {
       //init of 3D search tree
@@ -396,9 +396,9 @@ void FS3I::UTILS::AeroCouplingUtils::DistributeForceToNodes
     // prepare assembly
     int num = 3;
     Epetra_SerialDenseVector val(num);
-    vector<int> slm;
+    std::vector<int> slm;
     slm.reserve(num);
-    vector<int> lmowner(num);
+    std::vector<int> lmowner(num);
     // extract global dof ids
     istructdis_->Dof(snode, slm);
     // aeroforce[0...2] are forces
@@ -417,9 +417,9 @@ void FS3I::UTILS::AeroCouplingUtils::DistributeForceToNodes
     // prepare assembly
     num = 1;
     Epetra_SerialDenseVector tval(num);
-    vector<int> tlm;
+    std::vector<int> tlm;
     tlm.reserve(num);
-    vector<int> tlmowner(num);
+    std::vector<int> tlmowner(num);
     // extract global dof ids
     ithermodis_->Dof(tnode, tlm);
     // aeroforce[3] is a thermal flux
@@ -441,7 +441,7 @@ void FS3I::UTILS::AeroCouplingUtils::PackData
 (
   Teuchos::RCP<Epetra_Vector> idispnp,
   Teuchos::RCP<Epetra_Vector> itempnp,
-  vector<double>& packeddata
+  std::vector<double>& packeddata
 )
 {
   // make all interface data full redundant
@@ -460,17 +460,17 @@ void FS3I::UTILS::AeroCouplingUtils::PackData
 
   int dim = 3;
 
-  map<int, Teuchos::RCP<DRT::Element> >::const_iterator eleiter;
+  std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator eleiter;
   for(eleiter=structreduelements_[0].begin(); eleiter!=structreduelements_[0].end(); eleiter++)
   {
     Teuchos::RCP<DRT::Element> tmpele = eleiter->second;
     const int* nodeids = tmpele->NodeIds();
 
-    vector<double> midposition(true);
+    std::vector<double> midposition(true);
     midposition.reserve(3);
     for (int k=0;k<3;++k) midposition[k] = 0.0;
 
-    vector<double> midtemp(true);
+    std::vector<double> midtemp(true);
     midtemp.reserve(1);
     midtemp[0]=0.0;
 
@@ -487,7 +487,7 @@ void FS3I::UTILS::AeroCouplingUtils::PackData
 
       // insert nodal temperature
       DRT::Node* tnode = ithermodis_->gNode(nodalgid);
-      vector<int> lmt;
+      std::vector<int> lmt;
       lmt.reserve(1);
       ithermodis_->Dof(tnode, lmt);
 
