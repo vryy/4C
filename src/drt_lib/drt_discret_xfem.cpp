@@ -1143,6 +1143,7 @@ void DRT::DiscretizationXFEM::BuildInternalFaces()
       break;
     }
     default: dserror("DRT::UTILS::build... not supported");
+    break;
     }
 
 

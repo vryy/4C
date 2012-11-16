@@ -788,6 +788,7 @@ ScalarT DRT::UTILS::ExplicitTimeSlice::Fct(const ScalarT& T)
     break;
   default:
     dserror("Number of explicit timecurve (NUMEX=%d) unknown", numex_);
+    break;
   }
 
   return fac;

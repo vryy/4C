@@ -161,6 +161,7 @@ bool COMBUST::ReinitializationPDE::CallReinitialization(Teuchos::RCP<Epetra_Vect
     if(myrank_==0) std::cout << "No reinitialization chosen" << std::endl;
     break;
   default: dserror("unknown type of reinitialization technique");
+    break;
   }
 
   // reset the ScatraFieldReinit
