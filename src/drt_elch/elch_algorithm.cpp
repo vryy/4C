@@ -150,6 +150,7 @@ void ELCH::Algorithm::InitialCalculations()
   case INPAR::FLUID::timeint_bdf2:
     break;
   default: dserror("Selected time integration scheme is not available");
+    break;
   }
 
   // compute initial density
@@ -222,6 +223,7 @@ void ELCH::Algorithm::PrepareTimeStepConvection()
     break;
   }
   default: dserror("Selected time integration scheme is not available");
+    break;
   }
 
   FluidField().PrepareTimeStep();

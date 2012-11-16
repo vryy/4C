@@ -117,6 +117,7 @@ STR::InvAnalysis::InvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
      break;
      default:
        dserror("Only RES based update strategy implemented for old inverse analysis switch to inv_generalized to use other update strategies");
+       break;
    }
   if (DRT::INPUT::IntegralValue<int>(iap,"PARAM_BOUNDS"))
     dserror("Bounds Check only implemented for gen_inv_ana");
@@ -812,10 +813,13 @@ void STR::InvAnalysis::ReadInParameters()
               }
               default:
                 dserror("cannot deal with this material");
+                break;
               }
             }
           }
+          break;
         }
+
         // at this level do nothing, its inside the INPAR::MAT::m_elasthyper block or an interface to a micro material
         case INPAR::MAT::mes_couplogneohooke:
         case INPAR::MAT::mes_coupneohooke:
@@ -838,6 +842,7 @@ void STR::InvAnalysis::ReadInParameters()
           break;
         default:
           dserror("The inverse analysis is not implemented for this material");
+          break;
         }
       }
     }
@@ -1067,6 +1072,7 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
             }
             default:
               dserror("cannot deal with this material");
+              break;
             }
           }
         }

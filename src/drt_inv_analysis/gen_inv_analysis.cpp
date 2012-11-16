@@ -1244,9 +1244,11 @@ void STR::GenInvAnalysis::ReadInParameters()
               }
               default:
                 dserror("cannot deal with this material");
+                break;
 
             }
           }
+          break;
         }
         case INPAR::MAT::mes_couplogneohooke:
         case INPAR::MAT::mes_coupneohooke:
