@@ -682,11 +682,12 @@ namespace DRT
       Teuchos::RCP<MaterialDefinition> matdef,  ///< a material defintion to which named Boolean is added
       const std::string name,  ///< name of Boolean to add
       const std::string description,  ///< description about value
+      const bool defaultvalue=false,  ///< default bool
       const bool optional=false  ///< optional parameter if true
       )
     {
       matdef->AddComponent(Teuchos::rcp(new SeparatorMaterialComponent(name,description,optional)));
-      matdef->AddComponent(Teuchos::rcp(new BoolMaterialComponent(name,optional)));
+      matdef->AddComponent(Teuchos::rcp(new BoolMaterialComponent(name,defaultvalue,optional)));
     }
 
     /// add material definition to list of defined materials
