@@ -26,7 +26,7 @@ NUMTHERMDIS                     0
 --------------------------------------------------------------------------IO
 OUTPUT_OUT                      No
 OUTPUT_GID                      Yes
-OUTPUT_BIN                      No
+OUTPUT_BIN                      Yes
 STRUCT_DISP                     Yes
 STRUCT_STRESS                   No
 STRUCT_SM_DISP                  No

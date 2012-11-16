@@ -32,7 +32,7 @@ FILESTEPS                       1000
 FLUID_SOL                       Yes
 FLUID_STRESS                    No
 FLUID_VIS                       No
-OUTPUT_BIN                      No
+OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
 OUTPUT_OUT                      No
 STRUCT_DISP                     Yes
