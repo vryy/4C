@@ -45,17 +45,11 @@ SHAPEFCN                        Dual
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
 DYNAMICTYP                      OneStepTheta
-RESULTSEVRY                     1
-RESTARTEVRY                     1
-TIMESTEP                        0.2
-NUMSTEP                         100
-MAXTIME                         5000.0
 DAMPING                         No
 M_DAMP                          0.5
 K_DAMP                          0.5
 MAXITER                         50
 MINITER                         1
-TIMEADAPT                       0
 PREDICT                         ConstDisVelAcc
 TOLCONSTR                       1e-06
 TOLDISP                         1e-06
@@ -83,27 +77,16 @@ LINEAR_SOLVER                   3
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
 TIMEINTEGR                      One_Step_Theta
-STARTINGALGO                    One_Step_Theta
 NONLINITER                      Newton
 ITEMAX                          5
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
-UPRES                           1
-RESTARTEVRY                     20
-NUMSTEP                         200
-NUMSTASTEPS                     0
-MAXTIME                         1000.0
-TIMESTEP                        0.05
 THETA                           0.66
-START_THETA                     0.67
-ALPHA_F                         1.0
-ALPHA_M                         1.0
-GAMMA                           1.0
 LIFTDRAG                        no
 -----------------------------------------------------------------FSI DYNAMIC
 FSIAMGANALYZE                   No
 MAXTIME                         1000000.0
-TIMESTEP                        .5
+TIMESTEP                        0.5
 NUMSTEP                         2
 UPRES                           1
 RESTARTEVRY                     10
@@ -111,21 +94,9 @@ COUPALGO                        iter_mortar_monolithicfluidsplit
 COUPMETHOD                      mtr
 COUPVARIABLE                    Displacement
 LINEARBLOCKSOLVER               PreconditionedKrylov
-ALEPCITER                       1 1 1
-ALEPCOMEGA                      0.8 0.8 1.0
-FLUIDPCITER                     3 3 1
-FLUIDPCOMEGA                    0.6 0.6 1.0
-STRUCTPCITER                    2 2 1
-STRUCTPCOMEGA                   0.7 0.7 1.0
-PCITER                          2 1 1
-PCOMEGA                         1.0 1.0 1.0
 SYMMETRICPRECOND                no                              // SGS on monlithic
 PRECONDREUSE                    0
 INFNORMSCALING                  yes
-PREDICTOR                       d(n)
-ENERGYCHECK                     no
-TOLENCHECK                      1.0E-6
-RELAX                           1.0
 ITEMAX                          10
 CONVTOL                         1.0E-9
 BASETOL                         1.0E-12
@@ -134,11 +105,7 @@ SECONDORDER                     Yes
 SLIDEALEPROJ                    None
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
-TIMESTEP                        0.1
-NUMSTEP                         200
-MAXTIME                         5.0
 ALE_TYPE                        laplace
-RESULTSEVRY                     1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -255,13 +222,8 @@ SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 5
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (0.25*(1-cos(2*pi*t/200))) t1 0.0 t2 100.0
 CURVE1 on EXPR FUNC 0.5 t1 60.0 t2 360.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 0 0 0 FUNCTION y/15.0
-----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         2
 NDLINE                          6
@@ -5889,10 +5851,9 @@ NODE 2393 COORD 1.2437880660728e-07 2.9000000000000e+00 0.0000000000000e+00
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1521 QUANTITY velx VALUE 3.317074861e-05 TOLERANCE 1e-10
-FLUID DIS fluid NODE 960 QUANTITY velx VALUE -3.317043135e-05 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 2271 QUANTITY dispx VALUE 1.253585187e-05 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 2031 QUANTITY dispx VALUE -1.253572703e-05 TOLERANCE 1e-10
+FLUID DIS fluid NODE 1521 QUANTITY velx VALUE 3.26678006128564919e-05 TOLERANCE 1e-10
+FLUID DIS fluid NODE 960 QUANTITY velx VALUE -3.26675282462514125e-05 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 2271 QUANTITY dispx VALUE 1.23323527187966138e-05 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 2031 QUANTITY dispx VALUE -1.23322444021070440e-05 TOLERANCE 1e-10
 -------------------------------------------------------------------------END
-//                              END
 //                              END
