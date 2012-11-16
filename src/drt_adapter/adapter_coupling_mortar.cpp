@@ -1,18 +1,17 @@
 /*----------------------------------------------------------------------*/
 /*!
- \file adapter_coupling_mortar.cpp
+\file adapter_coupling_mortar.cpp
 
- \brief
+\brief A class providing coupling capabilities based on mortar methods
 
- <pre>
- Maintainer: Thomas Kloeppel
- kloeppel@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15257
- </pre>
- */
+<pre>
+Maintainer: Alexander Popp
+            popp@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15238
+</pre>
+*/
 /*----------------------------------------------------------------------*/
-
 #include "adapter_coupling_mortar.H"
 #include "../drt_mortar/mortar_interface.H"
 #include "../drt_mortar/mortar_node.H"
