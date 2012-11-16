@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_monolithic.h
+\file fsi_monolithic.H
 
 \brief General framework for monolithic fsi solution schemes
 
