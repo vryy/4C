@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_mortarmonolithic_fluidsplit.cpp
+\file fsi_monolithicfluidsplit.cpp
 
 \brief Solve FSI problem with matching grids using a monolithic scheme
 with condensed fluid interface velocities
@@ -25,7 +25,6 @@ Maintainer: Matthias Mayr
 #include "fsi_monolithic_linearsystem.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
@@ -79,23 +78,23 @@ FSI::MonolithicFluidSplit::MonolithicFluidSplit(const Epetra_Comm& comm,
     dserror("Could not remove fluid interface Dirichlet conditions from fluid DBC map.");
 #endif
 
-  fggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
-  fgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
-  figtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  fggtransform_   = Teuchos::rcp(new UTILS::MatrixRowColTransform);
+  fgitransform_   = Teuchos::rcp(new UTILS::MatrixRowTransform);
+  figtransform_   = Teuchos::rcp(new UTILS::MatrixColTransform);
+  aigtransform_   = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmiitransform_  = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmgitransform_  = Teuchos::rcp(new UTILS::MatrixRowColTransform);
 
   // Recovery of Lagrange multiplier happens on fluid field
-  lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap(),true));
+  lambda_   = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap(),true));
   fmgiprev_ = Teuchos::null;
-  fmgicur_ = Teuchos::null;
+  fmgicur_  = Teuchos::null;
   fmggprev_ = Teuchos::null;
-  fmggcur_ = Teuchos::null;
-  fgiprev_ = Teuchos::null;
-  fgicur_ = Teuchos::null;
-  fggprev_ = Teuchos::null;
-  fggcur_ = Teuchos::null;
+  fmggcur_  = Teuchos::null;
+  fgiprev_  = Teuchos::null;
+  fgicur_   = Teuchos::null;
+  fggprev_  = Teuchos::null;
+  fggcur_   = Teuchos::null;
 }
 
 /*----------------------------------------------------------------------*/
@@ -255,11 +254,11 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
   if (firstcall)
   {
     // get fluid matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf = FluidField().BlockSystemMatrix();
+    const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf = FluidField().BlockSystemMatrix();
     if (blockf==Teuchos::null) { dserror("expect fluid block matrix"); }
 
     // get fluid shape derivatives matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
+    const Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
 
     // get ale matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocka = AleField().BlockSystemMatrix();
@@ -537,8 +536,8 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     // Reset quantities of previous iteration step since they still store values from the last time step
     ddginc_ = LINALG::CreateVector(*StructureField()->Interface()->FSICondMap(),true);
     duiinc_ = LINALG::CreateVector(*FluidField().Interface()->OtherMap(),true);
+    ddialeinc_ = LINALG::CreateVector(*AleField().Interface()->OtherMap(),true);
     soliprev_ = Teuchos::null;
-    ddgaleinc_ = LINALG::CreateVector(*AleField().Interface()->FSICondMap(),true);
     solgprev_ = Teuchos::null;
     fgcur_ = LINALG::CreateVector(*FluidField().Interface()->FSICondMap(),true);
     fgicur_ = Teuchos::null;
@@ -1333,15 +1332,6 @@ void FSI::MonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetra_Ve
                                                               // store current step increment
   soliprev_ = fox;
   // ------------------------------------
-
-  // interface ale displacement increment
-  if (solgaleprev_ != Teuchos::null)                          // compute current iteration increment
-    ddgaleinc_->Update(1.0, *acx, -1.0, *solgaleprev_, 0.0);
-  else                                                        // first iteration increment
-    ddgaleinc_ = Teuchos::rcp(new Epetra_Vector(*acx));
-                                                              // store current step increment
-  solgaleprev_ = acx;
-  // ------------------------------------
 }
 
 /*----------------------------------------------------------------------*/
@@ -1353,6 +1343,10 @@ void FSI::MonolithicFluidSplit::Output()
 
   // output Lagrange multiplier
   {
+    /* 'lambda_' is only defined on the interface. So, insert 'lambda_' into
+     * 'lambdafull' that is defined on the entire fluid field. Then, write
+     * output or restart data.
+     */
     Teuchos::RCP<Epetra_Vector> lambdafull = FluidField().Interface()->InsertFSICondVector(lambda_);
     const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
@@ -1419,10 +1413,9 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
   // some scaling factors for fluid
   const double timescale  = FluidField().TimeScaling();
   const double scale      = FluidField().ResidualScaling();
-  const double dt         = FluidField().Dt();
 
   // get fluid shape derivative matrix
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
+  const Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
 
   // some often re-used vectors
   Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::null;     // stores intermediate result of terms (3)-(8)
@@ -1436,21 +1429,21 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
    *
    * (1)  - ftiparam / (1.-ftiparam) * lambda^{n}
    *
-   * (2)  + 1. / (1.-ftiparam) * D^{-T} * tmpvec
+   * (2)  - 1. / (1.-ftiparam) * tmpvec
    *
    * with tmpvec =
    *
    * (3)    r_{\Gamma}^{F,n+1}
    *
-   * (4)  + 1 / tau * F_{\Gamma\Gamma} * P * \Delta d_{\Gamma}^{S,n+1}
+   * (4)  + 1 / tau * F_{\Gamma\Gamma} * \Delta d_{\Gamma}^{S,n+1}
    *
-   * (5)  + F_{\Gamma\Gamma}^{G} * P * \Delta d_{\Gamma}^{S,n+1}
+   * (5)  + F_{\Gamma\Gamma}^{G} * \Delta d_{\Gamma}^{S,n+1}
    *
    * (6)  + F_{\Gamma I} * \Delta u_{I}^{F,n+1}
    *
    * (7)  + F_{\Gamma I}^{G} * \Delta d_{I}^{G,n+1}
    *
-   * (8)  - dt / tau * F_{\Gamma\Gamma} * u_{\Gamma}^n]
+   * (8)  + dt / tau * F_{\Gamma\Gamma} * u_{\Gamma}^n]
    *
    * Remark on term (8):
    * Term (8) has to be considered only in the first Newton iteration.
@@ -1458,7 +1451,7 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
    * than one nonlinear iteration until convergence.
    *
    * Remarks on all terms:
-   * +  Division by (1.0 - ftiparam) will be done in the end
+   * +  Division by -(1.0 - ftiparam) will be done in the end
    *    since this is common to all terms
    * +  tau: time scaling factor for interface time integration (tau = 1/FluidField().TimeScaling())
    * +  neglecting terms (4)-(8) should not alter the results significantly
@@ -1468,12 +1461,12 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
    */
 
   // ---------Addressing term (1)
-  lambda_->Update(-ftiparam,*lambda_,0.0);
+  lambda_->Update(ftiparam,*lambda_,0.0);
   // ---------End of term (1)
 
   // ---------Addressing term (3)
   Teuchos::RCP<Epetra_Vector> fluidresidual = FluidField().Interface()->ExtractFSICondVector(FluidField().RHS());
-  fluidresidual->Scale(-1.0);
+  fluidresidual->Scale(-1.0); // invert sign to obtain residual, not rhs
   tmpvec = Teuchos::rcp(new Epetra_Vector(*fluidresidual));
   // ---------End of term (3)
 
@@ -1541,7 +1534,7 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
   {
     auxvec = Teuchos::rcp(new Epetra_Vector(fggprev_->RangeMap(),true));
     fggprev_->Apply(*FluidField().ExtractInterfaceVeln(),*auxvec);
-    tmpvec->Update(dt*timescale,*auxvec,1.0);
+    tmpvec->Update(Dt()*timescale,*auxvec,1.0);
   }
   // ---------End of term (8)
 
@@ -1550,10 +1543,10 @@ void FSI::MonolithicFluidSplit::RecoverLagrangeMultiplier()
   // ---------End of term (2)
 
   // Finally, divide by (1.0-ftiparam) which is common to all terms
-  lambda_->Scale(1.0/(1.0-ftiparam));
+  lambda_->Scale(-1.0/(1.0-ftiparam));
 
-  // Scale by -1 such that lambda corresponds to the traction onto the structure
-  lambda_->Scale(-1.0);
+  // Finally, the Lagrange multiplier 'lambda_' is recovered here.
+  // It represents nodal forces acting onto the structure.
 
   return;
 }

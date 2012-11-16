@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_mortarmonolithic_fluidsplit.h
+\file fsi_monolithicfluidsplit.H
 
 \brief Solve FSI problem with matching grids using a monolithic scheme
 with condensed fluid interface velocities
@@ -39,8 +39,6 @@ namespace FSI
 
   /// monolithic FSI algorithm with overlapping interface equations
   /*!
-
-    This is research. Highly experimental. Subject to change.
 
     Combine structure, fluid and ale field in one huge block matrix. Matching
     nodes. Overlapping equations at the interface.
@@ -159,7 +157,7 @@ namespace FSI
     void SetupVector(
         Epetra_Vector &f,                      ///< composed vector that contains all field vectors
         Teuchos::RCP<const Epetra_Vector> sv,  ///< structural displacements
-        Teuchos::RCP<const Epetra_Vector> fv,  ///< fluid velocties and pressure
+        Teuchos::RCP<const Epetra_Vector> fv,  ///< fluid velocities and pressure
         Teuchos::RCP<const Epetra_Vector> av,  ///< ale displacements
         const double fluidscale                ///< residual scaling for fluid
     );
@@ -170,12 +168,12 @@ namespace FSI
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    Teuchos::RCP<UTILS::MatrixRowColTransform> fggtransform_;
-    Teuchos::RCP<UTILS::MatrixRowTransform> fgitransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> figtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
-    Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;
-    Teuchos::RCP<UTILS::MatrixRowColTransform> fmgitransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform>  fggtransform_;
+    Teuchos::RCP<UTILS::MatrixRowTransform>     fgitransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform>     figtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform>     aigtransform_;
+    Teuchos::RCP<UTILS::MatrixColTransform>     fmiitransform_;
+    Teuchos::RCP<UTILS::MatrixRowColTransform>  fmgitransform_;
 
     ///@}
 
@@ -224,14 +222,8 @@ namespace FSI
     //! inner ALE displacement solution at previous NOX iteration
     Teuchos::RCP<const Epetra_Vector> solialeprev_;
 
-    //! interface ALE displacement solution at previous NOX iteration
-    Teuchos::RCP<const Epetra_Vector> solgaleprev_;
-
     //! inner ALE displacement increment \f$\Delta(\Delta d_{I,i+1}^{G,n+1})\f$ at current NOX iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> ddialeinc_;
-
-    //! interface ALE displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{G,n+1})\f$ at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<Epetra_Vector> ddgaleinc_;
 
     //! block \f$F_{\Gamma I,i+1}\f$ of fluid matrix at current NOX iteration \f$i+1\f$
     Teuchos::RCP<const LINALG::SparseMatrix> fgicur_;

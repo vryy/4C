@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_mortarmonolithic_structuresplit.cpp
+\file fsi_monolithicstructuresplit.cpp
 
 \brief Solve FSI problem with matching grids using a monolithic scheme
 with condensed structure interface displacements
@@ -23,7 +23,6 @@ Maintainer: Matthias Mayr
 #include "fsi_statustest.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_io/io_control.H"
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_adapter/adapter_coupling.H"
@@ -280,7 +279,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
       dserror("expect structure block matrix");
 
     // get fluid shape derivatives matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
+    const Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
 
     //get ale matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocka = AleField().BlockSystemMatrix();
@@ -546,13 +545,13 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     }
 
     // Reset quantities for previous iteration step since they still store values from the last time step
-    ddiinc_ = LINALG::CreateVector(*StructureField()->Interface()->OtherMap(),true);
+    ddiinc_   = LINALG::CreateVector(*StructureField()->Interface()->OtherMap(),true);
     soliprev_ = Teuchos::null;
-    ddginc_ = LINALG::CreateVector(*StructureField()->Interface()->FSICondMap(),true);
-    duginc_ = LINALG::CreateVector(*FluidField().Interface()->FSICondMap(),true);
+    ddginc_   = LINALG::CreateVector(*StructureField()->Interface()->FSICondMap(),true);
+    duginc_   = LINALG::CreateVector(*FluidField().Interface()->FSICondMap(),true);
     disgprev_ = Teuchos::null;
-    sgicur_ = Teuchos::null;
-    sggcur_ = Teuchos::null;
+    sgicur_   = Teuchos::null;
+    sggcur_   = Teuchos::null;
   }
 
   // NOX expects the 'positive' residual. The negative sign for the
@@ -1195,14 +1194,14 @@ void FSI::MonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetr
   if (soliprev_ != Teuchos::null)
     ddiinc_->Update(1.0, *sox, -1.0, *soliprev_, 0.0);  // compute current iteration increment
   else
-    ddiinc_ = Teuchos::rcp(new Epetra_Vector(*sox));           // first iteration increment
+    ddiinc_ = Teuchos::rcp(new Epetra_Vector(*sox));    // first iteration increment
 
   soliprev_ = sox;                                      // store current step increment
 
   if (disgprev_ != Teuchos::null)
     ddginc_->Update(1.0, *scx, -1.0, *disgprev_, 0.0);  // compute current iteration increment
   else
-    ddginc_ = Teuchos::rcp(new Epetra_Vector(*scx));           // first iteration increment
+    ddginc_ = Teuchos::rcp(new Epetra_Vector(*scx));    // first iteration increment
 
   disgprev_ = scx;                                      // store current step increment
 
@@ -1222,6 +1221,10 @@ void FSI::MonolithicStructureSplit::Output()
 
   // output Lagrange multiplier
   {
+    /* 'lambda_' is only defined on the interface. So, insert 'lambda_' into
+     * 'lambdafull' that is defined on the entire structure field. Then, write
+     * output or restart data.
+     */
     Teuchos::RCP<Epetra_Vector> lambdafull = StructureField()->Interface()->InsertFSICondVector(lambda_);
     const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
@@ -1285,7 +1288,7 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
    *
    * (1)  - stiparam / (1.-stiparam) * lambda^{n}
    *
-   * (2)  - 1. / (1.-stiparam) * D^{-T} * tmpvec
+   * (2)  + 1. / (1.-stiparam) * tmpvec
    *
    * with tmpvec =
    *
@@ -1303,7 +1306,7 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
    * than one nonlinear iteration until convergence.
    *
    * Remarks on all terms:
-   * +  Division by -(1.0 - stiparam) will be done in the end
+   * +  Division by (1.0 - stiparam) will be done in the end
    *    since this is common to all terms
    * +  tau: time scaling factor for interface time integration (tau = 1/FluidField().TimeScaling())
    * +  neglecting terms (4)-(6) should not alter the results significantly
@@ -1313,28 +1316,29 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
    */
 
   // ---------Addressing term (1)
-  lambda_->Update(stiparam,*lambda_,0.0);
+  lambda_->Update(-stiparam,*lambda_,0.0);
   // ---------End of term (1)
 
   // ---------Addressing term (3)
   Teuchos::RCP<Epetra_Vector> structureresidual = StructureField()->Interface()->ExtractFSICondVector(StructureField()->RHS());
+  structureresidual->Scale(-1.0); // invert sign to obtain residual, not rhs
   tmpvec = Teuchos::rcp(new Epetra_Vector(*structureresidual));
   // ---------End of term (3)
 
   /* Commented out terms (4) to (6) since they tend to introduce oscillations
    * in the Lagrange multiplier field for certain material properties of the
    * structure
-   *                                                    Matthias Mayr 11/2012
+   *                                                     Matthias Mayr 11/2012
   // ---------Addressing term (4)
   auxvec = Teuchos::rcp(new Epetra_Vector(sgiprev_->RangeMap(),true));
   sgiprev_->Apply(*ddiinc_,*auxvec);
-  tmpvec->Update(-1.0,*auxvec,1.0);
+  tmpvec->Update(1.0,*auxvec,1.0);
   // ---------End of term (4)
 
   // ---------Addressing term (5)
   auxvec = Teuchos::rcp(new Epetra_Vector(sggprev_->RangeMap(),true));
   sggprev_->Apply(*FluidToStruct(duginc_),*auxvec);
-  tmpvec->Update(-1.0/timescale,*auxvec,1.0);
+  tmpvec->Update(1.0/timescale,*auxvec,1.0);
   // ---------End of term (5)
 
   //---------Addressing term (6)
@@ -1342,7 +1346,7 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
   {
     auxvec = Teuchos::rcp(new Epetra_Vector(sggprev_->RangeMap(),true));
     sggprev_->Apply(*FluidToStruct(FluidField().ExtractInterfaceVeln()),*auxvec);
-    tmpvec->Update(-Dt(),*auxvec,1.0);
+    tmpvec->Update(Dt(),*auxvec,1.0);
   }
   // ---------End of term (6)
    *
@@ -1353,7 +1357,10 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
   // ---------End of term (2)
 
   // finally, divide by -(1.-stiparam) which is common to all terms
-  lambda_->Scale(-1./(1.0-stiparam));
+  lambda_->Scale(1./(1.0-stiparam));
+
+  // Finally, the Lagrange multiplier 'lambda_' is recovered here.
+  // It represents nodal forces acting onto the structure.
 
   return;
 }

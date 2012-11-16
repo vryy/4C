@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_mortarmonolithic_structuresplit.h
+\file fsi_monolithicstructuresplit.H
 
 \brief Solve FSI problem with matching grids using a monolithic scheme
 with condensed structure interface displacements
@@ -145,7 +145,7 @@ namespace FSI
     void SetupVector(
         Epetra_Vector &f,                       ///< composed vector that contains all field vectors
         Teuchos::RCP<const Epetra_Vector> sv,   ///< structural displacements
-        Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid velocties and pressure
+        Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid velocities and pressure
         Teuchos::RCP<const Epetra_Vector> av,   ///< ale displacements
         const double fluidscale                 ///< residual scaling for fluid
     );
