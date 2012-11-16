@@ -4,10 +4,10 @@
 \brief Multi-step functionalities for structural time integration
 
 <pre>
-Maintainer: Thomas Klöppel
-            kloeppel@lnm.mw.tum.de
+Maintainer: Alexander Popp
+            popp@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15257
+            089 - 289-15238
 </pre>
 */
 

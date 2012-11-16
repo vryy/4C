@@ -1,7 +1,7 @@
 /*----------------------------------------------------------------------*/
 /*!
 \file strtimint_expleuler.H
-\brief Structural time integration with Adams-Bashforth 2nd order (explicit)
+\brief Structural time integration with forward Euler (explicit)
 
 <pre>
 Maintainer: Alexander Popp
