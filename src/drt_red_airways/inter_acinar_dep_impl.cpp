@@ -71,9 +71,9 @@ DRT::ELEMENTS::InterAcinarDepImpl<distype>::InterAcinarDepImpl()
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
   RedInterAcinarDep*         ele,
-  ParameterList&             params,
+  Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
-  vector<int>&               lm,
+  std::vector<int>&          lm,
   Epetra_SerialDenseMatrix&  elemat1_epetra,
   Epetra_SerialDenseMatrix&  elemat2_epetra,
   Epetra_SerialDenseVector&  elevec1_epetra,
@@ -163,9 +163,9 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(
   RedInterAcinarDep*                     ele,
-  ParameterList&                         params,
+  Teuchos::ParameterList&                         params,
   DRT::Discretization&                   discretization,
-  vector<int>&                           lm,
+  std::vector<int>&                      lm,
   Teuchos::RCP<const MAT::Material>      material)
 {
 
@@ -209,9 +209,9 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Sysmat(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
   RedInterAcinarDep*           ele,
-  ParameterList&               params,
+  Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
-  vector<int>&                 lm,
+  std::vector<int>&            lm,
   Epetra_SerialDenseVector&    rhs,
   RCP<MAT::Material>   material)
 {
@@ -226,11 +226,11 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::EvaluateTerminalBC(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::CalcFlowRates(
   RedInterAcinarDep*           ele,
-  ParameterList&               params,
+  Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   Epetra_SerialDenseVector&    elevec1, //a_volumenp,
   Epetra_SerialDenseVector&    elevec2, //a_volume_strain_np,
-  vector<int>&                 lm,
+  std::vector<int>&            lm,
   RCP<MAT::Material>   material)
 
 {
@@ -244,9 +244,9 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::CalcFlowRates(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::InterAcinarDepImpl<distype>::GetCoupledValues(
   RedInterAcinarDep*                   ele,
-  ParameterList&               params,
+  Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
-  vector<int>&                 lm,
+  std::vector<int>&            lm,
   RCP<MAT::Material>   material)
 {
 

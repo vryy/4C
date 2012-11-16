@@ -70,10 +70,10 @@ MAT::AAAraghavanvorp_damage::AAAraghavanvorp_damage()
 {
  isinit_=false;  ///< indicates if material is initialized by calling the #Initialized routine
  // damage history parameters
- histgcurr_= Teuchos::rcp(new vector<LINALG::Matrix<1,1> > );   ///< current damage parameter
- histglast_= Teuchos::rcp(new vector<LINALG::Matrix<1,1> > );   ///< damage of last converged state
- histeqstrmaxcurr_= Teuchos::rcp(new vector<LINALG::Matrix<1,1> > );   ///< current damage parameter
- histeqstrmaxlast_= Teuchos::rcp(new vector<LINALG::Matrix<1,1> > );   ///< damage of last converged state
+ histgcurr_= Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> > );   ///< current damage parameter
+ histglast_= Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> > );   ///< damage of last converged state
+ histeqstrmaxcurr_= Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> > );   ///< current damage parameter
+ histeqstrmaxlast_= Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> > );   ///< damage of last converged state
  elstrength_= Teuchos::rcp(new double );			       ///< element strength
 
 }
@@ -124,11 +124,11 @@ void MAT::AAAraghavanvorp_damage::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)   ^_^gm 05/09 |
  *----------------------------------------------------------------------*/
-void MAT::AAAraghavanvorp_damage::Unpack(const vector<char>& data)
+void MAT::AAAraghavanvorp_damage::Unpack(const std::vector<char>& data)
 {
   cout << "UNPACK \n";
   //isinit_=true; // corretto ore 14:27
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -155,10 +155,10 @@ void MAT::AAAraghavanvorp_damage::Unpack(const vector<char>& data)
 
   if (twicehistsize == 0) isinit_=false;
 
-  histgcurr_=Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
-  histglast_=Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
-//  histgcurr_= Teuchos::rcp(new vector<double > );   ///< current damage parameter
-//  histglast_= Teuchos::rcp(new vector<double> );   ///< damage of last converged state
+  histgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
+  histglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
+//  histgcurr_= Teuchos::rcp(new std::vector<double > );   ///< current damage parameter
+//  histglast_= Teuchos::rcp(new std::vector<double> );   ///< damage of last converged state
 
 
   for (int var=0; var<twicehistsize; ++var)
@@ -182,15 +182,15 @@ void MAT::AAAraghavanvorp_damage::Unpack(const vector<char>& data)
 void MAT::AAAraghavanvorp_damage::Setup(const int numgp,const double strength)
 {
   cout << "SETUP \n";
-  histgcurr_=Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
-  histglast_=Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
-//  histgcurr_= Teuchos::rcp(new vector<double> );   ///< current damage parameter
-//  histglast_= Teuchos::rcp(new vector<double> );   ///< damage of last converged state
+  histgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
+  histglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
+//  histgcurr_= Teuchos::rcp(new std::vector<double> );   ///< current damage parameter
+//  histglast_= Teuchos::rcp(new std::vector<double> );   ///< damage of last converged state
 
-  histeqstrmaxcurr_=Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
-  histeqstrmaxlast_=Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
-//  histeqstrmaxcurr_=Teuchos::rcp(new vector<double> );
-//  histeqstrmaxlast_=Teuchos::rcp(new vector<double> );
+  histeqstrmaxcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
+  histeqstrmaxlast_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
+//  histeqstrmaxcurr_=Teuchos::rcp(new std::vector<double> );
+//  histeqstrmaxlast_=Teuchos::rcp(new std::vector<double> );
 
   elstrength_=Teuchos::rcp(new double);
 //  double emptyvec=0.0;
@@ -230,10 +230,10 @@ void MAT::AAAraghavanvorp_damage::Update()
 
   const LINALG::Matrix<1,1> emptyvec(true);
 //  double emptyvec=0.0;
-//  histgcurr_= Teuchos::rcp(new vector<double > );   ///< current damage parameter
-  histgcurr_=Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
-  histeqstrmaxcurr_=Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
-//  histeqstrmaxcurr_=Teuchos::rcp(new vector<double>);
+//  histgcurr_= Teuchos::rcp(new std::vector<double > );   ///< current damage parameter
+  histgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
+  histeqstrmaxcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
+//  histeqstrmaxcurr_=Teuchos::rcp(new std::vector<double>);
   const int numgp = histglast_->size();
   histgcurr_->resize(numgp);
   histeqstrmaxcurr_->resize(numgp);

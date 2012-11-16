@@ -67,8 +67,8 @@ void MAT::PROTEIN::Pack(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::PROTEIN::Unpack(const vector<char>& data) {
-    vector<char>::size_type position = 0;
+void MAT::PROTEIN::Unpack(const std::vector<char>& data) {
+    std::vector<char>::size_type position = 0;
     // extract type
     int type = 0;
     ExtractfromPack(position, data, type);

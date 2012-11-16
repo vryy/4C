@@ -260,9 +260,9 @@ namespace FLD
     void SolveStationaryProblemFluidFluid();
 
     /// check xfluid input parameter list
-    void CheckXFluidFluidParams(ParameterList& params_xfem,
-                                ParameterList& params_xf_gen,
-                                ParameterList& params_xf_stab);
+    void CheckXFluidFluidParams(Teuchos::ParameterList& params_xfem,
+                                Teuchos::ParameterList& params_xf_gen,
+                                Teuchos::ParameterList& params_xf_stab);
 
     /// setup the variables to do a new time step
     void PrepareTimeStep();

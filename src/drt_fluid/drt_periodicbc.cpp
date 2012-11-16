@@ -129,7 +129,7 @@ void PeriodicBoundaryConditions::UpdateDofsForPeriodicBoundaryConditions()
     }
     // time measurement --- this causes the TimeMonitor tm0 to stop here
     //                                              (call of destructor)
-    tm0_ref_ = null;
+    tm0_ref_ = Teuchos::null;
 
     if(discret_->Comm().MyPID()==0 && verbose_)
     {
@@ -513,7 +513,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
           rotangles[0],
           abs_tol);
         // time measurement --- this causes the TimeMonitor tm1 to stop here
-        tm1_ref_ = null;
+        tm1_ref_ = Teuchos::null;
 
         if(discret_->Comm().NumProc()==1)
         {
@@ -566,7 +566,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
         AddConnectivity(midtosid,num);
 
         // time measurement --- this causes the TimeMonitor tm4 to stop here
-        tm4_ref_ = null;
+        tm4_ref_ = Teuchos::null;
 
         if (discret_->Comm().MyPID() == 0 && verbose_)
         {
@@ -601,7 +601,7 @@ void PeriodicBoundaryConditions::PutAllSlavesToMastersProc()
     }
 
     // time measurement --- this causes the TimeMonitor tm5 to stop here
-    tm5_ref_ = null;
+    tm5_ref_ = Teuchos::null;
   } // if (numpbcpairs_ > 2)
   return;
 } // PutAllSlavesToMastersProc()
@@ -645,7 +645,7 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
     tol
     );
   // time measurement --- this causes the TimeMonitor tm2 to stop here
-  tm2_ref_ = null;
+  tm2_ref_ = Teuchos::null;
 
   //----------------------------------------------------------------------
   //  SEARCH CLOSEST NODES IN OCTREES ON ALL PROCESSORS
@@ -666,7 +666,7 @@ void PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC(
   }
 
   // time measurement --- this causes the TimeMonitor tm3 to stop here
-  tm3_ref_ = null;
+  tm3_ref_ = Teuchos::null;
 
   return;
 } // PeriodicBoundaryConditions::CreateNodeCouplingForSinglePBC
@@ -1182,7 +1182,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
                                        discret_->Comm()));
 
     // time measurement --- this causes the TimeMonitor tm6 to stop here
-    tm6_ref_ = null;
+    tm6_ref_ = Teuchos::null;
 
 
     // time measurement --- start TimeMonitor tm7
@@ -1330,7 +1330,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     }
 
     // time measurement --- this causes the TimeMonitor tm7 to stop here
-    tm7_ref_ = null;
+    tm7_ref_ = Teuchos::null;
 
 
     // time measurement --- start TimeMonitor tm8
@@ -1367,10 +1367,10 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
     discret_->Redistribute(*newrownodemap,*newcolnodemap);
 
     // time measurement --- this causes the TimeMonitor tm8 to stop here
-    tm8_ref_ = null;
+    tm8_ref_ = Teuchos::null;
 
     // throw away old nodegraph
-    oldnodegraph = null;
+    oldnodegraph = Teuchos::null;
 
   }
 

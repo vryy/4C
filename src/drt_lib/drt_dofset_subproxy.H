@@ -42,28 +42,28 @@ namespace DRT
      ~DofSetSubProxy(){};
 
      /// Get the gid of all dofs of a node
-     virtual vector<int> Dof(const Node* node) const
+     virtual std::vector<int> Dof(const Node* node) const
        {
          const int gid = node->Id();
          const int lid = subcolnodes_->LID(gid);
          if (lid==-1)
-           return vector<int>();
+           return std::vector<int>();
          const int idx = (*idxcolnodes_)[lid];
-         vector<int> dof((*numdfcolnodes_)[lid]);
+         std::vector<int> dof((*numdfcolnodes_)[lid]);
          for (unsigned i=0; i<dof.size(); ++i)
            dof[i] = idx+i;
          return dof;
        }
 
      /// Get the gid of all dofs of a element
-     virtual vector<int> Dof(const Element* element) const
+     virtual std::vector<int> Dof(const Element* element) const
        {
          const int gid = element->Id();
          const int lid = subcoleles_->LID(gid);
          if (lid==-1)
-           return vector<int>();
+           return std::vector<int>();
          int idx = (*idxcolelements_)[lid];
-         vector<int> dof((*numdfcolelements_)[lid]);
+         std::vector<int> dof((*numdfcolelements_)[lid]);
          for (unsigned i=0; i<dof.size(); ++i)
            dof[i] = idx+i;
          return dof;

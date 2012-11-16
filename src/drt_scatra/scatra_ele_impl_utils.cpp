@@ -50,7 +50,7 @@ bool IsBinaryElectrolyte(const std::vector<double>& valence)
 std::vector<int> GetIndicesBinaryElectrolyte(const std::vector<double>& valence)
 {
   // indices of the two charged species to be determined
-  vector<int> indices;
+  std::vector<int> indices;
   for (size_t k=0; k < valence.size(); k++)
   {
     // is there some charge?
@@ -91,7 +91,7 @@ bool InflowElement(DRT::Element* ele)
 {
   bool inflow_ele = false;
 
-  vector<DRT::Condition*> myinflowcond;
+  std::vector<DRT::Condition*> myinflowcond;
 
   // check whether all nodes have a unique inflow condition
   DRT::UTILS::FindElementConditions(ele, "TurbulentInflowSection", myinflowcond);

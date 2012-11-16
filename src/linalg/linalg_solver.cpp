@@ -331,8 +331,8 @@ void LINALG::Solver::FixMLNullspace(std::string field,
   const int ndim = params.get("null space: dimension",-1);
   if (ndim==-1) dserror("List does not contain nullspace dimension");
 
-  Teuchos::RCP<vector<double> > ns =
-      params.get<Teuchos::RCP<vector<double> > >("nullspace",Teuchos::null);
+  Teuchos::RCP<std::vector<double> > ns =
+      params.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
   if (ns==Teuchos::null) dserror("List does not contain nullspace");
   double* ons = &((*ns)[0]);
 
@@ -348,7 +348,7 @@ void LINALG::Solver::FixMLNullspace(std::string field,
     dserror("New problem size larger than old - full rebuild of nullspace neccessary");
 
   // Allocate a new nullspace and fill it
-  Teuchos::RCP<vector<double> > nsnew = Teuchos::rcp(new vector<double>(nlength*ndim,0.0));
+  Teuchos::RCP<std::vector<double> > nsnew = Teuchos::rcp(new std::vector<double>(nlength*ndim,0.0));
   double* nns = &((*nsnew)[0]);
 
   for (int i=0; i<nlength; ++i)
@@ -366,7 +366,7 @@ void LINALG::Solver::FixMLNullspace(std::string field,
   // this print message can go away at some point
   if (!oldmap.Comm().MyPID())
     printf("Fixing %s ML Nullspace\n",field.c_str());
-  params.set<Teuchos::RCP<vector<double> > >("nullspace",nsnew);
+  params.set<Teuchos::RCP<std::vector<double> > >("nullspace",nsnew);
   params.set<double*>("null space: vectors",nns);
 
   return;
@@ -1980,7 +1980,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
       finalresult->FillComplete(B.DomainMap(),A.RangeMap());
       finalresult->OptimizeStorage();
     }
-    result = null;
+    result = Teuchos::null;
     return Teuchos::rcp(new SparseMatrix(finalresult,explicitdirichlet,savegraph));
 #endif
   }

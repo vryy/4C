@@ -116,7 +116,7 @@ namespace ART
       */
       void Write(RCP<DRT::Discretization>  discret,
                  ParameterList &           params,
-                 const vector<int> *       nodes);
+                 const std::vector<int> *       nodes);
 
 
     private:

@@ -18,7 +18,7 @@ ADAPTER::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> fluid,
     Teuchos::RCP<DRT::Discretization> embfluiddis,
     Teuchos::RCP<DRT::Discretization> bgfluiddis,
     Teuchos::RCP<LINALG::Solver> solver,
-    Teuchos::RCP<ParameterList> params,
+    Teuchos::RCP<Teuchos::ParameterList> params,
     bool isale,
     bool dirichletcond,
     bool monolithicfluidfluidfsi)
@@ -30,7 +30,7 @@ ADAPTER::FluidFluidFSI::FluidFluidFSI(Teuchos::RCP<Fluid> fluid,
   monolithicfluidfluidfsi_(monolithicfluidfluidfsi)
 {
   // make sure
-  if (fluid_ == null)
+  if (fluid_ == Teuchos::null)
     dserror("Failed to create the underlying fluid adapter");
 
   // cast fluid to fluidimplicit

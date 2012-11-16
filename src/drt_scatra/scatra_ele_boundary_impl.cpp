@@ -193,9 +193,9 @@ DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     DRT::ELEMENTS::TransportBoundary* ele,
-    ParameterList&                    params,
+    Teuchos::ParameterList&           params,
     DRT::Discretization&              discretization,
-    vector<int>&                      lm,
+    std::vector<int>&                 lm,
     Epetra_SerialDenseMatrix&         elemat1_epetra,
     Epetra_SerialDenseMatrix&         elemat2_epetra,
     Epetra_SerialDenseVector&         elevec1_epetra,
@@ -221,8 +221,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   isale_ = params.get<bool>("isale");
   if (isale_)
   {
-    const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",null);
-    if (dispnp==null) dserror("Cannot get state vector 'dispnp'");
+    const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
+    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_+1);
     // add nodal displacements
     xyze_ += edispnp_;
@@ -248,7 +248,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   case SCATRA::bd_calc_normal_vectors:
   {
     // access the global vector
-    const RCP<Epetra_MultiVector> normals = params.get< RCP<Epetra_MultiVector> >("normal vectors",null);
+    const RCP<Epetra_MultiVector> normals = params.get< RCP<Epetra_MultiVector> >("normal vectors",Teuchos::null);
     if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
 
     // determine constant outer normal to this element
@@ -279,10 +279,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   {
     // get actual values of transported scalars
     RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vector
-    vector<double> ephinp(lm.size());
+    std::vector<double> ephinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
 
     // get current condition
@@ -387,9 +387,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       {
         // get actual values of transported scalars
         RCP<const Epetra_Vector> phidtnp = discretization.GetState("timederivative");
-        if (phidtnp==null) dserror("Cannot get state vector 'ephidtnp'");
+        if (phidtnp==Teuchos::null) dserror("Cannot get state vector 'ephidtnp'");
         // extract local values from the global vector
-        vector<double> ephidtnp(lm.size());
+        std::vector<double> ephidtnp(lm.size());
         DRT::UTILS::ExtractMyValues(*phidtnp,ephidtnp,lm);
 
         if (not is_stationary)
@@ -427,13 +427,13 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   {
     // we dont know the parent element's lm vector; so we have to build it here
     const int nenparent = parentele->NumNode();
-    vector<int> lmparent(nenparent);
-    vector<int> lmparentowner;
-    vector<int> lmparentstride;
+    std::vector<int> lmparent(nenparent);
+    std::vector<int> lmparentowner;
+    std::vector<int> lmparentstride;
     parentele->LocationVector(discretization,lmparent,lmparentowner,lmparentstride);
 
     // get velocity values at nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
 
     // we deal with a (nsd_+1)-dimensional flow field
     Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
@@ -441,15 +441,15 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     // get values of scalar
     RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
-    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vectors for the parent(!) element
-    vector<double> myphinp(lmparent.size());
+    std::vector<double> myphinp(lmparent.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lmparent);
 
     // define vector for normal diffusive and velocity fluxes
-    vector<double> mynormdiffflux(lm.size());
-    vector<double> mynormvel(lm.size());
+    std::vector<double> mynormdiffflux(lm.size());
+    std::vector<double> mynormvel(lm.size());
 
     // determine constant outer normal to this element
     GetConstNormal(normal_,xyze_);
@@ -531,21 +531,21 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     // get values of scalar
     RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
-    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from global vector
-    vector<double> ephinp(lm.size());
+    std::vector<double> ephinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
 
     // we dont know the parent element's lm vector; so we have to build it here
     const int nenparent = parentele->NumNode();
-    vector<int> lmparent(nenparent);
-    vector<int> lmparentowner;
-    vector<int> lmparentstride;
+    std::vector<int> lmparent(nenparent);
+    std::vector<int> lmparentowner;
+    std::vector<int> lmparentstride;
     parentele->LocationVector(discretization,lmparent,lmparentowner,lmparentstride);
 
     // get velocity values at nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
 
     // we deal with a (nsd_+1)-dimensional flow field
     Epetra_SerialDenseVector evel((nsd_+1)*nenparent);
@@ -598,10 +598,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     // get values of scalar
     RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
-    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from global vector
-    vector<double> ephinp(lm.size());
+    std::vector<double> ephinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
 
     // get condition
@@ -693,10 +693,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     // get values of scalar
     RCP<const Epetra_Vector> phinp  = discretization.GetState("phinp");
-    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from global vector
-    vector<double> ephinp(lm.size());
+    std::vector<double> ephinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
 
     // get current condition
@@ -838,14 +838,14 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     // get actual values of transported scalars
     RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if (phinp==null) dserror("Cannot get state vector 'phinp'");
+    if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vector
-    vector<double> ephinp(lm.size());
+    std::vector<double> ephinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
 
     // get velocity values at nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",Teuchos::null);
 
     // we deal with a (nsd_+1)-dimensional flow field
     LINALG::Matrix<nsd_+1,nen_>  evel(true);
@@ -883,10 +883,10 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
     DRT::ELEMENTS::TransportBoundary*   ele,
-    ParameterList&                      params,
+    Teuchos::ParameterList&             params,
     DRT::Discretization&                discretization,
     DRT::Condition&                     condition,
-    vector<int>&                        lm,
+    std::vector<int>&                   lm,
     Epetra_SerialDenseVector&           elevec1)
 {
   // get node coordinates (we have a nsd_+1 dimensional computational domain!)
@@ -896,8 +896,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
   isale_ = params.get<bool>("isale");
   if (isale_)
   {
-    const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",null);
-    if (dispnp==null) dserror("Cannot get state vector 'dispnp'");
+    const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
+    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_+1);
     // add nodal displacements to point coordinates
     xyze_ += edispnp_;
@@ -925,7 +925,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -934,9 +934,9 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
-  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
-  const vector<double>* val   = condition.Get<vector<double> >("val"  );
-  const vector<int>*    func  = condition.Get<vector<int> >   ("funct");
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
+  const std::vector<int>*    func  = condition.Get<std::vector<int> >   ("funct");
 
   // integration loop
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
@@ -1051,7 +1051,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
     const DRT::Element*                 ele,
     Teuchos::RCP<const MAT::Material>   material,
-    const vector<double>&               ephinp,
+    const std::vector<double>&           ephinp,
     const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
     Epetra_SerialDenseMatrix&           emat,
     Epetra_SerialDenseVector&           erhs,
@@ -1222,7 +1222,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
 template <DRT::Element::DiscretizationType distype>
 vector<double> DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcConvectiveFlux(
     const DRT::Element*                 ele,
-    const vector<double>&               ephinp,
+    const std::vector<double>&           ephinp,
     const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
     Epetra_SerialDenseVector&           erhs
 )
@@ -1282,7 +1282,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ConvectiveHeatTransfer(
     const DRT::Element*                 ele,
     Teuchos::RCP<const MAT::Material>   material,
-    const vector<double>&               ephinp,
+    const std::vector<double>&           ephinp,
     Epetra_SerialDenseMatrix&           emat,
     Epetra_SerialDenseVector&           erhs,
     const double                        heatranscoeff,
@@ -1430,7 +1430,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     const DRT::Element*        ele,
     Epetra_SerialDenseMatrix& emat,
     Epetra_SerialDenseVector& erhs,
-    const vector<double>&   ephinp,
+    const std::vector<double>& ephinp,
     double  timefac,
     Teuchos::RCP<const MAT::Material> material,
     Teuchos::RCP<DRT::Condition>      cond,
@@ -1450,7 +1450,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // concentration values of reactive species at element nodes
-  vector<LINALG::Matrix<nen_,1> > conreact(numscal_);
+  std::vector<LINALG::Matrix<nen_,1> > conreact(numscal_);
 
   // el. potential values at element nodes
   LINALG::Matrix<nen_,1> pot(true);
@@ -1819,8 +1819,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 
         double pow_conint_p(1.0);      //product over i (c_i)^(p_i)
         double pow_conint_q(1.0);      //product over i (c_i)^(q_i)
-        vector<double> pow_conint_p_derivative(numscal_,1.0);  //pow_conint_p derivated after conint[nspec]
-        vector<double> pow_conint_q_derivative(numscal_,1.0); //pow_conint_q derivated after conint[nspec]
+        std::vector<double> pow_conint_p_derivative(numscal_,1.0);  //pow_conint_p derivated after conint[nspec]
+        std::vector<double> pow_conint_q_derivative(numscal_,1.0); //pow_conint_q derivated after conint[nspec]
 
         //concentration term (product of cathodic and anodic species)
         for(int kk=0; kk<numscal_; ++kk)
@@ -2155,10 +2155,10 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     const DRT::Element*        ele,
-    ParameterList&          params,
+    Teuchos::ParameterList& params,
     Teuchos::RCP<DRT::Condition>  cond,
-    const vector<double>&   ephinp,
-    const vector<double>& ephidtnp,
+    const std::vector<double>&   ephinp,
+    const std::vector<double>& ephidtnp,
     const int             kinetics,
     const std::vector<int>  stoich,
     const int                 nume,
@@ -2758,7 +2758,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::GetConstNormal(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateSurfacePermeability(
     const DRT::Element*        ele,
-    const vector<double>&      ephinp,
+    const std::vector<double>&  ephinp,
     Epetra_SerialDenseMatrix&  emat,
     Epetra_SerialDenseVector&  erhs,
     const double               timefac,
@@ -2833,7 +2833,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateSurfacePermeability(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
     const DRT::Element*        ele,
-    ParameterList&             params,
+    Teuchos::ParameterList&    params,
     Epetra_SerialDenseVector&  elevec1,
     const bool                 addarea
 )
@@ -2880,9 +2880,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::IntegrateShapeFunctions(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NormDiffFluxAndVelIntegral(
     const DRT::Element*             ele,
-    ParameterList&                  params,
-    const vector<double>&           enormdiffflux,
-    const vector<double>&           enormvel
+    Teuchos::ParameterList&         params,
+    const std::vector<double>&       enormdiffflux,
+    const std::vector<double>&       enormvel
 )
 {
   // get variables for integrals of normal diffusive flux and velocity
@@ -2921,7 +2921,7 @@ template <DRT::Element::DiscretizationType bdistype,
           DRT::Element::DiscretizationType pdistype>
    void  DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::WeakDirichlet(
      DRT::ELEMENTS::TransportBoundary*  ele,
-     ParameterList&                     params,
+     Teuchos::ParameterList&            params,
      DRT::Discretization&               discretization,
      Teuchos::RCP<const MAT::Material>  material,
      Epetra_SerialDenseMatrix&          elemat_epetra,
@@ -2961,7 +2961,7 @@ template <DRT::Element::DiscretizationType bdistype,
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = (*dbc).Get<vector<int> >("curve");
+  const std::vector<int>* curve  = (*dbc).Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -2970,8 +2970,8 @@ template <DRT::Element::DiscretizationType bdistype,
 
   // get values and spatial functions from condition
   // (assumed to be constant on element boundary)
-  const vector<double>* val  = (*dbc).Get<vector<double> >("val"  );
-  const vector<int>*    func = (*dbc).Get<vector<int> >   ("funct");
+  const std::vector<double>* val  = (*dbc).Get<std::vector<double> >("val"  );
+  const std::vector<int>*    func = (*dbc).Get<std::vector<int> >   ("funct");
 
   // assign boundary value multiplied by time-curve factor
   double dirichval=(*val)[0]*curvefac;
@@ -3001,19 +3001,19 @@ template <DRT::Element::DiscretizationType bdistype,
 
   // parent element lm vector (vectors plm and plmowner allocated outside in
   // EvaluateConditionUsingParentData)
-  RCP<vector<int> > plm      = params.get<RCP<vector<int> > >("plm");
-  RCP<vector<int> > plmowner = params.get<RCP<vector<int> > >("plmowner");
-  RCP<vector<int> > plmstride = params.get<RCP<vector<int> > >("plmstride");
+  Teuchos::RCP<vector<int> > plm      = params.get<Teuchos::RCP<vector<int> > >("plm");
+  Teuchos::RCP<vector<int> > plmowner = params.get<Teuchos::RCP<vector<int> > >("plmowner");
+  Teuchos::RCP<vector<int> > plmstride = params.get<Teuchos::RCP<vector<int> > >("plmstride");
   pele->LocationVector(discretization,*plm,*plmowner,*plmstride);
 
   // get velocity values at parent element nodes
-  const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
+  const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
   Epetra_SerialDenseVector evel(pnsd*pnen);
   DRT::UTILS::ExtractMyNodeBasedValues(pele,evel,velocity,pnsd);
 
   // get scalar values at parent element nodes
-  RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  if (phinp==null) dserror("Cannot get state vector 'phinp'");
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
   // extract local values from global vectors for parent element
   vector<double> myphinp(plm->size());
@@ -3665,7 +3665,7 @@ template <DRT::Element::DiscretizationType bdistype,
           DRT::Element::DiscretizationType pdistype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::TaylorGalerkinBoundaryOutflow(
     DRT::ELEMENTS::TransportBoundary*  ele,                  //!< transport element
-    ParameterList&                     params,               //!< parameter list
+    Teuchos::ParameterList&            params,               //!< parameter list
     DRT::Discretization&               discretization,       //!< discretization
     Teuchos::RCP<const MAT::Material>  material,             //!< material
     Epetra_SerialDenseMatrix&          elemat_epetra,        //!< ele sysmat
@@ -3697,21 +3697,21 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::TaylorGalerkinBoundaryOutflow(
 
   // parent element lm vector (vectors plm and plmowner allocated outside in
   // EvaluateConditionUsingParentData)
-  RCP<vector<int> > plm      = params.get<RCP<vector<int> > >("plm");
-  RCP<vector<int> > plmowner = params.get<RCP<vector<int> > >("plmowner");
-  RCP<vector<int> > plmstride = params.get<RCP<vector<int> > >("plmstride");
+  Teuchos::RCP<vector<int> > plm      = params.get<RCP<vector<int> > >("plm");
+  Teuchos::RCP<vector<int> > plmowner = params.get<RCP<vector<int> > >("plmowner");
+  Teuchos::RCP<vector<int> > plmstride = params.get<RCP<vector<int> > >("plmstride");
   pele->LocationVector(discretization,*plm,*plmowner,*plmstride);
 
   // get velocity values at parent element nodes
-  const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
+  const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
   Epetra_SerialDenseVector evel(pnsd*pnen);
   DRT::UTILS::ExtractMyNodeBasedValues(pele,evel,velocity,pnsd);
 
   // get scalar values at parent element nodes
   RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  if (phinp==null) dserror("Cannot get state vector 'phinp'");
+  if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
   RCP<const Epetra_Vector> phin = discretization.GetState("phin");
-  if (phinp==null) dserror("Cannot get state vector 'phin'");
+  if (phinp==Teuchos::null) dserror("Cannot get state vector 'phin'");
 
 
   // extract local values from global vectors for parent element
@@ -4093,7 +4093,7 @@ template <DRT::Element::DiscretizationType bdistype,
           DRT::Element::DiscretizationType pdistype>
 void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBoundary(
     DRT::ELEMENTS::TransportBoundary*  ele,                  //!< transport element
-    ParameterList&                     params,               //!< parameter list
+    Teuchos::ParameterList&            params,               //!< parameter list
     DRT::Discretization&               discretization,       //!< discretization
     Teuchos::RCP<const MAT::Material>  material,             //!< material
     Epetra_SerialDenseMatrix&          elemat_epetra,        //!< ele sysmat
@@ -4130,9 +4130,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBou
 
   // get scalar values at parent element nodes
   RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-  if (phinp==null) dserror("Cannot get state vector 'phinp'");
+  if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
   RCP<const Epetra_Vector> phin = discretization.GetState("phin");
-  if (phinp==null) dserror("Cannot get state vector 'phin'");
+  if (phinp==Teuchos::null) dserror("Cannot get state vector 'phin'");
 
   // extract local values from global vectors for parent element
   vector<double> myphinp(plm->size());

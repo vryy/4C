@@ -132,10 +132,10 @@ DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
-  const vector<int>    &     slavenodeids,
-  const vector<int>    &     dofsforpbcplane,
+  const std::vector<int>    &     slavenodeids,
+  const std::vector<int>    &     dofsforpbcplane,
   const double               rotangle,
-  map<int,vector<int> >&     midtosid
+  std::map<int,std::vector<int> >&     midtosid
   )
 {
   int myrank  =discret_.Comm().MyPID();
@@ -143,7 +143,7 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
 
   // map from global masternodeids to distances to their global slave
   // counterpart
-  map<int,double > diststom;
+  std::map<int,double > diststom;
 
   // 1) each proc generates a list of his slavenodes
   // 2) the list is communicated in a round robin pattern to all the
@@ -155,8 +155,8 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
 
   //--------------------------------------------------------------------
   // -> 1) create a list of slave nodes on this proc. Pack it.
-  vector<char> sblockofnodes;
-  vector<char> rblockofnodes;
+  std::vector<char> sblockofnodes;
+  std::vector<char> rblockofnodes;
 
   sblockofnodes.clear();
   rblockofnodes.clear();
@@ -261,11 +261,11 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
 
     //--------------------------------------------------
     // Unpack block.
-    vector<char>::size_type index = 0;
+    std::vector<char>::size_type index = 0;
     while (index < rblockofnodes.size())
     {
       // extract node data from blockofnodes
-      vector<char> data;
+      std::vector<char> data;
       DRT::ParObject::ExtractfromPack(index,rblockofnodes,data);
 
       // allocate an "empty node". Fill it with info from
@@ -356,7 +356,7 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
         if(nodeisinbox==true)
         {
 
-          map<int,vector<int> >::iterator found
+          std::map<int,std::vector<int> >::iterator found
 	    = midtosid.find(idofclosestpoint);
 
           if( found != midtosid.end() )
@@ -417,8 +417,8 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
 
 
 void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slavedis,
-                                   const vector<int>& slavenodeids,
-                                   map<int,std::pair<int,double> >& coupling)
+                                   const std::vector<int>& slavenodeids,
+                                   std::map<int,std::pair<int,double> >& coupling)
 {
   int numprocs = discret_.Comm().NumProc();
 
@@ -437,8 +437,8 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
 
   //--------------------------------------------------------------------
   // -> 1) create a list of slave nodes on this proc. Pack it.
-  vector<char> sblockofnodes;
-  vector<char> rblockofnodes;
+  std::vector<char> sblockofnodes;
+  std::vector<char> rblockofnodes;
 
   DRT::PackBuffer data;
 
@@ -539,11 +539,11 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
 
     //--------------------------------------------------
     // Unpack block.
-    vector<char>::size_type index = 0;
+    std::vector<char>::size_type index = 0;
     while (index < rblockofnodes.size())
     {
       // extract node data from blockofnodes
-      vector<char> data;
+      std::vector<char> data;
       DRT::ParObject::ExtractfromPack(index,rblockofnodes,data);
 
       // allocate an "empty node". Fill it with info from
@@ -561,7 +561,7 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
       if (not masterplanecoords_.empty())
       {
         // get its coordinates
-        vector<double> x(actnode->X(), actnode->X()+3);
+        std::vector<double> x(actnode->X(), actnode->X()+3);
 
         //--------------------------------------------------------
         // 3) now search for closest master point on this proc
@@ -572,7 +572,7 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
         // matching a point in the box. We do nothing.
         if (SearchClosestNodeOnThisProc(x, gid, dist))
         {
-          map<int,std::pair<int,double> >::iterator found = coupling.find(gid);
+          std::map<int,std::pair<int,double> >::iterator found = coupling.find(gid);
 
           // we are interested in the closest match
           if (found==coupling.end() or coupling[gid].second > dist)
@@ -606,7 +606,7 @@ void DRT::UTILS::NodeMatchingOctree::FindMatch(const DRT::Discretization& slaved
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 bool DRT::UTILS::NodeMatchingOctree::SearchClosestNodeOnThisProc(
-  const vector<double>& x,
+  const std::vector<double>& x,
   int           & idofclosestpoint,
   double        & distofclosestpoint
   )
@@ -621,7 +621,7 @@ bool DRT::UTILS::NodeMatchingOctree::SearchClosestNodeOnThisProc(
     // the node is inside the bounding box. So maybe the closest one is
     // here on this proc -> search for it
 
-    if(octreeroot_==null)
+    if(octreeroot_==Teuchos::null)
     {
       dserror("No root for octree on proc");
     }
@@ -632,7 +632,7 @@ bool DRT::UTILS::NodeMatchingOctree::SearchClosestNodeOnThisProc(
     {
       octreeele = octreeele->ReturnChildContainingPoint(x);
 
-      if(octreeele==null)
+      if(octreeele==Teuchos::null)
       {
         dserror("Child is nullpointer");
       }
@@ -922,7 +922,7 @@ RCP<DRT::UTILS::OctreeElement> DRT::UTILS::OctreeElement::ReturnChildContainingP
 {
   RCP<OctreeElement> nextelement;
 
-  if (this->octreechild1_ == null || this->octreechild2_ == null)
+  if (this->octreechild1_ == Teuchos::null || this->octreechild2_ == Teuchos::null)
   {
     dserror("Asked leaf element for further children.");
   }

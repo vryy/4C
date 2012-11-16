@@ -245,7 +245,7 @@ class V>
 static inline void updateAForRCINormal(
     LINALG::Matrix<3,3>&                        A,
     const V&                  					xsi,
-    const vector<LINALG::Matrix<3,1> >&         normal,
+    const std::vector<LINALG::Matrix<3,1> >&         normal,
     const M&            						xyze_surfaceElement,
     const bool                                  onBoundary
 )
@@ -312,7 +312,7 @@ class V>
 static inline void updateRHSForRCINormal(
     LINALG::Matrix<3,1>&                	b,
     const V&            					xsi,
-    const vector<LINALG::Matrix<3,1> >&   	normal,
+    const std::vector<LINALG::Matrix<3,1> >&   	normal,
     const M&      							xyze_surfaceElement,
     const bool                            	onBoundary)
 {
@@ -372,7 +372,7 @@ class M>
 static inline void updateAForRCIPlane(
     LINALG::Matrix<3,3>&                    A,
     const V&                                xsi,
-    const vector<LINALG::Matrix<3,1> >&     plane,
+    const std::vector<LINALG::Matrix<3,1> >&     plane,
     const M&                                xyze_lineElement)
 {
   const int numNodesLine = DRT::UTILS::DisTypeToNumNodePerEle<linetype>::numNodePerElement;
@@ -418,7 +418,7 @@ class M>
 static inline void updateRHSForRCIPlane(
     LINALG::Matrix<3,1>&                  	b,
     const V&            					xsi,
-    const vector<LINALG::Matrix<3,1> >&   	plane,
+    const std::vector<LINALG::Matrix<3,1> >&   	plane,
     const M&            					xyze_lineElement)
 {
   const int numNodesLine = DRT::UTILS::DisTypeToNumNodePerEle<linetype>::numNodePerElement;
@@ -463,7 +463,7 @@ class V,
 class M>
 bool computeRecoveryPlaneT(
     const M&                                xyze_lineElement,
-    const vector<LINALG::Matrix<3,1> >&     plane,
+    const std::vector<LINALG::Matrix<3,1> >&     plane,
     V&                                      xsi)
 {
   int                         iter = 0;
@@ -522,7 +522,7 @@ class V>
 bool computeRecoveryPlane(
     const DRT::Element*                 lineElement,
     const M&                            xyze_lineElement,
-    const vector<LINALG::Matrix<3,1> >& plane,
+    const std::vector<LINALG::Matrix<3,1> >& plane,
     V&                                  xsi
 )
 {

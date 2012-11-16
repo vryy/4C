@@ -193,7 +193,7 @@ public:
 
   void PreEvaluate
     (
-      ParameterList& params,  ///< ParameterList for communication between control routine and elements
+      Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
       DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
       DRT::Element::LocationArray& la ///< location array for de-assembly
     );
@@ -212,7 +212,7 @@ public:
   */
   int Evaluate
   (
-    ParameterList& params,  ///< ParameterList for communication between control routine and elements
+    Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
     DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
     DRT::Element::LocationArray& la, ///< location array for de-assembly
     Epetra_SerialDenseMatrix& elemat1,  ///< (stiffness-)matrix to be filled by element.
@@ -246,7 +246,7 @@ protected:
   */
   int MyEvaluate
   (
-    ParameterList& params,  ///< ParameterList for communication between control routine and elements
+    Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
     DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
     DRT::Element::LocationArray& la, ///< location array for de-assembly
     Epetra_SerialDenseMatrix& elemat1,  ///< (stiffness-)matrix to be filled by element.
@@ -290,10 +290,10 @@ protected:
 
   //! Calculate nonlinear stiffness and internal force for poroelasticity problems
   virtual void nlnstiff_poroelast(
-      vector<int>& lm, ///< location matrix
-      vector<double>& disp, ///< current displacements
-      vector<double>& vel, ///< current velocities
-      //    vector<double>&           residual,       ///< current residual displ
+      std::vector<int>& lm, ///< location matrix
+      std::vector<double>& disp, ///< current displacements
+      std::vector<double>& vel, ///< current velocities
+      //    std::vector<double>&      residual,       ///< current residual displ
       LINALG::Matrix<numdim_,numnod_> & evelnp, //< fluid velocity of element
       LINALG::Matrix<numnod_,1> & epreaf, //< fluid pressure of element
       LINALG::Matrix<numdof_,numdof_>* stiffmatrix, ///< element stiffness matrix
@@ -301,21 +301,21 @@ protected:
       LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
       //LINALG::Matrix<numgpt_,numstr_>* elestress, ///< stresses at GP
       //LINALG::Matrix<numgpt_,numstr_>* elestrain, ///< strains at GP
-      ParameterList& params ///< algorithmic parameters e.g. time
+      Teuchos::ParameterList& params ///< algorithmic parameters e.g. time
   //    const INPAR::STR::StressType iostress ///< stress output option
       );
 
   //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity problems
   virtual void coupling_poroelast(
-      vector<int>& lm, ///< location matrix
-      vector<double>& disp, ///< current displacements
-      vector<double>& vel, ///< current velocities
+      std::vector<int>& lm, ///< location matrix
+      std::vector<double>& disp, ///< current displacements
+      std::vector<double>& vel, ///< current velocities
       LINALG::Matrix<numdim_,numnod_> & evelnp, //< fluid velocity of element
       LINALG::Matrix<numnod_,1> & epreaf, //< fluid pressure of element
       LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* stiffmatrix, ///< element stiffness matrix
       LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* reamatrix, //< element reactive matrix
       LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
-      ParameterList& params); ///< algorithmic parameters e.g. time
+      Teuchos::ParameterList& params); ///< algorithmic parameters e.g. time
 
   //Gauss integration rule
   DRT::UTILS::GaussIntegration intpoints_;

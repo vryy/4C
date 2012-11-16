@@ -31,7 +31,7 @@ namespace LINALG
   {
     public:
 
-    explicit AMGPreconditioner(RCP<Epetra_Operator> A, const ParameterList& params, FILE* outfile = NULL);
+    explicit AMGPreconditioner(RCP<Epetra_Operator> A, const Teuchos::ParameterList& params, FILE* outfile = NULL);
     virtual ~AMGPreconditioner() {}
 
     const char* Label() const { return &label_[0]; }

@@ -200,7 +200,7 @@ void DRT::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
     if (min.size() < 1)
       return;
 
-    vector<int>::const_iterator largest = max_element( max.begin(), max.end() );
+    std::vector<int>::const_iterator largest = max_element( max.begin(), max.end() );
     int allmax = *largest;
     int availspace = 80;
     int arrowlen = availspace + 3;

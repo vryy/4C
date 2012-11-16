@@ -31,9 +31,9 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
   // -------------------------------------------------------------------
   // access the fluid and the optimization discretization
   // -------------------------------------------------------------------
-  RCP<DRT::Discretization> optidis = null;
+  RCP<DRT::Discretization> optidis = Teuchos::null;
   optidis = problem->GetDis(disname);
-  RCP<DRT::Discretization> fluiddis = null;
+  RCP<DRT::Discretization> fluiddis = Teuchos::null;
   fluiddis = problem->GetDis("fluid");
 
   // -------------------------------------------------------------------

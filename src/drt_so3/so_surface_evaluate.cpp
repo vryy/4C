@@ -35,15 +35,15 @@ using POTENTIAL::PotentialManager;
 /*----------------------------------------------------------------------*
  * Integrate a Surface Neumann boundary condition (public)     gee 04/08|
  * ---------------------------------------------------------------------*/
-int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           params,
+int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(Teuchos::ParameterList&  params,
                                                       DRT::Discretization&     discretization,
                                                       DRT::Condition&          condition,
-                                                      vector<int>&             lm,
+                                                      std::vector<int>&        lm,
                                                       Epetra_SerialDenseVector& elevec1,
                                                       Epetra_SerialDenseMatrix* elemat1)
 {
 
-  const ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
   double pstime = sdyn.get<double>("PRESTRESSTIME");
 
@@ -93,9 +93,9 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   }
 
   // get values and switches from the condition
-  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
-  const vector<double>* val   = condition.Get<vector<double> >("val"  );
-  const vector<int>*    spa_func = condition.Get<vector<int> >("funct");
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
+  const std::vector<int>*    spa_func = condition.Get<std::vector<int> >("funct");
 
   /*
   **    TIME CURVE BUSINESS
@@ -106,7 +106,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -136,8 +136,8 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
     else // standard case
     {
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vector 'displacement'");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       SpatialConfiguration(xc,mydisp);
 //      MaterialConfiguration(xc);
@@ -148,8 +148,8 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
   {
     xc.LightShape(numnode,3);
     RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-    if (disp==null) dserror("Cannot get state vector 'displacement'");
-    vector<double> mydisp(lm.size());
+    if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+    std::vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     MaterialConfiguration(x);
     SpatialConfiguration(xc,mydisp);
@@ -300,7 +300,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
       double ortho_value = (*val)[0];
       //if (!ortho_value) dserror("no orthopressure value given!"); // in case of coupling with redairways,
                                                                     //there is a zero orthoval in the beginning!!!!
-      vector<double> normal(3);
+      std::vector<double> normal(3);
       SurfaceIntegration(normal, xc,deriv);
       //Calculate spatial position of GP
       double functfac = 1.0;
@@ -366,7 +366,7 @@ int DRT::ELEMENTS::StructuralSurface::EvaluateNeumann(ParameterList&           p
 /*----------------------------------------------------------------------*
  * Evaluate normal at gp (private)                             gee 08/08|
  * ---------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(vector<double>& normal,
+void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(std::vector<double>& normal,
                                                           const Epetra_SerialDenseMatrix& x,
                                                           const Epetra_SerialDenseMatrix& deriv)
 {
@@ -387,7 +387,7 @@ void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(vector<double>& normal
  * Evaluate sqrt of determinant of metric at gp (private)      gee 04/08|
  * ---------------------------------------------------------------------*/
 void DRT::ELEMENTS::StructuralSurface::SurfaceIntegration(double& detA,
-                                                          vector<double>& normal,
+                                                          std::vector<double>& normal,
                                                           const Epetra_SerialDenseMatrix& x,
                                                           const Epetra_SerialDenseMatrix& deriv)
 {
@@ -629,9 +629,9 @@ void DRT::ELEMENTS::StructuralSurface::	FiniteDiff_DSurfaceIntegration(Epetra_Se
 /*----------------------------------------------------------------------*
  * Evaluate method for StructuralSurface-Elements               tk 10/07*
  * ---------------------------------------------------------------------*/
-int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
+int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
                                                DRT::Discretization&      discretization,
-                                               vector<int>&              lm,
+                                               std::vector<int>&         lm,
                                                Epetra_SerialDenseMatrix& elematrix1,
                                                Epetra_SerialDenseMatrix& elematrix2,
                                                Epetra_SerialDenseVector& elevector1,
@@ -679,8 +679,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
     {
       // element geometry update
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacementtotal");
-      if (disp==null) dserror("Cannot get state vector 'displacementtotal'");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null) dserror("Cannot get state vector 'displacementtotal'");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       const int numnode = NumNode();
       const int numdf=3;
@@ -698,7 +698,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
       const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 
       Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
-      vector<double> edispincr(lm.size());
+      std::vector<double> edispincr(lm.size());
       DRT::UTILS::ExtractMyValues(*dispincr,edispincr,lm);
       elevector2[0] = 0;
 
@@ -711,7 +711,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
         DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
 
-        vector<double> normal(3);
+        std::vector<double> normal(3);
         double detA;
         SurfaceIntegration(detA,normal,xc,deriv);
 
@@ -744,17 +744,17 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 
       //  element geometry update for time t_n
       Teuchos::RCP<const Epetra_Vector> dispn = discretization.GetState("displacementnp");
-      if (dispn==null)
+      if (dispn==Teuchos::null)
         dserror("Cannot get state vector 'displacementnp");
-      vector<double> edispn(lm.size());
+      std::vector<double> edispn(lm.size());
       DRT::UTILS::ExtractMyValues(*dispn,edispn,lm);
       LINALG::SerialDenseMatrix xcn(numnode,numdf);
       SpatialConfiguration(xcn,edispn);
 
       Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
-      if (dispn==null)
+      if (dispn==Teuchos::null)
         dserror("Cannot get state vector 'displacementincr");
-      vector<double> edispincr(lm.size());
+      std::vector<double> edispincr(lm.size());
       DRT::UTILS::ExtractMyValues(*dispincr,edispincr,lm);
 
       //integration of the displacements over the surface
@@ -773,7 +773,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
         DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
 
-        vector<double> normal(3);
+        std::vector<double> normal(3);
         double detA;
         SurfaceIntegration(detA,normal,xcn,deriv);
 
@@ -836,17 +836,17 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 
     //  element geometry update for time t_n
     Teuchos::RCP<const Epetra_Vector> dispn = discretization.GetState("displacementnp");
-    if (dispn==null)
+    if (dispn==Teuchos::null)
       dserror("Cannot get state vector 'displacementnp");
-    vector<double> edispn(lm.size());
+    std::vector<double> edispn(lm.size());
     DRT::UTILS::ExtractMyValues(*dispn,edispn,lm);
     LINALG::SerialDenseMatrix xcn(numnode,numdf);
     SpatialConfiguration(xcn,edispn);
 
     Teuchos::RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
-    if (dispn==null)
+    if (dispn==Teuchos::null)
       dserror("Cannot get state vector 'displacementincr");
-    vector<double> edispincr(lm.size());
+    std::vector<double> edispincr(lm.size());
     DRT::UTILS::ExtractMyValues(*dispincr,edispincr,lm);
 
     //integration of the displacements over the surface
@@ -854,10 +854,10 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
     LINALG::SerialDenseVector  funct(numnode);
     LINALG::SerialDenseMatrix  deriv(2,numnode);
 
-    vector<double> nodalrot (numnode);
+    std::vector<double> nodalrot (numnode);
     for (int node=0; node<numnode; node++)
     {
-      vector<double> normal(3); //normal in element center
+      std::vector<double> normal(3); //normal in element center
       // get shape functions and derivatives in the plane of the element
       DRT::UTILS::shape_function_2D(funct,0.0,0.0,Shape());
       DRT::UTILS::shape_function_2D_deriv1(deriv,0.0,0.0,Shape());
@@ -920,8 +920,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
     {
       // element geometry update
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vector 'displacement'");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       const int numdim = 3;
       LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
@@ -936,8 +936,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   {
     // element geometry update
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-    if (disp==null) dserror("Cannot get state vector 'displacement'");
-    vector<double> mydisp(lm.size());
+    if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+    std::vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     const int numdim =3;
     LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
@@ -1023,13 +1023,13 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         DRT::UTILS::shape_function_2D(funct,e0,e1,Shape());
         DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
 
-        vector<double> normal(3);
+        std::vector<double> normal(3);
         double detA;
         SurfaceIntegration(detA,normal,x,deriv);
         const double fac = intpoints.qwgt[gp] * detA;
 
         double temp = 0.0;
-        vector<double> X(3,0.);
+        std::vector<double> X(3,0.);
 
         for (int i=0; i<numnode; i++)
         {
@@ -1063,13 +1063,13 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   case calc_surfstress_stiff:
   {
     Teuchos::RCP<SurfStressManager> surfstressman =
-        params.get<Teuchos::RCP<SurfStressManager> >("surfstr_man", null);
+        params.get<Teuchos::RCP<SurfStressManager> >("surfstr_man",Teuchos::null);
 
-    if (surfstressman==null)
+    if (surfstressman==Teuchos::null)
       dserror("No SurfStressManager in Solid3 Surface available");
 
-    Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition",null);
-    if (cond==null)
+    Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition",Teuchos::null);
+    if (cond==Teuchos::null)
       dserror("Condition not available in Solid3 Surface");
 
     double time = params.get<double>("total time",-1.0);
@@ -1082,8 +1082,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
     LINALG::SerialDenseMatrix x(numnode,3);
 
     Teuchos::RCP<const Epetra_Vector> dism = discretization.GetState("displacement");
-    if (dism==null) dserror("Cannot get state vector 'displacement'");
-    vector<double> mydism(lm.size());
+    if (dism==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+    std::vector<double> mydism(lm.size());
     DRT::UTILS::ExtractMyValues(*dism,mydism,lm);
     SpatialConfiguration(x,mydism);
 
@@ -1116,8 +1116,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 
       // element geometry update (n+1)
       Teuchos::RCP<const Epetra_Vector> disn = discretization.GetState("new displacement");
-      if (disn==null) dserror("Cannot get state vector 'new displacement'");
-      vector<double> mydisn(lm.size());
+      if (disn==Teuchos::null) dserror("Cannot get state vector 'new displacement'");
+      std::vector<double> mydisn(lm.size());
       DRT::UTILS::ExtractMyValues(*disn,mydisn,lm);
       SpatialConfiguration(x,mydisn);
 
@@ -1126,7 +1126,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
       double Anew = 0.;                                            // interfacial area
       RCP<Epetra_SerialDenseVector> Adiffnew = Teuchos::rcp(new Epetra_SerialDenseVector);
 
-      ComputeAreaDeriv(x, numnode, ndof, Anew, Adiffnew, null);
+      ComputeAreaDeriv(x, numnode, ndof, Anew, Adiffnew,Teuchos::null);
 
       surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, Anew, Adiffnew, elevector1, elematrix1, this->Id(),
           time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
@@ -1149,12 +1149,12 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   case calc_potential_stiff:
   {
     Teuchos::RCP<PotentialManager> potentialmanager =
-        params.get<Teuchos::RCP<PotentialManager> >("pot_man", null);
-    if (potentialmanager==null)
+        params.get<Teuchos::RCP<PotentialManager> >("pot_man",Teuchos::null);
+    if (potentialmanager==Teuchos::null)
       dserror("No PotentialManager in Solid3 Surface available");
 
-    Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition",null);
-    if (cond==null)
+    Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition",Teuchos::null);
+    if (cond==Teuchos::null)
       dserror("Condition not available in Solid3 Surface");
 
     if (cond->Type()==DRT::Condition::LJ_Potential_Surface) // Lennard-Jones potential
@@ -1195,8 +1195,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
     {
       // element geometry update
       Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vector 'displacement'");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       const int numdim = 3;
       LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
@@ -1243,7 +1243,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
         // get shape functions and derivatives in the plane of the element
         DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
 
-        vector<double> normal(3);
+        std::vector<double> normal(3);
         double detA;
         SurfaceIntegration(detA,normal,xscurr,deriv);
         const double fac = intpoints.qwgt[gp] * detA;
@@ -1261,8 +1261,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   {
     // element geometry update
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-    if (disp==null) dserror("Cannot get state vector 'displacement'");
-    vector<double> mydisp(lm.size());
+    if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+    std::vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     const int numdim =3;
     LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
@@ -1285,8 +1285,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   {
     // element geometry update
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-    if (disp==null) dserror("Cannot get state vector 'displacement'");
-    vector<double> mydisp(lm.size());
+    if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+    std::vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     const int numdim =3;
     LINALG::SerialDenseMatrix xscurr(NumNode(),numdim);  // material coord. of element
@@ -1323,7 +1323,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
       const double e0 = intpoints.qxg[gp][0];
       const double e1 = intpoints.qxg[gp][1];
       DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
-      vector<double> normal(3);
+      std::vector<double> normal(3);
       double detA;
       SurfaceIntegration(detA,normal,x,deriv);
       a += (intpoints.qwgt[gp] * detA);
@@ -1343,7 +1343,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
   case calc_cur_nodal_normals:
   {
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-    if (disp==null) dserror("Cannot get state vector 'displacement'");
+    if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
     std::vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     BuildNormalsAtNodes(elevector1,mydisp,false);
@@ -1359,7 +1359,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 /*----------------------------------------------------------------------*
  * Evaluate method for StructuralSurface-Elements               tk 10/07*
  * ---------------------------------------------------------------------*/
-int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
+int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
                                                DRT::Discretization&      discretization,
                                                LocationArray&            la,
                                                Epetra_SerialDenseMatrix& elematrix1,
@@ -1404,9 +1404,9 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
     DRT::Element* parentele = ParentElement();
     const int nenparent = parentele->NumNode();
     // get element location vector and ownerships
-    vector<int> lmpar;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lmpar;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
     parentele->LocationVector(discretization,lmpar,lmowner,lmstride);
 
     const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
@@ -1418,8 +1418,8 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
 
     // element geometry update
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-    if (disp==null) dserror("Cannot get state vector 'displacement'");
-    vector<double> mydisp(lmpar.size());
+    if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+    std::vector<double> mydisp(lmpar.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lmpar);
 
     // update element geometry
@@ -1444,7 +1444,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(ParameterList&            params,
     const int numdofpernode = 4;
 
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState(1,"fluidvel");
-    if (velnp==null) dserror("Cannot get state vector 'fluidvel'");
+    if (velnp==Teuchos::null) dserror("Cannot get state vector 'fluidvel'");
     // extract local values of the global vectors
     std::vector<double> myvelpres(la[1].lm_.size());
     DRT::UTILS::ExtractMyValues(*velnp,myvelpres,la[1].lm_);
@@ -1606,7 +1606,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv
   // initialize
   V = 0.0;
   Vdiff1->Size(ndof);
-  if (Vdiff2!=null) Vdiff2->Shape(ndof, ndof);
+  if (Vdiff2!=Teuchos::null) Vdiff2->Shape(ndof, ndof);
 
   //Volume is calculated by evaluating the integral
   // 1/3*int_A(x dydz + y dxdz + z dxdy)
@@ -1648,7 +1648,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv
       DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
 
       // evaluate Jacobi determinant, for projected dA*
-      vector<double> normal(numdim);
+      std::vector<double> normal(numdim);
       double detA;
       // compute "metric tensor" deriv*xy, which is a 2x3 matrix with zero 3rd column
       LINALG::SerialDenseMatrix metrictensor(2,numdim);
@@ -1668,7 +1668,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeVolDeriv
       }
 
       //-------- compute second derivative
-      if (Vdiff2!=null)
+      if (Vdiff2!=Teuchos::null)
       {
         for (int i = 0; i < numnode ; i++)
         {
@@ -1707,7 +1707,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
   A = 0.;
   Adiff->Size(ndof);
 
-  if (Adiff2!=null) Adiff2->Shape(ndof, ndof);
+  if (Adiff2!=Teuchos::null) Adiff2->Shape(ndof, ndof);
 
   const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 
@@ -1729,7 +1729,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
     // get derivatives of shape functions in the plane of the element
     DRT::UTILS::shape_function_2D_deriv1(deriv,e0,e1,Shape());
 
-    vector<double> normal(3);
+    std::vector<double> normal(3);
     double detA;
     SurfaceIntegration(detA,normal,x,deriv);
     A += detA*intpoints.qwgt[gpid];
@@ -1768,7 +1768,7 @@ void DRT::ELEMENTS::StructuralSurface::ComputeAreaDeriv(const LINALG::SerialDens
       (*Adiff)[i] += jacobi_deriv(i)*intpoints.qwgt[gpid];
     }
 
-    if (Adiff2!=null)
+    if (Adiff2!=Teuchos::null)
     {
       /*--------- second derivates of minor determiants of the Jacobian
        *----------------------------- with respect to the displacements */

@@ -114,7 +114,7 @@ namespace UTILS
    * \date 05/08
    */
   template <class BoundaryEle, class ParentEle>
-  vector<Teuchos::RCP<DRT::Element> > ElementBoundaryFactory(
+  std::vector<Teuchos::RCP<DRT::Element> > ElementBoundaryFactory(
       const BoundaryBuildType  buildtype,  ///< flag, whether volumes, surfaces or lines have to be created
       ParentEle*               ele         ///< pointer on the parent element
       )
@@ -123,7 +123,7 @@ namespace UTILS
     // get node connectivity for specific distype of parent element
     unsigned int nele=0;
     const DRT::Element::DiscretizationType distype = ele->Shape();
-    vector< vector<int> > connectivity;
+    std::vector< std::vector<int> > connectivity;
     switch (buildtype)
     {
       case buildSurfaces:
@@ -141,7 +141,7 @@ namespace UTILS
       default: dserror("buildNothing case not handled in ElementBoundaryFactory");
     }
     // create vectors that will contain the volume, surface or line elements
-    vector<Teuchos::RCP<DRT::Element> > boundaryeles(nele);
+    std::vector<Teuchos::RCP<DRT::Element> > boundaryeles(nele);
 
     // does DRT::UTILS convention match your implementation of NumSurface() or NumLine()?
     if (nele != connectivity.size()) dserror("number of surfaces or lines does not match!");
@@ -151,8 +151,8 @@ namespace UTILS
     {
       // allocate node vectors
       unsigned int nnode = connectivity[iele].size(); // this number changes for pyramids or wedges
-      vector<int> nodeids(nnode);
-      vector<DRT::Node*> nodes(nnode);
+      std::vector<int> nodeids(nnode);
+      std::vector<DRT::Node*> nodes(nnode);
 
       // get connectivity infos
       for (unsigned int inode=0;inode<nnode;inode++)

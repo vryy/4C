@@ -257,9 +257,9 @@ void DRT::Element::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Element::Unpack(const vector<char>& data)
+void DRT::Element::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -299,14 +299,14 @@ void DRT::Element::Unpack(const vector<char>& data)
  |  Build nodal pointers                                    (protected) |
  |                                                            gee 11/06 |
  *----------------------------------------------------------------------*/
-bool DRT::Element::BuildNodalPointers(map<int,RCP<DRT::Node> >& nodes)
+bool DRT::Element::BuildNodalPointers(std::map<int,RCP<DRT::Node> >& nodes)
 {
   int        nnode   = NumNode();
   const int* nodeids = NodeIds();
   node_.resize(nnode);
   for (int i=0; i<nnode; ++i)
   {
-    map<int,RCP<DRT::Node> >::const_iterator curr = nodes.find(nodeids[i]);
+    std::map<int,Teuchos::RCP<DRT::Node> >::const_iterator curr = nodes.find(nodeids[i]);
     // this node is not on this proc
     if (curr==nodes.end()) dserror("Element %d cannot find node %d",Id(),nodeids[i]);
     else
@@ -484,7 +484,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
   // we need to look at all DofSets of our Discretization
   for (int dofset=0; dofset<la.Size(); ++dofset)
   {
-    vector<int>& lm       = la[dofset].lm_;
+    std::vector<int>& lm  = la[dofset].lm_;
     vector<int>& lmdirich = la[dofset].lmdirich_;
     vector<int>& lmowner  = la[dofset].lmowner_;
     vector<int>& lmstride = la[dofset].stride_;
@@ -508,7 +508,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
 
         if (doDirichlet)
         {
-          const vector<int>* flag = NULL;
+          const std::vector<int>* flag = NULL;
           DRT::Condition* dirich = node->GetCondition("Dirichlet");
           if (dirich)
           {
@@ -517,7 +517,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
                 dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
                 dirich->Type()!=DRT::Condition::VolumeDirichlet)
               dserror("condition with name Dirichlet is not of type Dirichlet");
-            flag = dirich->Get<vector<int> >("onoff");
+            flag = dirich->Get<std::vector<int> >("onoff");
           }
           for (unsigned j=0; j<dof.size(); ++j)
           {
@@ -541,7 +541,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
     }
     if (doDirichlet)
     {
-      const vector<int>* flag = NULL;
+      const std::vector<int>* flag = NULL;
       DRT::Condition* dirich = GetCondition("Dirichlet");
       if (dirich)
       {
@@ -550,7 +550,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
             dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
             dirich->Type()!=DRT::Condition::VolumeDirichlet)
           dserror("condition with name Dirichlet is not of type Dirichlet");
-        flag = dirich->Get<vector<int> >("onoff");
+        flag = dirich->Get<std::vector<int> >("onoff");
       }
       for (unsigned j=0; j<dof.size(); ++j)
       {
@@ -572,7 +572,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
 void DRT::Element::LocationVector(const Discretization& dis,
-                                  vector<int>& lm, vector<int>& lmdirich,
+                                  std::vector<int>& lm, vector<int>& lmdirich,
                                   vector<int>& lmowner, vector<int>& lmstride) const
 {
   const int numnode = NumNode();
@@ -589,7 +589,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
     for (int i=0; i<numnode; ++i)
     {
       DRT::Condition* dirich = nodes[i]->GetCondition("Dirichlet");
-      const vector<int>* flag = NULL;
+      const std::vector<int>* flag = NULL;
       if (dirich)
       {
         if (dirich->Type()!=DRT::Condition::PointDirichlet &&
@@ -597,7 +597,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
             dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
             dirich->Type()!=DRT::Condition::VolumeDirichlet)
           dserror("condition with name dirichlet is not of type Dirichlet");
-        flag = dirich->Get<vector<int> >("onoff");
+        flag = dirich->Get<std::vector<int> >("onoff");
       }
       const int owner = nodes[i]->Owner();
       vector<int> dof = dis.Dof(nodes[i]);
@@ -623,7 +623,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
   lmowner.resize(lm.size(),Owner());  
   
   // do dirichlet BCs
-  const vector<int>* flag = NULL;
+  const std::vector<int>* flag = NULL;
   DRT::Condition* dirich = GetCondition("Dirichlet");
   if (dirich)
   {
@@ -632,7 +632,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
         dirich->Type()!=DRT::Condition::SurfaceDirichlet &&
         dirich->Type()!=DRT::Condition::VolumeDirichlet)
       dserror("condition with name dirichlet is not of type Dirichlet");
-    flag = dirich->Get<vector<int> >("onoff");
+    flag = dirich->Get<std::vector<int> >("onoff");
   }
   const int owner = Owner();
   vector<int> dof = dis.Dof(this);
@@ -691,7 +691,7 @@ void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm,
 /*----------------------------------------------------------------------*
  |  evaluate element dummy (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::Element::Evaluate(ParameterList&            params,
+int DRT::Element::Evaluate(Teuchos::ParameterList&   params,
                            DRT::Discretization&      discretization,
                            LocationArray&            la,
                            Epetra_SerialDenseMatrix& elemat1,
@@ -706,9 +706,9 @@ int DRT::Element::Evaluate(ParameterList&            params,
 /*----------------------------------------------------------------------*
  |  evaluate element dummy (public)                          mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::Element::Evaluate(ParameterList& params,
+int DRT::Element::Evaluate(Teuchos::ParameterList& params,
                            DRT::Discretization&      discretization,
-                           vector<int>&              lm,
+                           std::vector<int>&         lm,
                            Epetra_SerialDenseMatrix& elemat1,
                            Epetra_SerialDenseMatrix& elemat2,
                            Epetra_SerialDenseVector& elevec1,
@@ -727,10 +727,10 @@ int DRT::Element::Evaluate(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate Neumann BC dummy (public)                       mwgee 01/07|
  *----------------------------------------------------------------------*/
-int DRT::Element::EvaluateNeumann(ParameterList& params,
+int DRT::Element::EvaluateNeumann(Teuchos::ParameterList& params,
                                   DRT::Discretization&      discretization,
                                   DRT::Condition&           condition,
-                                  vector<int>&              lm,
+                                  std::vector<int>&         lm,
                                   Epetra_SerialDenseVector& elevec1)
 {
   cout << "DRT::Element::EvaluateNeumann:\n"

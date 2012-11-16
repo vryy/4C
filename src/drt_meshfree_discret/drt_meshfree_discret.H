@@ -469,7 +469,7 @@ private:
                                                                   //!        dealing or even dealt with (continuously
                                                                   //!        updated and common to all recursion states)
                                 const int & myrank,               //!< (const): rank of proc
-                                map<int, map<int,int> > & procmap //!< (out): map over ranks assigned to map over nodes
+                                std::map<int, std::map<int,int> > & procmap //!< (out): map over ranks assigned to map over nodes
                                                                   //!         assigned to inital knots
   );
 
@@ -551,10 +551,10 @@ protected:
 
   Teuchos::RCP<Epetra_Map> knotrowmap_;       //!< unique distribution of nodal ownerships
   Teuchos::RCP<Epetra_Map> knotcolmap_;       //!< distribution of knots including ghost knots
-  vector<MeshfreeNode*>    knotrowptr_;       //!< vector of pointers to row knots for faster access
-  vector<MeshfreeNode*>    knotcolptr_;       //!< vector of pointers to column knots for faster access
-  vector<MeshfreeNode*>    knotghoptr_;       //!< vector of pointers to ghosted knots for faster access
-  map<int,Teuchos::RCP<MeshfreeNode> > knot_; //!< map from knot Gid to knot pointers
+  std::vector<MeshfreeNode*>    knotrowptr_;       //!< vector of pointers to row knots for faster access
+  std::vector<MeshfreeNode*>    knotcolptr_;       //!< vector of pointers to column knots for faster access
+  std::vector<MeshfreeNode*>    knotghoptr_;       //!< vector of pointers to ghosted knots for faster access
+  std::map<int,Teuchos::RCP<MeshfreeNode> > knot_; //!< map from knot Gid to knot pointers
 
 public: // hack ?
   Teuchos::RCP<MeshfreeProblem> solutionfunct_;  //!< defines the meshfree problem for the (basis) solution function

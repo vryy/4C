@@ -49,15 +49,6 @@ Maintainer: Michael Gee
 #include "drt_condition.H"
 
 
-// ToDo These using statements have to go away!
-// This is an intermediate solution to still use these objects without
-// an explicit specification of the namespace std or Teuchos in front.
-
-// note, we do not include a whole namespace!
-using std::vector;
-using Teuchos::ParameterList;
-
-
 // forward declarations
 namespace MAT
 {
@@ -879,7 +870,7 @@ public:
                               given in params
   \return 0 if successful, negative otherwise
   */
-  virtual int Evaluate(ParameterList&            params,
+  virtual int Evaluate(Teuchos::ParameterList&   params,
                        DRT::Discretization&      discretization,
                        LocationArray&            la,
                        Epetra_SerialDenseMatrix& elemat1,
@@ -914,7 +905,7 @@ public:
                               given in params
   \return 0 if successful, negative otherwise
   */
-  virtual int Evaluate(ParameterList&            params,
+  virtual int Evaluate(Teuchos::ParameterList&   params,
                        DRT::Discretization&      discretization,
                        std::vector<int>&         lm,
                        Epetra_SerialDenseMatrix& elemat1,
@@ -942,10 +933,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL) = 0;
 
@@ -1011,10 +1002,10 @@ private:
   int owner_;
 
   //! \brief List of my nodal ids, length NumNode()
-  vector<int> nodeid_;
+  std::vector<int> nodeid_;
 
   //! \brief Pointers to adjacent nodes in element local ordering
-  vector<DRT::Node*> node_;
+  std::vector<DRT::Node*> node_;
 
   //! \brief Some conditions e.g. BCs
   std::multimap<string,Teuchos::RCP<Condition> > condition_;

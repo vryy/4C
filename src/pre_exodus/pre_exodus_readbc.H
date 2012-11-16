@@ -55,14 +55,14 @@ struct cond_def{
   DRT::Condition::GeometryType gtype;
 };
 
-void ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs, vector<EXODUS::cond_def>& condefs);
+void ReadBCFile(const string& bcfile, std::vector<EXODUS::elem_def>& eledefs, std::vector<EXODUS::cond_def>& condefs);
 
 EXODUS::elem_def ReadEdef(const string& mesh_entity,const int id, const string& actcond);
 
 EXODUS::cond_def ReadCdef(const string& mesh_entity,const int id, const string& actcond);
 
 //! Read bc_entity specifications
-vector<string> ReadBCEntity(const string actcond);
+std::vector<string> ReadBCEntity(const string actcond);
 
 //! Check condition type against valid types
 inline EXODUS::cond_type CheckCondType(const string buffer);
@@ -75,27 +75,27 @@ void PrintBCDef(ostream& os, const EXODUS::elem_def& def);
 void PrintBCDef(ostream& os, const EXODUS::cond_def& def);
 
 // ! Check if periodic boundary conditions are defined
-bool PeriodicBoundaryConditionsFound(vector<EXODUS::cond_def> condefs);
+bool PeriodicBoundaryConditionsFound(std::vector<EXODUS::cond_def> condefs);
 
 // ! Correct nodal coordinates for periodic boundary conditions
 void CorrectNodalCoordinatesForPeriodicBoundaryConditions(
     EXODUS::Mesh&             mesh,
-    vector<EXODUS::cond_def>  condefs);
+    std::vector<EXODUS::cond_def>  condefs);
 
 // ! Correct nodal coordinates in the YZ plane for periodic boundary conditions
 void CorrectYZPlaneForPeriodicBoundaryConditions(
     EXODUS::Mesh&                   mesh,
-    const vector<EXODUS::cond_def>& condefs);
+    const std::vector<EXODUS::cond_def>& condefs);
 
 // ! Correct nodal coordinates in the XZ plane for periodic boundary conditions
 void CorrectXZPlaneForPeriodicBoundaryConditions(
     EXODUS::Mesh&                   mesh,
-    const vector<EXODUS::cond_def>& condefs);
+    const std::vector<EXODUS::cond_def>& condefs);
 
 // ! Correct nodal coordinates in the XY plane for periodic boundary conditions
 void CorrectXYPlaneForPeriodicBoundaryConditions(
     EXODUS::Mesh&                   mesh,
-    const vector<EXODUS::cond_def>& condefs);
+    const std::vector<EXODUS::cond_def>& condefs);
 
 } // of namespace EXODUS
 

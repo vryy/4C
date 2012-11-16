@@ -912,8 +912,8 @@ void ADAPTER::CouplingMortar::MeshInit(DRT::Discretization& masterdis,
 
     // prepare assembly
     Epetra_SerialDenseVector val(dim);
-    vector<int> lm(dim);
-    vector<int> lmowner(dim);
+    std::vector<int> lm(dim);
+    std::vector<int> lmowner(dim);
 
     for (int k=0;k<dim;++k)
     {
@@ -936,8 +936,8 @@ void ADAPTER::CouplingMortar::MeshInit(DRT::Discretization& masterdis,
 
     // prepare assembly
     Epetra_SerialDenseVector val(dim);
-    vector<int> lm(dim);
-    vector<int> lmowner(dim);
+    std::vector<int> lm(dim);
+    std::vector<int> lmowner(dim);
 
     for (int k=0;k<dim;++k)
     {
@@ -1151,8 +1151,8 @@ void ADAPTER::CouplingMortar::MeshInit(DRT::Discretization& masterdis,
 
     // prepare assembly
     Epetra_SerialDenseVector val(dim);
-    vector<int> lm(dim);
-    vector<int> lmowner(dim);
+    std::vector<int> lm(dim);
+    std::vector<int> lmowner(dim);
 
     for (int k=0;k<dim;++k)
     {
@@ -1175,8 +1175,8 @@ void ADAPTER::CouplingMortar::MeshInit(DRT::Discretization& masterdis,
 
     // prepare assembly
     Epetra_SerialDenseVector val(dim);
-    vector<int> lm(dim);
-    vector<int> lmowner(dim);
+    std::vector<int> lm(dim);
+    std::vector<int> lmowner(dim);
 
     for (int k=0;k<dim;++k)
     {

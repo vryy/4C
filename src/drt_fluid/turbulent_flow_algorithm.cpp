@@ -75,7 +75,7 @@ step_(0)
   // otherwise the periodic boundary connection between the nodes has to be rebuild
   // this results in a new dofmap and, hence, the connection between the parent dofset
   // and the child dofset will be lost
-  Teuchos::RCP<map<int,vector<int> > > pbcmapmastertoslave = inflowgenerator_->GetCoupledRowNodesChildDiscretization();
+  Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave = inflowgenerator_->GetCoupledRowNodesChildDiscretization();
 
   // initialize fluid inflow algorithm
   // this is a second fluid algorithm

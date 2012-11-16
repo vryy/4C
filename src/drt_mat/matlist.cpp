@@ -146,12 +146,12 @@ void MAT::MatList::Pack(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::MatList::Unpack(const vector<char>& data)
+void MAT::MatList::Unpack(const std::vector<char>& data)
 {
   // make sure we have a pristine material
   Clear();
 
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -189,7 +189,7 @@ void MAT::MatList::Unpack(const vector<char>& data)
       // loop map of associated local materials
       for (m=params_->MatIds()->begin(); m!=params_->MatIds()->end(); m++)
       {
-        vector<char> pbtest;
+        std::vector<char> pbtest;
         ExtractfromPack(position,data,pbtest);
         (mat_.find(*m))->second->Unpack(pbtest);
       }

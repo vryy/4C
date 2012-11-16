@@ -180,7 +180,7 @@ void DRT::ELEMENTS::Ale3::Pack(DRT::PackBuffer& data) const
 }
 
 
-void DRT::ELEMENTS::Ale3::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Ale3::Unpack(const std::vector<char>& data)
 {
 	vector<char>::size_type position = 0;
   // extract type
@@ -188,7 +188,7 @@ void DRT::ELEMENTS::Ale3::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // Gaussrule
@@ -221,7 +221,7 @@ void DRT::ELEMENTS::Ale3::Print(ostream& os) const
 //
 // get vector of surfaces
 //
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale3::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale3::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -234,7 +234,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale3::Surfaces()
 }
 
 
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale3::Volumes()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale3::Volumes()
 {
   vector<RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);

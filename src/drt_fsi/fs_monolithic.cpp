@@ -206,7 +206,7 @@ void FSI::MonolithicMainFS::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::
     Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
 
     // Create the solver
-    Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,RCP<ParameterList>(&nlParams,false));
+    Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,Teuchos::RCP<Teuchos::ParameterList>(&nlParams,false));
 
     // we know we already have the first linear system calculated
     grp->CaptureSystemState();
@@ -828,7 +828,7 @@ void FSI::MonolithicFS::SetupVector(Epetra_Vector &f,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem>
-FSI::MonolithicFS::CreateLinearSystem(ParameterList& nlParams,
+FSI::MonolithicFS::CreateLinearSystem(Teuchos::ParameterList& nlParams,
                                       NOX::Epetra::Vector& noxSoln,
                                       Teuchos::RCP<NOX::Utils> utils)
 {
@@ -1244,8 +1244,8 @@ void FSI::OverlappingBlockMatrixFS::SetupPreconditioner()
   const LINALG::SparseMatrix& fluidInnerOp  = Matrix(0,0);
   const LINALG::SparseMatrix& aleInnerOp    = Matrix(1,1);
 
-  Teuchos::RCP<LINALG::MapExtractor> fsidofmapex = null;
-  Teuchos::RCP<Epetra_Map>           irownodes = null;
+  Teuchos::RCP<LINALG::MapExtractor> fsidofmapex = Teuchos::null;
+  Teuchos::RCP<Epetra_Map>           irownodes = Teuchos::null;
 
   fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(),
                       fsidofmapex,

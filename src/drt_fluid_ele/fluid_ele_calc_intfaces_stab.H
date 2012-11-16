@@ -78,14 +78,14 @@ namespace DRT
           DRT::ELEMENTS::FluidIntFace*       intface,              ///< internal face element
           Teuchos::ParameterList&            params,               ///< parameter list
           DRT::Discretization&               discretization,       ///< discretization
-          vector<int>&                       patchlm,              ///< patch local map
-          vector<int>&                       lm_masterToPatch,     ///< local map between master dofs and patchlm
-          vector<int>&                       lm_slaveToPatch,      ///< local map between slave dofs and patchlm
-          vector<int>&                       lm_faceToPatch,       ///< local map between face dofs and patchlm
+          std::vector<int>&                  patchlm,              ///< patch local map
+          std::vector<int>&                  lm_masterToPatch,     ///< local map between master dofs and patchlm
+          std::vector<int>&                  lm_slaveToPatch,      ///< local map between slave dofs and patchlm
+          std::vector<int>&                  lm_faceToPatch,       ///< local map between face dofs and patchlm
           std::vector<int>&                  lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
           std::vector<int>&                  lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
-          vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
-          vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
+          std::vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
+          std::vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
         ) = 0;
 
 
@@ -180,14 +180,14 @@ namespace DRT
           DRT::ELEMENTS::FluidIntFace*       intface,              ///< internal face element
           Teuchos::ParameterList&            params,               ///< parameter list
           DRT::Discretization&               discretization,       ///< discretization
-          vector<int>&                       patchlm,              ///< patch local map
-          vector<int>&                       lm_masterToPatch,     ///< local map between master dofs and patchlm
-          vector<int>&                       lm_slaveToPatch,      ///< local map between slave dofs and patchlm
-          vector<int>&                       lm_faceToPatch,       ///< local map between face dofs and patchlm
+          std::vector<int>&                  patchlm,              ///< patch local map
+          std::vector<int>&                  lm_masterToPatch,     ///< local map between master dofs and patchlm
+          std::vector<int>&                  lm_slaveToPatch,      ///< local map between slave dofs and patchlm
+          std::vector<int>&                  lm_faceToPatch,       ///< local map between face dofs and patchlm
           std::vector<int>&                  lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
           std::vector<int>&                  lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
-          vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
-          vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
+          std::vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
+          std::vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
       );
 
     private:
@@ -222,13 +222,13 @@ namespace DRT
           Fluid*                     slave_ele,        ///< slave  parent element
           double &                   kinvisc,          ///< patch kinematic viscosity
           double &                   dens,             ///< patch density
-          vector<double>&            mypvelaf,         ///< master velaf
-          vector<double>&            mypvelnp,         ///< master velnp
-          vector<double>&            mypedispnp,       ///< master dispnp
-          vector<double>&            myedispnp,        ///< surfele dispnp
-          vector<double>&            mynvelaf,         ///< slave velaf
-          vector<double>&            mynvelnp,         ///< slave velnp
-          vector<double>&            mynedispnp        ///< slave dispnp
+          std::vector<double>&       mypvelaf,         ///< master velaf
+          std::vector<double>&       mypvelnp,         ///< master velnp
+          std::vector<double>&       mypedispnp,       ///< master dispnp
+          std::vector<double>&       myedispnp,        ///< surfele dispnp
+          std::vector<double>&       mynvelaf,         ///< slave velaf
+          std::vector<double>&       mynvelnp,         ///< slave velnp
+          std::vector<double>&       mynedispnp        ///< slave dispnp
       );
 
       //! evaluate shape functions and derivatives at integr. point

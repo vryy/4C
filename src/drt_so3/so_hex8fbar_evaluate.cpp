@@ -32,9 +32,9 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
                                     DRT::Discretization&      discretization,
-                                    vector<int>&              lm,
+                                    std::vector<int>&         lm,
                                     Epetra_SerialDenseMatrix& elemat1_epetra,
                                     Epetra_SerialDenseMatrix& elemat2_epetra,
                                     Epetra_SerialDenseVector& elevec1_epetra,
@@ -78,9 +78,9 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
     case calc_struct_linstiff:
     {
       // need current displacement and residual forces
-      vector<double> mydisp(lm.size());
+      std::vector<double> mydisp(lm.size());
       for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
       soh8fbar_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -93,10 +93,10 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
@@ -112,10 +112,10 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
@@ -136,10 +136,10 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       soh8fbar_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,params,
                         INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -155,14 +155,14 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
       {
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
-        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
-        if (disp==null) dserror("Cannot get state vectors 'displacement'");
-        if (stressdata==null) dserror("Cannot get 'stress' data");
-        if (straindata==null) dserror("Cannot get 'strain' data");
-        vector<double> mydisp(lm.size());
+        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress",Teuchos::null);
+        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain",Teuchos::null);
+        if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+        if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
+        if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
+        std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        vector<double> myres(lm.size());
+        std::vector<double> myres(lm.size());
         DRT::UTILS::ExtractMyValues(*res,myres,lm);
         LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
         LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
@@ -195,14 +195,14 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
     case postprocess_stress:
     {
       const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
-      if (gpstressmap==null)
+        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+      if (gpstressmap==Teuchos::null)
         dserror("no gp stress/strain map available for postprocessing");
       string stresstype = params.get<string>("stresstype","ndxyz");
       int gid = Id();
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> gpstress(((*gpstressmap)[gid])->A(),true);
 
-      Teuchos::RCP<Epetra_MultiVector> poststress=params.get<Teuchos::RCP<Epetra_MultiVector> >("poststress",null);
+      Teuchos::RCP<Epetra_MultiVector> poststress=params.get<Teuchos::RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
       if (poststress==Teuchos::null)
         dserror("No element stress/strain vector available");
 
@@ -362,8 +362,8 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(ParameterList& params,
     {
       time_ = params.get<double>("total time");
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get displacement state");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null) dserror("Cannot get displacement state");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
       // build def gradient for every gauss point
@@ -459,16 +459,16 @@ void DRT::ELEMENTS::So_hex8fbar::InitJacobianMapping()
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)               |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::So_hex8fbar::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::So_hex8fbar::EvaluateNeumann(Teuchos::ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
-                                           vector<int>&              lm,
+                                           std::vector<int>&         lm,
                                            Epetra_SerialDenseVector& elevec1,
                                            Epetra_SerialDenseMatrix* elemat1)
 {
   // get values and switches from the condition
-  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
-  const vector<double>* val   = condition.Get<vector<double> >("val"  );
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
 
   /*
   **    TIME CURVE BUSINESS
@@ -479,7 +479,7 @@ int DRT::ELEMENTS::So_hex8fbar::EvaluateNeumann(ParameterList& params,
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -534,15 +534,15 @@ int DRT::ELEMENTS::So_hex8fbar::EvaluateNeumann(ParameterList& params,
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
-      vector<int>&              lm,             // location matrix
-      vector<double>&           disp,           // current displacements
-      vector<double>&           residual,       // current residual displ
+      std::vector<int>&         lm,             // location matrix
+      std::vector<double>&      disp,           // current displacements
+      std::vector<double>&      residual,       // current residual displ
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix, // element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
       LINALG::Matrix<NUMDOF_SOH8,1>* force,                 // element internal force vector
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,   // stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,   // strains at GP
-      ParameterList&            params,         // algorithmic parameters e.g. time
+      Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
       const INPAR::STR::StressType   iostress,  // stress output option
       const INPAR::STR::StrainType   iostrain)  // strain output option
 {
@@ -882,7 +882,7 @@ void DRT::ELEMENTS::So_hex8fbar::soh8fbar_nlnstiffmass(
       // integrate `geometric' stiffness matrix and add to keu *****************
       LINALG::Matrix<6,1> sfac(stress_bar); // auxiliary integrated stress
       sfac.Scale(detJ_w/f_bar_factor); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-      vector<double> SmB_L(3); // intermediate Sm.B_L
+      std::vector<double> SmB_L(3); // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
       for (int inod=0; inod<NUMNOD_SOH8; ++inod) {
         SmB_L[0] = sfac(0) * N_XYZ(0, inod) + sfac(3) * N_XYZ(1, inod)
@@ -980,7 +980,7 @@ int DRT::ELEMENTS::So_hex8fbarType::Initialize(DRT::Discretization& dis)
 /*----------------------------------------------------------------------*
  |  compute def gradient at every gaussian point (protected)   gee 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8fbar::DefGradient(const vector<double>& disp,
+void DRT::ELEMENTS::So_hex8fbar::DefGradient(const std::vector<double>& disp,
                                          Epetra_SerialDenseMatrix& gpdefgrd,
                                          DRT::ELEMENTS::PreStress& prestress)
 {
@@ -1044,7 +1044,7 @@ void DRT::ELEMENTS::So_hex8fbar::DefGradient(const vector<double>& disp,
  |  compute Jac.mapping wrt deformed configuration (protected) gee 07/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8fbar::UpdateJacobianMapping(
-                                            const vector<double>& disp,
+                                            const std::vector<double>& disp,
                                             DRT::ELEMENTS::PreStress& prestress)
 {
   const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();

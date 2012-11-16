@@ -131,13 +131,13 @@ public:
   \brief Get vector of RCPs to the lines of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
   \brief Get vector of RCPs to the surfaces of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Return unique ParObject id
@@ -245,9 +245,9 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(ParameterList& params,
+  int Evaluate(Teuchos::ParameterList& params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
@@ -269,10 +269,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -291,19 +291,20 @@ private:
 
   void static_ke(
     DRT::Discretization&       dis,
-    vector<int>&               lm,
+    std::vector<int>&          lm,
     Epetra_SerialDenseMatrix*  sys_mat,
     Epetra_SerialDenseVector*  residual,
     Teuchos::RCP<MAT::Material> material,
     Teuchos::ParameterList&    params);
+
   void static_ke_laplace(
     DRT::Discretization&       dis,
-    vector<int>&               lm,
+    std::vector<int>&          lm,
     Epetra_SerialDenseMatrix*  sys_mat,
     Epetra_SerialDenseVector*  residual,
     Teuchos::RCP<MAT::Material> material,
     Teuchos::ParameterList&    params);
-  void static_ke_spring(Epetra_SerialDenseMatrix* sys_mat, vector<double>& displacements);
+  void static_ke_spring(Epetra_SerialDenseMatrix* sys_mat, std::vector<double>& displacements);
   void edge_geometry(int i, int j, const Epetra_SerialDenseMatrix& xyze,
                      double* length, double* sin_alpha, double* cos_alpha);
   double ale2_area_tria(const Epetra_SerialDenseMatrix& xyze, int i, int j, int k);
@@ -493,10 +494,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 

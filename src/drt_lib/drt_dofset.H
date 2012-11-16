@@ -187,11 +187,11 @@ public:
     }
 
   /// Get the gid of all dofs of a node
-  virtual vector<int> Dof(const Node* node) const
+  virtual std::vector<int> Dof(const Node* node) const
     {
       const int lid = node->LID();
       if (lid==-1)
-        return vector<int>();
+        return std::vector<int>();
       const int idx = (*idxcolnodes_)[lid];
       std::vector<int> dof((*numdfcolnodes_)[lid]);
       for (unsigned i=0; i<dof.size(); ++i)
@@ -200,11 +200,11 @@ public:
     }
 
   /// Get the gid of all dofs of a element
-  virtual vector<int> Dof(const Element* element) const
+  virtual std::vector<int> Dof(const Element* element) const
     {
       int lid = element->LID();
       if (lid==-1)
-        return vector<int>();
+        return std::vector<int>();
       int idx = (*idxcolelements_)[lid];
       std::vector<int> dof((*numdfcolelements_)[lid]);
       for (unsigned i=0; i<dof.size(); ++i)
@@ -213,7 +213,7 @@ public:
     }
 
   /// Get the gid of all dofs of a node
-  virtual void Dof(const Node* node, vector<int>& lm) const
+  virtual void Dof(const Node* node, std::vector<int>& lm) const
     {
       int lid = node->LID();
       if (lid==-1)
@@ -228,7 +228,7 @@ public:
   virtual void Dof(
       const Node* node,           ///< node, for which you want the dof positions
       const unsigned startindex,  ///< first index of vector at which will be written to end
-      vector<int>& lm             ///< already allocated vector to be filled with dof positions
+      std::vector<int>& lm        ///< already allocated vector to be filled with dof positions
       ) const
   {
     const int lid = node->LID();
@@ -242,7 +242,7 @@ public:
   }
 
   /// Get the gid of all dofs of a element
-  virtual void Dof(const Element* element, vector<int>& lm) const
+  virtual void Dof(const Element* element, std::vector<int>& lm) const
     {
       int lid = element->LID();
       if (lid==-1)
@@ -257,7 +257,7 @@ public:
   virtual void Dof(
       const Element* element,     ///< element which provides its expected number of DOFs per node
       const Node* node,           ///< node, for which you want the DOF positions
-      vector<int>& lm             ///< already allocated vector to be filled with DOF positions
+      std::vector<int>& lm        ///< already allocated vector to be filled with DOF positions
       ) const
   {
     const int lid = node->LID();

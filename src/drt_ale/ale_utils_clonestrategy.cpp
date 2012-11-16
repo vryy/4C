@@ -126,7 +126,7 @@ void ALE::UTILS::AleCloneStrategy::SetElementData(
 bool ALE::UTILS::AleCloneStrategy::DetermineEleType(
     DRT::Element* actele,
     const bool ismyele,
-    vector<string>& eletype)
+    std::vector<string>& eletype)
 {
   bool cloneit = true;
 

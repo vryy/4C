@@ -567,7 +567,7 @@ void XFEM::ApplyStandardEnrichmentCombust(
 
 void XFEM::ApplyElementEnrichmentCombust(
     const DRT::Element*                                                xfemele,
-    const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,
+    const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,
     std::map<int, std::set<XFEM::FieldEnr> >&                          elementDofMap,
     const COMBUST::InterfaceHandleCombust&                             ih
 )
@@ -576,7 +576,7 @@ void XFEM::ApplyElementEnrichmentCombust(
   const XFEM::Enrichment elementenr1(XFEM::Enrichment::typeStandard, 0);
   const XFEM::Enrichment elementenr2(XFEM::Enrichment::typeJump, 0);
 
-  map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
+  std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
   for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
   {
     elementDofMap[xfemele->Id()].insert(XFEM::FieldEnr(fielditer->first, elementenr1));
@@ -587,7 +587,7 @@ void XFEM::ApplyElementEnrichmentCombust(
 
 void XFEM::ApplyElementEnrichmentCombust(
     const DRT::Element*                                                xfemele,
-    const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,
+    const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>& element_ansatz,
     std::set<XFEM::FieldEnr>&                                          elementFieldEnrSet,
     const COMBUST::InterfaceHandleCombust&                             ih
 )
@@ -596,7 +596,7 @@ void XFEM::ApplyElementEnrichmentCombust(
   const XFEM::Enrichment elementenr1(XFEM::Enrichment::typeStandard, 0);
   const XFEM::Enrichment elementenr2(XFEM::Enrichment::typeVoid, 0);
 
-  map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
+  std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType>::const_iterator fielditer;
   for (fielditer = element_ansatz.begin();fielditer != element_ansatz.end();++fielditer)
   {
     elementFieldEnrSet.insert(XFEM::FieldEnr(fielditer->first, elementenr1));

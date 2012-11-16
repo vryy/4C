@@ -126,7 +126,7 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
   //! i.e. do nothing here
 
   // apply modifications due to thermal contact
-  if (thermcontman_!= null)
+  if (thermcontman_!= Teuchos::null)
   {  
     fres_->Scale(-1);
     thermcontman_->ApplyThermoContact(tang_,fres_,tempn_,(*dt_)[0]);

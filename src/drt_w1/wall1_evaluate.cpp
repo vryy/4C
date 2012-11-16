@@ -45,9 +45,9 @@ using POTENTIAL::PotentialManager; // potential manager
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
+int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
                                    DRT::Discretization&      discretization,
-                                   vector<int>&              lm,
+                                   std::vector<int>&         lm,
                                    Epetra_SerialDenseMatrix& elemat1,
                                    Epetra_SerialDenseMatrix& elemat2,
                                    Epetra_SerialDenseVector& elevec1,
@@ -123,11 +123,11 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
     case Wall1::calc_struct_linstiff:
     {
       // need current displacement and residual forces
-      vector<double> mydisp(lm.size());
+      std::vector<double> mydisp(lm.size());
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
-      vector<double> mydispmat(lm.size());
+      std::vector<double> mydispmat(lm.size());
       for (int i=0; i<(int)mydispmat.size(); ++i) mydispmat[i] = 0.0;
 
       // special case: geometrically linear
@@ -150,12 +150,12 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      vector<double> mydispmat(lm.size());
+      std::vector<double> mydispmat(lm.size());
       if (structale_)
       {
         RCP<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
@@ -184,12 +184,12 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
-      vector<double> mydispmat(lm.size());
+      std::vector<double> mydispmat(lm.size());
       if (structale_)
       {
         RCP<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
@@ -215,16 +215,16 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix (initialised to zero)
       // This matrix is not utterly useless. It is used to apply EAS-stuff in a linearised manner
       // onto the internal force vector.
       Epetra_SerialDenseMatrix myemat(lm.size(),lm.size());
-      vector<double> mydispmat(lm.size());
+      std::vector<double> mydispmat(lm.size());
       if (structale_)
       {
         RCP<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
@@ -311,16 +311,16 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
       {
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
-        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
-        if (disp==null) dserror("Cannot get state vectors 'displacement'");
-        if (stressdata==null) dserror("Cannot get stress 'data'");
-        if (straindata==null) dserror("Cannot get strain 'data'");
-        vector<double> mydisp(lm.size());
+        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress",Teuchos::null);
+        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain",Teuchos::null);
+        if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+        if (stressdata==Teuchos::null) dserror("Cannot get stress 'data'");
+        if (straindata==Teuchos::null) dserror("Cannot get strain 'data'");
+        std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        vector<double> myres(lm.size());
+        std::vector<double> myres(lm.size());
         DRT::UTILS::ExtractMyValues(*res,myres,lm);
-        vector<double> mydispmat(lm.size());
+        std::vector<double> mydispmat(lm.size());
         if (structale_)
         {
           RCP<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
@@ -369,14 +369,14 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
     case postprocess_stress:
     {
       const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
-      if (gpstressmap==null)
+        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+      if (gpstressmap==Teuchos::null)
         dserror("no gp stress/strain map available for postprocessing");
       string stresstype = params.get<string>("stresstype","ndxyz");
       int gid = Id();
       RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
-      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
-      if (poststress==null)
+      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
+      if (poststress==Teuchos::null)
         dserror("No element stress/strain vector available");
 
       if (stresstype=="ndxyz")
@@ -472,8 +472,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
 
         // get displacements and extract values of this element
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp==null) dserror("Cannot get state displacement vector");
-        vector<double> mydisp(lm.size());
+        if (disp==Teuchos::null) dserror("Cannot get state displacement vector");
+        std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
         // reference and current geometry (nodal positions)
@@ -658,12 +658,12 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
     case Wall1::calc_potential_stiff:
     {
       RCP<PotentialManager> potentialmanager =
-        params.get<RCP<PotentialManager> >("pot_man", null);
-      if (potentialmanager==null)
+        params.get<RCP<PotentialManager> >("pot_man",Teuchos::null);
+      if (potentialmanager==Teuchos::null)
         dserror("No PotentialManager in Wall1 Volume available");
 
-      RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
-      if (cond==null)
+      RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
+      if (cond==Teuchos::null)
         dserror("Condition not available in Wall1 Volume");
 
       if (cond->Type()==DRT::Condition::LJ_Potential_Volume) // Lennard-Jones potential
@@ -690,15 +690,15 @@ int DRT::ELEMENTS::Wall1::Evaluate(ParameterList&            params,
  |  Integrate a Surface Neumann boundary condition (public)  mgit 05/07|
  *----------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList&            params,
+int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
                                           DRT::Discretization&      discretization,
                                           DRT::Condition&           condition,
-                                          vector<int>&              lm,
+                                          std::vector<int>&         lm,
                                           Epetra_SerialDenseVector& elevec1,
                                           Epetra_SerialDenseMatrix* elemat1)
 {
   RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-  if (disp==null) dserror("Cannot get state vector 'displacement'");
+  if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
@@ -708,7 +708,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList&            params,
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;  // default time curve factor
@@ -762,7 +762,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList&            params,
   // gaussian points
   const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 
-  //  vector<double>* thick = data_.Get<vector<double> >("thick");
+  //  vector<double>* thick = data_.Get<std::vector<double> >("thick");
   //  if (!thick) dserror("Cannot find vector of nodal thickness");
 
   // shape functions
@@ -788,8 +788,8 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList&            params,
 
 
   // get values and switches from the condition
-  const vector<int>*    onoff = condition.Get<vector<int> >("onoff");
-  const vector<double>* val   = condition.Get<vector<double> >("val");
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >("onoff");
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val");
 
   /*=================================================== integration loops */
   for (int ip=0; ip<intpoints.nquad; ++ip)
@@ -856,10 +856,10 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(ParameterList&            params,
  |  evaluate the element (private)                            mgit 03/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
-  const vector<int>                    & lm         ,
-  const vector<double>                 & disp       ,
-  const vector<double>                 & residual   ,
-  const vector<double>                 & dispmat   ,
+  const std::vector<int>                    & lm         ,
+  const std::vector<double>                 & disp       ,
+  const std::vector<double>                 & residual   ,
+  const std::vector<double>                 & dispmat   ,
   std::vector<Epetra_SerialDenseVector>& myknots    ,
   Epetra_SerialDenseMatrix             * stiffmatrix,
   Epetra_SerialDenseMatrix             * massmatrix ,
@@ -1282,10 +1282,10 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
  |  evaluate the element (private)                            popp 09/11|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::w1_linstiffmass(
-  const vector<int>                    & lm         ,
-  const vector<double>                 & disp       ,
-  const vector<double>                 & residual   ,
-  const vector<double>                 & dispmat   ,
+  const std::vector<int>                    & lm         ,
+  const std::vector<double>                 & disp       ,
+  const std::vector<double>                 & residual   ,
+  const std::vector<double>                 & dispmat   ,
   std::vector<Epetra_SerialDenseVector>& myknots    ,
   Epetra_SerialDenseMatrix             * stiffmatrix,
   Epetra_SerialDenseMatrix             * massmatrix ,
@@ -1876,7 +1876,7 @@ void DRT::ELEMENTS::Wall1::StressCauchy(
 | deliver Cauchy stress                                             bborn 08/08|
 *-----------------------------------------------------------------------------*/
 void DRT::ELEMENTS::Wall1::Energy(
-  const ParameterList& params,
+  const Teuchos::ParameterList& params,
   const std::vector<int>& lm,
   const std::vector<double>& dis,
   Epetra_SerialDenseVector* energies,
@@ -2016,11 +2016,11 @@ void DRT::ELEMENTS::Wall1::AdvectionMapElement(double* XMat1,
     Epetra_SerialDenseMatrix xcure(2,numnode);
 
     // spatial displacements
-    vector<double> mydisp(la[0].lm_.size());
+    std::vector<double> mydisp(la[0].lm_.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
 
     // material displacements
-    vector<double> mydispmat(la[0].lm_.size());
+    std::vector<double> mydispmat(la[0].lm_.size());
     DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,la[0].lm_);
 
     for (int k=0; k<numnode; ++k)

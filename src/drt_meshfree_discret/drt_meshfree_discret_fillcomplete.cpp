@@ -35,8 +35,8 @@ void DRT::MESHFREE::MeshfreeDiscretization::Reset(bool killdofs)
   assigned_ = false;
 
   // delete all maps and pointers concerning knots
-  knotrowmap_ = null;
-  knotcolmap_ = null;
+  knotrowmap_ = Teuchos::null;
+  knotcolmap_ = Teuchos::null;
   knotrowptr_.clear();
   knotcolptr_.clear();
   knotghoptr_.clear();
@@ -106,7 +106,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::BuildKnotMaps()
 {
   const int myrank = Comm().MyPID();
   int numrowknots     = 0;
-  map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator curr;
+  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator curr;
   for (curr=knot_.begin(); curr != knot_.end(); ++curr)
     if (curr->second->Owner() == myrank)
       ++numrowknots;
@@ -157,7 +157,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::BuildKnotMaps()
  *--------------------------------------------------------------------------*/
 void DRT::MESHFREE::MeshfreeDiscretization::BuildElementToKnotPointers()
 {
-  map<int,Teuchos::RCP<DRT::Element> >::iterator elecurr;
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     bool success = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell>(elecurr->second,true)->BuildKnotPointers(knot_);
@@ -172,11 +172,11 @@ void DRT::MESHFREE::MeshfreeDiscretization::BuildElementToKnotPointers()
  *--------------------------------------------------------------------------*/
 void DRT::MESHFREE::MeshfreeDiscretization::BuildKnotToElementPointers()
 {
-  map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator knotcurr;
+  std::map<int,Teuchos::RCP<DRT::MESHFREE::MeshfreeNode> >::iterator knotcurr;
   for (knotcurr=knot_.begin(); knotcurr != knot_.end(); ++knotcurr)
     knotcurr->second->ClearMyElementTopology();
 
-  map<int,Teuchos::RCP<DRT::Element> >::iterator elecurr;
+  std::map<int,Teuchos::RCP<DRT::Element> >::iterator elecurr;
   for (elecurr=element_.begin(); elecurr != element_.end(); ++elecurr)
   {
     Teuchos::RCP<DRT::MESHFREE::Cell> cell = Teuchos::rcp_dynamic_cast<DRT::MESHFREE::Cell>(elecurr->second,true);

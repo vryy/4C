@@ -115,9 +115,9 @@ void MAT::ThermoStVenantKirchhoff::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack (public)                                          dano 02/10 |
  *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::Unpack(const vector<char>& data)
+void MAT::ThermoStVenantKirchhoff::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);

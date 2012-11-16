@@ -67,7 +67,7 @@ void GEO::checkGeoType(
   // check if cartesian
   if(eleDim == 3)
   {
-    const vector< vector<int> > eleNodeNumbering = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
+    const std::vector< std::vector<int> > eleNodeNumbering = DRT::UTILS::getEleNodeNumberingSurfaces(distype);
     vector< RCP<DRT::Element> >surfaces = (const_cast< DRT::Element* >(element))->Surfaces();
     for(int i = 0; i < element->NumSurface(); i++)
     {
@@ -153,7 +153,7 @@ const std::map<int,LINALG::Matrix<3,2> > GEO::getCurrentXAABBs(
  | triangle list                                                        |
  *----------------------------------------------------------------------*/
 const std::map<int,LINALG::Matrix<3,2> > GEO::getTriangleXAABBs(
-    const std::vector<vector<int> >&                triangleList,
+    const std::vector<std::vector<int> >&                triangleList,
     const std::vector<GEO::InterfacePoint>&         pointList)
 {
   std::map<int,LINALG::Matrix<3,2> >  triangleXAABBs;

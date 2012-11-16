@@ -185,13 +185,13 @@ namespace ELEMENTS
     }
 
     //! \brief Get vector of RCPs to the lines of this element
-    virtual vector<Teuchos::RCP<DRT::Element> > Lines();
+    virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
     //! \brief Get vector of RCPs to the surfaces of this element
-    virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
+    virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
     //! \brief Get vector of RCPs to the volume of this element
-    virtual vector<Teuchos::RCP<DRT::Element> > Volumes();
+    virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
     //! \brief Return unique ParObject id
     //!

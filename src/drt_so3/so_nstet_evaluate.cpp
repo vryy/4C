@@ -99,9 +99,9 @@ void DRT::ELEMENTS::NStet::InitElement()
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              gee 05/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
                                   DRT::Discretization&      discretization,
-                                  vector<int>&              lm,
+                                  std::vector<int>&         lm,
                                   Epetra_SerialDenseMatrix& elemat1_epetra,
                                   Epetra_SerialDenseMatrix& elemat2_epetra,
                                   Epetra_SerialDenseVector& elevec1_epetra,
@@ -145,10 +145,10 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       nstetnlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,
                         NULL,NULL,INPAR::STR::stress_none,INPAR::STR::strain_none);
@@ -162,10 +162,10 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<12,12>* elemat1ptr = NULL;
       if (elemat1.IsInitialized()) elemat1ptr = &elemat1;
@@ -181,18 +181,18 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
       if (discretization.Comm().MyPID()==Owner())
       {
         //------------------------------- compute element stress from stabilization
-        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress", null);
-        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain", null);
-        if (stressdata==null) dserror("Cannot get stress 'data'");
-        if (straindata==null) dserror("Cannot get strain 'data'");
+        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress",Teuchos::null);
+        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain",Teuchos::null);
+        if (stressdata==Teuchos::null) dserror("Cannot get stress 'data'");
+        if (straindata==Teuchos::null) dserror("Cannot get strain 'data'");
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress",INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain",INPAR::STR::strain_none);
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-        if (disp==null) dserror("Cannot get state vectors 'displacement'");
-        vector<double> mydisp(lm.size());
+        if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+        std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        vector<double> myres(lm.size());
+        std::vector<double> myres(lm.size());
         DRT::UTILS::ExtractMyValues(*res,myres,lm);
         LINALG::Matrix<1,6> stress(true);
         LINALG::Matrix<1,6> strain(true);
@@ -232,9 +232,9 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
 #ifndef PUSOSOLBERG
         Teuchos::RCP<Epetra_MultiVector> mis_stress = ElementType().pstab_nstress_;
         Teuchos::RCP<Epetra_MultiVector> mis_strain = ElementType().pstab_nstrain_;
-        map<int,vector<int> >::iterator ele = ElementType().pstab_cid_mis_.find(Id());
+        std::map<int,std::vector<int> >::iterator ele = ElementType().pstab_cid_mis_.find(Id());
         if (ele == ElementType().pstab_cid_mis_.end()) dserror("Cannot find this element");
-        map<int,vector<double> >::iterator elew = ElementType().pstab_cid_mis_weight_.find(Id());
+        std::map<int,std::vector<double> >::iterator elew = ElementType().pstab_cid_mis_weight_.find(Id());
         if (elew == ElementType().pstab_cid_mis_weight_.end()) dserror("Cannot find this element weight");
         vector<int>& mis = ele->second;
         const int nummis = (int)mis.size();
@@ -286,15 +286,15 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
     case postprocess_stress:
     {
       const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",null);
-      if (gpstressmap==null) dserror("no gp stress/strain map available for postprocessing");
+        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+      if (gpstressmap==Teuchos::null) dserror("no gp stress/strain map available for postprocessing");
       string stresstype = params.get<string>("stresstype","ndxyz");
 
       const int gid = Id();
       LINALG::Matrix<1,6> gpstress(((*gpstressmap)[gid])->A(),true);
 
-      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
-      if (poststress==null) dserror("No element stress/strain vector available");
+      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
+      if (poststress==Teuchos::null) dserror("No element stress/strain vector available");
 
       if (stresstype=="ndxyz")
       {
@@ -366,10 +366,10 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<12,12> myemat(true);
@@ -411,9 +411,9 @@ int DRT::ELEMENTS::NStet::Evaluate(ParameterList& params,
  |  evaluate the element (private)                             gee 05/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStet::nstetnlnstiffmass(
-      vector<int>&                     lm,             // location matrix
-      vector<double>&                  disp,           // current displacements
-      vector<double>&                  residual,       // current residuum
+      std::vector<int>&                lm,             // location matrix
+      std::vector<double>&             disp,           // current displacements
+      std::vector<double>&             residual,       // current residuum
       LINALG::Matrix<12,12>*           stiffmatrix,    // element stiffness matrix
       LINALG::Matrix<12,12>*           massmatrix,     // element mass matrix
       LINALG::Matrix<12, 1>*           force,          // stress output options
@@ -799,10 +799,10 @@ void DRT::ELEMENTS::NStet::SelectMaterial(
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     gee 05/08|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::NStet::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::NStet::EvaluateNeumann(Teuchos::ParameterList& params,
                                          DRT::Discretization&      discretization,
                                          DRT::Condition&           condition,
-                                         vector<int>&              lm,
+                                         std::vector<int>&         lm,
                                          Epetra_SerialDenseVector& elevec1,
                                          Epetra_SerialDenseMatrix* elemat1)
 {

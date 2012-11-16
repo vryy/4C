@@ -250,7 +250,7 @@ protected:
     void WriteNurbsCell(const DRT::Element::DiscretizationType distype   ,
                         const int                              gid       ,
                         std::ofstream&                              geofile   ,
-                        vector<int>&                           nodevector,
+                        std::vector<int>&                      nodevector,
                         const Teuchos::RCP<DRT::Discretization> dis       ,
                         const Teuchos::RCP<Epetra_Map>&         proc0map  ) const;
 
@@ -280,7 +280,7 @@ protected:
     const int         & l,
     const int         & m,
     const int         & n,
-    const vector<int> & ele_cart_id,
+    const std::vector<int> & ele_cart_id,
     const int         & nvpu,
     const int         & nvpv,
     const int         & npatch) const
@@ -307,7 +307,7 @@ protected:
     void WriteNodeConnectivityPar(
             std::ofstream& geofile,
             const Teuchos::RCP<DRT::Discretization> dis,
-            const vector<int>& nodevector,
+            const std::vector<int>& nodevector,
             const Teuchos::RCP<Epetra_Map> proc0map
             ) const;
     void WriteDofResultStep(
@@ -362,14 +362,14 @@ protected:
       Teuchos::RCP<Epetra_MultiVector> idata,
       const int dim,
       const int npatch,
-      const vector<int>& vpoff,
-      const vector<int>& ele_cart_id,
+      const std::vector<int>& vpoff,
+      const std::vector<int>& ele_cart_id,
       const DRT::Element* actele,
       DRT::NURBS::NurbsDiscretization* nurbsdis,
       const std::vector<Epetra_SerialDenseVector>& eleknots,
       const Epetra_SerialDenseVector& weights,
       const int                        numdf,
-      const vector<double>& my_data
+      const std::vector<double>& my_data
   ) const;
 
   void WriteNodalResultStepForNurbs(
@@ -406,7 +406,7 @@ protected:
             const int from) const;
     void WriteIndexTable(
             std::ofstream& file,
-            const vector<ofstream::pos_type>& filepos) const;
+            const std::vector<ofstream::pos_type>& filepos) const;
     /*!
      * \brief create string for the VARIABLE section
      *        that corresponds to the current field
@@ -471,7 +471,7 @@ protected:
     //! create string for one TIME section in the case file
     string GetTimeSectionString(
             const int timeset,            ///< number of timeset to be written
-            const vector<double>& times   ///< vector with time value for each time step
+            const std::vector<double>& times   ///< vector with time value for each time step
             ) const;
 
     //! create string for TIME section in the case file

@@ -126,7 +126,7 @@ void POTENTIAL::PotentialElementContainer::Pack(DRT::PackBuffer& data) const
  |                                                          u.may 12/09 |
  *----------------------------------------------------------------------*/
 void POTENTIAL::PotentialElementContainer::Unpack(
-  const vector<char>&     data)
+  const std::vector<char>&     data)
 {
   dserror("this unpack method is not used");
   return;
@@ -138,8 +138,8 @@ void POTENTIAL::PotentialElementContainer::Unpack(
  |                                                          u.may 12/09 |
  *----------------------------------------------------------------------*/
 void POTENTIAL::PotentialElementContainer::Unpack(
-	const vector<char>& 			data,
-	vector<char>::size_type&  position)
+	const std::vector<char>& 			data,
+	std::vector<char>::size_type&  position)
 {
   // gid
   ExtractfromPack(position,data, gid_);

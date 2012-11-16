@@ -222,9 +222,9 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(ParameterList&            params,
+  int Evaluate(Teuchos::ParameterList&   params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
@@ -279,7 +279,7 @@ public:
     const std::vector<int>& lm,  ///< location matrix
     const std::vector<double>& disp,  ///< current displacements
     const std::vector<double>& residual,   ///< current residual displ
-    ParameterList& params  ///< algorithmic parameters e.g. time
+    Teuchos::ParameterList& params  ///< algorithmic parameters e.g. time
     );
 #endif
 

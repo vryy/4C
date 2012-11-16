@@ -69,7 +69,7 @@ void POTENTIAL::PotentialDofSet::TransferDegreesOfFreedom(
         dserror("source dis does not have node");
 
       const DRT::Node* sourcenode = sourcedis.gNode(newnode->Id());
-      const vector<int> dofs = sourcedis.Dof(sourcenode);
+      const std::vector<int> dofs = sourcedis.Dof(sourcenode);
 
       if( (newnode->Owner() != sourcenode->Owner()) ||  (newnode->Owner() != newdis.Comm().MyPID()) )
         dserror("node not on proc");

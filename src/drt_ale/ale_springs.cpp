@@ -26,7 +26,7 @@ Maintainer: Ulrich Kuettler
  *----------------------------------------------------------------------*/
 ALE::AleSprings::AleSprings(RCP<DRT::Discretization> actdis,
                                 Teuchos::RCP<LINALG::Solver> solver,
-                                Teuchos::RCP<ParameterList> params,
+                                Teuchos::RCP<Teuchos::ParameterList> params,
                                 Teuchos::RCP<IO::DiscretizationWriter> output,
                                 bool dirichletcond)
   : Ale(actdis,solver,params,output,dirichletcond)
@@ -87,7 +87,7 @@ void ALE::AleSprings::Solve()
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
   // the DOFs with Dirchlet BCs are not rebuild, they are assumed to be correct
-  discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,Teuchos::null,Teuchos::null);
+  discret_->EvaluateDirichlet(eleparams,dispnp_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   incr_->Update(1.0,*dispnp_,-1.0,*dispn_,0.0);
 

@@ -134,25 +134,25 @@ public:
   \brief Get vector of RCPs to the lines of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
   \brief Get vector of RCPs to the surfaces of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Get vector of RCPs to the volumes of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Volumes();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
   /*!
     \brief Get coordinates of element center
 
     */
-  virtual vector<double> ElementCenterRefeCoords();
+  virtual std::vector<double> ElementCenterRefeCoords();
 
   /*!
   \brief Return unique ParObject id
@@ -265,7 +265,7 @@ public:
   \param name (in):   Name of data that is currently processed for visualization
   \param data (out):  data to be filled by element if element recognizes the name
   */
-  virtual bool VisData(const string& name, vector<double>& data);
+  virtual bool VisData(const string& name, std::vector<double>& data);
 
   //@}
 
@@ -308,9 +308,9 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  virtual int Evaluate(ParameterList& params,
+  virtual int Evaluate(Teuchos::ParameterList& params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
@@ -332,10 +332,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -381,9 +381,9 @@ protected:
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                           data_;
   //! vector of inverses of the jacobian in material frame
-  vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> >         invJ_;
+  std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> >    invJ_;
   //! determinant of Jacobian in material frame
-  vector<double>                                           detJ_;
+  std::vector<double>                                      detJ_;
 
   /// prestressing switch & time
   INPAR::STR::PreStress                                    pstype_;
@@ -392,10 +392,10 @@ protected:
   /// Prestressing object
   Teuchos::RCP<DRT::ELEMENTS::PreStress>                   prestress_;
   // compute Jacobian mapping wrt to deformed configuration
-  void UpdateJacobianMapping(const vector<double>& disp,
+  void UpdateJacobianMapping(const std::vector<double>& disp,
                              DRT::ELEMENTS::PreStress& prestress);
   // compute defgrd in all gp for given disp
-  void DefGradient(const vector<double>& disp,
+  void DefGradient(const std::vector<double>& disp,
                    Epetra_SerialDenseMatrix& gpdefgrd,
                    DRT::ELEMENTS::PreStress& prestress);
 
@@ -413,15 +413,15 @@ protected:
   virtual void InitJacobianMapping();
 
   //! Calculate nonlinear stiffness and mass matrix
-  virtual void sow6_nlnstiffmass(vector<int>&              lm,
-                                 vector<double>&           disp,
-                                 vector<double>&           residual,
+  virtual void sow6_nlnstiffmass(std::vector<int>&         lm,
+                                 std::vector<double>&      disp,
+                                 std::vector<double>&      residual,
                                  LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix,
                                  LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,
                                  LINALG::Matrix<NUMDOF_WEG6,1>* force,
                                  LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,
                                  LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,
-                                 ParameterList&            params,         // algorithmic parameters e.g. time
+                                 Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
                                  const INPAR::STR::StressType             iostress,
                                  const INPAR::STR::StrainType             iostrain);
 
@@ -432,7 +432,7 @@ protected:
                     const Epetra_SerialDenseVector* glstrain,
                     Epetra_SerialDenseMatrix* defgrd,
                     const int gp,
-                    ParameterList&            params);         // algorithmic parameters e.g. time
+                    Teuchos::ParameterList&   params);         // algorithmic parameters e.g. time
 
   //! material selection for sow6
   void sow6_mat_sel(
@@ -442,7 +442,7 @@ protected:
                     LINALG::Matrix<6,1>* glstrain,
                     LINALG::Matrix<3,3>* defgrd,
                     const int gp,
-                    ParameterList&  params);         // algorithmic parameters e.g. time
+                    Teuchos::ParameterList&  params);         // algorithmic parameters e.g. time
 
   //! remodeling for fibers at the end of time step (st 01/10)
   void sow6_remodel(
@@ -452,11 +452,11 @@ protected:
         Teuchos::RCP<MAT::Material>    mat);            // material
 
   //! Evaluate Wedge6 Shapefcts to keep them static
-  const vector<LINALG::Matrix<NUMNOD_WEG6,1> > sow6_shapefcts();
+  const std::vector<LINALG::Matrix<NUMNOD_WEG6,1> > sow6_shapefcts();
   //! Evaluate Wedge6 Derivs to keep them static
-  const vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > sow6_derivs();
+  const std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > sow6_derivs();
   //! Evaluate Wedge6 Weights to keep them static
-  const vector<double> sow6_weights();
+  const std::vector<double> sow6_weights();
 
 
   //! calculate static shape functions and derivatives for sow6

@@ -70,14 +70,14 @@ LINALG::Matrix<3,2> GEO::getXAABBofDis(
  | given elements with their current postions for sliding ALE           |
  *----------------------------------------------------------------------*/
 LINALG::Matrix<3,2> GEO::getXAABBofEles(
-    map<int, RCP<DRT::Element> >& 							elements,
+    std::map<int, RCP<DRT::Element> >& 							elements,
     const std::map<int,LINALG::Matrix<3,1> >& 	currentpositions)
 {
   LINALG::Matrix<3,2> XAABB(true);
   if (elements.begin() == elements.end())
     return XAABB;
 
-  map<int, RCP<DRT::Element> >::const_iterator elemiter;
+  std::map<int, RCP<DRT::Element> >::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
   {
     RCP<DRT::Element> currelement = elemiter->second;
@@ -306,7 +306,7 @@ int GEO::getXFEMLabel(
  | and element list                                                     |
  *----------------------------------------------------------------------*/
 void GEO::moveNodeOutOfStructure(
-    const vector<vector<int> >&                   triangleList,
+    const std::vector<std::vector<int> >&                   triangleList,
     vector< GEO::InterfacePoint >&                pointList,
     const int                                     querypointId,
     const GEO::NearestObject&                     nearestObject,
@@ -696,7 +696,7 @@ int GEO::nearestObjectInNode(
  *----------------------------------------------------------------------*/
 void GEO::nearest2DObjectInNode(
     const RCP<DRT::Discretization>              dis,
-    map<int, RCP<DRT::Element> >&               elements,
+    std::map<int, RCP<DRT::Element> >&          elements,
     const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
     const std::map<int, std::set<int> >&        elementList,
     const LINALG::Matrix<3,1>&                  point,
@@ -760,7 +760,7 @@ void GEO::nearest2DObjectInNode(
  *----------------------------------------------------------------------*/
 int GEO::nearest3DObjectInNode(
 		const RCP<DRT::Discretization>              dis,
-		map<int, RCP<DRT::Element> >&               elements,
+		std::map<int, RCP<DRT::Element> >&          elements,
 		const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
 		const std::map<int, std::set<int> >&        elementList,
 		const LINALG::Matrix<3,1>&                  point,
@@ -836,7 +836,7 @@ int GEO::nearest3DObjectInNode(
  *----------------------------------------------------------------------*/
 double GEO::nearestNodeInNode(
     const RCP<DRT::Discretization>              dis,
-    map<int, RCP<DRT::Element> >&               elements,
+    std::map<int, RCP<DRT::Element> >&          elements,
     const std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
     const LINALG::Matrix<3,1>&                  point,
     DRT::Node&                                  nearnode)
@@ -972,7 +972,7 @@ void GEO::fillPotObjectsInNode(
  | object is either a node, line or tri     element                     |
  *----------------------------------------------------------------------*/
 int GEO::nearestObjectInNode(
-    const vector<vector<int> >&                 triangleList,
+    const std::vector<std::vector<int> >&                 triangleList,
     const std::vector<GEO::InterfacePoint>&     pointList,
     const std::map<int, std::set<int> >&        elementList,
     const LINALG::Matrix<3,1>&                  point,
@@ -1361,7 +1361,7 @@ std::vector<int> GEO::getAdjacentSurfaceElementsToLine(
  |  for a line given by two end nodes                                   |
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::getAdjacentTriElementsToLine(
-    const std::vector< vector<int> >& triangleList,
+    const std::vector< std::vector<int> >& triangleList,
     const int                         triangleId,
     const int                         node1,
     const int                         node2)
@@ -1402,7 +1402,7 @@ std::vector<int> GEO::getAdjacentTriElementsToLine(
  |  for a given node                                                    |
  *----------------------------------------------------------------------*/
 std::vector<int> GEO::getAdjacentTriElementsToNode(
-    const std::vector< vector<int> >& triangleList,
+    const std::vector< std::vector<int> >& triangleList,
     const int                         node)
 {
   std::vector<int> adjacentElements;

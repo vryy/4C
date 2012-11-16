@@ -273,7 +273,7 @@ void STR::GenInvAnalysis::Integrate()
     }
 
     // pertubation of material parameter (should be relativ to the value that is perturbed)
-    vector<double> perturb(np_,0.0);
+    std::vector<double> perturb(np_,0.0);
     double alpha = iap.get<double>("INV_ALPHA");
     double beta  = iap.get<double>("INV_BETA");
     for (int i=0; i<np_; ++i)
@@ -332,7 +332,7 @@ void STR::GenInvAnalysis::Integrate()
 
       ParameterList p;
       p.set("action","calc_struct_reset_discretization");
-      discret_->Evaluate(p,null,null,null,null,null);
+      discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
     }
 
     discret_->Comm().Barrier();
@@ -406,7 +406,7 @@ void STR::GenInvAnalysis::NPIntegrate()
     gcomm->Barrier();
 
     // pertubation of material parameter (should be relativ to the value that is perturbed)
-    vector<double> perturb(np_,0.0);
+    std::vector<double> perturb(np_,0.0);
     double alpha = iap.get<double>("INV_ALPHA");
     double beta  = iap.get<double>("INV_BETA");
     for (int i=0; i<np_; ++i)
@@ -489,7 +489,7 @@ void STR::GenInvAnalysis::NPIntegrate()
       // reset discretization to blank
       ParameterList p;
       p.set("action","calc_struct_reset_discretization");
-      discret_->Evaluate(p,null,null,null,null,null);
+      discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
     } //--------------------------------------------------------------------------------
 
     gcomm->Barrier();
@@ -523,7 +523,7 @@ void STR::GenInvAnalysis::NPIntegrate()
 }
 
 //---------------------------------------------------------------------------------------------
-void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, vector<double>& perturb)
+void STR::GenInvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix& cmatrix, std::vector<double>& perturb)
 {
   // initalization of the Jacobian and other storage
   Epetra_SerialDenseMatrix sto(np_,  np_);

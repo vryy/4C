@@ -7658,7 +7658,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::ExtractValuesFromGlobalVectors_2D(
   const bool                        is_ale        ,
   const DRT::Discretization&        discretization,
-  const vector<int>&                lm            ,
+  const std::vector<int>&           lm            ,
   LINALG::Matrix<iel,1>&            eprenp        ,
   LINALG::Matrix<nsd_,iel>&            evelnp        ,
   LINALG::Matrix<nsd_,iel>&            evelaf        ,
@@ -7676,7 +7676,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::ExtractValuesFromGlobalVectors
   // accelerations (intermediate time step, n+alpha_M)
   RCP<const Epetra_Vector> accam = discretization.GetState("acc     (n+alpha_M,trial)");
 
-  if (velnp==null || velaf==null || accam==null)
+  if (velnp==Teuchos::null || velaf==Teuchos::null || accam==Teuchos::null)
   {
     dserror("Cannot get state vectors 'velnp', 'velaf'  and/or 'accam'");
   }
@@ -7719,15 +7719,15 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::ExtractValuesFromGlobalVectors
       =
       discretization.GetState("gridvelaf");
 
-    if (dispnp==null || gridvelaf==null)
+    if (dispnp==Teuchos::null || gridvelaf==Teuchos::null)
     {
       dserror("Cannot get state vectors 'dispnp' and/or 'gridvelaf'");
     }
 
-    vector<double> mydispnp(lm.size());
+    std::vector<double> mydispnp(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
 
-    vector<double> mygridvelaf(lm.size());
+    std::vector<double> mygridvelaf(lm.size());
     DRT::UTILS::ExtractMyValues(*gridvelaf,mygridvelaf,lm);
 
     // extract velocity part from "mygridvelaf" and get
@@ -7775,7 +7775,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::GetNodalBodyForce_2D(
   if (myneumcond.size()==1)
   {
     // find out whether we will use a time curve
-    const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
+    const std::vector<int>* curve  = myneumcond[0]->Get<std::vector<int> >("curve");
     int curvenum = -1;
 
     if (curve) curvenum = (*curve)[0];
@@ -7804,8 +7804,8 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::GetNodalBodyForce_2D(
     }
 
     // get values and switches from the condition
-    const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
-    const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+    const std::vector<int>*    onoff = myneumcond[0]->Get<std::vector<int> >   ("onoff");
+    const std::vector<double>* val   = myneumcond[0]->Get<std::vector<double> >("val"  );
 
     // set this condition to the edeadng array
     for(int isd=0;isd<2;isd++)

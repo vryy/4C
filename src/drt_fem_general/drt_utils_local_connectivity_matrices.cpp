@@ -311,13 +311,13 @@ int DRT::UTILS::getNumberOfElementVolumes(
 }
 
 /*----------------------------------------------------------------------*
- |  Fills a vector< vector<int> > with all nodes for         u.may 08/07|
+ |  Fills a vector< std::vector<int> > with all nodes for         u.may 08/07|
  |  every surface for each discretization type                          |
  *----------------------------------------------------------------------*/
-vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
+std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
     const DRT::Element::DiscretizationType&     distype)
 {
-    vector< vector<int> >   map;
+    std::vector< std::vector<int> >   map;
 
     switch(distype)
     {
@@ -325,7 +325,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
         {
             const int nSurf = 6;
             const int nNode = 4;
-            vector<int> submap(nNode, 0);
+            std::vector<int> submap(nNode, 0);
             for(int i = 0; i < nSurf; i++)
             {
                 map.push_back(submap);
@@ -338,7 +338,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
         {
             const int nSurf = 6;
             const int nNode = 8;
-            vector<int> submap(nNode, 0);
+            std::vector<int> submap(nNode, 0);
             for(int i = 0; i < nSurf; i++)
             {
                 map.push_back(submap);
@@ -351,7 +351,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
         {
             const int nSurf = 6;
             const int nNode = 9;
-            vector<int> submap(nNode, 0);
+            std::vector<int> submap(nNode, 0);
             for(int i = 0; i < nSurf; i++)
             {
                 map.push_back(submap);
@@ -364,7 +364,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
         {
             const int nSurf = 4;
             const int nNode = 3;
-            vector<int> submap(nNode, 0);
+            std::vector<int> submap(nNode, 0);
             for(int i = 0; i < nSurf; i++)
             {
                 map.push_back(submap);
@@ -377,7 +377,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
         {
             const int nSurf = 4;
             const int nNode = 6;
-            vector<int> submap(nNode, 0);
+            std::vector<int> submap(nNode, 0);
             for(int i = 0; i < nSurf; i++)
             {
                 map.push_back(submap);
@@ -391,7 +391,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
             // quad surfaces
             const int nqSurf = 3;
             const int nqNode = 4;
-            vector<int> submapq(nqNode, 0);
+            std::vector<int> submapq(nqNode, 0);
             for(int i = 0; i < nqSurf; i++)
             {
                 map.push_back(submapq);
@@ -402,7 +402,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
             // tri surfaces
             const int ntSurf = 2;
             const int ntNode = 3;
-            vector<int> submapt(ntNode, 0);
+            std::vector<int> submapt(ntNode, 0);
             for(int i = 0; i < ntSurf; i++)
             {
                 map.push_back(submapt);
@@ -416,7 +416,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
           // quad surfaces
           const int nqSurf = 1;
           const int nqNode = 4;
-          vector<int> submapq(nqNode, 0);
+          std::vector<int> submapq(nqNode, 0);
           for(int i = 0; i < nqSurf; i++)
           {
               map.push_back(submapq);
@@ -427,7 +427,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
           // tri surfaces
           const int ntSurf = 4;
           const int ntNode = 3;
-          vector<int> submapt(ntNode, 0);
+          std::vector<int> submapt(ntNode, 0);
           for(int i = 0; i < ntSurf; i++)
           {
               map.push_back(submapt);
@@ -441,7 +441,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
           // nurbs 4 surfaces --- valid only on interpolated boundaries
           const int nSurf = 6;
           const int nNode = 4;
-          vector<int> submap(nNode, 0);
+          std::vector<int> submap(nNode, 0);
           for(int i = 0; i < nSurf; i++)
           {
             map.push_back(submap);
@@ -455,7 +455,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
           // nurbs 9 surfaces --- valid only on interpolated boundaries
           const int nSurf = 6;
           const int nNode = 9;
-          vector<int> submap(nNode, 0);
+          std::vector<int> submap(nNode, 0);
           for(int i = 0; i < nSurf; i++)
           {
             map.push_back(submap);
@@ -476,13 +476,13 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
 
 
 /*----------------------------------------------------------------------*
- |  Fills a vector< vector<int> > with all nodes for         u.may 08/07|
+ |  Fills a vector< std::vector<int> > with all nodes for         u.may 08/07|
  |  every line for each discretization type                             |
  *----------------------------------------------------------------------*/
-vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
+std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingLines(
     const DRT::Element::DiscretizationType&     distype)
 {
-    vector< vector<int> >  map;
+    std::vector< std::vector<int> >  map;
 
     switch(distype)
     {
@@ -490,7 +490,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         {
             const int nLine = 12;
             const int nNode = 2;
-            vector<int> submap(nNode, -1);
+            std::vector<int> submap(nNode, -1);
 
             for(int i = 0; i < nLine; i++)
             {
@@ -504,7 +504,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         {
             const int nLine = 12;
             const int nNode = 3;
-            vector<int> submap(nNode, -1);
+            std::vector<int> submap(nNode, -1);
 
             for(int i = 0; i < nLine; i++)
             {
@@ -518,7 +518,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         {
             const int nLine = 12;
             const int nNode = 3;
-            vector<int> submap(nNode, -1);
+            std::vector<int> submap(nNode, -1);
 
             for(int i = 0; i < nLine; i++)
             {
@@ -532,7 +532,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         {
             const int nLine = 6;
             const int nNode = 2;
-            vector<int> submap(nNode, -1);
+            std::vector<int> submap(nNode, -1);
 
             for(int i = 0; i < nLine; i++)
             {
@@ -546,7 +546,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         {
             const int nLine = 6;
             const int nNode = 3;
-            vector<int> submap(nNode, -1);
+            std::vector<int> submap(nNode, -1);
 
             for(int i = 0; i < nLine; i++)
             {
@@ -560,7 +560,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         {
             const int nLine = 9;
             const int nNode = 2;
-            vector<int> submap(nNode, -1);
+            std::vector<int> submap(nNode, -1);
 
             for(int i = 0; i < nLine; i++)
             {
@@ -574,7 +574,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         {
             const int nLine = 9;
             const int nNode = 3;
-            vector<int> submap(nNode, -1);
+            std::vector<int> submap(nNode, -1);
 
             for(int i = 0; i < nLine; i++)
             {
@@ -589,7 +589,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         {
             const int nLine = 4;
             const int nNode = 3;
-            vector<int> submap(nNode, -1);
+            std::vector<int> submap(nNode, -1);
 
             for(int i = 0; i < nLine; i++)
             {
@@ -603,7 +603,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         {
             const int nLine = 4;
             const int nNode = 3;
-            vector<int> submap(nNode, -1);
+            std::vector<int> submap(nNode, -1);
 
             for(int i = 0; i < nLine; i++)
             {
@@ -617,7 +617,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         {
             const int nLine = 4;
             const int nNode = 2;
-            vector<int> submap(nNode, -1);
+            std::vector<int> submap(nNode, -1);
 
             for(int i = 0; i < nLine; i++)
             {
@@ -631,7 +631,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         {
             const int nLine = 4;
             const int nNode = 2;
-            vector<int> submap(nNode, -1);
+            std::vector<int> submap(nNode, -1);
 
             for(int i = 0; i < nLine; i++)
             {
@@ -645,7 +645,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         {
             const int nLine = 3;
             const int nNode = 3;
-            vector<int> submap(nNode, -1);
+            std::vector<int> submap(nNode, -1);
 
             for(int i = 0; i < nLine; i++)
             {
@@ -659,7 +659,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         {
             const int nLine = 3;
             const int nNode = 2;
-            vector<int> submap(nNode, -1);
+            std::vector<int> submap(nNode, -1);
 
             for(int i = 0; i < nLine; i++)
             {
@@ -673,7 +673,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
         {
             const int nLine = 8;
             const int nNode = 2;
-            vector<int> submap(nNode, -1);
+            std::vector<int> submap(nNode, -1);
 
             for(int i = 0; i < nLine; i++)
             {
@@ -692,22 +692,22 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumberingLines(
 
 
 /*----------------------------------------------------------------------*
- |  Fills a vector< vector<int> > with all surfaces for      u.may 08/07|
+ |  Fills a vector< std::vector<int> > with all surfaces for      u.may 08/07|
  |  every line for each discretization type                             |
  *----------------------------------------------------------------------*/
-vector< vector<int> > DRT::UTILS::getEleNodeNumbering_lines_surfaces(
+std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumbering_lines_surfaces(
     const DRT::Element::DiscretizationType&     distype)
 {
     int nLine;
     int nSurf;
 
-    vector< vector<int> > map;
+    std::vector< std::vector<int> > map;
 
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
         nLine = 12;
         nSurf = 2;
-        vector<int> submap(nSurf, 0);
+        std::vector<int> submap(nSurf, 0);
         for(int i = 0; i < nLine; i++)
         {
             map.push_back(submap);
@@ -719,7 +719,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_lines_surfaces(
     {
         nLine = 6;
         nSurf = 2;
-        vector<int> submap(nSurf, 0);
+        std::vector<int> submap(nSurf, 0);
         for(int i = 0; i < nLine; i++)
         {
             map.push_back(submap);
@@ -739,20 +739,20 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_lines_surfaces(
 
 
 /*----------------------------------------------------------------------*
- |  Fills a vector< vector<int> > with all lines for         u.may 08/08|
+ |  Fills a std::vector< std::vector<int> > with all lines for         u.may 08/08|
  |  every node for each discretization type                             |
  *----------------------------------------------------------------------*/
-vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_lines(
+std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_lines(
     const DRT::Element::DiscretizationType      distype)
 {
-    vector< vector<int> >   map;
+    std::vector< std::vector<int> >   map;
 
     const int nCornerNode = getNumberOfElementCornerNodes(distype);
 
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
         const int nLine = 3;
-        vector<int> submap(nLine, 0);
+        std::vector<int> submap(nLine, 0);
         for(int i = 0; i < nCornerNode; i++)
         {
             map.push_back(submap);
@@ -763,7 +763,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_lines(
     else if(distype == DRT::Element::tet4 ||  distype == DRT::Element::tet10)
     {
         const int nLine = 3;
-        vector<int> submap(nLine, 0);
+        std::vector<int> submap(nLine, 0);
         for(int i = 0; i < nCornerNode; i++)
         {
             map.push_back(submap);
@@ -780,21 +780,21 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_lines(
 
 
 /*----------------------------------------------------------------------*
- |  Fills a vector< vector<int> > with all surfaces for      u.may 08/07|
+ |  Fills a std::vector< std::vector<int> > with all surfaces for      u.may 08/07|
  |  every node for each discretization type                             |
  *----------------------------------------------------------------------*/
-vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_surfaces(
+std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_surfaces(
     const DRT::Element::DiscretizationType      distype)
 {
     const int nCornerNode = getNumberOfElementCornerNodes(distype);
     int nSurf;
 
-    vector< vector<int> >   map;
+    std::vector< std::vector<int> >   map;
 
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
         nSurf = 3;
-        vector<int> submap(nSurf, 0);
+        std::vector<int> submap(nSurf, 0);
         for(int i = 0; i < nCornerNode; i++)
         {
             map.push_back(submap);
@@ -805,7 +805,7 @@ vector< vector<int> > DRT::UTILS::getEleNodeNumbering_nodes_surfaces(
     else if(distype == DRT::Element::tet4 ||  distype == DRT::Element::tet10)
     {
         nSurf = 3;
-        vector<int> submap(nSurf, 0);
+        std::vector<int> submap(nSurf, 0);
         for(int i = 0; i < nCornerNode; i++)
         {
             map.push_back(submap);
@@ -894,12 +894,12 @@ LINALG::SerialDenseMatrix DRT::UTILS::getEleNodeNumbering_nodes_paramspace(
  |  Returns a vector with surface ID s a point is lying on   u.may 08/07|
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/
-vector<int> DRT::UTILS::getSurfaces(
+std::vector<int> DRT::UTILS::getSurfaces(
     const LINALG::Matrix<3,1>&                  rst,
     const DRT::Element::DiscretizationType      distype)
 {
     const double TOL = 1e-7;
-    vector<int> surfaces;
+    std::vector<int> surfaces;
 
     if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
     {
@@ -929,12 +929,12 @@ vector<int> DRT::UTILS::getSurfaces(
  |  Returns a vector with surface ID s a point is lying on     u.may 07/08|
  |  for each discretization type                                        |
  *----------------------------------------------------------------------*/
-vector<int> DRT::UTILS::getLines(
+std::vector<int> DRT::UTILS::getLines(
     const LINALG::Matrix<3,1>&                  rst,
     const DRT::Element::DiscretizationType      distype)
 {
   const double TOL = 1e-7;
-  vector<int> lines;
+  std::vector<int> lines;
 
   if(distype == DRT::Element::hex8 ||  distype == DRT::Element::hex20 || distype == DRT::Element::hex27)
   {

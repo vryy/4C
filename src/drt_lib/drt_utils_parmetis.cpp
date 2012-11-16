@@ -120,7 +120,7 @@ void DRT::UTILS::UnpackLocalConnectivity(
   lcon.clear();
 
   // position to extract
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
 
   // extract size (number of nodes we have a connectivity for)
   int size=0;
@@ -445,7 +445,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
         // connectivity on this proc
 
         // loop this procs global connectivity
-        map<int,std::set<int> >::iterator gidingcon;
+        std::map<int,std::set<int> >::iterator gidingcon;
 
         for(gidingcon=gcon.begin();gidingcon!=gcon.end();++gidingcon)
         {
@@ -779,7 +779,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     if (err<0) dserror("Graph export returned err=%d",err);
 
     //trash old graph
-    graph=null;
+    graph=Teuchos::null;
 
     // call fill complete and optimize storage
     outgraph->FillComplete();
@@ -1122,7 +1122,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     Epetra_Export exporter(graph->RowMap(),*rownodes);
     int err = finalgraph.Export(*graph,exporter,Insert);
     if (err<0) dserror("Graph export returned err=%d",err);
-    graph = null;
+    graph = Teuchos::null;
     finalgraph.FillComplete();
     finalgraph.OptimizeStorage();
     colnodes = Teuchos::rcp(new Epetra_Map(-1,//finalgraph.ColMap().NumGlobalElements(),

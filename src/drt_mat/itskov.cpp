@@ -101,9 +101,9 @@ void MAT::Itskov::Pack(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::Itskov::Unpack(const vector<char>& data)
+void MAT::Itskov::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -165,7 +165,7 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 
 	//init container
 	if ((time==0.0) && (gp==0)){
-		vector<double>time_alt(8);
+		std::vector<double>time_alt(8);
 		data_.Add("time", time_alt);
 		Epetra_SerialDenseMatrix I3_alt(8,2);
 		data_.Add("I3", I3_alt);
@@ -174,7 +174,7 @@ void MAT::Itskov::Unpack(const vector<char>& data)
 	}
 
 	//Update container
-	vector<double>* his_time=data_.GetMutable<vector<double> >("time");
+	std::vector<double>* his_time=data_.GetMutable<std::vector<double> >("time");
 	Epetra_SerialDenseMatrix* his_I3 = data_.GetMutable<Epetra_SerialDenseMatrix>("I3");
 	Epetra_SerialDenseMatrix* his_WPen = data_.GetMutable<Epetra_SerialDenseMatrix>("WPen");
 	if((*his_time)[gp]!=time)

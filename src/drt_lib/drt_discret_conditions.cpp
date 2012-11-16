@@ -76,7 +76,7 @@ void DRT::Discretization::BoundaryConditionsGeometry()
   // for all conditions, we set a ptr in the nodes to the condition
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
   {
-    const vector<int>* nodes = fool->second->Nodes();
+    const std::vector<int>* nodes = fool->second->Nodes();
     // There might be conditions that do not have a nodal cloud
     if (!nodes) continue;
     int nnode = nodes->size();
@@ -175,7 +175,7 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
   // First, give own elements a local id and find out
   // which ids we need to get from other processes.
 
-  vector< RCP<DRT::Element> > ownelements;
+  std::vector< RCP<DRT::Element> > ownelements;
 
   // ghostelementnodes, the vector we are going to communicate.
   // Layout:
@@ -186,9 +186,9 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
   //    [ node111,node112,node113, ... , -1, node121, ... , -1, ... ],
   //    ... // etc.
   //  ]
-  vector< vector<int> > ghostelementnodes( comm.NumProc() );
+  std::vector< std::vector<int> > ghostelementnodes( comm.NumProc() );
   // corresponding elements objects
-  vector< vector< RCP<DRT::Element> > > ghostelements( comm.NumProc() );
+  std::vector< std::vector< RCP<DRT::Element> > > ghostelements( comm.NumProc() );
 
   map< vector<int>, RCP<DRT::Element> >::const_iterator elemsiter;
   for( elemsiter = elementmap.begin(); elemsiter != elementmap.end(); ++elemsiter )
@@ -209,8 +209,8 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
   }
 
   // Find out which ids our own elements are supposed to get.
-  vector<int> snelements( comm.NumProc() );
-  vector<int> rnelements( comm.NumProc() );
+  std::vector<int> snelements( comm.NumProc() );
+  std::vector<int> rnelements( comm.NumProc() );
   fill( snelements.begin(), snelements.end(), 0 );
   snelements[ comm.MyPID() ] = ownelements.size();
   comm.SumAll( &snelements[0], &rnelements[0], comm.NumProc() );
@@ -225,20 +225,20 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
   ownelements.clear();
 
   // Last step: Get missing ids.
-  vector< vector<int> > requests;
+  std::vector< std::vector<int> > requests;
   LINALG::AllToAllCommunication( comm, ghostelementnodes, requests );
 
-  vector< vector<int> > sendids( comm.NumProc() );
+  std::vector< std::vector<int> > sendids( comm.NumProc() );
 
-  vector<int>::iterator keybegin;
+  std::vector<int>::iterator keybegin;
   for ( int proc = 0; proc < comm.NumProc(); ++proc )
   {
       keybegin = requests[proc].begin();
       for ( ;; ) {
-          vector<int>::iterator keyend = find( keybegin, requests[proc].end(), -1 );
+          std::vector<int>::iterator keyend = find( keybegin, requests[proc].end(), -1 );
           if ( keyend == requests[proc].end() )
               break;
-          vector<int> nodes = vector<int>( keybegin, keyend );
+          std::vector<int> nodes = vector<int>( keybegin, keyend );
           elemsiter = elementmap.find( nodes );
           if ( elemsiter == elementmap.end() )
               dserror( "Got request for unknown element" );
@@ -418,7 +418,7 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
   /* First: Create the line objects that belong to the condition. */
 
   // get ptrs to all node ids that have this condition
-  const vector<int>* nodeids = cond->Nodes();
+  const std::vector<int>* nodeids = cond->Nodes();
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
   // number of global nodes in this cloud
@@ -462,7 +462,7 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
       // loop all lines of all elements attached to actnode
       const int numlines = elements[i]->NumLine();
       if( !numlines ) continue;
-      vector<Teuchos::RCP<DRT::Element> >  lines = elements[i]->Lines();
+      std::vector<Teuchos::RCP<DRT::Element> >  lines = elements[i]->Lines();
       if(lines.size()==0) dserror("Element returned no lines");
       for( int j = 0; j < numlines; ++j )
       {
@@ -479,7 +479,7 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
             bool allin = true;
             for( int l=0; l < nnodeperline; ++l )
             {
-              map<int,DRT::Node*>::iterator test = colnodes.find(nodesperline[l]->Id());
+              std::map<int,DRT::Node*>::iterator test = colnodes.find(nodesperline[l]->Id());
               if( test==colnodes.end() )
               {
                 allin = false;
@@ -489,7 +489,7 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
             // if all nodes on line are in our cloud, add line
             if( allin )
             {
-              vector<int> nodes( actline->NumNode() );
+              std::vector<int> nodes( actline->NumNode() );
               transform( actline->Nodes(), actline->Nodes() + actline->NumNode(),
                          nodes.begin(), std::mem_fun( &DRT::Node::Id ) );
               sort( nodes.begin(), nodes.end() );
@@ -541,7 +541,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
   /* First: Create the surface objects that belong to the condition. */
 
   // get ptrs to all node ids that have this condition
-  const vector<int>* nodeids = cond->Nodes();
+  const std::vector<int>* nodeids = cond->Nodes();
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
   // number of global nodes in this cloud
@@ -587,7 +587,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
       // loop all surfaces of all elements attached to actnode
       const int numsurfs = elements[i]->NumSurface();
       if (!numsurfs) continue;
-      vector<Teuchos::RCP<DRT::Element> >  surfs = elements[i]->Surfaces();
+      std::vector<Teuchos::RCP<DRT::Element> >  surfs = elements[i]->Surfaces();
       if (surfs.size()==0) dserror("Element does not return any surfaces");
       for (int j=0; j<numsurfs; ++j)
       {
@@ -605,7 +605,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
             bool allin = true;
             for (int l=0; l<nnodepersurf; ++l)
             {
-              map<int,DRT::Node*>::iterator test = colnodes.find(nodespersurf[l]->Id());
+              std::map<int,DRT::Node*>::iterator test = colnodes.find(nodespersurf[l]->Id());
               if (test==colnodes.end())
               {
                 allin = false;
@@ -615,7 +615,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
             // if all nodes are in our cloud, add surface
             if (allin)
             {
-              vector<int> nodes( actsurf->NumNode() );
+              std::vector<int> nodes( actsurf->NumNode() );
               transform( actsurf->Nodes(), actsurf->Nodes() + actsurf->NumNode(),
                          nodes.begin(), std::mem_fun( &DRT::Node::Id ) );
               sort( nodes.begin(), nodes.end() );
@@ -655,7 +655,7 @@ void DRT::Discretization::BuildVolumesinCondition(
                                         RCP<DRT::Condition> cond)
 {
   // get ptrs to all node ids that have this condition
-  const vector<int>* nodeids = cond->Nodes();
+  const std::vector<int>* nodeids = cond->Nodes();
   if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
   // extract colnodes on this proc from condition
@@ -718,7 +718,7 @@ void DRT::Discretization::FindAssociatedEleIDs(RCP<DRT::Condition> cond, std::se
     if (actvolcond.GetInt("coupling id") == condID)
     {
       // get ptrs to all node ids that have this condition
-      const vector<int>* nodeids = actvolcond.Nodes();
+      const std::vector<int>* nodeids = actvolcond.Nodes();
       if (!nodeids) dserror("Cannot find array 'Node Ids' in condition");
 
       // extract colnodes on this proc from condition

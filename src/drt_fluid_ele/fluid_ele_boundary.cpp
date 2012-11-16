@@ -86,7 +86,7 @@ void DRT::ELEMENTS::FluidBoundary::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidBoundary::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::FluidBoundary::Unpack(const std::vector<char>& data)
 {
   dserror("this FluidBoundary element does not support communication");
   return;
@@ -114,7 +114,7 @@ void DRT::ELEMENTS::FluidBoundary::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 04/07|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidBoundary::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidBoundary::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -124,14 +124,14 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidBoundary::Lines()
 
   // so we have to allocate new line elements:
   dserror("Lines of FluidBoundary not implemented");
-  vector<Teuchos::RCP<DRT::Element> > lines(0);
+  std::vector<Teuchos::RCP<DRT::Element> > lines(0);
   return lines;
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 04/07|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidBoundary::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidBoundary::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -141,7 +141,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidBoundary::Surfaces()
 
   // so we have to allocate new surface elements:
   dserror("Surfaces of FluidBoundary not implemented");
-  vector<Teuchos::RCP<DRT::Element> > surfaces(0);
+  std::vector<Teuchos::RCP<DRT::Element> > surfaces(0);
   return surfaces;
 }
 

@@ -156,16 +156,16 @@ void DRT::ELEMENTS::RedAirway::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                         ismail 01/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirway::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::RedAirway::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
 
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
@@ -243,7 +243,7 @@ void DRT::ELEMENTS::RedAirway::VisNames(std::map<string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                     ismail 02/10 |
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::RedAirway::VisData(const string& name, vector<double>& data)
+bool DRT::ELEMENTS::RedAirway::VisData(const string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))

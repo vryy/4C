@@ -41,7 +41,7 @@ Maintainer: Volker Gravemeier
 /*----------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
   RCP<DRT::Discretization> actdis,
-  ParameterList&                   params)
+  Teuchos::ParameterList&                   params)
   :
   discret_(actdis),
   params_ (params)
@@ -93,11 +93,11 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
   //----------------------------------------------------------------------
   // create sets of coordinates for required evaluation lines
   //----------------------------------------------------------------------
-  x1ccoordinates_ = Teuchos::rcp(new vector<double> );
-  x2ccoordinates_ = Teuchos::rcp(new vector<double> );
-  x2wcoordinates_ = Teuchos::rcp(new vector<double> );
-  clrcoordinates_ = Teuchos::rcp(new vector<double> );
-  ctbcoordinates_ = Teuchos::rcp(new vector<double> );
+  x1ccoordinates_ = Teuchos::rcp(new std::vector<double> );
+  x2ccoordinates_ = Teuchos::rcp(new std::vector<double> );
+  x2wcoordinates_ = Teuchos::rcp(new std::vector<double> );
+  clrcoordinates_ = Teuchos::rcp(new std::vector<double> );
+  ctbcoordinates_ = Teuchos::rcp(new std::vector<double> );
 
   // the criterion allows differences in coordinates by 1e-9
   set<double,LineSortCriterion> x1cavcoords;
@@ -112,8 +112,8 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
   {
     if (homdir_=="z")
     {
-      x1coordinates_ = Teuchos::rcp(new vector<double> );
-      x2coordinates_ = Teuchos::rcp(new vector<double> );
+      x1coordinates_ = Teuchos::rcp(new std::vector<double> );
+      x2coordinates_ = Teuchos::rcp(new std::vector<double> );
     }
   }
   set<double,LineSortCriterion> x1avcoords;
@@ -248,7 +248,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       //--------------------------------------------------
       // Unpack received block into set of all planes.
       {
-        vector<double> coordsvec;
+        std::vector<double> coordsvec;
 
         coordsvec.clear();
 
@@ -322,7 +322,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       //--------------------------------------------------
       // Unpack received block into set of all planes.
       {
-        vector<double> coordsvec;
+        std::vector<double> coordsvec;
 
         coordsvec.clear();
 
@@ -396,7 +396,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       //--------------------------------------------------
       // Unpack received block into set of all planes.
       {
-        vector<double> coordsvec;
+        std::vector<double> coordsvec;
 
         coordsvec.clear();
 
@@ -469,7 +469,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       //--------------------------------------------------
       // Unpack received block into set of all planes.
       {
-        vector<double> coordsvec;
+        std::vector<double> coordsvec;
 
         coordsvec.clear();
 
@@ -543,7 +543,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       //--------------------------------------------------
       // Unpack received block into set of all planes.
       {
-        vector<double> coordsvec;
+        std::vector<double> coordsvec;
 
         coordsvec.clear();
 
@@ -623,7 +623,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
           //--------------------------------------------------
           // Unpack received block into set of all planes.
           {
-            vector<double> coordsvec;
+            std::vector<double> coordsvec;
 
             coordsvec.clear();
 
@@ -697,7 +697,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
           //--------------------------------------------------
           // Unpack received block into set of all planes.
           {
-            vector<double> coordsvec;
+            std::vector<double> coordsvec;
 
             coordsvec.clear();
 
@@ -718,11 +718,11 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
   // push coordinates in vectors
   //----------------------------------------------------------------------
   {
-    x1ccoordinates_ = Teuchos::rcp(new vector<double> );
-    x2ccoordinates_ = Teuchos::rcp(new vector<double> );
-    x2wcoordinates_ = Teuchos::rcp(new vector<double> );
-    clrcoordinates_ = Teuchos::rcp(new vector<double> );
-    ctbcoordinates_ = Teuchos::rcp(new vector<double> );
+    x1ccoordinates_ = Teuchos::rcp(new std::vector<double> );
+    x2ccoordinates_ = Teuchos::rcp(new std::vector<double> );
+    x2wcoordinates_ = Teuchos::rcp(new std::vector<double> );
+    clrcoordinates_ = Teuchos::rcp(new std::vector<double> );
+    ctbcoordinates_ = Teuchos::rcp(new std::vector<double> );
 
     for(std::set<double,LineSortCriterion>::iterator coord1c=x1cavcoords.begin();
         coord1c!=x1cavcoords.end();
@@ -765,8 +765,8 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
     {
       if (homdir_=="z")
       {
-        x1coordinates_ = Teuchos::rcp(new vector<double> );
-        x2coordinates_ = Teuchos::rcp(new vector<double> );
+        x1coordinates_ = Teuchos::rcp(new std::vector<double> );
+        x2coordinates_ = Teuchos::rcp(new std::vector<double> );
 
         for(std::set<double,LineSortCriterion>::iterator coord1=x1avcoords.begin();
             coord1!=x1avcoords.end();
@@ -795,192 +795,192 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
   int sizetb = ctbcoordinates_->size();
 
   // first-order moments
-  x1csumu_ =  Teuchos::rcp(new vector<double> );
+  x1csumu_ =  Teuchos::rcp(new std::vector<double> );
   x1csumu_->resize(size1c,0.0);
-  x2csumu_ =  Teuchos::rcp(new vector<double> );
+  x2csumu_ =  Teuchos::rcp(new std::vector<double> );
   x2csumu_->resize(size2c,0.0);
-  x2w1sumu_ =  Teuchos::rcp(new vector<double> );
+  x2w1sumu_ =  Teuchos::rcp(new std::vector<double> );
   x2w1sumu_->resize(size2w,0.0);
-  x2w2sumu_ =  Teuchos::rcp(new vector<double> );
+  x2w2sumu_ =  Teuchos::rcp(new std::vector<double> );
   x2w2sumu_->resize(size2w,0.0);
-  cyllsumu_ =  Teuchos::rcp(new vector<double> );
+  cyllsumu_ =  Teuchos::rcp(new std::vector<double> );
   cyllsumu_->resize(sizelr,0.0);
-  cyltsumu_ =  Teuchos::rcp(new vector<double> );
+  cyltsumu_ =  Teuchos::rcp(new std::vector<double> );
   cyltsumu_->resize(sizetb,0.0);
-  cylrsumu_ =  Teuchos::rcp(new vector<double> );
+  cylrsumu_ =  Teuchos::rcp(new std::vector<double> );
   cylrsumu_->resize(sizelr,0.0);
-  cylbsumu_ =  Teuchos::rcp(new vector<double> );
+  cylbsumu_ =  Teuchos::rcp(new std::vector<double> );
   cylbsumu_->resize(sizetb,0.0);
 
-  x1csumv_ =  Teuchos::rcp(new vector<double> );
+  x1csumv_ =  Teuchos::rcp(new std::vector<double> );
   x1csumv_->resize(size1c,0.0);
-  x2csumv_ =  Teuchos::rcp(new vector<double> );
+  x2csumv_ =  Teuchos::rcp(new std::vector<double> );
   x2csumv_->resize(size2c,0.0);
-  x2w1sumv_ =  Teuchos::rcp(new vector<double> );
+  x2w1sumv_ =  Teuchos::rcp(new std::vector<double> );
   x2w1sumv_->resize(size2w,0.0);
-  x2w2sumv_ =  Teuchos::rcp(new vector<double> );
+  x2w2sumv_ =  Teuchos::rcp(new std::vector<double> );
   x2w2sumv_->resize(size2w,0.0);
-  cyllsumv_ =  Teuchos::rcp(new vector<double> );
+  cyllsumv_ =  Teuchos::rcp(new std::vector<double> );
   cyllsumv_->resize(sizelr,0.0);
-  cyltsumv_ =  Teuchos::rcp(new vector<double> );
+  cyltsumv_ =  Teuchos::rcp(new std::vector<double> );
   cyltsumv_->resize(sizetb,0.0);
-  cylrsumv_ =  Teuchos::rcp(new vector<double> );
+  cylrsumv_ =  Teuchos::rcp(new std::vector<double> );
   cylrsumv_->resize(sizelr,0.0);
-  cylbsumv_ =  Teuchos::rcp(new vector<double> );
+  cylbsumv_ =  Teuchos::rcp(new std::vector<double> );
   cylbsumv_->resize(sizetb,0.0);
 
-  x1csumw_ =  Teuchos::rcp(new vector<double> );
+  x1csumw_ =  Teuchos::rcp(new std::vector<double> );
   x1csumw_->resize(size1c,0.0);
-  x2csumw_ =  Teuchos::rcp(new vector<double> );
+  x2csumw_ =  Teuchos::rcp(new std::vector<double> );
   x2csumw_->resize(size2c,0.0);
-  x2w1sumw_ =  Teuchos::rcp(new vector<double> );
+  x2w1sumw_ =  Teuchos::rcp(new std::vector<double> );
   x2w1sumw_->resize(size2w,0.0);
-  x2w2sumw_ =  Teuchos::rcp(new vector<double> );
+  x2w2sumw_ =  Teuchos::rcp(new std::vector<double> );
   x2w2sumw_->resize(size2w,0.0);
-  cyllsumw_ =  Teuchos::rcp(new vector<double> );
+  cyllsumw_ =  Teuchos::rcp(new std::vector<double> );
   cyllsumw_->resize(sizelr,0.0);
-  cyltsumw_ =  Teuchos::rcp(new vector<double> );
+  cyltsumw_ =  Teuchos::rcp(new std::vector<double> );
   cyltsumw_->resize(sizetb,0.0);
-  cylrsumw_ =  Teuchos::rcp(new vector<double> );
+  cylrsumw_ =  Teuchos::rcp(new std::vector<double> );
   cylrsumw_->resize(sizelr,0.0);
-  cylbsumw_ =  Teuchos::rcp(new vector<double> );
+  cylbsumw_ =  Teuchos::rcp(new std::vector<double> );
   cylbsumw_->resize(sizetb,0.0);
 
-  x1csump_ =  Teuchos::rcp(new vector<double> );
+  x1csump_ =  Teuchos::rcp(new std::vector<double> );
   x1csump_->resize(size1c,0.0);
-  x2csump_ =  Teuchos::rcp(new vector<double> );
+  x2csump_ =  Teuchos::rcp(new std::vector<double> );
   x2csump_->resize(size2c,0.0);
-  x2w1sump_ =  Teuchos::rcp(new vector<double> );
+  x2w1sump_ =  Teuchos::rcp(new std::vector<double> );
   x2w1sump_->resize(size2w,0.0);
-  x2w2sump_ =  Teuchos::rcp(new vector<double> );
+  x2w2sump_ =  Teuchos::rcp(new std::vector<double> );
   x2w2sump_->resize(size2w,0.0);
-  cyllsump_ =  Teuchos::rcp(new vector<double> );
+  cyllsump_ =  Teuchos::rcp(new std::vector<double> );
   cyllsump_->resize(sizelr,0.0);
-  cyltsump_ =  Teuchos::rcp(new vector<double> );
+  cyltsump_ =  Teuchos::rcp(new std::vector<double> );
   cyltsump_->resize(sizetb,0.0);
-  cylrsump_ =  Teuchos::rcp(new vector<double> );
+  cylrsump_ =  Teuchos::rcp(new std::vector<double> );
   cylrsump_->resize(sizelr,0.0);
-  cylbsump_ =  Teuchos::rcp(new vector<double> );
+  cylbsump_ =  Teuchos::rcp(new std::vector<double> );
   cylbsump_->resize(sizetb,0.0);
 
   // second-order moments
-  x1csumsqu_ =  Teuchos::rcp(new vector<double> );
+  x1csumsqu_ =  Teuchos::rcp(new std::vector<double> );
   x1csumsqu_->resize(size1c,0.0);
-  x2csumsqu_ =  Teuchos::rcp(new vector<double> );
+  x2csumsqu_ =  Teuchos::rcp(new std::vector<double> );
   x2csumsqu_->resize(size2c,0.0);
-  x2w1sumsqu_ =  Teuchos::rcp(new vector<double> );
+  x2w1sumsqu_ =  Teuchos::rcp(new std::vector<double> );
   x2w1sumsqu_->resize(size2w,0.0);
-  x2w2sumsqu_ =  Teuchos::rcp(new vector<double> );
+  x2w2sumsqu_ =  Teuchos::rcp(new std::vector<double> );
   x2w2sumsqu_->resize(size2w,0.0);
-  cyllsumsqu_ =  Teuchos::rcp(new vector<double> );
+  cyllsumsqu_ =  Teuchos::rcp(new std::vector<double> );
   cyllsumsqu_->resize(sizelr,0.0);
-  cyltsumsqu_ =  Teuchos::rcp(new vector<double> );
+  cyltsumsqu_ =  Teuchos::rcp(new std::vector<double> );
   cyltsumsqu_->resize(sizetb,0.0);
-  cylrsumsqu_ =  Teuchos::rcp(new vector<double> );
+  cylrsumsqu_ =  Teuchos::rcp(new std::vector<double> );
   cylrsumsqu_->resize(sizelr,0.0);
-  cylbsumsqu_ =  Teuchos::rcp(new vector<double> );
+  cylbsumsqu_ =  Teuchos::rcp(new std::vector<double> );
   cylbsumsqu_->resize(sizetb,0.0);
 
-  x1csumsqv_ =  Teuchos::rcp(new vector<double> );
+  x1csumsqv_ =  Teuchos::rcp(new std::vector<double> );
   x1csumsqv_->resize(size1c,0.0);
-  x2csumsqv_ =  Teuchos::rcp(new vector<double> );
+  x2csumsqv_ =  Teuchos::rcp(new std::vector<double> );
   x2csumsqv_->resize(size2c,0.0);
-  x2w1sumsqv_ =  Teuchos::rcp(new vector<double> );
+  x2w1sumsqv_ =  Teuchos::rcp(new std::vector<double> );
   x2w1sumsqv_->resize(size2w,0.0);
-  x2w2sumsqv_ =  Teuchos::rcp(new vector<double> );
+  x2w2sumsqv_ =  Teuchos::rcp(new std::vector<double> );
   x2w2sumsqv_->resize(size2w,0.0);
-  cyllsumsqv_ =  Teuchos::rcp(new vector<double> );
+  cyllsumsqv_ =  Teuchos::rcp(new std::vector<double> );
   cyllsumsqv_->resize(sizelr,0.0);
-  cyltsumsqv_ =  Teuchos::rcp(new vector<double> );
+  cyltsumsqv_ =  Teuchos::rcp(new std::vector<double> );
   cyltsumsqv_->resize(sizetb,0.0);
-  cylrsumsqv_ =  Teuchos::rcp(new vector<double> );
+  cylrsumsqv_ =  Teuchos::rcp(new std::vector<double> );
   cylrsumsqv_->resize(sizelr,0.0);
-  cylbsumsqv_ =  Teuchos::rcp(new vector<double> );
+  cylbsumsqv_ =  Teuchos::rcp(new std::vector<double> );
   cylbsumsqv_->resize(sizetb,0.0);
 
-  x1csumsqw_ =  Teuchos::rcp(new vector<double> );
+  x1csumsqw_ =  Teuchos::rcp(new std::vector<double> );
   x1csumsqw_->resize(size1c,0.0);
-  x2csumsqw_ =  Teuchos::rcp(new vector<double> );
+  x2csumsqw_ =  Teuchos::rcp(new std::vector<double> );
   x2csumsqw_->resize(size2c,0.0);
-  x2w1sumsqw_ =  Teuchos::rcp(new vector<double> );
+  x2w1sumsqw_ =  Teuchos::rcp(new std::vector<double> );
   x2w1sumsqw_->resize(size2w,0.0);
-  x2w2sumsqw_ =  Teuchos::rcp(new vector<double> );
+  x2w2sumsqw_ =  Teuchos::rcp(new std::vector<double> );
   x2w2sumsqw_->resize(size2w,0.0);
-  cyllsumsqw_ =  Teuchos::rcp(new vector<double> );
+  cyllsumsqw_ =  Teuchos::rcp(new std::vector<double> );
   cyllsumsqw_->resize(sizelr,0.0);
-  cyltsumsqw_ =  Teuchos::rcp(new vector<double> );
+  cyltsumsqw_ =  Teuchos::rcp(new std::vector<double> );
   cyltsumsqw_->resize(sizetb,0.0);
-  cylrsumsqw_ =  Teuchos::rcp(new vector<double> );
+  cylrsumsqw_ =  Teuchos::rcp(new std::vector<double> );
   cylrsumsqw_->resize(sizelr,0.0);
-  cylbsumsqw_ =  Teuchos::rcp(new vector<double> );
+  cylbsumsqw_ =  Teuchos::rcp(new std::vector<double> );
   cylbsumsqw_->resize(sizetb,0.0);
 
-  x1csumuv_ =  Teuchos::rcp(new vector<double> );
+  x1csumuv_ =  Teuchos::rcp(new std::vector<double> );
   x1csumuv_->resize(size1c,0.0);
-  x2csumuv_ =  Teuchos::rcp(new vector<double> );
+  x2csumuv_ =  Teuchos::rcp(new std::vector<double> );
   x2csumuv_->resize(size2c,0.0);
-  x2w1sumuv_ =  Teuchos::rcp(new vector<double> );
+  x2w1sumuv_ =  Teuchos::rcp(new std::vector<double> );
   x2w1sumuv_->resize(size2w,0.0);
-  x2w2sumuv_ =  Teuchos::rcp(new vector<double> );
+  x2w2sumuv_ =  Teuchos::rcp(new std::vector<double> );
   x2w2sumuv_->resize(size2w,0.0);
-  cyllsumuv_ =  Teuchos::rcp(new vector<double> );
+  cyllsumuv_ =  Teuchos::rcp(new std::vector<double> );
   cyllsumuv_->resize(sizelr,0.0);
-  cyltsumuv_ =  Teuchos::rcp(new vector<double> );
+  cyltsumuv_ =  Teuchos::rcp(new std::vector<double> );
   cyltsumuv_->resize(sizetb,0.0);
-  cylrsumuv_ =  Teuchos::rcp(new vector<double> );
+  cylrsumuv_ =  Teuchos::rcp(new std::vector<double> );
   cylrsumuv_->resize(sizelr,0.0);
-  cylbsumuv_ =  Teuchos::rcp(new vector<double> );
+  cylbsumuv_ =  Teuchos::rcp(new std::vector<double> );
   cylbsumuv_->resize(sizetb,0.0);
 
-  x1csumuw_ =  Teuchos::rcp(new vector<double> );
+  x1csumuw_ =  Teuchos::rcp(new std::vector<double> );
   x1csumuw_->resize(size1c,0.0);
-  x2csumuw_ =  Teuchos::rcp(new vector<double> );
+  x2csumuw_ =  Teuchos::rcp(new std::vector<double> );
   x2csumuw_->resize(size2c,0.0);
-  x2w1sumuw_ =  Teuchos::rcp(new vector<double> );
+  x2w1sumuw_ =  Teuchos::rcp(new std::vector<double> );
   x2w1sumuw_->resize(size2w,0.0);
-  x2w2sumuw_ =  Teuchos::rcp(new vector<double> );
+  x2w2sumuw_ =  Teuchos::rcp(new std::vector<double> );
   x2w2sumuw_->resize(size2w,0.0);
-  cyllsumuw_ =  Teuchos::rcp(new vector<double> );
+  cyllsumuw_ =  Teuchos::rcp(new std::vector<double> );
   cyllsumuw_->resize(sizelr,0.0);
-  cyltsumuw_ =  Teuchos::rcp(new vector<double> );
+  cyltsumuw_ =  Teuchos::rcp(new std::vector<double> );
   cyltsumuw_->resize(sizetb,0.0);
-  cylrsumuw_ =  Teuchos::rcp(new vector<double> );
+  cylrsumuw_ =  Teuchos::rcp(new std::vector<double> );
   cylrsumuw_->resize(sizelr,0.0);
-  cylbsumuw_ =  Teuchos::rcp(new vector<double> );
+  cylbsumuw_ =  Teuchos::rcp(new std::vector<double> );
   cylbsumuw_->resize(sizetb,0.0);
 
-  x1csumvw_ =  Teuchos::rcp(new vector<double> );
+  x1csumvw_ =  Teuchos::rcp(new std::vector<double> );
   x1csumvw_->resize(size1c,0.0);
-  x2csumvw_ =  Teuchos::rcp(new vector<double> );
+  x2csumvw_ =  Teuchos::rcp(new std::vector<double> );
   x2csumvw_->resize(size2c,0.0);
-  x2w1sumvw_ =  Teuchos::rcp(new vector<double> );
+  x2w1sumvw_ =  Teuchos::rcp(new std::vector<double> );
   x2w1sumvw_->resize(size2w,0.0);
-  x2w2sumvw_ =  Teuchos::rcp(new vector<double> );
+  x2w2sumvw_ =  Teuchos::rcp(new std::vector<double> );
   x2w2sumvw_->resize(size2w,0.0);
-  cyllsumvw_ =  Teuchos::rcp(new vector<double> );
+  cyllsumvw_ =  Teuchos::rcp(new std::vector<double> );
   cyllsumvw_->resize(sizelr,0.0);
-  cyltsumvw_ =  Teuchos::rcp(new vector<double> );
+  cyltsumvw_ =  Teuchos::rcp(new std::vector<double> );
   cyltsumvw_->resize(sizetb,0.0);
-  cylrsumvw_ =  Teuchos::rcp(new vector<double> );
+  cylrsumvw_ =  Teuchos::rcp(new std::vector<double> );
   cylrsumvw_->resize(sizelr,0.0);
-  cylbsumvw_ =  Teuchos::rcp(new vector<double> );
+  cylbsumvw_ =  Teuchos::rcp(new std::vector<double> );
   cylbsumvw_->resize(sizetb,0.0);
 
-  x1csumsqp_ =  Teuchos::rcp(new vector<double> );
+  x1csumsqp_ =  Teuchos::rcp(new std::vector<double> );
   x1csumsqp_->resize(size1c,0.0);
-  x2csumsqp_ =  Teuchos::rcp(new vector<double> );
+  x2csumsqp_ =  Teuchos::rcp(new std::vector<double> );
   x2csumsqp_->resize(size2c,0.0);
-  x2w1sumsqp_ =  Teuchos::rcp(new vector<double> );
+  x2w1sumsqp_ =  Teuchos::rcp(new std::vector<double> );
   x2w1sumsqp_->resize(size2w,0.0);
-  x2w2sumsqp_ =  Teuchos::rcp(new vector<double> );
+  x2w2sumsqp_ =  Teuchos::rcp(new std::vector<double> );
   x2w2sumsqp_->resize(size2w,0.0);
-  cyllsumsqp_ =  Teuchos::rcp(new vector<double> );
+  cyllsumsqp_ =  Teuchos::rcp(new std::vector<double> );
   cyllsumsqp_->resize(sizelr,0.0);
-  cyltsumsqp_ =  Teuchos::rcp(new vector<double> );
+  cyltsumsqp_ =  Teuchos::rcp(new std::vector<double> );
   cyltsumsqp_->resize(sizetb,0.0);
-  cylrsumsqp_ =  Teuchos::rcp(new vector<double> );
+  cylrsumsqp_ =  Teuchos::rcp(new std::vector<double> );
   cylrsumsqp_->resize(sizelr,0.0);
-  cylbsumsqp_ =  Teuchos::rcp(new vector<double> );
+  cylbsumsqp_ =  Teuchos::rcp(new std::vector<double> );
   cylbsumsqp_->resize(sizetb,0.0);
 
   //----------------------------------------------------------------------
@@ -993,8 +993,8 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
     if (homdir_ == "z")
     {
       // store them in parameterlist for access on the element
-      modelparams->set<RCP<vector<double> > >("dir1coords_",x1coordinates_);
-      modelparams->set<RCP<vector<double> > >("dir2coords_",x2coordinates_);
+      modelparams->set<RCP<std::vector<double> > >("dir1coords_",x1coordinates_);
+      modelparams->set<RCP<std::vector<double> > >("dir2coords_",x2coordinates_);
     }
   }
 

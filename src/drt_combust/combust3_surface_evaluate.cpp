@@ -31,7 +31,7 @@ Maintainer: Florian Henke
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Combust3Surface::Evaluate(
-    ParameterList&            params,
+    Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
     std::vector<int>&         lm,
     Epetra_SerialDenseMatrix& elemat1,
@@ -59,7 +59,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
         std::vector<double> mydispnp(lm.size(),0.0);
 
         dispnp = discretization.GetState("dispnp");
-        if (dispnp!=null)
+        if (dispnp!=Teuchos::null)
         {
           DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
         }
@@ -109,7 +109,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
           GEO::fillInitialPositionArray<DRT::Element::hex8>(this->parent_, xyze);
 
           // get node coordinates of the surface (2D) element
-          std::vector<std::vector<double> > xicoord(4, vector<double>(3, 0.0));
+          std::vector<std::vector<double> > xicoord(4, std::vector<double>(3, 0.0));
 
           size_t numnodesurf = this->NumNode();
           if (numnodesurf != 4)
@@ -783,7 +783,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
  |  Integrate a Surface Neumann boundary condition (public)  gammi 04/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Combust3Surface::EvaluateNeumann(
-    ParameterList&            params,
+    Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
     std::vector<int>&         lm,
@@ -804,7 +804,7 @@ int DRT::ELEMENTS::Combust3Surface::EvaluateNeumann(
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -812,9 +812,9 @@ int DRT::ELEMENTS::Combust3Surface::EvaluateNeumann(
     curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   // get values and switches from the condition
-  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
-  const vector<double>* val   = condition.Get<vector<double> >("val"  );
-  const vector<int>*    func  = condition.Get<vector<int> >   ("funct");
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
+  const std::vector<int>*    func  = condition.Get<std::vector<int> >   ("funct");
 
   // set number of nodes
   const int iel   = this->NumNode();
@@ -1034,7 +1034,7 @@ void  DRT::ELEMENTS::Combust3Surface::ComputeMetricTensorForSurface(
  |  Integrate shapefunctions over surface (private)          g.bau 07/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Combust3Surface::IntegrateShapeFunction(
-    ParameterList&                   params,
+    Teuchos::ParameterList&          params,
     const DRT::Discretization&       discretization,
     const std::vector<int>&          lm,
     Epetra_SerialDenseVector&        elevec1,
@@ -1150,7 +1150,7 @@ return;
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Combust3Surface::IntegrateSurfaceFlow(
-    ParameterList&                   params,
+    Teuchos::ParameterList&          params,
     const DRT::Discretization&       discretization,
     const std::vector<int>&          lm,
     Epetra_SerialDenseVector&        elevec1,

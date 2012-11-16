@@ -23,7 +23,7 @@
 ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
     Teuchos::RCP<DRT::Discretization> dis,
     Teuchos::RCP<LINALG::Solver> solver,
-    Teuchos::RCP<ParameterList> params,
+    Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<IO::DiscretizationWriter> output,
     bool isale,
     bool dirichletcond)
@@ -35,7 +35,7 @@ ADAPTER::FluidFSI::FluidFSI(Teuchos::RCP<Fluid> fluid,
   meshmap_(Teuchos::rcp(new LINALG::MapExtractor()))
 {
   // make sure
-  if (fluid_ == null)
+  if (fluid_ == Teuchos::null)
     dserror("Failed to create the underlying fluid adapter");
 
   // cast fluid to fluidimplicit
@@ -399,9 +399,9 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
     DRT::Element * actele = fluid_->Discretization()->lColElement(lid);
 
     // get element location vector and ownerships
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
     actele->LocationVector(*fluid_->Discretization(),lm,lmowner,lmstride);
 
 
@@ -465,7 +465,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
     Teuchos::RCP<std::vector<double> > pnewns = Teuchos::rcp(new std::vector<double>(plength,1.0));
     solver->Params().sublist("ML Parameters").set("null space: vectors",&((*pnewns)[0]));
     solver->Params().sublist("ML Parameters").remove("nullspace",false); // necessary?
-    solver->Params().sublist("Michael's secret vault").set<RCP<vector<double> > >("pressure nullspace",pnewns);
+    solver->Params().sublist("Michael's secret vault").set<RCP<std::vector<double> > >("pressure nullspace",pnewns);
   }
 
   solver->Solve(BTB->EpetraOperator(),x,BTvR,true,true);

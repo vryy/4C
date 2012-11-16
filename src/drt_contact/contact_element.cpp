@@ -185,7 +185,7 @@ int CONTACT::CoElement::NumDofPerNode(const DRT::Node& node) const
 /*----------------------------------------------------------------------*
  |  evaluate element (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
-int CONTACT::CoElement::Evaluate(ParameterList&            params,
+int CONTACT::CoElement::Evaluate(Teuchos::ParameterList&   params,
                                  DRT::Discretization&      discretization,
                                  std::vector<int>&         lm,
                                  Epetra_SerialDenseMatrix& elemat1,

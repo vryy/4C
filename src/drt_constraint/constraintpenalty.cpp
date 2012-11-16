@@ -28,8 +28,8 @@ Constraint(discr,conditionname)
   {
     for (unsigned int i=0; i<constrcond_.size();i++)
     {
-      const std::vector<double>* mypenalties = constrcond_[i]->Get<vector<double> >("penalty");
-      const std::vector<double>* myrhos = constrcond_[i]->Get<vector<double> >("rho");
+      const std::vector<double>* mypenalties = constrcond_[i]->Get<std::vector<double> >("penalty");
+      const std::vector<double>* myrhos = constrcond_[i]->Get<std::vector<double> >("rho");
       int condID=constrcond_[i]->GetInt("ConditionID");
       if (mypenalties->size() and myrhos->size())
       {
@@ -65,7 +65,7 @@ Constraint(discr,conditionname)
 }
 
 void UTILS::ConstraintPenalty::Initialize(
-    ParameterList&        params,
+    Teuchos::ParameterList&        params,
     RCP<Epetra_Vector>    systemvector3)
 {
   dserror("method not used for penalty formulation!");
@@ -74,7 +74,7 @@ void UTILS::ConstraintPenalty::Initialize(
 /*------------------------------------------------------------------------*
 *------------------------------------------------------------------------*/
 void UTILS::ConstraintPenalty::Initialize(
-    ParameterList&        params)
+    Teuchos::ParameterList& params)
 {
   // choose action
   switch (constrtype_)
@@ -127,7 +127,7 @@ void UTILS::ConstraintPenalty::Initialize
 /*-----------------------------------------------------------------------*
 *-----------------------------------------------------------------------*/
 void UTILS::ConstraintPenalty::Evaluate(
-    ParameterList&        params,
+    Teuchos::ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
@@ -178,7 +178,7 @@ void UTILS::ConstraintPenalty::Evaluate(
 /*-----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void UTILS::ConstraintPenalty::EvaluateConstraint(
-    ParameterList&        params,
+    Teuchos::ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
@@ -217,7 +217,7 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
       }
 
       // Evaluate loadcurve if defined. Put current load factor in parameterlist
-      const vector<int>*    curve  = cond.Get<vector<int> >("curve");
+      const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
       double curvefac = 1.0;
@@ -246,9 +246,9 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector and ownerships
-        vector<int> lm;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
 
         // get dimension of element matrices and vectors
@@ -295,7 +295,7 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void UTILS::ConstraintPenalty::EvaluateError(
-    ParameterList&        params,
+    Teuchos::ParameterList&        params,
     RCP<Epetra_Vector>    systemvector)
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
@@ -335,9 +335,9 @@ void UTILS::ConstraintPenalty::EvaluateError(
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector and ownerships
-        vector<int> lm;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
 
         // get dimension of element matrices and vectors

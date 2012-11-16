@@ -360,7 +360,7 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
       // number of dof per node in ScaTra
       int numscatradof = scatradis->NumDof(scatradis->lRowNode(lnodeid));
 
-      vector<double> Values(numdim);
+      std::vector<double> Values(numdim);
       for(int index=0;index<numdim;++index)
       {
         const int pos = lnodeid*numscatradof+reactingspeciesid;

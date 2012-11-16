@@ -226,7 +226,7 @@ V0_(V0)
     discret_->SetState("residual displacement",zeros_);
     discret_->SetState("displacement",dis_);
 
-    discret_->Evaluate(p,stiff_,null,fintm_,null,null);
+    discret_->Evaluate(p,stiff_,Teuchos::null,fintm_,Teuchos::null,Teuchos::null);
     discret_->ClearState();
   }
 
@@ -276,7 +276,7 @@ V0_(V0)
 
   // set vector values needed by elements
   discret_->ClearState();
-  discret_->Evaluate(par,null,null,null,null,null);
+  discret_->Evaluate(par,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   discret_->ClearState();
 
   // sum initial density over all procs (including supporting procs)
@@ -345,7 +345,7 @@ void STRUMULTI::MicroStatic::PredictConstDis(LINALG::Matrix<3,3>* defgrd)
     discret_->SetState("displacement",dism_);
     fintm_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->Evaluate(p,stiff_,null,fintm_,null,null);
+    discret_->Evaluate(p,stiff_,Teuchos::null,fintm_,Teuchos::null,Teuchos::null);
     discret_->ClearState();
 
     if (surf_stress_man_->HaveSurfStress())
@@ -433,7 +433,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
     discret_->SetState("displacement",dism_);
     fintm_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->Evaluate(p,stiff_,null,fintm_,null,null);
+    discret_->Evaluate(p,stiff_,Teuchos::null,fintm_,Teuchos::null,Teuchos::null);
     discret_->ClearState();
 
     if (surf_stress_man_->HaveSurfStress())
@@ -527,7 +527,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
     discret_->SetState("displacement",dism_);
     fintm_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->Evaluate(p,stiff_,null,fintm_,null,null);
+    discret_->Evaluate(p,stiff_,Teuchos::null,fintm_,Teuchos::null,Teuchos::null);
     discret_->ClearState();
 
     if (surf_stress_man_->HaveSurfStress())
@@ -627,7 +627,7 @@ void STRUMULTI::MicroStatic::FullNewton()
       discret_->SetState("displacement",dism_);
       fintm_->PutScalar(0.0);  // initialise internal force vector
 
-      discret_->Evaluate(p,stiff_,null,fintm_,null,null);
+      discret_->Evaluate(p,stiff_,Teuchos::null,fintm_,Teuchos::null,Teuchos::null);
       discret_->ClearState();
 
       if (surf_stress_man_->HaveSurfStress())
@@ -697,7 +697,7 @@ void STRUMULTI::MicroStatic::PrepareOutput()
     discret_->ClearState();
     discret_->SetState("residual displacement",zeros_);
     discret_->SetState("displacement",disn_);
-    discret_->Evaluate(p,null,null,null,null,null);
+    discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
     discret_->ClearState();
   }
 }
@@ -732,7 +732,7 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
 
     for (int i=0;i<discret_->ElementColMap()->NumMyElements();++i)
     {
-      if ((*lastalpha_)[i]!=null)
+      if ((*lastalpha_)[i]!=Teuchos::null)
       {
         DRT::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
       }
@@ -744,7 +744,7 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
     data.StartPacking();
     for (int i=0;i<discret_->ElementColMap()->NumMyElements();++i)
     {
-      if ((*lastalpha_)[i]!=null)
+      if ((*lastalpha_)[i]!=Teuchos::null)
       {
         DRT::ParObject::AddtoPack(data, *(*lastalpha_)[i]);
       }
@@ -977,7 +977,7 @@ void STRUMULTI::MicroStatic::UpdateNewTimeStep(Teuchos::RCP<Epetra_Vector> dis,
     RCP<Epetra_SerialDenseMatrix> alphai  = (*alpha)[i];
     RCP<Epetra_SerialDenseMatrix> alphao = (*oldalpha)[i];
 
-    if (alphai!=null && alphao!=null) // update only those elements with EAS
+    if (alphai!=null && alphao!=Teuchos::null) // update only those elements with EAS
     {
       Epetra_BLAS blas;
       blas.SCAL(alphao->M() * alphao->N(), -alphaf_/(1.0-alphaf_), alphao->A());  // alphao *= -alphaf/(1.0-alphaf)
@@ -1000,9 +1000,9 @@ void STRUMULTI::MicroStatic::SetTime(const double time, const double timen, cons
 
 void STRUMULTI::MicroStatic::ClearState()
 {
-  dis_ = null;
-  dism_ = null;
-  disn_ = null;
+  dis_ = Teuchos::null;
+  dism_ = Teuchos::null;
+  disn_ = Teuchos::null;
 }
 
 void STRUMULTI::MicroStatic::SetEASData()

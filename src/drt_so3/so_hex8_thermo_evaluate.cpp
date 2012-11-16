@@ -27,7 +27,7 @@ Maintainer: Caroline Danowski
  | originally by maf 04/07                                              |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex8::Evaluate(
-  ParameterList& params,
+  Teuchos::ParameterList& params,
   DRT::Discretization& discretization,
   DRT::Element::LocationArray& la,
   Epetra_SerialDenseMatrix& elemat1_epetra,
@@ -103,13 +103,13 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     // need current displacement and residual forces
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
     Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState(0,"residual displacement");
-    if (disp==null || res==null)
+    if (disp==Teuchos::null || res==Teuchos::null)
       dserror("Cannot get state vectors 'displacement' and/or residual");
-    vector<double> mydisp((la[0].lm_).size());
+    std::vector<double> mydisp((la[0].lm_).size());
     // build the location vector only for the structure field
-    vector<int> lm = la[0].lm_;
+    std::vector<int> lm = la[0].lm_;
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);  // global, local, lm
-    vector<double> myres((la[0].lm_).size());
+    std::vector<double> myres((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*res,myres,lm);
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
     // build a matrix dummy
@@ -171,10 +171,10 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
       dserror("Cannot get state vectors 'displacement' and/or residual");
 
     // build the location vector only for the structure field
-    vector<int> lm = la[0].lm_;
-    vector<double> mydisp((la[0].lm_).size());
+    std::vector<int> lm = la[0].lm_;
+    std::vector<double> mydisp((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // lm now contains only u-dofs
-    vector<double> myres((la[0].lm_).size());
+    std::vector<double> myres((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*res,myres,lm); // lm now contains only u-dofs
     // call the well-known nlnstiffmass for the normal structure solution
     nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,
@@ -225,12 +225,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     // need current displacement and residual forces
     RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
     RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-    if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+    if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
     // build the location vector only for the structure field
-    vector<int> lm = la[0].lm_;
-    vector<double> mydisp(lm.size());
+    std::vector<int> lm = la[0].lm_;
+    std::vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-    vector<double> myres(lm.size());
+    std::vector<double> myres(lm.size());
     DRT::UTILS::ExtractMyValues(*res,myres,lm);
     // create a dummy element matrix to apply linearised EAS-stuff onto
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
@@ -252,9 +252,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     // need current displacement and residual forces
     Teuchos::RCP<const Epetra_Vector> disp
       = discretization.GetState(0,"displacement");
-    if (disp==null)
+    if (disp==Teuchos::null)
       dserror("Cannot get state vectors 'displacement'");
-    vector<double> mydisp((la[0].lm_).size());
+    std::vector<double> mydisp((la[0].lm_).size());
     // build the location vector only for the structure field
     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
 
@@ -279,7 +279,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     if (discretization.Comm().MyPID()==Owner())
     {
       // build the location vector only for the structure field
-      vector<int> lm = la[0].lm_;
+      std::vector<int> lm = la[0].lm_;
       Teuchos::RCP<const Epetra_Vector> disp
         = discretization.GetState(0,"displacement");
       Teuchos::RCP<const Epetra_Vector> res
@@ -294,9 +294,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
       if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
       if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
       if (plstraindata==Teuchos::null) dserror("Cannot get 'plastic strain' data");
-      vector<double> mydisp((la[0].lm_).size());
+      std::vector<double> mydisp((la[0].lm_).size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres((la[0].lm_).size());
+      std::vector<double> myres((la[0].lm_).size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> strain;
@@ -398,8 +398,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
   {
     // elemat1+2,elevec1-3 are not used anyway
 
-    const Teuchos::RCP<map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap
-      = params.get<Teuchos::RCP<map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+    const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap
+      = params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
     if (gpstressmap==Teuchos::null)
       dserror("no gp stress/strain map available for postprocessing");
     string stresstype = params.get<string>("stresstype","ndxyz");
@@ -455,7 +455,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
  | originally by maf 04/07                                              |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex8::LinEvaluate(
-  ParameterList& params,
+  Teuchos::ParameterList& params,
   DRT::Discretization& discretization,
   DRT::Element::LocationArray& la,
   Epetra_SerialDenseMatrix& elemat1_epetra,
@@ -497,12 +497,12 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     // need current displacement and residual forces
     RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
     RCP<const Epetra_Vector> res  = discretization.GetState(0,"residual displacement");
-    if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+    if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
     // build the location vector only for the structure field
-    vector<int> lm = la[0].lm_;
-    vector<double> mydisp((la[0].lm_).size());
+    std::vector<int> lm = la[0].lm_;
+    std::vector<double> mydisp((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-    vector<double> myres((la[0].lm_).size());
+    std::vector<double> myres((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*res,myres,lm);
     // create a dummy element matrix to apply linearised EAS-stuff onto
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> myemat(true);
@@ -532,7 +532,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       // extract current temperatures declared as RCP<vector>
       Teuchos::RCP<std::vector<double> >robtempnp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
       DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
-      params.set<Teuchos::RCP<vector<double> > >("robinson_tempnp",robtempnp);
+      params.set<Teuchos::RCP<std::vector<double> > >("robinson_tempnp",robtempnp);
 
       // calculate the THERMOmechanical term for fint
       soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,NULL,NULL,params,
@@ -558,13 +558,13 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     // need current displacement and residual forces
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
     Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState(0,"residual displacement");
-    if (disp==null || res==null)
+    if (disp==Teuchos::null || res==Teuchos::null)
       dserror("Cannot get state vectors 'displacement' and/or residual");
-    vector<double> mydisp((la[0].lm_).size());
+    std::vector<double> mydisp((la[0].lm_).size());
     // build the location vector only for the structure field
-    vector<int> lm = la[0].lm_;
+    std::vector<int> lm = la[0].lm_;
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);  // global, local, lm
-    vector<double> myres((la[0].lm_).size());
+    std::vector<double> myres((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*res,myres,lm);
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* matptr = NULL;
     // build a matrix dummy
@@ -595,7 +595,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double> >robtempnp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
       DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
-      params.set<Teuchos::RCP<vector<double> > >("robinson_tempnp",robtempnp);
+      params.set<Teuchos::RCP<std::vector<double> > >("robinson_tempnp",robtempnp);
 
       // calculate the THERMOmechanical term for fint
       soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
@@ -629,10 +629,10 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       dserror("Cannot get state vectors 'displacement' and/or residual");
 
     // build the location vector only for the structure field
-    vector<int> lm = la[0].lm_;
-    vector<double> mydisp((la[0].lm_).size());
+    std::vector<int> lm = la[0].lm_;
+    std::vector<double> mydisp((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // lm now contains only u-dofs
-    vector<double> myres((la[0].lm_).size());
+    std::vector<double> myres((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*res,myres,lm); // lm now contains only u-dofs
 
     // need current temperature state,
@@ -662,7 +662,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       // extract local values of the global vectors
       Teuchos::RCP<std::vector<double> >robtempnp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
       DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
-      params.set<Teuchos::RCP<vector<double> > >("robinson_tempnp",robtempnp);
+      params.set<Teuchos::RCP<std::vector<double> > >("robinson_tempnp",robtempnp);
 
       // build the current temperature vector
       LINALG::Matrix<nen_*numdofpernode_,1> etemp(&(mytempnp[1]),true);  // view only!
@@ -694,7 +694,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     if (discretization.Comm().MyPID()==Owner())
     {
       // build the location vector only for the structure field
-      vector<int> lm = la[0].lm_;
+      std::vector<int> lm = la[0].lm_;
       Teuchos::RCP<const Epetra_Vector> disp
         = discretization.GetState(0,"displacement");
       Teuchos::RCP<const Epetra_Vector> res
@@ -710,9 +710,9 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
       if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
       if (plstraindata==Teuchos::null) dserror("Cannot get 'plastic strain' data");
-      vector<double> mydisp((la[0].lm_).size());
+      std::vector<double> mydisp((la[0].lm_).size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres((la[0].lm_).size());
+      std::vector<double> myres((la[0].lm_).size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> stress;
 
@@ -758,7 +758,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
         // extract local values of the global vectors
         Teuchos::RCP<std::vector<double> >robtempnp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
         DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
-        params.set<Teuchos::RCP<vector<double> > >("robinson_tempnp",robtempnp);
+        params.set<Teuchos::RCP<std::vector<double> > >("robinson_tempnp",robtempnp);
 
         // calculate the THERMOmechanical term for fint: temperature stresses
         soh8_finttemp(la,mydisp,myres,mytempnp,NULL,&stresstemp,NULL,params,
@@ -850,16 +850,16 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
   {
     // elemat1+2,elevec1-3 are not used anyway
 
-    const Teuchos::RCP<map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap
-      = params.get<Teuchos::RCP<map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+    const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap
+      = params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
     if (gpstressmap==Teuchos::null)
       dserror("no gp stress/strain map available for postprocessing");
     string stresstype = params.get<string>("stresstype","ndxyz");
     int gid = Id();
     LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> gpstress(((*gpstressmap)[gid])->A(),true);
     Teuchos::RCP<Epetra_MultiVector> poststress
-      = params.get<RCP<Epetra_MultiVector> >("poststress",null);
-    if (poststress==null)
+      = params.get<RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
+    if (poststress==Teuchos::null)
       dserror("No element stress/strain vector available");
 
     if (stresstype=="ndxyz")
@@ -903,9 +903,9 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     // need current displacement and residual forces
     Teuchos::RCP<const Epetra_Vector> disp
       = discretization.GetState(0,"displacement");
-    if (disp==null)
+    if (disp==Teuchos::null)
       dserror("Cannot get state vectors 'displacement'");
-    vector<double> mydisp((la[0].lm_).size());
+    std::vector<double> mydisp((la[0].lm_).size());
     // build the location vector only for the structure field
     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
 
@@ -929,16 +929,16 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
  |  evaluate the element (private)                           dano 05/10 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::linstiffmass(
-  vector<int>& lm,  // location matrix
-  vector<double>& disp,  // current displacements
-  vector<double>& residual,  // current residual displacements or displacement increment
+  std::vector<int>& lm,  // location matrix
+  std::vector<double>& disp,  // current displacements
+  std::vector<double>& residual,  // current residual displacements or displacement increment
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  // element stiffness matrix
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  // element mass matrix
   LINALG::Matrix<NUMDOF_SOH8,1>* force,  // element internal force vector
   LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  // stresses at GP
   LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  // strains at GP
   LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain, // plastic strains at GP
-  ParameterList& params,  // algorithmic parameters e.g. time
+  Teuchos::ParameterList& params,  // algorithmic parameters e.g. time
   const INPAR::STR::StressType iostress,  // stress output option
   const INPAR::STR::StrainType iostrain,  // strain output option
   const INPAR::STR::StrainType ioplstrain  // plastic strain output option
@@ -1109,8 +1109,8 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
       LINALG::Matrix<1,1> Ntemp(false);
       LINALG::Matrix<NUMSTR_SOH8,1> ctemp(true);
 
-      Teuchos::RCP<vector<double> > temperature_vector
-        = params.get<Teuchos::RCP<vector<double> > >("robinson_tempnp",Teuchos::null);
+      Teuchos::RCP<std::vector<double> > temperature_vector
+        = params.get<Teuchos::RCP<std::vector<double> > >("robinson_tempnp",Teuchos::null);
       // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
       if (temperature_vector==Teuchos::null)
       {
@@ -1253,8 +1253,8 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_finttemp(
   DRT::Element::LocationArray& la,  // location array
-  vector<double>& disp,  // current displacements
-  vector<double>& residual,  // current residual displ
+  std::vector<double>& disp,  // current displacements
+  std::vector<double>& residual,  // current residual displ
   vector<double>& temp, // current temperature
   LINALG::Matrix<NUMDOF_SOH8,1>* force,  // element internal force vector
   LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  // stresses at GP
@@ -1458,7 +1458,7 @@ void DRT::ELEMENTS::So_hex8::soh8_finttemp(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_stifftemp(
   DRT::Element::LocationArray& la,
-  vector<double>& disp,
+  std::vector<double>& disp,
   // element mechanical-thermal stiffness matrix
   LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>* stiffmatrixcoupl // (nsd_*nen_ x nen_)
   )

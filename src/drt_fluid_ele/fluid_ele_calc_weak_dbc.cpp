@@ -140,9 +140,9 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype>
 int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   FluidBoundary*             surfele       ,
-  ParameterList&             params        ,
+  Teuchos::ParameterList&    params        ,
   DRT::Discretization&       discretization,
-  vector<int>&               lm            ,
+  std::vector<int>&          lm            ,
   Epetra_SerialDenseMatrix&  elemat_epetra ,
   Epetra_SerialDenseVector&  elevec_epetra )
 {
@@ -225,7 +225,7 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = (*wdbc_cond).Get<vector<int> >("curve");
+  const std::vector<int>* curve  = (*wdbc_cond).Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -234,7 +234,7 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   // get values and switches from the condition
   // (assumed to be constant on element boundary)
-  const vector<int>* functions = (*wdbc_cond).Get<vector<int> >   ("funct");
+  const std::vector<int>* functions = (*wdbc_cond).Get<std::vector<int> >   ("funct");
 
   // I hope we have a linear element.
   // Ciarlet PG. The Finite element method for elliptic
@@ -281,7 +281,7 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   const double Cb = 4.0*scaling;
 
   // get value for boundary condition
-  const vector<double>* val = (*wdbc_cond).Get<vector<double> >("val");
+  const std::vector<double>* val = (*wdbc_cond).Get<std::vector<double> >("val");
 
   if(spalding)
   {
@@ -336,7 +336,7 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   RCP<const Epetra_Vector> velaf
     =
     discretization.GetState("velaf");
-  if (velaf==null)
+  if (velaf==Teuchos::null)
     dserror("Cannot get state vector 'velaf'");
 
   vector<double> mypvelaf((*plm).size());
@@ -352,7 +352,7 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     RCP<const Epetra_Vector> velnp
       =
       discretization.GetState("velnp");
-    if (velnp==null)
+    if (velnp==Teuchos::null)
       dserror("Cannot get state vector 'velnp'");
 
     DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,*plm);
@@ -369,7 +369,7 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     RCP<const Epetra_Vector> dispnp
       =
       discretization.GetState("dispnp");
-    if (dispnp==null)
+    if (dispnp==Teuchos::null)
     {
       dserror("Cannot get state vector 'dispnp'");
     }
@@ -2089,9 +2089,9 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype>
 int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   FluidBoundary*                lineele       ,
-  ParameterList&             params        ,
+  Teuchos::ParameterList&    params        ,
   DRT::Discretization&       discretization,
-  vector<int>&               lm            ,
+  std::vector<int>&          lm            ,
   Epetra_SerialDenseMatrix&  elemat_epetra ,
   Epetra_SerialDenseVector&  elevec_epetra )
 {
@@ -2159,7 +2159,7 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = (*wdbc_cond).Get<vector<int> >("curve");
+  const std::vector<int>* curve  = (*wdbc_cond).Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -2168,7 +2168,7 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   // get values and switches from the condition
   // (assumed to be constant on element boundary)
-  const vector<int>* functions = (*wdbc_cond).Get<vector<int> >   ("funct");
+  const std::vector<int>* functions = (*wdbc_cond).Get<std::vector<int> >   ("funct");
 
   // I hope we have a linear element.
   // Ciarlet PG. The Finite element method for elliptic
@@ -2210,7 +2210,7 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   const double Cb = 4.0*scaling;
 
   // get value for boundary condition
-  const vector<double>* val = (*wdbc_cond).Get<vector<double> >("val");
+  const std::vector<double>* val = (*wdbc_cond).Get<std::vector<double> >("val");
 
   // get time integration parameter
   //const double afgdt = params.get<double>("afgdt");
@@ -2254,7 +2254,7 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   RCP<const Epetra_Vector> velaf
     =
     discretization.GetState("velaf");
-  if (velaf==null)
+  if (velaf==Teuchos::null)
     dserror("Cannot get state vector 'velaf'");
 
   vector<double> mypvelaf((*plm).size());
@@ -2270,7 +2270,7 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     RCP<const Epetra_Vector> velnp
       =
       discretization.GetState("velnp");
-    if (velnp==null)
+    if (velnp==Teuchos::null)
       dserror("Cannot get state vector 'velnp'");
 
     DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,*plm);
@@ -2287,7 +2287,7 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     RCP<const Epetra_Vector> dispnp
       =
       discretization.GetState("dispnp");
-    if (dispnp==null)
+    if (dispnp==Teuchos::null)
     {
       dserror("Cannot get state vector 'dispnp'");
     }

@@ -124,7 +124,7 @@ POTENTIAL::SurfacePotential::SurfacePotential(
 | Call discretization to evaluate additional contributions due to    |
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
-void POTENTIAL::SurfacePotential::EvaluatePotential(  ParameterList& p,
+void POTENTIAL::SurfacePotential::EvaluatePotential(  Teuchos::ParameterList& p,
                                                   RCP<Epetra_Vector> disp,
                                                   RCP<Epetra_Vector> fint,
                                                   RCP<LINALG::SparseMatrix> stiff)
@@ -136,7 +136,7 @@ void POTENTIAL::SurfacePotential::EvaluatePotential(  ParameterList& p,
   discret_.SetState("displacement",disp);
   UpdateDisplacementsOfPotentialDiscretization(disp);
 
-  EvaluateSurfacePotentialCondition(p,stiff,null,fint,null,null,"Potential");
+  EvaluateSurfacePotentialCondition(p,stiff,Teuchos::null,fint,Teuchos::null,Teuchos::null,"Potential");
 
   return;
 }
@@ -149,7 +149,7 @@ void POTENTIAL::SurfacePotential::EvaluatePotential(  ParameterList& p,
 | evaluate potential conditions based on a Epetra_FecrsMatrix        |
 *--------------------------------------------------------------------*/
 void POTENTIAL::SurfacePotential::EvaluateSurfacePotentialCondition(
-    ParameterList&                          params,
+    Teuchos::ParameterList&                          params,
     RCP<LINALG::SparseMatrix>       systemmatrix1,
     RCP<LINALG::SparseMatrix>       systemmatrix2,
     RCP<Epetra_Vector>              systemvector1,
@@ -189,7 +189,7 @@ void POTENTIAL::SurfacePotential::EvaluateSurfacePotentialCondition(
     map<int,RCP<DRT::Element> >::iterator curr;
 
     // Evaluate Loadcurve if defined. Put current load factor in parameterlist
-    const vector<int>*    curve  = (*condIter)->Get<vector<int> >("curve");
+    const std::vector<int>*    curve  = (*condIter)->Get<std::vector<int> >("curve");
     int                   curvenum = -1;
     if (curve) curvenum = (*curve)[0];
     double                curvefac = 1.0;
@@ -210,9 +210,9 @@ void POTENTIAL::SurfacePotential::EvaluateSurfacePotentialCondition(
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
       // get element location vector and ownerships
-      vector<int> lm;
-      vector<int> lmrowowner;
-      vector<int> lmstride;
+      std::vector<int> lm;
+      std::vector<int> lmrowowner;
+      std::vector<int> lmstride;
       curr->second->LocationVector(discret_,lm,lmrowowner,lmstride);
       const int rowsize = lm.size();
 
@@ -225,8 +225,8 @@ void POTENTIAL::SurfacePotential::EvaluateSurfacePotentialCondition(
       if (err) dserror("error while evaluating elements");
 
       // specify lm row and lm col
-      vector<int> lmrow;
-      vector<int> lmcol;
+      std::vector<int> lmrow;
+      std::vector<int> lmcol;
       // only local values appeared
       if((int) lm.size() == rowsize)
       {
@@ -272,13 +272,13 @@ void POTENTIAL::SurfacePotential::EvaluateSurfacePotentialCondition(
 void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotential(
     const DRT::Element*             element,
     const DRT::UTILS::GaussRule2D&  gaussrule,
-    ParameterList&                  params,
-    vector<int>&                    lm,
+    Teuchos::ParameterList&         params,
+    std::vector<int>&               lm,
     Epetra_SerialDenseMatrix&       K_surf,
     Epetra_SerialDenseVector&       F_int)
 {
   // initialize Lennard Jones potential constant variables
-  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
+  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
 
   // find nodal ids influencing a given element
   const int     label     = cond->GetInt("label");		//jeder Körper besitzt ein label
@@ -321,15 +321,15 @@ void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotential(
 void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotentialApprox1(
     const DRT::Element*             element,
     const DRT::UTILS::GaussRule2D&  gaussrule,
-    ParameterList&                  params,
-    vector<int>&                    lm,
+    Teuchos::ParameterList&         params,
+    std::vector<int>&               lm,
     Epetra_SerialDenseMatrix&       K_surf,
     Epetra_SerialDenseVector&       F_int
     )
 {
 
   // get potential paramters
-  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
+  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
   const int     label     = cond->GetInt("label");		//jeder Körper besitzt ein label
   const double  cutOff    = cond->GetDouble("cutOff");
 
@@ -374,13 +374,13 @@ void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotentialApprox1(
 void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotentialApprox2(
     const DRT::Element*             element,
     const DRT::UTILS::GaussRule2D&  gaussrule,
-    ParameterList&                  params,
-    vector<int>&                    lm,
+    Teuchos::ParameterList&         params,
+    std::vector<int>&               lm,
     Epetra_SerialDenseMatrix&       K_surf,
     Epetra_SerialDenseVector&       F_int)
 {
   // get potential condition
-  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
+  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
   const int     label     = cond->GetInt("label");    //jeder Körper besitzt ein label
   const double  cutOff    = cond->GetDouble("cutOff");
 
@@ -411,13 +411,13 @@ void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotentialApprox2(
 void POTENTIAL::SurfacePotential::StiffnessAndInternalForcesPotential(
     const DRT::Element*             element,
     const DRT::UTILS::GaussRule1D&  gaussrule,
-    ParameterList&                  params,
-    vector<int>&                    lm,
+    Teuchos::ParameterList&         params,
+    std::vector<int>&               lm,
     Epetra_SerialDenseMatrix&       K_surf,
     Epetra_SerialDenseVector&       F_int)
 {
   // initialize Lennard Jones potential constant variables
-  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
+  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
 
   // find nodal ids influencing a given element
   const int     label     = cond->GetInt("label");
@@ -476,11 +476,11 @@ void POTENTIAL::SurfacePotential::UpdateDisplacementsOfPotentialDiscretization(
     for (int lid = 0; lid < potentialdis_->NumMyColNodes(); ++lid)
     {
       const DRT::Node* node = potentialdis_->lColNode(lid);
-      vector<int> lm;
+      std::vector<int> lm;
       lm.reserve(3);
       // extract global dof ids
       potentialdis_->Dof(node, lm);
-      vector<double> mydisp(3);
+      std::vector<double> mydisp(3);
       LINALG::Matrix<3,1> currpos;
       DRT::UTILS::ExtractMyValues(*idisp_total_,mydisp,lm);
       currpos(0) = node->X()[0] + mydisp[0];
@@ -512,7 +512,7 @@ void POTENTIAL::SurfacePotential::computeFandK(
    const DRT::Element*              actEle,
    const DRT::UTILS::GaussRule2D&   gaussrule,
    std::map<int,std::set<int> >&    potElements,
-   vector<int>&                     lm,
+   std::vector<int>&                lm,
    Epetra_SerialDenseMatrix&        K_surf,
    Epetra_SerialDenseVector&        F_int,
    RCP<DRT::Condition>      cond,
@@ -560,9 +560,9 @@ void POTENTIAL::SurfacePotential::computeFandK(
          const double beta_pot = GetAtomicDensity(element_pot->Id(), "Potential", labelByElement_);
 
          // obtain current potential dofs
-         vector<int> lmpot;
-         vector<int> lmowner;
-         vector<int> lmstride;
+         std::vector<int> lmpot;
+         std::vector<int> lmowner;
+         std::vector<int> lmstride;
          element_pot->LocationVector(*potentialdis_,lmpot,lmowner,lmstride);
 
          // obtain Gaussrule and integration points
@@ -659,7 +659,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1(
    const DRT::Element*              actEle,
    const DRT::UTILS::GaussRule2D&   gaussrule,
    std::map<int,std::set<int> >&    potElements,
-   vector<int>&                     lm,
+   std::vector<int>&                lm,
    Epetra_SerialDenseMatrix&        K_surf,
    Epetra_SerialDenseVector&        F_int,
    RCP<DRT::Condition>      cond,
@@ -724,9 +724,9 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1(
          const double beta_pot = GetAtomicDensity(element_pot->Id(), "Potential", labelByElement_);
 
          // obtain current potential dofs
-         vector<int> lmpot;
-         vector<int> lmowner;
-         vector<int> lmstride;
+         std::vector<int> lmpot;
+         std::vector<int> lmowner;
+         std::vector<int> lmstride;
          element_pot->LocationVector(*potentialdis_,lmpot,lmowner,lmstride);
 
          // obtain Gaussrule and integration points
@@ -863,7 +863,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
    const DRT::Element*              actEle,
    const DRT::UTILS::GaussRule2D&   gaussrule,
    std::map<int,std::set<int> >&    potElements,
-   vector<int>&                     lm,
+   std::vector<int>&                lm,
    Epetra_SerialDenseMatrix&        K_surf,
    Epetra_SerialDenseVector&        F_int,
    RCP<DRT::Condition>      cond,
@@ -916,9 +916,9 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx1_new(
          //cout << " influencing element" << endl;
          //element_pot->Print(cout);
          // obtain current potential dofs
-         vector<int> lmpot;
-         vector<int> lmowner;
-         vector<int> lmstride;
+         std::vector<int> lmpot;
+         std::vector<int> lmowner;
+         std::vector<int> lmstride;
          element_pot->LocationVector(*potentialdis_,lmpot,lmowner,lmstride);
 
          // obtain Gaussrule and integration points
@@ -1044,7 +1044,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2(
    const DRT::Element*                                        actEle,
    const DRT::UTILS::GaussRule2D&                             gaussrule,
    const std::map< int, std::map<int, GEO::NearestObject> >&  potentialObjects,
-   vector<int>&                                               lm,
+   std::vector<int>&                                          lm,
    Epetra_SerialDenseMatrix&                                  K_surf,
    Epetra_SerialDenseVector&                                  F_int,
    RCP<DRT::Condition>                                cond,
@@ -1102,9 +1102,9 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2(
         const double beta_pot = GetAtomicDensity(element_pot->Id(), "Potential", labelByElement_);
 
         // obtain current potential dofs
-        vector<int> lmpot;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lmpot;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         element_pot->LocationVector(*potentialdis_,lmpot,lmowner,lmstride);
 
         //Compute normal and detF in xp
@@ -1220,7 +1220,7 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2_new(
    const DRT::Element*                                        actEle,
    const DRT::UTILS::GaussRule2D&                             gaussrule,
    const std::map< int, std::map<int, GEO::NearestObject> >&  potentialObjects,
-   vector<int>&                                               lm,
+   std::vector<int>&                                          lm,
    Epetra_SerialDenseMatrix&                                  K_surf,
    Epetra_SerialDenseVector&                                  F_int,
    RCP<DRT::Condition>                                cond,
@@ -1284,9 +1284,9 @@ void POTENTIAL::SurfacePotential::computeFandK_Approx2_new(
         const double beta_pot = GetAtomicDensity(element_pot->Id(), "Potential", labelByElement_);
 
         // obtain current potential dofs
-        vector<int> lmpot;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lmpot;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         element_pot->LocationVector(*potentialdis_,lmpot,lmowner,lmstride);
 
         //Compute normal on potential elment in xp
@@ -1403,7 +1403,7 @@ void POTENTIAL::SurfacePotential::computeFandK(
    const DRT::Element*              actEle,
    const DRT::UTILS::GaussRule1D&   gaussrule,
    std::map<int,std::set<int> >&    potElements,
-   vector<int>&                     lm,
+   std::vector<int>&                lm,
    Epetra_SerialDenseMatrix&        K_surf,
    Epetra_SerialDenseVector&        F_int,
    RCP<DRT::Condition>      cond,
@@ -1446,9 +1446,9 @@ void POTENTIAL::SurfacePotential::computeFandK(
          const DRT::Element* element_pot = potentialdis_->gElement(*eleIter);
 
          // obtain current potential dofs
-         vector<int> lmpot;
-         vector<int> lmowner;
-         vector<int> lmstride;
+         std::vector<int> lmpot;
+         std::vector<int> lmowner;
+         std::vector<int> lmstride;
          element_pot->LocationVector(*potentialdis_,lmpot,lmowner,lmstride);
          const double beta_pot = GetAtomicDensity(element_pot->Id(), "Potential", labelByElement_);
 
@@ -2119,7 +2119,7 @@ bool POTENTIAL::SurfacePotential::DetermineValidContribution(
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
 void POTENTIAL::SurfacePotential::TestEvaluatePotential(
-  ParameterList&                      p,
+  Teuchos::ParameterList&                      p,
   RCP<Epetra_Vector>          disp,
   RCP<Epetra_Vector>          fint,
   RCP<LINALG::SparseMatrix>   stiff,
@@ -2133,7 +2133,7 @@ void POTENTIAL::SurfacePotential::TestEvaluatePotential(
   discret_.SetState("displacement",disp);
 
   // TODO compute elements by label for volume elements of the spheres
-  EvaluateSurfacePotentialCondition(p,stiff,null,fint,null,null,"Potential");
+  EvaluateSurfacePotentialCondition(p,stiff,Teuchos::null,fint,Teuchos::null,Teuchos::null,"Potential");
 
   std::map<int, std::set<int> > elementsByLabel_Vol = computeEleByLabelVol(discret_.GetState("displacement") ,elementsByLabel_);
   // compute test results
@@ -2225,7 +2225,7 @@ void POTENTIAL::SurfacePotential::TestEvaluatePotential(ParameterList& p,
   discret_.ClearState();
   discret_.SetState("displacement",disp);
 
-  EvaluateSurfacePotentialCondition(p,stiff,null,fint,null,null,"Potential");
+  EvaluateSurfacePotentialCondition(p,stiff,Teuchos::null,fint,Teuchos::null,Teuchos::null,"Potential");
 
   // center of gravity
 
@@ -2338,10 +2338,10 @@ void POTENTIAL::SurfacePotential::UpdateDisplacements(
 
   for (int i=0; i< element->NumNode(); i++)
   {
-    vector<int> lm;
+    std::vector<int> lm;
     lm.reserve(3);
     discretRCP_->Dof(node[i], lm);
-    vector<double> mydisp(3);
+    std::vector<double> mydisp(3);
 
     //Updaten der Knotenpositonen und speichern in xyze
     DRT::UTILS::ExtractMyValues(*idisp_solid,mydisp,lm);

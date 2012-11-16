@@ -26,12 +26,12 @@ void XFEM::DofDistributionSwitcher::extractDofKeysForInitialization(
   unknownFieldEnr.clear();
 
   // step 1: find predecessor of new nodal dofkey
-  for (map<DofKey, DofGID>::const_iterator newdof = newNodalDofDistrib_.begin();
+  for (std::map<DofKey, DofGID>::const_iterator newdof = newNodalDofDistrib_.begin();
                                                    newdof != newNodalDofDistrib_.end();
                                                    ++newdof)
   {
     const DofKey newdofkey = newdof->first;
-    map<DofKey, DofGID>::const_iterator olddof = oldNodalDofDistrib_.find(newdofkey);
+    std::map<DofKey, DofGID>::const_iterator olddof = oldNodalDofDistrib_.find(newdofkey);
     if (olddof != oldNodalDofDistrib_.end()) // if dofkey has existed before, use old value
     {
 
@@ -43,14 +43,14 @@ void XFEM::DofDistributionSwitcher::extractDofKeysForInitialization(
   }
 
   // step 2: find successor of old nodal dofkey to sum up values
-  for (map<DofKey, DofGID>::const_iterator olddof = oldNodalDofDistrib_.begin();
+  for (std::map<DofKey, DofGID>::const_iterator olddof = oldNodalDofDistrib_.begin();
                                                    olddof != oldNodalDofDistrib_.end();
                                                    ++olddof)
   {
     const DofKey olddofkey = olddof->first;
 
     // try to find successor
-    map<DofKey, DofGID>::const_iterator newdof = newNodalDofDistrib_.find(olddofkey);
+    std::map<DofKey, DofGID>::const_iterator newdof = newNodalDofDistrib_.find(olddofkey);
     if (newdof == newNodalDofDistrib_.end())  // if no successor found (was handled already in step 1)
     {
       // try to find another usefull value
@@ -122,7 +122,7 @@ void XFEM::DofDistributionSwitcher::GmshOutput(
   {
     const DRT::Node* actnode = ih_->FluidDis()->lColNode(i);
     const LINALG::Matrix<3,1> pos(actnode->X());
-    map<int,std::set<XFEM::FieldEnr> >::const_iterator iter = unknownFieldEnr_.find(actnode->Id());
+    std::map<int,std::set<XFEM::FieldEnr> >::const_iterator iter = unknownFieldEnr_.find(actnode->Id());
     int unknown = 0;
     if (iter != unknownFieldEnr_.end()) unknown = 1;
     IO::GMSH::cellWithScalarToStream(DRT::Element::point1, unknown, pos, gmshfilecontent);
@@ -134,7 +134,7 @@ void XFEM::DofDistributionSwitcher::GmshOutput(
   {
     const DRT::Node* actnode = ih_->FluidDis()->lColNode(i);
     const LINALG::Matrix<3,1> pos(actnode->X());
-    map<int,std::set<XFEM::FieldEnr> >::const_iterator iter = unknownFieldEnr_.find(actnode->Id());
+    std::map<int,std::set<XFEM::FieldEnr> >::const_iterator iter = unknownFieldEnr_.find(actnode->Id());
     int id = -1;
     if (iter != unknownFieldEnr_.end()) id = actnode->Id();
     IO::GMSH::cellWithScalarToStream(DRT::Element::point1, id, pos, gmshfilecontent);
@@ -200,7 +200,7 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
   // create new vector with new number of dofs
   const Teuchos::RCP<Epetra_Vector> newVector = Teuchos::rcp(new Epetra_Vector(newdofrowmap_,true));
 
-  if (vector == null)
+  if (vector == Teuchos::null)
   {
 #ifdef DEBUG
     std::cout << "  created new vector with all zeros" << endl;
@@ -221,14 +221,14 @@ void XFEM::DofDistributionSwitcher::mapVectorToNewDofDistributionCombust(
     if (not oldmap.SameAs(olddofrowmap_)) dserror("bug!");
 
     // step 1: find predecessor of new nodal dofkey
-    for (map<DofKey, DofGID>::const_iterator newdof = newNodalDofDistrib_.begin();
+    for (std::map<DofKey, DofGID>::const_iterator newdof = newNodalDofDistrib_.begin();
                                                      newdof != newNodalDofDistrib_.end();
                                                      ++newdof)
     {
       const DofKey newdofkey = newdof->first;
       const int newdofpos = newdof->second;
 
-      map<DofKey, DofGID>::const_iterator olddof = oldNodalDofDistrib_.find(newdofkey);
+      std::map<DofKey, DofGID>::const_iterator olddof = oldNodalDofDistrib_.find(newdofkey);
       if (olddof != oldNodalDofDistrib_.end()) // if dofkey has existed before, use old value
       {
         const DofKey olddofkey = olddof->first;

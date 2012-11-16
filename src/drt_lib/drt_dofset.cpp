@@ -136,12 +136,12 @@ void DRT::DofSet::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void DRT::DofSet::Reset()
 {
-  dofrowmap_ = null;
-  dofcolmap_ = null;
-  numdfcolnodes_ = null;
-  numdfcolelements_ = null;
-  idxcolnodes_ = null;
-  idxcolelements_ = null;
+  dofrowmap_ = Teuchos::null;
+  dofcolmap_ = Teuchos::null;
+  numdfcolnodes_ = Teuchos::null;
+  numdfcolelements_ = Teuchos::null;
+  idxcolnodes_ = Teuchos::null;
+  idxcolelements_ = Teuchos::null;
 
   filled_ = false;
 

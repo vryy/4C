@@ -168,7 +168,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   // care for periodic boundary conditions
   // -------------------------------------------------------------------
 
-  pbcmapmastertoslave_ = params_->get<RCP<map<int,vector<int> > > >("periodic bc");
+  pbcmapmastertoslave_ = params_->get<RCP<map<int,std::vector<int> > > >("periodic bc");
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
   // ensure that degrees of freedom in the discretization have been set
@@ -945,7 +945,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
 
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
-    discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null);
+    discret_->EvaluateDirichlet(eleparams,velnp_,Teuchos::null,Teuchos::null,Teuchos::null);
 
 #ifdef D_ALE_BFLOW
     if (alefluid_)
@@ -1248,7 +1248,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
            "L_2_norm_without_residual_at_itemax"))
       {
         // call standard loop over elements
-        discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
+        discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
 
         discret_->ClearState();
 
@@ -1487,7 +1487,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         c_->PutScalar(0.0);
 
         // get pressure
-        const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+        const std::vector<double>* mode = KSPcond->Get<std::vector<double> >("mode");
 
         for(int rr=0;rr<numdim_;++rr)
         {
@@ -1564,7 +1564,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
            "KrylovSpaceProjection");
 
         // get pressure
-        const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+        const std::vector<double>* mode = KSPcond->Get<std::vector<double> >("mode");
 
         for(int rr=0;rr<numdim_;++rr)
         {
@@ -2098,7 +2098,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
           c_->PutScalar(0.0);
 
           // get pressure
-          const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+          const std::vector<double>* mode = KSPcond->Get<std::vector<double> >("mode");
 
           for(int rr=0;rr<numdim_;++rr)
           {
@@ -2176,7 +2176,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
            "KrylovSpaceProjection");
 
           // get pressure
-          const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+          const std::vector<double>* mode = KSPcond->Get<std::vector<double> >("mode");
 
           for(int rr=0;rr<numdim_;++rr)
           {
@@ -2494,7 +2494,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   }
 
   // call standard loop over elements
-  discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
+  discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
   discret_->ClearState();
 
   // account for potential Neumann inflow terms
@@ -2908,7 +2908,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
 //
 //  // all surfaces of Fluid elements are FluidBoundaryElements
 //  // better: create FluidInternalSurfaces elements
-//  vector<Teuchos::RCP<DRT::Element> > surfaces = actele->Surfaces();
+//  std::vector<Teuchos::RCP<DRT::Element> > surfaces = actele->Surfaces();
 //
 //  // loop over surfaces
 //  for (unsigned int surf=0; surf<surfaces.size(); ++surf)
@@ -3015,7 +3015,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
 //      else
 //      {
 //        // do adjele and ele share a common surface ?
-//        vector<Teuchos::RCP<DRT::Element> > adjele_surfaces = adjele->Surfaces();
+//        std::vector<Teuchos::RCP<DRT::Element> > adjele_surfaces = adjele->Surfaces();
 //
 //        // loop over surfaces of adjacent element
 //        for (unsigned int adj_surf=0; adj_surf<adjele_surfaces.size(); ++adj_surf)
@@ -3419,7 +3419,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     eleparams.set("dt"     ,dta_    );
 
     // call loop over elements to update subgrid scales
-    discret_->Evaluate(eleparams,null,null,null,null,null);
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
     if(myrank_==0)
     {
@@ -3815,8 +3815,8 @@ void FLD::FluidImplicitTimeInt::Output()
   // Check if one-dimensional artery network problem exist
   if (ART_exp_timeInt_ != Teuchos::null)
   {
-    RCP<ParameterList> redD_export_params;
-    redD_export_params = Teuchos::rcp(new ParameterList());
+    RCP<Teuchos::ParameterList> redD_export_params;
+    redD_export_params = Teuchos::rcp(new Teuchos::ParameterList());
 
     redD_export_params->set<int>("step",step_);
     redD_export_params->set<int>("upres",upres_);
@@ -3829,8 +3829,8 @@ void FLD::FluidImplicitTimeInt::Output()
   // Check if one-dimensional artery network problem exist
   if (airway_imp_timeInt_ != Teuchos::null)
   {
-    RCP<ParameterList> redD_export_params;
-    redD_export_params = Teuchos::rcp(new ParameterList());
+    RCP<Teuchos::ParameterList> redD_export_params;
+    redD_export_params = Teuchos::rcp(new Teuchos::ParameterList());
 
     redD_export_params->set<int>("step",step_);
     redD_export_params->set<int>("upres",upres_);
@@ -3873,7 +3873,7 @@ void FLD::FluidImplicitTimeInt::Output()
     //cout << "this is my gdof vector" << gdofs[0] << " " << gdofs[1] << " " << gdofs[2] << endl;
 
     // get displacements of a node
-    vector<double> mydisp (3,0.0);
+    std::vector<double> mydisp (3,0.0);
     for (int ldof = 0; ldof<3; ldof ++)
     {
       int displid = dofrowmap->LID(gdofs[ldof]);
@@ -4204,7 +4204,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
 
   // element evaluation for getting system matrix
   // -> we merely need matrix "structure" below, not the actual contents
-  discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
+  discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
   discret_->ClearState();
   // reset the vector modified above
   scaaf_->PutScalar(0.0);
@@ -4225,7 +4225,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
     MLAPI::Init();
 
     // extract the ML parameters:
-    ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");
+    Teuchos::ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");
     // remark: we create a new solver with ML preconditioner here, since this allows for also using other solver setups
     // to solve the system of equations
     // get the solver number used form the multifractal subgrid-scale model parameter list
@@ -4336,7 +4336,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      const vector<int> nodedofset = discret_->Dof(0,lnode);
+      const std::vector<int> nodedofset = discret_->Dof(0,lnode);
 
       for(int index=0;index<numdim_+1;++index)
       {
@@ -4422,7 +4422,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
           // yes, we have one
 
           // get the list of all his slavenodes
-          map<int, vector<int> >::iterator master = pbcmapmastertoslave_->find(lnode->Id());
+          std::map<int, vector<int> >::iterator master = pbcmapmastertoslave_->find(lnode->Id());
 
           // slavenodes are ignored
           if(master == pbcmapmastertoslave_->end()) continue;
@@ -4458,10 +4458,10 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
     // define vectors for velocity field, node coordinates and coordinates
     // of left and right vortex
-    vector<double> u(numdim_);
-    vector<double> xy(numdim_);
-    vector<double> xy0_left(numdim_);
-    vector<double> xy0_right(numdim_);
+    std::vector<double> u(numdim_);
+    std::vector<double> xy(numdim_);
+    std::vector<double> xy0_left(numdim_);
+    std::vector<double> xy0_right(numdim_);
 
     // check whether present flow is indeed two-dimensional
     if (numdim_!=2) dserror("Counter-rotating vortices are a two-dimensional flow!");
@@ -4578,9 +4578,9 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
     const int npredof = numdim_;
 
     double         p;
-    vector<double> u  (numdim_);
-//    vector<double> acc(numdim_);
-    vector<double> xyz(numdim_);
+    std::vector<double> u  (numdim_);
+//    std::vector<double> acc(numdim_);
+    std::vector<double> xyz(numdim_);
 
     // check whether present flow is indeed three-dimensional
     if (numdim_!=3) dserror("Beltrami flow is a three-dimensional flow!");
@@ -4667,8 +4667,8 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
     if (numdim_!=2) dserror("Bochev test case is a two-dimensional flow!");
 
     // define vectors for velocity and pressure field as well as node coordinates
-    vector<double> up(numdim_+1);
-    vector<double> xy(numdim_);
+    std::vector<double> up(numdim_+1);
+    std::vector<double> xy(numdim_);
 
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
@@ -5109,7 +5109,7 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
       discret_->SetState("velaf",velnp_);
       // predicted dirichlet values
       // velnp then also holds prescribed new dirichlet values
-      discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null);
+      discret_->EvaluateDirichlet(eleparams,velnp_,Teuchos::null,Teuchos::null,Teuchos::null);
 #ifdef D_ALE_BFLOW
         if (alefluid_)
         {
@@ -5239,7 +5239,7 @@ Notice: Angular moments obtained from lift&drag forces currently refer to the
 void FLD::FluidImplicitTimeInt::LiftDrag() const
 {
   // in this map, the results of the lift drag calculation are stored
-  RCP<map<int,vector<double> > > liftdragvals;
+  RCP<map<int,std::vector<double> > > liftdragvals;
 
   FLD::UTILS::LiftDrag(*discret_,*trueresidual_,*params_,liftdragvals);
 
@@ -5779,7 +5779,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     else discret_->SetState("velaf",velnp_);
 
     // call loop over elements
-    discret_->Evaluate(eleparams,sysmat_,meshmatrix_,residual_,null,null);
+    discret_->Evaluate(eleparams,sysmat_,meshmatrix_,residual_,Teuchos::null,Teuchos::null);
     discret_->ClearState();
 
     // finalize the system matrix
@@ -6046,7 +6046,7 @@ void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
 
   // call standard loop over elements
-  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   return;
 }
 
@@ -6091,7 +6091,7 @@ void FLD::FluidImplicitTimeInt::SetElementTimeParameter()
   }
 
   // call standard loop over elements
-  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   return;
 }
 
@@ -6113,7 +6113,7 @@ void FLD::FluidImplicitTimeInt::SetElementTurbulenceParameter()
   eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements
-  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   return;
 }
 
@@ -6134,7 +6134,7 @@ void FLD::FluidImplicitTimeInt::SetElementLomaParameter()
   eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements
-  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   return;
 }
 
@@ -6150,7 +6150,7 @@ void FLD::FluidImplicitTimeInt::SetElementPoroParameter()
   eleparams.set<bool>("conti partial integration",params_->get<bool>("conti partial integration"));
 
   // call standard loop over elements
-  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   return;
 }
 
@@ -6435,9 +6435,9 @@ void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
       DRT::Element* ele = discret_->lRowElement(nele);
 
       // get element location vector, dirichlet flags and ownerships
-      vector<int> lm;
-      vector<int> lmowner;
-      vector<int> lmstride;
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
       ele->LocationVector(*discret_,lm,lmowner,lmstride);
 
       // call the element evaluate method to integrate functions
@@ -6479,9 +6479,9 @@ void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
       DRT::Element* ele = discret_->lRowElement(nele);
 
       // get element location vector, dirichlet flags and ownerships
-      vector<int> lm;
-      vector<int> lmowner;
-      vector<int> lmstride;
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
       ele->LocationVector(*discret_,lm,lmowner,lmstride);
 
       // call the element evaluate method to integrate functions
@@ -6561,7 +6561,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcDivOp()
     discret_->SetState("dispnp", dispnp_);
 
   // construct the operator on element level as a column vector
-  discret_->Evaluate(params, null, null, divop, null, null);
+  discret_->Evaluate(params, null, null, divop, null,Teuchos::null);
 
   // clear column maps after the evaluate call
   discret_->ClearState();

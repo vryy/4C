@@ -211,7 +211,7 @@ public:
 
   void PreEvaluate
     (
-      ParameterList& params,  ///< ParameterList for communication between control routine and elements
+      Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
       DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
       DRT::Element::LocationArray& la ///< location array for de-assembly
     );
@@ -229,7 +229,7 @@ public:
   */
   int Evaluate
   (
-    ParameterList& params,  ///< ParameterList for communication between control routine and elements
+    Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
     DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
     DRT::Element::LocationArray& la, ///< location array for de-assembly
     Epetra_SerialDenseMatrix& elemat1,  ///< (stiffness-)matrix to be filled by element.
@@ -252,7 +252,7 @@ protected:
 
   int MyEvaluate
   (
-    ParameterList& params,  ///< ParameterList for communication between control routine and elements
+    Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
     DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
     DRT::Element::LocationArray& la, ///< location array for de-assembly
     Epetra_SerialDenseMatrix& elemat1,  ///< (stiffness-)matrix to be filled by element.

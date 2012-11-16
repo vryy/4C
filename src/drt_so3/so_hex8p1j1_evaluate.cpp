@@ -30,9 +30,9 @@ Maintainer: Lena Wiechert
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
-  ParameterList&            params,
+  Teuchos::ParameterList&   params,
   DRT::Discretization&      discretization,
-  vector<int>&              lm,
+  std::vector<int>&         lm,
   Epetra_SerialDenseMatrix& elemat1_epetra,
   Epetra_SerialDenseMatrix& elemat2_epetra,
   Epetra_SerialDenseVector& elevec1_epetra,
@@ -86,10 +86,10 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       ForceStiffMass(lm,mydisp,myres,&elemat1,NULL,&elevec1,NULL,NULL,params,
@@ -104,7 +104,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       std::vector<double> myres(lm.size());
@@ -124,7 +124,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       std::vector<double> myres(lm.size());
@@ -188,13 +188,13 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
     {
       const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
         params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
-      if (gpstressmap==null)
+      if (gpstressmap==Teuchos::null)
         dserror("no gp stress/strain map available for postprocessing");
       std::string stresstype = params.get<string>("stresstype","ndxyz");
       const int gid = Id();
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> gpstress(((*gpstressmap)[gid])->A(),true);
 
-      Teuchos::RCP<Epetra_MultiVector> poststress=params.get<Teuchos::RCP<Epetra_MultiVector> >("poststress",null);
+      Teuchos::RCP<Epetra_MultiVector> poststress=params.get<Teuchos::RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
       if (poststress==Teuchos::null)
         dserror("No element stress/strain vector available");
 
@@ -1023,7 +1023,7 @@ void DRT::ELEMENTS::So_Hex8P1J1::test_stiffmat(
   const std::vector<int>& lm,  ///< location matrix
   const std::vector<double>& disp,  ///< current displacements
   const std::vector<double>& residual,   ///< current residual displ
-  ParameterList& params  ///< algorithmic parameters e.g. time
+  Teuchos::ParameterList& params  ///< algorithmic parameters e.g. time
   )
 {
   //double epsilon = 0.0;

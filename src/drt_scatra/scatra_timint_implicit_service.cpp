@@ -284,7 +284,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
 
       {
         // call standard loop over elements
-        discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
+        discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
         discret_->ClearState();
       }
 
@@ -355,7 +355,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     for (int condid = 0; condid < (int) cond.size(); condid++)
     {
       // is there already a ConditionID?
-      const vector<int>*    CondIDVec  = cond[condid]->Get<vector<int> >("ConditionID");
+      const std::vector<int>*    CondIDVec  = cond[condid]->Get<std::vector<int> >("ConditionID");
       if (CondIDVec)
       {
         if ((*CondIDVec)[0] != condid)
@@ -391,7 +391,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       discret_->EvaluateCondition(params,integratedshapefunc,condnames[i],condid);
       discret_->ClearState();
 
-      vector<double> normfluxintegral(numscal_);
+      std::vector<double> normfluxintegral(numscal_);
 
       // insert values into final flux vector for visualization
       int numrownodes = discret_->NumMyRowNodes();
@@ -436,7 +436,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       double boundaryint = params.get<double>("boundaryint");
 
       // care for the parallel case
-      vector<double> parnormfluxintegral(numscal_);
+      std::vector<double> parnormfluxintegral(numscal_);
       discret_->Comm().SumAll(&normfluxintegral[0],&parnormfluxintegral[0],numscal_);
       double parboundaryint = 0.0;
       discret_->Comm().SumAll(&boundaryint,&parboundaryint,1);
@@ -1035,7 +1035,7 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo(
   for (int condid = 0; condid < (int) cond.size(); condid++)
   {
     // is there already a ConditionID?
-    const vector<int>*    CondIDVec  = cond[condid]->Get<vector<int> >("ConditionID");
+    const std::vector<int>*    CondIDVec  = cond[condid]->Get<std::vector<int> >("ConditionID");
     if (CondIDVec)
     {
       if ((*CondIDVec)[0] != condid)
@@ -1098,7 +1098,7 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
     double& meanoverpot)
 {
   // safety check: is there already a ConditionID?
-  const vector<int>* CondIDVec  = condition->Get<vector<int> >("ConditionID");
+  const std::vector<int>* CondIDVec  = condition->Get<std::vector<int> >("ConditionID");
   if (not CondIDVec) dserror("Condition has not yet a ConditionID");
 
   // set vector values needed by elements
@@ -1250,7 +1250,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure()
   eleparams.set("isale",isale_);
   // provide displacement field in case of ALE
   if (isale_) AddMultiVectorToParameterList(eleparams,"dispnp",dispnp_);
-  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   thermpressn_ = eleparams.get("thermodynamic pressure", 98100.0);
 
   // initialize also value at n+1
@@ -1611,7 +1611,7 @@ void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(
  | compute outward pointing unit normal vectors at given b.c.  gjb 01/09|
  *----------------------------------------------------------------------*/
 RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
-    const vector<string>& condnames
+    const std::vector<string>& condnames
 )
 {
   // create vectors for x,y and z component of average normal vector field
@@ -2518,7 +2518,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
     MLAPI::Init();
 
     // extract the ML parameters
-    ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");
+    Teuchos::ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");
     // remark: we create a new solver with ML preconditioner here, since this allows for also using other solver setups
     // to solve the system of equations
     // get the solver number used form the multifractal subgrid-scale model parameter list
@@ -2720,9 +2720,9 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
       DRT::Element* ele = discret_->lRowElement(nele);
 
       // get element location vector, dirichlet flags and ownerships
-      vector<int> lm;
-      vector<int> lmowner;
-      vector<int> lmstride;
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
       ele->LocationVector(*discret_,lm,lmowner,lmstride);
 
       // call the element evaluate method to integrate functions

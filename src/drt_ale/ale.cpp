@@ -46,7 +46,7 @@ Maintainer: Ulrich Kuettler
  *----------------------------------------------------------------------*/
 ALE::Ale::Ale(RCP<DRT::Discretization> actdis,
               Teuchos::RCP<LINALG::Solver> solver,
-              Teuchos::RCP<ParameterList> params,
+              Teuchos::RCP<Teuchos::ParameterList> params,
               Teuchos::RCP<IO::DiscretizationWriter> output,
               bool dirichletcond)
   : discret_(actdis),
@@ -56,7 +56,7 @@ ALE::Ale::Ale(RCP<DRT::Discretization> actdis,
     step_(0),
     time_(0.0),
     uprestart_(params->get("write restart every", -1)),
-    sysmat_(null)
+    sysmat_(Teuchos::null)
 {
   numstep_ = params_->get<int>("numstep");
   maxtime_ = params_->get<double>("maxtime");
@@ -150,7 +150,7 @@ void ALE::Ale::SetupDBCMapEx(bool dirichletcond)
   eleparams.set("total time", time_);
   eleparams.set("delta time", dt_);
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
-  discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,null,dbcmaps_);
+  discret_->EvaluateDirichlet(eleparams,dispnp_,Teuchos::null,Teuchos::null,Teuchos::null,dbcmaps_);
 
   if (dirichletcond)
   {
@@ -240,7 +240,7 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, int d
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  Teuchos::RCP<DRT::Discretization> actdis = null;
+  Teuchos::RCP<DRT::Discretization> actdis = Teuchos::null;
 
   if (disnum == 0)
   {
@@ -293,7 +293,7 @@ void ALE::AleBaseAlgorithm::SetupAle(const Teuchos::ParameterList& prbdyn, int d
                            DRT::Problem::Instance()->ErrorFile()->Handle()));
   actdis->ComputeNullSpaceIfNecessary(solver->Params());
 
-  Teuchos::RCP<ParameterList> params = Teuchos::rcp(new Teuchos::ParameterList());
+  Teuchos::RCP<Teuchos::ParameterList> params = Teuchos::rcp(new Teuchos::ParameterList());
   params->set<int>("numstep",    prbdyn.get<int>("NUMSTEP"));
   params->set<double>("maxtime", prbdyn.get<double>("MAXTIME"));
   params->set<double>("dt",      prbdyn.get<double>("TIMESTEP"));

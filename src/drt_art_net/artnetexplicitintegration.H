@@ -98,7 +98,7 @@ public:
   */
   ArtNetExplicitTimeInt(RCP<DRT::Discretization>  dis,
                        LINALG::Solver&            solver,
-                       ParameterList&             params,
+                       Teuchos::ParameterList&    params,
                        IO::DiscretizationWriter&  output);
 
 
@@ -118,13 +118,13 @@ public:
   \brief start time loop for startingalgo, normal problems and restarts
 
   */
-  void Integrate(bool CoupledTo3D, RCP<ParameterList> CouplingParams);
+  void Integrate(bool CoupledTo3D, RCP<Teuchos::ParameterList> CouplingParams);
 
   /*!
   \brief Do time integration (time loop)
 
   */
-  void TimeLoop(bool CoupledTo3D, RCP<ParameterList> CouplingParams);
+  void TimeLoop(bool CoupledTo3D, RCP<Teuchos::ParameterList> CouplingParams);
 
 
 
@@ -136,7 +136,7 @@ public:
   \brief solve linearised artery and bifurcation
 
   */
-  void Solve(Teuchos::RCP<ParameterList> CouplingTo3DParams);
+  void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
   /*!
     \brief build linear system matrix and rhs
@@ -159,7 +159,7 @@ public:
 
   */
   void Output(bool               CoupledTo3D,
-              RCP<ParameterList> CouplingParams);
+              RCP<Teuchos::ParameterList> CouplingParams);
 
   /*!
   \brief Assembling of the RHS Vector and the LHS Matrix 
@@ -230,7 +230,7 @@ protected:
   //! arterial network discretization
   RCP<DRT::Discretization>      discret_;
   LINALG::Solver&               solver_;
-  ParameterList&                params_;
+  Teuchos::ParameterList&                params_;
   IO::DiscretizationWriter&     output_;
   //! the processor ID from the communicator
   int                           myrank_;
@@ -336,7 +336,7 @@ protected:
 
 
   /// connection between master and slave nodes on this proc
-  RCP<map<int,vector<int> > >     pbcmapmastertoslave_;
+  RCP<map<int,std::vector<int> > >     pbcmapmastertoslave_;
 
   //!
   bool coupledTo3D_;

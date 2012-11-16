@@ -75,7 +75,7 @@ protected:
   void CopyConditions(
       const Teuchos::RCP<DRT::Discretization> sourcedis,
       Teuchos::RCP<DRT::Discretization> targetdis,
-      const map<string,string>& conditions_to_copy);
+      const std::map<string,string>& conditions_to_copy);
 
   void Finalize(
       const Teuchos::RCP<DRT::Discretization> sourcedis,
@@ -168,7 +168,7 @@ public:
     CreateElements(sourcedis,targetdis,matmap,isnurbsdis);
 
     // copy desired conditions from source to target discretization
-    map<string,string> conditions_to_copy = CloneStrategy::ConditionsToCopy();
+    std::map<string,string> conditions_to_copy = CloneStrategy::ConditionsToCopy();
     CopyConditions(sourcedis,targetdis,conditions_to_copy);
 
     // call Redistribute, FillComplete etc.
@@ -180,8 +180,8 @@ private:
   /// get element type strings and global id's and nodes from source discretization
   void AnalyzeSourceDis(
       Teuchos::RCP<DRT::Discretization> sourcedis,
-      vector<string>& eletype,
-      vector<int>& egid,
+      std::vector<string>& eletype,
+      std::vector<int>& egid,
       std::set<int>& rownodeset,
       std::set<int>& colnodeset
       )
@@ -282,7 +282,7 @@ private:
       RCP<DRT::Element> newele = DRT::UTILS::Factory(eletype_[i],approxtype,egid_[i],myrank);
 
       // get global node ids of fluid element
-      vector<int> nids;
+      std::vector<int> nids;
       nids.reserve(sourceele->NumNode());
       transform(sourceele->Nodes(), sourceele->Nodes()+sourceele->NumNode(),
                 back_inserter(nids), std::mem_fun(&DRT::Node::Id));
@@ -322,9 +322,9 @@ private:
   //! set of column nodes
   std::set<int> colnodeset_;
   //! vector for holding global element ids
-  vector<int> egid_;
+  std::vector<int> egid_;
   //! vector for holding each (desired) element type string
-  vector<string> eletype_;
+  std::vector<string> eletype_;
 
 }; // class DiscretizationCreator
 

@@ -110,7 +110,7 @@ void DRT::ELEMENTS::FluidType::PreEvaluate(DRT::Discretization&                 
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
                                     DRT::Discretization&      discretization,
-                                    vector<int>&              lm,
+                                    std::vector<int>&         lm,
                                     Epetra_SerialDenseMatrix& elemat1,
                                     Epetra_SerialDenseMatrix& elemat2,
                                     Epetra_SerialDenseVector& elevec1,
@@ -271,13 +271,13 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
           // velocity and pressure values (n+1)
           RCP<const Epetra_Vector> velnp
           = discretization.GetState("u and p (n+1,converged)");
-          if (velnp==null) dserror("Cannot get state vector 'velnp'");
+          if (velnp==Teuchos::null) dserror("Cannot get state vector 'velnp'");
 
           // extract local values from the global vectors
-          vector<double> mysol  (lm.size());
+          std::vector<double> mysol  (lm.size());
           DRT::UTILS::ExtractMyValues(*velnp,mysol,lm);
 
-          vector<double> mydisp(lm.size());
+          std::vector<double> mydisp(lm.size());
           if(is_ale_)
           {
             // get most recent displacements
@@ -285,7 +285,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
             =
                 discretization.GetState("dispnp");
 
-            if (dispnp==null)
+            if (dispnp==Teuchos::null)
             {
               dserror("Cannot get state vectors 'dispnp'");
             }
@@ -349,12 +349,12 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
             = discretization.GetState("u and p (n+1,converged)");
           RCP<const Epetra_Vector> scanp
             = discretization.GetState("scalar (n+1,converged)");
-          if (velnp==null || scanp==null)
+          if (velnp==Teuchos::null || scanp==Teuchos::null)
             dserror("Cannot get state vectors 'velnp' and/or 'scanp'");
 
           // extract local values from the global vectors
-          vector<double> myvelpre(lm.size());
-          vector<double> mysca(lm.size());
+          std::vector<double> myvelpre(lm.size());
+          std::vector<double> mysca(lm.size());
           DRT::UTILS::ExtractMyValues(*velnp,myvelpre,lm);
           DRT::UTILS::ExtractMyValues(*scanp,mysca,lm);
 
@@ -404,12 +404,12 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
           = discretization.GetState("u and p (n+1,converged)");
           RCP<const Epetra_Vector> scanp
           = discretization.GetState("scalar (n+1,converged)");
-          if (velnp==null || scanp==null)
+          if (velnp==Teuchos::null || scanp==Teuchos::null)
             dserror("Cannot get state vectors 'velnp' and/or 'scanp'");
 
           // extract local values from global vectors
-          vector<double> myvelpre(lm.size());
-          vector<double> mysca(lm.size());
+          std::vector<double> myvelpre(lm.size());
+          std::vector<double> mysca(lm.size());
           DRT::UTILS::ExtractMyValues(*velnp,myvelpre,lm);
           DRT::UTILS::ExtractMyValues(*scanp,mysca,lm);
 
@@ -470,11 +470,11 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         if (vel==Teuchos::null)
           dserror("Cannot get state vectors 'vel'");
         // extract local values from the global vectors
-        vector<double> myvel(lm.size());
+        std::vector<double> myvel(lm.size());
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
 
-        vector<double> tmp_temp(lm.size());
-        vector<double> mytemp(nen);
+        std::vector<double> tmp_temp(lm.size());
+        std::vector<double> mytemp(nen);
         double thermpress = 0.0;
         // pointer to class FluidEleParameter (access to the general parameter)
         Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
@@ -499,10 +499,10 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         double dens_hat = 0.0;
         double dens_strainrate_hat = 0.0;
         // get pointers for vector quantities
-        RCP<vector<double> > vel_hat = params.get<RCP<vector<double> > >("vel_hat");
-        RCP<vector<double> > densvel_hat = params.get<RCP<vector<double> > >("densvel_hat");
-        RCP<vector<vector<double> > > reynoldsstress_hat = params.get<RCP<vector<vector<double> > > >("reynoldsstress_hat");
-        RCP<vector<vector<double> > > modeled_subgrid_stress = params.get<RCP<vector<vector<double> > > >("modeled_subgrid_stress");
+        RCP<std::vector<double> > vel_hat = params.get<RCP<std::vector<double> > >("vel_hat");
+        RCP<std::vector<double> > densvel_hat = params.get<RCP<std::vector<double> > >("densvel_hat");
+        RCP<vector<std::vector<double> > > reynoldsstress_hat = params.get<RCP<vector<std::vector<double> > > >("reynoldsstress_hat");
+        RCP<vector<std::vector<double> > > modeled_subgrid_stress = params.get<RCP<vector<std::vector<double> > > >("modeled_subgrid_stress");
 
         // integrate the convolution with the box filter function for this element
         // the results are assembled onto the *_hat arrays
@@ -745,15 +745,15 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
         // fine-scale velocity values
         RCP<const Epetra_Vector> fsvelnp = discretization.GetState("fsvelnp");
-        if (velnp==null or fsvelnp==null)
+        if (velnp==Teuchos::null or fsvelnp==Teuchos::null)
         {
           dserror("Cannot get state vectors");
         }
 
         // extract local values from the global vectors
-        vector<double> myvel(lm.size());
+        std::vector<double> myvel(lm.size());
         DRT::UTILS::ExtractMyValues(*velnp,myvel,lm);
-        vector<double> myfsvel(lm.size());
+        std::vector<double> myfsvel(lm.size());
         DRT::UTILS::ExtractMyValues(*fsvelnp,myfsvel,lm);
 
         const DiscretizationType distype = this->Shape();
@@ -791,15 +791,15 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         RCP<const Epetra_Vector> vel = discretization.GetState("velocity");
         // scalar values
         RCP<const Epetra_Vector> sca = discretization.GetState("scalar");
-        if (vel==null or sca==null)
+        if (vel==Teuchos::null or sca==Teuchos::null)
         {
           dserror("Cannot get state vectors");
         }
         // extract local values from the global vectors
-        vector<double> myvel(lm.size());
+        std::vector<double> myvel(lm.size());
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
-        vector<double> tmp_sca(lm.size());
-        vector<double> mysca(nen);
+        std::vector<double> tmp_sca(lm.size());
+        std::vector<double> mysca(nen);
         DRT::UTILS::ExtractMyValues(*sca,tmp_sca,lm);
         for (int i=0;i<nen;i++)
            mysca[i] = tmp_sca[nsd+(i*(nsd+1))];
@@ -934,7 +934,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
 int DRT::ELEMENTS::Fluid::EvaluateNeumann(Teuchos::ParameterList&    params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
-                                           vector<int>&              lm,
+                                           std::vector<int>&         lm,
                                            Epetra_SerialDenseVector& elevec1,
                                            Epetra_SerialDenseMatrix* elemat1)
 {

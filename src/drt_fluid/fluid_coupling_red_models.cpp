@@ -82,10 +82,10 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RCP<DRT::Discre
 
   if (numcondlines > 0) // if there is at least one coupling bc
   {
-      map3_Dnp_   = Teuchos::rcp(new map<string, double >);
-      map3_Dn_    = Teuchos::rcp(new map<string, double >);
-      mapRed_Dnp_ = Teuchos::rcp(new map<string, double >);
-      mapRed_Dn_  = Teuchos::rcp(new map<string, double >);
+      map3_Dnp_   = Teuchos::rcp(new std::map<string, double >);
+      map3_Dn_    = Teuchos::rcp(new std::map<string, double >);
+      mapRed_Dnp_ = Teuchos::rcp(new std::map<string, double >);
+      mapRed_Dn_  = Teuchos::rcp(new std::map<string, double >);
     // -------------------------------------------------------------------
     // get the maximum allowable number of iterations at the boundary
     // which should be the same!
@@ -419,7 +419,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
     // Define a map that will have the interpolated values at the
     // reduced-D time subscale
     // -----------------------------------------------------------------
-    RCP<map<string, double > >  map3D_inter_to_Red = Teuchos::rcp(new map<string, double >);
+    RCP<map<string, double > >  map3D_inter_to_Red = Teuchos::rcp(new std::map<string, double >);
     double dstep = 1.0/double(NumOfSteps);
 
     // -----------------------------------------------------------------
@@ -830,7 +830,7 @@ double FLD::UTILS::Fluid_couplingBc::Area( double& density, double& viscosity, i
   // find the lowest proc number that knows the material data
   int numproc = discret_3D_->Comm().NumProc();
   int theproc = -1;   // the lowest proc that has the desired information
-  vector<double> alldens(numproc);
+  std::vector<double> alldens(numproc);
 
   discret_3D_->Comm().GatherAll( &density,&(alldens[0]),1 );
   for(int i=0; i<numproc; i++)
@@ -1147,7 +1147,7 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(RCP<Epetra_Vector>    velnp
   cout<<"velocity: "<<endl;
   cout<<"Dflowrate: "<<Dflowrate<<endl;
   cout<<"area: "<<area<<endl;
-  const vector<int>* nodes = cond->Nodes();
+  const std::vector<int>* nodes = cond->Nodes();
 
   for(unsigned int i = 0; i< nodes->size(); i++)
   {

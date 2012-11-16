@@ -173,7 +173,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim,
         discret_->GetCondition("PointNeumann", pointneumannconditions);
         if (pointneumannconditions.size() > 0)
         {
-          const vector<double>* val = pointneumannconditions[0]->Get<vector<double> > ("val");
+          const std::vector<double>* val = pointneumannconditions[0]->Get<std::vector<double> > ("val");
           neumannforce = fabs((*val)[0]);
         }
         else
@@ -537,7 +537,7 @@ void STATMECH::StatMechManager::Output(const int ndim,
       discret_->GetCondition("PointNeumann", pointneumannconditions);
       if (pointneumannconditions.size() > 0)
       {
-        const vector<double>* val = pointneumannconditions[0]->Get<vector<double> > ("val");
+        const std::vector<double>* val = pointneumannconditions[0]->Get<std::vector<double> > ("val");
         neumannforce = fabs((*val)[0]);
       }
       else
@@ -601,8 +601,8 @@ void STATMECH::StatMechManager::Output(const int ndim,
       Epetra_Vector discol(*(discret_->DofColMap()), true);
       LINALG::Export(dis, discol);
 
-      vector<double> arclength(discret_->NumMyColNodes() - 1, 0);
-      vector<double> cosdiffer(discret_->NumMyColNodes() - 1, 0);
+      std::vector<double> arclength(discret_->NumMyColNodes() - 1, 0);
+      std::vector<double> cosdiffer(discret_->NumMyColNodes() - 1, 0);
 
       //after initilization time write output cosdiffer in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps,
       //when discret_->NumMyRowNodes()-1 = 0,cosdiffer is always equil to 1!!
@@ -4753,7 +4753,7 @@ void STATMECH::StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow
 void STATMECH::StatMechManager::ViscoelasticityOutput(const double& time, const Epetra_Vector& dis, const Epetra_Vector& fint, std::ostringstream& filename)
 {
 #ifdef DEBUG
-  if (forcesensor_ == null)
+  if (forcesensor_ == Teuchos::null)
     dserror("forcesensor_ is NULL pointer; possible reason: dynamic crosslinkers not activated and forcesensor applicable in this case only");
 #endif  // #ifdef DEBUG
   double f = 0;//mean value of force

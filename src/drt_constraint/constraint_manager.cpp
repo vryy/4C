@@ -215,15 +215,15 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   volconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   areaconstr3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   areaconstr2d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
-  volconstr3dpen_->Evaluate(p,stiff,null,fint,null,null);
-  areaconstr3dpen_->Evaluate(p,stiff,null,fint,null,null);
+  volconstr3dpen_->Evaluate(p,stiff,Teuchos::null,fint,Teuchos::null,Teuchos::null);
+  areaconstr3dpen_->Evaluate(p,stiff,Teuchos::null,fint,Teuchos::null,Teuchos::null);
 
   mpconplane3d_->SetConstrState("displacement",disp);
   mpconplane3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   mpcnormcomp3d_->SetConstrState("displacement",disp);
   mpcnormcomp3d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   mpcnormcomp3dpen_->SetConstrState("displacement",disp);
-  mpcnormcomp3dpen_->Evaluate(p,stiff,null,fint,null,null);
+  mpcnormcomp3dpen_->Evaluate(p,stiff,Teuchos::null,fint,Teuchos::null,Teuchos::null);
   mpconline2d_->SetConstrState("displacement",disp);
   mpconline2d_->Evaluate(p,stiff,constrMatrix_,fint,refbaseredundant,actredundant);
   // Export redundant vectors into distributed ones
@@ -267,15 +267,15 @@ void UTILS::ConstrManager::ComputeError(double time, RCP<Epetra_Vector> disp)
     //Compute current values and assemble them to the completely redundant vector
     //We will always use the third systemvector for this purpose
     p.set("OffsetID",offsetID_);
-    volconstr3d_->Evaluate(p,null,null,null,null,actredundant);
-    areaconstr3d_->Evaluate(p,null,null,null,null,actredundant);
-    areaconstr2d_->Evaluate(p,null,null,null,null,actredundant);
+    volconstr3d_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,actredundant);
+    areaconstr3d_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,actredundant);
+    areaconstr2d_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,actredundant);
 
-    mpconplane3d_->Evaluate(p,null,null,null,null,actredundant);
-    mpconplane3d_->Evaluate(p,null,null,null,null,actredundant);
+    mpconplane3d_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,actredundant);
+    mpconplane3d_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,actredundant);
 
-    mpcnormcomp3d_->Evaluate(p,null,null,null,null,actredundant);
-    mpcnormcomp3d_->Evaluate(p,null,null,null,null,actredundant);
+    mpcnormcomp3d_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,actredundant);
+    mpcnormcomp3d_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,actredundant);
 
     // Export redundant vectors into distributed ones
     actvalues_->PutScalar(0.0);

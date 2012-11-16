@@ -54,7 +54,7 @@ namespace UTILS
     bool DetermineEleType(
       DRT::Element* actele,
       const bool ismyele,
-      vector<string>& eletype
+      std::vector<string>& eletype
       );
 
     /// set element-specific data (material etc.)
@@ -66,7 +66,7 @@ namespace UTILS
       );
 
     /// returns conditions names to be copied (source and target name)
-    map<string,string> ConditionsToCopy();
+    std::map<string,string> ConditionsToCopy();
 
     /// check for correct material
     void CheckMaterialType(const int matid);

@@ -226,7 +226,7 @@ private:
 
         //! @name Evaluation
 
-        virtual int Evaluate(ParameterList& params,
+        virtual int Evaluate(Teuchos::ParameterList& params,
             DRT::Discretization&      discretization,
             std::vector<int>&         lm,
             Epetra_SerialDenseMatrix& elemat1,
@@ -235,7 +235,7 @@ private:
             Epetra_SerialDenseVector& elevec2,
             Epetra_SerialDenseVector& elevec3);
 
-        virtual int EvaluateNeumann(ParameterList& params,
+        virtual int EvaluateNeumann(Teuchos::ParameterList& params,
             DRT::Discretization&      discretization,
             DRT::Condition&           condition,
             std::vector<int>&              lm,
@@ -385,7 +385,7 @@ private:
             std::vector<double>&       myvelnp,
             std::vector<double>&       myprenp,
             Teuchos::RCP<const MAT::Material> material,
-            ParameterList&             params
+            Teuchos::ParameterList&    params
         );
 
         /*!
@@ -404,9 +404,9 @@ private:
 
          */
         void calc_volume_fraction(
-          DRT::Discretization&      discretization,
-          const vector<double>&     solution,
-          ParameterList&            params
+          DRT::Discretization&       discretization,
+          const std::vector<double>& solution,
+          Teuchos::ParameterList&    params
           );
 
         //! compute stresses from previous newton iteration and store them in dlm_info_
@@ -533,7 +533,7 @@ private:
 
         //! @name Evaluation
 
-        int Evaluate(ParameterList& params,
+        int Evaluate(Teuchos::ParameterList& params,
             DRT::Discretization&      discretization,
             std::vector<int>&         lm,
             Epetra_SerialDenseMatrix& elemat1,
@@ -542,7 +542,7 @@ private:
             Epetra_SerialDenseVector& elevec2,
             Epetra_SerialDenseVector& elevec3);
 
-        virtual int EvaluateNeumann(ParameterList& params,
+        virtual int EvaluateNeumann(Teuchos::ParameterList& params,
             DRT::Discretization&      discretization,
             DRT::Condition&           condition,
             std::vector<int>&         lm,
@@ -581,7 +581,7 @@ private:
 
         //! integrate shapefunction over surface element
         virtual void IntegrateShapeFunction(
-            ParameterList&                   params,          ///< ParameterList for communication between control routine and elements
+            Teuchos::ParameterList&          params,          ///< ParameterList for communication between control routine and elements
             const DRT::Discretization&       discretization,  ///< vector to be filled by element
             const std::vector<int>&          lm,              ///< location vector of this element
             Epetra_SerialDenseVector&        elevec1,         ///< vector to be filled by element
@@ -590,7 +590,7 @@ private:
 
         //! integrate shapefunction over surface element
         void IntegrateSurfaceFlow(
-            ParameterList&                   params,          ///< ParameterList for communication between control routine and elements
+            Teuchos::ParameterList&          params,          ///< ParameterList for communication between control routine and elements
             const DRT::Discretization&       discretization,  ///< vector to be filled by element
             const std::vector<int>&          lm,              ///< location vector of this element
             Epetra_SerialDenseVector&        elevec1,         ///< vector to be filled by element
@@ -686,7 +686,7 @@ private:
 
         //! @name Evaluation
         virtual int Evaluate(
-            ParameterList& params,
+            Teuchos::ParameterList&   params,
             DRT::Discretization&      discretization,
             std::vector<int>&   lm,
             Epetra_SerialDenseMatrix& elemat1,
@@ -696,7 +696,7 @@ private:
             Epetra_SerialDenseVector& elevec3);
 
         virtual int EvaluateNeumann(
-            ParameterList&             params,
+            Teuchos::ParameterList&    params,
             DRT::Discretization&       discretization,
             DRT::Condition&            condition,
             std::vector<int>&          lm,

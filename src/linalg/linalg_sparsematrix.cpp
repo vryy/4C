@@ -918,7 +918,7 @@ void LINALG::SparseMatrix::ApplyDirichlet(
       dserror("matrix type is not correct");
 
     vector<int> indices(maxnumentries,0);
-    vector<double> values(maxnumentries,0.0);
+    std::vector<double> values(maxnumentries,0.0);
     for (int i=0; i<nummyrows; ++i)
     {
       int row = sysmat_->GRID(i);
@@ -1054,7 +1054,7 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle,
       dserror("matrix type is not correct");
 
     vector<int> indices(maxnumentries,0);
-    vector<double> values(maxnumentries,0.0);
+    std::vector<double> values(maxnumentries,0.0);
     for (int i=0; i<nummyrows; ++i)
     {
       int row = sysmat_->GRID(i);
@@ -1172,7 +1172,7 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
 
     Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,maxnumentries,false));
     vector<int> indices(maxnumentries,0);
-    vector<double> values(maxnumentries,0.0);
+    std::vector<double> values(maxnumentries,0.0);
     for (int i=0; i<nummyrows; ++i)
     {
       int row = sysmat_->GRID(i);

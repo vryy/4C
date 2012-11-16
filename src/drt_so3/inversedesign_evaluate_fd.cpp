@@ -516,10 +516,10 @@ void DRT::ELEMENTS::InvDesign::FDYpsilon(   double Y4[][3][3][3],
  |                                                             gee 08/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
-                                             const vector<double>& disp,
+                                             const std::vector<double>& disp,
                                              const int gp,
                                              DRT::ELEMENTS::So_hex8* ele,
-                                             ParameterList& params) const
+                                             Teuchos::ParameterList& params) const
 
 {
   const static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
@@ -582,7 +582,7 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
 
   for (int i=0; i<6; ++i)
   {
-    vector<double> dispperm(NUMDOF_SOH8);
+    std::vector<double> dispperm(NUMDOF_SOH8);
     for (int j=0; j<NUMDOF_SOH8; ++j)
     {
       // permuted the displacement in direction j
@@ -654,7 +654,7 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
  |                                                             gee 08/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::InvDesign::FD_djdX(Epetra_SerialDenseMatrix& djdX,
-                                             const vector<double>& disp,
+                                             const std::vector<double>& disp,
                                              const int gp,
                                              DRT::ELEMENTS::So_hex8* ele) const
 
@@ -737,10 +737,10 @@ void DRT::ELEMENTS::InvDesign::FD_djdX(Epetra_SerialDenseMatrix& djdX,
  |                                                             gee 08/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
-                                             const vector<double>& disp,
+                                             const std::vector<double>& disp,
                                              const int gp,
                                              DRT::ELEMENTS::So_hex8* ele,
-                                             ParameterList& params) const
+                                             Teuchos::ParameterList& params) const
 
 {
   const static DRT::ELEMENTS::So_hex8::Integrator_So_hex8 int_hex8;
@@ -804,7 +804,7 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
 
   for (int i=0; i<6; ++i)
   {
-    vector<double> dispperm(NUMDOF_SOH8);
+    std::vector<double> dispperm(NUMDOF_SOH8);
     for (int j=0; j<NUMDOF_SOH8; ++j)
     {
       // permuted the displacement in direction j

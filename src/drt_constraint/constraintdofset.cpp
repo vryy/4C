@@ -69,8 +69,8 @@ UTILS::ConstraintDofSet::~ConstraintDofSet()
  *----------------------------------------------------------------------*/
 void UTILS::ConstraintDofSet::Reset()
 {
-  dofrowmap_ = null;
-  dofcolmap_ = null;
+  dofrowmap_ = Teuchos::null;
+  dofcolmap_ = Teuchos::null;
 }
 
 

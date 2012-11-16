@@ -147,7 +147,7 @@ public:
                               On output, the map has a distribution of
                               TargetMap().
   */
-  template<typename T> void Export(map<int,RCP<T> >& parobjects);
+  template<typename T> void Export(std::map<int,RCP<T> >& parobjects);
 
   /*!
   \brief Communicate a map of vectors of some basic data type T
@@ -164,7 +164,7 @@ public:
                         On output, the map has a distribution of
                         TargetMap().
   */
-  template<typename T> void Export(map<int,vector<T> >& data);
+  template<typename T> void Export(std::map<int,std::vector<T> >& data);
 
   /*!
   \brief Communicate a map of sets of some basic data type T (currently only int)
@@ -181,7 +181,7 @@ public:
                         On output, the map has a distribution of
                         TargetMap().
   */
-  template<typename T> void Export(map<int,std::set<T> >& data);
+  template<typename T> void Export(std::map<int,std::set<T> >& data);
 
   // 																														nagler 07/2012
   /*!
@@ -198,7 +198,7 @@ public:
                         On output, the map has a distribution of
                         TargetMap().
   */
-  template<typename T, typename U> void Export(map<int,map<T,U> >& data);
+  template<typename T, typename U> void Export(std::map<int,std::map<T,U> >& data);
 
   /*!
   \brief Communicate a map of int values
@@ -212,7 +212,7 @@ public:
                               On output, the map has a distribution of
                               TargetMap().
   */
-  void Export(map<int,int>& data);
+  void Export(std::map<int,int>& data);
 
   /*!
   \brief Communicate a map of double values
@@ -226,7 +226,7 @@ public:
                               On output, the map has a distribution of
                               TargetMap().
   */
-  void Export(map<int,double>& data);
+  void Export(std::map<int,double>& data);
 
   /*!
   \brief Communicate a map of serial dense matrices
@@ -240,7 +240,7 @@ public:
                               On output, the map has a distribution of
                               TargetMap().
   */
-  void Export(map<int,RCP<Epetra_SerialDenseMatrix> >& data);
+  void Export(std::map<int,RCP<Epetra_SerialDenseMatrix> >& data);
 
 
 #ifdef PARALLEL
@@ -406,7 +406,7 @@ public:
   \param recvbuff (output): buffer containing received data
   \param length (output): length of message upon receive
   */
-  void ReceiveAny(int& source, int& tag, vector<double>& recvbuff, int& length);
+  void ReceiveAny(int& source, int& tag, std::vector<double>& recvbuff, int& length);
 
   /*!
   \brief wait for nonblocking send to finish
@@ -488,10 +488,10 @@ private:
   //! no. of processors
   int                      numproc_;
   //! sending information
-  vector<std::set<int> >        sendplan_;
+  std::vector<std::set<int> >   sendplan_;
 #if 0
   //! receiving information
-  vector<std::set<int> >        recvplan_;
+  std::vector<std::set<int> >   recvplan_;
 #endif
 
   /// Internal helper class for Exporter that encapsulates packing and unpacking
@@ -539,13 +539,13 @@ private:
   {
   public:
 
-    explicit ParObjectExporterHelper(map<int,RCP<T> >& parobjects)
+    explicit ParObjectExporterHelper(std::map<int,RCP<T> >& parobjects)
       : parobjects_(parobjects) {}
 
     virtual void PreExportTest(Exporter* exporter)
     {
       // test whether type T implements ParObject
-      typename map<int,RCP<T> >::iterator curr = parobjects_.begin();
+      typename std::map<int,RCP<T> >::iterator curr = parobjects_.begin();
       if (curr != parobjects_.end())
       {
         T* ptr = curr->second.get();
@@ -556,7 +556,7 @@ private:
 
     virtual bool PackObject(int gid, DRT::PackBuffer & sendblock)
     {
-      typename map<int,RCP<T> >::const_iterator curr = parobjects_.find(gid);
+      typename std::map<int,RCP<T> >::const_iterator curr = parobjects_.find(gid);
       if (curr!=parobjects_.end())
       {
         ParObject::AddtoPack(sendblock,*curr->second);
@@ -567,7 +567,7 @@ private:
 
     virtual void UnpackObject(int gid, vector<char>::size_type& index, const vector<char>& recvblock)
     {
-      vector<char> data;
+      std::vector<char> data;
       ParObject::ExtractfromPack(index,recvblock,data);
 
       DRT::ParObject* o = DRT::UTILS::Factory(data);
@@ -581,8 +581,8 @@ private:
     virtual void PostExportCleanup(Exporter* exporter)
     {
       // loop map and kick out everything that's not in TargetMap()
-      map<int,RCP<T> > newmap;
-      typename map<int,RCP<T> >::const_iterator fool;
+      std::map<int,RCP<T> > newmap;
+      typename std::map<int,RCP<T> >::const_iterator fool;
       for (fool=parobjects_.begin(); fool != parobjects_.end(); ++fool)
         if (exporter->TargetMap().MyGID(fool->first))
           newmap[fool->first] = fool->second;
@@ -590,7 +590,7 @@ private:
     }
 
   private:
-    map<int,RCP<T> >& parobjects_;
+    std::map<int,RCP<T> >& parobjects_;
   };
 
 
@@ -608,7 +608,7 @@ private:
   {
   public:
 
-    explicit AnyObjectExporterHelper(map<int,RCP<T> >& objects)
+    explicit AnyObjectExporterHelper(std::map<int,RCP<T> >& objects)
       : objects_(objects) {}
 
     virtual void PreExportTest(Exporter* exporter)
@@ -617,7 +617,7 @@ private:
 
     virtual bool PackObject(int gid, DRT::PackBuffer & sendblock)
     {
-      typename map<int,RCP<T> >::const_iterator curr = objects_.find(gid);
+      typename std::map<int,RCP<T> >::const_iterator curr = objects_.find(gid);
       if (curr!=objects_.end())
       {
         ParObject::AddtoPack(sendblock,*curr->second);
@@ -638,8 +638,8 @@ private:
     virtual void PostExportCleanup(Exporter* exporter)
     {
       // loop map and kick out everything that's not in TargetMap()
-      map<int,RCP<T> > newmap;
-      typename map<int,RCP<T> >::const_iterator fool;
+      std::map<int,RCP<T> > newmap;
+      typename std::map<int,RCP<T> >::const_iterator fool;
       for (fool=objects_.begin(); fool != objects_.end(); ++fool)
         if (exporter->TargetMap().MyGID(fool->first))
           newmap[fool->first] = fool->second;
@@ -647,7 +647,7 @@ private:
     }
 
   private:
-    map<int,RCP<T> >& objects_;
+    std::map<int,RCP<T> >& objects_;
   };
 
 
@@ -658,7 +658,7 @@ private:
   {
   public:
 
-    explicit PODExporterHelper(map<int,T>& objects)
+    explicit PODExporterHelper(std::map<int,T>& objects)
       : objects_(objects) {}
 
     virtual void PreExportTest(Exporter* exporter)
@@ -668,7 +668,7 @@ private:
 
     virtual bool PackObject(int gid, DRT::PackBuffer & sendblock)
     {
-      typename map<int,T>::const_iterator curr = objects_.find(gid);
+      typename std::map<int,T>::const_iterator curr = objects_.find(gid);
       if (curr!=objects_.end())
       {
         ParObject::AddtoPack(sendblock,curr->second);
@@ -686,8 +686,8 @@ private:
     virtual void PostExportCleanup(Exporter* exporter)
     {
       // loop map and kick out everything that's not in TargetMap()
-      map<int,T> newmap;
-      typename map<int,T>::const_iterator fool;
+      std::map<int,T> newmap;
+      typename std::map<int,T>::const_iterator fool;
       for (fool=objects_.begin(); fool != objects_.end(); ++fool)
         if (exporter->TargetMap().MyGID(fool->first))
           newmap[fool->first] = fool->second;
@@ -695,7 +695,7 @@ private:
     }
 
   private:
-    map<int,T>& objects_;
+    std::map<int,T>& objects_;
   };
 
 
@@ -705,7 +705,7 @@ private:
   {
   public:
 
-    explicit PODVectorExporterHelper(map<int,vector<T> >& objects)
+    explicit PODVectorExporterHelper(std::map<int,std::vector<T> >& objects)
       : objects_(objects) {}
 
     virtual void PreExportTest(Exporter* exporter)
@@ -715,7 +715,7 @@ private:
 
     virtual bool PackObject(int gid, DRT::PackBuffer & sendblock)
     {
-      typename map<int,vector<T> >::const_iterator curr = objects_.find(gid);
+      typename std::map<int,std::vector<T> >::const_iterator curr = objects_.find(gid);
       if (curr!=objects_.end())
       {
         ParObject::AddtoPack(sendblock,curr->second);
@@ -732,8 +732,8 @@ private:
     virtual void PostExportCleanup(Exporter* exporter)
     {
       // loop map and kick out everything that's not in TargetMap()
-      map<int,vector<T> > newmap;
-      typename map<int,vector<T> >::iterator fool;
+      std::map<int,std::vector<T> > newmap;
+      typename std::map<int,std::vector<T> >::iterator fool;
       for (fool=objects_.begin(); fool != objects_.end(); ++fool)
         if (exporter->TargetMap().MyGID(fool->first))
           swap(newmap[fool->first], fool->second);
@@ -741,7 +741,7 @@ private:
     }
 
   private:
-    map<int,vector<T> >& objects_;
+    std::map<int,std::vector<T> >& objects_;
   };
 
   /// Concrete helper class that handles sets of plain old data (POD) objects
@@ -750,7 +750,7 @@ private:
   {
   public:
 
-    explicit PODSetExporterHelper(map<int,std::set<T> >& objects)
+    explicit PODSetExporterHelper(std::map<int,std::set<T> >& objects)
       : objects_(objects) {}
 
     virtual void PreExportTest(Exporter* exporter)
@@ -760,7 +760,7 @@ private:
 
     virtual bool PackObject(int gid, DRT::PackBuffer & sendblock)
     {
-      typename map<int,std::set<T> >::const_iterator curr = objects_.find(gid);
+      typename std::map<int,std::set<T> >::const_iterator curr = objects_.find(gid);
       if (curr!=objects_.end())
       {
         ParObject::AddtoPack(sendblock,curr->second);
@@ -777,8 +777,8 @@ private:
     virtual void PostExportCleanup(Exporter* exporter)
     {
       // loop map and kick out everything that's not in TargetMap()
-      map<int,std::set<T> > newmap;
-      typename map<int,std::set<T> >::iterator fool;
+      std::map<int,std::set<T> > newmap;
+      typename std::map<int,std::set<T> >::iterator fool;
       for (fool=objects_.begin(); fool != objects_.end(); ++fool)
         if (exporter->TargetMap().MyGID(fool->first))
          swap(newmap[fool->first], fool->second);
@@ -786,7 +786,7 @@ private:
     }
 
   private:
-    map<int,std::set<T> >& objects_;
+    std::map<int,std::set<T> >& objects_;
   };
 
 /// Concrete helper class that handles maps of plain old data (POD) objects
@@ -796,7 +796,7 @@ private:
   {
   public:
 
-    explicit PODMapExporterHelper(map<int,std::map<T,U> >& objects)
+    explicit PODMapExporterHelper(std::map<int,std::map<T,U> >& objects)
       : objects_(objects) {}
 
     virtual void PreExportTest(Exporter* exporter)
@@ -806,7 +806,7 @@ private:
 
     virtual bool PackObject(int gid, DRT::PackBuffer & sendblock)
     {
-      typename map<int,std::map<T,U> >::const_iterator curr = objects_.find(gid);
+      typename std::map<int,std::map<T,U> >::const_iterator curr = objects_.find(gid);
       if (curr!=objects_.end())
       {
       	ParObject::AddtoPack(sendblock,curr->second);
@@ -823,8 +823,8 @@ private:
     virtual void PostExportCleanup(Exporter* exporter)
     {
       // loop map and kick out everything that's not in TargetMap()
-      map<int,std::map<T,U> > newmap;
-      typename map<int,std::map<T,U> >::iterator fool;
+      std::map<int,std::map<T,U> > newmap;
+      typename std::map<int,std::map<T,U> >::iterator fool;
       for (fool=objects_.begin(); fool != objects_.end(); ++fool)
         if (exporter->TargetMap().MyGID(fool->first))
          swap(newmap[fool->first], fool->second);
@@ -832,7 +832,7 @@ private:
     }
 
   private:
-    map<int,std::map<T,U> >& objects_;
+    std::map<int,std::map<T,U> >& objects_;
   };
 
 }; // class Exporter
@@ -842,7 +842,7 @@ private:
  |  communicate objects (public)                             mwgee 11/06|
  *----------------------------------------------------------------------*/
 template<typename T> void DRT::Exporter::Export(
-                                     map<int,RCP<T> >& parobjects)
+                                     std::map<int,RCP<T> >& parobjects)
 {
   ParObjectExporterHelper<T> helper(parobjects);
   GenericExport(helper);
@@ -851,7 +851,7 @@ template<typename T> void DRT::Exporter::Export(
 /*----------------------------------------------------------------------*
  |  communicate objects (public)                             mwgee 11/06|
  *----------------------------------------------------------------------*/
-template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
+template<typename T> void DRT::Exporter::Export(std::map<int,std::vector<T> >& data)
 {
   PODVectorExporterHelper<T> helper(data);
   GenericExport(helper);
@@ -860,7 +860,7 @@ template<typename T> void DRT::Exporter::Export(map<int,vector<T> >& data)
 /*----------------------------------------------------------------------*
  |  communicate objects (public)                                   07/11|
  *----------------------------------------------------------------------*/
-template<typename T> void DRT::Exporter::Export(map<int,std::set<T> >& data)
+template<typename T> void DRT::Exporter::Export(std::map<int,std::set<T> >& data)
 {
   PODSetExporterHelper<T> helper(data);
   GenericExport(helper);
@@ -869,7 +869,7 @@ template<typename T> void DRT::Exporter::Export(map<int,std::set<T> >& data)
 /*----------------------------------------------------------------------*
  |  communicate objects (public)                           nagler  07/12|
  *----------------------------------------------------------------------*/
-template<typename T, typename U> void DRT::Exporter::Export(map<int,map<T,U> >& data)
+template<typename T, typename U> void DRT::Exporter::Export(std::map<int,std::map<T,U> >& data)
 {
 	PODMapExporterHelper<T,U> helper(data);
   GenericExport(helper);

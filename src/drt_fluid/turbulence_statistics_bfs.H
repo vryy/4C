@@ -78,7 +78,7 @@ public:
 
   */
   TurbulenceStatisticsBfs(RCP<DRT::Discretization> actdis,
-                          ParameterList&           params,
+                          Teuchos::ParameterList&           params,
                           const string&            geotype);
 
   /*!
@@ -197,7 +197,7 @@ private:
   RCP<DRT::Discretization> discret_;
 
   //! parameter list
-  ParameterList&                   params_;
+  Teuchos::ParameterList&                   params_;
 
   //! geometry of DNS of incompressible flow over bfs by Le, Moin and Kim or geometry of Avancha and Pletcher of LES of flow over bfs with heating
   FLD::TurbulenceStatisticsBfs::GeoType geotype_;
@@ -223,8 +223,8 @@ private:
   RCP<Epetra_Vector>       togglep_;
 
   //! available x1- and x2-coordinates
-  RCP<vector<double> >     x1coordinates_;
-  RCP<vector<double> >     x2coordinates_;
+  RCP<std::vector<double> >     x1coordinates_;
+  RCP<std::vector<double> >     x2coordinates_;
 
   //! coordinates of locations in x1- and x2-direction for statistical evaluation
   LINALG::Matrix<21,1> x1statlocations_;

@@ -29,15 +29,15 @@ extern "C"
  |  Integrate a Line Neumann boundary condition (public)     mwgee 01/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
-                                           ParameterList& params,
+                                           Teuchos::ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
-                                           vector<int>&              lm,
+                                           std::vector<int>&         lm,
                                            Epetra_SerialDenseVector& elevec1,
                                            Epetra_SerialDenseMatrix* elemat1)
 {
   RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-  if (disp==null) dserror("Cannot get state vector 'displacement'");
+  if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
@@ -47,7 +47,7 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -64,7 +64,7 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
   const int nir = parent_->ngp_[0];
   const int nis = parent_->ngp_[1];
   const int numdf = 6;
-  const vector<double>* thick = parent_->data_.Get<vector<double> >("thick");
+  const std::vector<double>* thick = parent_->data_.Get<std::vector<double> >("thick");
   if (!thick) dserror("Cannot find vector of nodal thicknesses");
 
   const Epetra_SerialDenseMatrix* a3ref = parent_->data_.Get<Epetra_SerialDenseMatrix>("a3ref");
@@ -152,8 +152,8 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
   }
 
   // get values and switches from the condition
-  const vector<int>*    onoff = condition.Get<vector<int> >("onoff");
-  const vector<double>* val   = condition.Get<vector<double> >("val");
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >("onoff");
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val");
 
 
   // do integration

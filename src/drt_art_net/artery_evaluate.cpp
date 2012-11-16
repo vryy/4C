@@ -35,9 +35,9 @@ using namespace DRT::UTILS;
 /*---------------------------------------------------------------------*
  //evaluate the element (public)                            ismail 06/09
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Artery::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Artery::Evaluate(Teuchos::ParameterList& params,
                                     DRT::Discretization&      discretization,
-                                    vector<int>&              lm,
+                                    std::vector<int>&         lm,
                                     Epetra_SerialDenseMatrix& elemat1,
                                     Epetra_SerialDenseMatrix& elemat2,
                                     Epetra_SerialDenseVector& elevec1,
@@ -138,10 +138,10 @@ Here must add the steps for evaluating an element
 } // end of DRT::ELEMENTS::Artery::Evaluate
 
 
-int DRT::ELEMENTS::Artery::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Artery::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization,
     DRT::Condition& condition,
-    vector<int>& lm,
+    std::vector<int>& lm,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {
@@ -153,10 +153,10 @@ int DRT::ELEMENTS::Artery::EvaluateNeumann(ParameterList& params,
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Artery::EvaluateDirichlet(ParameterList& params,
+int DRT::ELEMENTS::Artery::EvaluateDirichlet(Teuchos::ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
-                                           vector<int>&              lm,
+                                           std::vector<int>&         lm,
                                            Epetra_SerialDenseVector& elevec1)
 {
   return 0;

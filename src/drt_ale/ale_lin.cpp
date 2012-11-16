@@ -32,7 +32,7 @@ Maintainer: Ulrich Kuettler
  *----------------------------------------------------------------------*/
 ALE::AleLinear::AleLinear(RCP<DRT::Discretization> actdis,
                               Teuchos::RCP<LINALG::Solver> solver,
-                              Teuchos::RCP<ParameterList> params,
+                              Teuchos::RCP<Teuchos::ParameterList> params,
                               Teuchos::RCP<IO::DiscretizationWriter> output,
                               bool incremental,
                               bool dirichletcond)
@@ -162,7 +162,7 @@ void ALE::AleLinear::Solve()
   if (incremental_)
     EvaluateElements();
 
-  discret_->EvaluateDirichlet(eleparams,dispnp_,null,null,Teuchos::null,Teuchos::null);
+  discret_->EvaluateDirichlet(eleparams,dispnp_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   LINALG::ApplyDirichlettoSystem(sysmat_,dispnp_,residual_,dispnp_,*(dbcmaps_->CondMap()));
 
   if (xffinterface_->XFluidFluidCondRelevant())

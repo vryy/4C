@@ -210,7 +210,7 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::CombinedDBCMap()
   //vectoroverallfsimaps.push_back(fsibcmap_);
   Teuchos::RCP<Epetra_Map> overallfsidbcmaps = LINALG::MultiMapExtractor::MergeMaps(vectoroverallfsimaps);
 
-  vector<int> otherdbcmapvector; //vector of dbc
+  std::vector<int> otherdbcmapvector; //vector of dbc
   const int mylength = overallfsidbcmaps->NumMyElements(); //on each prossesor (lids)
   const int* mygids = overallfsidbcmaps->MyGlobalElements();
   for (int i=0; i<mylength; ++i)

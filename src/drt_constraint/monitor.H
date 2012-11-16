@@ -95,7 +95,7 @@ namespace UTILS
     //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateMonitor routine is called
     void Evaluate
     (
-      ParameterList&  params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
       RCP<Epetra_Vector> systemvector1 ///< distributed vector that may be filled by assembly of element contributions
     );
 
@@ -132,7 +132,7 @@ namespace UTILS
     //! Evaluate monitor values and assemble the results
     void EvaluateMonitor
     (
-      ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       RCP<Epetra_Vector>    systemvector ///< distributed vector that may be filled by aasembly of element contributions
     );
   }; //class

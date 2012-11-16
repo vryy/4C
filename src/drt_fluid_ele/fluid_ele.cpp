@@ -420,15 +420,15 @@ void DRT::ELEMENTS::Fluid::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                          gammi 02/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Fluid::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // is_ale_
@@ -489,7 +489,7 @@ void DRT::ELEMENTS::Fluid::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)                 ae  02/010|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -521,7 +521,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          ehrl  02/10|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -551,7 +551,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                 ehrl 02/10|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Volumes()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Volumes()
 {
   if (NumVolume()==1) // 3D boundary element and a 3D parent element -> body load (calculated in evaluate)
   {

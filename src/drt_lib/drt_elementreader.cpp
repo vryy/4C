@@ -394,8 +394,8 @@ void ElementReader::Partition()
   {
 #if defined(PARALLEL) && defined(PARMETIS)
 
-    rownodes_ = null;
-    colnodes_ = null;
+    rownodes_ = Teuchos::null;
+    colnodes_ = Teuchos::null;
     nids.clear();
     DRT::UTILS::PartUsingParMetis(dis_,roweles_,rownodes_,colnodes_,
                                   comm_,!reader_.MyOutputFlag());

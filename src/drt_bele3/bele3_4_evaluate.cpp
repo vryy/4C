@@ -25,9 +25,9 @@
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                           schott 11/11|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Bele3_4::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Bele3_4::Evaluate(Teuchos::ParameterList& params,
                                     DRT::Discretization&      discretization,
-                                    vector<int>&              lm,
+                                    std::vector<int>&         lm,
                                     Epetra_SerialDenseMatrix& elemat1,
                                     Epetra_SerialDenseMatrix& elemat2,
                                     Epetra_SerialDenseVector& elevec1,
@@ -43,10 +43,10 @@ int DRT::ELEMENTS::Bele3_4::Evaluate(ParameterList& params,
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Bele3_4::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Bele3_4::EvaluateNeumann(Teuchos::ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
-                                           vector<int>&              lm,
+                                           std::vector<int>&         lm,
                                            Epetra_SerialDenseVector& elevec1,
                                            Epetra_SerialDenseMatrix* elemat1)
 {

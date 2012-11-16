@@ -77,30 +77,30 @@ namespace DRT
     /// helper for ParallelTransferDegreesOfFreedom; unpack the received block to
     /// generate the current map node gid -> its dofs
     void UnpackLocalSourceDofs(
-      map<int,vector<int> >   & gid_to_dofs  ,
-      vector<char>            & rblock
+      std::map<int,std::vector<int> >   & gid_to_dofs  ,
+      std::vector<char>                 & rblock
       );
 
     /// helper for ParallelTransferDegreesOfFreedom; pack the current map
     /// node gid -> its dofs into a send block
     void PackLocalSourceDofs(
-      map<int,vector<int> >   & gid_to_dofs  ,
-      DRT::PackBuffer         & sblock
+      std::map<int,std::vector<int> >   & gid_to_dofs  ,
+      DRT::PackBuffer                   & sblock
       );
 
     /// helper for ParallelTransferDegreesOfFreedom; add processor local information
     /// to the map unpack the received block to the current map node gid -> its dofs
     void SetSourceDofsAvailableOnThisProc(
-      map<int,vector<int> >   & gid_to_dofs
+        std::map<int,std::vector<int> >   & gid_to_dofs
       );
 
     /// helper for ParallelTransferDegreesOfFreedom, an MPI send call
     void SendBlock(
-      int             numproc ,
-      int             myrank  ,
-      vector<char>  & sblock  ,
-      DRT::Exporter & exporter,
-      MPI_Request   & request );
+      int                  numproc ,
+      int                  myrank  ,
+      std::vector<char>  & sblock  ,
+      DRT::Exporter &      exporter,
+      MPI_Request   &      request );
 
     /// helper for ParallelTransferDegreesOfFreedom, an MPI receive call
     void ReceiveBlock(

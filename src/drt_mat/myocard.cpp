@@ -133,7 +133,7 @@ void MAT::Myocard::Pack(DRT::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void MAT::Myocard::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -175,9 +175,9 @@ void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
     const double offdirdiffusivity  = 0.3*params_->diffusivity; // "
 
     // read local eigenvectors of diffusion tensor at current element
-    vector<double> rad;
-    vector<double> axi;
-    vector<double> cir;
+    std::vector<double> rad;
+    std::vector<double> axi;
+    std::vector<double> cir;
     linedef->ExtractDoubleVector("RAD",rad);
     linedef->ExtractDoubleVector("AXI",axi);
     linedef->ExtractDoubleVector("CIR",cir);

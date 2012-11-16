@@ -67,7 +67,7 @@ public:
     \param stiff (out): stiffness matrix
    */
   void EvaluatePotential(
-      ParameterList&                      p,
+      Teuchos::ParameterList&                      p,
       RCP<Epetra_Vector>          disp,
       RCP<Epetra_Vector>          fint,
       RCP<LINALG::SparseMatrix>   stiff);
@@ -82,7 +82,7 @@ public:
     \param stiff (out): stiffness matrix
    */
   void TestEvaluatePotential( 
-      ParameterList&                    p,
+      Teuchos::ParameterList&                    p,
       RCP<Epetra_Vector>        disp,
       RCP<Epetra_Vector>        fint,
       RCP<LINALG::SparseMatrix> stiff,
@@ -94,8 +94,8 @@ public:
   void StiffnessAndInternalForcesPotential(
       const DRT::Element*             element,
       const DRT::UTILS::GaussRule3D&  gaussrule,
-      ParameterList&                  eleparams,
-      vector<int>&                    lm,
+      Teuchos::ParameterList&                  eleparams,
+      std::vector<int>&               lm,
       Epetra_SerialDenseMatrix&       K_stiff,
       Epetra_SerialDenseVector&       F_int);
   
@@ -114,8 +114,8 @@ public:
   void StiffnessAndInternalForcesPotential(
       const DRT::Element*               element,
       const DRT::UTILS::GaussRule2D&    gaussrule,
-      ParameterList&                    eleparams,
-      vector<int>&                      lm,
+      Teuchos::ParameterList&                    eleparams,
+      std::vector<int>&                 lm,
       Epetra_SerialDenseMatrix&         K_stiff,
       Epetra_SerialDenseVector&         fint
       );
@@ -134,8 +134,8 @@ public:
   void StiffnessAndInternalForcesPotential(
       const DRT::Element*               element,
       const DRT::UTILS::GaussRule1D&    gaussrule,
-      ParameterList&                    eleparams,
-      vector<int>&                      lm,
+      Teuchos::ParameterList&                    eleparams,
+      std::vector<int>&                 lm,
       Epetra_SerialDenseMatrix&         K_stiff,
       Epetra_SerialDenseVector&         fint
       );

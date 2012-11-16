@@ -82,25 +82,25 @@ MAT::ViscoGenMax::ViscoGenMax()
   : viscoparams_(NULL)
 {
   isinit_=false;
-  histstressisoprinccurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstressisoprinclast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisoprinccurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisoprinclast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisoprinccurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisoprinclast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisoprinccurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisoprinclast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
-  histstressisomodisocurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstressisomodisolast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisomodisocurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisomodisolast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisomodisocurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisomodisolast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisomodisocurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisomodisolast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
-  histstressisomodvolcurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstressisomodvollast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisomodvolcurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisomodvollast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisomodvolcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisomodvollast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisomodvolcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisomodvollast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
-  histstressanisoprinccurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstressanisoprinclast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressanisoprinccurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressanisoprinclast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressanisoprinccurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressanisoprinclast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressanisoprinccurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressanisoprinclast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 }
 
 
@@ -157,7 +157,7 @@ void MAT::ViscoGenMax::Pack(DRT::PackBuffer& data) const
 void MAT::ViscoGenMax::Unpack(const std::vector<char>& data)
 {
   isinit_=true;
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -173,25 +173,25 @@ void MAT::ViscoGenMax::Unpack(const std::vector<char>& data)
 
   if (histsize == 0) isinit_=false;
 
-  histstressisoprinccurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstressisoprinclast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisoprinccurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisoprinclast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisoprinccurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisoprinclast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisoprinccurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisoprinclast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
-  histstressisomodisocurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstressisomodisolast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisomodisocurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisomodisolast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisomodisocurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisomodisolast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisomodisocurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisomodisolast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
-  histstressisomodvolcurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstressisomodvollast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisomodvolcurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisomodvollast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisomodvolcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisomodvollast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisomodvolcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisomodvollast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
-  histstressanisoprinccurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstressanisoprinclast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressanisoprinccurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressanisoprinclast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressanisoprinccurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressanisoprinclast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressanisoprinccurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressanisoprinclast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
   for (int var=0; var<histsize; var+=1)
   {
@@ -283,25 +283,25 @@ void MAT::ViscoGenMax::Setup(const int numgp,DRT::INPUT::LineDefinition* linedef
 
   // Initialise/allocate internal stress variables
 
-  histstressisoprinccurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstressisoprinclast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisoprinccurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisoprinclast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisoprinccurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisoprinclast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisoprinccurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisoprinclast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
-  histstressisomodisocurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstressisomodisolast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisomodisocurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisomodisolast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisomodisocurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisomodisolast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisomodisocurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisomodisolast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
-  histstressisomodvolcurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstressisomodvollast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisomodvolcurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisomodvollast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisomodvolcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisomodvollast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisomodvolcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisomodvollast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
-  histstressanisoprinccurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstressanisoprinclast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressanisoprinccurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressanisoprinclast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressanisoprinccurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressanisoprinclast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressanisoprinccurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressanisoprinclast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
   const LINALG::Matrix<NUM_STRESS_3D,1> emptyvec(true);
   histstressisoprinccurr_->resize(numgp);
@@ -361,14 +361,14 @@ void MAT::ViscoGenMax::Update()
   histstressanisoprinclast_=histstressanisoprinccurr_;
   artstressanisoprinclast_=artstressanisoprinccurr_;
   const LINALG::Matrix<NUM_STRESS_3D,1> emptyvec(true);
-  histstressisoprinccurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisoprinccurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstressisomodisocurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisomodisocurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstressisomodvolcurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressisomodvolcurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histstressanisoprinccurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  artstressanisoprinccurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisoprinccurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisoprinccurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisomodisocurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisomodisocurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressisomodvolcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressisomodvolcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histstressanisoprinccurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  artstressanisoprinccurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   const int numgp=histstressisoprinclast_->size();
   histstressisoprinccurr_->resize(numgp);
   artstressisoprinccurr_->resize(numgp);

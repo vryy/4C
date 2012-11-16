@@ -125,15 +125,15 @@ void DRT::ELEMENTS::Bele3::Pack(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele3::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Bele3::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
@@ -162,7 +162,7 @@ void DRT::ELEMENTS::Bele3::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               gjb 05/08|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -178,9 +178,9 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of Surfaces (length 1) (public)               gammi 04/07|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Bele3::Surfaces()
 {
-  vector<Teuchos::RCP<DRT::Element> > surfaces(1);
+  std::vector<Teuchos::RCP<DRT::Element> > surfaces(1);
   surfaces[0]=Teuchos::rcp(this,false);
   return surfaces;
 }

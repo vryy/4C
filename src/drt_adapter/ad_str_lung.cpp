@@ -15,7 +15,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)
 {
   //----------------------------------------------------------------------
   // make sure
-  if (structure_ == null)
+  if (structure_ == Teuchos::null)
     dserror("Failed to create the underlying structural adapter");
 
   //----------------------------------------------------------------------
@@ -111,7 +111,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)
   for (int i=0; i<numnode; ++i)
   {
     const DRT::Node* actnode = Discretization()->gNode(nodes[i]);
-    const vector<int> dof = Discretization()->Dof(actnode);
+    const std::vector<int> dof = Discretization()->Dof(actnode);
     if (ndim > static_cast<int>(dof.size()))
       dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes[i],i,ndim);
     copy(&dof[0], &dof[0]+ndim, back_inserter(dofmapvec));
@@ -192,9 +192,9 @@ void ADAPTER::StructureLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initvo
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector and ownerships
-        vector<int> lm;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         curr->second->LocationVector(*Discretization(),lm,lmowner,lmstride);
 
         // reshape element matrices and vectors and init to zero
@@ -311,9 +311,9 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
       // get element location vector and ownerships
-      vector<int> lm;
-      vector<int> lmowner;
-      vector<int> lmstride;
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
       curr->second->LocationVector(*Discretization(),lm,lmowner,lmstride);
 
       // get dimension of element matrices and vectors
@@ -406,7 +406,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
     for (int j=0; j<Aprime->NumMyRows(); ++j)
     {
       vector<int>    Indices(MaxNumEntries);
-      vector<double> Values(MaxNumEntries);
+      std::vector<double> Values(MaxNumEntries);
       int Row = Aprime->GRID(j);
       int ierr = Aprime->ExtractGlobalRowCopy(Row,MaxNumEntries,NumEntries,&Values[0],&Indices[0]);
       if (ierr) dserror("ExtractGlobalRowCopy failed: err=%d",ierr);

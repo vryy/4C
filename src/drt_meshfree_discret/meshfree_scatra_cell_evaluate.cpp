@@ -20,9 +20,9 @@
  |  evaluate the element (public)                             nis Mar12 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::MeshfreeTransport::Evaluate(
-    ParameterList&            params,
+    Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2,
     Epetra_SerialDenseVector& elevec1,
@@ -83,10 +83,10 @@ int DRT::ELEMENTS::MeshfreeTransport::Evaluate(
  |                                                                      |
  |  Not decided on an implementation of Neumann BC for meshfree schemes |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::MeshfreeTransport::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::MeshfreeTransport::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {

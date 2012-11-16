@@ -139,8 +139,8 @@ void LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& target
  |  assemble a matrix  (public)                               popp 01/08|
  *----------------------------------------------------------------------*/
 void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
-                      const vector<int>& lmrow, const vector<int>& lmrowowner,
-                      const vector<int>& lmcol)
+                      const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
+                      const std::vector<int>& lmcol)
 {
   const int lrowdim = (int)lmrow.size();
   const int lcoldim = (int)lmcol.size();
@@ -190,7 +190,7 @@ void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
  |  assemble a vector  (public)                              mwgee 12/06|
  *----------------------------------------------------------------------*/
 void LINALG::Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
-                const vector<int>& lm, const vector<int>& lmowner)
+                const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
   const int ldim = (int)lm.size();
   if (ldim!=(int)lmowner.size() || ldim!=Vele.Length())
@@ -214,7 +214,7 @@ void LINALG::Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
  |  assemble a vector into MultiVector (public)              mwgee 01/08|
  *----------------------------------------------------------------------*/
 void LINALG::Assemble(Epetra_MultiVector& V, const int n, const Epetra_SerialDenseVector& Vele,
-                const vector<int>& lm, const vector<int>& lmowner)
+                const std::vector<int>& lm, const std::vector<int>& lmowner)
 {
   LINALG::Assemble(*(V(n)),Vele,lm,lmowner);
   return;
@@ -255,7 +255,7 @@ void LINALG::Add(const Epetra_CrsMatrix& A,
   if (!A.Filled()) dserror("FillComplete was not called on A");
 
   Epetra_CrsMatrix* Aprime = NULL;
-  RCP<EpetraExt::RowMatrix_Transpose> Atrans = null;
+  RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::null;
   if (transposeA)
   {
     Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
@@ -635,7 +635,7 @@ void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&            x,
                                     const RCP<const Epetra_Vector> dbctoggle)
 {
   const Epetra_Vector& dbct = *dbctoggle;
-  if (x != null && b != null)
+  if (x != Teuchos::null && b != Teuchos::null)
   {
     Epetra_Vector&       X    = *x;
     Epetra_Vector&       B    = *b;
@@ -663,7 +663,7 @@ void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&            x,
   if (not dbcmap.UniqueGIDs())
     dserror("unique map required");
 
-  if (x != null and b != null)
+  if (x != Teuchos::null and b != Teuchos::null)
   {
     Epetra_Vector&       X    = *x;
     Epetra_Vector&       B    = *b;
@@ -703,7 +703,7 @@ void LINALG::ApplyDirichlettoSystem(RCP<Epetra_Vector>&            b,
   if (not dbcmap.UniqueGIDs())
     dserror("unique map required");
 
-  if (b != null)
+  if (b != Teuchos::null)
   {
     Epetra_Vector&       B    = *b;
     const Epetra_Vector& dbcv = *dbcval;
@@ -848,13 +848,13 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
                             RCP<Epetra_CrsMatrix>& A21,
                             RCP<Epetra_CrsMatrix>& A22)
 {
-  if (A==null)
+  if (A==Teuchos::null)
     dserror("LINALG::SplitMatrix2x2: A==null on entry");
 
-  if (A11rowmap==null && A22rowmap != null)
+  if (A11rowmap==null && A22rowmap != Teuchos::null)
     A11rowmap = LINALG::SplitMap(A->RowMap(),*A22rowmap);
-  else if (A11rowmap != null && A22rowmap != null);
-  else if (A11rowmap != null && A22rowmap == null)
+  else if (A11rowmap != Teuchos::null && A22rowmap != Teuchos::null);
+  else if (A11rowmap != Teuchos::null && A22rowmap == Teuchos::null)
     A22rowmap = LINALG::SplitMap(A->RowMap(),*A11rowmap);
   else
   	dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
@@ -896,7 +896,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   A22 = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A22map,100));
   {
     vector<int>    a22gcindices(100);
-    vector<double> a22values(100);
+    std::vector<double> a22values(100);
     for (int i=0; i<A->NumMyRows(); ++i)
     {
       const int grid = A->GRID(i);
@@ -920,7 +920,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
       {
         const int gcid = A->ColMap().GID(cindices[j]);
         // see whether we have gcid in a22gmap
-        map<int,int>::iterator curr = a22gmap.find(gcid);
+        std::map<int,int>::iterator curr = a22gmap.find(gcid);
         if (curr==a22gmap.end()) continue;
         //cout << gcid << " ";
         a22gcindices[count] = gcid;
@@ -944,7 +944,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   A11 = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A11map,100));
   {
     vector<int>    a11gcindices(100);
-    vector<double> a11values(100);
+    std::vector<double> a11values(100);
     for (int i=0; i<A->NumMyRows(); ++i)
     {
       const int grid = A->GRID(i);
@@ -966,7 +966,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
       {
         const int gcid = A->ColMap().GID(cindices[j]);
         // see whether we have gcid as part of a22gmap
-        map<int,int>::iterator curr = a22gmap.find(gcid);
+        std::map<int,int>::iterator curr = a22gmap.find(gcid);
         if (curr!=a22gmap.end()) continue;
         a11gcindices[count] = gcid;
         a11values[count] = values[j];
@@ -987,7 +987,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   A12 = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A11map,100));
   {
     vector<int>    a12gcindices(100);
-    vector<double> a12values(100);
+    std::vector<double> a12values(100);
     for (int i=0; i<A->NumMyRows(); ++i)
     {
       const int grid = A->GRID(i);
@@ -1009,7 +1009,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
       {
         const int gcid = A->ColMap().GID(cindices[j]);
         // see whether we have gcid as part of a22gmap
-        map<int,int>::iterator curr = a22gmap.find(gcid);
+        std::map<int,int>::iterator curr = a22gmap.find(gcid);
         if (curr==a22gmap.end()) continue;
         a12gcindices[count] = gcid;
         a12values[count] = values[j];
@@ -1030,7 +1030,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   A21 = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A22map,100));
   {
     vector<int>    a21gcindices(100);
-    vector<double> a21values(100);
+    std::vector<double> a21values(100);
     for (int i=0; i<A->NumMyRows(); ++i)
     {
       const int grid = A->GRID(i);
@@ -1052,7 +1052,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
       {
         const int gcid = A->ColMap().GID(cindices[j]);
         // see whether we have gcid as part of a22gmap
-        map<int,int>::iterator curr = a22gmap.find(gcid);
+        std::map<int,int>::iterator curr = a22gmap.find(gcid);
         if (curr!=a22gmap.end()) continue;
         a21gcindices[count] = gcid;
         a21values[count] = values[j];
@@ -1086,14 +1086,14 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
                             RCP<Epetra_CrsMatrix>& A21,
                             RCP<Epetra_CrsMatrix>& A22)
 {
-  if (A==null)
+  if (A==Teuchos::null)
     dserror("LINALG::SplitMatrix2x2: A==null on entry");
 
-  if (A11rowmap==null && A22rowmap != null)
+  if (A11rowmap==Teuchos::null && A22rowmap != Teuchos::null)
     A11rowmap = LINALG::SplitMap(A->RowMap(),*A22rowmap);
-  else if (A11rowmap != null && A22rowmap == null)
+  else if (A11rowmap != Teuchos::null && A22rowmap == Teuchos::null)
     A22rowmap = LINALG::SplitMap(A->RowMap(),*A11rowmap);
-  else if (A11rowmap == null && A22rowmap == null)
+  else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
     dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
 
   vector<RCP<const Epetra_Map> > maps(2);
@@ -1134,23 +1134,23 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
                             RCP<LINALG::SparseMatrix>& A21,
                             RCP<LINALG::SparseMatrix>& A22)
 {
-  if (A==null)
+  if (A==Teuchos::null)
     dserror("LINALG::SplitMatrix2x2: A==null on entry");
 
   // check and complete input row maps
-  if (A11rowmap==null && A22rowmap != null)
+  if (A11rowmap==null && A22rowmap != Teuchos::null)
     A11rowmap = LINALG::SplitMap(A->RowMap(),*A22rowmap);
-  else if (A11rowmap != null && A22rowmap != null);
-  else if (A11rowmap != null && A22rowmap == null)
+  else if (A11rowmap != Teuchos::null && A22rowmap != Teuchos::null);
+  else if (A11rowmap != Teuchos::null && A22rowmap == Teuchos::null)
     A22rowmap = LINALG::SplitMap(A->RowMap(),*A11rowmap);
   else
     dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
 
   // check and complete input domain maps
-  if (A11domainmap==null && A22domainmap != null)
+  if (A11domainmap==null && A22domainmap != Teuchos::null)
   	A11domainmap = LINALG::SplitMap(A->DomainMap(),*A22domainmap);
-  else if (A11domainmap != null && A22domainmap != null);
-  else if (A11domainmap != null && A22domainmap == null)
+  else if (A11domainmap != Teuchos::null && A22domainmap != Teuchos::null);
+  else if (A11domainmap != Teuchos::null && A22domainmap == Teuchos::null)
     A22domainmap = LINALG::SplitMap(A->DomainMap(),*A11domainmap);
   else
     dserror("LINALG::SplitMatrix2x2: Both A11domainmap and A22domainmap == null on entry");
@@ -1197,7 +1197,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
     A11 = Teuchos::rcp(new LINALG::SparseMatrix(A11rmap,100));
     {
       vector<int>    a11gcindices(100);
-      vector<double> a11values(100);
+      std::vector<double> a11values(100);
       for (int i=0; i<A->EpetraMatrix()->NumMyRows(); ++i)
       {
         const int grid = A->EpetraMatrix()->GRID(i);
@@ -1219,7 +1219,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
         {
           const int gcid = A->ColMap().GID(cindices[j]);
           // see whether we have gcid as part of a11gmap
-          map<int,int>::iterator curr = a11gmap.find(gcid);
+          std::map<int,int>::iterator curr = a11gmap.find(gcid);
           if (curr==a11gmap.end()) continue;
           a11gcindices[count] = gcid;
           a11values[count] = values[j];
@@ -1242,7 +1242,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
     A22 = Teuchos::rcp(new LINALG::SparseMatrix(A22rmap,100));
     {
       vector<int>    a22gcindices(100);
-      vector<double> a22values(100);
+      std::vector<double> a22values(100);
       for (int i=0; i<A->EpetraMatrix()->NumMyRows(); ++i)
       {
         const int grid = A->EpetraMatrix()->GRID(i);
@@ -1264,7 +1264,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
         {
           const int gcid = A->ColMap().GID(cindices[j]);
           // see whether we have gcid as part of a11gmap
-          map<int,int>::iterator curr = a11gmap.find(gcid);
+          std::map<int,int>::iterator curr = a11gmap.find(gcid);
           if (curr!=a11gmap.end()) continue;
           a22gcindices[count] = gcid;
           a22values[count]    = values[j];
@@ -1287,7 +1287,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
     A12 = Teuchos::rcp(new LINALG::SparseMatrix(A11rmap,100));
     {
       vector<int>    a12gcindices(100);
-      vector<double> a12values(100);
+      std::vector<double> a12values(100);
       for (int i=0; i<A->EpetraMatrix()->NumMyRows(); ++i)
       {
         const int grid = A->EpetraMatrix()->GRID(i);
@@ -1309,7 +1309,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
         {
           const int gcid = A->ColMap().GID(cindices[j]);
           // see whether we have gcid as part of a11gmap
-          map<int,int>::iterator curr = a11gmap.find(gcid);
+          std::map<int,int>::iterator curr = a11gmap.find(gcid);
           if (curr!=a11gmap.end()) continue;
           a12gcindices[count] = gcid;
           a12values[count] = values[j];
@@ -1332,7 +1332,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
     A21 = Teuchos::rcp(new LINALG::SparseMatrix(A22rmap,100));
     {
       vector<int>    a21gcindices(100);
-      vector<double> a21values(100);
+      std::vector<double> a21values(100);
       for (int i=0; i<A->EpetraMatrix()->NumMyRows(); ++i)
       {
         const int grid = A->EpetraMatrix()->GRID(i);
@@ -1354,7 +1354,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
         {
           const int gcid = A->ColMap().GID(cindices[j]);
           // see whether we have gcid as part of a11gmap
-          map<int,int>::iterator curr = a11gmap.find(gcid);
+          std::map<int,int>::iterator curr = a11gmap.find(gcid);
           if (curr==a11gmap.end()) continue;
           a21gcindices[count] = gcid;
           a21values[count] = values[j];
@@ -1390,23 +1390,23 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
                             RCP<LINALG::SparseMatrix>& A21,
                             RCP<LINALG::SparseMatrix>& A22)
 {
-  if (A==null)
+  if (A==Teuchos::null)
     dserror("LINALG::SplitMatrix2x2: A==null on entry");
 
   // check and complete input row maps
-  if (A11rowmap==null && A22rowmap != null)
+  if (A11rowmap==Teuchos::null && A22rowmap != Teuchos::null)
     A11rowmap = LINALG::SplitMap(A->RowMap(),*A22rowmap);
-  else if (A11rowmap != null && A22rowmap == null)
+  else if (A11rowmap != Teuchos::null && A22rowmap == Teuchos::null)
     A22rowmap = LINALG::SplitMap(A->RowMap(),*A11rowmap);
-  else if (A11rowmap == null && A22rowmap == null)
+  else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
     dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
 
   // check and complete input domain maps
-  if (A11domainmap==null && A22domainmap != null)
+  if (A11domainmap==Teuchos::null && A22domainmap != Teuchos::null)
   	A11domainmap = LINALG::SplitMap(A->DomainMap(),*A22domainmap);
-  else if (A11domainmap != null && A22domainmap == null)
+  else if (A11domainmap != Teuchos::null && A22domainmap == Teuchos::null)
     A22domainmap = LINALG::SplitMap(A->DomainMap(),*A11domainmap);
-  else if (A11rowmap == null && A22rowmap == null)
+  else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
     dserror("LINALG::SplitMatrix2x2: Both A11domainmap and A22domainmap == null on entry");
 
   // local variables
@@ -1528,11 +1528,11 @@ RCP<Epetra_Map> LINALG::MergeMap(const RCP<const Epetra_Map>& map1,
                                  bool overlap)
 {
   // check for cases with null RCPs
-  if (map1==null && map2==null)
-    return null;
-  else if (map1==null)
+  if (map1==Teuchos::null && map2==Teuchos::null)
+    return Teuchos::null;
+  else if (map1==Teuchos::null)
     return Teuchos::rcp(new Epetra_Map(*map2));
-  else if (map2==null)
+  else if (map2==Teuchos::null)
     return Teuchos::rcp(new Epetra_Map(*map1));
 
   // wrapped call to non-RCP version of MergeMap
@@ -1988,8 +1988,8 @@ RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap)
  |  Send and receive lists of ints.  (heiner 09/07)                     |
  *----------------------------------------------------------------------*/
 void LINALG::AllToAllCommunication( const Epetra_Comm& comm,
-                                    const vector< vector<int> >& send,
-                                    vector< vector<int> >& recv )
+                                    const std::vector< std::vector<int> >& send,
+                                    vector< std::vector<int> >& recv )
 {
 #ifndef PARALLEL
 
@@ -2021,7 +2021,7 @@ void LINALG::AllToAllCommunication( const Epetra_Comm& comm,
 
     int displacement = 0;
     sdispls.push_back( 0 );
-    for ( vector< vector<int> >::const_iterator iter = send.begin();
+    for ( vector< std::vector<int> >::const_iterator iter = send.begin();
           iter != send.end(); ++iter )
     {
         sendbuf.insert( sendbuf.end(), iter->begin(), iter->end() );

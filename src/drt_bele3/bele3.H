@@ -107,8 +107,8 @@ public:
   }
   virtual int NumSurface() const {return 1;}
   virtual int NumVolume() const {return -1;}
-  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
-  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
   virtual int UniqueParObjectId() const { return Bele3Type::Instance().UniqueParObjectId(); }
   virtual void Pack(DRT::PackBuffer& data) const;
   virtual void Unpack(const std::vector<char>& data);
@@ -132,19 +132,19 @@ public:
 
   //! @name Evaluation
 
-  int Evaluate(ParameterList& params,
+  int Evaluate(Teuchos::ParameterList& params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
                Epetra_SerialDenseVector& elevec2,
                Epetra_SerialDenseVector& elevec3);
 
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -190,7 +190,7 @@ private:
     };
 
   //! vector with line elements
-//  vector<Teuchos::RCP<DRT::Element> >                      lines_;
+//  std::vector<Teuchos::RCP<DRT::Element> >                      lines_;
 
   //! flag for fixed or moving boundary
 //  const bool                                      is_moving_;
@@ -299,9 +299,9 @@ public:
 
     //! @name Evaluation
 
-  virtual int Evaluate(ParameterList& params,
+  virtual int Evaluate(Teuchos::ParameterList& params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
@@ -310,10 +310,10 @@ public:
 
   //! @name Evaluate methods
 
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -349,9 +349,9 @@ private:
 
   //! integrate shape functions over a line
   void IntegrateShapeFunction(
-      ParameterList&             params,
+      Teuchos::ParameterList&    params,
       DRT::Discretization&       discretization,
-      const vector<int>&         lm,
+      const std::vector<int>&    lm,
       Epetra_SerialDenseVector&  elevec1,
       const std::vector<double>& edispnp
       );

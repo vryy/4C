@@ -48,7 +48,7 @@ UTILS::MPConstraint2::MPConstraint2(RCP<DRT::Discretization> discr,
     actdisc_->Redistribute(*(actdisc_->NodeRowMap()), *newcolnodemap);
     RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentDofSet(actdisc_));
     (constraintdis_.find(0)->second)->ReplaceDofSet(newdofset);
-    newdofset = null;
+    newdofset = Teuchos::null;
     (constraintdis_.find(0)->second)->FillComplete();
   }
 
@@ -88,7 +88,7 @@ void UTILS::MPConstraint2::Initialize
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
 void UTILS::MPConstraint2::Initialize(
-    ParameterList&        params,
+    Teuchos::ParameterList&        params,
     RCP<Epetra_Vector>    systemvector)
 {
   const double time = params.get("total time",-1.0);
@@ -97,7 +97,7 @@ void UTILS::MPConstraint2::Initialize(
   // allocate vectors for amplitudes and IDs
 
 
-  vector<double> amplit(constrcond_.size());
+  std::vector<double> amplit(constrcond_.size());
   vector<int> IDs(constrcond_.size());
   // read data of the input files
   for (unsigned int i=0;i<constrcond_.size();i++)
@@ -133,7 +133,7 @@ void UTILS::MPConstraint2::Initialize(
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
 void UTILS::MPConstraint2::Evaluate(
-    ParameterList&        params,
+    Teuchos::ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
@@ -286,7 +286,7 @@ void UTILS::MPConstraint2::ReorderConstraintNodes
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
 void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
-    ParameterList&        params,
+    Teuchos::ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
@@ -347,9 +347,9 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       const double lagraval = (*lagramul)[lindex];
 
       // get element location vector, dirichlet flags and ownerships
-      vector<int> lm;
-      vector<int> lmowner;
-      vector<int> lmstride;
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
       actele->LocationVector(*disc,lm,lmowner,lmstride);
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
@@ -398,7 +398,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       }
 
       // Load curve business
-      const vector<int>*    curve  = cond.Get<vector<int> >("curve");
+      const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
       double curvefac = 1.0;

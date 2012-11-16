@@ -465,7 +465,7 @@ public:
    * \return 0 if successful, negative otherwise
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               std::vector<int>&         lm,
@@ -763,7 +763,7 @@ public:
    * \return 0 if successful, negative otherwise
    *///                                                   (public) nis Feb12
   /*------------------------------------------------------------------------*/
-  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               std::vector<int>&         lm,

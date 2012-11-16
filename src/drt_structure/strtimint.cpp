@@ -1255,7 +1255,7 @@ void STR::TimInt::DetermineStressStrain()
       discret_->SetState(1,"temperature",tempn_);
     if(fluidveln_!=Teuchos::null)
       discret_->SetState(1,"fluidveln",fluidveln_);
-    if(dismatn_!= null)
+    if(dismatn_!= Teuchos::null)
       discret_->SetState(0,"material displacement",dismatn_);
 
     discret_->Evaluate(p, Teuchos::null, Teuchos::null,
@@ -1450,15 +1450,15 @@ void STR::TimInt::OutputContact()
     mass_->Multiply(false, (*vel_)[0], *mv);
 
     // linear / angular momentum
-    vector<double> sumlinmom(3);
-    vector<double> sumangmom(3);
-    vector<double> angmom(3);
-    vector<double> linmom(3);
+    std::vector<double> sumlinmom(3);
+    std::vector<double> sumangmom(3);
+    std::vector<double> angmom(3);
+    std::vector<double> linmom(3);
 
     // vectors of nodal properties
-    vector<double> nodelinmom(3);
-    vector<double> nodeangmom(3);
-    vector<double> position(3);
+    std::vector<double> nodelinmom(3);
+    std::vector<double> nodeangmom(3);
+    std::vector<double> position(3);
 
     // loop over all nodes belonging to the respective processor
     for (int k=0; k<(discret_->NodeRowMap())->NumMyElements();++k)
@@ -1709,7 +1709,7 @@ void STR::TimInt::OutputNodalPositions()
     //cout << "this is my gdof vector" << gdofs[0] << " " << gdofs[1] << " " << gdofs[2] << endl;
 
     // get displacements of a node
-    vector<double> mydisp (3,0.0);
+    std::vector<double> mydisp (3,0.0);
     for (int ldof = 0; ldof<3; ldof ++)
     {
       int displid = dofrowmap->LID(gdofs[ldof]);
@@ -1826,7 +1826,7 @@ void STR::TimInt::ApplyForceStiffInternal
     discret_->SetState(1,"temperature",tempn_);
   if(fluidveln_!=Teuchos::null)    //porelasticity specific (coupling with fluid field)
     discret_->SetState(1,"fluidvel",fluidveln_);
-  if(dismatn_!=null)
+  if(dismatn_!=Teuchos::null)
     discret_->SetState(0,"material displacement",dismatn_);
   discret_->Evaluate(p, stiff, damp, fint, Teuchos::null, Teuchos::null);
   discret_->ClearState();

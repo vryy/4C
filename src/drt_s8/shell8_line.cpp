@@ -91,7 +91,7 @@ void DRT::ELEMENTS::Shell8Line::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Shell8Line::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Shell8Line::Unpack(const std::vector<char>& data)
 {
   dserror("this line element does not support communication");
   return;

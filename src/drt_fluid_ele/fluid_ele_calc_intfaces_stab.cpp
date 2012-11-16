@@ -203,10 +203,10 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     DRT::ELEMENTS::FluidIntFace*       intface,              ///< internal face element
     Teuchos::ParameterList&            params,               ///< parameter list
     DRT::Discretization&               discretization,       ///< discretization
-    vector<int>&                       patchlm,              ///< patch local map
-    vector<int>&                       lm_masterToPatch,     ///< local map between master dofs and patchlm
-    vector<int>&                       lm_slaveToPatch,      ///< local map between slave dofs and patchlm
-    vector<int>&                       lm_faceToPatch,       ///< local map between face dofs and patchlm
+    std::vector<int>&                  patchlm,              ///< patch local map
+    std::vector<int>&                  lm_masterToPatch,     ///< local map between master dofs and patchlm
+    std::vector<int>&                  lm_slaveToPatch,      ///< local map between slave dofs and patchlm
+    std::vector<int>&                  lm_faceToPatch,       ///< local map between face dofs and patchlm
     std::vector<int>&                  lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
     std::vector<int>&                  lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
     vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
@@ -288,7 +288,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   //------------- extract patch velaf velocity---------
   // velocities (intermediate time step, n+alpha_F)
   RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
-  if (velaf==null)
+  if (velaf==Teuchos::null)
     dserror("Cannot get state vector 'velaf'");
 
 
@@ -327,10 +327,10 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   {
     // velocities (intermediate time step, n+1)
     RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-    if (velnp==null)
+    if (velnp==Teuchos::null)
       dserror("Cannot get state vector 'velnp'");
 
-    vector<double> patch_velnp(ndofinpatch);
+    std::vector<double> patch_velnp(ndofinpatch);
     for (int i=0; i<ndofinpatch; ++i)
     {
       int lid = velnp->Map().LID(patchlm[i]);
@@ -371,13 +371,13 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   {
     // mesh displacements, new time step, n+1
     RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-    if (dispnp==null)
+    if (dispnp==Teuchos::null)
     {
       dserror("Cannot get state vector 'dispnp'");
     }
 
     // extract patch dispnp
-    vector<double> patch_dispnp(ndofinpatch);
+    std::vector<double> patch_dispnp(ndofinpatch);
     for (int i=0; i<ndofinpatch; ++i)
     {
       int lid = dispnp->Map().LID(patchlm[i]);
@@ -1010,13 +1010,13 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
     Fluid*                     slave_ele,        ///< slave  parent element
     double &                   kinvisc,          ///< patch kinematic viscosity
     double &                   dens,             ///< patch density
-    vector<double>&            mypvelaf,         ///< master velaf
-    vector<double>&            mypvelnp,         ///< master velnp
-    vector<double>&            mypedispnp,       ///< master dispnp
-    vector<double>&            myedispnp,        ///< surfele dispnp
-    vector<double>&            mynvelaf,         ///< slave velaf
-    vector<double>&            mynvelnp,         ///< slave velnp
-    vector<double>&            mynedispnp        ///< slave dispnp
+    std::vector<double>&       mypvelaf,         ///< master velaf
+    std::vector<double>&       mypvelnp,         ///< master velnp
+    std::vector<double>&       mypedispnp,       ///< master dispnp
+    std::vector<double>&       myedispnp,        ///< surfele dispnp
+    std::vector<double>&       mynvelaf,         ///< slave velaf
+    std::vector<double>&       mynvelnp,         ///< slave velnp
+    std::vector<double>&       mynedispnp        ///< slave dispnp
     )
 {
 
@@ -2273,10 +2273,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
   // compute element length w.r.t master element
 
   // numbering of master's surfaces/lines w.r.t parent element
-  vector< vector<int> > m_connectivity;
+  vector< std::vector<int> > m_connectivity;
 
   // numbering of slave's surfaces/lines w.r.t parent element
-  vector< vector<int> > s_connectivity;
+  vector< std::vector<int> > s_connectivity;
 
   if(nsd_ == 3)
   {

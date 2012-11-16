@@ -45,9 +45,9 @@ namespace ELEMENTS
     virtual ~ArteryExpInterface() {}
     /// Evaluate the element
     virtual int Evaluate(Artery*                   ele,
-                         ParameterList&            params,
+                         Teuchos::ParameterList&   params,
                          DRT::Discretization&      discretization,
-                         vector<int>&              lm,
+                         std::vector<int>&         lm,
                          Epetra_SerialDenseMatrix& elemat1_epetra,
                          Epetra_SerialDenseMatrix& elemat2_epetra,
                          Epetra_SerialDenseVector& elevec1_epetra,
@@ -56,28 +56,28 @@ namespace ELEMENTS
                          RCP<MAT::Material> mat) = 0;
 
     virtual void Initial(Artery*                                  ele,
-                         ParameterList&                           params,
+                         Teuchos::ParameterList&                           params,
                          DRT::Discretization&                     discretization,
-                         vector<int>&                             lm,
+                         std::vector<int>&                        lm,
                          Teuchos::RCP<const MAT::Material>        material)=0;
 
     virtual void EvaluateTerminalBC(Artery*                       ele,
-                                    ParameterList&                params,
+                                    Teuchos::ParameterList&       params,
                                     DRT::Discretization&          discretization,
-                                    vector<int>&                  lm,
+                                    std::vector<int>&             lm,
                                     RCP<MAT::Material>    mat) = 0;
 
     virtual void CalcPostprocessingValues(Artery*                       ele,
-                                          ParameterList&                params,
+                                          Teuchos::ParameterList&       params,
                                           DRT::Discretization&          discretization,
-                                          vector<int>&                  lm,
+                                          std::vector<int>&             lm,
                                           RCP<MAT::Material>    mat) = 0;
 
 
     virtual bool SolveRiemann(Artery*                             ele,
-                              ParameterList&                      params,
+                              Teuchos::ParameterList&             params,
                               DRT::Discretization&                discretization,
-                              vector<int>&                        lm,
+                              std::vector<int>&                   lm,
                               Teuchos::RCP<const MAT::Material>   mat) = 0;
 
     /// Internal implementation class for artery element
@@ -113,9 +113,9 @@ namespace ELEMENTS
       The evaluate function for the general artery case.
      */
     virtual int Evaluate(Artery*                   ele,
-                         ParameterList&            params,
+                         Teuchos::ParameterList&   params,
                          DRT::Discretization&      discretization,
-                         vector<int>&              lm,
+                         std::vector<int>&         lm,
                          Epetra_SerialDenseMatrix& elemat1_epetra,
                          Epetra_SerialDenseMatrix& elemat2_epetra,
                          Epetra_SerialDenseVector& elevec1_epetra,
@@ -146,21 +146,21 @@ namespace ELEMENTS
                 double                                   dt);
 
     virtual bool SolveRiemann(Artery*                            ele,
-                              ParameterList&                     params,
+                              Teuchos::ParameterList&                     params,
                               DRT::Discretization&               discretization,
-                              vector<int>&                       lm,
+                              std::vector<int>&                  lm,
                               Teuchos::RCP<const MAT::Material>  mat);
 
     virtual void EvaluateTerminalBC(Artery*                      ele,
-                                    ParameterList&               params,
+                                    Teuchos::ParameterList&      params,
                                     DRT::Discretization&         disctretization,
-                                    vector<int>&                 lm,
+                                    std::vector<int>&            lm,
                                     RCP<MAT::Material>   mat);
 
     virtual void CalcPostprocessingValues(Artery*                       ele,
-                                          ParameterList&                params,
+                                          Teuchos::ParameterList&       params,
                                           DRT::Discretization&          discretization,
-                                          vector<int>&                  lm,
+                                          std::vector<int>&             lm,
                                           RCP<MAT::Material>    mat);
 
 
@@ -179,9 +179,9 @@ namespace ELEMENTS
       \param dt               (i) timestep
       */
     virtual void Initial(Artery*                                  ele,
-                         ParameterList&                           params,
+                         Teuchos::ParameterList&                           params,
                          DRT::Discretization&                     discretization,
-                         vector<int>&                             lm,
+                         std::vector<int>&                        lm,
                          Teuchos::RCP<const MAT::Material>        material);
 
     /*!

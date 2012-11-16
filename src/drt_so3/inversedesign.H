@@ -218,19 +218,19 @@ private:
                  const LINALG::SerialDenseMatrix& F,
                  const LINALG::SerialDenseMatrix& S) const;
   void FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
-                     const vector<double>& disp,
+                     const std::vector<double>& disp,
                      const int gp,
                      DRT::ELEMENTS::So_hex8* ele,
-                     ParameterList& params) const;
+                     Teuchos::ParameterList& params) const;
   void FD_djdX(Epetra_SerialDenseMatrix& djdX,
-                     const vector<double>& disp,
+                     const std::vector<double>& disp,
                      const int gp,
                      DRT::ELEMENTS::So_hex8* ele) const;
   void FD_dISdX(Epetra_SerialDenseMatrix& stiff,
-                     const vector<double>& disp,
+                     const std::vector<double>& disp,
                      const int gp,
                      DRT::ELEMENTS::So_hex8* ele,
-                     ParameterList& params) const;
+                     Teuchos::ParameterList& params) const;
   void FD_dISdf(Epetra_SerialDenseMatrix& dISdf,
                 const Epetra_SerialDenseVector& stress,
                 const LINALG::SerialDenseMatrix& f) const;

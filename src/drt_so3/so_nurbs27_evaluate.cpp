@@ -33,9 +33,9 @@ Maintainer: Peter Gamnitzer
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
-  ParameterList&            params        ,
+  Teuchos::ParameterList&   params        ,
   DRT::Discretization&      discretization,
-  vector<int>&              lm            ,
+  std::vector<int>&         lm            ,
   Epetra_SerialDenseMatrix& elemat1_epetra,
   Epetra_SerialDenseMatrix& elemat2_epetra,
   Epetra_SerialDenseVector& elevec1_epetra,
@@ -73,9 +73,9 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
     case calc_struct_linstiff:
     {
       // need current displacement and residual forces
-      vector<double> mydisp(lm.size());
+      std::vector<double> mydisp(lm.size());
       for (unsigned i=0; i<mydisp.size(); ++i) mydisp[i] = 0.0;
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       for (unsigned i=0; i<myres.size(); ++i) myres[i] = 0.0;
       sonurbs27_nlnstiffmass(lm            ,
 			     discretization,
@@ -94,10 +94,10 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       LINALG::Matrix<81,81>* matptr = NULL;
       if (elemat1.IsInitialized()) matptr = &elemat1;
@@ -119,10 +119,10 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       LINALG::Matrix<81,81> myemat(true);
@@ -143,10 +143,10 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       sonurbs27_nlnstiffmass(lm            ,
@@ -287,7 +287,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
     LINALG::Matrix<81,81>&      elemat1,
     const INPAR::STR::STC_Scale stc_scaling,
     const int                   stc_layer,
-    vector<int>&                lm,
+    std::vector<int>&           lm,
     DRT::Discretization&        discretization,
     bool                        do_inverse
 )
@@ -627,16 +627,16 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
  |  Integrate a Volume Neumann boundary condition (public)              |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
-  ParameterList&            params        ,
+  Teuchos::ParameterList&   params        ,
   DRT::Discretization&      discretization,
   DRT::Condition&           condition     ,
-  vector<int>&              lm            ,
+  std::vector<int>&         lm            ,
   Epetra_SerialDenseVector& elevec1       ,
   Epetra_SerialDenseMatrix* elemat1       )
 {
   // get values and switches from the condition
-  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
-  const vector<double>* val   = condition.Get<vector<double> >("val"  );
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
 
   // --------------------------------------------------
   // Initialisation of nurbs specific stuff
@@ -696,7 +696,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::EvaluateNeumann(
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -835,14 +835,14 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::InitJacobianMapping(DRT::Discretization& 
  |  evaluate the element (private)                                      |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
-  vector<int>&           lm            , // location matrix
+  std::vector<int>&      lm            , // location matrix
   DRT::Discretization&   discretization, // discretisation to extract knot vector
-  vector<double>&        disp          , // current displacements
-  vector<double>&        residual      , // current residual displ
+  std::vector<double>&   disp          , // current displacements
+  std::vector<double>&   residual      , // current residual displ
   LINALG::Matrix<81,81>* stiffmatrix   , // element stiffness matrix
   LINALG::Matrix<81,81>* massmatrix    , // element mass matrix
   LINALG::Matrix<81, 1>* force         , // element internal force vector
-  ParameterList&         params        ) // strain output option
+  Teuchos::ParameterList&         params        ) // strain output option
 {
 
   // --------------------------------------------------
@@ -1042,7 +1042,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
       // integrate `geometric' stiffness matrix and add to keu *****************
       LINALG::Matrix<6,1> sfac(stress); // auxiliary integrated stress
       sfac.Scale(detJ_w); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-      vector<double> SmB_L(3); // intermediate Sm.B_L
+      std::vector<double> SmB_L(3); // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
       for (int inod=0; inod<27; ++inod)
       {

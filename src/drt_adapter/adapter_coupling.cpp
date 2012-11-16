@@ -395,7 +395,7 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
       }
     }
 
-    const vector<int> dof = dis.Dof(0,actnode);
+    const std::vector<int> dof = dis.Dof(0,actnode);
     if (numdof > static_cast<int>(dof.size()))
       dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes[i],i,numdof);
     copy(&dof[0], &dof[0]+numdof, back_inserter(dofs[nodes[i]]));
@@ -419,7 +419,7 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
 
   for (int i=0; i<permnumnode; ++i)
   {
-    const vector<int>& dof = dofs[permnodes[i]];
+    const std::vector<int>& dof = dofs[permnodes[i]];
     copy(dof.begin(), dof.end(), back_inserter(dofmapvec));
   }
 

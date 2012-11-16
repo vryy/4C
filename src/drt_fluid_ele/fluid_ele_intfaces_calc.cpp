@@ -132,7 +132,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
     DRT::ELEMENTS::FluidIntFace*         intface,         ///< internal face element
     std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element
     std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
-    ParameterList&                       params,          ///< parameter list
+    Teuchos::ParameterList&              params,          ///< parameter list
     DRT::DiscretizationXFEM&             discretization,  ///< XFEM discretization
     RCP<LINALG::SparseMatrix>            systemmatrix,    ///< systemmatrix
     RCP<Epetra_Vector>                   systemvector     ///< systemvector
@@ -185,8 +185,8 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
 
 
   // patch_lm for Velx,Vely,Velz, Pres field
-  vector<vector<int> >patch_components_lm(numdofpernode);
-  vector<vector<int> >patch_components_lmowner(numdofpernode);
+  vector<std::vector<int> >patch_components_lm(numdofpernode);
+  vector<std::vector<int> >patch_components_lmowner(numdofpernode);
 
   // modify the patch owner to the owner of the internal face element
   vector<int> patchlm_owner;
@@ -350,14 +350,14 @@ template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidIntFaceImpl<distype>::EvaluateInternalFaces(   DRT::ELEMENTS::FluidIntFace*       intface,              ///< internal face element
                                                                        Teuchos::ParameterList&            params,               ///< parameter list
                                                                        DRT::Discretization&               discretization,       ///< discretization
-                                                                       vector<int>&                       patchlm,              ///< patch local map
-                                                                       vector<int>&                       lm_masterToPatch,     ///< local map between master dofs and patchlm
-                                                                       vector<int>&                       lm_slaveToPatch,      ///< local map between slave dofs and patchlm
-                                                                       vector<int>&                       lm_faceToPatch,       ///< local map between face dofs and patchlm
+                                                                       std::vector<int>&                  patchlm,              ///< patch local map
+                                                                       std::vector<int>&                  lm_masterToPatch,     ///< local map between master dofs and patchlm
+                                                                       std::vector<int>&                  lm_slaveToPatch,      ///< local map between slave dofs and patchlm
+                                                                       std::vector<int>&                  lm_faceToPatch,       ///< local map between face dofs and patchlm
                                                                        std::vector<int>&                  lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
                                                                        std::vector<int>&                  lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
-                                                                       vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
-                                                                       vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
+                                                                       std::vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
+                                                                       std::vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
                                                                        )
 {
   FLD::IntFaceAction act = FLD::ifa_none;

@@ -143,15 +143,15 @@ void DRT::MESHFREE::Cell::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data  (public)                                     nis Jan12 |
  *----------------------------------------------------------------------*/
-void DRT::MESHFREE::Cell::Unpack(const vector<char>& data)
+void DRT::MESHFREE::Cell::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class DRT::MESHFREE::MeshfreeBin
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   DRT::MESHFREE::MeshfreeBin::Unpack(basedata);
   // extract knotid_

@@ -201,7 +201,7 @@ void DRT::Discretization::Evaluate(
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                     mwgee 08/09|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateNeumann(ParameterList&                       params,
+void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList&              params,
                                           Teuchos::RCP<Epetra_Vector>          systemvector,
                                           Teuchos::RCP<LINALG::SparseOperator> systemmatrix)
 {
@@ -215,7 +215,7 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&                       p
 /*----------------------------------------------------------------------*
  |  evaluate Neumann conditions (public)                     mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
+void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
                                           Epetra_Vector&          systemvector,
                                           LINALG::SparseOperator* systemmatrix)
 {
@@ -239,12 +239,12 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
     if (assemblemat && !systemvector.Comm().MyPID())
       cout << "WARNING: No linearization of PointNeumann conditions" << endl;
     DRT::Condition& cond = *(fool->second);
-    const vector<int>* nodeids = cond.Nodes();
+    const std::vector<int>* nodeids = cond.Nodes();
     if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
-    const vector<int>*    curve  = cond.Get<vector<int> >("curve");
-    const vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
-    const vector<double>* val    = cond.Get<vector<double> >("val");
+    const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
+    const std::vector<int>*    onoff  = cond.Get<std::vector<int> >("onoff");
+    const std::vector<double>* val    = cond.Get<std::vector<double> >("val");
     // Neumann BCs for some historic reason only have one curve
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];
@@ -258,7 +258,7 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
       DRT::Node* actnode = gNode((*nodeids)[i]);
       if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
       // call explicitly the main dofset, i.e. the first column
-      vector<int> dofs = Dof(0,actnode);
+      std::vector<int> dofs = Dof(0,actnode);
       const unsigned numdf = dofs.size();
       for (unsigned j=0; j<numdf; ++j)
       {
@@ -290,9 +290,9 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector, dirichlet flags and ownerships
-        vector<int> lm;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         curr->second->LocationVector(*this,lm,lmowner,lmstride);
         elevector.Size((int)lm.size());
         if (!assemblemat)
@@ -319,7 +319,7 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
    {
      if (fool->first != (string)"PointNeumannEB") continue;
      DRT::Condition& cond = *(fool->second);
-     const vector<int>* nodeids = cond.Nodes();
+     const std::vector<int>* nodeids = cond.Nodes();
      if (!nodeids) dserror("Point Moment condition does not have nodal cloud");
      const int nnode = (*nodeids).size();
 
@@ -332,9 +332,9 @@ void DRT::Discretization::EvaluateNeumann(ParameterList&          params,
          Epetra_SerialDenseVector elevector;
          Epetra_SerialDenseMatrix elematrix;
 
-         vector<int> lm;
-         vector<int> lmowner;
-         vector<int> lmstride;
+         std::vector<int> lm;
+         std::vector<int> lmowner;
+         std::vector<int> lmstride;
 
          // do only nodes in my row map
          if (!NodeRowMap()->MyGID((*nodeids)[i])) continue;
@@ -408,7 +408,7 @@ static void DoDirichletCondition(DRT::Condition&             cond,
 /*----------------------------------------------------------------------*
  |  evaluate Dirichlet conditions (public)                   mwgee 01/07|
  *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateDirichlet(ParameterList& params,
+void DRT::Discretization::EvaluateDirichlet(Teuchos::ParameterList& params,
                                             Teuchos::RCP<Epetra_Vector> systemvector,
                                             Teuchos::RCP<Epetra_Vector> systemvectord,
                                             Teuchos::RCP<Epetra_Vector> systemvectordd,
@@ -516,13 +516,13 @@ void DoDirichletCondition(DRT::Condition&             cond,
                           Teuchos::RCP<Epetra_Vector> toggle,
                           Teuchos::RCP<std::set<int> > dbcgids)
 {
-  const vector<int>* nodeids = cond.Nodes();
+  const std::vector<int>* nodeids = cond.Nodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
   const int nnode = (*nodeids).size();
-  const vector<int>*    curve  = cond.Get<vector<int> >("curve");
-  const vector<int>*    funct  = cond.Get<vector<int> >("funct");
-  const vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
-  const vector<double>* val    = cond.Get<vector<double> >("val");
+  const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
+  const std::vector<int>*    funct  = cond.Get<std::vector<int> >("funct");
+  const std::vector<int>*    onoff  = cond.Get<std::vector<int> >("onoff");
+  const std::vector<double>* val    = cond.Get<std::vector<double> >("val");
 
   // determine highest degree of time derivative
   // and first existent system vector to apply DBC to
@@ -587,7 +587,7 @@ void DoDirichletCondition(DRT::Condition&             cond,
         continue;
       }
       const int gid = dofs[j];
-      vector<double> value(deg+1,(*val)[onesetj]);
+      std::vector<double> value(deg+1,(*val)[onesetj]);
 
       // factor given by time curve
       std::vector<double> curvefac(deg+1, 1.0);
@@ -645,7 +645,7 @@ void DoDirichletCondition(DRT::Condition&             cond,
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateCondition
 (
-  ParameterList& params,
+  Teuchos::ParameterList& params,
   RCP<Epetra_Vector> systemvector,
   const string& condstring,
   const int condid
@@ -661,7 +661,7 @@ void DRT::Discretization::EvaluateCondition
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateCondition
 (
-  ParameterList& params,
+  Teuchos::ParameterList& params,
   const string& condstring,
   const int condid
 )
@@ -676,7 +676,7 @@ void DRT::Discretization::EvaluateCondition
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateCondition
 (
-  ParameterList& params,
+  Teuchos::ParameterList& params,
   RCP<LINALG::SparseOperator> systemmatrix1,
   RCP<LINALG::SparseOperator> systemmatrix2,
   RCP<Epetra_Vector> systemvector1,
@@ -696,7 +696,7 @@ void DRT::Discretization::EvaluateCondition
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateCondition
 (
-  ParameterList& params,
+  Teuchos::ParameterList& params,
   DRT::AssembleStrategy & strategy,
   const string& condstring,
   const int condid
@@ -727,15 +727,15 @@ void DRT::Discretization::EvaluateCondition
       DRT::Condition& cond = *(fool->second);
       if (condid == -1 || condid ==cond.GetInt("ConditionID"))
       {
-        map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+        std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
         // if (geom.empty()) dserror("evaluation of condition with empty geometry");
         // no check for empty geometry here since in parallel computations
         // can exist processors which do not own a portion of the elements belonging
         // to the condition geometry
-        map<int,RCP<DRT::Element> >::iterator curr;
+        std::map<int,RCP<DRT::Element> >::iterator curr;
 
         // Evaluate Loadcurve if defined. Put current load factor in parameterlist
-        const vector<int>*    curve  = cond.Get<vector<int> >("curve");
+        const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
         int curvenum = -1;
         if (curve) curvenum = (*curve)[0];
         double curvefac = 1.0;
@@ -743,7 +743,7 @@ void DRT::Discretization::EvaluateCondition
           curvefac = Problem::Instance()->Curve(curvenum).f(time);
 
         // Get ConditionID of current condition if defined and write value in parameterlist
-        const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
+        const std::vector<int>*    CondIDVec  = cond.Get<std::vector<int> >("ConditionID");
         if (CondIDVec)
         {
           params.set("ConditionID",(*CondIDVec)[0]);
@@ -795,7 +795,7 @@ void DRT::Discretization::EvaluateCondition
  |                                                          gammi 07/08 |
  *----------------------------------------------------------------------*/
 void DRT::Discretization::EvaluateConditionUsingParentData(
-  ParameterList&                       params       ,
+  Teuchos::ParameterList&                       params       ,
   RCP<LINALG::SparseOperator>          systemmatrix1,
   RCP<LINALG::SparseOperator>          systemmatrix2,
   RCP<Epetra_Vector>                   systemvector1,
@@ -850,18 +850,18 @@ void DRT::Discretization::EvaluateConditionUsingParentData(
 	for (curr=geom.begin(); curr!=geom.end(); ++curr)
 	{
 	  // get element location vector and ownerships
-	  vector<int> lm;
-	  vector<int> lmowner;
-	  vector<int> lmstride;
+	  std::vector<int> lm;
+	  std::vector<int> lmowner;
+	  std::vector<int> lmstride;
 	  curr->second->LocationVector(*this,lm,lmowner,lmstride);
 
 	  // place vectors for parent lm and lmowner in
 	  // the parameterlist --- the element will fill
 	  // them since only the element implementation
 	  // knows its parent
-	  RCP<vector<int> > plm     =Teuchos::rcp(new vector<int>);
-	  RCP<vector<int> > plmowner=Teuchos::rcp(new vector<int>);
-	  RCP<vector<int> > plmstride=Teuchos::rcp(new vector<int>);
+	  RCP<vector<int> > plm     =Teuchos::rcp(new std::vector<int>);
+	  RCP<vector<int> > plmowner=Teuchos::rcp(new std::vector<int>);
+	  RCP<vector<int> > plmstride=Teuchos::rcp(new std::vector<int>);
 
 	  params.set<RCP<vector<int> > >("plm",plm);
 	  params.set<RCP<vector<int> > >("plmowner",plmowner);
@@ -1014,7 +1014,7 @@ void DRT::Discretization::EvaluateScalars(
 void DRT::Discretization::EvaluateInitialField(
     const string& fieldstring,
     RCP<Epetra_Vector> fieldvector,
-    const vector<int> locids
+    const std::vector<int> locids
 )
 {
   // check for valid input
@@ -1026,7 +1026,7 @@ void DRT::Discretization::EvaluateInitialField(
   if (invalid) dserror("ERROR: Invalid input to EvaluateInitialField().");
 
   // get initial field conditions
-  vector<DRT::Condition*> initfieldconditions(0);
+  std::vector<DRT::Condition*> initfieldconditions(0);
   GetCondition("Initfield",initfieldconditions);
 
   //--------------------------------------------------------
@@ -1090,13 +1090,13 @@ void DRT::Discretization::EvaluateInitialField(
  *----------------------------------------------------------------------*/
 void  DRT::Discretization::DoInitialField(DRT::Condition& cond,
                                           RCP<Epetra_Vector> fieldvector,
-                                          const vector<int> locids
+                                          const std::vector<int> locids
 )
 {
-  const vector<int>* nodeids = cond.Nodes();
+  const std::vector<int>* nodeids = cond.Nodes();
   if (!nodeids) dserror("Initfield condition does not have nodal cloud");
   const int nnode = (*nodeids).size();
-  const vector<int>* funct  = cond.Get<vector<int> >("funct");
+  const std::vector<int>* funct  = cond.Get<std::vector<int> >("funct");
 
   // check fieldvector
   if (fieldvector==Teuchos::null)

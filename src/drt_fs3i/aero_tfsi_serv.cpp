@@ -173,7 +173,7 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
   //dofs of the original discretizations are used to set same dofs for the new interface discretization
   Teuchos::RCP<DRT::DofSet> newdofset1=Teuchos::rcp(new DRT::TransparentDofSet(structdis,parallel));
   istructnewdis->ReplaceDofSet(newdofset1);
-  newdofset1=null;
+  newdofset1=Teuchos::null;
 
   //final fill complete to reorganize everything in the discretization
   istructnewdis->FillComplete(true, false, false);
@@ -182,7 +182,7 @@ FS3I::UTILS::AeroCouplingUtils::AeroCouplingUtils
   //dofs of the original discretizations are used to set same dofs for the new interface discretization
   Teuchos::RCP<DRT::DofSet> newdofset2=Teuchos::rcp(new DRT::TransparentDofSet(thermodis,parallel));
   ithermonewdis->ReplaceDofSet(newdofset2);
-  newdofset2=null;
+  newdofset2=Teuchos::null;
 
   //final fill complete to reorganize everything in the discretization
   ithermonewdis->FillComplete(true, false, false);

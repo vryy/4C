@@ -396,7 +396,7 @@ private:
   //@}
 
   /// the single instance
-  static vector<Problem* > instances_;
+  static std::vector<Problem* > instances_;
 
   /// the problem type
   PROBLEM_TYP probtype_;

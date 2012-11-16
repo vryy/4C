@@ -92,7 +92,7 @@ namespace GEO
 
 
     const std::map<int,LINALG::Matrix<3,2> > getTriangleXAABBs(
-      const std::vector<vector<int> >&                triangleList,
+      const std::vector<std::vector<int> >&           triangleList,
       const std::vector<GEO::InterfacePoint>&         pointList
       );
 
@@ -169,8 +169,8 @@ namespace GEO
       // check if cartesian
       if(eleDim == 3)
       {
-        const vector< vector<int> > eleNodeNumbering = DRT::UTILS::getEleNodeNumberingSurfaces(DISTYPE);
-        const vector< Teuchos::RCP<DRT::Element> >surfaces = (const_cast< DRT::Element* >(element))->Surfaces();
+        const std::vector< std::vector<int> > eleNodeNumbering = DRT::UTILS::getEleNodeNumberingSurfaces(DISTYPE);
+        const std::vector< Teuchos::RCP<DRT::Element> >surfaces = (const_cast< DRT::Element* >(element))->Surfaces();
         for(int i = 0; i < element->NumSurface(); i++)
         {
           CartesianCount = 0;

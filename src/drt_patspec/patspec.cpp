@@ -66,7 +66,7 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
   int gfoundit = 0;
   dis->Comm().SumAll(&lfoundit,&gfoundit,1);
 
-  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+  const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
 
   int maxhulumen  = pslist.get<int>("MAXHULUMEN");
   params->set("max hu lumen", maxhulumen);
@@ -129,9 +129,9 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
         Teuchos::ParameterList eparams;
         eparams.set("action","calc_struct_area");
         eparams.set("area",0.0);
-        vector<int> lm;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         element->LocationVector(actdis,lm,lmowner,lmstride);
         Epetra_SerialDenseMatrix dummat(0,0);
         Epetra_SerialDenseVector dumvec(0);
@@ -152,8 +152,8 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
 
       // now we have the area per node, put it in a vector that is equal to the nodes vector
       // consider only my row nodes
-      const vector<int>* nodes = embedcond[cond]->Nodes();
-      vector<double> apern(nodes->size(),0.0);
+      const std::vector<int>* nodes = embedcond[cond]->Nodes();
+      std::vector<double> apern(nodes->size(),0.0);
       for (int i=0; i<(int)nodes->size(); ++i)
       {
         int gid = (*nodes)[i];
@@ -190,7 +190,7 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
 void PATSPEC::ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis,
 	                         Teuchos::RCP<Teuchos::ParameterList> params)
 {
-  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+  const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
   double subrendia = pslist.get<double>("AAA_SUBRENDIA");
   int is_male  = DRT::INPUT::IntegralValue<int>(pslist,"MALE_PATIENT");
   int has_familyhist  = DRT::INPUT::IntegralValue<int>(pslist,"FAMILYHIST");
@@ -313,7 +313,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
   std::set<int> allnodes;
   for (int i=0; i<(int)conds.size(); ++i)
   {
-    const vector<int>* nodes = conds[i]->Nodes();
+    const std::vector<int>* nodes = conds[i]->Nodes();
     if (!nodes) dserror("Cannot find node ids in condition");
     for (int j=0; j<(int)nodes->size(); ++j)
       allnodes.insert((*nodes)[j]);
@@ -418,7 +418,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
  *----------------------------------------------------------------------*/
 void PATSPEC::ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis)
 {
-  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+  const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
   string filename = pslist.get<string>("CENTERLINEFILE");
 
   if (filename=="name.txt")
@@ -572,7 +572,7 @@ void PATSPEC::GetILTDistance(const int eleid,
       {
         MAT::ElastHyper* hyper = static_cast<MAT::ElastHyper*>(actmat.get());
 
-        const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+        const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
         int maxhulumen  = pslist.get<int>("MAXHULUMEN");
         params.set("max hu lumen", maxhulumen);
 
@@ -690,11 +690,11 @@ void PATSPEC::CheckEmbeddingTissue(Teuchos::RCP<DRT::Discretization> discret,
   int dnodecount = 0;
   for (int i=0; i<(int)embedcond.size(); ++i)
   {
-    const vector<int>* nodes = embedcond[i]->Nodes();
+    const std::vector<int>* nodes = embedcond[i]->Nodes();
     double springstiff = embedcond[i]->GetDouble("stiff");
     //const string* model = embedcond[i]->Get<string>("model");
     //double offset = embedcond[i]->GetDouble("offset");
-    const vector<double>* areapernode = embedcond[i]->Get< vector<double> >("areapernode");
+    const std::vector<double>* areapernode = embedcond[i]->Get< vector<double> >("areapernode");
 
     //for (int i=0; i<areapernode->size(); i++)
     //{
@@ -702,7 +702,7 @@ void PATSPEC::CheckEmbeddingTissue(Teuchos::RCP<DRT::Discretization> discret,
     //}
     //exit(0);
 
-    const vector<int>& nds = *nodes;
+    const std::vector<int>& nds = *nodes;
     for (int j=0; j<(int)nds.size(); ++j)
     {
 
@@ -731,7 +731,7 @@ void PATSPEC::CheckEmbeddingTissue(Teuchos::RCP<DRT::Discretization> discret,
 
         assert (numdof==3);
 
-        vector<double> u(numdof);
+        std::vector<double> u(numdof);
         for (int k=0; k<numdof; ++k)
         {
           u[k] = (*disp)[disp->Map().LID(dofs[k])];

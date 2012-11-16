@@ -97,7 +97,7 @@ void DRT::ELEMENTS::FluidIntFace::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                         schott 03/12 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::FluidIntFace::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::FluidIntFace::Unpack(const std::vector<char>& data)
 {
   dserror("this FluidIntFace element does not support communication");
   return;
@@ -174,7 +174,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
   lm_slaveNodeToPatch.clear();
 
   // for each master node, the offset for node's dofs in master_lm
-  map<int, int> m_node_lm_offset;
+  std::map<int, int> m_node_lm_offset;
 
   // ---------------------------------------------------
   int dofset = 0; // assume dofset 0
@@ -225,7 +225,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
     DRT::Node* node = s_nodes[k];
 
     // slave node already contained?
-    map<int,int>::iterator m_offset;
+    std::map<int,int>::iterator m_offset;
     m_offset = m_node_lm_offset.find(node->Id());
 
     if(m_offset==m_node_lm_offset.end()) // node not included yet
@@ -290,7 +290,7 @@ void DRT::ELEMENTS::FluidIntFace::PatchLocationVector(
     DRT::Node* node = f_nodes[k];
 
     // face node must be contained
-    map<int,int>::iterator m_offset;
+    std::map<int,int>::iterator m_offset;
     m_offset = m_node_lm_offset.find(node->Id());
 
     if(m_offset!=m_node_lm_offset.end()) // node not included yet
@@ -334,7 +334,7 @@ void DRT::ELEMENTS::FluidIntFace::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                           schott 03/12 |
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidIntFace::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidIntFace::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -344,14 +344,14 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidIntFace::Lines()
 
   // so we have to allocate new line elements:
   dserror("Lines of FluidIntFace not implemented");
-  vector<Teuchos::RCP<DRT::Element> > lines(0);
+  std::vector<Teuchos::RCP<DRT::Element> > lines(0);
   return lines;
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                           schott 03/12 |
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidIntFace::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidIntFace::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -361,7 +361,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidIntFace::Surfaces()
 
   // so we have to allocate new surface elements:
   dserror("Surfaces of FluidIntFace not implemented");
-  vector<Teuchos::RCP<DRT::Element> > surfaces(0);
+  std::vector<Teuchos::RCP<DRT::Element> > surfaces(0);
   return surfaces;
 }
 
@@ -369,9 +369,9 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::FluidIntFace::Surfaces()
  |  evaluate the element (public)                          schott 03/12 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::FluidIntFace::Evaluate(
-    ParameterList&            params,
+    Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2,
     Epetra_SerialDenseVector& elevec1,
@@ -392,10 +392,10 @@ int DRT::ELEMENTS::FluidIntFace::Evaluate(
  |  Integrate a surface/line Neumann boundary condition    schott 03/12 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::FluidIntFace::EvaluateNeumann(
-    ParameterList&            params,
+    Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {

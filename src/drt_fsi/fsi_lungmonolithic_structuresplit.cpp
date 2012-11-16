@@ -93,7 +93,7 @@ void FSI::LungMonolithicStructureSplit::SetupSystem()
   vector<int> fpciter;
   vector<double> fpcomega;
   vector<int> apciter;
-  vector<double> apcomega;
+  std::vector<double> apcomega;
   {
     int    word1;
     double word2;

@@ -35,9 +35,9 @@ extern "C"
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
+int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
                                     DRT::Discretization&      discretization,
-                                    vector<int>&              lm,
+                                    std::vector<int>&         lm,
                                     Epetra_SerialDenseMatrix& elemat1,
                                     Epetra_SerialDenseMatrix& elemat2,
                                     Epetra_SerialDenseVector& elevec1,
@@ -107,9 +107,9 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
     case calc_struct_linstiff:
     {
       // need current displacement and residual forces
-      vector<double> mydisp(lm.size());
+      std::vector<double> mydisp(lm.size());
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
       s8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
     }
@@ -119,10 +119,10 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       s8_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,actmat);
     }
@@ -132,10 +132,10 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Epetra_SerialDenseMatrix myemat(lm.size(),lm.size());
@@ -151,10 +151,10 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       s8_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,actmat);
       if (act==calc_struct_nlnstifflmass) s8_lumpmass(&elemat2);
@@ -167,8 +167,8 @@ int DRT::ELEMENTS::Shell8::Evaluate(ParameterList&            params,
       dserror("stress output for shell8 currently not supported");
 
 //       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-//       if (disp==null) dserror("Cannot get state vectors 'displacement'");
-//       vector<double> mydisp(lm.size());
+//       if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+//       std::vector<double> mydisp(lm.size());
 //       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 //       s8stress(actmat,mydisp);
     }
@@ -275,7 +275,7 @@ void DRT::ELEMENTS::Shell8::s8stress(struct _MATERIAL* material,
   const int nit = 2;
   const int numdf = 6;
   const double condfac = sdc_;
-  const vector<double>* thick = data_.Get<vector<double> >("thick");
+  const std::vector<double>* thick = data_.Get<std::vector<double> >("thick");
   if (!thick) dserror("Cannot find vector of nodal thicknesses");
   const Epetra_SerialDenseMatrix* a3ref = data_.Get<Epetra_SerialDenseMatrix>("a3ref");
   if (!a3ref) dserror("Cannot find array of directors");
@@ -612,7 +612,7 @@ void DRT::ELEMENTS::Shell8::VisNames(std::map<string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                       mwgee 01/08|
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::Shell8::VisData(const string& name, vector<double>& data)
+bool DRT::ELEMENTS::Shell8::VisData(const string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))
@@ -721,29 +721,29 @@ enum LoadType
 };
 static void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
                          double wgt, const double xjm[][3],
-                         const vector<double>& funct,
+                         const std::vector<double>& funct,
                          const Epetra_SerialDenseMatrix& deriv,
                          const int iel,
                          const double xi,
                          const double yi,
                          const double zi,
                          const enum LoadType ltype,
-                         const vector<int>& onoff,
-                         const vector<double>& val,
+                         const std::vector<int>& onoff,
+                         const std::vector<double>& val,
                          const double curvefac,
                          const double time);
 /*----------------------------------------------------------------------*
  |  Integrate a Surface Neumann boundary condition (public)  mwgee 01/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Shell8::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Shell8::EvaluateNeumann(Teuchos::ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
-                                           vector<int>&              lm,
+                                           std::vector<int>&         lm,
                                            Epetra_SerialDenseVector& elevec1,
                                            Epetra_SerialDenseMatrix* elemat1)
 {
   RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-  if (disp==null) dserror("Cannot get state vector 'displacement'");
+  if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
@@ -762,7 +762,7 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(ParameterList& params,
   const int nir = ngp_[0];
   const int nis = ngp_[1];
   const int numdf = 6;
-  const vector<double>* thick = data_.Get<vector<double> >("thick");
+  const std::vector<double>* thick = data_.Get<std::vector<double> >("thick");
   if (!thick) dserror("Cannot find vector of nodal thicknesses");
 
   vector<double> funct(iel);
@@ -836,7 +836,7 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(ParameterList& params,
   }
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -854,8 +854,8 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(ParameterList& params,
   else dserror("Unknown type of SurfaceNeumann condition");
 
   // get values and switches from the condition
-  const vector<int>*    onoff = condition.Get<vector<int> >("onoff");
-  const vector<double>* val   = condition.Get<vector<double> >("val");
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >("onoff");
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val");
 
   // start integration
   double e3=0.0;
@@ -909,9 +909,9 @@ int DRT::ELEMENTS::Shell8::EvaluateNeumann(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  evaluate the element (private)                            mwgee 12/06|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(vector<int>&              lm,
-                                            vector<double>&           disp,
-                                            vector<double>&           residual,
+void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(std::vector<int>&         lm,
+                                            std::vector<double>&      disp,
+                                            std::vector<double>&      residual,
                                             Epetra_SerialDenseMatrix* stiffmatrix,
                                             Epetra_SerialDenseMatrix* massmatrix,
                                             Epetra_SerialDenseVector* force,
@@ -1031,8 +1031,8 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(vector<int>&              lm,
   S8_DATA s8data;
   s8_integration_points(s8data);
 
-  const vector<double>* thick = NULL;
-  thick = data_.Get<vector<double> >("thick");
+  const std::vector<double>* thick = NULL;
+  thick = data_.Get<std::vector<double> >("thick");
   if (!thick) dserror("Cannot find nodal thicknesses");
 
   // eas
@@ -1055,7 +1055,7 @@ void DRT::ELEMENTS::Shell8::s8_nlnstiffmass(vector<int>&              lm,
     oldRtild    = data_.GetMutable<vector<double> >("Rtild");
     if (!alfa || !oldDtildinv || !oldLt || !oldRtild) dserror("Missing data");
     /*---------------- make multiplication eashelp = oldLt * disp[kstep] */
-    vector<double> eashelp(nhyb_);
+    std::vector<double> eashelp(nhyb_);
     s8_YpluseqAx(eashelp,*oldLt,residual,1.0,true);
     /*---------------------------------------- add old Rtilde to eashelp */
     for (int i=0; i<nhyb_; ++i) eashelp[i] += (*oldRtild)[i];
@@ -1367,7 +1367,7 @@ void DRT::ELEMENTS::Shell8::s8_lumpmass(Epetra_SerialDenseMatrix* emass)
  |                                                 (private) 12/06 mgee |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Shell8::s8tmas(
-              const vector<double>& funct, const vector<double>& thick,
+              const std::vector<double>& funct, const vector<double>& thick,
               Epetra_SerialDenseMatrix& emass, const int iel, const int numdf,
               const double facv, const double facw, const double facvw)
 {
@@ -1438,11 +1438,11 @@ void DRT::ELEMENTS::Shell8::s8intforce(Epetra_SerialDenseVector& intforce, const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Shell8::s8anstvkg(
                  Epetra_SerialDenseMatrix& estif, double stress_r[],
-                 const vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
+                 const std::vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
                  const int numdf, const int iel, const double weight,
                  const double e1, const double e2,
                  const double frq[], const double fsq[],
-                 const vector<double> funct1q[], const vector<double> funct2q[],
+                 const std::vector<double> funct1q[], const vector<double> funct2q[],
                  const Epetra_SerialDenseMatrix deriv1q[], const Epetra_SerialDenseMatrix deriv2q[],
                  const int ansq, const int nsansq)
 {
@@ -1558,7 +1558,7 @@ void DRT::ELEMENTS::Shell8::s8anstvkg(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Shell8::s8tvkg(
               Epetra_SerialDenseMatrix& estif, double stress_r[],
-              const vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
+              const std::vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
               const int numdf, const int iel, const double weight,
               const double e1, const double e2)
 {
@@ -1802,7 +1802,7 @@ C!    GEAENDERTE METRIK DES VERF. SCHALENRAUMS INFOLGE ENHANCED STRAIN .
 C.......................................................................
 */
 void DRT::ELEMENTS::Shell8::s8vthv(double gmkovc[][3], double gmkonc[][3],
-                                   const vector<double>& epsh,
+                                   const std::vector<double>& epsh,
                                    double* detc, const double e3, const double condfac)
 {
 /*----------------------------------------------------------------------*/
@@ -1999,7 +1999,7 @@ void DRT::ELEMENTS::Shell8::s8tvhe(
 void DRT::ELEMENTS::Shell8::s8ansbbarq(
      Epetra_SerialDenseMatrix& bop,
      const double frq[], const double fsq[],
-     const vector<double> funct1q[], const vector<double> funct2q[],
+     const std::vector<double> funct1q[], const vector<double> funct2q[],
      const Epetra_SerialDenseMatrix deriv1q[], const Epetra_SerialDenseMatrix deriv2q[],
      const double akovc1q[][3][3], const double akovc2q[][3][3],
      const double a3kvpc1q[][3][2], const double a3kvpc2q[][3][2],
@@ -2081,7 +2081,7 @@ void DRT::ELEMENTS::Shell8::s8ansbbarq(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Shell8::s8tvbo(const double e1, const double e2,
                                    Epetra_SerialDenseMatrix& bop,
-                                   const vector<double>& funct,
+                                   const std::vector<double>& funct,
                                    const Epetra_SerialDenseMatrix& deriv,
                                    const int iel,
                                    const int numdf,
@@ -2863,9 +2863,9 @@ void DRT::ELEMENTS::Shell8::s8_ansqshapefunctions(
 void DRT::ELEMENTS::Shell8::s8_ans_colloquationpoints(
                                  const int nsansq, const int iel, const int ans,
                                  double xr1[], double xs1[], double xr2[], double xs2[],
-                                 vector<double>                  funct1q[],
+                                 std::vector<double>                  funct1q[],
                                  Epetra_SerialDenseMatrix        deriv1q[],
-                                 vector<double>                  funct2q[],
+                                 std::vector<double>                  funct2q[],
                                  Epetra_SerialDenseMatrix        deriv2q[],
                                  const double xrefe[][MAXNOD_SHELL8],
                                  const double a3r[][MAXNOD_SHELL8],
@@ -2925,7 +2925,7 @@ void DRT::ELEMENTS::Shell8::s8tmtr(const double x[][MAXNOD_SHELL8],
                                    double gmkov[][3],
                                    double gmkon[][3],
                                    double* det,
-                                   const vector<double>& funct,
+                                   const std::vector<double>& funct,
                                    const Epetra_SerialDenseMatrix& deriv,
                                    const int iel,
                                    const double condfac,
@@ -2980,7 +2980,7 @@ void DRT::ELEMENTS::Shell8::s8_jaco(const vector<double>& funct,
                                     const Epetra_SerialDenseMatrix& deriv,
                                     const double x[][MAXNOD_SHELL8],
                                     double xjm[][3],
-                                    const vector<double>& hte,
+                                    const std::vector<double>& hte,
                                     const double a3ref[][MAXNOD_SHELL8],
                                     const double e3,
                                     const int iel,
@@ -3026,7 +3026,7 @@ void DRT::ELEMENTS::Shell8::s8tvmr(const double x[][MAXNOD_SHELL8],
                                    double amkov[][3],
                                    double amkon[][3],
                                    double* det,
-                                   const vector<double>& funct,
+                                   const std::vector<double>& funct,
                                    const Epetra_SerialDenseMatrix& deriv,
                                    const int iel,
                                    double a3kvp[][2],
@@ -3288,7 +3288,7 @@ void DRT::ELEMENTS::Shell8::s8mattrnvecdense(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Shell8::s8_YpluseqAx(Epetra_SerialDenseVector& y,
                                          const Epetra_SerialDenseMatrix& A,
-                                         const vector<double>& x,
+                                         const std::vector<double>& x,
                                          const double factor,
                                          const bool init)
 {
@@ -3315,7 +3315,7 @@ void DRT::ELEMENTS::Shell8::s8_YpluseqAx(Epetra_SerialDenseVector& y,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Shell8::s8_YpluseqAx(vector<double>& y,
                                          const Epetra_SerialDenseMatrix& A,
-                                         const vector<double>& x,
+                                         const std::vector<double>& x,
                                          const double factor,
                                          const bool init)
 {
@@ -3738,15 +3738,15 @@ void DRT::ELEMENTS::Shell8::s8_shapefunctions(
  *----------------------------------------------------------------------*/
 void s8loadgaussianpoint(double eload[][MAXNOD_SHELL8], const double hhi,
                          double wgt, const double xjm[][3],
-                         const vector<double>& funct,
+                         const std::vector<double>& funct,
                          const Epetra_SerialDenseMatrix& deriv,
                          const int iel,
                          const double xi,
                          const double yi,
                          const double zi,
                          const enum LoadType ltype,
-                         const vector<int>& onoff,
-                         const vector<double>& val,
+                         const std::vector<int>& onoff,
+                         const std::vector<double>& val,
                          const double curvefac,
                          const double time)
 {
@@ -3852,13 +3852,13 @@ int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
     Epetra_SerialDenseMatrix* a3ref = actele->data_.GetMutable<Epetra_SerialDenseMatrix>("a3ref");
 
     // create vector thick
-    vector<double> tmpvector(numnode);
+    std::vector<double> tmpvector(numnode);
     actele->data_.Add("thick",tmpvector);
     vector<double>* thick = actele->data_.GetMutable<vector<double> >("thick");
     for (int i=0; i<numnode; ++i) (*thick)[i] = actele->thickness_;
 
 
-    vector<double> funct(numnode);
+    std::vector<double> funct(numnode);
     Epetra_SerialDenseMatrix deriv;
     deriv.Shape(2,numnode);
 
@@ -3908,8 +3908,8 @@ int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
       const int nmaxw  = actmat->m.viscohyper->nmaxw;
       const int ngauss = actele->ngp_[0]*actele->ngp_[1]*actele->ngp_[2];
       const int size = ngauss*(nmaxw+1)*3*3;
-      vector<double> his1(size);
-      vector<double> his2(size);
+      std::vector<double> his1(size);
+      std::vector<double> his2(size);
       for (int i=0; i<size; ++i) his1[i] = his2[i] = 0.0;
       actele->data_.Add("mathis1",his1);
       actele->data_.Add("mathis2",his2);
@@ -3919,7 +3919,7 @@ int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
 
   //------------------------------------ do directors at nodes Bischoff style
   const int MAXELEHARDCODED = 6;
-  map<int,vector<double> > a3map;
+  map<int,std::vector<double> > a3map;
   Epetra_SerialDenseMatrix collaverdir(3,MAXELEHARDCODED);
   // loop my row nodes and build a3map
   for (int i=0; i<dis.NumMyRowNodes(); ++i)
@@ -3977,7 +3977,7 @@ int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
   for (int i=0; i<dis.NumMyColNodes(); ++i)
   {
     DRT::Node* actnode = dis.lColNode(i);
-    map<int,vector<double> >::iterator curr = a3map.find(actnode->Id());
+    map<int,std::vector<double> >::iterator curr = a3map.find(actnode->Id());
     if (curr==a3map.end()) dserror("Cannot find a3map entry");
     const int numele = actnode->NumElement();
     for (int j=0; j<numele; ++j)

@@ -97,9 +97,9 @@ DRT::ELEMENTS::MeshfreeScaTraBoundaryImpl<distype> * DRT::ELEMENTS::MeshfreeScaT
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::MeshfreeScaTraBoundaryImpl<distype>::Evaluate(
     DRT::ELEMENTS::MeshfreeTransportBoundary* ele,
-    ParameterList&                    params,
+    Teuchos::ParameterList&           params,
     DRT::Discretization&              discretization,
-    vector<int>&                      lm,
+    std::vector<int>&                 lm,
     Epetra_SerialDenseMatrix&         elemat1_epetra,
     Epetra_SerialDenseMatrix&         elemat2_epetra,
     Epetra_SerialDenseVector&         elevec1_epetra,
@@ -118,10 +118,10 @@ int DRT::ELEMENTS::MeshfreeScaTraBoundaryImpl<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::MeshfreeScaTraBoundaryImpl<distype>::EvaluateNeumann(
     DRT::ELEMENTS::MeshfreeTransportBoundary*   cell,
-    ParameterList&                      params,
+    Teuchos::ParameterList&             params,
     DRT::Discretization&                discretization,
     DRT::Condition&                     condition,
-    vector<int>&                        lm,
+    std::vector<int>&                   lm,
     Epetra_SerialDenseVector&           elevec1)
 {
   //----------------------------------------------------------------------
@@ -136,8 +136,8 @@ int DRT::ELEMENTS::MeshfreeScaTraBoundaryImpl<distype>::EvaluateNeumann(
 //  isale_ = params.get<bool>("isale");
 //  if (isale_)
 //  {
-//    const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",null);
-//    if (dispnp==null) dserror("Cannot get state vector 'dispnp'");
+//    const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
+//    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
 //    DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_);
 //    // add nodal displacements to point coordinates
 //    xyze_ += edispnp_;
@@ -154,7 +154,7 @@ int DRT::ELEMENTS::MeshfreeScaTraBoundaryImpl<distype>::EvaluateNeumann(
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -168,11 +168,11 @@ int DRT::ELEMENTS::MeshfreeScaTraBoundaryImpl<distype>::EvaluateNeumann(
   //----------------------------------------------------------------------
 
   // determines whether dof is activated or not
-  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
   // points to value of boundary condition at dof
-  const vector<double>* val   = condition.Get<vector<double> >("val"  );
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
   // points to function number if condition is spatial function at dof
-  const vector<int>*    func  = condition.Get<vector<int> >   ("funct");
+  const std::vector<int>*    func  = condition.Get<std::vector<int> >   ("funct");
 
   //----------------------------------------------------------------------
   // get integrations points and weights in xyz-system

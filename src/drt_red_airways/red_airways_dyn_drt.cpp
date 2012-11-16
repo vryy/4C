@@ -57,7 +57,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RCP<DRT::Discretization> actdis = null;
+  RCP<DRT::Discretization> actdis = Teuchos::null;
   actdis = DRT::Problem::Instance()->GetDis("red_airway");
 
   // -------------------------------------------------------------------
@@ -165,7 +165,7 @@ Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>  dyn_red_airways_drt(bool Coupled
   if (!CoupledTo3D)
   {
     // call time-integration (or stationary) scheme
-    RCP<ParameterList> param_temp;
+    RCP<Teuchos::ParameterList> param_temp;
     airwayimplicit->Integrate();
 
     Teuchos::RCP<DRT::ResultTest> resulttest

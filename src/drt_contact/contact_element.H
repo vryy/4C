@@ -197,7 +197,7 @@ public:
                               given in params
   \return 0 if successful, negative otherwise
   */
-  virtual int Evaluate(ParameterList&            params,
+  virtual int Evaluate(Teuchos::ParameterList&   params,
                        DRT::Discretization&      discretization,
                        std::vector<int>&         lm,
                        Epetra_SerialDenseMatrix& elemat1,
@@ -225,7 +225,7 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList&            params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
                               std::vector<int>&         lm,

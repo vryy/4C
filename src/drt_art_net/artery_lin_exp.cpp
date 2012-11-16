@@ -74,9 +74,9 @@ DRT::ELEMENTS::ArteryLinExp<distype>::ArteryLinExp()
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ArteryLinExp<distype>::Evaluate(
   Artery*                    ele,
-  ParameterList&             params,
+  Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
-  vector<int>&               lm,
+  std::vector<int>&          lm,
   Epetra_SerialDenseMatrix&  elemat1_epetra,
   Epetra_SerialDenseMatrix&  elemat2_epetra,
   Epetra_SerialDenseVector&  elevec1_epetra,
@@ -116,7 +116,7 @@ int DRT::ELEMENTS::ArteryLinExp<distype>::Evaluate(
   RCP<const Epetra_Vector> qanp  = discretization.GetState("qanp");
   //  RCP<Epetra_Vector> Wfnp        = discretization.GetState("Wfnp");
 
-  if (qanp==null)
+  if (qanp==Teuchos::null)
     dserror("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
@@ -156,9 +156,9 @@ int DRT::ELEMENTS::ArteryLinExp<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ArteryLinExp<distype>::Initial(
   Artery*                                  ele,
-  ParameterList&                           params,
+  Teuchos::ParameterList&                           params,
   DRT::Discretization&                     discretization,
-  vector<int>&                             lm,
+  std::vector<int>&                        lm,
   Teuchos::RCP<const MAT::Material>        material)
 {
 
@@ -716,9 +716,9 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
 template <DRT::Element::DiscretizationType distype>
 bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
   Artery*                             ele,
-  ParameterList&                      params,
+  Teuchos::ParameterList&             params,
   DRT::Discretization&                discretization,
-  vector<int>&                        lm,
+  std::vector<int>&                   lm,
   Teuchos::RCP<const MAT::Material>   material)
 {
 
@@ -787,7 +787,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
   RCP<Epetra_Vector>   Wfnp  = params.get<RCP<Epetra_Vector> >("Wfnp");
   RCP<Epetra_Vector>   Wbnp  = params.get<RCP<Epetra_Vector> >("Wbnp");
 
-  if (qanp==null)
+  if (qanp==Teuchos::null)
     dserror("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
@@ -967,9 +967,9 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
   Artery*                      ele,
-  ParameterList&               params,
+  Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
-  vector<int>&                 lm,
+  std::vector<int>&            lm,
   RCP<MAT::Material>   material)
 {
 
@@ -1042,7 +1042,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
 
   RCP<const Epetra_Vector> qanp  = discretization.GetState("qanp");
 
-  if (qanp==null)
+  if (qanp==Teuchos::null)
     dserror("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
@@ -1087,7 +1087,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
       RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
 
-      if (bcval==null||dbctog==null)
+      if (bcval==null||dbctog==Teuchos::null)
         dserror("Cannot get state vectors 'bcval' and 'dbctog'");
 
 
@@ -1139,7 +1139,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
       // -----------------------------------------------------------------------------
       if(ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond"))
       {
-        RCP<ParameterList> CoupledTo3DParams = params.get<RCP<ParameterList> >("coupling with 3D fluid params");
+        RCP<Teuchos::ParameterList> CoupledTo3DParams = params.get<RCP<Teuchos::ParameterList> >("coupling with 3D fluid params");
         const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
         Cparams.set<RCP<ParameterList > >("coupling with 3D fluid params",CoupledTo3DParams);
         Cparams.set<string>("Condition Name","Art_redD_3D_CouplingCond");
@@ -1273,9 +1273,9 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
   Artery*                      ele,
-  ParameterList&               params,
+  Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
-  vector<int>&                 lm,
+  std::vector<int>&            lm,
   RCP<MAT::Material>   material)
 {
   RCP<const Epetra_Vector> qanp  = discretization.GetState("qanp");
@@ -1350,7 +1350,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
   const int numnode = iel;
   vector<int>::iterator it_vcr;
 
-  if (qanp==null)
+  if (qanp==Teuchos::null)
     dserror("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
@@ -1489,7 +1489,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
   const int numnode = iel;
   vector<int>::iterator it_vcr;
 
-  if (qanp==null)
+  if (qanp==Teuchos::null)
     dserror("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors

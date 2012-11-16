@@ -164,7 +164,7 @@ void POTENTIAL::PotentialManager::ReadParameter()
 | Call discretization to evaluate additional contributions due to    |
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
-void POTENTIAL::PotentialManager::EvaluatePotential(  ParameterList&                    p,
+void POTENTIAL::PotentialManager::EvaluatePotential(  Teuchos::ParameterList&                    p,
                                                       RCP<Epetra_Vector>        disp,
                                                       RCP<Epetra_Vector>        fint,
                                                       RCP<LINALG::SparseMatrix> stiff)
@@ -183,7 +183,7 @@ void POTENTIAL::PotentialManager::EvaluatePotential(  ParameterList&            
 | Call discretization to evaluate additional contributions due to    |
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
-void POTENTIAL::PotentialManager::TestEvaluatePotential(  ParameterList&                    p,
+void POTENTIAL::PotentialManager::TestEvaluatePotential(  Teuchos::ParameterList&                    p,
                                                           RCP<Epetra_Vector>        disp,
                                                           RCP<Epetra_Vector>        fint,
                                                           RCP<LINALG::SparseMatrix> stiff,
@@ -232,8 +232,8 @@ void POTENTIAL::PotentialManager::TestEvaluatePotential(  ParameterList&        
 void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
     const DRT::Element*             element,
     const DRT::UTILS::GaussRule2D&  gaussrule,
-    ParameterList&                  eleparams,
-    vector<int>&                    lm,
+    Teuchos::ParameterList&                  eleparams,
+    std::vector<int>&               lm,
     Epetra_SerialDenseMatrix&       K_stiff,
     Epetra_SerialDenseVector&       F_int)
 {
@@ -268,8 +268,8 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
 void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
     const DRT::Element*             element,
     const DRT::UTILS::GaussRule3D&  gaussrule,
-    ParameterList&                  eleparams,
-    vector<int>&                    lm,
+    Teuchos::ParameterList&                  eleparams,
+    std::vector<int>&               lm,
     Epetra_SerialDenseMatrix&       K_stiff,
     Epetra_SerialDenseVector&       F_int)
 { 
@@ -292,8 +292,8 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
 void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
     const DRT::Element*             element,
     const DRT::UTILS::GaussRule1D&  gaussrule,
-    ParameterList&                  eleparams,
-    vector<int>&                    lm,
+    Teuchos::ParameterList&                  eleparams,
+    std::vector<int>&               lm,
     Epetra_SerialDenseMatrix&       K_stiff,
     Epetra_SerialDenseVector&       F_int)
 {

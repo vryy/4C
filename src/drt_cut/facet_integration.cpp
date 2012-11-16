@@ -106,7 +106,7 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plan
   clockwise_ = 0;
   Side* parent = face1_->ParentSide();
   const std::vector<Node*> &par_nodes = parent->Nodes();
-  std::vector<vector<double> > corners(par_nodes.size());
+  std::vector<std::vector<double> > corners(par_nodes.size());
   int mm=0;
   //std::cout<<"parent side\t"<<"element id = "<<elem1_->Id()<<"\n";
   for(std::vector<Node*>::const_iterator i=par_nodes.begin();i!=par_nodes.end();i++)
@@ -213,7 +213,7 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plan
   clockwise_ = 0;
   Side* parent = face1_->ParentSide();
   const std::vector<Node*> &par_nodes = parent->Nodes();
-  std::vector<vector<double> > corners(par_nodes.size());
+  std::vector<std::vector<double> > corners(par_nodes.size());
   int mm=0;
 
   for(std::vector<Node*>::const_iterator i=par_nodes.begin();i!=par_nodes.end();i++)

@@ -69,9 +69,9 @@ DRT::ELEMENTS::AirwayImpl<distype>::AirwayImpl()
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   RedAirway*                 ele,
-  ParameterList&             params,
+  Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
-  vector<int>&               lm,
+  std::vector<int>&          lm,
   Epetra_SerialDenseMatrix&  elemat1_epetra,
   Epetra_SerialDenseMatrix&  elemat2_epetra,
   Epetra_SerialDenseVector&  elevec1_epetra,
@@ -133,7 +133,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
   RCP<Epetra_Vector> qout_n  = params.get<RCP<Epetra_Vector> >("qout_n");
   RCP<Epetra_Vector> qout_nm = params.get<RCP<Epetra_Vector> >("qout_nm");
 
- if (pnp==null || pn==null || pnm==null )
+ if (pnp==Teuchos::null || pn==Teuchos::null || pnm==null )
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
   // extract local values from the global vectors
@@ -237,9 +237,9 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
   RedAirway*                             ele,
-  ParameterList&                         params,
+  Teuchos::ParameterList&                         params,
   DRT::Discretization&                   discretization,
-  vector<int>&                           lm,
+  std::vector<int>&                      lm,
   Teuchos::RCP<const MAT::Material>      material)
 {
 
@@ -261,7 +261,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
 
   //vector<int> lmowner;
   vector<int> lmstride;
-  RCP<vector<int> > lmowner = Teuchos::rcp(new vector<int>);
+  RCP<vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
   ele->LocationVector(discretization,lm,*lmowner,lmstride);
 
   //--------------------------------------------------------------------
@@ -696,9 +696,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       // -------------------------------------------------------------
       // Read in the pleural pressure
       // -------------------------------------------------------------
-      const vector<int>*    curve     = condition->Get<vector<int> >("curve");
-      const vector<double>* vals      = condition->Get<vector<double> >("val");
-      const vector<int>*    functions = condition->Get<vector<int> >("funct");
+      const std::vector<int>*    curve     = condition->Get<std::vector<int> >("curve");
+      const std::vector<double>* vals      = condition->Get<std::vector<double> >("val");
+      const std::vector<int>*    functions = condition->Get<std::vector<int> >("funct");
 
       double Pp_nm = 0.0;
       double Pp_n  = 0.0;
@@ -1010,9 +1010,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
   RedAirway*                   ele,
-  ParameterList&               params,
+  Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
-  vector<int>&                 lm,
+  std::vector<int>&            lm,
   Epetra_SerialDenseVector&    rhs,
   RCP<MAT::Material>   material)
 {
@@ -1030,7 +1030,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
 
   RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
 
-  if (pnp==null)
+  if (pnp==Teuchos::null)
     dserror("Cannot get state vectors 'pnp'");
 
   // extract local values from the global vectors
@@ -1069,9 +1069,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           Bc = *(condition->Get<string>("boundarycond"));
 
 
-          const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
+          const  vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
           double curvefac = 1.0;
-          const  vector<double>* vals   = condition->Get<vector<double> >("val");
+          const  vector<double>* vals   = condition->Get<std::vector<double> >("val");
 
           // -----------------------------------------------------------------
           // Read in the value of the applied BC
@@ -1083,7 +1083,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
 
           BCin = (*vals)[0]*curvefac;
 
-          const vector<int>*    functions = condition->Get<vector<int> >("funct");
+          const std::vector<int>*    functions = condition->Get<std::vector<int> >("funct");
           int functnum = -1;
           if (functions) functnum = (*functions)[0];
           else functnum = -1;
@@ -1109,7 +1109,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
         {
           const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
 
-          RCP<ParameterList> CoupledTo3DParams  =
+          RCP<Teuchos::ParameterList> CoupledTo3DParams  =
             params.get<RCP<ParameterList > >("coupling with 3D fluid params");
           // -----------------------------------------------------------------
           // If the parameter list is empty, then something is wrong!
@@ -1182,9 +1182,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
             Bc = *(condition->Get<string>("phase2"));
           }
 
-          const  vector<int>*    curve  = condition->Get<vector<int> >("curve");
+          const  vector<int>*    curve  = condition->Get<std::vector<int> >("curve");
           double curvefac = 1.0;
-          const  vector<double>* vals   = condition->Get<vector<double> >("val");
+          const  vector<double>* vals   = condition->Get<std::vector<double> >("val");
 
           // -----------------------------------------------------------------
           // Read in the value of the applied BC
@@ -1217,7 +1217,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
           RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
 
-          if (bcval==null||dbctog==null)
+          if (bcval==null||dbctog==Teuchos::null)
           {
             dserror("Cannot get state vectors 'bcval' and 'dbctog'");
             exit(1);
@@ -1250,7 +1250,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
 
           // get rhs
           //          RCP<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
-          //          if (rhs==null)
+          //          if (rhs==Teuchos::null)
           //          {
           //            dserror("Cannot get state vector 'rhs'");
           //            exit(1);
@@ -1314,7 +1314,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
           RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
 
-          if (bcval==null||dbctog==null)
+          if (bcval==null||dbctog==Teuchos::null)
           {
             dserror("Cannot get state vectors 'bcval' and 'dbctog'");
             exit(1);
@@ -1346,7 +1346,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
         if (ele->Nodes()[i]->NumElement() == 1)
         {
           RCP<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
-          if (rhs==null)
+          if (rhs==Teuchos::null)
           {
             dserror("Cannot get state vector 'rhs'");
             exit(1);
@@ -1375,13 +1375,13 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   RedAirway*                   ele,
-  ParameterList&               params,
+  Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   //  Epetra_SerialDenseVector&    a_volume_strain_np,
   //  Epetra_SerialDenseVector&    a_volumenp,
   Epetra_SerialDenseVector&    vec1,
   Epetra_SerialDenseVector&    vec2,
-  vector<int>&                 lm,
+  std::vector<int>&            lm,
   RCP<MAT::Material>   material)
 {
   //  const int   myrank  = discretization.Comm().MyPID();
@@ -1705,9 +1705,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
   RedAirway*                   ele,
-  ParameterList&               params,
+  Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
-  vector<int>&                 lm,
+  std::vector<int>&            lm,
   RCP<MAT::Material>   material)
 {
   const int   myrank  = discretization.Comm().MyPID();
@@ -1724,7 +1724,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
 
   RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
 
-  if (pnp==null)
+  if (pnp==Teuchos::null)
     dserror("Cannot get state vectors 'pnp'");
 
   // extract local values from the global vectors
@@ -1755,7 +1755,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
       {
 
           const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
-          RCP<ParameterList> CoupledTo3DParams  =
+          RCP<Teuchos::ParameterList> CoupledTo3DParams  =
             params.get<RCP<ParameterList > >("coupling with 3D fluid params");
           // -----------------------------------------------------------------
           // If the parameter list is empty, then something is wrong!

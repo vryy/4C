@@ -188,9 +188,9 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(ParameterList& params,
+  int Evaluate(Teuchos::ParameterList& params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
@@ -242,15 +242,15 @@ protected:
 
   //! Compute stiffness and mass matrix
   void sosh8_nlnstiffmass(
-      vector<int>&              lm,             ///< location matrix
-      vector<double>&           disp,           ///< current displacements
-      vector<double>&           residual,       ///< current residual displ
+      std::vector<int>&         lm,             ///< location matrix
+      std::vector<double>&      disp,           ///< current displacements
+      std::vector<double>&      residual,       ///< current residual displ
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
-      ParameterList&            params,         ///< algorithmic parameters e.g. time
+      Teuchos::ParameterList&   params,         ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType  iostress,   ///< stress output option
       const INPAR::STR::StrainType  iostrain);  ///< strain output option
 
@@ -286,7 +286,7 @@ protected:
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>& elemat1,
     const INPAR::STR::STC_Scale stc_scaling,
     const int stc_layer,
-    vector<int>& lm,
+    std::vector<int>& lm,
     DRT::Discretization& discretization,
     bool calcinverse
   );
@@ -297,12 +297,12 @@ protected:
     );
 
   //! return thickness direction
-  const vector<double> GetThickvec(){return thickvec_;};
+  const std::vector<double> GetThickvec(){return thickvec_;};
 
   //! Debug gmsh-plot to check thickness direction
   void sosh8_gmshplotlabeledelement(const int LabelIds[NUMNOD_SOH8]);
 
-  const vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > sosh8_derivs_sdc();
+  const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > sosh8_derivs_sdc();
 
 }; // class So_sh8
 

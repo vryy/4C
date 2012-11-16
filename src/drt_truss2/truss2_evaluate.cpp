@@ -21,9 +21,9 @@ Maintainer: Christian Cyron
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 cyron 02/10|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Truss2::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Truss2::Evaluate(Teuchos::ParameterList& params,
     DRT::Discretization& discretization,
-    vector<int>& lm,
+    std::vector<int>& lm,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2,
     Epetra_SerialDenseVector& elevec1,
@@ -86,20 +86,20 @@ int DRT::ELEMENTS::Truss2::Evaluate(ParameterList& params,
       //
       // get element displcements
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       // get residual displacements
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (res==null) dserror("Cannot get state vectors 'residual displacement'");
-      vector<double> myres(lm.size());
+      if (res==Teuchos::null) dserror("Cannot get state vectors 'residual displacement'");
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
            
       // get element velocities (UNCOMMENT IF NEEDED)
       /*
       RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
-      if (vel==null) dserror("Cannot get state vectors 'velocity'");
-      vector<double> myvel(lm.size());
+      if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
+      std::vector<double> myvel(lm.size());
       DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
       */
       
@@ -153,17 +153,17 @@ int DRT::ELEMENTS::Truss2::Evaluate(ParameterList& params,
  |  Integrate a Surface Neumann boundary condition (public)                                       cyron 02/10|
  *----------------------------------------------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Truss2::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Truss2::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization& discretization,
     DRT::Condition& condition,
-    vector<int>& lm,
+    std::vector<int>& lm,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {
   // get element displacements
     RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-    if (disp==null) dserror("Cannot get state vector 'displacement'");
-    vector<double> mydisp(lm.size());
+    if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+    std::vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
 
@@ -173,7 +173,7 @@ int DRT::ELEMENTS::Truss2::EvaluateNeumann(ParameterList& params,
     if (time<0.0) usetime = false;
 
     // find out whether we will use a time curve and get the factor
-    const vector<int>* curve = condition.Get<vector<int> >("curve");
+    const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
     int curvenum = -1;
     // number of the load curve related with a specific line Neumann condition called
     if (curve) curvenum = (*curve)[0];
@@ -197,10 +197,10 @@ int DRT::ELEMENTS::Truss2::EvaluateNeumann(ParameterList& params,
 
     // onoff is related to the first 6 flags of a line Neumann condition in the input file;
     // value 1 for flag i says that condition is active for i-th degree of freedom
-    const vector<int>* onoff = condition.Get<vector<int> >("onoff");
+    const std::vector<int>* onoff = condition.Get<std::vector<int> >("onoff");
     // val is related to the 6 "val" fields after the onoff flags of the Neumann condition
     // in the input file; val gives the values of the force as a multiple of the prescribed load curve
-    const vector<double>* val = condition.Get<vector<double> >("val");
+    const std::vector<double>* val = condition.Get<std::vector<double> >("val");
 
     //integration loops
     for (int ip=0; ip<intpoints.nquad; ++ip)

@@ -65,7 +65,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // -------------------------------------------------------------------
   // access the discretization
   // -------------------------------------------------------------------
-  RCP<DRT::Discretization> actdis = null;
+  RCP<DRT::Discretization> actdis = Teuchos::null;
 
   actdis = DRT::Problem::Instance()->GetDis("artery");
 
@@ -166,7 +166,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   if (!CoupledTo3D)
   {
     // call time-integration (or stationary) scheme
-    RCP<ParameterList> param_temp;
+    RCP<Teuchos::ParameterList> param_temp;
     artnetexplicit->Integrate(CoupledTo3D,param_temp);
 
     Teuchos::RCP<DRT::ResultTest> resulttest

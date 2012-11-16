@@ -851,15 +851,15 @@ void POTENTIAL::Potential::computeDistance(
 void POTENTIAL::Potential::CollectLmcol(
     const Teuchos::RCP<DRT::Discretization>     potentialdis,
     std::map<int,std::set<int> >&               potentialElementIds,
-    vector<int>&                                lmcol)
+    std::vector<int>&                           lmcol)
 {
   for(std::map<int, std::set<int> >::const_iterator labelIter = potentialElementIds.begin(); labelIter != potentialElementIds.end(); labelIter++)
     for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
     {
       const DRT::Element* element = potentialdis->gElement(*eleIter);
-      vector<int> lmowner;
-      vector<int> lm;
-      vector<int> lmstride;
+      std::vector<int> lmowner;
+      std::vector<int> lm;
+      std::vector<int> lmstride;
       element->LocationVector(*potentialdis,lm,lmowner,lmstride);
 
       for(int i = 0; i < (int) lm.size(); i++)
@@ -890,7 +890,7 @@ void POTENTIAL::Potential::CollectLmcol(
     const Teuchos::RCP<DRT::Discretization>                       potentialdis,
     std::map<int,std::set<int> >&                                 potentialElementIds,
     std::map<int,std::vector<PotentialElementContainer> >&        nonlocalPecs,
-    vector<int>&                                                  lmcol)
+    std::vector<int>&                                             lmcol)
 {
   CollectLmcol(potentialdis, potentialElementIds, lmcol);
 
@@ -937,9 +937,9 @@ void POTENTIAL::Potential::CollectLmcol(
       {
         insertedEles.insert(ele_id);
         const DRT::Element* element = potentialdis->gElement(ele_id);
-        vector<int> lmowner;
-        vector<int> lm;
-        vector<int> lmstride;
+        std::vector<int> lmowner;
+        std::vector<int> lm;
+        std::vector<int> lmstride;
         element->LocationVector(*potentialdis,lm,lmowner,lmstride);
         
         for(int i = 0; i < (int) lm.size(); i++)
@@ -1102,9 +1102,9 @@ Epetra_SerialDenseMatrix POTENTIAL::Potential::SpatialConfiguration(
  |  get time curve factor			                               u.may 12/09|
  *----------------------------------------------------------------------*/
 double POTENTIAL::Potential::GetTimeCurveFactor(
-    ParameterList&                  params)
+    Teuchos::ParameterList&                  params)
 {
-  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
+  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
   const int    curvenum = cond->GetInt("curve");
   const double time     = params.get<double>("total time",-1.0);
   const double t_end    = DRT::Problem::Instance()->Curve(curvenum).end();
@@ -1584,11 +1584,11 @@ void POTENTIAL::Potential::getPhysicalEleCoords(
 
   for (int i=0; i< element->NumNode(); i++)
   {
-    vector<int> lm;
+    std::vector<int> lm;
     lm.reserve(3);
     // discretRCP_->Dof(node[i], lm);
     dis->Dof(node[i], lm);
-    vector<double> mydisp(3);
+    std::vector<double> mydisp(3);
     
     // update nodal positions and compute element coordinates
     DRT::UTILS::ExtractMyValues(*idisp_solid,mydisp,lm);

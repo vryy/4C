@@ -137,19 +137,19 @@ public:
   \brief Get vector of RCPs to the lines of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
   \brief Get vector of RCPs to the surfaces of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Get vector of RCPs to the volumes of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Volumes();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
   /*!
   \brief Return unique ParObject id
@@ -263,7 +263,7 @@ public:
   virtual bool VisData
   (
     const string& name, ///< Name of data that is currently processed for visualization
-    vector<double>& data   ///<d ata to be filled by element if element recognizes the name
+    std::vector<double>& data   ///<d ata to be filled by element if element recognizes the name
   );
 
   //@}
@@ -293,9 +293,9 @@ public:
   */
   int Evaluate
   (
-    ParameterList& params,  ///< ParameterList for communication between control routine and elements
+    Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
     DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
-    vector<int>&              lm, ///< location matrix for de-assembly
+    std::vector<int>&         lm, ///< location matrix for de-assembly
     Epetra_SerialDenseMatrix& elemat1,  ///< (stiffness-)matrix to be filled by element.
     Epetra_SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
     Epetra_SerialDenseVector& elevec1,  ///< (internal force-)vector to be filled by element
@@ -320,17 +320,17 @@ public:
   */
   virtual int EvaluateNeumann
   (
-    ParameterList& params,
+    Teuchos::ParameterList& params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1 = NULL
   );
 
 
   //const vector<double> GetFibervec(){return fiberdirection_;};
-  const vector<double> soh20_ElementCenterRefeCoords();
+  const std::vector<double> soh20_ElementCenterRefeCoords();
 
   //@}
 
@@ -373,9 +373,9 @@ protected:
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                                        data_;
   //! vector of inverses of the jacobian in material frame
-  vector<LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20> >                    invJ_;
+  std::vector<LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20> >               invJ_;
   //! determinant of Jacobian in material frame
-  vector<double>                                                        detJ_;
+  std::vector<double>                                                   detJ_;
 
 
   friend class DRT::ELEMENTS::InvDesign;
@@ -392,29 +392,29 @@ protected:
 
   //! Calculate linear stiffness and mass matrix
   virtual void soh20_linstiffmass(
-      vector<int>&              lm,             ///< location matrix
-      vector<double>&           disp,           ///< current displacements
-      vector<double>&           residual,       ///< current residual displ
+      std::vector<int>&         lm,             ///< location matrix
+      std::vector<double>&      disp,           ///< current displacements
+      std::vector<double>&      residual,       ///< current residual displ
       LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* stiffmatrix,    ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* massmatrix,     ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOH20,1>* force,          ///< element internal force vector
       LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20>* elestress,      ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20>* elestrain,      ///< strains at GP
-      ParameterList&            params,         ///< algorithmic parameters e.g. time
+      Teuchos::ParameterList&   params,         ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType   iostress,  ///< stress output option
       const INPAR::STR::StrainType   iostrain); ///< strain output option
 
   //! Calculate nonlinear stiffness and mass matrix
   virtual void soh20_nlnstiffmass(
-      vector<int>&              lm,             ///< location matrix
-      vector<double>&           disp,           ///< current displacements
-      vector<double>&           residual,       ///< current residual displ
+      std::vector<int>&         lm,             ///< location matrix
+      std::vector<double>&      disp,           ///< current displacements
+      std::vector<double>&      residual,       ///< current residual displ
       LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* stiffmatrix,    ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* massmatrix,     ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOH20,1>* force,          ///< element internal force vector
       LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20>* elestress,      ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20>* elestrain,      ///< strains at GP
-      ParameterList&            params,         ///< algorithmic parameters e.g. time
+      Teuchos::ParameterList&   params,         ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType   iostress,  ///< stress output option
       const INPAR::STR::StrainType   iostrain); ///< strain output option
 
@@ -426,11 +426,11 @@ protected:
                    Epetra_MultiVector& expolstresses);
 
   //! Evaluate Hex20 Shapefcts to keep them static
-  const vector<LINALG::Matrix<NUMNOD_SOH20,1> > soh20_shapefcts();
+  const std::vector<LINALG::Matrix<NUMNOD_SOH20,1> > soh20_shapefcts();
   //! Evaluate Hex20 Derivs to keep them static
-  const vector<LINALG::Matrix<NUMDIM_SOH20,NUMNOD_SOH20> > soh20_derivs();
+  const std::vector<LINALG::Matrix<NUMDIM_SOH20,NUMNOD_SOH20> > soh20_derivs();
   //! Evaluate Hex20 Weights to keep them static
-  const vector<double> soh20_weights();
+  const std::vector<double> soh20_weights();
 
   //! Evaluate shapefunction, derivative and gaussweights
   void soh20_shapederiv(
@@ -463,7 +463,7 @@ protected:
                     LINALG::Matrix<6,1>* glstrain,
                     LINALG::Matrix<3,3>* defgrd,
                     const int gp,
-                    ParameterList&  params);
+                    Teuchos::ParameterList&  params);
 
   //! @name Multi-scale related stuff
 
@@ -471,7 +471,7 @@ protected:
    * \brief Determine a homogenized material density for multi-scale
    * analyses by averaging over the initial volume
    * */
-  void soh20_homog(ParameterList& params);
+  void soh20_homog(Teuchos::ParameterList& params);
 
   /*!
    * \brief Read restart on the microscale
@@ -481,10 +481,10 @@ protected:
   //@}
 
   /// temporary method for compatibility with solidshell, needs clarification
-  vector<double> getthicknessvector() const
+  std::vector<double> getthicknessvector() const
   {
     dserror("not implemented");
-    return vector<double>(3);
+    return std::vector<double>(3);
   };
 
 

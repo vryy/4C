@@ -137,7 +137,7 @@ void LINALG::Preconditioner::Setup(Teuchos::RCP<Epetra_Operator>      matrix,
       prec_ = Teuchos::rcp(new LINALG::SIMPLER_Operator(matrix,Params(),
                                                solver_->Params().sublist("SIMPLER"),
                                                outfile_));
-      Pmatrix_ = null;
+      Pmatrix_ = Teuchos::null;
     }
 #endif
   }
@@ -260,11 +260,11 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(
   const int size = fluidmap->NumMyElements();
 
   // old nullspace
-  Teuchos::RCP<vector<double> > ns = mllist.get<Teuchos::RCP<vector<double> > >("nullspace",Teuchos::null);
+  Teuchos::RCP<std::vector<double> > ns = mllist.get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
   if (ns == Teuchos::null) dserror("there is no nullspace in ml list");
 
   // new nullspace
-  Teuchos::RCP<vector<double> > newns = Teuchos::rcp(new vector<double>(newnsdim*size,0.0));
+  Teuchos::RCP<std::vector<double> > newns = Teuchos::rcp(new std::vector<double>(newnsdim*size,0.0));
 
   // use old nullspace as the first modes of new nullspace
   copy((*ns).begin(),(*ns).end(),(*newns).begin());
@@ -363,7 +363,7 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(
 
   // put new nullspace and its dimension in mllist
   mllist.set("null space: dimension",newnsdim);
-  mllist.set<Teuchos::RCP<vector<double> > >("nullspace",newns);
+  mllist.set<Teuchos::RCP<std::vector<double> > >("nullspace",newns);
   mllist.set("null space: vectors",&(*newns)[0]);
 
   return;

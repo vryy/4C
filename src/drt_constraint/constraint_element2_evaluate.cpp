@@ -22,9 +22,9 @@ Maintainer: Thomas Kloeppel
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ConstraintElement2::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
                                     DRT::Discretization&      discretization,
-                                    vector<int>&              lm,
+                                    std::vector<int>&         lm,
                                     Epetra_SerialDenseMatrix& elemat1,
                                     Epetra_SerialDenseMatrix& elemat2,
                                     Epetra_SerialDenseVector& elevec1,
@@ -60,8 +60,8 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(ParameterList& params,
     case calc_MPC_dist_stiff:
     {
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vector 'displacement'");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       const int numnode = 3;
       const int numdim = 2;
@@ -80,8 +80,8 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(ParameterList& params,
     case calc_MPC_angle_stiff:
     {
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vector 'displacement'");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       const int numnode = 3;
       const int numdim = 2;
@@ -111,10 +111,10 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(ParameterList& params,
  * Evaluate Neumann (->dserror) */
 int DRT::ELEMENTS::ConstraintElement2::EvaluateNeumann
 (
-  ParameterList& params,
+  Teuchos::ParameterList& params,
   DRT::Discretization&      discretization,
   DRT::Condition&           condition,
-  vector<int>&              lm,
+  std::vector<int>&         lm,
   Epetra_SerialDenseVector& elevec1,
   Epetra_SerialDenseMatrix* elemat1
 )

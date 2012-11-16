@@ -63,10 +63,10 @@ public:
       Teuchos::RCP<XFEM::FluidWizard>         wizard_new,       /// fluid wizard at t^(n+1)
       Teuchos::RCP<XFEM::FluidDofSet>         dofset_old,       /// fluid wizard at t^n
       Teuchos::RCP<XFEM::FluidDofSet>         dofset_new,       /// fluid wizard at t^(n+1)
-      vector<RCP<Epetra_Vector> > oldVectors,
+      std::vector<RCP<Epetra_Vector> > oldVectors,
       const Epetra_Map& olddofcolmap,
       const Epetra_Map& newdofrowmap,
-      const RCP<map<int,vector<int> > > pbcmap
+      const RCP<std::map<int,std::vector<int> > > pbcmap
   );
 
   //! destructor
@@ -487,7 +487,7 @@ protected:
     vector<int> 					startOwner_; // nearest nodes owner
     double 							dMin_; // minimal distance in initialization
     vector<LINALG::Matrix<3,1> > 	velValues_; // computed velocity for a node
-    vector<double> 					presValues_; // computed pressure for a node
+    std::vector<double> 					presValues_; // computed pressure for a node
     vector<LINALG::Matrix<2,4> > 	jumpAndKinkValues_; // computed jump and kink values for a node's jump enrichment dof
     vector<LINALG::Matrix<1,4> > 	kinkValues_; // computed kink values for a node's kink enrichment dof
     state state_; // status for both the used special algorithm and the state within the algorithm
@@ -516,19 +516,19 @@ protected:
   RCP<XFEM::DofManager> newdofman_; // dof manager of current time step t^n+1
   const Epetra_Map olddofcolmap_; // dof column map of last time step t^n in column map
   Epetra_Map newdofrowmap_; // dof column map of current time step t^n+1 in row map
-  const map<DofKey, DofGID> oldNodalDofColDistrib_; // dof distribution map of last time step t^n in column map
-  map<DofKey, DofGID> newNodalDofRowDistrib_; // dof distribution map of current time step t^n+1 in row map
+  const std::map<DofKey, DofGID> oldNodalDofColDistrib_; // dof distribution map of last time step t^n in column map
+  std::map<DofKey, DofGID> newNodalDofRowDistrib_; // dof distribution map of current time step t^n+1 in row map
 
   // data
   const RCP<Epetra_Vector> phin_; // phi^n in column map
   RCP<Epetra_Vector> phinp_; // phi^n+1,i+1 in column map
   const RCP<COMBUST::InterfaceHandleCombust> oldinterfacehandle_; // interface handle of old time step t^n
   RCP<COMBUST::InterfaceHandleCombust> newinterfacehandle_; // interface handle of new time step t^n+1
-  const vector<RCP<Epetra_Vector> > oldVectors_; // global vectors at t^n w.r.t old interface position in column map
-  vector<RCP<Epetra_Vector> > newVectors_;       // global vectors at t^n w.r.t new interface position in row map
+  const std::vector<RCP<Epetra_Vector> > oldVectors_; // global vectors at t^n w.r.t old interface position in column map
+  std::vector<RCP<Epetra_Vector> > newVectors_;       // global vectors at t^n w.r.t new interface position in row map
 
   // stuff for parallel communication
-  const RCP<map<int,vector<int> > > pbcmap_; // map for master and slave elements of nodes
+  const RCP<std::map<int,std::vector<int> > > pbcmap_; // map for master and slave elements of nodes
   const int myrank_; // current processor id
   const int numproc_; // number of processors
 
@@ -536,7 +536,7 @@ protected:
   const int newton_max_iter_; // maximal iteration number of newton loop
   const double newton_tol_; // tolerance for newton algorithm
 
-  RCP<vector<TimeIntData> > timeIntData_; // data-vector containing all data for computation with help of sub-class TimeIntData
+  RCP<std::vector<TimeIntData> > timeIntData_; // data-vector containing all data for computation with help of sub-class TimeIntData
 
 public:
   int numNodes(){return timeIntData_->size();};
@@ -760,7 +760,7 @@ public:
     LINALG::Matrix<nsd,numnode> evel(true);
     LINALG::Matrix<numnode,1>   epre(true);
 
-    if(vel_vec == null)
+    if(vel_vec == Teuchos::null)
       dserror("Cannot get state vector %s", state.c_str());
 
     // extract local values of the global vectors
@@ -814,7 +814,7 @@ public:
       const RCP<Epetra_Vector> field, // Epetra_Vector fitting to field and dofDistribution
       const RCP<DofManager> dofman,
       const Epetra_Map& dofMap, // DofMap fitting to field and dofDistribution
-      const map<DofKey, DofGID>& dofDistribution, // dofDistribution fitting to Epetra_Vector and field
+      const std::map<DofKey, DofGID>& dofDistribution, // dofDistribution fitting to Epetra_Vector and field
       LINALG::Matrix<3,2*numnode>& nodevel,
 #ifdef COMBUST_NORMAL_ENRICHMENT
       LINALG::Matrix<1,numnode>& nodevelenr,
@@ -943,9 +943,9 @@ protected:
       LINALG::Matrix<3,1>&             newNodeCoords,        ///< node coordinates of point that has to be projected
       double &                         min_dist,             ///< minimal distance, potentially updated
       LINALG::Matrix<3,1>&             proj_x_np,            ///< projection of point on this side
-      map<vector<int>, vector<double> >&  proj_xi_line,         ///< map<sorted nids, local line coordinates of projection of point w.r.t sides >
-      map<vector<int>, vector<int> >&     proj_lineid,          ///< map<sorted nids, local line id w.r.t sides>
-      map<vector<int>, vector<int> >&     proj_nid_line,        ///< map<sorted nids, side Ids>
+      std::map<vector<int>, std::vector<double> >&  proj_xi_line,         ///< map<sorted nids, local line coordinates of projection of point w.r.t sides >
+      std::map<vector<int>, vector<int> >&     proj_lineid,          ///< map<sorted nids, local line id w.r.t sides>
+      std::map<vector<int>, vector<int> >&     proj_nid_line,        ///< map<sorted nids, side Ids>
       int &                            proj_sid,             ///< id of side that contains the projected point
       TimeIntData&                     data                  ///< reference to data
       );
@@ -958,9 +958,9 @@ protected:
       int &                          proj_nid_np,          ///< nid id of projected point on surface
       LINALG::Matrix<3,1>&           proj_x_np,            ///< projection of point on this side
       int &                          proj_sid,             ///< id of side that contains the projected point
-      map<vector<int>, vector<double> > proj_xi_line,         ///< map<side ID, local coordinates of projection of point w.r.t to this line>
-      map<vector<int>, vector<int> >    proj_lineid,          ///< map<side ID, local line id>
-      map<vector<int>, vector<int> >    proj_nid_line,        ///< map<side ID, vec<line Ids>>
+      std::map<vector<int>, std::vector<double> > proj_xi_line,         ///< map<side ID, local coordinates of projection of point w.r.t to this line>
+      std::map<vector<int>, std::vector<int> >    proj_lineid,          ///< map<side ID, local line id>
+      std::map<vector<int>, std::vector<int> >    proj_nid_line,        ///< map<side ID, vec<line Ids>>
       TimeIntData&                   data                  ///< reference to data
       );
 
@@ -968,7 +968,7 @@ protected:
   template<DRT::Element::DiscretizationType side_distype, const int numdof>
   bool ProjectOnSide(
       Epetra_SerialDenseMatrix &   side_xyze,      ///< side's node coordinates
-      const vector<int>&           lm,             ///< local map
+      const std::vector<int>&      lm,             ///< local map
       LINALG::Matrix<3,1> &        x_gp_lin,       ///< global coordinates of point that has to be projected
       LINALG::Matrix<3,1> &        x_side,         ///< projected point on side
       LINALG::Matrix<2,1> &        xi_side,        ///< local coordinates of projected point w.r.t side
@@ -979,7 +979,7 @@ protected:
   template<DRT::Element::DiscretizationType line_distype, const int numdof>
   bool ProjectOnLine(
       Epetra_SerialDenseMatrix &   line_xyze,      ///< line's node coordinates
-      const vector<int>&           lm,             ///< local map
+      const std::vector<int>&      lm,             ///< local map
       LINALG::Matrix<3,1> &        x_point_np,     ///< global coordinates of point that has to be projected
       LINALG::Matrix<3,1> &        x_line,         ///< projected point on line
       double &                     xi_line,        ///< local coordinates of projected point w.r.t line
@@ -989,7 +989,7 @@ protected:
   //! compute distance (project) between two points
   void ProjectOnPoint(
       Epetra_SerialDenseMatrix &   point_xyze,     ///< point's node coordinates
-      const vector<int>&           lm,             ///< local map
+      const std::vector<int>&      lm,             ///< local map
       LINALG::Matrix<3,1> &        x_point_np,     ///< global coordinates of point that has to be projected
       LINALG::Matrix<3,1> &        x_point,        ///< global coordinates of point on surface
       double &                     dist            ///< distance from point to its projection
@@ -1003,7 +1003,7 @@ protected:
   void ComputeStartPoint_Side(
       DRT::Element*                side,           ///< pointer to side element
       Epetra_SerialDenseMatrix &   side_xyze,      ///< side's node coordinates
-      const vector<int>&           lm,             ///< local map
+      const std::vector<int>&      lm,             ///< local map
       LINALG::Matrix<2,1> &        xi_side,        ///< local coordinates of projected point w.r.t side
       double &                     dist,            ///< distance from point to its projection
       LINALG::Matrix<3,1>&         proj_x_n,       ///< projected point at t^n
@@ -1016,8 +1016,8 @@ protected:
       Epetra_SerialDenseMatrix &   side1_xyze,      ///< side's node coordinates
       DRT::Element*                side2,           ///< pointer to side element
       Epetra_SerialDenseMatrix &   side2_xyze,      ///< side's node coordinates
-      const vector<int>&           lm1,             ///< local map
-      const vector<int>&           lm2,             ///< local map
+      const std::vector<int>&           lm1,             ///< local map
+      const std::vector<int>&           lm2,             ///< local map
       double &                     dist,           ///< distance from point to its projection
       LINALG::Matrix<3,1>&         proj_x_n,       ///< projected point at t^n
       LINALG::Matrix<3,1>&         start_point     ///< final start point
@@ -1027,7 +1027,7 @@ protected:
       DRT::Element*                side,           ///< pointer to side element
       LINALG::Matrix<3,1>&         normal,         ///< normal vector w.r.t side
       Epetra_SerialDenseMatrix &   side_xyze,      ///< side's node coordinates
-      const vector<int>&           lm,             ///< local map
+      const std::vector<int>&      lm,             ///< local map
       LINALG::Matrix<3,1> &        proj_x_n,       ///< projected point on side
       LINALG::Matrix<2,1> &        xi_side         ///< local coordinates of projected point w.r.t side
   );
@@ -1036,7 +1036,7 @@ protected:
   void getNormalSide_tn(
       LINALG::Matrix<3,1>&         normal,         ///< normal vector w.r.t side
       Epetra_SerialDenseMatrix &   side_xyze,      ///< side's node coordinates
-      const vector<int>&           lm,             ///< local map
+      const std::vector<int>&      lm,             ///< local map
       LINALG::Matrix<3,1> &        proj_x_n,       ///< projected point on side
       LINALG::Matrix<2,1> &        xi_side         ///< local coordinates of projected point w.r.t side
       );
@@ -1052,7 +1052,7 @@ protected:
   template<DRT::Element::DiscretizationType line_distype, const int numdof>
   void get_projxn_Line(
       Epetra_SerialDenseMatrix &   line_xyze,      ///< line's node coordinates
-      const vector<int>&           lm,             ///< local map
+      const std::vector<int>&      lm,             ///< local map
       LINALG::Matrix<3,1> &        proj_x_n,       ///< projected point on side
       double &                     xi_line         ///< local coordinates of projected point w.r.t line
   );
@@ -1063,7 +1063,7 @@ protected:
       Epetra_SerialDenseMatrix&    xyze,         ///< node coordinates of side or line
       const DRT::Discretization &  cutdis,       ///< cut discretization
       const std::string            state,        ///< state
-      const vector<int>&           lm            ///< local map
+      const std::vector<int>&      lm            ///< local map
       );
 
   //! set the final startvalues for a node

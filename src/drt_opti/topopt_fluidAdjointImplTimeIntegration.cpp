@@ -37,7 +37,7 @@ Maintainer: Martin Winklmaier
 TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
     RCP<DRT::Discretization>      actdis,
     RCP<LINALG::Solver>           solver,
-    RCP<ParameterList>            params,
+    RCP<Teuchos::ParameterList>            params,
     RCP<IO::DiscretizationWriter> output)
   : FluidAdjointTimeInt(actdis,solver,params,output)
 {
@@ -63,7 +63,7 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
   // -------------------------------------------------------------------
   // care for periodic boundary conditions
   // -------------------------------------------------------------------
-  pbcmapmastertoslave_ = params_->get<RCP<map<int,vector<int> > > >("periodic bc");
+  pbcmapmastertoslave_ = params_->get<RCP<map<int,std::vector<int> > > >("periodic bc");
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
   // ensure that degrees of freedom in the discretization have been set
@@ -453,7 +453,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
                   "L_2_norm_without_residual_at_itemax"))
       {
         // call standard loop over elements
-        discret_->Evaluate(eleparams,sysmat_,null,residual_,null,null);
+        discret_->Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
         discret_->ClearState();
 
         //----------------------------------------------------------------------
@@ -822,7 +822,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetInitialAdjointField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      const vector<int> nodedofset = discret_->Dof(lnode);
+      const std::vector<int> nodedofset = discret_->Dof(lnode);
 
       for(int index=0;index<numdim_+1;++index)
       {
@@ -1069,7 +1069,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
   eleparams.set<INPAR::TOPOPT::AdjointTestCases>("special test case",params_->get<INPAR::TOPOPT::AdjointTestCases>("special test case"));
 
   // call standard loop over elements
-  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   return;
 }
 
@@ -1103,7 +1103,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementTimeParameter() const
     dserror("time integration scheme not implemented");
 
   // call standard loop over elements
-  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   return;
 }
 

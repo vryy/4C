@@ -132,7 +132,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::NURBS::Wall1Nurbs::Shape() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             gammi 05/09|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NURBS::Wall1Nurbs::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NURBS::Wall1Nurbs::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.

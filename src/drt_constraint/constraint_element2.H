@@ -191,9 +191,9 @@ public:
   */
   int Evaluate
   (
-    ParameterList& params, ///< ParameterList for communication
+    Teuchos::ParameterList& params, ///< ParameterList for communication
     DRT::Discretization& discretization,  ///< discretization
-    vector<int>& lm,  ///< location vector
+    std::vector<int>& lm,  ///< location vector
     Epetra_SerialDenseMatrix& elemat1, ///< first matrix to be filled by element
     Epetra_SerialDenseMatrix& elemat2,///< second matrix to be filled by element
     Epetra_SerialDenseVector& elevec1,  ///< third matrix to be filled by element
@@ -211,10 +211,10 @@ public:
   */
   virtual int EvaluateNeumann
   (
-    ParameterList& params,  ///< ParameterList for communication
+    Teuchos::ParameterList& params,  ///< ParameterList for communication
     DRT::Discretization& discretization,  ///< discretization
     DRT::Condition& condition,  ///< Neumann condition to evaluate
-    vector<int>& lm,  ///< location vector
+    std::vector<int>& lm,  ///< location vector
     Epetra_SerialDenseVector& elevec1,   ///< vector to be filled by element
     Epetra_SerialDenseMatrix* elemat1 = NULL
   );
@@ -266,7 +266,7 @@ private:
   inline void SpatialConfiguration
   (
     LINALG::Matrix<3,2>& x, ///< nodal coords in spatial frame
-    const vector<double> disp  ///< displacements
+    const std::vector<double> disp  ///< displacements
   ) const
   {
       const int numnode = 3;

@@ -20,9 +20,9 @@ Maintainer: Georg Bauer
  |  evaluate the element (public)                              gjb 01/09|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Transport::Evaluate(
-    ParameterList&            params,
+    Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2,
     Epetra_SerialDenseVector& elevec1,
@@ -68,10 +68,10 @@ int DRT::ELEMENTS::Transport::Evaluate(
  |  integration of the volume Neumann (body forces) loads takes place   |
  |  in the element. We need it there for the stabilization terms!       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Transport::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Transport::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {

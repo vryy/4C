@@ -3666,7 +3666,7 @@ void STATMECH::StatMechManager::CrosslinkerPeriodicBoundaryShift(Epetra_MultiVec
 /*----------------------------------------------------------------------*
  |  Evaluate DBCs in case of periodic BCs (public)         mueller 03/12|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::EvaluateDirichletStatMech(ParameterList&                     params,
+void STATMECH::StatMechManager::EvaluateDirichletStatMech(Teuchos::ParameterList&            params,
                                                           Teuchos::RCP<Epetra_Vector>        dis,
                                                           Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor)
 {
@@ -3993,7 +3993,7 @@ void STATMECH::StatMechManager::DoDirichletConditionPredefined(DRT::Condition&  
                                                                Teuchos::RCP<Epetra_Vector> toggle,
                                                                Teuchos::RCP<std::set<int> > dbcgids)
 {
-  const vector<int>* nodeids = cond.Nodes();
+  const std::vector<int>* nodeids = cond.Nodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
   const int nnode = (*nodeids).size();
   const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");

@@ -18,7 +18,7 @@ Maintainer: Thomas Kloeppel
 /*----------------------------------------------------------------------*
  |  return Center Coords in Reference System                            |
  *----------------------------------------------------------------------*/
-const vector<double> DRT::ELEMENTS::So_hex20::soh20_ElementCenterRefeCoords()
+const std::vector<double> DRT::ELEMENTS::So_hex20::soh20_ElementCenterRefeCoords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();
@@ -36,7 +36,7 @@ const vector<double> DRT::ELEMENTS::So_hex20::soh20_ElementCenterRefeCoords()
   LINALG::Matrix<1,NUMDIM_SOH20> midpoint;
   //midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);
-  vector<double> centercoords(3);
+  std::vector<double> centercoords(3);
   centercoords[0] = midpoint(0,0);
   centercoords[1] = midpoint(0,1);
   centercoords[2] = midpoint(0,2);

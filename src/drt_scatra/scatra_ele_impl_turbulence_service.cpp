@@ -36,10 +36,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::scatra_apply_box_filter(
   double&                    dens_hat,
   double&                    temp_hat,
   double&                    dens_temp_hat,
-  Teuchos::RCP<vector<double> >       vel_hat,
-  Teuchos::RCP<vector<double> >       densvel_hat,
-  Teuchos::RCP<vector<double> >       densveltemp_hat,
-  Teuchos::RCP<vector<double> >       densstraintemp_hat,
+  Teuchos::RCP<std::vector<double> >       vel_hat,
+  Teuchos::RCP<std::vector<double> >       densvel_hat,
+  Teuchos::RCP<std::vector<double> >       densveltemp_hat,
+  Teuchos::RCP<std::vector<double> >       densstraintemp_hat,
   double&                    volume,
   const DRT::Element*        ele)
 {
@@ -59,7 +59,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::scatra_apply_box_filter(
   if (material->MaterialType() == INPAR::MAT::m_scatra)
   {
     //access fluid discretization
-    RCP<DRT::Discretization> fluiddis = null;
+    RCP<DRT::Discretization> fluiddis = Teuchos::null;
     fluiddis = DRT::Problem::Instance()->GetDis("fluid");
     //get corresponding fluid element (it has the same global ID as the scatra element)
     DRT::Element* fluidele = fluiddis->gElement(ele->Id());
@@ -291,7 +291,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::scatra_calc_smag_const_LkMk_and_MkMk(
  *----------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::GetMeanPrtOfHomogenousDirection(
-  ParameterList&             turbmodelparams,
+  Teuchos::ParameterList&    turbmodelparams,
   double&                    inv_Prt,
   int&                       nlayer
 )
@@ -301,8 +301,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMeanPrtOfHomogenousDirection(
 
   if (turbmodelparams.get<string>("HOMDIR","not_specified") !=  "not_specified")
   {
-    RCP<vector<double> > averaged_LkMk = turbmodelparams.get<RCP<vector<double> > >("averaged_LkMk_");
-    RCP<vector<double> > averaged_MkMk = turbmodelparams.get<RCP<vector<double> > >("averaged_MkMk_");
+    RCP<std::vector<double> > averaged_LkMk = turbmodelparams.get<RCP<std::vector<double> > >("averaged_LkMk_");
+    RCP<std::vector<double> > averaged_MkMk = turbmodelparams.get<RCP<std::vector<double> > >("averaged_MkMk_");
 
     // get homogeneous direction
     string homdir = turbmodelparams.get<string>("HOMDIR","not_specified");
@@ -325,7 +325,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMeanPrtOfHomogenousDirection(
     // determine the layer
     if (homdir == "xy" or homdir == "xz" or homdir == "yz")
     {
-      RCP<vector<double> > planecoords = turbmodelparams.get<RCP<vector<double> > >("planecoords_");
+      RCP<std::vector<double> > planecoords = turbmodelparams.get<RCP<std::vector<double> > >("planecoords_");
       // get center
       double center = 0.0;
       if (homdir == "xy")
@@ -352,8 +352,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMeanPrtOfHomogenousDirection(
     }
     else if (homdir == "x" or homdir == "y" or homdir == "z")
     {
-      RCP<vector<double> > dir1coords = turbmodelparams.get<RCP<vector<double> > >("dir1coords_");
-      RCP<vector<double> > dir2coords = turbmodelparams.get<RCP<vector<double> > >("dir2coords_");
+      RCP<std::vector<double> > dir1coords = turbmodelparams.get<RCP<std::vector<double> > >("dir1coords_");
+      RCP<std::vector<double> > dir2coords = turbmodelparams.get<RCP<std::vector<double> > >("dir2coords_");
       // get center
       double dim1_center = 0.0;
       double dim2_center = 0.0;
@@ -1213,7 +1213,7 @@ double DRT::ELEMENTS::ScaTraImpl<distype>::CalcRefLength(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::StoreModelParametersForOutput(
   const bool                            isowned,
-  ParameterList&                        turbulencelist,
+  Teuchos::ParameterList&               turbulencelist,
   const int                             nlayer,
   const double                          tpn)
 {
@@ -1234,19 +1234,19 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::StoreModelParametersForOutput(
           if (tpn>1.0E-16)
           {
             // get dynamically estimated Smagorinsky constant from fluid element, i.e., (Cs*h)^2
-            double Cs_delta_sq = (*(turbulencelist.get<RCP<vector<double> > >("global_Cs_delta_sq_sum")))[nlayer];
+            double Cs_delta_sq = (*(turbulencelist.get<RCP<std::vector<double> > >("global_Cs_delta_sq_sum")))[nlayer];
             // since Cs_delta_sq contains the sum over all elements of this layer,
             // we have to divide by the number of elements of this layer
             int numele_layer = turbulencelist.get<int>("numele_layer");
-            (*(turbulencelist.get<RCP<vector<double> > >("local_Prt_sum")))[nlayer]+=(Cs_delta_sq/numele_layer)/tpn;
+            (*(turbulencelist.get<RCP<std::vector<double> > >("local_Prt_sum")))[nlayer]+=(Cs_delta_sq/numele_layer)/tpn;
           }
           else
-            (*(turbulencelist.get<RCP<vector<double> > >("local_Prt_sum")))         [nlayer]+=0.0;
+            (*(turbulencelist.get<RCP<std::vector<double> > >("local_Prt_sum")))         [nlayer]+=0.0;
 
           // set (Cs*h)^2/Prt and diffeff for output
-          (*(turbulencelist.get<RCP<vector<double> > >("local_Cs_delta_sq_Prt_sum")))[nlayer]+=tpn;
+          (*(turbulencelist.get<RCP<std::vector<double> > >("local_Cs_delta_sq_Prt_sum")))[nlayer]+=tpn;
           if (numscal_>1) dserror("One scalar assumed for dynamic Smagorinsky model!");
-          (*(turbulencelist.get<RCP<vector<double> > >("local_diffeff_sum")))    [nlayer]+=diffus_[0];
+          (*(turbulencelist.get<RCP<std::vector<double> > >("local_diffeff_sum")))    [nlayer]+=diffus_[0];
         }
       }
     }

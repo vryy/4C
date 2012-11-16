@@ -148,22 +148,22 @@ public:
   \brief Get vector of RCPs to the lines of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
   \brief Get vector of RCPs to the surfaces of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Get vector of RCPs to the volumes of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Volumes();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
 
-  virtual vector<double> ElementCenterRefeCoords();
+  virtual std::vector<double> ElementCenterRefeCoords();
 
   /*!
   \brief Return unique ParObject id
@@ -290,7 +290,7 @@ public:
   \param name (in):   Name of data that is currently processed for visualization
   \param data (out):  data to be filled by element if element recognizes the name
   */
-  virtual bool VisData(const string& name, vector<double>& data);
+  virtual bool VisData(const string& name, std::vector<double>& data);
 
   //@}
 
@@ -333,9 +333,9 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  virtual int Evaluate(ParameterList& params,
+  virtual int Evaluate(Teuchos::ParameterList& params,
                        DRT::Discretization&      discretization,
-                       vector<int>&              lm,
+                       std::vector<int>&         lm,
                        Epetra_SerialDenseMatrix& elemat1,
                        Epetra_SerialDenseMatrix& elemat2,
                        Epetra_SerialDenseVector& elevec1,
@@ -427,16 +427,16 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
 
   //const vector<double> GetFibervec(){return fiberdirection_;};
-  const vector<double> soh8_ElementCenterRefeCoords();
+  const std::vector<double> soh8_ElementCenterRefeCoords();
 
   //@}
 
@@ -527,10 +527,10 @@ protected:
   /// Prestressing object
   RCP<DRT::ELEMENTS::PreStress>                                         prestress_;
   // compute Jacobian mapping wrt to deformed configuration
-  virtual void UpdateJacobianMapping(const vector<double>& disp,
+  virtual void UpdateJacobianMapping(const std::vector<double>& disp,
                                      DRT::ELEMENTS::PreStress& prestress);
   // compute defgrd in all gp for given disp
-  virtual void DefGradient(const vector<double>& disp,
+  virtual void DefGradient(const std::vector<double>& disp,
                            Epetra_SerialDenseMatrix& gpdefgrd,
                            DRT::ELEMENTS::PreStress& prestress);
 
@@ -550,33 +550,33 @@ protected:
 
   //! Calculate nonlinear stiffness and mass matrix
   virtual void nlnstiffmass(
-      vector<int>& lm,  ///< location matrix
-      vector<double>& disp,  ///< current displacements
-      vector<double>& residual,  ///< current residual displ
+      std::vector<int>& lm,  ///< location matrix
+      std::vector<double>& disp,  ///< current displacements
+      std::vector<double>& residual,  ///< current residual displ
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  ///< strains at GP
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain,  ///< plastic strains at GP
-      ParameterList& params,  ///< algorithmic parameters e.g. time
+      Teuchos::ParameterList& params,  ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType iostress,  ///< stress output option
       const INPAR::STR::StrainType iostrain,  ///< strain output option
       const INPAR::STR::StrainType ioplstrain);  ///< plastic strain output option
 
   //! Calculate nonlinear stiffness and mass matrix (GEMM)
   virtual void soh8_nlnstiffmass_gemm(
-      vector<int>& lm,  ///< location matrix
+      std::vector<int>& lm,  ///< location matrix
       vector<double>& dispo,  ///< old displacements
-      vector<double>& disp,  ///< current displacements
-      vector<double>& residual,  ///< current residual displ
+      std::vector<double>& disp,  ///< current displacements
+      std::vector<double>& residual,  ///< current residual displ
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  ///< strains at GP
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain,  ///< plastic strains at GP
-      ParameterList& params,  ///< algorithmic parameters e.g. time
+      Teuchos::ParameterList& params,  ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType iostress,  ///< stress output option
       const INPAR::STR::StrainType iostrain,  ///< strain output option
       const INPAR::STR::StrainType ioplstrain);  ///< plastic strain output option
@@ -591,17 +591,17 @@ protected:
 
   //! remodeling for fibers at the end of time step (st 01/10)
   void soh8_remodel(
-        vector<int>&              lm,             // location matrix
-        vector<double>&           disp,           // current displacements
-        ParameterList&            params,         // algorithmic parameters e.g. time
+        std::vector<int>&         lm,             // location matrix
+        std::vector<double>&      disp,           // current displacements
+        Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
         RCP<MAT::Material>        mat);            // material
 
   //! Evaluate Hex8 Shapefcts to keep them static
-  const vector<LINALG::Matrix<NUMNOD_SOH8,1> > soh8_shapefcts();
+  const std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > soh8_shapefcts();
   //! Evaluate Hex8 Derivs to keep them static
-  const vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > soh8_derivs();
+  const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > soh8_derivs();
   //! Evaluate Hex8 Weights to keep them static
-  const vector<double> soh8_weights();
+  const std::vector<double> soh8_weights();
 
   // to be removed!!!
   void soh8_shapederiv(
@@ -636,7 +636,7 @@ protected:
                     LINALG::Matrix<6,1>* plglstrain,
                     LINALG::Matrix<3,3>* defgrd,
                     const int gp,
-                    ParameterList&  params);
+                    Teuchos::ParameterList&  params);
 
   //! Interface to material laws working with soh8 and GEMM
   void soh8_mat_sel_gemm(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
@@ -654,16 +654,16 @@ protected:
 
   //! Calculate linear stiffness and mass matrix
   virtual void linstiffmass(
-    vector<int>& lm,  ///< location matrix
-    vector<double>& disp,  ///< current displacements
-    vector<double>& residual,  ///< current residual displ
+    std::vector<int>& lm,  ///< location matrix
+    std::vector<double>& disp,  ///< current displacements
+    std::vector<double>& residual,  ///< current residual displ
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
     LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
     LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  ///< stresses at GP
     LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain, ///< strains at GP
     LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain, // plastic strains at GP
-    ParameterList& params,  ///< algorithmic parameters e.g. time
+    Teuchos::ParameterList& params,  ///< algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress,  ///< stress output option
     const INPAR::STR::StrainType iostrain, ///< strain output option
     const INPAR::STR::StrainType ioplstrain); ///< plastic strain output option
@@ -687,8 +687,8 @@ protected:
   //! Calculate temperature coupling term for the internal force (geometric linear)
   virtual void soh8_finttemp(
     DRT::Element::LocationArray& la,  //!< location array
-    vector<double>& disp,  //!< current displacements
-    vector<double>& residual,  //!< current residual displ
+    std::vector<double>& disp,  //!< current displacements
+    std::vector<double>& residual,  //!< current residual displ
     vector<double>& temp, //!< current temperature
     LINALG::Matrix<NUMDOF_SOH8,1>* force,  //!< element internal force vector
     LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  //!< stresses at GP
@@ -701,7 +701,7 @@ protected:
   //! \brief Calculate mechanical thermal stiffness term needed for monolithic TSI
   virtual void soh8_stifftemp(
     DRT::Element::LocationArray& la,
-    vector<double>& disp,  //!< (i): current displacement
+    std::vector<double>& disp,  //!< (i): current displacement
     LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>* stiffmatrixcoupl  //!< (o): mechanical thermal stiffness term at current gp
     );
 
@@ -755,7 +755,7 @@ protected:
    * \brief Determine a homogenized material density for multi-scale
    * analyses by averaging over the initial volume
    * */
-  void soh8_homog(ParameterList& params);
+  void soh8_homog(Teuchos::ParameterList& params);
 
   /*!
    * \brief Set EAS internal variables on the microscale
@@ -764,12 +764,12 @@ protected:
    * macroscopic Gauss point and set before the determination of
    * microscale stiffness etc.
    * */
-  void soh8_set_eas_multi(ParameterList&  params);
+  void soh8_set_eas_multi(Teuchos::ParameterList&  params);
 
   /*!
    * \brief Initialize EAS internal variables on the microscale
    * */
-  void soh8_eas_init_multi(ParameterList&  params);
+  void soh8_eas_init_multi(Teuchos::ParameterList&  params);
 
   /*!
    * \brief Read restart on the microscale
@@ -779,7 +779,7 @@ protected:
   //@}
 
   /// temporary method for compatibility with solidshell, needs clarification
-  vector<double> getthicknessvector() const {dserror("not implemented"); return vector<double>(3);};
+  std::vector<double> getthicknessvector() const {dserror("not implemented"); return std::vector<double>(3);};
 
 private:
 

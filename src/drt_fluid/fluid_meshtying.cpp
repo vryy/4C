@@ -33,7 +33,7 @@ Maintainer: Andreas Ehrl
 
 FLD::Meshtying::Meshtying(RCP<DRT::Discretization>      dis,
                           LINALG::Solver&               solver,
-                          ParameterList&                params,
+                          Teuchos::ParameterList&       params,
                           const UTILS::MapExtractor*    surfacesplitter):
   discret_(dis),
   solver_(solver),
@@ -181,11 +181,11 @@ RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
       sysmatsolve_ = mat;
 #endif
 
-    //RCP<vector<double> > test1 = solver.Params().sublist("Inverse1").sublist("ML Parameters").get<RCP<vector<double> > >("nullspace");
+    //RCP<std::vector<double> > test1 = solver.Params().sublist("Inverse1").sublist("ML Parameters").get<RCP<std::vector<double> > >("nullspace");
     //cout << "Length of null space before  " << test1->size() << endl;
     //cout << "address  " << test1 << endl;
 
-    //RCP<vector<double> > test2 = solver.Params().sublist("Inverse2").sublist("ML Parameters").get<RCP<vector<double> > >("nullspace");
+    //RCP<std::vector<double> > test2 = solver.Params().sublist("Inverse2").sublist("ML Parameters").get<RCP<std::vector<double> > >("nullspace");
     //cout << "Length of null space before  " << test2->size() << endl;
     //cout << "address  " << test2 << endl;
 
@@ -1389,7 +1389,7 @@ void FLD::Meshtying::AnalyzeMatrix(
       int maxnumentries = matrix->MaxNumEntries();
       int numOfNonZeros = 0;
       vector<int> indices(maxnumentries, 0);
-      vector<double> values(maxnumentries, 0.0);
+      std::vector<double> values(maxnumentries, 0.0);
 
       int error = matrix->ExtractMyRowCopy(i, maxnumentries, numOfNonZeros, &values[0], &indices[0]);
       if (error!=0) dserror("Epetra_CrsMatrix::ExtractMyRowCopy returned err=%d",error);
@@ -1441,7 +1441,7 @@ void FLD::Meshtying::ReplaceMatrixEntries(
     int maxnumentries = Pmat->MaxNumEntries();
     int numOfNonZeros = 0;
     vector<int> indices(maxnumentries);
-    vector<double> values(maxnumentries);
+    std::vector<double> values(maxnumentries);
 
     int error = Pmat->ExtractMyRowCopy(i, maxnumentries, numOfNonZeros, &values[0], &indices[0]);
     if (error!=0) dserror("Epetra_CrsMatrix::ExtractMyRowCopy returned err=%d",error);

@@ -162,15 +162,15 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data                                                (public) |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::NURBS::So_nurbs27::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::NURBS::So_nurbs27::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // kintype_
@@ -220,7 +220,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                           |
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Volumes()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Volumes()
 {
   vector<RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);
@@ -231,7 +231,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Volumes()
  |  get vector of surfaces (public)                                      |
  |  surface normals always point outward                                 |
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -247,7 +247,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                                        |
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NURBS::So_nurbs27::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.

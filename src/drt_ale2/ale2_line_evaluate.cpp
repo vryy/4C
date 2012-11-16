@@ -21,7 +21,7 @@ int DRT::ELEMENTS::Ale2Line::EvaluateNeumann(
     Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {

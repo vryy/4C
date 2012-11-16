@@ -76,20 +76,20 @@ MAT::PAR::Robinson::Robinson(
   )
 : Parameter(matdata),
   kind_((matdata->Get<std::string>("KIND"))),
-  youngs_(*(matdata->Get<vector<double> >("YOUNG"))),
+  youngs_(*(matdata->Get<std::vector<double> >("YOUNG"))),
   poissonratio_(matdata->GetDouble("NUE")),
   density_(matdata->GetDouble("DENS")),
   thermexpans_(matdata->GetDouble("THEXPANS")),
   inittemp_(matdata->GetDouble("INITTEMP")),
   hrdn_fact_(matdata->GetDouble("HRDN_FACT")),
   hrdn_expo_(matdata->GetDouble("HRDN_EXPO")),
-  shrthrshld_(*(matdata->Get<vector<double> >("SHRTHRSHLD"))),
+  shrthrshld_(*(matdata->Get<std::vector<double> >("SHRTHRSHLD"))),
   rcvry_(matdata->GetDouble("RCVRY")),
   actv_ergy_(matdata->GetDouble("ACTV_ERGY")),
   actv_tmpr_(matdata->GetDouble("ACTV_TMPR")),
   g0_(matdata->GetDouble("G0")),
   m_(matdata->GetDouble("M_EXPO")),
-  beta_(*(matdata->Get<vector<double> >("BETA"))),
+  beta_(*(matdata->Get<std::vector<double> >("BETA"))),
   h_(matdata->GetDouble("H_FACT"))
 {
 }
@@ -189,10 +189,10 @@ void MAT::Robinson::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack (public)                                           dano 11/11 |
  *----------------------------------------------------------------------*/
-void MAT::Robinson::Unpack(const vector<char>& data)
+void MAT::Robinson::Unpack(const std::vector<char>& data)
 {
   isinit_=true;
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -276,14 +276,14 @@ void MAT::Robinson::Setup(
    std::string buffer;
 
   // initialise history variables
-  strainpllast_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  strainplcurr_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  strainpllast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  strainplcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
-  backstresslast_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  backstresscurr_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  backstresslast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  backstresscurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
-  kvarva_ = Teuchos::rcp(new vector<LINALG::Matrix<2*NUM_STRESS_3D,1> >);
-  kvakvae_ = Teuchos::rcp(new vector<LINALG::Matrix<2*NUM_STRESS_3D,NUM_STRESS_3D> >);
+  kvarva_ = Teuchos::rcp(new std::vector<LINALG::Matrix<2*NUM_STRESS_3D,1> >);
+  kvakvae_ = Teuchos::rcp(new std::vector<LINALG::Matrix<2*NUM_STRESS_3D,NUM_STRESS_3D> >);
 
   LINALG::Matrix<NUM_STRESS_3D,1> emptymat(true);
   strainpllast_->resize(numgp);
@@ -352,8 +352,8 @@ void MAT::Robinson::Update(
   }
 
   // empty vectors of current data
-  strainplcurr_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  backstresscurr_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  strainplcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  backstresscurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
   // get size of the vector
   // (use the last vector, because it includes latest results, current is empty)
@@ -1354,7 +1354,7 @@ void MAT::Robinson::CalcBEBackStressFlow(
  | at current temperature --> polynomial type                              |
  *----------------------------------------------------------------------*/
 double MAT::Robinson::GetMatParameterAtTempnp(
-  const vector<double>* paramvector,  // (i) given parameter is a vector
+  const std::vector<double>* paramvector,  // (i) given parameter is a vector
   const double& tempnp  // tmpr (i) current temperature
   )
 {

@@ -70,7 +70,7 @@ Converter::Converter(PostField* field)
       dserror("not a shell8 element");
 
     const Epetra_SerialDenseMatrix* dirs = actshell->GetDirectors();
-    const vector<double>* thick = actshell->GetThickness();
+    const std::vector<double>* thick = actshell->GetThickness();
     int enumnode = actshell->NumNode();
     for (int n=0; n<enumnode; ++n)
     {

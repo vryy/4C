@@ -102,8 +102,8 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
   minn[2] = box1.minz();
   maxx[2] = box1.maxz();
 
-  vector<vector<double> > zcoord;
-  vector<vector<double> > ycoord;
+  vector<std::vector<double> > zcoord;
+  vector<std::vector<double> > ycoord;
   get_zcoordinates(zcoord,ycoord);
 
 //min z plane which contains significant area
@@ -111,7 +111,7 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
   while(1)
   {
       bool area=false;
-      vector<vector<double> > InPlane;
+      vector<std::vector<double> > InPlane;
       area = IsContainArea(minn,maxx,zmin,InPlane,zcoord,ycoord,0.01,numeach);
       if(area)
       {
@@ -127,7 +127,7 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
   while(1)
   {
     bool area=false;
-    vector<vector<double> > InPlane;
+    vector<std::vector<double> > InPlane;
     area = IsContainArea(minn,maxx,zmax,InPlane,zcoord,ycoord,0.01,numeach);
     if(area)
     {
@@ -147,7 +147,7 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
       while(1)
       {
         bool area=false;
-        vector<vector<double> > InPlane;
+        vector<std::vector<double> > InPlane;
         area = IsContainArea(minn,maxx,zmin,InPlane,zcoord,ycoord,0.001,numeach);
         if(area)
         {
@@ -161,7 +161,7 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
       while(1)
       {
         bool area=false;
-        vector<vector<double> > InPlane;
+        vector<std::vector<double> > InPlane;
         area = IsContainArea(minn,maxx,zmax,InPlane,zcoord,ycoord,0.001,numeach);
         if(area)
         {
@@ -195,7 +195,7 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
       for(int i=1;i<num-1;i++)
       {
         bool area = false;
-        vector<vector<double> > InPlane;
+        vector<std::vector<double> > InPlane;
         area = IsContainArea(minn,maxx,zplane[i],InPlane,zcoord,ycoord,0.01,numeach);
         if(area)
         {
@@ -240,14 +240,14 @@ bool GEO::CUT::VolumeIntegration::compute_Gaussian_points(int numeach)
     Store the z- and y-coordinates of the all corner points which will be used to find whether the intersection
     point lies inside the volume or not
 *--------------------------------------------------------------------------------------------------------------------*/
-void GEO::CUT::VolumeIntegration::get_zcoordinates(vector<vector<double> >& zcoord,
-                vector<vector<double> >& ycoord)
+void GEO::CUT::VolumeIntegration::get_zcoordinates(vector<std::vector<double> >& zcoord,
+                vector<std::vector<double> >& ycoord)
 {
     const plain_facet_set & facete = volcell_->Facets();
     int faceno=0;
     for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
     {
-      vector<double> thisplane1,thisplane2;
+      std::vector<double> thisplane1,thisplane2;
 
 //since the imaginary line never intersect this plane
       if(fabs(eqn_facets_[faceno][0])<0.00000001)
@@ -259,7 +259,7 @@ void GEO::CUT::VolumeIntegration::get_zcoordinates(vector<vector<double> >& zcoo
         continue;
       }
       Facet *face1 = *i;
-      const std::vector<vector<double> > corLocal = face1->CornerPointsLocal(elem1_);
+      const std::vector<std::vector<double> > corLocal = face1->CornerPointsLocal(elem1_);
       for(std::vector<std::vector<double> >::const_iterator k=corLocal.begin();k!=corLocal.end();k++)
       {
         std::vector<double> coords1 = *k;
@@ -277,8 +277,8 @@ void GEO::CUT::VolumeIntegration::get_zcoordinates(vector<vector<double> >& zcoo
               check whether the generated ray intersect any of the facets
               if so generate gauss points along the ray
 *------------------------------------------------------------------------------------------*/
-bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *maxi,vector<vector<double> >& linePts,
-                vector<vector<double> >zcoord,vector<vector<double> >ycoord,double toler,int numeach)
+bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *maxi,vector<std::vector<double> >& linePts,
+                vector<std::vector<double> >zcoord,vector<std::vector<double> >ycoord,double toler,int numeach)
 {
   bool intersect = false;
   vector<int> planeinter,InterFaces;
@@ -327,7 +327,7 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
     else
       intersect = true;
 
-    vector<double> inter1,inter2;
+    std::vector<double> inter1,inter2;
     inter1.push_back(int1);
     inter1.push_back(pt[1]);
     inter1.push_back(pt[2]);
@@ -338,7 +338,7 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
 #if 1 //old way of point distribution method in intersection lines
     if(fabs(inter2[0]-inter1[0])<0.025*(maxi[0]-mini[0]))
     {
-      vector<double> middle(3);
+      std::vector<double> middle(3);
       middle[0] = 0.5*(inter2[0]+inter1[0]);
       middle[1] = inter2[1];
       middle[2] = inter2[2];
@@ -367,7 +367,7 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
     int numX = (int)((fabs(inter2[0]-inter1[0])/(maxi[0]-mini[0]))*numeach+1);
     if(numX==1)
     {
-      vector<double> middle(3);
+      std::vector<double> middle(3);
       middle[0] = 0.5*(inter2[0]+inter1[0]);
       middle[1] = inter2[1];
       middle[2] = inter2[2];
@@ -393,7 +393,7 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
     {
       int fa1 = *i;
       double int1 = (eqn_facets_[fa1][3]-eqn_facets_[fa1][1]*pt[1]-eqn_facets_[fa1][2]*pt[2])/eqn_facets_[fa1][0];
-      vector<double> inter1;
+      std::vector<double> inter1;
       inter1.push_back(int1);
       inter1.push_back(pt[1]);
       inter1.push_back(pt[2]);
@@ -409,11 +409,11 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
       bool ptsInside = false;
       unsigned face1 = i->second;
       Facet *facet1 = *(f+face1);
-      vector<double> inter1 = i->first;
+      std::vector<double> inter1 = i->first;
       i++;
       unsigned face2 = i->second;
       Facet *facet2 = *(f+face2);
-      vector<double> inter2 = i->first;
+      std::vector<double> inter2 = i->first;
       i--;
 
 //Among two consequetive facets which are cut by the line, one must be the cut surface
@@ -444,7 +444,7 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
         }
         if((inter2[0]-inter1[0])<toler*(maxi[0]-mini[0]))
         {
-          vector<double> middle(3);
+          std::vector<double> middle(3);
           middle[0] = 0.5*(inter2[0]+inter1[0]);
           middle[1] = inter2[1];
           middle[2] = inter2[2];
@@ -474,7 +474,7 @@ bool GEO::CUT::VolumeIntegration::IsIntersect(double *pt, double *mini, double *
          Check whether the intersection point, which is in the plane containing the facet, actually
          lies with in the facet area
 *--------------------------------------------------------------------------------------------------------------------*/
-int GEO::CUT::VolumeIntegration::pnpoly(int npol, vector<double>xp, vector<double>yp, double x, double y)
+int GEO::CUT::VolumeIntegration::pnpoly(int npol, std::vector<double>xp, std::vector<double>yp, double x, double y)
 {
   // check whether given point is one of the corner points
   for( int i=0;i<npol;i++ )
@@ -523,7 +523,7 @@ int GEO::CUT::VolumeIntegration::pnpoly(int npol, vector<double>xp, vector<doubl
 /*-------------------------------------------------------------------------------------------------------------------*
 
 *--------------------------------------------------------------------------------------------------------------------*/
-int GEO::CUT::VolumeIntegration::pnpoly(vector<vector<double> >xp, LINALG::Matrix<3,1> pt,
+int GEO::CUT::VolumeIntegration::pnpoly(vector<std::vector<double> >xp, LINALG::Matrix<3,1> pt,
                                         string projType)
 {
   int npol = xp.size();
@@ -549,8 +549,8 @@ int GEO::CUT::VolumeIntegration::pnpoly(vector<vector<double> >xp, LINALG::Matri
   // check whether given point is on the edge
   for( int i=0;i<npol;i++ )
   {
-    vector<double> end1 = xp[i];
-    vector<double> end2 = xp[(i+1)%npol];
+    std::vector<double> end1 = xp[i];
+    std::vector<double> end2 = xp[(i+1)%npol];
 
     // line with constant ind1
     if( fabs(end1[ind1]-end2[ind1]) < 1e-8 && fabs(end1[ind1]-pt(ind1,0)) < 1e-8 ) // pt is on infinite line check
@@ -595,8 +595,8 @@ int GEO::CUT::VolumeIntegration::pnpoly(vector<vector<double> >xp, LINALG::Matri
         Check whether the particular z-plane of the volumecell contains significant area so as to distribute
         the Gauss points in that plane
  *--------------------------------------------------------------------------------------------------------------------*/
-bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], double&zmin,vector<vector<double> > &pts,
-                vector<vector<double> >zcoord,vector<vector<double> >ycoord,double toler,int numeach)
+bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], double&zmin,vector<std::vector<double> > &pts,
+                vector<std::vector<double> >zcoord,vector<std::vector<double> >ycoord,double toler,int numeach)
 {
    bool isArea=true;
    double dx1[3];
@@ -606,7 +606,7 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], d
 //check for the lowest line
    while(1)
    {
-     vector<vector<double> > linePts;
+     vector<std::vector<double> > linePts;
      ymin += toler*dx1[1];
      bool intersec = false;
      double a[] = {xmin,ymin,zmin};
@@ -629,7 +629,7 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], d
 //check for the topmost line
    while(1)
    {
-     vector<vector<double> > linePts;
+     vector<std::vector<double> > linePts;
      ymax -= toler*dx1[1];
 
      bool intersec = false;
@@ -658,7 +658,7 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], d
   {
     double a[] = {xmin,yplane[i],zmin};
     bool intersec = false;
-    vector<vector<double> > linePts;
+    vector<std::vector<double> > linePts;
     intersec = IsIntersect(a, minn, maxx, linePts,zcoord,ycoord,toler,numeach);
     if(intersec)
     {
@@ -677,7 +677,7 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], d
           dyym += 0.5*dyym;
           double a[] = {xmin,yplane[i]-dyym,zmin};
           bool innerintersec = false;
-          vector<vector<double> > linePts;
+          vector<std::vector<double> > linePts;
           innerintersec = IsIntersect(a, minn, maxx, linePts,zcoord,ycoord,toler,numeach);
 
           if(innerintersec)
@@ -698,7 +698,7 @@ bool GEO::CUT::VolumeIntegration::IsContainArea(double minn[3],double maxx[3], d
               inter1 and inter2
 *-------------------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::VolumeIntegration::OnLine(vector<double>inter1,vector<double>inter2,
-                vector<vector<double> >&linePts,int num)
+                vector<std::vector<double> >&linePts,int num)
 {
 	vector<double> left,right;
 	if(inter1[0]<inter2[0])
@@ -717,7 +717,7 @@ void GEO::CUT::VolumeIntegration::OnLine(vector<double>inter1,vector<double>inte
 	double xdiff = (inter2[0]-inter1[0])/(num-1);
 	for(int i=0;i<num;i++)
 	{
-    vector<double> temp(3);
+    std::vector<double> temp(3);
     temp[0] = inter1[0]+i*xdiff;
     temp[1] = inter1[1];
     temp[2] = inter1[2];
@@ -1090,7 +1090,7 @@ std::string GEO::CUT::VolumeIntegration::IsPointInside( LINALG::Matrix<3,1> & rs
   //--------------------------------------------------------------------------------
   vector<plain_facet_set::const_iterator> XFacets;        //facets with non-zero nx
   vector<plain_facet_set::const_iterator> NotXFacets;     //facets with zero nx
-  vector<vector<double> > Eqnplane;                       //eqn of plane for all facets
+  vector<std::vector<double> > Eqnplane;                       //eqn of plane for all facets
 
   for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
   {
@@ -1121,7 +1121,7 @@ std::string GEO::CUT::VolumeIntegration::IsPointInside( LINALG::Matrix<3,1> & rs
     if( cutno==1 )
     {
       // find x-value of intersection point, (yInt,zInt) = (y,z) of given pt
-      vector<double> eqn = Eqnplane[XFacets[i]-facete.begin()];
+      std::vector<double> eqn = Eqnplane[XFacets[i]-facete.begin()];
       double x = (eqn[3]-eqn[1]*rst(1,0)-eqn[2]*rst(2,0))/eqn[0];
       if( fabs((x-rst(0,0))/x) < 1e-8 ) // pt is on one of the XFacets
         return "onBoundary";
@@ -1137,7 +1137,7 @@ std::string GEO::CUT::VolumeIntegration::IsPointInside( LINALG::Matrix<3,1> & rs
   // Check to see if point is in x-z or x-y oriented facets
   for( unsigned i=0;i<NotXFacets.size();i++ )
   {
-    vector<double> eqn = Eqnplane[NotXFacets[i]-facete.begin()];
+    std::vector<double> eqn = Eqnplane[NotXFacets[i]-facete.begin()];
     // check pt on x-y plane facet
     if( fabs(eqn[2])<1e-10 )  // make sure it is x-y facet
     {

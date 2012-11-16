@@ -127,7 +127,7 @@ void FSI::FSIResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, in
       double result = 0.0;    // will hold the actual result of run
 
       // test Lagrange multipliers
-      if (fsilambda_ != null)
+      if (fsilambda_ != Teuchos::null)
       {
         const Epetra_BlockMap& fsilambdamap = fsilambda_->Map();
         if (position=="lambdax")

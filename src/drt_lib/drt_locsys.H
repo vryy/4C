@@ -291,16 +291,16 @@ protected:
     functionevaluation,
     originradialsliding
   };
-  vector<DRT::UTILS::LocsysManager::Type>  type_;
+  std::vector<DRT::UTILS::LocsysManager::Type>  type_;
 
   /// id of locsys condition
-  vector<int>                              id_;
+  std::vector<int>                         id_;
 
   /// problem dimension
   int                                      dim_;
 
   /// local system conditions
-  vector<DRT::Condition*>                  locsysconds_;
+  std::vector<DRT::Condition*>             locsysconds_;
 
   /// number of local systems
   int                                      numlocsys_;
@@ -310,7 +310,7 @@ protected:
 
 
   /// types of local systems conditions
-  vector<DRT::Condition::ConditionType>    typelocsys_;
+  std::vector<DRT::Condition::ConditionType> typelocsys_;
 
   /// local system normals / tangents
   Epetra_SerialDenseMatrix                 normals_;
@@ -325,7 +325,7 @@ protected:
   RCP<Epetra_Map>                          locsysdofmap_;
 
   /// store OriginRadialSliding locsys IDs
-  vector<int>                              radslideids_;
+  std::vector<int>                         radslideids_;
 
   /// Transformation matrix which maps globally oriented components
   /// into locally oriented components (dubbed 'forward' transformation)

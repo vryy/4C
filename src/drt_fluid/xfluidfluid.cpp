@@ -2546,8 +2546,8 @@ void FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
  |  check xfluid input parameters/ safety checks           schott 05/12 |
  *----------------------------------------------------------------------*/
 void FLD::XFluidFluid::CheckXFluidFluidParams( ParameterList& params_xfem,
-                                               ParameterList& params_xf_gen,
-                                               ParameterList& params_xf_stab)
+                                               Teuchos::ParameterList& params_xf_gen,
+                                               Teuchos::ParameterList& params_xf_stab)
 {
   if (myrank_==0)
   {
@@ -3367,8 +3367,8 @@ void FLD::XFluidFluid::TimeUpdate()
     eleparams.set("dt"     ,dta_    );
 
     // call loop over elements to update subgrid scales
-    bgdis_->Evaluate(eleparams,null,null,null,null,null);
-    embdis_->Evaluate(eleparams,null,null,null,null,null);
+    bgdis_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+    embdis_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
     if(myrank_==0)
     {
@@ -3631,14 +3631,14 @@ void FLD::XFluidFluid::SetDirichletNeumannBC()
     bgdis_->SetState("velaf",state_->velnp_);
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
-    bgdis_->EvaluateDirichlet(eleparams,state_->velnp_,null,null,null,state_->dbcmaps_);
+    bgdis_->EvaluateDirichlet(eleparams,state_->velnp_,Teuchos::null,Teuchos::null,Teuchos::null,state_->dbcmaps_);
     bgdis_->ClearState();
 
     embdis_->ClearState();
     embdis_->SetState("velaf",alevelnp_);
     //don't call this with the mapextractor. Otherwise the Mapextractor will
     //be built again.
-    embdis_->EvaluateDirichlet(eleparams,alevelnp_,null,null,null);
+    embdis_->EvaluateDirichlet(eleparams,alevelnp_,Teuchos::null,Teuchos::null,Teuchos::null);
     embdis_->ClearState();
 
     // set thermodynamic pressure
@@ -4011,9 +4011,9 @@ void FLD::XFluidFluid::SetElementGeneralFluidParameter()
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
 
   // call standard loop over elements
-  //discret_->Evaluate(eleparams,null,null,null,null,null);
+  //discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
-  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*bgdis_,eleparams,null,null,null,null,null);
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*bgdis_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 #else
   dserror("D_FLUID3 required");
 #endif
@@ -4037,7 +4037,7 @@ void FLD::XFluidFluid::SetElementTurbulenceParameter()
   eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements
-  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*bgdis_,eleparams,null,null,null,null,null);
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*bgdis_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 #else
   dserror("D_FLUID3 required");
 #endif
@@ -4077,10 +4077,10 @@ void FLD::XFluidFluid::SetElementTimeParameter()
   }
 
   // call standard loop over elements
-  //discret_->Evaluate(eleparams,null,null,null,null,null);
+  //discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
-  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*bgdis_,eleparams,null,null,null,null,null);
-  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*embdis_,eleparams,null,null,null,null,null);
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*bgdis_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*embdis_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 #else
   dserror("D_FLUID3 required");
 #endif
@@ -4136,7 +4136,7 @@ double FLD::XFluidFluid::TimIntParam() const
 void FLD::XFluidFluid::LiftDrag() const
 {
   // in this map, the results of the lift drag calculation are stored
-  RCP<map<int,vector<double> > > liftdragvals;
+  RCP<map<int,std::vector<double> > > liftdragvals;
 
   FLD::UTILS::LiftDrag(*embdis_,*aletrueresidual_,*params_,liftdragvals);
 
@@ -4877,7 +4877,7 @@ void FLD::XFluidFluid::SetInitialFlowField(
       // get the processor local node
       DRT::Node*  lnode      = bgdis_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      const vector<int> nodedofset = bgdis_->Dof(lnode);
+      const std::vector<int> nodedofset = bgdis_->Dof(lnode);
 
       if (nodedofset.size()!=0)
       {
@@ -4900,7 +4900,7 @@ void FLD::XFluidFluid::SetInitialFlowField(
       // get the processor local node
       DRT::Node*  lnode      = embdis_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      const vector<int> nodedofset = embdis_->Dof(lnode);
+      const std::vector<int> nodedofset = embdis_->Dof(lnode);
 
       for(int index=0;index<numdim_+1;++index)
       {
@@ -4927,8 +4927,8 @@ void FLD::XFluidFluid::SetInitialFlowField(
     const int npredof = numdim_;
 
     double         p;
-    vector<double> u  (numdim_);
-    vector<double> xyz(numdim_);
+    std::vector<double> u  (numdim_);
+    std::vector<double> xyz(numdim_);
 
     // check whether present flow is indeed three-dimensional
     if (numdim_!=3) dserror("Beltrami flow is a three-dimensional flow!");

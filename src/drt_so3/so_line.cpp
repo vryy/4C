@@ -103,7 +103,7 @@ void DRT::ELEMENTS::StructuralLine::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data                                                gee 04/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralLine::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::StructuralLine::Unpack(const std::vector<char>& data)
 {
   dserror("StructuralLine element does not support communication");
   return;

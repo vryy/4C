@@ -267,7 +267,7 @@ void MAT::MicroMaterialGP::EasInit()
       Epetra_SerialDenseVector elevector1;
       Epetra_SerialDenseVector elevector2;
       Epetra_SerialDenseVector elevector3;
-      vector<int> lm;
+      std::vector<int> lm;
 
       actele->Evaluate(p,*discret,lm,elematrix1,elematrix2,elevector1,elevector2,elevector3);
     }

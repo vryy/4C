@@ -304,9 +304,9 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   DRT::Element*              ele,
-  ParameterList&             params,
+  Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
-  vector<int>&               lm,
+  std::vector<int>&          lm,
   Epetra_SerialDenseMatrix&  elemat1_epetra,
   Epetra_SerialDenseMatrix&  elemat2_epetra,
   Epetra_SerialDenseVector&  elevec1_epetra,
@@ -385,9 +385,9 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // set thermodynamic pressure and its time derivative as well as
     // flag for turbulence model if required
     turbmodel_ = INPAR::FLUID::no_model;
-    ParameterList& turbulencelist = params.sublist("TURBULENCE MODEL");
-    ParameterList& sgvisclist = params.sublist("SUBGRID VISCOSITY");
-    ParameterList& mfslist = params.sublist("MULTIFRACTAL SUBGRID SCALES");
+    Teuchos::ParameterList& turbulencelist = params.sublist("TURBULENCE MODEL");
+    Teuchos::ParameterList& sgvisclist = params.sublist("SUBGRID VISCOSITY");
+    Teuchos::ParameterList& mfslist = params.sublist("MULTIFRACTAL SUBGRID SCALES");
     if (scatratype == INPAR::SCATRA::scatratype_loma)
     {
       thermpressnp_ = params.get<double>("thermodynamic pressure");
@@ -425,7 +425,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     if (convform ==INPAR::SCATRA::convform_conservative) is_conservative_ = true;
 
     // set parameters for stabilization
-    ParameterList& stablist = params.sublist("STABILIZATION");
+    Teuchos::ParameterList& stablist = params.sublist("STABILIZATION");
 
     // get definition for stabilization parameter tau
     whichtau_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
@@ -543,8 +543,8 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (hist==Teuchos::null || phinp==Teuchos::null)
       dserror("Cannot get state vector 'hist' and/or 'phinp'");
-    vector<double> myhist(lm.size());
-    vector<double> myphinp(lm.size());
+    std::vector<double> myhist(lm.size());
+    std::vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
@@ -568,7 +568,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       // extract additional local values from global vector
       RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
       if (phiam==Teuchos::null) dserror("Cannot get state vector 'phiam'");
-      vector<double> myphiam(lm.size());
+      std::vector<double> myphiam(lm.size());
       DRT::UTILS::ExtractMyValues(*phiam,myphiam,lm);
 
       // fill element array
@@ -587,7 +587,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       // extract additional local values from global vector
       RCP<const Epetra_Vector> phin = discretization.GetState("phin");
       if (phin==Teuchos::null) dserror("Cannot get state vector 'phin'");
-      vector<double> myphin(lm.size());
+      std::vector<double> myphin(lm.size());
       DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
 
       // fill element array
@@ -699,7 +699,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         RCP<const Epetra_Vector> gfsphinp = discretization.GetState("fsphinp");
         if (gfsphinp==Teuchos::null) dserror("Cannot get state vector 'fsphinp'");
 
-        vector<double> myfsphinp(lm.size());
+        std::vector<double> myfsphinp(lm.size());
         DRT::UTILS::ExtractMyValues(*gfsphinp,myfsphinp,lm);
 
         for (int i=0;i<nen_;++i)
@@ -961,7 +961,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp==Teuchos::null)
         dserror("Cannot get state vector 'phinp'");
-      vector<double> myphinp(lm.size());
+      std::vector<double> myphinp(lm.size());
       DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
       // fill all element arrays
@@ -999,7 +999,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // -> extract local values from global vectors
     RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-    vector<double> myphinp(lm.size());
+    std::vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
     // fill all element arrays
@@ -1019,7 +1019,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     const double dt = params.get<double>("time-step length");
 
     // set flag for potential evaluation of material law at int. point
-    ParameterList& stablist = params.sublist("STABILIZATION");
+    Teuchos::ParameterList& stablist = params.sublist("STABILIZATION");
     const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
     mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
 
@@ -1080,7 +1080,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       // -> extract local values from the global vectors
       RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
-      vector<double> myphinp(lm.size());
+      std::vector<double> myphinp(lm.size());
       DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
       // calculate scalars and domain integral
@@ -1098,7 +1098,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vector
-    vector<double> myphinp(lm.size());
+    std::vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
     // fill element arrays
@@ -1129,7 +1129,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       const double frt = params.get<double>("frt");
       // extract local values from the global vector
       RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      vector<double> myphinp(lm.size());
+      std::vector<double> myphinp(lm.size());
       DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
       // fill element arrays
@@ -1159,7 +1159,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // need initial field -> extract local values from the global vector
     RCP<const Epetra_Vector> phi0 = discretization.GetState("phi0");
     if (phi0==Teuchos::null) dserror("Cannot get state vector 'phi0'");
-    vector<double> myphi0(lm.size());
+    std::vector<double> myphi0(lm.size());
     DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
 
     // fill element arrays
@@ -1189,7 +1189,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       Teuchos::RCP<const Epetra_Vector> scalar = discretization.GetState("scalar");
       if (scalar == Teuchos::null)
         dserror("Cannot get scalar!");
-      vector<double> myscalar(lm.size());
+      std::vector<double> myscalar(lm.size());
       DRT::UTILS::ExtractMyValues(*scalar,myscalar,lm);
       for (int i=0;i<nen_;++i)
           ephinp_[0](i,0) = myscalar[i];
@@ -1210,10 +1210,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       double temp_hat = 0.0;
       double dens_temp_hat = 0.0;
       // get pointers for vector quantities
-      RCP<vector<double> > vel_hat = params.get<RCP<vector<double> > >("vel_hat");
-      RCP<vector<double> > densvel_hat = params.get<RCP<vector<double> > >("densvel_hat");
-      RCP<vector<double> > densveltemp_hat = params.get<RCP<vector<double> > >("densveltemp_hat");
-      RCP<vector<double> > densstraintemp_hat = params.get<RCP<vector<double> > >("densstraintemp_hat");
+      RCP<std::vector<double> > vel_hat = params.get<RCP<std::vector<double> > >("vel_hat");
+      RCP<std::vector<double> > densvel_hat = params.get<RCP<std::vector<double> > >("densvel_hat");
+      RCP<std::vector<double> > densveltemp_hat = params.get<RCP<std::vector<double> > >("densveltemp_hat");
+      RCP<std::vector<double> > densstraintemp_hat = params.get<RCP<std::vector<double> > >("densstraintemp_hat");
 
       // integrate the convolution with the box filter function for this element
       // the results are assembled onto the *_hat arrays
@@ -1341,7 +1341,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null)
       dserror("Cannot get state vector 'phinp'");
-    vector<double> myphinp(lm.size());
+    std::vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
     // fill all element arrays
     for (int i=0;i<nen_;++i)
@@ -1364,7 +1364,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       dserror("Multifractal_Subgrid_Scales expected");
 
     // get parameters for multifractal subgrid-scales
-    ParameterList& mfslist = params.sublist("MULTIFRACTAL SUBGRID SCALES");
+    Teuchos::ParameterList& mfslist = params.sublist("MULTIFRACTAL SUBGRID SCALES");
     // get near-wall limit
     bool nwl = DRT::INPUT::IntegralValue<int>(mfslist,"NEAR_WALL_LIMIT");
     // get evaluation of B
@@ -1388,7 +1388,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     else dserror("Unknown length!");
 
     // set parameters for stabilization (required for evaluation of material)
-    ParameterList& stablist = params.sublist("STABILIZATION");
+    Teuchos::ParameterList& stablist = params.sublist("STABILIZATION");
     // set flags for potential evaluation of tau and material law at int. point
     const INPAR::SCATRA::EvalTau tauloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalTau>(stablist,"EVALUATION_TAU");
     tau_gp_ = (tauloc == INPAR::SCATRA::evaltau_integration_point); // set true/false
@@ -1954,7 +1954,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         if (dirichcond0.size() > 0)
         {
           //cout<<"Ele Id = "<<ele->Id()<<"  Found one Dirichlet node for vi="<<vi<<endl;
-          const vector<int>*    onoff = dirichcond0[0]->Get<vector<int> >   ("onoff");
+          const std::vector<int>*    onoff = dirichcond0[0]->Get<std::vector<int> >   ("onoff");
           for (int k=0; k<numscal_; ++k)
           {
             if ((*onoff)[k])
@@ -2019,7 +2019,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForce(
   if (myneumcond.size()==1)
   {
     // check for potential time curve
-    const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
+    const std::vector<int>* curve  = myneumcond[0]->Get<std::vector<int> >("curve");
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];
 
@@ -2037,8 +2037,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForce(
     else curvefac = 1.0;
 
     // get values and switches from the condition
-    const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
-    const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+    const std::vector<int>*    onoff = myneumcond[0]->Get<std::vector<int> >   ("onoff");
+    const std::vector<double>* val   = myneumcond[0]->Get<std::vector<double> >("val"  );
 
     // set this condition to the bodyforce array
     for(int idof=0;idof<numdofpernode_;idof++)
@@ -2328,7 +2328,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
         or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
     {
       //access fluid discretization
-      RCP<DRT::Discretization> fluiddis = null;
+      RCP<DRT::Discretization> fluiddis = Teuchos::null;
       fluiddis = DRT::Problem::Instance()->GetDis("fluid");
       //get corresponding fluid element (it has the same global ID as the scatra element)
       DRT::Element* fluidele = fluiddis->gElement(ele->Id());
@@ -3616,9 +3616,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
   Epetra_SerialDenseMatrix&             emat,
   Epetra_SerialDenseVector&             erhs,
   const enum INPAR::SCATRA::ScaTraType  scatratype,
-  ParameterList&                        params,
+  Teuchos::ParameterList&               params,
   DRT::Discretization&                  discretization,
-  vector<int>&                          lm
+  std::vector<int>&                     lm
   )
   {
   // access flag
@@ -3879,7 +3879,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   const DRT::Element*                   ele,
   const enum INPAR::SCATRA::ScaTraType  scatratype,
-  ParameterList&                        params,
+  Teuchos::ParameterList&               params,
   Epetra_SerialDenseVector&             errors
   )
 {
@@ -4203,7 +4203,7 @@ return;
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateScalars(
 const DRT::Element*             ele,
-const vector<double>&           ephinp,
+const std::vector<double>&       ephinp,
 Epetra_SerialDenseVector&       scalars,
 const bool                      inverting
 )
@@ -4925,7 +4925,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
-    vector<double> v(1,migepe2);
+    std::vector<double> v(1,migepe2);
     std::ostringstream temp;
     temp << k;
     string name = "Pe_mig_"+temp.str();
@@ -4963,7 +4963,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     // visualize resultant Pe number
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
-    vector<double> v(1,epe);
+    std::vector<double> v(1,epe);
     std::ostringstream temp;
     temp << k;
     string name = "Pe_"+temp.str();
@@ -4997,7 +4997,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
 
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
-    vector<double> v(1,migepe2);
+    std::vector<double> v(1,migepe2);
     std::ostringstream temp;
     temp << k;
     string name = "Pe_mig_"+temp.str();
@@ -5031,7 +5031,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     // visualize resultant Pe number
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
-    vector<double> v(1,epe);
+    std::vector<double> v(1,epe);
     std::ostringstream temp;
     temp << k;
     string name = "Pe_"+temp.str();
@@ -5360,7 +5360,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
     const string* condtype = myfluidneumcond[0]->Get<string>("type");
 
     // find out whether we will use a time curve
-    const vector<int>* curve  = myfluidneumcond[0]->Get<vector<int> >("curve");
+    const std::vector<int>* curve  = myfluidneumcond[0]->Get<std::vector<int> >("curve");
     int curvenum = -1;
 
     if (curve) curvenum = (*curve)[0];
@@ -5381,8 +5381,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
       curvefac = 1.0;
 
     // get values and switches from the condition
-    const vector<int>*    onoff = myfluidneumcond[0]->Get<vector<int> >   ("onoff");
-    const vector<double>* val   = myfluidneumcond[0]->Get<vector<double> >("val"  );
+    const std::vector<int>*    onoff = myfluidneumcond[0]->Get<std::vector<int> >   ("onoff");
+    const std::vector<double>* val   = myfluidneumcond[0]->Get<std::vector<double> >("val"  );
 
     // set this condition to the body force array
     for(int isd=0;isd<nsd_;isd++)
@@ -6409,7 +6409,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PoroScatraMod(
   )
 {
   //access structure discretization
-  RCP<DRT::Discretization> structdis = null;
+  RCP<DRT::Discretization> structdis = Teuchos::null;
   structdis = DRT::Problem::Instance()->GetDis("structure");
   //get corresponding structure element (it has the same global ID as the scatra element)
   DRT::Element* structele = structdis->gElement(eleid);

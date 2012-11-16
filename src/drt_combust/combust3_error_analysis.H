@@ -1196,7 +1196,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           int NUMDOF,
           class M1, class V1, class V2>
 void Nitsche_BuildDomainIntegratedErrors(
-    ParameterList&                         eleparams,        ///< list of parameters with actions to be calculated
+    Teuchos::ParameterList&                         eleparams,        ///< list of parameters with actions to be calculated
     const INPAR::COMBUST::NitscheError&    NitscheErrorType, ///< which solution is the reference
     const DRT::ELEMENTS::Combust3*         ele,              ///< element whose matrix is calculated
     const COMBUST::InterfaceHandleCombust* ih,               ///< information about the interface
@@ -2206,7 +2206,7 @@ template <DRT::Element::DiscretizationType DISTYPE,
           int NUMDOF,
           class M1, class M2, class V1, class V2>
 void Nitsche_BuildBoundaryIntegratedErrors(
-    ParameterList&                         eleparams,         ///< list of parameters with actions to be calculated
+    Teuchos::ParameterList&                eleparams,         ///< list of parameters with actions to be calculated
     const INPAR::COMBUST::NitscheError&    NitscheErrorType,  ///< which solution is the reference
     const DRT::ELEMENTS::Combust3*         ele,               ///< element whose matrix is calculated
     const COMBUST::InterfaceHandleCombust* ih,                ///< information about the interface

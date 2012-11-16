@@ -807,8 +807,8 @@ void CONTACT::Beam3cmanager::GetMaxEleLength(double& maxelelength)
     DRT::Node* node1 = ContactDiscret().gNode(node1_gid);
     
     // get coordinates of edge nodes
-    vector<double> x_n0(3);
-    vector<double> x_n1(3);
+    std::vector<double> x_n0(3);
+    std::vector<double> x_n1(3);
     for (int j=0;j<3;++j)
     {
       x_n0[j] = node0->X()[j];
@@ -817,7 +817,7 @@ void CONTACT::Beam3cmanager::GetMaxEleLength(double& maxelelength)
         
     // compute distance vector and length
     // (APPROXIMATION FOR HIGHER-ORDER ELEMENTS !!!)
-    vector<double> dist(3);
+    std::vector<double> dist(3);
     for (int j=0;j<3;++j) dist[j] = x_n0[j] - x_n1[j];
     double elelength = sqrt(dist[0]*dist[0]+dist[1]*dist[1]+dist[2]*dist[2]);
     
@@ -1414,7 +1414,7 @@ void CONTACT::Beam3cmanager::Reactions(const Epetra_Vector& fint,
   // only implemented for one single node
   int i=0;  // CHOOSE YOUR NODE ID HERE!!!
   const DRT::Node* thisnode = ContactDiscret().gNode(i);
-  const vector<int> DofGIDs = ContactDiscret().Dof(thisnode);
+  const std::vector<int> DofGIDs = ContactDiscret().Dof(thisnode);
   CSVcontent << i;
   
   // write reaction forces and moments

@@ -79,7 +79,7 @@ public:
 
   */
   TurbulenceStatisticsSqc(RCP<DRT::Discretization> actdis,
-                          ParameterList&                   params);
+                          Teuchos::ParameterList&                   params);
 
   /*!
   \brief Destructor
@@ -163,7 +163,7 @@ private:
   RCP<DRT::Discretization> discret_;
 
   //! parameter list
-  ParameterList&                   params_;
+  Teuchos::ParameterList&                   params_;
 
    //! pointer to vel/pres^2 field (space allocated in constructor)
   RCP<Epetra_Vector>       squaredvelnp_;
@@ -175,115 +175,115 @@ private:
   RCP<Epetra_Vector>       togglep_;
 
   //! the coordinates of various lines
-  RCP<vector<double> >     x1ccoordinates_;
-  RCP<vector<double> >     x2ccoordinates_;
-  RCP<vector<double> >     x2wcoordinates_;
-  RCP<vector<double> >     clrcoordinates_;
-  RCP<vector<double> >     ctbcoordinates_;
+  RCP<std::vector<double> >     x1ccoordinates_;
+  RCP<std::vector<double> >     x2ccoordinates_;
+  RCP<std::vector<double> >     x2wcoordinates_;
+  RCP<std::vector<double> >     clrcoordinates_;
+  RCP<std::vector<double> >     ctbcoordinates_;
   //! all coordinates in x1- and x2-direction (required for averaging of Smagorinsky constant)
-  RCP<vector<double> >     x1coordinates_;
-  RCP<vector<double> >     x2coordinates_;
+  RCP<std::vector<double> >     x1coordinates_;
+  RCP<std::vector<double> >     x2coordinates_;
 
   //! sum over u
-  RCP<vector<double> >     x1csumu_;
-  RCP<vector<double> >     x2csumu_;
-  RCP<vector<double> >     x2w1sumu_;
-  RCP<vector<double> >     x2w2sumu_;
-  RCP<vector<double> >     cyllsumu_;
-  RCP<vector<double> >     cyltsumu_;
-  RCP<vector<double> >     cylrsumu_;
-  RCP<vector<double> >     cylbsumu_;
+  RCP<std::vector<double> >     x1csumu_;
+  RCP<std::vector<double> >     x2csumu_;
+  RCP<std::vector<double> >     x2w1sumu_;
+  RCP<std::vector<double> >     x2w2sumu_;
+  RCP<std::vector<double> >     cyllsumu_;
+  RCP<std::vector<double> >     cyltsumu_;
+  RCP<std::vector<double> >     cylrsumu_;
+  RCP<std::vector<double> >     cylbsumu_;
   //! sum over v
-  RCP<vector<double> >     x1csumv_;
-  RCP<vector<double> >     x2csumv_;
-  RCP<vector<double> >     x2w1sumv_;
-  RCP<vector<double> >     x2w2sumv_;
-  RCP<vector<double> >     cyllsumv_;
-  RCP<vector<double> >     cyltsumv_;
-  RCP<vector<double> >     cylrsumv_;
-  RCP<vector<double> >     cylbsumv_;
+  RCP<std::vector<double> >     x1csumv_;
+  RCP<std::vector<double> >     x2csumv_;
+  RCP<std::vector<double> >     x2w1sumv_;
+  RCP<std::vector<double> >     x2w2sumv_;
+  RCP<std::vector<double> >     cyllsumv_;
+  RCP<std::vector<double> >     cyltsumv_;
+  RCP<std::vector<double> >     cylrsumv_;
+  RCP<std::vector<double> >     cylbsumv_;
   //! sum over w
-  RCP<vector<double> >     x1csumw_;
-  RCP<vector<double> >     x2csumw_;
-  RCP<vector<double> >     x2w1sumw_;
-  RCP<vector<double> >     x2w2sumw_;
-  RCP<vector<double> >     cyllsumw_;
-  RCP<vector<double> >     cyltsumw_;
-  RCP<vector<double> >     cylrsumw_;
-  RCP<vector<double> >     cylbsumw_;
+  RCP<std::vector<double> >     x1csumw_;
+  RCP<std::vector<double> >     x2csumw_;
+  RCP<std::vector<double> >     x2w1sumw_;
+  RCP<std::vector<double> >     x2w2sumw_;
+  RCP<std::vector<double> >     cyllsumw_;
+  RCP<std::vector<double> >     cyltsumw_;
+  RCP<std::vector<double> >     cylrsumw_;
+  RCP<std::vector<double> >     cylbsumw_;
   //! sum over p
-  RCP<vector<double> >     x1csump_;
-  RCP<vector<double> >     x2csump_;
-  RCP<vector<double> >     x2w1sump_;
-  RCP<vector<double> >     x2w2sump_;
-  RCP<vector<double> >     cyllsump_;
-  RCP<vector<double> >     cyltsump_;
-  RCP<vector<double> >     cylrsump_;
-  RCP<vector<double> >     cylbsump_;
+  RCP<std::vector<double> >     x1csump_;
+  RCP<std::vector<double> >     x2csump_;
+  RCP<std::vector<double> >     x2w1sump_;
+  RCP<std::vector<double> >     x2w2sump_;
+  RCP<std::vector<double> >     cyllsump_;
+  RCP<std::vector<double> >     cyltsump_;
+  RCP<std::vector<double> >     cylrsump_;
+  RCP<std::vector<double> >     cylbsump_;
 
   //! sum over u^2
-  RCP<vector<double> >     x1csumsqu_;
-  RCP<vector<double> >     x2csumsqu_;
-  RCP<vector<double> >     x2w1sumsqu_;
-  RCP<vector<double> >     x2w2sumsqu_;
-  RCP<vector<double> >     cyllsumsqu_;
-  RCP<vector<double> >     cyltsumsqu_;
-  RCP<vector<double> >     cylrsumsqu_;
-  RCP<vector<double> >     cylbsumsqu_;
+  RCP<std::vector<double> >     x1csumsqu_;
+  RCP<std::vector<double> >     x2csumsqu_;
+  RCP<std::vector<double> >     x2w1sumsqu_;
+  RCP<std::vector<double> >     x2w2sumsqu_;
+  RCP<std::vector<double> >     cyllsumsqu_;
+  RCP<std::vector<double> >     cyltsumsqu_;
+  RCP<std::vector<double> >     cylrsumsqu_;
+  RCP<std::vector<double> >     cylbsumsqu_;
   //! sum over v^2
-  RCP<vector<double> >     x1csumsqv_;
-  RCP<vector<double> >     x2csumsqv_;
-  RCP<vector<double> >     x2w1sumsqv_;
-  RCP<vector<double> >     x2w2sumsqv_;
-  RCP<vector<double> >     cyllsumsqv_;
-  RCP<vector<double> >     cyltsumsqv_;
-  RCP<vector<double> >     cylrsumsqv_;
-  RCP<vector<double> >     cylbsumsqv_;
+  RCP<std::vector<double> >     x1csumsqv_;
+  RCP<std::vector<double> >     x2csumsqv_;
+  RCP<std::vector<double> >     x2w1sumsqv_;
+  RCP<std::vector<double> >     x2w2sumsqv_;
+  RCP<std::vector<double> >     cyllsumsqv_;
+  RCP<std::vector<double> >     cyltsumsqv_;
+  RCP<std::vector<double> >     cylrsumsqv_;
+  RCP<std::vector<double> >     cylbsumsqv_;
   //! sum over w^2
-  RCP<vector<double> >     x1csumsqw_;
-  RCP<vector<double> >     x2csumsqw_;
-  RCP<vector<double> >     x2w1sumsqw_;
-  RCP<vector<double> >     x2w2sumsqw_;
-  RCP<vector<double> >     cyllsumsqw_;
-  RCP<vector<double> >     cyltsumsqw_;
-  RCP<vector<double> >     cylrsumsqw_;
-  RCP<vector<double> >     cylbsumsqw_;
+  RCP<std::vector<double> >     x1csumsqw_;
+  RCP<std::vector<double> >     x2csumsqw_;
+  RCP<std::vector<double> >     x2w1sumsqw_;
+  RCP<std::vector<double> >     x2w2sumsqw_;
+  RCP<std::vector<double> >     cyllsumsqw_;
+  RCP<std::vector<double> >     cyltsumsqw_;
+  RCP<std::vector<double> >     cylrsumsqw_;
+  RCP<std::vector<double> >     cylbsumsqw_;
   //! sum over uv
-  RCP<vector<double> >     x1csumuv_;
-  RCP<vector<double> >     x2csumuv_;
-  RCP<vector<double> >     x2w1sumuv_;
-  RCP<vector<double> >     x2w2sumuv_;
-  RCP<vector<double> >     cyllsumuv_;
-  RCP<vector<double> >     cyltsumuv_;
-  RCP<vector<double> >     cylrsumuv_;
-  RCP<vector<double> >     cylbsumuv_;
+  RCP<std::vector<double> >     x1csumuv_;
+  RCP<std::vector<double> >     x2csumuv_;
+  RCP<std::vector<double> >     x2w1sumuv_;
+  RCP<std::vector<double> >     x2w2sumuv_;
+  RCP<std::vector<double> >     cyllsumuv_;
+  RCP<std::vector<double> >     cyltsumuv_;
+  RCP<std::vector<double> >     cylrsumuv_;
+  RCP<std::vector<double> >     cylbsumuv_;
   //! sum over uw
-  RCP<vector<double> >     x1csumuw_;
-  RCP<vector<double> >     x2csumuw_;
-  RCP<vector<double> >     x2w1sumuw_;
-  RCP<vector<double> >     x2w2sumuw_;
-  RCP<vector<double> >     cyllsumuw_;
-  RCP<vector<double> >     cyltsumuw_;
-  RCP<vector<double> >     cylrsumuw_;
-  RCP<vector<double> >     cylbsumuw_;
+  RCP<std::vector<double> >     x1csumuw_;
+  RCP<std::vector<double> >     x2csumuw_;
+  RCP<std::vector<double> >     x2w1sumuw_;
+  RCP<std::vector<double> >     x2w2sumuw_;
+  RCP<std::vector<double> >     cyllsumuw_;
+  RCP<std::vector<double> >     cyltsumuw_;
+  RCP<std::vector<double> >     cylrsumuw_;
+  RCP<std::vector<double> >     cylbsumuw_;
   //! sum over vw
-  RCP<vector<double> >     x1csumvw_;
-  RCP<vector<double> >     x2csumvw_;
-  RCP<vector<double> >     x2w1sumvw_;
-  RCP<vector<double> >     x2w2sumvw_;
-  RCP<vector<double> >     cyllsumvw_;
-  RCP<vector<double> >     cyltsumvw_;
-  RCP<vector<double> >     cylrsumvw_;
-  RCP<vector<double> >     cylbsumvw_;
+  RCP<std::vector<double> >     x1csumvw_;
+  RCP<std::vector<double> >     x2csumvw_;
+  RCP<std::vector<double> >     x2w1sumvw_;
+  RCP<std::vector<double> >     x2w2sumvw_;
+  RCP<std::vector<double> >     cyllsumvw_;
+  RCP<std::vector<double> >     cyltsumvw_;
+  RCP<std::vector<double> >     cylrsumvw_;
+  RCP<std::vector<double> >     cylbsumvw_;
   //! sum over p^2
-  RCP<vector<double> >     x1csumsqp_;
-  RCP<vector<double> >     x2csumsqp_;
-  RCP<vector<double> >     x2w1sumsqp_;
-  RCP<vector<double> >     x2w2sumsqp_;
-  RCP<vector<double> >     cyllsumsqp_;
-  RCP<vector<double> >     cyltsumsqp_;
-  RCP<vector<double> >     cylrsumsqp_;
-  RCP<vector<double> >     cylbsumsqp_;
+  RCP<std::vector<double> >     x1csumsqp_;
+  RCP<std::vector<double> >     x2csumsqp_;
+  RCP<std::vector<double> >     x2w1sumsqp_;
+  RCP<std::vector<double> >     x2w2sumsqp_;
+  RCP<std::vector<double> >     cyllsumsqp_;
+  RCP<std::vector<double> >     cyltsumsqp_;
+  RCP<std::vector<double> >     cylrsumsqp_;
+  RCP<std::vector<double> >     cylbsumsqp_;
 
 };
 

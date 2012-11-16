@@ -24,7 +24,7 @@
 
 #include "smoother.H"
 
-LINALG::AMGPreconditioner::AMGPreconditioner(RCP<Epetra_Operator> A, const ParameterList& params, FILE* outfile)
+LINALG::AMGPreconditioner::AMGPreconditioner(RCP<Epetra_Operator> A, const Teuchos::ParameterList& params, FILE* outfile)
 :
   Epetra_Operator(),
   label_("LINALG::AMGPreconditioner"),
@@ -59,7 +59,7 @@ void LINALG::AMGPreconditioner::Setup()
   // prepare null space approximation
   const int length = Ainput_->RowMap().NumMyElements();
   const int nlnnode = length/nsdim;
-  RCP<vector<double> > ns = Teuchos::rcp(new vector<double>(nsdim*length,0.0));
+  RCP<std::vector<double> > ns = Teuchos::rcp(new std::vector<double>(nsdim*length,0.0));
   for (int i=0; i<nlnnode; ++i)
   {
     (*ns)[i*nsdim] = 1.0;
@@ -76,7 +76,7 @@ void LINALG::AMGPreconditioner::Setup()
 
 
 
-  RCP<Epetra_MultiVector> nextNS = null;
+  RCP<Epetra_MultiVector> nextNS = Teuchos::null;
 
   A_.resize(nmaxlevels_+1);    // transfer operators
   T_.resize(nmaxlevels_);    // transfer operators
@@ -101,7 +101,7 @@ void LINALG::AMGPreconditioner::Setup()
   {
     /////////////////////////////////////////////////////////
     /////////////////////// AGGREGATION PROCESS
-    RCP<Epetra_IntVector> aggs = null;
+    RCP<Epetra_IntVector> aggs = Teuchos::null;
 
     ////////////// determine aggregates using the velocity block matrix A11_[curlevel]
     // set parameters for aggregation process

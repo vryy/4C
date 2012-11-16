@@ -307,7 +307,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
   this->CenterOfMassCalculation(cmass,normal,ds_condname);
 
   // get the normal
-  normal_ =  Teuchos::rcp(new vector<double>(*normal));
+  normal_ =  Teuchos::rcp(new std::vector<double>(*normal));
   string normal_info = *(conditions[surf_numcond])->Get<string>("NORMAL");
   if(normal_info == "self_evaluate_normal")
   {
@@ -315,7 +315,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
     {
       cout<<"Normal is automatically evaluated"<<endl;
     }
-    vnormal_ =  Teuchos::rcp(new vector<double>(*normal));
+    vnormal_ =  Teuchos::rcp(new std::vector<double>(*normal));
   }
   else if (normal_info ==  "use_prescribed_normal")
   {
@@ -323,7 +323,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
     {
       cout<<"Normal is manually setup"<<endl;
     }
-    vnormal_ =  Teuchos::rcp(new vector<double>);
+    vnormal_ =  Teuchos::rcp(new std::vector<double>);
     (*vnormal_)[0] = (conditions[surf_numcond])->GetDouble("n1");
     (*vnormal_)[1] = (conditions[surf_numcond])->GetDouble("n2");
     (*vnormal_)[2] = (conditions[surf_numcond])->GetDouble("n3");
@@ -342,7 +342,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
     {
       cout<<"Center of mass is automatically evaluated"<<endl;
     }
-    cmass_ =  Teuchos::rcp(new vector<double>(*cmass));
+    cmass_ =  Teuchos::rcp(new std::vector<double>(*cmass));
   }
   else if (c_mass_info ==  "use_prescribed_center_of_mass")
   {
@@ -350,7 +350,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
     {
       cout<<"Center of mass is manually setup"<<endl;
     }
-    normal_ =  Teuchos::rcp(new vector<double>);
+    normal_ =  Teuchos::rcp(new std::vector<double>);
     (*cmass_)[0] = (conditions[surf_numcond])->GetDouble("c1");
     (*cmass_)[1] = (conditions[surf_numcond])->GetDouble("c2");
     (*cmass_)[2] = (conditions[surf_numcond])->GetDouble("c3");
@@ -387,7 +387,7 @@ FLD::UTILS::FluidVolumetricSurfaceFlowBc::FluidVolumetricSurfaceFlowBc(RCP<DRT::
   // -------------------------------------------------------------------
   int num_steps = int(period_/dta) + 1;
 
-  flowrates_ = Teuchos::rcp(new vector<double>(num_steps,0.0));
+  flowrates_ = Teuchos::rcp(new std::vector<double>(num_steps,0.0));
 
   if (prebiasing_flag_=="PREBIASED"||prebiasing_flag_=="FORCED")
   {
@@ -549,15 +549,15 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
   //--------------------------------------------------------------------
   // get the nodes of the condition
   //--------------------------------------------------------------------
-  const vector<int>* border_nodes = cond->Nodes();
+  const std::vector<int>* border_nodes = cond->Nodes();
 
   //--------------------------------------------------------------------
   // Create a map of the border nodes
   //--------------------------------------------------------------------
-  map <int, vector<double> > border_nodes_coords;
+  map <int, std::vector<double> > border_nodes_coords;
   for (unsigned int i =0 ; i<border_nodes->size();i++)
   {
-    vector<double> coords(3,0.0);
+    std::vector<double> coords(3,0.0);
     int node_num = (*border_nodes)[i];
 
     bool inserted = border_nodes_coords.insert( make_pair( node_num, coords ) ).second;
@@ -571,10 +571,10 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
   //--------------------------------------------------------------------
   // find the coordinates of each border node and get it parallel
   //--------------------------------------------------------------------
-  for (std::map<int, vector<double> >::iterator it = border_nodes_coords.begin(); it!=border_nodes_coords.end(); it++)
+  for (std::map<int, std::vector<double> >::iterator it = border_nodes_coords.begin(); it!=border_nodes_coords.end(); it++)
   {
     // define the coordinate of a border node
-    vector<double>  xyze(3,0.0);
+    std::vector<double>  xyze(3,0.0);
 
 
 
@@ -671,7 +671,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvalLocalNormalizedRadii(
         double diff_error_r = 2.0;
 
         bool isBorderNode = false;
-        for (std::map<int, vector<double> >::iterator it = border_nodes_coords.begin(); it!=border_nodes_coords.end(); it++)
+        for (std::map<int, std::vector<double> >::iterator it = border_nodes_coords.begin(); it!=border_nodes_coords.end(); it++)
         {
           isBorderNode = false;
 
@@ -820,7 +820,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionNodeRowMap(
   //--------------------------------------------------------------------
   // get the nodes of the condition
   //--------------------------------------------------------------------
-  const vector<int>* nodes = cond->Nodes();
+  const std::vector<int>* nodes = cond->Nodes();
   vector<int>  nodeids;
 
   //--------------------------------------------------------------------
@@ -879,7 +879,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::BuildConditionDofRowMap(
   //--------------------------------------------------------------------
   // get the nodes of the condition
   //--------------------------------------------------------------------
-  const vector<int>* nodes = cond->Nodes();
+  const std::vector<int>* nodes = cond->Nodes();
   vector<int>  dofids;
 
   //--------------------------------------------------------------------
@@ -1022,7 +1022,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::ReadRestart(
 
     // evaluate the new flowrates vector
     int nq_pos = 0;
-    RCP<std::vector<double> > nq = Teuchos::rcp(new vector<double>(nQSize,0.0));
+    RCP<std::vector<double> > nq = Teuchos::rcp(new std::vector<double>(nQSize,0.0));
     this->Interpolate(flowrates_,nq,flowratespos_,nq_pos,period_);
 
     // store new values in class
@@ -1087,7 +1087,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
   }
 #endif
 
-  RCP<ParameterList>  params = Teuchos::rcp(new ParameterList);
+  RCP<Teuchos::ParameterList>  params = Teuchos::rcp(new ParameterList);
 
   params->set<int>("Number of Harmonics",n_harmonics_);
   // condition id
@@ -1197,9 +1197,9 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateFlowrate (
   DRT::Condition* condition = conditions[condnum_s_];
 
   // get curve and curve_factor
-  const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
+  const  vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
   double curvefac = 1.0;
-  const  vector<double>* vals   = condition->Get<vector<double> >("val");
+  const  vector<double>* vals   = condition->Get<std::vector<double> >("val");
 
   // evaluate the current flowrate value
   double flowrate = 0.0;
@@ -1228,7 +1228,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
   RCP<Epetra_Vector>        local_radii,
   RCP<Epetra_Vector>        border_radii,
   RCP<std::vector<double> > normal,
-  RCP<ParameterList>        params)
+  RCP<Teuchos::ParameterList>        params)
 
 
 {
@@ -1250,7 +1250,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::Velocities(
   // history of avarage velocities at the outlet
   RCP<std::vector<double> > flowrates;
   flowrates            = params->get<RCP<std::vector<double> > >("Flowrates");
-  RCP<std::vector<double> > velocities = Teuchos::rcp(new vector<double>(*flowrates));
+  RCP<std::vector<double> > velocities = Teuchos::rcp(new std::vector<double>(*flowrates));
 
   // the velocity position
   int velocityposition = params->get<int>("Velocity Position");
@@ -1477,13 +1477,13 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
   // loop over all of the nodes
   RCP<Epetra_Vector> correction_velnp = LINALG::CreateVector(*cond_dofrowmap_,true);
 
-  RCP<ParameterList>  params = Teuchos::rcp(new ParameterList);
+  RCP<Teuchos::ParameterList>  params = Teuchos::rcp(new ParameterList);
 
   params->set<int>("Number of Harmonics",0);
   // condition id
   params->set<int>("Condition ID", condid_);
   // history of avarage velocities at the outlet
-  RCP<std::vector<double> > flowrates = Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > flowrates = Teuchos::rcp(new std::vector<double> );
   flowrates->push_back(1.0*area_);
   params->set<RCP<std::vector<double> > >("Flowrates", flowrates);
   // the velocity position
@@ -1867,7 +1867,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::Area(
   // find the lowest proc number that knows the material data
   int numproc = discret_->Comm().NumProc();
   int theproc = -1;   // the lowest proc that has the desired information
-  vector<double> alldens(numproc);
+  std::vector<double> alldens(numproc);
 
   discret_->Comm().GatherAll( &density,&(alldens[0]),1 );
   for(int i=0; i<numproc; i++)

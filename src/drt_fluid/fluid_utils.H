@@ -420,8 +420,8 @@ Maintainer: Peter Gamnitzer
 void LiftDrag(
   const DRT::Discretization      & dis         , //! fluid discretization (node distribution, conditions)
   const Epetra_Vector            & force       , //! vector of nodalforces
-  const ParameterList            & params      , //! parameterlist including the lifdrag flag
-  RCP<map<int,vector<double> > > & liftdragvals  //! the computed values for lift and drag in an array
+  const Teuchos::ParameterList   & params      , //! parameterlist including the lifdrag flag
+  Teuchos::RCP<std::map<int,std::vector<double> > > & liftdragvals  //! the computed values for lift and drag in an array
   );
 
 /*!
@@ -433,7 +433,7 @@ void LiftDrag(
 void WriteLiftDragToFile(
   const double                     time,         ///< current real time
   const int                        step,         ///< time step
-  const map<int,vector<double> >&  liftdragvals  ///< the computed values for lift and drag in an array
+  const std::map<int,std::vector<double> >&  liftdragvals  ///< the computed values for lift and drag in an array
   );
 
 /*!

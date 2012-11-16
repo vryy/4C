@@ -44,12 +44,12 @@ template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationT
 void SideImpl<distype, side_distype, numdof>::addeidisp(
     const DRT::Discretization &  cutdis,       ///< cut discretization
     const std::string            state,        ///< state
-    const vector<int>&           lm            ///< local map
+    const std::vector<int>&      lm            ///< local map
     )
 {
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = cutdis.GetState(state);
-  if(matrix_state == null)
+  if(matrix_state == Teuchos::null)
     dserror("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vector
@@ -83,12 +83,12 @@ template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationT
 void SideImpl<distype, side_distype, numdof>::eivel(
     const DRT::Discretization &  cutdis,  ///< cut discretization
     const std::string            state,   ///< state
-    const vector<int>&           lm       ///< local map
+    const std::vector<int>&      lm       ///< local map
     )
 {
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = cutdis.GetState(state);
-  if(matrix_state == null)
+  if(matrix_state == Teuchos::null)
     dserror("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors
@@ -2598,12 +2598,12 @@ template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationT
 void EmbImpl<distype, emb_distype>::addembdisp(
     const DRT::Discretization &  embdis,       ///< cut discretization
     const std::string            state,        ///< state
-    const vector<int>&           lm            ///< local map
+    const std::vector<int>&      lm            ///< local map
     )
 {
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = embdis.GetState(state);
-  if(matrix_state == null)
+  if(matrix_state == Teuchos::null)
     dserror("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors
@@ -2665,13 +2665,13 @@ template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationT
 void EmbImpl<distype, emb_distype>::emb_vel(
     const DRT::Discretization &  embdis,       ///< embedded discretization
     const std::string            state,        ///< state
-    const vector<int>&           lm            ///< local map
+    const std::vector<int>&      lm            ///< local map
     )
 {
 
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = embdis.GetState(state);
-  if(matrix_state == null)
+  if(matrix_state == Teuchos::null)
     dserror("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors

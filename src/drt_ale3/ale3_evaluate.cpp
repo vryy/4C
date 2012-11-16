@@ -110,9 +110,9 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::Done()
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
                                   DRT::Discretization&      discretization,
-                                  vector<int>&              lm,
+                                  std::vector<int>&         lm,
                                   Epetra_SerialDenseMatrix& elemat1,
                                   Epetra_SerialDenseMatrix& elemat2,
                                   Epetra_SerialDenseVector& elevec1,
@@ -193,7 +193,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
   case calc_ale_spring:
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-    vector<double> my_dispnp(lm.size());
+    std::vector<double> my_dispnp(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
     Ale3_Impl_Interface::Impl(this)->static_ke_spring(this,elemat1,my_dispnp);
@@ -203,7 +203,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
 
   case calc_ale_spring_fixed_ref:
   {
-    vector<double> my_dispnp(lm.size(),0.0);
+    std::vector<double> my_dispnp(lm.size(),0.0);
     Ale3_Impl_Interface::Impl(this)->static_ke_spring(this,elemat1,my_dispnp);
 
     break;
@@ -212,7 +212,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
   case calc_ale_node_normal:
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-    vector<double> my_dispnp(lm.size());
+    std::vector<double> my_dispnp(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
     Ale3_Impl_Interface::Impl(this)->ElementNodeNormal(this,elevec1,my_dispnp);
@@ -235,10 +235,10 @@ int DRT::ELEMENTS::Ale3::Evaluate(ParameterList& params,
  |  integration of the volume neumann loads takes place in the element. |
  |  We need it there for the stabilisation terms!                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Ale3::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Ale3::EvaluateNeumann(Teuchos::ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
-                                           vector<int>&              lm,
+                                           std::vector<int>&         lm,
                                            Epetra_SerialDenseVector& elevec1,
                                            Epetra_SerialDenseMatrix* elemat1)
 {
@@ -920,7 +920,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_spring(
   Ale3*                     ele,
   Epetra_SerialDenseMatrix& sys_mat_epetra,
-  const vector<double>&           displacements)
+  const std::vector<double>&       displacements)
 {
   LINALG::Matrix<3*iel,3*iel> sys_mat(sys_mat_epetra.A(),true);
   int node_i, node_j;                                     // end nodes of spring
@@ -1334,7 +1334,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
   Ale3*                      ele,
   DRT::Discretization&       dis,
-  vector<int>&               lm,
+  std::vector<int>&          lm,
   Epetra_SerialDenseMatrix&  sys_mat_epetra,
   Epetra_SerialDenseVector&  /*residual*/,
   bool                       incremental,

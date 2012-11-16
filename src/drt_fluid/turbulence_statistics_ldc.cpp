@@ -37,7 +37,7 @@ Maintainer: Volker Gravemeier
 /*----------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   RCP<DRT::Discretization> actdis,
-  ParameterList&                   params)
+  Teuchos::ParameterList&                   params)
   :
   discret_(actdis),
   params_ (params)
@@ -72,9 +72,9 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   //----------------------------------------------------------------------
   // create sets of coordinates for centerlines in x1-, x2- and x3-direction
   //----------------------------------------------------------------------
-  x1coordinates_ = Teuchos::rcp(new vector<double> );
-  x2coordinates_ = Teuchos::rcp(new vector<double> );
-  x3coordinates_ = Teuchos::rcp(new vector<double> );
+  x1coordinates_ = Teuchos::rcp(new std::vector<double> );
+  x2coordinates_ = Teuchos::rcp(new std::vector<double> );
+  x3coordinates_ = Teuchos::rcp(new std::vector<double> );
 
   // the criterion allows differences in coordinates by 1e-9
   set<double,LineSortCriterion> x1avcoords;
@@ -220,7 +220,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
       //--------------------------------------------------
       // Unpack received block into set of all planes.
       {
-        vector<double> coordsvec;
+        std::vector<double> coordsvec;
 
         coordsvec.clear();
 
@@ -292,7 +292,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
       //--------------------------------------------------
       // Unpack received block into set of all planes.
       {
-        vector<double> coordsvec;
+        std::vector<double> coordsvec;
 
         coordsvec.clear();
 
@@ -365,7 +365,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
       //--------------------------------------------------
       // Unpack received block into set of all planes.
       {
-        vector<double> coordsvec;
+        std::vector<double> coordsvec;
 
         coordsvec.clear();
 
@@ -384,9 +384,9 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   // push coordinates in x1-, x2- and x3-direction in a vector
   //----------------------------------------------------------------------
   {
-    x1coordinates_ = Teuchos::rcp(new vector<double> );
-    x2coordinates_ = Teuchos::rcp(new vector<double> );
-    x3coordinates_ = Teuchos::rcp(new vector<double> );
+    x1coordinates_ = Teuchos::rcp(new std::vector<double> );
+    x2coordinates_ = Teuchos::rcp(new std::vector<double> );
+    x3coordinates_ = Teuchos::rcp(new std::vector<double> );
 
     for(std::set<double,LineSortCriterion>::iterator coord1=x1avcoords.begin();
         coord1!=x1avcoords.end();
@@ -418,134 +418,134 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   int size3 = x3coordinates_->size();
 
   // first-order moments
-  x1sumu_ =  Teuchos::rcp(new vector<double> );
+  x1sumu_ =  Teuchos::rcp(new std::vector<double> );
   x1sumu_->resize(size1,0.0);
-  x2sumu_ =  Teuchos::rcp(new vector<double> );
+  x2sumu_ =  Teuchos::rcp(new std::vector<double> );
   x2sumu_->resize(size2,0.0);
-  x3sumu_ =  Teuchos::rcp(new vector<double> );
+  x3sumu_ =  Teuchos::rcp(new std::vector<double> );
   x3sumu_->resize(size3,0.0);
 
-  x1sumv_ =  Teuchos::rcp(new vector<double> );
+  x1sumv_ =  Teuchos::rcp(new std::vector<double> );
   x1sumv_->resize(size1,0.0);
-  x2sumv_ =  Teuchos::rcp(new vector<double> );
+  x2sumv_ =  Teuchos::rcp(new std::vector<double> );
   x2sumv_->resize(size2,0.0);
-  x3sumv_ =  Teuchos::rcp(new vector<double> );
+  x3sumv_ =  Teuchos::rcp(new std::vector<double> );
   x3sumv_->resize(size3,0.0);
 
-  x1sumw_ =  Teuchos::rcp(new vector<double> );
+  x1sumw_ =  Teuchos::rcp(new std::vector<double> );
   x1sumw_->resize(size1,0.0);
-  x2sumw_ =  Teuchos::rcp(new vector<double> );
+  x2sumw_ =  Teuchos::rcp(new std::vector<double> );
   x2sumw_->resize(size2,0.0);
-  x3sumw_ =  Teuchos::rcp(new vector<double> );
+  x3sumw_ =  Teuchos::rcp(new std::vector<double> );
   x3sumw_->resize(size3,0.0);
 
-  x1sump_ =  Teuchos::rcp(new vector<double> );
+  x1sump_ =  Teuchos::rcp(new std::vector<double> );
   x1sump_->resize(size1,0.0);
-  x2sump_ =  Teuchos::rcp(new vector<double> );
+  x2sump_ =  Teuchos::rcp(new std::vector<double> );
   x2sump_->resize(size2,0.0);
-  x3sump_ =  Teuchos::rcp(new vector<double> );
+  x3sump_ =  Teuchos::rcp(new std::vector<double> );
   x3sump_->resize(size3,0.0);
 
   // second-order moments
-  x1sumsqu_ =  Teuchos::rcp(new vector<double> );
+  x1sumsqu_ =  Teuchos::rcp(new std::vector<double> );
   x1sumsqu_->resize(size1,0.0);
-  x2sumsqu_ =  Teuchos::rcp(new vector<double> );
+  x2sumsqu_ =  Teuchos::rcp(new std::vector<double> );
   x2sumsqu_->resize(size2,0.0);
-  x3sumsqu_ =  Teuchos::rcp(new vector<double> );
+  x3sumsqu_ =  Teuchos::rcp(new std::vector<double> );
   x3sumsqu_->resize(size3,0.0);
 
-  x1sumsqv_ =  Teuchos::rcp(new vector<double> );
+  x1sumsqv_ =  Teuchos::rcp(new std::vector<double> );
   x1sumsqv_->resize(size1,0.0);
-  x2sumsqv_ =  Teuchos::rcp(new vector<double> );
+  x2sumsqv_ =  Teuchos::rcp(new std::vector<double> );
   x2sumsqv_->resize(size2,0.0);
-  x3sumsqv_ =  Teuchos::rcp(new vector<double> );
+  x3sumsqv_ =  Teuchos::rcp(new std::vector<double> );
   x3sumsqv_->resize(size3,0.0);
 
-  x1sumsqw_ =  Teuchos::rcp(new vector<double> );
+  x1sumsqw_ =  Teuchos::rcp(new std::vector<double> );
   x1sumsqw_->resize(size1,0.0);
-  x2sumsqw_ =  Teuchos::rcp(new vector<double> );
+  x2sumsqw_ =  Teuchos::rcp(new std::vector<double> );
   x2sumsqw_->resize(size2,0.0);
-  x3sumsqw_ =  Teuchos::rcp(new vector<double> );
+  x3sumsqw_ =  Teuchos::rcp(new std::vector<double> );
   x3sumsqw_->resize(size3,0.0);
 
-  x1sumsqp_ =  Teuchos::rcp(new vector<double> );
+  x1sumsqp_ =  Teuchos::rcp(new std::vector<double> );
   x1sumsqp_->resize(size1,0.0);
-  x2sumsqp_ =  Teuchos::rcp(new vector<double> );
+  x2sumsqp_ =  Teuchos::rcp(new std::vector<double> );
   x2sumsqp_->resize(size2,0.0);
-  x3sumsqp_ =  Teuchos::rcp(new vector<double> );
+  x3sumsqp_ =  Teuchos::rcp(new std::vector<double> );
   x3sumsqp_->resize(size3,0.0);
 
-  x1sumuv_ =  Teuchos::rcp(new vector<double> );
+  x1sumuv_ =  Teuchos::rcp(new std::vector<double> );
   x1sumuv_->resize(size1,0.0);
-  x2sumuv_ =  Teuchos::rcp(new vector<double> );
+  x2sumuv_ =  Teuchos::rcp(new std::vector<double> );
   x2sumuv_->resize(size2,0.0);
-  x3sumuv_ =  Teuchos::rcp(new vector<double> );
+  x3sumuv_ =  Teuchos::rcp(new std::vector<double> );
   x3sumuv_->resize(size3,0.0);
 
-  x1sumuw_ =  Teuchos::rcp(new vector<double> );
+  x1sumuw_ =  Teuchos::rcp(new std::vector<double> );
   x1sumuw_->resize(size1,0.0);
-  x2sumuw_ =  Teuchos::rcp(new vector<double> );
+  x2sumuw_ =  Teuchos::rcp(new std::vector<double> );
   x2sumuw_->resize(size2,0.0);
-  x3sumuw_ =  Teuchos::rcp(new vector<double> );
+  x3sumuw_ =  Teuchos::rcp(new std::vector<double> );
   x3sumuw_->resize(size3,0.0);
 
-  x1sumvw_ =  Teuchos::rcp(new vector<double> );
+  x1sumvw_ =  Teuchos::rcp(new std::vector<double> );
   x1sumvw_->resize(size1,0.0);
-  x2sumvw_ =  Teuchos::rcp(new vector<double> );
+  x2sumvw_ =  Teuchos::rcp(new std::vector<double> );
   x2sumvw_->resize(size2,0.0);
-  x3sumvw_ =  Teuchos::rcp(new vector<double> );
+  x3sumvw_ =  Teuchos::rcp(new std::vector<double> );
   x3sumvw_->resize(size3,0.0);
 
   // the following vectors are only necessary for low-Mach-number flow
   // first-order moments
-  x1sumrho_ =  Teuchos::rcp(new vector<double> );
+  x1sumrho_ =  Teuchos::rcp(new std::vector<double> );
   x1sumrho_->resize(size1,0.0);
-  x2sumrho_ =  Teuchos::rcp(new vector<double> );
+  x2sumrho_ =  Teuchos::rcp(new std::vector<double> );
   x2sumrho_->resize(size2,0.0);
-  x3sumrho_ =  Teuchos::rcp(new vector<double> );
+  x3sumrho_ =  Teuchos::rcp(new std::vector<double> );
   x3sumrho_->resize(size3,0.0);
 
-  x1sumT_ =  Teuchos::rcp(new vector<double> );
+  x1sumT_ =  Teuchos::rcp(new std::vector<double> );
   x1sumT_->resize(size1,0.0);
-  x2sumT_ =  Teuchos::rcp(new vector<double> );
+  x2sumT_ =  Teuchos::rcp(new std::vector<double> );
   x2sumT_->resize(size2,0.0);
-  x3sumT_ =  Teuchos::rcp(new vector<double> );
+  x3sumT_ =  Teuchos::rcp(new std::vector<double> );
   x3sumT_->resize(size3,0.0);
 
   // second-order moments
-  x1sumsqrho_ =  Teuchos::rcp(new vector<double> );
+  x1sumsqrho_ =  Teuchos::rcp(new std::vector<double> );
   x1sumsqrho_->resize(size1,0.0);
-  x2sumsqrho_ =  Teuchos::rcp(new vector<double> );
+  x2sumsqrho_ =  Teuchos::rcp(new std::vector<double> );
   x2sumsqrho_->resize(size2,0.0);
-  x3sumsqrho_ =  Teuchos::rcp(new vector<double> );
+  x3sumsqrho_ =  Teuchos::rcp(new std::vector<double> );
   x3sumsqrho_->resize(size3,0.0);
 
-  x1sumsqT_ =  Teuchos::rcp(new vector<double> );
+  x1sumsqT_ =  Teuchos::rcp(new std::vector<double> );
   x1sumsqT_->resize(size1,0.0);
-  x2sumsqT_ =  Teuchos::rcp(new vector<double> );
+  x2sumsqT_ =  Teuchos::rcp(new std::vector<double> );
   x2sumsqT_->resize(size2,0.0);
-  x3sumsqT_ =  Teuchos::rcp(new vector<double> );
+  x3sumsqT_ =  Teuchos::rcp(new std::vector<double> );
   x3sumsqT_->resize(size3,0.0);
 
-  x1sumuT_ =  Teuchos::rcp(new vector<double> );
+  x1sumuT_ =  Teuchos::rcp(new std::vector<double> );
   x1sumuT_->resize(size1,0.0);
-  x2sumuT_ =  Teuchos::rcp(new vector<double> );
+  x2sumuT_ =  Teuchos::rcp(new std::vector<double> );
   x2sumuT_->resize(size2,0.0);
-  x3sumuT_ =  Teuchos::rcp(new vector<double> );
+  x3sumuT_ =  Teuchos::rcp(new std::vector<double> );
   x3sumuT_->resize(size3,0.0);
 
-  x1sumvT_ =  Teuchos::rcp(new vector<double> );
+  x1sumvT_ =  Teuchos::rcp(new std::vector<double> );
   x1sumvT_->resize(size1,0.0);
-  x2sumvT_ =  Teuchos::rcp(new vector<double> );
+  x2sumvT_ =  Teuchos::rcp(new std::vector<double> );
   x2sumvT_->resize(size2,0.0);
-  x3sumvT_ =  Teuchos::rcp(new vector<double> );
+  x3sumvT_ =  Teuchos::rcp(new std::vector<double> );
   x3sumvT_->resize(size3,0.0);
 
-  x1sumwT_ =  Teuchos::rcp(new vector<double> );
+  x1sumwT_ =  Teuchos::rcp(new std::vector<double> );
   x1sumwT_->resize(size1,0.0);
-  x2sumwT_ =  Teuchos::rcp(new vector<double> );
+  x2sumwT_ =  Teuchos::rcp(new std::vector<double> );
   x2sumwT_->resize(size2,0.0);
-  x3sumwT_ =  Teuchos::rcp(new vector<double> );
+  x3sumwT_ =  Teuchos::rcp(new std::vector<double> );
   x3sumwT_->resize(size3,0.0);
 
   //----------------------------------------------------------------------

@@ -71,8 +71,8 @@ public:
   */
   DynSmagFilter(
     RCP<DRT::Discretization>     actdis             ,
-    RCP<map<int,vector<int> > >  pbcmapmastertoslave,
-    ParameterList&               params             );
+    RCP<map<int,std::vector<int> > >  pbcmapmastertoslave,
+    Teuchos::ParameterList&      params             );
 
   /*!
   \brief Destructor
@@ -83,7 +83,7 @@ public:
   void AddScatra(
     RCP<DRT::Discretization>     scatradis,
     INPAR::SCATRA::ScaTraType    scatratype,
-    RCP<map<int,vector<int> > >  scatra_pbcmapmastertoslave);
+    RCP<map<int,std::vector<int> > >  scatra_pbcmapmastertoslave);
 
   /*!
   \brief Perform box filter operation, compare filtered quantities
@@ -113,7 +113,7 @@ public:
     Teuchos::RCP<Epetra_Vector>             scalar,
     const double                            thermpress,
     const Teuchos::RCP<const Epetra_Vector> dirichtoggle,
-    ParameterList&                          extraparams
+    Teuchos::ParameterList&                          extraparams
     );
 
   void ApplyFilter(
@@ -355,9 +355,9 @@ private:
   //! the discretization
   RCP<DRT::Discretization>     discret_;
   //! connection between master and slave nodes on this proc
-  RCP<map<int,vector<int> > >  pbcmapmastertoslave_;
+  RCP<map<int,std::vector<int> > >  pbcmapmastertoslave_;
   //! parameterlist including time params, stabilization params and turbulence sublist
-  ParameterList&               params_ ;
+  Teuchos::ParameterList&      params_ ;
   //! flag for physical type of fluid flow
   INPAR::FLUID::PhysicalType   physicaltype_;
   //@}
@@ -373,7 +373,7 @@ private:
   //! the discretization
   RCP<DRT::Discretization>     scatradiscret_;
   INPAR::SCATRA::ScaTraType    scatratype_;
-  RCP<map<int,vector<int> > >  scatra_pbcmapmastertoslave_;
+  RCP<map<int,std::vector<int> > >  scatra_pbcmapmastertoslave_;
   //@}
 
   //! @name vectors used for filtering (for dynamic Smagorinsky model)
@@ -433,8 +433,8 @@ private:
   //        -------------------------------
 
   //! the direction coordinates for the above mentioned averaging procedure
-  RCP<vector<double> >         dir1coords_;
-  RCP<vector<double> >         dir2coords_;
+  RCP<std::vector<double> >         dir1coords_;
+  RCP<std::vector<double> >         dir2coords_;
   //@}
 
 }; // end class DynSmagFilter

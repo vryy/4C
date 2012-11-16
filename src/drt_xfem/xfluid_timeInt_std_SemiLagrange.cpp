@@ -808,7 +808,7 @@ void XFEM::XFLUID_SemiLagrange::getDataForNotConvergedNodes()
 //    resetState(TimeIntData::failedSL_,TimeIntData::extrapolateStd_);
 //
 //    // vector with data for extrapolation
-//    extrapol->timeIntData_ = Teuchos::rcp(new vector<TimeIntData>);
+//    extrapol->timeIntData_ = Teuchos::rcp(new std::vector<TimeIntData>);
 //
 //    // add data for extrapolation
 //    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
@@ -937,7 +937,7 @@ void XFEM::XFLUID_SemiLagrange::extractNodalValuesFromVector(
   evel.Clear();
   epre.Clear();
 
-  if(vel_vec == null)
+  if(vel_vec == Teuchos::null)
     dserror("vector is null");
 
   // extract local values of the global vectors
@@ -1655,7 +1655,7 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
 
   // array of vectors which stores data for
   // every processor in one vector
-  vector<vector<TimeIntData> > dataVec(numproc_);
+  vector<std::vector<TimeIntData> > dataVec(numproc_);
 
   // fill vectors with the data
   for (vector<TimeIntData>::iterator data=timeIntData_->begin();

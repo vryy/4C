@@ -86,10 +86,10 @@ private:
   static NStet5Type                                   instance_;
 
   //! map of row nodes adjacent to NStet5 elements
-  std::map<int,DRT::Node*>                                 noderids_;
+  std::map<int,DRT::Node*>                            noderids_;
 
   //! map of column NStet5 elements
-  std::map<int,DRT::ELEMENTS::NStet5*>                     elecids_;
+  std::map<int,DRT::ELEMENTS::NStet5*>                elecids_;
 
   //! nodal stresses and strains for output
   Teuchos::RCP<Epetra_MultiVector>                    nstress_;
@@ -101,18 +101,18 @@ private:
 
   //! vector of elements adjacent to each row node
   // std::map<centernodeid,vector of ptrs to elements>
-  std::map<int,vector<DRT::ELEMENTS::NStet5*> >            adjele_;
+  std::map<int,std::vector<DRT::ELEMENTS::NStet5*> >            adjele_;
 
   //! map of subelements of adjacent elements
   // std::map<centernodeid,std::map<eleid,vector of local subele numbers> >
-  std::map<int,std::map<int,vector<int> > >                     adjsubele_;
+  std::map<int,std::map<int,std::vector<int> > >               adjsubele_;
 
   //! map of location vectors for patch around a node
   // std::map<centernodeid,vector of degrees of freedom on patch including element dofs>
-  std::map<int,vector<int> >                               adjlm_;
+  std::map<int,std::vector<int> >                               adjlm_;
 
   //! map of location vectors for patch around a node
-  std::map<int,vector<vector<vector<int> > > >             lmlm_;
+  std::map<int,std::vector<std::vector<std::vector<int> > > >        lmlm_;
 
   void InitElementsandMaps(std::map<int,DRT::ELEMENTS::NStet5*>& elecids,
                            std::map<int,DRT::Node*>&             noderids,
@@ -122,11 +122,11 @@ private:
 
   void InitAdjacency(std::map<int,DRT::ELEMENTS::NStet5*>&          elecids,
                      std::map<int,DRT::Node*>&                      noderids,
-                     std::map<int,vector<DRT::ELEMENTS::NStet5*> >& adjele,
+                     std::map<int,std::vector<DRT::ELEMENTS::NStet5*> >& adjele,
                      std::map<int,std::map<int,DRT::Node*> >&       adjnode,
-                     std::map<int,vector<int> >&                    adjlm,
-                     std::map<int,std::map<int,vector<int> > >&     adjsubele,
-                     std::map<int,vector<vector<vector<int> > > >&  adjlmlm,
+                     std::map<int,std::vector<int> >&                    adjlm,
+                     std::map<int,std::map<int,std::vector<int> > >&     adjsubele,
+                     std::map<int,std::vector<std::vector<std::vector<int> > > >&  adjlmlm,
                      DRT::Discretization&                      dis);
 
 
@@ -135,14 +135,14 @@ private:
   void NodalIntegration(Epetra_SerialDenseMatrix*       stiff,
                         Epetra_SerialDenseVector*       force,
                         std::map<int,DRT::Node*>&       adjnode,
-                        vector<DRT::ELEMENTS::NStet5*>& adjele,
-                        std::map<int,vector<int> >&     adjsubele,
-                        vector<int>&                    lm,
-                        vector<vector<vector<int> > >&  lmlm,
+                        std::vector<DRT::ELEMENTS::NStet5*>& adjele,
+                        std::map<int,std::vector<int> >&     adjsubele,
+                        std::vector<int>&               lm,
+                        std::vector<std::vector<std::vector<int> > >&  lmlm,
                         const Epetra_Vector&            disp,
                         DRT::Discretization&            dis,
-                        vector<double>*                 nodalstress,
-                        vector<double>*                 nodalstrain,
+                        std::vector<double>*            nodalstress,
+                        std::vector<double>*            nodalstrain,
                         const INPAR::STR::StressType    iostress,
                         const INPAR::STR::StrainType    iostrain);
 
@@ -163,20 +163,20 @@ private:
                                const LINALG::Matrix<3,3>& C);
 
   void StrainOutput(const INPAR::STR::StrainType iostrain,
-                    vector<double>&              nodalstrain,
+                    std::vector<double>&         nodalstrain,
                     LINALG::Matrix<3,3>&         F,
                     const double&                detF,
                     const double                 volweight,
                     const double                 devweight);
 
   void StrainOutput(const INPAR::STR::StrainType iostrain,
-                    vector<double>&              nodalstrain,
+                    std::vector<double>&         nodalstrain,
                     LINALG::Matrix<3,3>&         F,
                     LINALG::Matrix<6,1>&         glstrain,
                     const double                 weight);
 
   void StressOutput(const INPAR::STR::StressType iostress,
-                    vector<double>&              nodalstress,
+                    std::vector<double>&         nodalstress,
                     LINALG::Matrix<6,1>&         stress,
                     LINALG::Matrix<3,3>&         F,
                     const double&                detF);
@@ -282,19 +282,19 @@ public:
   \brief Get vector of RCPs to the lines of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
   \brief Get vector of RCPs to the surfaces of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Get vector of RCPs to the volumes of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Volumes();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
   /*!
   \brief Return unique ParObject id
@@ -380,9 +380,9 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(ParameterList& params,
+  int Evaluate(Teuchos::ParameterList& params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
@@ -404,10 +404,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -532,8 +532,8 @@ protected:
   }
 
   //! standards displ. tet4 calc routine
-  virtual void nstet5nlnstiffmass(vector<int>&                    lm,
-                                vector<double>&                  disp,
+  virtual void nstet5nlnstiffmass(std::vector<int>&               lm,
+                                std::vector<double>&             disp,
                                 LINALG::Matrix<15,15>*           stiffmatrix,
                                 LINALG::Matrix<15,15>*           massmatrix,
                                 LINALG::Matrix<15,1>*            force,
@@ -563,7 +563,7 @@ protected:
   //! @name Multi-scale related stuff
 
   /// Determine a homogenized material density for multi-scale analyses by averaging over the initial volume
-  void nstet5_homog(ParameterList& params);
+  void nstet5_homog(Teuchos::ParameterList& params);
 
   /// Read restart on the microscale
   void nstet5_read_restart_multi();

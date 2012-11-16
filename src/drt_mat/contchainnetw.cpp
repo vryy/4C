@@ -75,12 +75,12 @@ MAT::ContChainNetw::ContChainNetw()
 {
   isinit_=false;
   //mytime_=0.0;
-  li_ = Teuchos::rcp(new vector<vector<double> >);
-  li0_ = Teuchos::rcp(new vector<vector<double> >);
-  lambda_ = Teuchos::rcp(new vector<vector<double> >);
-  ni_ = Teuchos::rcp(new vector<LINALG::Matrix<3,3> >);
-  stresses_ = Teuchos::rcp(new vector<LINALG::Matrix<3,3> >);
-  mytime_ = Teuchos::rcp(new vector<double>);
+  li_ = Teuchos::rcp(new std::vector<std::vector<double> >);
+  li0_ = Teuchos::rcp(new std::vector<std::vector<double> >);
+  lambda_ = Teuchos::rcp(new std::vector<std::vector<double> >);
+  ni_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >);
+  stresses_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >);
+  mytime_ = Teuchos::rcp(new std::vector<double>);
 }
 
 
@@ -134,9 +134,9 @@ void MAT::ContChainNetw::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)         06/08|
  *----------------------------------------------------------------------*/
-void MAT::ContChainNetw::Unpack(const vector<char>& data)
+void MAT::ContChainNetw::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -163,14 +163,14 @@ void MAT::ContChainNetw::Unpack(const vector<char>& data)
   ExtractfromPack(position,data,histsize);
 
   if (histsize == 0) isinit_=false;
-  li_ = Teuchos::rcp(new vector<vector<double> >);
-  li0_ = Teuchos::rcp(new vector<vector<double> >);
-  ni_ = Teuchos::rcp(new vector<LINALG::Matrix<3,3> >);
-  stresses_ = Teuchos::rcp(new vector<LINALG::Matrix<3,3> >);
-  mytime_ = Teuchos::rcp(new vector<double>);
+  li_ = Teuchos::rcp(new std::vector<std::vector<double> >);
+  li0_ = Teuchos::rcp(new std::vector<std::vector<double> >);
+  ni_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >);
+  stresses_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >);
+  mytime_ = Teuchos::rcp(new std::vector<double>);
   for (int var = 0; var < histsize; ++var) {
-    vector<double> li;
-    vector<double> li0;
+    std::vector<double> li;
+    std::vector<double> li0;
     LINALG::Matrix<3,3> tmp;
     ExtractfromPack(position,data,li);
     ExtractfromPack(position,data,li0);
@@ -201,12 +201,12 @@ void MAT::ContChainNetw::Initialize(const int numgp, const int eleid)
   const double isotropy  = 1/sqrt(3.0) * r0;
   srand ( time(NULL) + 5 + eleid*numgp );
 
-  li0_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  li_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  lambda_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  ni_ = Teuchos::rcp(new vector<LINALG::Matrix<3,3> >);
-  stresses_ = Teuchos::rcp(new vector<LINALG::Matrix<3,3> >);
-  mytime_ = Teuchos::rcp(new vector<double>);
+  li0_ = Teuchos::rcp(new std::vector<std::vector<double> > (numgp));
+  li_ = Teuchos::rcp(new std::vector<std::vector<double> > (numgp));
+  lambda_ = Teuchos::rcp(new std::vector<std::vector<double> > (numgp));
+  ni_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >);
+  stresses_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >);
+  mytime_ = Teuchos::rcp(new std::vector<double>);
   // initial basis is identity
   LINALG::Matrix<3,3> id(true);
   for (int i=0; i<3; ++i) id(i,i) = 1.0;
@@ -392,7 +392,7 @@ void MAT::ContChainNetw::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
     //LINALG::SymmetricEigenProblem(strain,lambda);
 
     // initialise rem_toggle which means per default diminuish cell lengths
-    vector<double> rem_toggle(3,0.0);
+    std::vector<double> rem_toggle(3,0.0);
 
     // decide on remodeling strategy and update cell dimensions and history
     if (params_->updrate_ == 0){
@@ -471,9 +471,9 @@ void MAT::ContChainNetw::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
 
 LINALG::Matrix<3,3> MAT::ContChainNetw::EvaluateStress(
     const LINALG::Matrix<3,3>& isostress,
-    const vector<LINALG::Matrix<3,3> >& Ni,
-    const vector<double>& cell_li,
-    const vector<double>& cell_Inv,
+    const std::vector<LINALG::Matrix<3,3> >& Ni,
+    const std::vector<double>& cell_li,
+    const std::vector<double>& cell_Inv,
     const double s_chn_scalar,
     const double stressfree)
 {
@@ -497,9 +497,9 @@ LINALG::Matrix<3,3> MAT::ContChainNetw::EvaluateStress(
 
 void MAT::ContChainNetw::UpdateStress(
     LINALG::Matrix<3,3>& stress,
-    const vector<LINALG::Matrix<3,3> >& Ni,
-    const vector<double>& cell_li,
-    const vector<double>& cell_Inv,
+    const std::vector<LINALG::Matrix<3,3> >& Ni,
+    const std::vector<double>& cell_li,
+    const std::vector<double>& cell_Inv,
     const double s_chn_scalar,
     const double stressfree)
 {
@@ -521,9 +521,9 @@ void MAT::ContChainNetw::UpdateStress(
 }
 
 void MAT::ContChainNetw::EvaluateCmat(LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,
-    const vector<LINALG::Matrix<3,3> >& Ni,
-    const vector<double>& cell_li,
-    const vector<double>& cell_Inv,
+    const std::vector<LINALG::Matrix<3,3> >& Ni,
+    const std::vector<double>& cell_li,
+    const std::vector<double>& cell_Inv,
     const double c_chn_scalar,
     const double stressfree)
 {
@@ -556,7 +556,7 @@ vector<LINALG::Matrix<3,3> > MAT::ContChainNetw::EvaluateStructTensors(const int
 
 vector<double> MAT::ContChainNetw::EvaluateInvariants(
     const LINALG::Matrix<3,3> & CG,
-    const vector<LINALG::Matrix<3,3> >& Ni)
+    const std::vector<LINALG::Matrix<3,3> >& Ni)
 {
   vector<double> Inv(3);
   for (int i_fib=0; i_fib<3; ++i_fib){
@@ -569,7 +569,7 @@ vector<double> MAT::ContChainNetw::EvaluateInvariants(
 
 void MAT::ContChainNetw::Update(const Epetra_SerialDenseMatrix& Phi,
     const Epetra_SerialDenseVector& lambda,
-    const vector<double> rem_toggle,
+    const std::vector<double> rem_toggle,
     const int gp, const double r0, const double decay)
 {
   double rescale = 0.0;
@@ -593,7 +593,7 @@ void MAT::ContChainNetw::Update(const Epetra_SerialDenseMatrix& Phi,
 
 void MAT::ContChainNetw::UpdateRate(const Epetra_SerialDenseMatrix& Phi,
     const Epetra_SerialDenseVector& lambda,
-    const vector<double> rem_toggle,
+    const std::vector<double> rem_toggle,
     const int gp, const double r0, const double decay, const double kappa, const double dt)
 {
   double rescale = 0.0;
@@ -642,9 +642,9 @@ std::string MAT::ContChainNetw::PrintAnisoVects(const int gp)
 }
 
 std::string MAT::ContChainNetw::PrintAnisoCmat(const LINALG::Matrix<6,6>& cmat,
-    const vector<LINALG::Matrix<3,3> >& Ni,
-    const vector<double>& cell_li,
-    const vector<double>& cell_Inv,
+    const std::vector<LINALG::Matrix<3,3> >& Ni,
+    const std::vector<double>& cell_li,
+    const std::vector<double>& cell_Inv,
     const double c_chn_scalar,
     const double stressfree)
 {
@@ -789,8 +789,8 @@ void MAT::ChainOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
       //int ngp = chain->Getni()->size();
       int endgp = 1; //ngp;
       for (int gp = 0; gp < endgp; ++gp){
-        vector<double> li = chain->Getli()->at(gp);
-        vector<double> lamb = chain->Getlambdas()->at(gp);
+        std::vector<double> li = chain->Getli()->at(gp);
+        std::vector<double> lamb = chain->Getlambdas()->at(gp);
         LINALG::Matrix<3,3> ni0 = chain->Getni()->at(gp);
 
         // time
@@ -835,12 +835,12 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
     const DRT::Element* actele = dis->lColElement(iele);
 
     // build current configuration
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
     actele->LocationVector(*dis,lm,lmowner,lmstride);
     RCP<const Epetra_Vector> disp = dis->GetState("displacement");
-    vector<double> mydisp(lm.size(),0);
+    std::vector<double> mydisp(lm.size(),0);
     //DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     const int numnode = actele->NumNode();
     const int numdof = 3;
@@ -854,17 +854,17 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
     gmshfilecontent << IO::GMSH::cellWithScalarToString(actele->Shape(),
         1.0, xyze) << endl;
 
-    vector<double> elecenter = MAT::MatPointCoords(actele,mydisp);
+    std::vector<double> elecenter = MAT::MatPointCoords(actele,mydisp);
     RCP<MAT::Material> mat = actele->Material();
     MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
     LINALG::Matrix<3,3> ni0 = chain->Getni()->at(0);
-    vector<double> lamb0 = chain->Getlambdas()->at(0);
-    RCP<vector<vector<double> > > gplis = chain->Getli();
-    RCP<vector<vector<double> > > gpli0s = chain->Getli0();
+    std::vector<double> lamb0 = chain->Getlambdas()->at(0);
+    RCP<vector<std::vector<double> > > gplis = chain->Getli();
+    RCP<vector<std::vector<double> > > gpli0s = chain->Getli0();
     RCP<vector<LINALG::Matrix<3,3> > > gpnis = chain->Getni();
 
-    vector<double> centerli (3,0.0);
-    vector<double> centerli_0 (3,0.0);
+    std::vector<double> centerli (3,0.0);
+    std::vector<double> centerli_0 (3,0.0);
 
 //    // material plot at element center
 //    const int dim=3;
@@ -880,11 +880,11 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
     // material plot at gauss points
     int ngp = chain->Getni()->size();
     for (int gp = 0; gp < ngp; ++gp){
-      vector<double> point = MAT::MatPointCoords(actele,mydisp,gp);
+      std::vector<double> point = MAT::MatPointCoords(actele,mydisp,gp);
       double scalar = 1;
-      vector<double> length(3);
-      vector<double> gpli =  chain->Getli()->at(gp);
-      vector<double> gpli0 = chain->Getli0()->at(gp);
+      std::vector<double> length(3);
+      std::vector<double> gpli =  chain->Getli()->at(gp);
+      std::vector<double> gpli0 = chain->Getli0()->at(gp);
 //      length[0] = scalar * gpli[0]/gpli0[0];
 //      length[1] = scalar * gpli[1]/gpli0[1];
 //      length[2] = scalar * gpli[2]/gpli0[2];

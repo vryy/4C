@@ -532,7 +532,7 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
 /*----------------------------------------------------------------------*
  |  communicate objects (public)                             mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Exporter::Export(map<int,int>& data)
+void DRT::Exporter::Export(std::map<int,int>& data)
 {
   PODExporterHelper<int> helper(data);
   GenericExport(helper);
@@ -542,7 +542,7 @@ void DRT::Exporter::Export(map<int,int>& data)
 /*----------------------------------------------------------------------*
  |  communicate objects (public)                             mwgee 11/06|
  *----------------------------------------------------------------------*/
-void DRT::Exporter::Export(map<int,double>& data)
+void DRT::Exporter::Export(std::map<int,double>& data)
 {
   PODExporterHelper<double> helper(data);
   GenericExport(helper);
@@ -552,7 +552,7 @@ void DRT::Exporter::Export(map<int,double>& data)
 /*----------------------------------------------------------------------*
  |  communicate objects (public)                             u.kue 07/09|
  *----------------------------------------------------------------------*/
-void DRT::Exporter::Export(map<int,RCP<Epetra_SerialDenseMatrix> >& data)
+void DRT::Exporter::Export(std::map<int,RCP<Epetra_SerialDenseMatrix> >& data)
 {
   AnyObjectExporterHelper<Epetra_SerialDenseMatrix> helper(data);
   GenericExport(helper);

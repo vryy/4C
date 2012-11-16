@@ -96,7 +96,7 @@ void DRT::ELEMENTS::Vele3Line::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Vele3Line::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Vele3Line::Unpack(const std::vector<char>& data)
 {
   dserror("this Vele3Line element does not support communication");
   return;

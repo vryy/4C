@@ -80,9 +80,9 @@ public:
   //! Evaluate
   virtual int Evaluate(
     DRT::Element*              ele,            //!< the element we are dealing with
-    ParameterList&             params,         //!< the parameter list
+    Teuchos::ParameterList&    params,         //!< the parameter list
     DRT::Discretization&       discretization, //!< the discretization the element is part of
-    vector<int>&               lm,             //!< location matrix
+    std::vector<int>&          lm,             //!< location matrix
     Epetra_SerialDenseMatrix&  elemat1_epetra, //!< ?
     Epetra_SerialDenseMatrix&  elemat2_epetra, //!< ?
     Epetra_SerialDenseVector&  elevec1_epetra, //!< ?
@@ -221,16 +221,16 @@ private:
     Epetra_SerialDenseMatrix&             emat,      //!< element matrix to calculate
     Epetra_SerialDenseVector&             erhs,      //!< element rhs to calculate
     const enum INPAR::SCATRA::ScaTraType  scatratype, //!< type of scalar transport problem
-    ParameterList&                        params,         //!< the parameter list
+    Teuchos::ParameterList&               params,         //!< the parameter list
     DRT::Discretization&                  discretization, //!< the discretization the element is part of
-    vector<int>&                          lm              //!< location matrix
+    std::vector<int>&                     lm              //!< location matrix
   );
 
   //! calculate error compared to analytical solutions
   virtual void CalErrorComparedToAnalytSolution(
     const DRT::Element*          ele,                 //!< the element
     const enum INPAR::SCATRA::ScaTraType  scatratype, //!< type of scalar transport problem
-    ParameterList&               params,              //!< parameter list
+    Teuchos::ParameterList&      params,              //!< parameter list
     Epetra_SerialDenseVector&    errors               //!< computed error contributions
   );
 
@@ -248,7 +248,7 @@ private:
   //! calculate scalars and domain integral
   virtual void CalculateScalars(
     const DRT::Element*       ele,      //!< the element we are dealing with
-    const vector<double>&     ephinp,   //!< current scalar field
+    const std::vector<double>& ephinp,   //!< current scalar field
     Epetra_SerialDenseVector& scalars,  //!< vector for computed integrals
     const bool                inverting //!< flag for invertuing
   );
@@ -457,10 +457,10 @@ private:
           double&                    dens_hat,
           double&                    temp_hat,
           double&                    dens_temp_hat,
-          Teuchos::RCP<vector<double> >       vel_hat,
-          Teuchos::RCP<vector<double> >       densvel_hat,
-          Teuchos::RCP<vector<double> >       densveltemp_hat,
-          Teuchos::RCP<vector<double> >       densstraintemp_hat,
+          Teuchos::RCP<std::vector<double> >       vel_hat,
+          Teuchos::RCP<std::vector<double> >       densvel_hat,
+          Teuchos::RCP<std::vector<double> >       densveltemp_hat,
+          Teuchos::RCP<std::vector<double> >       densstraintemp_hat,
           double&                    volume,
           const DRT::Element*        ele
   );
@@ -484,7 +484,7 @@ private:
 
   //! calculate mean turbulent Prandtl number
   void GetMeanPrtOfHomogenousDirection(
-          ParameterList&             turbmodelparams,
+          Teuchos::ParameterList&    turbmodelparams,
           double&                    inv_Prt,
           int&                       nlayer
           );
@@ -538,7 +538,7 @@ private:
   //! store turbulent Prandtl number and effective diffusivity for output
   virtual void StoreModelParametersForOutput(
     const bool                            isowned,        //!< owner of element
-    ParameterList&                        turbulencelist, //!< turbulence parameter list
+    Teuchos::ParameterList&               turbulencelist, //!< turbulence parameter list
     const int                             nlayer,         //!< element layer
     const double                          tpn             //! turbulent Prandlt number
     );
@@ -605,11 +605,11 @@ private:
   /*========================================================================*/
 
   //! scalar at integration point
-  vector<double> phi_;
+  std::vector<double> phi_;
   //! subgrid-scale part of scalar
-  vector<double> sgphi_;
+  std::vector<double> sgphi_;
   //! multifractal subgrid-scale part of scalar
-  vector<double> mfssgphi_;
+  std::vector<double> mfssgphi_;
 
   //! (global) gradient of transported scalar at integration point
   LINALG::Matrix<nsd_,1> gradphi_;
@@ -619,24 +619,24 @@ private:
   LINALG::Matrix<nsd_,1> mfsggradphi_;
 
   //! scalar at t_(n)
-  vector<LINALG::Matrix<nen_,1> > ephin_;
+  std::vector<LINALG::Matrix<nen_,1> > ephin_;
   //! scalar at t_(n+1) or t_(n+alpha_F)
-  vector<LINALG::Matrix<nen_,1> > ephinp_;
+  std::vector<LINALG::Matrix<nen_,1> > ephinp_;
   //! scalar at t_(n+alpha_M)
-  vector<LINALG::Matrix<nen_,1> > ephiam_;
+  std::vector<LINALG::Matrix<nen_,1> > ephiam_;
 
   //! vector containing all values from previous timelevel n in gausspoint
-  vector<double> hist_;
+  std::vector<double> hist_;
   //! history vector of transported scalars
-  vector<LINALG::Matrix<nen_,1> > ehist_;
+  std::vector<LINALG::Matrix<nen_,1> > ehist_;
 
   //! scalar at t_(0) used for reinitialization as reference
-  vector<LINALG::Matrix<nen_,1> > ephi0_Reinit_Reference_;
+  std::vector<LINALG::Matrix<nen_,1> > ephi0_Reinit_Reference_;
   //! scalar at t_(0) used for reinitialization as reference
-  vector<LINALG::Matrix<nen_,1> > ephi0_penalty_;
+  std::vector<LINALG::Matrix<nen_,1> > ephi0_penalty_;
 
   //! fine-scale solution ?
-  vector<LINALG::Matrix<nen_,1> > fsphinp_;
+  std::vector<LINALG::Matrix<nen_,1> > fsphinp_;
 
   //! gradient of phi at global time for reinitialization(initialization for pseudo time loop)
   LINALG::Matrix<nsd_,1> grad_phi_0;
@@ -646,7 +646,7 @@ private:
   /*========================================================================*/
 
   //! values of all transported scalars in gausspoint (ELCH)
-  vector<double> conint_;
+  std::vector<double> conint_;
 
   //! electric potential
   LINALG::Matrix<nen_,1> epotnp_;
@@ -710,29 +710,29 @@ private:
   /*========================================================================*/
 
   //! density at t_(n)
-  vector<double> densn_;
+  std::vector<double> densn_;
   //! density at t_(n+1) or t_(n+alpha_F)
-  vector<double> densnp_;
+  std::vector<double> densnp_;
   //! density at t_(n+alpha_M)
-  vector<double> densam_;
+  std::vector<double> densam_;
   //! factor for density derivative (at t_(n+1) or t_(n+alpha_F))
-  vector<double> densgradfac_;
+  std::vector<double> densgradfac_;
 
   //! diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  vector<double> diffus_;
+  std::vector<double> diffus_;
   //! all-scale or fine-scale subgrid diffusivities (one per transported scalar)
-  vector<double> sgdiff_;
+  std::vector<double> sgdiff_;
   //! general reaction term R(phi) (without density)
-  vector<double> reacterm_;
+  std::vector<double> reacterm_;
   //! reaction coefficient
-  vector<double> reacoeff_;
+  std::vector<double> reacoeff_;
   //! reaction coefficent derivative (needed for matrix contribution)
-  vector<double> reacoeffderiv_;
+  std::vector<double> reacoeffderiv_;
 
   //! charge numbers of all ion species (ELCH specific)
-  vector<double> valence_;
+  std::vector<double> valence_;
   //! diffusivity times valence for each ion species (ELCH specific)
-  vector<double> diffusvalence_;
+  std::vector<double> diffusvalence_;
 
   //! specific heat capacity (either at constant pressure or at constant volume)
   double shc_;
@@ -776,27 +776,27 @@ private:
   //! (global) Laplacian of shape functions at integration point
   LINALG::Matrix<nen_,1> laplace_;
   //! rhs force in Gauss point
-  vector<double> rhs_;
+  std::vector<double> rhs_;
   //! rhs of temperature equation in case of reactive equation system
-  vector<double> reatemprhs_;
+  std::vector<double> reatemprhs_;
   //! bodyforce in element nodesx
-  vector<LINALG::Matrix<nen_,1> > bodyforce_;
+  std::vector<LINALG::Matrix<nen_,1> > bodyforce_;
   //! residual of scalar transport equation
-  vector<double> scatrares_;
+  std::vector<double> scatrares_;
   //! convective term (part of residual) ?
-  vector<double> conv_phi_;
+  std::vector<double> conv_phi_;
   //! diffusive term (part of residual) ?
-  vector<double> diff_phi_;
+  std::vector<double> diff_phi_;
   //! reactive term (part of residual) ?
-  vector<double> rea_phi_;
+  std::vector<double> rea_phi_;
 
   //! the stabilisation parameters (one per transported scalar)
-  vector<double> tau_;
+  std::vector<double> tau_;
   //! derivative of stabilization parameter with respect to el. potential (ELCH)
-  vector<LINALG::Matrix<nen_,1> > tauderpot_;
+  std::vector<LINALG::Matrix<nen_,1> > tauderpot_;
 
   //! reconstructed flux values via L2 projection
-  vector<LINALG::Matrix<nsd_,nen_> > efluxreconstr_;
+  std::vector<LINALG::Matrix<nsd_,nen_> > efluxreconstr_;
 
   //! weights for nurbs elements
   LINALG::Matrix<nen_,1> weights_;

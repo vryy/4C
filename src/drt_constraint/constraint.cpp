@@ -36,7 +36,7 @@ actdisc_(discr)
     for (unsigned int i=0; i<constrcond_.size();i++)
     {
       //constrcond_[i]->Print(cout);
-      int condID=(*(constrcond_[i]->Get<vector<int> >("ConditionID")))[0];
+      int condID=(*(constrcond_[i]->Get<std::vector<int> >("ConditionID")))[0];
       if (condID>maxID)
       {
         maxID=condID;
@@ -46,7 +46,7 @@ actdisc_(discr)
         offsetID=condID;
       }
 
-      const std::vector<double>* myinittime = constrcond_[i]->Get<vector<double> >("activTime");
+      const std::vector<double>* myinittime = constrcond_[i]->Get<std::vector<double> >("activTime");
       if (myinittime->size())
       {
         inittimes_.insert(std::pair<int,double>(condID,(*myinittime)[0]));
@@ -79,7 +79,7 @@ actdisc_(discr)
     constrtype_=GetConstrType(conditionname);
     for (unsigned int i=0; i<constrcond_.size();i++)
     {
-      const std::vector<double>* myinittime = (constrcond_[i]->Get<vector<double> >("activTime"));
+      const std::vector<double>* myinittime = (constrcond_[i]->Get<std::vector<double> >("activTime"));
       int condID=constrcond_[i]->GetInt("ConditionID");
       if (myinittime->size())
       {
@@ -124,7 +124,7 @@ UTILS::Constraint::ConstrType UTILS::Constraint::GetConstrType(const string& nam
 |Initialization routine computes ref base values and activates conditions |
 *------------------------------------------------------------------------*/
 void UTILS::Constraint::Initialize(
-    ParameterList&        params,
+    Teuchos::ParameterList&        params,
     RCP<Epetra_Vector>    systemvector3)
 {
   // choose action
@@ -182,7 +182,7 @@ void UTILS::Constraint::Initialize
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
 void UTILS::Constraint::Evaluate(
-    ParameterList&        params,
+    Teuchos::ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
@@ -215,7 +215,7 @@ void UTILS::Constraint::Evaluate(
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
 void UTILS::Constraint::EvaluateConstraint(
-    ParameterList&        params,
+    Teuchos::ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
@@ -264,7 +264,7 @@ void UTILS::Constraint::EvaluateConstraint(
       }
 
       // Evaluate loadcurve if defined. Put current load factor in parameterlist
-      const vector<int>*    curve  = cond.Get<vector<int> >("curve");
+      const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
       double curvefac = 1.0;
@@ -303,9 +303,9 @@ void UTILS::Constraint::EvaluateConstraint(
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector and ownerships
-        vector<int> lm;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
 
         // get dimension of element matrices and vectors
@@ -361,7 +361,7 @@ void UTILS::Constraint::EvaluateConstraint(
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
 void UTILS::Constraint::InitializeConstraint(
-    ParameterList&        params,
+    Teuchos::ParameterList&        params,
     RCP<Epetra_Vector>    systemvector)
 {
   if (!(actdisc_->Filled())) dserror("FillComplete() was not called");
@@ -401,9 +401,9 @@ void UTILS::Constraint::InitializeConstraint(
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector and ownerships
-        vector<int> lm;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
 
         // get dimension of element matrices and vectors

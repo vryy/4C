@@ -102,7 +102,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
 bool TSI::UTILS::ThermoStructureCloneStrategy::DetermineEleType(
   DRT::Element* actele,
   const bool ismyele,
-  vector<string>& eletype
+  std::vector<string>& eletype
   )
 {
   // we only support thermo elements here

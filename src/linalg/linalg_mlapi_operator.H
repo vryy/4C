@@ -63,7 +63,7 @@ public:
   \brief Standard Constructor
   */
   explicit AMG_Operator(RCP<Epetra_RowMatrix> A,
-                        ParameterList& params,
+                        Teuchos::ParameterList& params,
                         const bool compute);
 
   /*!
@@ -88,7 +88,7 @@ public:
   \brief get reference to parameter list
 
   */
-  ParameterList& Params() const {return params_;}
+  Teuchos::ParameterList& Params() const {return params_;}
 
   /*!
   \brief get input matrix
@@ -227,7 +227,7 @@ private:
   inline const Operator& Anonstab(const int level) const { return Anonstab_[level]; }
 
   string                  label_;      // name of this operator
-  ParameterList&          params_;     // ml parameter list (intput)
+  Teuchos::ParameterList&          params_;     // ml parameter list (intput)
   RCP<Epetra_CrsMatrix>   Ainput_;     // input matrix
   int                     nlevel_;     // no. of grids in hierarchy
   vector<Operator>        P_;          // the matrix hierarchy

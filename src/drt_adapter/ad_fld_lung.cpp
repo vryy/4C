@@ -14,7 +14,7 @@
 ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid,
     Teuchos::RCP<DRT::Discretization> dis,
     Teuchos::RCP<LINALG::Solver> solver,
-    Teuchos::RCP<ParameterList> params,
+    Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<IO::DiscretizationWriter> output,
     bool isale,
     bool dirichletcond)
@@ -22,7 +22,7 @@ ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid,
 {
   // make sure
 
-  if (fluid_ == null)
+  if (fluid_ == Teuchos::null)
     dserror("Failed to create the underlying fluid adapter");
 
   // get lung fluid-structure volume constraints
@@ -70,7 +70,7 @@ ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid,
   for (unsigned int i=0; i<outflowfsinodes.size(); ++i)
   {
     DRT::Node* actnode = Discretization()->gNode(outflowfsinodes[i]);
-    const vector<int> dof = Discretization()->Dof(actnode);
+    const std::vector<int> dof = Discretization()->Dof(actnode);
 
     const int ndim = DRT::Problem::Instance()->NDim();
     if (ndim > static_cast<int>(dof.size()))
@@ -156,9 +156,9 @@ void ADAPTER::FluidLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initflowra
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
       // get element location vector and ownerships
-      vector<int> lm;
-      vector<int> lmowner;
-      vector<int> lmstride;
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
       curr->second->LocationVector(*Discretization(),lm,lmowner,lmstride);
 
       // Reshape element matrices and vectors and init to zero
@@ -248,9 +248,9 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
       // get element location vector and ownerships
-      vector<int> lm;
-      vector<int> lmowner;
-      vector<int> lmstride;
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
       curr->second->LocationVector(*Discretization(),lm,lmowner,lmstride);
 
       // get dimension of element matrices and vectors

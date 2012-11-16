@@ -50,7 +50,7 @@ class BraessSarazin_Smoother : public virtual Epetra_Operator
      *  \param A22: matrix block (2,2)
      *  \param params: parameter list
      */
-    explicit BraessSarazin_Smoother(Teuchos::RCP<const SparseMatrix> A11, Teuchos::RCP<const SparseMatrix> A12, Teuchos::RCP<const SparseMatrix> A21, Teuchos::RCP<const SparseMatrix> A22, const ParameterList& params);
+    explicit BraessSarazin_Smoother(Teuchos::RCP<const SparseMatrix> A11, Teuchos::RCP<const SparseMatrix> A12, Teuchos::RCP<const SparseMatrix> A21, Teuchos::RCP<const SparseMatrix> A22, const Teuchos::ParameterList& params);
     virtual ~BraessSarazin_Smoother() {};
 
     virtual const char* Label() const { return "Braess-Sarazin Smoother"; }

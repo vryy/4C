@@ -70,9 +70,9 @@ DRT::ELEMENTS::AcinusImpl<distype>::AcinusImpl()
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
   RedAcinus*                 ele,
-  ParameterList&             params,
+  Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
-  vector<int>&               lm,
+  std::vector<int>&          lm,
   Epetra_SerialDenseMatrix&  elemat1_epetra,
   Epetra_SerialDenseMatrix&  elemat2_epetra,
   Epetra_SerialDenseVector&  elevec1_epetra,
@@ -131,7 +131,7 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
   
   RCP<Epetra_Vector> sysmat_iad = params.get<RCP<Epetra_Vector> >("sysmat_iad");
 
- if (pnp==null || pn==null || pnm==null )
+ if (pnp==Teuchos::null || pn==Teuchos::null || pnm==null )
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
   // extract local values from the global vectors
@@ -222,9 +222,9 @@ int DRT::ELEMENTS::AcinusImpl<distype>::Evaluate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
   RedAcinus*                             ele,
-  ParameterList&                         params,
+  Teuchos::ParameterList&                         params,
   DRT::Discretization&                   discretization,
-  vector<int>&                           lm,
+  std::vector<int>&                      lm,
   Teuchos::RCP<const MAT::Material>      material)
 {
 
@@ -246,7 +246,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Initial(
 
   //vector<int> lmowner;
   vector<int> lmstride;
-  RCP<vector<int> > lmowner = Teuchos::rcp(new vector<int>);
+  RCP<vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
   ele->LocationVector(discretization,lm,*lmowner,lmstride);
 
   //--------------------------------------------------------------------
@@ -663,9 +663,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::Sysmat(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
   RedAcinus*                   ele,
-  ParameterList&               params,
+  Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
-  vector<int>&                 lm,
+  std::vector<int>&            lm,
   Epetra_SerialDenseVector&    rhs,
   RCP<MAT::Material>   material)
 {
@@ -683,7 +683,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
 
   RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
 
-  if (pnp==null)
+  if (pnp==Teuchos::null)
     dserror("Cannot get state vectors 'pnp'");
 
   // extract local values from the global vectors
@@ -722,10 +722,10 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           Bc = *(condition->Get<string>("boundarycond"));
           
         
-          const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
+          const  vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
           double curvefac = 1.0;
-          const  vector<double>* vals   = condition->Get<vector<double> >("val");
-          const vector<int>*     functions = condition->Get<vector<int> >("funct");
+          const  vector<double>* vals   = condition->Get<std::vector<double> >("val");
+          const std::vector<int>*     functions = condition->Get<std::vector<int> >("funct");
 
           // -----------------------------------------------------------------
           // Read in the value of the applied BC
@@ -766,7 +766,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
         {
           const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");
 
-          RCP<ParameterList> CoupledTo3DParams  =
+          RCP<Teuchos::ParameterList> CoupledTo3DParams  =
             params.get<RCP<ParameterList > >("coupling with 3D fluid params");
           // -----------------------------------------------------------------
           // If the parameter list is empty, then something is wrong!
@@ -839,9 +839,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
             Bc = *(condition->Get<string>("phase2"));
           }
 
-          const  vector<int>*    curve  = condition->Get<vector<int> >("curve");
+          const  vector<int>*    curve  = condition->Get<std::vector<int> >("curve");
           double curvefac = 1.0;
-          const  vector<double>* vals   = condition->Get<vector<double> >("val");
+          const  vector<double>* vals   = condition->Get<std::vector<double> >("val");
 
           // -----------------------------------------------------------------
           // Read in the value of the applied BC
@@ -877,7 +877,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
           RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
           
-          if (bcval==null||dbctog==null)
+          if (bcval==null||dbctog==Teuchos::null)
           {
             dserror("Cannot get state vectors 'bcval' and 'dbctog'");
             exit(1);
@@ -928,7 +928,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
 
           // get rhs
           //          RCP<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
-          //          if (rhs==null)
+          //          if (rhs==Teuchos::null)
           //          {
           //            dserror("Cannot get state vector 'rhs'");
           //            exit(1);
@@ -992,7 +992,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
           RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
           RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
           
-          if (bcval==null||dbctog==null)
+          if (bcval==null||dbctog==Teuchos::null)
           {
             dserror("Cannot get state vectors 'bcval' and 'dbctog'");
             exit(1);
@@ -1024,7 +1024,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
         if (ele->Nodes()[i]->NumElement() == 1)
         {
           RCP<Epetra_Vector> rhs  = params.get<RCP<Epetra_Vector> >("rhs");
-          if (rhs==null)
+          if (rhs==Teuchos::null)
           {
             dserror("Cannot get state vector 'rhs'");
             exit(1);
@@ -1053,11 +1053,11 @@ void DRT::ELEMENTS::AcinusImpl<distype>::EvaluateTerminalBC(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
   RedAcinus*                   ele,
-  ParameterList&               params,
+  Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
   Epetra_SerialDenseVector&    elevec1, //a_volumenp,
   Epetra_SerialDenseVector&    elevec2, //a_volume_strain_np,
-  vector<int>&                 lm,
+  std::vector<int>&            lm,
   RCP<MAT::Material>   material)
 
 #if 1
@@ -1106,7 +1106,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
   RCP<Epetra_Vector> a_volume_strain_np = params.get<RCP<Epetra_Vector> >("acinar_vnp_strain");
 
 
- if (pnp==null || pn==null || pnm==null )
+ if (pnp==Teuchos::null || pn==Teuchos::null || pnm==null )
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
   // extract local values from the global vectors
@@ -1523,9 +1523,9 @@ void DRT::ELEMENTS::AcinusImpl<distype>::CalcFlowRates(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
   RedAcinus*                   ele,
-  ParameterList&               params,
+  Teuchos::ParameterList&      params,
   DRT::Discretization&         discretization,
-  vector<int>&                 lm,
+  std::vector<int>&            lm,
   RCP<MAT::Material>   material)
 {
   const int   myrank  = discretization.Comm().MyPID();
@@ -1542,7 +1542,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
 
   RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
 
-  if (pnp==null)
+  if (pnp==Teuchos::null)
     dserror("Cannot get state vectors 'pnp'");
 
   // extract local values from the global vectors
@@ -1573,7 +1573,7 @@ void DRT::ELEMENTS::AcinusImpl<distype>::GetCoupledValues(
       {
 
           const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond");        
-          RCP<ParameterList> CoupledTo3DParams  =
+          RCP<Teuchos::ParameterList> CoupledTo3DParams  =
             params.get<RCP<ParameterList > >("coupling with 3D fluid params");
           // -----------------------------------------------------------------
           // If the parameter list is empty, then something is wrong!

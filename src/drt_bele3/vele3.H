@@ -149,17 +149,17 @@ public:
   /*!
   \brief Get vector of RCPs to the lines of this element
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
   \brief Get vector of RCPs to the surfaces of this element
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Get vector of RCPs to the volume of this element
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Volumes();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
 
   /*!
@@ -231,9 +231,9 @@ public:
   //@}
 
   //! @name Evaluation
-  int Evaluate(ParameterList& params,
+  int Evaluate(Teuchos::ParameterList& params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
@@ -241,10 +241,10 @@ public:
                Epetra_SerialDenseVector& elevec3);
 
 
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -356,8 +356,8 @@ public:
   }
   virtual int NumSurface() const {return 1;}
   virtual int NumVolume() const {return -1;}
-  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
-  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
   virtual int UniqueParObjectId() const { return Vele3SurfaceType::Instance().UniqueParObjectId(); }
   virtual void Pack(DRT::PackBuffer& data) const;
   virtual void Unpack(const std::vector<char>& data);
@@ -383,9 +383,9 @@ public:
   //@}
 
   //! @name Evaluation
-  int Evaluate(ParameterList& params,
+  int Evaluate(Teuchos::ParameterList& params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
@@ -393,10 +393,10 @@ public:
                Epetra_SerialDenseVector& elevec3);
 
 
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -543,9 +543,9 @@ public:
 
 
   //! @name Evaluation
-  virtual int Evaluate(ParameterList&     params,
+  virtual int Evaluate(Teuchos::ParameterList& params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
@@ -554,10 +554,10 @@ public:
 
 
   //! @name Evaluate methods
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 

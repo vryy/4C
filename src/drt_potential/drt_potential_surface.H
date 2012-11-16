@@ -68,7 +68,7 @@ public:
     \param fint (out): internal forces
     \param stiff (out): stiffness matrix
    */
-  void EvaluatePotential(   ParameterList&                    p,
+  void EvaluatePotential(   Teuchos::ParameterList&                    p,
                             RCP<Epetra_Vector>        disp,
                             RCP<Epetra_Vector>        fint,
                             RCP<LINALG::SparseMatrix> stiff);
@@ -76,7 +76,7 @@ public:
   
   
   void EvaluateSurfacePotentialCondition(
-      ParameterList&                          params,
+      Teuchos::ParameterList&                          params,
       RCP<LINALG::SparseMatrix>       systemmatrix1,
       RCP<LINALG::SparseMatrix>       systemmatrix2,
       RCP<Epetra_Vector>              systemvector1,
@@ -98,8 +98,8 @@ public:
   void StiffnessAndInternalForcesPotential(
       const DRT::Element*               element,
       const DRT::UTILS::GaussRule2D&    gaussrule,
-      ParameterList&                    params,
-      vector<int>&                      lm,
+      Teuchos::ParameterList&           params,
+      std::vector<int>&                 lm,
       Epetra_SerialDenseMatrix&         K_surf,
       Epetra_SerialDenseVector&         fint);
   
@@ -107,8 +107,8 @@ public:
   void StiffnessAndInternalForcesPotentialApprox1(
         const DRT::Element*               element,
         const DRT::UTILS::GaussRule2D&    gaussrule,
-        ParameterList&                    params,
-        vector<int>&                      lm,
+        Teuchos::ParameterList&           params,
+        std::vector<int>&                 lm,
         Epetra_SerialDenseMatrix&         K_surf,
         Epetra_SerialDenseVector&         fint);
   
@@ -116,8 +116,8 @@ public:
   void StiffnessAndInternalForcesPotentialApprox2(
         const DRT::Element*               element,
         const DRT::UTILS::GaussRule2D&    gaussrule,
-        ParameterList&                    params,
-        vector<int>&                      lm,
+        Teuchos::ParameterList&           params,
+        std::vector<int>&                 lm,
         Epetra_SerialDenseMatrix&         K_surf,
         Epetra_SerialDenseVector&         fint);
 
@@ -134,8 +134,8 @@ public:
   void StiffnessAndInternalForcesPotential(
       const DRT::Element*               element,
       const DRT::UTILS::GaussRule1D&    gaussrule,
-      ParameterList&                    params,
-      vector<int>&                      lm,
+      Teuchos::ParameterList&           params,
+      std::vector<int>&                 lm,
       Epetra_SerialDenseMatrix&         K_surf,
       Epetra_SerialDenseVector&         fint);
   
@@ -151,7 +151,7 @@ public:
     \param fint       (out) : element internal force vector
    */
   void TestEvaluatePotential(
-      ParameterList&                    p,
+      Teuchos::ParameterList&                    p,
       RCP<Epetra_Vector>        disp,
       RCP<Epetra_Vector>        fint,
       RCP<LINALG::SparseMatrix> stiff,
@@ -183,7 +183,7 @@ private:
       const DRT::Element*              actEle,
       const DRT::UTILS::GaussRule2D&   gaussrule,
       std::map<int,std::set<int> >&    potElements,
-      vector<int>&                     lm,
+      std::vector<int>&                lm,
       Epetra_SerialDenseMatrix&        K_surf,
       Epetra_SerialDenseVector&        F_int,
       RCP<DRT::Condition>      cond,
@@ -195,7 +195,7 @@ private:
         const DRT::Element*              actEle,
         const DRT::UTILS::GaussRule2D&   gaussrule,
         std::map<int,std::set<int> >&    potElements,
-        vector<int>&                     lm,
+        std::vector<int>&                lm,
         Epetra_SerialDenseMatrix&        K_surf,
         Epetra_SerialDenseVector&        F_int,
         RCP<DRT::Condition>      cond,
@@ -207,7 +207,7 @@ private:
      const DRT::Element*              actEle,
      const DRT::UTILS::GaussRule2D&   gaussrule,
      std::map<int,std::set<int> >&    potElements,
-     vector<int>&                     lm,
+     std::vector<int>&                lm,
      Epetra_SerialDenseMatrix&        K_surf,
      Epetra_SerialDenseVector&        F_int,
      RCP<DRT::Condition>      cond,
@@ -219,7 +219,7 @@ private:
       const DRT::Element*                                         actEle,
       const DRT::UTILS::GaussRule2D&                              gaussrule,  
       const std::map< int, std::map<int, GEO::NearestObject> >&   potentialObjects,
-      vector<int>&                                                lm,
+      std::vector<int>&                                           lm,
       Epetra_SerialDenseMatrix&                                   K_surf,
       Epetra_SerialDenseVector&                                   F_int,
       RCP<DRT::Condition>                                 cond,
@@ -232,7 +232,7 @@ private:
      const DRT::Element*                                        actEle,
      const DRT::UTILS::GaussRule2D&                             gaussrule,  
      const std::map< int, std::map<int, GEO::NearestObject> >&  potentialObjects,
-     vector<int>&                                               lm,
+     std::vector<int>&                                          lm,
      Epetra_SerialDenseMatrix&                                  K_surf,
      Epetra_SerialDenseVector&                                  F_int,
      RCP<DRT::Condition>                                cond,
@@ -249,7 +249,7 @@ private:
         const DRT::Element*              actEle,
         const DRT::UTILS::GaussRule1D&   gaussrule,
         std::map<int,std::set<int> >&    potElements,
-        vector<int>&                     lm,
+        std::vector<int>&                lm,
         Epetra_SerialDenseMatrix&        K_surf,
         Epetra_SerialDenseVector&        F_int,
         RCP<DRT::Condition>      cond,

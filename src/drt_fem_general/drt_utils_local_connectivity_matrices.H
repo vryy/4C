@@ -549,52 +549,52 @@ namespace UTILS
       const DRT::Element::DiscretizationType&     distype);
 
   /*!
-  \brief Fills a vector< vector<int> > with all nodes for every surface
+  \brief Fills a vector< std::vector<int> > with all nodes for every surface
          for each discretization type
 
   \return map with all nodes for each surface
    */
-  vector< vector<int> > getEleNodeNumberingSurfaces(
+  std::vector< std::vector<int> > getEleNodeNumberingSurfaces(
       const DRT::Element::DiscretizationType&     distype     ///< discretization type
   );
 
   /*!
-  \brief Fills a vector< vector<int> > with all nodes for every line
+  \brief Fills a vector< std::vector<int> > with all nodes for every line
          for each discretization type
 
   \return map with all nodes for each line
    */
-  vector< vector<int> > getEleNodeNumberingLines(
+  std::vector< std::vector<int> > getEleNodeNumberingLines(
       const DRT::Element::DiscretizationType&     distype     ///< discretization type
   );
 
   /*!
-  \brief Fills a vector< vector<int> > with all surfaces for every line
+  \brief Fills a vector< std::vector<int> > with all surfaces for every line
          for each discretization type
 
   \return map with surfaces adjacent to each line
   */
-  vector< vector<int> > getEleNodeNumbering_lines_surfaces(
+  std::vector< std::vector<int> > getEleNodeNumbering_lines_surfaces(
     const DRT::Element::DiscretizationType&     distype     ///< discretization type
     );
 
   /*!
-  \brief Fills a vector< vector<int> > with all lines for every node
+  \brief Fills a vector< std::vector<int> > with all lines for every node
          for each discretization type
 
   \return map with all lines adjacent to each node
   */
-  vector< vector<int> > getEleNodeNumbering_nodes_lines(
+  std::vector< std::vector<int> > getEleNodeNumbering_nodes_lines(
       const DRT::Element::DiscretizationType      distype
       );
 
   /*!
-  \brief Fills a vector< vector<int> > with all surfaces for every node
+  \brief Fills a vector< std::vector<int> > with all surfaces for every node
          for each discretization type
 
   \return map with all surfaces adjacent to each node
   */
-  vector< vector<int> > getEleNodeNumbering_nodes_surfaces(
+  std::vector< std::vector<int> > getEleNodeNumbering_nodes_surfaces(
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
 
@@ -612,7 +612,7 @@ namespace UTILS
   \brief Returns a vector with the surface ID s a point in 3d reference coordinates
   \      is lying on for each discretization type
   */
-  vector<int> getSurfaces(
+  std::vector<int> getSurfaces(
     const LINALG::Matrix<3,1>&                  rst,        ///< point in reference coordinates
     const DRT::Element::DiscretizationType      distype     ///< discretization type
     );
@@ -622,7 +622,7 @@ namespace UTILS
    \brief Returns a vector with the line ID s a point in 3d reference coordinates
    \      is lying on for each discretization type
    */
-  vector<int> getLines(
+  std::vector<int> getLines(
       const LINALG::Matrix<3,1>&                  rst,      ///< point in reference coordinates
       const DRT::Element::DiscretizationType      distype   ///< discretization type
       );

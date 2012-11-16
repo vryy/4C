@@ -45,7 +45,7 @@ MPConstraint
     for (conditer=constrcond_.begin();conditer!=constrcond_.end();conditer++)
     {
       const int condID = (*conditer)->GetInt("ConditionID");
-      const std::vector<double>* mypenalties = (*conditer)->Get<vector<double> >("penalty");
+      const std::vector<double>* mypenalties = (*conditer)->Get<std::vector<double> >("penalty");
       penalties_[condID] = (*mypenalties)[0];
       const string* type = (*conditer)->Get<string>("control");
       if (*type == "abs")
@@ -118,7 +118,7 @@ void UTILS::MPConstraint3Penalty::Initialize(const double& time)
  *-----------------------------------------------------------------------*/
 void UTILS::MPConstraint3Penalty::Initialize
 (
-  ParameterList& params,
+  Teuchos::ParameterList& params,
   RCP<Epetra_Vector> systemvector
 )
 {
@@ -129,7 +129,7 @@ void UTILS::MPConstraint3Penalty::Initialize
  *-----------------------------------------------------------------------*/
 void UTILS::MPConstraint3Penalty::Initialize
 (
-  ParameterList& params
+  Teuchos::ParameterList& params
 )
 {
   const double time = params.get("total time",-1.0);
@@ -169,7 +169,7 @@ void UTILS::MPConstraint3Penalty::Initialize
  *-----------------------------------------------------------------------*/
 void UTILS::MPConstraint3Penalty::Evaluate
 ( 
-    ParameterList& params, 
+    Teuchos::ParameterList& params, 
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
     RCP<Epetra_Vector> systemvector1, 
@@ -257,7 +257,7 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
         case mpcnodeonplane3d:
         {
           // take three nodes defining plane as specified by user and put them into a set
-          const vector<int>* defnvp = (*conditer)->Get<vector<int> > ("planeNodes");
+          const std::vector<int>* defnvp = (*conditer)->Get<std::vector<int> > ("planeNodes");
           defnv = *defnvp;
         }
         break;
@@ -364,7 +364,7 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
 void UTILS::MPConstraint3Penalty::EvaluateConstraint
 (
     RCP<DRT::Discretization> disc,
-    ParameterList& params, 
+    Teuchos::ParameterList& params, 
     RCP<LINALG::SparseOperator> systemmatrix1, 
     RCP<LINALG::SparseOperator> systemmatrix2,
     RCP<Epetra_Vector> systemvector1, 
@@ -417,9 +417,9 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
         }
 
         // get element location vector, dirichlet flags and ownerships
-        vector<int> lm;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         actele->LocationVector(*disc,lm,lmowner,lmstride);
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero
@@ -435,7 +435,7 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
         if (err) dserror("Proc %d: Element %d returned err=%d",disc->Comm().MyPID(),eid,err);
 
         // loadcurve business
-        const vector<int>*    curve  = cond->Get<vector<int> >("curve");
+        const std::vector<int>*    curve  = cond->Get<std::vector<int> >("curve");
         int curvenum = -1;
         if (curve) curvenum = (*curve)[0];
         double curvefac = 1.0;
@@ -465,7 +465,7 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
 void UTILS::MPConstraint3Penalty::EvaluateError
 (
     RCP<DRT::Discretization> disc,
-    ParameterList& params, 
+    Teuchos::ParameterList& params, 
     RCP<Epetra_Vector> systemvector,
     bool init
 )
@@ -494,9 +494,9 @@ void UTILS::MPConstraint3Penalty::EvaluateError
       params.set< RCP<DRT::Condition> >("condition", Teuchos::rcp(cond,false));
 
       // get element location vector, dirichlet flags and ownerships
-      vector<int> lm;
-      vector<int> lmowner;
-      vector<int> lmstride;
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
       actele->LocationVector(*disc,lm,lmowner,lmstride);
       elevector3.Size(1);
       params.set("ConditionID",eid);

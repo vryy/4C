@@ -44,9 +44,9 @@ namespace ELEMENTS
     virtual ~RedInterAcinarDepImplInterface() {}
     /// Evaluate the element
     virtual int Evaluate(RedInterAcinarDep*        ele,
-                         ParameterList&            params,
+                         Teuchos::ParameterList&   params,
                          DRT::Discretization&      discretization,
-                         vector<int>&              lm,
+                         std::vector<int>&         lm,
                          Epetra_SerialDenseMatrix& elemat1_epetra,
                          Epetra_SerialDenseMatrix& elemat2_epetra,
                          Epetra_SerialDenseVector& elevec1_epetra,
@@ -55,30 +55,30 @@ namespace ELEMENTS
                          RCP<MAT::Material> mat) = 0;
 
     virtual void Initial(RedInterAcinarDep*                       ele,
-                         ParameterList&                           params,
+                         Teuchos::ParameterList&                           params,
                          DRT::Discretization&                     discretization,
-                         vector<int>&                             lm,
+                         std::vector<int>&                        lm,
                          Teuchos::RCP<const MAT::Material>        material)=0;
 
     virtual void EvaluateTerminalBC(RedInterAcinarDep*            ele,
-                                    ParameterList&                params,
+                                    Teuchos::ParameterList&       params,
                                     DRT::Discretization&          discretization,
-                                    vector<int>&                  lm,
+                                    std::vector<int>&             lm,
                                     Epetra_SerialDenseVector& elevec1_epetra,
                                     RCP<MAT::Material>    mat) = 0;
 
     virtual void CalcFlowRates(RedInterAcinarDep*            ele,
-                               ParameterList&                params,
+                               Teuchos::ParameterList&       params,
                                DRT::Discretization&          discretization,
                                Epetra_SerialDenseVector&     a_volumen,
                                Epetra_SerialDenseVector&     a_volumenp,
-                               vector<int>&                  lm,
+                               std::vector<int>&             lm,
                                RCP<MAT::Material>    mat) = 0;
 
     virtual void GetCoupledValues(RedInterAcinarDep*           ele,
-                                  ParameterList&               params,
+                                  Teuchos::ParameterList&      params,
                                   DRT::Discretization&         discretization,
-                                  vector<int>&                 lm,
+                                  std::vector<int>&            lm,
                                   RCP<MAT::Material>   material) = 0;
 
     /// Internal implementation class for acinus element
@@ -115,9 +115,9 @@ namespace ELEMENTS
       The evaluate function for the general acinus case.
      */
     virtual int Evaluate(RedInterAcinarDep*        ele,
-                         ParameterList&            params,
+                         Teuchos::ParameterList&   params,
                          DRT::Discretization&      discretization,
-                         vector<int>&              lm,
+                         std::vector<int>&         lm,
                          Epetra_SerialDenseMatrix& elemat1_epetra,
                          Epetra_SerialDenseMatrix& elemat2_epetra,
                          Epetra_SerialDenseVector& elevec1_epetra,
@@ -152,9 +152,9 @@ namespace ELEMENTS
 
 
     virtual void EvaluateTerminalBC(RedInterAcinarDep *          ele,
-                                    ParameterList&               params,
+                                    Teuchos::ParameterList&      params,
                                     DRT::Discretization&         disctretization,
-                                    vector<int>&                 lm,
+                                    std::vector<int>&            lm,
                                     Epetra_SerialDenseVector&    elevec1_epetra,
                                     RCP<MAT::Material>   mat);
 
@@ -173,29 +173,29 @@ namespace ELEMENTS
       \param dt               (i) timestep
       */
     virtual void Initial(RedInterAcinarDep*                       ele,
-                         ParameterList&                           params,
+                         Teuchos::ParameterList&                           params,
                          DRT::Discretization&                     discretization,
-                         vector<int>&                             lm,
+                         std::vector<int>&                        lm,
                          Teuchos::RCP<const MAT::Material>        material);
 
     /*!
      \Essential functions to compute the results of essentail matrices 
     */
     virtual void CalcFlowRates(RedInterAcinarDep*            ele,
-                               ParameterList&                params,
+                               Teuchos::ParameterList&       params,
                                DRT::Discretization&          discretization,
                                Epetra_SerialDenseVector&     a_volumen_strain_np,
                                Epetra_SerialDenseVector&     a_volumenp,
-                               vector<int>&                  lm,
+                               std::vector<int>&             lm,
                                RCP<MAT::Material>    mat);
 
     /*!
      \Essential functions to evaluate the coupled results
     */
     virtual void GetCoupledValues(RedInterAcinarDep*           ele,
-                                  ParameterList&               params,
+                                  Teuchos::ParameterList&      params,
                                   DRT::Discretization&         discretization,
-                                  vector<int>&                 lm,
+                                  std::vector<int>&            lm,
                                   RCP<MAT::Material>   material);
 
   private:

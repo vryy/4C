@@ -364,9 +364,9 @@ private:
          
   */
   void EvaluateNewtonF(vector<double>& f,
-                       const vector<double>& x1, const vector<double>& x2,
-                       const vector<double>& dx1, const vector<double>& dx2,
-                       const vector<double>& t1, const vector<double>& t2,
+                       const std::vector<double>& x1, const vector<double>& x2,
+                       const std::vector<double>& dx1, const vector<double>& dx2,
+                       const std::vector<double>& t1, const vector<double>& t2,
                        const double& norm, int beams_smoothing);
   
   /*!
@@ -374,11 +374,11 @@ private:
   
   */
   void EvaluateNewtonGradF(LINALG::Matrix<2,2>& df,
-                           const vector<double>& x1, const vector<double>& x2,
-                           const vector<double>& dx1, const vector<double>& dx2,
-                           const vector<double>& ddx1, const vector<double>& ddx2,
-                           const vector<double>& t1, const vector<double>& t2,
-                           const vector<double>& dt1, const vector<double>& dt2,
+                           const std::vector<double>& x1, const vector<double>& x2,
+                           const std::vector<double>& dx1, const vector<double>& dx2,
+                           const std::vector<double>& ddx1, const vector<double>& ddx2,
+                           const std::vector<double>& t1, const vector<double>& t2,
+                           const std::vector<double>& dt1, const vector<double>& dt2,
                            const double& norm, int beams_smoothing);
   
   /*!
@@ -386,7 +386,7 @@ private:
   
   */
   void EvaluateFcContact(const double& pp, const double& gap,
-                         const vector<double>& normal, Epetra_Vector& fint,
+                         const std::vector<double>& normal, Epetra_Vector& fint,
                          Epetra_SerialDenseVector funct1, Epetra_SerialDenseVector funct2, 
                          const int numnode1, const int numnode2);
   
@@ -395,11 +395,11 @@ private:
   
   */
   void EvaluateStiffcContact(const double& pp, const double& gap,
-                             const vector<double>& normal, const double& norm,
+                             const std::vector<double>& normal, const double& norm,
                              LINALG::SparseMatrix& stiffmatrix,
-                             const vector<double>& x1, const vector<double>& x2,
-                             const vector<double>& dx1, const vector<double>& dx2,
-                             const vector<double>& ddx1, const vector<double>& ddx2, 
+                             const std::vector<double>& x1, const vector<double>& x2,
+                             const std::vector<double>& dx1, const vector<double>& dx2,
+                             const std::vector<double>& ddx1, const vector<double>& ddx2, 
                              const Epetra_SerialDenseVector& funct1,
                              const Epetra_SerialDenseVector& funct2,  
                              const Epetra_SerialDenseMatrix& deriv1,
@@ -407,7 +407,7 @@ private:
                              const Epetra_SerialDenseMatrix& secondderiv1,
                              const Epetra_SerialDenseMatrix& secondderiv2, 
                              const int numnode1, const int numnode2,
-                             const vector<double>& XiContact,
+                             const std::vector<double>& XiContact,
                              int beams_smoothing);
   
 
@@ -424,8 +424,8 @@ private:
   \brief Compute normal vector in contact point
           
   */
-  void ComputeNormal(vector<double>& normal, double& gap, double& norm, 
-                     const vector<double>& x1, const vector<double>& x2);
+  void ComputeNormal(std::vector<double>& normal, double& gap, double& norm, 
+                     const std::vector<double>& x1, const vector<double>& x2);
   
 
 
@@ -457,9 +457,9 @@ private:
   \brief Compute coordinates and their derivatives from the discretization
           
   */
-  void ComputeCoordsAndDerivs(vector<double>& x1, vector<double>& x2, 
-                              vector<double>& dx1, vector<double>& dx2,
-                              vector<double>& ddx1, vector<double>& ddx2,
+  void ComputeCoordsAndDerivs(vector<double>& x1, std::vector<double>& x2, 
+                              vector<double>& dx1, std::vector<double>& dx2,
+                              vector<double>& ddx1, std::vector<double>& ddx2,
                               const Epetra_SerialDenseVector& funct1,
                               const Epetra_SerialDenseVector& funct2,
                               const Epetra_SerialDenseMatrix& deriv1,
@@ -473,8 +473,8 @@ private:
   \brief Compute contact point tangents and their derivatives
 
   */
-  void ComputeTangentsAndDerivs(vector<double>& t1, vector<double>& t2,
-                              vector<double>& dt1, vector<double>& dt2,
+  void ComputeTangentsAndDerivs(vector<double>& t1, std::vector<double>& t2,
+                              vector<double>& dt1, std::vector<double>& dt2,
                               const Epetra_SerialDenseVector& funct1,
                               const Epetra_SerialDenseVector& funct2,
                               const Epetra_SerialDenseMatrix& deriv1,
@@ -505,23 +505,23 @@ private:
                          Epetra_SerialDenseMatrix& deriv2,
                          Epetra_SerialDenseMatrix& secondderiv1,
                          Epetra_SerialDenseMatrix& secondderiv2,
-                         const vector<double>& eta);
+                         const std::vector<double>& eta);
   
   /*!
   \brief Compute linearizations of contact point
           
   */
-  void ComputeLinXiAndLinEta(vector<double>& delta_xi, vector<double>& delta_eta, 
-                             const vector<double>& x1, const vector<double>& x2,
-                             const vector<double>& dx1, const vector<double>& dx2,
-                             const vector<double>& ddx1, const vector<double>& ddx2,
+  void ComputeLinXiAndLinEta(vector<double>& delta_xi, std::vector<double>& delta_eta, 
+                             const std::vector<double>& x1, const vector<double>& x2,
+                             const std::vector<double>& dx1, const vector<double>& dx2,
+                             const std::vector<double>& ddx1, const vector<double>& ddx2,
                              const Epetra_SerialDenseVector& funct1,
                              const Epetra_SerialDenseVector& funct2, 
                              const Epetra_SerialDenseMatrix& deriv1,
                              const Epetra_SerialDenseMatrix& deriv2, 
-                             const vector<double>& normal, const double& norm,
+                             const std::vector<double>& normal, const double& norm,
                              const int numnode1, const int numnode2,
-                             const vector<double>& XiContact,
+                             const std::vector<double>& XiContact,
                              int beams_smoothing);
   
   /*!
@@ -529,14 +529,14 @@ private:
           
   */
   void ComputeLinGap(vector<double>& delta_gap,
-                     vector<double>& delta_xi, vector<double>& delta_eta,
-                     const vector<double>& x1, const vector<double>& x2,
-                     const vector<double>& dx1, const vector<double>& dx2,
+                     vector<double>& delta_xi, std::vector<double>& delta_eta,
+                     const std::vector<double>& x1, const vector<double>& x2,
+                     const std::vector<double>& dx1, const vector<double>& dx2,
                      const Epetra_SerialDenseVector& funct1,
                      const Epetra_SerialDenseVector& funct2, 
                      const double& normdist,
                      const int& numnode1, const int& numnode2,
-                     const vector<double>& normal, const double& norm,
+                     const std::vector<double>& normal, const double& norm,
                      const double& gap,Epetra_SerialDenseMatrix& delta_x1_minus_x2,
                      int beams_smoothing);
   
@@ -545,12 +545,12 @@ private:
           
   */
   void ComputeLinNormal(Epetra_SerialDenseMatrix& delta_n, 
-                        const vector<double>& x1, const vector<double>& x2,
+                        const std::vector<double>& x1, const vector<double>& x2,
                         const double& norm,
                         const int& numnode1, const int& numnode2,
                         const Epetra_SerialDenseMatrix& delta_x1_minus_x2,
-                        const vector<double>& normal, 
-                        const vector<double>& XiContact,
+                        const std::vector<double>& normal, 
+                        const std::vector<double>& XiContact,
                         int beams_smoothing);
   
   /*!
@@ -558,7 +558,7 @@ private:
           
   */                
   void ComputeDistance(vector<double>& distance, double& normdist,
-                       const vector<double>& normal, const double& norm);
+                       const std::vector<double>& normal, const double& norm);
   
   /*!
   \brief Check if contact is active and set flag accordingly
@@ -586,9 +586,9 @@ private:
           
   */                
   void FDCheckCPP(const int& numnode1, const int& numnode2, 
-                  const vector<double>& delta_xi,
-                  const vector<double>& delta_eta,
-                  const vector<double>& XiContact,
+                  const std::vector<double>& delta_xi,
+                  const std::vector<double>& delta_eta,
+                  const std::vector<double>& XiContact,
                   int beams_smoothing);
   
 
@@ -599,7 +599,7 @@ private:
 
   */
   void FDCheckNewtonCPP(const int& numnode1, const int& numnode2,
-         const vector<double>& eta,int beams_smoothing);
+         const std::vector<double>& eta,int beams_smoothing);
 
 
 
@@ -608,9 +608,9 @@ private:
           
   */
   void FDCheckLinGap(const int& numnode1, const int& numnode2, 
-                     const vector<double>& normal,
+                     const std::vector<double>& normal,
                      const double& norm,
-                     const vector<double>& delta_gap,
+                     const std::vector<double>& delta_gap,
                      const double& gap,
                      int beams_smoothing);
   
@@ -620,7 +620,7 @@ private:
   */
   void FDCheckLinNormal(const int& numnode1, const int& numnode2, 
                         const Epetra_SerialDenseMatrix& delta_n,
-                        const vector<double>& normal,
+                        const std::vector<double>& normal,
                         int beams_smoothing);
   
   /*!
@@ -630,7 +630,7 @@ private:
   void FDCheckStiffc(const int& numnode1, const int& numnode2, 
                      const Epetra_SerialDenseMatrix& stiffc1,
                      const Epetra_SerialDenseMatrix& stiffc2, 
-                     const double& pp, const vector<double>& normal,
+                     const double& pp, const std::vector<double>& normal,
                      const double& gap,
                      const Epetra_SerialDenseVector& funct1,
                      const Epetra_SerialDenseVector& funct2,

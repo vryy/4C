@@ -16,7 +16,7 @@ Maintainer: Michael Gee
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
 LINALG::AMG_Operator::AMG_Operator(RCP<Epetra_RowMatrix> A,
-                                   ParameterList& params,
+                                   Teuchos::ParameterList& params,
                                    const bool compute) :
 Epetra_Operator(),
 label_("LINALG::AMG_Operator"),

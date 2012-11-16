@@ -26,7 +26,7 @@ Maintainer: Lena Yoshihara
 // this routine is intended to determine a homogenized material
 // density for multi-scale analyses by averaging over the initial volume
 
-void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params)
+void DRT::ELEMENTS::So_hex8::soh8_homog(Teuchos::ParameterList&  params)
 {
   if(DRT::Problem::Instance(0)->GetNPGroup()->SubComm()->MyPID() == Owner())
   {
@@ -54,20 +54,20 @@ void DRT::ELEMENTS::So_hex8::soh8_homog(ParameterList&  params)
 // macroscopic Gauss point and set before the determination of microscale
 // stiffness etc.
 
-void DRT::ELEMENTS::So_hex8::soh8_set_eas_multi(ParameterList&  params)
+void DRT::ELEMENTS::So_hex8::soh8_set_eas_multi(Teuchos::ParameterList&  params)
 {
   if (eastype_ != soh8_easnone)
   {
     RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldalpha =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldalpha", null);
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldalpha",Teuchos::null);
     RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldfeas =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldfeas", null);
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldfeas",Teuchos::null);
     RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldKaainv =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldKaainv", null);
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldKaainv",Teuchos::null);
     RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldKda =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldKda", null);
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldKda",Teuchos::null);
 
-    if (oldalpha==null || oldfeas==null || oldKaainv==null || oldKda==null)
+    if (oldalpha==Teuchos::null || oldfeas==Teuchos::null || oldKaainv==Teuchos::null || oldKda==Teuchos::null)
       dserror("Cannot get EAS internal data from parameter list for multi-scale problems");
 
     data_.Add("alpha", (*oldalpha)[Id()]);
@@ -82,20 +82,20 @@ void DRT::ELEMENTS::So_hex8::soh8_set_eas_multi(ParameterList&  params)
 /*----------------------------------------------------------------------*
  |  Initialize EAS internal variables on the microscale         lw 03/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::soh8_eas_init_multi(ParameterList&  params)
+void DRT::ELEMENTS::So_hex8::soh8_eas_init_multi(Teuchos::ParameterList&  params)
 {
   if (eastype_ != soh8_easnone)
   {
     RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > lastalpha =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("lastalpha", null);
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("lastalpha",Teuchos::null);
     RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldalpha =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldalpha", null);
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldalpha",Teuchos::null);
     RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldfeas =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldfeas", null);
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldfeas",Teuchos::null);
     RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldKaainv =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldKaainv", null);
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldKaainv",Teuchos::null);
     RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > oldKda =
-      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldKda", null);
+      params.get<RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > >("oldKda",Teuchos::null);
 
     (*lastalpha)[Id()] = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_, 1));
     (*oldalpha)[Id()]  = Teuchos::rcp(new Epetra_SerialDenseMatrix(neas_, 1));

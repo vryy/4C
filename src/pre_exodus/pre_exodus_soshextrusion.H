@@ -42,36 +42,36 @@ namespace EXODUS
   int RepairTwistedExtrusion(const double thickness,
       const map<int,double>& nd_ts, // map of variable thicknesses at node
       const int numlayers,const int initelesign, int& highestnid,
-      const map<int,vector<int> >& encloseconn, const map<int,vector<int> >& layerstack,
-      std::map<int,vector<int> >& newconn, std::map<int,vector<double> >& newnodes,map<int,std::set<int> >& ext_node_conn,
-      const std::map<int,vector<double> >& avgnode_normals, std::map<int,vector<int> >& node_pair,
+      const map<int,std::vector<int> >& encloseconn, const map<int,std::vector<int> >& layerstack,
+      std::map<int,std::vector<int> >& newconn, std::map<int,std::vector<double> >& newnodes,map<int,std::set<int> >& ext_node_conn,
+      const std::map<int,std::vector<double> >& avgnode_normals, std::map<int,std::vector<int> >& node_pair,
       const std::map<int,int>& inv_node_pair);
 
   vector<double> ExtrudeNodeCoords(const vector<double> basecoords, const double distance,
       const int layer, const int numlayers, const vector<double> normal);
 
   vector<double> NodeToAvgNormal(const int node,const vector<int> elenodes,const vector<double> refnormdir,
-      const std::map<int,std::set<int> >& nodetoele, const std::map<int,vector<int> >& ele_conn, const EXODUS::Mesh& basemesh,
+      const std::map<int,std::set<int> >& nodetoele, const std::map<int,std::vector<int> >& ele_conn, const EXODUS::Mesh& basemesh,
       bool check_norm_scalarproduct = true);
 
-  vector<double> AverageNormal(const vector<double> normal, const vector<vector<double> > nbr_normals);
+  vector<double> AverageNormal(const vector<double> normal, const vector<std::vector<double> > nbr_normals);
 
   vector<double> Normal(int head1, int origin, int head2, const EXODUS::Mesh& basemesh);
-  vector<double> Normal(int head1, int origin, int head2,const std::map<int,vector<double> >& coords);
+  vector<double> Normal(int head1, int origin, int head2,const std::map<int,std::vector<double> >& coords);
 
   void CheckNormDir(vector<double>& checkn,const vector<double> refn);
 
-  vector<double> MeanVec(const vector<vector<double> > baseVecs);
+  vector<double> MeanVec(const vector<std::vector<double> > baseVecs);
 
-  const std::map<int,std::set<int> > NodeToEleConn(const std::map<int,vector<int> > ele_conn);
+  const std::map<int,std::set<int> > NodeToEleConn(const std::map<int,std::vector<int> > ele_conn);
 
-  const std::map<int,vector<int> > EleNeighbors(const std::map<int,vector<int> >ele_conn, const std::map<int,std::set<int> >& node_conn);
+  const std::map<int,std::vector<int> > EleNeighbors(const std::map<int,std::vector<int> >ele_conn, const std::map<int,std::set<int> >& node_conn);
 
-  const std::set<int> FreeEdgeNodes(const std::map<int,vector<int> >& ele_conn, const std::map<int,vector<int> >& ele_nbrs);
+  const std::set<int> FreeEdgeNodes(const std::map<int,std::vector<int> >& ele_conn, const std::map<int,std::vector<int> >& ele_nbrs);
 
-  const std::set<int> FindExtrudedNodes(const std::set<int>& freedgenodes, const std::map<int,vector<int> >& nodepair,const std::set<int>& ns);
+  const std::set<int> FindExtrudedNodes(const std::set<int>& freedgenodes, const std::map<int,std::vector<int> >& nodepair,const std::set<int>& ns);
 
-  std::set<int> FreeFaceNodes(const std::set<int>& freedgenodes, const std::map<int,vector<int> >& nodepair);
+  std::set<int> FreeFaceNodes(const std::set<int>& freedgenodes, const std::map<int,std::vector<int> >& nodepair);
 
   bool FindinVec(const int id,vector<int> vec);
   int  FindPosinVec(const int id,vector<int> vec);
@@ -82,19 +82,19 @@ namespace EXODUS
 
   enum ExtrusionType{eblock,sideset};
 
-  std::map<int,vector<int> > ExtrusionErrorOutput(const int secedgenode,const int todo_counter,
-      const std::set<int>& doneles, const std::map<int,vector<int> >& ele_conn, const std::set<int>& todo_eleset);
+  std::map<int,std::vector<int> > ExtrusionErrorOutput(const int secedgenode,const int todo_counter,
+      const std::set<int>& doneles, const std::map<int,std::vector<int> >& ele_conn, const std::set<int>& todo_eleset);
 
-  void PlotEleGmsh(const vector<int> elenodes, const std::map<int,vector<double> >& nodes, const int id);
+  void PlotEleGmsh(const vector<int> elenodes, const std::map<int,std::vector<double> >& nodes, const int id);
   void PlotStartEleGmsh(const int eleid, const vector<int> elenodes,
       const EXODUS::Mesh& basemesh, const int nodeid, const vector<double> normal);
 
-  void PlotEleNbrs(const vector<int> centerele,const vector<int> nbrs, const std::map<int,vector<int> >& baseconn,
+  void PlotEleNbrs(const vector<int> centerele,const vector<int> nbrs, const std::map<int,std::vector<int> >& baseconn,
       const EXODUS::Mesh& basemesh, const int nodeid, const vector<double> normal,
-      const std::map<int,std::set<int> >& node_conn, const std::map<int,vector<double> >avg_nn);
+      const std::map<int,std::set<int> >& node_conn, const std::map<int,std::vector<double> >avg_nn);
 
-  void PlotEleConnGmsh(const std::map<int,vector<int> >& conn, const std::map<int,vector<double> >& nodes, const int plot_eleid=-1);
-  void PlotEleConnGmsh(const std::map<int,vector<int> >& conn, const std::map<int,vector<double> >& nodes, const std::map<int,vector<int> >& leftovers);
+  void PlotEleConnGmsh(const std::map<int,std::vector<int> >& conn, const std::map<int,std::vector<double> >& nodes, const int plot_eleid=-1);
+  void PlotEleConnGmsh(const std::map<int,std::vector<int> >& conn, const std::map<int,std::vector<double> >& nodes, const std::map<int,std::vector<int> >& leftovers);
 
 } // of namespace EXODUS
 

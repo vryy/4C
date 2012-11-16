@@ -552,7 +552,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
   const double vol = my::fac_;
 
   //access structure discretization
-  RCP<DRT::Discretization> structdis = null;
+  RCP<DRT::Discretization> structdis = Teuchos::null;
   structdis = DRT::Problem::Instance()->GetDis("structure");
   //get corresponding structure element (it has the same global ID as the fluid element)
   DRT::Element* structele = structdis->gElement(eid);
@@ -1945,7 +1945,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
     my::reacoeff_ = actmat->ComputeReactionCoeff();
 
     //access structure discretization
-    RCP<DRT::Discretization> structdis = null;
+    RCP<DRT::Discretization> structdis = Teuchos::null;
     structdis = DRT::Problem::Instance()->GetDis("structure");
     //get corresponding structure element (it has the same global ID as the fluid element)
     DRT::Element* structele = structdis->gElement(eid);
@@ -2265,7 +2265,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
       double porosity=0.0;
 
       //access structure discretization
-      RCP<DRT::Discretization> structdis = null;
+      RCP<DRT::Discretization> structdis = Teuchos::null;
       structdis = DRT::Problem::Instance()->GetDis("structure");
       //get corresponding structure element (it has the same global ID as the fluid element)
       DRT::Element* structele = structdis->gElement(eid);

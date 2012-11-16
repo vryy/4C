@@ -62,12 +62,12 @@ void DRT::Discretization::Reset(bool killdofs)
       dofsets_[i]->Reset();
   }
 
-  elerowmap_ = null;
-  elecolmap_ = null;
+  elerowmap_ = Teuchos::null;
+  elecolmap_ = Teuchos::null;
   elerowptr_.clear();
   elecolptr_.clear();
-  noderowmap_ = null;
-  nodecolmap_ = null;
+  noderowmap_ = Teuchos::null;
+  nodecolmap_ = Teuchos::null;
   noderowptr_.clear();
   nodecolptr_.clear();
 
@@ -90,7 +90,7 @@ int DRT::Discretization::FillComplete(bool assigndegreesoffreedom,
                                       bool initelements,
                                       bool doboundaryconditions)
 {
-  // set all maps to null
+  // set all maps to Teuchos::null
   Reset(assigndegreesoffreedom);
 
   // (re)build map of nodes noderowmap_, nodecolmap_, noderowptr and nodecolptr
@@ -156,7 +156,7 @@ void DRT::Discretization::BuildNodeRowMap()
   for (curr=node_.begin(); curr != node_.end(); ++curr)
     if (curr->second->Owner() == myrank)
       ++nummynodes;
-  vector<int> nodeids(nummynodes);
+  std::vector<int> nodeids(nummynodes);
   noderowptr_.resize(nummynodes);
 
   int count=0;
@@ -178,7 +178,7 @@ void DRT::Discretization::BuildNodeRowMap()
 void DRT::Discretization::BuildNodeColMap()
 {
   int nummynodes = (int)node_.size();
-  vector<int> nodeids(nummynodes);
+  std::vector<int> nodeids(nummynodes);
   nodecolptr_.resize(nummynodes);
 
   int count=0;
@@ -207,7 +207,7 @@ void DRT::Discretization::BuildElementRowMap()
   for (curr=element_.begin(); curr != element_.end(); ++curr)
     if (curr->second->Owner()==myrank)
       nummyeles++;
-  vector<int> eleids(nummyeles);
+  std::vector<int> eleids(nummyeles);
   elerowptr_.resize(nummyeles);
   int count=0;
   for (curr=element_.begin(); curr != element_.end(); ++curr)
@@ -228,9 +228,9 @@ void DRT::Discretization::BuildElementRowMap()
 void DRT::Discretization::BuildElementColMap()
 {
   int nummyeles = (int)element_.size();
-  vector<int> eleids(nummyeles);
+  std::vector<int> eleids(nummyeles);
   elecolptr_.resize(nummyeles);
-  map<int,RCP<DRT::Element> >::iterator curr;
+  std::map<int,RCP<DRT::Element> >::iterator curr;
   int count=0;
   for (curr=element_.begin(); curr != element_.end(); ++curr)
   {

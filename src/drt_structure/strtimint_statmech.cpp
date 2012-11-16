@@ -717,7 +717,7 @@ void STR::TimIntStatMech::FullNewton()
 //      //discret_->SetState("velocity",velm_); // not used at the moment
 //
 //      fint_->PutScalar(0.0);  // initialise internal force vector
-//      discret_->Evaluate(p,stiff_,null,fint_,null,null);
+//      discret_->Evaluate(p,stiff_,Teuchos::null,fint_,Teuchos::null,Teuchos::null);
 //
 //      discret_->ClearState();
 //
@@ -882,7 +882,7 @@ void STR::TimIntStatMech::InitializeNewtonUzawa()
       discret_->SetState("velocity",veln_);
 
       fint_->PutScalar(0.0);  // initialise internal force vector
-      discret_->Evaluate(p,stiff_,null,fint_,null,null);
+      discret_->Evaluate(p,stiff_,Teuchos::null,fint_,Teuchos::null,Teuchos::null);
 
       discret_->ClearState();
     }
@@ -1080,7 +1080,7 @@ void STR::TimIntStatMech::InitializeNewtonUzawa()
 //    discret_->SetState("residual displacement",zeros_);
 //    discret_->SetState("displacement",dis_);
 //    discret_->SetState("velocity",vel_);
-//    discret_->Evaluate(p,null,null,null,null,null);
+//    discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 //    discret_->ClearState();
 //    if (!isdatawritten) output_.NewStep(istep, timen);
 //    isdatawritten = true;
@@ -1312,7 +1312,7 @@ void STR::TimIntStatMech::PTCBrownianForcesAndDamping(double& dt, double& crotpt
   statmechman_->AddStatMechParamsTo(p);
 
   //evaluate ptc stiffness contribution in all the elements
-  discret_->Evaluate(p,stiff_,null,null,null,null);
+  discret_->Evaluate(p,stiff_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   sumptc += Teuchos::Time::wallTime() - t_ptc;
 
@@ -1739,7 +1739,7 @@ void STR::TimIntStatMech::StatMechRestoreConvState()
     {
       ParameterList p;
       p.set("action","calc_struct_reset_istep");
-      discret_->Evaluate(p,null,null,null,null,null);
+      discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
       statmechman_->RestoreConv(stiff_, beamcman_);
       buildoctree_ = true;
     }

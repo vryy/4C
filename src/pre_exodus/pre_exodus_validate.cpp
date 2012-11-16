@@ -29,6 +29,7 @@ Validate a given BACI input file (after all preprocessing steps)
 
 using namespace Teuchos;
 using namespace EXODUS;
+using std::vector;
 
 
 /*----------------------------------------------------------------------*/
@@ -141,8 +142,8 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
   Epetra_SerialDenseMatrix    deriv(NSD, iel);
 
   // go through all elements
-  RCP<map<int,vector<int> > > eleconn = eb->GetEleConn();
-  map<int,vector<int> >::iterator i_ele;
+  RCP<map<int,std::vector<int> > > eleconn = eb->GetEleConn();
+  map<int,std::vector<int> >::iterator i_ele;
   int numrewindedeles=0;
   for(i_ele=eleconn->begin();i_ele!=eleconn->end();++i_ele){
     int rewcount=0;
@@ -218,8 +219,8 @@ int EXODUS::ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::Dis
 
   // go through all elements
   int invalids = 0;
-  RCP<map<int,vector<int> > > eleconn = eb->GetEleConn();
-  map<int,vector<int> >::iterator i_ele;
+  RCP<map<int,std::vector<int> > > eleconn = eb->GetEleConn();
+  map<int,std::vector<int> >::iterator i_ele;
   for(i_ele=eleconn->begin();i_ele!=eleconn->end();++i_ele){
     for (int igp = 0; igp < intpoints.nquad; ++igp) {
       DRT::UTILS::shape_function_3D_deriv1(deriv,intpoints.qxg[igp][0],intpoints.qxg[igp][1],intpoints.qxg[igp][2],distype);
@@ -234,14 +235,14 @@ int EXODUS::ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::Dis
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-bool EXODUS::PositiveEle(const int& eleid, const vector<int>& nodes,const Mesh& mymesh,const Epetra_SerialDenseMatrix& deriv)
+bool EXODUS::PositiveEle(const int& eleid, const std::vector<int>& nodes,const Mesh& mymesh,const Epetra_SerialDenseMatrix& deriv)
 {
   const int iel = deriv.N();
   const int NSD = deriv.M();
   LINALG::SerialDenseMatrix xyze(deriv.M(),iel);
   for (int inode=0; inode<iel; inode++)
   {
-    const vector<double> x = mymesh.GetNode(nodes.at(inode));
+    const std::vector<double> x = mymesh.GetNode(nodes.at(inode));
     xyze(0,inode) = x[0];
     xyze(1,inode) = x[1];
     xyze(2,inode) = x[2];
@@ -272,7 +273,7 @@ bool EXODUS::PositiveEle(const int& eleid, const vector<int>& nodes,const Mesh& 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >& nodecoords)
+int EXODUS::EleSaneSign(const std::vector<int>& nodes,const std::map<int,std::vector<double> >& nodecoords)
 {
   const int iel = nodes.size();
   // to be even stricter we test the Jacobian at every Node, not just at the gausspoints
@@ -311,7 +312,7 @@ int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >&
   LINALG::SerialDenseMatrix xyze(deriv.M(),iel);
   for (int inode=0; inode<iel; inode++)
   {
-    const vector<double> x = nodecoords.find(nodes[inode])->second;
+    const std::vector<double> x = nodecoords.find(nodes[inode])->second;
     xyze(0,inode) = x[0];
     xyze(1,inode) = x[1];
     xyze(2,inode) = x[2];
@@ -347,9 +348,9 @@ int EXODUS::EleSaneSign(const vector<int>& nodes,const map<int,vector<double> >&
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-vector<int> EXODUS::RewindEle(vector<int> old_nodeids, const DRT::Element::DiscretizationType distype)
+std::vector<int> EXODUS::RewindEle(std::vector<int> old_nodeids, const DRT::Element::DiscretizationType distype)
 {
-  vector<int> new_nodeids(old_nodeids.size());
+  std::vector<int> new_nodeids(old_nodeids.size());
   // rewinding of nodes to arrive at mathematically positive element
   switch(distype)
   {

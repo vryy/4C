@@ -68,7 +68,7 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
       const DRT::Node* newnode = newdis.lRowNode(inode);
       const DRT::Node* sourcenode = sourcedis.gNode(newnode->Id());
 
-      const vector<int> dofs = sourcedis.Dof(0,sourcenode);
+      const std::vector<int> dofs = sourcedis.Dof(0,sourcenode);
 
       const int newlid = newnode->LID();
       const int numdofs = (*numdfcolnodes_)[newlid];
@@ -104,7 +104,7 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
       {
         dserror("required node %d not on proc",newnode->Id());
       }
-      const vector<int> dofs = sourcedis.Dof(0,sourcenode);
+      const std::vector<int> dofs = sourcedis.Dof(0,sourcenode);
       const int newlid = newnode->LID();
       //const int newfirstidx = (*idxcolnodes_)[newlid];
       const int numdofs = (*numdfcolnodes_)[newlid];
@@ -157,7 +157,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
   // the idea is to search for the sourcerownode on some proc and to get
   // this unique number
   //
-  map<int,vector<int> >  gid_to_dofs;
+  map<int,std::vector<int> >  gid_to_dofs;
 
   for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
   {
@@ -264,7 +264,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
   {
     const DRT::Node* newnode = newdis.lRowNode(inode);
 
-    const vector<int> dofs = gid_to_dofs[newnode->Id()];
+    const std::vector<int> dofs = gid_to_dofs[newnode->Id()];
 
     const int newlid = newnode->LID();
     const int numdofs = (*numdfcolnodes_)[newlid];
@@ -313,7 +313,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
   {
     const DRT::Node* newnode = newdis.lColNode(inode);
 
-    const vector<int> dofs = gid_to_dofs[newnode->Id()];
+    const std::vector<int> dofs = gid_to_dofs[newnode->Id()];
 
     const int newlid = newnode->LID();
     //const int newfirstidx = (*idxcolnodes_)[newlid];
@@ -354,10 +354,10 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
-  map<int,vector<int> >   & gid_to_dofs
+  map<int,std::vector<int> >   & gid_to_dofs
   )
 {
-  for(map<int,vector<int> >::iterator curr=gid_to_dofs.begin();
+  for(map<int,std::vector<int> >::iterator curr=gid_to_dofs.begin();
     curr!=gid_to_dofs.end();++curr)
   {
 
@@ -369,7 +369,7 @@ void DRT::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
 
       const DRT::Node* sourcenode = sourcedis_->gNode(curr->first);
 
-      const vector<int> dofs = sourcedis_->Dof(0,sourcenode);
+      const std::vector<int> dofs = sourcedis_->Dof(0,sourcenode);
 
       for (vector<int>::const_iterator iter=dofs.begin();iter!=dofs.end();++iter)
       {
@@ -398,7 +398,7 @@ void DRT::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::TransparentDofSet::PackLocalSourceDofs(
-  map<int,vector<int> >   & gid_to_dofs  ,
+  map<int,std::vector<int> >   & gid_to_dofs  ,
   DRT::PackBuffer         & sblock
   )
 {
@@ -407,7 +407,7 @@ void DRT::TransparentDofSet::PackLocalSourceDofs(
   // add size  to sendblock
   DRT::ParObject::AddtoPack(sblock,size);
 
-  for(map<int,vector<int> >::iterator curr=gid_to_dofs.begin();
+  for(map<int,std::vector<int> >::iterator curr=gid_to_dofs.begin();
     curr!=gid_to_dofs.end();++curr)
   {
     int         gid    = curr->first;
@@ -436,14 +436,14 @@ void DRT::TransparentDofSet::PackLocalSourceDofs(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::TransparentDofSet::UnpackLocalSourceDofs(
-  map<int,vector<int> >   & gid_to_dofs  ,
+  map<int,std::vector<int> >   & gid_to_dofs  ,
   vector<char>            & rblock
   )
 {
   gid_to_dofs.clear();
 
   // position to extract
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
 
   // extract size
   int size=0;

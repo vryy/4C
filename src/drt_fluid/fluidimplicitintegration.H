@@ -857,7 +857,7 @@ protected:
   FLD::UTILS::KSPMapExtractor kspsplitter_;
 
   /// connection between master and slave nodes on this proc (based on row map!!!!)
-  RCP<map<int,vector<int> > > pbcmapmastertoslave_;
+  RCP<map<int,std::vector<int> > > pbcmapmastertoslave_;
 
   /// a manager doing the transfer of boundary data for
   /// turbulent inflow profiles from a separate (periodic) domain

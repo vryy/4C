@@ -52,18 +52,18 @@ namespace MAT {
 	    /// \b FCD_Type type of the fc direction (string) (principal/vector/none)
 	    const string* fcd_type_;
 	    /// \b FCD: direction of fc direction if fcd_type_ is vector (unit vector)
-	    const vector<double>* fcd_;
+	    const std::vector<double>* fcd_;
 	    /// \b FCD_Space: directional space of fc (unit vector)
-	    const vector<double>* fcds_;
+	    const std::vector<double>* fcds_;
 
 	    /// \b SCL: second characteristic (sc) length [AKMA]
 	    const double scl_;
 	    /// \b SCD_Type: type of the sc direction (string) (principal/vector/none)
 	    const string* scd_type_;
 	    /// \b SCD: direction of sc direction if scd_type_ is vector (unit vector)
-	    const vector<double>* scd_;
+	    const std::vector<double>* scd_;
 	    /// \b SCD_Space: directional space of sc (unit vector)
-	    const vector<double>* scds_;
+	    const std::vector<double>* scds_;
 
 	    /// \b FCD_Acceleration: boolean (1/0) if F'' in fcd is computed and as force given to MD
 	    const int fcdacc_;
@@ -193,7 +193,7 @@ private:
 	  \param data (in) : vector storing all data to be unpacked into this
 	  instance.
 	 */
-	virtual void Unpack(const vector<char>& data);
+	virtual void Unpack(const std::vector<char>& data);
 
 	//@}
 
@@ -303,7 +303,7 @@ private:
 	 \param charmm_result (out) : The CHARMm result vector
 	*/
 	void CHARMmfileapi(
-		map<string, double>& CHARMmPar,
+	  std::map<string, double>& CHARMmPar,
 		LINALG::SerialDenseVector& charmm_result);
 
         /*!
@@ -316,7 +316,7 @@ private:
 	 \param charmm_result (out) : The CHARMm result vector
 	*/
 	void Readresults(
-		map<string, double>& CHARMmPar,
+	  std::map<string, double>& CHARMmPar,
 		LINALG::SerialDenseVector& charmm_result);
 
         /*!

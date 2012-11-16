@@ -22,9 +22,6 @@ Maintainer: Andreas Ehrl
 #include "fluid_ele_parameter.H"
 #include "../drt_lib/drt_element.H"
 
-class ParameterList;
-
-
 namespace DRT
 {
 class Condition;
@@ -56,50 +53,50 @@ public:
     must be defined in FluidBoundaryImpl.
    */
   virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary*      ele,
-      ParameterList&             params,
+      Teuchos::ParameterList&    params,
       DRT::Discretization&       discretization,
       DRT::Condition&            condition,
-      vector<int>&               lm,
+      std::vector<int>&          lm,
       Epetra_SerialDenseVector&  elevec1_epetra,
       Epetra_SerialDenseMatrix*  elemat1
   ) = 0;
 
   virtual void IntegrateShapeFunction(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm,
+      std::vector<int>&               lm,
       Epetra_SerialDenseVector&       elevec1,
-      const vector<double>&           mydispnp
+      const std::vector<double>&      mydispnp
   ) = 0;
 
   virtual void AreaCaculation(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm
+      std::vector<int>&               lm
   ) = 0;
 
   virtual void IntegratedPressureParameterCalculation(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm
+      std::vector<int>&               lm
   ) = 0;
 
   virtual void ComputeFlowRate(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm,
+      std::vector<int>&               lm,
       Epetra_SerialDenseVector&       elevec1
   ) = 0;
 
   virtual void FlowRateDeriv(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm,
+      std::vector<int>&               lm,
       Epetra_SerialDenseMatrix&       elemat1,
       Epetra_SerialDenseMatrix&       elemat2,
       Epetra_SerialDenseVector&       elevec1,
@@ -109,97 +106,97 @@ public:
 
   virtual void ImpedanceIntegration(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm,
+      std::vector<int>&               lm,
       Epetra_SerialDenseVector&       elevec1
   ) = 0;
 
   virtual void ElementNodeNormal(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm,
+      std::vector<int>&               lm,
       Epetra_SerialDenseVector&       elevec1,
-      const vector<double>&           mydispnp
+      const std::vector<double>&      mydispnp
   ) = 0;
 
   virtual void ElementMeanCurvature(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm,
+      std::vector<int>&               lm,
       Epetra_SerialDenseVector&       elevec1,
-      const vector<double>&           mydispnp,
-      vector<double>&                 mynormals
+      const std::vector<double>&      mydispnp,
+      std::vector<double>&            mynormals
   ) = 0;
 
   virtual void MixHybDirichlet(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm,
+      std::vector<int>&               lm,
       Epetra_SerialDenseMatrix&       elemat1,
       Epetra_SerialDenseVector&       elevec1
   ) = 0;
 
   virtual void ConservativeOutflowConsistency(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm,
+      std::vector<int>&               lm,
       Epetra_SerialDenseMatrix&       elemat1,
       Epetra_SerialDenseVector&       elevec1
   ) = 0;
 
   virtual void NeumannInflow(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm,
+      std::vector<int>&               lm,
       Epetra_SerialDenseMatrix&       elemat1,
       Epetra_SerialDenseVector&       elevec1
   ) = 0;
 
   virtual void ElementSurfaceTension(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm,
+      std::vector<int>&               lm,
       Epetra_SerialDenseVector&       elevec1,
-      const vector<double>&                 mydispnp,
-      vector<double>&                 mynormals,
-      vector<double>&                 mycurvature
+      const std::vector<double>&      mydispnp,
+      std::vector<double>&            mynormals,
+      std::vector<double>&            mycurvature
   ) = 0;
 
   virtual void CenterOfMassCalculation(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm
+      std::vector<int>&               lm
   ) = 0;
 
   virtual void CalcTractionVelocityComponent(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm,
+      std::vector<int>&               lm,
       Epetra_SerialDenseVector&       elevec1
   ) = 0;
 
   virtual void ComputeNeumannUvIntegral(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm,
+      std::vector<int>&               lm,
       Epetra_SerialDenseVector&       elevec1
   ) = 0;
 
   virtual void NoPenetration(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm,
+      std::vector<int>&               lm,
       Epetra_SerialDenseMatrix&       elemat1,
       Epetra_SerialDenseMatrix&       elemat2,
       Epetra_SerialDenseVector&       elevec1
@@ -207,9 +204,9 @@ public:
 
   virtual void PoroBoundary(
       DRT::ELEMENTS::FluidBoundary*  ele1,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm,
+      std::vector<int>&               lm,
       Epetra_SerialDenseMatrix&       elemat1,
       Epetra_SerialDenseVector&       elevec1
   ) = 0;
@@ -285,10 +282,10 @@ public:
 
   //! Evaluate a Neumann boundary condition
   virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary*    ele,
-                              ParameterList&             params,
+                              Teuchos::ParameterList&    params,
                               DRT::Discretization&       discretization,
                               DRT::Condition&            condition,
-                              vector<int>&               lm,
+                              std::vector<int>&          lm,
                               Epetra_SerialDenseVector&  elevec1_epetra,
                               Epetra_SerialDenseMatrix*  elemat1
                               );
@@ -304,9 +301,9 @@ public:
     */
   virtual void IntegrateShapeFunction(
       DRT::ELEMENTS::FluidBoundary*    ele,
-      ParameterList&                    params,
+      Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
-      vector<int>&                      lm,
+      std::vector<int>&                 lm,
       Epetra_SerialDenseVector&         elevec1,
       const std::vector<double>&        edispnp);
 
@@ -320,9 +317,9 @@ public:
     */
   void ElementNodeNormal(
       DRT::ELEMENTS::FluidBoundary*   ele,
-      ParameterList&                 params,
+      Teuchos::ParameterList&        params,
       DRT::Discretization&           discretization,
-      vector<int>&                   lm,
+      std::vector<int>&              lm,
       Epetra_SerialDenseVector&      elevec1,
       const std::vector<double>&     edispnp);
 
@@ -336,9 +333,9 @@ public:
     */
   void ElementMeanCurvature(
       DRT::ELEMENTS::FluidBoundary*    ele,
-      ParameterList&                    params,
+      Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
-      vector<int>&                      lm,
+      std::vector<int>&                 lm,
       Epetra_SerialDenseVector&         elevec1,
       const std::vector<double>&        edispnp,
       std::vector<double>&              enormals);
@@ -353,9 +350,9 @@ public:
     */
   void ElementSurfaceTension(
       DRT::ELEMENTS::FluidBoundary*   ele,
-      ParameterList&                   params,
+      Teuchos::ParameterList&          params,
       DRT::Discretization&             discretization,
-      vector<int>&                     lm,
+      std::vector<int>&                lm,
       Epetra_SerialDenseVector&        elevec1,
       const std::vector<double>&       edispnp,
       std::vector<double>&             enormals,
@@ -369,9 +366,9 @@ public:
     */
   void AreaCaculation(
       DRT::ELEMENTS::FluidBoundary*    ele,
-      ParameterList&                    params,
+      Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
-      vector<int>&                      lm);
+      std::vector<int>&                 lm);
 
    /*!
     brief integrate elemental pressure over a surface
@@ -383,9 +380,9 @@ public:
     */
   void IntegratedPressureParameterCalculation(
       DRT::ELEMENTS::FluidBoundary*    ele,
-      ParameterList&                    params,
+      Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
-      vector<int>&                      lm);
+      std::vector<int>&                 lm);
 
    /*!
     brief center of mass of a surface
@@ -397,9 +394,9 @@ public:
     */
   void CenterOfMassCalculation(
       DRT::ELEMENTS::FluidBoundary*    ele,
-      ParameterList&                    params,
+      Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
-      vector<int>&                      lm);
+      std::vector<int>&                 lm);
 
     /*!
     \brief calculate the velocity component of the traction
@@ -412,9 +409,9 @@ public:
     */
   void CalcTractionVelocityComponent(
       DRT::ELEMENTS::FluidBoundary*    ele,
-      ParameterList&                    params,
+      Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
-      vector<int>&                      lm,
+      std::vector<int>&                 lm,
       Epetra_SerialDenseVector&         elevec1);
 
     /*!
@@ -428,9 +425,9 @@ public:
     */
   void ComputeNeumannUvIntegral(
       DRT::ELEMENTS::FluidBoundary*    ele,
-      ParameterList&                    params,
+      Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
-      vector<int>&                      lm,
+      std::vector<int>&                 lm,
       Epetra_SerialDenseVector&         elevec1);
 
     /*!
@@ -443,9 +440,9 @@ public:
      */
   void ComputeFlowRate(
       DRT::ELEMENTS::FluidBoundary*    ele,
-      ParameterList&                    params,
+      Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
-      vector<int>&                      lm,
+      std::vector<int>&                 lm,
       Epetra_SerialDenseVector&         elevec1);
 
     /*!
@@ -464,9 +461,9 @@ public:
     */
   void FlowRateDeriv(
       DRT::ELEMENTS::FluidBoundary*   ele,
-      ParameterList&                   params,
+      Teuchos::ParameterList&          params,
       DRT::Discretization&             discretization,
-      vector<int>&                     lm,
+      std::vector<int>&                lm,
       Epetra_SerialDenseMatrix&        elemat1,
       Epetra_SerialDenseMatrix&        elemat2,
       Epetra_SerialDenseVector&        elevec1,
@@ -483,10 +480,10 @@ public:
     \param elevec1 (out)      : vector to be filled by element. If NULL on input,
     */
   void ImpedanceIntegration(
-      DRT::ELEMENTS::FluidBoundary*    ele,
-      ParameterList&                    params,
+      DRT::ELEMENTS::FluidBoundary*     ele,
+      Teuchos::ParameterList&           params,
       DRT::Discretization&              discretization,
-      vector<int>&                      lm,
+      std::vector<int>&                 lm,
       Epetra_SerialDenseVector&         elevec1);
 
     /*!
@@ -502,9 +499,9 @@ public:
     */
   void ConservativeOutflowConsistency(
       DRT::ELEMENTS::FluidBoundary* ele,
-      ParameterList&             params,
+      Teuchos::ParameterList&    params,
       DRT::Discretization&       discretization,
-      vector<int>&               lm,
+      std::vector<int>&          lm,
       Epetra_SerialDenseMatrix&  elemat1,
       Epetra_SerialDenseVector&  elevec1);
 
@@ -522,9 +519,9 @@ public:
     */
   void NeumannInflow(
       DRT::ELEMENTS::FluidBoundary*  ele,
-      ParameterList&             params,
+      Teuchos::ParameterList&    params,
       DRT::Discretization&       discretization,
-      vector<int>&               lm,
+      std::vector<int>&          lm,
       Epetra_SerialDenseMatrix&  elemat1,
       Epetra_SerialDenseVector&  elevec1);
 
@@ -540,9 +537,9 @@ public:
     */
   void  MixHybDirichlet(
       DRT::ELEMENTS::FluidBoundary*  surfele,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm,
+      std::vector<int>&               lm,
       Epetra_SerialDenseMatrix&       elemat,
       Epetra_SerialDenseVector&       elevec);
 
@@ -565,9 +562,9 @@ public:
     */
   void NoPenetration(
       DRT::ELEMENTS::FluidBoundary*  ele,
-      ParameterList&             params,
+      Teuchos::ParameterList&    params,
       DRT::Discretization&       discretization,
-      vector<int>&               lm,
+      std::vector<int>&          lm,
       Epetra_SerialDenseMatrix&  elemat1,
       Epetra_SerialDenseMatrix&  elemat2,
       Epetra_SerialDenseVector&  elevec1);
@@ -591,9 +588,9 @@ public:
   */
 void PoroBoundary(
     DRT::ELEMENTS::FluidBoundary*  ele,
-    ParameterList&             params,
+    Teuchos::ParameterList&    params,
     DRT::Discretization&       discretization,
-    vector<int>&               lm,
+    std::vector<int>&          lm,
     Epetra_SerialDenseMatrix&  elemat1,
     Epetra_SerialDenseVector&  elevec1);
 
@@ -619,9 +616,9 @@ private:
             DRT::Element::DiscretizationType pdistype>
   void MixHybDirichlet(
       DRT::ELEMENTS::FluidBoundary*  ele,
-      ParameterList&                  params,
+      Teuchos::ParameterList&         params,
       DRT::Discretization&            discretization,
-      vector<int>&                    lm,
+      std::vector<int>&               lm,
       Epetra_SerialDenseMatrix&       elemat,
       Epetra_SerialDenseVector&       elevec);
 

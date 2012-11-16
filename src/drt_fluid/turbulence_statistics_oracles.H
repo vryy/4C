@@ -73,8 +73,8 @@ public:
   void ExtractProfiles();
 
   void ExtractSetOfProfiles(
-    const vector<double>&      x1locations,
-    const vector<double>&      x2locations,
+    const std::vector<double>&  x1locations,
+    const std::vector<double>&  x2locations,
     LINALG::SerialDenseMatrix& profilesu,
     LINALG::SerialDenseMatrix& profilesv,
     LINALG::SerialDenseMatrix& profilesw,
@@ -97,7 +97,7 @@ public:
       const int               step,
       const string&           suffix,
       const int               x1pos,
-      const vector<double>&   x2locations,
+      const std::vector<double>&   x2locations,
       double* profileu,
       double* profilev,
       double* profilew,
@@ -192,18 +192,18 @@ private:
   const double x2inflowchannelmin_first_; // x2-coordinate first node away from bottom wall of upper inflow channel
 
   // coordinates of nodes in x2-direction
-  Teuchos::RCP<vector<double> > x2_inflow_; // x2-coordinates of nodes at x =-5h (both inflow channels)
-  Teuchos::RCP<vector<double> > x2_0h_;     // x2-coordinates of nodes at x = 0h (step/expansion)
-  Teuchos::RCP<vector<double> > x2_1h_;     // x2-coordinates of nodes at x = 1h
-  Teuchos::RCP<vector<double> > x2_2h_;     // x2-coordinates of nodes at x = 2h
-  Teuchos::RCP<vector<double> > x2_3h_;     // x2-coordinates of nodes at x > 3h
+  Teuchos::RCP<std::vector<double> > x2_inflow_; // x2-coordinates of nodes at x =-5h (both inflow channels)
+  Teuchos::RCP<std::vector<double> > x2_0h_;     // x2-coordinates of nodes at x = 0h (step/expansion)
+  Teuchos::RCP<std::vector<double> > x2_1h_;     // x2-coordinates of nodes at x = 1h
+  Teuchos::RCP<std::vector<double> > x2_2h_;     // x2-coordinates of nodes at x = 2h
+  Teuchos::RCP<std::vector<double> > x2_3h_;     // x2-coordinates of nodes at x > 3h
 
   // coordinates of nodes in x1-direction
-  Teuchos::RCP<vector<double> > x1_midupperchannel_;   // x1-coordinates of nodes at y = 85.5mm = 2.86h (mid line upper channel)
-  Teuchos::RCP<vector<double> > x1_midlowerchannel_;   // x1-coordinates of nodes at y = 45.1mm = 1.51h (mid line lower channel)
-  Teuchos::RCP<vector<double> > x1_midchamber_;        // x1-coordinates of nodes at y = 65.3mm = 2.18h (mid line chamber)
-  Teuchos::RCP<vector<double> > x1_wallchamber_;       // x1-coordinates of nodes at wall of chamber
-  Teuchos::RCP<vector<double> > x1_wallinflowchannel_; // x1-coordinates of nodes at wall of inflow channels
+  Teuchos::RCP<std::vector<double> > x1_midupperchannel_;   // x1-coordinates of nodes at y = 85.5mm = 2.86h (mid line upper channel)
+  Teuchos::RCP<std::vector<double> > x1_midlowerchannel_;   // x1-coordinates of nodes at y = 45.1mm = 1.51h (mid line lower channel)
+  Teuchos::RCP<std::vector<double> > x1_midchamber_;        // x1-coordinates of nodes at y = 65.3mm = 2.18h (mid line chamber)
+  Teuchos::RCP<std::vector<double> > x1_wallchamber_;       // x1-coordinates of nodes at wall of chamber
+  Teuchos::RCP<std::vector<double> > x1_wallinflowchannel_; // x1-coordinates of nodes at wall of inflow channels
   // number of nodes in x1-direction
   size_t numx1_midinflowchannel_;
   size_t numx1_midchamber_;

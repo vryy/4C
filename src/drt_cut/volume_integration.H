@@ -80,15 +80,15 @@ namespace GEO
         /*!
         \brief Check whether the generated ray intersect the facets of the volumecell, if so distribute Gauss points along this ray
         */
-        bool IsIntersect(double *pt, double *mini, double *maxi,vector<vector<double> >& linePts,
-                        vector<vector<double> >zcoord,vector<vector<double> >ycoord,double toler,int numeach);
+        bool IsIntersect(double *pt, double *mini, double *maxi,vector<std::vector<double> >& linePts,
+                        vector<std::vector<double> >zcoord,vector<std::vector<double> >ycoord,double toler,int numeach);
 
         /*!
         \brief Check whether the particular z-plane of the volumecell contains significant area so as to distribute
         the Gauss points in that plane
         */
-        bool IsContainArea(double minn[3],double maxx[3], double&zmin,vector<vector<double> > &pts,
-                vector<vector<double> >zcoord,vector<vector<double> >ycoord,double toler,int numeach);
+        bool IsContainArea(double minn[3],double maxx[3], double&zmin,vector<std::vector<double> > &pts,
+                vector<std::vector<double> >zcoord,vector<std::vector<double> >ycoord,double toler,int numeach);
 
         /*!
         \brief Writes the Geometry of volumecell and location of Gauss points in GMSH format output file
@@ -99,25 +99,25 @@ namespace GEO
         \brief Generates equally spaced "num" number of points on the line whose end points are specified by
         inter1 and inter2
         */
-        void OnLine(vector<double>inter1,vector<double>inter2,vector<vector<double> >&linePts,int num);
+        void OnLine(vector<double>inter1,vector<double>inter2,vector<std::vector<double> >&linePts,int num);
 
         /*!
         \brief Store the z- and y-coordinates of the all corner points which will be used to find whether the intersection
         point lies inside the volume or not
         */
-        void get_zcoordinates(vector<vector<double> >& zcoord,vector<vector<double> >& ycoord);
+        void get_zcoordinates(vector<std::vector<double> >& zcoord,vector<std::vector<double> >& ycoord);
 
         /*
         \brief Check whether the intersection point, which is in the plane containing the facet, actually lies with
         in the facet area
         */
-        int pnpoly(int npol, vector<double>xp, vector<double>yp, double x, double y);
+        int pnpoly(int npol, std::vector<double>xp, std::vector<double>yp, double x, double y);
 
         /*
         \brief Check whether the intersection point, which is in the plane containing the facet, actually lies with
         in the facet area
         */
-        int pnpoly(vector<vector<double> >xp, LINALG::Matrix<3,1> pt,string projType);
+        int pnpoly(vector<std::vector<double> >xp, LINALG::Matrix<3,1> pt,string projType);
 
         /*!
         \brief Adds linear combination of first order base function to the moment fitting system of equations

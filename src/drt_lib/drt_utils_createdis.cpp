@@ -94,7 +94,7 @@ RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeRowMap(
     std::set<int>& rownodeset,Teuchos::RCP<DRT::Discretization> targetdis)
 {
   // we get the node maps almost for free
-  vector<int> targetnoderowvec(rownodeset.begin(), rownodeset.end());
+  std::vector<int> targetnoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
 
   RCP<Epetra_Map> targetnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
@@ -114,7 +114,7 @@ RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeColMap(
     std::set<int>& colnodeset,Teuchos::RCP<DRT::Discretization> targetdis)
 {
   // we get the node maps almost for free
-  vector<int> targetnodecolvec(colnodeset.begin(), colnodeset.end());
+  std::vector<int> targetnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
   RCP<Epetra_Map> targetnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
       targetnodecolvec.size(),
@@ -132,14 +132,14 @@ RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeColMap(
 void DRT::UTILS::DiscretizationCreatorBase::CopyConditions(
     const Teuchos::RCP<DRT::Discretization> sourcedis,
     Teuchos::RCP<DRT::Discretization> targetdis,
-    const map<string,string>& conditions_to_copy)
+    const std::map<string,string>& conditions_to_copy)
 {
   // copy selected conditions to the new discretization (and rename them if desired)
-  for (map<string,string>::const_iterator conditername = conditions_to_copy.begin();
+  for (std::map<string,string>::const_iterator conditername = conditions_to_copy.begin();
   conditername != conditions_to_copy.end();
   ++conditername)
   {
-    vector<DRT::Condition*> conds;
+    std::vector<DRT::Condition*> conds;
     sourcedis->GetCondition((*conditername).first, conds);
     for (unsigned i=0; i<conds.size(); ++i)
     {

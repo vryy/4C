@@ -139,7 +139,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 #endif // TSIPARTITIONEDASOUTPUT
 
     // contact
-    if(StructureField()->ContactManager() != null)
+    if(StructureField()->ContactManager() != Teuchos::null)
       ThermoField()->PrepareThermoContact(StructureField()->ContactManager(),StructureField()->Discretization());
 
 }  // Constructor

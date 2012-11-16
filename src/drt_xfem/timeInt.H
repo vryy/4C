@@ -49,9 +49,9 @@ public:
       const RCP<COMBUST::FlameFront> flamefront,
       const Epetra_Map& olddofcolmap,
       const Epetra_Map& newdofrowmap,
-      const map<DofKey, DofGID>& oldNodalDofColDistrib,
-      const map<DofKey, DofGID>& newNodalDofRowDistrib,
-      const RCP<map<int,vector<int> > > pbcmap
+      const std::map<DofKey, DofGID>& oldNodalDofColDistrib,
+      const std::map<DofKey, DofGID>& newNodalDofRowDistrib,
+      const RCP<std::map<int,std::vector<int> > > pbcmap
   );
 
   //! destructor
@@ -591,7 +591,7 @@ protected:
     vector<int> 					startOwner_; // nearest nodes owner
     double 							dMin_; // minimal distance in initialization
     vector<LINALG::Matrix<3,1> > 	velValues_; // computed velocity for a node
-    vector<double> 					presValues_; // computed pressure for a node
+    std::vector<double> 					presValues_; // computed pressure for a node
     vector<LINALG::Matrix<2,4> > 	jumpAndKinkValues_; // computed jump and kink values for a node's jump enrichment dof
     vector<LINALG::Matrix<1,4> > 	kinkValues_; // computed kink values for a node's kink enrichment dof
     state state_; // status for both the used special algorithm and the state within the algorithm
@@ -611,8 +611,8 @@ protected:
   RCP<XFEM::DofManager> newdofman_; // dof manager of current time step t^n+1
   const Epetra_Map olddofcolmap_; // dof column map of last time step t^n in column map
   Epetra_Map newdofrowmap_; // dof column map of current time step t^n+1 in row map
-  const map<DofKey, DofGID> oldNodalDofColDistrib_; // dof distribution map of last time step t^n in column map
-  map<DofKey, DofGID> newNodalDofRowDistrib_; // dof distribution map of current time step t^n+1 in row map
+  const std::map<DofKey, DofGID> oldNodalDofColDistrib_; // dof distribution map of last time step t^n in column map
+  std::map<DofKey, DofGID> newNodalDofRowDistrib_; // dof distribution map of current time step t^n+1 in row map
 
   // data
   const RCP<Epetra_Vector> phin_; // phi^n in column map
@@ -620,11 +620,11 @@ protected:
   const RCP<COMBUST::InterfaceHandleCombust> oldinterfacehandle_; // interface handle of old time step t^n
   RCP<COMBUST::InterfaceHandleCombust> newinterfacehandle_; // interface handle of new time step t^n+1
   RCP<Epetra_MultiVector> gradphi_; // smoothed gradient of phi-vector of new time step t^n+1
-  const vector<RCP<Epetra_Vector> > oldVectors_; // global vectors of old time step t^n in column map
+  const std::vector<RCP<Epetra_Vector> > oldVectors_; // global vectors of old time step t^n in column map
   vector<RCP<Epetra_Vector> > newVectors_; // global vectors of new time step t^n+1 in row map
 
   // stuff for parallel communication
-  const RCP<map<int,vector<int> > > pbcmap_; // map for master and slave elements of nodes
+  const RCP<std::map<int,std::vector<int> > > pbcmap_; // map for master and slave elements of nodes
   const int myrank_; // current processor id
   const int numproc_; // number of processors
 
@@ -737,7 +737,7 @@ protected:
       nodephi(nodeid,0) = (*phi)[discret_->gNode(elenodeids[nodeid])->LID()];
 
     // create an element dof manager
-    const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty; // ansatz map needed for eledofman
+    const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty; // ansatz map needed for eledofman
     Teuchos::RCP<XFEM::ElementDofManager> eleDofManager = Teuchos::rcp(new XFEM::ElementDofManager(*element,element_ansatz_empty,*dofman));
 
     // the enrichment functions may depend on the point
@@ -1010,7 +1010,7 @@ public:
       const RCP<XFEM::DofManager> newdofman,
       const RCP<COMBUST::FlameFront> flamefront,
       const Epetra_Map& newdofrowmap,
-      const map<DofKey, DofGID>& newNodalDofRowDistrib
+      const std::map<DofKey, DofGID>& newNodalDofRowDistrib
   );
 
   //! search for an element containing some point
@@ -1156,7 +1156,7 @@ public:
       const RCP<Epetra_Vector> field, // Epetra_Vector fitting to field and dofDistribution
       const RCP<DofManager> dofman,
       const Epetra_Map& dofMap, // DofMap fitting to field and dofDistribution
-      const map<DofKey, DofGID>& dofDistribution, // dofDistribution fitting to Epetra_Vector and field
+      const std::map<DofKey, DofGID>& dofDistribution, // dofDistribution fitting to Epetra_Vector and field
       LINALG::Matrix<3,2*numnode>& nodevel,
 #ifdef COMBUST_NORMAL_ENRICHMENT
       LINALG::Matrix<1,numnode>& nodevelenr,
@@ -1313,21 +1313,21 @@ public:
       const RCP<XFEM::DofManager> newdofman,
       const RCP<COMBUST::FlameFront> flamefront,
       const Epetra_Map& newdofrowmap,
-      const map<DofKey, DofGID>& newNodalDofRowDistrib,
-      const map<DofKey,XFEM::DofGID>& oldNodalDofColDistrib
+      const std::map<DofKey, DofGID>& newNodalDofRowDistrib,
+      const std::map<DofKey,XFEM::DofGID>& oldNodalDofColDistrib
   );
 
   //! main function computing the enrichment values
   void setEnrichmentValues();
 
   //! return map between element id and jump and kink values at old interface position for jump enriched dofs
-  map<int,vector<LINALG::Matrix<2,4> > >* oldJumpEnrichedValues()
+  std::map<int,std::vector<LINALG::Matrix<2,4> > >* oldJumpEnrichedValues()
             {
     return &eleJumpsAndKinks_;
             }
 
   //! return map between element id and jump and kink values at old interface position for kink enriched dofs
-  map<int,vector<LINALG::Matrix<1,4> > >* oldKinkEnrichedValues()
+  std::map<int,std::vector<LINALG::Matrix<1,4> > >* oldKinkEnrichedValues()
             {
     return &eleKinks_;
             }
@@ -1544,10 +1544,10 @@ protected:
   std::set<int> critElesPlus_; // set of element with critical small part in Omega^+
   std::set<int> critElesMinus_; // set of element with critical small part in Omega^-
 
-  map<int,vector<LINALG::Matrix<2,4> > > eleJumpsAndKinks_; // map for element jump and kink values for an ele gid
-  map<int,vector<LINALG::Matrix<1,4> > > eleKinks_; // map for element jump and kink values for an ele gid
+  std::map<int,std::vector<LINALG::Matrix<2,4> > > eleJumpsAndKinks_; // map for element jump and kink values for an ele gid
+  std::map<int,std::vector<LINALG::Matrix<1,4> > > eleKinks_; // map for element jump and kink values for an ele gid
 
-  map<DofKey, DofGID> nodalDofColDistrib_npi_; // dof distribution of last fgi iteration (t^n+1,i)
+  std::map<DofKey, DofGID> nodalDofColDistrib_npi_; // dof distribution of last fgi iteration (t^n+1,i)
 }; // class Enrichmentvalues
 } // namespace XFEM
 

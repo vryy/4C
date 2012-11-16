@@ -146,7 +146,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(
 
   // create a linear solver
   Teuchos::RCP<Teuchos::ParameterList> solveparams
-    = Teuchos::rcp(new ParameterList());
+    = Teuchos::rcp(new Teuchos::ParameterList());
   Teuchos::RCP<LINALG::Solver> solver
     = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
                                       actdis->Comm(),

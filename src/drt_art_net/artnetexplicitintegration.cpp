@@ -47,7 +47,7 @@ Maintainer: Mahmoud Ismail
 
 ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actdis,
                                                   LINALG::Solver  &         solver,
-                                                  ParameterList&            params,
+                                                  Teuchos::ParameterList&   params,
                                                   IO::DiscretizationWriter& output)
   :
   // call constructor for "nontrivial" objects
@@ -167,7 +167,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
   // create the junction boundary conditions
   ParameterList junparams;
 
-  junc_nodal_vals_=Teuchos::rcp(new map<const int, RCP<ART::UTILS::JunctionNodeParams> >);
+  junc_nodal_vals_=Teuchos::rcp(new std::map<const int, RCP<ART::UTILS::JunctionNodeParams> >);
 
   junparams.set<RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters",junc_nodal_vals_);
 
@@ -192,10 +192,10 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
     //    DRT::Element* ele = discret_->lColElement(nele);
 
     // get element location vector, dirichlet flags and ownerships
-    //    vector<int> lm;
-    //    vector<int> lmstride;
-    //    vector<int> lmowner;
-    //        RCP<vector<int> > lmowner = Teuchos::rcp(new vector<int>);
+    //    std::vector<int> lm;
+    //    std::vector<int> lmstride;
+    //    std::vector<int> lmowner;
+    //        RCP<vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
     //    ele->LocationVector(*discret_,lm,*lmowner,lmstride);
 
     // loop all nodes of this element, add values to the global vectors
@@ -231,7 +231,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetExplicitTimeInt::Integrate()
 {
-  RCP<ParameterList> param;
+  RCP<Teuchos::ParameterList> param;
   Integrate(false, param);
 } // ArtNetExplicitTimeInt::Integrate
 
@@ -247,7 +247,7 @@ void ART::ArtNetExplicitTimeInt::Integrate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetExplicitTimeInt::Integrate(bool CoupledTo3D,
-                                           RCP<ParameterList> CouplingParams)
+                                           RCP<Teuchos::ParameterList> CouplingParams)
 {
   coupledTo3D_ = CoupledTo3D;
   if (CoupledTo3D && CouplingParams.get() == NULL)
@@ -278,7 +278,7 @@ void ART::ArtNetExplicitTimeInt::Integrate(bool CoupledTo3D,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetExplicitTimeInt::TimeLoop(bool CoupledTo3D,
-                                          RCP<ParameterList> CouplingTo3DParams)
+                                          RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   coupledTo3D_ = CoupledTo3D;
   // time measurement: time loop
@@ -372,7 +372,7 @@ void ART::ArtNetExplicitTimeInt::PrepareTimeStep()
 /*
 Some detials!!
 */
-void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<ParameterList> CouplingTo3DParams)
+void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   // time measurement: Artery
   if(!coupledTo3D_)
@@ -621,7 +621,7 @@ void ART::ArtNetExplicitTimeInt::TimeUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
-                                        RCP<ParameterList> CouplingParams)
+                                        RCP<Teuchos::ParameterList> CouplingParams)
 {
   int step      = 0;
   int upres     = 0;

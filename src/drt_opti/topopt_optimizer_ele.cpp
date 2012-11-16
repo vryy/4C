@@ -214,15 +214,15 @@ void DRT::ELEMENTS::TopOpt::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            gjb 05/08 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::TopOpt::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::TopOpt::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // distype
@@ -287,7 +287,7 @@ void DRT::ELEMENTS::TopOpt::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines            (public)                  g.bau 03/07|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -312,7 +312,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          g.bau 03/07|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -342,7 +342,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                g.bau 03/07|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Volumes()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Volumes()
 {
   if (NumVolume() == 1)
   {
@@ -440,7 +440,7 @@ void DRT::ELEMENTS::TopOptBoundary::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack data (public)                                      gjb 01/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::TopOptBoundary::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::TopOptBoundary::Unpack(const std::vector<char>& data)
 {
   dserror("This TransportBoundary element does not support communication");
   return;
@@ -487,7 +487,7 @@ int DRT::ELEMENTS::TopOptBoundary::NumSurface() const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              gjb 01/09 |
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOptBoundary::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOptBoundary::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -497,14 +497,14 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOptBoundary::Lines()
 
   // so we have to allocate new line elements:
   dserror("Lines of TransportBoundary not implemented");
-  vector<Teuchos::RCP<DRT::Element> > lines(0);
+  std::vector<Teuchos::RCP<DRT::Element> > lines(0);
   return lines;
 }
 
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                              gjb 01/09 |
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOptBoundary::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOptBoundary::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -514,7 +514,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOptBoundary::Surfaces()
 
   // so we have to allocate new surface elements:
   dserror("Surfaces of TransportBoundary not implemented");
-  vector<Teuchos::RCP<DRT::Element> > surfaces(0);
+  std::vector<Teuchos::RCP<DRT::Element> > surfaces(0);
   return surfaces;
 }
 

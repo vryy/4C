@@ -85,7 +85,7 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
       double result = 0.0;  // will hold the actual result of run
 
       // test displacements or pressure
-      if (dis_ != null)
+      if (dis_ != Teuchos::null)
       {
         const Epetra_BlockMap& disnpmap = dis_->Map();
         if (position=="dispx")
@@ -111,7 +111,7 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
       }
 
       // test velocities
-      if (vel_ != null)
+      if (vel_ != Teuchos::null)
       {
         const Epetra_BlockMap& velnpmap = vel_->Map();
 
@@ -133,7 +133,7 @@ void StruResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& t
       }
 
       // test accelerations
-      if (acc_ != null)
+      if (acc_ != Teuchos::null)
       {
         const Epetra_BlockMap& accnpmap = acc_->Map();
 

@@ -117,10 +117,10 @@ void MAT::HolzapfelCardio::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)         11/09|
  *----------------------------------------------------------------------*/
-void MAT::HolzapfelCardio::Unpack(const vector<char>& data)
+void MAT::HolzapfelCardio::Unpack(const std::vector<char>& data)
 {
   isinit_=true;
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -150,13 +150,13 @@ void MAT::HolzapfelCardio::Unpack(const vector<char>& data)
     return;
   }
   // unpack fiber internal variables
-  a1_ = Teuchos::rcp(new vector<vector<double> >(numgp));
-  a2_ = Teuchos::rcp(new vector<vector<double> >(numgp));
-  ca1_ = Teuchos::rcp(new vector<vector<double> >(numgp));
-  ca2_ = Teuchos::rcp(new vector<vector<double> >(numgp));
+  a1_ = Teuchos::rcp(new std::vector<std::vector<double> >(numgp));
+  a2_ = Teuchos::rcp(new std::vector<std::vector<double> >(numgp));
+  ca1_ = Teuchos::rcp(new std::vector<std::vector<double> >(numgp));
+  ca2_ = Teuchos::rcp(new std::vector<std::vector<double> >(numgp));
 
   for (int gp = 0; gp < numgp; ++gp) {
-    vector<double> a;
+    std::vector<double> a;
     ExtractfromPack(position,data,a);
     a1_->at(gp) = a;
     ExtractfromPack(position,data,a);
@@ -183,10 +183,10 @@ void MAT::HolzapfelCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* li
     Fibers are related to a local element cosy which has to be
     specified in the element line */
 
-  a1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  a2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  ca1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  ca2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  a1_ = Teuchos::rcp(new std::vector<std::vector<double> > (numgp));
+  a2_ = Teuchos::rcp(new std::vector<std::vector<double> > (numgp));
+  ca1_ = Teuchos::rcp(new std::vector<std::vector<double> > (numgp));
+  ca2_ = Teuchos::rcp(new std::vector<std::vector<double> > (numgp));
 
   for (int gp = 0; gp < numgp; gp++) {
     a1_->at(gp).resize(3);
@@ -210,9 +210,9 @@ void MAT::HolzapfelCardio::Setup(const int numgp, DRT::INPUT::LineDefinition* li
 
   } else if (initflag==1){
 	// read local (cylindrical) cosy-directions at current element
-    vector<double> rad;
-    vector<double> axi;
-    vector<double> cir;
+    std::vector<double> rad;
+    std::vector<double> axi;
+    std::vector<double> cir;
     linedef->ExtractDoubleVector("RAD",rad);
     linedef->ExtractDoubleVector("AXI",axi);
     linedef->ExtractDoubleVector("CIR",cir);
@@ -533,8 +533,8 @@ void MAT::HolzapfelCardio::EvaluateFiberVecs
   }
 
   // pull back in reference configuration
-  vector<double> a1_0(3);
-  vector<double> a2_0(3);
+  std::vector<double> a1_0(3);
+  std::vector<double> a2_0(3);
   LINALG::Matrix<3,3> idefgrd(false);
   idefgrd.Invert(defgrd);
   for (int i = 0; i < 3; i++) {

@@ -168,15 +168,15 @@ void DRT::MESHFREE::MeshfreeBin::Pack(DRT::PackBuffer& data) const
 /*--------------------------------------------------------------------------*
  | Unpack data                                         (public) ghamm 11/12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeBin::Unpack(const vector<char>& data)
+void DRT::MESHFREE::MeshfreeBin::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class DRT::Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   DRT::Element::Unpack(basedata);
   // nothing to extract for meshfree bin

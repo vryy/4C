@@ -132,13 +132,13 @@ public:
 //    int Size() const { return lm_.size(); }
 //
 //    /// global dof numbers of cellal dofs
-//    vector<int> lm_;
+//    std::vector<int> lm_;
 //
 //    /// Dirichlet on/off flags
-//    vector<int> lmdirich_;
+//    std::vector<int> lmdirich_;
 //
 //    /// Owner of dof (that is owner of knot or cell the dof belongs to)
-//    vector<int> lmowner_;
+//    std::vector<int> lmowner_;
 //
 //    /// Nodal stride (that is, how many dofs are guaranteed to be contigous in the system matrix)
 //    vector<int> stride_;
@@ -417,10 +417,10 @@ public:
 private:
 
   //! \brief List of my nodal ids, length NumKnot()
-  vector<int> knotid_;
+  std::vector<int> knotid_;
 
   //! \brief Pointers to adjacent knots in cell local ordering
-  vector<MeshfreeNode*> knot_;
+  std::vector<MeshfreeNode*> knot_;
 
   //! meshfree parameter settings
   Teuchos::RCP<Teuchos::ParameterList> params_;

@@ -707,7 +707,7 @@ RCP<vector<char> > DRT::Discretization::PackMyElements() const
     e->Pack(buffer);
   }
 
-  RCP<vector<char> > block = Teuchos::rcp(new vector<char>);
+  RCP<vector<char> > block = Teuchos::rcp(new std::vector<char>);
   std::swap( *block, buffer() );
   return block;
 }
@@ -741,7 +741,7 @@ RCP<vector<char> > DRT::Discretization::PackMyNodes() const
     n->Pack(buffer);
   }
 
-  RCP<vector<char> > block = Teuchos::rcp(new vector<char>);
+  RCP<vector<char> > block = Teuchos::rcp(new std::vector<char>);
   std::swap( *block, buffer() );
   return block;
 }
@@ -779,7 +779,7 @@ RCP<vector<char> > DRT::Discretization::PackCondition(const string condname) con
     c->Pack(buffer);
   }
 
-  RCP<vector<char> > block = Teuchos::rcp(new vector<char>);
+  RCP<vector<char> > block = Teuchos::rcp(new std::vector<char>);
   std::swap( *block, buffer() );
   return block;
 }
@@ -794,7 +794,7 @@ void DRT::Discretization::UnPackMyElements(RCP<vector<char> > e)
   vector<char>::size_type index = 0;
   while (index < e->size())
   {
-    vector<char> data;
+    std::vector<char> data;
     ParObject::ExtractfromPack(index,*e,data);
     DRT::ParObject* o = DRT::UTILS::Factory(data);
     DRT::Element* ele = dynamic_cast<Element*>(o);
@@ -818,7 +818,7 @@ void DRT::Discretization::UnPackMyNodes(RCP<vector<char> > e)
 	vector<char>::size_type index = 0;
   while (index < e->size())
   {
-    vector<char> data;
+    std::vector<char> data;
     ParObject::ExtractfromPack(index,*e,data);
     DRT::ParObject* o = DRT::UTILS::Factory(data);
     DRT::Node* n = dynamic_cast<Node*>(o);
@@ -844,7 +844,7 @@ void DRT::Discretization::UnPackCondition(
 	vector<char>::size_type index = 0;
   while (index < e->size())
   {
-    vector<char> data;
+    std::vector<char> data;
     DRT::ParObject::ExtractfromPack(index,*e,data);
     DRT::ParObject* o = DRT::UTILS::Factory(data);
     DRT::Condition* cond = dynamic_cast<DRT::Condition*>(o);

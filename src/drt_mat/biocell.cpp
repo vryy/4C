@@ -76,9 +76,9 @@ void MAT::BioCell::Pack(DRT::PackBuffer& data) const
 
 
 /*---------------------------------------------------------------------*/
-void MAT::BioCell::Unpack(const vector<char>& data)
+void MAT::BioCell::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -164,7 +164,7 @@ void MAT::BioCell::Evaluate(
   InverseTensor(C,Cinv,I3);
 
   // Preparation of anisotropic tensors ////////////////////////////////////////
-  vector<double> a(3); // anisotropic direction vector
+  std::vector<double> a(3); // anisotropic direction vector
   a[0]=0.0;
   a[1]=1.0;
   a[2]=0.0;
@@ -234,8 +234,8 @@ void MAT::BioCell::Evaluate(
 
   // Constitutive Tensor ///////////////////////////////////////////////////////
   // deltas
-  vector<double> delta_an(8);
-  vector<double> delta_af(8);
+  std::vector<double> delta_an(8);
+  std::vector<double> delta_af(8);
   // Actin Network
   if (AN) {
       delta_an[0] = 0.0;
@@ -320,7 +320,7 @@ void MAT::BioCell::Evaluate(
 
   // Assemble Constitutive Tensor
   LINALG::SerialDenseMatrix Celasticity(9,9); // Elasticity Tensor
-  vector<double> Celas_ap(8); // additive parts of the elasticity tensor in its most general form
+  std::vector<double> Celas_ap(8); // additive parts of the elasticity tensor in its most general form
   for (k=0; k<9; k+=3) {
       for (l=0; l<9; l+=3) {
           for (i=0; i<3; i++) {

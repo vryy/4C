@@ -25,7 +25,7 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
   RCP<DRT::Discretization> actdis             ,
   bool                             alefluid           ,
   RCP<Epetra_Vector>       dispnp             ,
-  ParameterList&                   params             ,
+  Teuchos::ParameterList&                   params             ,
   const bool                       withscatra
   )
   :
@@ -81,11 +81,11 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
   // compute all planes for sampling
 
   // available shells of element corners (Nurbs) of elements
-  nodeshells_ = Teuchos::rcp(new vector<double> );
+  nodeshells_ = Teuchos::rcp(new std::vector<double> );
 
   // available homogeneous (sampling) shells --- there are
   // numsubdivisions layers per element layer
-  shellcoordinates_ = Teuchos::rcp(new vector<double> );
+  shellcoordinates_ = Teuchos::rcp(new std::vector<double> );
 
   const int numsubdivisions=5;
 
@@ -413,46 +413,46 @@ FLD::TurbulenceStatisticsCcy::TurbulenceStatisticsCcy(
   // --------------------------------
 
   // first order moments
-  pointsumu_ =  Teuchos::rcp(new vector<double> );
+  pointsumu_ =  Teuchos::rcp(new std::vector<double> );
   pointsumu_->resize(size,0.0);
 
-  pointsumv_ =  Teuchos::rcp(new vector<double> );
+  pointsumv_ =  Teuchos::rcp(new std::vector<double> );
   pointsumv_->resize(size,0.0);
 
-  pointsumw_ =  Teuchos::rcp(new vector<double> );
+  pointsumw_ =  Teuchos::rcp(new std::vector<double> );
   pointsumw_->resize(size,0.0);
 
-  pointsump_ =  Teuchos::rcp(new vector<double> );
+  pointsump_ =  Teuchos::rcp(new std::vector<double> );
   pointsump_->resize(size,0.0);
 
   // now the second order moments
-  pointsumuu_ =  Teuchos::rcp(new vector<double> );
+  pointsumuu_ =  Teuchos::rcp(new std::vector<double> );
   pointsumuu_->resize(size,0.0);
 
-  pointsumvv_ =  Teuchos::rcp(new vector<double> );
+  pointsumvv_ =  Teuchos::rcp(new std::vector<double> );
   pointsumvv_->resize(size,0.0);
 
-  pointsumww_ =  Teuchos::rcp(new vector<double> );
+  pointsumww_ =  Teuchos::rcp(new std::vector<double> );
   pointsumww_->resize(size,0.0);
 
-  pointsumpp_ =  Teuchos::rcp(new vector<double> );
+  pointsumpp_ =  Teuchos::rcp(new std::vector<double> );
   pointsumpp_->resize(size,0.0);
 
-  pointsumuv_  =  Teuchos::rcp(new vector<double> );
+  pointsumuv_  =  Teuchos::rcp(new std::vector<double> );
   pointsumuv_->resize(size,0.0);
 
-  pointsumuw_  =  Teuchos::rcp(new vector<double> );
+  pointsumuw_  =  Teuchos::rcp(new std::vector<double> );
   pointsumuw_->resize(size,0.0);
 
-  pointsumvw_  =  Teuchos::rcp(new vector<double> );
+  pointsumvw_  =  Teuchos::rcp(new std::vector<double> );
   pointsumvw_->resize(size,0.0);
 
   if (withscatra_)
   {
-    pointsumc_ =  Teuchos::rcp(new vector<double> );
+    pointsumc_ =  Teuchos::rcp(new std::vector<double> );
     pointsumc_->resize(size,0.0);
 
-    pointsumcc_ = Teuchos::rcp(new vector<double> );
+    pointsumcc_ = Teuchos::rcp(new std::vector<double> );
     pointsumcc_->resize(size,0.0);
 
   // pointsumphi_/pointsumphiphi_ are allocated in ApplyScatraResults()
@@ -691,14 +691,14 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
     Epetra_SerialDenseVector nurbs_shape_funct(numnp);
 
     // extract local values from the global vectors
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
 
     actele->LocationVector(*nurbsdis,lm,lmowner,lmstride);
 
     // extract local values from global vector
-    vector<double> myvelnp(lm.size());
+    std::vector<double> myvelnp(lm.size());
     DRT::UTILS::ExtractMyValues(*(nurbsdis->GetState("velnp")),myvelnp,lm);
 
     // create Matrix objects
@@ -726,7 +726,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
     if(withscatra_)
     {
       // extract local values from global vector
-      vector<double> myscanp(lm.size());
+      std::vector<double> myscanp(lm.size());
       DRT::UTILS::ExtractMyValues(*(nurbsdis->GetState("scanp")),myscanp,lm);
 
       // insert data into element array (scalar field is stored at pressure dofs)
@@ -750,7 +750,7 @@ void FLD::TurbulenceStatisticsCcy::EvaluatePointwiseMeanValuesInPlanes()
       RCP<const Epetra_Vector> phinp = scatranurbsdis->GetState("phinp_for_statistics");
       if (phinp==Teuchos::null)
         dserror("Cannot get state vector 'phinp' for statistics");
-      vector<double> myphinp(scatralm.size());
+      std::vector<double> myphinp(scatralm.size());
       DRT::UTILS::ExtractMyValues(*phinp,myphinp,scatralm);
 
       // fill all element arrays

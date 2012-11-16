@@ -91,7 +91,7 @@ Here is how this data can be unpacked again:<br>
 \code
 Fool::Unpack(const vector< char > &data)
 {
-  vector<char>::size_type position = 0;                      // used to mark current reading position in data
+  std::vector<char>::size_type position = 0;                      // used to mark current reading position in data
   int tmp;
   ExtractfromPack(position,data,tmp);    // unpack the unique id
   if (tmp != UniqueParObjectId()) dserror("data does not belong to this class");

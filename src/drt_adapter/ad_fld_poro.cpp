@@ -27,7 +27,7 @@
 ADAPTER::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid,
     Teuchos::RCP<DRT::Discretization> dis,
     Teuchos::RCP<LINALG::Solver> solver,
-    Teuchos::RCP<ParameterList> params,
+    Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<IO::DiscretizationWriter> output,
     bool isale,
     bool dirichletcond)
@@ -35,7 +35,7 @@ ADAPTER::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid,
 {
   // make sure
 
-  if (fluid_ == null)
+  if (fluid_ == Teuchos::null)
     dserror("Failed to create the underlying fluid adapter");
 
   Discretization()->GetCondition("NoPenetration", nopencond_);

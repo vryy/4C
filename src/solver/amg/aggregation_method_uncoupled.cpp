@@ -13,8 +13,8 @@
 
 LINALG::AggregationMethod_Uncoupled::AggregationMethod_Uncoupled(FILE* outfile) :
   nGlobalDirichletBlocks(0),
-  map_(null),
-  amal_map_(null),
+  map_(Teuchos::null),
+  amal_map_(Teuchos::null),
   nVerbose_(0)
 {
 
@@ -107,12 +107,12 @@ int LINALG::AggregationMethod_Uncoupled::AmalgamateMatrix(const RCP<Epetra_CrsMa
 #endif
 
   ////////////// find boundary blocks
-  if(bdry_array != null) bdry_array = null;   // delete input object
+  if(bdry_array != Teuchos::null) bdry_array = Teuchos::null;   // delete input object
   bdry_array = Teuchos::rcp(new Epetra_IntVector(*amal_map_,true));
   bdry_array->PutValue(AGGR_READY);
 
   //////////////////// create graph for amalgamated matrix
-  if(amalA != null) amalA = null;   // delete input object
+  if(amalA != Teuchos::null) amalA = Teuchos::null;   // delete input object
   amalA = Teuchos::rcp(new Epetra_CrsGraph(Copy,*amal_map_,10));
 
   //////////////////// fill graph for amalgamated matrix
@@ -189,7 +189,7 @@ int LINALG::AggregationMethod_Uncoupled::AmalgamateMatrix(const RCP<Epetra_CrsMa
 int LINALG::AggregationMethod_Uncoupled::Coarsen(const RCP<Epetra_CrsGraph>& amalA, const RCP<Epetra_IntVector>& bdry_array, ParameterList& params, RCP<Epetra_IntVector>& amal_Aggregates, int& nLocalAggregates)
 {
   ///////////// prepare amal_Aggregates vector (contains local aggregate id)
-  if (amal_Aggregates==null) amal_Aggregates = Teuchos::rcp(new Epetra_IntVector(amalA->RowMap(),true));
+  if (amal_Aggregates==Teuchos::null) amal_Aggregates = Teuchos::rcp(new Epetra_IntVector(amalA->RowMap(),true));
   amal_Aggregates->PutValue(-1);
 
   ///////////// create internal vector for aggregate status
@@ -896,7 +896,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
     int colnnz = A->NumGlobalEntries(grid);
     int numEntries;
     vector<int> colindices(colnnz,0);
-    vector<double> colvals(colnnz,0.0);
+    std::vector<double> colvals(colnnz,0.0);
 #ifdef DEBUG
     int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
     if(ret !=0 )
@@ -1006,7 +1006,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
   // define vectors for storing matrix graph information
   vector<int> globalrowids(A->NumMyRows(),-1);                // local row id -> global row id
   map<int, vector<int> > globalcolids;  // global col ids
-  map<int, vector<double> > vals;  // vals
+  map<int, std::vector<double> > vals;  // vals
   vector<int> numindicesperrow(A->NumMyRows(),0);                                       // number of colindices per local row
 
 
@@ -1020,7 +1020,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
     int colnnz = A->NumGlobalEntries(grid);
     int numEntries;
     vector<int> colindices(colnnz,0);
-    vector<double> colvals(colnnz,0.0);
+    std::vector<double> colvals(colnnz,0.0);
     int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
 
     if(ret !=0 )
@@ -1069,7 +1069,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
 
 #ifdef DEBUG
     if(globalcolids[i].size() != vals[i].size())  dserror("number of cols in row doesn't match to number of values in same row");
-    vector<double> tmpvals = vals[grid];
+    std::vector<double> tmpvals = vals[grid];
     for(unsigned int j=0; j<tmpvals.size();j++)
     {
       if(tmpvals[j] == 0.0)
@@ -1082,7 +1082,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
   }
 
   // create matrix with new graph
-  if(prunedA!=null) prunedA = null;
+  if(prunedA!=Teuchos::null) prunedA = Teuchos::null;
   prunedA = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A->RowMap(),&numindicesperrow[0],true));
 
   // fill matrix
@@ -1145,7 +1145,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropicSimple(const RCP<
   // define vectors for storing matrix graph information
   vector<int> globalrowids(A->NumMyRows(),-1);                // local row id -> global row id
   map<int, vector<int> > globalcolids;  // global col ids
-  map<int, vector<double> > vals;  // vals
+  map<int, std::vector<double> > vals;  // vals
   vector<int> numindicesperrow(A->NumMyRows(),0);                                       // number of colindices per local row
 
   // extract graph information of A + pruning
@@ -1157,7 +1157,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropicSimple(const RCP<
     int colnnz = A->NumGlobalEntries(grid);
     int numEntries;
     vector<int> colindices(colnnz,0);
-    vector<double> colvals(colnnz,0.0);
+    std::vector<double> colvals(colnnz,0.0);
     int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
 
     if(ret !=0 )
@@ -1209,7 +1209,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropicSimple(const RCP<
 
 #ifdef DEBUG
     if(globalcolids[i].size() != vals[i].size())  dserror("number of cols in row doesn't match to number of values in same row");
-    vector<double> tmpvals = vals[grid];
+    std::vector<double> tmpvals = vals[grid];
     for(unsigned int j=0; j<tmpvals.size();j++)
     {
       if(tmpvals[j] == 0.0)
@@ -1222,7 +1222,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropicSimple(const RCP<
   }
 
   // create matrix with new graph
-  if(prunedA!=null) prunedA = null;
+  if(prunedA!=Teuchos::null) prunedA = Teuchos::null;
   prunedA = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A->RowMap(),&numindicesperrow[0],true));
 
   // fill matrix
@@ -1260,7 +1260,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
   // define vectors for storing matrix graph information
   vector<int> globalrowids(A->NumMyRows(),-1);                // local row id -> global row id
   map<int, vector<int> > globalcolids;  // global col ids
-  map<int, vector<double> > vals;  // vals
+  map<int, std::vector<double> > vals;  // vals
   vector<int> numindicesperrow(A->NumMyRows(),0);                                       // number of colindices per local row
 
   // extract graph information of A + pruning
@@ -1272,7 +1272,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
     int colnnz = A->NumGlobalEntries(grid);
     int numEntries;
     vector<int> colindices(colnnz,0);
-    vector<double> colvals(colnnz,0.0);
+    std::vector<double> colvals(colnnz,0.0);
     int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
 
     if(ret !=0 )
@@ -1298,7 +1298,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
 
 #ifdef DEBUG
     if(globalcolids[i].size() != vals[i].size())  dserror("number of cols in row doesn't match to number of values in same row");
-    vector<double> tmpvals = vals[grid];
+    std::vector<double> tmpvals = vals[grid];
     for(unsigned int j=0; j<tmpvals.size();j++)
     {
       if(tmpvals[j] == 0.0)
@@ -1311,7 +1311,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
   }
 
   // create matrix with new graph
-  if(prunedA!=null) prunedA = null;
+  if(prunedA!=Teuchos::null) prunedA = Teuchos::null;
   prunedA = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A->RowMap(),&numindicesperrow[0],true));
 
   // fill matrix
@@ -1333,7 +1333,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
 #if 0
   if(A->Filled()==false) dserror("A is not filled!!");
   cout << *A << endl;
-  if(prunedA!=null) prunedA = null;
+  if(prunedA!=Teuchos::null) prunedA = Teuchos::null;
 
   prunedA = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A->RangeMap(),20,false));
 
@@ -1345,7 +1345,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
     int colnnz = A->NumGlobalEntries(grid);
     int numEntries;
     vector<int> colindices(colnnz,-1);
-    vector<double> vals(colnnz,-1.0);
+    std::vector<double> vals(colnnz,-1.0);
     int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&vals[0],&colindices[0]);
     if(ret!=0) dserror("error extract global row view");
 
@@ -1384,13 +1384,13 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
 
 int LINALG::AggregationMethod_Uncoupled::GetGlobalAggregates(const RCP<Epetra_CrsMatrix>& A, ParameterList& params, RCP<Epetra_IntVector>& aggrinfo, int& naggregates_local, const RCP<Epetra_MultiVector>& ThisNS)
 {
-  RCP<Epetra_CrsGraph> amal_graph = null; // graph of amalgamated A matrix (lives on amal_map_)
-  RCP<Epetra_IntVector> bdry_array = null; // bdry array vector (lives on amal_map_)
-  RCP<Epetra_IntVector> amal_aggs = null; // vector with aggregate ids (local aggregate ids)
+  RCP<Epetra_CrsGraph> amal_graph = Teuchos::null; // graph of amalgamated A matrix (lives on amal_map_)
+  RCP<Epetra_IntVector> bdry_array = Teuchos::null; // bdry array vector (lives on amal_map_)
+  RCP<Epetra_IntVector> amal_aggs = Teuchos::null; // vector with aggregate ids (local aggregate ids)
 
   nVerbose_ = params.get("ML output",0);  // store verbosity level
 
-  RCP<Epetra_CrsMatrix> prunedA = null;
+  RCP<Epetra_CrsMatrix> prunedA = Teuchos::null;
   string pruningAlgorithm = params.get("aggregation method", "isotropic aggregation");
   if(pruningAlgorithm == "isotropic aggregation")
   {
@@ -1431,7 +1431,7 @@ int LINALG::AggregationMethod_Uncoupled::GetGlobalAggregates(const RCP<Epetra_Cr
   for(int i=0; i<comm.MyPID(); ++i) offset += global[i];
 
   // create aggrinfo vector
-  if(aggrinfo != null) aggrinfo = null;
+  if(aggrinfo != Teuchos::null) aggrinfo = Teuchos::null;
   aggrinfo = Teuchos::rcp(new Epetra_IntVector(*map_,true));
 #ifdef DEBUG
   if(!aggs->Map().SameAs(aggrinfo->Map())) dserror("maps don't match!");

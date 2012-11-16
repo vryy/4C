@@ -707,7 +707,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
     RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
-    xdiscret->EvaluateDirichletCombust(eleparams,state_.velnp_,null,null,null,dbcmaps_);
+    xdiscret->EvaluateDirichletCombust(eleparams,state_.velnp_,Teuchos::null,Teuchos::null,Teuchos::null,dbcmaps_);
 
     discret_->ClearState();
 
@@ -1578,7 +1578,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
           c_->PutScalar(0.0);
 
           // get pressure
-          const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+          const std::vector<double>* mode = KSPcond->Get<std::vector<double> >("mode");
 
           // make sure the dat file specified a pressure mode
           for(int rr=0;rr<numdim_;++rr)
@@ -2695,16 +2695,16 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         //-------------------------------------------
         // extract pressure values from global vector
         //-------------------------------------------
-        vector<int> lm;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         ele->LocationVector(*(discret_), lm, lmowner, lmstride);
         // extract local values from the global vector
-        vector<double> myvelnp(lm.size());
+        std::vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*output_col_vel, myvelnp, lm);
 
         const int numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Pres);
-        const vector<int>& dofpos = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Pres);
+        const std::vector<int>& dofpos = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Pres);
         // get pressure values for this element
         LINALG::SerialDenseMatrix presele(1,numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
@@ -2720,7 +2720,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
 #endif
         size_t numnode = ele->NumNode();
-        vector<double> myphinp(numnode);
+        std::vector<double> myphinp(numnode);
         // extract G-function values to element level
         DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp_);
 
@@ -2799,7 +2799,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
             if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
 #endif
             size_t numnode = ele->NumNode();
-            vector<double> myphinp(numnode);
+            std::vector<double> myphinp(numnode);
             // extract G-function values to element level
             DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp_);
 #ifdef DEBUG
@@ -2821,16 +2821,16 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
             //-------------------------------------------
             // extract pressure values from global vector
             //-------------------------------------------
-            vector<int> lm;
-            vector<int> lmowner;
-            vector<int> lmstride;
+            std::vector<int> lm;
+            std::vector<int> lmowner;
+            std::vector<int> lmstride;
             ele->LocationVector(*(discret_), lm, lmowner, lmstride);
             // extract local values from the global vector
-            vector<double> myvelnp(lm.size());
+            std::vector<double> myvelnp(lm.size());
             DRT::UTILS::ExtractMyValues(*output_col_vel, myvelnp, lm);
 
             const size_t numparam = eledofman.NumDofPerField(XFEM::PHYSICS::Pres);
-            const vector<int>& dofpos = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Pres);
+            const std::vector<int>& dofpos = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Pres);
             LINALG::SerialDenseVector epres(numparam);
             for (size_t iparam=0; iparam<numparam; ++iparam)
               epres(iparam) = myvelnp[dofpos[iparam]];
@@ -3020,17 +3020,17 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         // create local copy of information about dofs
         const XFEM::ElementDofManager eledofman(*ele,physprob_.elementAnsatz_->getElementAnsatz(ele->Shape()),*dofmanagerForOutput_);
 
-        vector<int> lm;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         ele->LocationVector(*(discret_), lm, lmowner, lmstride);
 
         // extract local values from the global vector
-        vector<double> myvelnp(lm.size());
+        std::vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*output_col_vel, myvelnp, lm);
 
         const int numparam = eledofman.NumDofPerField(field);
-        const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
+        const std::vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
 
         LINALG::SerialDenseMatrix elementvalues(1,numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
@@ -3047,7 +3047,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
 #endif
 
         size_t numnode = ele->NumNode();
-        vector<double> myphinp(numnode);
+        std::vector<double> myphinp(numnode);
         // extract G-function values to element level
         DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp_);
 
@@ -3132,16 +3132,16 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         // create local copy of information about dofs
         const XFEM::ElementDofManager eledofman(*ele,element_ansatz,*dofmanagerForOutput_);
 
-        vector<int> lm;
-        vector<int> lmowner;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
         ele->LocationVector(*(discret_), lm, lmowner);
 
         // extract local values from the global vector
-        vector<double> myvelnp(lm.size());
+        std::vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*output_col_vel, myvelnp, lm);
 
         const int numparam = eledofman.NumDofPerField(field);
-        const vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
+        const std::vector<int>& dofpos = eledofman.LocalDofPosPerField(field);
 
         LINALG::SerialDenseVector elementvalues(numparam);
         for (int iparam=0; iparam<numparam; ++iparam)
@@ -3207,21 +3207,21 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         // create local copy of information about dofs
         const XFEM::ElementDofManager eledofman(*ele,physprob_.elementAnsatz_->getElementAnsatz(ele->Shape()),*dofmanagerForOutput_);
 
-        vector<int> lm;
-        vector<int> lmowner;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
         ele->LocationVector(*(discret_), lm, lmowner);
 
         // extract local values from the global vector
-        vector<double> myvelnp(lm.size());
+        std::vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*state_.velnp_, myvelnp, lm);
 
         const int numparam = eledofman.NumDofPerField(field);
-        const vector<int>& dofposxx = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmaxx);
-        const vector<int>& dofposyy = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmayy);
-        const vector<int>& dofposzz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmazz);
-        const vector<int>& dofposxy = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmaxy);
-        const vector<int>& dofposxz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmaxz);
-        const vector<int>& dofposyz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmayz);
+        const std::vector<int>& dofposxx = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmaxx);
+        const std::vector<int>& dofposyy = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmayy);
+        const std::vector<int>& dofposzz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmazz);
+        const std::vector<int>& dofposxy = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmaxy);
+        const std::vector<int>& dofposxz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmaxz);
+        const std::vector<int>& dofposyz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Sigmayz);
 
         LINALG::SerialDenseMatrix elementvalues(9,numparam);
         for (int iparam=0; iparam<numparam; ++iparam) elementvalues(0,iparam) = myvelnp[dofposxx[iparam]];
@@ -3751,20 +3751,20 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 #endif
         const XFEM::ElementDofManager eledofman(*ele,elementAnsatz.getElementAnsatz(ele->Shape()),*dofmanagerForOutput_);
 
-        vector<int> lm;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         ele->LocationVector(*discret_, lm, lmowner, lmstride);
 
         // extract local values from the global vector
-        vector<double> myvelnp(lm.size());
+        std::vector<double> myvelnp(lm.size());
         DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
 
-        const vector<int>& dofposvelx = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
-        const vector<int>& dofposvely = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
-        const vector<int>& dofposvelz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
+        const std::vector<int>& dofposvelx = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
+        const std::vector<int>& dofposvely = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
+        const std::vector<int>& dofposvelz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
 #ifdef COMBUST_NORMAL_ENRICHMENT
-        const vector<int>& dofposveln = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Veln);
+        const std::vector<int>& dofposveln = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Veln);
 #endif
 
         const int numparamvelx = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
@@ -3793,7 +3793,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
 #endif
         size_t numnode = ele->NumNode();
-        vector<double> myphinp(numnode);
+        std::vector<double> myphinp(numnode);
         // extract G-function values to element level
         DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp_);
 
@@ -3886,7 +3886,7 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
 #endif
             size_t numnode = ele->NumNode();
-            vector<double> myphinp(numnode);
+            std::vector<double> myphinp(numnode);
             // extract G-function values to element level
             DRT::UTILS::ExtractMyNodeBasedValues(ele, myphinp, *phinp_);
 
@@ -3927,19 +3927,19 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             //-------------------------------------------
             // extract velocity values from global vector
             //-------------------------------------------
-            vector<int> lm;
-            vector<int> lmowner;
-            vector<int> lmstride;
+            std::vector<int> lm;
+            std::vector<int> lmowner;
+            std::vector<int> lmstride;
             ele->LocationVector(*(discret_), lm, lmowner, lmstride);
             // extract local values from the global vector
-            vector<double> myvelnp(lm.size());
+            std::vector<double> myvelnp(lm.size());
             DRT::UTILS::ExtractMyValues(*vectorfield, myvelnp, lm);
 
-            const vector<int>& dofposvelx = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
-            const vector<int>& dofposvely = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
-            const vector<int>& dofposvelz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
+            const std::vector<int>& dofposvelx = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velx);
+            const std::vector<int>& dofposvely = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Vely);
+            const std::vector<int>& dofposvelz = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Velz);
 #ifdef COMBUST_NORMAL_ENRICHMENT
-            const vector<int>& dofposveln = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Veln);
+            const std::vector<int>& dofposveln = eledofman.LocalDofPosPerField(XFEM::PHYSICS::Veln);
 #endif
 
             const size_t numparamvelx = eledofman.NumDofPerField(XFEM::PHYSICS::Velx);
@@ -4205,8 +4205,8 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     const int npredof = numdim_;
 
     double         p;
-    vector<double> u  (numdim_);
-    vector<double> xyz(numdim_);
+    std::vector<double> u  (numdim_);
+    std::vector<double> xyz(numdim_);
 
     // check whether present flow is indeed three-dimensional
     if (numdim_!=3) dserror("Beltrami flow is a three-dimensional flow!");
@@ -4282,7 +4282,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      const vector<int> nodedofset = discret_->Dof(lnode);
+      const std::vector<int> nodedofset = discret_->Dof(lnode);
 
       for(int index=0;index<numdim+1;++index)
       {
@@ -4360,7 +4360,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
           // yes, we have one
 
           // get the list of all his slavenodes
-//          map<int, vector<int> >::iterator master = pbcmapmastertoslave_->find(lnode->Id());
+//          std::map<int, vector<int> >::iterator master = pbcmapmastertoslave_->find(lnode->Id());
 
           // slavenodes are ignored
 //          if(master == pbcmapmastertoslave_->end()) continue;
@@ -4514,7 +4514,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       //vel(1) = sl*densu/dens;
 
       // access standard FEM dofset (3 x vel + 1 x pressure) to get dof IDs for this node
-      const vector<int> nodedofs = (*standarddofset_).Dof(lnode);
+      const std::vector<int> nodedofs = (*standarddofset_).Dof(lnode);
       //const vector<int> nodedofs = discret_->Dof(lnode);
       //for (int i=0;i<standardnodedofset.size();i++)
       //{
@@ -4650,7 +4650,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       //vel(1) = sl*densu/dens;
 
       // access standard FEM dofset (3 x vel + 1 x pressure) to get dof IDs for this node
-      const vector<int> nodedofs = (*standarddofset_).Dof(lnode);
+      const std::vector<int> nodedofs = (*standarddofset_).Dof(lnode);
       //const vector<int> nodedofs = discret_->Dof(lnode);
       //for (int i=0;i<standardnodedofset.size();i++)
       //{
@@ -5007,7 +5007,7 @@ void FLD::CombustFluidImplicitTimeInt::SetupXFluidSplit(
   for (int i=0; i<dis.NumMyRowNodes(); ++i) {
     const DRT::Node* node = dis.lRowNode(i);
     const std::set<XFEM::FieldEnr>& enrvarset(dofman->getNodeDofSet(node->Id()));
-    const vector<int> dof = dis.Dof(node);
+    const std::vector<int> dof = dis.Dof(node);
     dsassert(dof.size() == enrvarset.size(), "mismatch in length!");
     std::set<XFEM::FieldEnr>::const_iterator enrvar;
     size_t countdof = 0;
@@ -5386,7 +5386,7 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     discret_->SetState("u and p at time n+1 (converged)",state_.velnp_);
 
     // call loop over elements (assemble nothing)
-    discret_->Evaluate(eleparams,null,null,null,null,null);
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
     discret_->ClearState();
 
     double locvelerr = eleparams.get<double>("L2 integrated velocity error");
@@ -5486,7 +5486,7 @@ double FLD::CombustFluidImplicitTimeInt::TimIntParam() const
 void FLD::CombustFluidImplicitTimeInt::LiftDrag() const
 {
   // in this map, the results of the lift drag calculation are stored
-  RCP<map<int,vector<double> > > liftdragvals;
+  RCP<map<int,std::vector<double> > > liftdragvals;
 
   FLD::UTILS::LiftDrag(*discret_,*trueresidual_,*params_,liftdragvals);
 

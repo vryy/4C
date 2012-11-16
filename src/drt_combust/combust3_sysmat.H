@@ -408,7 +408,7 @@ void BlendMaterial(
    *                                                                                 schott Jun 15, 2010
    */
   void callNitscheErrors(
-      ParameterList&                                         eleparams,
+      Teuchos::ParameterList&                                eleparams,
       const INPAR::COMBUST::NitscheError&                    NitscheErrorType,
       const XFEM::AssemblyType                               assembly_type,
       const DRT::ELEMENTS::Combust3*                         ele,

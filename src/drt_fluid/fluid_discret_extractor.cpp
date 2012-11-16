@@ -279,7 +279,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
           vector<int> reduced_ids;
 
           // get all nodes of parent discretization having this condition
-          const vector<int>* candidates = (*actcond[numactcond]).Nodes();
+          const std::vector<int>* candidates = (*actcond[numactcond]).Nodes();
 
           vector<int> mytoggle(candidates->size(),0);
           vector<int> toggle(candidates->size(),0);
@@ -410,9 +410,9 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       pbc.UpdateDofsForPeriodicBoundaryConditions();
 
       // get node to node coupling
-      col_pbcmapmastertoslave_ = Teuchos::rcp(new map<int,vector<int> > ());
+      col_pbcmapmastertoslave_ = Teuchos::rcp(new std::map<int,std::vector<int> > ());
       col_pbcmapmastertoslave_ = pbc.ReturnAllCoupledColNodes();
-      row_pbcmapmastertoslave_ = Teuchos::rcp(new map<int,vector<int> > ());
+      row_pbcmapmastertoslave_ = Teuchos::rcp(new std::map<int,std::vector<int> > ());
       row_pbcmapmastertoslave_ = pbc.ReturnAllCoupledRowNodes();
     }
 

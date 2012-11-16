@@ -108,7 +108,7 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
     {
       const XFEM::PHYSICS::Field field = enrfield->getField();
       //numParamsPerField_[field] = 0;
-      paramsLocalEntries_[field] = vector<int>();
+      paramsLocalEntries_[field] = std::vector<int>();
     }
   }
   // for element dofs
@@ -118,7 +118,7 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
   {
     const XFEM::PHYSICS::Field field = enrfield->getField();
     //numParamsPerField_[field] = 0;
-    paramsLocalEntries_[field] = vector<int>();
+    paramsLocalEntries_[field] = std::vector<int>();
   }
 
   unique_enrichments_.clear();

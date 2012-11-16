@@ -99,9 +99,9 @@ bool DRT::ELEMENTS::Shell8::ReadElement(const std::string& eletype,
   for (int i=0; i<5; ++i) nhyb_ += eas_[i];
 
   // create arrays alfa, Dtildinv, Lt, Rtild in data_
-  vector<double> alfa(nhyb_);
-  vector<double> alfao(nhyb_);
-  vector<double> Rtild(nhyb_);
+  std::vector<double> alfa(nhyb_);
+  std::vector<double> alfao(nhyb_);
+  std::vector<double> Rtild(nhyb_);
   std::fill(alfa.begin(), alfa.end(), 0);
   std::fill(alfao.begin(),alfao.end(),0);
   std::fill(Rtild.begin(),Rtild.end(),0);

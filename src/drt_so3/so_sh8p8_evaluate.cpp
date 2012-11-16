@@ -339,8 +339,8 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
       int gid = Id();
       LINALG::Matrix<NUMGPT_,NUMSTR_> gpstress(((*gpstressmap)[gid])->A(),true);
 
-      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",null);
-      if (poststress==null)
+      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
+      if (poststress==Teuchos::null)
         dserror("No element stress/strain vector available");
 
       if (stresstype=="ndxyz") {
@@ -586,12 +586,12 @@ int DRT::ELEMENTS::So_sh8p8::Evaluate(
     case calc_potential_stiff:
     {
       RCP<PotentialManager> potentialmanager =
-        params.get<RCP<PotentialManager> >("pot_man", null);
-      if (potentialmanager==null)
+        params.get<RCP<PotentialManager> >("pot_man",Teuchos::null);
+      if (potentialmanager==Teuchos::null)
         dserror("No PotentialManager in sh8p8 available");
 
-      RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
-      if (cond==null)
+      RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
+      if (cond==Teuchos::null)
         dserror("Condition not available in sh8p8");
 
       if (cond->Type()==DRT::Condition::LJ_Potential_Volume) // Lennard-Jones potential
@@ -2359,7 +2359,7 @@ void DRT::ELEMENTS::So_sh8p8::CalcSTCMatrix
   LINALG::Matrix<NUMDOF_,NUMDOF_>& elemat1,
   const INPAR::STR::STC_Scale stc_scaling,
   const int stc_layer,
-  vector<int>& lm,
+  std::vector<int>& lm,
   DRT::Discretization& discretization,
   bool calcinverse
 )

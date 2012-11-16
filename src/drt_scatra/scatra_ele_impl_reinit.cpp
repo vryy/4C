@@ -191,9 +191,9 @@ double getEleDiameter(const M1& xyze)
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::ReInitImpl<distype>::Evaluate(
   DRT::Element*              ele,
-  ParameterList&             params,
+  Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
-  vector<int>&               lm,
+  std::vector<int>&          lm,
   Epetra_SerialDenseMatrix&  elemat1_epetra,
   Epetra_SerialDenseMatrix&  elemat2_epetra,
   Epetra_SerialDenseVector&  elevec1_epetra,
@@ -209,8 +209,8 @@ int DRT::ELEMENTS::ReInitImpl<distype>::Evaluate(
   is_ale_ = params.get<bool>("isale",false);
   if (is_ale_)
   {
-    const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",null);
-    if (dispnp==null) dserror("Cannot get state vector 'dispnp'");
+    const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp",Teuchos::null);
+    if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_);
     // add nodal displacements to point coordinates
     xyze_ += edispnp_;
@@ -245,11 +245,11 @@ int DRT::ELEMENTS::ReInitImpl<distype>::Evaluate(
     RCP<const Epetra_Vector> phin  = discretization.GetState("phin");
     RCP<const Epetra_Vector> phi0_Reinit_Reference = discretization.GetState("phistart");
 
-    if (phinp==null || phin==null || phi0_Reinit_Reference==null)
+    if (phinp==Teuchos::null || phin==Teuchos::null || phi0_Reinit_Reference==Teuchos::null)
       dserror("Cannot get state vector 'phinp' or 'phi0_Reinit_Reference'");
-    vector<double> myphinp(lm.size());
-    vector<double> myphin(lm.size());
-    vector<double> myphi0(lm.size());
+    std::vector<double> myphinp(lm.size());
+    std::vector<double> myphin(lm.size());
+    std::vector<double> myphi0(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
     if (reinitswitch==true) DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
     if (reinitswitch==true) DRT::UTILS::ExtractMyValues(*phi0_Reinit_Reference,myphi0,lm);
@@ -320,7 +320,7 @@ int DRT::ELEMENTS::ReInitImpl<distype>::Evaluate(
 
 
       // set parameters for stabilization
-      ParameterList& stablist = params.sublist("STABILIZATION");
+      Teuchos::ParameterList& stablist = params.sublist("STABILIZATION");
 
       // get definition for stabilization parameter tau
       whichtau_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
@@ -375,9 +375,9 @@ int DRT::ELEMENTS::ReInitImpl<distype>::Evaluate(
       mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
 
       // get velocity at nodes
-      const RCP<Epetra_MultiVector> reinit_velocity = params.get< RCP<Epetra_MultiVector> >("reinit velocity field",null);
+      const RCP<Epetra_MultiVector> reinit_velocity = params.get< RCP<Epetra_MultiVector> >("reinit velocity field",Teuchos::null);
       DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,reinit_velocity,nsd_);
-      const RCP<Epetra_MultiVector> reinit_convelocity = params.get< RCP<Epetra_MultiVector> >("reinit convective velocity field",null);
+      const RCP<Epetra_MultiVector> reinit_convelocity = params.get< RCP<Epetra_MultiVector> >("reinit convective velocity field",Teuchos::null);
       DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,reinit_convelocity,nsd_);
 
       // calculate element coefficient matrix and rhs
@@ -411,19 +411,19 @@ int DRT::ELEMENTS::ReInitImpl<distype>::Evaluate(
     const double dt   = params.get<double>("time-step length");
 
     // get velocity at nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",null);
+    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field",Teuchos::null);
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
-    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",null);
+    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
     DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
 
     // extract local values from the global vectors
     RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     RCP<const Epetra_Vector> phin  = discretization.GetState("phin");
 
-    if (phinp==null || phin==null)
+    if (phinp==Teuchos::null || phin==Teuchos::null)
       dserror("Cannot get state vector 'phinp' or 'phin_'");
-    vector<double> myphinp(lm.size());
-    vector<double> myphin(lm.size());
+    std::vector<double> myphinp(lm.size());
+    std::vector<double> myphin(lm.size());
 
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
     DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
@@ -463,10 +463,10 @@ int DRT::ELEMENTS::ReInitImpl<distype>::Evaluate(
 
       // need current solution
       RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-      if (phinp==null) dserror("Cannot get state vector 'phinp'");
+      if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
       // extract local values from the global vector
-      vector<double> myphinp(lm.size());
+      std::vector<double> myphinp(lm.size());
       DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
 
@@ -1225,7 +1225,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
 
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
-    vector<double> v(1,migepe2);
+    std::vector<double> v(1,migepe2);
     std::ostringstream temp;
     temp << k;
     string name = "Pe_mig_"+temp.str();
@@ -1263,7 +1263,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     // visualize resultant Pe number
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
-    vector<double> v(1,epe);
+    std::vector<double> v(1,epe);
     std::ostringstream temp;
     temp << k;
     string name = "Pe_"+temp.str();
@@ -1296,7 +1296,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
 
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
-    vector<double> v(1,migepe2);
+    std::vector<double> v(1,migepe2);
     std::ostringstream temp;
     temp << k;
     string name = "Pe_mig_"+temp.str();
@@ -1330,7 +1330,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     // visualize resultant Pe number
     DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
     if (!actele) dserror("cast to Transport* failed");
-    vector<double> v(1,epe);
+    std::vector<double> v(1,epe);
     std::ostringstream temp;
     temp << k;
     string name = "Pe_"+temp.str();
@@ -2220,7 +2220,7 @@ double DRT::ELEMENTS::ReInitImpl<distype>::EvalShapeFuncAndDerivsAtIntPointREINI
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::ReInitImpl<distype>::CalErrorsReinitialization(
     const DRT::Element*          ele,   //!< the element
-    ParameterList&               params //!< parameter list
+    Teuchos::ParameterList&      params //!< parameter list
   )
 {
   // evaluate the error only within the transition region of the smoothed heavyside function
@@ -2502,7 +2502,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalMatAndRHS_REINIT_Penalty(
 
   const size_t numnode = ele->NumNode();
 
-  vector<Teuchos::RCP<DRT::Element> > linesVec = ele->Lines();
+  std::vector<Teuchos::RCP<DRT::Element> > linesVec = ele->Lines();
   typedef vector<Teuchos::RCP<DRT::Element> >::iterator lines_iterator;
 
   for(lines_iterator line = linesVec.begin(); line != linesVec.end(); line++)

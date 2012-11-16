@@ -69,7 +69,7 @@ public:
 
 
   void BoundaryElementLoop(
-    ParameterList&                       mhdbcparams,
+    Teuchos::ParameterList&                       mhdbcparams,
     Teuchos::RCP<Epetra_Vector>          velaf_   ,
     Teuchos::RCP<Epetra_Vector>          velnp_   ,
     Teuchos::RCP<Epetra_Vector>          residual_,

@@ -330,6 +330,6 @@ LINALG::SerialDenseMatrix DRT::MESHFREE::CellGaussPoints<distype>::N_(ngp_,nek_)
 template<DRT::Element::DiscretizationType distype>
 LINALG::SerialDenseVector DRT::MESHFREE::CellGaussPoints<distype>::w_(ngp_);
 template<DRT::Element::DiscretizationType distype>
-vector<LINALG::SerialDenseMatrix> DRT::MESHFREE::CellGaussPoints<distype>::dN_;
+std::vector<LINALG::SerialDenseMatrix> DRT::MESHFREE::CellGaussPoints<distype>::dN_;
 template<DRT::Element::DiscretizationType distype>
 bool DRT::MESHFREE::CellGaussPoints<distype>::is_instantiated_ = false;

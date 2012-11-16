@@ -291,9 +291,9 @@ namespace FLD
       );
 
     /// check xfluid input parameter list
-    void CheckXFluidParams(ParameterList& params_xfem,
-                           ParameterList& params_xf_gen,
-                           ParameterList& params_xf_stab);
+    void CheckXFluidParams(Teuchos::ParameterList& params_xfem,
+        Teuchos::ParameterList& params_xf_gen,
+        Teuchos::ParameterList& params_xf_stab);
 
     /// print stabilization params to screen
     void PrintStabilizationParams();

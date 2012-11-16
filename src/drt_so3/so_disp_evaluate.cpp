@@ -30,9 +30,9 @@ Maintainer: Axel Gerstenberger
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                              maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::SoDisp::Evaluate(Teuchos::ParameterList& params,
                                     DRT::Discretization&      discretization,
-                                    vector<int>&              lm,
+                                    std::vector<int>&         lm,
                                     Epetra_SerialDenseMatrix& elemat1,
                                     Epetra_SerialDenseMatrix& elemat2,
                                     Epetra_SerialDenseVector& elevec1,
@@ -65,9 +65,9 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
     // linear stiffness
     case calc_struct_linstiff: {
       // need current displacement and residual forces
-      vector<double> mydisp(lm.size());
+      std::vector<double> mydisp(lm.size());
       for (int i=0; i<(int)mydisp.size(); ++i) mydisp[i] = 0.0;
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       for (int i=0; i<(int)myres.size(); ++i) myres[i] = 0.0;
       sodisp_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1, params);
     }
@@ -78,10 +78,10 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       sodisp_nlnstiffmass(lm,mydisp,myres,&elemat1,NULL,&elevec1,params);
     }
@@ -92,10 +92,10 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       // create a dummy element matrix to apply linearised EAS-stuff onto
       Epetra_SerialDenseMatrix myemat(lm.size(),lm.size());
@@ -113,10 +113,10 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
       // need current displacement and residual forces
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (disp==null || res==null) dserror("Cannot get state vectors 'displacement' and/or residual");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null || res==Teuchos::null) dserror("Cannot get state vectors 'displacement' and/or residual");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-      vector<double> myres(lm.size());
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       sodisp_nlnstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1, params);
     }
@@ -197,7 +197,7 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
 
 				// get displacements and extract values of this element
 				RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-				if (disp==null) dserror("Cannot get state displacement vector");
+				if (disp==Teuchos::null) dserror("Cannot get state displacement vector");
 				vector<double> mydisp(lm.size());
 				DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
@@ -387,10 +387,10 @@ int DRT::ELEMENTS::SoDisp::Evaluate(ParameterList& params,
 /*----------------------------------------------------------------------*
  |  Integrate a Volume Neumann boundary condition (public)     maf 04/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::SoDisp::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::SoDisp::EvaluateNeumann(Teuchos::ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
-                                           vector<int>&              lm,
+                                           std::vector<int>&         lm,
                                            Epetra_SerialDenseVector& elevec1,
                                            Epetra_SerialDenseMatrix* elemat1)
 {
@@ -402,18 +402,18 @@ int DRT::ELEMENTS::SoDisp::EvaluateNeumann(ParameterList& params,
  |  evaluate the element (private)                             maf 04/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::SoDisp::sodisp_nlnstiffmass(
-      vector<int>&              lm,             // location matrix
-      vector<double>&           disp,           // current displacements
-      vector<double>&           residual,       // current residual displ
+      std::vector<int>&         lm,             // location matrix
+      std::vector<double>&      disp,           // current displacements
+      std::vector<double>&      residual,       // current residual displ
       Epetra_SerialDenseMatrix* stiffmatrix,    // element stiffness matrix
       Epetra_SerialDenseMatrix* massmatrix,     // element mass matrix
       Epetra_SerialDenseVector* force,          // element internal force vector
-      ParameterList&            params)         // algorithmic parameters e.g. time
+      Teuchos::ParameterList&   params)         // algorithmic parameters e.g. time
 {
 
     vector<Epetra_SerialDenseVector> shapefcts(numgpt_disp_);
     vector<Epetra_SerialDenseMatrix> derivs(numgpt_disp_);
-    vector<double> weights(numgpt_disp_);
+    std::vector<double> weights(numgpt_disp_);
     sodisp_shapederiv(shapefcts,derivs,weights);   // call to evaluate
   /* ============================================================================*/
 
@@ -554,7 +554,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_nlnstiffmass(
     // integrate `geometric' stiffness matrix and add to keu *****************
     Epetra_SerialDenseVector sfac(stress); // auxiliary integrated stress
     sfac.Scale(detJ * weights.at(gp));     // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
-    vector<double> SmB_L(NUMDIM_DISP);     // intermediate Sm.B_L
+    std::vector<double> SmB_L(NUMDIM_DISP);     // intermediate Sm.B_L
     // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
     for (int inod=0; inod<numnod_disp_; ++inod){
       SmB_L[0] = sfac(0) * N_XYZ(0,inod) + sfac(3) * N_XYZ(1,inod) + sfac(5) * N_XYZ(2,inod);

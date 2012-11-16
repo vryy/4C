@@ -2286,8 +2286,8 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
  |  check xfluid input parameters/ safety checks           schott 05/12 |
  *----------------------------------------------------------------------*/
 void FLD::XFluid::CheckXFluidParams( ParameterList& params_xfem,
-                                     ParameterList& params_xf_gen,
-                                     ParameterList& params_xf_stab)
+                                     Teuchos::ParameterList& params_xf_gen,
+                                     Teuchos::ParameterList& params_xf_stab)
 {
   if (myrank_==0)
   {
@@ -3132,7 +3132,7 @@ void FLD::XFluid::TimeUpdate()
     eleparams.set("dt"     ,dta_    );
 
     // call loop over elements to update subgrid scales
-    discret_->Evaluate(eleparams,null,null,null,null,null);
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
     if(myrank_==0)
     {
@@ -4003,9 +4003,9 @@ void FLD::XFluid::Output()
       for (int lid = 0; lid < soliddis_->NumMyColNodes(); ++lid)
       {
         const DRT::Node* node = soliddis_->lColNode(lid);
-        vector<int> lm;
+        std::vector<int> lm;
         soliddis_->Dof(node, lm);
-        vector<double> mydisp;
+        std::vector<double> mydisp;
         DRT::UTILS::ExtractMyValues(dispcol,mydisp,lm);
         if (mydisp.size() != 3)
           dserror("we need 3 displacements here");
@@ -4030,9 +4030,9 @@ void FLD::XFluid::Output()
       for (int lid = 0; lid < boundarydis_->NumMyColNodes(); ++lid)
       {
         const DRT::Node* node = boundarydis_->lColNode(lid);
-        vector<int> lm;
+        std::vector<int> lm;
         boundarydis_->Dof(node, lm);
-        vector<double> mydisp;
+        std::vector<double> mydisp;
         DRT::UTILS::ExtractMyValues(idispcol,mydisp,lm);
         if (mydisp.size() != 3)
           dserror("we need 3 displacements here");
@@ -4136,7 +4136,7 @@ void FLD::XFluid::Output()
         const DRT::Element* actele = xdiscret->lRowIntFace(i);
         std::map<int,int> & ghost_penalty_map = state_->EdgeStab()->GetGhostPenaltyMap();
 
-        map<int,int>::iterator it = ghost_penalty_map.find(actele->Id());
+        std::map<int,int>::iterator it = ghost_penalty_map.find(actele->Id());
         if(it != ghost_penalty_map.end())
         {
           int ghost_penalty = it->second;
@@ -4156,7 +4156,7 @@ void FLD::XFluid::Output()
       {
         const DRT::Element* actele = xdiscret->lRowIntFace(i);
         std::map<int,int> & edge_based_map = state_->EdgeStab()->GetEdgeBasedMap();
-        map<int,int>::iterator it = edge_based_map.find(actele->Id());
+        std::map<int,int>::iterator it = edge_based_map.find(actele->Id());
 
         if(it != edge_based_map.end())
         {
@@ -4487,7 +4487,7 @@ void FLD::XFluid::SetInitialFlowField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      const vector<int> nodedofset = discret_->Dof(lnode);
+      const std::vector<int> nodedofset = discret_->Dof(lnode);
 
       if (nodedofset.size()!=0)
       {
@@ -4515,8 +4515,8 @@ void FLD::XFluid::SetInitialFlowField(
     const int npredof = numdim_;
 
     double         p;
-    vector<double> u  (numdim_);
-    vector<double> xyz(numdim_);
+    std::vector<double> u  (numdim_);
+    std::vector<double> xyz(numdim_);
 
     // check whether present flow is indeed three-dimensional
     if (numdim_!=3) dserror("Beltrami flow is a three-dimensional flow!");
@@ -4623,7 +4623,7 @@ void FLD::XFluid::SetInitialInterfaceField()
       // get the processor local node
       DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      const vector<int> nodedofset = boundarydis_->Dof(lnode);
+      const std::vector<int> nodedofset = boundarydis_->Dof(lnode);
 
       if (nodedofset.size()!=0)
       {
@@ -4674,7 +4674,7 @@ void FLD::XFluid::SetInterfaceDisplacement()
           // get the processor local node
           DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
           // the set of degrees of freedom associated with the node
-          const vector<int> nodedofset = boundarydis_->Dof(lnode);
+          const std::vector<int> nodedofset = boundarydis_->Dof(lnode);
 
           if (nodedofset.size()!=0)
           {
@@ -4712,7 +4712,7 @@ void FLD::XFluid::SetInterfaceDisplacement()
         // get the processor local node
         DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
-        const vector<int> nodedofset = boundarydis_->Dof(lnode);
+        const std::vector<int> nodedofset = boundarydis_->Dof(lnode);
 
         if (nodedofset.size()!=0)
         {
@@ -4868,7 +4868,7 @@ void FLD::XFluid::ComputeInterfaceVelocities()
           // get the processor local node
           DRT::Node*  lnode      = boundarydis_->lRowNode(lnodeid);
           // the set of degrees of freedom associated with the node
-          const vector<int> nodedofset = boundarydis_->Dof(lnode);
+          const std::vector<int> nodedofset = boundarydis_->Dof(lnode);
 
           if (nodedofset.size()!=0)
           {
@@ -4934,7 +4934,7 @@ void FLD::XFluid::SetDirichletNeumannBC()
     discret_->SetState("velaf",state_->velnp_);
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
-    discret_->EvaluateDirichlet(eleparams,state_->velnp_,null,null,null,state_->dbcmaps_);
+    discret_->EvaluateDirichlet(eleparams,state_->velnp_,Teuchos::null,Teuchos::null,Teuchos::null,state_->dbcmaps_);
 
     discret_->ClearState();
 
@@ -4974,9 +4974,9 @@ void FLD::XFluid::SetElementGeneralFluidParameter()
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
 
   // call standard loop over elements
-  //discret_->Evaluate(eleparams,null,null,null,null,null);
+  //discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
-  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
 }
 
@@ -4998,7 +4998,7 @@ void FLD::XFluid::SetElementTurbulenceParameter()
   eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements
-  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   return;
 }
@@ -5036,9 +5036,9 @@ void FLD::XFluid::SetElementTimeParameter()
   }
 
   // call standard loop over elements
-  //discret_->Evaluate(eleparams,null,null,null,null,null);
+  //discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
-  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_,eleparams,null,null,null,null,null);
+  DRT::ELEMENTS::FluidType::Instance().PreEvaluate(*discret_,eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 }
 
 void FLD::XFluid::GenAlphaIntermediateValues()

@@ -52,7 +52,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
   // -------------------------------------------------------------------
   // Read in the 3D parameters exported to the reduced D problem
   // -------------------------------------------------------------------
-  RCP<ParameterList> CoupledTo3DParams;
+  RCP<Teuchos::ParameterList> CoupledTo3DParams;
 
   // -------------------------------------------------------------------
   // Read in global time
@@ -74,9 +74,9 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
     // -----------------------------------------------------------------
     // Read in the bc curve information
     // -----------------------------------------------------------------
-    const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
+    const  vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
     double curvefac = 1.0;
-    const  vector<double>* vals   = condition->Get<vector<double> >("val");
+    const  vector<double>* vals   = condition->Get<std::vector<double> >("val");
     
     // -----------------------------------------------------------------
     // Check whether the BC is absorbing or forced
@@ -548,9 +548,9 @@ void ART::UTILS::SolveReflectiveTerminal(RCP<DRT::Discretization> actdis,
   // -------------------------------------------------------------------
   // Read in the bc curve information
   // -------------------------------------------------------------------
-  const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
+  const  vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
   double curvefac = 1.0;
-  const  vector<double>* vals   = condition->Get<vector<double> >("val");
+  const  vector<double>* vals   = condition->Get<std::vector<double> >("val");
 
   // if the curve exist => Rf = val*curve(time)
   if ((*curve)[0]>=0)
@@ -627,9 +627,9 @@ void ART::UTILS::SolveExplWindkesselBC(RCP<DRT::Discretization> actdis,
   // -------------------------------------------------------------------
   // Read in the bc curve information
   // -------------------------------------------------------------------
-  const  vector<int>*    curve  = condition->Get<vector<int>    >("curve");
+  const  vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
   double curvefac = 1.0;
-  const  vector<double>* vals   = condition->Get<vector<double> >("val");
+  const  vector<double>* vals   = condition->Get<std::vector<double> >("val");
 
   double Wb;
   if(int_type == "ExplicitWindkessel")

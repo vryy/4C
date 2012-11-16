@@ -25,13 +25,13 @@ XFEM::TIMEINT::TIMEINT(
     const RCP<DRT::Discretization> discret,
     const RCP<DofManager> olddofman,
     const RCP<DofManager> newdofman,
-    vector<RCP<Epetra_Vector> > oldVectors,
+    std::vector<RCP<Epetra_Vector> > oldVectors,
     const RCP<COMBUST::FlameFront> flamefront,
     const Epetra_Map& olddofcolmap,
     const Epetra_Map& newdofrowmap,
-    const map<DofKey, DofGID>& oldNodalDofColDistrib,
-    const map<DofKey, DofGID>& newNodalDofRowDistrib,
-    const RCP<map<int,vector<int> > > pbcmap
+    const std::map<DofKey, DofGID>& oldNodalDofColDistrib,
+    const std::map<DofKey, DofGID>& newNodalDofRowDistrib,
+    const RCP<std::map<int,std::vector<int> > > pbcmap
 ) :
 discret_(discret),
 olddofman_(olddofman),
@@ -512,7 +512,7 @@ flamefront_(flamefront)
   if (initialize)
   {
     const int nsd = 3; // dimension
-    timeIntData_ = Teuchos::rcp(new vector<TimeIntData>); // vector containing all data used for computation
+    timeIntData_ = Teuchos::rcp(new std::vector<TimeIntData>); // vector containing all data used for computation
 
     /*------------------------*
      * Initialization         *
@@ -583,7 +583,7 @@ void XFEM::STD::importNewFGIData(
     const RCP<XFEM::DofManager> newdofman,
     const RCP<COMBUST::FlameFront> flamefront,
     const Epetra_Map& newdofrowmap,
-    const map<DofKey, DofGID>& newNodalDofRowDistrib)
+    const std::map<DofKey, DofGID>& newNodalDofRowDistrib)
 {
   discret_ = discret;
   newdofman_ = newdofman;
@@ -773,7 +773,7 @@ void XFEM::STD::setFinalData(
 )
 {
   const int nsd = 3; // 3 dimensions for a 3d fluid element
-  map<int,int> usedStartpoints; // map containing the used start points
+  std::map<int,int> usedStartpoints; // map containing the used start points
   int numStartpoints; // number of used start points
   double newValue = 0.0; // new value
 
@@ -788,7 +788,7 @@ void XFEM::STD::setFinalData(
 
       const int gnodeid = data->node_.Id(); // global node id
 
-      map<int,int>::iterator currstartpoint = usedStartpoints.find(gnodeid); // current start point
+      std::map<int,int>::iterator currstartpoint = usedStartpoints.find(gnodeid); // current start point
       if (currstartpoint==usedStartpoints.end()) // standard case and "standard alternative" case
       {
         usedStartpoints.insert(std::pair<int,int>(gnodeid,1));
@@ -975,7 +975,7 @@ void XFEM::STD::exportFinalData()
 
   // array of vectors which stores data for
   // every processor in one vector
-  vector<vector<TimeIntData> > dataVec(numproc_);
+  vector<std::vector<TimeIntData> > dataVec(numproc_);
 
   // fill vectors with the data
   for (vector<TimeIntData>::iterator data=timeIntData_->begin();
@@ -1046,7 +1046,7 @@ void XFEM::STD::exportFinalData()
       vector<int> startGid; // global id of first startpoint
       vector<int> startOwner; // owner of first startpoint
       vector<LINALG::Matrix<nsd,1> > velValues; // velocity values
-      vector<double> presValues; // pressure values
+      std::vector<double> presValues; // pressure values
       int newtype; // type of the data
 
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,gid);
@@ -1102,7 +1102,7 @@ critTol_(1.0e-02)
   if (timeIntEnrType_==INPAR::COMBUST::xfemtimeintenr_standard)
     getCritCutElements();
 
-  timeIntData_ = Teuchos::rcp(new vector<TimeIntData>);
+  timeIntData_ = Teuchos::rcp(new std::vector<TimeIntData>);
   return;
 } // end constructor
 
@@ -1129,8 +1129,8 @@ void XFEM::ENR::importNewFGIData(
     const RCP<XFEM::DofManager> newdofman,
     const RCP<COMBUST::FlameFront> flamefront,
     const Epetra_Map& newdofrowmap,
-    const map<DofKey, DofGID>& newNodalDofRowDistrib,
-    const map<DofKey, DofGID>& oldNodalDofColDistrib
+    const std::map<DofKey, DofGID>& newNodalDofRowDistrib,
+    const std::map<DofKey, DofGID>& oldNodalDofColDistrib
 )
 {
   discret_=discret;
@@ -1175,7 +1175,7 @@ bool XFEM::ENR::newEnrValueNeeded(
         // additional checks for standard or minimal enrichment computation:
 
         // check if enrichment dofs existed before
-        map<DofKey, DofGID>::const_iterator olddof = oldNodalDofColDistrib_.find(newdofkey);
+        std::map<DofKey, DofGID>::const_iterator olddof = oldNodalDofColDistrib_.find(newdofkey);
         if (olddof == oldNodalDofColDistrib_.end()) // olddof not found -> no enr value before -> enr value has to be set
           return true;
 
@@ -1201,10 +1201,10 @@ bool XFEM::ENR::newEnrValueNeeded(
       if (fieldenr->getEnrichment().Type() != XFEM::Enrichment::typeStandard)
       {
         // check if enrichment dofs existed before
-        map<DofKey, DofGID>::const_iterator dof_npi = nodalDofColDistrib_npi_.find(newdofkey);
+        std::map<DofKey, DofGID>::const_iterator dof_npi = nodalDofColDistrib_npi_.find(newdofkey);
         if (dof_npi == nodalDofColDistrib_npi_.end()) // olddof not found -> no enr value before -> enr value has to be set
         {
-          map<DofKey, DofGID>::const_iterator dof_n = oldNodalDofColDistrib_.find(newdofkey);
+          std::map<DofKey, DofGID>::const_iterator dof_n = oldNodalDofColDistrib_.find(newdofkey);
           if (dof_n != oldNodalDofColDistrib_.end()) // dof existed at t^n so use this value if it is not critical
           {
             if ((timeIntEnrType_==INPAR::COMBUST::xfemtimeintenr_standard) and (critCut(node))) // critical cut has to be recomputed

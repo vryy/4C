@@ -125,19 +125,19 @@ public:
   \brief Get vector of RCPs to the lines of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
   \brief Get vector of RCPs to the surfaces of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Get vector of RCPs to the volumes of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Volumes();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
   /*!
   \brief Return unique ParObject id
@@ -247,9 +247,9 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(ParameterList& params,
+  int Evaluate(Teuchos::ParameterList& params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
@@ -270,10 +270,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -337,32 +337,32 @@ protected:
   SoDisp& operator = (const SoDisp& old);
 
   //! Calculate nonlinear stiffness and mass matrix
-  virtual void sodisp_nlnstiffmass(vector<int>&              lm,
-                                 vector<double>&           disp,
-                                 vector<double>&           residual,
+  virtual void sodisp_nlnstiffmass(std::vector<int>&       lm,
+                                 std::vector<double>&      disp,
+                                 std::vector<double>&      residual,
                                  Epetra_SerialDenseMatrix* stiffmatrix,
                                  Epetra_SerialDenseMatrix* massmatrix,
                                  Epetra_SerialDenseVector* force,
-                                 ParameterList&            params);         // algorithmic parameters e.g. time
+                                 Teuchos::ParameterList&   params);         // algorithmic parameters e.g. time
 
   //! material selection for so_disp
   void sodisp_mat_sel(Epetra_SerialDenseVector* stress,
                     Epetra_SerialDenseMatrix* cmat,
                     double* density,
                     const Epetra_SerialDenseVector* glstrain,
-                    ParameterList&            params);         // algorithmic parameters e.g. time
+                    Teuchos::ParameterList&   params);         // algorithmic parameters e.g. time
   void sodisp_mat_sel(
           LINALG::Matrix<6,1>* stress,
           LINALG::Matrix<6,6>* cmat,
           double* density,
           LINALG::Matrix<6,1>* glstrain,
-          ParameterList&            params);        // algorithmic parameters e.g. time
+          Teuchos::ParameterList&   params);        // algorithmic parameters e.g. time
 
   //! evaluate shape functions and derivatives - non-static due to flexible shape
   void sodisp_shapederiv(
-          vector<Epetra_SerialDenseVector>& shapefcts,
-          vector<Epetra_SerialDenseMatrix>& derivs,
-          vector<double>& weights);
+      std::vector<Epetra_SerialDenseVector>& shapefcts,
+      std::vector<Epetra_SerialDenseMatrix>& derivs,
+      std::vector<double>& weights);
 
 
 }; // class SoDisp

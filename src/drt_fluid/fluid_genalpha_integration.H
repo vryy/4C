@@ -150,10 +150,10 @@ public:
   FluidGenAlphaIntegration(
     const Teuchos::RCP<DRT::Discretization>&    actdis,
     const Teuchos::RCP<LINALG::Solver>&             solver,
-    const Teuchos::RCP<ParameterList>&              params,
+    const Teuchos::RCP<Teuchos::ParameterList>&              params,
     const Teuchos::RCP<IO::DiscretizationWriter>&   output,
     bool                        alefluid,
-    RCP<map<int,vector<int> > > pbcmapmastertoslave);
+    RCP<map<int,std::vector<int> > > pbcmapmastertoslave);
 
    /*!
   \brief Destructor
@@ -1197,7 +1197,7 @@ private:
   //        --------------------------------------------------------
   //
   //! the connection between master and slave nodes on this proc
-  RCP<map<int,vector<int> > > pbcmapmastertoslave_;
+  RCP<map<int,std::vector<int> > > pbcmapmastertoslave_;
   //@}
 
 

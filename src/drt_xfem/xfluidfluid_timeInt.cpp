@@ -46,7 +46,7 @@ XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
   RCP<XFEM::FluidWizard>         wizard,
   int                            step,
   enum INPAR::XFEM::XFluidFluidTimeInt xfem_timeintapproach,
-  const ParameterList&              params
+  const Teuchos::ParameterList&              params
   ) :
   embdis_(embdis),
   step_(step)
@@ -199,10 +199,10 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
 //     for (int i=0; i<bgdis->NumMyColNodes(); ++i)
 //     {
 //        const DRT::Node* actnode = bgdis->lColNode(i);
-//        map<int, vector<int> >::const_iterator iter = stdnoden_.find(actnode->Id());
-//        map<int, vector<int> >::const_iterator iter2 = enrichednoden_.find(actnode->Id());
-//        map<int, vector<int> >::const_iterator iter3 = stdnodenp_.find(actnode->Id());
-//        map<int, vector<int> >::const_iterator iter4 = enrichednodenp_.find(actnode->Id());
+//        std::map<int, vector<int> >::const_iterator iter = stdnoden_.find(actnode->Id());
+//        std::map<int, vector<int> >::const_iterator iter2 = enrichednoden_.find(actnode->Id());
+//        std::map<int, vector<int> >::const_iterator iter3 = stdnodenp_.find(actnode->Id());
+//        std::map<int, vector<int> >::const_iterator iter4 = enrichednodenp_.find(actnode->Id());
 //        if (iter2 != enrichednoden_.end()) cout  << " enrichned n : " << actnode->Id() << " "  ;
 //        if (iter2 == enrichednoden_.end() and iter == stdnoden_.end()) cout  << " void n :" <<  actnode->Id() << " "  ;
 //        if (iter4 != enrichednodenp_.end()) cout  << " enrichned np : " << actnode->Id() << " "  ;
@@ -456,7 +456,7 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(const RCP<DRT::Discretiz
       vector<int>  stuff_bgnodeidswithnohistory;
       vector<int>  stuff_nodedone;
 
-      vector<char>::size_type position = 0;
+      std::vector<char>::size_type position = 0;
       DRT::ParObject::ExtractfromPack(position,rblock,stuff_coord);
       DRT::ParObject::ExtractfromPack(position,rblock,stuff_interpolatedvecs);
       DRT::ParObject::ExtractfromPack(position,rblock,stuff_bgnodeidswithnohistory);
@@ -1087,12 +1087,12 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(const RCP<DRT::Discr
         const DRT::Node*const* pelenodes = actele->Nodes();
         std::map<int,LINALG::Matrix<3,1> > mapofnodepos; //node id-> position
 
-        vector<int> lm;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         actele->LocationVector(*embdis_, lm, lmowner, lmstride);
 
-        vector<double> myolddisp(lm.size());
+        std::vector<double> myolddisp(lm.size());
         DRT::UTILS::ExtractMyValues(*aledispnpoldstate, myolddisp, lm);
 
         for (int inode = 0; inode < actele->NumNode(); ++inode)
@@ -1119,12 +1119,12 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(const RCP<DRT::Discr
         const DRT::Node*const* pelenodes = actele->Nodes();
         std::map<int,LINALG::Matrix<3,1> > mapofnodepos; //node id-> position
 
-        vector<int> lm;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         actele->LocationVector(*embdis_, lm, lmowner, lmstride);
 
-        vector<double> mydisp(lm.size());
+        std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*aledispnp, mydisp, lm);
 
         for (int inode = 0; inode < actele->NumNode(); ++inode)
@@ -1151,12 +1151,12 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(const RCP<DRT::Discr
         const DRT::Node*const* pelenodes = actele->Nodes();
         std::map<int,LINALG::Matrix<3,1> > mapofnodepos; //node id-> position
 
-        vector<int> lm;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         actele->LocationVector(*embdis_, lm, lmowner, lmstride);
 
-        vector<double> mydisp(lm.size());
+        std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*aledispnp, mydisp, lm);
 
         for (int inode = 0; inode < actele->NumNode(); ++inode)
@@ -2031,12 +2031,12 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
 //     const DRT::Element* actpele = embdis_->lColElement(pele);
 //     const DRT::Node*const* pelenodes = actpele->Nodes();
 
-//     vector<int> lm;
-//     vector<int> lmowner;
-//     vector<int> lmstride;
+//     std::vector<int> lm;
+//     std::vector<int> lmowner;
+//     std::vector<int> lmstride;
 //     actpele->LocationVector(*embdis_, lm, lmowner, lmstride);
 
-//     vector<double> mydisp(lm.size());
+//     std::vector<double> mydisp(lm.size());
 //     DRT::UTILS::ExtractMyValues(*col_embfluiddisp, mydisp, lm);
 
 //     GEO::CUT::BoundingBox patchbox;

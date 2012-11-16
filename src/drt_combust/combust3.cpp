@@ -224,13 +224,13 @@ void DRT::ELEMENTS::Combust3::Pack(DRT::PackBuffer& data) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Combust3::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
@@ -315,7 +315,7 @@ void DRT::ELEMENTS::Combust3::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines              (public)                  gjb 03/07|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -331,7 +331,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                            gjb 05/08|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -347,7 +347,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                g.bau 03/07|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Volumes()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Combust3::Volumes()
 {
   vector<RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);

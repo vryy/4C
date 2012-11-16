@@ -26,7 +26,7 @@ Maintainer: Peter Gamnitzer
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 05/07|
  *----------------------------------------------------------------------*/
-DRT::PBCDofSet::PBCDofSet(Teuchos::RCP<std::map<int,vector<int> > >  couplednodes)
+DRT::PBCDofSet::PBCDofSet(Teuchos::RCP<std::map<int,std::vector<int> > >  couplednodes)
   :DofSet(), perbndcouples_(couplednodes), myMaxGID_(-1)
 {
   slavenodeids_ = Teuchos::rcp(new std::set<int>);

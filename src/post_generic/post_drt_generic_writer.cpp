@@ -97,7 +97,7 @@ void EnsightWriter::WriteFiles()
   PostResult result = PostResult(field_);
 
   // timesteps when the solution is written
-  const vector<double> soltime = result.get_result_times(field_->name());
+  const std::vector<double> soltime = result.get_result_times(field_->name());
   const unsigned int numsoltimes = soltime.size();
 
   ///////////////////////////////////
@@ -499,7 +499,7 @@ void EnsightWriter::WriteCells(
 void EnsightWriter::WriteNodeConnectivityPar(
   std::ofstream& geofile,
   const RCP<DRT::Discretization> dis,
-  const vector<int>& nodevector,
+  const std::vector<int>& nodevector,
   const RCP<Epetra_Map> proc0map) const
 {
 #ifdef PARALLEL
@@ -1045,7 +1045,7 @@ void EnsightWriter::WriteResult(const string groupname,
   // store solution times vector for later case file creation
   {
     PostResult res = PostResult(field_); // this is needed!
-    vector<double> restimes = res.get_result_times(field_->name(),groupname);
+    std::vector<double> restimes = res.get_result_times(field_->name(),groupname);
     timesetmap_[name] = restimes;
   }
 
@@ -1672,7 +1672,7 @@ void EnsightWriter::WriteElementResultStep(
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteIndexTable(
   std::ofstream& file,
-  const vector<ofstream::pos_type>& filepos
+  const std::vector<ofstream::pos_type>& filepos
   ) const
 {
   std::ofstream::pos_type lastpos = file.tellp();
@@ -1811,7 +1811,7 @@ string EnsightWriter::GetVariableEntryForCaseFile(
 /*----------------------------------------------------------------------*/
 string EnsightWriter::GetTimeSectionString(
   const int timeset,
-  const vector<double>& times
+  const std::vector<double>& times
   ) const
 {
   std::stringstream s;
@@ -1849,7 +1849,7 @@ string EnsightWriter::GetTimeSectionStringFromTimesets(
     if (entry == timesetnumbermap_.end())
       dserror("key not found!");
     const int timesetnumber = entry->second;
-    const vector<double> soltimes = timeset->second;
+    const std::vector<double> soltimes = timeset->second;
     if (donetimesets.find(timesetnumber)==donetimesets.end()) // do not write redundant time sets
     {
       donetimesets.insert(timesetnumber);

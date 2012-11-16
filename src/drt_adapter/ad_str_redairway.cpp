@@ -62,7 +62,7 @@ void ADAPTER::StructureRedAirway::CalcVol(std::map<int,double>& V)
 {
   if (!(Discretization()->Filled())) dserror("FillComplete() was not called");
 
-  ParameterList params;
+  Teuchos::ParameterList params;
   params.set("action","calc_struct_constrvol");
 
   // set displacements
@@ -78,7 +78,7 @@ void ADAPTER::StructureRedAirway::CalcVol(std::map<int,double>& V)
     DRT::Condition& cond = *(coupcond_[condID]);
     double tmp = 0.;
     params.set("ConditionID",condID);
-    params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+    params.set<Teuchos::RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
 
     // define element matrices and vectors
     Epetra_SerialDenseMatrix elematrix1;
@@ -87,17 +87,17 @@ void ADAPTER::StructureRedAirway::CalcVol(std::map<int,double>& V)
     Epetra_SerialDenseVector elevector2;
     Epetra_SerialDenseVector elevector3;
 
-    map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+    std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    map<int,RCP<DRT::Element> >::iterator curr;
+    std::map<int,RCP<DRT::Element> >::iterator curr;
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
       // get element location vector and ownerships
-      vector<int> lm;
-      vector<int> lmowner;
-      vector<int> lmstride;
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
       curr->second->LocationVector(*Discretization(),lm,lmowner,lmstride);
 
       // reshape element matrices and vectors and init to zero

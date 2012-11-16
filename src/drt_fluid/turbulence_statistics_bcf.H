@@ -92,7 +92,7 @@ public:
   */
   TurbulenceStatisticsBcf(
                           RCP<DRT::Discretization>      actdis,
-                          ParameterList&                        params);
+                          Teuchos::ParameterList&                        params);
 
 
   /*!
@@ -288,10 +288,10 @@ private:
 
   //! contains plane normal direction etc --- this is the original
   //! fluid dynamic parameterlist
-  ParameterList&                             params_;
+  Teuchos::ParameterList&                             params_;
 
   //! the dim_-coordinates of the homogeneous planes containing nodes
-  RCP<vector<double> >               nodeplanes_;
+  RCP<std::vector<double> >               nodeplanes_;
 
   //! a bounding box for the channel
   RCP<Epetra_SerialDenseMatrix>      boundingbox_;
@@ -308,7 +308,7 @@ private:
   //!--------------------------------------------------
 
   //! sum over the volume of each phase (in one plane)
-  std::vector<RCP<vector<double> > > sumvol_;
+  std::vector<RCP<std::vector<double> > > sumvol_;
 
 
   //!--------------------------------------------------
@@ -316,32 +316,32 @@ private:
   //!--------------------------------------------------
   //
   //! pointer to the sum of nodes per plane
-  std::vector<RCP<vector<double> > > pointsumnode_;
+  std::vector<RCP<std::vector<double> > > pointsumnode_;
 
   //! sum over u (over one plane in each component)
-  std::vector<RCP<vector<double> > > pointsumu_;
+  std::vector<RCP<std::vector<double> > > pointsumu_;
   //! sum over v (over one plane in each component)
-  std::vector<RCP<vector<double> > > pointsumv_;
+  std::vector<RCP<std::vector<double> > > pointsumv_;
   //! sum over w (over one plane in each component)
-  std::vector<RCP<vector<double> > > pointsumw_;
+  std::vector<RCP<std::vector<double> > > pointsumw_;
   //! sum over p (over one plane in each component)
-  std::vector<RCP<vector<double> > > pointsump_;
+  std::vector<RCP<std::vector<double> > > pointsump_;
 
   //! sum over u (over one plane in each component)
-  std::vector<RCP<vector<double> > > pointsumuv_;
+  std::vector<RCP<std::vector<double> > > pointsumuv_;
   //! sum over v (over one plane in each component)
-  std::vector<RCP<vector<double> > > pointsumuw_;
+  std::vector<RCP<std::vector<double> > > pointsumuw_;
   //! sum over w (over one plane in each component)
-  std::vector<RCP<vector<double> > > pointsumvw_;
+  std::vector<RCP<std::vector<double> > > pointsumvw_;
 
   //! sum over u^2 (over one plane in each component)
-  std::vector<RCP<vector<double> > > pointsumsqu_;
+  std::vector<RCP<std::vector<double> > > pointsumsqu_;
   //! sum over v^2 (over one plane in each component)
-  std::vector<RCP<vector<double> > > pointsumsqv_;
+  std::vector<RCP<std::vector<double> > > pointsumsqv_;
   //! sum over w^2 (over one plane in each component)
-  std::vector<RCP<vector<double> > > pointsumsqw_;
+  std::vector<RCP<std::vector<double> > > pointsumsqw_;
   //! sum over p^2 (over one plane in each component)
-  std::vector<RCP<vector<double> > > pointsumsqp_;
+  std::vector<RCP<std::vector<double> > > pointsumsqp_;
 
   //!--------------------------------------------------
   //!   averaged forces (mean, bottom and top)

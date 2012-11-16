@@ -64,7 +64,7 @@ public:
     \param stiff (out): stiffness matrix
    */
   void EvaluatePotential( 
-		  ParameterList& p,
+		  Teuchos::ParameterList& p,
 		  RCP<Epetra_Vector> 			disp,
 		  RCP<Epetra_Vector> 			fint,
 		  RCP<LINALG::SparseMatrix> 	stiff
@@ -85,8 +85,8 @@ public:
   void StiffnessAndInternalForcesPotential(
       const DRT::Element*             element,
       const DRT::UTILS::GaussRule3D&  gaussrule,
-      ParameterList&                  params,
-      vector<int>&                    lm,
+      Teuchos::ParameterList&         params,
+      std::vector<int>&               lm,
       Epetra_SerialDenseMatrix&       K_stiff,
       Epetra_SerialDenseVector&       F_int
       );
@@ -106,8 +106,8 @@ public:
   void StiffnessAndInternalForcesPotential(
       const DRT::Element*               element,
       const DRT::UTILS::GaussRule2D&    gaussrule,
-      ParameterList&                    params,
-      vector<int>&                      lm,
+      Teuchos::ParameterList&           params,
+      std::vector<int>&                 lm,
       Epetra_SerialDenseMatrix&         K_stiff,
       Epetra_SerialDenseVector&         fint
       );
@@ -115,7 +115,7 @@ public:
   
   // TEST Van Der Waals potential
   void TestEvaluatePotential(
-    ParameterList&                      p,
+    Teuchos::ParameterList&                      p,
     RCP<Epetra_Vector>          disp,
     RCP<Epetra_Vector>          fint,
     RCP<LINALG::SparseMatrix>   stiff,
@@ -141,7 +141,7 @@ private:
   
   
   void EvaluateVolumePotentialCondition(
-      ParameterList&                          params,
+      Teuchos::ParameterList&                          params,
       RCP<LINALG::SparseMatrix>       systemmatrix1,
       RCP<LINALG::SparseMatrix>       systemmatrix2,
       RCP<Epetra_Vector>              systemvector1,
@@ -184,7 +184,7 @@ private:
   void ComputeFandK(
       const DRT::Element*                                             actEle,
       const DRT::UTILS::GaussRule3D&                                  gaussrule,
-      vector<int>&                                                    lm,
+      std::vector<int>&                                               lm,
       Epetra_SerialDenseMatrix&                                       K_stiff,
       Epetra_SerialDenseVector&                                       F_int,
       RCP<DRT::Condition>                                     cond,
@@ -198,7 +198,7 @@ private:
   void ComputeFandK(
       const DRT::Element*                                         actEle,
       const DRT::UTILS::GaussRule2D&                              gaussrule,
-      vector<int>&                                                lm,
+      std::vector<int>&                                           lm,
       Epetra_SerialDenseMatrix&                                   K_stiff,
       Epetra_SerialDenseVector&                                   F_int,
       RCP<DRT::Condition>                                 cond,

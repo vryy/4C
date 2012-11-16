@@ -70,9 +70,9 @@ namespace UTILS
   \param lm     (in): vector containing global ids to be extracted. Size of lm
                       determines number of values to be extracted.
   */
-  void ExtractMyValues(const Epetra_Vector& global, vector<double>& local, const vector<int>& lm);
+  void ExtractMyValues(const Epetra_Vector& global, std::vector<double>& local, const std::vector<int>& lm);
 
-  void ExtractMyValues(const Epetra_Vector& global, Epetra_SerialDenseVector& local, const vector<int>& lm);
+  void ExtractMyValues(const Epetra_Vector& global, Epetra_SerialDenseVector& local, const std::vector<int>& lm);
 
   /// Locally extract a subset of values from a (column)-nodemap-based Epetra_MultiVector
   /*  \author henke
@@ -182,7 +182,7 @@ namespace UTILS
   void DisBasedLocationVector(
       const DRT::Discretization & dis,
       const DRT::Element& ele,
-      vector<int>& lm,
+      std::vector<int>& lm,
       const int num);
 
 

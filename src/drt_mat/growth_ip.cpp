@@ -280,7 +280,7 @@ void MAT::Growth::Evaluate
   const int gp,
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
   LINALG::Matrix<NUM_STRESS_3D,1> * stress,
-  ParameterList& params
+  Teuchos::ParameterList& params
 )
 {
   double dt = params.get<double>("delta time",-1.0);
@@ -491,7 +491,7 @@ void MAT::Growth::EvaluateElastic
   const int gp,
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
   LINALG::Matrix<NUM_STRESS_3D,1> * stress,
-  ParameterList& params
+  Teuchos::ParameterList& params
 )
 {
   if (matelastic_->MaterialType() == INPAR::MAT::m_elasthyper) {

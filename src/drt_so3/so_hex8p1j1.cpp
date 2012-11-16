@@ -155,15 +155,15 @@ void DRT::ELEMENTS::So_Hex8P1J1::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                              lw 12/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_Hex8P1J1::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::So_Hex8P1J1::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class So_hex8 Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   DRT::ELEMENTS::So_hex8::Unpack(basedata);
 

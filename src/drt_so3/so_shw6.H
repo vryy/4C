@@ -217,9 +217,9 @@ private:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  virtual int Evaluate(ParameterList& params,
+  virtual int Evaluate(Teuchos::ParameterList& params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
@@ -228,15 +228,15 @@ private:
 
   //! Compute stiffness and mass matrix
   virtual void soshw6_nlnstiffmass(
-          vector<int>&              lm,             // location matrix
-          vector<double>&           disp,           // current displacements
-          vector<double>&           residual,       // current residual displ
+          std::vector<int>&         lm,             // location matrix
+          std::vector<double>&      disp,           // current displacements
+          std::vector<double>&      residual,       // current residual displ
           LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix, // element stiffness matrix
           LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,  // element mass matrix
           LINALG::Matrix<NUMDOF_WEG6,1>* force,                 // element internal force vector
           LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,   // stresses at GP
           LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,   // strains at GP
-          ParameterList&            params,         // algorithmic parameters e.g. time
+          Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
           const INPAR::STR::StressType             iostress,    // stress output option
           const INPAR::STR::StrainType             iostrain);   // strain output option
 
@@ -247,9 +247,9 @@ private:
   void soshw6_anssetup(
           const LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6>& xrefe, ///< material element coords
           const LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6>& xcurr, ///< current element coords
-          vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> >** deriv_sp,   ///< derivs eval. at all sampling points
-          vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> >& jac_sps,     ///< jac at all sampling points
-          vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> >& jac_cur_sps, ///< current jac at all sampling points
+          std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> >** deriv_sp,   ///< derivs eval. at all sampling points
+          std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> >& jac_sps,     ///< jac at all sampling points
+          std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> >& jac_cur_sps, ///< current jac at all sampling points
           LINALG::Matrix<num_ans*num_sp,NUMDOF_WEG6>& B_ans_loc); ///< modified B
 
   //! Transformation matrix parameter->material space
@@ -261,7 +261,7 @@ private:
 
   //! EAS technology, setup necessary data
   void soshw6_eassetup(
-            vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
+            std::vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
             double& detJ0,                      // det of Jacobian at origin
             LINALG::Matrix<NUMSTR_WEG6,NUMSTR_WEG6>& T0invT,   // maps M(origin) local to global
             const LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6>& xrefe);    // material element coords

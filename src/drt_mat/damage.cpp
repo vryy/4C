@@ -147,10 +147,10 @@ void MAT::Damage::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  | unpack (public)                                           dano 04/11 |
  *----------------------------------------------------------------------*/
-void MAT::Damage::Unpack(const vector<char>& data)
+void MAT::Damage::Unpack(const std::vector<char>& data)
 {
   isinit_=true;
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -225,14 +225,14 @@ void MAT::Damage::Unpack(const vector<char>& data)
 void MAT::Damage::Setup(const int numgp)
 {
   // initialize hist variables
-  strainpllast_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  strainplcurr_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  strainpllast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  strainplcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
-  backstresslast_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  backstresscurr_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  backstresslast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  backstresscurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
-  strainbarpllast_ = Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
-  strainbarplcurr_ = Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
+  strainbarpllast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
+  strainbarplcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
 
   LINALG::Matrix<NUM_STRESS_3D,1> emptymat(true);
   strainpllast_->resize(numgp);
@@ -275,10 +275,10 @@ void MAT::Damage::Update()
   strainbarpllast_ = strainbarplcurr_;
 
   // empty vectors of current data
-  strainplcurr_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  backstresscurr_ = Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  strainplcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  backstresscurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
-  strainbarplcurr_ = Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
+  strainbarplcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
 
   // get the size of the vector
   // (use the last vector, because it includes latest results, current is empty)

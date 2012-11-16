@@ -81,7 +81,7 @@ void SCATRA::TimIntTaylorGalerkin::PredictThermPressure()
  | set time for evaluation of Neumann boundary conditions      vg 12/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntTaylorGalerkin::SetTimeForNeumannEvaluation(
-  ParameterList& params)
+  Teuchos::ParameterList& params)
 {
   params.set("total time",time_);
   return;
@@ -158,7 +158,7 @@ void SCATRA::TimIntTaylorGalerkin::AVM3Separation()
  | add parameters specific for time-integration scheme     schott 05/11 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntTaylorGalerkin::AddSpecificTimeIntegrationParameters(
-  ParameterList& params)
+  Teuchos::ParameterList& params)
 {
   params.set("using stationary formulation",false);
   params.set("using generalized-alpha time integration",false);

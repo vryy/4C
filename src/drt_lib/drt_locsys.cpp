@@ -110,11 +110,11 @@ void DRT::UTILS::LocsysManager::Setup()
     {
       typelocsys_[i] = DRT::Condition::VolumeLocsys;
 
-      const vector<double>* n = currlocsys->Get<vector<double> >("normal");
-      const vector<double>* t = currlocsys->Get<vector<double> >("tangent");
+      const std::vector<double>* n = currlocsys->Get<std::vector<double> >("normal");
+      const std::vector<double>* t = currlocsys->Get<std::vector<double> >("tangent");
       double ln = sqrt((*n)[0]*(*n)[0] + (*n)[1]*(*n)[1] + (*n)[2]*(*n)[2]);
       double lt = sqrt((*t)[0]*(*t)[0] + (*t)[1]*(*t)[1] + (*t)[2]*(*t)[2]);
-      const vector<int>* nodes = currlocsys->Nodes();
+      const std::vector<int>* nodes = currlocsys->Nodes();
 
       // check for sanity of input data
       if (Dim()==2)
@@ -164,7 +164,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (type_[i] == DRT::UTILS::LocsysManager::functionevaluation)
       {
       	// read origin from input file
-      	const vector<double>* o = currlocsys->Get<vector<double> >("origin");
+      	const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
       	if(o->size() != 3)
       		dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
       	for (int k=0;k<origins_.N();k++)
@@ -174,7 +174,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (type_[i] == DRT::UTILS::LocsysManager::originradialsliding)
 			{
 				// read origin from input file
-				const vector<double>* o = currlocsys->Get<vector<double> >("origin");
+				const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
 				if(o->size() != 3)
 					dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
 				// store locsys position (to identify this locsys type later on)
@@ -213,11 +213,11 @@ void DRT::UTILS::LocsysManager::Setup()
     {
       typelocsys_[i] = DRT::Condition::SurfaceLocsys;
 
-      const vector<double>* n = currlocsys->Get<vector<double> >("normal");
-      const vector<double>* t = currlocsys->Get<vector<double> >("tangent");
+      const std::vector<double>* n = currlocsys->Get<std::vector<double> >("normal");
+      const std::vector<double>* t = currlocsys->Get<std::vector<double> >("tangent");
       double ln = sqrt((*n)[0]*(*n)[0] + (*n)[1]*(*n)[1] + (*n)[2]*(*n)[2]);
       double lt = sqrt((*t)[0]*(*t)[0] + (*t)[1]*(*t)[1] + (*t)[2]*(*t)[2]);
-      const vector<int>* nodes = currlocsys->Nodes();
+      const std::vector<int>* nodes = currlocsys->Nodes();
 
       // check for sanity of input data
       if (Dim()==2)
@@ -284,7 +284,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (type_[i] == DRT::UTILS::LocsysManager::functionevaluation)
       {
       	// read origin from input file
-      	const vector<double>* o = currlocsys->Get<vector<double> >("origin");
+      	const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
       	if(o->size() != 3)
       		dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
 
@@ -294,7 +294,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (type_[i] == DRT::UTILS::LocsysManager::originradialsliding)
 			{
 				// read origin from input file
-				const vector<double>* o = currlocsys->Get<vector<double> >("origin");
+				const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
 				if(o->size() != 3)
 					dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
 				// store locsys position (to identify this locsys type later on)
@@ -333,11 +333,11 @@ void DRT::UTILS::LocsysManager::Setup()
     {
       typelocsys_[i] = DRT::Condition::LineLocsys;
 
-      const vector<double>* n = currlocsys->Get<vector<double> >("normal");
-      const vector<double>* t = currlocsys->Get<vector<double> >("tangent");
+      const std::vector<double>* n = currlocsys->Get<std::vector<double> >("normal");
+      const std::vector<double>* t = currlocsys->Get<std::vector<double> >("tangent");
       double ln = sqrt((*n)[0]*(*n)[0] + (*n)[1]*(*n)[1] + (*n)[2]*(*n)[2]);
       double lt = sqrt((*t)[0]*(*t)[0] + (*t)[1]*(*t)[1] + (*t)[2]*(*t)[2]);
-      const vector<int>* nodes = currlocsys->Nodes();
+      const std::vector<int>* nodes = currlocsys->Nodes();
 
       // check for sanity of input data
       if (Dim()==2)
@@ -404,7 +404,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (type_[i] == DRT::UTILS::LocsysManager::functionevaluation)
       {
       	// read origin from input file
-      	const vector<double>* o = currlocsys->Get<vector<double> >("origin");
+      	const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
       	if(o->size() != 3)
       		dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
       	for (int k=0;k<origins_.N();k++)
@@ -413,7 +413,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (type_[i] == DRT::UTILS::LocsysManager::originradialsliding)
 			{
 				// read origin from input file
-				const vector<double>* o = currlocsys->Get<vector<double> >("origin");
+				const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
 				if(o->size() != 3)
 					dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
 				// store locsys position (to identify this locsys type later on)
@@ -452,11 +452,11 @@ void DRT::UTILS::LocsysManager::Setup()
     {
       typelocsys_[i] = DRT::Condition::PointLocsys;
 
-      const vector<double>* n = currlocsys->Get<vector<double> >("normal");
-      const vector<double>* t = currlocsys->Get<vector<double> >("tangent");
+      const std::vector<double>* n = currlocsys->Get<std::vector<double> >("normal");
+      const std::vector<double>* t = currlocsys->Get<std::vector<double> >("tangent");
       double ln = sqrt((*n)[0]*(*n)[0] + (*n)[1]*(*n)[1] + (*n)[2]*(*n)[2]);
       double lt = sqrt((*t)[0]*(*t)[0] + (*t)[1]*(*t)[1] + (*t)[2]*(*t)[2]);
-      const vector<int>* nodes = currlocsys->Nodes();
+      const std::vector<int>* nodes = currlocsys->Nodes();
 
       // check for sanity of input data
       if (Dim()==2)
@@ -523,7 +523,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (type_[i] == DRT::UTILS::LocsysManager::functionevaluation)
       {
       	// read origin from input file
-      	const vector<double>* o = currlocsys->Get<vector<double> >("origin");
+      	const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
       	if(o->size() != 3)
       		dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
       	for (int k=0;k<origins_.N();k++)
@@ -532,7 +532,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (type_[i] == DRT::UTILS::LocsysManager::originradialsliding)
 			{
 				// read origin from input file
-				const vector<double>* o = currlocsys->Get<vector<double> >("origin");
+				const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
 				if(o->size() != 3)
 					dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
 				// store locsys position (to identify this locsys type later on)
@@ -600,7 +600,7 @@ void DRT::UTILS::LocsysManager::Setup()
     int gid = noderowmap->GID(i);
     DRT::Node* node = Discret().gNode(gid);
     if (!node) dserror("ERROR: Cannot find node with gid %",gid);
-    vector<int> dofs = Discret().Dof(node);
+    std::vector<int> dofs = Discret().Dof(node);
     int numdof = (int)dofs.size();
     int locsysindex = (int)(*locsystoggle_)[i];
 
@@ -667,7 +667,7 @@ void DRT::UTILS::LocsysManager::Setup()
       }
 
       DRT::Condition* currlocsys = locsysconds_[locsysindex];
-      const vector<int>*   funct = currlocsys->Get<vector<int> >("(axis,angle)-funct");
+      const std::vector<int>*   funct = currlocsys->Get<std::vector<int> >("(axis,angle)-funct");
       if(funct)
       {
         // sanity checks
@@ -756,8 +756,8 @@ void DRT::UTILS::LocsysManager::Setup()
        */
       if(radslidetoggle)
       {
-        vector<double> radialdir;
-        vector<double> thirddir;
+        std::vector<double> radialdir;
+        std::vector<double> thirddir;
         radialdir.resize(3, 0.0);
         thirddir.resize(3, 0.0);
 
@@ -893,7 +893,7 @@ void DRT::UTILS::LocsysManager::Setup()
   {
     int nummyentries = 0;
     int* myglobalentries = NULL;
-    vector<int> locsysdofs;
+    std::vector<int> locsysdofs;
     if (locsysdofset.size() > 0)
     {
       locsysdofs.reserve(locsysdofset.size());
@@ -904,7 +904,7 @@ void DRT::UTILS::LocsysManager::Setup()
     locsysdofmap_ = Teuchos::rcp(new Epetra_Map(-1, nummyentries, myglobalentries,
                                        discret_.DofRowMap()->IndexBase(),
                                        discret_.Comm()));
-    if (locsysdofmap_ == null) dserror("Creation failed.");
+    if (locsysdofmap_ == Teuchos::null) dserror("Creation failed.");
 
     subtrafo_ = trafo_->ExtractDirichletRows(*locsysdofmap_);
     //cout << "Subtrafo: nummyrows=" << subtrafo_->EpetraMatrix()->NumMyRows()

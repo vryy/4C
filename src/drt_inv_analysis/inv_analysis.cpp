@@ -181,7 +181,7 @@ void STR::InvAnalysis::Integrate()
   // fitting loop
   do
   {
-    vector<double> inc(np_, 0.0);
+    std::vector<double> inc(np_, 0.0);
     for (int i=0; i<np_;i++)
       inc[i] = alpha + beta * p_[i];
 
@@ -378,7 +378,7 @@ Epetra_SerialDenseVector STR::InvAnalysis::GetCalculatedCurve()
   discret_->GetCondition("SurfInvAna",  invanacond);
 
   //nodes of the pulling direction
-  const vector<int>* ia_nd_ps  = invanacond[0]->Nodes();
+  const std::vector<int>* ia_nd_ps  = invanacond[0]->Nodes();
 
   for (vector<int>::const_iterator inodegid = ia_nd_ps->begin();
        inodegid !=ia_nd_ps->end();
@@ -389,7 +389,7 @@ Epetra_SerialDenseVector STR::InvAnalysis::GetCalculatedCurve()
       if (discret_->gNode(*inodegid)->Owner() == discret_->Comm().MyPID())
       {
         const DRT::Node* node = discret_->gNode(*inodegid);
-        vector<int> lm = discret_->Dof(node);
+        std::vector<int> lm = discret_->Dof(node);
         const double disp_x = (*disp)[disp->Map().LID(lm[0])];
         cvector_arg[0] += disp_x;
       }
@@ -404,8 +404,8 @@ Epetra_SerialDenseVector STR::InvAnalysis::GetCalculatedCurve()
 
 
   //nodes to determine the compression
-  const vector<int>* ia_nd_fs_p = invanacond[1]->Nodes();
-  const vector<int>* ia_nd_fs_n = invanacond[2]->Nodes();
+  const std::vector<int>* ia_nd_fs_p = invanacond[1]->Nodes();
+  const std::vector<int>* ia_nd_fs_n = invanacond[2]->Nodes();
 
   for (vector<int>::const_iterator inodegid = ia_nd_fs_p->begin();
        inodegid !=ia_nd_fs_p->end();
@@ -416,7 +416,7 @@ Epetra_SerialDenseVector STR::InvAnalysis::GetCalculatedCurve()
       if (discret_->gNode(*inodegid)->Owner() == discret_->Comm().MyPID())
       {
         const DRT::Node* node = discret_->gNode(*inodegid);
-        vector<int> lm = discret_->Dof(node);
+        std::vector<int> lm = discret_->Dof(node);
         const double disp_y = (*disp)[disp->Map().LID(lm[1])];
         cvector_arg[1] += disp_y;
       }
@@ -432,7 +432,7 @@ Epetra_SerialDenseVector STR::InvAnalysis::GetCalculatedCurve()
       if (discret_->gNode(*inodegid)->Owner() == discret_->Comm().MyPID())
       {
         const DRT::Node* node = discret_->gNode(*inodegid);
-        vector<int> lm = discret_->Dof(node);
+        std::vector<int> lm = discret_->Dof(node);
         const double disp_y = (*disp)[disp->Map().LID(lm[1])];
         cvector_arg[1] -= disp_y;
       }

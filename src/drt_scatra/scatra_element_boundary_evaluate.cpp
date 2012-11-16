@@ -19,9 +19,9 @@ Maintainer: Georg Bauer
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::TransportBoundary::Evaluate(
-    ParameterList&            params,
+    Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2,
     Epetra_SerialDenseVector& elevec1,
@@ -57,10 +57,10 @@ int DRT::ELEMENTS::TransportBoundary::Evaluate(
  |  Integrate a Surface/Line Neumann boundary condition       gjb 01/09 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::TransportBoundary::EvaluateNeumann(
-    ParameterList&            params,
+    Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {

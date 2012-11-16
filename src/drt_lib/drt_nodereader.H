@@ -60,7 +60,7 @@ public:
 private:
 
   /// find the discretization that contains the given node
-  vector<Teuchos::RCP<DRT::Discretization> > FindDisNode(int nodeid);
+  std::vector<Teuchos::RCP<DRT::Discretization> > FindDisNode(int nodeid);
 
   /// the main dat file reader
   const DatFileReader& reader_;

@@ -33,9 +33,9 @@ using namespace DRT::UTILS;
 /*---------------------------------------------------------------------*
  |evaluate the element (public)                            ismail 09/12|
  *---------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedAcinus::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::RedAcinus::Evaluate(Teuchos::ParameterList& params,
                                        DRT::Discretization&      discretization,
-                                       vector<int>&              lm,
+                                       std::vector<int>&         lm,
                                        Epetra_SerialDenseMatrix& elemat1,
                                        Epetra_SerialDenseMatrix& elemat2,
                                        Epetra_SerialDenseVector& elevec1,
@@ -145,10 +145,10 @@ Here must add the steps for evaluating an element
 } // end of DRT::ELEMENTS::RedAcinus::Evaluate
 
 
-int DRT::ELEMENTS::RedAcinus::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::RedAcinus::EvaluateNeumann(Teuchos::ParameterList& params,
                                               DRT::Discretization& discretization,
                                               DRT::Condition& condition,
-                                              vector<int>& lm,
+                                              std::vector<int>& lm,
                                               Epetra_SerialDenseVector& elevec1,
                                               Epetra_SerialDenseMatrix* elemat1)
 {
@@ -160,10 +160,10 @@ int DRT::ELEMENTS::RedAcinus::EvaluateNeumann(ParameterList& params,
  |                                                                      |
  |  The function is just a dummy.                                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::RedAcinus::EvaluateDirichlet(ParameterList& params,
+int DRT::ELEMENTS::RedAcinus::EvaluateDirichlet(Teuchos::ParameterList& params,
                                                 DRT::Discretization&      discretization,
                                                 DRT::Condition&           condition,
-                                                vector<int>&              lm,
+                                                std::vector<int>&         lm,
                                                 Epetra_SerialDenseVector& elevec1)
 {
   return 0;

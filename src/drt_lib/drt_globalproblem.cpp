@@ -179,7 +179,7 @@ std::string DRT::Problem::SpatialApproximation() const
 /*----------------------------------------------------------------------*/
 void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
 {
-  Teuchos::RCP<ParameterList> list = Teuchos::rcp(new ParameterList("DAT FILE"));
+  Teuchos::RCP<Teuchos::ParameterList> list = Teuchos::rcp(new Teuchos::ParameterList("DAT FILE"));
 
   reader.ReadGidSection("--DISCRETISATION", *list);
   reader.ReadGidSection("--PROBLEM SIZE", *list);
@@ -480,19 +480,19 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
 
   //--------------------------------------------- read generic node sets
   // read design nodes <-> nodes
-  vector<vector<int> > dnode_fenode(ndnode);
+  std::vector<std::vector<int> > dnode_fenode(ndnode);
   reader.ReadDesign("DNODE",dnode_fenode);
 
   // read design lines <-> nodes
-  vector<vector<int> > dline_fenode(ndline);
+  std::vector<std::vector<int> > dline_fenode(ndline);
   reader.ReadDesign("DLINE",dline_fenode);
 
   // read design surfaces <-> nodes
-  vector<vector<int> > dsurf_fenode(ndsurf);
+  std::vector<std::vector<int> > dsurf_fenode(ndsurf);
   reader.ReadDesign("DSURF",dsurf_fenode);
 
   // read design volumes <-> nodes
-  vector<vector<int> > dvol_fenode(ndvol);
+  std::vector<std::vector<int> > dvol_fenode(ndvol);
   reader.ReadDesign("DVOL",dvol_fenode);
 
   // create list of known conditions
@@ -554,11 +554,11 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
       // Iterate through all discretizations and sort the appropriate condition
       // into the correct discretization it applies to
 
-      map<std::string,RCP<Discretization> >::iterator iter;
+      std::map<std::string,RCP<Discretization> >::iterator iter;
       for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
       {
         Teuchos::RCP<DRT::Discretization> actdis = iter->second;
-        const vector<int>* nodes = curr->second->Nodes();
+        const std::vector<int>* nodes = curr->second->Nodes();
         if (nodes->size()==0)
           dserror("%s condition %d has no nodal cloud",
               condlist[c]->Description().c_str(),
@@ -619,7 +619,7 @@ void DRT::Problem::ReadKnots(DRT::INPUT::DatFileReader& reader)
   // Iterate through all discretizations and sort the appropriate condition
   // into the correct discretization it applies to
 
-  map<std::string,RCP<Discretization> >::iterator iter;
+  std::map<std::string,RCP<Discretization> >::iterator iter;
   for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
   {
       Teuchos::RCP<DRT::Discretization> actdis = iter->second;
@@ -716,20 +716,20 @@ void DRT::Problem::WriteInputParameters()
 void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool readmesh)
 {
 
-  RCP<DRT::Discretization> structdis       = null;
-  RCP<DRT::Discretization> fluiddis        = null;
-  RCP<DRT::Discretization> xfluiddis       = null;
-  RCP<DRT::Discretization> aledis          = null;
-  RCP<DRT::Discretization> structaledis    = null;
-  RCP<DRT::Discretization> boundarydis     = null;
-  RCP<DRT::Discretization> thermdis        = null;
-  RCP<DRT::Discretization> scatradis       = null;
-  RCP<DRT::Discretization> fluidscatradis  = null;
-  RCP<DRT::Discretization> structscatradis = null;
-  RCP<DRT::Discretization> arterydis       = null; //_1D_ARTERY_
-  RCP<DRT::Discretization> airwaydis       = null;
-  RCP<DRT::Discretization> optidis         = null;
-  RCP<DRT::Discretization> particledis     = null;
+  RCP<DRT::Discretization> structdis       = Teuchos::null;
+  RCP<DRT::Discretization> fluiddis        = Teuchos::null;
+  RCP<DRT::Discretization> xfluiddis       = Teuchos::null;
+  RCP<DRT::Discretization> aledis          = Teuchos::null;
+  RCP<DRT::Discretization> structaledis    = Teuchos::null;
+  RCP<DRT::Discretization> boundarydis     = Teuchos::null;
+  RCP<DRT::Discretization> thermdis        = Teuchos::null;
+  RCP<DRT::Discretization> scatradis       = Teuchos::null;
+  RCP<DRT::Discretization> fluidscatradis  = Teuchos::null;
+  RCP<DRT::Discretization> structscatradis = Teuchos::null;
+  RCP<DRT::Discretization> arterydis       = Teuchos::null; //_1D_ARTERY_
+  RCP<DRT::Discretization> airwaydis       = Teuchos::null;
+  RCP<DRT::Discretization> optidis         = Teuchos::null;
+  RCP<DRT::Discretization> particledis     = Teuchos::null;
 
   // decide which kind of spatial representation is required
   std::string distype = SpatialApproximation();
@@ -1715,7 +1715,7 @@ void DRT::Problem::AddDis(const std::string name, RCP<Discretization> dis)
 /*----------------------------------------------------------------------*/
 RCP<DRT::Discretization> DRT::Problem::GetDis(const std::string name) const
 {
-  map<std::string,RCP<Discretization> >::const_iterator iter = discretizationmap_.find(name);
+  std::map<std::string,RCP<Discretization> >::const_iterator iter = discretizationmap_.find(name);
 
   if (iter != discretizationmap_.end())
   {
@@ -1737,7 +1737,7 @@ std::vector<std::string> DRT::Problem::GetDisNames() const {
   std::vector<std::string> vec;
   vec.reserve(mysize);
 
-  map<std::string,RCP<Discretization> >::const_iterator iter;
+  std::map<std::string,RCP<Discretization> >::const_iterator iter;
   for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
   {
     vec.push_back(iter->first);
@@ -1751,7 +1751,7 @@ std::vector<std::string> DRT::Problem::GetDisNames() const {
 /*----------------------------------------------------------------------*/
 bool DRT::Problem::DoesExistDis(const std::string name) const {
 
-  map<std::string,RCP<Discretization> >::const_iterator iter = discretizationmap_.find(name);
+  std::map<std::string,RCP<Discretization> >::const_iterator iter = discretizationmap_.find(name);
   if (iter != discretizationmap_.end())
   {
     return true;

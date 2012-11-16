@@ -425,7 +425,7 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &
 
 
   // call edge-based stabilization and ghost penalty
-  ParameterList edgebasedparams;
+  Teuchos::ParameterList edgebasedparams;
 
   // set action for elements
   edgebasedparams.set<int>("action",FLD::EOS_and_GhostPenalty_stabilization);

@@ -188,7 +188,7 @@ void UTILS::SurfStressManager::EvaluateSurfStress(ParameterList& p,
     p.set("newstep", true);
   }
 
-  discret_->EvaluateCondition(p,stiff,null,fint,null,null,"SurfaceStress");
+  discret_->EvaluateCondition(p,stiff,Teuchos::null,fint,Teuchos::null,Teuchos::null,"SurfaceStress");
 
   return;
 }

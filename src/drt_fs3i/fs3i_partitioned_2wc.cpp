@@ -100,7 +100,7 @@ void FS3I::PartFS3I_2WC::InitialCalculations()
   // Neumann boundary conditions in fluid at beginning of first time step
   fsi_->FluidField().SetTimeLomaFields(fluidscatra_->ScaTraField().Phinp(),
                                        fluidscatra_->ScaTraField().ThermPressNp(),
-                                       null,
+                                       Teuchos::null,
                                        fluidscatra_->ScaTraField().Discretization());
   // prepare time loop for FSI
   fsi_->PrepareTimeloop();

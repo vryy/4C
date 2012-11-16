@@ -168,7 +168,7 @@ void SCATRA::TimIntOneStepTheta::PredictThermPressure()
  | set time for evaluation of Neumann boundary conditions      vg 12/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::SetTimeForNeumannEvaluation(
-  ParameterList& params)
+  Teuchos::ParameterList& params)
 {
   params.set("total time",time_);
   return;
@@ -225,7 +225,7 @@ void SCATRA::TimIntOneStepTheta::DynamicComputationOfCs()
  | add parameters specific for time-integration scheme         vg 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntOneStepTheta::AddSpecificTimeIntegrationParameters(
-  ParameterList& params)
+  Teuchos::ParameterList& params)
 {
   params.set("using stationary formulation",false);
   params.set("using generalized-alpha time integration",false);

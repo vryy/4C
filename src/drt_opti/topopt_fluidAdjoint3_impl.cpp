@@ -2620,7 +2620,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ContStab(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ExtractValuesFromGlobalVector(
     const DRT::Discretization&   discretization, ///< discretization
-    const vector<int>&           lm,             ///<
+    const std::vector<int>&      lm,             ///<
     LINALG::Matrix<nsd_,nen_> *  matrixtofill,   ///< vector field
     LINALG::Matrix<nen_,1> *     vectortofill,   ///< scalar field
     const std::string            state          ///< state of the global vector
@@ -2628,7 +2628,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ExtractValuesFromGlobalVector(
 {
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(state);
-  if(matrix_state == null)
+  if(matrix_state == Teuchos::null)
     dserror("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors

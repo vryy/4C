@@ -166,7 +166,7 @@ public:
   virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /// Get vector of RCPs to the surfaces of this element
-  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /// Return unique ParObject id
   ///
@@ -239,7 +239,7 @@ public:
   ///
   /// \return 0 if successful, negative otherwise
   int Evaluate(
-    ParameterList& params,  ///< (in/out) ParameterList for communication between control routine
+    Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication between control routine
                             ///< and elements
     DRT::Discretization& discretization,  ///< A reference to the underlying discretization
     std::vector<int>& lm,  ///< location vector of this element
@@ -266,7 +266,7 @@ public:
   ///
   /// \return 0 if successful, negative otherwise
   virtual int EvaluateNeumann(
-    ParameterList& params,   ///< (in/out) ParameterList for communication between control routine
+    Teuchos::ParameterList& params,   ///< (in/out) ParameterList for communication between control routine
                              ///< and elements
     DRT::Discretization& discretization,  ///< A reference to the underlying discretization
     DRT::Condition& condition,  ///<  The condition to be evaluated
@@ -525,7 +525,7 @@ private:
 
   /// determine internal energy
   void Energy(
-    const ParameterList& params,  ///<  a list containing GEMM coefficients
+    const Teuchos::ParameterList& params,  ///<  a list containing GEMM coefficients
     const std::vector<int>& lm,  ///< location vector
     const std::vector<double>& dis,  ///< element displacements \f$d_{n}^{(e)}\f$ at \f$t_{n}\f$
     Epetra_SerialDenseVector* energies,  ///< (in/out) energies
@@ -697,7 +697,7 @@ private:
   /// evaluate the element forces and stiffness and mass for GEMM
   /// \author bborn \date 08/08
   void FintStiffMassGEMM(
-    const ParameterList& params,  ///<  a list containing GEMM coefficients
+    const Teuchos::ParameterList& params,  ///<  a list containing GEMM coefficients
     const std::vector<int>& lm,  ///< location vector
     const std::vector<double>& dispo,  ///< element displacements \f$d_{n+1}^{(e)}\f$ at \f$t_{n}\f$
     const std::vector<double>& disp,  ///< element displacements \f$d_{n}^{(e)}\f$ at \f$t_{n+1}\f$
@@ -934,7 +934,7 @@ public:
   ///
   /// \return 0 if successful, negative otherwise
   virtual int EvaluateNeumann(
-    ParameterList& params,  ///< (in/out) ParameterList for communication between control routine
+    Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication between control routine
                             ///<   and elements
     DRT::Discretization& discretization,  ///< (in) A reference to the underlying discretization
     DRT::Condition& condition,  ///< (in) The condition to be evaluated
@@ -949,7 +949,7 @@ public:
   ///
   /// \return 0 if successful, negative otherwise
   virtual int Evaluate(
-    ParameterList& params,  ///< (in/out) ParameterList for communication between control routine
+    Teuchos::ParameterList& params,  ///< (in/out) ParameterList for communication between control routine
                             ///< and elements
     DRT::Discretization& discretization,  ///< (in) A reference to the underlying discretization
     std::vector<int>& lm,  ///< (in) location vector of this element

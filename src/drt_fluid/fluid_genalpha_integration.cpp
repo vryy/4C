@@ -34,10 +34,10 @@ Maintainer: Peter Gamnitzer
 FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   const Teuchos::RCP<DRT::Discretization>&      actdis,
   const Teuchos::RCP<LINALG::Solver>&           solver,
-  const Teuchos::RCP<ParameterList>&            params,
+  const Teuchos::RCP<Teuchos::ParameterList>&            params,
   const Teuchos::RCP<IO::DiscretizationWriter>& output,
   bool                                          alefluid,
-  RCP<map<int,vector<int> > > pbcmapmastertoslave
+  RCP<map<int,std::vector<int> > > pbcmapmastertoslave
 ):TimInt(actdis, solver, params, output),
   dis_   (discret_),
   alefluid_(alefluid),
@@ -341,7 +341,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
 
   // end time measurement for timeloop
 
-  tm7_ref_ = null;
+  tm7_ref_ = Teuchos::null;
 
   // extra discretisation for mixed/hybrid Dirichlet conditions
   MHD_evaluator_=Teuchos::rcp(new FluidMHDEvaluate(discret_));
@@ -436,9 +436,9 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeloop()
   }
 
   // end time measurement for timeloop
-  tm2_ref_ = null;
+  tm2_ref_ = Teuchos::null;
 
-  tm0_ref_ = null; // end total time measurement
+  tm0_ref_ = Teuchos::null; // end total time measurement
   if(discret_->Comm().MyPID()==0)
   {
     cout<<"\n"<<"\n";
@@ -557,7 +557,7 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   this->GenAlphaComputeIntermediateSol();
 
   // time measurement --- stop TimeMonitor tm9
-  tm9_ref_        = null;
+  tm9_ref_        = Teuchos::null;
 
   //--------------------------------------------------------------------
   // do output to screen
@@ -642,7 +642,7 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     this->GenAlphaComputeIntermediateSol();
 
     // time measurement --- stop TimeMonitor tm9
-    tm9_ref_        = null;
+    tm9_ref_        = Teuchos::null;
 
     // -------------------------------------------------------------------
     // call elements to calculate residual for convergence check and
@@ -661,7 +661,7 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   }
 
   // end time measurement for nonlinear iteration
-  tm6_ref_ = null;
+  tm6_ref_ = Teuchos::null;
 
   return;
 }// FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration
@@ -812,7 +812,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
 
   // predicted dirichlet values
   // velnp then also holds prescribed new dirichlet values
-  discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null,dbcmaps_);
+  discret_->EvaluateDirichlet(eleparams,velnp_,Teuchos::null,Teuchos::null,Teuchos::null,dbcmaps_);
   discret_->ClearState();
 
   // Transfer of boundary data if necessary
@@ -941,7 +941,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeUpdate()
     eleparams.set("dt"     ,dt_    );
 
     // call loop over elements
-    discret_->Evaluate(eleparams,null,null,null,null,null);
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   }
 
   if (alefluid_)
@@ -1004,7 +1004,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaStatisticsAndOutput()
   this->GenAlphaOutput();
 
   // time measurement --- stop TimeMonitor tm8
-  tm8_ref_        = null;
+  tm8_ref_        = Teuchos::null;
 
   return;
 } // FluidGenAlphaIntegration::StatisticsAndOutput
@@ -1025,7 +1025,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
 
-    vector<double> my_y;
+    std::vector<double> my_y;
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
@@ -1065,20 +1065,20 @@ void FLD::FluidGenAlphaIntegration::GenAlphaOutput()
     vector<int>    id       (n,0);
     vector<int>    id_loc   (n,0);
 
-    vector<double> u    (n,0.0);
-    vector<double> u_loc(n,0.0);
+    std::vector<double> u    (n,0.0);
+    std::vector<double> u_loc(n,0.0);
 
-    vector<double> v    (n,0.0);
-    vector<double> v_loc(n,0.0);
+    std::vector<double> v    (n,0.0);
+    std::vector<double> v_loc(n,0.0);
 
-    vector<double> w    (n,0.0);
-    vector<double> w_loc(n,0.0);
+    std::vector<double> w    (n,0.0);
+    std::vector<double> w_loc(n,0.0);
 
-    vector<double> p    (n,0.0);
-    vector<double> p_loc(n,0.0);
+    std::vector<double> p    (n,0.0);
+    std::vector<double> p_loc(n,0.0);
 
-    vector<double> y    (n,0.0);
-    vector<double> y_loc(n,0.0);
+    std::vector<double> y    (n,0.0);
+    std::vector<double> y_loc(n,0.0);
 
 
     int count=n_lower_procs;
@@ -1355,7 +1355,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
   // other parameters that might be needed by the elements
   {
-    ParameterList& timelist = eleparams.sublist("time integration parameters");
+    Teuchos::ParameterList& timelist = eleparams.sublist("time integration parameters");
 
     timelist.set("alpha_M",alphaM_);
     timelist.set("alpha_F",alphaF_);
@@ -1615,7 +1615,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
       shapederivatives_->ApplyDirichlet(*(dbcmaps_->CondMap()),false);
     }
 
-    timesparsitypattern_ref_ = null;
+    timesparsitypattern_ref_ = Teuchos::null;
   }
 
 
@@ -1687,7 +1687,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
       c_->PutScalar(0.0);
 
       // get pressure
-      const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+      const std::vector<double>* mode = KSPcond->Get<std::vector<double> >("mode");
 
       for(int rr=0;rr<numdim_;++rr)
       {
@@ -1770,7 +1770,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
        "KrylovSpaceProjection");
 
       // get pressure
-      const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+      const std::vector<double>* mode = KSPcond->Get<std::vector<double> >("mode");
 
       for(int rr=0;rr<numdim_;++rr)
       {
@@ -2118,7 +2118,7 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
 
   // other parameters that might be needed by the elements
   {
-    ParameterList& timelist = eleparams.sublist("time integration parameters");
+    Teuchos::ParameterList& timelist = eleparams.sublist("time integration parameters");
 
     timelist.set("alpha_M",alphaM_);
     timelist.set("alpha_F",alphaF_);
@@ -2166,7 +2166,7 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
     MLAPI::Init();
 
     // extract the ML parameters
-    ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");;
+    Teuchos::ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");;
 
     // get toggle vector for Dirchlet boundary conditions
     const Epetra_Vector& dbct = *Dirichlet();
@@ -2412,8 +2412,8 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
     int npredof = numdim;
 
     double         p;
-    vector<double> u  (numdim);
-    vector<double> xyz(numdim);
+    std::vector<double> u  (numdim);
+    std::vector<double> xyz(numdim);
 
 
     if(numdim!=3)
@@ -2496,14 +2496,14 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
     discret_->SetState("velnp",velnp_);
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
-    discret_->EvaluateDirichlet(eleparams,velnp_,null,null,null,dbcmaps_);
+    discret_->EvaluateDirichlet(eleparams,velnp_,Teuchos::null,Teuchos::null,Teuchos::null,dbcmaps_);
     discret_->ClearState();
 
     // set vector values needed by elements
     discret_->SetState("velnp",veln_);
     // predicted dirichlet values
     // velnp then also holds prescribed new dirichlet values
-    discret_->EvaluateDirichlet(eleparams,veln_,null,null,null,dbcmaps_);
+    discret_->EvaluateDirichlet(eleparams,veln_,Teuchos::null,Teuchos::null,Teuchos::null,dbcmaps_);
     discret_->ClearState();
   }
 
@@ -2551,7 +2551,7 @@ void FLD::FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
     discret_->SetState("u and p at time n+1 (converged)",velnp_);
 
     // call loop over elements
-    discret_->Evaluate(eleparams,null,null,null,null,null);
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
     discret_->ClearState();
 
 
@@ -3103,7 +3103,7 @@ Notice: Angular moments obtained from lift&drag forces currently refere
 void FLD::FluidGenAlphaIntegration::LiftDrag() const
 {
   // in this map, the results of the lift drag calculation are stored
-  RCP<map<int,vector<double> > > liftdragvals;
+  RCP<map<int,std::vector<double> > > liftdragvals;
 
   FLD::UTILS::LiftDrag(*discret_,*force_,*params_,liftdragvals);
 
@@ -3357,7 +3357,7 @@ void FLD::FluidGenAlphaIntegration::SetElementGeneralFluidParameter()
   eleparams.set<int>("TimeIntegrationScheme", INPAR::FLUID::timeint_gen_alpha);
 
   // call standard loop over elements
-  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   return;
 }
 
@@ -3378,7 +3378,7 @@ void FLD::FluidGenAlphaIntegration::SetElementTurbulenceParameter()
   eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements
-  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   return;
 }
 
@@ -3404,7 +3404,7 @@ void FLD::FluidGenAlphaIntegration::SetElementTimeParameter()
   eleparams.set("gamma",gamma_);
 
   // call standard loop over elements
-  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   return;
 }
 

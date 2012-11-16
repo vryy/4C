@@ -18,7 +18,7 @@ ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP< Fluid> fluid,
     Teuchos::RCP<DRT::Discretization> xfluiddis,
     Teuchos::RCP<DRT::Discretization> soliddis,
     Teuchos::RCP<LINALG::Solver> solver,
-    Teuchos::RCP<ParameterList> params,
+    Teuchos::RCP<Teuchos::ParameterList> params,
     Teuchos::RCP<IO::DiscretizationWriter> output )
 : FluidWrapper(fluid),
   xfluiddis_(xfluiddis),
@@ -27,7 +27,7 @@ ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP< Fluid> fluid,
   params_(params)
 {
   // make sure
-  if (fluid_ == null)
+  if (fluid_ == Teuchos::null)
     dserror("Failed to create the underlying fluid adapter");
 
   // cast fluid to fluidimplicit

@@ -95,21 +95,21 @@ private:
   //! unpack all master values contained in receive block
   void UnpackLocalMasterValues(
     vector<int>             & mymasters    ,
-    vector<vector<double> > & mymasters_vel,
+    vector<std::vector<double> > & mymasters_vel,
     vector<char>            & rblock
     );
 
   //! pack all master values into a send block
   void PackLocalMasterValues(
     vector<int>             & mymasters    ,
-    vector<vector<double> > & mymasters_vel,
+    vector<std::vector<double> > & mymasters_vel,
     DRT::PackBuffer         & sblock
     );
 
   //! for all values avaible on the processor, do the final setting of the value
   void SetValuesAvailableOnThisProc(
     vector<int>                 & mymasters,
-    vector<vector<double> >     & mymasters_vel,
+    vector<std::vector<double> >     & mymasters_vel,
     Teuchos::RCP<Epetra_Vector>   velnp);
 
   //! flag active boundary condition (may be used to switch off everything)
@@ -122,7 +122,7 @@ private:
   RCP<LINALG::MapExtractor> dbcmaps_;
 
   //! the connectivity of the boundary condition
-  std::map<int,vector<int> >       midtosid_;
+  std::map<int,std::vector<int> >       midtosid_;
 
   //! time curve number
   int curve_;

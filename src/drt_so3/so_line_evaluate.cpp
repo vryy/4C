@@ -24,10 +24,10 @@ Maintainer: Michael Gee
 /*-----------------------------------------------------------------------*
  * Integrate a Line Neumann boundary condition (public)         gee 04/08|
  * ----------------------------------------------------------------------*/
-int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(ParameterList&            params,
+int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(Teuchos::ParameterList&   params,
                                                    DRT::Discretization&      discretization,
                                                    DRT::Condition&           condition,
-                                                   vector<int>&              lm,
+                                                   std::vector<int>&         lm,
                                                    Epetra_SerialDenseVector& elevec1,
                                                    Epetra_SerialDenseMatrix* elemat1)
 {
@@ -59,8 +59,8 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(ParameterList&            par
   else dserror("Unknown type of LineNeumann condition");
 
   // get values and switches from the condition
-  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
-  const vector<double>* val   = condition.Get<vector<double> >("val"  );
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
 
   /*
   **    TIME CURVE BUSINESS
@@ -71,7 +71,7 @@ int DRT::ELEMENTS::StructuralLine::EvaluateNeumann(ParameterList&            par
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;

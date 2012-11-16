@@ -187,7 +187,7 @@ void SCATRA::TimIntGenAlpha::ComputeThermPressureIntermediateValues()
  | set time for evaluation of Neumann boundary conditions      vg 12/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::SetTimeForNeumannEvaluation(
-  ParameterList& params)
+  Teuchos::ParameterList& params)
 {
   params.set("total time",time_-(1-alphaF_)*dta_);
   return;
@@ -244,7 +244,7 @@ void SCATRA::TimIntGenAlpha::DynamicComputationOfCs()
  | add parameters specific for time-integration scheme         vg 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntGenAlpha::AddSpecificTimeIntegrationParameters(
-  ParameterList& params)
+  Teuchos::ParameterList& params)
 {
   params.set("using stationary formulation",false);
   params.set("using generalized-alpha time integration",true);

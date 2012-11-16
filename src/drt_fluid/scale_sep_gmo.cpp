@@ -162,7 +162,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
       //--------------------------------------------------
       // Unpack received block into set of all planes.
       {
-        vector<double> coordsvec;
+        std::vector<double> coordsvec;
 
         coordsvec.clear();
 
@@ -233,7 +233,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
       //--------------------------------------------------
       // Unpack received block into set of all planes.
       {
-        vector<double> coordsvec;
+        std::vector<double> coordsvec;
 
         coordsvec.clear();
 
@@ -304,7 +304,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
       //--------------------------------------------------
       // Unpack received block into set of all planes.
       {
-        vector<double> coordsvec;
+        std::vector<double> coordsvec;
 
         coordsvec.clear();
 
@@ -323,12 +323,12 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
   // push coordinates in vectors
   //----------------------------------------------------------------------
 
-  RCP<vector<double> > x1coordinates;
-  x1coordinates = Teuchos::rcp(new vector<double> );
-  RCP<vector<double> > x2coordinates;
-  x2coordinates = Teuchos::rcp(new vector<double> );
-  RCP<vector<double> > x3coordinates;
-  x3coordinates = Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > x1coordinates;
+  x1coordinates = Teuchos::rcp(new std::vector<double> );
+  RCP<std::vector<double> > x2coordinates;
+  x2coordinates = Teuchos::rcp(new std::vector<double> );
+  RCP<std::vector<double> > x3coordinates;
+  x3coordinates = Teuchos::rcp(new std::vector<double> );
 
   for(std::set<double,LineSortCriterion>::iterator coord1=x1coords.begin();
       coord1!=x1coords.end();
@@ -359,12 +359,12 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
   //----------------------------------------------------------------------
 
   // start with first coordinate and take ever other
-  RCP<vector<double> > x1coarsecoordinates;
-  x1coarsecoordinates = Teuchos::rcp(new vector<double> );
-  RCP<vector<double> > x2coarsecoordinates;
-  x2coarsecoordinates = Teuchos::rcp(new vector<double> );
-  RCP<vector<double> > x3coarsecoordinates;
-  x3coarsecoordinates = Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > x1coarsecoordinates;
+  x1coarsecoordinates = Teuchos::rcp(new std::vector<double> );
+  RCP<std::vector<double> > x2coarsecoordinates;
+  x2coarsecoordinates = Teuchos::rcp(new std::vector<double> );
+  RCP<std::vector<double> > x3coarsecoordinates;
+  x3coarsecoordinates = Teuchos::rcp(new std::vector<double> );
 
   if ((x1coordinates->size()%2==0) or (x3coordinates->size()%2==0) or (x3coordinates->size()%2==0))
     dserror("Even number of elements expected!");

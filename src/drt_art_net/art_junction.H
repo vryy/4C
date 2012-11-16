@@ -111,7 +111,7 @@ namespace ART
       \brief all parameters connected to junctions
       */
       //      RCP<map<const int, RCP<JunctionNodeParams> > >  nodalParams_;
-      //map<const int, RCP<ParameterList> >  nodalParams_;
+      //map<const int, RCP<Teuchos::ParameterList> >  nodalParams_;
 
       //! 1d artery discretization
       RCP<DRT::Discretization>      discret_;
@@ -178,34 +178,34 @@ namespace ART
       \Evaluate the Jacobian matrix to solve the nonlinear problem
       */
       void Jacobian_Eval( Epetra_SerialDenseMatrix & Jacobian,
-                          vector<double> &A,
-                          vector<double> &Q,
-                          vector<double> &W,
-                          vector<double> &Ao,
-                          vector<double> &rho,
-                          vector<double> &beta,
-                          vector<double> &Pext);
+                          std::vector<double> &A,
+                          std::vector<double> &Q,
+                          std::vector<double> &W,
+                          std::vector<double> &Ao,
+                          std::vector<double> &rho,
+                          std::vector<double> &beta,
+                          std::vector<double> &Pext);
 
       /*!
       \Evaluate the residual vector needed to solve the nonlinear problem
       */
       void Residual_Eval( Epetra_SerialDenseVector & f,
-                          vector<double> &A,
-                          vector<double> &Q,
-                          vector<double> &W,
-                          vector<double> &Ao,
-                          vector<double> &rho,
-                          vector<double> &beta,
-                          vector<double> &Pext);
+                          std::vector<double> &A,
+                          std::vector<double> &Q,
+                          std::vector<double> &W,
+                          std::vector<double> &Ao,
+                          std::vector<double> &rho,
+                          std::vector<double> &beta,
+                          std::vector<double> &Pext);
 
       void Residual_Eval( Epetra_SerialDenseMatrix & f,
-                          vector<double> &A,
-                          vector<double> &Q,
-                          vector<double> &W,
-                          vector<double> &Ao,
-                          vector<double> &rho,
-                          vector<double> &beta,
-                          vector<double> &Pext);
+                          std::vector<double> &A,
+                          std::vector<double> &Q,
+                          std::vector<double> &W,
+                          std::vector<double> &Ao,
+                          std::vector<double> &rho,
+                          std::vector<double> &beta,
+                          std::vector<double> &Pext);
 
       /*!
       \Evaluate the residual vector needed to solve the nonlinear problem
@@ -236,7 +236,7 @@ namespace ART
       int                           condid_;
 
       //! vector associated to the pressure head loss constant
-      vector<double>                Kr;
+      std::vector<double>                Kr;
 
       //! time step size
       double                        dta_;

@@ -52,7 +52,7 @@ Maintainer: Florian Henke
 COMBUST::FlameFront::FlameFront(
     const Teuchos::RCP<DRT::Discretization> fluiddis,
     const Teuchos::RCP<DRT::Discretization> gfuncdis,
-    const Teuchos::RCP<map<int,vector<int> > > pbcmap
+    const Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap
 ) :
 fluiddis_(fluiddis),
 gfuncdis_(gfuncdis),
@@ -2194,7 +2194,7 @@ void COMBUST::FlameFront::FindFlameFront(
     {
       // remark: vector "lm" is neccessary, because ExtractMyValues() only accepts "vector<int>"
       // arguments, but ele->NodeIds delivers an "int*" argument
-      vector<int> lm(ele->NumNode());
+      std::vector<int> lm(ele->NumNode());
       // get vector of node GIDs for this element
       const int* nodeids = ele->NodeIds();
       for (unsigned inode=0; inode < lm.size(); inode++)
@@ -2214,15 +2214,15 @@ void COMBUST::FlameFront::FindFlameFront(
       }
   3.Möglichkeit, die funktioniert, wenn phi auf der gfuncdis DofColMap vorliegen würde.
         // get vector of all dof GIDs of this element
-        const vector<int> lm = gfuncdis_->Dof(ele);
+        const std::vector<int> lm = gfuncdis_->Dof(ele);
         // create local vector "myphinp"
-        vector<double> myphinp(lm.size()); // vector<double> degeneriert hier zum scalaren double!
+        std::vector<double> myphinp(lm.size()); // vector<double> degeneriert hier zum scalaren double!
        */
       //--------------------------------------------------------------------------------------------
       // extract G-function values for all nodes belonging to this fluid element ( == cell!)
       //--------------------------------------------------------------------------------------------
       // create vector "mygfuncvalues" holding G-function values for this element
-      vector<double> mygfuncvalues(ele->NumNode(),1000.0);
+      std::vector<double> mygfuncvalues(ele->NumNode(),1000.0);
       // get entries in "gfuncvalues" corresponding to node GIDs "lm" and store them in "mygfuncvalues"
       DRT::UTILS::ExtractMyValues(*phi,mygfuncvalues,lm);
       //TEST
@@ -2245,7 +2245,7 @@ void COMBUST::FlameFront::FindFlameFront(
       cell->SetGfuncValues(mygfuncvalues);
 
       //TEST Einheitswürfel mit verschiedenen Schnitten (Hex8)
-      //        vector<double> phis (8);
+      //        std::vector<double> phis (8);
       //        phis[0]=-1;
       //        phis[1]=-1;
       //        phis[2]=1;
@@ -2329,7 +2329,7 @@ void COMBUST::FlameFront::FindFlameFront(
       //              cell->SetGfuncValues(phis);
 
       //TEST Einheitswürfel mit verschiedenen Schnitten (Hex20)
-      //      vector<double> phis (20);
+      //      std::vector<double> phis (20);
       //      phis[0]=-1;
       //      phis[1]=-1;
       //      phis[2]=3;
@@ -5976,7 +5976,7 @@ void COMBUST::FlameFront::packBoundaryIntCells(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void COMBUST::FlameFront::unpackBoundaryIntCells(
-    const vector<char>&                     data,
+    const std::vector<char>&                     data,
     std::map<int, GEO::BoundaryIntCells>&   intcellmap)
 {
   // pointer to current position in a group of cells in local string (counts bytes)

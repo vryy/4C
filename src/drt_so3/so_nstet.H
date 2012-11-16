@@ -107,32 +107,32 @@ private:
   Teuchos::RCP<Epetra_MultiVector>        nstrain_;
 
   // vector of elements adjacent to each row node
-  std::map<int,vector<DRT::ELEMENTS::NStet*> > adjele_;
+  std::map<int,std::vector<DRT::ELEMENTS::NStet*> > adjele_;
 
   // map of nodes forming a patch around a node
   std::map<int,std::map<int,DRT::Node*> >      adjnode_;
 
   // map of location vectors for patch around a node
-  std::map<int,vector<int> >                   adjlm_;
+  std::map<int,std::vector<int> >                   adjlm_;
 
   // vector of elements associated with an MIS node
   // key: mis node number
-  std::map<int,vector<DRT::ELEMENTS::NStet*> > pstab_adjele_;
+  std::map<int,std::vector<DRT::ELEMENTS::NStet*> > pstab_adjele_;
 
   // map indicating the weight of the mis node on an element
   // key: mis node number
   // values: weights for all elements on patch in pstab_adjele_
-  std::map<int,vector<double> >                pstab_adjele_weight_;
+  std::map<int,std::vector<double> >                pstab_adjele_weight_;
 
   // adjnode and adjlm for mis patches
   std::map<int,std::map<int,DRT::Node*> >      pstab_adjnode_;
-  std::map<int,vector<int> >                   pstab_adjlm_;
+  std::map<int,std::vector<int> >                   pstab_adjlm_;
 
   // map indicating which element is associated with which MIS noderids
   // key is column element gid
   // value is MIS nodes this element is associated with
-  std::map<int,vector<int> >                   pstab_cid_mis_;
-  std::map<int,vector<double> >                pstab_cid_mis_weight_;
+  std::map<int,std::vector<int> >                   pstab_cid_mis_;
+  std::map<int,std::vector<double> >                pstab_cid_mis_weight_;
 
   Teuchos::RCP<Epetra_Map>                     pstab_misstressout_;
 
@@ -148,9 +148,9 @@ private:
 
   void InitAdjacency(std::map<int,DRT::ELEMENTS::NStet*>&          elecids,
                      std::map<int,DRT::Node*>&                     noderids,
-                     std::map<int,vector<DRT::ELEMENTS::NStet*> >& adjele,
+                     std::map<int,std::vector<DRT::ELEMENTS::NStet*> >& adjele,
                      std::map<int,std::map<int,DRT::Node*> >&      adjnode,
-                     std::map<int,vector<int> >&                   adjlm,
+                     std::map<int,std::vector<int> >&              adjlm,
                      DRT::Discretization&                          dis);
 
   void InitMISnode(std::map<int,int>&              misnodesmap,
@@ -161,9 +161,9 @@ private:
 
   void InitMISpatchesGreedyI(
                            std::map<int,int>&                            misnodesmap,
-                           std::map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
-                           std::map<int,vector<int> >&                   pstab_cid_mis,
-                           std::map<int,vector<double> >&                pstab_cid_mis_weight,
+                           std::map<int,std::vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
+                           std::map<int,std::vector<int> >&                   pstab_cid_mis,
+                           std::map<int,std::vector<double> >&                pstab_cid_mis_weight,
                            std::map<int,DRT::ELEMENTS::NStet*>&          elecids,
                            std::map<int,DRT::ELEMENTS::NStet*>&          elecids_full,
                            std::map<int,DRT::Node*>&                     noderids,
@@ -173,10 +173,10 @@ private:
 
   void InitMISpatchesGreedyII(
                            std::map<int,int>&                            misnodesmap,
-                           std::map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
-                           std::map<int,vector<double> >&                pstab_adjele_weight,
-                           std::map<int,vector<int> >&                   pstab_cid_mis,
-                           std::map<int,vector<double> >&                pstab_cid_mis_weight,
+                           std::map<int,std::vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
+                           std::map<int,std::vector<double> >&                pstab_adjele_weight,
+                           std::map<int,std::vector<int> >&                   pstab_cid_mis,
+                           std::map<int,std::vector<double> >&                pstab_cid_mis_weight,
                            std::map<int,DRT::ELEMENTS::NStet*>&          elecids,
                            std::map<int,DRT::ELEMENTS::NStet*>&          elecids_full,
                            std::map<int,DRT::Node*>&                     noderids,
@@ -186,10 +186,10 @@ private:
 
   void InitMISpatchesGreedyIII(
                            std::map<int,int>&                            misnodesmap,
-                           std::map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
-                           std::map<int,vector<double> >&                pstab_adjele_weight,
-                           std::map<int,vector<int> >&                   pstab_cid_mis,
-                           std::map<int,vector<double> >&                pstab_cid_mis_weight,
+                           std::map<int,std::vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
+                           std::map<int,std::vector<double> >&                pstab_adjele_weight,
+                           std::map<int,std::vector<int> >&                   pstab_cid_mis,
+                           std::map<int,std::vector<double> >&                pstab_cid_mis_weight,
                            std::map<int,DRT::ELEMENTS::NStet*>&          elecids,
                            std::map<int,DRT::ELEMENTS::NStet*>&          elecids_full,
                            std::map<int,DRT::Node*>&                     noderids,
@@ -199,17 +199,17 @@ private:
 
 
   void InitMISAdjacency(
-                        std::map<int,vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
-                        std::map<int,vector<DRT::ELEMENTS::NStet*> >& adjele,
+                        std::map<int,std::vector<DRT::ELEMENTS::NStet*> >& pstab_adjele,
+                        std::map<int,std::vector<DRT::ELEMENTS::NStet*> >& adjele,
                         std::map<int,std::map<int,DRT::Node*> >&      pstab_adjnode,
                         std::map<int,std::map<int,DRT::Node*> >&      adjnode,
-                        std::map<int,vector<int> >&                   pstab_adjlm,
-                        std::map<int,vector<int> >&                   adjlm,
+                        std::map<int,std::vector<int> >&                   pstab_adjlm,
+                        std::map<int,std::vector<int> >&                   adjlm,
                         const int                                myrank,
                         const int                                numproc,
                         DRT::Discretization&                     dis);
 
-  Teuchos::RCP<Epetra_Map> InitMISStressMap(std::map<int,vector<int> >& pstab_cid_mis,
+  Teuchos::RCP<Epetra_Map> InitMISStressMap(std::map<int,std::vector<int> >& pstab_cid_mis,
                                             DRT::Discretization& dis);
 
 
@@ -218,12 +218,12 @@ private:
   void NodalIntegration(Epetra_SerialDenseMatrix*       stiff,
                         Epetra_SerialDenseVector*       force,
                         std::map<int,DRT::Node*>&       adjnode,
-                        vector<DRT::ELEMENTS::NStet*>&  adjele,
-                        vector<int>&                    lm,
+                        std::vector<DRT::ELEMENTS::NStet*>&  adjele,
+                        std::vector<int>&               lm,
                         const Epetra_Vector&            disp,
                         DRT::Discretization&            dis,
-                        vector<double>*                 nodalstress,
-                        vector<double>*                 nodalstrain,
+                        std::vector<double>*            nodalstress,
+                        std::vector<double>*            nodalstrain,
                         const INPAR::STR::StressType    iostress,
                         const INPAR::STR::StrainType    iostrain);
 
@@ -231,13 +231,13 @@ private:
   void MISNodalIntegration(Epetra_SerialDenseMatrix*       stiff,
                            Epetra_SerialDenseVector*       force,
                            std::map<int,DRT::Node*>&       adjnode,
-                           vector<DRT::ELEMENTS::NStet*>&  adjele,
-                           vector<double>&                 weight,
-                           vector<int>&                    lm,
+                           std::vector<DRT::ELEMENTS::NStet*>& adjele,
+                           std::vector<double>&            weight,
+                           std::vector<int>&               lm,
                            const Epetra_Vector&            disp,
                            DRT::Discretization&            dis,
-                           vector<double>*                 nodalstress,
-                           vector<double>*                 nodalstrain,
+                           std::vector<double>*            nodalstress,
+                           std::vector<double>*            nodalstrain,
                            const INPAR::STR::StressType    iostress,
                            const INPAR::STR::StrainType    iostrain);
 
@@ -257,20 +257,20 @@ private:
                                const LINALG::Matrix<3,3>& C);
 
   void StrainOutput(const INPAR::STR::StrainType iostrain,
-                    vector<double>&              nodalstrain,
+                    std::vector<double>&         nodalstrain,
                     LINALG::Matrix<3,3>&         F,
                     const double&                detF,
                     const double                 volweight,
                     const double                 devweight);
 
   void StrainOutput(const INPAR::STR::StrainType iostrain,
-                    vector<double>&              nodalstrain,
+                    std::vector<double>&         nodalstrain,
                     LINALG::Matrix<3,3>&         F,
                     LINALG::Matrix<6,1>&         glstrain,
                     const double                 weight);
 
   void StressOutput(const INPAR::STR::StressType iostress,
-                    vector<double>&              nodalstress,
+                    std::vector<double>&         nodalstress,
                     LINALG::Matrix<6,1>&         stress,
                     LINALG::Matrix<3,3>&         F,
                     const double&                detF);
@@ -337,19 +337,19 @@ public:
   \brief Get vector of RCPs to the lines of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
   \brief Get vector of RCPs to the surfaces of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Get vector of RCPs to the volumes of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Volumes();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
   /*!
   \brief Return unique ParObject id
@@ -443,9 +443,9 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(ParameterList& params,
+  int Evaluate(Teuchos::ParameterList& params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
@@ -467,10 +467,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -518,7 +518,7 @@ protected:
   int                                                      material_;
 
   //! vector of history variables for each Gauss point
-  vector<Teuchos::RCP<MAT::Material> >                     mat_;
+  std::vector<Teuchos::RCP<MAT::Material> >                mat_;
 
   //! volume of element
   double                                                   V_;
@@ -602,9 +602,9 @@ protected:
   }
 
   //! standards displ. tet4 calc routine
-  virtual void nstetnlnstiffmass(vector<int>&                    lm,
-                                vector<double>&                  disp,
-                                vector<double>&                  residual,
+  virtual void nstetnlnstiffmass(std::vector<int>&               lm,
+                                std::vector<double>&             disp,
+                                std::vector<double>&             residual,
                                 LINALG::Matrix<12,12>*           stiffmatrix,
                                 LINALG::Matrix<12,12>*           massmatrix,
                                 LINALG::Matrix<12,1>*            force,
@@ -634,7 +634,7 @@ protected:
   //! @name Multi-scale related stuff
 
   /// Determine a homogenized material density for multi-scale analyses by averaging over the initial volume
-  void nstet_homog(ParameterList& params);
+  void nstet_homog(Teuchos::ParameterList& params);
 
   /// Read restart on the microscale
   void nstet_read_restart_multi();

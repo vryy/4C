@@ -335,7 +335,7 @@ protected:
   void CollectLmcol(
       const Teuchos::RCP<DRT::Discretization>     potentialdis,
       std::map<int,std::set<int> >&               potentialElementIds,
-      vector<int>&                                lmcol
+      std::vector<int>&                           lmcol
       );
   
   
@@ -346,7 +346,7 @@ protected:
       const Teuchos::RCP<DRT::Discretization>                       potentialdis,
       std::map<int,std::set<int> >&                                 potentialElementIds,
       std::map<int,std::vector<PotentialElementContainer> >&        nonlocalPecs,
-      vector<int>&                                                  lmcol
+      std::vector<int>&                                             lmcol
       );
   
   
@@ -404,7 +404,7 @@ protected:
    
   //! get time curve factor
   double GetTimeCurveFactor(
-    ParameterList&                        		params
+    Teuchos::ParameterList&                        		params
 	);
   
   

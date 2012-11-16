@@ -75,7 +75,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
     const int maxnumentries = A.MaxNumEntries();
     RCP<SparseMatrix> tmp = Teuchos::rcp(new SparseMatrix(*onoderowmap,maxnumentries));
     vector<int> indices(maxnumentries);
-    vector<double> values(maxnumentries);
+    std::vector<double> values(maxnumentries);
     for (int i=0; i<numdofrows; ++i)
     {
       const int gdofrow = A.RowMap().GID(i);

@@ -355,11 +355,11 @@ public:
 
   Usage is<br>
     \code
-    const vector<int>* ifool = Container::Get<vector<int> >("ifool_name");
+    const std::vector<int>* ifool = Container::Get<std::vector<int> >("ifool_name");
     \endcode
     or <br>
     \code
-    const vector<double>* dfool = Container::Get<vector<double> >("dfool_name");
+    const std::vector<double>* dfool = Container::Get<std::vector<double> >("dfool_name");
     \endcode
     or <br>
     \code
@@ -422,11 +422,11 @@ public:
 
   Usage is<br>
     \code
-    vector<int>* ifool = Container::Get<vector<int> >("ifool_name");
+    std::vector<int>* ifool = Container::Get<std::vector<int> >("ifool_name");
     \endcode
     or <br>
     \code
-    vector<double>* dfool = Container::Get<vector<double> >("dfool_name");
+    std::vector<double>* dfool = Container::Get<std::vector<double> >("dfool_name");
     \endcode
     or <br>
     \code

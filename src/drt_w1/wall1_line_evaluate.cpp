@@ -28,10 +28,10 @@ using POTENTIAL::PotentialManager;
  |  Integrate a Line Neumann boundary condition (public)      mgit 03/07|
  *----------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1)
 {
@@ -50,9 +50,9 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
   else dserror("Unknown type of SurfaceNeumann condition");
 
   // get values and switches from the condition
-  const vector<int>*    onoff    = condition.Get<vector<int> >("onoff");
-  const vector<double>* val      = condition.Get<vector<double> >("val");
-  const vector<int>*    spa_func = condition.Get<vector<int> >("funct");
+  const std::vector<int>*    onoff    = condition.Get<std::vector<int> >("onoff");
+  const std::vector<double>* val      = condition.Get<std::vector<double> >("val");
+  const std::vector<int>*    spa_func = condition.Get<std::vector<int> >("funct");
 
   // find out whether we will use a time curve
   bool usetime = true;
@@ -60,7 +60,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -81,7 +81,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
 
   // element geometry update
   RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-  if (disp==null) dserror("Cannot get state vector 'displacement'");
+  if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
   LINALG::SerialDenseMatrix xye(Wall1::numdim_,numnod);  // material coord. of element
@@ -116,7 +116,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
          const double dr = w1_substitution(xye,deriv,NULL,numnod);
 
          // load vector ar
-         vector<double> ar(Wall1::noddof_);
+         std::vector<double> ar(Wall1::noddof_);
 
          // loop the dofs of a node
          // ar[i] = ar[i] * facr * ds * onoff[i] * val[i] * curvefac * functfac
@@ -170,13 +170,13 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(ParameterList& params,
          if (!ortho_value) dserror("no orthopressure value given!");
 
          // outward normal vector (unit vector)
-         vector<double> unrm(Wall1::numdim_);
+         std::vector<double> unrm(Wall1::numdim_);
 
          // compute infinitesimal line element dr for integration along the line
          const double dr = w1_substitution(xyecurr,deriv,&unrm,numnod);
 
          // load vector ar
-         vector<double> ar(Wall1::noddof_);
+         std::vector<double> ar(Wall1::noddof_);
 
          // loop the dofs of a node
          // ar[i] = ar[i] * facr * ds * onoff[i] * val[i]*curvefac
@@ -263,9 +263,9 @@ double  DRT::ELEMENTS::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix
 }
 
 /*======================================================================*/
-int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
                                 DRT::Discretization&      discretization,
-                                vector<int>&              lm,
+                                std::vector<int>&         lm,
                                 Epetra_SerialDenseMatrix& elematrix1,
                                 Epetra_SerialDenseMatrix& elematrix2,
                                 Epetra_SerialDenseVector& elevector1,
@@ -302,8 +302,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
       {
         // element geometry update
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp==null) dserror("Cannot get state vector 'displacement'");
-        vector<double> mydisp(lm.size());
+        if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+        std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
         const int numnod = NumNode();
         Epetra_SerialDenseMatrix xsrefe(numnod,Wall1::numdim_);  // material coord. of element
@@ -330,8 +330,8 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
       {
 		  // element geometry update
         RCP<const Epetra_Vector> disptotal = discretization.GetState("displacementtotal");
-        if (disptotal==null) dserror("Cannot get state vector 'displacementtotal'");
-        vector<double> mydisp(lm.size());
+        if (disptotal==Teuchos::null) dserror("Cannot get state vector 'displacementtotal'");
+        std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disptotal,mydisp,lm);
         const int numnod = NumNode();
         Epetra_SerialDenseMatrix xsrefe(Wall1::numdim_,numnod);  // material coord. of element
@@ -402,11 +402,11 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
         dserror("Area Constraint only works for line2 curves!");
       }  // element geometry update
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null)
+      if (disp==Teuchos::null)
       {
         dserror("Cannot get state vector 'displacement'");
       }
-      vector<double> mydisp(lm.size());
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       const int numnod = NumNode();
       Epetra_SerialDenseMatrix xsrefe(numnod,Wall1::numdim_);  // material coord. of element
@@ -433,12 +433,12 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(ParameterList& params,
     case calc_potential_stiff:
     {
       RCP<PotentialManager> potentialmanager =
-        params.get<RCP<PotentialManager> >("pot_man_", null);
-      if (potentialmanager==null)
+        params.get<RCP<PotentialManager> >("pot_man_",Teuchos::null);
+      if (potentialmanager==Teuchos::null)
         dserror("No PotentialManager in Wall1 line available");
 
-      RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
-      if (cond==null)
+      RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
+      if (cond==Teuchos::null)
         dserror("Condition not available in Wall1 line");
 
       const DRT::UTILS::GaussRule1D gaussrule = getOptimalGaussrule(distype);

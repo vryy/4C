@@ -261,7 +261,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
         // of the node ids and thus cannot copy the conditions completely. 
         vector<int> reduced_ids;
 
-        const vector<int>* candidates = (*mysurfpbcs[numcond]).Nodes();
+        const std::vector<int>* candidates = (*mysurfpbcs[numcond]).Nodes();
       
         vector<int> mytoggle(candidates->size(),0);
         vector<int> toggle(candidates->size(),0);
@@ -531,7 +531,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 
 
 void FLD::FluidMHDEvaluate::BoundaryElementLoop(
-  ParameterList&                       mhdbcparams,
+  Teuchos::ParameterList&                       mhdbcparams,
   Teuchos::RCP<Epetra_Vector>          velaf_     ,
   Teuchos::RCP<Epetra_Vector>          velnp_     ,
   Teuchos::RCP<Epetra_Vector>          residual_  ,
@@ -565,7 +565,7 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
       // loop all MHD conditions
       for (unsigned numcond=0;numcond<bndMHDcnd.size();++numcond)
       {
-        map<int,RCP<DRT::Element> >& geom = (*bndMHDcnd[numcond]).Geometry();
+        std::map<int,RCP<DRT::Element> >& geom = (*bndMHDcnd[numcond]).Geometry();
 
         RCP<DRT::Condition> thiscond = Teuchos::rcp(bndMHDcnd[numcond],false);
 
@@ -583,18 +583,18 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
         for (map<int,RCP<DRT::Element> >::iterator curr=geom.begin(); curr!=geom.end(); ++curr)
         {
           // get element location vector and ownerships
-          vector<int> lm;
-          vector<int> lmowner;
-          vector<int> lmstride;
+          std::vector<int> lm;
+          std::vector<int> lmowner;
+          std::vector<int> lmstride;
           curr->second->LocationVector(*bnd_discret_,lm,lmowner,lmstride);
 
           // place vectors for parent lm and lmowner in
           // the parameterlist --- the element will fill
           // them since only the element implementation
           // knows its parent
-          RCP<vector<int> > plm     =Teuchos::rcp(new vector<int>);
-          RCP<vector<int> > plmowner=Teuchos::rcp(new vector<int>);
-          RCP<vector<int> > plmstride=Teuchos::rcp(new vector<int>);
+          RCP<vector<int> > plm     =Teuchos::rcp(new std::vector<int>);
+          RCP<vector<int> > plmowner=Teuchos::rcp(new std::vector<int>);
+          RCP<vector<int> > plmstride=Teuchos::rcp(new std::vector<int>);
 
           mhdbcparams.set<RCP<vector<int> > >("plm",plm);
           mhdbcparams.set<RCP<vector<int> > >("plmowner",plmowner);

@@ -31,14 +31,12 @@ Maintainer: Peter Gamnitzer
 #ifndef FLUID_GENALPHA_H
 #define FLUID_GENALPHA_H
 
-
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 
-class ParameterList;
 namespace DRT
 {
   class Discretization;
@@ -68,9 +66,9 @@ namespace DRT
         must be defined in FluidGenalphaResVMM.
       */
       virtual int Evaluate(Fluid*                    ele,
-                           ParameterList&             params,
+                           Teuchos::ParameterList&    params,
                            DRT::Discretization&       discretization,
-                           vector<int>&               lm,
+                           std::vector<int>&          lm,
                            Epetra_SerialDenseMatrix&  elemat1_epetra,
                            Epetra_SerialDenseMatrix&  elemat2_epetra,
                            Epetra_SerialDenseVector&  elevec1_epetra,
@@ -86,9 +84,9 @@ namespace DRT
         must be defined in FluidGenalphaResVMM.
       */
       virtual int CalcResAvgs(Fluid*                    ele,
-                              ParameterList&             params,
+                              Teuchos::ParameterList&    params,
                               DRT::Discretization&       discretization,
-                              vector<int>&               lm,
+                              std::vector<int>&          lm,
                               Teuchos::RCP<MAT::Material> mat) = 0;
 
       /// Internal implementation class for fluid element
@@ -290,9 +288,9 @@ namespace DRT
 
       */
       virtual int Evaluate(Fluid*                    ele,
-                           ParameterList&             params,
+                           Teuchos::ParameterList&    params,
                            DRT::Discretization&       discretization,
-                           vector<int>&               lm,
+                           std::vector<int>&          lm,
                            Epetra_SerialDenseMatrix&  elemat1_epetra,
                            Epetra_SerialDenseMatrix&  elemat2_epetra,
                            Epetra_SerialDenseVector&  elevec1_epetra,
@@ -352,9 +350,9 @@ namespace DRT
       */
 
       virtual int CalcResAvgs(Fluid*                    ele,
-                              ParameterList&             params,
+                              Teuchos::ParameterList&    params,
                               DRT::Discretization&       discretization,
-                              vector<int>&               lm,
+                              std::vector<int>&          lm,
                               Teuchos::RCP<MAT::Material> mat);
       //@}
 
@@ -926,8 +924,8 @@ namespace DRT
 
       void SetParametersForTurbulenceModel(
         const Fluid*                       ele            ,
-        ParameterList                     & turbmodelparams,
-        ParameterList                     & sgvsicparams,
+        Teuchos::ParameterList            & turbmodelparams,
+        Teuchos::ParameterList            & sgvsicparams,
         const INPAR::FLUID::FineSubgridVisc     & fssgv          ,
         INPAR::FLUID::TurbModelAction           & turb_mod_action,
         double                            & Cs             ,
@@ -955,7 +953,7 @@ namespace DRT
         const INPAR::FLUID::FineSubgridVisc fssgv         ,
         const bool                    is_ale        ,
         const DRT::Discretization&    discretization,
-        const vector<int>&            lm,
+        const std::vector<int>&       lm,
         LINALG::Matrix<iel,1>&        eprenp        ,
         LINALG::Matrix<nsd_,iel>&     evelnp        ,
         LINALG::Matrix<nsd_,iel>&     evelaf        ,
@@ -1210,7 +1208,7 @@ namespace DRT
       void ExtractValuesFromGlobalVectors_2D(
         const bool                        is_ale        ,
         const DRT::Discretization&        discretization,
-        const vector<int>&                lm            ,
+        const std::vector<int>&           lm            ,
         LINALG::Matrix<iel,1>&            eprenp        ,
         LINALG::Matrix<nsd_,iel>&            evelnp        ,
         LINALG::Matrix<nsd_,iel>&            evelaf        ,

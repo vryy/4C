@@ -91,7 +91,7 @@ DRT::ELEMENTS::Combust3::StabilisationAction DRT::ELEMENTS::Combust3::ConvertStr
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                           g.bau 03/07 |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
                                      DRT::Discretization&      discretization,
                                      std::vector<int>&         lm,
                                      Epetra_SerialDenseMatrix& elemat1,
@@ -454,7 +454,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
       {
         // need current velocity and history vector
         RCP<const Epetra_Vector> vel_pre_np = discretization.GetState("u and p at time n+1 (converged)");
-        if (vel_pre_np==null)
+        if (vel_pre_np==Teuchos::null)
           dserror("Cannot get state vectors 'velnp'");
 
         // extract local values from the global vectors
@@ -463,8 +463,8 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
         // split "my_vel_pre_np" into velocity part "myvelnp" and pressure part "myprenp"
         const int numnode = NumNode();
-        vector<double> myprenp(numnode);
-        vector<double> myvelnp(3*numnode);
+        std::vector<double> myprenp(numnode);
+        std::vector<double> myvelnp(3*numnode);
 
         for (int i=0;i<numnode;++i)
         {
@@ -563,10 +563,10 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
 
         // velocity and pressure values (n+1)
         RCP<const Epetra_Vector> velnp = discretization.GetState("u and p (n+1,converged)");
-        if (velnp==null)
+        if (velnp==Teuchos::null)
           dserror("Cannot get state vector 'velnp'");
 
-        vector<double> mysol (lm.size());
+        std::vector<double> mysol (lm.size());
         DRT::UTILS::ExtractMyValues(*velnp, mysol, lm);
 
         // integrate mean values
@@ -599,7 +599,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(ParameterList& params,
  |  integration of the volume neumann (body forces) loads takes place   |
  |  in the element. We need it there for the stabilisation terms!       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Combust3::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Combust3::EvaluateNeumann(Teuchos::ParameterList& params,
                                             DRT::Discretization&      discretization,
                                             DRT::Condition&           condition,
                                             std::vector<int>&         lm,
@@ -640,7 +640,7 @@ void DRT::ELEMENTS::Combust3::f3_int_beltrami_err(
     std::vector<double>&      evelnp,
     std::vector<double>&      eprenp,
     Teuchos::RCP<const MAT::Material> material,
-    ParameterList&            params
+    Teuchos::ParameterList&   params
     )
 {
   const int NSD = 3;
@@ -832,9 +832,9 @@ void DRT::ELEMENTS::Combust3::f3_int_beltrami_err(
  |                                                      DA wichmann    |
  *---------------------------------------------------------------------*/
 void DRT::ELEMENTS::Combust3::calc_volume_fraction(
-  DRT::Discretization&      discretization,
-  const vector<double>&     solution      ,
-  ParameterList&            params
+  DRT::Discretization&       discretization,
+  const std::vector<double>& solution      ,
+  Teuchos::ParameterList&    params
   )
 {
   // set element data
@@ -847,7 +847,7 @@ void DRT::ELEMENTS::Combust3::calc_volume_fraction(
 
   // the vector planes contains the coordinates of the homogeneous planes (in
   // wall normal direction)
-  RCP<vector<double> > planes = params.get<RCP<vector<double> > >("coordinate vector for hom. planes");
+  RCP<std::vector<double> > planes = params.get<RCP<std::vector<double> > >("coordinate vector for hom. planes");
 
   // a map to link a material to its index in the vectors
   RCP<map<int,int> > matidtoindex = params.get<RCP<map<int,int> > >("map materialid to index");
@@ -866,7 +866,7 @@ void DRT::ELEMENTS::Combust3::calc_volume_fraction(
 
 
   // get the pointers to the solution vectors
-  vector<RCP<vector<double> > >& sumvol = *(params.get<vector<RCP<vector<double> > >* >("element volume"));
+  vector<RCP<std::vector<double> > >& sumvol = *(params.get<vector<RCP<std::vector<double> > >* >("element volume"));
 
   // get node coordinates of element
   LINALG::Matrix<3,8>  xyze;
@@ -953,7 +953,7 @@ void DRT::ELEMENTS::Combust3::UpdateOldDLMAndDLMRHS(
     // new alpha is: - Kaa^-1 . (feas + Kda . old_d), here: - Kaa^-1 . feas
 
     // extract local (element) increment from global vector
-    vector<double> inc_velnp(lm.size());
+    std::vector<double> inc_velnp(lm.size());
     DRT::UTILS::ExtractMyValues(*discretization.GetState("velpres nodal iterinc"),inc_velnp,lm);
 
     static const Epetra_BLAS blas;

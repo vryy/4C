@@ -313,7 +313,7 @@ public:
                     RCP<Epetra_Vector>        local_radii,
                     RCP<Epetra_Vector>        border_radii,
                     RCP<std::vector<double> > normal,
-                    RCP<ParameterList>        params);
+                    RCP<Teuchos::ParameterList>        params);
 
   /*!
   \brief Polynomail shaped velocity profile
@@ -370,7 +370,7 @@ public:
   /*!
   \brief Calculate the Flowrate on a boundary
   */
-  void   DFT(RCP<vector<double> >   f,
+  void   DFT(RCP<std::vector<double> >   f,
              RCP<vector<std::complex<double> > > & F,
              int starting_pos);
 

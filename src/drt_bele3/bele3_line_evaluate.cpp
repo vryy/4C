@@ -27,9 +27,9 @@ Maintainer: Axel Gerstenberger
  |  evaluate the element (public)                            g.bau 07/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Bele3Line::Evaluate(
-    ParameterList&            params,
+    Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2,
     Epetra_SerialDenseVector& elevec1,
@@ -48,12 +48,12 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(
     case integrate_Shapefunction:
     {
       RCP<const Epetra_Vector> dispnp;
-      vector<double> mydispnp;
+      std::vector<double> mydispnp;
 
 //      if (parent_->IsMoving())
       {
         dispnp = discretization.GetState("dispnp");
-        if (dispnp!=null)
+        if (dispnp!=Teuchos::null)
         {
           mydispnp.resize(lm.size());
           DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
@@ -81,10 +81,10 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(
  |  Integrate a Line Neumann boundary condition (public)     gammi 04/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
-    ParameterList& params,
+    Teuchos::ParameterList& params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {
@@ -100,7 +100,7 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -109,9 +109,9 @@ int DRT::ELEMENTS::Bele3Line::EvaluateNeumann(
 
   // get values and switches from the condition
   // (assumed to be constant on element boundary)
-  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
-  const vector<double>* val   = condition.Get<vector<double> >("val"  );
-  const vector<int>*    functions = condition.Get<vector<int> >("funct");
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
+  const std::vector<int>*    functions = condition.Get<std::vector<int> >("funct");
 
   // set number of nodes
   const size_t iel   = this->NumNode();
@@ -233,7 +233,7 @@ double  DRT::ELEMENTS::Bele3Line::f2_substitution(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(ParameterList& params,
                   DRT::Discretization&       discretization,
-                  const vector<int>&         lm,
+                  const std::vector<int>&    lm,
                   Epetra_SerialDenseVector&  elevec1,
                   const std::vector<double>& edispnp)
 {

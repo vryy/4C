@@ -583,7 +583,7 @@ void PostProblem::read_meshes()
         {
           cout << " ->set output mode for xfem elements" << endl;
           currfield.discretization()->FillComplete(false,false,false);
-          ParameterList eleparams;
+          Teuchos::ParameterList eleparams;
           eleparams.set("action","set_standard_mode");
           eleparams.set("standard_mode",true);
           currfield.discretization()->Evaluate(eleparams);
@@ -790,7 +790,7 @@ PostResult::~PostResult()
  *----------------------------------------------------------------------*/
 vector<double> PostResult::get_result_times(const string& fieldname)
 {
-    vector<double> times; // timesteps when the solution is written
+    std::vector<double> times; // timesteps when the solution is written
 
 #if 0
     if (this->next_result())
@@ -818,7 +818,7 @@ vector<double> PostResult::get_result_times(
         const string& fieldname,
         const string& groupname)
 {
-    vector<double> times; // timesteps when the solution is written
+    std::vector<double> times; // timesteps when the solution is written
 
     if (this->next_result(groupname))
         times.push_back(this->time());

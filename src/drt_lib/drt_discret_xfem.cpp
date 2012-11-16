@@ -130,13 +130,13 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
                           Teuchos::RCP<Epetra_Vector> toggle,
                           Teuchos::RCP<std::set<int> > dbcgids)
 {
-  const vector<int>* nodeids = cond.Nodes();
+  const std::vector<int>* nodeids = cond.Nodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
   const int nnode = (*nodeids).size();
-  const vector<int>*    curve  = cond.Get<vector<int> >("curve");
-  const vector<int>*    funct  = cond.Get<vector<int> >("funct");
-  const vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
-  const vector<double>* val    = cond.Get<vector<double> >("val");
+  const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
+  const std::vector<int>*    funct  = cond.Get<std::vector<int> >("funct");
+  const std::vector<int>*    onoff  = cond.Get<std::vector<int> >("onoff");
+  const std::vector<double>* val    = cond.Get<std::vector<double> >("val");
 
   // determine highest degree of time derivative
   // and first existent system vector to apply DBC to
@@ -188,7 +188,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
            continue; // for loop over dofs is advanced by 1 (++j)
          }
          const int gid = dofs[j];
-         vector<double> value(deg+1,(*val)[j]);
+         std::vector<double> value(deg+1,(*val)[j]);
 
          // factor given by time curve
          std::vector<double> curvefac(deg+1, 1.0);
@@ -253,7 +253,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
           continue; // for loop over dofs is advanced by 1 (++j)
         }
         const int gid = dofs[j];
-        vector<double> value(deg+1,(*val)[truncj]);
+        std::vector<double> value(deg+1,(*val)[truncj]);
 
         // factor given by time curve
         std::vector<double> curvefac(deg+1, 1.0);
@@ -439,7 +439,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
           continue; // for loop over dofs is advanced by 1 (++j)
         }
         const int gid = dofs[j];
-        vector<double> value(deg+1,(*val)[truncj]);
+        std::vector<double> value(deg+1,(*val)[truncj]);
 
         // factor given by time curve
          std::vector<double> curvefac(deg+1, 1.0);
@@ -532,7 +532,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
           // ich bin ein Dirichlet dof
           //--------------------------
           const int gid = dofs[j];
-          vector<double> value(deg+1,(*val)[xfemj]);
+          std::vector<double> value(deg+1,(*val)[xfemj]);
 
           // factor given by time curve
           std::vector<double> curvefac(deg+1, 1.0);
@@ -584,7 +584,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
           // ich bin ein Dirichlet dof
           //--------------------------
           const int gid = dofs[j];
-          vector<double> value(deg+1,(*val)[xfemj]);
+          std::vector<double> value(deg+1,(*val)[xfemj]);
 
           //cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " (veln) is set to 0.0 for node " << actnode->Id() << endl;
           // apply factors to Dirichlet value
@@ -679,7 +679,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
             // ich bin ein Dirichlet dof
             //--------------------------
             const int gid = dofs[j];
-            vector<double> value(deg+1,(*val)[xfemj]);
+            std::vector<double> value(deg+1,(*val)[xfemj]);
 
             //cout << "/!\\ warning === Dirichlet value of enriched dof " << j << " (pres) is set to 0.0 for node " << actnode->Id() << endl;
             // apply factors to Dirichlet value
@@ -739,7 +739,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
           continue; // for loop over dofs is advanced by 1 (++j)
         }
         const int gid = dofs[j];
-        vector<double> value(deg+1,(*val)[truncj]);
+        std::vector<double> value(deg+1,(*val)[truncj]);
 
         // factor given by time curve
         std::vector<double> curvefac(deg+1, 1.0);
@@ -813,7 +813,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
 /*----------------------------------------------------------------------*
  | evaluate Dirichlet conditions (public)                   henke 07/09 |
  *----------------------------------------------------------------------*/
-void DRT::DiscretizationXFEM::EvaluateDirichletCombust(ParameterList& params,
+void DRT::DiscretizationXFEM::EvaluateDirichletCombust(Teuchos::ParameterList& params,
                                             Teuchos::RCP<Epetra_Vector> systemvector,
                                             Teuchos::RCP<Epetra_Vector> systemvectord,
                                             Teuchos::RCP<Epetra_Vector> systemvectordd,
@@ -1127,7 +1127,7 @@ void DRT::DiscretizationXFEM::BuildInternalFaces()
     // get node connectivity for specific distype of parent element
     unsigned int nele=0;
     const DRT::Element::DiscretizationType distype = ele->Shape();
-    vector< vector<int> > connectivity;
+    vector< std::vector<int> > connectivity;
     switch (buildtype)
     {
     case DRT::UTILS::buildSurfaces:

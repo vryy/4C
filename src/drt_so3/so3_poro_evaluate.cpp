@@ -35,7 +35,7 @@
  |  preevaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::PreEvaluate(ParameterList& params,
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::PreEvaluate(Teuchos::ParameterList& params,
                                         DRT::Discretization&      discretization,
                                         DRT::Element::LocationArray& la)
 {
@@ -47,7 +47,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::PreEvaluate(ParameterList& params
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::So3_Poro< so3_ele, distype>::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::So3_Poro< so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     DRT::Element::LocationArray& la,
                                     Epetra_SerialDenseMatrix& elemat1_epetra,
@@ -119,7 +119,7 @@ int DRT::ELEMENTS::So3_Poro< so3_ele, distype>::Evaluate(ParameterList& params,
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
-                                    ParameterList&               params,
+                                    Teuchos::ParameterList&      params,
                                     DRT::Discretization&         discretization,
                                     DRT::Element::LocationArray& la,
                                     Epetra_SerialDenseMatrix&    elemat1_epetra,
@@ -162,15 +162,15 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
     Teuchos::RCP<const Epetra_Vector> res = discretization.GetState(0,"residual displacement");
 
-    if (disp==null )
+    if (disp==Teuchos::null )
       dserror("calc_struct_nlnstiff: Cannot get state vector 'displacement' ");
     // build the location vector only for the structure field
-    vector<int> lm = la[0].lm_;
+    std::vector<int> lm = la[0].lm_;
 
-    vector<double> mydisp((lm).size());
+    std::vector<double> mydisp((lm).size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // global, local, lm
 
-    vector<double> myres((lm).size());
+    std::vector<double> myres((lm).size());
     DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
     LINALG::Matrix<numdof_,numdof_>* matptr = NULL;
@@ -184,7 +184,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     // call the fluid discretization: fluid equates 2nd dofset
     // disassemble velocities and pressures
 
-    vector<double> myvel((lm).size(),0.0);
+    std::vector<double> myvel((lm).size(),0.0);
 
     LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
     LINALG::Matrix<numnod_,1> myepreaf(true);
@@ -200,7 +200,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
       if (discretization.HasState(0,"velocity"))
       {
         Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0,"velocity");
-        if (vel==null )
+        if (vel==Teuchos::null )
           dserror("calc_struct_nlnstiff: Cannot get state vector 'velocity' ");
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
       }
@@ -255,16 +255,16 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
     Teuchos::RCP<const Epetra_Vector> res = discretization.GetState(0,"residual displacement");
 
-    if (disp==null )
+    if (disp==Teuchos::null )
       dserror("calc_struct_nlnstiffmass: Cannot get state vector 'displacement' ");
 
     // build the location vector only for the structure field
-    vector<int> lm = la[0].lm_;
+    std::vector<int> lm = la[0].lm_;
 
-    vector<double> mydisp((lm).size());
+    std::vector<double> mydisp((lm).size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // global, local, lm
 
-    vector<double> myres((lm).size());
+    std::vector<double> myres((lm).size());
     DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
     LINALG::Matrix<numdof_,numdof_>* matptr = NULL;
@@ -288,7 +288,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     //  dof per node of other dofset
     const int numdofpernode = NumDofPerNode(1,*(Nodes()[0]));
 
-    vector<double> myvel((lm).size(),0.0);
+    std::vector<double> myvel((lm).size(),0.0);
 
     LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
     LINALG::Matrix<numnod_,1> myepreaf(true);
@@ -299,7 +299,7 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
    //     dserror("calc_struct_nlnstiffmass: Location vector length for velocities does not match!");
 
       Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0,"velocity");
-      if (vel==null )
+      if (vel==Teuchos::null )
         dserror("calc_struct_nlnstiffmass: Cannot get state vector 'velocity' ");
       DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
 
@@ -361,13 +361,13 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     // need current displacement, velocities and residual forces
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
 
-    if (disp==null )
+    if (disp==Teuchos::null )
       dserror("calc_struct_multidofsetcoupling: Cannot get state vector 'displacement' ");
 
     // build the location vector only for the structure field
-    vector<int> lm = la[0].lm_;
+    std::vector<int> lm = la[0].lm_;
 
-    vector<double> mydisp((lm).size());
+    std::vector<double> mydisp((lm).size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // global, local, lm
 
     LINALG::Matrix<numdof_,(numdim_+1)*numnod_>* matptr = NULL;
@@ -382,9 +382,9 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
       const int numdofpernode_ = NumDofPerNode(1,*(Nodes()[0]));
 
       Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0,"velocity");
-      if (vel==null )
+      if (vel==Teuchos::null )
         dserror("calc_struct_multidofsetcoupling: Cannot get state vector 'velocity' ");
-      vector<double> myvel((lm).size());
+      std::vector<double> myvel((lm).size());
       DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
 
       LINALG::Matrix<numdim_,numnod_> myvelnp(true);
@@ -436,16 +436,16 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
     Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState(0,"displacement");
     Teuchos::RCP<const Epetra_Vector> res = discretization.GetState(0,"residual displacement");
 
-    if (disp==null )
+    if (disp==Teuchos::null )
       dserror("Cannot get state vector 'displacement' ");
 
     // build the location vector only for the structure field
-    vector<int> lm = la[0].lm_;
+    std::vector<int> lm = la[0].lm_;
 
-    vector<double> mydisp((lm).size());
+    std::vector<double> mydisp((lm).size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm); // global, local, lm
 
-    vector<double> myres((lm).size());
+    std::vector<double> myres((lm).size());
     DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
     // need current fluid state,
@@ -458,9 +458,9 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
       const int numdofpernode_ = NumDofPerNode(1,*(Nodes()[0]));
 
       Teuchos::RCP<const Epetra_Vector> vel = discretization.GetState(0,"velocity");
-      if (vel==null )
+      if (vel==Teuchos::null )
         dserror("Cannot get state vector 'velocity' ");
-      vector<double> myvel((lm).size());
+      std::vector<double> myvel((lm).size());
       DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
 
       LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
@@ -523,9 +523,9 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
-    vector<int>&                       lm,           // location matrix
-    vector<double>&                    disp,         // current displacements
-    vector<double>&                    vel,          // current velocities
+    std::vector<int>&                  lm,           // location matrix
+    std::vector<double>&               disp,         // current displacements
+    std::vector<double>&               vel,          // current velocities
     LINALG::Matrix<numdim_, numnod_> & evelnp,       // current fluid velocities
     LINALG::Matrix<numnod_, 1> &       epreaf,       // current fluid pressure
     LINALG::Matrix<numdof_, numdof_>*  stiffmatrix,  // element stiffness matrix
@@ -533,14 +533,14 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
     LINALG::Matrix<numdof_, 1>*        force,        // element internal force vector
     //LINALG::Matrix<numgptpar_, numstr_>* elestress, // stresses at GP
     //LINALG::Matrix<numgptpar_, numstr_>* elestrain, // strains at GP
-    ParameterList&                     params        // algorithmic parameters e.g. time
+    Teuchos::ParameterList&                     params        // algorithmic parameters e.g. time
  //   const INPAR::STR::StressType       iostress     // stress output option
     )
 {
   // get global id of the structure element
   int id = Id();
   //access fluid discretization
-  RCP<DRT::Discretization> fluiddis = null;
+  RCP<DRT::Discretization> fluiddis = Teuchos::null;
   fluiddis = DRT::Problem::Instance()->GetDis("fluid");
   //get corresponding fluid element (it has the same global ID as the structure element)
   DRT::Element* fluidele = fluiddis->gElement(id);
@@ -1506,7 +1506,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
       //scale and add viscous stress
       sfac.Update(detJ_w,fstress,fac1); // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
 
-      vector<double> SmB_L(3); // intermediate Sm.B_L
+      std::vector<double> SmB_L(3); // intermediate Sm.B_L
       // kgeo += (B_L^T . sigma . B_L) * detJ * w(gp)  with B_L = Ni,Xj see NiliFEM-Skript
       for (int inod=0; inod<numnod_; ++inod)
       {
@@ -1551,21 +1551,21 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
-    vector<int>& lm,                                                 // location matrix
-    vector<double>& disp,                                            // current displacements
-    vector<double>& vel,                                             // current velocities
+    std::vector<int>& lm,                                                 // location matrix
+    std::vector<double>& disp,                                            // current displacements
+    std::vector<double>& vel,                                             // current velocities
     LINALG::Matrix<numdim_, numnod_> & evelnp,                       //current fluid velocity
     LINALG::Matrix<numnod_, 1> & epreaf,                             //current fluid pressure
     LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* stiffmatrix,   // element stiffness matrix
     LINALG::Matrix<numdof_, (numdim_ + 1) * numnod_>* reamatrix,     // element reactive matrix
     LINALG::Matrix<numdof_, 1>* force,                               // element internal force vector
-    ParameterList& params)                                           // algorithmic parameters e.g. time
+    Teuchos::ParameterList& params)                                           // algorithmic parameters e.g. time
 {
   //=============================get parameters
   // get global id of the structure element
   int id = Id();
   //access fluid discretization
-  RCP<DRT::Discretization> fluiddis = null;
+  RCP<DRT::Discretization> fluiddis = Teuchos::null;
   fluiddis = DRT::Problem::Instance()->GetDis("fluid");
   //get corresponding fluid element
   DRT::Element* fluidele = fluiddis->gElement(id);

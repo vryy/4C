@@ -101,9 +101,9 @@ void MAT::MooneyRivlin::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)     maf 04/08|
  *----------------------------------------------------------------------*/
-void MAT::MooneyRivlin::Unpack(const vector<char>& data)
+void MAT::MooneyRivlin::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);

@@ -155,22 +155,22 @@ private:
       { return isinit_&&(remtime_!=Teuchos::null);}
 
     /// return lambdas
-    RCP<vector<vector<double> > > Getlambdas() const {return lambda_;}
+    RCP<vector<std::vector<double> > > Getlambdas() const {return lambda_;}
 
     /// return phis
     RCP<vector<Epetra_SerialDenseMatrix> > Getphis() const {return phi_;}
 
     /// return gammas
-    RCP<vector<double> > Getgammas() const {return gamma_;}
+    RCP<std::vector<double> > Getgammas() const {return gamma_;}
 
     /// return remtimes
-    RCP<vector<double> > Getremtimes() const {return remtime_;}
+    RCP<std::vector<double> > Getremtimes() const {return remtime_;}
 
     /// return a1s
-    RCP<vector<vector<double> > > Geta1() const {return a1_;}
+    RCP<vector<std::vector<double> > > Geta1() const {return a1_;}
 
     /// return a2s
-    RCP<vector<vector<double> > > Geta2() const {return a2_;}
+    RCP<vector<std::vector<double> > > Geta2() const {return a2_;}
 
     /*!
       \brief setup material at element input with potentially local fiber cosy
@@ -212,20 +212,20 @@ private:
     MAT::PAR::ArtWallRemod* params_;
 
     /// angle of alignment at gp
-    Teuchos::RCP<vector<double> > gamma_;
+    Teuchos::RCP<std::vector<double> > gamma_;
     /// first fiber vector per gp
-    Teuchos::RCP<vector<vector<double> > > a1_;
+    Teuchos::RCP<vector<std::vector<double> > > a1_;
     /// second fiber vector per gp
-    Teuchos::RCP<vector<vector<double> > > a2_;
+    Teuchos::RCP<vector<std::vector<double> > > a2_;
     /// eigenvectors per gp
     Teuchos::RCP<vector<Epetra_SerialDenseMatrix> > phi_;
     /// eigenvalues per gp
-    Teuchos::RCP<vector<vector<double> > > lambda_;
+    Teuchos::RCP<vector<std::vector<double> > > lambda_;
     /// current stress
     Teuchos::RCP<vector<Epetra_SerialDenseMatrix> > stresses_;
 
     /// remember time
-    Teuchos::RCP<vector<double> > remtime_;
+    Teuchos::RCP<std::vector<double> > remtime_;
 
     /// init flag of internal variables
     bool isinit_;

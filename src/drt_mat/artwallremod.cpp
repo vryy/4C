@@ -72,13 +72,13 @@ MAT::ArtWallRemod::ArtWallRemod()
 {
   dserror("This material law - ARTWALLREMOD - is not maintained anymore.");
   isinit_=false;
-  gamma_ = Teuchos::rcp(new vector<double>);
-  lambda_ = Teuchos::rcp(new vector<vector<double> >);
-  a1_ = Teuchos::rcp(new vector<vector<double> >);
-  a2_ = Teuchos::rcp(new vector<vector<double> >);
-  phi_ = Teuchos::rcp(new vector<Epetra_SerialDenseMatrix>);
-  stresses_ = Teuchos::rcp(new vector<Epetra_SerialDenseMatrix>);
-  remtime_ = Teuchos::rcp(new vector<double>);
+  gamma_ = Teuchos::rcp(new std::vector<double>);
+  lambda_ = Teuchos::rcp(new std::vector<std::vector<double> >);
+  a1_ = Teuchos::rcp(new std::vector<std::vector<double> >);
+  a2_ = Teuchos::rcp(new std::vector<std::vector<double> >);
+  phi_ = Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>);
+  stresses_ = Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>);
+  remtime_ = Teuchos::rcp(new std::vector<double>);
 }
 
 
@@ -142,9 +142,9 @@ void MAT::ArtWallRemod::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)         06/08|
  *----------------------------------------------------------------------*/
-void MAT::ArtWallRemod::Unpack(const vector<char>& data)
+void MAT::ArtWallRemod::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -173,16 +173,16 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
   if (numgp == 0) isinit_=false;
 
   // unpack internal variables independent of remodeling
-  remtime_ = Teuchos::rcp(new vector<double>(numgp));
-  a1_ = Teuchos::rcp(new vector<vector<double> >(numgp));
-  a2_ = Teuchos::rcp(new vector<vector<double> >(numgp));
+  remtime_ = Teuchos::rcp(new std::vector<double>(numgp));
+  a1_ = Teuchos::rcp(new std::vector<std::vector<double> >(numgp));
+  a2_ = Teuchos::rcp(new std::vector<std::vector<double> >(numgp));
   bool haveremodeldata = false;
   for (int gp = 0; gp < numgp; ++gp) {
     double mytime;
     ExtractfromPack(position,data,mytime);
     remtime_->at(gp) = mytime;
     if (mytime != -1.) haveremodeldata = true;
-    vector<double> a;
+    std::vector<double> a;
     ExtractfromPack(position,data,a);
     a1_->at(gp) = a;
     ExtractfromPack(position,data,a);
@@ -199,7 +199,7 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
         ExtractfromPack(position,data,gamma);
         ExtractfromPack(position,data,tmp);
         ExtractfromPack(position,data,tmp);
-        vector<double> a;
+        std::vector<double> a;
         ExtractfromPack(position,data,a);
       }
     }
@@ -212,10 +212,10 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
     // because remodeling might be switched after restart
     if (params_->rembegt_ != -1.){
       // initialize internal variables of remodeling
-      gamma_ = Teuchos::rcp(new vector<double>(numgp));
-      phi_ = Teuchos::rcp(new vector<Epetra_SerialDenseMatrix>(numgp));
-      stresses_ = Teuchos::rcp(new vector<Epetra_SerialDenseMatrix>(numgp));
-      lambda_ = Teuchos::rcp(new vector<vector<double> >(numgp));
+      gamma_ = Teuchos::rcp(new std::vector<double>(numgp));
+      phi_ = Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(numgp));
+      stresses_ = Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix>(numgp));
+      lambda_ = Teuchos::rcp(new std::vector<std::vector<double> >(numgp));
       if (haveremodeldata){ // unpack remodel data
         for (int gp = 0; gp < numgp; ++gp) {
           double gamma;
@@ -226,7 +226,7 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
           phi_->at(gp) = tmp;
           ExtractfromPack(position,data,tmp);
           stresses_->at(gp) = tmp;
-          vector<double> a;
+          std::vector<double> a;
           ExtractfromPack(position,data,a);
           lambda_->at(gp) = a;
         }
@@ -252,7 +252,7 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
         ExtractfromPack(position,data,gamma);
         ExtractfromPack(position,data,tmp);
         ExtractfromPack(position,data,tmp);
-        vector<double> a;
+        std::vector<double> a;
         ExtractfromPack(position,data,a);
         remtime_->at(gp) = params_->rembegt_; // overwrite restart data with input when switching
       }
@@ -269,8 +269,8 @@ void MAT::ArtWallRemod::Unpack(const vector<char>& data)
 
 void MAT::ArtWallRemod::Setup(const int numgp, const int eleid, DRT::INPUT::LineDefinition* linedef)
 {
-  a1_ = Teuchos::rcp(new vector<vector<double> > (numgp));
-  a2_ = Teuchos::rcp(new vector<vector<double> > (numgp));
+  a1_ = Teuchos::rcp(new std::vector<std::vector<double> > (numgp));
+  a2_ = Teuchos::rcp(new std::vector<std::vector<double> > (numgp));
   int initflag = params_->init_;
   double gamma = params_->gamma_;
   gamma = (gamma * M_PI)/180.0;  // convert to radians
@@ -288,9 +288,9 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid, DRT::INPUT::Line
     }
   } else if (initflag==1){
   // fibers aligned in local element cosy with gamma around circumferential direction
-    vector<double> rad;
-    vector<double> axi;
-    vector<double> cir;
+    std::vector<double> rad;
+    std::vector<double> axi;
+    std::vector<double> cir;
     // read local (cylindrical) cosy-directions at current element
     linedef->ExtractDoubleVector("RAD",rad);
     linedef->ExtractDoubleVector("AXI",axi);
@@ -327,10 +327,10 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid, DRT::INPUT::Line
   // check for remodelling option and initialize
   if ((params_->rembegt_ > 0.)){
     // history
-    gamma_ = Teuchos::rcp(new vector<double> (numgp));  // of alignment angles
-    lambda_ = Teuchos::rcp(new vector<vector<double> > (numgp)); // of eigenvalues
-    phi_ = Teuchos::rcp(new vector<Epetra_SerialDenseMatrix> (numgp)); // of eigenvectors
-    stresses_ = Teuchos::rcp(new vector<Epetra_SerialDenseMatrix> (numgp)); // of stresses
+    gamma_ = Teuchos::rcp(new std::vector<double> (numgp));  // of alignment angles
+    lambda_ = Teuchos::rcp(new std::vector<std::vector<double> > (numgp)); // of eigenvalues
+    phi_ = Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix> (numgp)); // of eigenvectors
+    stresses_ = Teuchos::rcp(new std::vector<Epetra_SerialDenseMatrix> (numgp)); // of stresses
     for (int gp = 0; gp < numgp; ++gp) {
       gamma_->at(gp) = gamma;
       lambda_->at(gp).resize(3);
@@ -343,7 +343,7 @@ void MAT::ArtWallRemod::Setup(const int numgp, const int eleid, DRT::INPUT::Line
     // no remodeling
     params_->rembegt_ = -1.0;
   }
-  remtime_ = Teuchos::rcp(new vector<double> (numgp)); // of remodelling time
+  remtime_ = Teuchos::rcp(new std::vector<double> (numgp)); // of remodelling time
   for (int gp = 0; gp < numgp; ++gp) remtime_->at(gp) = params_->rembegt_;
 
   isinit_ = true;
@@ -588,8 +588,8 @@ void MAT::ArtWallRemod::Remodel(const int gp, const double time, const LINALG::M
   EvaluateFiberVecs(gp,newgamma,stresses_->at(gp)); // remember! stresses holds eigenvectors
 
   // pull-back of new fiber vecs
-  vector<double> a1_0(3);
-  vector<double> a2_0(3);
+  std::vector<double> a1_0(3);
+  std::vector<double> a2_0(3);
   LINALG::Matrix<3,3> idefgrd(false);
   idefgrd.Invert(defgrd);
   for (int i = 0; i < 3; ++i) {
@@ -668,10 +668,10 @@ void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
       for (int gp = 0; gp < endgp; ++gp){ //gp+=4
         double gamma = remo->Getgammas()->at(gp);
         double remtime = remo->Getremtimes()->at(gp);
-        vector<double> lamb = remo->Getlambdas()->at(gp);
+        std::vector<double> lamb = remo->Getlambdas()->at(gp);
         Epetra_SerialDenseMatrix phi = remo->Getphis()->at(gp);
-        vector<double> a1s = remo->Geta1()->at(gp);
-        vector<double> a2s = remo->Geta2()->at(gp);
+        std::vector<double> a1s = remo->Geta1()->at(gp);
+        std::vector<double> a2s = remo->Geta2()->at(gp);
 
         // time
         outfile << time << ",";
@@ -719,12 +719,12 @@ void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
     const DRT::Element* actele = dis->lColElement(iele);
 
     // build current configuration
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
     actele->LocationVector(*dis,lm,lmowner,lmstride);
     RCP<const Epetra_Vector> disp = dis->GetState("displacement");
-    vector<double> mydisp(lm.size(),0);
+    std::vector<double> mydisp(lm.size(),0);
     //DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     const int numnode = actele->NumNode();
     const int numdof = 3;
@@ -738,18 +738,18 @@ void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
     gmshfilecontent << IO::GMSH::cellWithScalarToString(actele->Shape(),
         1.0, xyze) << endl;
 
-    vector<double> elecenter = MAT::MatPointCoords(actele,mydisp);
+    std::vector<double> elecenter = MAT::MatPointCoords(actele,mydisp);
     RCP<MAT::Material> mat = actele->Material();
     MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
-    RCP<vector<vector<double> > > a1s = remo->Geta1();
-    RCP<vector<vector<double> > > a2s = remo->Geta2();
+    RCP<vector<std::vector<double> > > a1s = remo->Geta1();
+    RCP<vector<std::vector<double> > > a2s = remo->Geta2();
 
     // material plot at gauss points
     int ngp = remo->Geta1()->size();
     for (int gp = 0; gp < ngp; ++gp){
-      vector<double> point = MAT::MatPointCoords(actele,mydisp,gp);
+      std::vector<double> point = MAT::MatPointCoords(actele,mydisp,gp);
 
-      vector<vector<double> > fibgp(2);
+      vector<std::vector<double> > fibgp(2);
       fibgp.at(0) = a1s->at(gp);
       fibgp.at(1) = a2s->at(gp);
 
@@ -777,7 +777,7 @@ void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
       }
 
 //      Epetra_SerialDenseMatrix Phi= remo->Getphis()->at(gp);
-//      vector<double> lambda = remo->Getlambdas()->at(gp);
+//      std::vector<double> lambda = remo->Getlambdas()->at(gp);
 //      const double scale = 100.0;
 //      for (int k=0; k<3; ++k){
 //        gmshfilecontent << "VP(" << std::scientific << point[0] << ",";

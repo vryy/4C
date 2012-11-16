@@ -55,7 +55,7 @@ public:
   \return void
 
   */
-  FixedSizePBCDofSet(RCP<map<int,vector<int> > >  couplednodes, int numreservedof)
+  FixedSizePBCDofSet(RCP<map<int,std::vector<int> > >  couplednodes, int numreservedof)
     :FixedSizeDofSet(numreservedof), PBCDofSet(couplednodes)
   {
     return;

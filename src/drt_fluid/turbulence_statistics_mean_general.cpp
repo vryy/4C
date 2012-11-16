@@ -395,10 +395,10 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
   }
 
   // get an empty vector for the averages
-  vector<double> avg_u(x.size(),0.0);
-  vector<double> avg_v(x.size(),0.0);
-  vector<double> avg_w(x.size(),0.0);
-  vector<double> avg_p(x.size(),0.0);
+  std::vector<double> avg_u(x.size(),0.0);
+  std::vector<double> avg_v(x.size(),0.0);
+  std::vector<double> avg_w(x.size(),0.0);
+  std::vector<double> avg_p(x.size(),0.0);
 
   vector<int>    count(x.size(),0  );
 
@@ -486,7 +486,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       avg_w.clear();
       avg_p.clear();
 
-      vector<char>::size_type position=0;
+      std::vector<char>::size_type position=0;
 
       // size
       int size;
@@ -804,7 +804,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       avg_w.clear();
       avg_p.clear();
 
-      vector<char>::size_type position=0;
+      std::vector<char>::size_type position=0;
 
       // size
       int size;

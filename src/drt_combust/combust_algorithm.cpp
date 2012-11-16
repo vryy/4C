@@ -1778,8 +1778,8 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
     // - maximum in planenormaldirection
     vector<DRT::Condition*>* surfacepbcs = pbc->ReturnSurfacePBCs();
     vector<int>    planenormal(0);
-    vector<double> globalmins (0);
-    vector<double> globalmaxs (0);
+    std::vector<double> globalmins (0);
+    std::vector<double> globalmaxs (0);
     for (size_t i = 0; i < surfacepbcs->size(); ++i)
     {
       const string* ismaster = (*surfacepbcs)[i]->Get<string>("Is slave periodic boundary condition");
@@ -1795,7 +1795,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
             const string* isslave = (*surfacepbcs)[j]->Get<string>("Is slave periodic boundary condition");
             if (*isslave == "Slave")
             {
-              const vector<int>* slavenodeids = (*surfacepbcs)[j]->Nodes();
+              const std::vector<int>* slavenodeids = (*surfacepbcs)[j]->Nodes();
               // append slave node Ids to node Ids for the complete condition
               for (size_t k = 0; k < slavenodeids->size(); ++k)
                nodeids.push_back(slavenodeids->at(k));
@@ -1923,8 +1923,8 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
             vector<int> pbcnodes;
             for (size_t numcond=0; numcond<mypbc.size(); ++numcond)
             {
-              Teuchos::RCP<map<int,vector<int> > > pbcmastertoslave = ScaTraField().PBCmap();
-              map<int,vector<int> >::iterator mapit;
+              Teuchos::RCP<std::map<int,std::vector<int> > > pbcmastertoslave = ScaTraField().PBCmap();
+              std::map<int,std::vector<int> >::iterator mapit;
               for (mapit = pbcmastertoslave->begin(); mapit != pbcmastertoslave->end(); ++mapit)
               {
                 if (mapit->first == nodeid)
@@ -1978,7 +1978,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
     // and therefore gets added to the surfacenodes set. This set is redundantly available and
     // mereley knows a node's position and velocities
     //-----------------------------------------------------------------------------------------------
-    Teuchos::RCP<vector<LINALG::Matrix<3,2> > > surfacenodes = Teuchos::rcp(new vector<LINALG::Matrix<3,2> >);
+    Teuchos::RCP<vector<LINALG::Matrix<3,2> > > surfacenodes = Teuchos::rcp(new std::vector<LINALG::Matrix<3,2> >);
 
     std::set<int>::const_iterator nodeit;
     for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
@@ -2015,7 +2015,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
     // Now the surfacenodes must be gathered to all procs
     {
       Teuchos::RCP<vector<LINALG::Matrix<3,2> > > mysurfacenodes = surfacenodes;
-      surfacenodes = Teuchos::rcp(new vector<LINALG::Matrix<3,2> >);
+      surfacenodes = Teuchos::rcp(new std::vector<LINALG::Matrix<3,2> >);
 
       LINALG::Gather<LINALG::Matrix<3,2> >(*mysurfacenodes,*surfacenodes,numproc,allproc,fluiddis->Comm());
     }
@@ -2443,7 +2443,7 @@ void COMBUST::Algorithm::Redistribute()
       const Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
       const Teuchos::RCP<DRT::Discretization> gfuncdis = ScaTraField().Discretization();
       const Epetra_Map* noderowmap = fluiddis->NodeRowMap();
-      Teuchos::RCP<map<int,vector<int> > > allcoupledcolnodes = ScaTraField().PBC()->ReturnAllCoupledColNodes();
+      Teuchos::RCP<std::map<int,std::vector<int> > > allcoupledcolnodes = ScaTraField().PBC()->ReturnAllCoupledColNodes();
 
       // weights for graph partition
       Epetra_Vector weights(*noderowmap,false);
@@ -2471,7 +2471,7 @@ void COMBUST::Algorithm::Redistribute()
       // they need a small weight since they do not contribute any dofs
       // to the linear system
       {
-        map<int,vector<int> >::iterator masterslavepair;
+        std::map<int,std::vector<int> >::iterator masterslavepair;
 
         for(masterslavepair =allcoupledcolnodes->begin();
             masterslavepair!=allcoupledcolnodes->end()  ;
@@ -2558,7 +2558,7 @@ void COMBUST::Algorithm::Redistribute()
           if (!noderowmap->MyGID(rownode))
             continue;
 
-          map<int,vector<int> >::iterator masterslavepair = allcoupledcolnodes->find(rownode);
+          std::map<int,std::vector<int> >::iterator masterslavepair = allcoupledcolnodes->find(rownode);
           if(masterslavepair != allcoupledcolnodes->end())
           {
             // get all masternodes of this element
@@ -2566,7 +2566,7 @@ void COMBUST::Algorithm::Redistribute()
             {
               int colnode = nodeids[col];
 
-              map<int,vector<int> >::iterator othermasterslavepair = allcoupledcolnodes->find(colnode);
+              std::map<int,std::vector<int> >::iterator othermasterslavepair = allcoupledcolnodes->find(colnode);
               if(othermasterslavepair != allcoupledcolnodes->end())
               {
                 // add connection to all slaves
@@ -2749,7 +2749,7 @@ void COMBUST::Algorithm::Redistribute()
 
       // loop all master nodes on this proc
       {
-        map<int,vector<int> >::iterator masterslavepair;
+        std::map<int,std::vector<int> >::iterator masterslavepair;
 
         for(masterslavepair =allcoupledcolnodes->begin();
             masterslavepair!=allcoupledcolnodes->end()  ;
@@ -2763,7 +2763,7 @@ void COMBUST::Algorithm::Redistribute()
             continue;
           }
 
-          map<int,int>::iterator paul = idxmap.find(master->Id());
+          std::map<int,int>::iterator paul = idxmap.find(master->Id());
           if (paul == idxmap.end())
             dserror("master not in reverse lookup");
 
@@ -2781,7 +2781,7 @@ void COMBUST::Algorithm::Redistribute()
 
             int slaveindex = idxmap[slave->Id()];
 
-            map<int,int>::iterator foo = idxmap.find(slave->Id());
+            std::map<int,int>::iterator foo = idxmap.find(slave->Id());
             if (foo == idxmap.end())
               dserror("slave not in reverse lookup");
 

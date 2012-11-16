@@ -52,9 +52,9 @@ public:
     must be defined in ScaTraBoundaryImpl.
    */
   virtual int Evaluate(DRT::ELEMENTS::TransportBoundary* ele,
-                       ParameterList&             params,
+                       Teuchos::ParameterList&    params,
                        DRT::Discretization&       discretization,
-                       vector<int>&               lm,
+                       std::vector<int>&          lm,
                        Epetra_SerialDenseMatrix&  elemat1_epetra,
                        Epetra_SerialDenseMatrix&  elemat2_epetra,
                        Epetra_SerialDenseVector&  elevec1_epetra,
@@ -68,10 +68,10 @@ public:
     must be defined in ScaTraBoundaryImpl.
    */
   virtual int EvaluateNeumann(DRT::ELEMENTS::TransportBoundary* ele,
-                              ParameterList&                    params,
+                              Teuchos::ParameterList&           params,
                               DRT::Discretization&              discretization,
                               DRT::Condition&                   condition,
-                              vector<int>&                      lm,
+                              std::vector<int>&                 lm,
                               Epetra_SerialDenseVector&         elevec1_epetra
                               ) = 0;
 
@@ -184,9 +184,9 @@ public:
 
   //! Evaluate
   virtual int Evaluate(DRT::ELEMENTS::TransportBoundary* ele,
-                       ParameterList&             params,
+                       Teuchos::ParameterList&    params,
                        DRT::Discretization&       discretization,
-                       vector<int>&               lm,
+                       std::vector<int>&          lm,
                        Epetra_SerialDenseMatrix&  elemat1_epetra,
                        Epetra_SerialDenseMatrix&  elemat2_epetra,
                        Epetra_SerialDenseVector&  elevec1_epetra,
@@ -196,10 +196,10 @@ public:
 
   //! Evaluate a Neumann boundary condition
   virtual int EvaluateNeumann(DRT::ELEMENTS::TransportBoundary* ele,
-                              ParameterList&                    params,
+                              Teuchos::ParameterList&           params,
                               DRT::Discretization&              discretization,
                               DRT::Condition&                   condition,
-                              vector<int>&                      lm,
+                              std::vector<int>&                 lm,
                               Epetra_SerialDenseVector&         elevec1_epetra
                               );
 
@@ -218,7 +218,7 @@ public:
        const DRT::Element*        ele,  ///< the actual boundary element
        Epetra_SerialDenseMatrix& emat,  ///< element-matrix
        Epetra_SerialDenseVector& erhs,  ///< element-rhs
-       const vector<double>&   ephinp,  ///< actual conc. and pot. values
+       const std::vector<double>&   ephinp,  ///< actual conc. and pot. values
        double                 timefac,
        Teuchos::RCP<const MAT::Material>  material,  ///< the material
        Teuchos::RCP<DRT::Condition>       cond,      ///< the condition
@@ -234,10 +234,10 @@ public:
     //! provide electrode kinetics status information
     void ElectrodeStatus(
         const DRT::Element*        ele,  ///< the actual boundary element
-        ParameterList&          params,  ///< the parameter list
+        Teuchos::ParameterList& params,  ///< the parameter list
         Teuchos::RCP<DRT::Condition>  cond,  ///< the condition
-        const vector<double>&   ephinp,  ///< current conc. and potential values
-        const vector<double>& ephidtnp,  ///< time derivative vector evaluated at t_{n+1}
+        const std::vector<double>&   ephinp,  ///< current conc. and potential values
+        const std::vector<double>& ephidtnp,  ///< time derivative vector evaluated at t_{n+1}
         const int             kinetics,  ///< desired electrode kinetics model
         const std::vector<int>  stoich,  ///< stoichometry of the reaction
         const int                 nume,  ///<  number of transfered electrons
@@ -250,7 +250,7 @@ public:
     //! evaluate surface/interface permeability
     void EvaluateSurfacePermeability(
         const DRT::Element*        ele,  ///< the actual boundary element
-        const vector<double>&      ephinp, ///< scalar values at element nodes
+        const std::vector<double>&  ephinp, ///< scalar values at element nodes
         Epetra_SerialDenseMatrix&  emat,  ///< element-matrix
         Epetra_SerialDenseVector&  erhs,  ///< element-rhs
         const double               timefac,  ///< time factor
@@ -260,7 +260,7 @@ public:
      //! integral of shape functions over boundary surface
      void IntegrateShapeFunctions(
          const DRT::Element*       ele,    ///< the actual boundary element
-         ParameterList&            params, ///< the parameter list
+         Teuchos::ParameterList&   params, ///< the parameter list
          Epetra_SerialDenseVector& elevec1,///< result vector (to be assembled)
          const bool                addarea ///< flag for area calculation
      );
@@ -268,14 +268,14 @@ public:
     //! integral of normal diffusive flux and velocity over boundary surface
     void NormDiffFluxAndVelIntegral(
         const DRT::Element*             ele,
-        ParameterList&                  params,
-        const vector<double>&           enormdiffflux,
-        const vector<double>&           enormvel);
+        Teuchos::ParameterList&         params,
+        const std::vector<double>&       enormdiffflux,
+        const std::vector<double>&       enormvel);
 
     //! compute integral of convective mass/heat flux over boundary surface
-    vector<double> CalcConvectiveFlux(
+    std::vector<double> CalcConvectiveFlux(
         const DRT::Element*                 ele,
-        const vector<double>&               ephinp,
+        const std::vector<double>&           ephinp,
         const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
         Epetra_SerialDenseVector&           erhs);
 
@@ -289,7 +289,7 @@ public:
     void NeumannInflow(
         const DRT::Element*                 ele,
         Teuchos::RCP<const MAT::Material>   material,
-        const vector<double>&               ephinp,
+        const std::vector<double>&           ephinp,
         const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
         Epetra_SerialDenseMatrix&           emat,
         Epetra_SerialDenseVector&           erhs,
@@ -300,7 +300,7 @@ public:
     void ConvectiveHeatTransfer(
         const DRT::Element*                 ele,
         Teuchos::RCP<const MAT::Material>   material,
-        const vector<double>&               ephinp,
+        const std::vector<double>&           ephinp,
         Epetra_SerialDenseMatrix&           emat,
         Epetra_SerialDenseVector&           erhs,
         const double                        heatranscoeff,
@@ -321,7 +321,7 @@ public:
 
     template <DRT::Element::DiscretizationType bdistype,DRT::Element::DiscretizationType pdistype>
     void WeakDirichlet(DRT::ELEMENTS::TransportBoundary*  ele,
-                       ParameterList&                     params,
+                       Teuchos::ParameterList&            params,
                        DRT::Discretization&               discretization,
                        Teuchos::RCP<const MAT::Material>  material,
                        Epetra_SerialDenseMatrix&          elemat_epetra,
@@ -331,7 +331,7 @@ public:
     template <DRT::Element::DiscretizationType bdistype,DRT::Element::DiscretizationType pdistype>
     void TaylorGalerkinBoundaryOutflow(
         DRT::ELEMENTS::TransportBoundary*  ele,                  //!< transport element
-        ParameterList&                     params,               //!< parameter list
+        Teuchos::ParameterList&            params,               //!< parameter list
         DRT::Discretization&               discretization,       //!< discretization
         Teuchos::RCP<const MAT::Material>  material,             //!< material
         Epetra_SerialDenseMatrix&          elemat_epetra,        //!< ele sysmat
@@ -342,7 +342,7 @@ public:
     template <DRT::Element::DiscretizationType bdistype,DRT::Element::DiscretizationType pdistype>
     void ReinitCharacteristicGalerkinBoundary(
         DRT::ELEMENTS::TransportBoundary*  ele,                  //!< transport element
-        ParameterList&                     params,               //!< parameter list
+        Teuchos::ParameterList&            params,               //!< parameter list
         DRT::Discretization&               discretization,       //!< discretization
         Teuchos::RCP<const MAT::Material>  material,             //!< material
         Epetra_SerialDenseMatrix&          elemat_epetra,        //!< ele sysmat
@@ -376,7 +376,7 @@ public:
     //! nodal displacement values for ALE
     LINALG::Matrix<nsd_+1,nen_> edispnp_;
     //! diffusivity / diffusivities (in case of systems) / thermal conductivity
-    vector<double> diffus_;
+    std::vector<double> diffus_;
     //! charge numbers of all ion species (ELCH specific)
     // vector<double> valence_;
     //! specific heat capacity at constant pressure (in case of temperature eq.)

@@ -75,7 +75,7 @@ public:
 
   */
   TurbulenceStatisticsLdc(RCP<DRT::Discretization> actdis,
-                          ParameterList&                   params);
+                          Teuchos::ParameterList&                   params);
 
   /*!
   \brief Destructor
@@ -169,7 +169,7 @@ private:
   RCP<DRT::Discretization> discret_;
 
   //! parameter list
-  ParameterList&                   params_;
+  Teuchos::ParameterList&                   params_;
 
   //! toogle vectors: sums are computed by scalarproducts
   RCP<Epetra_Vector>       toggleu_;
@@ -178,84 +178,84 @@ private:
   RCP<Epetra_Vector>       togglep_;
 
   //! the coordinates of the centerlines in x1-, x2- and x3-direction
-  RCP<vector<double> >     x1coordinates_;
-  RCP<vector<double> >     x2coordinates_;
-  RCP<vector<double> >     x3coordinates_;
+  RCP<std::vector<double> >     x1coordinates_;
+  RCP<std::vector<double> >     x2coordinates_;
+  RCP<std::vector<double> >     x3coordinates_;
 
   //! sum over u (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumu_;
-  RCP<vector<double> >     x2sumu_;
-  RCP<vector<double> >     x3sumu_;
+  RCP<std::vector<double> >     x1sumu_;
+  RCP<std::vector<double> >     x2sumu_;
+  RCP<std::vector<double> >     x3sumu_;
   //! sum over v (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumv_;
-  RCP<vector<double> >     x2sumv_;
-  RCP<vector<double> >     x3sumv_;
+  RCP<std::vector<double> >     x1sumv_;
+  RCP<std::vector<double> >     x2sumv_;
+  RCP<std::vector<double> >     x3sumv_;
   //! sum over w (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumw_;
-  RCP<vector<double> >     x2sumw_;
-  RCP<vector<double> >     x3sumw_;
+  RCP<std::vector<double> >     x1sumw_;
+  RCP<std::vector<double> >     x2sumw_;
+  RCP<std::vector<double> >     x3sumw_;
   //! sum over p (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sump_;
-  RCP<vector<double> >     x2sump_;
-  RCP<vector<double> >     x3sump_;
+  RCP<std::vector<double> >     x1sump_;
+  RCP<std::vector<double> >     x2sump_;
+  RCP<std::vector<double> >     x3sump_;
   //! sum over density (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumrho_;
-  RCP<vector<double> >     x2sumrho_;
-  RCP<vector<double> >     x3sumrho_;
+  RCP<std::vector<double> >     x1sumrho_;
+  RCP<std::vector<double> >     x2sumrho_;
+  RCP<std::vector<double> >     x3sumrho_;
   //! sum over T (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumT_;
-  RCP<vector<double> >     x2sumT_;
-  RCP<vector<double> >     x3sumT_;
+  RCP<std::vector<double> >     x1sumT_;
+  RCP<std::vector<double> >     x2sumT_;
+  RCP<std::vector<double> >     x3sumT_;
 
   //! sum over u^2 (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumsqu_;
-  RCP<vector<double> >     x2sumsqu_;
-  RCP<vector<double> >     x3sumsqu_;
+  RCP<std::vector<double> >     x1sumsqu_;
+  RCP<std::vector<double> >     x2sumsqu_;
+  RCP<std::vector<double> >     x3sumsqu_;
   //! sum over v^2 (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumsqv_;
-  RCP<vector<double> >     x2sumsqv_;
-  RCP<vector<double> >     x3sumsqv_;
+  RCP<std::vector<double> >     x1sumsqv_;
+  RCP<std::vector<double> >     x2sumsqv_;
+  RCP<std::vector<double> >     x3sumsqv_;
   //! sum over w^2 (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumsqw_;
-  RCP<vector<double> >     x2sumsqw_;
-  RCP<vector<double> >     x3sumsqw_;
+  RCP<std::vector<double> >     x1sumsqw_;
+  RCP<std::vector<double> >     x2sumsqw_;
+  RCP<std::vector<double> >     x3sumsqw_;
   //! sum over p^2 (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumsqp_;
-  RCP<vector<double> >     x2sumsqp_;
-  RCP<vector<double> >     x3sumsqp_;
+  RCP<std::vector<double> >     x1sumsqp_;
+  RCP<std::vector<double> >     x2sumsqp_;
+  RCP<std::vector<double> >     x3sumsqp_;
   //! sum over density^2 (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumsqrho_;
-  RCP<vector<double> >     x2sumsqrho_;
-  RCP<vector<double> >     x3sumsqrho_;
+  RCP<std::vector<double> >     x1sumsqrho_;
+  RCP<std::vector<double> >     x2sumsqrho_;
+  RCP<std::vector<double> >     x3sumsqrho_;
   //! sum over T^2 (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumsqT_;
-  RCP<vector<double> >     x2sumsqT_;
-  RCP<vector<double> >     x3sumsqT_;
+  RCP<std::vector<double> >     x1sumsqT_;
+  RCP<std::vector<double> >     x2sumsqT_;
+  RCP<std::vector<double> >     x3sumsqT_;
 
   //! sum over uv (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumuv_;
-  RCP<vector<double> >     x2sumuv_;
-  RCP<vector<double> >     x3sumuv_;
+  RCP<std::vector<double> >     x1sumuv_;
+  RCP<std::vector<double> >     x2sumuv_;
+  RCP<std::vector<double> >     x3sumuv_;
   //! sum over uw (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumuw_;
-  RCP<vector<double> >     x2sumuw_;
-  RCP<vector<double> >     x3sumuw_;
+  RCP<std::vector<double> >     x1sumuw_;
+  RCP<std::vector<double> >     x2sumuw_;
+  RCP<std::vector<double> >     x3sumuw_;
   //! sum over vw (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumvw_;
-  RCP<vector<double> >     x2sumvw_;
-  RCP<vector<double> >     x3sumvw_;
+  RCP<std::vector<double> >     x1sumvw_;
+  RCP<std::vector<double> >     x2sumvw_;
+  RCP<std::vector<double> >     x3sumvw_;
   //! sum over uT (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumuT_;
-  RCP<vector<double> >     x2sumuT_;
-  RCP<vector<double> >     x3sumuT_;
+  RCP<std::vector<double> >     x1sumuT_;
+  RCP<std::vector<double> >     x2sumuT_;
+  RCP<std::vector<double> >     x3sumuT_;
   //! sum over vT (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumvT_;
-  RCP<vector<double> >     x2sumvT_;
-  RCP<vector<double> >     x3sumvT_;
+  RCP<std::vector<double> >     x1sumvT_;
+  RCP<std::vector<double> >     x2sumvT_;
+  RCP<std::vector<double> >     x3sumvT_;
   //! sum over wT (over the centerlines in x1-, x2- and x3-direction)
-  RCP<vector<double> >     x1sumwT_;
-  RCP<vector<double> >     x2sumwT_;
-  RCP<vector<double> >     x3sumwT_;
+  RCP<std::vector<double> >     x1sumwT_;
+  RCP<std::vector<double> >     x2sumwT_;
+  RCP<std::vector<double> >     x3sumwT_;
 };
 
 }

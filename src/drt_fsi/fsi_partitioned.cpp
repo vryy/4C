@@ -391,7 +391,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
     Teuchos::RCP<NOX::StatusTest::Combo> combo = CreateStatusTest(nlParams, grp);
 
     // Create the solver
-    Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,RCP<ParameterList>(&nlParams,false));
+    Teuchos::RCP<NOX::Solver::Generic> solver = NOX::Solver::buildSolver(grp,combo,Teuchos::RCP<Teuchos::ParameterList>(&nlParams,false));
 
     // solve the whole thing
     NOX::StatusTest::StatusType status = solver->solve();
@@ -465,7 +465,7 @@ void FSI::Partitioned::Timeloop(const Teuchos::RCP<NOX::Epetra::Interface::Requi
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem>
-FSI::Partitioned::CreateLinearSystem(ParameterList& nlParams,
+FSI::Partitioned::CreateLinearSystem(Teuchos::ParameterList& nlParams,
                                                   const Teuchos::RCP<NOX::Epetra::Interface::Required>& interface,
                                                   NOX::Epetra::Vector& noxSoln,
                                                   Teuchos::RCP<NOX::Utils> utils)
@@ -625,7 +625,7 @@ FSI::Partitioned::CreateLinearSystem(ParameterList& nlParams,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::StatusTest::Combo>
-FSI::Partitioned::CreateStatusTest(ParameterList& nlParams,
+FSI::Partitioned::CreateStatusTest(Teuchos::ParameterList& nlParams,
                                    Teuchos::RCP<NOX::Epetra::Group> grp)
 {
   // Create the convergence tests
@@ -649,7 +649,7 @@ FSI::Partitioned::CreateStatusTest(ParameterList& nlParams,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void
-FSI::Partitioned::CreateStatusTest(ParameterList& nlParams,
+FSI::Partitioned::CreateStatusTest(Teuchos::ParameterList& nlParams,
                                    Teuchos::RCP<NOX::Epetra::Group> grp,
                                    Teuchos::RCP<NOX::StatusTest::Combo> converged)
 {

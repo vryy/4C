@@ -350,7 +350,7 @@ void DRT::ELEMENTS::So_sh8Type::sosh8_gmshplotdis(const DRT::Discretization& dis
     // plot elements
     gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(actele->thickdir_, actele) << endl;
     // plot vector from 1st node to 5th node which is parametric t-dir
-    vector<double> X15(3);
+    std::vector<double> X15(3);
     X15[0] = actele->Nodes()[4]->X()[0] - actele->Nodes()[0]->X()[0];
     X15[1] = actele->Nodes()[4]->X()[1] - actele->Nodes()[0]->X()[1];
     X15[2] = actele->Nodes()[4]->X()[2] - actele->Nodes()[0]->X()[2];
@@ -379,8 +379,8 @@ void DRT::ELEMENTS::So_sh8Type::sosh8_gmshplotdis(const DRT::Discretization& dis
     DRT::ELEMENTS::So_sh8* actele = dynamic_cast<DRT::ELEMENTS::So_sh8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8* failed");
     // plot vector in center of elements
-    const vector<double> pv = actele->GetThickvec();
-    vector<double> ec = actele->soh8_ElementCenterRefeCoords();
+    const std::vector<double> pv = actele->GetThickvec();
+    std::vector<double> ec = actele->soh8_ElementCenterRefeCoords();
     //gmshfilecontent << "VP(0,0,0){1,1.3,1.7};" << endl;
     gmshfilecontent << "VP(" << std::scientific << ec[0] << "," << ec[1] << "," << ec[2] << ")";
     gmshfilecontent << "{" << std::scientific << pv[0] << "," << pv[1] << "," << pv[2] << "};" << endl;
@@ -394,10 +394,10 @@ void DRT::ELEMENTS::So_sh8Type::sosh8_gmshplotdis(const DRT::Discretization& dis
     DRT::ELEMENTS::So_hex8* actele = dynamic_cast<DRT::ELEMENTS::So_hex8*>(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8* failed");
     // plot vector in center of elements
-    vector<double> ec = actele->soh8_ElementCenterRefeCoords();
+    std::vector<double> ec = actele->soh8_ElementCenterRefeCoords();
     RCP<MAT::Material> mat = actele->Material();
     MAT::AnisotropicBalzani* anba = static_cast <MAT::AnisotropicBalzani*>(mat.get());
-    vector<double> pv(3);
+    std::vector<double> pv(3);
     if (anba->GlobalFiberDirection()){
       pv = anba->ReturnGlobalFiberDirection();
     }

@@ -41,7 +41,7 @@ Maintainer: Volker Gravemeier
 /*----------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   RCP<DRT::Discretization> actdis,
-  ParameterList&                   params,
+  Teuchos::ParameterList&          params,
   const string&                    geotype):
   discret_      (actdis),
   params_       (params),
@@ -94,8 +94,8 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   //----------------------------------------------------------------------
   // create sets of coordinates
   //----------------------------------------------------------------------
-  x1coordinates_ = Teuchos::rcp(new vector<double> );
-  x2coordinates_ = Teuchos::rcp(new vector<double> );
+  x1coordinates_ = Teuchos::rcp(new std::vector<double> );
+  x2coordinates_ = Teuchos::rcp(new std::vector<double> );
 
   // the criterion allows differences in coordinates by 1e-9
   set<double,LineSortCriterion> x1avcoords;
@@ -229,7 +229,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
       //--------------------------------------------------
       // Unpack received block into set of all planes.
       {
-        vector<double> coordsvec;
+        std::vector<double> coordsvec;
 
         coordsvec.clear();
 
@@ -302,7 +302,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
       //--------------------------------------------------
       // Unpack received block into set of all planes.
       {
-        vector<double> coordsvec;
+        std::vector<double> coordsvec;
 
         coordsvec.clear();
 
@@ -321,8 +321,8 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   // push coordinates in vectors
   //----------------------------------------------------------------------
   {
-    x1coordinates_ = Teuchos::rcp(new vector<double> );
-    x2coordinates_ = Teuchos::rcp(new vector<double> );
+    x1coordinates_ = Teuchos::rcp(new std::vector<double> );
+    x2coordinates_ = Teuchos::rcp(new std::vector<double> );
 
     for(std::set<double,LineSortCriterion>::iterator coord1=x1avcoords.begin();
         coord1!=x1avcoords.end();
@@ -545,8 +545,8 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   if (modelparams->get<string>("PHYSICAL_MODEL","no_model") == "Dynamic_Smagorinsky")
   {
     // store them in parameterlist for access on the element
-    modelparams->set<RCP<vector<double> > >("dir1coords_",x1coordinates_);
-    modelparams->set<RCP<vector<double> > >("dir2coords_",x2coordinates_);
+    modelparams->set<RCP<std::vector<double> > >("dir1coords_",x1coordinates_);
+    modelparams->set<RCP<std::vector<double> > >("dir2coords_",x2coordinates_);
   }
 
   //----------------------------------------------------------------------

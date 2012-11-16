@@ -136,7 +136,7 @@ TSI::Monolithic::Monolithic(
 #endif
 
   // structural and thermal contact
-  if(StructureField()->ContactManager()!=null)
+  if(StructureField()->ContactManager()!=Teuchos::null)
   {
     cmtman_ = StructureField()->ContactManager();
 

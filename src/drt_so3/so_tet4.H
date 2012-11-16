@@ -139,21 +139,21 @@ public:
   \brief Get vector of RCPs to the lines of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
   \brief Get vector of RCPs to the surfaces of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Get vector of RCPs to the volumes of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Volumes();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
-  virtual vector<double> ElementCenterRefeCoords();
+  virtual std::vector<double> ElementCenterRefeCoords();
 
   /*!
   \brief Return unique ParObject id
@@ -265,7 +265,7 @@ public:
   \param name (in):   Name of data that is currently processed for visualization
   \param data (out):  data to be filled by element if element recognizes the name
   */
-  virtual bool VisData(const string& name, vector<double>& data);
+  virtual bool VisData(const string& name, std::vector<double>& data);
 
   //@}
 
@@ -309,9 +309,9 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(ParameterList& params,
+  int Evaluate(Teuchos::ParameterList& params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
@@ -333,10 +333,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -404,10 +404,10 @@ protected:
   /// Prestressing object
   Teuchos::RCP<DRT::ELEMENTS::PreStress>                                   prestress_;
   /// compute Jacobian mapping wrt to deformed configuration
-  void UpdateJacobianMapping(const vector<double>& disp,
+  void UpdateJacobianMapping(const std::vector<double>& disp,
                              DRT::ELEMENTS::PreStress& prestress);
   /// compute defgrd in all gp for given disp
-  void DefGradient(const vector<double>& disp,
+  void DefGradient(const std::vector<double>& disp,
                    Epetra_SerialDenseMatrix& gpdefgrd,
                    DRT::ELEMENTS::PreStress& prestress);
 
@@ -424,32 +424,32 @@ protected:
 
   //! Calculate nonlinear stiffness and mass matrix
   virtual void nlnstiffmass(
-    vector<int>&  lm,
-    vector<double>&  disp,
-    vector<double>&  residual,
+    std::vector<int>&  lm,
+    std::vector<double>&  disp,
+    std::vector<double>&  residual,
     LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,
     LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,
     LINALG::Matrix<NUMDOF_SOTET4,1>* force,
     LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* stresses,
     LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,
     LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* eleplstrain,
-    ParameterList& params,
+    Teuchos::ParameterList& params,
     const INPAR::STR::StressType iostress,
     const INPAR::STR::StrainType iostrain,
     const INPAR::STR::StrainType ioplstrain
     );
 
   void linstiffmass(
-    vector<int>& lm,  // location matrix
-    vector<double>& disp,  // current displacements
-    vector<double>& residual,  // current residual displacements or displacement increment
+    std::vector<int>& lm,  // location matrix
+    std::vector<double>& disp,  // current displacements
+    std::vector<double>& residual,  // current residual displacements or displacement increment
     LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,  // element stiffness matrix
     LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,  // element mass matrix
     LINALG::Matrix<NUMDOF_SOTET4,1>* force,  // element internal force vector
     LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,  // stresses at GP
     LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,  // strains at GP
     LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* eleplstrain, // plastic strains at GP
-    ParameterList& params,  // algorithmic parameters e.g. time
+    Teuchos::ParameterList& params,  // algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress,  // stress output option
     const INPAR::STR::StrainType iostrain,  // strain output option
     const INPAR::STR::StrainType ioplstrain  // plastic strain output option
@@ -468,24 +468,24 @@ protected:
 
   //! remodeling for fibers at the end of time step (st 01/10)
   void so_tet4_remodel(
-        vector<int>&                lm,             // location matrix
-        vector<double>&             disp,           // current displacements
-        ParameterList&              params,         // algorithmic parameters e.g. time
+        std::vector<int>&           lm,             // location matrix
+        std::vector<double>&        disp,           // current displacements
+        Teuchos::ParameterList&     params,         // algorithmic parameters e.g. time
         Teuchos::RCP<MAT::Material> mat);            // material
 
   //! Evaluate Tet4 Shapefcts at 1 gausspoint to keep them static
-  const vector<LINALG::Matrix<NUMNOD_SOTET4,1> > so_tet4_1gp_shapefcts();
+  const std::vector<LINALG::Matrix<NUMNOD_SOTET4,1> > so_tet4_1gp_shapefcts();
   //! Evaluate Tet4 Derivs at 1 gausspoint to keep them static
-  const vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > so_tet4_1gp_derivs();
+  const std::vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > so_tet4_1gp_derivs();
   //! Evaluate Tet4 Weights at 1 gausspoint to keep them static
-  const vector<double> so_tet4_1gp_weights();
+  const std::vector<double> so_tet4_1gp_weights();
 
   //! Evaluate Tet4 Shapefcts at 4 gausspoints to keep them static
-  const vector<LINALG::Matrix<NUMNOD_SOTET4,1> > so_tet4_4gp_shapefcts();
+  const std::vector<LINALG::Matrix<NUMNOD_SOTET4,1> > so_tet4_4gp_shapefcts();
   //! Evaluate Tet4 Derivs at 4 gausspoints to keep them static
-  const vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > so_tet4_4gp_derivs();
+  const std::vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > so_tet4_4gp_derivs();
   //! Evaluate Tet4 Weights at 4 gausspoints to keep them static
-  const vector<double> so_tet4_4gp_weights();
+  const std::vector<double> so_tet4_4gp_weights();
 
   /// material selection for so_tet4
   void so_tet4_mat_sel(Epetra_SerialDenseVector* stress,
@@ -503,12 +503,12 @@ protected:
                     LINALG::Matrix<6,1>* glstrain,
                     LINALG::Matrix<3,3>* defgrd,
                     const int gp,
-                    ParameterList& params);
+                    Teuchos::ParameterList& params);
 
   //! @name Multi-scale related stuff
 
   /// Determine a homogenized material density for multi-scale analyses by averaging over the initial volume
-  void sotet4_homog(ParameterList& params);
+  void sotet4_homog(Teuchos::ParameterList& params);
 
   /// Read restart on the microscale
   void sotet4_read_restart_multi();

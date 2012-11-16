@@ -34,8 +34,8 @@ Maintainer: Tobias Wiesner
  |  ctor (public)                                            mwgee 02/08|
  *----------------------------------------------------------------------*/
 LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSIMPLE_BlockPreconditioner(RCP<Epetra_Operator> A,
-                                           const ParameterList& predict_list,
-                                           const ParameterList& correct_list,
+                                           const Teuchos::ParameterList& predict_list,
+                                           const Teuchos::ParameterList& correct_list,
                                            FILE* outfile)
   : outfile_(outfile),
     predictSolver_list_(predict_list),
@@ -70,8 +70,8 @@ LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::CheapSIMPLE_BlockPreconditioner
  |  (private)                                                mwgee 02/08|
  *----------------------------------------------------------------------*/
 void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator> A,
-                                     const ParameterList& origvlist,
-                                     const ParameterList& origplist)
+                                     const Teuchos::ParameterList& origvlist,
+                                     const Teuchos::ParameterList& origplist)
 {
   const int myrank = A->Comm().MyPID();
   Epetra_Time time(A->Comm());
@@ -87,7 +87,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
   // either do manual split or use provided BlockSparseMatrixBase
   //-------------------------------------------------------------------------
   A_ = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(A);
-  if (A_!=null)
+  if (A_!=Teuchos::null)
   {
     // Make a shallow copy of the block matrix as the preconditioners on the
     // blocks will be reused and the next assembly will replace the block
@@ -210,9 +210,9 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
   // Allocate solver for pressure and velocity
   //-------------------------------------------------------------------------
   {
-    RCP<ParameterList> vrcplist = Teuchos::rcp(&predictSolver_list_,false);
+    RCP<Teuchos::ParameterList> vrcplist = Teuchos::rcp(&predictSolver_list_,false);
     vsolver_ = Teuchos::rcp(new LINALG::Solver(vrcplist,A_->Comm(),outfile_));
-    RCP<ParameterList> prcplist = Teuchos::rcp(&schurSolver_list_,false);
+    RCP<Teuchos::ParameterList> prcplist = Teuchos::rcp(&schurSolver_list_,false);
     psolver_ = Teuchos::rcp(new LINALG::Solver(prcplist,A_->Comm(),outfile_));
   }
 #endif

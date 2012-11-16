@@ -30,8 +30,8 @@ Maintainer: Ursula Rasthofer
  *----------------------------------------------------------------------*/
 FLD::DynSmagFilter::DynSmagFilter(
   RCP<DRT::Discretization>     actdis             ,
-  RCP<map<int,vector<int> > >  pbcmapmastertoslave,
-  ParameterList&               params)
+  RCP<map<int,std::vector<int> > >  pbcmapmastertoslave,
+  Teuchos::ParameterList&      params)
   :
   // call constructor for "nontrivial" objects
   discret_            (actdis             ),
@@ -149,7 +149,7 @@ FLD::DynSmagFilter::~DynSmagFilter()
 void FLD::DynSmagFilter::AddScatra(
   RCP<DRT::Discretization>     scatradis,
   INPAR::SCATRA::ScaTraType    scatratype,
-  RCP<map<int,vector<int> > >  scatra_pbcmapmastertoslave)
+  RCP<map<int,std::vector<int> > >  scatra_pbcmapmastertoslave)
 {
   scatradiscret_ = scatradis;
   scatratype_ = scatratype;
@@ -186,14 +186,14 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
       or modelparams->get<string>("CANONICAL_FLOW","no")=="loma_channel_flow_of_height_2"
       or modelparams->get<string>("CANONICAL_FLOW","no")=="scatra_channel_flow_of_height_2")
   {
-    size_t nlayer = (*modelparams->get<RCP<vector<double> > >("local_Cs_sum")).size();
+    size_t nlayer = (*modelparams->get<RCP<std::vector<double> > >("local_Cs_sum")).size();
     for (size_t rr=0; rr<nlayer; rr++)
     {
-      (*modelparams->get<RCP<vector<double> > >("local_Cs_sum"))[rr] = 0.0;
-      (*modelparams->get<RCP<vector<double> > >("local_Cs_delta_sq_sum"))[rr] = 0.0;
-      (*modelparams->get<RCP<vector<double> > >("local_visceff_sum"))[rr] = 0.0;
-      (*modelparams->get<RCP<vector<double> > >("local_Ci_sum"))[rr] = 0.0;
-      (*modelparams->get<RCP<vector<double> > >("local_Ci_delta_sq_sum"))[rr] = 0.0;
+      (*modelparams->get<RCP<std::vector<double> > >("local_Cs_sum"))[rr] = 0.0;
+      (*modelparams->get<RCP<std::vector<double> > >("local_Cs_delta_sq_sum"))[rr] = 0.0;
+      (*modelparams->get<RCP<std::vector<double> > >("local_visceff_sum"))[rr] = 0.0;
+      (*modelparams->get<RCP<std::vector<double> > >("local_Ci_sum"))[rr] = 0.0;
+      (*modelparams->get<RCP<std::vector<double> > >("local_Ci_delta_sq_sum"))[rr] = 0.0;
     }
   }
 
@@ -212,7 +212,7 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfPrt(
   Teuchos::RCP<Epetra_Vector>             scalar,
   const double                            thermpress,
   const Teuchos::RCP<const Epetra_Vector> dirichtoggle,
-  ParameterList&                          extraparams
+  Teuchos::ParameterList&                          extraparams
   )
 {
 
@@ -235,29 +235,29 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfPrt(
       or modelparams->get<string>("CANONICAL_FLOW","no")=="loma_channel_flow_of_height_2"
       or modelparams->get<string>("CANONICAL_FLOW","no")=="scatra_channel_flow_of_height_2")
   {
-    size_t nlayer = (*modelparams->get<RCP<vector<double> > >("local_Prt_sum")).size();
+    size_t nlayer = (*modelparams->get<RCP<std::vector<double> > >("local_Prt_sum")).size();
     for (size_t rr=0; rr<nlayer; rr++)
     {
-      (*modelparams->get<RCP<vector<double> > >("local_Prt_sum"))[rr] = 0.0;
-      (*modelparams->get<RCP<vector<double> > >("local_Cs_delta_sq_Prt_sum"))[rr] = 0.0;
-      (*modelparams->get<RCP<vector<double> > >("local_diffeff_sum"))[rr] = 0.0;
+      (*modelparams->get<RCP<std::vector<double> > >("local_Prt_sum"))[rr] = 0.0;
+      (*modelparams->get<RCP<std::vector<double> > >("local_Cs_delta_sq_Prt_sum"))[rr] = 0.0;
+      (*modelparams->get<RCP<std::vector<double> > >("local_diffeff_sum"))[rr] = 0.0;
     }
-    extramodelparams->set<RCP<vector<double> > >("local_Prt_sum",
-                    modelparams->get<RCP<vector<double> > >("local_Prt_sum"));
-    extramodelparams->set<RCP<vector<double> > >("local_Cs_delta_sq_Prt_sum",
-                    modelparams->get<RCP<vector<double> > >("local_Cs_delta_sq_Prt_sum"));
-    extramodelparams->set<RCP<vector<double> > >("local_diffeff_sum",
-                    modelparams->get<RCP<vector<double> > >("local_diffeff_sum"));
+    extramodelparams->set<RCP<std::vector<double> > >("local_Prt_sum",
+                    modelparams->get<RCP<std::vector<double> > >("local_Prt_sum"));
+    extramodelparams->set<RCP<std::vector<double> > >("local_Cs_delta_sq_Prt_sum",
+                    modelparams->get<RCP<std::vector<double> > >("local_Cs_delta_sq_Prt_sum"));
+    extramodelparams->set<RCP<std::vector<double> > >("local_diffeff_sum",
+                    modelparams->get<RCP<std::vector<double> > >("local_diffeff_sum"));
     // add (Cs*h)^2 to calculate Prt
     // therefore, it is assumed that finally the scatra field is solved after the fluid fields
     // be careful since this vector has not yet been commuicated
-    RCP<vector<double> > local_Cs_delta_sq_sum = modelparams->get<RCP<vector<double> > >("local_Cs_delta_sq_sum");
-    RCP<vector<double> > global_Cs_delta_sq_sum;
-    global_Cs_delta_sq_sum = Teuchos::rcp(new vector<double> (nlayer,0.0));
+    RCP<std::vector<double> > local_Cs_delta_sq_sum = modelparams->get<RCP<std::vector<double> > >("local_Cs_delta_sq_sum");
+    RCP<std::vector<double> > global_Cs_delta_sq_sum;
+    global_Cs_delta_sq_sum = Teuchos::rcp(new std::vector<double> (nlayer,0.0));
     discret_->Comm().SumAll(&((*local_Cs_delta_sq_sum )[0]),
                             &((*global_Cs_delta_sq_sum)[0]),
                             local_Cs_delta_sq_sum->size());
-    extramodelparams->set<RCP<vector<double> > >("global_Cs_delta_sq_sum",global_Cs_delta_sq_sum);
+    extramodelparams->set<RCP<std::vector<double> > >("global_Cs_delta_sq_sum",global_Cs_delta_sq_sum);
     extramodelparams->set<int>("numele_layer",numele_layer);
   }
 
@@ -296,13 +296,13 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
   // hom. direction
   int numlayers = 0;
 
-  RCP<vector<double> > averaged_LijMij        = Teuchos::rcp(new vector<double>);
-  RCP<vector<double> > averaged_MijMij        = Teuchos::rcp(new vector<double>);
+  RCP<std::vector<double> > averaged_LijMij        = Teuchos::rcp(new std::vector<double>);
+  RCP<std::vector<double> > averaged_MijMij        = Teuchos::rcp(new std::vector<double>);
 
   // additional averaged quantities for extension to variable-density flow at low-Mach number
   // quantities to estimate CI
-  RCP<vector<double> > averaged_CI_numerator   = Teuchos::rcp(new vector<double>);
-  RCP<vector<double> > averaged_CI_denominator = Teuchos::rcp(new vector<double>);
+  RCP<std::vector<double> > averaged_CI_numerator   = Teuchos::rcp(new std::vector<double>);
+  RCP<std::vector<double> > averaged_CI_denominator = Teuchos::rcp(new std::vector<double>);
 
   vector<int>          count_for_average      ;
   vector<int>          local_count_for_average;
@@ -323,7 +323,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
     {
       // get planecoordinates
       ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-      dir1coords_=modelparams->get<RCP<vector<double> > >("planecoords_",Teuchos::null);
+      dir1coords_=modelparams->get<RCP<std::vector<double> > >("planecoords_",Teuchos::null);
 
       if(dir1coords_==Teuchos::null)
       {
@@ -340,8 +340,8 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
     {
       // get coordinates
       ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-      dir1coords_=modelparams->get<RCP<vector<double> > >("dir1coords_",Teuchos::null);
-      dir2coords_=modelparams->get<RCP<vector<double> > >("dir2coords_",Teuchos::null);
+      dir1coords_=modelparams->get<RCP<std::vector<double> > >("dir1coords_",Teuchos::null);
+      dir2coords_=modelparams->get<RCP<std::vector<double> > >("dir2coords_",Teuchos::null);
 
       if(dir1coords_==Teuchos::null)
       {
@@ -427,9 +427,9 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
     DRT::Element* ele = discret_->lRowElement(nele);
 
     // get element location vector, dirichlet flags and ownerships
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
     ele->LocationVector(*discret_,lm,lmowner,lmstride);
 
     // call the element evaluate method to integrate functions
@@ -631,21 +631,21 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
     }
     // provide necessary information for the elements
     {
-      modelparams->set<RCP<vector<double> > >("averaged_LijMij_",averaged_LijMij);
-      modelparams->set<RCP<vector<double> > >("averaged_MijMij_",averaged_MijMij);
+      modelparams->set<RCP<std::vector<double> > >("averaged_LijMij_",averaged_LijMij);
+      modelparams->set<RCP<std::vector<double> > >("averaged_MijMij_",averaged_MijMij);
       if (physicaltype_ == INPAR::FLUID::loma)
       {
-        modelparams->set<RCP<vector<double> > >("averaged_CI_numerator_",averaged_CI_numerator);
-        modelparams->set<RCP<vector<double> > >("averaged_CI_denominator_",averaged_CI_denominator);
+        modelparams->set<RCP<std::vector<double> > >("averaged_CI_numerator_",averaged_CI_numerator);
+        modelparams->set<RCP<std::vector<double> > >("averaged_CI_denominator_",averaged_CI_denominator);
       }
       if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
       {
-        modelparams->set<RCP<vector<double> > >("planecoords_"    ,dir1coords_   );
+        modelparams->set<RCP<std::vector<double> > >("planecoords_"    ,dir1coords_   );
       }
       else if (special_flow_homdir_ == "x" or special_flow_homdir_ == "y" or special_flow_homdir_ == "z")
       {
-        modelparams->set<RCP<vector<double> > >("dir1coords_"    ,dir1coords_   );
-        modelparams->set<RCP<vector<double> > >("dir2coords_"    ,dir2coords_   );
+        modelparams->set<RCP<std::vector<double> > >("dir1coords_"    ,dir1coords_   );
+        modelparams->set<RCP<std::vector<double> > >("dir2coords_"    ,dir2coords_   );
       }
       else
         dserror("More than two homogeneous directions not supported!");
@@ -663,7 +663,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
  |                                                      rasthofer 20/11 |
  *----------------------------------------------------------------------*/
 void FLD::DynSmagFilter::DynSmagComputePrt(
-  ParameterList&  extraparams,
+  Teuchos::ParameterList&  extraparams,
   int& numele_layer)
 {
   TEUCHOS_FUNC_TIME_MONITOR("ComputePrt");
@@ -675,8 +675,8 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
   // hom. direction
   int numlayers = 0;
 
-  RCP<vector<double> > averaged_LkMk        = Teuchos::rcp(new vector<double>);
-  RCP<vector<double> > averaged_MkMk        = Teuchos::rcp(new vector<double>);
+  RCP<std::vector<double> > averaged_LkMk        = Teuchos::rcp(new std::vector<double>);
+  RCP<std::vector<double> > averaged_MkMk        = Teuchos::rcp(new std::vector<double>);
 
   vector<int>          count_for_average      ;
   vector<int>          local_count_for_average;
@@ -690,7 +690,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
     {
       // get planecoordinates
       ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-      dir1coords_=modelparams->get<RCP<vector<double> > >("planecoords_",Teuchos::null);
+      dir1coords_=modelparams->get<RCP<std::vector<double> > >("planecoords_",Teuchos::null);
 
       if(dir1coords_==Teuchos::null)
       {
@@ -707,8 +707,8 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
     {
       // get coordinates
       ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-      dir1coords_=modelparams->get<RCP<vector<double> > >("dir1coords_",Teuchos::null);
-      dir2coords_=modelparams->get<RCP<vector<double> > >("dir2coords_",Teuchos::null);
+      dir1coords_=modelparams->get<RCP<std::vector<double> > >("dir1coords_",Teuchos::null);
+      dir2coords_=modelparams->get<RCP<std::vector<double> > >("dir2coords_",Teuchos::null);
 
       if(dir1coords_==Teuchos::null)
       {
@@ -784,9 +784,9 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
     DRT::Element* ele = scatradiscret_->lRowElement(nele);
 
     // get element location vector, dirichlet flags and ownerships
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
     ele->LocationVector(*scatradiscret_,lm,lmowner,lmstride);
 
     // call the element evaluate method to integrate functions
@@ -955,11 +955,11 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
 
     // provide necessary information for the elements
     {
-      modelparams->set<RCP<vector<double> > >("averaged_LkMk_",averaged_LkMk);
-      modelparams->set<RCP<vector<double> > >("averaged_MkMk_",averaged_MkMk);
+      modelparams->set<RCP<std::vector<double> > >("averaged_LkMk_",averaged_LkMk);
+      modelparams->set<RCP<std::vector<double> > >("averaged_MkMk_",averaged_MkMk);
       if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
       {
-        modelparams->set<RCP<vector<double> > >("planecoords_"    ,dir1coords_   );
+        modelparams->set<RCP<std::vector<double> > >("planecoords_"    ,dir1coords_   );
         // channel flow only
         // return number of elements per layer
         // equal number of elements in each layer assumed
@@ -967,8 +967,8 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
       }
       else if (special_flow_homdir_ == "x" or special_flow_homdir_ == "y" or special_flow_homdir_ == "z")
       {
-        modelparams->set<RCP<vector<double> > >("dir1coords_"    ,dir1coords_   );
-        modelparams->set<RCP<vector<double> > >("dir2coords_"    ,dir2coords_   );
+        modelparams->set<RCP<std::vector<double> > >("dir1coords_"    ,dir1coords_   );
+        modelparams->set<RCP<std::vector<double> > >("dir2coords_"    ,dir2coords_   );
       }
       else
         dserror("More than two homogeneous directions not supported!");
@@ -1062,9 +1062,9 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
     DRT::Element* ele = discret_->lColElement(nele);
 
     // provide vectors for filtered quantities
-    RCP<vector<double> > vel_hat = Teuchos::rcp(new vector<double> ((numdim),0.0));
-    RCP<vector<vector<double> > > reynoldsstress_hat = Teuchos::rcp(new vector<vector<double> >);
-    RCP<vector<vector<double> > > modeled_subgrid_stress = Teuchos::rcp(new vector<vector<double> >);
+    RCP<std::vector<double> > vel_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
+    RCP<vector<std::vector<double> > > reynoldsstress_hat = Teuchos::rcp(new std::vector<std::vector<double> >);
+    RCP<vector<std::vector<double> > > modeled_subgrid_stress = Teuchos::rcp(new std::vector<std::vector<double> >);
     // set to dimensions
     (*reynoldsstress_hat).resize(numdim);
     (*modeled_subgrid_stress).resize(numdim);
@@ -1082,17 +1082,17 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
         (*modeled_subgrid_stress)[rr][ss] = 0.0;
       }
     }
-    RCP<vector<double> > densvel_hat = Teuchos::rcp(new vector<double> ((numdim),0.0));
+    RCP<std::vector<double> > densvel_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
     // and set them in parameter list
-    filterparams.set<RCP<vector<double> > >("vel_hat",vel_hat);
-    filterparams.set<RCP<vector<vector<double> > > >("reynoldsstress_hat",reynoldsstress_hat);
-    filterparams.set<RCP<vector<vector<double> > > >("modeled_subgrid_stress",modeled_subgrid_stress);
-    filterparams.set<RCP<vector<double> > >("densvel_hat",densvel_hat);
+    filterparams.set<RCP<std::vector<double> > >("vel_hat",vel_hat);
+    filterparams.set<RCP<vector<std::vector<double> > > >("reynoldsstress_hat",reynoldsstress_hat);
+    filterparams.set<RCP<vector<std::vector<double> > > >("modeled_subgrid_stress",modeled_subgrid_stress);
+    filterparams.set<RCP<std::vector<double> > >("densvel_hat",densvel_hat);
 
     // get element location vector, dirichlet flags and ownerships
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
     ele->LocationVector(*discret_,lm,lmowner,lmstride);
 
     // call the element evaluate method to integrate functions
@@ -1170,18 +1170,18 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
     map<int, vector<int> >::iterator masternode;
 
     double val;
-    vector<double> vel_val(3);
-    vector<vector<double> > reystress_val;
+    std::vector<double> vel_val(3);
+    vector<std::vector<double> > reystress_val;
     reystress_val.resize(3);
     for(int rr=0;rr<3;rr++)
       (reystress_val[rr]).resize(3);
-    vector<vector<double> > modeled_subgrid_stress_val;
+    vector<std::vector<double> > modeled_subgrid_stress_val;
     modeled_subgrid_stress_val.resize(3);
     for(int rr=0;rr<3;rr++)
       (modeled_subgrid_stress_val[rr]).resize(3);
 
     // loma specific quantities
-    vector<double> dens_vel_val(3);
+    std::vector<double> dens_vel_val(3);
     double dens_val;
     double dens_strainrate_val;
 
@@ -1652,15 +1652,15 @@ void FLD::DynSmagFilter::ApplyBoxFilterScatra(
     DRT::Element* ele = scatradiscret_->lColElement(nele);
 
     // provide vectors for filtered quantities
-    RCP<vector<double> > vel_hat = Teuchos::rcp(new vector<double> ((numdim),0.0));
-    RCP<vector<double> > densvel_hat = Teuchos::rcp(new vector<double> ((numdim),0.0));
-    RCP<vector<double> > densveltemp_hat = Teuchos::rcp(new vector<double> ((numdim),0.0));
-    RCP<vector<double> > densstraintemp_hat = Teuchos::rcp(new vector<double> ((numdim),0.0));
+    RCP<std::vector<double> > vel_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
+    RCP<std::vector<double> > densvel_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
+    RCP<std::vector<double> > densveltemp_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
+    RCP<std::vector<double> > densstraintemp_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
     // and set them in parameter list
-    filterparams.set<RCP<vector<double> > >("vel_hat",vel_hat);
-    filterparams.set<RCP<vector<double> > >("densvel_hat",densvel_hat);
-    filterparams.set<RCP<vector<double> > >("densveltemp_hat",densveltemp_hat);
-    filterparams.set<RCP<vector<double> > >("densstraintemp_hat",densstraintemp_hat);
+    filterparams.set<RCP<std::vector<double> > >("vel_hat",vel_hat);
+    filterparams.set<RCP<std::vector<double> > >("densvel_hat",densvel_hat);
+    filterparams.set<RCP<std::vector<double> > >("densveltemp_hat",densveltemp_hat);
+    filterparams.set<RCP<std::vector<double> > >("densstraintemp_hat",densstraintemp_hat);
 
     // initialize variables for filtered scalar quantities
     double dens_hat = 0.0;
@@ -1671,9 +1671,9 @@ void FLD::DynSmagFilter::ApplyBoxFilterScatra(
     double volume_contribution = 0.0;
 
     // get element location vector, dirichlet flags and ownerships
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
     ele->LocationVector(*scatradiscret_,lm,lmowner,lmstride);
 
     // call the element evaluate method to integrate functions
@@ -1734,10 +1734,10 @@ void FLD::DynSmagFilter::ApplyBoxFilterScatra(
     map<int, vector<int> >::iterator masternode;
 
     double val = 0.0;
-    vector<double> vel_val(3);
-    vector<double> dens_vel_val(3);
-    vector<double> dens_vel_temp_val(3);
-    vector<double> dens_strain_temp_val(3);
+    std::vector<double> vel_val(3);
+    std::vector<double> dens_vel_val(3);
+    std::vector<double> dens_vel_temp_val(3);
+    std::vector<double> dens_strain_temp_val(3);
     double temp_val = 0.0;
     double dens_val = 0.0;
     double dens_temp_val = 0.0;

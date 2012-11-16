@@ -135,9 +135,9 @@ DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::FluidAdjoint3BoundaryImpl()
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
                               DRT::ELEMENTS::FluidBoundary* ele,
-                              ParameterList&                 params,
+                              Teuchos::ParameterList&        params,
                               DRT::Discretization&           discretization,
-                              const vector<int>&             lm,
+                              const std::vector<int>&             lm,
                               Epetra_SerialDenseVector&      elevec)
 {
   // the vectors have been allocated outside in EvaluateConditionUsingParentData()
@@ -175,7 +175,7 @@ int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
-  const vector<int>*    onoff = condition->Get<vector<int> >   ("onoff");
+  const std::vector<int>*    onoff = condition->Get<std::vector<int> >   ("onoff");
 
   // get time factor for Neumann term
   const double timefac = fluidAdjoint3Parameter_->Timefac();
@@ -379,7 +379,7 @@ return;
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::ExtractValuesFromGlobalVector(
     const DRT::Discretization&      discretization, ///< discretization
-    const vector<int>&              lm,             ///<
+    const std::vector<int>&              lm,             ///<
     LINALG::Matrix<nsd_,nen_>*      matrixtofill,   ///< vector field
     LINALG::Matrix<nen_,1>*         vectortofill,   ///< scalar field
     const std::string               state          ///< state of the global vector
@@ -387,7 +387,7 @@ void DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::ExtractValuesFromGlobalV
 {
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(state);
-  if(matrix_state == null)
+  if(matrix_state == Teuchos::null)
     dserror("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors

@@ -256,7 +256,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
            (discretization.HasState(1,"velocity"))
          )
       {
-        vector<double> mydisp((la[1].lm_).size());
+        std::vector<double> mydisp((la[1].lm_).size());
         // get the displacements
         Teuchos::RCP<const Epetra_Vector> disp
           = discretization.GetState(1,"displacement");
@@ -265,7 +265,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // extract the displacements
         DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
 
-        vector<double> myvel((la[1].lm_).size());
+        std::vector<double> myvel((la[1].lm_).size());
         // get the velocities
         Teuchos::RCP<const Epetra_Vector> vel
           = discretization.GetState(1,"velocity");
@@ -356,7 +356,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
            (discretization.HasState(1,"velocity"))
          )
       {
-        vector<double> mydisp((la[1].lm_).size());
+        std::vector<double> mydisp((la[1].lm_).size());
         // get the displacements
         Teuchos::RCP<const Epetra_Vector> disp
           = discretization.GetState(1,"displacement");
@@ -365,7 +365,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // extract the displacements
         DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
 
-        vector<double> myvel((la[1].lm_).size());
+        std::vector<double> myvel((la[1].lm_).size());
         // get the velocities
         Teuchos::RCP<const Epetra_Vector> vel
           = discretization.GetState(1,"velocity");
@@ -458,7 +458,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
            (discretization.HasState(1,"velocity"))
          )
       {
-        vector<double> mydisp((la[1].lm_).size());
+        std::vector<double> mydisp((la[1].lm_).size());
         // get the displacements
         Teuchos::RCP<const Epetra_Vector> disp
           = discretization.GetState(1,"displacement");
@@ -467,7 +467,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // extract the displacements
         DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
 
-        vector<double> myvel((la[1].lm_).size());
+        std::vector<double> myvel((la[1].lm_).size());
         // get the velocities
         Teuchos::RCP<const Epetra_Vector> vel
           = discretization.GetState(1,"velocity");
@@ -594,7 +594,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
            (discretization.HasState(1,"velocity"))
          )
       {
-        vector<double> mydisp((la[1].lm_).size());
+        std::vector<double> mydisp((la[1].lm_).size());
         // get the displacements
         Teuchos::RCP<const Epetra_Vector> disp
           = discretization.GetState(1,"displacement");
@@ -603,7 +603,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // extract the displacements
         DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
 
-        vector<double> myvel((la[1].lm_).size());
+        std::vector<double> myvel((la[1].lm_).size());
         // get the velocities
         Teuchos::RCP<const Epetra_Vector> vel
           = discretization.GetState(1,"velocity");
@@ -913,7 +913,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
            (discretization.HasState(1,"velocity"))
          )
       {
-        vector<double> mydisp((la[1].lm_).size());
+        std::vector<double> mydisp((la[1].lm_).size());
         // get the displacements
         Teuchos::RCP<const Epetra_Vector> disp
           = discretization.GetState(1,"displacement");
@@ -922,7 +922,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // extract the displacements
         DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
 
-        vector<double> myvel((la[1].lm_).size());
+        std::vector<double> myvel((la[1].lm_).size());
         // get the velocities
         Teuchos::RCP<const Epetra_Vector> vel
           = discretization.GetState(1,"velocity");
@@ -1158,7 +1158,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
   DRT::Element* ele,  // the element whose matrix is calculated
   const double& time,  // current time
-  vector<double>& disp,  // current displacements
+  std::vector<double>& disp,  // current displacements
   vector<double>& vel,  // current velocities
   const double& stepsize,
   LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  // conductivity matrix
@@ -1450,7 +1450,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
   DRT::Element* ele,  // the element whose matrix is calculated
-  vector<double>& disp,  // current displacements
+  std::vector<double>& disp,  // current displacements
   vector<double>& vel,  // current velocities
   LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl  // conductivity matrix
   )

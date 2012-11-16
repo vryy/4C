@@ -420,7 +420,7 @@ void DRT::UTILS::PartUsingMetis(RCP<Epetra_Map>& rownodes,
     // At this point we have a good guess about the system matrix bandwidth.
     //graph->MaxNumIndices();
 
-    graph = null;
+    graph = Teuchos::null;
 }
 
 

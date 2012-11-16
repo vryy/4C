@@ -902,7 +902,7 @@ private:
     LINALG::Matrix<NUMDOF_,NUMDOF_>& elemat1,
     const INPAR::STR::STC_Scale stc_scaling,
     const int stc_layer,
-    vector<int>& lm,
+    std::vector<int>& lm,
     DRT::Discretization& discretization,
     bool calcinverse
   );

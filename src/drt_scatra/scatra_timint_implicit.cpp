@@ -1975,7 +1975,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
         const string* definition = KSPcond[imode]->Get<string>("weight vector definition");
 
         // get rigid body modes
-        const vector<double>* mode = KSPcond[imode]->Get<vector<double> >("mode");
+        const std::vector<double>* mode = KSPcond[imode]->Get<std::vector<double> >("mode");
 
         int numdof = 0;
         Epetra_IntSerialDenseVector dofids(6);

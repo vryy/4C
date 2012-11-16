@@ -120,7 +120,7 @@ FLD::UTILS::FluidImpedanceWrapper::~FluidImpedanceWrapper()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-RCP<vector<double> > FLD::UTILS::FluidImpedanceWrapper::getPressures(int condid)
+RCP<std::vector<double> > FLD::UTILS::FluidImpedanceWrapper::getPressures(int condid)
 {
   return (impmap_[condid])->FluidImpedanceBc::getPressures();
 }
@@ -421,7 +421,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RCP<DRT::Discretization> actdis,
   else
   {
 
-    flowrates_    = Teuchos::rcp(new vector<double>);
+    flowrates_    = Teuchos::rcp(new std::vector<double>);
     flowrates_->push_back(0.0);
 
     // -------------------------------------------------------------------
@@ -584,7 +584,7 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
 
   // evaluate the new pressure vector
   int np_pos = 0;
-  RCP<std::vector<double> > np = Teuchos::rcp(new vector<double>(nPSize,0.0));
+  RCP<std::vector<double> > np = Teuchos::rcp(new std::vector<double>(nPSize,0.0));
   this->interpolate(pressures_,np,pressurespos_,np_pos,t);
 
   // store new values in class
@@ -656,7 +656,7 @@ void FLD::UTILS::FluidImpedanceBc::ReadRestart( IO::DiscretizationReader& reader
 
     // evaluate the new flow rate vector
     int nfr_pos = 0;
-    RCP<std::vector<double> > nfr = Teuchos::rcp(new vector<double>(nQSize,0.0));
+    RCP<std::vector<double> > nfr = Teuchos::rcp(new std::vector<double>(nQSize,0.0));
     this->interpolate(flowrates_,nfr,flowratespos_,nfr_pos,t);
     // store new values in class
     flowratespos_ = nfr_pos;
@@ -704,7 +704,7 @@ double FLD::UTILS::FluidImpedanceBc::Area( double& density, double& viscosity, i
   // find the lowest proc number that knows the material data
   int numproc = discret_->Comm().NumProc();
   int theproc = -1;   // the lowest proc that has the desired information
-  vector<double> alldens(numproc);
+  std::vector<double> alldens(numproc);
 
   discret_->Comm().GatherAll( &density,&(alldens[0]),1 );
   for(int i=0; i<numproc; i++)
@@ -1657,8 +1657,8 @@ void FLD::UTILS::FluidImpedanceBc::getResultsOfAPeriod(
   dpstream<<"dP"<<condid;
   endCystream<<"EndOfCycle"<<condid;
 
-  params.set<RCP<vector<double> > >(pstream.str(),pressures_ );
-  params.set<RCP<vector<double> > >(qstream.str(),flowrates_);
+  params.set<RCP<std::vector<double> > >(pstream.str(),pressures_ );
+  params.set<RCP<std::vector<double> > >(qstream.str(),flowrates_);
   params.set<double> (dpstream.str(),dP_);
   params.set<bool> (endCystream.str(),endOfCycle_);
 

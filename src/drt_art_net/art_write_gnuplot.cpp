@@ -81,7 +81,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( RCP<DRT::Discretizat
       // ---------------------------------------------------------------
       int Artery_Number;
       Artery_Number = myConditions[i]->GetInt("ArteryNumber");
-      const vector<int> * nodes = myConditions[i]->Nodes();
+      const std::vector<int> * nodes = myConditions[i]->Nodes();
 
       // ---------------------------------------------------------------
       // Sort all nodes so such that inlet node is the first and outlet
@@ -269,8 +269,8 @@ ART::UTILS::ArtWriteGnuplot::ArtWriteGnuplot()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
-                                        ParameterList&            params,
-                                        const vector<int>*        nodes)
+                                        Teuchos::ParameterList&   params,
+                                        const std::vector<int>*        nodes)
 {
 
   // defining the Length
@@ -294,9 +294,9 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
     DRT::Element** ele = nd->Elements();
 
     // get element location vector, dirichlet flags and ownerships
-    vector<int> lm;
-    vector<int> lmstride;
-    RCP<vector<int> > lmowner = Teuchos::rcp(new vector<int>);
+    std::vector<int> lm;
+    std::vector<int> lmstride;
+    RCP<vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
     const int* ele_nodes = ele[0][0].NodeIds();
 
     if(ele_nodes[0] == (*nodes)[i])
@@ -323,7 +323,7 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
 
     // get the degrees of freedom
     RCP<const Epetra_Vector> qanp  = discret->GetState("qanp");
-    vector<double> myqanp(lm.size());
+    std::vector<double> myqanp(lm.size());
     DRT::UTILS::ExtractMyValues(*qanp,myqanp,lm);
 
     // get the current simulation time

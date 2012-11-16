@@ -82,25 +82,25 @@ MAT::PlasticNeoHooke::PlasticNeoHooke()
 {
   isinit_=false;
   // current plastic strain
-  histplasticrcgcurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histplasticrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   // current plastic strain
-  histeplasticscurr_=Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
+  histeplasticscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
   // plastic strain of last converged state
-  histplasticrcglast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histplasticrcglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   // of last converged state
-  histeplasticslast_=Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
+  histeplasticslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
   // of last converged state
-  histplasticbstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<3,1> >);
+  histplasticbstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >);
   // backward stress of last converged state /*added*/
-  histplasticbstresslast_=Teuchos::rcp(new vector<LINALG::Matrix<3,1> >);
+  histplasticbstresslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >);
   // current eigenvalues /*added*/
-  lamdacurr_=Teuchos::rcp(new vector<LINALG::Matrix<3,1> >);
+  lamdacurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >);
   // eigenvalues of the last converged state /*added*/
-  lamdalast_=Teuchos::rcp(new vector<LINALG::Matrix<3,1> >);
+  lamdalast_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >);
   // matrix of the current three eigenvectors in 3D  /*added*/
-  nsetcurr_=Teuchos::rcp(new vector<LINALG::Matrix<3,3> >);
+  nsetcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >);
   // matrix of the three eigenvectors in 3D of last converged state /*added*/
-  nsetlast_=Teuchos::rcp(new vector<LINALG::Matrix<3,3> >);
+  nsetlast_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >);
 }
 
 /*----------------------------------------------------------------------*
@@ -154,10 +154,10 @@ void MAT::PlasticNeoHooke::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack (public)                                               12/09 |
  *----------------------------------------------------------------------*/
-void MAT::PlasticNeoHooke::Unpack(const vector<char>& data)
+void MAT::PlasticNeoHooke::Unpack(const std::vector<char>& data)
 {
   isinit_=true;
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -184,16 +184,16 @@ void MAT::PlasticNeoHooke::Unpack(const vector<char>& data)
 
   if (twicehistsize == 0) isinit_=false;
 
-  histplasticrcgcurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histeplasticscurr_=Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
-  histplasticrcglast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histeplasticslast_=Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
-  histplasticbstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<3,1> >); /*added*/
-  histplasticbstresslast_=Teuchos::rcp(new vector<LINALG::Matrix<3,1> >); /*added*/
-  lamdacurr_=Teuchos::rcp(new vector<LINALG::Matrix<3,1> >); /*added*/
-  lamdalast_=Teuchos::rcp(new vector<LINALG::Matrix<3,1> >); /*added*/
-  nsetcurr_=Teuchos::rcp(new vector<LINALG::Matrix<3,3> >); /*added*/
-  nsetlast_=Teuchos::rcp(new vector<LINALG::Matrix<3,3> >); /*added*/
+  histplasticrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histeplasticscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
+  histplasticrcglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histeplasticslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
+  histplasticbstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >); /*added*/
+  histplasticbstresslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >); /*added*/
+  lamdacurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >); /*added*/
+  lamdalast_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >); /*added*/
+  nsetcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >); /*added*/
+  nsetlast_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >); /*added*/
 
   for (int var=0; var<twicehistsize; var+=2)
   {
@@ -229,16 +229,16 @@ void MAT::PlasticNeoHooke::Unpack(const vector<char>& data)
 *----------------------------------------------------------------------*/
 void MAT::PlasticNeoHooke::Setup(const int numgp)
 {
-  histplasticrcgcurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histeplasticscurr_=Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
-  histplasticbstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<3,1> >); /*added*/
-  lamdacurr_=Teuchos::rcp(new vector<LINALG::Matrix<3,1> >); /*added*/
-  nsetcurr_=Teuchos::rcp(new vector<LINALG::Matrix<3,3> >); /*added*/
-  histplasticrcglast_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histeplasticslast_=Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
-  histplasticbstresslast_=Teuchos::rcp(new vector<LINALG::Matrix<3,1> >); /*added*/
-  lamdalast_=Teuchos::rcp(new vector<LINALG::Matrix<3,1> >); /*added*/
-  nsetlast_=Teuchos::rcp(new vector<LINALG::Matrix<3,3> >); /*added*/
+  histplasticrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histeplasticscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
+  histplasticbstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >); /*added*/
+  lamdacurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >); /*added*/
+  nsetcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >); /*added*/
+  histplasticrcglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histeplasticslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
+  histplasticbstresslast_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >); /*added*/
+  lamdalast_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >); /*added*/
+  nsetlast_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >); /*added*/
 
   LINALG::Matrix<NUM_STRESS_3D,1> emptyvec1(true);
   for (int j=0;j<3;j++)
@@ -297,11 +297,11 @@ void MAT::PlasticNeoHooke::Update()
   const LINALG::Matrix<1,1> emptyvec2(true);
   const LINALG::Matrix<3,1> emptyvec3(true); /*added*/
   const LINALG::Matrix<3,3> emptyvec4(true); /*added*/
-  histplasticrcgcurr_=Teuchos::rcp(new vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
-  histeplasticscurr_=Teuchos::rcp(new vector<LINALG::Matrix<1,1> >);
-  histplasticbstresscurr_=Teuchos::rcp(new vector<LINALG::Matrix<3,1> >);/*added*/
-  lamdacurr_=Teuchos::rcp(new vector<LINALG::Matrix<3,1> >);/*added*/
-  nsetcurr_=Teuchos::rcp(new vector<LINALG::Matrix<3,3> >); /*added*/
+  histplasticrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
+  histeplasticscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
+  histplasticbstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >);/*added*/
+  lamdacurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >);/*added*/
+  nsetcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >); /*added*/
   const int numgp=histplasticrcglast_->size();
   histplasticrcgcurr_->resize(numgp);
   histeplasticscurr_->resize(numgp);

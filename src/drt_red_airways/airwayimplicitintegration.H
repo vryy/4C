@@ -97,7 +97,7 @@ public:
   */
   RedAirwayImplicitTimeInt(RCP<DRT::Discretization>  dis,
                            LINALG::Solver&            solver,
-                           ParameterList&             params,
+                           Teuchos::ParameterList&    params,
                            IO::DiscretizationWriter&  output);
 
 
@@ -117,26 +117,26 @@ public:
   \brief start time loop for startingalgo, normal problems and restarts
 
   */
-  void Integrate(bool CoupledTo3D, RCP<ParameterList> CouplingParams);
+  void Integrate(bool CoupledTo3D, RCP<Teuchos::ParameterList> CouplingParams);
 
   /*!
   \brief Do time integration (time loop)
 
   */
-  void TimeLoop(bool CoupledTo3D, RCP<ParameterList> CouplingParams);
+  void TimeLoop(bool CoupledTo3D, RCP<Teuchos::ParameterList> CouplingParams);
 
   /*!
   \brief Do one step time integration (time loop)
 
   */
-  void OneStepTimeLoop(bool CoupledTo3D = false, RCP<ParameterList> CouplingParams = Teuchos::null);
+  void OneStepTimeLoop(bool CoupledTo3D = false, RCP<Teuchos::ParameterList> CouplingParams = Teuchos::null);
 
 
   /*!
   \brief Integrate one step
 
   */
-  void IntegrateStep(RCP<ParameterList> CouplingTo3DParams = Teuchos::null);
+  void IntegrateStep(RCP<Teuchos::ParameterList> CouplingTo3DParams = Teuchos::null);
 
 
   /// setup the variables to do a new time step
@@ -147,13 +147,13 @@ public:
   \brief solve of airways
 
   */
-  void Solve(Teuchos::RCP<ParameterList> CouplingTo3DParams);
+  void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
   /*!
   \brief nonlinear solver of airways
 
   */
-  void NonLin_Solve(Teuchos::RCP<ParameterList> CouplingTo3DParams);
+  void NonLin_Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
 
   /*!
@@ -177,7 +177,7 @@ public:
 
   */
   void Output  (bool               CoupledTo3D = false,
-                RCP<ParameterList> CouplingParams = Teuchos::null);
+                RCP<Teuchos::ParameterList> CouplingParams = Teuchos::null);
 
   /*!
   \brief Assembling of the RHS Vector and the LHS Matrix
@@ -188,7 +188,7 @@ public:
   /*!
   \brief Evaluate the error residual
   */
-  void EvalResidual(Teuchos::RCP<ParameterList> CouplingTo3DParams);
+  void EvalResidual(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
 
   /*!
@@ -367,7 +367,7 @@ protected:
   //@}
 
   //! connection between master and slave nodes on this proc
-  RCP<map<int,vector<int> > >     pbcmapmastertoslave_;
+  RCP<map<int,std::vector<int> > >     pbcmapmastertoslave_;
   //@}
 
   //!

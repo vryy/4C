@@ -54,9 +54,9 @@ public:
     must be defined in ScaTraBoundaryImpl.
    */
   virtual int Evaluate(DRT::ELEMENTS::MeshfreeTransportBoundary* ele,
-                       ParameterList&             params,
+                       Teuchos::ParameterList&    params,
                        DRT::Discretization&       discretization,
-                       vector<int>&               lm,
+                       std::vector<int>&          lm,
                        Epetra_SerialDenseMatrix&  elemat1_epetra,
                        Epetra_SerialDenseMatrix&  elemat2_epetra,
                        Epetra_SerialDenseVector&  elevec1_epetra,
@@ -70,10 +70,10 @@ public:
     must be defined in ScaTraBoundaryImpl.
    */
   virtual int EvaluateNeumann(DRT::ELEMENTS::MeshfreeTransportBoundary* ele,
-                              ParameterList&                    params,
+                              Teuchos::ParameterList&           params,
                               DRT::Discretization&              discretization,
                               DRT::Condition&                   condition,
-                              vector<int>&                      lm,
+                              std::vector<int>&                 lm,
                               Epetra_SerialDenseVector&         elevec1_epetra
                               ) = 0;
 
@@ -136,9 +136,9 @@ public:
 
   //! Evaluate
   virtual int Evaluate(DRT::ELEMENTS::MeshfreeTransportBoundary* ele,
-                       ParameterList&             params,
+                       Teuchos::ParameterList&    params,
                        DRT::Discretization&       discretization,
-                       vector<int>&               lm,
+                       std::vector<int>&          lm,
                        Epetra_SerialDenseMatrix&  elemat1_epetra,
                        Epetra_SerialDenseMatrix&  elemat2_epetra,
                        Epetra_SerialDenseVector&  elevec1_epetra,
@@ -148,10 +148,10 @@ public:
 
   //! Evaluate a Neumann boundary condition
   virtual int EvaluateNeumann(DRT::ELEMENTS::MeshfreeTransportBoundary* ele,
-                              ParameterList&                    params,
+                              Teuchos::ParameterList&           params,
                               DRT::Discretization&              discretization,
                               DRT::Condition&                   condition,
-                              vector<int>&                      lm,
+                              std::vector<int>&                 lm,
                               Epetra_SerialDenseVector&         elevec1_epetra
                               );
 
@@ -191,7 +191,7 @@ public:
   //! @name coefficients and related
   /*========================================================================*/
   //! diffusivity / diffusivities (in case of systems) / thermal conductivity
-  vector<double> diffus_;
+  std::vector<double> diffus_;
 
   /*========================================================================*/
   //! @name flags

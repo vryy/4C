@@ -116,7 +116,7 @@ void UTILS::MPConstraint3::Initialize
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
 void UTILS::MPConstraint3::Initialize(
-    ParameterList&        params,
+    Teuchos::ParameterList&        params,
     RCP<Epetra_Vector>    systemvector)
 {
   const double time = params.get("total time",-1.0);
@@ -124,7 +124,7 @@ void UTILS::MPConstraint3::Initialize(
   // in the input file
   // allocate vectors for amplitudes and IDs
 
-  vector<double> amplit(constrcond_.size());
+  std::vector<double> amplit(constrcond_.size());
   vector<int> IDs(constrcond_.size());
   // read data of the input files
 
@@ -184,7 +184,7 @@ void UTILS::MPConstraint3::Initialize(
 |Evaluate Constraints, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
 void UTILS::MPConstraint3::Evaluate(
-    ParameterList&        params,
+    Teuchos::ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
@@ -256,7 +256,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
     case mpcnodeonplane3d:
     {
       // take three nodes defining plane as specified by user and put them into a set
-      const vector<int>*  defnvp = (*conditer)->Get<vector<int> > ("planeNodes");
+      const std::vector<int>*  defnvp = (*conditer)->Get<std::vector<int> > ("planeNodes");
       defnv = *defnvp;
     }
     break;
@@ -368,7 +368,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint3::CreateDiscretizationFro
  *----------------------------------------------------------------------*/
 void UTILS::MPConstraint3::EvaluateConstraint(
     RCP<DRT::Discretization> disc,
-    ParameterList&        params,
+    Teuchos::ParameterList&        params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
     RCP<Epetra_Vector>    systemvector1,
@@ -436,9 +436,9 @@ void UTILS::MPConstraint3::EvaluateConstraint(
       const double lagraval = (*lagramul)[lindex];
 
       // get element location vector, dirichlet flags and ownerships
-      vector<int> lm;
-      vector<int> lmowner;
-      vector<int> lmstride;
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
       actele->LocationVector(*disc,lm,lmowner,lmstride);
       // get dimension of element matrices and vectors
       // Reshape element matrices and vectors and init to zero
@@ -483,7 +483,7 @@ void UTILS::MPConstraint3::EvaluateConstraint(
       }
 
       //loadcurve business
-      const vector<int>*    curve  = cond->Get<vector<int> >("curve");
+      const std::vector<int>*    curve  = cond->Get<std::vector<int> >("curve");
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
       double curvefac = 1.0;
@@ -504,7 +504,7 @@ void UTILS::MPConstraint3::EvaluateConstraint(
  |assembing results based on this conditions                             |
  *----------------------------------------------------------------------*/
 void UTILS::MPConstraint3::InitializeConstraint(RCP<DRT::Discretization> disc,
-    ParameterList&        params,
+    Teuchos::ParameterList&        params,
     RCP<Epetra_Vector>    systemvector)
 {
   if (!(disc->Filled())) dserror("FillComplete() was not called");
@@ -530,9 +530,9 @@ void UTILS::MPConstraint3::InitializeConstraint(RCP<DRT::Discretization> disc,
     params.set< RCP<DRT::Condition> >("condition", Teuchos::rcp(cond,false));
 
     // get element location vector, dirichlet flags and ownerships
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
     actele->LocationVector(*disc,lm,lmowner,lmstride);
     // get dimension of element matrices and vectors
     // Reshape element matrices and vectors and init to zero
@@ -556,7 +556,7 @@ void UTILS::MPConstraint3::InitializeConstraint(RCP<DRT::Discretization> disc,
     LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);
 
     // loadcurve business
-    const vector<int>*    curve  = cond->Get<vector<int> >("curve");
+    const std::vector<int>*    curve  = cond->Get<std::vector<int> >("curve");
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];
     double curvefac = 1.0;

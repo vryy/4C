@@ -86,7 +86,7 @@ namespace ELEMENTS
     virtual int IntegrateShapeFunction(
         DRT::ELEMENTS::Fluid*     ele,
         DRT::Discretization&      discretization,
-        vector<int>&              lm            ,
+        std::vector<int>&         lm            ,
         Epetra_SerialDenseVector& elevec1       );
 
     /*! \brief Calculate a integrated divergence operator in vector form
@@ -101,7 +101,7 @@ namespace ELEMENTS
     (
       DRT::ELEMENTS::Fluid*     ele,            //< current fluid element
       DRT::Discretization&      discretization, //< fluid discretization
-      vector<int>&              lm,             //< some DOF management
+      std::vector<int>&         lm,             //< some DOF management
       Epetra_SerialDenseVector& elevec1         //< reference to element vector to be filled
     );
 
@@ -112,18 +112,18 @@ namespace ELEMENTS
 
     virtual int ComputeError(
         DRT::ELEMENTS::Fluid*         ele,
-        ParameterList&                params,
+        Teuchos::ParameterList&       params,
         Teuchos::RCP<MAT::Material>&  mat,
         DRT::Discretization&          discretization,
-        vector<int>&                  lm,
+        std::vector<int>&             lm,
         Epetra_SerialDenseVector&     elevec);
 
     virtual int ComputeError(
         DRT::ELEMENTS::Fluid*                ele,
-        ParameterList&                       params,
+        Teuchos::ParameterList&              params,
         Teuchos::RCP<MAT::Material>&         mat,
         DRT::Discretization&                 discretization,
-        vector<int>&                         lm,
+        std::vector<int>&                    lm,
         Epetra_SerialDenseVector&            elevec1,
         const DRT::UTILS::GaussIntegration & intpoints2);
 
@@ -208,9 +208,9 @@ namespace ELEMENTS
       \brief calculate dissipation of various terms (evaluation of turbulence models)
     */
     virtual int CalcDissipation(Fluid*                     ele,
-                                ParameterList&             params,
+                                Teuchos::ParameterList&    params,
                                 DRT::Discretization&       discretization,
-                                vector<int>&               lm,
+                                std::vector<int>&          lm,
                                 Teuchos::RCP<MAT::Material> mat);
 
     /*!
@@ -653,7 +653,7 @@ namespace ELEMENTS
                                          );
 
      //! get turbulence parameter
-     void GetTurbulenceParams(ParameterList&  turbmodelparams,    ///< pointer general turbulence parameter list
+     void GetTurbulenceParams(Teuchos::ParameterList&  turbmodelparams,    ///< pointer general turbulence parameter list
                               double&         Cs_delta_sq,        ///< parameter CS in dynamic Smagorinsky
                               double&         Ci_delta_sq,        ///< parameter CI in dynamic Smagorinsky for loma
                               int&            nlayer,             ///< number of layers for computation of parameter CS in dynamic Smagorinsky
@@ -681,7 +681,7 @@ namespace ELEMENTS
      void CalcMultiFracSubgridVelCoef(
        const double            Csgs, ///< model coefficient
        const double            alpha,///< filter width ratio
-       const vector<double>    Nvel, ///< number of casacade steps
+       const std::vector<double> Nvel, ///< number of casacade steps
        LINALG::Matrix<nsd_,1>& B_mfs ///< final coefficient
        );
 
@@ -690,7 +690,7 @@ namespace ELEMENTS
        const double          Csgs, ///< model coefficient
        const double          alpha,///< model coefficient
        const double          Pr,   ///< Prandtl number
-       const vector<double>  Nvel, ///< number of casacade steps (velocity)
+       const std::vector<double>  Nvel, ///< number of casacade steps (velocity)
        double                Nphi, ///< number of casacade steps (scalar)
        double&               D_mfs ///< final coefficient
        );
@@ -863,13 +863,13 @@ namespace ELEMENTS
                                        const int    nlayer,
                                        const int    eid,
                                        const bool   isowned,
-                                       ParameterList&  turbmodelparams);
+                                       Teuchos::ParameterList&  turbmodelparams);
 
 //    /*!
 //     * \brief fill elment matrix and vectors with the global values
 //     */
     void ExtractValuesFromGlobalVector(const DRT::Discretization&                       discretization, ///< discretization
-                                       const vector<int>&                               lm,             ///<
+                                       const std::vector<int>&                          lm,             ///<
                                        FLD::RotationallySymmetricPeriodicBC<distype>  & rotsymmpbc, ///<
                                        LINALG::Matrix<nsd_,nen_> *                      matrixtofill,   ///< vector field
                                        LINALG::Matrix<nen_,1> *                         vectortofill,   ///< scalar field
@@ -879,7 +879,7 @@ namespace ELEMENTS
 //    {
 //      // get state of the global vector
 //      Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(state);
-//      if(matrix_state == null)
+//      if(matrix_state == Teuchos::null)
 //        dserror("Cannot get state vector %s", state.c_str());
 //
 //      // extract local values of the global vectors

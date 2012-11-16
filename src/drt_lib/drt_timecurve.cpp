@@ -946,9 +946,9 @@ template <typename ScalarT>
 ScalarT DRT::UTILS::BloodTimeSlice::Fct(const ScalarT& t)
 {
   const int DataLength=points_;
-  vector<double> SampleNumber;
-  vector<double> EvenCoefficient;
-  vector<double> OddCoefficient;
+  std::vector<double> SampleNumber;
+  std::vector<double> EvenCoefficient;
+  std::vector<double> OddCoefficient;
   ScalarT fac = 0.0;
   double C = (double)points_;
 
@@ -1287,7 +1287,7 @@ std::vector<double> DRT::UTILS::TimeCurve::FctDer(const double t,
   // after the last slice. Consequently, first and second derivatives
   // have to be zero in that case to be consistent with f(t) evaluation!
   slice = slices_.back();
-  vector<double> res = slice->FctDer(slice->end(), deg);
+  std::vector<double> res = slice->FctDer(slice->end(), deg);
   // set derivatives to zero while f(t) stored in res[0] is kept
   for (size_t i=1; i < res.size();i++)
   {

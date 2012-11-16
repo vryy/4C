@@ -108,9 +108,9 @@ void MAT::AnisotropicBalzani::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)     maf 07/07|
  *----------------------------------------------------------------------*/
-void MAT::AnisotropicBalzani::Unpack(const vector<char>& data)
+void MAT::AnisotropicBalzani::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -144,9 +144,9 @@ void MAT::AnisotropicBalzani::Setup(DRT::INPUT::LineDefinition* linedef)
   // check whether fiber are based on local cosy
   if (params_->aloc_ == 1){
     // fibers aligned in local element cosy with gamma_i around circumferential direction
-    vector<double> rad;
-    vector<double> axi;
-    vector<double> cir;
+    std::vector<double> rad;
+    std::vector<double> axi;
+    std::vector<double> cir;
     // read local (cylindrical) cosy-directions at current element
     linedef->ExtractDoubleVector("RAD",rad);
     linedef->ExtractDoubleVector("AXI",axi);
@@ -167,7 +167,7 @@ void MAT::AnisotropicBalzani::Setup(DRT::INPUT::LineDefinition* linedef)
 
     a1_.resize(3);
     a2_.resize(3);
-    vector<double> a(3);
+    std::vector<double> a(3);
     for (int i = 0; i < 3; ++i) {
       // a = cos gamma e1 +- sin gamma e2
       a1_.at(i) = cos(gamma1)*locsys(i,2) + sin(gamma1)*locsys(i,1);

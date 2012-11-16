@@ -111,7 +111,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
       for(int i =0; i<numofcond; i++)
       {
         // get the node number connected to the condition
-        const vector<int> * nodes = myConditions[i]->Nodes();
+        const std::vector<int> * nodes = myConditions[i]->Nodes();
         
         // The junction condition must be connected to one and only one node
         if(nodes->size()!=1)
@@ -158,10 +158,10 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
       }
       
       // second, group all the similar conditions in one vector
-      vector<vector<DRT::Condition*> > SortedConds;
+      vector<std::vector<DRT::Condition*> > SortedConds;
       vector<DRT::Condition *> grouped_cond;
       
-      vector<vector<int> > SortedIOarts;
+      vector<std::vector<int> > SortedIOarts;
       vector<int> grouped_IO;
 
       for(unsigned int i=0; i<myConditions.size();)
@@ -211,11 +211,11 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
         // -------------------------------------------------------------------
         bool inserted;
         // create an empty map associated to the RCP nodalParams_
-        //      nodalParams = Teuchos::rcp(new map<const int, RCP<JunctionNodeParams> >());
+        //      nodalParams = Teuchos::rcp(new std::map<const int, RCP<JunctionNodeParams> >());
         
         for (unsigned int j=0 ; j< SortedConds[i].size(); j++)
         {
-          const vector<int> * nodes = SortedConds[i][j]->Nodes();
+          const std::vector<int> * nodes = SortedConds[i][j]->Nodes();
           RCP<JunctionNodeParams> nodeparams = Teuchos::rcp(new JunctionNodeParams);
 
           int local_id =  discret_->NodeRowMap()->LID((*nodes)[0]);
@@ -581,13 +581,13 @@ int ART::UTILS::ArtJunctionBc::Solve(ParameterList & params)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::UTILS::ArtJunctionBc::Jacobian_Eval( Epetra_SerialDenseMatrix & Jacobian,
-                                               vector<double> &A,
-                                               vector<double> &Q,
-                                               vector<double> &W,
-                                               vector<double> &Ao,
-                                               vector<double> &rho,
-                                               vector<double> &beta,
-                                               vector<double> &Pext)
+                                               std::vector<double> &A,
+                                               std::vector<double> &Q,
+                                               std::vector<double> &W,
+                                               std::vector<double> &Ao,
+                                               std::vector<double> &rho,
+                                               std::vector<double> &beta,
+                                               std::vector<double> &Pext)
 {
 
   // empty the Jacobian
@@ -637,13 +637,13 @@ void ART::UTILS::ArtJunctionBc::Jacobian_Eval( Epetra_SerialDenseMatrix & Jacobi
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void ART::UTILS::ArtJunctionBc::Residual_Eval( Epetra_SerialDenseVector & f,
-                                               vector<double> &A,
-                                               vector<double> &Q,
-                                               vector<double> &W,
-                                               vector<double> &Ao,
-                                               vector<double> &rho,
-                                               vector<double> &beta,
-                                               vector<double> &Pext)
+                                               std::vector<double> &A,
+                                               std::vector<double> &Q,
+                                               std::vector<double> &W,
+                                               std::vector<double> &Ao,
+                                               std::vector<double> &rho,
+                                               std::vector<double> &beta,
+                                               std::vector<double> &Pext)
 {
 
   // initialize the residual

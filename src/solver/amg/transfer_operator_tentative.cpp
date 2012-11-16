@@ -18,7 +18,7 @@ LINALG::TentativeTransferOperator::TentativeTransferOperator(const RCP<SparseMat
 RCP<Epetra_MultiVector>  LINALG::TentativeTransferOperator::buildTransferOperators(const RCP<Epetra_IntVector> aggs, int naggs_local, Teuchos::ParameterList& params, const RCP<Epetra_MultiVector>& ThisNS, const int domainoffset)
 {
   ////////////// define dummy variable for next nullspace
-  RCP<Epetra_MultiVector> NextNS = null;
+  RCP<Epetra_MultiVector> NextNS = Teuchos::null;
 
   ////////////// build tentative prolongator
   GetPtent(A_->RowMap(),*aggs,naggs_local,params,*ThisNS,prolongator_,NextNS,domainoffset);
@@ -80,7 +80,7 @@ void LINALG::TentativeTransferOperator::GetPtent(const Epetra_Map& rowmap, const
   for(int i=0; i<naggs; ++i)
   {
     vector<int> gids(0);
-    aggdofs.insert(std::pair<int,vector<int> >(firstagg+i,gids));  // is meant to contain all dof gids for an aggregate
+    aggdofs.insert(std::pair<int,std::vector<int> >(firstagg+i,gids));  // is meant to contain all dof gids for an aggregate
   }
   for(int i=0; i<mylength; ++i)
   {
@@ -116,8 +116,8 @@ void LINALG::TentativeTransferOperator::GetPtent(const Epetra_Map& rowmap, const
     int k = min(m,n);
     if(k!=n) dserror("Aggregate too small, fatal!");
 
-    vector<double> work(lwork);
-    vector<double> tau(k);
+    std::vector<double> work(lwork);
+    std::vector<double> tau(k);
     Epetra_LAPACK lapack;
     lapack.GEQRF(m,n,Bagg.A(),m,&tau[0],&work[0],lwork,&info);
     if (info) dserror ("Lapack dgeqrf returned nonzero");

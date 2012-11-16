@@ -621,15 +621,15 @@ void DRT::ELEMENTS::InvDesign::BuildYpsilon(LINALG::Matrix<6,9>& Y,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
       DRT::ELEMENTS::So_hex8*   ele,            ///< this element
-      vector<int>&              lm,             ///< location matrix
-      vector<double>&           disp,           ///< current displacements
-      vector<double>&           residual,       ///< current residuum
+      std::vector<int>&         lm,             ///< location matrix
+      std::vector<double>&      disp,           ///< current displacements
+      std::vector<double>&      residual,       ///< current residuum
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOH8,          1>* force,          ///< element internal force vector
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
-      ParameterList&            params,         ///< algorithmic parameters e.g. time
+      Teuchos::ParameterList&   params,         ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType iostress,    ///< stress output option
       const INPAR::STR::StrainType iostrain)    ///< strain output option
 {
@@ -927,7 +927,7 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::InvDesign::soh8_StoreMaterialConfiguration(
                                               DRT::ELEMENTS::So_hex8* ele,
-                                              const vector<double>& disp)
+                                              const std::vector<double>& disp)
 {
   const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = ele->soh8_derivs();
   LINALG::Matrix<NUMNOD_SOH8,3> xrefe;  // material coord. of element
@@ -973,15 +973,15 @@ void DRT::ELEMENTS::InvDesign::soh8_StoreMaterialConfiguration(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
       DRT::ELEMENTS::So_weg6*   ele,            ///< this element
-      vector<int>&              lm,             ///< location matrix
-      vector<double>&           disp,           ///< current displacements
-      vector<double>&           residual,       ///< current residuum
+      std::vector<int>&         lm,             ///< location matrix
+      std::vector<double>&      disp,           ///< current displacements
+      std::vector<double>&      residual,       ///< current residuum
       LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix,    ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,     ///< element mass matrix
       LINALG::Matrix<NUMDOF_WEG6,          1>* force,          ///< element internal force vector
       LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,      ///< stresses at GP
       LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,      ///< strains at GP
-      ParameterList&            params,         ///< algorithmic parameters e.g. time
+      Teuchos::ParameterList&   params,         ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType iostress,    ///< stress output option
       const INPAR::STR::StrainType iostrain)    ///< strain output option
 {
@@ -1291,7 +1291,7 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::InvDesign::sow6_StoreMaterialConfiguration(
                                        DRT::ELEMENTS::So_weg6* ele,
-                                       const vector<double>& disp)
+                                       const std::vector<double>& disp)
 {
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for Wedge_6 with 6 GAUSS POINTS*
@@ -1356,11 +1356,11 @@ void DRT::ELEMENTS::InvDesign::sow6_StoreMaterialConfiguration(
  |                                                             gee 09/08|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
-      ParameterList&            params,
+      Teuchos::ParameterList&   params,
       DRT::ELEMENTS::So_tet4*   ele,            ///< this element
-      vector<int>&              lm,             ///< location matrix
-      vector<double>&           disp,           ///< current displacements
-      vector<double>&           residual,       ///< current residuum
+      std::vector<int>&         lm,             ///< location matrix
+      std::vector<double>&      disp,           ///< current displacements
+      std::vector<double>&      residual,       ///< current residuum
       LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,    ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,     ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOTET4,            1>* force,          ///< element internal force vector
@@ -1372,9 +1372,9 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
 /* =============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_4  with 1 GAUSS POINTS*
 ** =============================================================================*/
-  const static vector<LINALG::Matrix<NUMNOD_SOTET4,1> > shapefcts = ele->so_tet4_1gp_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = ele->so_tet4_1gp_derivs();
-  const static vector<double> gpweights = ele->so_tet4_1gp_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOTET4,1> > shapefcts = ele->so_tet4_1gp_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = ele->so_tet4_1gp_derivs();
+  const static std::vector<double> gpweights = ele->so_tet4_1gp_weights();
   double density =  0.0;
 
   //---------------------------------------------------------------------
@@ -1625,8 +1625,8 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
   //---------------------------------------------------------------------
 
   // static vectors created in any case to safe "if-case"
-  const static vector<LINALG::Matrix<NUMNOD_SOTET4,1> > shapefcts4gp = ele->so_tet4_4gp_shapefcts();
-  const static vector<double> gpweights4gp = ele->so_tet4_4gp_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOTET4,1> > shapefcts4gp = ele->so_tet4_4gp_shapefcts();
+  const static std::vector<double> gpweights4gp = ele->so_tet4_4gp_weights();
   // evaluate mass matrix
   if (massmatrix != NULL)
   {
@@ -1659,11 +1659,11 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::InvDesign::sot4_StoreMaterialConfiguration(
                                        DRT::ELEMENTS::So_tet4* ele,
-                                       const vector<double>& disp)
+                                       const std::vector<double>& disp)
 {
-  const static vector<LINALG::Matrix<NUMNOD_SOTET4,1> > shapefcts = ele->so_tet4_1gp_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = ele->so_tet4_1gp_derivs();
-  const static vector<double> gpweights = ele->so_tet4_1gp_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOTET4,1> > shapefcts = ele->so_tet4_1gp_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = ele->so_tet4_1gp_derivs();
+  const static std::vector<double> gpweights = ele->so_tet4_1gp_weights();
   LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xrefe;
   LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xcurr;
   DRT::Node** nodes = ele->Nodes();

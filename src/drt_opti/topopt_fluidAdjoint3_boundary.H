@@ -95,9 +95,9 @@ public:
 
   //! Evaluate a Neumann boundary condition
   virtual int EvaluateNeumann(DRT::ELEMENTS::FluidBoundary*    ele,
-                              ParameterList&             params,
+                              Teuchos::ParameterList&    params,
                               DRT::Discretization&       discretization,
-                              const vector<int>&         lm,
+                              const std::vector<int>&    lm,
                               Epetra_SerialDenseVector&  elevec
                               );
 

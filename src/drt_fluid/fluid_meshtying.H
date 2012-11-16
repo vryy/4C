@@ -75,7 +75,7 @@ class Meshtying
     //! Constructor
     Meshtying(RCP<DRT::Discretization>      dis,                      ///> actual discretisation
               LINALG::Solver&               solver,
-              ParameterList&                params,                   ///> meshting parameter list
+              Teuchos::ParameterList&       params,                   ///> meshting parameter list
               const UTILS::MapExtractor*    surfacesplitter = NULL);  ///> surface splitter
 
 

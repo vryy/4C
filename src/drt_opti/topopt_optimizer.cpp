@@ -33,7 +33,7 @@ Maintainer: Martin Winklmaier
 TOPOPT::Optimizer::Optimizer(
     RCP<DRT::Discretization> optidis,
     Teuchos::RCP<DRT::Discretization> fluiddis,
-    const ParameterList& params,
+    const Teuchos::ParameterList& params,
     Teuchos::RCP<IO::DiscretizationWriter>& output
 ) :
 optidis_(optidis),
@@ -43,8 +43,8 @@ params_(params)
   const Teuchos::ParameterList& optimizer_params = params_.sublist("TOPOLOGY OPTIMIZER");
 
   // fluid fields for optimization
-  fluidvel_ = Teuchos::rcp(new map<int,Teuchos::RCP<Epetra_Vector> >);
-  adjointvel_ = Teuchos::rcp(new map<int,Teuchos::RCP<Epetra_Vector> >);
+  fluidvel_ = Teuchos::rcp(new std::map<int,Teuchos::RCP<Epetra_Vector> >);
+  adjointvel_ = Teuchos::rcp(new std::map<int,Teuchos::RCP<Epetra_Vector> >);
 
   // topology density fields
   dens_ = Teuchos::rcp(new Epetra_Vector(*optidis_->NodeRowMap(),false));

@@ -214,14 +214,14 @@ void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::v
   }
 
   //store the equation of each line in the form of ax+by=c
-  vector<vector<double> > eqnLines(co1.size());
+  vector<std::vector<double> > eqnLines(co1.size());
   for(unsigned i=0;i<co1.size();i++)
   {
     double x1 = co1[i];
     double x2 = co1[(i+1)%co1.size()];
     double y1 = co2[i];
     double y2 = co2[(i+1)%co2.size()];
-    vector<double> line(3);
+    std::vector<double> line(3);
     if(fabs(x2-x1)<0.00000001)
     {
       line[0] = 1.0;
@@ -295,7 +295,7 @@ void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::v
     else //more than 2 intersections for bcell is unlikely (???). Not tested enough
     {
       int count=0, numcut = intersections.size();;
-      vector<double> x1(numcut);
+      std::vector<double> x1(numcut);
       for(map<double,int>::iterator j=intersections.begin();j!=intersections.end();j++)
       {
         x1[count] = j->first;

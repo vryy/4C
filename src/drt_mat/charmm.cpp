@@ -37,12 +37,12 @@ MAT::PAR::CHARMM::CHARMM(Teuchos::RCP<MAT::PAR::Material> matdata)
 origin_(matdata->GetInt("ORIGIN")),
 fcl_(matdata->GetDouble("FCL")),
 fcd_type_(matdata->Get<string>("FCD_TYPE")),
-fcd_(matdata->Get<vector<double> >("FCD")),
-fcds_(matdata->Get<vector<double> >("FCD_Space")),
+fcd_(matdata->Get<std::vector<double> >("FCD")),
+fcds_(matdata->Get<std::vector<double> >("FCD_Space")),
 scl_(matdata->GetDouble("SCL")),
 scd_type_(matdata->Get<string>("SCD_TYPE")),
-scd_(matdata->Get<vector<double> >("SCD")),
-scds_(matdata->Get<vector<double> >("SCD_Space")),
+scd_(matdata->Get<std::vector<double> >("SCD")),
+scds_(matdata->Get<std::vector<double> >("SCD_Space")),
 fcdacc_(matdata->GetInt("FCD_Acceleration")),
 atomicmass_(matdata->GetDouble("AtomicMass")),
 facc_scale_(matdata->GetDouble("Facc_Scale")),
@@ -107,8 +107,8 @@ void MAT::CHARMM::Pack(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::CHARMM::Unpack(const vector<char>& data) {
-    vector<char>::size_type position = 0;
+void MAT::CHARMM::Unpack(const std::vector<char>& data) {
+    std::vector<char>::size_type position = 0;
     // extract type
     int type = 0;
     ExtractfromPack(position, data, type);
@@ -152,7 +152,7 @@ void MAT::CHARMM::Setup(DRT::Container& data_) {
     strain_type.push_back("principal");
     strain_type.push_back("vector");
 
-    vector<double> his_charmm;
+    std::vector<double> his_charmm;
     his_charmm.push_back(0.0); // actual time
     his_charmm.push_back(0.0); // time at last timestep
     for (int i = 0; i < (int) strain_type.size(); i++) {
@@ -173,7 +173,7 @@ void MAT::CHARMM::Setup(DRT::Container& data_) {
     // position 2: energy at lambda = 0
     // position 3: # of atoms at lambda = 0
     // position 4: volume at lambda = 0
-    vector<double> his_mat(4);
+    std::vector<double> his_mat(4);
     his_mat.push_back(0.0);
     his_mat.push_back(0.0);
     his_mat.push_back(0.0);
@@ -209,7 +209,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
     // energy = diff : use the difference between current strain and last strain
     const string energy = "store";
     // length of the protein in the main pulling direction [A]
-    vector<double> characteristic_length(2);
+    std::vector<double> characteristic_length(2);
     // Integrin length !!!!
     characteristic_length[0] = FCL(); //40.625; //50; //originally 44
     // Collagen length !!!!

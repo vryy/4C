@@ -199,7 +199,7 @@ int DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Evaluate(
   const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
 
   // set parameters for stabilization
-  ParameterList& stablist = params.sublist("STABILIZATION");
+  Teuchos::ParameterList& stablist = params.sublist("STABILIZATION");
 
   if (scatratype == INPAR::SCATRA::scatratype_undefined)
     dserror("Set parameter SCATRATYPE in your input file!");
@@ -255,10 +255,10 @@ int DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Evaluate(
     // extract local values from the global vectors
     RCP<const Epetra_Vector> hist = discretization.GetState("hist");
     RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
-    if (hist==null || phinp==null)
+    if (hist==Teuchos::null || phinp==Teuchos::null)
       dserror("Cannot get state vector 'hist' and/or 'phinp'");
-    vector<double> myhist(lm.size());
-    vector<double> myphinp(lm.size());
+    std::vector<double> myhist(lm.size());
+    std::vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
@@ -284,8 +284,8 @@ int DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::Evaluate(
     {
       // extract additional local values from global vector
       RCP<const Epetra_Vector> phin = discretization.GetState("phin");
-      if (phin==null) dserror("Cannot get state vector 'phin'");
-      vector<double> myphin(lm.size());
+      if (phin==Teuchos::null) dserror("Cannot get state vector 'phin'");
+      std::vector<double> myphin(lm.size());
       DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
 
       // fill element array
@@ -522,7 +522,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::BodyForce(
   if (myneumcond.size()==1)
   {
     // check for potential time curve
-    const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
+    const std::vector<int>* curve  = myneumcond[0]->Get<std::vector<int> >("curve");
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];
 
@@ -540,8 +540,8 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::BodyForce(
     else curvefac = 1.0;
 
     // get values and switches from the condition
-    const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
-    const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
+    const std::vector<int>*    onoff = myneumcond[0]->Get<std::vector<int> >   ("onoff");
+    const std::vector<double>* val   = myneumcond[0]->Get<std::vector<double> >("val"  );
 
     // set this condition to the bodyforce array
     for(int idof=0;idof<numdofpernode_;idof++)
@@ -1406,7 +1406,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::CalculateFlux(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::CalculateScalars(
   const DRT::Element*             ele,
-  const vector<double>&           ephinp,
+  const std::vector<double>&       ephinp,
   Epetra_SerialDenseVector&       scalars,
   const bool                      inverting
   )

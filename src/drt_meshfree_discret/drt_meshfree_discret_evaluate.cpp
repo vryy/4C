@@ -78,7 +78,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Evaluate(Teuchos::ParameterList&    
     rmap = &(systemmatrix1->OperatorRangeMap());
     dmap = rmap;
     systemmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
-    if (systemmatrix != null && systemmatrix->Filled())
+    if (systemmatrix != Teuchos::null && systemmatrix->Filled())
       systemmatrix_FE = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,systemmatrix->EpetraMatrix()->Graph()));
     else
       systemmatrix_FE = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,*rmap,256,false));
@@ -86,7 +86,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Evaluate(Teuchos::ParameterList&    
 
   //-----------------------------------------------------------------
   // make some tests for fast assembly
-  if (systemmatrix != null && systemmatrix->Filled())
+  if (systemmatrix != Teuchos::null && systemmatrix->Filled())
   {
     Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
     if (!matrix.StorageOptimized()) dserror("Matrix must be StorageOptimized() when Filled()");
@@ -208,7 +208,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Evaluate(Teuchos::ParameterList&    
         }
         else // local row
         {
-          if (systemmatrix != null && systemmatrix->Filled()) // matrix is SparseMatrix
+          if (systemmatrix != Teuchos::null && systemmatrix->Filled()) // matrix is SparseMatrix
           {
             Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
             int length;
@@ -301,7 +301,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Evaluate(Teuchos::ParameterList&    
         int* lindices;
         int err = systemmatrix_FE->ExtractMyRowView(lrow,numentries,values,lindices);
         if (err) dserror("Epetra_FECrsMatrix::ExtractMyRowView returned err=%d",err);
-        if (systemmatrix != null && systemmatrix->Filled())
+        if (systemmatrix != Teuchos::null && systemmatrix->Filled())
         {
           Epetra_CrsMatrix& matrix = *systemmatrix->EpetraMatrix();
           for (int j=0; j<numentries; ++j)

@@ -80,7 +80,7 @@ public:
   TurbulenceStatisticsCcy(RCP<DRT::Discretization> actdis             ,
                           bool                             alefluid           ,
                           RCP<Epetra_Vector>       dispnp             ,
-                          ParameterList&                   params             ,
+                          Teuchos::ParameterList&                   params             ,
                           const bool                       withscatra);
 
   /*!
@@ -204,7 +204,7 @@ private:
 
   //! contains plane normal direction etc --- this is the original
   //! fluid dynamic parameterlist
-  ParameterList&                   params_;
+  Teuchos::ParameterList&                   params_;
 
   //! parameterlist for the element call when averages of residuals
   //! are calculated --- used for communication between element
@@ -215,11 +215,11 @@ private:
   RCP<Epetra_Vector>       meanvelnp_;
 
   //! the dim_-coordinates of the homogeneous planes containing nodes
-  RCP<vector<double> >     nodeshells_;
+  RCP<std::vector<double> >     nodeshells_;
 
   //! the dim_-coordinates of the homogeneous planes --- including
   //additional sampling planes
-  RCP<vector<double> >     shellcoordinates_;
+  RCP<std::vector<double> >     shellcoordinates_;
 
   //!--------------------------------------------------
   //!       the pointwise averaged stuff
@@ -227,29 +227,29 @@ private:
   //
 
   //! sum over u (over one plane in each component)
-  RCP<vector<double> >     pointsumu_;
+  RCP<std::vector<double> >     pointsumu_;
   //! sum over v (over one plane in each component)
-  RCP<vector<double> >     pointsumv_;
+  RCP<std::vector<double> >     pointsumv_;
   //! sum over w (over one plane in each component)
-  RCP<vector<double> >     pointsumw_;
+  RCP<std::vector<double> >     pointsumw_;
   //! sum over p (over one plane in each component)
-  RCP<vector<double> >     pointsump_;
+  RCP<std::vector<double> >     pointsump_;
 
   //! sum over u^2 (over one plane in each component)
-  RCP<vector<double> >     pointsumuu_;
+  RCP<std::vector<double> >     pointsumuu_;
   //! sum over v^2 (over one plane in each component)
-  RCP<vector<double> >     pointsumvv_;
+  RCP<std::vector<double> >     pointsumvv_;
   //! sum over w^2 (over one plane in each component)
-  RCP<vector<double> >     pointsumww_;
+  RCP<std::vector<double> >     pointsumww_;
   //! sum over p^2 (over one plane in each component)
-  RCP<vector<double> >     pointsumpp_;
+  RCP<std::vector<double> >     pointsumpp_;
 
   //! sum over uv (over one plane in each component)
-  RCP<vector<double> >     pointsumuv_;
+  RCP<std::vector<double> >     pointsumuv_;
   //! sum over uw (over one plane in each component)
-  RCP<vector<double> >     pointsumuw_;
+  RCP<std::vector<double> >     pointsumuw_;
   //! sum over vw (over one plane in each component)
-  RCP<vector<double> >     pointsumvw_;
+  RCP<std::vector<double> >     pointsumvw_;
 
   // for additional scalar transport
 
@@ -266,9 +266,9 @@ private:
   RCP<Epetra_Vector>       meanfullphinp_;
 
   //! sum over c (over one plane in each component)
-  RCP<vector<double> >     pointsumc_;
+  RCP<std::vector<double> >     pointsumc_;
   //! sum over c^2 (over one plane in each component)
-  RCP<vector<double> >     pointsumcc_;
+  RCP<std::vector<double> >     pointsumcc_;
 
   //! sum over c (over one plane in each component)
   RCP<Epetra_SerialDenseMatrix>     pointsumphi_;

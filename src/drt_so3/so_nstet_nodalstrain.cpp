@@ -40,17 +40,17 @@ void DRT::ELEMENTS::NStetType::ElementDeformationGradient(DRT::Discretization& d
 {
   // current displacement
   RCP<const Epetra_Vector> disp = dis.GetState("displacement");
-  if (disp==null) dserror("Cannot get state vector 'displacement'");
+  if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
   // loop elements
   std::map<int,DRT::ELEMENTS::NStet*>::iterator ele;
   for (ele=elecids_.begin(); ele != elecids_.end(); ++ele)
   {
     DRT::ELEMENTS::NStet* e = ele->second;
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
     e->LocationVector(dis,lm,lmowner,lmstride);
-    vector<double> mydisp(lm.size());
+    std::vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
     // create dfad version of nxyz and mydisp
@@ -140,7 +140,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
     rmap = &(systemmatrix1->OperatorRangeMap());
     dmap = rmap;
     systemmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(systemmatrix1);
-    if (systemmatrix != null && systemmatrix->Filled())
+    if (systemmatrix != Teuchos::null && systemmatrix->Filled())
       stifftmp = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,systemmatrix->EpetraMatrix()->Graph()));
     else
       stifftmp = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,*rmap,256,false));
@@ -148,7 +148,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
 
   //-----------------------------------------------------------------
   // make some tests for fast assembly
-  if (systemmatrix != null && systemmatrix->Filled())
+  if (systemmatrix != Teuchos::null && systemmatrix->Filled())
   {
     Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
     if (!matrix.StorageOptimized()) dserror("Matrix must be StorageOptimized() when Filled()");
@@ -220,8 +220,8 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
     {
       INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(p, "iostress",INPAR::STR::stress_none);
       INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(p, "iostrain",INPAR::STR::strain_none);
-      vector<double> nodalstress(6);
-      vector<double> nodalstrain(6);
+      std::vector<double> nodalstress(6);
+      std::vector<double> nodalstrain(6);
       NodalIntegration(NULL,NULL,adjnode,adjele,lm,*disp,dis,
                        &nodalstress,&nodalstrain,iostress,iostrain);
 
@@ -236,8 +236,8 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
 #ifndef PUSOSOLBERG
       if (mis)
       {
-        vector<double> mis_nodalstress(6);
-        vector<double> mis_nodalstrain(6);
+        std::vector<double> mis_nodalstress(6);
+        std::vector<double> mis_nodalstrain(6);
         MISNodalIntegration(NULL,NULL,*mis_adjnode,*mis_adjele,*mis_weight,*mis_lm,*disp,dis,
                             &mis_nodalstress,&mis_nodalstrain,iostress,iostrain);
 
@@ -258,7 +258,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
     // there is no guarantee that systemmatrix exists
     // (e.g. if systemmatrix1 is actually a BlockSparseMatrix)
     bool fastassemble = false;
-    if (systemmatrix != null) fastassemble = true;
+    if (systemmatrix != Teuchos::null) fastassemble = true;
 
     if (assemblemat1)
     {
@@ -295,7 +295,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
         }
         else // local row
         {
-          if (systemmatrix != null && systemmatrix->Filled()) // matrix is SparseMatrix
+          if (systemmatrix != Teuchos::null && systemmatrix->Filled()) // matrix is SparseMatrix
           {
             Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
             int length;
@@ -375,7 +375,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
           }
           else
           {
-            if (systemmatrix != null && systemmatrix->Filled()) // matrix is SparseMatrix
+            if (systemmatrix != Teuchos::null && systemmatrix->Filled()) // matrix is SparseMatrix
             {
               Epetra_CrsMatrix& matrix = *(systemmatrix->EpetraMatrix());
               int length;
@@ -512,7 +512,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
         int* lindices;
         int err = stifftmp->ExtractMyRowView(lrow,numentries,values,lindices);
         if (err) dserror("Epetra_FECrsMatrix::ExtractMyRowView returned err=%d",err);
-        if (systemmatrix != null && systemmatrix->Filled())
+        if (systemmatrix != Teuchos::null && systemmatrix->Filled())
         {
           Epetra_CrsMatrix& matrix = *systemmatrix->EpetraMatrix();
           for (int j=0; j<numentries; ++j)
@@ -539,13 +539,13 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       stiff,
                                                 Epetra_SerialDenseVector*       force,
-                                                map<int,DRT::Node*>&            adjnode,
-                                                vector<DRT::ELEMENTS::NStet*>&  adjele,
-                                                vector<int>&                    lm,
+                                                std::map<int,DRT::Node*>&            adjnode,
+                                                std::vector<DRT::ELEMENTS::NStet*>& adjele,
+                                                std::vector<int>&               lm,
                                                 const Epetra_Vector&            disp,
                                                 DRT::Discretization&            dis,
-                                                vector<double>*                 nodalstress,
-                                                vector<double>*                 nodalstrain,
+                                                std::vector<double>*            nodalstress,
+                                                std::vector<double>*            nodalstrain,
                                                 const INPAR::STR::StressType    iostress,
                                                 const INPAR::STR::StrainType    iostrain)
 {
@@ -585,7 +585,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   // build averaged F and volume of node (using sacado)
   double VnodeL = 0.0;
   LINALG::TMatrix<FAD,3,3> fad_FnodeL(true);
-  vector<vector<int> > lmlm(neleinpatch);
+  vector<std::vector<int> > lmlm(neleinpatch);
   for (int i=0; i<neleinpatch; ++i)
   {
     const double V = adjele[i]->Vol()/4;
@@ -593,8 +593,8 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
 
     // get the element's displacements out of the patch' displacements
     vector<int> elelm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
     adjele[i]->LocationVector(dis,elelm,lmowner,lmstride);
 
     // have to find position of elelm[i] in lm
@@ -924,14 +924,14 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
 void DRT::ELEMENTS::NStetType::MISNodalIntegration(
                            Epetra_SerialDenseMatrix*       stiff,
                            Epetra_SerialDenseVector*       force,
-                           map<int,DRT::Node*>&            adjnode,
-                           vector<DRT::ELEMENTS::NStet*>&  adjele,
-                           vector<double>&                 weight,
-                           vector<int>&                    lm,
+                           std::map<int,DRT::Node*>&            adjnode,
+                           std::vector<DRT::ELEMENTS::NStet*>& adjele,
+                           std::vector<double>&            weight,
+                           std::vector<int>&               lm,
                            const Epetra_Vector&            disp,
                            DRT::Discretization&            dis,
-                           vector<double>*                 nodalstress,
-                           vector<double>*                 nodalstrain,
+                           std::vector<double>*            nodalstress,
+                           std::vector<double>*            nodalstrain,
                            const INPAR::STR::StressType    iostress,
                            const INPAR::STR::StrainType    iostrain)
 {
@@ -969,7 +969,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
   //-----------------------------------------------------------------------
   // build averaged F, det(F) and volume of node (using sacado)
   double VnodeL = 0.0;
-  vector<vector<int> > lmlm(neleinpatch);
+  vector<std::vector<int> > lmlm(neleinpatch);
   FAD fad_Jnode = 0.0;
   for (int i=0; i<neleinpatch; ++i)
   {
@@ -978,8 +978,8 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
 
     // get the element's displacements out of the patch' displacements
     vector<int> elelm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
     adjele[i]->LocationVector(dis,elelm,lmowner,lmstride);
     // have to find position of elelm[i] in lm
     // lmlm[i][j] : element i, degree of freedom j, lmlm[i][j] position in patchdisp[0..ndofinpatch]
@@ -1478,7 +1478,7 @@ void DRT::ELEMENTS::NStetType::DevStressTangent(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStetType::StrainOutput(
                     const INPAR::STR::StrainType iostrain,
-                    vector<double>&              nodalstrain,
+                    std::vector<double>&         nodalstrain,
                     LINALG::Matrix<3,3>&         F,
                     const double&                detF,
                     const double                 volweight,
@@ -1566,7 +1566,7 @@ void DRT::ELEMENTS::NStetType::StrainOutput(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStetType::StrainOutput(
                     const INPAR::STR::StrainType iostrain,
-                    vector<double>&              nodalstrain,
+                    std::vector<double>&         nodalstrain,
                     LINALG::Matrix<3,3>&         F,
                     LINALG::Matrix<6,1>&         glstrain,
                     const double                 weight)
@@ -1625,7 +1625,7 @@ void DRT::ELEMENTS::NStetType::StrainOutput(
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::NStetType::StressOutput(
                     const INPAR::STR::StressType iostress,
-                    vector<double>&              nodalstress,
+                    std::vector<double>&         nodalstress,
                     LINALG::Matrix<6,1>&         stress,
                     LINALG::Matrix<3,3>&         F,
                     const double&                detF)

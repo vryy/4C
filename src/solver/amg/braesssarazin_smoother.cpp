@@ -26,7 +26,7 @@
 
 #include "ml_MultiLevelPreconditioner.h"
 
-LINALG::BraessSarazin_Smoother::BraessSarazin_Smoother(RCP<const SparseMatrix> A11, RCP<const SparseMatrix> A12, RCP<const SparseMatrix> A21, RCP<const SparseMatrix> A22, const ParameterList& params)
+LINALG::BraessSarazin_Smoother::BraessSarazin_Smoother(RCP<const SparseMatrix> A11, RCP<const SparseMatrix> A12, RCP<const SparseMatrix> A21, RCP<const SparseMatrix> A22, const Teuchos::ParameterList& params)
 :
 Epetra_Operator(),
 F_(A11),
@@ -38,7 +38,7 @@ omega_(1.3),
 velmap_(A11->RowMap()),
 premap_(A22->RowMap())
 {
-  diagFinv_ = null;
+  diagFinv_ = Teuchos::null;
 
 
   Setup();

@@ -86,11 +86,11 @@ private:
         const std::vector<int>&   trialdof
         ) const
     {
-      vector<int>::const_iterator trialpos = trialdof.begin();
+      std::vector<int>::const_iterator trialpos = trialdof.begin();
       for (std::size_t ui=0; ui!=numparamtrial; ++ui)
       {
         const double multiply = fac * trialshape(ui);
-        vector<int>::const_iterator testpos = testdof.begin();
+        std::vector<int>::const_iterator testpos = testdof.begin();
         for (std::size_t vi=0; vi!=numparamtest; ++vi)
         {
 //          const std::size_t testpos = testdof[vi];
@@ -109,7 +109,7 @@ private:
         const double&             fac
         ) const
     {
-      vector<int>::const_iterator testpos = testdof.begin();
+      std::vector<int>::const_iterator testpos = testdof.begin();
       for (std::size_t vi=0; vi!=numparamtest; ++vi)
       {
           eforce_(*testpos) += fac*testshape(vi);

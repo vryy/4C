@@ -153,19 +153,19 @@ public:
   \brief Get vector of RCPs to the lines of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
   \brief Get vector of RCPs to the surfaces of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Get vector of RCPs to the volumes of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Volumes();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Volumes();
 
   /*!
   \brief Return unique ParObject id
@@ -259,9 +259,9 @@ public:
   */
   int Evaluate
   (
-    ParameterList&            params        , ///< ParameterList for communication between control routine and elements
+    Teuchos::ParameterList&   params        , ///< ParameterList for communication between control routine and elements
     DRT::Discretization&      discretization, ///< pointer to discretization for de-assembly
-    vector<int>&              lm            , ///< location matrix for de-assembly
+    std::vector<int>&         lm            , ///< location matrix for de-assembly
     Epetra_SerialDenseMatrix& elemat1       , ///< (stiffness-)matrix to be filled by element.
     Epetra_SerialDenseMatrix& elemat2       , ///< (mass-)matrix to be filled by element.
     Epetra_SerialDenseVector& elevec1       , ///< (internal force-)vector to be filled by element
@@ -286,10 +286,10 @@ public:
   */
   virtual int EvaluateNeumann
   (
-    ParameterList&            params        ,
+    Teuchos::ParameterList&   params        ,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition     ,
-    vector<int>&              lm            ,
+    std::vector<int>&         lm            ,
     Epetra_SerialDenseVector& elevec1       ,
     Epetra_SerialDenseMatrix* elemat1 = NULL
   );
@@ -307,7 +307,7 @@ public:
    LINALG::Matrix<81,81>& elemat1,
    const INPAR::STR::STC_Scale stc_scaling,
    const int                   stc_layer,
-   vector<int>&                lm,
+   std::vector<int>&           lm,
    DRT::Discretization&        discretization,
    bool                        do_inverse 
    );
@@ -344,9 +344,9 @@ protected:
   //! container containing all kind of solid3 thisandthat
   DRT::Container                data_;
   //! vector of inverses of the jacobian in material frame
-  vector<LINALG::Matrix<3,3> >  invJ_;
+  std::vector<LINALG::Matrix<3,3> >  invJ_;
   //! determinant of Jacobian in material frame
-  vector<double>                detJ_;
+  std::vector<double>                detJ_;
 
 
   // internal calculation methods
@@ -360,14 +360,14 @@ protected:
 
   //! Calculate nonlinear stiffness and mass matrix
   virtual void sonurbs27_nlnstiffmass(
-      vector<int>&           lm            , ///< location matrix
+      std::vector<int>&      lm            , ///< location matrix
       DRT::Discretization&   discretization, ///< discretisation to extract knot vector
-      vector<double>&        disp          , ///< current displacements
-      vector<double>&        residual      , ///< current residual displ
+      std::vector<double>&   disp          , ///< current displacements
+      std::vector<double>&   residual      , ///< current residual displ
       LINALG::Matrix<81,81>* stiffmatrix   , ///< element stiffness matrix
       LINALG::Matrix<81,81>* massmatrix    , ///< element mass matrix
       LINALG::Matrix<81,1>*  force         , ///< element internal force vector
-      ParameterList&         params        );
+      Teuchos::ParameterList& params        );
 
   /*!
    \brief Interface to material laws
@@ -392,21 +392,21 @@ protected:
     LINALG::Matrix<6,1>* glstrain,
     LINALG::Matrix<3,3>* defgrd  ,
     const int            gp      ,
-    ParameterList&       params  );
+    Teuchos::ParameterList& params  );
 
 
   //! Evaluate Nurbs27 Shapefcts to keep them static
-  const vector<LINALG::Matrix<27, 1> > sonurbs27_shapefcts(
+  const std::vector<LINALG::Matrix<27, 1> > sonurbs27_shapefcts(
     const std::vector<Epetra_SerialDenseVector> & myknots,
     const LINALG::Matrix<27,1>                  & weights
     );
   //! Evaluate Nurbs27 Derivs to keep them static
-  const vector<LINALG::Matrix< 3,27> > sonurbs27_derivs(
+  const std::vector<LINALG::Matrix< 3,27> > sonurbs27_derivs(
     const std::vector<Epetra_SerialDenseVector> & myknots,
     const LINALG::Matrix<27,1>                  & weights
     );
   //! Evaluate Nurbs27 Weights to keep them static
-  const vector<double> sonurbs27_gpweights();
+  const std::vector<double> sonurbs27_gpweights();
 
 
 }; // class So_nurbs27

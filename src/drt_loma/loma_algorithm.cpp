@@ -211,7 +211,7 @@ void LOMA::Algorithm::TimeLoop()
   // Neumann boundary conditions in FLUID at beginning of first time step
   FluidField().SetTimeLomaFields(ScaTraField().Phinp(),
                                  ScaTraField().ThermPressNp(),
-                                 null,
+                                 Teuchos::null,
                                  ScaTraField().Discretization());
 
   // time loop
@@ -265,7 +265,7 @@ void LOMA::Algorithm::InitialCalculations()
   // Neumann boundary conditions in FLUID at beginning of first time step
   FluidField().SetTimeLomaFields(ScaTraField().Phinp(),
                                  ScaTraField().ThermPressNp(),
-                                 null,
+                                 Teuchos::null,
                                  ScaTraField().Discretization());
 
   // write initial fields
@@ -761,7 +761,7 @@ void LOMA::Algorithm::ReadInflowRestart(int restart)
   // set initial scalar field
   FluidField().SetTimeLomaFields(ScaTraField().Phinp(),
                                  0.0,
-                                 null,
+                                 Teuchos::null,
                                  ScaTraField().Discretization());
   FluidField().ReadRestart(restart);
   // as ReadRestart is only called for the FluidField

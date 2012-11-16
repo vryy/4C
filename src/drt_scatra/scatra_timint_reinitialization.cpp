@@ -31,7 +31,7 @@ Maintainer: Benedikt Schott
  | add parameters specific for time-integration scheme     schott 05/11 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::AddReinitializationParameters(
-  ParameterList& params)
+    Teuchos::ParameterList& params)
 {
 
   // action for elements
@@ -96,7 +96,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS_Boundary()
   {
     // evaluate boundary conditions for characteristic galerkin level set transport
     // new parameter list
-    ParameterList TaylorGalerkinBoundaryParams;
+    Teuchos::ParameterList TaylorGalerkinBoundaryParams;
 
     // set action for elements
     TaylorGalerkinBoundaryParams.set<int>("action", SCATRA::bd_calc_TG_outflow);
@@ -138,7 +138,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS_Boundary()
     {
       // evaluate boundary conditions for characteristic galerkin reinitialization method
       // new parameter list
-      ParameterList reinitCharacteristicParams;
+      Teuchos::ParameterList reinitCharacteristicParams;
 
       // set action for elements
       reinitCharacteristicParams.set<int>("action",SCATRA::bd_reinitialize_levelset);

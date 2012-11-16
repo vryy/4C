@@ -63,8 +63,8 @@ public:
   \brief Standard Constructor
 	 */
 	explicit CheapSIMPLE_BlockPreconditioner(RCP<Epetra_Operator> A,
-			const ParameterList& velocitylist,
-			const ParameterList& pressurelist,
+			const Teuchos::ParameterList& velocitylist,
+			const Teuchos::ParameterList& pressurelist,
 			FILE* outfile = NULL);
 
 	/*!
@@ -222,8 +222,8 @@ private:
   \brief setup phase of preconditioner
 	 */
 	void Setup(RCP<Epetra_Operator> A,
-			const ParameterList& origvlist,
-			const ParameterList& origplist);
+			const Teuchos::ParameterList& origvlist,
+			const Teuchos::ParameterList& origplist);
 
 	/*!
   \brief do one sweep of simple or simplec preconditioning

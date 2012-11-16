@@ -460,7 +460,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
   // ---------------------------------------------------------------------
   // set parameters for classical turbulence models
   // ---------------------------------------------------------------------
-  ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
+  Teuchos::ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
 
   double Cs_delta_sq   = 0.0;
   double Ci_delta_sq   = 0.0;
@@ -1381,7 +1381,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
     const string* condtype = myneumcond[0]->Get<string>("type");
 
     // check for potential time curve
-    const vector<int>* curve  = myneumcond[0]->Get<vector<int> >("curve");
+    const std::vector<int>* curve  = myneumcond[0]->Get<std::vector<int> >("curve");
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];
 
@@ -1399,9 +1399,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
     else curvefac = 1.0;
 
     // get values and switches from the condition
-    const vector<int>*    onoff = myneumcond[0]->Get<vector<int> >   ("onoff");
-    const vector<double>* val   = myneumcond[0]->Get<vector<double> >("val"  );
-    const vector<int>*    functions = myneumcond[0]->Get<vector<int> >("funct");
+    const std::vector<int>*    onoff = myneumcond[0]->Get<std::vector<int> >   ("onoff");
+    const std::vector<double>* val   = myneumcond[0]->Get<std::vector<double> >("val"  );
+    const std::vector<int>*    functions = myneumcond[0]->Get<std::vector<int> >("funct");
 
     // factor given by spatial function
     double functionfac = 1.0;
@@ -1460,7 +1460,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
     if (myscatraneumcond.size()==1)
     {
       // check for potential time curve
-      const vector<int>* curve  = myscatraneumcond[0]->Get<vector<int> >("curve");
+      const std::vector<int>* curve  = myscatraneumcond[0]->Get<std::vector<int> >("curve");
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
 
@@ -1478,8 +1478,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
       else curvefac = 1.0;
 
       // get values and switches from the condition
-      const vector<int>*    onoff = myscatraneumcond[0]->Get<vector<int> >   ("onoff");
-      const vector<double>* val   = myscatraneumcond[0]->Get<vector<double> >("val"  );
+      const std::vector<int>*    onoff = myscatraneumcond[0]->Get<std::vector<int> >   ("onoff");
+      const std::vector<double>* val   = myscatraneumcond[0]->Get<std::vector<double> >("val"  );
 
       // set this condition to the bodyforce array
       for (int jnode=0; jnode<nen_; jnode++)

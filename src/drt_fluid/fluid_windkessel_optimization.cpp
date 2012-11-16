@@ -301,8 +301,8 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(ParameterList params)
     pstream<<"pressures"<<itr->first;
     qstream<<"flowrates"<<itr->first;
 
-    RCP<vector<double> > pressures = params.get<RCP<vector<double> > > (pstream.str());
-    RCP<vector<double> > flowrates = params.get<RCP<vector<double> > > (qstream.str());
+    RCP<std::vector<double> > pressures = params.get<RCP<std::vector<double> > > (pstream.str());
+    RCP<std::vector<double> > flowrates = params.get<RCP<std::vector<double> > > (qstream.str());
 
     double pres_T, flow_T;
     pres_T = (*pressures)[0];
@@ -498,8 +498,8 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(ParameterList params)
 void FLD::UTILS::FluidWkOptimizationWrapper::CalcObjFunction(
   int                   index,
   RCP<DRT::Condition>   cond,
-  RCP<vector<double> >  pressures,
-  RCP<vector<double> >  flowrates,
+  RCP<std::vector<double> >  pressures,
+  RCP<std::vector<double> >  flowrates,
   double                dt
   )
 {
@@ -569,8 +569,8 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_du(
   int                   index,
   int                   constrain_num,
   RCP<DRT::Condition>   cond,
-  RCP<vector<double> >  pressures,
-  RCP<vector<double> >  flowrates,
+  RCP<std::vector<double> >  pressures,
+  RCP<std::vector<double> >  flowrates,
   ParameterList         params,
   double                dt)
 {
@@ -663,8 +663,8 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_dphi(
   int                   index,
   int                   constrain_num,
   RCP<DRT::Condition>   cond,
-  RCP<vector<double> >  pressures,
-  RCP<vector<double> >  flowrates,
+  RCP<std::vector<double> >  pressures,
+  RCP<std::vector<double> >  flowrates,
   ParameterList         params,
   double                dt)
 {
@@ -778,8 +778,8 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dL_du(
   int                   index,
   int                   constrain_num,
   RCP<DRT::Condition>   cond,
-  RCP<vector<double> >  pressures,
-  RCP<vector<double> >  flowrates,
+  RCP<std::vector<double> >  pressures,
+  RCP<std::vector<double> >  flowrates,
   ParameterList         params,
   double                dt)
 {
@@ -898,8 +898,8 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dJ_dphi(
   int                   index,
   int                   constrain_num,
   RCP<DRT::Condition>   cond,
-  RCP<vector<double> >  pressures,
-  RCP<vector<double> >  flowrates,
+  RCP<std::vector<double> >  pressures,
+  RCP<std::vector<double> >  flowrates,
   ParameterList         params,
   double                dt)
 {

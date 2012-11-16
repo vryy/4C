@@ -108,14 +108,14 @@ void GEO::SearchTree::initializePointTree(
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::initializeTreeSlideALE(
     const LINALG::Matrix<3,2>&          nodeBox,
-    map<int, RCP<DRT::Element> >&       elements,
+    std::map<int, RCP<DRT::Element> >&  elements,
     const TreeType                      treetype)
 {
 
   treeRoot_ = Teuchos::null;
   treeRoot_ = Teuchos::rcp( new TreeNode(NULL, max_depth_, nodeBox, treetype));
 
-  map<int, RCP<DRT::Element> >::const_iterator elemiter;
+  std::map<int, RCP<DRT::Element> >::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
   {
     treeRoot_->insertElement(-1,elemiter->first);
@@ -197,7 +197,7 @@ int GEO::SearchTree::queryXFEMFSIPointType(
  | fix intersection for contact with xfem FSI              u.may   02/09|
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::moveContactNodes(
-    const vector<vector<int> >&                   triangleList,
+    const std::vector<std::vector<int> >&                   triangleList,
     vector< GEO::InterfacePoint >&                pointList,
     const std::map<int,LINALG::Matrix<3,2> >&     triangleXAABBs,
     const LINALG::Matrix<3,1>&                    querypoint,
@@ -783,7 +783,7 @@ void GEO::SearchTree::TreeNode::createChildren(
  | of masterelements (Ids)						                                  |
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::createChildren(
-	map<int, RCP<DRT::Element> >&		masterelements,
+    std::map<int, RCP<DRT::Element> >&		masterelements,
     	const std::map<int,LINALG::Matrix<3,1> >&	currentpositions)
 {
   // create empty children
@@ -918,7 +918,7 @@ void GEO::SearchTree::TreeNode::setXFEMLabelOfEmptyChildren(
  | set XFEM label of empty children                        u.may   02/09|
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::setXFEMLabelOfEmptyChildren(
-    const vector<vector<int> >&                   triangleList,
+    const std::vector<std::vector<int> >&                   triangleList,
     const std::vector<GEO::InterfacePoint>&       pointList)
 {
   for(int index = 0; index < getNumChildren(); index++)
@@ -1862,7 +1862,7 @@ int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
  | fix intersection for contact with xfem FSI              u.may   02/09|
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::moveContactNodes(
-    const vector<vector<int> >&                   triangleList,
+    const std::vector<std::vector<int> >&                   triangleList,
     vector< GEO::InterfacePoint >&                pointList,
     const std::map<int,LINALG::Matrix<3,2> >&     triangleXAABBs,
     const LINALG::Matrix<3,1>&                    querypoint,
@@ -1959,7 +1959,7 @@ std::map<int,std::set<int> > GEO::SearchTree::TreeNode::searchElementsInRadius(
   {
     case INNER_NODE:
     {
-      const vector<int> childindex = classifyRadius(radius, point);
+      const std::vector<int> childindex = classifyRadius(radius, point);
       if(childindex.size() < 1)
         dserror("no child found\n");
       else if (childindex.size() ==1) // child node found which encloses AABB so step down
@@ -1979,7 +1979,7 @@ std::map<int,std::set<int> > GEO::SearchTree::TreeNode::searchElementsInRadius(
 
       // dynamically grow tree otherwise, create children and set label for empty children
       // search in appropriate child node
-      const vector<int> childindex = classifyRadius(radius, point); 
+      const std::vector<int> childindex = classifyRadius(radius, point); 
       if(childindex.size() < 1)
         dserror("no child found\n");
       else if (childindex.size() ==1) // child node found which encloses AABB so refine further
@@ -2012,7 +2012,7 @@ std::vector<int> GEO::SearchTree::TreeNode::searchPointsInRadius(
   {
     case INNER_NODE:
     {
-      const vector<int> childindex = classifyRadius(radius,querypoint);
+      const std::vector<int> childindex = classifyRadius(radius,querypoint);
 
       //child node of tree found, which encloses AABB of querypoint completely; thus step down
       if (childindex.size() ==1)
@@ -2034,7 +2034,7 @@ std::vector<int> GEO::SearchTree::TreeNode::searchPointsInRadius(
       if (treedepth_ <= 0 || (elementList_.size()==1 && (elementList_.begin()->second).size() == 1) )
         return GEO::getPointsInRadius(currentpositions, querypoint, radius,elementList_);
 
-      const vector<int> childindex = classifyRadius(radius, querypoint);
+      const std::vector<int> childindex = classifyRadius(radius, querypoint);
 
       if(childindex.size() < 1)
         dserror("no child found\n");

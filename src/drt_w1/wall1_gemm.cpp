@@ -38,7 +38,7 @@ Maintainer: Burkhard Bornemann
 /*======================================================================*/
 /* evaluate the element forces and stiffness and mass for GEMM */
 void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
-  const ParameterList& params,
+  const Teuchos::ParameterList& params,
   const std::vector<int>& lm,
   const std::vector<double>& dispo,
   const std::vector<double>& disp,

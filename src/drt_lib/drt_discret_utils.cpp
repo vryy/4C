@@ -26,7 +26,7 @@ Maintainer: Michael Gee
  |  compute nullspace of system (public)                     mwgee 02/07|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::ComputeNullSpaceIfNecessary(
-                                              ParameterList& solveparams,
+                                              Teuchos::ParameterList& solveparams,
                                               bool recompute)
 {
   // see whether we have an aztec list
@@ -68,7 +68,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   {
 
     // get the aztec list and see whether we use downwinding
-    ParameterList& azlist = solveparams.sublist("Aztec Parameters");
+    Teuchos::ParameterList& azlist = solveparams.sublist("Aztec Parameters");
 
     azlist.set<int>("downwinding nv",nv);
     azlist.set<int>("downwinding np",np);
@@ -76,7 +76,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   else if(solveparams.isSublist("Belos Parameters"))
   {
     // get the belos list and see whether we use downwinding
-    ParameterList& beloslist = solveparams.sublist("Belos Parameters");
+    Teuchos::ParameterList& beloslist = solveparams.sublist("Belos Parameters");
 
     beloslist.set<int>("downwinding nv",nv);
     beloslist.set<int>("downwinding np",np);
@@ -124,9 +124,9 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
 
   // see whether we have previously computed the nullspace
   // and recomputation is enforced
-  ParameterList& mllist = *mllist_ptr; //solveparams.sublist("ML Parameters");
-  RCP<vector<double> > ns = mllist.get<RCP<vector<double> > >("nullspace",null);
-  if (ns != null && !recompute) return;
+  Teuchos::ParameterList& mllist = *mllist_ptr; //solveparams.sublist("ML Parameters");
+  RCP<std::vector<double> > ns = mllist.get<RCP<std::vector<double> > >("nullspace",Teuchos::null);
+  if (ns != Teuchos::null && !recompute) return;
 
   // do the usual tests
   if (!Filled()) dserror("FillComplete was not called on discretization");
@@ -135,8 +135,8 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   // no, we have not previously computed the nullspace
   // or want to recompute it anyway
   // -> compute nullspace
-  ns = null;
-  mllist.set<RCP<vector<double> > >("nullspace",null);
+  ns = Teuchos::null;
+  mllist.set<RCP<std::vector<double> > >("nullspace",Teuchos::null);
   // ML would not tolerate this Teuchos::rcp-ptr in its list otherwise
   mllist.set<bool>("ML validate parameter list",false);
   const Epetra_Map* rowmap = DofRowMap(0);
@@ -157,9 +157,9 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   mllist.set("null space: add default vectors",false);
   // allocate dimns times the local length of the rowmap
   const int lrows = rowmap->NumMyElements();
-  ns = Teuchos::rcp(new vector<double>(dimns*lrows));
+  ns = Teuchos::rcp(new std::vector<double>(dimns*lrows));
   double* nullsp = &((*ns)[0]);
-  mllist.set<RCP<vector<double> > >("nullspace",ns);
+  mllist.set<RCP<std::vector<double> > >("nullspace",ns);
   mllist.set("null space: vectors",nullsp);
 
   if (dimns==1 && numdf==1)

@@ -44,10 +44,10 @@ XFEM::XFLUID_TIMEINT_BASE::XFLUID_TIMEINT_BASE(
     Teuchos::RCP<XFEM::FluidWizard>         wizard_new,       /// fluid wizard at t^(n+1)
     Teuchos::RCP<XFEM::FluidDofSet>         dofset_old,       /// fluid wizard at t^n
     Teuchos::RCP<XFEM::FluidDofSet>         dofset_new,       /// fluid wizard at t^(n+1)
-    vector<RCP<Epetra_Vector> > oldVectors,
+    std::vector<RCP<Epetra_Vector> > oldVectors,
     const Epetra_Map& olddofcolmap,
     const Epetra_Map& newdofrowmap,
-    const RCP<map<int,vector<int> > > pbcmap
+    const RCP<std::map<int,std::vector<int> > > pbcmap
 ) :
 discret_(discret),
 boundarydis_(boundarydis),
@@ -857,7 +857,7 @@ dt_(dt)
   if (initialize)
   {
     const int nsd = 3; // dimension
-    timeIntData_ = Teuchos::rcp(new vector<TimeIntData>); // vector containing all data used for computation
+    timeIntData_ = Teuchos::rcp(new std::vector<TimeIntData>); // vector containing all data used for computation
 
     /*------------------------*
      * Initialization         *
@@ -1185,12 +1185,12 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
   LINALG::Matrix<3,1> proj_x_n(true);                 ///< projected point at t^n (tracked back along structural movement)
   LINALG::Matrix<3,1> start_point(true);              ///< final start point for SemiLagrange algo
   int proj_sid = -1;                                  ///< id of side that contains the projected point
-  map<vector<int>, vector<int> >    proj_lineid;         ///< map< sorted nids, global side IDs >
+  std::map<vector<int>, vector<int> >    proj_lineid;         ///< map< sorted nids, global side IDs >
   // smallest distance w.r.t side
   LINALG::Matrix<2,1> proj_xi_side(true);             ///< local coordinates of projected point if projection w.r.t side
   // smallest distance w.r.t line
-  map<vector<int>, vector<double> > proj_xi_line;        ///< map<sorted nids,local line coordinates w.r.t lines of different sides>
-  map<vector<int>, vector<int> >    proj_nid_line;       ///< map<sorted nids, sideids>
+  std::map<vector<int>, std::vector<double> > proj_xi_line;        ///< map<sorted nids,local line coordinates w.r.t lines of different sides>
+  std::map<vector<int>, vector<int> >    proj_nid_line;       ///< map<sorted nids, sideids>
   // smallest distance w.r.t point
   int proj_nid_np = -1;                               ///< nid of projected point if projection w.r.t point (structural node)
 
@@ -1311,12 +1311,12 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
   else if(data.proj_ == TimeIntData::onLine_)
   {
     // check if both lines are identical
-    for(map<vector<int>, vector<int> >::iterator line=proj_nid_line.begin(); line!=proj_nid_line.end(); line++)
+    for(std::map<std::vector<int>, std::vector<int> >::iterator line=proj_nid_line.begin(); line!=proj_nid_line.end(); line++)
     {
-      vector<int>& sides = line->second;
+      std::vector<int>& sides = line->second;
 
-      vector<int>&    local_lineIds = proj_lineid.find(line->first)->second;
-      vector<double>& local_xi_line = proj_xi_line.find(line->first)->second;
+      std::vector<int>&    local_lineIds = proj_lineid.find(line->first)->second;
+      std::vector<double>& local_xi_line = proj_xi_line.find(line->first)->second;
 
       if(sides.size()!= 2) dserror("there must be two sides adjacent to line, but there are %d sides", sides.size());
 
@@ -1521,7 +1521,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
 void XFEM::XFLUID_STD::ComputeStartPoint_Side(
     DRT::Element*                side,           ///< pointer to side element
     Epetra_SerialDenseMatrix &   side_xyze,      ///< side's node coordinates
-    const vector<int>&           lm,             ///< local map
+    const std::vector<int>&      lm,             ///< local map
     LINALG::Matrix<2,1> &        xi_side,        ///< local coordinates of projected point w.r.t side
     double &                     dist,           ///< distance from point to its projection
     LINALG::Matrix<3,1>&         proj_x_n,       ///< projected point at t^n
@@ -1544,8 +1544,8 @@ void XFEM::XFLUID_STD::ComputeStartPoint_Line(
     Epetra_SerialDenseMatrix &   side1_xyze,      ///< side's node coordinates
     DRT::Element*                side2,           ///< pointer to side element
     Epetra_SerialDenseMatrix &   side2_xyze,      ///< side's node coordinates
-    const vector<int>&           lm1,             ///< local map
-    const vector<int>&           lm2,             ///< local map
+    const std::vector<int>&           lm1,             ///< local map
+    const std::vector<int>&           lm2,             ///< local map
     double &                     dist,           ///< distance from point to its projection
     LINALG::Matrix<3,1>&         proj_x_n,       ///< projected point at t^n
     LINALG::Matrix<3,1>&         start_point     ///< final start point
@@ -1600,7 +1600,7 @@ void XFEM::XFLUID_STD::callgetNormalSide_tn(
     DRT::Element*                side,           ///< pointer to side element
     LINALG::Matrix<3,1>&         normal,         ///< normal vector w.r.t side
     Epetra_SerialDenseMatrix &   side_xyze,      ///< side's node coordinates
-    const vector<int>&           lm,             ///< local map
+    const std::vector<int>&      lm,             ///< local map
     LINALG::Matrix<3,1> &        proj_x_n,       ///< projected point on side
     LINALG::Matrix<2,1> &        xi_side         ///< local coordinates of projected point w.r.t side
 )
@@ -1682,7 +1682,7 @@ template<DRT::Element::DiscretizationType side_distype, const int numdof>
 void XFEM::XFLUID_STD::getNormalSide_tn(
     LINALG::Matrix<3,1>&         normal,         ///< normal vector w.r.t side
     Epetra_SerialDenseMatrix &   side_xyze,      ///< side's node coordinates
-    const vector<int>&           lm,             ///< local map
+    const std::vector<int>&      lm,             ///< local map
     LINALG::Matrix<3,1> &        proj_x_n,       ///< projected point on side
     LINALG::Matrix<2,1> &        xi_side         ///< local coordinates of projected point w.r.t side
 )
@@ -1803,7 +1803,7 @@ void XFEM::XFLUID_STD::call_get_projxn_Line(
 template<DRT::Element::DiscretizationType line_distype, const int numdof>
 void XFEM::XFLUID_STD::get_projxn_Line(
     Epetra_SerialDenseMatrix &   line_xyze,      ///< line's node coordinates
-    const vector<int>&           lm,             ///< local map
+    const std::vector<int>&      lm,             ///< local map
     LINALG::Matrix<3,1> &        proj_x_n,       ///< projected point on side
     double &                     xi_line         ///< local coordinates of projected point w.r.t line
 )
@@ -1844,7 +1844,7 @@ void XFEM::XFLUID_STD::addeidisp(
     Epetra_SerialDenseMatrix&    xyze,         ///< node coordinates of side or line
     const DRT::Discretization &  cutdis,       ///< cut discretization
     const std::string            state,        ///< state
-    const vector<int>&           lm            ///< local map
+    const std::vector<int>&      lm            ///< local map
     )
 {
 
@@ -1855,7 +1855,7 @@ void XFEM::XFLUID_STD::addeidisp(
 
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = cutdis.GetState(state);
-  if(matrix_state == null)
+  if(matrix_state == Teuchos::null)
     dserror("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors
@@ -2038,9 +2038,9 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
     LINALG::Matrix<3,1>&             newNodeCoords,        ///< node coordinates of point that has to be projected
     double &                         min_dist,             ///< minimal distance, potentially updated
     LINALG::Matrix<3,1>&             proj_x_np,            ///< projection of point on this side
-    map<vector<int>, vector<double> >&  proj_xi_line,         ///< map<sorted nids, local line coordinates of projection of point w.r.t sides >
-    map<vector<int>, vector<int> >&     proj_lineid,          ///< map<sorted nids, local line id w.r.t sides>
-    map<vector<int>, vector<int> >&     proj_nid_line,        ///< map<sorted nids, side Ids>
+    std::map<vector<int>, std::vector<double> >&  proj_xi_line,         ///< map<sorted nids, local line coordinates of projection of point w.r.t sides >
+    std::map<vector<int>, vector<int> >&     proj_lineid,          ///< map<sorted nids, local line id w.r.t sides>
+    std::map<vector<int>, vector<int> >&     proj_nid_line,        ///< map<sorted nids, side Ids>
     int &                            proj_sid,             ///< id of side that contains the projected point
     TimeIntData&                     data                  ///< reference to data
     )
@@ -2169,7 +2169,7 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
         sideids.push_back(side->Id());
         vector<int> locallineids;
         locallineids.push_back(line_count);
-        vector<double> locallineXiCoords;
+        std::vector<double> locallineXiCoords;
         locallineXiCoords.push_back(xi_line);
 
         // set line id w.r.t side->Id() that contains the projected point
@@ -2202,9 +2202,9 @@ void XFEM::XFLUID_STD::CallProjectOnPoint(
     int &                          proj_nid_np,          ///< nid id of projected point on surface
     LINALG::Matrix<3,1>&           proj_x_np,            ///< projection of point on this side
     int &                          proj_sid,             ///< id of side that contains the projected point
-    map<vector<int>, vector<double> > proj_xi_line,         ///< map<side ID, local coordinates of projection of point w.r.t to this line>
-    map<vector<int>, vector<int> >    proj_lineid,          ///< map<side ID, local line id>
-    map<vector<int>, vector<int> >    proj_nid_line,        ///< map<side ID, vec<line Ids>>
+    std::map<vector<int>, std::vector<double> > proj_xi_line,         ///< map<side ID, local coordinates of projection of point w.r.t to this line>
+    std::map<vector<int>, vector<int> >    proj_lineid,          ///< map<side ID, local line id>
+    std::map<vector<int>, vector<int> >    proj_nid_line,        ///< map<side ID, vec<line Ids>>
     TimeIntData&                   data                  ///< reference to data
 )
 {
@@ -2260,7 +2260,7 @@ void XFEM::XFLUID_STD::CallProjectOnPoint(
 template<DRT::Element::DiscretizationType side_distype, const int numdof>
 bool XFEM::XFLUID_STD::ProjectOnSide(
     Epetra_SerialDenseMatrix &   side_xyze,      ///< side's node coordinates
-    const vector<int>&           lm,             ///< local map
+    const std::vector<int>&      lm,             ///< local map
     LINALG::Matrix<3,1> &        x_gp_lin,       ///< global coordinates of point that has to be projected
     LINALG::Matrix<3,1> &        x_side,         ///< projected point on side
     LINALG::Matrix<2,1> &        xi_side,        ///< local coordinates of projected point w.r.t side
@@ -2528,7 +2528,7 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
 template<DRT::Element::DiscretizationType line_distype, const int numdof>
 bool XFEM::XFLUID_STD::ProjectOnLine(
     Epetra_SerialDenseMatrix &   line_xyze,      ///< line's node coordinates
-    const vector<int>&           lm,             ///< local map
+    const std::vector<int>&      lm,             ///< local map
     LINALG::Matrix<3,1> &        x_point_np,     ///< global coordinates of point that has to be projected
     LINALG::Matrix<3,1> &        x_line,         ///< projected point on line
     double &                     xi_line,        ///< local coordinates of projected point w.r.t line
@@ -2617,7 +2617,7 @@ bool XFEM::XFLUID_STD::ProjectOnLine(
  *--------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::ProjectOnPoint(
     Epetra_SerialDenseMatrix &   point_xyze,     ///< point's node coordinates
-    const vector<int>&           lm,             ///< local map
+    const std::vector<int>&      lm,             ///< local map
     LINALG::Matrix<3,1> &        x_point_np,     ///< global coordinates of point that has to be projected
     LINALG::Matrix<3,1> &        x_point,        ///< global coordinates of point on surface
     double &                     dist            ///< distance from point to its projection
@@ -2626,7 +2626,7 @@ void XFEM::XFLUID_STD::ProjectOnPoint(
   const std::string state = "idispnp";
 
   Teuchos::RCP<const Epetra_Vector> matrix_state = boundarydis_->GetState( state);
-  if(matrix_state == null)
+  if(matrix_state == Teuchos::null)
     dserror("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors
@@ -2879,7 +2879,7 @@ void XFEM::XFLUID_STD::exportFinalData()
 
   // array of vectors which stores data for
   // every processor in one vector
-  vector<vector<TimeIntData> > dataVec(numproc_);
+  vector<std::vector<TimeIntData> > dataVec(numproc_);
 
   // fill vectors with the data
   for (vector<TimeIntData>::iterator data=timeIntData_->begin();
@@ -2951,7 +2951,7 @@ void XFEM::XFLUID_STD::exportFinalData()
       vector<int> startGid; // global id of first startpoint
       vector<int> startOwner; // owner of first startpoint
       vector<LINALG::Matrix<nsd,1> > velValues; // velocity values
-      vector<double> presValues; // pressure values
+      std::vector<double> presValues; // pressure values
       int newtype; // type of the data
 
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,gid);

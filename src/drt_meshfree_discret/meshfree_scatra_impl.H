@@ -103,7 +103,7 @@ public:
   virtual int Evaluate(DRT::Element*              ele,
                        Teuchos::ParameterList&    params,
                        DRT::Discretization&       discretization,
-                       vector<int>&               lm,
+                       std::vector<int>&          lm,
                        Epetra_SerialDenseMatrix&  elemat1_epetra,
                        Epetra_SerialDenseMatrix&  elemat2_epetra,
                        Epetra_SerialDenseVector&  elevec1_epetra,
@@ -204,9 +204,9 @@ public:
    *///                                                   (public) nis Mar12
   /*------------------------------------------------------------------------*/
   virtual int Evaluate(DRT::Element*              ele,            //!< the element to which sysmat belongs
-                       ParameterList&             params,         //!< ?
+                       Teuchos::ParameterList&    params,         //!< ?
                        DRT::Discretization&       discretization, //!< ?
-                       vector<int>&               lm,             //!< ?
+                       std::vector<int>&          lm,             //!< ?
                        Epetra_SerialDenseMatrix&  elemat1_epetra, //!< ?
                        Epetra_SerialDenseMatrix&  elemat2_epetra, //!< ?
                        Epetra_SerialDenseVector&  elevec1_epetra, //!< ?
@@ -320,7 +320,7 @@ private:
   /*------------------------------------------------------------------------*/
   virtual void CalculateScalars(
     const DRT::Element*       ele,      //!< pointer to the element
-    const vector<double>&     ephinp,   //!< current scalar field
+    const std::vector<double>& ephinp,   //!< current scalar field
     Epetra_SerialDenseVector& scalars,  //!< vector for computed integrals
     const bool                inverting //!< flag for invertuing
   );
@@ -450,17 +450,17 @@ private:
   //! transported scalar in gausspoint
   double phi_;
   //! vector containing all values from previous timelevel n in gausspoint
-  vector<double> hist_;
+  std::vector<double> hist_;
   //! (global) gradient of transported scalar at integration point
   LINALG::SerialDenseVector gradphi_;
   //! scalar at t_(n-1): size(nen_)
-  vector<LINALG::SerialDenseVector> ephin_;
+  std::vector<LINALG::SerialDenseVector> ephin_;
   //! scalar at t_(n+1) or t_(n+alpha_F): size(nen_)
-  vector<LINALG::SerialDenseVector> ephinp_;
+  std::vector<LINALG::SerialDenseVector> ephinp_;
   //! scalar at t_(n+alpha_M): size(nen_)
-  vector<LINALG::SerialDenseVector> ephiam_;
+  std::vector<LINALG::SerialDenseVector> ephiam_;
   //! history vector of transported scalars: size(nen_)
-  vector<LINALG::SerialDenseVector> ehist_;
+  std::vector<LINALG::SerialDenseVector> ehist_;
 
   /*========================================================================*/
   //! @name Velocity, pressure, and related
@@ -494,42 +494,42 @@ private:
   //! global derivatives of shape functions w.r.t x,y,z: (nsd_ x nen_)
   LINALG::SerialDenseMatrix deriv_;
   //! bodyforce of node dofs: (numdofpernode_)
-  vector<LINALG::SerialDenseVector> bodyforce_;
+  std::vector<LINALG::SerialDenseVector> bodyforce_;
   //! rhs force in Gauss point
-  vector<double> rhs_;
+  std::vector<double> rhs_;
   //! rhs of temperature equation in case of reactive equation system
-  vector<double> reatemprhs_;
+  std::vector<double> reatemprhs_;
   //! residual of scalar transport equation
-  vector<double> scatrares_;
+  std::vector<double> scatrares_;
   //! convective term (part of residual)
-  vector<double> conv_phi_;
+  std::vector<double> conv_phi_;
   //! diffusive term (part of residual)
-  vector<double> diff_phi_;
+  std::vector<double> diff_phi_;
   //! reactive term (part of residual)
-  vector<double> rea_phi_;
+  std::vector<double> rea_phi_;
   //! (global) Laplacian of shape functions at integration point: (nen_)
   LINALG::SerialDenseVector laplace_;
   //! reconstructed flux values via L2 projection: (nsd_ x nen_)
-  vector<LINALG::SerialDenseMatrix> efluxreconstr_;
+  std::vector<LINALG::SerialDenseMatrix> efluxreconstr_;
 
   /*========================================================================*/
   //! @name Coefficients and related
   /*========================================================================*/
 
   //! density at t_(n) - (vector over scalars)
-  vector<double> densn_;
+  std::vector<double> densn_;
   //! density at t_(n+1) or t_(n+alpha_F) - (vector over scalars)
-  vector<double> densnp_;
+  std::vector<double> densnp_;
   //! density at t_(n+alpha_M) - (vector over scalars)
-  vector<double> densam_;
+  std::vector<double> densam_;
   //! factor for density derivative (at t_(n+1) or t_(n+alpha_F)) - (vector over scalars)
-  vector<double> densgradfac_;
+  std::vector<double> densgradfac_;
   //! diffusivity / diffusivities (in case of systems) / thermal conductivity - (vector over scalars)
-  vector<double> diffus_;
+  std::vector<double> diffus_;
   //! reaction coefficient - (vector over scalars)
-  vector<double> reacoeff_;
+  std::vector<double> reacoeff_;
   //! reaction coefficent derivative (needed for matrix contribution)
-  vector<double> reacoeffderiv_;
+  std::vector<double> reacoeffderiv_;
   //! specific heat capacity (either at constant pressure or at constant volume)
   double shc_;
   //! fluid viscosity

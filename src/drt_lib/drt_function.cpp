@@ -2422,9 +2422,9 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       const std::string* type  = locsyscond_->Get<std::string>("Type");
       if (*type!="FunctionEvaluation")
         dserror("Locsys is of wrong type %s",type->c_str());
-      const vector<double>* n  = locsyscond_->Get<vector<double> >("normal");
-      const vector<double>* t1 = locsyscond_->Get<vector<double> >("tangent");
-      const vector<double>* o  = locsyscond_->Get<vector<double> >("origin");
+      const std::vector<double>* n  = locsyscond_->Get<std::vector<double> >("normal");
+      const std::vector<double>* t1 = locsyscond_->Get<std::vector<double> >("tangent");
+      const std::vector<double>* o  = locsyscond_->Get<std::vector<double> >("origin");
       if (!n || !t1 || !o)
         dserror("LOCSYS Condition components missing");
       normal_   = *n;
@@ -2454,9 +2454,9 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       //**************************************************************
       int linecount = 0;
       const double *tempcoords;
-      vector<double> xnode;
-      vector<double> ynode;
-      vector<double> znode;
+      std::vector<double> xnode;
+      std::vector<double> ynode;
+      std::vector<double> znode;
       vector<DRT::Condition*> dirichlet;
       
       dis->GetCondition("Dirichlet",dirichlet);
@@ -2552,8 +2552,8 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       }
       
       //nodal polar coordinates
-      vector<double> xpedge;
-      vector<double> xpedgeloc;
+      std::vector<double> xpedge;
+      std::vector<double> xpedgeloc;
       // transform global to local coordinates
       xpedge.assign(3,0.0);
       xpedgeloc.assign(3,0.0);
@@ -2610,7 +2610,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
     noharm_ = 32;
     int sizephyscurve = 200;
     // storage vector for time curve values
-    vector<double> flowvel;
+    std::vector<double> flowvel;
     // chosen time value from TimeCurveManager
     double timetcm = 0.0;
     // modulus of n-th harmonic during transition phase
@@ -2659,9 +2659,9 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
      dotrafo_ = true;
   if(fsi_ && dotrafo_==true)
   {
-    vector<double> xnode;
-    vector<double> ynode;
-    vector<double> znode;
+    std::vector<double> xnode;
+    std::vector<double> ynode;
+    std::vector<double> znode;
     vector<DRT::Condition*> dirichlet;
     // get current displacement vector from discretization
     RCP<const Epetra_Vector> disp;
@@ -2704,7 +2704,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
           if(!redundant)
           {
             const double *coords = dis->gNode(currentid)->X();
-            vector<double> tempcoords;
+            std::vector<double> tempcoords;
             vector<int> dofnode = dis->Dof(dis->gNode(currentid));
             tempcoords.assign(3,0.0);
             // determine current nodal position: reference position + displacement
@@ -2723,8 +2723,8 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       else
       continue;
     }
-    vector<double> xpedge;
-    vector<double> xpedgeloc;
+    std::vector<double> xpedge;
+    std::vector<double> xpedgeloc;
     
     xpedge.assign(3,0.0);
     xpedgeloc.assign(3,0.0);

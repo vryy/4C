@@ -50,9 +50,9 @@ public:
     must be defined in ScaTraImpl.
    */
   virtual int Evaluate(DRT::Element*              ele,
-                       ParameterList&             params,
+                       Teuchos::ParameterList&    params,
                        DRT::Discretization&       discretization,
-                       vector<int>&               lm,
+                       std::vector<int>&          lm,
                        Epetra_SerialDenseMatrix&  elemat1_epetra,
                        Epetra_SerialDenseMatrix&  elemat2_epetra,
                        Epetra_SerialDenseVector&  elevec1_epetra,

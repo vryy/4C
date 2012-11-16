@@ -161,7 +161,7 @@ public:
   virtual DRT::ElementType & ElementType() const
   { return StructuralSurfaceType::Instance(); }
 
-  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   virtual int NumLine() const {return DRT::UTILS::getNumberOfElementLines(Shape());}
 
@@ -179,17 +179,17 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList&            params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList&   params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
   //! Evaluate method for StructuralSurface-Elements
-  virtual int Evaluate(ParameterList& params,
+  virtual int Evaluate(Teuchos::ParameterList& params,
                        DRT::Discretization&      discretization,
-                       vector<int>&              lm,
+                       std::vector<int>&         lm,
                        Epetra_SerialDenseMatrix& elematrix1,
                        Epetra_SerialDenseMatrix& elematrix2,
                        Epetra_SerialDenseVector& elevector1,
@@ -197,7 +197,7 @@ public:
                        Epetra_SerialDenseVector& elevector3);
 
   //! Evaluate method for StructuralSurface-Elements
-  virtual int Evaluate(ParameterList& params,
+  virtual int Evaluate(Teuchos::ParameterList& params,
                        DRT::Discretization&      discretization,
                        LocationArray&            la,
                        Epetra_SerialDenseMatrix& elematrix1,
@@ -264,7 +264,7 @@ protected:
   \param deriv  (in)  : derivatives of shape functions
   */
   void SurfaceIntegration(double& detA,
-                          vector<double>& normal,
+                          std::vector<double>& normal,
                           const Epetra_SerialDenseMatrix& x,
                           const Epetra_SerialDenseMatrix& deriv);
 
@@ -277,7 +277,7 @@ protected:
   \param x      (in)  : nodal coords in either material or spatial frame
   \param deriv  (in)  : derivatives of shape functions
   */
-  void SurfaceIntegration(vector<double>& normal,
+  void SurfaceIntegration(std::vector<double>& normal,
                           const Epetra_SerialDenseMatrix& x,
                           const Epetra_SerialDenseMatrix& deriv);
 
@@ -320,7 +320,7 @@ protected:
   \param disp  (int)  : displacements
   */
   inline void SpatialConfiguration(LINALG::SerialDenseMatrix& x,
-                                   const vector<double> disp) const
+                                   const std::vector<double> disp) const
   {
     const int numnode = NumNode();
     for (int i=0; i<numnode; ++i)
@@ -341,7 +341,7 @@ protected:
   */
   inline void SpatialConfiguration(LINALG::SerialDenseMatrix& x,
                                    LINALG::SerialDenseMatrix& xrefe,
-                                   const vector<double> disp) const
+                                   const std::vector<double> disp) const
   {
     const int numnode = NumNode();
     for (int i=0; i<numnode; ++i)

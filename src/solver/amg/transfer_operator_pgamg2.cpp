@@ -27,9 +27,9 @@ RCP<Epetra_MultiVector>  LINALG::PGAMG2TransferOperator::buildTransferOperators(
   TEUCHOS_FUNC_TIME_MONITOR("PGAMG2TransferOperator::buildTransferOperators");
 
   ////////////// define dummy variable for next nullspace
-  RCP<Epetra_MultiVector> NextNS = null;
-  RCP<SparseMatrix> prolongator_tent = null;
-  RCP<SparseMatrix> restrictor_tent = null;
+  RCP<Epetra_MultiVector> NextNS = Teuchos::null;
+  RCP<SparseMatrix> prolongator_tent = Teuchos::null;
+  RCP<SparseMatrix> restrictor_tent = Teuchos::null;
   nVerbose_ = params.get("ML output",0);
 
   ////////////// build tentative prolongator

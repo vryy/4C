@@ -37,7 +37,7 @@ Maintainer: Mahmoud Ismail
 
 AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretization>  actdis,
                                                            LINALG::Solver  &         solver,
-                                                           ParameterList&            params,
+                                                           Teuchos::ParameterList&   params,
                                                            IO::DiscretizationWriter& output)
   :
   // call constructor for "nontrivial" objects
@@ -197,10 +197,10 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
     DRT::Element* ele = discret_->lColElement(nele);
 
     // get element location vector, dirichlet flags and ownerships
-    vector<int> lm;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmstride;
     //vector<int> lmowner;
-    RCP<vector<int> > lmowner = Teuchos::rcp(new vector<int>);
+    RCP<vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
     ele->LocationVector(*discret_,lm,*lmowner,lmstride);
 
     // loop all nodes of this element, add values to the global vectors
@@ -234,7 +234,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void AIRWAY::RedAirwayImplicitTimeInt::Integrate()
 {
-  RCP<ParameterList> param;
+  RCP<Teuchos::ParameterList> param;
   Integrate(false, param);
 } //RedAirwayImplicitTimeInt::Integrate()
 
@@ -250,7 +250,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void AIRWAY::RedAirwayImplicitTimeInt::Integrate(bool CoupledTo3D,
-                                                 RCP<ParameterList> CouplingParams)
+                                                 RCP<Teuchos::ParameterList> CouplingParams)
 {
   coupledTo3D_ = CoupledTo3D;
   if (CoupledTo3D && CouplingParams.get() == NULL)
@@ -281,7 +281,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Integrate(bool CoupledTo3D,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(bool CoupledTo3D,
-                                                RCP<ParameterList> CouplingTo3DParams)
+                                                RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   coupledTo3D_ = CoupledTo3D;
   // time measurement: time loop
@@ -316,7 +316,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeLoop(bool CoupledTo3D,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void AIRWAY::RedAirwayImplicitTimeInt::OneStepTimeLoop(bool CoupledTo3D,
-                                                RCP<ParameterList> CouplingTo3DParams)
+                                                RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   coupledTo3D_ = CoupledTo3D;
 
@@ -401,7 +401,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::OneStepTimeLoop(bool CoupledTo3D,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void AIRWAY::RedAirwayImplicitTimeInt::IntegrateStep(RCP<ParameterList> CouplingTo3DParams)
+void AIRWAY::RedAirwayImplicitTimeInt::IntegrateStep(RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   // -------------------------------------------------------------------
   //                       output to screen
@@ -468,7 +468,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::PrepareTimeStep()
 /*
 Some detials!!
 */
-void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<ParameterList> CouplingTo3DParams)
+void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   //--------------------------------------------------------------------
   //
@@ -548,7 +548,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::NonLin_Solve(Teuchos::RCP<ParameterList> 
 /*
 Some detials!!
 */
-void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<ParameterList> CouplingTo3DParams)
+void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   // time measurement: Airways
   if(!coupledTo3D_)
@@ -989,7 +989,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::TimeUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
-                                              RCP<ParameterList> CouplingParams)
+                                              RCP<Teuchos::ParameterList> CouplingParams)
 {
   int step      = 0;
   int upres     = 0;
@@ -1245,7 +1245,7 @@ AIRWAY::RedAirwayImplicitTimeInt::CreateFieldTest()
 /*----------------------------------------------------------------------*
  |                                                                      |
  *----------------------------------------------------------------------*/
-void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<ParameterList> CouplingTo3DParams)
+void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams)
 {
   residual_->PutScalar(0.0);
   // -------------------------------------------------------------------

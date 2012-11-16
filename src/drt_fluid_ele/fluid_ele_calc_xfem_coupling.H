@@ -88,14 +88,14 @@ namespace DRT
         virtual void addeidisp(
             const DRT::Discretization &  cutdis,       ///< cut discretization
             const std::string            state,        ///< state
-            const vector<int>&           lm            ///< local map
+            const std::vector<int>&      lm            ///< local map
             ) = 0;
 
         //! extract/set side's interface velocity
         virtual void eivel(
             const DRT::Discretization &  cutdis,       ///< cut discretization
             const std::string            state,        ///< state
-            const vector<int>&           lm            ///< local map
+            const std::vector<int>&      lm            ///< local map
             ) = 0;
 
         virtual void getivelint(
@@ -230,14 +230,14 @@ namespace DRT
         virtual void addembdisp(
             const DRT::Discretization &  embdis,       ///< embedded discretization
             const std::string            state,        ///< state
-            const vector<int>&           lm            ///< local map
+            const std::vector<int>&      lm            ///< local map
         ) = 0;
 
         //! extract/set embedded element velocity
         virtual void emb_vel(
             const DRT::Discretization &  embdis,       ///< embedded discretization
             const std::string            state,        ///< state
-            const vector<int>&           lm            ///< local map
+            const std::vector<int>&      lm            ///< local map
         ) = 0;
 
         virtual void getembpress(

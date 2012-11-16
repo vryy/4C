@@ -291,7 +291,7 @@ namespace IO
     void elementAtCurrentPositionToStream(
         const double                            scalar,                 ///< scalar value for the entire element
         const DRT::Element*                     ele,                    ///< element to print
-        const map<int,LINALG::Matrix<3,1> >&    currentelepositions,    ///< nodal position array
+        const std::map<int,LINALG::Matrix<3,1> >&    currentelepositions,    ///< nodal position array
         std::ostream&                           s
     );
 
@@ -299,7 +299,7 @@ namespace IO
     std::string elementAtCurrentPositionToString(
         const double                            scalar,                 ///< scalar value for the entire element
         const DRT::Element*                     ele,                    ///< element to print
-        const map<int,LINALG::Matrix<3,1> >&    currentelepositions     ///< nodal position array
+        const std::map<int,LINALG::Matrix<3,1> >&    currentelepositions     ///< nodal position array
     );
 
     //! take an array (numnode) and translate it to the scalar value section of an Gmsh element entry

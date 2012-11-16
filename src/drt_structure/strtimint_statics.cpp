@@ -293,7 +293,7 @@ void STR::TimIntStatics::UpdateStepElement()
   // go to elements
   discret_->ClearState();
   discret_->SetState("displacement",(*dis_)(0));
-  discret_->Evaluate(p, null, null, null, null, null);
+  discret_->Evaluate(p, null, null, null, null,Teuchos::null);
   discret_->ClearState();
 }
 

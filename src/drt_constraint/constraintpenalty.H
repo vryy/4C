@@ -65,14 +65,14 @@ namespace UTILS
     /// unused
     void Initialize
     (
-      ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       RCP<Epetra_Vector>    systemvector3  ///< distributed vector that may be filled by assembly of element contributions
     );
     
     /// initialization routine called by the manager ctor
     void Initialize
     (
-      ParameterList&        params  ///< parameter list to communicate between elements and discretization
+      Teuchos::ParameterList&        params  ///< parameter list to communicate between elements and discretization
     );
 
     /// initialization routine called at restart to activate the right conditions
@@ -84,7 +84,7 @@ namespace UTILS
     //! Evaluate routine to call from outside. In here the right action is determined and the #EvaluateConstraint routine is called
     void Evaluate
     (
-      ParameterList&  params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::ParameterList&  params,  ///< parameter list to communicate between elements and discretization
       RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
       RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
       RCP<Epetra_Vector> systemvector1, ///< distributed vector that may be filled by assembly of element contributions
@@ -116,7 +116,7 @@ namespace UTILS
     //! Evaluate constraint conditions and assemble the results
     void EvaluateConstraint
     (
-      ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       RCP<LINALG::SparseOperator> systemmatrix1, ///< sparse matrix that may be filled by assembly of element contributions
       RCP<LINALG::SparseOperator> systemmatrix2, ///< sparse (rectangular) matrix that may be filled by assembly of element contributions
       RCP<Epetra_Vector>    systemvector1, ///< distributed vector that may be filled by aasembly of element contributions
@@ -127,7 +127,7 @@ namespace UTILS
     //! Compute and assemble initial constraint values (depending on user specific activation times)
     void EvaluateError
     (
-      ParameterList&        params,  ///< parameter list to communicate between elements and discretization
+      Teuchos::ParameterList&        params,  ///< parameter list to communicate between elements and discretization
       RCP<Epetra_Vector>    systemvector ///< distributed vector that may be filled by aasembly of element contributions
     );
   }; //class

@@ -175,7 +175,7 @@ void StructureEnsightWriter::WriteNodalStress(const string groupname,
   // store solution times vector for later case file creation
   {
     PostResult res = PostResult(field_); // this is needed!
-    vector<double> restimes = res.get_result_times(field_->name(),groupname);
+    std::vector<double> restimes = res.get_result_times(field_->name(),groupname);
     timesetmap_[name] = restimes;
   }
 
@@ -214,8 +214,8 @@ void StructureEnsightWriter::WriteNodalStressStep(std::ofstream& file,
   const Epetra_Map* nodemap = dis->NodeRowMap();
   RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(new Epetra_MultiVector(*nodemap,6));
   p.set("poststress",nodal_stress);
-  dis->Evaluate(p,null,null,null,null,null);
-  if (nodal_stress==null)
+  dis->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  if (nodal_stress==Teuchos::null)
   {
     dserror("vector containing element center stresses/strains not available");
   }
@@ -345,7 +345,7 @@ void StructureEnsightWriter::WriteElementCenterStress(const string groupname,
   // store solution times vector for later case file creation
   {
     PostResult res = PostResult(field_); // this is needed!
-    vector<double> restimes = res.get_result_times(field_->name(),groupname);
+    std::vector<double> restimes = res.get_result_times(field_->name(),groupname);
     timesetmap_[name] = restimes;
   }
 
@@ -381,8 +381,8 @@ void StructureEnsightWriter::WriteElementCenterStressStep(std::ofstream& file,
   p.set("gpstressmap", data);
   RCP<Epetra_MultiVector> elestress = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),6));
   p.set("poststress",elestress);
-  dis->Evaluate(p,null,null,null,null,null);
-  if (elestress==null)
+  dis->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  if (elestress==Teuchos::null)
   {
     dserror("vector containing element center stresses/strains not available");
   }
@@ -629,7 +629,7 @@ void StructureEnsightWriter::WriteNodalEigenStress(const string groupname,
   for (int i=0;i<numfiles;++i)
   {
     PostResult res = PostResult(field_); // this is needed!
-    vector<double> restimes = res.get_result_times(field_->name(),groupname);
+    std::vector<double> restimes = res.get_result_times(field_->name(),groupname);
     timesetmap_[name[i]] = restimes;
   }
 
@@ -668,8 +668,8 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
   const Epetra_Map* nodemap = dis->NodeRowMap();
   RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(new Epetra_MultiVector(*nodemap,6));
   p.set("poststress",nodal_stress);
-  dis->Evaluate(p,null,null,null,null,null);
-  if (nodal_stress==null)
+  dis->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  if (nodal_stress==Teuchos::null)
   {
     dserror("vector containing nodal stresses/strains not available");
   }
@@ -962,7 +962,7 @@ void StructureEnsightWriter::WriteElementCenterEigenStress(const string groupnam
   for (int i=0;i<numfiles;++i)
   {
     PostResult res = PostResult(field_); // this is needed!
-    vector<double> restimes = res.get_result_times(field_->name(),groupname);
+    std::vector<double> restimes = res.get_result_times(field_->name(),groupname);
     timesetmap_[name[i]] = restimes;
   }
 
@@ -1001,8 +1001,8 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
   p.set("gpstressmap", data);
   RCP<Epetra_MultiVector> elestress = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),6));
   p.set("poststress",elestress);
-  dis->Evaluate(p,null,null,null,null,null);
-  if (elestress==null)
+  dis->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  if (elestress==Teuchos::null)
   {
     dserror("vector containing element center stresses/strains not available");
   }

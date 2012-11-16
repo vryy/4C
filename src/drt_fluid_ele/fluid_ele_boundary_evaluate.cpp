@@ -27,9 +27,9 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::FluidBoundary::Evaluate(
-    ParameterList&            params,
+    Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2,
     Epetra_SerialDenseVector& elevec1,
@@ -47,12 +47,12 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
   case FLD::integrate_Shapefunction:
   {
     RCP<const Epetra_Vector> dispnp;
-    vector<double> mydispnp;
+    std::vector<double> mydispnp;
 
     if (isale)
     {
       dispnp = discretization.GetState("dispnp");
-      if (dispnp!=null)
+      if (dispnp!=Teuchos::null)
       {
         mydispnp.resize(lm.size());
         DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
@@ -126,12 +126,12 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
   case FLD::ba_calc_node_normal:
   {
     RCP<const Epetra_Vector> dispnp;
-    vector<double> mydispnp;
+    std::vector<double> mydispnp;
 
     if (isale)
     {
       dispnp = discretization.GetState("dispnp");
-      if (dispnp!=null)
+      if (dispnp!=Teuchos::null)
       {
         mydispnp.resize(lm.size());
         DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
@@ -149,12 +149,12 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
   case FLD::calc_node_curvature:
   {
     RCP<const Epetra_Vector> dispnp;
-    vector<double> mydispnp;
+    std::vector<double> mydispnp;
 
     if (isale)
     {
       dispnp = discretization.GetState("dispnp");
-      if (dispnp!=null)
+      if (dispnp!=Teuchos::null)
       {
         mydispnp.resize(lm.size());
         DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
@@ -162,10 +162,10 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
     }
 
     RCP<const Epetra_Vector> normals;
-    vector<double> mynormals;
+    std::vector<double> mynormals;
 
     normals = discretization.GetState("normals");
-    if (normals!=null)
+    if (normals!=Teuchos::null)
     {
       mynormals.resize(lm.size());
       DRT::UTILS::ExtractMyValues(*normals,mynormals,lm);
@@ -234,18 +234,18 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
     // require second derivatives.
 
     RCP<const Epetra_Vector> dispnp;
-    vector<double> mydispnp;
+    std::vector<double> mydispnp;
 
     dispnp = discretization.GetState("dispnp");
-    if (dispnp!=null)
+    if (dispnp!=Teuchos::null)
     {
       mydispnp.resize(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
     }
 
     // mynormals and mycurvature are not used in the function
-    vector<double> mynormals;
-    vector<double> mycurvature;
+    std::vector<double> mynormals;
+    std::vector<double> mycurvature;
 
     DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->ElementSurfaceTension(
         this,
@@ -335,10 +335,10 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
  |  Integrate a surface/line Neumann boundary condition       gjb 01/09 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::FluidBoundary::EvaluateNeumann(
-    ParameterList&            params,
+    Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {

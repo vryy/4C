@@ -125,7 +125,7 @@ void FLD::GetRelevantSlaveNodesOfRotSymPBC(
     if((*mymasterslavetoggle=="Slave")
         && (abs(rotangle)> EPS13))
     {
-      const vector<int>* nodes = mypbccond[numcond]->Nodes();
+      const std::vector<int>* nodes = mypbccond[numcond]->Nodes();
       for (unsigned int inode=0; inode < nodes->size(); inode++)
       {
         const int nodegid = nodes->at(inode);

@@ -56,7 +56,7 @@ namespace COMBUST
   {
     const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
-    vector<DRT::Condition*> myneumcond;
+    std::vector<DRT::Condition*> myneumcond;
     int myindex = -1;
 
     // check whether all nodes have a unique VolumeNeumann condition
@@ -75,7 +75,7 @@ namespace COMBUST
     if (myindex >= 0)
     {
       // find out whether we will use a time curve
-      const vector<int>* curve  = myneumcond[myindex]->Get<vector<int> >("curve");
+      const std::vector<int>* curve  = myneumcond[myindex]->Get<std::vector<int> >("curve");
       int curvenum = -1;
 
       if (curve) curvenum = (*curve)[0];
@@ -104,9 +104,9 @@ namespace COMBUST
       }
 
       // get values and switches from the condition
-      const vector<int>*    onoff = myneumcond[myindex]->Get<vector<int> >   ("onoff");
-      const vector<double>* val   = myneumcond[myindex]->Get<vector<double> >("val"  );
-      const vector<int>*    functions = myneumcond[myindex]->Get<vector<int> >("funct");
+      const std::vector<int>*    onoff = myneumcond[myindex]->Get<std::vector<int> >   ("onoff");
+      const std::vector<double>* val   = myneumcond[myindex]->Get<std::vector<double> >("val"  );
+      const std::vector<int>*    functions = myneumcond[myindex]->Get<std::vector<int> >("funct");
 
       // factor given by spatial function
       double functionfac = 1.0;

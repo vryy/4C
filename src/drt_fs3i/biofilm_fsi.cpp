@@ -604,7 +604,7 @@ void FS3I::BiofilmFSI::ChangeConfig(RCP<DRT::Discretization> dis, Teuchos::RCP<E
     DRT::Node* mynode = dis->gNode(gid);
 
     vector<int> globaldofs = dis->Dof(mynode);
-    vector<double> nvector(globaldofs.size());
+    std::vector<double> nvector(globaldofs.size());
 
     // extract local values from the global vector
     //const size_t ldim = globaldofs.size();
@@ -650,7 +650,7 @@ void FS3I::BiofilmFSI::ScatraChangeConfig(RCP<DRT::Discretization> scatradis, RC
     //  dof sets, e.g., for structure-based scalar transport)
     vector<int> nodedofs = dis->Dof(0,lnode);
 
-    vector<double> nvector(nodedofs.size());
+    std::vector<double> nvector(nodedofs.size());
 
 
     // extract local values from the global vector

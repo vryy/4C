@@ -318,7 +318,7 @@ private:
    * \brief fill elment matrix and vectors with the global values
    */
   void ExtractValuesFromGlobalVector( const DRT::Discretization&   discretization, ///< discretization
-      const vector<int>&           lm,             ///<
+      const std::vector<int>&      lm,             ///<
       LINALG::Matrix<nsd_,nen_> *  matrixtofill,   ///< vector field
       LINALG::Matrix<nen_,1> *     vectortofill,   ///< scalar field
       const std::string            state          ///< state of the global vector

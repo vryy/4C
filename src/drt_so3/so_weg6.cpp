@@ -123,7 +123,7 @@ time_(0.0)
   Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
   if (params!=Teuchos::null)
   {
-    const ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
     pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
     pstime_ = sdyn.get<double>("PRESTRESSTIME");
   }
@@ -235,15 +235,15 @@ void DRT::ELEMENTS::So_weg6::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::So_weg6::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // kintype_
@@ -516,7 +516,7 @@ void DRT::ELEMENTS::So_weg6::VisNames(std::map<string,int>& names)
 /*----------------------------------------------------------------------*
  |  Return visualization data (public)                         maf 07/08|
  *----------------------------------------------------------------------*/
-bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
+bool DRT::ELEMENTS::So_weg6::VisData(const string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))
@@ -525,8 +525,8 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
   if (Material()->MaterialType() == INPAR::MAT::m_artwallremod)
   {
     MAT::ArtWallRemod* art = static_cast <MAT::ArtWallRemod*>(Material().get());
-    vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
-    vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
+    std::vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
+    std::vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
     if (name == "Fiber1")
     {
       if ((int)data.size()!=3)
@@ -563,7 +563,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
     {
       if ((int)data.size()!=3)
         dserror("size mismatch");
-      vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
+      std::vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
       data[0] = a1[0];
       data[1] = a1[1];
       data[2] = a1[2];
@@ -572,7 +572,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
     {
       if ((int)data.size()!=3)
         dserror("size mismatch");
-      vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
+      std::vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
       data[0] = a2[0];
       data[1] = a2[1];
       data[2] = a2[2];
@@ -614,7 +614,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
     {
       if ((int)data.size()!=3)
         dserror("size mismatch");
-      vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
+      std::vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
       data[0] = a1[0];
       data[1] = a1[1];
       data[2] = a1[2];
@@ -623,7 +623,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
     {
       if ((int)data.size()!=3)
         dserror("size mismatch");
-      vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
+      std::vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
       data[0] = a2[0];
       data[1] = a2[1];
       data[2] = a2[2];
@@ -632,7 +632,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
     {
       if ((int)data.size()!=3)
         dserror("size mismatch");
-      vector<double> a3 = art->Geta3()->at(0);  // get a3 of first gp
+      std::vector<double> a3 = art->Geta3()->at(0);  // get a3 of first gp
       data[0] = a3[0];
       data[1] = a3[1];
       data[2] = a3[2];
@@ -641,7 +641,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
     {
       if ((int)data.size()!=3)
         dserror("size mismatch");
-      vector<double> a4 = art->Geta4()->at(0);  // get a4 of first gp
+      std::vector<double> a4 = art->Geta4()->at(0);  // get a4 of first gp
       data[0] = a4[0];
       data[1] = a4[1];
       data[2] = a4[2];
@@ -679,7 +679,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
       {
         if ((int)data.size()!=3)
           dserror("size mismatch");
-        vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
+        std::vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
         data[0] = a1[0];
         data[1] = a1[1];
         data[2] = a1[2];
@@ -688,7 +688,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
       {
         if ((int)data.size()!=3)
           dserror("size mismatch");
-        vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
+        std::vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
         data[0] = a2[0];
         data[1] = a2[1];
         data[2] = a2[2];
@@ -705,7 +705,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
       {
         if ((int)data.size()!=3)
           dserror("size mismatch");
-        vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
+        std::vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
         data[0] = a1[0];
         data[1] = a1[1];
         data[2] = a1[2];
@@ -714,7 +714,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
       {
         if ((int)data.size()!=3)
           dserror("size mismatch");
-        vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
+        std::vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
         data[0] = a2[0];
         data[1] = a2[1];
         data[2] = a2[2];
@@ -723,7 +723,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
       {
         if ((int)data.size()!=3)
           dserror("size mismatch");
-        vector<double> a3 = art->Geta3()->at(0);  // get a3 of first gp
+        std::vector<double> a3 = art->Geta3()->at(0);  // get a3 of first gp
         data[0] = a3[0];
         data[1] = a3[1];
         data[2] = a3[2];
@@ -732,7 +732,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
       {
         if ((int)data.size()!=3)
           dserror("size mismatch");
-        vector<double> a4 = art->Geta4()->at(0);  // get a4 of first gp
+        std::vector<double> a4 = art->Geta4()->at(0);  // get a4 of first gp
         data[0] = a4[0];
         data[1] = a4[1];
         data[2] = a4[2];
@@ -857,7 +857,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, vector<double>& data)
 /*----------------------------------------------------------------------*
  |  get vector of volumes (length 1) (public)                  maf 04/07|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Volumes()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Volumes()
 {
   vector<RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);
@@ -868,7 +868,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Volumes()
  |  get vector of surfaces (public)                             maf 04/07|
  |  surface normals always point outward                                 |
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -883,7 +883,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Surfaces()
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                               maf 04/07|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.

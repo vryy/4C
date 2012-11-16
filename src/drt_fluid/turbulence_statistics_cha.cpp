@@ -28,7 +28,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   RCP<DRT::Discretization> actdis             ,
   bool                             alefluid           ,
   RCP<Epetra_Vector>       dispnp             ,
-  ParameterList&                   params             ,
+  Teuchos::ParameterList&                   params             ,
   bool                             subgrid_dissipation
   )
   :
@@ -220,13 +220,13 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
   // available planes of element nodes (polynomial)/corners
   // (Nurbs) of elements
-  nodeplanes_ = Teuchos::rcp(new vector<double> );
+  nodeplanes_ = Teuchos::rcp(new std::vector<double> );
 
 
   // available homogeneous (sampling) planes --- there are
   // numsubdivisions layers per element layer between two
   // nodes (Polynomial)/per element layer (Nurbs)
-  planecoordinates_ = Teuchos::rcp(new vector<double> );
+  planecoordinates_ = Teuchos::rcp(new std::vector<double> );
 
   const int numsubdivisions=5;
 
@@ -257,7 +257,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   {
     // create set of available homogeneous planes. The normal direction
     // is read from the parameter list
-    planecoordinates_ = Teuchos::rcp(new vector<double> );
+    planecoordinates_ = Teuchos::rcp(new std::vector<double> );
 
     // the criterion allows differences in coordinates by 1e-9
     set<double,PlaneSortCriterion> availablecoords;
@@ -379,7 +379,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
         // Unpack received block into set of all planes.
         {
-          vector<double> coordsvec;
+          std::vector<double> coordsvec;
 
           coordsvec.clear();
 
@@ -398,7 +398,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     // push coordinates of planes in a vector
 
     {
-      nodeplanes_ = Teuchos::rcp(new vector<double> );
+      nodeplanes_ = Teuchos::rcp(new std::vector<double> );
 
 
       for(std::set<double,PlaneSortCriterion>::iterator coord=availablecoords.begin();
@@ -647,8 +647,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     //----------------------------------------------------------------------
     // add contributions from all processors, normalize
 
-    vector<double> lnodeplanes      (*nodeplanes_      );
-    vector<double> lplanecoordinates(*planecoordinates_);
+    std::vector<double> lnodeplanes      (*nodeplanes_      );
+    std::vector<double> lplanecoordinates(*planecoordinates_);
 
     discret_->Comm().SumAll(&(lnodeplanes[0]      ),&((*nodeplanes_      )[0]),nodeplanes_->size()      );
     discret_->Comm().SumAll(&(lplanecoordinates[0]),&((*planecoordinates_)[0]),planecoordinates_->size());
@@ -704,65 +704,65 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   // --------------------------------------
 
   // first order moments
-  sumu_ =  Teuchos::rcp(new vector<double> );
+  sumu_ =  Teuchos::rcp(new std::vector<double> );
   sumu_->resize(size,0.0);
 
-  sumv_ =  Teuchos::rcp(new vector<double> );
+  sumv_ =  Teuchos::rcp(new std::vector<double> );
   sumv_->resize(size,0.0);
 
-  sumw_ =  Teuchos::rcp(new vector<double> );
+  sumw_ =  Teuchos::rcp(new std::vector<double> );
   sumw_->resize(size,0.0);
 
-  sump_ =  Teuchos::rcp(new vector<double> );
+  sump_ =  Teuchos::rcp(new std::vector<double> );
   sump_->resize(size,0.0);
 
-  sumrho_ =  Teuchos::rcp(new vector<double> );
+  sumrho_ =  Teuchos::rcp(new std::vector<double> );
   sumrho_->resize(size,0.0);
 
-  sumT_ =  Teuchos::rcp(new vector<double> );
+  sumT_ =  Teuchos::rcp(new std::vector<double> );
   sumT_->resize(size,0.0);
 
-  sumrhou_ =  Teuchos::rcp(new vector<double> );
+  sumrhou_ =  Teuchos::rcp(new std::vector<double> );
   sumrhou_->resize(size,0.0);
 
-  sumrhouT_ =  Teuchos::rcp(new vector<double> );
+  sumrhouT_ =  Teuchos::rcp(new std::vector<double> );
   sumrhouT_->resize(size,0.0);
 
   // now the second order moments
-  sumsqu_ =  Teuchos::rcp(new vector<double> );
+  sumsqu_ =  Teuchos::rcp(new std::vector<double> );
   sumsqu_->resize(size,0.0);
 
-  sumsqv_ =  Teuchos::rcp(new vector<double> );
+  sumsqv_ =  Teuchos::rcp(new std::vector<double> );
   sumsqv_->resize(size,0.0);
 
-  sumsqw_ =  Teuchos::rcp(new vector<double> );
+  sumsqw_ =  Teuchos::rcp(new std::vector<double> );
   sumsqw_->resize(size,0.0);
 
-  sumsqp_ =  Teuchos::rcp(new vector<double> );
+  sumsqp_ =  Teuchos::rcp(new std::vector<double> );
   sumsqp_->resize(size,0.0);
 
-  sumsqrho_ =  Teuchos::rcp(new vector<double> );
+  sumsqrho_ =  Teuchos::rcp(new std::vector<double> );
   sumsqrho_->resize(size,0.0);
 
-  sumsqT_ =  Teuchos::rcp(new vector<double> );
+  sumsqT_ =  Teuchos::rcp(new std::vector<double> );
   sumsqT_->resize(size,0.0);
 
-  sumuv_ =  Teuchos::rcp(new vector<double> );
+  sumuv_ =  Teuchos::rcp(new std::vector<double> );
   sumuv_->resize(size,0.0);
 
-  sumuw_ =  Teuchos::rcp(new vector<double> );
+  sumuw_ =  Teuchos::rcp(new std::vector<double> );
   sumuw_->resize(size,0.0);
 
-  sumvw_ =  Teuchos::rcp(new vector<double> );
+  sumvw_ =  Teuchos::rcp(new std::vector<double> );
   sumvw_->resize(size,0.0);
 
-  sumuT_ =  Teuchos::rcp(new vector<double> );
+  sumuT_ =  Teuchos::rcp(new std::vector<double> );
   sumuT_->resize(size,0.0);
 
-  sumvT_ =  Teuchos::rcp(new vector<double> );
+  sumvT_ =  Teuchos::rcp(new std::vector<double> );
   sumvT_->resize(size,0.0);
 
-  sumwT_ =  Teuchos::rcp(new vector<double> );
+  sumwT_ =  Teuchos::rcp(new std::vector<double> );
   sumwT_->resize(size,0.0);
 
   // arrays for point based averaging
@@ -771,29 +771,29 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   pointsquaredvelnp_  = LINALG::CreateVector(*dofrowmap,true);
 
   // first order moments
-  pointsumu_ =  Teuchos::rcp(new vector<double> );
+  pointsumu_ =  Teuchos::rcp(new std::vector<double> );
   pointsumu_->resize(size,0.0);
 
-  pointsumv_ =  Teuchos::rcp(new vector<double> );
+  pointsumv_ =  Teuchos::rcp(new std::vector<double> );
   pointsumv_->resize(size,0.0);
 
-  pointsumw_ =  Teuchos::rcp(new vector<double> );
+  pointsumw_ =  Teuchos::rcp(new std::vector<double> );
   pointsumw_->resize(size,0.0);
 
-  pointsump_ =  Teuchos::rcp(new vector<double> );
+  pointsump_ =  Teuchos::rcp(new std::vector<double> );
   pointsump_->resize(size,0.0);
 
   // now the second order moments
-  pointsumsqu_ =  Teuchos::rcp(new vector<double> );
+  pointsumsqu_ =  Teuchos::rcp(new std::vector<double> );
   pointsumsqu_->resize(size,0.0);
 
-  pointsumsqv_ =  Teuchos::rcp(new vector<double> );
+  pointsumsqv_ =  Teuchos::rcp(new std::vector<double> );
   pointsumsqv_->resize(size,0.0);
 
-  pointsumsqw_ =  Teuchos::rcp(new vector<double> );
+  pointsumsqw_ =  Teuchos::rcp(new std::vector<double> );
   pointsumsqw_->resize(size,0.0);
 
-  pointsumsqp_ =  Teuchos::rcp(new vector<double> );
+  pointsumsqp_ =  Teuchos::rcp(new std::vector<double> );
   pointsumsqp_->resize(size,0.0);
 
   //----------------------------------------------------------------------
@@ -812,86 +812,86 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
     // vectors containing processor local values to sum element
     // contributions on this proc
-    RCP<vector<double> > local_Cs_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    RCP<vector<double> > local_Cs_delta_sq_sum =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    RCP<vector<double> > local_visceff_sum     =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    RCP<vector<double> > local_Prt_sum         =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    RCP<vector<double> > local_Cs_delta_sq_Prt_sum =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    RCP<vector<double> > local_diffeff_sum     =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    RCP<vector<double> > local_Ci_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    RCP<vector<double> > local_Ci_delta_sq_sum =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    RCP<std::vector<double> > local_Cs_sum          =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+    RCP<std::vector<double> > local_Cs_delta_sq_sum =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+    RCP<std::vector<double> > local_visceff_sum     =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+    RCP<std::vector<double> > local_Prt_sum         =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+    RCP<std::vector<double> > local_Cs_delta_sq_Prt_sum =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+    RCP<std::vector<double> > local_diffeff_sum     =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+    RCP<std::vector<double> > local_Ci_sum          =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+    RCP<std::vector<double> > local_Ci_delta_sq_sum =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
 
     // store them in parameterlist for access on the element
     ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
 
-    modelparams->set<RCP<vector<double> > >("planecoords_"         ,nodeplanes_          );
-    modelparams->set<RCP<vector<double> > >("local_Cs_sum"         ,local_Cs_sum         );
-    modelparams->set<RCP<vector<double> > >("local_Cs_delta_sq_sum",local_Cs_delta_sq_sum);
-    modelparams->set<RCP<vector<double> > >("local_visceff_sum"    ,local_visceff_sum    );
-    modelparams->set<RCP<vector<double> > >("local_Prt_sum"        ,local_Prt_sum);
-    modelparams->set<RCP<vector<double> > >("local_Cs_delta_sq_Prt_sum",local_Cs_delta_sq_Prt_sum);
-    modelparams->set<RCP<vector<double> > >("local_diffeff_sum"    ,local_diffeff_sum    );
-    modelparams->set<RCP<vector<double> > >("local_Ci_sum"         ,local_Ci_sum         );
-    modelparams->set<RCP<vector<double> > >("local_Ci_delta_sq_sum",local_Ci_delta_sq_sum);
+    modelparams->set<RCP<std::vector<double> > >("planecoords_"         ,nodeplanes_          );
+    modelparams->set<RCP<std::vector<double> > >("local_Cs_sum"         ,local_Cs_sum         );
+    modelparams->set<RCP<std::vector<double> > >("local_Cs_delta_sq_sum",local_Cs_delta_sq_sum);
+    modelparams->set<RCP<std::vector<double> > >("local_visceff_sum"    ,local_visceff_sum    );
+    modelparams->set<RCP<std::vector<double> > >("local_Prt_sum"        ,local_Prt_sum);
+    modelparams->set<RCP<std::vector<double> > >("local_Cs_delta_sq_Prt_sum",local_Cs_delta_sq_Prt_sum);
+    modelparams->set<RCP<std::vector<double> > >("local_diffeff_sum"    ,local_diffeff_sum    );
+    modelparams->set<RCP<std::vector<double> > >("local_Ci_sum"         ,local_Ci_sum         );
+    modelparams->set<RCP<std::vector<double> > >("local_Ci_delta_sq_sum",local_Ci_delta_sq_sum);
 
     // vectors for statistics computation (sums and increments)
     // ----------------------------------
 
     // means for the Smagorinsky constant
-    sumCs_  =  Teuchos::rcp(new vector<double> );
+    sumCs_  =  Teuchos::rcp(new std::vector<double> );
     sumCs_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumCs_  =  Teuchos::rcp(new vector<double> );
+    incrsumCs_  =  Teuchos::rcp(new std::vector<double> );
     incrsumCs_->resize(nodeplanes_->size()-1,0.0);
 
     // means for (Cs*delta)^2
-    sumCs_delta_sq_  =  Teuchos::rcp(new vector<double> );
+    sumCs_delta_sq_  =  Teuchos::rcp(new std::vector<double> );
     sumCs_delta_sq_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumCs_delta_sq_  =  Teuchos::rcp(new vector<double> );
+    incrsumCs_delta_sq_  =  Teuchos::rcp(new std::vector<double> );
     incrsumCs_delta_sq_->resize(nodeplanes_->size()-1,0.0);
 
     // means for the effective viscosity
-    sumvisceff_  =  Teuchos::rcp(new vector<double> );
+    sumvisceff_  =  Teuchos::rcp(new std::vector<double> );
     sumvisceff_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumvisceff_  =  Teuchos::rcp(new vector<double> );
+    incrsumvisceff_  =  Teuchos::rcp(new std::vector<double> );
     incrsumvisceff_->resize(nodeplanes_->size()-1,0.0);
 
     // means for Prt
-    sumPrt_  =  Teuchos::rcp(new vector<double> );
+    sumPrt_  =  Teuchos::rcp(new std::vector<double> );
     sumPrt_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumPrt_  =  Teuchos::rcp(new vector<double> );
+    incrsumPrt_  =  Teuchos::rcp(new std::vector<double> );
     incrsumPrt_->resize(nodeplanes_->size()-1,0.0);
 
     // means for (Cs*delta)^2/Prt
-    sumCs_delta_sq_Prt_  =  Teuchos::rcp(new vector<double> );
+    sumCs_delta_sq_Prt_  =  Teuchos::rcp(new std::vector<double> );
     sumCs_delta_sq_Prt_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumCs_delta_sq_Prt_  =  Teuchos::rcp(new vector<double> );
+    incrsumCs_delta_sq_Prt_  =  Teuchos::rcp(new std::vector<double> );
     incrsumCs_delta_sq_Prt_->resize(nodeplanes_->size()-1,0.0);
 
     // means for the effective diffusivity
-    sumdiffeff_  =  Teuchos::rcp(new vector<double> );
+    sumdiffeff_  =  Teuchos::rcp(new std::vector<double> );
     sumdiffeff_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumdiffeff_  =  Teuchos::rcp(new vector<double> );
+    incrsumdiffeff_  =  Teuchos::rcp(new std::vector<double> );
     incrsumdiffeff_->resize(nodeplanes_->size()-1,0.0);
 
     // means for Ci
-    sumCi_  =  Teuchos::rcp(new vector<double> );
+    sumCi_  =  Teuchos::rcp(new std::vector<double> );
     sumCi_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumCi_  =  Teuchos::rcp(new vector<double> );
+    incrsumCi_  =  Teuchos::rcp(new std::vector<double> );
     incrsumCi_->resize(nodeplanes_->size()-1,0.0);
 
     // means for (Ci*delta)^2
-    sumCi_delta_sq_  =  Teuchos::rcp(new vector<double> );
+    sumCi_delta_sq_  =  Teuchos::rcp(new std::vector<double> );
     sumCi_delta_sq_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumCi_delta_sq_  =  Teuchos::rcp(new vector<double> );
+    incrsumCi_delta_sq_  =  Teuchos::rcp(new std::vector<double> );
     incrsumCi_delta_sq_->resize(nodeplanes_->size()-1,0.0);
   }
 
@@ -903,10 +903,10 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   if (scalesimilarity_)
   {
     // means for subfilter stress
-    sumstress12_  =  Teuchos::rcp(new vector<double> );
+    sumstress12_  =  Teuchos::rcp(new std::vector<double> );
     sumstress12_->resize(nodeplanes_->size(),0.0);
 
-    incrsumstress12_  =  Teuchos::rcp(new vector<double> );
+    incrsumstress12_  =  Teuchos::rcp(new std::vector<double> );
     incrsumstress12_->resize(nodeplanes_->size(),0.0);
   }
 
@@ -919,70 +919,70 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   {
     // vectors for statistics computation (sums and increments)
     // means for N
-    sumN_stream_  =  Teuchos::rcp(new vector<double> );
+    sumN_stream_  =  Teuchos::rcp(new std::vector<double> );
     sumN_stream_->resize(nodeplanes_->size()-1,0.0);
-    sumN_normal_  =  Teuchos::rcp(new vector<double> );
+    sumN_normal_  =  Teuchos::rcp(new std::vector<double> );
     sumN_normal_->resize(nodeplanes_->size()-1,0.0);
-    sumN_span_  =  Teuchos::rcp(new vector<double> );
+    sumN_span_  =  Teuchos::rcp(new std::vector<double> );
     sumN_span_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumN_stream_  =  Teuchos::rcp(new vector<double> );
+    incrsumN_stream_  =  Teuchos::rcp(new std::vector<double> );
     incrsumN_stream_->resize(nodeplanes_->size()-1,0.0);
-    incrsumN_normal_  =  Teuchos::rcp(new vector<double> );
+    incrsumN_normal_  =  Teuchos::rcp(new std::vector<double> );
     incrsumN_normal_->resize(nodeplanes_->size()-1,0.0);
-    incrsumN_span_  =  Teuchos::rcp(new vector<double> );
+    incrsumN_span_  =  Teuchos::rcp(new std::vector<double> );
     incrsumN_span_->resize(nodeplanes_->size()-1,0.0);
 
     // means for B
-    sumB_stream_  =  Teuchos::rcp(new vector<double> );
+    sumB_stream_  =  Teuchos::rcp(new std::vector<double> );
     sumB_stream_->resize(nodeplanes_->size()-1,0.0);
-    sumB_normal_  =  Teuchos::rcp(new vector<double> );
+    sumB_normal_  =  Teuchos::rcp(new std::vector<double> );
     sumB_normal_->resize(nodeplanes_->size()-1,0.0);
-    sumB_span_  =  Teuchos::rcp(new vector<double> );
+    sumB_span_  =  Teuchos::rcp(new std::vector<double> );
     sumB_span_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumB_stream_  =  Teuchos::rcp(new vector<double> );
+    incrsumB_stream_  =  Teuchos::rcp(new std::vector<double> );
     incrsumB_stream_->resize(nodeplanes_->size()-1,0.0);
-    incrsumB_normal_  =  Teuchos::rcp(new vector<double> );
+    incrsumB_normal_  =  Teuchos::rcp(new std::vector<double> );
     incrsumB_normal_->resize(nodeplanes_->size()-1,0.0);
-    incrsumB_span_  =  Teuchos::rcp(new vector<double> );
+    incrsumB_span_  =  Teuchos::rcp(new std::vector<double> );
     incrsumB_span_->resize(nodeplanes_->size()-1,0.0);
 
     // means for C_sgs
-    sumCsgs_  =  Teuchos::rcp(new vector<double> );
+    sumCsgs_  =  Teuchos::rcp(new std::vector<double> );
     sumCsgs_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumCsgs_  =  Teuchos::rcp(new vector<double> );
+    incrsumCsgs_  =  Teuchos::rcp(new std::vector<double> );
     incrsumCsgs_->resize(nodeplanes_->size()-1,0.0);
 
     // means for subgrid viscosity
     // if used in combination with eddy viscosity model
-    sumsgvisc_  =  Teuchos::rcp(new vector<double> );
+    sumsgvisc_  =  Teuchos::rcp(new std::vector<double> );
     sumsgvisc_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumsgvisc_  =  Teuchos::rcp(new vector<double> );
+    incrsumsgvisc_  =  Teuchos::rcp(new std::vector<double> );
     incrsumsgvisc_->resize(nodeplanes_->size()-1,0.0);
 
     // vectors for statistics computation (sums and increments)
     // means for Nphi
-    sumNphi_  =  Teuchos::rcp(new vector<double> );
+    sumNphi_  =  Teuchos::rcp(new std::vector<double> );
     sumNphi_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumNphi_  =  Teuchos::rcp(new vector<double> );
+    incrsumNphi_  =  Teuchos::rcp(new std::vector<double> );
     incrsumNphi_->resize(nodeplanes_->size()-1,0.0);
 
     // means for D
-    sumDphi_  =  Teuchos::rcp(new vector<double> );
+    sumDphi_  =  Teuchos::rcp(new std::vector<double> );
     sumDphi_->resize(nodeplanes_->size()-1,0.0);
 
-    incrsumDphi_  =  Teuchos::rcp(new vector<double> );
+    incrsumDphi_  =  Teuchos::rcp(new std::vector<double> );
     incrsumDphi_->resize(nodeplanes_->size()-1,0.0);
 
     // means for C_sgs_phi
-    sumCsgs_phi_  =  Teuchos::rcp(new vector<double> );
+    sumCsgs_phi_  =  Teuchos::rcp(new std::vector<double> );
     sumCsgs_phi_->resize(nodeplanes_->size()-1,0.0);
     
-    incrsumCsgs_phi_  =  Teuchos::rcp(new vector<double> );
+    incrsumCsgs_phi_  =  Teuchos::rcp(new std::vector<double> );
     incrsumCsgs_phi_->resize(nodeplanes_->size()-1,0.0);
   }
 
@@ -1001,153 +1001,153 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     // local_incrresC(_sq)       (in plane) averaged values of resC (^2)
     // local_incrspressnp(_sq)   (in plane) averaged values of spressnp (^2)
     //--------------------------------------------------
-    RCP<vector<double> > local_incrvol           = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incrhk            = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incrhbazilevs     = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incrstrle         = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incrgradle        = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incrvol           = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incrhk            = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incrhbazilevs     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incrstrle         = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incrgradle        = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
 
-    RCP<vector<double> > local_incrtauC          = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incrtauM          = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incrtauC          = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incrtauM          = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
 
-    RCP<vector<double> > local_incrres           = Teuchos::rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
-    RCP<vector<double> > local_incrres_sq        = Teuchos::rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
-    RCP<vector<double> > local_incrabsres        = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incrres           = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1),0.0));
+    RCP<std::vector<double> > local_incrres_sq        = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1),0.0));
+    RCP<std::vector<double> > local_incrabsres        = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
 
-    RCP<vector<double> > local_incrtauinvsvel    = Teuchos::rcp(new vector<double> (3*(nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incrtauinvsvel    = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1)  ,0.0));
 
-    RCP<vector<double> > local_incrsvelaf        = Teuchos::rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
-    RCP<vector<double> > local_incrsvelaf_sq     = Teuchos::rcp(new vector<double> (3*(nodeplanes_->size()-1),0.0));
-    RCP<vector<double> > local_incrabssvelaf     = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incrsvelaf        = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1),0.0));
+    RCP<std::vector<double> > local_incrsvelaf_sq     = Teuchos::rcp(new std::vector<double> (3*(nodeplanes_->size()-1),0.0));
+    RCP<std::vector<double> > local_incrabssvelaf     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
 
-    RCP<vector<double> > local_incrresC          = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incrresC_sq       = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incrspressnp      = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incrspressnp_sq   = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incrresC          = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incrresC_sq       = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incrspressnp      = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incrspressnp_sq   = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
 
-    RCP<vector<double> > local_incr_eps_pspg     = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incr_eps_supg     = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incr_eps_cross    = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incr_eps_rey      = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incr_eps_cstab    = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incr_eps_eddyvisc = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incr_eps_visc     = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incr_eps_conv     = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incr_eps_mfs      = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incr_eps_mfscross = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incr_eps_mfsrey   = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<vector<double> > local_incr_eps_avm3     = Teuchos::rcp(new vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incr_eps_pspg     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incr_eps_supg     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incr_eps_cross    = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incr_eps_rey      = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incr_eps_cstab    = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incr_eps_eddyvisc = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incr_eps_visc     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incr_eps_conv     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incr_eps_mfs      = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incr_eps_mfscross = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incr_eps_mfsrey   = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incr_eps_avm3     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
 
-    RCP<vector<double> > local_incrcrossstress   = Teuchos::rcp(new vector<double> (6*(nodeplanes_->size()-1),0.0));
-    RCP<vector<double> > local_incrreystress     = Teuchos::rcp(new vector<double> (6*(nodeplanes_->size()-1),0.0));
+    RCP<std::vector<double> > local_incrcrossstress   = Teuchos::rcp(new std::vector<double> (6*(nodeplanes_->size()-1),0.0));
+    RCP<std::vector<double> > local_incrreystress     = Teuchos::rcp(new std::vector<double> (6*(nodeplanes_->size()-1),0.0));
 
     // pass pointers to local sum vectors to the element
-    eleparams_.set<RCP<vector<double> > >("incrvol"          ,local_incrvol         );
-    eleparams_.set<RCP<vector<double> > >("incrhk"           ,local_incrhk          );
-    eleparams_.set<RCP<vector<double> > >("incrhbazilevs"    ,local_incrhbazilevs   );
-    eleparams_.set<RCP<vector<double> > >("incrstrle"        ,local_incrstrle       );
-    eleparams_.set<RCP<vector<double> > >("incrgradle"       ,local_incrgradle      );
+    eleparams_.set<RCP<std::vector<double> > >("incrvol"          ,local_incrvol         );
+    eleparams_.set<RCP<std::vector<double> > >("incrhk"           ,local_incrhk          );
+    eleparams_.set<RCP<std::vector<double> > >("incrhbazilevs"    ,local_incrhbazilevs   );
+    eleparams_.set<RCP<std::vector<double> > >("incrstrle"        ,local_incrstrle       );
+    eleparams_.set<RCP<std::vector<double> > >("incrgradle"       ,local_incrgradle      );
 
-    eleparams_.set<RCP<vector<double> > >("planecoords_"     ,nodeplanes_           );
-    eleparams_.set<RCP<vector<double> > >("incrtauC"         ,local_incrtauC        );
-    eleparams_.set<RCP<vector<double> > >("incrtauM"         ,local_incrtauM        );
-    eleparams_.set<RCP<vector<double> > >("incrres"          ,local_incrres         );
-    eleparams_.set<RCP<vector<double> > >("incrres_sq"       ,local_incrres_sq      );
-    eleparams_.set<RCP<vector<double> > >("incrabsres"       ,local_incrabsres      );
-    eleparams_.set<RCP<vector<double> > >("incrtauinvsvel"   ,local_incrtauinvsvel  );
-    eleparams_.set<RCP<vector<double> > >("incrsvelaf"       ,local_incrsvelaf      );
-    eleparams_.set<RCP<vector<double> > >("incrsvelaf_sq"    ,local_incrsvelaf_sq   );
-    eleparams_.set<RCP<vector<double> > >("incrabssvelaf"    ,local_incrabssvelaf   );
-    eleparams_.set<RCP<vector<double> > >("incrresC"         ,local_incrresC        );
-    eleparams_.set<RCP<vector<double> > >("incrresC_sq"      ,local_incrresC_sq     );
-    eleparams_.set<RCP<vector<double> > >("incrspressnp"     ,local_incrspressnp    );
-    eleparams_.set<RCP<vector<double> > >("incrspressnp_sq"  ,local_incrspressnp_sq );
+    eleparams_.set<RCP<std::vector<double> > >("planecoords_"     ,nodeplanes_           );
+    eleparams_.set<RCP<std::vector<double> > >("incrtauC"         ,local_incrtauC        );
+    eleparams_.set<RCP<std::vector<double> > >("incrtauM"         ,local_incrtauM        );
+    eleparams_.set<RCP<std::vector<double> > >("incrres"          ,local_incrres         );
+    eleparams_.set<RCP<std::vector<double> > >("incrres_sq"       ,local_incrres_sq      );
+    eleparams_.set<RCP<std::vector<double> > >("incrabsres"       ,local_incrabsres      );
+    eleparams_.set<RCP<std::vector<double> > >("incrtauinvsvel"   ,local_incrtauinvsvel  );
+    eleparams_.set<RCP<std::vector<double> > >("incrsvelaf"       ,local_incrsvelaf      );
+    eleparams_.set<RCP<std::vector<double> > >("incrsvelaf_sq"    ,local_incrsvelaf_sq   );
+    eleparams_.set<RCP<std::vector<double> > >("incrabssvelaf"    ,local_incrabssvelaf   );
+    eleparams_.set<RCP<std::vector<double> > >("incrresC"         ,local_incrresC        );
+    eleparams_.set<RCP<std::vector<double> > >("incrresC_sq"      ,local_incrresC_sq     );
+    eleparams_.set<RCP<std::vector<double> > >("incrspressnp"     ,local_incrspressnp    );
+    eleparams_.set<RCP<std::vector<double> > >("incrspressnp_sq"  ,local_incrspressnp_sq );
 
-    eleparams_.set<RCP<vector<double> > >("incr_eps_pspg"    ,local_incr_eps_pspg    );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_supg"    ,local_incr_eps_supg    );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_cross"   ,local_incr_eps_cross   );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_rey"     ,local_incr_eps_rey     );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_cstab"   ,local_incr_eps_cstab   );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_eddyvisc",local_incr_eps_eddyvisc);
-    eleparams_.set<RCP<vector<double> > >("incr_eps_visc"    ,local_incr_eps_visc    );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_conv"    ,local_incr_eps_conv    );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_mfs"     ,local_incr_eps_mfs     );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_mfscross",local_incr_eps_mfscross);
-    eleparams_.set<RCP<vector<double> > >("incr_eps_mfsrey"  ,local_incr_eps_mfsrey  );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_avm3"    ,local_incr_eps_avm3    );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_pspg"    ,local_incr_eps_pspg    );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_supg"    ,local_incr_eps_supg    );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_cross"   ,local_incr_eps_cross   );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_rey"     ,local_incr_eps_rey     );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_cstab"   ,local_incr_eps_cstab   );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_eddyvisc",local_incr_eps_eddyvisc);
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_visc"    ,local_incr_eps_visc    );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_conv"    ,local_incr_eps_conv    );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_mfs"     ,local_incr_eps_mfs     );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_mfscross",local_incr_eps_mfscross);
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_mfsrey"  ,local_incr_eps_mfsrey  );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_avm3"    ,local_incr_eps_avm3    );
 
-    eleparams_.set<RCP<vector<double> > >("incrcrossstress"  ,local_incrcrossstress  );
-    eleparams_.set<RCP<vector<double> > >("incrreystress"    ,local_incrreystress    );
+    eleparams_.set<RCP<std::vector<double> > >("incrcrossstress"  ,local_incrcrossstress  );
+    eleparams_.set<RCP<std::vector<double> > >("incrreystress"    ,local_incrreystress    );
 
     // means for comparison of of residual and subscale acceleration
 
-    sumres_    =  Teuchos::rcp(new vector<double> );
+    sumres_    =  Teuchos::rcp(new std::vector<double> );
     sumres_->resize(3*(nodeplanes_->size()-1),0.0);
-    sumres_sq_ =  Teuchos::rcp(new vector<double> );
+    sumres_sq_ =  Teuchos::rcp(new std::vector<double> );
     sumres_sq_->resize(3*(nodeplanes_->size()-1),0.0);
-    sumabsres_ =  Teuchos::rcp(new vector<double> );
+    sumabsres_ =  Teuchos::rcp(new std::vector<double> );
     sumabsres_->resize((nodeplanes_->size()-1),0.0);
-    sumtauinvsvel_ =  Teuchos::rcp(new vector<double> );
+    sumtauinvsvel_ =  Teuchos::rcp(new std::vector<double> );
     sumtauinvsvel_->resize(3*(nodeplanes_->size()-1),0.0);
 
-    sumsvelaf_=  Teuchos::rcp(new vector<double> );
+    sumsvelaf_=  Teuchos::rcp(new std::vector<double> );
     sumsvelaf_->resize(3*(nodeplanes_->size()-1),0.0);
-    sumsvelaf_sq_=  Teuchos::rcp(new vector<double> );
+    sumsvelaf_sq_=  Teuchos::rcp(new std::vector<double> );
     sumsvelaf_sq_->resize(3*(nodeplanes_->size()-1),0.0);
-    sumabssvelaf_=  Teuchos::rcp(new vector<double> );
+    sumabssvelaf_=  Teuchos::rcp(new std::vector<double> );
     sumabssvelaf_->resize((nodeplanes_->size()-1),0.0);
 
-    sumresC_       =  Teuchos::rcp(new vector<double> );
+    sumresC_       =  Teuchos::rcp(new std::vector<double> );
     sumresC_->resize(nodeplanes_->size()-1,0.0);
-    sumresC_sq_    =  Teuchos::rcp(new vector<double> );
+    sumresC_sq_    =  Teuchos::rcp(new std::vector<double> );
     sumresC_sq_->resize(nodeplanes_->size()-1,0.0);
 
-    sumspressnp_   =  Teuchos::rcp(new vector<double> );
+    sumspressnp_   =  Teuchos::rcp(new std::vector<double> );
     sumspressnp_->resize(nodeplanes_->size()-1,0.0);
-    sumspressnp_sq_=  Teuchos::rcp(new vector<double> );
+    sumspressnp_sq_=  Teuchos::rcp(new std::vector<double> );
     sumspressnp_sq_->resize(nodeplanes_->size()-1,0.0);
 
-    sumhk_         =  Teuchos::rcp(new vector<double> );
+    sumhk_         =  Teuchos::rcp(new std::vector<double> );
     sumhk_->resize(nodeplanes_->size()-1,0.0);
-    sumhbazilevs_  =  Teuchos::rcp(new vector<double> );
+    sumhbazilevs_  =  Teuchos::rcp(new std::vector<double> );
     sumhbazilevs_->resize(nodeplanes_->size()-1,0.0);
-    sumstrle_      =  Teuchos::rcp(new vector<double> );
+    sumstrle_      =  Teuchos::rcp(new std::vector<double> );
     sumstrle_->resize(nodeplanes_->size()-1,0.0);
-    sumgradle_     =  Teuchos::rcp(new vector<double> );
+    sumgradle_     =  Teuchos::rcp(new std::vector<double> );
     sumgradle_->resize(nodeplanes_->size()-1,0.0);
-    sumtauM_       =  Teuchos::rcp(new vector<double> );
+    sumtauM_       =  Teuchos::rcp(new std::vector<double> );
     sumtauM_->resize(nodeplanes_->size()-1,0.0);
-    sumtauC_       =  Teuchos::rcp(new vector<double> );
+    sumtauC_       =  Teuchos::rcp(new std::vector<double> );
     sumtauC_->resize(nodeplanes_->size()-1,0.0);
 
-    sum_eps_pspg_=  Teuchos::rcp(new vector<double> );
+    sum_eps_pspg_=  Teuchos::rcp(new std::vector<double> );
     sum_eps_pspg_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_supg_=  Teuchos::rcp(new vector<double> );
+    sum_eps_supg_=  Teuchos::rcp(new std::vector<double> );
     sum_eps_supg_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_cross_=  Teuchos::rcp(new vector<double> );
+    sum_eps_cross_=  Teuchos::rcp(new std::vector<double> );
     sum_eps_cross_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_rey_=  Teuchos::rcp(new vector<double> );
+    sum_eps_rey_=  Teuchos::rcp(new std::vector<double> );
     sum_eps_rey_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_cstab_=  Teuchos::rcp(new vector<double> );
+    sum_eps_cstab_=  Teuchos::rcp(new std::vector<double> );
     sum_eps_cstab_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_eddyvisc_=  Teuchos::rcp(new vector<double> );
+    sum_eps_eddyvisc_=  Teuchos::rcp(new std::vector<double> );
     sum_eps_eddyvisc_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_visc_=  Teuchos::rcp(new vector<double> );
+    sum_eps_visc_=  Teuchos::rcp(new std::vector<double> );
     sum_eps_visc_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_conv_=  Teuchos::rcp(new vector<double> );
+    sum_eps_conv_=  Teuchos::rcp(new std::vector<double> );
     sum_eps_conv_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_mfs_=  Teuchos::rcp(new vector<double> );
+    sum_eps_mfs_=  Teuchos::rcp(new std::vector<double> );
     sum_eps_mfs_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_mfscross_=  Teuchos::rcp(new vector<double> );
+    sum_eps_mfscross_=  Teuchos::rcp(new std::vector<double> );
     sum_eps_mfscross_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_mfsrey_=  Teuchos::rcp(new vector<double> );
+    sum_eps_mfsrey_=  Teuchos::rcp(new std::vector<double> );
     sum_eps_mfsrey_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_avm3_=  Teuchos::rcp(new vector<double> );
+    sum_eps_avm3_=  Teuchos::rcp(new std::vector<double> );
     sum_eps_avm3_->resize(nodeplanes_->size()-1,0.0);
 
-    sum_crossstress_=  Teuchos::rcp(new vector<double> );
+    sum_crossstress_=  Teuchos::rcp(new std::vector<double> );
     sum_crossstress_->resize(6*(nodeplanes_->size()-1),0.0);
-    sum_reystress_  =  Teuchos::rcp(new vector<double> );
+    sum_reystress_  =  Teuchos::rcp(new std::vector<double> );
     sum_reystress_  ->resize(6*(nodeplanes_->size()-1),0.0);
   }
 
@@ -1777,76 +1777,76 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   int size = sumu_->size();
 
   // generate processor local result vectors
-  RCP<vector<double> > locarea =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locarea =  Teuchos::rcp(new std::vector<double> );
   locarea->resize(size,0.0);
 
-  RCP<vector<double> > locsumu =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumu =  Teuchos::rcp(new std::vector<double> );
   locsumu->resize(size,0.0);
 
-  RCP<vector<double> > locsumv =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumv =  Teuchos::rcp(new std::vector<double> );
   locsumv->resize(size,0.0);
 
-  RCP<vector<double> > locsumw =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumw =  Teuchos::rcp(new std::vector<double> );
   locsumw->resize(size,0.0);
 
-  RCP<vector<double> > locsump =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsump =  Teuchos::rcp(new std::vector<double> );
   locsump->resize(size,0.0);
 
-  RCP<vector<double> > locsumsqu =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumsqu =  Teuchos::rcp(new std::vector<double> );
   locsumsqu->resize(size,0.0);
 
-  RCP<vector<double> > locsumsqv =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumsqv =  Teuchos::rcp(new std::vector<double> );
   locsumsqv->resize(size,0.0);
 
-  RCP<vector<double> > locsumsqw =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumsqw =  Teuchos::rcp(new std::vector<double> );
   locsumsqw->resize(size,0.0);
 
-  RCP<vector<double> > locsumuv  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumuv  =  Teuchos::rcp(new std::vector<double> );
   locsumuv->resize(size,0.0);
 
-  RCP<vector<double> > locsumuw  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumuw  =  Teuchos::rcp(new std::vector<double> );
   locsumuw->resize(size,0.0);
 
-  RCP<vector<double> > locsumvw  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumvw  =  Teuchos::rcp(new std::vector<double> );
   locsumvw->resize(size,0.0);
 
-  RCP<vector<double> > locsumsqp =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumsqp =  Teuchos::rcp(new std::vector<double> );
   locsumsqp->resize(size,0.0);
 
-  RCP<vector<double> > globarea =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globarea =  Teuchos::rcp(new std::vector<double> );
   globarea->resize(size,0.0);
 
-  RCP<vector<double> > globsumu =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumu =  Teuchos::rcp(new std::vector<double> );
   globsumu->resize(size,0.0);
 
-  RCP<vector<double> > globsumv =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumv =  Teuchos::rcp(new std::vector<double> );
   globsumv->resize(size,0.0);
 
-  RCP<vector<double> > globsumw =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumw =  Teuchos::rcp(new std::vector<double> );
   globsumw->resize(size,0.0);
 
-  RCP<vector<double> > globsump =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsump =  Teuchos::rcp(new std::vector<double> );
   globsump->resize(size,0.0);
 
-  RCP<vector<double> > globsumsqu =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumsqu =  Teuchos::rcp(new std::vector<double> );
   globsumsqu->resize(size,0.0);
 
-  RCP<vector<double> > globsumsqv =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumsqv =  Teuchos::rcp(new std::vector<double> );
   globsumsqv->resize(size,0.0);
 
-  RCP<vector<double> > globsumsqw =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumsqw =  Teuchos::rcp(new std::vector<double> );
   globsumsqw->resize(size,0.0);
 
-  RCP<vector<double> > globsumuv  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumuv  =  Teuchos::rcp(new std::vector<double> );
   globsumuv->resize(size,0.0);
 
-  RCP<vector<double> > globsumuw  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumuw  =  Teuchos::rcp(new std::vector<double> );
   globsumuw->resize(size,0.0);
 
-  RCP<vector<double> > globsumvw  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumvw  =  Teuchos::rcp(new std::vector<double> );
   globsumvw->resize(size,0.0);
 
-  RCP<vector<double> > globsumsqp =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumsqp =  Teuchos::rcp(new std::vector<double> );
   globsumsqp->resize(size,0.0);
 
   // communicate pointers to the result vectors to the element
@@ -1880,7 +1880,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   }
 
   // call loop over elements
-  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   discret_->ClearState();
 
 
@@ -1979,96 +1979,96 @@ const double eosfac)
   int size = sumu_->size();
 
   // generate processor local result vectors
-  RCP<vector<double> > locarea =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locarea =  Teuchos::rcp(new std::vector<double> );
   locarea->resize(size,0.0);
 
-  RCP<vector<double> > locsumu =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumu =  Teuchos::rcp(new std::vector<double> );
   locsumu->resize(size,0.0);
-  RCP<vector<double> > locsumv =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumv =  Teuchos::rcp(new std::vector<double> );
   locsumv->resize(size,0.0);
-  RCP<vector<double> > locsumw =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumw =  Teuchos::rcp(new std::vector<double> );
   locsumw->resize(size,0.0);
-  RCP<vector<double> > locsump =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsump =  Teuchos::rcp(new std::vector<double> );
   locsump->resize(size,0.0);
-  RCP<vector<double> > locsumrho = Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumrho = Teuchos::rcp(new std::vector<double> );
   locsumrho->resize(size,0.0);
-  RCP<vector<double> > locsumT =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumT =  Teuchos::rcp(new std::vector<double> );
   locsumT->resize(size,0.0);
-  RCP<vector<double> > locsumrhou =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumrhou =  Teuchos::rcp(new std::vector<double> );
   locsumrhou->resize(size,0.0);
-  RCP<vector<double> > locsumrhouT =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumrhouT =  Teuchos::rcp(new std::vector<double> );
   locsumrhouT->resize(size,0.0);
 
-  RCP<vector<double> > locsumsqu =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumsqu =  Teuchos::rcp(new std::vector<double> );
   locsumsqu->resize(size,0.0);
-  RCP<vector<double> > locsumsqv =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumsqv =  Teuchos::rcp(new std::vector<double> );
   locsumsqv->resize(size,0.0);
-  RCP<vector<double> > locsumsqw =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumsqw =  Teuchos::rcp(new std::vector<double> );
   locsumsqw->resize(size,0.0);
-  RCP<vector<double> > locsumsqp =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumsqp =  Teuchos::rcp(new std::vector<double> );
   locsumsqp->resize(size,0.0);
-  RCP<vector<double> > locsumsqrho = Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumsqrho = Teuchos::rcp(new std::vector<double> );
   locsumsqrho->resize(size,0.0);
-  RCP<vector<double> > locsumsqT =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumsqT =  Teuchos::rcp(new std::vector<double> );
   locsumsqT->resize(size,0.0);
 
-  RCP<vector<double> > locsumuv  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumuv  =  Teuchos::rcp(new std::vector<double> );
   locsumuv->resize(size,0.0);
-  RCP<vector<double> > locsumuw  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumuw  =  Teuchos::rcp(new std::vector<double> );
   locsumuw->resize(size,0.0);
-  RCP<vector<double> > locsumvw  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumvw  =  Teuchos::rcp(new std::vector<double> );
   locsumvw->resize(size,0.0);
-  RCP<vector<double> > locsumuT  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumuT  =  Teuchos::rcp(new std::vector<double> );
   locsumuT->resize(size,0.0);
-  RCP<vector<double> > locsumvT  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumvT  =  Teuchos::rcp(new std::vector<double> );
   locsumvT->resize(size,0.0);
-  RCP<vector<double> > locsumwT  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumwT  =  Teuchos::rcp(new std::vector<double> );
   locsumwT->resize(size,0.0);
 
-  RCP<vector<double> > globarea =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globarea =  Teuchos::rcp(new std::vector<double> );
   globarea->resize(size,0.0);
 
-  RCP<vector<double> > globsumu =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumu =  Teuchos::rcp(new std::vector<double> );
   globsumu->resize(size,0.0);
-  RCP<vector<double> > globsumv =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumv =  Teuchos::rcp(new std::vector<double> );
   globsumv->resize(size,0.0);
-  RCP<vector<double> > globsumw =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumw =  Teuchos::rcp(new std::vector<double> );
   globsumw->resize(size,0.0);
-  RCP<vector<double> > globsump =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsump =  Teuchos::rcp(new std::vector<double> );
   globsump->resize(size,0.0);
-  RCP<vector<double> > globsumrho = Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumrho = Teuchos::rcp(new std::vector<double> );
   globsumrho->resize(size,0.0);
-  RCP<vector<double> > globsumT =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumT =  Teuchos::rcp(new std::vector<double> );
   globsumT->resize(size,0.0);
-  RCP<vector<double> > globsumrhou =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumrhou =  Teuchos::rcp(new std::vector<double> );
   globsumrhou->resize(size,0.0);
-  RCP<vector<double> > globsumrhouT =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumrhouT =  Teuchos::rcp(new std::vector<double> );
   globsumrhouT->resize(size,0.0);
 
-  RCP<vector<double> > globsumsqu =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumsqu =  Teuchos::rcp(new std::vector<double> );
   globsumsqu->resize(size,0.0);
-  RCP<vector<double> > globsumsqv =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumsqv =  Teuchos::rcp(new std::vector<double> );
   globsumsqv->resize(size,0.0);
-  RCP<vector<double> > globsumsqw =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumsqw =  Teuchos::rcp(new std::vector<double> );
   globsumsqw->resize(size,0.0);
-  RCP<vector<double> > globsumsqp =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumsqp =  Teuchos::rcp(new std::vector<double> );
   globsumsqp->resize(size,0.0);
-  RCP<vector<double> > globsumsqrho = Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumsqrho = Teuchos::rcp(new std::vector<double> );
   globsumsqrho->resize(size,0.0);
-  RCP<vector<double> > globsumsqT =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumsqT =  Teuchos::rcp(new std::vector<double> );
   globsumsqT->resize(size,0.0);
 
-  RCP<vector<double> > globsumuv  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumuv  =  Teuchos::rcp(new std::vector<double> );
   globsumuv->resize(size,0.0);
-  RCP<vector<double> > globsumuw  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumuw  =  Teuchos::rcp(new std::vector<double> );
   globsumuw->resize(size,0.0);
-  RCP<vector<double> > globsumvw  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumvw  =  Teuchos::rcp(new std::vector<double> );
   globsumvw->resize(size,0.0);
-  RCP<vector<double> > globsumuT  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumuT  =  Teuchos::rcp(new std::vector<double> );
   globsumuT->resize(size,0.0);
-  RCP<vector<double> > globsumvT  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumvT  =  Teuchos::rcp(new std::vector<double> );
   globsumvT->resize(size,0.0);
-  RCP<vector<double> > globsumwT  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumwT  =  Teuchos::rcp(new std::vector<double> );
   globsumwT->resize(size,0.0);
 
   // communicate pointers to the result vectors to the element
@@ -2113,7 +2113,7 @@ const double eosfac)
   discret_->SetState("scalar (n+1,converged)" ,meanscanp_);
 
   // call loop over elements
-  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   discret_->ClearState();
 
 
@@ -2217,80 +2217,80 @@ void FLD::TurbulenceStatisticsCha::EvaluateScatraIntegralMeanValuesInPlanes()
   int size = sumu_->size();
 
   // generate processor local result vectors
-  RCP<vector<double> > locarea =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locarea =  Teuchos::rcp(new std::vector<double> );
   locarea->resize(size,0.0);
 
-  RCP<vector<double> > locsumu =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumu =  Teuchos::rcp(new std::vector<double> );
   locsumu->resize(size,0.0);
-  RCP<vector<double> > locsumv =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumv =  Teuchos::rcp(new std::vector<double> );
   locsumv->resize(size,0.0);
-  RCP<vector<double> > locsumw =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumw =  Teuchos::rcp(new std::vector<double> );
   locsumw->resize(size,0.0);
-  RCP<vector<double> > locsump =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsump =  Teuchos::rcp(new std::vector<double> );
   locsump->resize(size,0.0);
-  RCP<vector<double> > locsumphi =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumphi =  Teuchos::rcp(new std::vector<double> );
   locsumphi->resize(size,0.0);
 
-  RCP<vector<double> > locsumsqu =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumsqu =  Teuchos::rcp(new std::vector<double> );
   locsumsqu->resize(size,0.0);
-  RCP<vector<double> > locsumsqv =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumsqv =  Teuchos::rcp(new std::vector<double> );
   locsumsqv->resize(size,0.0);
-  RCP<vector<double> > locsumsqw =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumsqw =  Teuchos::rcp(new std::vector<double> );
   locsumsqw->resize(size,0.0);
-  RCP<vector<double> > locsumsqp =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumsqp =  Teuchos::rcp(new std::vector<double> );
   locsumsqp->resize(size,0.0);
-  RCP<vector<double> > locsumsqphi =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumsqphi =  Teuchos::rcp(new std::vector<double> );
   locsumsqphi->resize(size,0.0);
 
-  RCP<vector<double> > locsumuv  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumuv  =  Teuchos::rcp(new std::vector<double> );
   locsumuv->resize(size,0.0);
-  RCP<vector<double> > locsumuw  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumuw  =  Teuchos::rcp(new std::vector<double> );
   locsumuw->resize(size,0.0);
-  RCP<vector<double> > locsumvw  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumvw  =  Teuchos::rcp(new std::vector<double> );
   locsumvw->resize(size,0.0);
-  RCP<vector<double> > locsumuphi  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumuphi  =  Teuchos::rcp(new std::vector<double> );
   locsumuphi->resize(size,0.0);
-  RCP<vector<double> > locsumvphi  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumvphi  =  Teuchos::rcp(new std::vector<double> );
   locsumvphi->resize(size,0.0);
-  RCP<vector<double> > locsumwphi  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > locsumwphi  =  Teuchos::rcp(new std::vector<double> );
   locsumwphi->resize(size,0.0);
 
-  RCP<vector<double> > globarea =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globarea =  Teuchos::rcp(new std::vector<double> );
   globarea->resize(size,0.0);
 
-  RCP<vector<double> > globsumu =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumu =  Teuchos::rcp(new std::vector<double> );
   globsumu->resize(size,0.0);
-  RCP<vector<double> > globsumv =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumv =  Teuchos::rcp(new std::vector<double> );
   globsumv->resize(size,0.0);
-  RCP<vector<double> > globsumw =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumw =  Teuchos::rcp(new std::vector<double> );
   globsumw->resize(size,0.0);
-  RCP<vector<double> > globsump =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsump =  Teuchos::rcp(new std::vector<double> );
   globsump->resize(size,0.0);
-  RCP<vector<double> > globsumphi =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumphi =  Teuchos::rcp(new std::vector<double> );
   globsumphi->resize(size,0.0);
 
-  RCP<vector<double> > globsumsqu =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumsqu =  Teuchos::rcp(new std::vector<double> );
   globsumsqu->resize(size,0.0);
-  RCP<vector<double> > globsumsqv =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumsqv =  Teuchos::rcp(new std::vector<double> );
   globsumsqv->resize(size,0.0);
-  RCP<vector<double> > globsumsqw =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumsqw =  Teuchos::rcp(new std::vector<double> );
   globsumsqw->resize(size,0.0);
-  RCP<vector<double> > globsumsqp =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumsqp =  Teuchos::rcp(new std::vector<double> );
   globsumsqp->resize(size,0.0);
-  RCP<vector<double> > globsumsqphi =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumsqphi =  Teuchos::rcp(new std::vector<double> );
   globsumsqphi->resize(size,0.0);
 
-  RCP<vector<double> > globsumuv  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumuv  =  Teuchos::rcp(new std::vector<double> );
   globsumuv->resize(size,0.0);
-  RCP<vector<double> > globsumuw  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumuw  =  Teuchos::rcp(new std::vector<double> );
   globsumuw->resize(size,0.0);
-  RCP<vector<double> > globsumvw  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumvw  =  Teuchos::rcp(new std::vector<double> );
   globsumvw->resize(size,0.0);
-  RCP<vector<double> > globsumuphi  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumuphi  =  Teuchos::rcp(new std::vector<double> );
   globsumuphi->resize(size,0.0);
-  RCP<vector<double> > globsumvphi  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumvphi  =  Teuchos::rcp(new std::vector<double> );
   globsumvphi->resize(size,0.0);
-  RCP<vector<double> > globsumwphi  =  Teuchos::rcp(new vector<double> );
+  RCP<std::vector<double> > globsumwphi  =  Teuchos::rcp(new std::vector<double> );
   globsumwphi->resize(size,0.0);
 
   // communicate pointers to the result vectors to the element
@@ -2331,7 +2331,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateScatraIntegralMeanValuesInPlanes()
   discret_->SetState("scalar (n+1,converged)" ,meanscanp_);
 
   // call loop over elements
-  discret_->Evaluate(eleparams,null,null,null,null,null);
+  discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   discret_->ClearState();
 
 
@@ -2595,59 +2595,59 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
   // extract values for Cs, Cs_delta_sq_ and visceff from parameterlist
   // the values are stored in vectors --- each component corresponds to
   // one element layer
-  RCP<vector<double> > global_incr_Cs_sum;
-  RCP<vector<double> > local_Cs_sum;
-  global_incr_Cs_sum          = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Cs_sum                = modelparams->get<RCP<vector<double> > >("local_Cs_sum"         ,Teuchos::null);
+  RCP<std::vector<double> > global_incr_Cs_sum;
+  RCP<std::vector<double> > local_Cs_sum;
+  global_incr_Cs_sum          = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_Cs_sum                = modelparams->get<RCP<std::vector<double> > >("local_Cs_sum"         ,Teuchos::null);
   if(local_Cs_sum==Teuchos::null)
     dserror("local_Cs_sum==null from parameterlist");
 
-  RCP<vector<double> > global_incr_Cs_delta_sq_sum;
-  RCP<vector<double> > local_Cs_delta_sq_sum;
-  global_incr_Cs_delta_sq_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Cs_delta_sq_sum       = modelparams->get<RCP<vector<double> > >("local_Cs_delta_sq_sum",Teuchos::null);
+  RCP<std::vector<double> > global_incr_Cs_delta_sq_sum;
+  RCP<std::vector<double> > local_Cs_delta_sq_sum;
+  global_incr_Cs_delta_sq_sum = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_Cs_delta_sq_sum       = modelparams->get<RCP<std::vector<double> > >("local_Cs_delta_sq_sum",Teuchos::null);
   if(local_Cs_delta_sq_sum==Teuchos::null)
     dserror("local_Cs_delta_sq_sum==null from parameterlist");
 
-  RCP<vector<double> > global_incr_visceff_sum;
-  RCP<vector<double> > local_visceff_sum;
-  global_incr_visceff_sum     = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_visceff_sum           = modelparams->get<RCP<vector<double> > >("local_visceff_sum"    ,Teuchos::null);
+  RCP<std::vector<double> > global_incr_visceff_sum;
+  RCP<std::vector<double> > local_visceff_sum;
+  global_incr_visceff_sum     = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_visceff_sum           = modelparams->get<RCP<std::vector<double> > >("local_visceff_sum"    ,Teuchos::null);
   if(local_visceff_sum==Teuchos::null)
       dserror("local_visceff_sum==null from parameterlist");
 
-  RCP<vector<double> > global_incr_Prt_sum;
-  RCP<vector<double> > local_Prt_sum;
-  global_incr_Prt_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Prt_sum       = modelparams->get<RCP<vector<double> > >("local_Prt_sum",Teuchos::null);
+  RCP<std::vector<double> > global_incr_Prt_sum;
+  RCP<std::vector<double> > local_Prt_sum;
+  global_incr_Prt_sum = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_Prt_sum       = modelparams->get<RCP<std::vector<double> > >("local_Prt_sum",Teuchos::null);
   if(local_Prt_sum==Teuchos::null)
     dserror("local_Prt_sum==null from parameterlist");
 
-  RCP<vector<double> > global_incr_Cs_delta_sq_Prt_sum;
-  RCP<vector<double> > local_Cs_delta_sq_Prt_sum;
-  global_incr_Cs_delta_sq_Prt_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Cs_delta_sq_Prt_sum       = modelparams->get<RCP<vector<double> > >("local_Cs_delta_sq_Prt_sum",Teuchos::null);
+  RCP<std::vector<double> > global_incr_Cs_delta_sq_Prt_sum;
+  RCP<std::vector<double> > local_Cs_delta_sq_Prt_sum;
+  global_incr_Cs_delta_sq_Prt_sum = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_Cs_delta_sq_Prt_sum       = modelparams->get<RCP<std::vector<double> > >("local_Cs_delta_sq_Prt_sum",Teuchos::null);
   if(local_Cs_delta_sq_Prt_sum==Teuchos::null)
     dserror("local_Cs_delta_sq_Prt_sum==null from parameterlist");
 
-  RCP<vector<double> > global_incr_diffeff_sum;
-  RCP<vector<double> > local_diffeff_sum;
-  global_incr_diffeff_sum     = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_diffeff_sum           = modelparams->get<RCP<vector<double> > >("local_diffeff_sum"    ,Teuchos::null);
+  RCP<std::vector<double> > global_incr_diffeff_sum;
+  RCP<std::vector<double> > local_diffeff_sum;
+  global_incr_diffeff_sum     = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_diffeff_sum           = modelparams->get<RCP<std::vector<double> > >("local_diffeff_sum"    ,Teuchos::null);
   if(local_diffeff_sum==Teuchos::null)
       dserror("local_diffeff_sum==null from parameterlist");
 
-  RCP<vector<double> > global_incr_Ci_sum;
-  RCP<vector<double> > local_Ci_sum;
-  global_incr_Ci_sum          = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Ci_sum                = modelparams->get<RCP<vector<double> > >("local_Ci_sum"         ,Teuchos::null);
+  RCP<std::vector<double> > global_incr_Ci_sum;
+  RCP<std::vector<double> > local_Ci_sum;
+  global_incr_Ci_sum          = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_Ci_sum                = modelparams->get<RCP<std::vector<double> > >("local_Ci_sum"         ,Teuchos::null);
   if(local_Ci_sum==Teuchos::null)
     dserror("local_Ci_sum==null from parameterlist");
 
-  RCP<vector<double> > global_incr_Ci_delta_sq_sum;
-  RCP<vector<double> > local_Ci_delta_sq_sum;
-  global_incr_Ci_delta_sq_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Ci_delta_sq_sum       = modelparams->get<RCP<vector<double> > >("local_Ci_delta_sq_sum",Teuchos::null);
+  RCP<std::vector<double> > global_incr_Ci_delta_sq_sum;
+  RCP<std::vector<double> > local_Ci_delta_sq_sum;
+  global_incr_Ci_delta_sq_sum = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_Ci_delta_sq_sum       = modelparams->get<RCP<std::vector<double> > >("local_Ci_delta_sq_sum",Teuchos::null);
   if(local_Ci_delta_sq_sum==Teuchos::null)
     dserror("local_Ci_delta_sq_sum==null from parameterlist");
 
@@ -2692,23 +2692,23 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
   }
 
   // reinitialise to zero for next element call
-  local_Cs_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Cs_delta_sq_sum =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_visceff_sum     =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Prt_sum         =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Cs_delta_sq_Prt_sum =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_diffeff_sum     =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Ci_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Ci_delta_sq_sum =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_Cs_sum          =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_Cs_delta_sq_sum =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_visceff_sum     =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_Prt_sum         =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_Cs_delta_sq_Prt_sum =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_diffeff_sum     =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_Ci_sum          =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_Ci_delta_sq_sum =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
 
-  modelparams->set<RCP<vector<double> > >("local_Cs_sum"         ,local_Cs_sum         );
-  modelparams->set<RCP<vector<double> > >("local_Cs_delta_sq_sum",local_Cs_delta_sq_sum);
-  modelparams->set<RCP<vector<double> > >("local_visceff_sum"    ,local_visceff_sum    );
-  modelparams->set<RCP<vector<double> > >("local_Prt_sum"        ,local_Prt_sum);
-  modelparams->set<RCP<vector<double> > >("local_Cs_delta_sq_Prt_sum",local_Cs_delta_sq_Prt_sum);
-  modelparams->set<RCP<vector<double> > >("local_diffeff_sum"    ,local_diffeff_sum    );
-  modelparams->set<RCP<vector<double> > >("local_Ci_sum"         ,local_Ci_sum         );
-  modelparams->set<RCP<vector<double> > >("local_Ci_delta_sq_sum",local_Ci_delta_sq_sum);
+  modelparams->set<RCP<std::vector<double> > >("local_Cs_sum"         ,local_Cs_sum         );
+  modelparams->set<RCP<std::vector<double> > >("local_Cs_delta_sq_sum",local_Cs_delta_sq_sum);
+  modelparams->set<RCP<std::vector<double> > >("local_visceff_sum"    ,local_visceff_sum    );
+  modelparams->set<RCP<std::vector<double> > >("local_Prt_sum"        ,local_Prt_sum);
+  modelparams->set<RCP<std::vector<double> > >("local_Cs_delta_sq_Prt_sum",local_Cs_delta_sq_Prt_sum);
+  modelparams->set<RCP<std::vector<double> > >("local_diffeff_sum"    ,local_diffeff_sum    );
+  modelparams->set<RCP<std::vector<double> > >("local_Ci_sum"         ,local_Ci_sum         );
+  modelparams->set<RCP<std::vector<double> > >("local_Ci_delta_sq_sum",local_Ci_delta_sq_sum);
 
   return;
 } // FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities
@@ -2722,10 +2722,10 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
   ----------------------------------------------------------------------*/
 void FLD::TurbulenceStatisticsCha::AddSubfilterStresses(const RCP<const Epetra_Vector>   stress12)
 {
-  RCP<vector<double> > global_incr_stress12_sum;
-  RCP<vector<double> > local_stress12_sum;
-  global_incr_stress12_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size(),0.0));
-  local_stress12_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size(),0.0));
+  RCP<std::vector<double> > global_incr_stress12_sum;
+  RCP<std::vector<double> > local_stress12_sum;
+  global_incr_stress12_sum = Teuchos::rcp(new std::vector<double> (nodeplanes_->size(),0.0));
+  local_stress12_sum = Teuchos::rcp(new std::vector<double> (nodeplanes_->size(),0.0));
 
   for (int nid=0;nid<discret_->NumMyRowNodes();++nid)
   {
@@ -2810,117 +2810,117 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
 
   // vectors containing processor local values to sum element
   // contributions on this proc
-  RCP<vector<double> > local_N_stream_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RCP<vector<double> > local_N_normal_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RCP<vector<double> > local_N_span_sum            =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RCP<vector<double> > local_B_stream_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RCP<vector<double> > local_B_normal_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RCP<vector<double> > local_B_span_sum            =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RCP<vector<double> > local_Csgs_sum              =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RCP<vector<double> > local_sgvisc_sum            =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RCP<vector<double> > local_Nphi_sum              =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RCP<vector<double> > local_Dphi_sum              =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  RCP<vector<double> > local_Csgs_phi_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RCP<std::vector<double> > local_N_stream_sum          =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  RCP<std::vector<double> > local_N_normal_sum          =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  RCP<std::vector<double> > local_N_span_sum            =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  RCP<std::vector<double> > local_B_stream_sum          =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  RCP<std::vector<double> > local_B_normal_sum          =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  RCP<std::vector<double> > local_B_span_sum            =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  RCP<std::vector<double> > local_Csgs_sum              =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  RCP<std::vector<double> > local_sgvisc_sum            =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  RCP<std::vector<double> > local_Nphi_sum              =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  RCP<std::vector<double> > local_Dphi_sum              =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  RCP<std::vector<double> > local_Csgs_phi_sum          =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
 
 
   // store them in parameterlist for access on the element
   ParameterList *  modelparams = &(paramsele.sublist("TURBULENCE MODEL"));
 
-  modelparams->set<RCP<vector<double> > >("planecoords"                ,nodeplanes_               );
-  modelparams->set<RCP<vector<double> > >("local_N_stream_sum"         ,local_N_stream_sum         );
-  modelparams->set<RCP<vector<double> > >("local_N_normal_sum"         ,local_N_normal_sum         );
-  modelparams->set<RCP<vector<double> > >("local_N_span_sum"           ,local_N_span_sum           );
-  modelparams->set<RCP<vector<double> > >("local_B_stream_sum"         ,local_B_stream_sum         );
-  modelparams->set<RCP<vector<double> > >("local_B_normal_sum"         ,local_B_normal_sum         );
-  modelparams->set<RCP<vector<double> > >("local_B_span_sum"           ,local_B_span_sum           );
-  modelparams->set<RCP<vector<double> > >("local_Csgs_sum"             ,local_Csgs_sum             );
-  modelparams->set<RCP<vector<double> > >("local_sgvisc_sum"           ,local_sgvisc_sum           );
+  modelparams->set<RCP<std::vector<double> > >("planecoords"                ,nodeplanes_               );
+  modelparams->set<RCP<std::vector<double> > >("local_N_stream_sum"         ,local_N_stream_sum         );
+  modelparams->set<RCP<std::vector<double> > >("local_N_normal_sum"         ,local_N_normal_sum         );
+  modelparams->set<RCP<std::vector<double> > >("local_N_span_sum"           ,local_N_span_sum           );
+  modelparams->set<RCP<std::vector<double> > >("local_B_stream_sum"         ,local_B_stream_sum         );
+  modelparams->set<RCP<std::vector<double> > >("local_B_normal_sum"         ,local_B_normal_sum         );
+  modelparams->set<RCP<std::vector<double> > >("local_B_span_sum"           ,local_B_span_sum           );
+  modelparams->set<RCP<std::vector<double> > >("local_Csgs_sum"             ,local_Csgs_sum             );
+  modelparams->set<RCP<std::vector<double> > >("local_sgvisc_sum"           ,local_sgvisc_sum           );
   if (withscatra)
   {
-    modelparams->set<RCP<vector<double> > >("local_Nphi_sum"                 ,local_Nphi_sum         );
-    modelparams->set<RCP<vector<double> > >("local_Dphi_sum"                 ,local_Dphi_sum         );
-    modelparams->set<RCP<vector<double> > >("local_Csgs_phi_sum"             ,local_Csgs_phi_sum     );
+    modelparams->set<RCP<std::vector<double> > >("local_Nphi_sum"                 ,local_Nphi_sum         );
+    modelparams->set<RCP<std::vector<double> > >("local_Dphi_sum"                 ,local_Dphi_sum         );
+    modelparams->set<RCP<std::vector<double> > >("local_Csgs_phi_sum"             ,local_Csgs_phi_sum     );
   }
 
   // set state vectors for element call
   discret_->ClearState();
   discret_->SetState("velnp",velnp);
-  if (fsvelnp == null)
+  if (fsvelnp == Teuchos::null)
     dserror("Haven't got fine-scale velocity!");
   discret_->SetState("fsvelnp",fsvelnp);
 
   // call loop over elements to compute means
-  discret_->Evaluate(paramsele,null,null,null,null,null);
+  discret_->Evaluate(paramsele,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   discret_->ClearState();
 
   // extract values for N, B, Csgs and sgvisc from parameter list
   // the values are stored in vectors --- each component corresponds to
   // one element layer
-  RCP<vector<double> > global_incr_N_stream_sum;
-  global_incr_N_stream_sum          = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_N_stream_sum                = modelparams->get<RCP<vector<double> > >("local_N_stream_sum",Teuchos::null);
+  RCP<std::vector<double> > global_incr_N_stream_sum;
+  global_incr_N_stream_sum          = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_N_stream_sum                = modelparams->get<RCP<std::vector<double> > >("local_N_stream_sum",Teuchos::null);
   if(local_N_stream_sum==Teuchos::null)
     dserror("local_N_stream_sum==null from parameterlist");
-  RCP<vector<double> > global_incr_N_normal_sum;
-  global_incr_N_normal_sum          = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_N_normal_sum                = modelparams->get<RCP<vector<double> > >("local_N_normal_sum",Teuchos::null);
+  RCP<std::vector<double> > global_incr_N_normal_sum;
+  global_incr_N_normal_sum          = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_N_normal_sum                = modelparams->get<RCP<std::vector<double> > >("local_N_normal_sum",Teuchos::null);
   if(local_N_normal_sum==Teuchos::null)
     dserror("local_N_normal_sum==null from parameterlist");
-  RCP<vector<double> > global_incr_N_span_sum;
-  global_incr_N_span_sum          = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_N_span_sum                = modelparams->get<RCP<vector<double> > >("local_N_span_sum",Teuchos::null);
+  RCP<std::vector<double> > global_incr_N_span_sum;
+  global_incr_N_span_sum          = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_N_span_sum                = modelparams->get<RCP<std::vector<double> > >("local_N_span_sum",Teuchos::null);
   if(local_N_span_sum==Teuchos::null)
     dserror("local_N_span_sum==null from parameterlist");
 
-  RCP<vector<double> > global_incr_B_stream_sum;
-  global_incr_B_stream_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_B_stream_sum       = modelparams->get<RCP<vector<double> > >("local_B_stream_sum",Teuchos::null);
+  RCP<std::vector<double> > global_incr_B_stream_sum;
+  global_incr_B_stream_sum = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_B_stream_sum       = modelparams->get<RCP<std::vector<double> > >("local_B_stream_sum",Teuchos::null);
   if(local_B_stream_sum==Teuchos::null)
     dserror("local_B_stream_sum==null from parameterlist");
-  RCP<vector<double> > global_incr_B_normal_sum;
-  global_incr_B_normal_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_B_normal_sum       = modelparams->get<RCP<vector<double> > >("local_B_normal_sum",Teuchos::null);
+  RCP<std::vector<double> > global_incr_B_normal_sum;
+  global_incr_B_normal_sum = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_B_normal_sum       = modelparams->get<RCP<std::vector<double> > >("local_B_normal_sum",Teuchos::null);
   if(local_B_normal_sum==Teuchos::null)
     dserror("local_B_normal_sum==null from parameterlist");
-  RCP<vector<double> > global_incr_B_span_sum;
-  global_incr_B_span_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_B_span_sum       = modelparams->get<RCP<vector<double> > >("local_B_span_sum",Teuchos::null);
+  RCP<std::vector<double> > global_incr_B_span_sum;
+  global_incr_B_span_sum = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_B_span_sum       = modelparams->get<RCP<std::vector<double> > >("local_B_span_sum",Teuchos::null);
   if(local_B_span_sum==Teuchos::null)
     dserror("local_B_span_sum==null from parameterlist");
 
-  RCP<vector<double> > global_incr_Csgs_sum;
-  global_incr_Csgs_sum     = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Csgs_sum           = modelparams->get<RCP<vector<double> > >("local_Csgs_sum",Teuchos::null);
+  RCP<std::vector<double> > global_incr_Csgs_sum;
+  global_incr_Csgs_sum     = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_Csgs_sum           = modelparams->get<RCP<std::vector<double> > >("local_Csgs_sum",Teuchos::null);
   if(local_Csgs_sum==Teuchos::null)
       dserror("local_Csgs_sum==null from parameterlist");
 
-  RCP<vector<double> > global_incr_sgvisc_sum;
-  global_incr_sgvisc_sum     = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_sgvisc_sum           = modelparams->get<RCP<vector<double> > >("local_sgvisc_sum",Teuchos::null);
+  RCP<std::vector<double> > global_incr_sgvisc_sum;
+  global_incr_sgvisc_sum     = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_sgvisc_sum           = modelparams->get<RCP<std::vector<double> > >("local_sgvisc_sum",Teuchos::null);
   if(local_sgvisc_sum==Teuchos::null)
       dserror("local_sgvsic_sum==null from parameterlist");
 
-  RCP<vector<double> > global_incr_Nphi_sum;
-  global_incr_Nphi_sum          = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RCP<std::vector<double> > global_incr_Nphi_sum;
+  global_incr_Nphi_sum          = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
 
-  RCP<vector<double> > global_incr_Dphi_sum;
-  global_incr_Dphi_sum = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));;
+  RCP<std::vector<double> > global_incr_Dphi_sum;
+  global_incr_Dphi_sum = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));;
 
-  RCP<vector<double> > global_incr_Csgs_phi_sum;
-  global_incr_Csgs_phi_sum     = Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  RCP<std::vector<double> > global_incr_Csgs_phi_sum;
+  global_incr_Csgs_phi_sum     = Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
 
   if (withscatra)
   {
-    local_Nphi_sum                = modelparams->get<RCP<vector<double> > >("local_Nphi_sum",Teuchos::null);
+    local_Nphi_sum                = modelparams->get<RCP<std::vector<double> > >("local_Nphi_sum",Teuchos::null);
     if(local_Nphi_sum==Teuchos::null)
       dserror("local_Nphi_sum==null from parameterlist");
 
-    local_Dphi_sum       = modelparams->get<RCP<vector<double> > >("local_Dphi_sum",Teuchos::null);
+    local_Dphi_sum       = modelparams->get<RCP<std::vector<double> > >("local_Dphi_sum",Teuchos::null);
     if(local_Dphi_sum==Teuchos::null)
       dserror("local_Dphi_sum==null from parameterlist");
 
-    local_Csgs_phi_sum           = modelparams->get<RCP<vector<double> > >("local_Csgs_phi_sum",Teuchos::null);
+    local_Csgs_phi_sum           = modelparams->get<RCP<std::vector<double> > >("local_Csgs_phi_sum",Teuchos::null);
     if(local_Csgs_phi_sum==Teuchos::null)
       dserror("local_Csgs_phi_sum==null from parameterlist");
   }
@@ -2984,35 +2984,35 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
   }
 
   // reinitialize to zero for next element call
-  local_N_stream_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_N_normal_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_N_span_sum            =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_B_stream_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_B_normal_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_B_span_sum            =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_Csgs_sum              =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-  local_sgvisc_sum            =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+  local_N_stream_sum          =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_N_normal_sum          =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_N_span_sum            =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_B_stream_sum          =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_B_normal_sum          =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_B_span_sum            =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_Csgs_sum              =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+  local_sgvisc_sum            =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
 
   if (withscatra)
   {
-    local_Nphi_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    local_Dphi_sum          =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
-    local_Csgs_phi_sum      =  Teuchos::rcp(new vector<double> (nodeplanes_->size()-1,0.0));
+    local_Nphi_sum          =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+    local_Dphi_sum          =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
+    local_Csgs_phi_sum      =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
   }
 
-  modelparams->set<RCP<vector<double> > >("local_N_stream_sum"     ,local_N_stream_sum);
-  modelparams->set<RCP<vector<double> > >("local_N_normal_sum"     ,local_N_normal_sum);
-  modelparams->set<RCP<vector<double> > >("local_N_span_sum"       ,local_N_span_sum  );
-  modelparams->set<RCP<vector<double> > >("local_B_stream_sum"     ,local_B_stream_sum);
-  modelparams->set<RCP<vector<double> > >("local_B_normal_sum"     ,local_B_normal_sum);
-  modelparams->set<RCP<vector<double> > >("local_B_span_sum"       ,local_B_span_sum  );
-  modelparams->set<RCP<vector<double> > >("local_Csgs_sum"         ,local_Csgs_sum    );
-  modelparams->set<RCP<vector<double> > >("local_sgvisc_sum"       ,local_sgvisc_sum  );
+  modelparams->set<RCP<std::vector<double> > >("local_N_stream_sum"     ,local_N_stream_sum);
+  modelparams->set<RCP<std::vector<double> > >("local_N_normal_sum"     ,local_N_normal_sum);
+  modelparams->set<RCP<std::vector<double> > >("local_N_span_sum"       ,local_N_span_sum  );
+  modelparams->set<RCP<std::vector<double> > >("local_B_stream_sum"     ,local_B_stream_sum);
+  modelparams->set<RCP<std::vector<double> > >("local_B_normal_sum"     ,local_B_normal_sum);
+  modelparams->set<RCP<std::vector<double> > >("local_B_span_sum"       ,local_B_span_sum  );
+  modelparams->set<RCP<std::vector<double> > >("local_Csgs_sum"         ,local_Csgs_sum    );
+  modelparams->set<RCP<std::vector<double> > >("local_sgvisc_sum"       ,local_sgvisc_sum  );
   if (withscatra)
   {
-    modelparams->set<RCP<vector<double> > >("local_Nphi_sum"         ,local_Nphi_sum         );
-    modelparams->set<RCP<vector<double> > >("local_Dphi_sum"         ,local_Dphi_sum         );
-    modelparams->set<RCP<vector<double> > >("local_Csgs_phi_sum"     ,local_Csgs_phi_sum     );
+    modelparams->set<RCP<std::vector<double> > >("local_Nphi_sum"         ,local_Nphi_sum         );
+    modelparams->set<RCP<std::vector<double> > >("local_Dphi_sum"         ,local_Dphi_sum         );
+    modelparams->set<RCP<std::vector<double> > >("local_Csgs_phi_sum"     ,local_Csgs_phi_sum     );
   }
 
   // add increment of last iteration to the sum of all values
@@ -3081,7 +3081,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     }
 
     // call loop over elements to compute means
-    discret_->Evaluate(eleparams_,null,null,null,null,null);
+    discret_->Evaluate(eleparams_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
     discret_->ClearState();
 
@@ -3091,43 +3091,43 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
     // ------------------------------------------------
     // get results from element call via parameter list
-    RCP<vector<double> > local_vol               =eleparams_.get<RCP<vector<double> > >("incrvol"         );
+    RCP<std::vector<double> > local_vol               =eleparams_.get<RCP<std::vector<double> > >("incrvol"         );
 
-    RCP<vector<double> > local_incrhk            =eleparams_.get<RCP<vector<double> > >("incrhk"          );
-    RCP<vector<double> > local_incrhbazilevs     =eleparams_.get<RCP<vector<double> > >("incrhbazilevs"   );
-    RCP<vector<double> > local_incrstrle         =eleparams_.get<RCP<vector<double> > >("incrstrle"       );
-    RCP<vector<double> > local_incrgradle        =eleparams_.get<RCP<vector<double> > >("incrgradle"      );
+    RCP<std::vector<double> > local_incrhk            =eleparams_.get<RCP<std::vector<double> > >("incrhk"          );
+    RCP<std::vector<double> > local_incrhbazilevs     =eleparams_.get<RCP<std::vector<double> > >("incrhbazilevs"   );
+    RCP<std::vector<double> > local_incrstrle         =eleparams_.get<RCP<std::vector<double> > >("incrstrle"       );
+    RCP<std::vector<double> > local_incrgradle        =eleparams_.get<RCP<std::vector<double> > >("incrgradle"      );
 
-    RCP<vector<double> > local_incrtauC          =eleparams_.get<RCP<vector<double> > >("incrtauC"        );
-    RCP<vector<double> > local_incrtauM          =eleparams_.get<RCP<vector<double> > >("incrtauM"        );
+    RCP<std::vector<double> > local_incrtauC          =eleparams_.get<RCP<std::vector<double> > >("incrtauC"        );
+    RCP<std::vector<double> > local_incrtauM          =eleparams_.get<RCP<std::vector<double> > >("incrtauM"        );
 
-    RCP<vector<double> > local_incrres           =eleparams_.get<RCP<vector<double> > >("incrres"         );
-    RCP<vector<double> > local_incrres_sq        =eleparams_.get<RCP<vector<double> > >("incrres_sq"      );
-    RCP<vector<double> > local_incrabsres        =eleparams_.get<RCP<vector<double> > >("incrabsres"      );
-    RCP<vector<double> > local_incrtauinvsvel    =eleparams_.get<RCP<vector<double> > >("incrtauinvsvel"  );
-    RCP<vector<double> > local_incrsvelaf        =eleparams_.get<RCP<vector<double> > >("incrsvelaf"      );
-    RCP<vector<double> > local_incrsvelaf_sq     =eleparams_.get<RCP<vector<double> > >("incrsvelaf_sq"   );
-    RCP<vector<double> > local_incrabssvelaf     =eleparams_.get<RCP<vector<double> > >("incrabssvelaf"   );
-    RCP<vector<double> > local_incrresC          =eleparams_.get<RCP<vector<double> > >("incrresC"        );
-    RCP<vector<double> > local_incrresC_sq       =eleparams_.get<RCP<vector<double> > >("incrresC_sq"     );
-    RCP<vector<double> > local_incrspressnp      =eleparams_.get<RCP<vector<double> > >("incrspressnp"    );
-    RCP<vector<double> > local_incrspressnp_sq   =eleparams_.get<RCP<vector<double> > >("incrspressnp_sq" );
+    RCP<std::vector<double> > local_incrres           =eleparams_.get<RCP<std::vector<double> > >("incrres"         );
+    RCP<std::vector<double> > local_incrres_sq        =eleparams_.get<RCP<std::vector<double> > >("incrres_sq"      );
+    RCP<std::vector<double> > local_incrabsres        =eleparams_.get<RCP<std::vector<double> > >("incrabsres"      );
+    RCP<std::vector<double> > local_incrtauinvsvel    =eleparams_.get<RCP<std::vector<double> > >("incrtauinvsvel"  );
+    RCP<std::vector<double> > local_incrsvelaf        =eleparams_.get<RCP<std::vector<double> > >("incrsvelaf"      );
+    RCP<std::vector<double> > local_incrsvelaf_sq     =eleparams_.get<RCP<std::vector<double> > >("incrsvelaf_sq"   );
+    RCP<std::vector<double> > local_incrabssvelaf     =eleparams_.get<RCP<std::vector<double> > >("incrabssvelaf"   );
+    RCP<std::vector<double> > local_incrresC          =eleparams_.get<RCP<std::vector<double> > >("incrresC"        );
+    RCP<std::vector<double> > local_incrresC_sq       =eleparams_.get<RCP<std::vector<double> > >("incrresC_sq"     );
+    RCP<std::vector<double> > local_incrspressnp      =eleparams_.get<RCP<std::vector<double> > >("incrspressnp"    );
+    RCP<std::vector<double> > local_incrspressnp_sq   =eleparams_.get<RCP<std::vector<double> > >("incrspressnp_sq" );
 
-    RCP<vector<double> > local_incr_eps_visc     = eleparams_.get<RCP<vector<double> > >("incr_eps_visc"    );
-    RCP<vector<double> > local_incr_eps_conv     = eleparams_.get<RCP<vector<double> > >("incr_eps_conv"    );
-    RCP<vector<double> > local_incr_eps_eddyvisc = eleparams_.get<RCP<vector<double> > >("incr_eps_eddyvisc");
-    RCP<vector<double> > local_incr_eps_avm3     = eleparams_.get<RCP<vector<double> > >("incr_eps_avm3"    );
-    RCP<vector<double> > local_incr_eps_mfs      = eleparams_.get<RCP<vector<double> > >("incr_eps_mfs"     );
-    RCP<vector<double> > local_incr_eps_mfscross = eleparams_.get<RCP<vector<double> > >("incr_eps_mfscross");
-    RCP<vector<double> > local_incr_eps_mfsrey   = eleparams_.get<RCP<vector<double> > >("incr_eps_mfsrey"  );
-    RCP<vector<double> > local_incr_eps_supg     = eleparams_.get<RCP<vector<double> > >("incr_eps_supg"    );
-    RCP<vector<double> > local_incr_eps_cross    = eleparams_.get<RCP<vector<double> > >("incr_eps_cross"   );
-    RCP<vector<double> > local_incr_eps_rey      = eleparams_.get<RCP<vector<double> > >("incr_eps_rey"     );
-    RCP<vector<double> > local_incr_eps_cstab    = eleparams_.get<RCP<vector<double> > >("incr_eps_cstab"   );
-    RCP<vector<double> > local_incr_eps_pspg     = eleparams_.get<RCP<vector<double> > >("incr_eps_pspg"    );
+    RCP<std::vector<double> > local_incr_eps_visc     = eleparams_.get<RCP<std::vector<double> > >("incr_eps_visc"    );
+    RCP<std::vector<double> > local_incr_eps_conv     = eleparams_.get<RCP<std::vector<double> > >("incr_eps_conv"    );
+    RCP<std::vector<double> > local_incr_eps_eddyvisc = eleparams_.get<RCP<std::vector<double> > >("incr_eps_eddyvisc");
+    RCP<std::vector<double> > local_incr_eps_avm3     = eleparams_.get<RCP<std::vector<double> > >("incr_eps_avm3"    );
+    RCP<std::vector<double> > local_incr_eps_mfs      = eleparams_.get<RCP<std::vector<double> > >("incr_eps_mfs"     );
+    RCP<std::vector<double> > local_incr_eps_mfscross = eleparams_.get<RCP<std::vector<double> > >("incr_eps_mfscross");
+    RCP<std::vector<double> > local_incr_eps_mfsrey   = eleparams_.get<RCP<std::vector<double> > >("incr_eps_mfsrey"  );
+    RCP<std::vector<double> > local_incr_eps_supg     = eleparams_.get<RCP<std::vector<double> > >("incr_eps_supg"    );
+    RCP<std::vector<double> > local_incr_eps_cross    = eleparams_.get<RCP<std::vector<double> > >("incr_eps_cross"   );
+    RCP<std::vector<double> > local_incr_eps_rey      = eleparams_.get<RCP<std::vector<double> > >("incr_eps_rey"     );
+    RCP<std::vector<double> > local_incr_eps_cstab    = eleparams_.get<RCP<std::vector<double> > >("incr_eps_cstab"   );
+    RCP<std::vector<double> > local_incr_eps_pspg     = eleparams_.get<RCP<std::vector<double> > >("incr_eps_pspg"    );
 
-    RCP<vector<double> > local_incrcrossstress   = eleparams_.get<RCP<vector<double> > >("incrcrossstress"  );
-    RCP<vector<double> > local_incrreystress     = eleparams_.get<RCP<vector<double> > >("incrreystress"    );
+    RCP<std::vector<double> > local_incrcrossstress   = eleparams_.get<RCP<std::vector<double> > >("incrcrossstress"  );
+    RCP<std::vector<double> > local_incrreystress     = eleparams_.get<RCP<std::vector<double> > >("incrreystress"    );
 
     int presize    = local_incrresC       ->size();
     int velsize    = local_incrres        ->size();
@@ -3137,133 +3137,133 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     // vectors to sum over all procs
 
     // volume of element layers
-    RCP<vector<double> > global_vol;
-    global_vol           =  Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_vol;
+    global_vol           =  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // element sizes of element layers
-    RCP<vector<double> > global_incrhk;
-    global_incrhk        =  Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incrhk;
+    global_incrhk        =  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // element sizes in Bazilevs parameter, viscous regime in element layers
-    RCP<vector<double> > global_incrhbazilevs;
-    global_incrhbazilevs =  Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incrhbazilevs;
+    global_incrhbazilevs =  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // element sizes of element stream length
-    RCP<vector<double> > global_incrstrle;
-    global_incrstrle     =  Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incrstrle;
+    global_incrstrle     =  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // element sizes based on gradient length
-    RCP<vector<double> > global_incrgradle;
-    global_incrgradle     =  Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incrgradle;
+    global_incrgradle     =  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
 
     // (in plane) averaged values of tauM/tauC
 
-    RCP<vector<double> > global_incrtauM;
-    global_incrtauM=  Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incrtauM;
+    global_incrtauM=  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    RCP<vector<double> > global_incrtauC;
-    global_incrtauC=  Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incrtauC;
+    global_incrtauC=  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // (in plane) averaged values of resM (^2) (abs)
 
-    RCP<vector<double> > global_incrres;
-    global_incrres=  Teuchos::rcp(new vector<double> (velsize,0.0));
+    RCP<std::vector<double> > global_incrres;
+    global_incrres=  Teuchos::rcp(new std::vector<double> (velsize,0.0));
 
-    RCP<vector<double> > global_incrres_sq;
-    global_incrres_sq=  Teuchos::rcp(new vector<double> (velsize,0.0));
+    RCP<std::vector<double> > global_incrres_sq;
+    global_incrres_sq=  Teuchos::rcp(new std::vector<double> (velsize,0.0));
 
-    RCP<vector<double> > global_incrtauinvsvel;
-    global_incrtauinvsvel=  Teuchos::rcp(new vector<double> (velsize,0.0));
+    RCP<std::vector<double> > global_incrtauinvsvel;
+    global_incrtauinvsvel=  Teuchos::rcp(new std::vector<double> (velsize,0.0));
 
-    RCP<vector<double> > global_incrabsres;
-    global_incrabsres=  Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incrabsres;
+    global_incrabsres=  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // (in plane) averaged values of svelaf (^2) (abs)
 
-    RCP<vector<double> > global_incrsvelaf;
-    global_incrsvelaf=  Teuchos::rcp(new vector<double> (velsize,0.0));
+    RCP<std::vector<double> > global_incrsvelaf;
+    global_incrsvelaf=  Teuchos::rcp(new std::vector<double> (velsize,0.0));
 
-    RCP<vector<double> > global_incrsvelaf_sq;
-    global_incrsvelaf_sq=  Teuchos::rcp(new vector<double> (velsize,0.0));
+    RCP<std::vector<double> > global_incrsvelaf_sq;
+    global_incrsvelaf_sq=  Teuchos::rcp(new std::vector<double> (velsize,0.0));
 
-    RCP<vector<double> > global_incrabssvelaf;
-    global_incrabssvelaf=  Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incrabssvelaf;
+    global_incrabssvelaf=  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // (in plane) averaged values of resC (^2)
 
-    RCP<vector<double> > global_incrresC;
-    global_incrresC=  Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incrresC;
+    global_incrresC=  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    RCP<vector<double> > global_incrresC_sq;
-    global_incrresC_sq=  Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incrresC_sq;
+    global_incrresC_sq=  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // (in plane) averaged values of spressnp (^2)
 
-    RCP<vector<double> > global_incrspressnp;
-    global_incrspressnp=  Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incrspressnp;
+    global_incrspressnp=  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    RCP<vector<double> > global_incrspressnp_sq;
-    global_incrspressnp_sq=  Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incrspressnp_sq;
+    global_incrspressnp_sq=  Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation by pspg term
 
-    RCP<vector<double> > global_incr_eps_pspg;
-    global_incr_eps_pspg  = Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incr_eps_pspg;
+    global_incr_eps_pspg  = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation by supg term
 
-    RCP<vector<double> > global_incr_eps_supg;
-    global_incr_eps_supg  = Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incr_eps_supg;
+    global_incr_eps_supg  = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation by cross term
 
-    RCP<vector<double> > global_incr_eps_cross;
-    global_incr_eps_cross  = Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incr_eps_cross;
+    global_incr_eps_cross  = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation by reynolds term
 
-    RCP<vector<double> > global_incr_eps_rey;
-    global_incr_eps_rey  = Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incr_eps_rey;
+    global_incr_eps_rey  = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation by continuity stabilisation
 
-    RCP<vector<double> > global_incr_eps_cstab;
-    global_incr_eps_cstab  = Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incr_eps_cstab;
+    global_incr_eps_cstab  = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation by eddy viscosity
 
-    RCP<vector<double> > global_incr_eps_eddyvisc;
-    global_incr_eps_eddyvisc  = Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incr_eps_eddyvisc;
+    global_incr_eps_eddyvisc  = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    RCP<vector<double> > global_incr_eps_avm3;
-    global_incr_eps_avm3  = Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incr_eps_avm3;
+    global_incr_eps_avm3  = Teuchos::rcp(new std::vector<double> (presize,0.0));
     // (in plane) averaged values of dissipation by scale similarity model
-    RCP<vector<double> > global_incr_eps_mfs;
-    global_incr_eps_mfs  = Teuchos::rcp(new vector<double> (presize,0.0));
-    RCP<vector<double> > global_incr_eps_mfscross;
-    global_incr_eps_mfscross  = Teuchos::rcp(new vector<double> (presize,0.0));
-    RCP<vector<double> > global_incr_eps_mfsrey;
-    global_incr_eps_mfsrey  = Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incr_eps_mfs;
+    global_incr_eps_mfs  = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incr_eps_mfscross;
+    global_incr_eps_mfscross  = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incr_eps_mfsrey;
+    global_incr_eps_mfsrey  = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation by viscous forces
 
-    RCP<vector<double> > global_incr_eps_visc;
-    global_incr_eps_visc  = Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incr_eps_visc;
+    global_incr_eps_visc  = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation/production by convection
 
-    RCP<vector<double> > global_incr_eps_conv;
-    global_incr_eps_conv  = Teuchos::rcp(new vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incr_eps_conv;
+    global_incr_eps_conv  = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // (in plane) averaged values of subgrid stresses resulting from supg and cross term
 
-    RCP<vector<double> > global_incrcrossstress;
-    global_incrcrossstress = Teuchos::rcp(new vector<double> (stresssize,0.0));
+    RCP<std::vector<double> > global_incrcrossstress;
+    global_incrcrossstress = Teuchos::rcp(new std::vector<double> (stresssize,0.0));
 
     // (in plane) averaged values of subgrid stresses resulting from reynolds stresses
-    RCP<vector<double> > global_incrreystress;
-    global_incrreystress   = Teuchos::rcp(new vector<double> (stresssize,0.0));
+    RCP<std::vector<double> > global_incrreystress;
+    global_incrreystress   = Teuchos::rcp(new std::vector<double> (stresssize,0.0));
 
 
     //--------------------------------------------------
@@ -3438,83 +3438,83 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     }
 
     // reset working arrays
-    local_vol               = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_vol               = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    local_incrhk            = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incrhbazilevs     = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incrstrle         = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incrgradle        = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incrhk            = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incrhbazilevs     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incrstrle         = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incrgradle        = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    local_incrtauC          = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incrtauM          = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incrtauC          = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incrtauM          = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    local_incrres           = Teuchos::rcp(new vector<double> (velsize,0.0));
-    local_incrres_sq        = Teuchos::rcp(new vector<double> (velsize,0.0));
-    local_incrsvelaf        = Teuchos::rcp(new vector<double> (velsize,0.0));
-    local_incrsvelaf_sq     = Teuchos::rcp(new vector<double> (velsize,0.0));
-    local_incrtauinvsvel    = Teuchos::rcp(new vector<double> (velsize,0.0));
+    local_incrres           = Teuchos::rcp(new std::vector<double> (velsize,0.0));
+    local_incrres_sq        = Teuchos::rcp(new std::vector<double> (velsize,0.0));
+    local_incrsvelaf        = Teuchos::rcp(new std::vector<double> (velsize,0.0));
+    local_incrsvelaf_sq     = Teuchos::rcp(new std::vector<double> (velsize,0.0));
+    local_incrtauinvsvel    = Teuchos::rcp(new std::vector<double> (velsize,0.0));
 
-    local_incrabsres        = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incrabssvelaf     = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incrabsres        = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incrabssvelaf     = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    local_incrresC          = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incrresC_sq       = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incrspressnp      = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incrspressnp_sq   = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incrresC          = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incrresC_sq       = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incrspressnp      = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incrspressnp_sq   = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    local_incr_eps_pspg     = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incr_eps_supg     = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incr_eps_cross    = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incr_eps_rey      = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incr_eps_cstab    = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incr_eps_eddyvisc = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incr_eps_visc     = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incr_eps_conv     = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incr_eps_avm3     = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incr_eps_mfs      = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incr_eps_mfscross = Teuchos::rcp(new vector<double> (presize,0.0));
-    local_incr_eps_mfsrey   = Teuchos::rcp(new vector<double> (presize,0.0));
+    local_incr_eps_pspg     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incr_eps_supg     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incr_eps_cross    = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incr_eps_rey      = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incr_eps_cstab    = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incr_eps_eddyvisc = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incr_eps_visc     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incr_eps_conv     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incr_eps_avm3     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incr_eps_mfs      = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incr_eps_mfscross = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incr_eps_mfsrey   = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
-    local_incrcrossstress   = Teuchos::rcp(new vector<double> (stresssize,0.0));
-    local_incrreystress     = Teuchos::rcp(new vector<double> (stresssize,0.0));
+    local_incrcrossstress   = Teuchos::rcp(new std::vector<double> (stresssize,0.0));
+    local_incrreystress     = Teuchos::rcp(new std::vector<double> (stresssize,0.0));
 
-    eleparams_.set<RCP<vector<double> > >("incrvol"          ,local_vol              );
-    eleparams_.set<RCP<vector<double> > >("incrhk"           ,local_incrhk           );
-    eleparams_.set<RCP<vector<double> > >("incrhbazilevs"    ,local_incrhbazilevs    );
-    eleparams_.set<RCP<vector<double> > >("incrstrle"        ,local_incrstrle        );
-    eleparams_.set<RCP<vector<double> > >("incrgradle"       ,local_incrgradle       );
+    eleparams_.set<RCP<std::vector<double> > >("incrvol"          ,local_vol              );
+    eleparams_.set<RCP<std::vector<double> > >("incrhk"           ,local_incrhk           );
+    eleparams_.set<RCP<std::vector<double> > >("incrhbazilevs"    ,local_incrhbazilevs    );
+    eleparams_.set<RCP<std::vector<double> > >("incrstrle"        ,local_incrstrle        );
+    eleparams_.set<RCP<std::vector<double> > >("incrgradle"       ,local_incrgradle       );
 
-    eleparams_.set<RCP<vector<double> > >("incrtauC"         ,local_incrtauC         );
-    eleparams_.set<RCP<vector<double> > >("incrtauM"         ,local_incrtauM         );
+    eleparams_.set<RCP<std::vector<double> > >("incrtauC"         ,local_incrtauC         );
+    eleparams_.set<RCP<std::vector<double> > >("incrtauM"         ,local_incrtauM         );
 
-    eleparams_.set<RCP<vector<double> > >("incrres"          ,local_incrres          );
-    eleparams_.set<RCP<vector<double> > >("incrres_sq"       ,local_incrres_sq       );
-    eleparams_.set<RCP<vector<double> > >("incrabsres"       ,local_incrabsres       );
-    eleparams_.set<RCP<vector<double> > >("incrtauinvsvel"   ,local_incrtauinvsvel   );
-    eleparams_.set<RCP<vector<double> > >("incrsvelaf"       ,local_incrsvelaf       );
-    eleparams_.set<RCP<vector<double> > >("incrsvelaf_sq"    ,local_incrsvelaf_sq    );
-    eleparams_.set<RCP<vector<double> > >("incrabssvelaf"    ,local_incrabssvelaf    );
+    eleparams_.set<RCP<std::vector<double> > >("incrres"          ,local_incrres          );
+    eleparams_.set<RCP<std::vector<double> > >("incrres_sq"       ,local_incrres_sq       );
+    eleparams_.set<RCP<std::vector<double> > >("incrabsres"       ,local_incrabsres       );
+    eleparams_.set<RCP<std::vector<double> > >("incrtauinvsvel"   ,local_incrtauinvsvel   );
+    eleparams_.set<RCP<std::vector<double> > >("incrsvelaf"       ,local_incrsvelaf       );
+    eleparams_.set<RCP<std::vector<double> > >("incrsvelaf_sq"    ,local_incrsvelaf_sq    );
+    eleparams_.set<RCP<std::vector<double> > >("incrabssvelaf"    ,local_incrabssvelaf    );
 
-    eleparams_.set<RCP<vector<double> > >("incrresC"         ,local_incrresC         );
-    eleparams_.set<RCP<vector<double> > >("incrresC_sq"      ,local_incrresC_sq      );
-    eleparams_.set<RCP<vector<double> > >("incrspressnp"     ,local_incrspressnp     );
-    eleparams_.set<RCP<vector<double> > >("incrspressnp_sq"  ,local_incrspressnp_sq  );
+    eleparams_.set<RCP<std::vector<double> > >("incrresC"         ,local_incrresC         );
+    eleparams_.set<RCP<std::vector<double> > >("incrresC_sq"      ,local_incrresC_sq      );
+    eleparams_.set<RCP<std::vector<double> > >("incrspressnp"     ,local_incrspressnp     );
+    eleparams_.set<RCP<std::vector<double> > >("incrspressnp_sq"  ,local_incrspressnp_sq  );
 
-    eleparams_.set<RCP<vector<double> > >("incr_eps_pspg"    ,local_incr_eps_pspg    );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_supg"    ,local_incr_eps_supg    );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_cross"   ,local_incr_eps_cross   );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_rey"     ,local_incr_eps_rey     );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_cstab"   ,local_incr_eps_cstab   );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_eddyvisc",local_incr_eps_eddyvisc);
-    eleparams_.set<RCP<vector<double> > >("incr_eps_visc"    ,local_incr_eps_visc    );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_conv"    ,local_incr_eps_conv    );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_avm3"    ,local_incr_eps_avm3    );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_mfs"     ,local_incr_eps_mfs     );
-    eleparams_.set<RCP<vector<double> > >("incr_eps_mfscross",local_incr_eps_mfscross);
-    eleparams_.set<RCP<vector<double> > >("incr_eps_mfsrey"   ,local_incr_eps_mfsrey );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_pspg"    ,local_incr_eps_pspg    );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_supg"    ,local_incr_eps_supg    );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_cross"   ,local_incr_eps_cross   );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_rey"     ,local_incr_eps_rey     );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_cstab"   ,local_incr_eps_cstab   );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_eddyvisc",local_incr_eps_eddyvisc);
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_visc"    ,local_incr_eps_visc    );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_conv"    ,local_incr_eps_conv    );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_avm3"    ,local_incr_eps_avm3    );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_mfs"     ,local_incr_eps_mfs     );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_mfscross",local_incr_eps_mfscross);
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_mfsrey"   ,local_incr_eps_mfsrey );
 
-    eleparams_.set<RCP<vector<double> > >("incrcrossstress"  ,local_incrcrossstress  );
-    eleparams_.set<RCP<vector<double> > >("incrreystress"    ,local_incrreystress    );
+    eleparams_.set<RCP<std::vector<double> > >("incrcrossstress"  ,local_incrcrossstress  );
+    eleparams_.set<RCP<std::vector<double> > >("incrreystress"    ,local_incrreystress    );
   }
 
   return;

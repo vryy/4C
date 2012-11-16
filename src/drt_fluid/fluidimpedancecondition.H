@@ -96,7 +96,7 @@ public:
   /*!
   \brief return pressures of one cycle
   */
-  RCP<vector<double> > getPressures(int condid);
+  RCP<std::vector<double> > getPressures(int condid);
 
   /*!
   \brief Wrapper for FluidImpedacnceBc::SetWindkesselParams
@@ -270,7 +270,7 @@ private:
   /*!
   \brief return pressures of one cycle
   */
-  RCP<vector<double> > getPressures(){return pressures_;}
+  RCP<std::vector<double> > getPressures(){return pressures_;}
 
 
   /*!

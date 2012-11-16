@@ -91,9 +91,9 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Pack(DRT::PackBuffer& data) con
  |                                                           vuong 03/12|
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   so3_ele::ExtractfromPack(position,data,type);
@@ -113,7 +113,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Unpack(const vector<char>& data
   //  so3_ele::ExtractfromPack(position,data,invJ_[i]);
 
   // extract base class Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   so3_ele::ExtractfromPack(position,data,basedata);
   so3_ele::Unpack(basedata);
 

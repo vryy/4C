@@ -372,8 +372,8 @@ namespace LINALG
   \param lmcol (in)      : vector with column gids
   */
   void Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,
-                const vector<int>& lmrow, const vector<int>& lmrowowner,
-                const vector<int>& lmcol);
+                const std::vector<int>& lmrow, const std::vector<int>& lmrowowner,
+                const std::vector<int>& lmcol);
 
   /*!
   \brief Assemble a Epetra_SerialDenseVector into a Epetra_Vector
@@ -389,7 +389,7 @@ namespace LINALG
   \param lmowner (in) : vector with owner procs of gids
   */
   void Assemble(Epetra_Vector& V, const Epetra_SerialDenseVector& Vele,
-                const vector<int>& lm, const vector<int>& lmowner);
+                const std::vector<int>& lm, const std::vector<int>& lmowner);
 
   /*!
   \brief Assemble a Epetra_SerialDenseVector into a Epetra_MultiVector
@@ -406,7 +406,7 @@ namespace LINALG
   \param lmowner (in) : vector with owner procs of gids
   */
   void Assemble(Epetra_MultiVector& V, const int n, const Epetra_SerialDenseVector& Vele,
-                const vector<int>& lm, const vector<int>& lmowner);
+                const std::vector<int>& lm, const std::vector<int>& lmowner);
 
 
   /*!
@@ -1014,7 +1014,7 @@ namespace LINALG
       return; // nothing to do in serial
     }
     // build a map of data
-    map<int,vector<T> > datamap;
+    map<int,std::vector<T> > datamap;
     datamap[myrank] = sdata;
     // build a source map
     Epetra_Map source(numproc,1,&myrank,0,comm);
@@ -1040,10 +1040,10 @@ namespace LINALG
     // put data from map in rdata
     rdata.clear();
     int count=0;
-    typename map<int,vector<T> >::const_iterator curr;
+    typename map<int,std::vector<T> >::const_iterator curr;
     for (curr=datamap.begin(); curr != datamap.end(); ++curr)
     {
-      const vector<T>& current = curr->second;
+      const std::vector<T>& current = curr->second;
       const int size = (int)current.size();
       rdata.resize((int)rdata.size()+size);
       for (int i=0; i<size; ++i)
@@ -1389,7 +1389,7 @@ namespace LINALG
     \date 09/07
    */
   void AllToAllCommunication( const Epetra_Comm& comm,
-                              const vector< vector<int> >& send, vector< vector<int> >& recv );
+                              const std::vector< std::vector<int> >& send, vector< std::vector<int> >& recv );
 
   /// return the first slot of a pair
   /*!

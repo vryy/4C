@@ -131,13 +131,13 @@ public:
   \brief Get vector of RCPs to the lines of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
   /*!
   \brief Get vector of RCPs to the surfaces of this element
 
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
   /*!
   \brief Return unique ParObject id
@@ -243,7 +243,7 @@ public:
   \param name (in):   Name of data that is currently processed for visualization
   \param data (out):  data to be filled by element if element recognizes the name
   */
-  virtual bool VisData(const string& name, vector<double>& data);
+  virtual bool VisData(const string& name, std::vector<double>& data);
 
   //@}
 
@@ -284,9 +284,9 @@ public:
                           to fill this vector
   \return 0 if successful, negative otherwise
   */
-  int Evaluate(ParameterList& params,
+  int Evaluate(Teuchos::ParameterList& params,
                DRT::Discretization&      discretization,
-               vector<int>&              lm,
+               std::vector<int>&         lm,
                Epetra_SerialDenseMatrix& elemat1,
                Epetra_SerialDenseMatrix& elemat2,
                Epetra_SerialDenseVector& elevec1,
@@ -308,10 +308,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -323,7 +323,7 @@ public:
   /*!
   \brief Get ptr to nodal thicknesses
   */
-  const vector<double>* GetThickness() { return data_.Get<vector<double> >("thick");}
+  const std::vector<double>* GetThickness() { return data_.Get<std::vector<double> >("thick");}
 
   /*!
   \brief Get reference to directors
@@ -388,9 +388,9 @@ private:
   // don't want = operator
   Shell8& operator = (const Shell8& old);
 
-  void s8_nlnstiffmass(vector<int>&              lm,
-                       vector<double>&           disp,
-                       vector<double>&           residual,
+  void s8_nlnstiffmass(std::vector<int>&         lm,
+                       std::vector<double>&      disp,
+                       std::vector<double>&      residual,
                        Epetra_SerialDenseMatrix* stiffmatrix,
                        Epetra_SerialDenseMatrix* massmatrix,
                        Epetra_SerialDenseVector* force,
@@ -399,10 +399,10 @@ private:
   //! lump mass matrix (bborn 07/08)
   void s8_lumpmass(Epetra_SerialDenseMatrix* emass);  //!< element mass matrix
 
-  void s8stress(struct _MATERIAL* material, vector<double>& mydisp);
+  void s8stress(struct _MATERIAL* material, std::vector<double>& mydisp);
 
-  void s8_surfaceload(ParameterList& params,Epetra_SerialDenseVector& elevec1,
-                    const vector<double>& disp);
+  void s8_surfaceload(Teuchos::ParameterList& params,Epetra_SerialDenseVector& elevec1,
+                    const std::vector<double>& disp);
 
   void s8_integration_points(struct _S8_DATA& data);
 
@@ -410,16 +410,16 @@ private:
               const double D[][12], const int iel, const int numdf, const double weight);
 
   void s8tvkg(Epetra_SerialDenseMatrix& estif, double stress_r[],
-              const vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
+              const std::vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
               const int numdf, const int iel, const double weight,
               const double e1, const double e2);
 
   void s8anstvkg(Epetra_SerialDenseMatrix& estif, double stress_r[],
-                 const vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
+                 const std::vector<double>& funct, const Epetra_SerialDenseMatrix& deriv,
                  const int numdf, const int iel, const double weight,
                  const double e1, const double e2,
                  const double frq[], const double fsq[],
-                 const vector<double> funct1q[], const vector<double> funct2q[],
+                 const std::vector<double> funct1q[], const std::vector<double> funct2q[],
                  const Epetra_SerialDenseMatrix deriv1q[], const Epetra_SerialDenseMatrix deriv2q[],
                  const int ansq, const int nsansq);
 
@@ -427,7 +427,7 @@ private:
                   const Epetra_SerialDenseMatrix& bop, const int iel,
                   const int numdf, const int nstress_r, const double weight);
 
-  void s8tmas(const vector<double>& funct, const vector<double>& thick,
+  void s8tmas(const std::vector<double>& funct, const std::vector<double>& thick,
               Epetra_SerialDenseMatrix& emass, const int iel, const int numdf,
               const double facv, const double facw, const double facvw);
 
@@ -444,11 +444,11 @@ private:
   void s8tvma(double D[][12], double** C, double stress[], double stress_r[],
               const double e3, const double fact, const double condfac);
 
-  void s8_YpluseqAx(vector<double>& y, const Epetra_SerialDenseMatrix& A,
-                    const vector<double>& x, const double factor,
+  void s8_YpluseqAx(std::vector<double>& y, const Epetra_SerialDenseMatrix& A,
+                    const std::vector<double>& x, const double factor,
                     const bool init);
   void s8_YpluseqAx(Epetra_SerialDenseVector& y, const Epetra_SerialDenseMatrix& A,
-                    const vector<double>& x, const double factor,
+                    const std::vector<double>& x, const double factor,
                     const bool init);
 
   void s8inv3(double a[][3], double* det);
@@ -481,7 +481,7 @@ private:
                         const int nj,
                         const int init,
                         const double factor);
-  void s8mattrnvecdense(vector<double>& r,
+  void s8mattrnvecdense(std::vector<double>& r,
                         const Epetra_SerialDenseMatrix& A,
                         const double b[],
                         const int ni,
@@ -492,13 +492,13 @@ private:
   double s8_localcoordsofnode(const int node, const int flag,
                               const int numnode) const;
 
-  void s8_shapefunctions(vector<double>& funct, Epetra_SerialDenseMatrix& deriv,
+  void s8_shapefunctions(std::vector<double>& funct, Epetra_SerialDenseMatrix& deriv,
                                const double r, const double s, const int numnode,
                                const int doderiv) const;
 
   void s8tvbo(const double e1, const double e2,
               Epetra_SerialDenseMatrix& bop,
-              const vector<double>& funct,
+              const std::vector<double>& funct,
               const Epetra_SerialDenseMatrix& deriv,
               const int iel,
               const int numdf,
@@ -513,7 +513,7 @@ private:
               double amkov[][3],
               double amkon[][3],
               double* det,
-              const vector<double>& funct,
+              const std::vector<double>& funct,
               const Epetra_SerialDenseMatrix& deriv,
               const int iel,
               double a3kvp[][2],
@@ -527,7 +527,7 @@ private:
               double gmkov[][3],
               double gmkon[][3],
               double* det,
-              const vector<double>& funct,
+              const std::vector<double>& funct,
               const Epetra_SerialDenseMatrix& deriv,
               const int iel,
               const double condfac,
@@ -542,11 +542,11 @@ private:
               double a3kvpc[][2], double a3kvpr[][2],
               const double e3, const double condfac);
 
-  void s8_jaco(const vector<double>& funct,
+  void s8_jaco(const std::vector<double>& funct,
                const Epetra_SerialDenseMatrix& deriv,
                const double x[][MAXNOD_SHELL8],
                double xjm[][3],
-               const vector<double>& hte,
+               const std::vector<double>& hte,
                const double a3ref[][MAXNOD_SHELL8],
                const double e3,
                const int iel,
@@ -555,9 +555,9 @@ private:
 
   void s8_ans_colloquationpoints(const int nsansq, const int iel, const int ans,
                                  double xr1[], double xs1[], double xr2[], double xs2[],
-                                 vector<double>                  funct1q[],
+                                 std::vector<double>                  funct1q[],
                                  Epetra_SerialDenseMatrix        deriv1q[],
-                                 vector<double>                  funct2q[],
+                                 std::vector<double>                  funct2q[],
                                  Epetra_SerialDenseMatrix        deriv2q[],
                                  const double xrefe[][MAXNOD_SHELL8],
                                  const double a3r[][MAXNOD_SHELL8],
@@ -594,7 +594,7 @@ private:
 
   void s8ansbbarq(Epetra_SerialDenseMatrix& bop,
                   const double frq[], const double fsq[],
-                  const vector<double> funct1q[], const vector<double> funct2q[],
+                  const std::vector<double> funct1q[], const std::vector<double> funct2q[],
                   const Epetra_SerialDenseMatrix deriv1q[], const Epetra_SerialDenseMatrix deriv2q[],
                   const double akovc1q[][3][3], const double akovc2q[][3][3],
                   const double a3kvpc1q[][3][2], const double a3kvpc2q[][3][2],
@@ -621,7 +621,7 @@ private:
                   const double akonr0[][3], const double detr, const double detr0,
                   const int nhyb);
 
-  void s8vthv(double gmkovc[][3], double gmkonc[][3], const vector<double>& epsh,
+  void s8vthv(double gmkovc[][3], double gmkonc[][3], const std::vector<double>& epsh,
               double* detc, const double e3, const double condfac);
 
 }; // class Shell8
@@ -790,10 +790,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 

@@ -104,7 +104,7 @@ public:
   TurbulenceStatisticsCha(RCP<DRT::Discretization> actdis             ,
                           bool                             alefluid           ,
                           RCP<Epetra_Vector>       dispnp             ,
-                          ParameterList&                   params             ,
+                          Teuchos::ParameterList&                   params             ,
                           bool                             subgrid_dissipation);
 
   /*!
@@ -360,7 +360,7 @@ private:
 
   //! contains plane normal direction etc --- this is the original
   //! fluid dynamic parameterlist
-  ParameterList&                   params_;
+  Teuchos::ParameterList&                   params_;
 
   //! toggle evaluation of dynamic Smagorinsky/Smagorinsky with
   //! wall damping quantities
@@ -400,11 +400,11 @@ private:
   RCP<Epetra_Vector>       togglep_;
 
   //! the dim_-coordinates of the homogeneous planes containing nodes
-  RCP<vector<double> >     nodeplanes_;
+  RCP<std::vector<double> >     nodeplanes_;
 
   //! the dim_-coordinates of the homogeneous planes --- including
   //additional sampling planes
-  RCP<vector<double> >     planecoordinates_;
+  RCP<std::vector<double> >     planecoordinates_;
 
   //! a bounding box for the channel
   RCP<Epetra_SerialDenseMatrix> boundingbox_;
@@ -422,47 +422,47 @@ private:
   //!--------------------------------------------------
   //
   //! sum over u (over one plane in each component)
-  RCP<vector<double> >     sumu_;
+  RCP<std::vector<double> >     sumu_;
   //! sum over v (over one plane in each component)
-  RCP<vector<double> >     sumv_;
+  RCP<std::vector<double> >     sumv_;
   //! sum over w (over one plane in each component)
-  RCP<vector<double> >     sumw_;
+  RCP<std::vector<double> >     sumw_;
   //! sum over p (over one plane in each component)
-  RCP<vector<double> >     sump_;
+  RCP<std::vector<double> >     sump_;
   //! sum over density (over one plane in each component)
-  RCP<vector<double> >     sumrho_;
+  RCP<std::vector<double> >     sumrho_;
   //! sum over T (over one plane in each component)
-  RCP<vector<double> >     sumT_;
+  RCP<std::vector<double> >     sumT_;
   //! sum over density*u (over one plane in each component)
-  RCP<vector<double> >     sumrhou_;
+  RCP<std::vector<double> >     sumrhou_;
   //! sum over density*u*T (over one plane in each component)
-  RCP<vector<double> >     sumrhouT_;
+  RCP<std::vector<double> >     sumrhouT_;
 
   //! sum over u^2 (over one plane in each component)
-  RCP<vector<double> >     sumsqu_;
+  RCP<std::vector<double> >     sumsqu_;
   //! sum over v^2 (over one plane in each component)
-  RCP<vector<double> >     sumsqv_;
+  RCP<std::vector<double> >     sumsqv_;
   //! sum over w^2 (over one plane in each component)
-  RCP<vector<double> >     sumsqw_;
+  RCP<std::vector<double> >     sumsqw_;
   //! sum over p^2 (over one plane in each component)
-  RCP<vector<double> >     sumsqp_;
+  RCP<std::vector<double> >     sumsqp_;
   //! sum over density^2 (over one plane in each component)
-  RCP<vector<double> >     sumsqrho_;
+  RCP<std::vector<double> >     sumsqrho_;
   //! sum over T^2 (over one plane in each component)
-  RCP<vector<double> >     sumsqT_;
+  RCP<std::vector<double> >     sumsqT_;
 
   //! sum over uv (over one plane in each component)
-  RCP<vector<double> >     sumuv_;
+  RCP<std::vector<double> >     sumuv_;
   //! sum over uw (over one plane in each component)
-  RCP<vector<double> >     sumuw_;
+  RCP<std::vector<double> >     sumuw_;
   //! sum over vw (over one plane in each component)
-  RCP<vector<double> >     sumvw_;
+  RCP<std::vector<double> >     sumvw_;
   //! sum over uv (over one plane in each component)
-  RCP<vector<double> >     sumuT_;
+  RCP<std::vector<double> >     sumuT_;
   //! sum over uw (over one plane in each component)
-  RCP<vector<double> >     sumvT_;
+  RCP<std::vector<double> >     sumvT_;
   //! sum over vw (over one plane in each component)
-  RCP<vector<double> >     sumwT_;
+  RCP<std::vector<double> >     sumwT_;
 
   //!--------------------------------------------------
   //!       the pointwise averaged stuff
@@ -472,26 +472,26 @@ private:
   RCP<Epetra_Vector>       pointsquaredvelnp_;
 
   //! sum over u (over one plane in each component)
-  RCP<vector<double> >     pointsumu_;
+  RCP<std::vector<double> >     pointsumu_;
   //! sum over v (over one plane in each component)
-  RCP<vector<double> >     pointsumv_;
+  RCP<std::vector<double> >     pointsumv_;
   //! sum over w (over one plane in each component)
-  RCP<vector<double> >     pointsumw_;
+  RCP<std::vector<double> >     pointsumw_;
   //! sum over p (over one plane in each component)
-  RCP<vector<double> >     pointsump_;
+  RCP<std::vector<double> >     pointsump_;
   //! sum over T (over one plane in each component)
-  RCP<vector<double> >     pointsumT_;
+  RCP<std::vector<double> >     pointsumT_;
 
   //! sum over u^2 (over one plane in each component)
-  RCP<vector<double> >     pointsumsqu_;
+  RCP<std::vector<double> >     pointsumsqu_;
   //! sum over v^2 (over one plane in each component)
-  RCP<vector<double> >     pointsumsqv_;
+  RCP<std::vector<double> >     pointsumsqv_;
   //! sum over w^2 (over one plane in each component)
-  RCP<vector<double> >     pointsumsqw_;
+  RCP<std::vector<double> >     pointsumsqw_;
   //! sum over p^2 (over one plane in each component)
-  RCP<vector<double> >     pointsumsqp_;
+  RCP<std::vector<double> >     pointsumsqp_;
   //! sum over T^2 (over one plane in each component)
-  RCP<vector<double> >     pointsumsqT_;
+  RCP<std::vector<double> >     pointsumsqT_;
 
   //!--------------------------------------------------
   //!   averaged forces (mean, bottom and top)
@@ -527,160 +527,160 @@ private:
   //!--------------------------------------------------
 
   //! sum over Cs --- used only for dynamic Smagorinsky model
-  RCP<vector<double> >     sumCs_;
+  RCP<std::vector<double> >     sumCs_;
   //! sum over (Cs*delta)^2 --- used only for dynamic Smagorinsky model
-  RCP<vector<double> >     sumCs_delta_sq_;
+  RCP<std::vector<double> >     sumCs_delta_sq_;
   //! sum over effective viscosity --- used only for dynamic Smagorinsky model
-  RCP<vector<double> >     sumvisceff_;
+  RCP<std::vector<double> >     sumvisceff_;
   //! increment of sumCs over in one timestep
-  RCP<vector<double> >     incrsumCs_;
+  RCP<std::vector<double> >     incrsumCs_;
   //! increment of sumCs_delta_sq over in one timestep
-  RCP<vector<double> >     incrsumCs_delta_sq_;
+  RCP<std::vector<double> >     incrsumCs_delta_sq_;
   //! increment of sumvisceff over in one timestep
-  RCP<vector<double> >     incrsumvisceff_;
+  RCP<std::vector<double> >     incrsumvisceff_;
   //! sum over Prt --- used only for dynamic Smagorinsky model
-  RCP<vector<double> >     sumPrt_;
+  RCP<std::vector<double> >     sumPrt_;
   //! sum over (Cs*delta)^2/Prt --- used only for dynamic Smagorinsky model
-  RCP<vector<double> >     sumCs_delta_sq_Prt_;
+  RCP<std::vector<double> >     sumCs_delta_sq_Prt_;
   //! sum over effective diffusivity --- used only for dynamic Smagorinsky model
-  RCP<vector<double> >     sumdiffeff_;
+  RCP<std::vector<double> >     sumdiffeff_;
   //! increment of sumCs_delta_sq_Prt over in one timestep
-  RCP<vector<double> >     incrsumCs_delta_sq_Prt_;
+  RCP<std::vector<double> >     incrsumCs_delta_sq_Prt_;
   //! increment of sumPrt over in one timestep
-  RCP<vector<double> >     incrsumPrt_;
+  RCP<std::vector<double> >     incrsumPrt_;
   //! increment of sumdiffeff over in one timestep
-  RCP<vector<double> >     incrsumdiffeff_;
+  RCP<std::vector<double> >     incrsumdiffeff_;
   //! sum over Ci --- used only for dynamic Smagorinsky model for loma
-  RCP<vector<double> >     sumCi_;
+  RCP<std::vector<double> >     sumCi_;
   //! sum over (Ci*delta)^2 --- used only for dynamic Smagorinsky model for loma
-  RCP<vector<double> >     sumCi_delta_sq_;
+  RCP<std::vector<double> >     sumCi_delta_sq_;
   //! increment of sumCi over in one timestep
-  RCP<vector<double> >     incrsumCi_;
+  RCP<std::vector<double> >     incrsumCi_;
   //! increment of sumCi_delta_sq over in one timestep
-  RCP<vector<double> >     incrsumCi_delta_sq_;
+  RCP<std::vector<double> >     incrsumCi_delta_sq_;
 
   //!--------------------------------------------------
   //!  averaged quantities from scale similarity model
   //!--------------------------------------------------
 
   //! sum over subfilter stress 12 --- used only for scale similarity model
-  RCP<vector<double> >     sumstress12_;
+  RCP<std::vector<double> >     sumstress12_;
   //! increment of sumstress12 over in one time step
-  RCP<vector<double> >     incrsumstress12_;
+  RCP<std::vector<double> >     incrsumstress12_;
 
   //!--------------------------------------------------
   //!  averaged quantities from multifractal subgid-scales
   //!--------------------------------------------------
 
   //! sum over parameter N --- used only for multifractal subgid-scale model
-  RCP<vector<double> >     sumN_stream_;
-  RCP<vector<double> >     sumN_normal_;
-  RCP<vector<double> >     sumN_span_;
+  RCP<std::vector<double> >     sumN_stream_;
+  RCP<std::vector<double> >     sumN_normal_;
+  RCP<std::vector<double> >     sumN_span_;
   //! increment of parameter N over in one time step
-  RCP<vector<double> >     incrsumN_stream_;
-  RCP<vector<double> >     incrsumN_normal_;
-  RCP<vector<double> >     incrsumN_span_;
+  RCP<std::vector<double> >     incrsumN_stream_;
+  RCP<std::vector<double> >     incrsumN_normal_;
+  RCP<std::vector<double> >     incrsumN_span_;
   //! sum over parameter B --- used only for multifractal subgid-scale model
-  RCP<vector<double> >     sumB_stream_;
-  RCP<vector<double> >     sumB_normal_;
-  RCP<vector<double> >     sumB_span_;
+  RCP<std::vector<double> >     sumB_stream_;
+  RCP<std::vector<double> >     sumB_normal_;
+  RCP<std::vector<double> >     sumB_span_;
   //! increment of parameter B over in one time step
-  RCP<vector<double> >     incrsumB_stream_;
-  RCP<vector<double> >     incrsumB_normal_;
-  RCP<vector<double> >     incrsumB_span_;
+  RCP<std::vector<double> >     incrsumB_stream_;
+  RCP<std::vector<double> >     incrsumB_normal_;
+  RCP<std::vector<double> >     incrsumB_span_;
   //! sum over parameter Csgs --- used only for multifractal subgid-scale model
-  RCP<vector<double> >     sumCsgs_;
+  RCP<std::vector<double> >     sumCsgs_;
   //! increment of Csgs over in one time step
-  RCP<vector<double> >     incrsumCsgs_;
+  RCP<std::vector<double> >     incrsumCsgs_;
   //! sum over subgrid viscosity --- used only for multifractal subgid-scale model in combination with eddy viscosity model
-  RCP<vector<double> >     sumsgvisc_;
+  RCP<std::vector<double> >     sumsgvisc_;
   //! increment of subgrid viscosity over in one time step
-  RCP<vector<double> >     incrsumsgvisc_;
+  RCP<std::vector<double> >     incrsumsgvisc_;
   //! sum over parameter Nphi --- used only for multifractal subgid-scale model
-  RCP<vector<double> >     sumNphi_;
+  RCP<std::vector<double> >     sumNphi_;
   //! increment of parameter Nphi over in one time step
-  RCP<vector<double> >     incrsumNphi_;
+  RCP<std::vector<double> >     incrsumNphi_;
   //! sum over parameter Dphi --- used only for multifractal subgid-scale model
-  RCP<vector<double> >     sumDphi_;
+  RCP<std::vector<double> >     sumDphi_;
   //! increment of parameter Dphi over in one time step
-  RCP<vector<double> >     incrsumDphi_;
+  RCP<std::vector<double> >     incrsumDphi_;
   //! sum over parameter Csgs_phi --- used only for multifractal subgid-scale model
-  RCP<vector<double> >     sumCsgs_phi_;
+  RCP<std::vector<double> >     sumCsgs_phi_;
   //! increment of Csgs_phi over in one time step
-  RCP<vector<double> >     incrsumCsgs_phi_;
+  RCP<std::vector<double> >     incrsumCsgs_phi_;
 
   //!--------------------------------------------------
   //!  averaged resudiuals and subscale quantities
   //!--------------------------------------------------
 
   //! sum over all in plane element sizes
-  RCP<vector<double> >     sumhk_;
+  RCP<std::vector<double> >     sumhk_;
   //! sum over all in plane element sizes for the Bazilevs
   //! parameter in the viscous regime
-  RCP<vector<double> >     sumhbazilevs_;
+  RCP<std::vector<double> >     sumhbazilevs_;
   //! sum over all in plane stream lengths
-  RCP<vector<double> >     sumstrle_;
+  RCP<std::vector<double> >     sumstrle_;
   //! sum over all in plane stream lengths
-  RCP<vector<double> >     sumgradle_;
+  RCP<std::vector<double> >     sumgradle_;
 
   //! sum over all in plane residuals
-  RCP<vector<double> >     sumtauM_;
+  RCP<std::vector<double> >     sumtauM_;
   //! sum over all in plane squared residuals
-  RCP<vector<double> >     sumtauC_;
+  RCP<std::vector<double> >     sumtauC_;
 
   //! sum over all in plane residuals
-  RCP<vector<double> >     sumres_;
+  RCP<std::vector<double> >     sumres_;
   //! sum over all in plane squared residuals
-  RCP<vector<double> >     sumres_sq_;
+  RCP<std::vector<double> >     sumres_sq_;
   //! sum over all in plane residuals norms
-  RCP<vector<double> >     sumabsres_;
+  RCP<std::vector<double> >     sumabsres_;
   //! sum over all in plane values of svel/tau
-  RCP<vector<double> >     sumtauinvsvel_;
+  RCP<std::vector<double> >     sumtauinvsvel_;
   //! sum over all in plane subscale velocities
-  RCP<vector<double> >     sumsvelaf_;
+  RCP<std::vector<double> >     sumsvelaf_;
   //! sum over all in plane squared subscale velocities
-  RCP<vector<double> >     sumsvelaf_sq_;
+  RCP<std::vector<double> >     sumsvelaf_sq_;
   //! sum over all in plane subscale velocities norms
-  RCP<vector<double> >     sumabssvelaf_;
+  RCP<std::vector<double> >     sumabssvelaf_;
 
   //! sum over all in plane residuals of the continuity equation
-  RCP<vector<double> >     sumresC_;
+  RCP<std::vector<double> >     sumresC_;
   //! sum over all in plane squared residuals of the continuity equation
-  RCP<vector<double> >     sumresC_sq_;
+  RCP<std::vector<double> >     sumresC_sq_;
   //! sum over all in plane subscale pressure values at current timestep
-  RCP<vector<double> >     sumspressnp_   ;
+  RCP<std::vector<double> >     sumspressnp_   ;
   //! sum over all in plane squared subscale pressure values at current timestep
-  RCP<vector<double> >     sumspressnp_sq_;
+  RCP<std::vector<double> >     sumspressnp_sq_;
 
   //! sum over all in plane averaged dissipation rates from pspg stabilisation
-  RCP<vector<double> >     sum_eps_pspg_;
+  RCP<std::vector<double> >     sum_eps_pspg_;
   //! sum over all in plane averaged dissipation rates from supg stabilisation
-  RCP<vector<double> >     sum_eps_supg_;
+  RCP<std::vector<double> >     sum_eps_supg_;
   //! sum over all in plane averaged dissipation rates from cross term
-  RCP<vector<double> >     sum_eps_cross_;
+  RCP<std::vector<double> >     sum_eps_cross_;
   //! sum over all in plane averaged dissipation rates from reynolds term
-  RCP<vector<double> >     sum_eps_rey_;
+  RCP<std::vector<double> >     sum_eps_rey_;
   //! sum over all in plane averaged dissipation rates from least squares continuity term
-  RCP<vector<double> >     sum_eps_cstab_;
+  RCP<std::vector<double> >     sum_eps_cstab_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (Smagorinsky)
-  RCP<vector<double> >     sum_eps_eddyvisc_;
+  RCP<std::vector<double> >     sum_eps_eddyvisc_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (AVM3)
-  RCP<vector<double> >     sum_eps_avm3_;
+  RCP<std::vector<double> >     sum_eps_avm3_;
   //! sum over all in plane averaged dissipation rates from scale similarity model
-  RCP<vector<double> >     sum_eps_mfs_;
+  RCP<std::vector<double> >     sum_eps_mfs_;
   //! sum over all in plane averaged dissipation rates from scale similarity model (forwardscatter)
-  RCP<vector<double> >     sum_eps_mfscross_;
+  RCP<std::vector<double> >     sum_eps_mfscross_;
   //! sum over all in plane averaged dissipation rates from scale similarity model (backscatter)
-  RCP<vector<double> >     sum_eps_mfsrey_;
+  RCP<std::vector<double> >     sum_eps_mfsrey_;
   //! sum over all in plane averaged dissipation rates from Galerkin viscous term
-  RCP<vector<double> >     sum_eps_visc_;
+  RCP<std::vector<double> >     sum_eps_visc_;
   //! sum over all in plane averaged dissipation rates from Galerkin convective term
-  RCP<vector<double> >     sum_eps_conv_;
+  RCP<std::vector<double> >     sum_eps_conv_;
 
   //! sum over all in plane averaged supg+cross stress
-  RCP<vector<double> >     sum_crossstress_;
+  RCP<std::vector<double> >     sum_crossstress_;
   //! sum over all in plane averaged reynolds stress
-  RCP<vector<double> >     sum_reystress_;
+  RCP<std::vector<double> >     sum_reystress_;
 
 };
 

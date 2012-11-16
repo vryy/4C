@@ -33,9 +33,9 @@ typedef Sacado::Fad::DFad<double> FAD;
 /*-----------------------------------------------------------------------------------------------------------*
  |  evaluate the element (public)                                                                 meier 05/12|
  *----------------------------------------------------------------------------------------------------------*/
-int DRT::ELEMENTS::Beam3ebtor::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
                                         DRT::Discretization& discretization,
-                                        vector<int>& lm,
+                                        std::vector<int>& lm,
                                         Epetra_SerialDenseMatrix& elemat1,
                                         Epetra_SerialDenseMatrix& elemat2,
                                         Epetra_SerialDenseVector& elevec1,
@@ -91,26 +91,26 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(ParameterList& params,
       // making use of the local-to-global map lm one can extract current displacement and residual values for each degree of freedom
       // get element displacements
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
       // get residual displacements
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (res==null) dserror("Cannot get state vectors 'residual displacement'");
-      vector<double> myres(lm.size());
+      if (res==Teuchos::null) dserror("Cannot get state vectors 'residual displacement'");
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       //TODO: Only in the dynamic case the velocities are needed.
       // get element velocities
-      vector<double> myvel(lm.size());
+      std::vector<double> myvel(lm.size());
 
       const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
       if(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP")!=INPAR::STR::dyna_statics)
       {
         RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
-        if (vel==null) dserror("Cannot get state vectors 'velocity'");
+        if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
         DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
       }
       if (act == Beam3ebtor::calc_struct_nlnstiffmass)
@@ -163,16 +163,16 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(ParameterList& params,
  |  Integrate a Surface/Line Neumann boundary condition (public)                                  meier 05/12|
  *-----------------------------------------------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(Teuchos::ParameterList& params,
                                                DRT::Discretization& discretization,
                                                DRT::Condition& condition,
-                                               vector<int>& lm,
+                                               std::vector<int>& lm,
                                                Epetra_SerialDenseVector& elevec1,
                                                Epetra_SerialDenseMatrix* elemat1)
 {
   // get element displacements
   RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
-  if (disp==null) dserror("Cannot get state vector 'displacement new'");
+  if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
   vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
   for (int i=0; i<14;i++)
@@ -183,7 +183,7 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(ParameterList& params,
   // get element velocities (UNCOMMENT IF NEEDED)
   /*
   RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
-  if (vel==null) dserror("Cannot get state vectors 'velocity'");
+  if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
   vector<double> myvel(lm.size());
   DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
   */
@@ -198,7 +198,7 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(ParameterList& params,
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
 
   int curvenum = -1;
 
@@ -214,14 +214,14 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(ParameterList& params,
   // get values and switches from the condition:
   // onoff is related to the first 6 flags of a line Neumann condition in the input file;
   // value 1 for flag i says that condition is active for i-th degree of freedom
-  const vector<int>* onoff = condition.Get<vector<int> >("onoff");
+  const std::vector<int>* onoff = condition.Get<std::vector<int> >("onoff");
   // val is related to the 6 "val" fields after the onoff flags of the Neumann condition
 
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
-  const vector<double>* val = condition.Get<vector<double> >("val");
+  const std::vector<double>* val = condition.Get<std::vector<double> >("val");
 
   //find out which node is correct
-  const vector< int > * nodeids = condition.Nodes();
+  const std::vector< int > * nodeids = condition.Nodes();
 
   //if a point neumann condition needs to be linearized
   if(condition.Type() == DRT::Condition::PointNeumannEB)
@@ -364,9 +364,9 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(ParameterList& params,
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private)                                                   meier 05/12|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass( ParameterList& params,
-                                                 vector<double>& vel,
-                                                 vector<double>& disp,
+void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
+                                                 std::vector<double>& vel,
+                                                 std::vector<double>& disp,
                                                  Epetra_SerialDenseMatrix* stiffmatrix,
                                                  Epetra_SerialDenseMatrix* massmatrix,
                                                  Epetra_SerialDenseVector* force)
@@ -1419,7 +1419,7 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckStiffMatrix(vector<double>& disp,
 void DRT::ELEMENTS::Beam3ebtor::FADCheckNeumann(ParameterList& params,
                                                 DRT::Discretization& discretization,
                                                 DRT::Condition& condition,
-                                                vector<int>& lm,
+                                                std::vector<int>& lm,
                                                 Epetra_SerialDenseVector& elevec1,
                                                 Epetra_SerialDenseMatrix* elemat1)
 {
@@ -1445,7 +1445,7 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckNeumann(ParameterList& params,
 
   //get element displacements
   RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
-  if (disp==null) dserror("Cannot get state vector 'displacement new'");
+  if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
   vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
@@ -1464,7 +1464,7 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckNeumann(ParameterList& params,
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
 
   int curvenum = -1;
 
@@ -1481,14 +1481,14 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckNeumann(ParameterList& params,
 
   // onoff is related to the first 6 flags of a line Neumann condition in the input file;
   // value 1 for flag i says that condition is active for i-th degree of freedom
-  const vector<int>* onoff = condition.Get<vector<int> >("onoff");
+  const std::vector<int>* onoff = condition.Get<std::vector<int> >("onoff");
   // val is related to the 6 "val" fields after the onoff flags of the Neumann condition
 
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
-  const vector<double>* val = condition.Get<vector<double> >("val");
+  const std::vector<double>* val = condition.Get<std::vector<double> >("val");
 
   //find out which node is correct
-  const vector< int > * nodeids = condition.Nodes();
+  const std::vector< int > * nodeids = condition.Nodes();
 
   //if a point neumann condition needs to be linearized
   if(condition.Type() == DRT::Condition::PointNeumannEB)

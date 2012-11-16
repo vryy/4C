@@ -168,15 +168,15 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
     aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap()));
 
     vector<int> pciter;
-    vector<double> pcomega;
+    std::vector<double> pcomega;
     vector<int> spciter;
-    vector<double> spcomega;
+    std::vector<double> spcomega;
     vector<int> fpciter;
-    vector<double> fpcomega;
+    std::vector<double> fpcomega;
     vector<int> apciter;
-    vector<double> apcomega;
+    std::vector<double> apcomega;
     vector<string> blocksmoother;
-    vector<double> schuromega;
+    std::vector<double> schuromega;
     {
       int    word1;
       double word2;

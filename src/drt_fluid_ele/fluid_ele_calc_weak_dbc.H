@@ -33,8 +33,7 @@ Maintainer: Volker Gravemeier
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
-
-class ParameterList;
+;
 namespace DRT
 {
   class Discretization;
@@ -90,9 +89,9 @@ namespace DRT
       */
       virtual int EvaluateWeakDBC(
         FluidBoundary*             surfele       ,
-        ParameterList&             params        ,
+        Teuchos::ParameterList&    params        ,
         DRT::Discretization&       discretization,
-        vector<int>&               lm            ,
+        std::vector<int>&          lm            ,
         Epetra_SerialDenseMatrix&  elemat_epetra ,
         Epetra_SerialDenseVector&  elevec_epetra ) = 0;
 
@@ -160,9 +159,9 @@ namespace DRT
       */
       virtual int EvaluateWeakDBC(
         FluidBoundary*             surfele       ,
-        ParameterList&             params        ,
+        Teuchos::ParameterList&    params        ,
         DRT::Discretization&       discretization,
-        vector<int>&               lm            ,
+        std::vector<int>&          lm            ,
         Epetra_SerialDenseMatrix&  elemat_epetra ,
         Epetra_SerialDenseVector&  elevec_epetra );
 
@@ -274,9 +273,9 @@ namespace DRT
        */
        virtual int EvaluateWeakDBC(
          FluidBoundary*                lineele       ,
-         ParameterList&             params        ,
+         Teuchos::ParameterList&    params        ,
          DRT::Discretization&       discretization,
-         vector<int>&               lm            ,
+         std::vector<int>&          lm            ,
          Epetra_SerialDenseMatrix&  elemat_epetra ,
          Epetra_SerialDenseVector&  elevec_epetra );
 

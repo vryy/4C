@@ -33,7 +33,7 @@ Maintainer: Christian Cyron
  *----------------------------------------------------------------------------------------------------------*/
 int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
                                    DRT::Discretization& discretization,
-                                   vector<int>& lm,
+                                   std::vector<int>& lm,
                                    Epetra_SerialDenseMatrix& elemat1,
                                    Epetra_SerialDenseMatrix& elemat2,
                                    Epetra_SerialDenseVector& elevec1,
@@ -90,8 +90,8 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
       // need current global displacement and and get them from discretization
       // making use of the local-to-global map lm one can extract current displacemnet and residual values for each degree of freedom
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
       const int nnode = NumNode();
@@ -134,18 +134,18 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
       //
       // get element displcements
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vectors 'displacement'");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
       // get residual displacements
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (res==null) dserror("Cannot get state vectors 'residual displacement'");
-      vector<double> myres(lm.size());
+      if (res==Teuchos::null) dserror("Cannot get state vectors 'residual displacement'");
+      std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
 
       //only if random numbers for Brownian dynamics are passed to element, get element velocities
-      vector<double> myvel(lm.size());
+      std::vector<double> myvel(lm.size());
       if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) != Teuchos::null)
       {
         RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
@@ -428,19 +428,19 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
 int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
                                         DRT::Discretization& discretization,
                                         DRT::Condition& condition,
-                                        vector<int>& lm,
+                                        std::vector<int>& lm,
                                         Epetra_SerialDenseVector& elevec1,
                                         Epetra_SerialDenseMatrix* elemat1)
 {
   // get element displacements
   RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-  if (disp==null) dserror("Cannot get state vector 'displacement'");
+  if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
   // get element velocities (UNCOMMENT IF NEEDED)
   /*
   RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
-  if (vel==null) dserror("Cannot get state vectors 'velocity'");
+  if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
   vector<double> myvel(lm.size());
   DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
   */
@@ -451,7 +451,7 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
   if (time<0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve = condition.Get<std::vector<int> >("curve");
   int curvenum = -1;
   // number of the load curve related with a specific line Neumann condition called
   if (curve) curvenum = (*curve)[0];
@@ -475,10 +475,10 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
 
   // onoff is related to the first 6 flags of a line Neumann condition in the input file;
   // value 1 for flag i says that condition is active for i-th degree of freedom
-  const vector<int>* onoff = condition.Get<vector<int> >("onoff");
+  const std::vector<int>* onoff = condition.Get<std::vector<int> >("onoff");
   // val is related to the 6 "val" fields after the onoff flags of the Neumann condition
   // in the input file; val gives the values of the force as a multiple of the prescribed load curve
-  const vector<double>* val = condition.Get<vector<double> >("val");
+  const std::vector<double>* val = condition.Get<std::vector<double> >("val");
 
   //integration loops
   for (int numgp=0; numgp<intpoints.nquad; ++numgp)
@@ -811,7 +811,7 @@ inline void DRT::ELEMENTS::Beam3::computeKsig2(LINALG::Matrix<6*nnode,6*nnode>& 
  *-----------------------------------------------------------------------------------------------------------*/
 template<int nnode>
 void DRT::ELEMENTS::Beam3::b3_energy( Teuchos::ParameterList& params,
-                                      vector<double>& disp,
+                                      std::vector<double>& disp,
                                       Epetra_SerialDenseVector* intenergy)
 {
   //initialize energies (only one kind of energy computed here
@@ -922,8 +922,8 @@ void DRT::ELEMENTS::Beam3::b3_energy( Teuchos::ParameterList& params,
  *-----------------------------------------------------------------------------------------------------------*/
 template<int nnode>
 void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
-                                            vector<double>&           vel,
-                                            vector<double>&           disp,
+                                            std::vector<double>&      vel,
+                                            std::vector<double>&      disp,
                                             Epetra_SerialDenseMatrix* stiffmatrix,
                                             Epetra_SerialDenseMatrix* massmatrix,
                                             Epetra_SerialDenseVector* force)
@@ -1411,8 +1411,8 @@ void DRT::ELEMENTS::Beam3::MyBackgroundVelocity(Teuchos::ParameterList& params, 
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode> //number of nodes
 inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(Teuchos::ParameterList& params,  //!<parameter list
-                                              const vector<double>&     vel,  //!< element velocity vector
-                                              const vector<double>&     disp, //!<element disp vector
+                                              const std::vector<double>& vel,  //!< element velocity vector
+                                              const std::vector<double>& disp, //!<element disp vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector* force)//!< element internal force vector
 {
@@ -1505,8 +1505,8 @@ inline void DRT::ELEMENTS::Beam3::MyRotationalDamping(Teuchos::ParameterList& pa
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node
 inline void DRT::ELEMENTS::Beam3::MyTranslationalDamping(Teuchos::ParameterList& params,  //!<parameter list
-                                                  const vector<double>&     vel,  //!< element velocity vector
-                                                  const vector<double>&     disp, //!<element disp vector
+                                                  const std::vector<double>& vel,  //!< element velocity vector
+                                                  const std::vector<double>& disp, //!<element disp vector
                                                   Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                                   Epetra_SerialDenseVector* force)//!< element internal force vector
 {
@@ -1612,8 +1612,8 @@ inline void DRT::ELEMENTS::Beam3::MyTranslationalDamping(Teuchos::ParameterList&
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
 inline void DRT::ELEMENTS::Beam3::MyStochasticForces(Teuchos::ParameterList& params,  //!<parameter list
-                                              const vector<double>&     vel,  //!< element velocity vector
-                                              const vector<double>&     disp, //!<element disp vector
+                                              const std::vector<double>& vel,  //!< element velocity vector
+                                              const std::vector<double>& disp, //!<element disp vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector* force)//!< element internal force vector
 {
@@ -1694,8 +1694,8 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticForces(Teuchos::ParameterList& par
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int randompergauss> //number of nodes, number of random numbers required per Gauss point, number of random numbers required per Gauss point
 inline void DRT::ELEMENTS::Beam3::MyStochasticMoments(Teuchos::ParameterList& params,  //!<parameter list
-                                              const vector<double>&     vel,  //!< element velocity vector
-                                              const vector<double>&     disp, //!<element disp vector
+                                              const std::vector<double>& vel,  //!< element velocity vector
+                                              const std::vector<double>& disp, //!<element disp vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector* force)//!< element internal force vector
 {
@@ -1767,8 +1767,8 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticMoments(Teuchos::ParameterList& pa
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim, int dof, int randompergauss> //number of nodes, number of dimensions of embedding space, number of degrees of freedom per node, number of random numbers required per Gauss point
 inline void DRT::ELEMENTS::Beam3::CalcBrownian(Teuchos::ParameterList& params,
-                                              const vector<double>&           vel,  //!< element velocity vector
-                                              const vector<double>&           disp, //!< element displacement vector
+                                              const std::vector<double>&       vel,  //!< element velocity vector
+                                              const std::vector<double>&       disp, //!< element displacement vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector* force) //!< element internal force vector
 {

@@ -52,7 +52,7 @@ void STR::TimIntPrestress::UpdateStepElement()
   ParameterList p;
   
   // which prestress type?
-  const ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
   double pstime = sdyn.get<double>("PRESTRESSTIME");
 
@@ -111,7 +111,7 @@ void STR::TimIntPrestress::UpdateStepElement()
     // action for elements
     p.set("action","calc_struct_inversedesign_switch");
     p.set("total time",timen_ );
-    discret_->Evaluate(p,null,null,null,null,null);
+    discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   }
 
   if (pstype == INPAR::STR::prestress_mulf &&  (*time_)[0] <= pstime)

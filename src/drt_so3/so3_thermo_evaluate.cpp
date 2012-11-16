@@ -31,7 +31,7 @@
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::PreEvaluate(
-  ParameterList& params,
+  Teuchos::ParameterList& params,
   DRT::Discretization& discretization,
   DRT::Element::LocationArray& la
   )
@@ -61,7 +61,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::PreEvaluate(
       DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
 
       // now set the current temperature vector in the parameter list
-      params.set<Teuchos::RCP<vector<double> > >("robinson_tempnp",robtempnp);
+      params.set<Teuchos::RCP<std::vector<double> > >("robinson_tempnp",robtempnp);
     }
   } // initial temperature dependence
 
@@ -74,7 +74,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::PreEvaluate(
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::So3_Thermo< so3_ele, distype>::Evaluate(
-  ParameterList& params,
+  Teuchos::ParameterList& params,
   DRT::Discretization& discretization,
   DRT::Element::LocationArray& la,
   Epetra_SerialDenseMatrix& elemat1_epetra,
@@ -205,7 +205,7 @@ int DRT::ELEMENTS::So3_Thermo< so3_ele, distype>::Evaluate(
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
-  ParameterList& params,
+  Teuchos::ParameterList& params,
   DRT::Discretization& discretization,
   DRT::Element::LocationArray& la,
   Epetra_SerialDenseMatrix& elemat1_epetra,
@@ -252,9 +252,9 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       dserror("Cannot get state vectors 'displacement' and/or residual");
 
     // build the location vector only for the structure field
-    vector<double> mydisp((la[0].lm_).size());
+    std::vector<double> mydisp((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
-    vector<double> myres((la[0].lm_).size());
+    std::vector<double> myres((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*res,myres,la[0].lm_);
     // create a dummy element matrix to apply linearised EAS-stuff onto
     LINALG::Matrix<numdofperelement_,numdofperelement_> myemat(true);
@@ -340,9 +340,9 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       dserror("Cannot get state vectors 'displacement' and/or residual");
 
     // build the location vector only for the structure field
-    vector<double> mydisp((la[0].lm_).size());
+    std::vector<double> mydisp((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
-    vector<double> myres((la[0].lm_).size());
+    std::vector<double> myres((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*res,myres,la[0].lm_);
 
     // initialise the vectors
@@ -430,9 +430,9 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       dserror("Cannot get state vectors 'displacement' and/or residual");
 
     // build the location vector only for the structure field
-    vector<double> mydisp((la[0].lm_).size());
+    std::vector<double> mydisp((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
-    vector<double> myres((la[0].lm_).size());
+    std::vector<double> myres((la[0].lm_).size());
     DRT::UTILS::ExtractMyValues(*res,myres,la[0].lm_);
 
     // initialise the vectors
@@ -516,9 +516,9 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       if (disp==Teuchos::null || res==Teuchos::null)
         dserror("Cannot get state vectors 'displacement'");
 
-      vector<double> mydisp((la[0].lm_).size());
+      std::vector<double> mydisp((la[0].lm_).size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
-      vector<double> myres((la[0].lm_).size());
+      std::vector<double> myres((la[0].lm_).size());
       DRT::UTILS::ExtractMyValues(*res,myres,la[0].lm_);
 
       Teuchos::RCP<vector<char> > stressdata
@@ -728,7 +728,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       = discretization.GetState(0,"displacement");
     if (disp==Teuchos::null)
       dserror("Cannot get state vectors 'displacement'");
-    vector<double> mydisp((la[0].lm_).size());
+    std::vector<double> mydisp((la[0].lm_).size());
     // build the location vector only for the structure field
     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
 
@@ -763,8 +763,8 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
   DRT::Element::LocationArray& la,  // location array
-  vector<double>& disp,  // current displacements
-  vector<double>& residual,  // current residual displ
+  std::vector<double>& disp,  // current displacements
+  std::vector<double>& residual,  // current residual displ
   vector<double>& temp, // current temperature
   LINALG::Matrix<numdofperelement_,1>* force,  // element internal force vector
   LINALG::Matrix<numgpt_1,numstr_>* elestress,  // stresses at GP
@@ -928,7 +928,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_kdT_tsi(
   DRT::Element::LocationArray& la,
-  vector<double>& disp,  // current displacement
+  std::vector<double>& disp,  // current displacement
   LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT  // (nsd_*nen_ x nen_)
   )
 {
@@ -1015,8 +1015,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_kdT_tsi(
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
   DRT::Element::LocationArray& la,  // location array
-  vector<double>& disp,  // current displacements
-  vector<double>& residual,  // current residual displ
+  std::vector<double>& disp,  // current displacements
+  std::vector<double>& residual,  // current residual displ
   vector<double>& temp, // current temperature
   LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
   LINALG::Matrix<numdofperelement_,1>* force,  // element internal force vector
@@ -1236,7 +1236,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
   DRT::Element::LocationArray& la,
-  vector<double>& disp,  // current displacement
+  std::vector<double>& disp,  // current displacement
   LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT  // (nsd_*nen_ x nen_)
   )
   {

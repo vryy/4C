@@ -29,7 +29,7 @@ Maintainer: Ursula Rasthofer
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
-                               ParameterList&             turbmodelparams,
+                               Teuchos::ParameterList&    turbmodelparams,
                                double&                    Cs_delta_sq,
                                double&                    Ci_delta_sq,
                                int&                       nlayer,
@@ -54,9 +54,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
     center/=nen_;
 
     // node coordinates of plane to the element layer
-    Teuchos::RCP<vector<double> > planecoords
+    Teuchos::RCP<std::vector<double> > planecoords
       =
-      turbmodelparams.get<Teuchos::RCP<vector<double> > >("planecoords_");
+      turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("planecoords_");
 
     bool found = false;
     for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
@@ -86,14 +86,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
             !=
             "not_specified")
     {
-      Teuchos::RCP<vector<double> > averaged_LijMij = turbmodelparams.get<Teuchos::RCP<vector<double> > >("averaged_LijMij_");
-      Teuchos::RCP<vector<double> > averaged_MijMij = turbmodelparams.get<Teuchos::RCP<vector<double> > >("averaged_MijMij_");
-      Teuchos::RCP<vector<double> > averaged_CI_numerator = Teuchos::null;
-      Teuchos::RCP<vector<double> > averaged_CI_denominator = Teuchos::null;
+      Teuchos::RCP<std::vector<double> > averaged_LijMij = turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("averaged_LijMij_");
+      Teuchos::RCP<std::vector<double> > averaged_MijMij = turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("averaged_MijMij_");
+      Teuchos::RCP<std::vector<double> > averaged_CI_numerator = Teuchos::null;
+      Teuchos::RCP<std::vector<double> > averaged_CI_denominator = Teuchos::null;
       if (fldpara_->PhysicalType()==INPAR::FLUID::loma)
       {
-        averaged_CI_numerator = turbmodelparams.get<Teuchos::RCP<vector<double> > >("averaged_CI_numerator_");
-        averaged_CI_denominator = turbmodelparams.get<Teuchos::RCP<vector<double> > >("averaged_CI_denominator_");
+        averaged_CI_numerator = turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("averaged_CI_numerator_");
+        averaged_CI_denominator = turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("averaged_CI_denominator_");
       }
 
       // get homogeneous direction
@@ -116,7 +116,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
 
       if (homdir == "xy" or homdir == "xz" or homdir == "yz")
       {
-        Teuchos::RCP<vector<double> > planecoords = turbmodelparams.get<Teuchos::RCP<vector<double> > >("planecoords_");
+        Teuchos::RCP<std::vector<double> > planecoords = turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("planecoords_");
         // get center
         double center = 0.0;
         if (homdir == "xy")
@@ -143,8 +143,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
       }
       else if (homdir == "x" or homdir == "y" or homdir == "z")
       {
-        Teuchos::RCP<vector<double> > dir1coords = turbmodelparams.get<Teuchos::RCP<vector<double> > >("dir1coords_");
-        Teuchos::RCP<vector<double> > dir2coords = turbmodelparams.get<Teuchos::RCP<vector<double> > >("dir2coords_");
+        Teuchos::RCP<std::vector<double> > dir1coords = turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("dir1coords_");
+        Teuchos::RCP<std::vector<double> > dir2coords = turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("dir2coords_");
         // get center
         double dim1_center = 0.0;
         double dim2_center = 0.0;
@@ -433,7 +433,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
 
     // allocate vector for parameter N
     // N may depend on the direction
-    vector<double> Nvel (3);
+    std::vector<double> Nvel (3);
 
     // potential calculation of Re to determine N
     double Re_ele = -1.0;
@@ -737,7 +737,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
     }
 
 #ifdef DIR_N
-    vector<double> weights (3);
+    std::vector<double> weights (3);
     weights[0] = WEIGHT_NX;
     weights[1] = WEIGHT_NY;
     weights[2] = WEIGHT_NZ;
@@ -834,7 +834,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::CalcMultiFracSubgridVelCoef(
   const double            Csgs,
   const double            alpha,
-  const vector<double>    Nvel,
+  const std::vector<double> Nvel,
   LINALG::Matrix<nsd_,1>& B_mfs
   )
 {
@@ -875,7 +875,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcMultiFracSubgridScaCoef(
   const double            Csgs,
   const double            alpha,
   const double            Pr,
-  const vector<double>    Nvel,
+  const std::vector<double> Nvel,
   double                  Nphi,
   double &                D_mfs
   )
@@ -1447,7 +1447,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::StoreModelParametersForOutput(
    const int    nlayer,
    const int    eid,
    const bool   isowned,
-   ParameterList&  turbmodelparams)
+   Teuchos::ParameterList&  turbmodelparams)
 {
   // do the fastest test first
   if (isowned)
@@ -1463,15 +1463,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::StoreModelParametersForOutput(
         {
           // Cs was changed in Sysmat (Cs->sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0)))
           // to compare it with the standard Smagorinsky Cs
-          (*(turbmodelparams.get<Teuchos::RCP<vector<double> > >("local_Cs_sum")))         [nlayer]+=fldpara_->Cs_;
-          (*(turbmodelparams.get<Teuchos::RCP<vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
-          (*(turbmodelparams.get<Teuchos::RCP<vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff_;
+          (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_Cs_sum")))         [nlayer]+=fldpara_->Cs_;
+          (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
+          (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff_;
           if (turbmodelparams.get<string>("CANONICAL_FLOW","no") == "loma_channel_flow_of_height_2")
           {
             // recompute delta = std::pow((vol),(1.0/3.0))
             EvalShapeFuncAndDerivsAtEleCenter(eid);
-            (*(turbmodelparams.get<Teuchos::RCP<vector<double> > >("local_Ci_sum")))         [nlayer]+=sqrt(Ci_delta_sq)/pow((fac_),(1.0/3.0));
-            (*(turbmodelparams.get<Teuchos::RCP<vector<double> > >("local_Ci_delta_sq_sum")))[nlayer]+=Ci_delta_sq;
+            (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_Ci_sum")))         [nlayer]+=sqrt(Ci_delta_sq)/pow((fac_),(1.0/3.0));
+            (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_Ci_delta_sq_sum")))[nlayer]+=Ci_delta_sq;
           }
         }
       }

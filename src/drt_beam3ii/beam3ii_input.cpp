@@ -51,7 +51,7 @@ bool DRT::ELEMENTS::Beam3ii::ReadElement(const std::string&          eletype,
   Qconv_.resize(NumNode());
   
   //extract triads at element nodes in reference configuration as rotation vectors and save them as quaternions at each node, respectively
-  vector<double> triads;
+  std::vector<double> triads;
   linedef->ExtractDoubleVector("TRIADS",triads);
   LINALG::Matrix<3,1> nodeangle;
     for(int i=0; i<NumNode(); i++)

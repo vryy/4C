@@ -90,7 +90,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
   Teuchos::RCP<DRT::Discretization> gfuncdis = scatra_.Discretization();
 
   // get map holding pairs of nodes (master-slave) on periodic boundaries (pbc nodes)
-  Teuchos::RCP<map<int,vector<int> > > pbcmap = scatra_.PBCmap();
+  Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap = scatra_.PBCmap();
 
   // get the pbc itself
   Teuchos::RCP<PeriodicBoundaryConditions> pbc = scatra_.PBC();
@@ -123,7 +123,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
           const string* isslave = (*surfacepbcs)[j]->Get<string>("Is slave periodic boundary condition");
           if (*isslave == "Slave")
           {
-            const vector<int>* slavenodeids = (*surfacepbcs)[j]->Nodes();
+            const std::vector<int>* slavenodeids = (*surfacepbcs)[j]->Nodes();
             // append slave node Ids to node Ids for the complete condition
             for (size_t k = 0; k < slavenodeids->size(); ++k)
               nodeids.push_back(slavenodeids->at(k));
@@ -186,7 +186,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
     //cout << "proc " << comm.MyPID() << " reinitialization for node: " << lnode->Id() << endl;
 
     // get the dof associated with this node
-    const vector<int> nodedofset = gfuncdis->Dof(lnode); // this should not be a vector, but a scalar!
+    const std::vector<int> nodedofset = gfuncdis->Dof(lnode); // this should not be a vector, but a scalar!
 #ifdef DEBUG
     int numdofs = nodedofset.size(); // this should be 1 (scalar field!)
     if (numdofs != 1)
@@ -459,7 +459,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
 
     // get the dof associated with these nodes (master and slave share this dof)
     DRT::Node* masternode = gfuncdis->gNode(mastergid);
-    const vector<int> nodedofset = gfuncdis->Dof(masternode); // this should not be a vector, but a scalar!
+    const std::vector<int> nodedofset = gfuncdis->Dof(masternode); // this should not be a vector, but a scalar!
 #ifdef DEBUG
     int numdofs = nodedofset.size(); // this should be 1 (scalar field!)
     if (numdofs != 1)
@@ -515,7 +515,7 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
   Teuchos::RCP<DRT::Discretization> gfuncdis = scatra_.Discretization();
 
   // get map holding pairs of nodes (master-slave) on periodic boundaries (pbc nodes)
-  Teuchos::RCP<map<int,vector<int> > > pbcmap = scatra_.PBCmap();
+  Teuchos::RCP<std::map<int,std::vector<int> > > pbcmap = scatra_.PBCmap();
 
   // get the pbc itself
   Teuchos::RCP<PeriodicBoundaryConditions> pbc = scatra_.PBC();
@@ -573,7 +573,7 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
           const string* isslave = (*surfacepbcs)[j]->Get<string>("Is slave periodic boundary condition");
           if (*isslave == "Slave")
           {
-            const vector<int>* slavenodeids = (*surfacepbcs)[j]->Nodes();
+            const std::vector<int>* slavenodeids = (*surfacepbcs)[j]->Nodes();
             // append slave node Ids to node Ids for the complete condition
             for (size_t k = 0; k < slavenodeids->size(); ++k)
               nodeids.push_back(slavenodeids->at(k));
@@ -625,7 +625,7 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
   {
     // Here we simply take the eleids from the boundaryIntCells map, which leads to our list of cut elements
     // also there is no distribution necessary, as this map is already stored on every proc
-    for (map<int,GEO::BoundaryIntCells>::const_iterator elepatches = flamefront_.begin(); elepatches != flamefront_.end(); ++elepatches)
+    for (std::map<int,GEO::BoundaryIntCells>::const_iterator elepatches = flamefront_.begin(); elepatches != flamefront_.end(); ++elepatches)
       allcuteleids.push_back(elepatches->first);
 
     // our local nodecoords
@@ -759,7 +759,7 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
         double pbcmindist = 1.0e19;
 
         // get patches belonging to first entry
-        map<int,GEO::BoundaryIntCells>::const_iterator elepatches = flamefront_.find( eledistance.front().first );
+        std::map<int,GEO::BoundaryIntCells>::const_iterator elepatches = flamefront_.find( eledistance.front().first );
         if (elepatches == flamefront_.end())
           dserror("Could not find the boundary integration cells belonging to Element %d.", eledistance.front().first);
 

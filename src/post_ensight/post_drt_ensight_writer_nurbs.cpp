@@ -51,7 +51,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
 
   // the coordinates of the visualisation points on this proc
   // used to construct the multivector nodecoords
-  vector<vector<double> > local_vis_point_x;
+  vector<std::vector<double> > local_vis_point_x;
   local_vis_point_x.clear();
 
   // cast dis to NurbsDiscretisation
@@ -1536,7 +1536,7 @@ void EnsightWriter::WriteNurbsCell(
   const DRT::Element::DiscretizationType distype   ,
   const int                              gid       ,
   std::ofstream&                              geofile   ,
-  vector<int>&                           nodevector,
+  std::vector<int>&                      nodevector,
   const RCP<DRT::Discretization> dis       ,
   const RCP<Epetra_Map>&         proc0map
 ) const
@@ -1881,9 +1881,9 @@ void EnsightWriter::WriteDofResultStepForNurbs(
   {
     DRT::Element*  actele = nurbsdis->gElement(elementmap->GID(iele));
 
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
 
     // extract local values from the global vectors
     actele->LocationVector(*nurbsdis,lm,lmowner,lmstride);
@@ -2041,9 +2041,9 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     }
 
     // extract local values from the global vectors
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
 
     actele->LocationVector(*nurbsdis,lm,lmowner,lmstride); // get gid, location in the patch and the number of the patch
 
@@ -2054,7 +2054,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     knotvec->GetEleKnots(eleknots,actele->Id());
 
     // access solution data
-    vector<double> my_data(lm.size());
+    std::vector<double> my_data(lm.size());
     if(name == "velocity"
        ||
        name == "averaged_velocity"
@@ -2202,14 +2202,14 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(
     Teuchos::RCP<Epetra_MultiVector> idata,
     const int dim,
     const int npatch,
-    const vector<int>& vpoff,
-    const vector<int>& ele_cart_id,
+    const std::vector<int>& vpoff,
+    const std::vector<int>& ele_cart_id,
     const DRT::Element* actele,
     DRT::NURBS::NurbsDiscretization* nurbsdis,
     const std::vector<Epetra_SerialDenseVector>& eleknots,
     const Epetra_SerialDenseVector& weights,
     const int                        numdf,
-    const vector<double>& my_data
+    const std::vector<double>& my_data
 ) const
 {
   // number of all control points of the element
@@ -3567,9 +3567,9 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
   {
     DRT::Element*  actele = nurbsdis->gElement(elementmap->GID(iele));
 /*
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
 
     // extract local values from the global vectors
     actele->LocationVector(*nurbsdis,lm,lmowner,lmstride);
@@ -3660,7 +3660,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
     knotvec->GetEleKnots(eleknots,actele->Id());
 
     // access solution data
-    vector<double> my_data(numnp*numdf);
+    std::vector<double> my_data(numnp*numdf);
 
     const int* nodeids = actele->NodeIds();
 

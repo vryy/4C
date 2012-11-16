@@ -59,7 +59,7 @@ namespace ADAPTER {
         Teuchos::RCP<DRT::Discretization>      xfluiddis,
         Teuchos::RCP<DRT::Discretization>      soliddis,
         Teuchos::RCP<LINALG::Solver>           solver,
-        Teuchos::RCP<ParameterList>            params,
+        Teuchos::RCP<Teuchos::ParameterList>            params,
         Teuchos::RCP<IO::DiscretizationWriter> output);
 
     /// communication object at the interface

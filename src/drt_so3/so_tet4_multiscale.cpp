@@ -25,7 +25,7 @@ Maintainer: Lena Yoshihara
 // this routine is intended to determine a homogenized material
 // density for multi-scale analyses by averaging over the initial volume
 
-void DRT::ELEMENTS::So_tet4::sotet4_homog(ParameterList&  params)
+void DRT::ELEMENTS::So_tet4::sotet4_homog(Teuchos::ParameterList&  params)
 {
   if(DRT::Problem::Instance(0)->GetNPGroup()->SubComm()->MyPID() == Owner())
   {

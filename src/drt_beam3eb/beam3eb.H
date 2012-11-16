@@ -210,7 +210,7 @@ public:
   /*!
   \brief Get vector of RCPs to the lines of this element
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Lines();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
 
   /*!
@@ -288,9 +288,9 @@ public:
                               given in params
   \return 0 if successful, negative otherwise
   */
-  virtual int Evaluate(ParameterList&            params,
+  virtual int Evaluate(Teuchos::ParameterList&   params,
                        DRT::Discretization&      discretization,
-                       vector<int>&              lm,
+                       std::vector<int>&         lm,
                        Epetra_SerialDenseMatrix& elemat1,
                        Epetra_SerialDenseMatrix& elemat2,
                        Epetra_SerialDenseVector& elevec1,
@@ -316,10 +316,10 @@ public:
 
   \return 0 if successful, negative otherwise
   */
-  virtual int EvaluateNeumann(ParameterList& params,
+  virtual int EvaluateNeumann(Teuchos::ParameterList& params,
                               DRT::Discretization&      discretization,
                               DRT::Condition&           condition,
-                              vector<int>&              lm,
+                              std::vector<int>&         lm,
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
@@ -368,7 +368,7 @@ private:
   double jacobi_;
 
   //! Matrix holding tangents at each node in reference configuration
-  vector<LINALG::Matrix<3,1> > Tref_;
+  std::vector<LINALG::Matrix<3,1> > Tref_;
 
   // some quantities nessecary for high precission calculation
   #ifdef PRECISION
@@ -386,7 +386,7 @@ private:
   //! @name methods for initilization of the element
 
   //!sets up from current nodal position all geometric parameters (considering current position as reference configuration)
-  void SetUpReferenceGeometry(const vector<double>& xrefe,const bool secondinit = false);
+  void SetUpReferenceGeometry(const std::vector<double>& xrefe,const bool secondinit = false);
 
   //@}
 
@@ -400,9 +400,9 @@ private:
   //! @name Internal calculation methods
 
   //!calculation of nonlinear stiffness and mass matrix
-  void eb_nlnstiffmass( ParameterList& params,
-                        vector<double>&           vel,
-                        vector<double>&           disp,
+  void eb_nlnstiffmass( Teuchos::ParameterList&   params,
+                        std::vector<double>&      vel,
+                        std::vector<double>&      disp,
                         Epetra_SerialDenseMatrix* stiffmatrix,
                         Epetra_SerialDenseMatrix* massmatrix,
                         Epetra_SerialDenseVector* force);
@@ -425,15 +425,15 @@ private:
   #endif
 
   //!check of stiffness matrix via FAD
-  void FADCheckStiffMatrix(vector<double>& disp,
+  void FADCheckStiffMatrix(std::vector<double>& disp,
                            Epetra_SerialDenseMatrix* stiffmatrix,
                            Epetra_SerialDenseVector* force);
 
   //!check of stiffness terms stemming from Neumann Boundary Conditions via FAD
-  void FADCheckNeumann(ParameterList& params,
+  void FADCheckNeumann(Teuchos::ParameterList& params,
                        DRT::Discretization& discretization,
                        DRT::Condition& condition,
-                       vector<int>& lm,
+                       std::vector<int>& lm,
                        Epetra_SerialDenseVector& elevec1,
                        Epetra_SerialDenseMatrix* elemat1);
 

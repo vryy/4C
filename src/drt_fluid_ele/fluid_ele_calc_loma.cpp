@@ -284,7 +284,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
   // ---------------------------------------------------------------------
   // set parameters for classical turbulence models
   // ---------------------------------------------------------------------
-  ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
+  Teuchos::ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
 
   double Cs_delta_sq   = 0.0;
   double Ci_delta_sq   = 0.0;

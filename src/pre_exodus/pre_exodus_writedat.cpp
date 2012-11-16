@@ -28,7 +28,7 @@ using namespace Teuchos;
 /*----------------------------------------------------------------------*/
 int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
     const string& headfile, const vector<EXODUS::elem_def>& eledefs, const vector<EXODUS::cond_def>& condefs,
-    const map<int,map<int,vector<vector<double> > > >& elecenterlineinfo)
+    const map<int,map<int,std::vector<std::vector<double> > > >& elecenterlineinfo)
 {
   // open datfile
   std::ofstream dat(datfile.c_str());
@@ -233,7 +233,7 @@ void EXODUS::WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EX
         dat << "E " << actcon.e_id << " - " << actcon.desc << endl;
       } else if ((actcon.sec == "DESIGN SURF LOCSYS CONDITIONS") && (actcon.me==EXODUS::bcns)) {
         // special case for locsys conditions: calculate normal
-        vector<double> normtang = EXODUS::CalcNormalSurfLocsys(actcon.id,mymesh);
+        std::vector<double> normtang = EXODUS::CalcNormalSurfLocsys(actcon.id,mymesh);
         dat << "E " << actcon.e_id << " - ";
         for (unsigned int i = 0; i < normtang.size() ; ++i) dat <<  std::setprecision (10) << std::fixed << normtang[i] << " ";
         dat << endl;
@@ -381,22 +381,22 @@ const std::set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const E
   } else if (e.me==EXODUS::bceb){
     std::set<int> allnodes;
     RCP<EXODUS::ElementBlock> eb = m.GetElementBlock(e.id);
-    RCP<const map<int,vector<int> > > eles = eb->GetEleConn();
-    map<int,vector<int> >::const_iterator i_ele;
+    RCP<const map<int,std::vector<int> > > eles = eb->GetEleConn();
+    map<int,std::vector<int> >::const_iterator i_ele;
     for(i_ele=eles->begin(); i_ele != eles->end(); ++i_ele){
-      const vector<int> nodes = i_ele->second;
-      vector<int>::const_iterator i;
+      const std::vector<int> nodes = i_ele->second;
+      std::vector<int>::const_iterator i;
       for(i=nodes.begin();i!=nodes.end();++i) allnodes.insert(*i);
     }
     return allnodes;
   } else if (e.me==EXODUS::bcss){
     std::set<int> allnodes;
     EXODUS::SideSet ss = m.GetSideSet(e.id);
-    const map<int,vector<int> > eles = ss.GetSideSet();
-    map<int,vector<int> >::const_iterator i_ele;
+    const map<int,std::vector<int> > eles = ss.GetSideSet();
+    map<int,std::vector<int> >::const_iterator i_ele;
     for(i_ele=eles.begin(); i_ele != eles.end(); ++i_ele){
-      const vector<int> nodes = i_ele->second;
-      vector<int>::const_iterator i;
+      const std::vector<int> nodes = i_ele->second;
+      std::vector<int>::const_iterator i;
       for(i=nodes.begin();i!=nodes.end();++i) allnodes.insert(*i);
     }
     return allnodes;
@@ -412,11 +412,11 @@ void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, ostream& dat)
 {
   dat << "-------------------------------------------------------NODE COORDS" << endl;
   dat.precision(16);
-  RCP<map<int,vector<double> > > nodes = mymesh.GetNodes();
-  map<int,vector<double> >::const_iterator i_node;
+  RCP<map<int,std::vector<double> > > nodes = mymesh.GetNodes();
+  map<int,std::vector<double> >::const_iterator i_node;
   for (i_node = nodes->begin(); i_node != nodes->end(); ++i_node)
   {
-    vector<double> coords = i_node->second;
+    std::vector<double> coords = i_node->second;
     dat << "NODE " << i_node->first << "  " << '\t' << "COORD" << '\t';
     for(unsigned int i=0; i<coords.size(); ++i) dat << std::scientific << coords[i] << '\t';
     dat << endl;
@@ -428,7 +428,7 @@ void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, ostream& dat)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& mymesh, ostream& dat,
-     const map<int,map<int,vector<vector<double> > > >& elecenterlineinfo)
+     const map<int,map<int,std::vector<std::vector<double> > > >& elecenterlineinfo)
 {
   // sort elements w.r.t. structure, fluid, ale, scalar transport, thermo, etc.
   vector<EXODUS::elem_def> strus;
@@ -506,15 +506,15 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, int& startele, ostream& datfile,
-    const map<int,map<int,vector<vector<double> > > >& elescli,const int eb_id)
+    const map<int,map<int,std::vector<std::vector<double> > > >& elescli,const int eb_id)
 {
-  RCP<const map<int,vector<int> > > eles = eb->GetEleConn();
-  map<int,vector<int> >::const_iterator i_ele;
+  RCP<const map<int,std::vector<int> > > eles = eb->GetEleConn();
+  map<int,std::vector<int> >::const_iterator i_ele;
   for (i_ele=eles->begin();i_ele!=eles->end();++i_ele)
   {
     std::stringstream dat; // first build up the string for actual element line
-    const vector<int> nodes = i_ele->second;
-    vector<int>::const_iterator i_n;
+    const std::vector<int> nodes = i_ele->second;
+    std::vector<int>::const_iterator i_n;
     dat << "   " << startele;
     dat << " " << acte.ename;                       // e.g. "SOLIDH8"
     dat << " " << DistypeToString(PreShapeToDrt(eb->GetShape()));
@@ -526,7 +526,7 @@ void EXODUS::DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def
     	if(elescli.find(eb_id)!=elescli.end())
     	{
     		// write local cosy from centerline to each element
-    		vector<vector<double> > ecli = (elescli.find(eb_id)->second).find(i_ele->first)->second;
+    		vector<std::vector<double> > ecli = (elescli.find(eb_id)->second).find(i_ele->first)->second;
 		  dat << " RAD " << std::fixed << std::setprecision(8) << ecli[0][0] << " " << ecli[0][1] << " " << ecli[0][2];
 		  dat << " AXI " << ecli[1][0] << " " << ecli[1][1] << " " << ecli[1][2];
 		  dat << " CIR " << ecli[2][0] << " " << ecli[2][1] << " " << ecli[2][2];

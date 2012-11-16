@@ -18,7 +18,7 @@ Maintainer: Florian Henke
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Combust3Line::Evaluate(
-        ParameterList&            params,
+        Teuchos::ParameterList&   params,
         DRT::Discretization&      discretization,
         std::vector<int>&         lm,
         Epetra_SerialDenseMatrix& elemat1,
@@ -46,7 +46,7 @@ int DRT::ELEMENTS::Combust3Line::Evaluate(
  |  Integrate a Surface Neumann boundary condition (public)  gammi 04/07|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::Combust3Line::EvaluateNeumann(
-        ParameterList&            params,
+        Teuchos::ParameterList&   params,
         DRT::Discretization&      discretization,
         DRT::Condition&           condition,
         std::vector<int>&         lm,

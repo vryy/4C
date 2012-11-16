@@ -51,7 +51,7 @@ public:
       vector<RCP<Epetra_Vector> > newRowVectorsnp
   );
 
-  map<int,vector<LINALG::Matrix<2,4> > >* oldJumpAndKinkValues(){return &eleJumpsAndKinks_;}
+  std::map<int,std::vector<LINALG::Matrix<2,4> > >* oldJumpAndKinkValues(){return &eleJumpsAndKinks_;}
 
 protected:
 

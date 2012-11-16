@@ -171,9 +171,9 @@ public:
   */
   int Evaluate
   (
-    ParameterList& params,  ///< ParameterList for communication between control routine and elements
+    Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
     DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
-    vector<int>&              lm, ///< location matrix for de-assembly
+    std::vector<int>&         lm, ///< location matrix for de-assembly
     Epetra_SerialDenseMatrix& elemat1,  ///< (stiffness-)matrix to be filled by element.
     Epetra_SerialDenseMatrix& elemat2,  ///< (mass-)matrix to be filled by element.
     Epetra_SerialDenseVector& elevec1,  ///< (internal force-)vector to be filled by element
@@ -197,10 +197,10 @@ public:
   */
   virtual int EvaluateNeumann
   (
-    ParameterList& params,
+    Teuchos::ParameterList& params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1 = NULL
   );
@@ -213,10 +213,10 @@ protected:
   So_hex8fbar& operator = (const So_hex8fbar& old);
 
   // compute Jacobian mapping wrt to deformed configuration
-  virtual void UpdateJacobianMapping(const vector<double>& disp,
+  virtual void UpdateJacobianMapping(const std::vector<double>& disp,
                                      DRT::ELEMENTS::PreStress& prestress);
   // compute defgrd in all gp for given disp
-  virtual void DefGradient(const vector<double>& disp,
+  virtual void DefGradient(const std::vector<double>& disp,
                            Epetra_SerialDenseMatrix& gpdefgrd,
                            DRT::ELEMENTS::PreStress& prestress);
 
@@ -230,7 +230,7 @@ protected:
 		LINALG::Matrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
 		LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
 		LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
-		ParameterList&            params,         ///< algorithmic parameters e.g. time
+		Teuchos::ParameterList&        params,         ///< algorithmic parameters e.g. time
 		const INPAR::STR::StressType   iostress,  ///< stress output option
 		const INPAR::STR::StrainType   iostrain); ///< strain output option
 

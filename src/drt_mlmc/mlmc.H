@@ -16,7 +16,6 @@ Maintainer: Jonas Biehler
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_Vector.h"
 #include "Teuchos_RCP.hpp"
-#include "Teuchos_RCP.hpp"
 #include <Epetra_Map.h>
 #include <Epetra_Operator.h>
 #include "Epetra_FECrsMatrix.h"

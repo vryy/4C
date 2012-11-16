@@ -114,7 +114,7 @@ int LINALG::SOLVER::DirectSolver::ApplyInverse(const Epetra_MultiVector& X, Epet
 //----------------------------------------------------------------------------------
 void LINALG::SOLVER::DirectSolver::Solve()
 {
-  if (amesos_==null) dserror("No solver allocated");
+  if (amesos_==Teuchos::null) dserror("No solver allocated");
 
   // Problem has not been factorized before
   if (not IsFactored())

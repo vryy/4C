@@ -31,9 +31,9 @@ RCP<Epetra_MultiVector>  LINALG::SAAMGTransferOperator::buildTransferOperators(c
   TEUCHOS_FUNC_TIME_MONITOR("SAAMGTransferOperator::buildTransferOperators");
 
   ////////////// define dummy variable for next nullspace
-  RCP<Epetra_MultiVector> NextNS = null;
-  RCP<SparseMatrix> prolongator_tent = null;
-  RCP<SparseMatrix> restrictor_tent = null;
+  RCP<Epetra_MultiVector> NextNS = Teuchos::null;
+  RCP<SparseMatrix> prolongator_tent = Teuchos::null;
+  RCP<SparseMatrix> restrictor_tent = Teuchos::null;
 
   ////////////// build tentative prolongator
   GetPtent(A_->RowMap(),*aggs,naggs_local,params,*ThisNS,prolongator_tent,NextNS,domainoffset);

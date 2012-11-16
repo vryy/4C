@@ -21,8 +21,6 @@ Maintainer: Benedikt Schott
 #include "fluid_ele_parameter.H"
 
 
-class ParameterList;
-
 namespace LINALG
 {
   class SparseMatrix;
@@ -61,7 +59,7 @@ public:
                        DRT::ELEMENTS::FluidIntFace*         intface,         ///< internal face element
                        std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element
                        std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
-                       ParameterList&                       params,          ///< parameter list
+                       Teuchos::ParameterList&              params,          ///< parameter list
                        DRT::DiscretizationXFEM&             discretization,  ///< XFEM discretization
                        Teuchos::RCP<LINALG::SparseMatrix>   systemmatrix,    ///< systemmatrix
                        Teuchos::RCP<Epetra_Vector>          systemvector     ///< systemvector
@@ -71,14 +69,14 @@ public:
       DRT::ELEMENTS::FluidIntFace*       intface,              ///< internal face element
       Teuchos::ParameterList&            params,               ///< parameter list
       DRT::Discretization&               discretization,       ///< discretization
-      vector<int>&                       patchlm,              ///< patch local map
-      vector<int>&                       lm_masterToPatch,     ///< local map between master dofs and patchlm
-      vector<int>&                       lm_slaveToPatch,      ///< local map between slave dofs and patchlm
-      vector<int>&                       lm_faceToPatch,       ///< local map between face dofs and patchlm
+      std::vector<int>&                  patchlm,              ///< patch local map
+      std::vector<int>&                  lm_masterToPatch,     ///< local map between master dofs and patchlm
+      std::vector<int>&                  lm_slaveToPatch,      ///< local map between slave dofs and patchlm
+      std::vector<int>&                  lm_faceToPatch,       ///< local map between face dofs and patchlm
       std::vector<int>&                  lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
       std::vector<int>&                  lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
-      vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
-      vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
+      std::vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
+      std::vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
   )= 0;
 
 
@@ -131,7 +129,7 @@ public:
                               DRT::ELEMENTS::FluidIntFace*         intface,         ///< internal face element
                               std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element
                               std::vector<int>&                    nds_slave,       ///< nodal dofset w.r.t. slave element
-                              ParameterList&                       params,          ///< parameter list
+                              Teuchos::ParameterList&              params,          ///< parameter list
                               DRT::DiscretizationXFEM&             discretization,  ///< XFEM discretization
                               Teuchos::RCP<LINALG::SparseMatrix>   systemmatrix,    ///< systemmatrix
                               Teuchos::RCP<Epetra_Vector>          systemvector     ///< systemvector
@@ -142,14 +140,14 @@ public:
       DRT::ELEMENTS::FluidIntFace*       intface,              ///< internal face element
       Teuchos::ParameterList&            params,               ///< parameter list
       DRT::Discretization&               discretization,       ///< discretization
-      vector<int>&                       patchlm,              ///< patch local map
-      vector<int>&                       lm_masterToPatch,     ///< local map between master dofs and patchlm
-      vector<int>&                       lm_slaveToPatch,      ///< local map between slave dofs and patchlm
-      vector<int>&                       lm_faceToPatch,       ///< local map between face dofs and patchlm
+      std::vector<int>&                  patchlm,              ///< patch local map
+      std::vector<int>&                  lm_masterToPatch,     ///< local map between master dofs and patchlm
+      std::vector<int>&                  lm_slaveToPatch,      ///< local map between slave dofs and patchlm
+      std::vector<int>&                  lm_faceToPatch,       ///< local map between face dofs and patchlm
       std::vector<int>&                  lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
       std::vector<int>&                  lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
-      vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
-      vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
+      std::vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
+      std::vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
   );
 
 private:

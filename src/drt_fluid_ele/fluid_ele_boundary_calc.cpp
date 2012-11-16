@@ -26,7 +26,7 @@ Maintainer: Andreas Ehrl
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
-#include "../linalg/linalg_utils.H"
+//#include "../linalg/linalg_utils.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -164,10 +164,10 @@ DRT::ELEMENTS::FluidBoundaryImpl<distype>::FluidBoundaryImpl()
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
                               DRT::ELEMENTS::FluidBoundary* ele,
-                              ParameterList&                 params,
+                              Teuchos::ParameterList&        params,
                               DRT::Discretization&           discretization,
                               DRT::Condition&                condition,
-                              vector<int>&                   lm,
+                              std::vector<int>&              lm,
                               Epetra_SerialDenseVector&      elevec1_epetra,
                               Epetra_SerialDenseMatrix*      elemat1_epetra)
 {
@@ -177,7 +177,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
   if (time<0.0) usetime = false;
 
   // get time-curve factor/ n = - grad phi / |grad phi|
-  const vector<int>* curve  = condition.Get<vector<int> >("curve");
+  const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -186,9 +186,9 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
 
   // get values, switches and spatial functions from the condition
   // (assumed to be constant on element boundary)
-  const vector<int>*    onoff = condition.Get<vector<int> >   ("onoff");
-  const vector<double>* val   = condition.Get<vector<double> >("val"  );
-  const vector<int>*    func  = condition.Get<vector<int> >   ("funct");
+  const std::vector<int>*    onoff = condition.Get<std::vector<int> >   ("onoff");
+  const std::vector<double>* val   = condition.Get<std::vector<double> >("val"  );
+  const std::vector<int>*    func  = condition.Get<std::vector<int> >   ("funct");
 
   // get time factor for Neumann term
   const double timefac = fldpara_->TimeFacRhs();
@@ -202,7 +202,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
 
   // get scalar vector
   RCP<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
-  if (scaaf==null) dserror("Cannot get state vector 'scaaf'");
+  if (scaaf==Teuchos::null) dserror("Cannot get state vector 'scaaf'");
 
   // extract local values from global vector
   vector<double> myscaaf(lm.size());
@@ -314,9 +314,9 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
     DRT::ELEMENTS::FluidBoundary*  ele,
-    ParameterList&                  params,
+    Teuchos::ParameterList&         params,
     DRT::Discretization&            discretization,
-    vector<int>&                    lm,
+    std::vector<int>&               lm,
     Epetra_SerialDenseMatrix&       elemat1_epetra,
     Epetra_SerialDenseVector&       elevec1_epetra)
 {
@@ -357,7 +357,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
   if (isale)
   {
     dispnp = discretization.GetState("dispnp");
-    if (dispnp!=null)
+    if (dispnp!=Teuchos::null)
     {
       mydispnp.resize(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
@@ -376,7 +376,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
   LINALG::Matrix<nsd_, bdrynen_>   evel(true);
 
   RCP<const Epetra_Vector> vel = discretization.GetState("u and p (trial)");
-  if (vel==null) dserror("Cannot get state vector 'u and p (trial)'");
+  if (vel==Teuchos::null) dserror("Cannot get state vector 'u and p (trial)'");
 
   // extract local values from the global vectors
   vector<double> myvel(lm.size());
@@ -547,9 +547,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(
     DRT::ELEMENTS::FluidBoundary*  ele,
-    ParameterList&                  params,
+    Teuchos::ParameterList&         params,
     DRT::Discretization&            discretization,
-    vector<int>&                    lm,
+    std::vector<int>&               lm,
     Epetra_SerialDenseMatrix&       elemat1,
     Epetra_SerialDenseVector&       elevec1)
 {
@@ -584,7 +584,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(
   // get velocity and scalar vector at time n+alpha_F/n+1
   RCP<const Epetra_Vector> velaf = discretization.GetState("velaf");
   RCP<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
-  if (velaf==null or scaaf==null)
+  if (velaf==Teuchos::null or scaaf==Teuchos::null)
     dserror("Cannot get state vector 'velaf' and/or 'scaaf'");
 
   // extract local values from global vector
@@ -758,9 +758,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegrateShapeFunction(
                   DRT::ELEMENTS::FluidBoundary* ele,
-                  ParameterList& params,
+                  Teuchos::ParameterList& params,
                   DRT::Discretization&       discretization,
-                  vector<int>&               lm,
+                  std::vector<int>&          lm,
                   Epetra_SerialDenseVector&  elevec1,
                   const std::vector<double>& edispnp)
 {
@@ -817,9 +817,9 @@ return;
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementNodeNormal(
                                                      DRT::ELEMENTS::FluidBoundary*   ele,
-                                                     ParameterList&                   params,
+                                                     Teuchos::ParameterList&          params,
                                                      DRT::Discretization&             discretization,
-                                                     vector<int>&                     lm,
+                                                     std::vector<int>&                lm,
                                                      Epetra_SerialDenseVector&        elevec1,
                                                      const std::vector<double>&       edispnp)
 {
@@ -877,9 +877,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementNodeNormal(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
                                                         DRT::ELEMENTS::FluidBoundary*    ele,
-                                                        ParameterList&                    params,
+                                                        Teuchos::ParameterList&           params,
                                                         DRT::Discretization&              discretization,
-                                                        vector<int>&                      lm,
+                                                        std::vector<int>&                 lm,
                                                         Epetra_SerialDenseVector&         elevec1,
                                                         const std::vector<double>&        edispnp,
                                                         std::vector<double>&              enormals)
@@ -1049,9 +1049,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
                                                          DRT::ELEMENTS::FluidBoundary*   ele,
-                                                         ParameterList&                   params,
+                                                         Teuchos::ParameterList&          params,
                                                          DRT::Discretization&             discretization,
-                                                         vector<int>&                     lm,
+                                                         std::vector<int>&                lm,
                                                          Epetra_SerialDenseVector&        elevec1,
                                                          const std::vector<double>&       edispnp,
                                                          std::vector<double>&             enormals,
@@ -1073,7 +1073,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
   double SFgamma = 0.0;
   // get material data
   RCP<MAT::Material> mat = ele->ParentElement()->Material();
-  if (mat==null)
+  if (mat==Teuchos::null)
     dserror("no mat from parent!");
   else if (mat->MaterialType()==INPAR::MAT::m_fluid)
   {
@@ -1195,9 +1195,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementSurfaceTension(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCaculation(
                                                   DRT::ELEMENTS::FluidBoundary*  ele,
-                                                  ParameterList&                  params,
+                                                  Teuchos::ParameterList&         params,
                                                   DRT::Discretization&            discretization,
-                                                  vector<int>&                    lm)
+                                                  std::vector<int>&               lm)
 {
   // get the required material information
   RCP<MAT::Material> mat = ele->ParentElement()->Material();
@@ -1258,7 +1258,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCaculation(
   if (ele->ParentElement()->IsAle())
   {
     dispnp = discretization.GetState("dispnp");
-    if (dispnp!=null)
+    if (dispnp!=Teuchos::null)
     {
       mydispnp.resize(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
@@ -1295,9 +1295,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::AreaCaculation(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegratedPressureParameterCalculation(
   DRT::ELEMENTS::FluidBoundary*    ele,
-  ParameterList&                    params,
+  Teuchos::ParameterList&           params,
   DRT::Discretization&              discretization,
-  vector<int>&                      lm)
+  std::vector<int>&                 lm)
 {
 
   //------------------------------------------------------------------
@@ -1346,7 +1346,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegratedPressureParameterCalcu
 
   // extract local values from the global vectors
   RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-  if (velnp==null)
+  if (velnp==Teuchos::null)
     dserror("Cannot get state vector 'velnp'");
 
   vector<double> myvelnp(lm.size());
@@ -1380,7 +1380,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegratedPressureParameterCalcu
   if (ele->ParentElement()->IsAle())
   {
     dispnp = discretization.GetState("dispnp");
-    if (dispnp!=null)
+    if (dispnp!=Teuchos::null)
     {
       mydispnp.resize(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
@@ -1423,9 +1423,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegratedPressureParameterCalcu
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
   DRT::ELEMENTS::FluidBoundary*    ele,
-  ParameterList&                    params,
+  Teuchos::ParameterList&           params,
   DRT::Discretization&              discretization,
-  vector<int>&                      lm)
+  std::vector<int>&                 lm)
 {
 
   //------------------------------------------------------------------
@@ -1450,7 +1450,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
   if (ele->ParentElement()->IsAle())
   {
     dispnp = discretization.GetState("dispnp");
-    if (dispnp!=null)
+    if (dispnp!=Teuchos::null)
     {
       mydispnp.resize(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
@@ -1525,9 +1525,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CenterOfMassCalculation(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(
                                                                 DRT::ELEMENTS::FluidBoundary*    ele,
-                                                                ParameterList&                    params,
+                                                                Teuchos::ParameterList&           params,
                                                                 DRT::Discretization&              discretization,
-                                                                vector<int>&                      lm,
+                                                                std::vector<int>&                 lm,
                                                                 Epetra_SerialDenseVector&         elevec1)
 {
   // get integration rule
@@ -1536,7 +1536,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(
   // extract local values from the global vectors
   RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
 
-  if (velnp==null)
+  if (velnp==Teuchos::null)
     dserror("Cannot get state vector 'velnp'");
 
   vector<double> myvelnp(lm.size());
@@ -1568,7 +1568,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(
   if (ele->ParentElement()->IsAle())
   {
     dispnp = discretization.GetState("dispnp");
-    if (dispnp!=null)
+    if (dispnp!=Teuchos::null)
     {
       mydispnp.resize(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
@@ -1647,9 +1647,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(
                                                  DRT::ELEMENTS::FluidBoundary*   ele,
-                                                 ParameterList&                   params,
+                                                 Teuchos::ParameterList&          params,
                                                  DRT::Discretization&             discretization,
-                                                 vector<int>&                     lm,
+                                                 std::vector<int>&                lm,
                                                  Epetra_SerialDenseMatrix&        elemat1,
                                                  Epetra_SerialDenseMatrix&        elemat2,
                                                  Epetra_SerialDenseVector&        elevec1,
@@ -1669,7 +1669,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(
   if (isale)
   {
     dispnp = discretization.GetState("dispnp");
-    if (dispnp==null) dserror("Cannot get state vectors 'dispnp'");
+    if (dispnp==Teuchos::null) dserror("Cannot get state vectors 'dispnp'");
     edispnp.resize(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,edispnp,lm);
   }
@@ -1704,7 +1704,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(
   // get nodal velocities and pressures
   RCP<const Epetra_Vector> convelnp = discretization.GetState("convectivevel");
 
-  if (convelnp==null)
+  if (convelnp==Teuchos::null)
     dserror("Cannot get state vector 'convectivevel'");
 
   // extract local values from the global vectors
@@ -1918,9 +1918,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
                   DRT::ELEMENTS::FluidBoundary*    ele,
-                  ParameterList&                    params,
+                  Teuchos::ParameterList&           params,
                   DRT::Discretization&              discretization,
-                  vector<int>&                      lm,
+                  std::vector<int>&                 lm,
                   Epetra_SerialDenseVector&         elevec1)
 {
   //  const double thsl = params.get("thsl",0.0);
@@ -1944,7 +1944,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ImpedanceIntegration(
   if (ele->ParentElement()->IsAle())
   {
     dispnp = discretization.GetState("dispnp");
-    if (dispnp!=null)
+    if (dispnp!=Teuchos::null)
     {
       mydispnp.resize(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
@@ -2226,9 +2226,9 @@ return;
 template <DRT::Element::DiscretizationType distype>
    void  DRT::ELEMENTS::FluidBoundaryImpl<distype>::MixHybDirichlet(
      DRT::ELEMENTS::FluidBoundary*  surfele,
-     ParameterList&                  params,
+     Teuchos::ParameterList&         params,
      DRT::Discretization&            discretization,
-     vector<int>&                    lm,
+     std::vector<int>&               lm,
      Epetra_SerialDenseMatrix&       elemat,
      Epetra_SerialDenseVector&       elevec)
 {
@@ -2287,9 +2287,9 @@ template <DRT::Element::DiscretizationType bndydistype,
           DRT::Element::DiscretizationType pdistype>
    void  DRT::ELEMENTS::FluidBoundaryImpl<distype>::MixHybDirichlet(
      DRT::ELEMENTS::FluidBoundary*  surfele,
-     ParameterList&                  params,
+     Teuchos::ParameterList&         params,
      DRT::Discretization&            discretization,
-     vector<int>&                    lm,
+     std::vector<int>&               lm,
      Epetra_SerialDenseMatrix&       elemat_epetra,
      Epetra_SerialDenseVector&       elevec_epetra)
 {
@@ -2353,7 +2353,7 @@ template <DRT::Element::DiscretizationType bndydistype,
     params.get<RCP<DRT::Condition> >("condition");
 
   // get value for boundary condition
-  const vector<double>* val = (*hixhybdbc_cond).Get<vector<double> >("val");
+  const std::vector<double>* val = (*hixhybdbc_cond).Get<std::vector<double> >("val");
 
   //
   const int myid = (*((*hixhybdbc_cond).Nodes()))[0];
@@ -2398,7 +2398,7 @@ template <DRT::Element::DiscretizationType bndydistype,
 
 
   // find out whether we will use a time curve and get the factor
-  const vector<int>* curve  = (*hixhybdbc_cond).Get<vector<int> >("curve");
+  const std::vector<int>* curve  = (*hixhybdbc_cond).Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
@@ -2407,7 +2407,7 @@ template <DRT::Element::DiscretizationType bndydistype,
 
   // get values and switches from the condition
   // (assumed to be constant on element boundary)
-  const vector<int>* functions = (*hixhybdbc_cond).Get<vector<int> >   ("funct");
+  const std::vector<int>* functions = (*hixhybdbc_cond).Get<std::vector<int> >   ("funct");
 
   LINALG::Matrix<nsd,1> u_dirich(true);
 
@@ -2478,19 +2478,19 @@ template <DRT::Element::DiscretizationType bndydistype,
   LINALG::Matrix<piel,   1>    pepres(true);
 
   RCP<const Epetra_Vector> vel = discretization.GetState("velaf");
-  if (vel==null) dserror("Cannot get state vector 'velaf'");
+  if (vel==Teuchos::null) dserror("Cannot get state vector 'velaf'");
 
   // extract local node values for pressure and velocities from global vectors
   if((fldpara_->TimeAlgo()==INPAR::FLUID::timeint_gen_alpha) or
       (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha))
   {
     RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
-    if (velnp==null) dserror("Cannot get state vector 'velnp'");
+    if (velnp==Teuchos::null) dserror("Cannot get state vector 'velnp'");
 
     double maxvel=0;
 
-    vector<double> mypvelaf((*plm).size());
-    vector<double> mypvelnp((*plm).size());
+    std::vector<double> mypvelaf((*plm).size());
+    std::vector<double> mypvelnp((*plm).size());
 
     DRT::UTILS::ExtractMyValues(*vel,  mypvelaf,*plm);
     DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,*plm);
@@ -2523,7 +2523,7 @@ template <DRT::Element::DiscretizationType bndydistype,
   }
   else
   {
-    vector<double> mypvel((*plm).size());
+    std::vector<double> mypvel((*plm).size());
 
     DRT::UTILS::ExtractMyValues(*vel,mypvel,*plm);
 
@@ -3767,16 +3767,16 @@ template <DRT::Element::DiscretizationType bndydistype,
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   DRT::ELEMENTS::FluidBoundary*    ele,
-  ParameterList&                    params,
+  Teuchos::ParameterList&           params,
   DRT::Discretization&              discretization,
-  vector<int>&                      lm,
+  std::vector<int>&                 lm,
   Epetra_SerialDenseVector&         elevec1)
 {
 
   // extract local values from the global vectors
   RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
 
-  if (velnp==null)
+  if (velnp==Teuchos::null)
     dserror("Cannot get state vector 'velnp'");
 
   vector<double> myvelnp(lm.size());
@@ -3853,7 +3853,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   if (ele->ParentElement()->IsAle())
   {
     dispnp = discretization.GetState("dispnp");
-    if (dispnp!=null)
+    if (dispnp!=Teuchos::null)
     {
       mydispnp.resize(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
@@ -3878,7 +3878,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
     EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
 
     // Get the velocity value at the corresponding Gauss point.
-    vector<double> vel_gps(nsd_,0.0);
+    std::vector<double> vel_gps(nsd_,0.0);
     for (int inode=0;inode<bdrynen_;++inode)
     {
       for(int idim=0;idim<nsd_;++idim)
@@ -3920,9 +3920,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeNeumannUvIntegral(
   DRT::ELEMENTS::FluidBoundary*    ele,
-  ParameterList&                    params,
+  Teuchos::ParameterList&           params,
   DRT::Discretization&              discretization,
-  vector<int>&                      lm,
+  std::vector<int>&                 lm,
   Epetra_SerialDenseVector&         elevec1)
 {
   // get integration rule
@@ -3931,7 +3931,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeNeumannUvIntegral(
   // extract local values from the global vectors
   RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
 
-  if (velnp==null)
+  if (velnp==Teuchos::null)
     dserror("Cannot get state vector 'velnp'");
 
   vector<double> myvelnp(lm.size());
@@ -3967,7 +3967,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeNeumannUvIntegral(
   if (ele->ParentElement()->IsAle())
   {
     dispnp = discretization.GetState("dispnp");
-    if (dispnp!=null)
+    if (dispnp!=Teuchos::null)
     {
       mydispnp.resize(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
@@ -4018,9 +4018,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeNeumannUvIntegral(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
                                                  DRT::ELEMENTS::FluidBoundary*   ele,
-                                                 ParameterList&                   params,
+                                                 Teuchos::ParameterList&          params,
                                                  DRT::Discretization&             discretization,
-                                                 vector<int>&                     lm,
+                                                 std::vector<int>&                lm,
                                                  Epetra_SerialDenseMatrix&        elemat1,
                                                  Epetra_SerialDenseMatrix&        elemat2,
                                                  Epetra_SerialDenseVector&        elevec1)
@@ -4047,7 +4047,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
   if (ele->ParentElement()->IsAle())
   {
     dispnp = discretization.GetState("dispnp");
-    if (dispnp!=null)
+    if (dispnp!=Teuchos::null)
     {
       mydispnp.resize(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
@@ -4126,9 +4126,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
     Teuchos::RCP<const Epetra_Vector> gridvel = discretization.GetState("gridv");
 
-    if (velnp==null)
+    if (velnp==Teuchos::null)
       dserror("Cannot get state vector 'velnp'");
-    if (gridvel==null)
+    if (gridvel==Teuchos::null)
       dserror("Cannot get state vector 'gridv'");
 
     std::vector<double> myvelnp(lm.size());
@@ -4234,9 +4234,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
                                                  DRT::ELEMENTS::FluidBoundary*   ele,
-                                                 ParameterList&                   params,
+                                                 Teuchos::ParameterList&          params,
                                                  DRT::Discretization&             discretization,
-                                                 vector<int>&                     lm,
+                                                 std::vector<int>&                lm,
                                                  Epetra_SerialDenseMatrix&        elemat1,
                                                  Epetra_SerialDenseVector&        elevec1)
 {
@@ -4263,7 +4263,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
   if (ele->ParentElement()->IsAle())
   {
     dispnp = discretization.GetState("dispnp");
-    if (dispnp!=null)
+    if (dispnp!=Teuchos::null)
     {
       mydispnp.resize(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
@@ -4284,9 +4284,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
   Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
   Teuchos::RCP<const Epetra_Vector> gridvel = discretization.GetState("gridv");
 
-  if (velnp==null)
+  if (velnp==Teuchos::null)
     dserror("Cannot get state vector 'velnp'");
-  if (gridvel==null)
+  if (gridvel==Teuchos::null)
     dserror("Cannot get state vector 'gridv'");
 
   std::vector<double> myvelnp(lm.size());
@@ -4317,7 +4317,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
 
   const int peleid = pele->Id();
   //access structure discretization
-  RCP<DRT::Discretization> structdis = null;
+  RCP<DRT::Discretization> structdis = Teuchos::null;
   structdis = DRT::Problem::Instance()->GetDis("structure");
   //get corresponding structure element (it has the same global ID as the scatra element)
   DRT::Element* structele = structdis->gElement(peleid);

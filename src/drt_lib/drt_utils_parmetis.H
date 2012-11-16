@@ -66,7 +66,7 @@ namespace UTILS
                          RCP<Epetra_Map> roweles,
                          RCP<Epetra_Map>& rownodes,
                          RCP<Epetra_Map>& colnodes,
-                         vector<int>& nids,
+                         std::vector<int>& nids,
                          int nblock,
                          int ntarget,
                          RCP<Epetra_Comm> comm,

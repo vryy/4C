@@ -99,7 +99,7 @@ public:
   virtual void Unpack(const std::vector<char>& data);
 
   //! unpacks the potential element container from a vector<char>
-  void Unpack(const vector<char>& data, vector<char>::size_type& position);
+  void Unpack(const std::vector<char>& data, std::vector<char>::size_type& position);
 
   //! print
   void Print();

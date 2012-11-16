@@ -93,13 +93,13 @@ void XFEM::packDofKeys(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void XFEM::unpackDofKeys(
-    const vector<char>&                     dataRecv,
+    const std::vector<char>&                     dataRecv,
     std::set<XFEM::DofKey >&       dofkeyset )
 {
 	vector<char>::size_type index = 0;
   while (index < dataRecv.size())
   {
-    vector<char> data;
+    std::vector<char> data;
     DRT::ParObject::ExtractfromPack(index, dataRecv, data);
     dofkeyset.insert(XFEM::DofKey(data));
   }

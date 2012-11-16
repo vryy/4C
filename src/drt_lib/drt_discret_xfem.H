@@ -168,7 +168,7 @@ public:
 
   \author henke 07/09
   */
-  virtual void EvaluateDirichletCombust(ParameterList& params,
+  virtual void EvaluateDirichletCombust(Teuchos::ParameterList& params,
       Teuchos::RCP<Epetra_Vector> systemvector,
       Teuchos::RCP<Epetra_Vector> systemvectord,
       Teuchos::RCP<Epetra_Vector> systemvectordd,
@@ -190,7 +190,7 @@ public:
   \param solveparams (in): List of parameters
   \param recompute (in)  : force method to recompute the nullspace
   */
-  virtual void ComputeNullSpaceIfNecessary(ParameterList& solveparams,
+  virtual void ComputeNullSpaceIfNecessary(Teuchos::ParameterList& solveparams,
                                            bool recompute = false)
   {
     // remark: the null space is not computed correctly for XFEM discretizations, since the number of
@@ -377,11 +377,11 @@ protected:
 
   bool                                  extension_filled_;      ///< flag indicating whether intfaces extension has been filled
 
-  RCP<Epetra_Map>                       intfacerowmap_;         ///< unique distribution of element ownerships
-  RCP<Epetra_Map>                       intfacecolmap_;         ///< distribution of elements including ghost elements
-  vector<DRT::Element*>                 intfacerowptr_;         ///< vector of pointers to row elements for faster access
-  vector<DRT::Element*>                 intfacecolptr_;         ///< vector of pointers to column elements for faster access
-  map<int,RCP<DRT::Element> >           faces_;                 ///< map of internal faces elements
+  Teuchos::RCP<Epetra_Map>              intfacerowmap_;         ///< unique distribution of element ownerships
+  Teuchos::RCP<Epetra_Map>              intfacecolmap_;         ///< distribution of elements including ghost elements
+  std::vector<DRT::Element*>            intfacerowptr_;         ///< vector of pointers to row elements for faster access
+  std::vector<DRT::Element*>            intfacecolptr_;         ///< vector of pointers to column elements for faster access
+  std::map<int,RCP<DRT::Element> >      faces_;                 ///< map of internal faces elements
 
 
 }; // class DiscretizationXFEM

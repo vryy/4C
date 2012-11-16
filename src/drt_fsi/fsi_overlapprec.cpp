@@ -247,8 +247,8 @@ void FSI::OverlappingBlockMatrix::SetupPreconditioner()
   const LINALG::SparseMatrix& fluidInnerOp  = Matrix(1,1);
   const LINALG::SparseMatrix& aleInnerOp    = Matrix(2,2);
 
-  Teuchos::RCP<LINALG::MapExtractor> fsidofmapex = null;
-  Teuchos::RCP<Epetra_Map>           irownodes = null;
+  Teuchos::RCP<LINALG::MapExtractor> fsidofmapex = Teuchos::null;
+  Teuchos::RCP<Epetra_Map>           irownodes = Teuchos::null;
 
   structuresolver_->Setup(structInnerOp.EpetraMatrix());
   fluidsolver_->Setup(fluidInnerOp.EpetraMatrix(),

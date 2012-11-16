@@ -81,7 +81,7 @@ void SCATRA::TimIntStationary::SetOldPartOfRighthandside()
  | set time for evaluation of Neumann boundary conditions      vg 12/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntStationary::SetTimeForNeumannEvaluation(
-  ParameterList& params)
+  Teuchos::ParameterList& params)
 {
   params.set("total time",time_);
   return;
@@ -120,7 +120,7 @@ void SCATRA::TimIntStationary::AVM3Separation()
  | add parameters specific for time-integration scheme         vg 11/08 |
  *----------------------------------------------------------------------*/
 void SCATRA::TimIntStationary::AddSpecificTimeIntegrationParameters(
-  ParameterList& params)
+  Teuchos::ParameterList& params)
 {
   params.set("using stationary formulation",true);
   params.set("using generalized-alpha time integration",false);

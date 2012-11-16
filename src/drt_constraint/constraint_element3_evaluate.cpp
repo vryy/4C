@@ -24,9 +24,9 @@ using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::ConstraintElement3::Evaluate(Teuchos::ParameterList& params,
                                     DRT::Discretization&      discretization,
-                                    vector<int>&              lm,
+                                    std::vector<int>&         lm,
                                     Epetra_SerialDenseMatrix& elemat1,
                                     Epetra_SerialDenseMatrix& elemat2,
                                     Epetra_SerialDenseVector& elevec1,
@@ -59,8 +59,8 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
     case calc_MPC_state:
     {
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vector 'displacement'");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       const int numnod = NumNode();
 
@@ -82,7 +82,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
       else if (numnod == 2)
       {
         RCP<DRT::Condition> condition = params.get<RCP<DRT::Condition> >("condition");
-        const vector<double>*  direct = condition->Get<vector<double> > ("direction");
+        const std::vector<double>*  direct = condition->Get<std::vector<double> > ("direction");
         const string* value = condition-> Get<string>("value");
         if (*value == "disp")
           elevec3[0] = ComputeWeightedDistance(mydisp,*direct);
@@ -100,8 +100,8 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
     case calc_MPC_stiff:
     {
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vector 'displacement'");
-      vector<double> mydisp(lm.size());
+      if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+      std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       const int numnod = NumNode();
 
@@ -131,7 +131,7 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
       else if (numnod == 2)
       {
         RCP<DRT::Condition> condition = params.get<RCP<DRT::Condition> >("condition");
-        const vector<double>*  direct = condition->Get<vector<double> > ("direction");
+        const std::vector<double>*  direct = condition->Get<std::vector<double> > ("direction");
 
         //Compute weighted difference between masternode and other node and it's derivative
         ComputeFirstDerivWeightedDistance(elevec1,*direct);
@@ -165,10 +165,10 @@ int DRT::ELEMENTS::ConstraintElement3::Evaluate(ParameterList& params,
  * Evaluate Neumann (->dserror) */
 int DRT::ELEMENTS::ConstraintElement3::EvaluateNeumann
 (
-  ParameterList& params,
+  Teuchos::ParameterList& params,
   DRT::Discretization&      discretization,
   DRT::Condition&           condition,
-  vector<int>&              lm,
+  std::vector<int>&         lm,
   Epetra_SerialDenseVector& elevec1,
   Epetra_SerialDenseMatrix* elemat1
 )
@@ -1835,8 +1835,8 @@ void DRT::ELEMENTS::ConstraintElement3::ComputeSecondDeriv
 
 double DRT::ELEMENTS::ConstraintElement3::ComputeWeightedDistance
 (
-  const vector<double> disp,
-  const vector<double> direct
+  const std::vector<double> disp,
+  const std::vector<double> direct
 )
 {
 
@@ -1855,7 +1855,7 @@ double DRT::ELEMENTS::ConstraintElement3::ComputeWeightedDistance
 double DRT::ELEMENTS::ConstraintElement3::ComputeWeightedDistance
 (
   const LINALG::Matrix<2,3> disp,
-  const vector<double> direct
+  const std::vector<double> direct
 )
 {
 
@@ -1874,7 +1874,7 @@ double DRT::ELEMENTS::ConstraintElement3::ComputeWeightedDistance
 void DRT::ELEMENTS::ConstraintElement3::ComputeFirstDerivWeightedDistance
  (
    Epetra_SerialDenseVector& elevector,
-   const vector<double> direct
+   const std::vector<double> direct
  )
 {
   // norm of direct

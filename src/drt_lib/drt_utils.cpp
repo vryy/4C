@@ -55,8 +55,8 @@ Maintainer: Michael Gee
  |  locally extract a subset of values  (public)            mwgee 12/06|
  *----------------------------------------------------------------------*/
 void DRT::UTILS::ExtractMyValues(const Epetra_Vector& global,
-                                 vector<double>& local,
-                                 const vector<int>& lm)
+                                 std::vector<double>& local,
+                                 const std::vector<int>& lm)
 {
   const size_t ldim = lm.size();
   local.resize(ldim);
@@ -76,7 +76,7 @@ void DRT::UTILS::ExtractMyValues(const Epetra_Vector& global,
  *----------------------------------------------------------------------*/
 void DRT::UTILS::ExtractMyValues(const Epetra_Vector&      global,
                                  Epetra_SerialDenseVector& local,
-                                 const vector<int>&        lm)
+                                 const std::vector<int>&        lm)
 {
   const size_t ldim = lm.size();
   local.Size(ldim);
@@ -131,7 +131,7 @@ void DRT::UTILS::ExtractMyNodeBasedValues(
     const int nsd
     )
 {
-  if (global==null) dserror("received a TEUCHOS::null pointer");
+  if (global==Teuchos::null) dserror("received a TEUCHOS::null pointer");
   if (nsd > global->NumVectors())
     dserror("Requested %d of %d available columns", nsd,global->NumVectors());
   const int iel = ele->NumNode(); // number of nodes
@@ -159,11 +159,11 @@ void DRT::UTILS::ExtractMyNodeBasedValues(
 void DRT::UTILS::DisBasedLocationVector(
     const DRT::Discretization & dis,
     const DRT::Element& ele,
-    vector<int>& lm,
+    std::vector<int>& lm,
     const int num)
 {
   lm.clear();
-  vector<int> giddofs;
+  std::vector<int> giddofs;
   const int numnodes = ele.NumNode();
   for (int i=0;i<numnodes;i++)
   {

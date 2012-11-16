@@ -952,8 +952,8 @@ void StructMonWriter::WriteStrResult(
   const Epetra_Map* nodemap = dis->NodeRowMap();
   RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(new Epetra_MultiVector(*nodemap,6));
   p.set("poststress",nodal_stress);
-  dis->Evaluate(p,null,null,null,null,null);
-    if (nodal_stress==null)
+  dis->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+    if (nodal_stress==Teuchos::null)
     {
       dserror("vector containing nodal stresses/strains not available");
     }

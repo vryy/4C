@@ -228,8 +228,8 @@ namespace ELEMENTS
     void CalculateCouplFintCondCapa(
       DRT::Element* ele,  //!< the element whose matrix is calculated
       const double& time,  //!< current time
-      vector<double>& disp,  //!< current displacements
-      vector<double>& vel,  //!< current velocities
+      std::vector<double>& disp,  //!< current displacements
+      std::vector<double>& vel,  //!< current velocities
       const double& stepsize,  //!< time step size
       LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  //!< conductivity matrix
       LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa,  //!< capacity matrix
@@ -245,7 +245,7 @@ namespace ELEMENTS
     //! mechanical energy dissipates as heat
     void CalculateInternalDissipation(
       DRT::Element* ele,  //!< the element whose matrix is calculated
-      vector<double>& vel,  //!< current velocities
+      std::vector<double>& vel,  //!< current velocities
       const double& stepsize,  //!< step size Delta t
       LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  //!< conductivity matrix
       LINALG::Matrix<nen_*numdofpernode_,1>* efint  //!< internal force
@@ -254,8 +254,8 @@ namespace ELEMENTS
     //! calculate thermal-mechanical system matrix term needed in monolithic TSI
     void CalculateCouplCond(
       DRT::Element* ele,  //!< the element whose matrix is calculated
-      vector<double>& disp,  //!< current displacements
-      vector<double>& vel,  //!< current velocities
+      std::vector<double>& disp,  //!< current displacements
+      std::vector<double>& vel,  //!< current velocities
       LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* econdcoupl  //!< k_Tu matrix
       );
 

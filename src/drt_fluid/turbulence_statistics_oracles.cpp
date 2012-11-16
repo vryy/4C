@@ -27,7 +27,7 @@ Maintainer: Florian Henke
  *------------------------------------------------------------------------------------------------*/
 COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   RCP<DRT::Discretization> discret,
-  ParameterList&                   params,
+  Teuchos::ParameterList&          params,
   const string&                    geotype,
   const bool                       withscatra)
   :
@@ -285,18 +285,18 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
   //----------------------------
   {
     // horizontal line vectors
-    x1_midupperchannel_ = Teuchos::rcp(new vector<double> ); // x1-coordinates of nodes at y = 85.5mm = 2.86h (mid line upper channel)
-    x1_midlowerchannel_ = Teuchos::rcp(new vector<double> ); // x1-coordinates of nodes at y = 45.1mm = 1.51h (mid line lower channel)
-    x1_midchamber_      = Teuchos::rcp(new vector<double> ); // x1-coordinates of nodes at y = 65.3mm = 2.18h (mid line chamber)
-    x1_wallchamber_     = Teuchos::rcp(new vector<double> ); // x1-coordinates of nodes at the walls
-    x1_wallinflowchannel_ = Teuchos::rcp(new vector<double> ); // x1-coordinates of nodes at the walls
+    x1_midupperchannel_ = Teuchos::rcp(new std::vector<double> ); // x1-coordinates of nodes at y = 85.5mm = 2.86h (mid line upper channel)
+    x1_midlowerchannel_ = Teuchos::rcp(new std::vector<double> ); // x1-coordinates of nodes at y = 45.1mm = 1.51h (mid line lower channel)
+    x1_midchamber_      = Teuchos::rcp(new std::vector<double> ); // x1-coordinates of nodes at y = 65.3mm = 2.18h (mid line chamber)
+    x1_wallchamber_     = Teuchos::rcp(new std::vector<double> ); // x1-coordinates of nodes at the walls
+    x1_wallinflowchannel_ = Teuchos::rcp(new std::vector<double> ); // x1-coordinates of nodes at the walls
 
     // vertical line vectors
-    x2_inflow_ = Teuchos::rcp(new vector<double> ); // x2-coordinates of nodes at x =-5h (both inflow channels)
-    x2_0h_     = Teuchos::rcp(new vector<double> ); // x2-coordinates of nodes at x = 0h (step/expansion)
-    x2_1h_     = Teuchos::rcp(new vector<double> ); // x2-coordinates of nodes at x = 1h
-    x2_2h_     = Teuchos::rcp(new vector<double> ); // x2-coordinates of nodes at x = 2h
-    x2_3h_     = Teuchos::rcp(new vector<double> ); // x2-coordinates of nodes at x > 3h
+    x2_inflow_ = Teuchos::rcp(new std::vector<double> ); // x2-coordinates of nodes at x =-5h (both inflow channels)
+    x2_0h_     = Teuchos::rcp(new std::vector<double> ); // x2-coordinates of nodes at x = 0h (step/expansion)
+    x2_1h_     = Teuchos::rcp(new std::vector<double> ); // x2-coordinates of nodes at x = 1h
+    x2_2h_     = Teuchos::rcp(new std::vector<double> ); // x2-coordinates of nodes at x = 2h
+    x2_3h_     = Teuchos::rcp(new std::vector<double> ); // x2-coordinates of nodes at x > 3h
 
     for(std::set<double,LineSortCriterion>::const_iterator coorditer=x1_midupperchannel.begin(); coorditer!=x1_midupperchannel.end(); ++coorditer)
       x1_midupperchannel_->push_back(*coorditer);
@@ -311,8 +311,8 @@ COMBUST::TurbulenceStatisticsORACLES::TurbulenceStatisticsORACLES(
     for(std::set<double,LineSortCriterion>::const_iterator coorditer=x1_wallinflowchannel.begin(); coorditer!=x1_wallinflowchannel.end(); ++coorditer)
       x1_wallinflowchannel_->push_back(*coorditer);
 
-    Teuchos::RCP<vector<double> > x1_wallchamberbottom;
-    x1_wallchamberbottom = Teuchos::rcp(new vector<double> );
+    Teuchos::RCP<std::vector<double> > x1_wallchamberbottom;
+    x1_wallchamberbottom = Teuchos::rcp(new std::vector<double> );
     for(std::set<double,LineSortCriterion>::const_iterator coorditer=x1_wallbottomchamber.begin(); coorditer!=x1_wallbottomchamber.end(); ++coorditer)
       x1_wallchamberbottom->push_back(*coorditer);
     if ((*x1_wallchamber_).size() != (*x1_wallchamberbottom).size()) dserror("grid mismatch between top and bottom wall");
@@ -691,11 +691,11 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
     // top and bottom planes in chamber
     const size_t numplanes = 2;
 
-    vector<double> forceplanes(2);
+    std::vector<double> forceplanes(2);
     forceplanes[0] = x2min_;
     forceplanes[1] = x2max_;
 
-    vector<double> velplanes(2);
+    std::vector<double> velplanes(2);
     velplanes[0] = x2min_first_;
     velplanes[1] = x2max_first_;
 
@@ -707,23 +707,23 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
     //xzplanesinflow[1] = x2inflowmax_;
     //int dim = 1; // x2-coordinate
 
-    vector<double> locforceu(numx1_wallchamber_);
-    vector<double> locforcev(numx1_wallchamber_);
-    vector<double> locforcew(numx1_wallchamber_);
-    vector<double> locp     (numx1_wallchamber_);
+    std::vector<double> locforceu(numx1_wallchamber_);
+    std::vector<double> locforcev(numx1_wallchamber_);
+    std::vector<double> locforcew(numx1_wallchamber_);
+    std::vector<double> locp     (numx1_wallchamber_);
 
-    vector<double> globforceu(numx1_wallchamber_);
-    vector<double> globforcev(numx1_wallchamber_);
-    vector<double> globforcew(numx1_wallchamber_);
-    vector<double> globp     (numx1_wallchamber_);
+    std::vector<double> globforceu(numx1_wallchamber_);
+    std::vector<double> globforcev(numx1_wallchamber_);
+    std::vector<double> globforcew(numx1_wallchamber_);
+    std::vector<double> globp     (numx1_wallchamber_);
 
-    vector<double> locvelu(numx1_wallchamber_);
-    vector<double> locvelv(numx1_wallchamber_);
-    vector<double> locvelw(numx1_wallchamber_);
+    std::vector<double> locvelu(numx1_wallchamber_);
+    std::vector<double> locvelv(numx1_wallchamber_);
+    std::vector<double> locvelw(numx1_wallchamber_);
 
-    vector<double> globvelu(numx1_wallchamber_);
-    vector<double> globvelv(numx1_wallchamber_);
-    vector<double> globvelw(numx1_wallchamber_);
+    std::vector<double> globvelu(numx1_wallchamber_);
+    std::vector<double> globvelv(numx1_wallchamber_);
+    std::vector<double> globvelw(numx1_wallchamber_);
 
     for (size_t iplane=0; iplane<numplanes; ++iplane)
     {
@@ -766,10 +766,10 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
                   dof = discret_->Dof(node);
 
                 // extract local values from the global vector
-                vector<double> myforce(dof.size());
+                std::vector<double> myforce(dof.size());
                 DRT::UTILS::ExtractMyValues(*force_, myforce, dof);
                 // extract pressure
-                vector<double> myvel(dof.size());
+                std::vector<double> myvel(dof.size());
                 DRT::UTILS::ExtractMyValues(*vel_, myvel, dof);
 
                 locforceu[ipos]+=myforce[0];
@@ -782,7 +782,7 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
                 vector<int> dof = discret_->Dof(node);
 
                 // extract local values from the global vector
-                vector<double> myvel(dof.size());
+                std::vector<double> myvel(dof.size());
                 DRT::UTILS::ExtractMyValues(*vel_, myvel, dof);
 
                 locvelu[ipos]+=myvel[0];
@@ -824,11 +824,11 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
     // top and bottom planes in chamber
     const size_t numplanes = 2;
 
-    vector<double> forceplanes(2);
+    std::vector<double> forceplanes(2);
     forceplanes[0] = x2inflowchannelmin_;
     forceplanes[1] = x2inflowchannelmax_;
 
-    vector<double> velplanes(2);
+    std::vector<double> velplanes(2);
     velplanes[0] = x2inflowchannelmin_first_;
     velplanes[1] = x2inflowchannelmax_first_;
 
@@ -840,23 +840,23 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
     //xzplanesinflow[1] = x2inflowmax_;
     //int dim = 1; // x2-coordinate
 
-    vector<double> locforceu(numx1_wallinflowchannel_);
-    vector<double> locforcev(numx1_wallinflowchannel_);
-    vector<double> locforcew(numx1_wallinflowchannel_);
-    vector<double> locp     (numx1_wallinflowchannel_);
+    std::vector<double> locforceu(numx1_wallinflowchannel_);
+    std::vector<double> locforcev(numx1_wallinflowchannel_);
+    std::vector<double> locforcew(numx1_wallinflowchannel_);
+    std::vector<double> locp     (numx1_wallinflowchannel_);
 
-    vector<double> globforceu(numx1_wallinflowchannel_);
-    vector<double> globforcev(numx1_wallinflowchannel_);
-    vector<double> globforcew(numx1_wallinflowchannel_);
-    vector<double> globp     (numx1_wallinflowchannel_);
+    std::vector<double> globforceu(numx1_wallinflowchannel_);
+    std::vector<double> globforcev(numx1_wallinflowchannel_);
+    std::vector<double> globforcew(numx1_wallinflowchannel_);
+    std::vector<double> globp     (numx1_wallinflowchannel_);
 
-    vector<double> locvelu(numx1_wallinflowchannel_);
-    vector<double> locvelv(numx1_wallinflowchannel_);
-    vector<double> locvelw(numx1_wallinflowchannel_);
+    std::vector<double> locvelu(numx1_wallinflowchannel_);
+    std::vector<double> locvelv(numx1_wallinflowchannel_);
+    std::vector<double> locvelw(numx1_wallinflowchannel_);
 
-    vector<double> globvelu(numx1_wallinflowchannel_);
-    vector<double> globvelv(numx1_wallinflowchannel_);
-    vector<double> globvelw(numx1_wallinflowchannel_);
+    std::vector<double> globvelu(numx1_wallinflowchannel_);
+    std::vector<double> globvelv(numx1_wallinflowchannel_);
+    std::vector<double> globvelw(numx1_wallinflowchannel_);
 
     for (size_t iplane=0; iplane<numplanes; ++iplane)
     {
@@ -899,10 +899,10 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
                   dof = discret_->Dof(node);
 
                 // extract local values from the global vector
-                vector<double> myforce(dof.size());
+                std::vector<double> myforce(dof.size());
                 DRT::UTILS::ExtractMyValues(*force_, myforce, dof);
                 // extract pressure
-                vector<double> myvel(dof.size());
+                std::vector<double> myvel(dof.size());
                 DRT::UTILS::ExtractMyValues(*vel_, myvel, dof);
 
                 locforceu[ipos]+=myforce[0];
@@ -915,7 +915,7 @@ void COMBUST::TurbulenceStatisticsORACLES::DoTimeSample(
                 vector<int> dof = discret_->Dof(node);
 
                 // extract local values from the global vector
-                vector<double> myvel(dof.size());
+                std::vector<double> myvel(dof.size());
                 DRT::UTILS::ExtractMyValues(*vel_, myvel, dof);
 
                 locvelu[ipos]+=myvel[0];
@@ -973,7 +973,7 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractProfiles()
   // select vertical profiles in inflow zone
   //----------------------------------------
   {
-    vector<double> x1locations(2);
+    std::vector<double> x1locations(2);
     x1locations[0] = x1positions_(0); // x1=-5h
     x1locations[1] = x1positions_(1); // x1=-4h
 
@@ -986,7 +986,7 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractProfiles()
   // select vertical profiles in mixing zone
   //----------------------------------------
   {
-    vector<double> x1locations(3);
+    std::vector<double> x1locations(3);
     x1locations[0] = x1positions_(2); // x1=-2h
     x1locations[1] = x1positions_(3); // x1=-1h
     x1locations[2] = x1positions_(4); // x1= 0h
@@ -1000,7 +1000,7 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractProfiles()
   // select vertical profiles at 1h in recirculation zone
   //-----------------------------------------------------
   {
-    vector<double> x1locations(1);
+    std::vector<double> x1locations(1);
     x1locations[0] = x1positions_(5); // x1= 1h
 
     ExtractSetOfProfiles(x1locations, *x2_1h_, *vert1hu_,  *vert1hv_,  *vert1hw_, *vert1hp_,
@@ -1012,7 +1012,7 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractProfiles()
   // select vertical profiles at 2h in recirculation zone
   //-----------------------------------------------------
   {
-    vector<double> x1locations(1);
+    std::vector<double> x1locations(1);
     x1locations[0] = x1positions_(6); // x1= 2h
 
     ExtractSetOfProfiles(x1locations, *x2_2h_, *vert2hu_,  *vert2hv_,  *vert2hw_, *vert2hp_,
@@ -1024,7 +1024,7 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractProfiles()
   // select vertical profiles in chamber
   //------------------------------------
   {
-    vector<double> x1locations(14);
+    std::vector<double> x1locations(14);
     x1locations[0]  = x1positions_(7);  // x1= 3h;
     x1locations[1]  = x1positions_(8);  // x1= 4h;
     x1locations[2]  = x1positions_(9);  // x1= 5h;
@@ -1053,8 +1053,8 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractProfiles()
  | extract a set of profiles at specified locations within a homogeneous grid zone    henke 06/11 |
  *------------------------------------------------------------------------------------------------*/
 void COMBUST::TurbulenceStatisticsORACLES::ExtractSetOfProfiles(
-    const vector<double>&      x1locations,
-    const vector<double>&      x2locations,
+    const std::vector<double>&  x1locations,
+    const std::vector<double>&  x2locations,
     LINALG::SerialDenseMatrix& profilesu,
     LINALG::SerialDenseMatrix& profilesv,
     LINALG::SerialDenseMatrix& profilesw,
@@ -1070,17 +1070,17 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractSetOfProfiles(
 )
 {
   // store contributions of each processor (local) to profile
-  vector<vector<double> > locu(x1locations.size(),vector<double>(x2locations.size()));
-  vector<vector<double> > locv(x1locations.size(),vector<double>(x2locations.size()));
-  vector<vector<double> > locw(x1locations.size(),vector<double>(x2locations.size()));
-  vector<vector<double> > locp(x1locations.size(),vector<double>(x2locations.size()));
-  vector<vector<double> > locg(x1locations.size(),vector<double>(x2locations.size()));
+  vector<std::vector<double> > locu(x1locations.size(),vector<double>(x2locations.size()));
+  vector<std::vector<double> > locv(x1locations.size(),vector<double>(x2locations.size()));
+  vector<std::vector<double> > locw(x1locations.size(),vector<double>(x2locations.size()));
+  vector<std::vector<double> > locp(x1locations.size(),vector<double>(x2locations.size()));
+  vector<std::vector<double> > locg(x1locations.size(),vector<double>(x2locations.size()));
 
-  vector<vector<double> > globu(x1locations.size(),vector<double>(x2locations.size()));
-  vector<vector<double> > globv(x1locations.size(),vector<double>(x2locations.size()));
-  vector<vector<double> > globw(x1locations.size(),vector<double>(x2locations.size()));
-  vector<vector<double> > globp(x1locations.size(),vector<double>(x2locations.size()));
-  vector<vector<double> > globg(x1locations.size(),vector<double>(x2locations.size()));
+  vector<std::vector<double> > globu(x1locations.size(),vector<double>(x2locations.size()));
+  vector<std::vector<double> > globv(x1locations.size(),vector<double>(x2locations.size()));
+  vector<std::vector<double> > globw(x1locations.size(),vector<double>(x2locations.size()));
+  vector<std::vector<double> > globp(x1locations.size(),vector<double>(x2locations.size()));
+  vector<std::vector<double> > globg(x1locations.size(),vector<double>(x2locations.size()));
 
   //vector<double> locu(x1locations.size()*x2locations.size());
   //std::fill(locu.begin(),locu.end(),0);
@@ -1128,7 +1128,7 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractSetOfProfiles(
               {
                 vector<int> dof = stddofset_->Dof(node);
                 // extract local values from the global vector
-                vector<double> myvel(dof.size());
+                std::vector<double> myvel(dof.size());
                 DRT::UTILS::ExtractMyValues(*vel_, myvel, dof);
 
                 locu[ix1pos][ix2pos]=myvel[0];
@@ -1145,7 +1145,7 @@ void COMBUST::TurbulenceStatisticsORACLES::ExtractSetOfProfiles(
               {
                 vector<int> dof = discret_->Dof(node);
                 // extract local values from the global vector
-                vector<double> myvel(dof.size());
+                std::vector<double> myvel(dof.size());
                 DRT::UTILS::ExtractMyValues(*vel_, myvel, dof);
 
                 locu[ix1pos][ix2pos]=myvel[0];
@@ -1594,7 +1594,7 @@ void COMBUST::TurbulenceStatisticsORACLES::WriteStatisticsFile(
       const int                  step,
       const string&              suffix,
       const int                  x1pos,
-      const vector<double>&      x2locations,
+      const std::vector<double>&  x2locations,
       double* profileu,
       double* profilev,
       double* profilew,
@@ -1850,7 +1850,7 @@ void COMBUST::TurbulenceStatisticsORACLES::ExportLocation(std::set<double,LineSo
 
     // unpack received block into set of all planes.
     {
-      vector<double> coordsvec;
+      std::vector<double> coordsvec;
 
       coordsvec.clear();
 

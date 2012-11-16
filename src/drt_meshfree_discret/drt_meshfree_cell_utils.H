@@ -153,7 +153,7 @@ private:
   //! vector of weights of Gauss points
   static LINALG::SerialDenseVector w_;
   //! vector of matrices of values of cell shape function derivatives at Gauss points
-  static vector<LINALG::SerialDenseMatrix> dN_;
+  static std::vector<LINALG::SerialDenseMatrix> dN_;
   //! flag indicating instantiation status of CellGaussPoints<distype> - initilized to false
   static bool is_instantiated_;
 };

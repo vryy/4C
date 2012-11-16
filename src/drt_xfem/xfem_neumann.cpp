@@ -33,7 +33,7 @@ Maintainer: Dipl.-Math. Benedikt Schott
  |  evaluate Neumann conditions (public)                    schott 08/11|
  *----------------------------------------------------------------------*/
 void XFEM::EvaluateNeumann(                    Teuchos::RCP<XFEM::FluidWizard>      wizard,
-                                               ParameterList&                       params,
+                                               Teuchos::ParameterList&              params,
                                                DRT::Discretization &                discret,
                                                DRT::Discretization &                cutdiscret,
                                                Teuchos::RCP<Epetra_Vector>          systemvector,
@@ -51,7 +51,7 @@ void XFEM::EvaluateNeumann(                    Teuchos::RCP<XFEM::FluidWizard>  
  |  evaluate Neumann conditions (public)                    schott 08/11|
  *----------------------------------------------------------------------*/
 void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
-                             ParameterList&          params,
+                             Teuchos::ParameterList&          params,
                              DRT::Discretization &   discret,
                              DRT::Discretization &   cutdiscret,
                              Epetra_Vector&          systemvector,
@@ -176,7 +176,7 @@ void XFEM::EvaluateNeumannStandard( multimap<string,DRT::Condition* > &   condit
                                     bool                                  usetime,
                                     const double                          time,
                                     bool                                  assemblemat,
-                                    ParameterList&                        params,
+                                    Teuchos::ParameterList&               params,
                                     DRT::Discretization &                 discret,
                                     Epetra_Vector&                        systemvector,
                                     LINALG::SparseOperator*               systemmatrix)
@@ -194,12 +194,12 @@ void XFEM::EvaluateNeumannStandard( multimap<string,DRT::Condition* > &   condit
     if (assemblemat && !systemvector.Comm().MyPID())
       cout << "WARNING: No linearization of PointNeumann conditions" << endl;
     DRT::Condition& cond = *(fool->second);
-    const vector<int>* nodeids = cond.Nodes();
+    const std::vector<int>* nodeids = cond.Nodes();
     if (!nodeids) dserror("PointNeumann condition does not have nodal cloud");
     const int nnode = (*nodeids).size();
-    const vector<int>*    curve  = cond.Get<vector<int> >("curve");
-    const vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
-    const vector<double>* val    = cond.Get<vector<double> >("val");
+    const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
+    const std::vector<int>*    onoff  = cond.Get<std::vector<int> >("onoff");
+    const std::vector<double>* val    = cond.Get<std::vector<double> >("val");
     // Neumann BCs for some historic reason only have one curve
     int curvenum = -1;
     if (curve) curvenum = (*curve)[0];
@@ -245,9 +245,9 @@ void XFEM::EvaluateNeumannStandard( multimap<string,DRT::Condition* > &   condit
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector, dirichlet flags and ownerships
-        vector<int> lm;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lm;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         curr->second->LocationVector(discret,lm,lmowner,lmstride);
         elevector.Size((int)lm.size());
         if (!assemblemat)
@@ -279,7 +279,7 @@ void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
                                 bool                                 usetime,
                                 const double                         time,
                                 bool                                 assemblemat,
-                                ParameterList&                       params,
+                                Teuchos::ParameterList&              params,
                                 DRT::Discretization &                discret,
                                 DRT::Discretization &                cutdiscret,
                                 Epetra_Vector&                       systemvector,
@@ -393,9 +393,9 @@ void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
           if(eval_Neumann && !xfem_eval_Neumann)
           {
               // get element location vector, dirichlet flags and ownerships
-              vector<int> lm;
-              vector<int> lmowner;
-              vector<int> lmstride;
+              std::vector<int> lm;
+              std::vector<int> lmowner;
+              std::vector<int> lmstride;
               curr->second->LocationVector(discret,lm,lmowner,lmstride);
               elevector.Size((int)lm.size());
               if (!assemblemat)
@@ -500,7 +500,7 @@ void XFEM::CutNeumannSurf(RCP<DRT::Element> neumann_surface, DRT::Element* paren
 
 
   // get surfaces of parent element
-  vector<Teuchos::RCP<DRT::Element> > surfaces(parentele->Surfaces());
+  std::vector<Teuchos::RCP<DRT::Element> > surfaces(parentele->Surfaces());
 
 
   // compare the Neumann surface with the surfaces of the element

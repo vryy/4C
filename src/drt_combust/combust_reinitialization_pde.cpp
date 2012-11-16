@@ -27,7 +27,7 @@ COMBUST::ReinitializationPDE::ReinitializationPDE()
   Teuchos::ParameterList combustdyn = DRT::Problem::Instance()->CombustionDynamicParams();
 
   // make a copy (inside an Teuchos::rcp) containing also all sublists
-  combustdynreinit_ = Teuchos::rcp(new ParameterList(combustdyn));
+  combustdynreinit_ = Teuchos::rcp(new Teuchos::ParameterList(combustdyn));
 
   // -------------------------------------------------------------------
   // overrule certain parameters
@@ -194,10 +194,10 @@ SCATRA::ScaTraTimIntImpl& COMBUST::ReinitializationPDE::ScaTraReinitField()
 double COMBUST::ReinitializationPDE::EvaluateGradientNormError()
 {
 
-  RCP<DRT::Discretization> discret = ScaTraReinitField().Discretization();
+  Teuchos::RCP<DRT::Discretization> discret = ScaTraReinitField().Discretization();
 
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
 
   // parameters for the elements
   p.set<int>("action",SCATRA::calc_error_reinit);
@@ -217,7 +217,7 @@ double COMBUST::ReinitializationPDE::EvaluateGradientNormError()
   discret->SetState("phinp",ScaTraReinitField().Phinp());
 
   // get (squared) error values
-  discret->Evaluate(p,null,null,null,null,null);
+  discret->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   discret->ClearState();
 
 

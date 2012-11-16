@@ -446,7 +446,7 @@ void POROELAST::PoroBase::CalculateSurfPoro(const string& condstring)
 
  AddMultiVectorToParameterList(p,"convective velocity field",convel,fluiddis);
 
-  StructureField()->Discretization()->EvaluateCondition(p,null,null,null,null,null,condstring);
+  StructureField()->Discretization()->EvaluateCondition(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condstring);
   StructureField()->Discretization()->ClearState();
 }
 

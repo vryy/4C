@@ -139,7 +139,7 @@ void MAT::StructPoro::Pack(DRT::PackBuffer& data) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::StructPoro::Unpack(const vector<char>& data)
+void MAT::StructPoro::Unpack(const std::vector<char>& data)
 {
   std::vector<char>::size_type position = 0;
   // extract type
@@ -230,7 +230,7 @@ void MAT::StructPoro::Unpack(const vector<char>& data)
     {
       mat_ = MAT::Material::Factory(params_->matid_);
 
-      vector<char> basedata(0);
+      std::vector<char> basedata(0);
       ExtractfromPack(position,data,basedata);
       mat_->Unpack(basedata);
 

@@ -77,7 +77,7 @@ void POTENTIAL::VolumePotential::EvaluatePotential( ParameterList& 						p,
   // update displacement for volume discretization discretRCP
   UpdateDisplacementsOfPotentialDiscretization(disp_col_);
 
-  EvaluateVolumePotentialCondition(p,stiff,null,fint,null,null,"Potential");
+  EvaluateVolumePotentialCondition(p,stiff,Teuchos::null,fint,Teuchos::null,Teuchos::null,"Potential");
   return;
 }
 
@@ -89,7 +89,7 @@ void POTENTIAL::VolumePotential::EvaluatePotential( ParameterList& 						p,
 | evaluate potential conditions based on a Epetra_FecrsMatrix        |
 *--------------------------------------------------------------------*/
 void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
-    ParameterList&                          params,
+    Teuchos::ParameterList&                          params,
     RCP<LINALG::SparseMatrix>       systemmatrix1,
     RCP<LINALG::SparseMatrix>       systemmatrix2,
     RCP<Epetra_Vector>              systemvector1,
@@ -142,7 +142,7 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
      map<int,RCP<DRT::Element> >::iterator curr;
 
      // Evaluate Loadcurve if defined. Put current load factor in parameterlist
-     const vector<int>*    curve  = (*condIter)->Get<vector<int> >("curve");
+     const std::vector<int>*    curve  = (*condIter)->Get<std::vector<int> >("curve");
      int                   curvenum = -1;
      if (curve) curvenum = (*curve)[0];
      double                curvefac = 1.0;
@@ -163,9 +163,9 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
      for (curr=geom.begin(); curr!=geom.end(); ++curr)
      {
        // get element location vector and ownerships
-       vector<int> lm;
-       vector<int> lmrowowner;
-       vector<int> lmstride;
+       std::vector<int> lm;
+       std::vector<int> lmrowowner;
+       std::vector<int> lmstride;
        curr->second->LocationVector(discret_,lm,lmrowowner,lmstride);
        const int rowsize = lm.size();
 
@@ -180,8 +180,8 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
        if (err) dserror("error while evaluating elements");
 
        // specify lm row and lm col
-       vector<int> lmrow;
-       vector<int> lmcol;
+       std::vector<int> lmrow;
+       std::vector<int> lmcol;
        // only local values appeared
        if((int) lm.size() == rowsize)
        {
@@ -232,13 +232,13 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
 void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
     const DRT::Element*             element,
     const DRT::UTILS::GaussRule3D&  gaussrule,
-    ParameterList&                  params,
-    vector<int>&                    lm,
+    Teuchos::ParameterList&         params,
+    std::vector<int>&               lm,
     Epetra_SerialDenseMatrix&       K_stiff,
     Epetra_SerialDenseVector&       F_int)
 {
   // initialize Lennard Jones potential constant variables
-  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",null);
+  RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
 
   // initialize time variables
   double curvefac = GetTimeCurveFactor(params);
@@ -262,13 +262,13 @@ void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
 void POTENTIAL::VolumePotential::StiffnessAndInternalForcesPotential(
     const DRT::Element*             element,
     const DRT::UTILS::GaussRule2D&  gaussrule,
-    ParameterList&                  params,
-    vector<int>&                    lm,
+    Teuchos::ParameterList&         params,
+    std::vector<int>&               lm,
     Epetra_SerialDenseMatrix&       K_stiff,
     Epetra_SerialDenseVector&       F_int)
 {
   // initialize potential condition variables
-  RCP<DRT::Condition> cond      = params.get<RCP<DRT::Condition> >("condition",null);
+  RCP<DRT::Condition> cond      = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
 
   // initialize time variables
   double curvefac = GetTimeCurveFactor(params);
@@ -295,12 +295,12 @@ void POTENTIAL::VolumePotential::UpdateDisplacementsOfPotentialDiscretization(
   for (int lid = 0; lid < discretRCP_->NumMyColNodes(); ++lid)
   {
     const DRT::Node* node = discretRCP_->lColNode(lid);
-    vector<int> lm;
+    std::vector<int> lm;
     lm.reserve(3);
     // extract global dof ids
     discretRCP_->Dof(node, lm);
 
-    vector<double> mydisp(3);
+    std::vector<double> mydisp(3);
     LINALG::Matrix<3,1> currpos;
     DRT::UTILS::ExtractMyValues(*idisp_solid,mydisp,lm);
     currpos(0) = node->X()[0] + mydisp[0];
@@ -480,9 +480,9 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
       for(std::set<int>::const_iterator eleIter = (labelIter->second).begin(); eleIter != (labelIter->second).end(); eleIter++)
       {
         DRT::Element* element = discretRCP_->gElement(*eleIter);
-        vector<int> lmowner;
-        vector<int> lm;
-        vector<int> lmstride;
+        std::vector<int> lmowner;
+        std::vector<int> lm;
+        std::vector<int> lmstride;
         element->LocationVector(*discretRCP_,lm,lmowner,lmstride);
         const double beta = GetAtomicDensity(element->Id(), "Potential", labelByElement_);
 
@@ -544,7 +544,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
     dserror("dummy element obtained potential elements");
 
   nonlocalPecs_.clear();
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   for(int i_ele = 0; i_ele < numEle_send; ++i_ele)
   {
     RCP<PotentialElementContainer> pec = Teuchos::rcp( new PotentialElementContainer());
@@ -582,7 +582,7 @@ void POTENTIAL::VolumePotential::TreeSearchElement(
 void POTENTIAL::VolumePotential::ComputeFandK(
    const DRT::Element*                                    actEle,
    const DRT::UTILS::GaussRule3D&                         gaussrule,
-   vector<int>&                                           lm,
+   std::vector<int>&                                      lm,
    Epetra_SerialDenseMatrix&                              K_stiff,
    Epetra_SerialDenseVector&                              F_int,
    RCP<DRT::Condition>                            cond,
@@ -627,9 +627,9 @@ void POTENTIAL::VolumePotential::ComputeFandK(
          const DRT::Element* element_pot = discretRCP_->gElement(*eleIter);
 
          // obtain current potential dofs
-         vector<int> lmpot;
-         vector<int> lmowner;
-         vector<int> lmstride;
+         std::vector<int> lmpot;
+         std::vector<int> lmowner;
+         std::vector<int> lmstride;
          element_pot->LocationVector(*discretRCP_,lmpot,lmowner,lmstride);
 
          // obtain Gaussrule and integration points
@@ -697,7 +697,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
         // get atom density
         const double beta_pot = (*pecIter).Beta();
         // obtain current potential dofs
-        vector<int> lmpot = (*pecIter).GetLm();
+        std::vector<int> lmpot = (*pecIter).GetLm();
 
         // obtain Gaussrule and integration points
         DRT::UTILS::GaussRule3D rule_pot = DRT::UTILS::intrule3D_undefined;
@@ -766,7 +766,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
 void POTENTIAL::VolumePotential::ComputeFandK(
     const DRT::Element*                                         actEle,
     const DRT::UTILS::GaussRule2D&                              gaussrule,
-    vector<int>&                                                lm,
+    std::vector<int>&                                           lm,
     Epetra_SerialDenseMatrix&                                   K_stiff,
     Epetra_SerialDenseVector&                                   F_int,
     RCP<DRT::Condition>                                 cond,
@@ -811,9 +811,9 @@ void POTENTIAL::VolumePotential::ComputeFandK(
         const DRT::Element* element_pot = discretRCP_->gElement(*eleIter);
 
         // obtain current potential dofs
-        vector<int> lmpot;
-        vector<int> lmowner;
-        vector<int> lmstride;
+        std::vector<int> lmpot;
+        std::vector<int> lmowner;
+        std::vector<int> lmstride;
         element_pot->LocationVector(*discretRCP_,lmpot,lmowner,lmstride);
 
         // obtain Gaussrule and integration points
@@ -875,7 +875,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
 
         const double beta_pot = (*pecIter).Beta();
         // obtain current potential dofs
-        vector<int> lmpot = (*pecIter).GetLm();
+        std::vector<int> lmpot = (*pecIter).GetLm();
 
         // obtain Gaussrule and integration points
         DRT::UTILS::GaussRule2D rule_pot = DRT::UTILS::intrule2D_undefined;
@@ -1179,7 +1179,7 @@ void POTENTIAL::VolumePotential::GetGaussRule2D(
 | potential forces                                                   |
 *--------------------------------------------------------------------*/
 void POTENTIAL::VolumePotential::TestEvaluatePotential(
-  ParameterList&                      p,
+  Teuchos::ParameterList&                      p,
   RCP<Epetra_Vector>          disp,
   RCP<Epetra_Vector>          fint,
   RCP<LINALG::SparseMatrix>   stiff,
@@ -1192,7 +1192,7 @@ void POTENTIAL::VolumePotential::TestEvaluatePotential(
   discret_.ClearState();
   discret_.SetState("displacement",disp);
 
-  EvaluateVolumePotentialCondition(p,stiff,null,fint,null,null,"Potential");
+  EvaluateVolumePotentialCondition(p,stiff,Teuchos::null,fint,Teuchos::null,Teuchos::null,"Potential");
 
   RCP<const Epetra_Vector>        disp_col = discret_.GetState("displacement");
   // compute test results

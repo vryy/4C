@@ -274,7 +274,7 @@ void fillElementUnknownsArrays(
     {
       dserror("increase SizeFac for stress unknowns");
     }
-    const vector<int>& discpresdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::DiscPres>());
+    const std::vector<int>& discpresdof(dofman.LocalDofPosPerField<XFEM::PHYSICS::DiscPres>());
     for (std::size_t iparam=0; iparam<numparamdiscpres; ++iparam)   ediscpres(iparam) = mystate.velnp_[discpresdof[iparam]];
   }
 
@@ -619,7 +619,7 @@ void COMBUST::BlendMaterial(
     if (cell->getDomainPlus() == blenddomain)
     {
       // find out whether there is a time curve
-      const vector<int>* curve = cond[0]->Get<vector<int> >("curve");
+      const std::vector<int>* curve = cond[0]->Get<std::vector<int> >("curve");
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
 
@@ -638,7 +638,7 @@ void COMBUST::BlendMaterial(
 
       double fac = -1.0;
       // get switch from the condition
-      const vector<int>* onoff = cond[0]->Get<vector<int> > ("onoff");
+      const std::vector<int>* onoff = cond[0]->Get<std::vector<int> > ("onoff");
       if (onoff)
         fac = (*onoff)[0]*curvefac;
       else
@@ -1313,7 +1313,7 @@ namespace COMBUST
 template <DRT::Element::DiscretizationType DISTYPE,
           XFEM::AssemblyType ASSTYPE>
 void NitscheErrors(
-    ParameterList&                          eleparams,
+    Teuchos::ParameterList&                 eleparams,
     const INPAR::COMBUST::NitscheError&     NitscheErrorType,
     const DRT::ELEMENTS::Combust3*          ele,                          ///< the element those matrix is calculated
     const COMBUST::InterfaceHandleCombust*  ih,                           ///< connection to the interface handler
@@ -1434,7 +1434,7 @@ void NitscheErrors(
 /*----------------------------------------------------------------------*
  *----------------------------------------- ----------------------------*/
 void COMBUST::callNitscheErrors(
-    ParameterList&                              eleparams,        ///< list of parameters
+    Teuchos::ParameterList&                     eleparams,        ///< list of parameters
     const INPAR::COMBUST::NitscheError&         NitscheErrorType, ///<
     const XFEM::AssemblyType                    assembly_type,    ///<
     const DRT::ELEMENTS::Combust3*              ele,              ///<

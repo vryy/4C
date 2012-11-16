@@ -33,7 +33,7 @@
  |  preevaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(ParameterList& params,
+void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterList& params,
                                         DRT::Discretization&      discretization,
                                         DRT::Element::LocationArray& la)
 {
@@ -58,7 +58,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(ParameterList& para
       Teuchos::RCP<std::vector<double> >mytemp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
       DRT::UTILS::ExtractMyValues(*tempnp,*mytemp,la[1].lm_);
 
-      params.set<Teuchos::RCP<vector<double> > >("scalar",mytemp);
+      params.set<Teuchos::RCP<std::vector<double> > >("scalar",mytemp);
     }
   }else{
 
@@ -66,8 +66,8 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(ParameterList& para
     const double time = params.get("total time",0.0);
   // find out whether we will use a time curve and get the factor
     int num = 0; // TO BE READ FROM INPUTFILE AT EACH ELEMENT!!!
-    vector<double> xrefe; xrefe.resize(3);
-//    vector<double> xcurr; xcurr.resize(3);
+    std::vector<double> xrefe; xrefe.resize(3);
+//    std::vector<double> xcurr; xcurr.resize(3);
     DRT::Node** nodes = Nodes();
     // get displacements of this element
     //vector<double> mydisp(lm.size());
@@ -93,7 +93,7 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(ParameterList& para
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::MyEvaluate(ParameterList& params,
+int DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::MyEvaluate(Teuchos::ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     DRT::Element::LocationArray& la,
                                     Epetra_SerialDenseMatrix& elemat1_epetra,
@@ -110,7 +110,7 @@ int DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::MyEvaluate(ParameterList& params
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::So3_Scatra< so3_ele, distype>::Evaluate(ParameterList& params,
+int DRT::ELEMENTS::So3_Scatra< so3_ele, distype>::Evaluate(Teuchos::ParameterList& params,
                                     DRT::Discretization&      discretization,
                                     DRT::Element::LocationArray& la,
                                     Epetra_SerialDenseMatrix& elemat1_epetra,

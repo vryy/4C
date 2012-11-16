@@ -373,7 +373,7 @@ void EXODUS::CorrectNodalCoordinatesForPeriodicBoundaryConditions(
  *----------------------------------------------------------------------*/
 void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
     EXODUS::Mesh&                   mesh,
-    const vector<EXODUS::cond_def>& condefs)
+    const std::vector<EXODUS::cond_def>& condefs)
 {
   // loop over all conditions
   for(unsigned int i=0; i<condefs.size(); i++)
@@ -511,7 +511,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
  *----------------------------------------------------------------------*/
 void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
     EXODUS::Mesh&                   mesh,
-    const vector<EXODUS::cond_def>& condefs)
+    const std::vector<EXODUS::cond_def>& condefs)
 {
   // loop over all conditions
   for(unsigned int i=0; i<condefs.size(); i++)
@@ -650,7 +650,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
  *----------------------------------------------------------------------*/
 void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
     EXODUS::Mesh&                   mesh,
-    const vector<EXODUS::cond_def>& condefs)
+    const std::vector<EXODUS::cond_def>& condefs)
 {
   // loop over all conditions
    for(unsigned int i=0; i<condefs.size(); i++)

@@ -41,7 +41,7 @@ int DRT::IndependentPBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization&
 
   // loop all master nodes and set the dofs of the slaves to the dofs of the master
   // remark: the previously assigned dofs of slave nodes are overwritten here
-  for(std::map<int,vector<int> >::iterator master = perbndcouples_->begin();
+  for(std::map<int,std::vector<int> >::iterator master = perbndcouples_->begin();
       master != perbndcouples_->end();
       ++master )
   {

@@ -152,7 +152,7 @@ public:
   /*!
   \brief Get vector of RCPs to the surfaces of this element
   */
-  virtual vector<Teuchos::RCP<DRT::Element> > Surfaces();
+  virtual std::vector<Teuchos::RCP<DRT::Element> > Surfaces();
 
 
 private:

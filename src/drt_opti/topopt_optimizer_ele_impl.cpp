@@ -152,10 +152,10 @@ is_higher_order_ele_(false)
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
   DRT::Element*              ele,
-  ParameterList&             params,
+  Teuchos::ParameterList&    params,
   DRT::Discretization&       optidis,
   RCP<MAT::Material>         mat,
-  vector<int>&               lm
+  std::vector<int>&          lm
 )
 {
   return EvaluateValues(
@@ -174,10 +174,10 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
   DRT::Element*                 ele,
-  ParameterList&                params,
+  Teuchos::ParameterList&       params,
   DRT::Discretization&          optidis,
   RCP<MAT::Material>            mat,
-  vector<int>&                  lm,
+  std::vector<int>&             lm,
   DRT::UTILS::GaussIntegration& intpoints
 )
 {
@@ -318,10 +318,10 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Values(
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
   DRT::Element*              ele,
-  ParameterList&             params,
+  Teuchos::ParameterList&    params,
   DRT::Discretization&       optidis,
   RCP<MAT::Material>         mat,
-  vector<int>&               lm,
+  std::vector<int>&          lm,
   Epetra_SerialDenseVector&  elevec1_epetra
   )
 {
@@ -342,10 +342,10 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
   DRT::Element*                 ele,
-  ParameterList&                params,
+  Teuchos::ParameterList&       params,
   DRT::Discretization&          optidis,
   RCP<MAT::Material>            mat,
-  vector<int>&                  lm,
+  std::vector<int>&             lm,
   Epetra_SerialDenseVector&     elevec1_epetra,
   DRT::UTILS::GaussIntegration& intpoints
 )
@@ -587,7 +587,7 @@ void DRT::ELEMENTS::TopOptImpl<distype>::EvalPorosityAtIntPoint(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TopOptImpl<distype>::ExtractValuesFromGlobalVector(
     DRT::Discretization&         discretization, ///< discretization
-    const vector<int>&           lm,                  ///<
+    const std::vector<int>&      lm,                  ///<
     LINALG::Matrix<nsd_,nen_> *  matrixtofill,        ///< vector field
     LINALG::Matrix<nen_,1> *     vectortofill,        ///< scalar field
     RCP<Epetra_Vector>&          globalvector         ///< global vector
@@ -732,10 +732,10 @@ is_higher_order_ele_(false)
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TopOptBoundaryImpl<distype>::EvaluateBoundaryValues(
   DRT::Element*              ele,
-  ParameterList&             params,
+  Teuchos::ParameterList&    params,
   DRT::Discretization&       optidis,
   RCP<MAT::Material>         mat,
-  vector<int>&               lm
+  std::vector<int>&          lm
   )
 {
   // TODO coming...
@@ -750,10 +750,10 @@ int DRT::ELEMENTS::TopOptBoundaryImpl<distype>::EvaluateBoundaryValues(
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TopOptBoundaryImpl<distype>::EvaluateBoundaryGradients(
   DRT::Element*              ele,
-  ParameterList&             params,
+  Teuchos::ParameterList&    params,
   DRT::Discretization&       optidis,
   RCP<MAT::Material>         mat,
-  vector<int>&               lm,
+  std::vector<int>&          lm,
   Epetra_SerialDenseVector&  elevec1_epetra
   )
 {
@@ -771,7 +771,7 @@ int DRT::ELEMENTS::TopOptBoundaryImpl<distype>::EvaluateBoundaryGradients(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TopOptBoundaryImpl<distype>::ExtractValuesFromGlobalVector(
     DRT::Discretization&         discretization, ///< discretization
-    const vector<int>&           lm,                  ///<
+    const std::vector<int>&      lm,                  ///<
     LINALG::Matrix<nsd_,nen_> *  matrixtofill,        ///< vector field
     LINALG::Matrix<nen_,1> *     vectortofill,        ///< scalar field
     RCP<Epetra_Vector>&          globalvector         ///< global vector

@@ -300,15 +300,15 @@ void DRT::ELEMENTS::Beam3::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                           cyron 01/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Beam3::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
@@ -344,7 +344,7 @@ void DRT::ELEMENTS::Beam3::Unpack(const vector<char>& data)
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                          cyron 01/08|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Beam3::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Beam3::Lines()
 {
   vector<RCP<Element> > lines(1);
   lines[0]= Teuchos::rcp(this, false);
@@ -473,8 +473,8 @@ int DRT::ELEMENTS::Beam3Type::Initialize(DRT::Discretization& dis)
 	    if (!currele) dserror("cast to Beam3* failed");
 
 	    //reference node position
-	    vector<double> xrefe;
-	    vector<double> rotrefe;
+	    std::vector<double> xrefe;
+	    std::vector<double> rotrefe;
 	    const int nnode= currele->NumNode();
 
 	    //resize xrefe for the number of coordinates we need to store

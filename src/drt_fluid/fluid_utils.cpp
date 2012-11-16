@@ -283,8 +283,8 @@ void FLD::UTILS::SetupFluidFluidVelPresSplit(const DRT::Discretization& fluiddis
 void FLD::UTILS::LiftDrag(
   const DRT::Discretization      & dis         ,
   const Epetra_Vector            & trueresidual,
-  const ParameterList            & params      ,
-  RCP<map<int,vector<double> > > & liftdragvals
+  const Teuchos::ParameterList   & params      ,
+  Teuchos::RCP<std::map<int,std::vector<double> > > & liftdragvals
   )
 {
   const int liftdrag = params.get<int>("liftdrag");
@@ -318,7 +318,7 @@ void FLD::UTILS::LiftDrag(
         /* get label of present LiftDrag condition  */
         const int label = ldconds[i]->GetInt("label");
 
-        ((*liftdragvals)).insert(std::pair<int,vector<double> >(label,vector<double> (6,0.0)));
+        ((*liftdragvals)).insert(std::pair<int,std::vector<double> >(label,vector<double> (6,0.0)));
       }
 
       // prepare output
@@ -347,16 +347,16 @@ void FLD::UTILS::LiftDrag(
         std::set<DRT::Node*>& nodes = ldnodemap[label];
 
         // centre coordinates to present label
-        ldcoordmap[label] = ldconds[i]->Get<vector<double> >("centerCoord");
+        ldcoordmap[label] = ldconds[i]->Get<std::vector<double> >("centerCoord");
 
         // axis of rotation for present label (only needed for 3D)
         if(ldconds[i]->Type() == DRT::Condition::SurfLIFTDRAG)
         {
-          ldaxismap[label] = ldconds[i]->Get<vector<double> >("axis");
+          ldaxismap[label] = ldconds[i]->Get<std::vector<double> >("axis");
         }
 
         /* get pointer to its nodal Ids*/
-        const vector<int>* ids = ldconds[i]->Get<vector<int> >("Node Ids");
+        const std::vector<int>* ids = ldconds[i]->Get<std::vector<int> >("Node Ids");
 
         /* put all nodes belonging to the L&D line or surface into 'nodes' which are
            associated with the present label */
@@ -515,7 +515,7 @@ void FLD::UTILS::LiftDrag(
 void FLD::UTILS::WriteLiftDragToFile(
   const double                     time,
   const int                        step,
-  const map<int,vector<double> >&  liftdragvals
+  const map<int,std::vector<double> >&  liftdragvals
   )
 {
   // print to file
@@ -528,7 +528,7 @@ void FLD::UTILS::WriteLiftDragToFile(
          << right << std::setw(16) << "F_z";
 
 
-  for (map<int,vector<double> >::const_iterator liftdragval = liftdragvals.begin(); liftdragval != liftdragvals.end(); ++liftdragval)
+  for (map<int,std::vector<double> >::const_iterator liftdragval = liftdragvals.begin(); liftdragval != liftdragvals.end(); ++liftdragval)
   {
     std::ostringstream s;
     s << right << std::setw(16) << std::scientific << time

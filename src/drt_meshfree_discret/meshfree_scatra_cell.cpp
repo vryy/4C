@@ -291,7 +291,7 @@ void DRT::ELEMENTS::MeshfreeTransport::Print(ostream& os) const
 /*--------------------------------------------------------------------------*
  |  get vector of lines                                  (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -316,7 +316,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Lines()
 /*--------------------------------------------------------------------------*
  |  get vector of surfaces                               (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -346,7 +346,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Surfaces()
 /*--------------------------------------------------------------------------*
  |  get vector of volumes (length 1)                     (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Volumes()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransport::Volumes()
 {
   if (NumVolume() == 1)
   {
@@ -390,15 +390,15 @@ void DRT::ELEMENTS::MeshfreeTransport::Pack(DRT::PackBuffer& data) const
 /*--------------------------------------------------------------------------*
  |  Unpack data                                           (public)nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::ELEMENTS::MeshfreeTransport::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::MeshfreeTransport::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class Cell
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   DRT::MESHFREE::Cell::Unpack(basedata);
   // numdofpernode
@@ -431,22 +431,22 @@ void DRT::ELEMENTS::MeshfreeTransport::VisNames(std::map<string,int>& names)
 
     // element Peclet number
     string name = "Pe_"+temp.str();
-    const vector<double>* Pe = data_.Get<vector<double> >(name);
+    const std::vector<double>* Pe = data_.Get<std::vector<double> >(name);
     if (Pe) names.insert(std::pair<string,int>(name,1));
 
     // element Peclet number (only migration term)
     name = "Pe_mig_"+temp.str();
-    const vector<double>* Pe_mig = data_.Get<vector<double> >(name);
+    const std::vector<double>* Pe_mig = data_.Get<std::vector<double> >(name);
     if (Pe_mig) names.insert(std::pair<string,int>(name,1));
 
     //characteristic element length
     name = "hk_"+temp.str();
-    const vector<double>* hk = data_.Get<vector<double> >(name);
+    const std::vector<double>* hk = data_.Get<std::vector<double> >(name);
     if (hk) names.insert(std::pair<string,int>(name,1));
 
     // Stabilization parameter at element center
     name = "tau_"+temp.str();
-    const vector<double>* tau = data_.Get<vector<double> >(name);
+    const std::vector<double>* tau = data_.Get<std::vector<double> >(name);
     if (tau) names.insert(std::pair<string,int>(name,1));
 
   } // loop over transported scalars
@@ -458,7 +458,7 @@ void DRT::ELEMENTS::MeshfreeTransport::VisNames(std::map<string,int>& names)
 /*--------------------------------------------------------------------------*
  |  Return visualization data                            (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-bool DRT::ELEMENTS::MeshfreeTransport::VisData(const string& name, vector<double>& data)
+bool DRT::ELEMENTS::MeshfreeTransport::VisData(const string& name, std::vector<double>& data)
 {
   // Put the owner of this element into the file (use base class method for this)
   if(DRT::Element::VisData(name,data))
@@ -599,7 +599,7 @@ inline int DRT::ELEMENTS::MeshfreeTransportBoundary::NumSurface() const
 /*---------------------------------------------------------------------------*
  |  get vector of lines                                   (public) nis Jan12 |
  *---------------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransportBoundary::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransportBoundary::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -609,14 +609,14 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransportBoundary::Li
 
   // so we have to allocate new line elements:
   dserror("Lines of MeshfreeTransportBoundary not implemented");
-  vector<Teuchos::RCP<DRT::Element> > lines(0);
+  std::vector<Teuchos::RCP<DRT::Element> > lines(0);
   return lines;
 }
 
 /*---------------------------------------------------------------------------*
  |  get vector of lines                                   (public) nis Jan12 |
  *---------------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransportBoundary::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransportBoundary::Surfaces()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -626,7 +626,7 @@ vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::MeshfreeTransportBoundary::Su
 
   // so we have to allocate new surface elements:
   dserror("Surfaces of MeshfreeTransportBoundary not implemented");
-  vector<Teuchos::RCP<DRT::Element> > surfaces(0);
+  std::vector<Teuchos::RCP<DRT::Element> > surfaces(0);
   return surfaces;
 }
 
@@ -643,7 +643,7 @@ void DRT::ELEMENTS::MeshfreeTransportBoundary::Pack(DRT::PackBuffer& data) const
 /*---------------------------------------------------------------------------*
  |  Unpack data (public)                                  (public) nis Jan12 |
  *---------------------------------------------------------------------------*/
-void DRT::ELEMENTS::MeshfreeTransportBoundary::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::MeshfreeTransportBoundary::Unpack(const std::vector<char>& data)
 {
   dserror("This TransportBoundary element does not support communication");
   return;

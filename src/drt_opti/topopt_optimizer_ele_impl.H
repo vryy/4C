@@ -57,10 +57,10 @@ public:
    */
   virtual int EvaluateValues(
       DRT::Element*               ele,
-      ParameterList&              params,
+      Teuchos::ParameterList&     params,
       DRT::Discretization&        optidis,
       Teuchos::RCP<MAT::Material> mat,
-      vector<int>&                lm
+      std::vector<int>&           lm
   ) = 0;
 
   //! Evaluate the gradient of the objective of element
@@ -70,10 +70,10 @@ public:
    */
   virtual int EvaluateGradients(
       DRT::Element*              ele,
-      ParameterList&             params,
+      Teuchos::ParameterList&    params,
       DRT::Discretization&       optidis,
       Teuchos::RCP<MAT::Material> mat,
-      vector<int>&               lm,
+      std::vector<int>&          lm,
       Epetra_SerialDenseVector&  elevec1_epetra
   ) = 0;
 
@@ -127,39 +127,39 @@ public:
   //! Evaluate objective value
   virtual int EvaluateValues(
       DRT::Element*               ele,            //!< the element we are dealing with
-      ParameterList&              params,         //!< the parameter list
+      Teuchos::ParameterList&     params,         //!< the parameter list
       DRT::Discretization&        optidis, //!< the discretization the element is part of
       Teuchos::RCP<MAT::Material> mat,
-      vector<int>&                lm              //!< location matrix
+      std::vector<int>&           lm              //!< location matrix
   );
 
   //! Evaluate objective value
   virtual int EvaluateValues(
       DRT::Element*                 ele,            //!< the element we are dealing with
-      ParameterList&                params,         //!< the parameter list
+      Teuchos::ParameterList&       params,         //!< the parameter list
       DRT::Discretization&          optidis, //!< the discretization the element is part of
       Teuchos::RCP<MAT::Material>   mat,
-      vector<int>&                  lm,             //!< location matrix
+      std::vector<int>&             lm,             //!< location matrix
       DRT::UTILS::GaussIntegration& intpoints       ///< gauss points
   );
 
   //! Evaluate gradient of objective
   virtual int EvaluateGradients(
       DRT::Element*              ele,            //!< the element we are dealing with
-      ParameterList&             params,         //!< the parameter list
+      Teuchos::ParameterList&    params,         //!< the parameter list
       DRT::Discretization&       optidis, //!< the discretization the element is part of
       Teuchos::RCP<MAT::Material> mat,
-      vector<int>&               lm,             //!< location matrix
+      std::vector<int>&          lm,             //!< location matrix
       Epetra_SerialDenseVector&  elevec1_epetra
   );
 
   //! Evaluate gradient of objective
   virtual int EvaluateGradients(
       DRT::Element*                 ele,            //!< the element we are dealing with
-      ParameterList&                params,         //!< the parameter list
+      Teuchos::ParameterList&       params,         //!< the parameter list
       DRT::Discretization&          optidis, //!< the discretization the element is part of
       Teuchos::RCP<MAT::Material>   mat,
-      vector<int>&                  lm,             //!< location matrix
+      std::vector<int>&             lm,             //!< location matrix
       Epetra_SerialDenseVector&     elevec1_epetra,
       DRT::UTILS::GaussIntegration& intpoints       ///< gauss points
   );
@@ -217,7 +217,7 @@ private:
   /// extract element data from global vector
   void ExtractValuesFromGlobalVector(
       DRT::Discretization&         optidis, ///< discretization
-      const vector<int>&           lm,                  ///<
+      const std::vector<int>&      lm,                  ///<
       LINALG::Matrix<nsd_,nen_> *  matrixtofill,        ///< vector field
       LINALG::Matrix<nen_,1> *     vectortofill,        ///< scalar field
       Teuchos::RCP<Epetra_Vector>& globalvector         ///< global vector
@@ -312,10 +312,10 @@ public:
    */
   virtual int EvaluateBoundaryValues(
       DRT::Element*              ele,
-      ParameterList&             params,
+      Teuchos::ParameterList&    params,
       DRT::Discretization&       optidis,
       Teuchos::RCP<MAT::Material> mat,
-      vector<int>&               lm
+      std::vector<int>&          lm
   ) = 0;
 
   //! Evaluate the gradient of the objective of element
@@ -325,10 +325,10 @@ public:
    */
   virtual int EvaluateBoundaryGradients(
       DRT::Element*              ele,
-      ParameterList&             params,
+      Teuchos::ParameterList&    params,
       DRT::Discretization&       optidis,
       Teuchos::RCP<MAT::Material> mat,
-      vector<int>&               lm,
+      std::vector<int>&          lm,
       Epetra_SerialDenseVector&  elevec1_epetra
   ) = 0;
 
@@ -387,19 +387,19 @@ public:
   //! Evaluate objective value
   virtual int EvaluateBoundaryValues(
       DRT::Element*              ele,            //!< the element we are dealing with
-      ParameterList&             params,         //!< the parameter list
+      Teuchos::ParameterList&    params,         //!< the parameter list
       DRT::Discretization&       optidis, //!< the discretization the element is part of
       Teuchos::RCP<MAT::Material> mat,
-      vector<int>&               lm              //!< location matrix
+      std::vector<int>&          lm              //!< location matrix
   );
 
   //! Evaluate gradient of objective
   virtual int EvaluateBoundaryGradients(
       DRT::Element*              ele,            //!< the element we are dealing with
-      ParameterList&             params,         //!< the parameter list
+      Teuchos::ParameterList&    params,         //!< the parameter list
       DRT::Discretization&       optidis, //!< the discretization the element is part of
       Teuchos::RCP<MAT::Material> mat,
-      vector<int>&               lm,             //!< location matrix
+      std::vector<int>&          lm,             //!< location matrix
       Epetra_SerialDenseVector&  elevec1_epetra
   );
 
@@ -416,7 +416,7 @@ private:
 //  //! integral of shape functions over boundary surface
 //  void IntegrateShapeFunctions(
 //      const DRT::Element*       ele,    ///< the actual boundary element
-//      ParameterList&            params, ///< the parameter list
+//      Teuchos::ParameterList&   params, ///< the parameter list
 //      Epetra_SerialDenseVector& elevec1,///< result vector (to be assembled)
 //      const bool                addarea ///< flag for area calculation
 //  );
@@ -424,7 +424,7 @@ private:
   /// extract element data from global vector
   void ExtractValuesFromGlobalVector(
       DRT::Discretization&         optidis, ///< discretization
-      const vector<int>&           lm,                  ///<
+      const std::vector<int>&      lm,                  ///<
       LINALG::Matrix<nsd_,nen_> *  matrixtofill,        ///< vector field
       LINALG::Matrix<nen_,1> *     vectortofill,        ///< scalar field
       Teuchos::RCP<Epetra_Vector>& globalvector         ///< global vector

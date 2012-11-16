@@ -96,7 +96,7 @@ void TOPOPT::TopoptFluidCloneStrategy::SetElementData(
 bool TOPOPT::TopoptFluidCloneStrategy::DetermineEleType(
     DRT::Element* actele,
     const bool ismyele,
-    vector<string>& eletype)
+    std::vector<string>& eletype)
 {
   // note: ismyele, actele remain unused here! Used only for ALE creation
 

@@ -92,8 +92,8 @@ public:
   */
   void CalcObjFunction( int                   index,
                         RCP<DRT::Condition>   cond,
-                        RCP<vector<double> >  pressures,
-                        RCP<vector<double> >  flowrates,
+                        RCP<std::vector<double> >  pressures,
+                        RCP<std::vector<double> >  flowrates,
                         double                dt);
 
   /*!
@@ -102,8 +102,8 @@ public:
   void dN_du( int                   index,
               int                   constrain_num,
               RCP<DRT::Condition>   cond,
-              RCP<vector<double> >  pressures,
-              RCP<vector<double> >  flowrates,
+              RCP<std::vector<double> >  pressures,
+              RCP<std::vector<double> >  flowrates,
               ParameterList         params,
               double                dt);
 
@@ -113,8 +113,8 @@ public:
   void dN_dphi( int                   index,
                 int                   constrain_num,
                 RCP<DRT::Condition>   cond,
-                RCP<vector<double> >  pressures,
-                RCP<vector<double> >  flowrates,
+                RCP<std::vector<double> >  pressures,
+                RCP<std::vector<double> >  flowrates,
                 ParameterList         params,
                 double                dt);
 
@@ -124,8 +124,8 @@ public:
   void dL_du( int                   index,
               int                   constrain_num,
               RCP<DRT::Condition>   cond,
-              RCP<vector<double> >  pressures,
-              RCP<vector<double> >  flowrates,
+              RCP<std::vector<double> >  pressures,
+              RCP<std::vector<double> >  flowrates,
               ParameterList         params,
               double                dt);
 
@@ -135,8 +135,8 @@ public:
   void dJ_dphi( int                   index,
                 int                   constrain_num,
                 RCP<DRT::Condition>   cond,
-                RCP<vector<double> >  pressures,
-                RCP<vector<double> >  flowrates,
+                RCP<std::vector<double> >  pressures,
+                RCP<std::vector<double> >  flowrates,
                 ParameterList         params,
                 double                dt);
 

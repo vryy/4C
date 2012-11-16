@@ -58,20 +58,20 @@ EXODUS::Mesh::Mesh(const string exofilename)
 
   // get nodal coordinates
   {
-    vector<double> x(num_nodes);
-    vector<double> y(num_nodes);
-    vector<double> z(num_nodes);
+    std::vector<double> x(num_nodes);
+    std::vector<double> y(num_nodes);
+    std::vector<double> z(num_nodes);
     error = ex_get_coord(exoid_,&x[0],&y[0],&z[0]);
     if (error != 0) dserror("exo error returned");
 
     // store nodes in map
-    nodes_ = Teuchos::rcp(new map<int,vector<double> >);
+    nodes_ = Teuchos::rcp(new std::map<int,std::vector<double> >);
     for (int i = 0; i < num_nodes; ++i) {
-      vector<double> coords;
+      std::vector<double> coords;
       coords.push_back(x[i]);
       coords.push_back(y[i]);
       coords.push_back(z[i]);
-      nodes_->insert(std::pair<int,vector<double> >(i+1,coords)); //to store the EXO-ID starting with 1
+      nodes_->insert(std::pair<int,std::vector<double> >(i+1,coords)); //to store the EXO-ID starting with 1
     }
   } // free coordinate vectors x, y ,z
 
@@ -104,7 +104,7 @@ EXODUS::Mesh::Mesh(const string exofilename)
       vector<int> allconn(num_nod_per_elem*num_el_in_blk);
       error = ex_get_elem_conn(exoid_,ebids[i],&allconn[0]);
       if (error != 0) dserror("exo error returned");
-      RCP<map<int,vector<int> > > eleconn = Teuchos::rcp(new map<int,vector<int> >);
+      RCP<map<int,std::vector<int> > > eleconn = Teuchos::rcp(new std::map<int,std::vector<int> >);
       for (int j = 0; j < num_el_in_blk; ++j)
       {
         vector<int> actconn;
@@ -112,7 +112,7 @@ EXODUS::Mesh::Mesh(const string exofilename)
         for (int k = 0; k < num_nod_per_elem; ++k){
           actconn.push_back(allconn[k + j*num_nod_per_elem]);
         }
-        eleconn->insert(std::pair<int,vector<int> >(j,actconn));
+        eleconn->insert(std::pair<int,std::vector<int> >(j,actconn));
       }
       RCP<ElementBlock> actEleBlock = Teuchos::rcp(new ElementBlock(StringToShape(ele_type), eleconn, blockname));
 
@@ -215,12 +215,12 @@ EXODUS::Mesh::Mesh(const string exofilename)
       vector<int> side_set_side_list(num_side_in_set);
       error = ex_get_side_set (exoid_, spropID[i], &(side_set_elem_list[0]),&(side_set_side_list[0]));
       if (error != 0) dserror("error reading side set");
-      map<int,vector<int> > sides_in_set;
+      map<int,std::vector<int> > sides_in_set;
       for (int j = 0; j < num_side_in_set; ++j){
         vector<int> side(2); // first entry is element, second side
         side[0] = side_set_elem_list[j];
         side[1] = side_set_side_list[j];
-        sides_in_set.insert(std::pair<int,vector<int> >(j,side));
+        sides_in_set.insert(std::pair<int,std::vector<int> >(j,side));
       }
 
       SideSet actSideSet(sides_in_set,sidesetname);
@@ -238,7 +238,7 @@ EXODUS::Mesh::Mesh(const string exofilename)
 
 EXODUS::Mesh::Mesh()
 {
-  nodes_ = Teuchos::rcp(new map<int,vector<double> >);
+  nodes_ = Teuchos::rcp(new std::map<int,std::vector<double> >);
   num_dim_ = 3;
   baci_dim_ = 3;
   num_elem_ = 0;
@@ -259,7 +259,7 @@ EXODUS::Mesh::~Mesh()
  |  Extension constructor (public)                             maf 01/08|
  *----------------------------------------------------------------------*/
 EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
-                   const RCP<map<int,vector<double> > > extNodes,
+                   const RCP<map<int,std::vector<double> > > extNodes,
                    const map<int,RCP<ElementBlock> >& extBlocks,
                    const map<int,NodeSet>& extNodesets,
                    const map<int,SideSet>& extSidesets,
@@ -272,9 +272,9 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
   const int basedim     = basemesh.GetNumDim();
   const int bacidim     = basemesh.GetBACIDim();
   const int basenumele  = basemesh.GetNumEle();
-  RCP<map<int,vector<double> > >baseNodes = Teuchos::rcp(new map<int,vector<double> >);
+  RCP<map<int,std::vector<double> > >baseNodes = Teuchos::rcp(new std::map<int,std::vector<double> >);
   baseNodes = basemesh.GetNodes();
-  //RCP<map<int,vector<double> > > baseNodes = basemesh.GetNodes();
+  //RCP<map<int,std::vector<double> > > baseNodes = basemesh.GetNodes();
   map<int,RCP<ElementBlock> >  baseEblocks = basemesh.GetElementBlocks();
   map<int,NodeSet>         baseNodesets = basemesh.GetNodeSets();
   map<int,SideSet>         baseSidesets = basemesh.GetSideSets();
@@ -290,10 +290,10 @@ EXODUS::Mesh::Mesh(const EXODUS::Mesh& basemesh,
   exoid_ = basemesh.GetExoId(); //basefile still used for writing minor infos, e.g. qa record or coordnames
 
   // merge nodes
-  map<int,vector<double> >::const_iterator i_node;
+  map<int,std::vector<double> >::const_iterator i_node;
   for(i_node = extNodes->begin(); i_node != extNodes->end(); ++i_node){
-    std::pair< map<int,vector<double> >::iterator, bool > check;
-    check = baseNodes->insert(std::pair<int,vector<double> >(i_node->first,i_node->second));
+    std::pair< map<int,std::vector<double> >::iterator, bool > check;
+    check = baseNodes->insert(std::pair<int,std::vector<double> >(i_node->first,i_node->second));
     // happens when concatenating: if (check.second == false)  dserror("Extension node already exists!");
   }
   nodes_ = baseNodes;
@@ -432,12 +432,12 @@ EXODUS::SideSet EXODUS::Mesh::GetSideSet(const int id) const
 /*----------------------------------------------------------------------*/
 void EXODUS::Mesh::PrintNodes(ostream& os, bool storeid) const
 {
-  map<int,vector<double> >::const_iterator it;
+  map<int,std::vector<double> >::const_iterator it;
   for (it=nodes_->begin(); it != nodes_->end(); it++){
     if (storeid) os << "MapID: " << it->first;
     int exoid = it->first + 1;
     os << " ExoID: " << exoid << " : ";
-    const vector<double> mycoords = it->second;
+    const std::vector<double> mycoords = it->second;
     for (int i=0; i < signed(mycoords.size()); i++ ){
       os << mycoords[i] << ",";
     }
@@ -449,7 +449,7 @@ void EXODUS::Mesh::PrintNodes(ostream& os, bool storeid) const
 /*----------------------------------------------------------------------*/
 vector<double> EXODUS::Mesh::GetNode(const int NodeID) const
 {
-  map<int,vector<double> >::const_iterator  it = nodes_->find(NodeID);
+  map<int,std::vector<double> >::const_iterator  it = nodes_->find(NodeID);
   return it->second;
 }
 
@@ -457,7 +457,7 @@ vector<double> EXODUS::Mesh::GetNode(const int NodeID) const
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EXODUS::Mesh::SetNode(const int              NodeID,
-                           const vector<double>   coord) 
+                           const std::vector<double>   coord) 
 {
   // if entry exits already , delete it first and the insert the new value
   // other wise nothing is inserted
@@ -484,7 +484,7 @@ void EXODUS::Mesh::SetNsd (const int nsd)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
+map<int,std::vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
 {
   cout << "Creating SideSet Connectivity... " << endl;
   fflush(stdout);
@@ -502,9 +502,9 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
   RCP<Time> time7 = TimeMonitor::getNewTimer("Get all Eblocks and Econns");
   RCP<TimeMonitor> tm_total = Teuchos::rcp(new TimeMonitor(*timetot));
 
-  map<int,vector<int> > conn;
-  map<int,vector<int> > mysides = sideset.GetSideSet();
-  map<int,vector<int> >::iterator i_side;
+  map<int,std::vector<int> > conn;
+  map<int,std::vector<int> > mysides = sideset.GetSideSet();
+  map<int,std::vector<int> >::iterator i_side;
 
   map<int,RCP<EXODUS::ElementBlock> > ebs = GetElementBlocks();
   map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_ebs;
@@ -514,7 +514,7 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
   int rangebreak = 0;
   // Also we once get all EBlocks and EConns to enable quick access
   vector<EXODUS::ElementBlock> eblocks;
-  vector<map<int,vector<int> > > econns;
+  vector<map<int,std::vector<int> > > econns;
   RCP<TimeMonitor> tm7 = Teuchos::rcp(new TimeMonitor(*time7));
   for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
     rangebreak += i_ebs->second->GetNumEle();
@@ -522,7 +522,7 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
     eblocks.push_back(*i_ebs->second);
     econns.push_back(*(i_ebs->second->GetEleConn()));
   }
-  tm7 = null;
+  tm7 = Teuchos::null;
 
   // fill SideSet Connectivity
   //int perc = 1;
@@ -537,19 +537,19 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
       if (actele < glob_eb_erange[i]){ actebid = i-1; break;}
     RCP<TimeMonitor> tm2 = Teuchos::rcp(new TimeMonitor(*time2));
     //EXODUS::ElementBlock acteb = ebs.find(actebid)->second;
-    tm2 = null;
+    tm2 = Teuchos::null;
     //EXODUS::ElementBlock::Shape actshape = acteb.GetShape();
     if (actebid<0) dserror("invalid element block id");
     EXODUS::ElementBlock::Shape actshape = eblocks[actebid].GetShape();
     RCP<TimeMonitor> tm3 = Teuchos::rcp(new TimeMonitor(*time3));
-    //map<int,vector<int> > acteconn = acteb.GetEleConn();
-    tm3 = null;
+    //map<int,std::vector<int> > acteconn = acteb.GetEleConn();
+    tm3 = Teuchos::null;
     // get act parent ele from actual Side
     int parent_ele_id = actele - glob_eb_erange[actebid];
     RCP<TimeMonitor> tm4 = Teuchos::rcp(new TimeMonitor(*time4));
     //vector<int> parent_ele = acteconn.find(parent_ele_id)->second;
     vector<int> parent_ele = econns[actebid].find(parent_ele_id)->second;
-    tm4 = null;
+    tm4 = Teuchos::null;
     // Face to ElementNode Map
     //// **** temporary hex map due to conflicts between side numbering exo<->baci
     RCP<TimeMonitor> tm5 = Teuchos::rcp(new TimeMonitor(*time5));
@@ -557,11 +557,11 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
     case ElementBlock::tet4: {actface = actface; tetc++; break;}
     case ElementBlock::hex8: {actface = HexSideNumberExoToBaci(actface); hexc++; break;}
     case ElementBlock::pyramid5: {
-//      vector<vector<int> > test = DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape));
+//      vector<std::vector<int> > test = DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape));
 //      for(unsigned int j=0; j<test.size(); ++j) PrintVec(cout,test[j]);
       actface = PyrSideNumberExoToBaci(actface); pyrc++; break;}
     case ElementBlock::wedge6: {
-//      vector<vector<int> > test = DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape));
+//      vector<std::vector<int> > test = DRT::UTILS::getEleNodeNumberingSurfaces(PreShapeToDrt(actshape));
 //      for(unsigned int j=0; j<test.size(); ++j) PrintVec(cout,test[j]);
       actface = actface; wedgc++; break;
       }
@@ -583,11 +583,11 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
       dserror("Child Ele error");
     }
     // insert child into SideSet Connectivity
-    conn.insert(std::pair<int,vector<int> >(i_side->first,child));
-    tm5 = null;
+    conn.insert(std::pair<int,std::vector<int> >(i_side->first,child));
+    tm5 = Teuchos::null;
 
 //    // progress output
-//    tm1 = null;
+//    tm1 = Teuchos::null;
 //    if (signed(i_side->first) == perc * signed(mysides.size())/100){
 //      TimeMonitor::summarize();
 //      cout << perc << " % of " << mysides.size() << " Sides done" << endl;
@@ -595,7 +595,7 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
 //      fflush(stdout);
 //    }
   }
-  tm_total = null;
+  tm_total = Teuchos::null;
 //  TimeMonitor::summarize();
   cout << "...done" << endl;
   fflush(stdout);
@@ -605,7 +605,7 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset, bool checkoutside) const
+map<int,std::vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset, bool checkoutside) const
 {
   cout << "Creating SideSet Connectivity with outside-check... " << endl;
   fflush(stdout);
@@ -617,9 +617,9 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset, bool c
   RCP<Time> time1 = TimeMonitor::getNewTimer("One Side Set");
   RCP<TimeMonitor> tm_total = Teuchos::rcp(new TimeMonitor(*timetot));
 
-  map<int,vector<int> > conn;
-  map <int,vector<int> > mysides = sideset.GetSideSet();
-  map<int,vector<int> >::iterator i_side;
+  map<int,std::vector<int> > conn;
+  map <int,std::vector<int> > mysides = sideset.GetSideSet();
+  map<int,std::vector<int> >::iterator i_side;
 
   map<int,RCP<EXODUS::ElementBlock> > ebs = GetElementBlocks();
   map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_ebs;
@@ -629,7 +629,7 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset, bool c
   int rangebreak = 0;
   // Also we once get all EBlocks and EConns to enable quick access
   vector<EXODUS::ElementBlock> eblocks;
-  vector<map<int,vector<int> > > econns;
+  vector<map<int,std::vector<int> > > econns;
   for (i_ebs = ebs.begin(); i_ebs != ebs.end(); ++i_ebs ){
     rangebreak += i_ebs->second->GetNumEle();
     glob_eb_erange.push_back(rangebreak);
@@ -679,10 +679,10 @@ map<int,vector<int> > EXODUS::Mesh::GetSideSetConn(const SideSet sideset, bool c
     }
 
     // insert child into SideSet Connectivity
-    conn.insert(std::pair<int,vector<int> >(i_side->first,child));
-    tm1 = null;
+    conn.insert(std::pair<int,std::vector<int> >(i_side->first,child));
+    tm1 = Teuchos::null;
   }
-  tm_total = null;
+  tm_total = Teuchos::null;
   //  TimeMonitor::summarize();
   cout << "...done" << endl;
   fflush(stdout);
@@ -769,23 +769,23 @@ vector<double> EXODUS::Mesh::NodeVec(const int tail, const int head) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-vector<EXODUS::ElementBlock> EXODUS::Mesh::SideSetToEBlocks(const EXODUS::SideSet& sideset, const map<int,vector<int> >& sideconn) const
+vector<EXODUS::ElementBlock> EXODUS::Mesh::SideSetToEBlocks(const EXODUS::SideSet& sideset, const map<int,std::vector<int> >& sideconn) const
 {
   vector<ElementBlock> eblocks;
-  //map<int,vector<int> > sideconn = sideset.GetSideSet();
-  map<int,vector<int> >::const_iterator i_ele;
-  RCP<map<int,vector<int> > > quadconn = Teuchos::rcp(new map<int,vector<int> >);
+  //map<int,std::vector<int> > sideconn = sideset.GetSideSet();
+  map<int,std::vector<int> >::const_iterator i_ele;
+  RCP<map<int,std::vector<int> > > quadconn = Teuchos::rcp(new std::map<int,std::vector<int> >);
   int quadcounter = 0;
-  RCP<map<int,vector<int> > > triconn = Teuchos::rcp(new map<int,vector<int> >);
+  RCP<map<int,std::vector<int> > > triconn = Teuchos::rcp(new std::map<int,std::vector<int> >);
   int tricounter = 0;
   for (i_ele = sideconn.begin(); i_ele != sideconn.end(); ++i_ele){
     int numnodes = i_ele->second.size();
     if (numnodes == 4){
-      quadconn->insert(std::pair<int,vector<int> >(quadcounter,i_ele->second));
+      quadconn->insert(std::pair<int,std::vector<int> >(quadcounter,i_ele->second));
       quadcounter ++;
     }
     else if (numnodes == 3){
-      triconn->insert(std::pair<int,vector<int> >(tricounter,i_ele->second));
+      triconn->insert(std::pair<int,std::vector<int> >(tricounter,i_ele->second));
       tricounter ++;
     }
     else dserror("Number of basenodes for conversion from SideSet to EBlock not supported");
@@ -808,9 +808,9 @@ vector<EXODUS::ElementBlock> EXODUS::Mesh::SideSetToEBlocks(const EXODUS::SideSe
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-EXODUS::NodeSet EXODUS::Mesh::SideSetToNodeSet(const EXODUS::SideSet& sideset, const map<int,vector<int> >& sideconn) const
+EXODUS::NodeSet EXODUS::Mesh::SideSetToNodeSet(const EXODUS::SideSet& sideset, const map<int,std::vector<int> >& sideconn) const
 {
-  map<int,vector<int> >::const_iterator i_side;
+  map<int,std::vector<int> >::const_iterator i_side;
   vector<int>::const_iterator i_node;
   std::set<int> nodes;
   for(i_side = sideconn.begin(); i_side != sideconn.end(); ++i_side)
@@ -826,9 +826,9 @@ EXODUS::NodeSet EXODUS::Mesh::SideSetToNodeSet(const EXODUS::SideSet& sideset, c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::set<int> EXODUS::Mesh::GetSideSetNodes(const EXODUS::SideSet& sideset, const map<int,vector<int> >& sideconn) const
+std::set<int> EXODUS::Mesh::GetSideSetNodes(const EXODUS::SideSet& sideset, const map<int,std::vector<int> >& sideconn) const
 {
-  map<int,vector<int> >::const_iterator i_side;
+  map<int,std::vector<int> >::const_iterator i_side;
   vector<int>::const_iterator i_node;
   std::set<int> nodes;
   for(i_side = sideconn.begin(); i_side != sideconn.end(); ++i_side)
@@ -894,8 +894,8 @@ void EXODUS::Mesh::WriteMesh(const string newexofilename) const
   vector<double> xc(num_nodes);
   vector<double> yc(num_nodes);
   vector<double> zc(num_nodes);
-  map<int,vector<double> >::const_iterator it;
-  RCP<map<int,vector<double> > > nodes = GetNodes();
+  map<int,std::vector<double> >::const_iterator it;
+  RCP<map<int,std::vector<double> > > nodes = GetNodes();
   for(it=nodes->begin(); it != nodes->end(); ++it){
     xc[it->first-1] = it->second[0]; // vector starts with 0
     yc[it->first-1] = it->second[1]; // vector starts with 0
@@ -941,7 +941,7 @@ void EXODUS::Mesh::WriteMesh(const string newexofilename) const
     const ElementBlock eb = (*iebs->second);
     const ElementBlock::Shape shape = eb.GetShape();
     const string shapestring = ShapeToString(shape);
-    const vector<int> exampleconn = eb.GetEleNodes(0); //iebs->first);
+    const std::vector<int> exampleconn = eb.GetEleNodes(0); //iebs->first);
     const int num_nod_per_elem = exampleconn.size();
     const int numele = eb.GetNumEle();
     const char* elem_type = shapestring.c_str();
@@ -981,7 +981,7 @@ void EXODUS::Mesh::WriteMesh(const string newexofilename) const
     vector<int> side_set_elem_list(num_side_in_set);
     vector<int> side_set_side_list(num_side_in_set);
     // in case the sideset is newly created we have to adjust element ids to global numbering
-    map<int,vector<int> >globalsides;
+    map<int,std::vector<int> >globalsides;
     if (iss->second.GetFirstSideSet().size()==3){
       globalsides = GlobalifySSeleids(ssID);
       ss.FillSideLists(&side_set_elem_list[0],&side_set_side_list[0],globalsides);
@@ -1032,13 +1032,13 @@ void EXODUS::Mesh::EraseSideSet(const int id)
  | - calculates the midpoint of each element                               |
  | - returns map <midpoint-ID,std::pair<eblock-ID,element-ID> >         SP 06/08|
  *------------------------------------------------------------------------*/
-map<int,std::pair<int,int> > EXODUS::Mesh::createMidpoints(map<int,vector<double> >& midpoints, const vector<int>& eb_ids) const
+map<int,std::pair<int,int> > EXODUS::Mesh::createMidpoints(map<int,std::vector<double> >& midpoints, const vector<int>& eb_ids) const
 {
 	//map that will be returned
 	map<int,std::pair<int,int> > conn_mpID_elID;
 
 //	//initialising midpoints
-//	this->midpoints_ = Teuchos::rcp(new map<int,vector<double> >);
+//	this->midpoints_ = Teuchos::rcp(new std::map<int,std::vector<double> >);
 
 	//auxiliary variables
 	int counter_elements = 0;
@@ -1057,8 +1057,8 @@ map<int,std::pair<int,int> > EXODUS::Mesh::createMidpoints(map<int,vector<double
     EBlocks.insert(std::pair<int,RCP<EXODUS::ElementBlock> >(*id,acteb));
   }
 
-	map<int,vector<int> > EleConn;
-	map<int,vector<int> >::const_iterator it_2;
+	map<int,std::vector<int> > EleConn;
+	map<int,std::vector<int> >::const_iterator it_2;
 
 	vector<int>::const_iterator it_3;
 
@@ -1094,7 +1094,7 @@ map<int,std::pair<int,int> > EXODUS::Mesh::createMidpoints(map<int,vector<double
 			midPoint[2]=sumVector[2]/nodes_per_element;
 
 			//insert calculated midpoint in midpoints_
-      midpoints.insert(std::pair<int,vector<double> >(counter_elements,midPoint));
+      midpoints.insert(std::pair<int,std::vector<double> >(counter_elements,midPoint));
 			//conn_mpID_elID = (midpoint-ID, eblock-ID, element-ID)
       std::pair<int,int> eb_e = std::make_pair(it->first,it_2->first);
 			conn_mpID_elID.insert(std::pair<int,std::pair<int,int> >(counter_elements,eb_e));
@@ -1106,7 +1106,7 @@ map<int,std::pair<int,int> > EXODUS::Mesh::createMidpoints(map<int,vector<double
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-map<int,vector<int> > EXODUS::Mesh::GlobalifySSeleids(const int ssid) const
+map<int,std::vector<int> > EXODUS::Mesh::GlobalifySSeleids(const int ssid) const
 {
   SideSet ss = GetSideSet(ssid);
 
@@ -1126,8 +1126,8 @@ map<int,vector<int> > EXODUS::Mesh::GlobalifySSeleids(const int ssid) const
     ++rangepos;
   }
 
-  map<int,vector<int> >sideset = ss.GetSideSet();
-  map<int,vector<int> >::iterator i_ss;
+  map<int,std::vector<int> >sideset = ss.GetSideSet();
+  map<int,std::vector<int> >::iterator i_ss;
 
   for(i_ss=sideset.begin();i_ss!=sideset.end();++i_ss){
     if (i_ss->second.size()!=3) dserror("Problem in new SideSet!"); // double check
@@ -1145,22 +1145,22 @@ map<int,vector<int> > EXODUS::Mesh::GlobalifySSeleids(const int ssid) const
  *------------------------------------------------------------------------*/
 void EXODUS::Mesh::PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& mymesh) const
 {
-  RCP<map<int,vector<double> > > nodes= mymesh.GetNodes();
+  RCP<map<int,std::vector<double> > > nodes= mymesh.GetNodes();
   std::ofstream f_system(fname.c_str());
   std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" Mesh \" {" << endl;
 
   map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
   map<int,RCP<EXODUS::ElementBlock> >::const_iterator eb_it;
-  map<int,vector<int> > conn;
-  map<int,vector<int> > ::const_iterator it;
+  map<int,std::vector<int> > conn;
+  map<int,std::vector<int> > ::const_iterator it;
 
   for(eb_it=ebs.begin(); eb_it!=ebs.end(); ++eb_it){
-    RCP<map<int,vector<int> > > actconn = eb_it->second->GetEleConn();
+    RCP<map<int,std::vector<int> > > actconn = eb_it->second->GetEleConn();
     for(it = actconn->begin(); it != actconn->end(); ++it)
     {
       int eleid = it->first;
-      const vector<int> elenodes = it->second;
+      const std::vector<int> elenodes = it->second;
       int numnodes = elenodes.size();
       if (numnodes==6) gmshfilecontent << "SI(";
       else if (numnodes==8) gmshfilecontent << "SH(";
@@ -1187,7 +1187,7 @@ void EXODUS::Mesh::PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& 
  *------------------------------------------------------------------------*/
 void EXODUS::Mesh::PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& mymesh, const vector<int>& ebids) const
 {
-  RCP<map<int,vector<double> > > nodes= mymesh.GetNodes();
+  RCP<map<int,std::vector<double> > > nodes= mymesh.GetNodes();
   std::ofstream f_system(fname.c_str());
   std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" Mesh \" {" << endl;
@@ -1200,15 +1200,15 @@ void EXODUS::Mesh::PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& 
   }
 
   map<int,RCP<EXODUS::ElementBlock> >::const_iterator eb_it;
-  map<int,vector<int> > conn;
-  map<int,vector<int> > ::const_iterator it;
+  map<int,std::vector<int> > conn;
+  map<int,std::vector<int> > ::const_iterator it;
 
   for(eb_it=ebs.begin(); eb_it!=ebs.end(); ++eb_it){
-    RCP<map<int,vector<int> > > actconn = eb_it->second->GetEleConn();
+    RCP<map<int,std::vector<int> > > actconn = eb_it->second->GetEleConn();
     for(it = actconn->begin(); it != actconn->end(); ++it)
     {
       int eleid = it->first;
-      const vector<int> elenodes = it->second;
+      const std::vector<int> elenodes = it->second;
       int numnodes = elenodes.size();
       if (numnodes==6) gmshfilecontent << "SI(";
       else if (numnodes==8) gmshfilecontent << "SH(";
@@ -1239,7 +1239,7 @@ void EXODUS::Mesh::PlotNodesGmsh() const
   std::stringstream gmshfilecontent;
 	gmshfilecontent << "View \" Nodes \" {" << endl;
 
-	map<int,vector<double> >::const_iterator it;
+	map<int,std::vector<double> >::const_iterator it;
 	//loop over all nodes
 	for (it=nodes_->begin(); it != nodes_->end(); it++){
 
@@ -1264,19 +1264,19 @@ void EXODUS::Mesh::PlotNodesGmsh() const
 /*------------------------------------------------------------------------*
  |creates gmsh-file to visualize connectivity                     MF 12/08|
  *------------------------------------------------------------------------*/
-void EXODUS::Mesh::PlotConnGmsh(const string fname,const EXODUS::Mesh& mymesh, const map<int,vector<int> >& conn) const
+void EXODUS::Mesh::PlotConnGmsh(const string fname,const EXODUS::Mesh& mymesh, const map<int,std::vector<int> >& conn) const
 {
-  RCP<map<int,vector<double> > > nodes= mymesh.GetNodes();
+  RCP<map<int,std::vector<double> > > nodes= mymesh.GetNodes();
   std::ofstream f_system(fname.c_str());
   std::stringstream gmshfilecontent;
   gmshfilecontent << "View \" Connectivity \" {" << endl;
 
-  map<int,vector<int> > ::const_iterator it;
+  map<int,std::vector<int> > ::const_iterator it;
 
   for(it = conn.begin(); it != conn.end(); ++it)
   {
     int eleid = it->first;
-    const vector<int> elenodes = it->second;
+    const std::vector<int> elenodes = it->second;
     int numnodes = elenodes.size();
     if (numnodes==6) gmshfilecontent << "SI(";
     else if (numnodes==8) gmshfilecontent << "SH(";
@@ -1301,13 +1301,13 @@ void EXODUS::Mesh::PlotConnGmsh(const string fname,const EXODUS::Mesh& mymesh, c
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype, RCP<map<int,vector<int> > >& eleconn, string name)
+EXODUS::ElementBlock::ElementBlock(ElementBlock::Shape Distype, RCP<map<int,std::vector<int> > >& eleconn, string name)
 : distype_(Distype),
   eleconn_(eleconn),
   name_(name.c_str())
 {
   // do a sanity check
-  for (map<int,vector<int> >::const_iterator elem=eleconn->begin(); elem!=eleconn->end(); ++elem)
+  for (map<int,std::vector<int> >::const_iterator elem=eleconn->begin(); elem!=eleconn->end(); ++elem)
   {
     if (DRT::UTILS::getNumberOfElementNodes(PreShapeToDrt(Distype)) != (int) elem->second.size())
     {
@@ -1328,7 +1328,7 @@ EXODUS::ElementBlock::~ElementBlock()
 /*----------------------------------------------------------------------*/
 vector<int> EXODUS::ElementBlock::GetEleNodes(int i) const
 {
-  map<int,vector<int> >::const_iterator  it = eleconn_->find(i);
+  map<int,std::vector<int> >::const_iterator  it = eleconn_->find(i);
   return it->second;
 }
 
@@ -1336,7 +1336,7 @@ vector<int> EXODUS::ElementBlock::GetEleNodes(int i) const
 /*----------------------------------------------------------------------*/
 int EXODUS::ElementBlock::GetEleNode(int ele, int node) const
 {
-  map<int,vector<int> >::const_iterator  it = eleconn_->find(ele);
+  map<int,std::vector<int> >::const_iterator  it = eleconn_->find(ele);
   if (it == eleconn_->end()) dserror("Element not found");
   vector<int> elenodes = GetEleNodes(ele);
   return elenodes[node];
@@ -1346,7 +1346,7 @@ int EXODUS::ElementBlock::GetEleNode(int ele, int node) const
 /*----------------------------------------------------------------------*/
 void EXODUS::ElementBlock::FillEconnArray(int *connarray) const
 {
-  const map<int,vector<int> >::const_iterator iele;
+  const map<int,std::vector<int> >::const_iterator iele;
   int numele = eleconn_->size();
   for (int i = 0; i < numele; ++i) {
     vector<int> ele = GetEleNodes(i);
@@ -1365,10 +1365,10 @@ void EXODUS::ElementBlock::Print(ostream& os, bool verbose) const
   << "of Shape: " << ShapeToString(distype_) << endl
   << "has " << GetNumEle() << " Elements" << endl;
   if (verbose){
-    map<int,vector<int> >::const_iterator it;
+    map<int,std::vector<int> >::const_iterator it;
     for (it=eleconn_->begin(); it != eleconn_->end(); it++){
       os << "Ele " << it->first << ": ";
-      const vector<int> myconn = it->second; //GetEleNodes(int(it));
+      const std::vector<int> myconn = it->second; //GetEleNodes(int(it));
       for (int i=0; i < signed(myconn.size()); i++ ){
         os << myconn[i] << ",";
       }
@@ -1424,7 +1424,7 @@ void EXODUS::NodeSet::FillNodelistArray(int* nodelist) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-EXODUS::SideSet::SideSet(const map<int,vector<int> >& sides, const string& name)
+EXODUS::SideSet::SideSet(const map<int,std::vector<int> >& sides, const string& name)
 : sides_(sides),
   name_(name.c_str())
 {
@@ -1435,8 +1435,8 @@ EXODUS::SideSet::SideSet(const map<int,vector<int> >& sides, const string& name)
 /*----------------------------------------------------------------------*/
 void EXODUS::SideSet::FillSideLists(int* elemlist, int* sidelist) const
 {
-  map<int,vector<int> > sides = GetSideSet();
-  map<int,vector<int> >::iterator it;
+  map<int,std::vector<int> > sides = GetSideSet();
+  map<int,std::vector<int> >::iterator it;
   int i=0;
   for (it=sides.begin(); it != sides.end(); ++it){
     elemlist[i] = it->second[0];
@@ -1447,9 +1447,9 @@ void EXODUS::SideSet::FillSideLists(int* elemlist, int* sidelist) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::SideSet::FillSideLists(int* elemlist, int* sidelist, const map<int,vector<int> >& sides) const
+void EXODUS::SideSet::FillSideLists(int* elemlist, int* sidelist, const map<int,std::vector<int> >& sides) const
 {
-  map<int,vector<int> >::const_iterator it;
+  map<int,std::vector<int> >::const_iterator it;
   int i=0;
   for (it=sides.begin(); it != sides.end(); ++it){
     elemlist[i] = it->second[0];
@@ -1464,7 +1464,7 @@ void EXODUS::SideSet::Print(ostream& os, bool verbose) const{
   os << "SideSet, named: " << name_ << endl
   << "has " << GetNumSides() << " Sides" << endl;
   if (verbose){
-    map<int,vector<int> >::const_iterator it;
+    map<int,std::vector<int> >::const_iterator it;
     for (it=sides_.begin(); it != sides_.end(); it++){
       os << "Side " << it->first << ": ";
       os << "Ele: " << it->second.at(0) << ", Side: " << it->second.at(1) << endl;
@@ -1495,9 +1495,9 @@ EXODUS::Mesh EXODUS::QuadtoTri(EXODUS::Mesh& basemesh)
       cout << "Warning! Only quad4 or shell4 in quad->tri conversion. Skipping EBlock" << endl;
     } else {
 
-      RCP<map<int,vector<int> > > quad_conn = quadblock->GetEleConn();
-      map<int,vector<int> >::const_iterator i_quad;
-      RCP<map<int,vector<int> > > triconn = Teuchos::rcp(new map<int,vector<int> >);
+      RCP<map<int,std::vector<int> > > quad_conn = quadblock->GetEleConn();
+      map<int,std::vector<int> >::const_iterator i_quad;
+      RCP<map<int,std::vector<int> > > triconn = Teuchos::rcp(new std::map<int,std::vector<int> >);
 
       for (i_quad = quad_conn->begin(); i_quad != quad_conn->end(); ++i_quad){
         vector<int> quad = i_quad->second;
@@ -1507,8 +1507,8 @@ EXODUS::Mesh EXODUS::QuadtoTri(EXODUS::Mesh& basemesh)
         tri2[0] = quad[2]; tri2[1] = quad[3]; tri2[2] = quad[0];
         int tri1_id = 2*i_quad->first;
         int tri2_id = 2*i_quad->first + 1;
-        triconn->insert(std::pair<int,vector<int> >(tri1_id,tri1));
-        triconn->insert(std::pair<int,vector<int> >(tri2_id,tri2));
+        triconn->insert(std::pair<int,std::vector<int> >(tri1_id,tri1));
+        triconn->insert(std::pair<int,std::vector<int> >(tri2_id,tri2));
       }
 
       RCP<EXODUS::ElementBlock> triblock = Teuchos::rcp(new EXODUS::ElementBlock(EXODUS::ElementBlock::tri3,triconn,quadblock->GetName()));
@@ -1521,7 +1521,7 @@ EXODUS::Mesh EXODUS::QuadtoTri(EXODUS::Mesh& basemesh)
   map<int,EXODUS::NodeSet> emptynodeset;
   map<int,EXODUS::SideSet> emptysideset;
   if (basemesh.GetNumSideSets()>0) cout << "Warning! SideSets will not be transfered by quad->tri!" << endl;
-  RCP<map<int,vector<double> > > emptynodes = Teuchos::rcp(new map<int,vector<double> >);
+  RCP<map<int,std::vector<double> > > emptynodes = Teuchos::rcp(new std::map<int,std::vector<double> >);
   EXODUS::Mesh trimesh(basemesh,emptynodes,neweblocks,emptynodeset,emptysideset,newtitle);
   return trimesh;
 }
@@ -1534,9 +1534,9 @@ EXODUS::Mesh EXODUS::QuadtoTri(EXODUS::Mesh& basemesh)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintMap(ostream& os,const map<int,vector<int> > mymap)
+void EXODUS::PrintMap(ostream& os,const map<int,std::vector<int> > mymap)
 {
-  map<int,vector<int> >::const_iterator iter;
+  map<int,std::vector<int> >::const_iterator iter;
   for(iter = mymap.begin(); iter != mymap.end(); ++iter)
   {
       os << iter->first << ": ";
@@ -1568,13 +1568,13 @@ void EXODUS::PrintMap(ostream& os,const map<int,std::set<int> > mymap)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintMap(ostream& os,const map<int,vector<double> > mymap)
+void EXODUS::PrintMap(ostream& os,const map<int,std::vector<double> > mymap)
 {
-  map<int,vector<double> >::const_iterator iter;
+  map<int,std::vector<double> >::const_iterator iter;
   for(iter = mymap.begin(); iter != mymap.end(); ++iter)
   {
       os << iter->first << ": ";
-      vector<double> actvec = iter->second;
+      std::vector<double> actvec = iter->second;
       vector<double>::iterator i;
       for (i=actvec.begin(); i<actvec.end(); ++i) {
         os << *i << ",";

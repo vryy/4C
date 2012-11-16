@@ -58,12 +58,10 @@ Maintainer: Michael Gee
 // This is an intermediate solution to still use these objects without
 // an explicit specification of the namespace std or Teuchos in front.
 
-// note, we do not include a whole namespace!
+// Note: at least we do not include a whole namespace!
 using Teuchos::RCP;
-using Teuchos::null;
+using std::vector;
 
-using std::map;
-using std::cout;
 
 namespace LINALG
 {
@@ -251,7 +249,7 @@ public:
   - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
   \param node (in)      : the node
   */
-  virtual vector<int> Dof(const Node* node) const
+  virtual std::vector<int> Dof(const Node* node) const
   { dsassert(dofsets_.size()==1,"expect just one dof set"); return Dof(0,node); }
 
   /*!
@@ -263,7 +261,7 @@ public:
   - HaveDofs()==true prerequisite (produced by call to AssignDegreesOfFreedom()))
   \param element (in)      : the element
   */
-  virtual vector<int> Dof(const Element* element) const
+  virtual std::vector<int> Dof(const Element* element) const
   { dsassert(dofsets_.size()==1,"expect just one dof set"); return Dof(0,element); }
 
   /*!
@@ -276,7 +274,7 @@ public:
   \param node (in)      : the node
   \param lm (in/out)    : lm vector the dofs are appended to
   */
-  virtual void Dof(const Node* node, vector<int>& lm) const
+  virtual void Dof(const Node* node, std::vector<int>& lm) const
   { dsassert(dofsets_.size()==1,"expect just one dof set"); Dof((unsigned)0,node,lm); }
 
   /*!
@@ -290,7 +288,7 @@ public:
   \param node (in)      : the node
   \param lm (in/out)    : lm vector the dofs are appended to
   */
-  virtual void Dof(const Element* element, const Node* node, vector<int>& lm) const
+  virtual void Dof(const Element* element, const Node* node, std::vector<int>& lm) const
   { dsassert(dofsets_.size()==1,"expect just one dof set"); Dof(0,element,node,lm); }
 
   /*!
@@ -303,7 +301,7 @@ public:
   \param element (in)      : the element
   \param lm (in/out)    : lm vector the dofs are appended to
   */
-  virtual void Dof(const Element* element, vector<int>& lm) const
+  virtual void Dof(const Element* element, std::vector<int>& lm) const
   { dsassert(dofsets_.size()==1,"expect just one dof set"); Dof(0,element,lm); }
 
   /*!
@@ -317,7 +315,7 @@ public:
   \param startindex (in): first index of vector at which will be written to end
   \param lm (in/out)    : lm vector the dofs are appended to
   */
-  virtual void Dof(const Node* node, const unsigned startindex, vector<int>& lm) const
+  virtual void Dof(const Node* node, const unsigned startindex, std::vector<int>& lm) const
   { dsassert(dofsets_.size()==1,"expect just one dof set"); Dof(0,node,startindex,lm); }
 
   /*!
@@ -390,7 +388,7 @@ public:
   \param nds (in)       : number of dofset
   \param node (in)      : the node
   */
-  virtual vector<int> Dof(unsigned nds, const Node* node) const
+  virtual std::vector<int> Dof(unsigned nds, const Node* node) const
   {
     dsassert(nds<dofsets_.size(),"undefined dof set");
     dsassert(havedof_,"no dofs assigned");
@@ -407,7 +405,7 @@ public:
   \param nds (in)       : number of dofset
   \param element (in)      : the element
   */
-  virtual vector<int> Dof(unsigned nds, const Element* element) const
+  virtual std::vector<int> Dof(unsigned nds, const Element* element) const
   {
     dsassert(nds<dofsets_.size(),"undefined dof set");
     dsassert(havedof_,"no dofs assigned");
@@ -425,7 +423,7 @@ public:
   \param node (in)      : the node
   \param lm (in/out)    : lm vector the dofs are appended to
   */
-  virtual void Dof(unsigned nds, const Node* node, vector<int>& lm) const
+  virtual void Dof(unsigned nds, const Node* node, std::vector<int>& lm) const
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); dofsets_[nds]->Dof(node,lm); }
 
   /*!
@@ -440,7 +438,7 @@ public:
   \param node (in)      : the node
   \param lm (in/out)    : lm vector the dofs are appended to
   */
-  virtual void Dof(unsigned nds, const Element* element, const Node* node, vector<int>& lm) const
+  virtual void Dof(unsigned nds, const Element* element, const Node* node, std::vector<int>& lm) const
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); dofsets_[nds]->Dof(element,node,lm); }
 
   /*!
@@ -454,7 +452,7 @@ public:
   \param element (in)      : the element
   \param lm (in/out)    : lm vector the dofs are appended to
   */
-  virtual void Dof(unsigned nds, const Element* element, vector<int>& lm) const
+  virtual void Dof(unsigned nds, const Element* element, std::vector<int>& lm) const
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); dofsets_[nds]->Dof(element,lm); }
 
   /*!
@@ -469,7 +467,7 @@ public:
   \param startindex (in): first index of vector at which will be written to end
   \param lm (in/out)    : lm vector the dofs are appended to
   */
-  virtual void Dof(unsigned nds, const Node* node, const unsigned startindex, vector<int>& lm) const
+  virtual void Dof(unsigned nds, const Node* node, const unsigned startindex, std::vector<int>& lm) const
   { dsassert(nds<dofsets_.size(),"undefined dof set"); dsassert(havedof_,"no dofs assigned"); dofsets_[nds]->Dof(node,startindex,lm); }
 
   /*!
@@ -1245,7 +1243,7 @@ public:
     dsassert(nds<dofsets_.size(),"undefined dof set");
     if (state_.size()<=nds)
       return Teuchos::null;
-    map<string,RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
+    std::map<string,RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
     if (fool==state_[nds].end()) dserror("Cannot find state %s",&name[0]);
     else return fool->second;
     return Teuchos::null;
@@ -1261,7 +1259,7 @@ public:
     dsassert(nds<dofsets_.size(),"undefined dof set");
     if (state_.size()<=nds)
       return false;
-    map<string,RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
+    std::map<string,RCP<const Epetra_Vector> >::const_iterator fool = state_[nds].find(name);
     return fool!=state_[nds].end();
   }
 
@@ -1430,7 +1428,7 @@ public:
   \param systemvector (out): Vector to assemble Neumann BCs to.
                              The vector is NOT initialized to zero by this method.
   */
-  virtual void EvaluateNeumann(ParameterList&          params,
+  virtual void EvaluateNeumann(Teuchos::ParameterList& params,
                                Epetra_Vector&          systemvector,
                                LINALG::SparseOperator* systemmatrix = NULL);
 
@@ -1491,7 +1489,7 @@ public:
   \param dbcmapextractor (out): Map extractor containing maps for the DOFs subjected to
                                 Dirichlet boundary conditions and the remaining/free DOFs
   */
-  virtual void EvaluateDirichlet(ParameterList& params,
+  virtual void EvaluateDirichlet(Teuchos::ParameterList& params,
                                  Teuchos::RCP<Epetra_Vector> systemvector,
                                  Teuchos::RCP<Epetra_Vector> systemvectord,
                                  Teuchos::RCP<Epetra_Vector> systemvectordd,
@@ -1509,7 +1507,7 @@ public:
   */
   virtual void EvaluateCondition
   (
-    ParameterList& params,  ///< List of parameters for use at element level
+    Teuchos::ParameterList& params,  ///< List of parameters for use at element level
     RCP<Epetra_Vector> systemvector1, ///< Vector to assemble BCs to.(NOT initialized to zero by this method)
     const string& condstring, ///< Name of condition to be evaluated
     const int condid=-1  ///< condition ID
@@ -1526,7 +1524,7 @@ public:
   */
   virtual void EvaluateCondition
   (
-    ParameterList& params, ///< List of parameters for use at element level
+    Teuchos::ParameterList& params, ///< List of parameters for use at element level
     const string& condstring,  ///< Name of condition to be evaluated
     const int condid=-1  ///< condidition ID
   );
@@ -1534,7 +1532,7 @@ public:
   /// Evaluate a specific condition using assemble strategy
    void EvaluateCondition
    (
-     ParameterList& params,
+     Teuchos::ParameterList& params,
      DRT::AssembleStrategy & strategy,
      const string& condstring,
      const int condid=-1
@@ -1571,7 +1569,7 @@ public:
     */
   void EvaluateCondition
   (
-    ParameterList& params,
+    Teuchos::ParameterList& params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
     RCP<Epetra_Vector> systemvector1,
@@ -1612,7 +1610,7 @@ public:
   */
   void EvaluateConditionUsingParentData
   (
-    ParameterList&              params,
+    Teuchos::ParameterList&     params,
     RCP<LINALG::SparseOperator> systemmatrix1,
     RCP<LINALG::SparseOperator> systemmatrix2,
     RCP<Epetra_Vector>          systemvector1,
@@ -1635,7 +1633,7 @@ public:
   \param solveparams (in): List of parameters
   \param recompute (in)  : force method to recompute the nullspace
   */
-  virtual void ComputeNullSpaceIfNecessary(ParameterList& solveparams,
+  virtual void ComputeNullSpaceIfNecessary(Teuchos::ParameterList& solveparams,
                                            bool recompute = false);
 
   /*!
@@ -1686,7 +1684,7 @@ public:
   */
   void EvaluateInitialField(const string& fieldstring,
                             RCP<Epetra_Vector> fieldvector,
-                            const vector<int> locids
+                            const std::vector<int> locids
   );
 
   /*!
@@ -1697,7 +1695,7 @@ public:
   */
   void DoInitialField(DRT::Condition& cond,
                       RCP<Epetra_Vector> fieldvector,
-                      const vector<int> locids
+                      const std::vector<int> locids
   );
 
   //@}
@@ -1928,21 +1926,21 @@ protected:
 
   RCP<Epetra_Map>                       elerowmap_;         // unique distribution of element ownerships
   RCP<Epetra_Map>                       elecolmap_;         // distribution of elements including ghost elements
-  vector<DRT::Element*>                 elerowptr_;         // vector of pointers to row elements for faster access
-  vector<DRT::Element*>                 elecolptr_;         // vector of pointers to column elements for faster access
-  map<int,RCP<DRT::Element> >           element_;           // map of elements
+  std::vector<DRT::Element*>            elerowptr_;         // vector of pointers to row elements for faster access
+  std::vector<DRT::Element*>            elecolptr_;         // vector of pointers to column elements for faster access
+  std::map<int,RCP<DRT::Element> >      element_;           // map of elements
 
   RCP<Epetra_Map>                       noderowmap_;        // unique distribution of nodal ownerships
   RCP<Epetra_Map>                       nodecolmap_;        // distribution of nodes including ghost nodes
-  vector<DRT::Node*>                    noderowptr_;        // vector of pointers to row nodes for faster access
-  vector<DRT::Node*>                    nodecolptr_;        // vector of pointers to column nodes for faster access
-  map<int,RCP<DRT::Node> >              node_;              // map from nodal Gid to node pointers
+  std::vector<DRT::Node*>               noderowptr_;        // vector of pointers to row nodes for faster access
+  std::vector<DRT::Node*>               nodecolptr_;        // vector of pointers to column nodes for faster access
+  std::map<int,RCP<DRT::Node> >         node_;              // map from nodal Gid to node pointers
 
-  vector<map<string,RCP<const Epetra_Vector> > > state_;    // map of references to solution states
+  std::vector<std::map<string,RCP<const Epetra_Vector> > > state_;    // map of references to solution states
 
   std::multimap<string,RCP<Condition> > condition_;         // some conditions e.g. BCs
 
-  vector<RCP<DofSet> >                  dofsets_;           // set of DofSets
+  std::vector<RCP<DofSet> >             dofsets_;           // set of DofSets
 }; // class Discretization
 } // namespace DRT
 

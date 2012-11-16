@@ -250,7 +250,7 @@ discret_(discret)
     if (fric == INPAR::CONTACT::friction_tresca || fric == INPAR::CONTACT::friction_coulomb)
     {
       // read interface COFs
-      vector<double> frcoeff((int)currentgroup.size());
+      std::vector<double> frcoeff((int)currentgroup.size());
       for (int j=0;j<(int)currentgroup.size();++j)
         frcoeff[j] = currentgroup[j]->GetDouble("FrCoeffOrBound");
 

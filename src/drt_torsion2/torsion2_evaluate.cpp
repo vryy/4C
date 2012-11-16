@@ -80,12 +80,12 @@ int DRT::ELEMENTS::Torsion2::Evaluate(Teuchos::ParameterList& params,
       //
       // get element displacements
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-      if (disp==null) dserror("Cannot get state vectors 'displacement'");
+      if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       std::vector<double> mydisp(lm.size());
       DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
       // get residual displacements
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      if (res==null) dserror("Cannot get state vectors 'residual displacement'");
+      if (res==Teuchos::null) dserror("Cannot get state vectors 'residual displacement'");
       std::vector<double> myres(lm.size());
       DRT::UTILS::ExtractMyValues(*res,myres,lm);
       
@@ -146,7 +146,7 @@ int DRT::ELEMENTS::Torsion2::Evaluate(Teuchos::ParameterList& params,
 
             //create new displacement and velocity vectors in order to store artificially modified displacements
             //vector<double> vel_aux(myvel);
-            vector<double> disp_aux(mydisp);
+            std::vector<double> disp_aux(mydisp);
 
             //modifying displacement artificially (for numerical derivative of internal forces):
             disp_aux[numdof*k + i] += h_rel;

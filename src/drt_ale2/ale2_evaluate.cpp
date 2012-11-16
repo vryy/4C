@@ -26,9 +26,9 @@ using namespace DRT::UTILS;
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Ale2::Evaluate(ParameterList&            params,
+int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList&   params,
                                   DRT::Discretization&      discretization,
-                                  vector<int>&              lm,
+                                  std::vector<int>&         lm,
                                   Epetra_SerialDenseMatrix& elemat1,
                                   Epetra_SerialDenseMatrix& elemat2,
                                   Epetra_SerialDenseVector& elevec1,
@@ -80,7 +80,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList&            params,
   case calc_ale_spring:
   {
     Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp"); // get the displacements
-    vector<double> my_dispnp(lm.size());
+    std::vector<double> my_dispnp(lm.size());
     DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
     static_ke_spring(&elemat1,my_dispnp);
@@ -91,7 +91,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList&            params,
   {
     // same as calc_ale_spring, however, no displ. and hence initial/reference configuration
     // is used for stiffness matrix computation
-    vector<double> my_dispnp(lm.size(),0.0);
+    std::vector<double> my_dispnp(lm.size(),0.0);
     static_ke_spring(&elemat1,my_dispnp);
 
     break;
@@ -111,10 +111,10 @@ int DRT::ELEMENTS::Ale2::Evaluate(ParameterList&            params,
  |  integration of the volume neumann loads takes place in the element. |
  |  We need it there for the stabilisation terms!                       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::Ale2::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::Ale2::EvaluateNeumann(Teuchos::ParameterList& params,
                                            DRT::Discretization&      discretization,
                                            DRT::Condition&           condition,
-                                           vector<int>&              lm,
+                                           std::vector<int>&         lm,
                                            Epetra_SerialDenseVector& elevec1,
                                            Epetra_SerialDenseMatrix* elemat1)
 {

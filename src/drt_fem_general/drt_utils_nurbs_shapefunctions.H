@@ -725,7 +725,7 @@ template <class VF,class UV,class WG>
 void nurbs_get_2D_funct(
     VF                                     & nurbs_shape_funct,
     const UV                               & uv               ,
-    const vector<Epetra_SerialDenseVector> & knots            ,
+    const std::vector<Epetra_SerialDenseVector> & knots            ,
     const WG                               & weights          ,
     const DRT::Element::DiscretizationType & distype          )
 {
@@ -1057,7 +1057,7 @@ void nurbs_get_2D_funct_deriv(
     VF                                     & nurbs_shape_funct,
     MD                                     & nurbs_shape_deriv,
     const UV                               & uv               ,
-    const vector<Epetra_SerialDenseVector> & knots            ,
+    const std::vector<Epetra_SerialDenseVector> & knots            ,
     const WG                               & weights          ,
     const DRT::Element::DiscretizationType & distype          )
 {
@@ -1480,7 +1480,7 @@ void nurbs_get_2D_funct_deriv_deriv2(
     MD                                     & nurbs_shape_deriv ,
     MSD                                    & nurbs_shape_deriv2,
     const UV                               & uv                ,
-    const vector<Epetra_SerialDenseVector> & knots             ,
+    const std::vector<Epetra_SerialDenseVector> & knots             ,
     const WG                               & weights           ,
     const DRT::Element::DiscretizationType & distype           )
 {
@@ -2073,7 +2073,7 @@ template <class V,class UV,class WG>
 void nurbs_get_3D_funct(
     V                                      & nurbs_shape_funct,
     const UV                               & uv               ,
-    const vector<Epetra_SerialDenseVector> & knots            ,
+    const std::vector<Epetra_SerialDenseVector> & knots            ,
     const WG                               & weights          ,
     const DRT::Element::DiscretizationType & distype          )
 {
@@ -2492,7 +2492,7 @@ void nurbs_get_3D_funct_deriv(
     VF                                     & nurbs_shape_funct,
     MD                                     & nurbs_shape_deriv,
     const UV                               & uv               ,
-    const vector<Epetra_SerialDenseVector> & knots            ,
+    const std::vector<Epetra_SerialDenseVector> & knots            ,
     const WG                               & weights          ,
     const DRT::Element::DiscretizationType & distype          )
 {
@@ -3113,7 +3113,7 @@ void nurbs_get_3D_funct_deriv_deriv2(
     MD                                     & nurbs_shape_deriv ,
     MSD                                    & nurbs_shape_deriv2,
     const UV                               & uv                ,
-    const vector<Epetra_SerialDenseVector> & knots             ,
+    const std::vector<Epetra_SerialDenseVector> & knots             ,
     const WG                               & weights           ,
     const DRT::Element::DiscretizationType & distype           )
 {
@@ -3758,7 +3758,7 @@ void nurbs_get_funct_deriv_deriv2(
        MD                                     & nurbs_shape_deriv ,
        MSD                                    & nurbs_shape_deriv2,
        const UV                               & uv                ,
-       const vector<Epetra_SerialDenseVector> & knots             ,
+       const std::vector<Epetra_SerialDenseVector> & knots             ,
        const WG                               & weights           ,
        const DRT::Element::DiscretizationType & distype           )
 {
@@ -3805,7 +3805,7 @@ void nurbs_get_funct_deriv(
        VF                                     & nurbs_shape_funct ,
        MD                                     & nurbs_shape_deriv ,
        const UV                               & uv                ,
-       const vector<Epetra_SerialDenseVector> & knots             ,
+       const std::vector<Epetra_SerialDenseVector> & knots             ,
        const WG                               & weights           ,
        const DRT::Element::DiscretizationType & distype           )
 {
@@ -3856,7 +3856,7 @@ template <class VF,class UV,class WG>
 void nurbs_get_funct(
        VF                                     & nurbs_shape_funct ,
        const UV                               & uv                ,
-       const vector<Epetra_SerialDenseVector> & knots             ,
+       const std::vector<Epetra_SerialDenseVector> & knots             ,
        const WG                               & weights           ,
        const DRT::Element::DiscretizationType & distype           )
 {

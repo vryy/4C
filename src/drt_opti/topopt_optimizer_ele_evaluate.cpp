@@ -44,9 +44,9 @@ DRT::ELEMENTS::TopOpt::ActionType DRT::ELEMENTS::TopOpt::convertStringToActionTy
  |  evaluate the element (public)                              gjb 01/09|
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::TopOpt::Evaluate(
-    ParameterList&            params,
+    Teuchos::ParameterList&   params,
     DRT::Discretization&      optidis,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2,
     Epetra_SerialDenseVector& elevec1,
@@ -106,10 +106,10 @@ int DRT::ELEMENTS::TopOpt::Evaluate(
  |  integration of the volume Neumann (body forces) loads takes place   |
  |  in the element. We need it there for the stabilization terms!       |
  *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::TopOpt::EvaluateNeumann(ParameterList& params,
+int DRT::ELEMENTS::TopOpt::EvaluateNeumann(Teuchos::ParameterList& params,
     DRT::Discretization&      discretization,
     DRT::Condition&           condition,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {
@@ -147,9 +147,9 @@ DRT::ELEMENTS::TopOptBoundary::ActionType DRT::ELEMENTS::TopOptBoundary::convert
  |  evaluate the element (public)                             gjb 01/09 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::TopOptBoundary::Evaluate(
-    ParameterList&            params,
+    Teuchos::ParameterList&   params,
     DRT::Discretization&      discretization,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseMatrix& elemat1,
     Epetra_SerialDenseMatrix& elemat2,
     Epetra_SerialDenseVector& elevec1,
@@ -164,10 +164,10 @@ int DRT::ELEMENTS::TopOptBoundary::Evaluate(
  |  Integrate a Surface/Line Neumann boundary condition       gjb 01/09 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::TopOptBoundary::EvaluateNeumann(
-    ParameterList&            params,
+    Teuchos::ParameterList&   params,
     DRT::Discretization&      optidis,
     DRT::Condition&           condition,
-    vector<int>&              lm,
+    std::vector<int>&         lm,
     Epetra_SerialDenseVector& elevec1,
     Epetra_SerialDenseMatrix* elemat1)
 {

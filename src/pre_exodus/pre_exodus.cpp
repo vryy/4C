@@ -122,7 +122,7 @@ int main(
   My_CLP.setOption("clinedx",&clinedx,"move centerline coords to align with mesh: delta x");
   My_CLP.setOption("clinedy",&clinedy,"move centerline coords to align with mesh: delta y");
   My_CLP.setOption("clinedz",&clinedz,"move centerline coords to align with mesh: delta z");
-  map<int,map<int,vector<vector<double> > > >elecenterlineinfo;
+  map<int,map<int,std::vector<std::vector<double> > > >elecenterlineinfo;
 
   // check for quad->tri conversion
   My_CLP.setOption("quadtri","noquadtri",&quadtri,"transform quads to tris by cutting in two halves");

@@ -34,7 +34,7 @@ actdisc_(discr)
     for (unsigned int i=0; i<moncond_.size();i++)
     {
       //moncond_[i]->Print(cout);
-      int condID=(*(moncond_[i]->Get<vector<int> >("ConditionID")))[0];
+      int condID=(*(moncond_[i]->Get<std::vector<int> >("ConditionID")))[0];
       if (condID>maxID)
       {
         maxID=condID;
@@ -72,7 +72,7 @@ UTILS::Monitor::MoniType UTILS::Monitor::GetMoniType(const string& name)
 |Evaluate Monitors, choose the right action based on type             |
 *-----------------------------------------------------------------------*/
 void UTILS::Monitor::Evaluate(
-    ParameterList&        params,
+    Teuchos::ParameterList&        params,
     RCP<Epetra_Vector>    systemvector)
 {
   switch (montype_)
@@ -103,7 +103,7 @@ void UTILS::Monitor::Evaluate(
  *----------------------------------------------------------------------*/
 void UTILS::Monitor::EvaluateMonitor
 (
-  ParameterList&        params,
+  Teuchos::ParameterList&        params,
   RCP<Epetra_Vector>    systemvector
 )
 {
@@ -118,7 +118,7 @@ void UTILS::Monitor::EvaluateMonitor
     DRT::Condition& cond = *(moncond_[i]);
 
     // Get ConditionID of current condition if defined and write value in parameterlist
-    const vector<int>*    CondIDVec  = cond.Get<vector<int> >("ConditionID");
+    const std::vector<int>*    CondIDVec  = cond.Get<std::vector<int> >("ConditionID");
     const int condID=(*CondIDVec)[0];
     const int offsetID=params.get("OffsetID",0);
     params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
@@ -138,9 +138,9 @@ void UTILS::Monitor::EvaluateMonitor
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
       // get element location vector and ownerships
-      vector<int> lm;
-      vector<int> lmowner;
-      vector<int> lmstride;
+      std::vector<int> lm;
+      std::vector<int> lmowner;
+      std::vector<int> lmstride;
       curr->second->LocationVector(*actdisc_,lm,lmowner,lmstride);
 
       // get dimension of element matrices and vectors

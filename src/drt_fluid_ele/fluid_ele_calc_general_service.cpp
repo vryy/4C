@@ -37,7 +37,7 @@ template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalc<distype>::IntegrateShapeFunction(
     DRT::ELEMENTS::Fluid*    ele,
     DRT::Discretization&      discretization,
-    vector<int>&              lm            ,
+    std::vector<int>&         lm            ,
     Epetra_SerialDenseVector& elevec1       )
 {
   // --------------------------------------------------
@@ -105,7 +105,7 @@ template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDivOp(
     DRT::ELEMENTS::Fluid*     ele,
     DRT::Discretization&      discretization,
-    vector<int>&              lm            ,
+    std::vector<int>&         lm            ,
     Epetra_SerialDenseVector& elevec1       )
 {
   // get node coordinates
@@ -144,10 +144,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDivOp(
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
     DRT::ELEMENTS::Fluid*           ele,
-    ParameterList&                  params,
+    Teuchos::ParameterList&         params,
     Teuchos::RCP<MAT::Material>&    mat,
     DRT::Discretization&            discretization,
-    vector<int>&                    lm,
+    std::vector<int>&               lm,
     Epetra_SerialDenseVector&       elevec1
     )
 {
@@ -165,10 +165,10 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
     DRT::ELEMENTS::Fluid*           ele,
-    ParameterList&                  params,
+    Teuchos::ParameterList&         params,
     Teuchos::RCP<MAT::Material>&    mat,
     DRT::Discretization&            discretization,
-    vector<int>&                    lm,
+    std::vector<int>&               lm,
     Epetra_SerialDenseVector&       elevec1,
     const DRT::UTILS::GaussIntegration & intpoints
     )
@@ -457,7 +457,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
  */
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::ExtractValuesFromGlobalVector( const DRT::Discretization&   discretization, ///< discretization
-                                    const vector<int>&           lm,             ///<
+                                    const std::vector<int>&      lm,             ///<
                                     FLD::RotationallySymmetricPeriodicBC<distype> & rotsymmpbc, ///<
                                     LINALG::Matrix<nsd_,nen_> *  matrixtofill,   ///< vector field
                                     LINALG::Matrix<nen_,1> *     vectortofill,   ///< scalar field
@@ -465,7 +465,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ExtractValuesFromGlobalVector( const 
 {
   // get state of the global vector
   Teuchos::RCP<const Epetra_Vector> matrix_state = discretization.GetState(state);
-  if(matrix_state == null)
+  if(matrix_state == Teuchos::null)
     dserror("Cannot get state vector %s", state.c_str());
 
   // extract local values of the global vectors
@@ -500,9 +500,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ExtractValuesFromGlobalVector( const 
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   Fluid*                     ele,
-  ParameterList&             params,
+  Teuchos::ParameterList&    params,
   DRT::Discretization&       discretization,
-  vector<int>&               lm,
+  std::vector<int>&          lm,
   RCP<MAT::Material> mat)
 {
   //----------------------------------------------------------------------
@@ -634,7 +634,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   // ---------------------------------------------------------------------
   // set parameters for classical turbulence models
   // ---------------------------------------------------------------------
-  ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
+  Teuchos::ParameterList& turbmodelparams = params.sublist("TURBULENCE MODEL");
 
   double Ci_delta_sq = 0.0;
   double Cs_delta_sq = 0.0;
@@ -667,7 +667,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 
   // the coordinates of the element layers in the channel
   // planecoords are named nodeplanes in turbulence_statistics_channel!
-  RCP<vector<double> > planecoords  = params.get<RCP<vector<double> > >("planecoords_",Teuchos::null);
+  RCP<std::vector<double> > planecoords  = params.get<RCP<std::vector<double> > >("planecoords_",Teuchos::null);
   if(planecoords==Teuchos::null)
     dserror("planecoords is null, but need channel_flow_of_height_2\n");
 
@@ -1524,45 +1524,45 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   eps_cstab /= vol;
   eps_pspg /= vol;
 
-  RCP<vector<double> > incrvol           = params.get<RCP<vector<double> > >("incrvol"          );
+  RCP<std::vector<double> > incrvol           = params.get<RCP<std::vector<double> > >("incrvol"          );
 
-  RCP<vector<double> > incr_eps_visc      = params.get<RCP<vector<double> > >("incr_eps_visc"    );
-  RCP<vector<double> > incr_eps_conv      = params.get<RCP<vector<double> > >("incr_eps_conv"    );
-  RCP<vector<double> > incr_eps_smag      = params.get<RCP<vector<double> > >("incr_eps_eddyvisc");
-  RCP<vector<double> > incr_eps_avm3      = params.get<RCP<vector<double> > >("incr_eps_avm3"    );
-  RCP<vector<double> > incr_eps_mfs       = params.get<RCP<vector<double> > >("incr_eps_mfs"     );
-  RCP<vector<double> > incr_eps_mfscross  = params.get<RCP<vector<double> > >("incr_eps_mfscross");
-  RCP<vector<double> > incr_eps_mfsrey    = params.get<RCP<vector<double> > >("incr_eps_mfsrey"  );
-  RCP<vector<double> > incr_eps_supg      = params.get<RCP<vector<double> > >("incr_eps_supg"    );
-  RCP<vector<double> > incr_eps_cross     = params.get<RCP<vector<double> > >("incr_eps_cross"   );
-  RCP<vector<double> > incr_eps_rey       = params.get<RCP<vector<double> > >("incr_eps_rey"     );
-  RCP<vector<double> > incr_eps_cstab     = params.get<RCP<vector<double> > >("incr_eps_cstab"   );
-  RCP<vector<double> > incr_eps_pspg      = params.get<RCP<vector<double> > >("incr_eps_pspg"    );
+  RCP<std::vector<double> > incr_eps_visc      = params.get<RCP<std::vector<double> > >("incr_eps_visc"    );
+  RCP<std::vector<double> > incr_eps_conv      = params.get<RCP<std::vector<double> > >("incr_eps_conv"    );
+  RCP<std::vector<double> > incr_eps_smag      = params.get<RCP<std::vector<double> > >("incr_eps_eddyvisc");
+  RCP<std::vector<double> > incr_eps_avm3      = params.get<RCP<std::vector<double> > >("incr_eps_avm3"    );
+  RCP<std::vector<double> > incr_eps_mfs       = params.get<RCP<std::vector<double> > >("incr_eps_mfs"     );
+  RCP<std::vector<double> > incr_eps_mfscross  = params.get<RCP<std::vector<double> > >("incr_eps_mfscross");
+  RCP<std::vector<double> > incr_eps_mfsrey    = params.get<RCP<std::vector<double> > >("incr_eps_mfsrey"  );
+  RCP<std::vector<double> > incr_eps_supg      = params.get<RCP<std::vector<double> > >("incr_eps_supg"    );
+  RCP<std::vector<double> > incr_eps_cross     = params.get<RCP<std::vector<double> > >("incr_eps_cross"   );
+  RCP<std::vector<double> > incr_eps_rey       = params.get<RCP<std::vector<double> > >("incr_eps_rey"     );
+  RCP<std::vector<double> > incr_eps_cstab     = params.get<RCP<std::vector<double> > >("incr_eps_cstab"   );
+  RCP<std::vector<double> > incr_eps_pspg      = params.get<RCP<std::vector<double> > >("incr_eps_pspg"    );
 
-  RCP<vector<double> > incrhk            = params.get<RCP<vector<double> > >("incrhk"           );
-  RCP<vector<double> > incrhbazilevs     = params.get<RCP<vector<double> > >("incrhbazilevs"    );
-  RCP<vector<double> > incrstrle         = params.get<RCP<vector<double> > >("incrstrle"        );
-  RCP<vector<double> > incrgradle        = params.get<RCP<vector<double> > >("incrgradle"       );
+  RCP<std::vector<double> > incrhk            = params.get<RCP<std::vector<double> > >("incrhk"           );
+  RCP<std::vector<double> > incrhbazilevs     = params.get<RCP<std::vector<double> > >("incrhbazilevs"    );
+  RCP<std::vector<double> > incrstrle         = params.get<RCP<std::vector<double> > >("incrstrle"        );
+  RCP<std::vector<double> > incrgradle        = params.get<RCP<std::vector<double> > >("incrgradle"       );
 
-  RCP<vector<double> > incrres           = params.get<RCP<vector<double> > >("incrres"          );
-  RCP<vector<double> > incrres_sq        = params.get<RCP<vector<double> > >("incrres_sq"       );
-  RCP<vector<double> > incrabsres        = params.get<RCP<vector<double> > >("incrabsres"       );
-  RCP<vector<double> > incrtauinvsvel    = params.get<RCP<vector<double> > >("incrtauinvsvel"   );
+  RCP<std::vector<double> > incrres           = params.get<RCP<std::vector<double> > >("incrres"          );
+  RCP<std::vector<double> > incrres_sq        = params.get<RCP<std::vector<double> > >("incrres_sq"       );
+  RCP<std::vector<double> > incrabsres        = params.get<RCP<std::vector<double> > >("incrabsres"       );
+  RCP<std::vector<double> > incrtauinvsvel    = params.get<RCP<std::vector<double> > >("incrtauinvsvel"   );
 
-  RCP<vector<double> > incrsvelaf        = params.get<RCP<vector<double> > >("incrsvelaf"       );
-  RCP<vector<double> > incrsvelaf_sq     = params.get<RCP<vector<double> > >("incrsvelaf_sq"    );
-  RCP<vector<double> > incrabssvelaf     = params.get<RCP<vector<double> > >("incrabssvelaf"    );
+  RCP<std::vector<double> > incrsvelaf        = params.get<RCP<std::vector<double> > >("incrsvelaf"       );
+  RCP<std::vector<double> > incrsvelaf_sq     = params.get<RCP<std::vector<double> > >("incrsvelaf_sq"    );
+  RCP<std::vector<double> > incrabssvelaf     = params.get<RCP<std::vector<double> > >("incrabssvelaf"    );
 
-  RCP<vector<double> > incrresC          = params.get<RCP<vector<double> > >("incrresC"         );
-  RCP<vector<double> > incrresC_sq       = params.get<RCP<vector<double> > >("incrresC_sq"      );
-  RCP<vector<double> > spressnp          = params.get<RCP<vector<double> > >("incrspressnp"     );
-  RCP<vector<double> > spressnp_sq       = params.get<RCP<vector<double> > >("incrspressnp_sq"  );
+  RCP<std::vector<double> > incrresC          = params.get<RCP<std::vector<double> > >("incrresC"         );
+  RCP<std::vector<double> > incrresC_sq       = params.get<RCP<std::vector<double> > >("incrresC_sq"      );
+  RCP<std::vector<double> > spressnp          = params.get<RCP<std::vector<double> > >("incrspressnp"     );
+  RCP<std::vector<double> > spressnp_sq       = params.get<RCP<std::vector<double> > >("incrspressnp_sq"  );
 
-  RCP<vector<double> > incrtauC          = params.get<RCP<vector<double> > >("incrtauC"         );
-  RCP<vector<double> > incrtauM          = params.get<RCP<vector<double> > >("incrtauM"         );
+  RCP<std::vector<double> > incrtauC          = params.get<RCP<std::vector<double> > >("incrtauC"         );
+  RCP<std::vector<double> > incrtauM          = params.get<RCP<std::vector<double> > >("incrtauM"         );
 
-  RCP<vector<double> > incrcrossstress   = params.get<RCP<vector<double> > >("incrcrossstress"  );
-  RCP<vector<double> > incrreystress     = params.get<RCP<vector<double> > >("incrreystress"    );
+  RCP<std::vector<double> > incrcrossstress   = params.get<RCP<std::vector<double> > >("incrcrossstress"  );
+  RCP<std::vector<double> > incrreystress     = params.get<RCP<std::vector<double> > >("incrreystress"    );
 
   bool found = false;
 

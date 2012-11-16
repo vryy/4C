@@ -124,7 +124,7 @@ void DRT::ELEMENTS::StructuralSurface::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                             gee 04/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::StructuralSurface::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::StructuralSurface::Unpack(const std::vector<char>& data)
 {
   dserror("this StructuralSurface element does not support communication");
   return;
@@ -141,7 +141,7 @@ void DRT::ELEMENTS::StructuralSurface::Print(ostream& os) const
   return;
 }
 
-vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::StructuralSurface::Lines()
+std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::StructuralSurface::Lines()
 {
    return DRT::UTILS::ElementBoundaryFactory
      <DRT::ELEMENTS::StructuralLine,DRT::ELEMENTS::StructuralSurface>(DRT::UTILS::buildLines,this);

@@ -1170,7 +1170,7 @@ void POROELAST::Monolithic::PoroFDCheck()
   Teuchos::RCP<Epetra_CrsMatrix> stiff_approx = Teuchos::null;
   stiff_approx = LINALG::CreateMatrix(*DofRowMap(), 81);
 
-  //Teuchos::RCP<Epetra_Vector> rhs_old= null;
+  //Teuchos::RCP<Epetra_Vector> rhs_old= Teuchos::null;
   Teuchos::RCP<Epetra_Vector> rhs_old = Teuchos::rcp(new Epetra_Vector(*DofRowMap(),
       true));
   rhs_old->Update(1.0, *rhs_, 0.0);

@@ -146,9 +146,9 @@ void DRT::NURBS::apply_nurbs_initial_condition_solve(
     Epetra_SerialDenseMatrix elemass;
     Epetra_SerialDenseVector elerhs;
 
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
 
     // loop over column elements
     const int numcolele = nurbsdis->NumMyColElements();

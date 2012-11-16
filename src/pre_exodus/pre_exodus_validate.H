@@ -46,11 +46,11 @@ void ValidateElementJacobian(EXODUS::Mesh& mymesh,const DRT::Element::Discretiza
 int ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::DiscretizationType distype, Teuchos::RCP<ElementBlock> eb);
 
 //! Check one element for positive Jacobi determinant
-bool PositiveEle(const int& eleid, const vector<int>& nodes,const EXODUS::Mesh& mymesh,const Epetra_SerialDenseMatrix& deriv);
-int EleSaneSign(const vector<int>& nodes,const std::map<int,vector<double> >& nodecoords);
+bool PositiveEle(const int& eleid, const std::vector<int>& nodes,const EXODUS::Mesh& mymesh,const Epetra_SerialDenseMatrix& deriv);
+int EleSaneSign(const std::vector<int>& nodes,const std::map<int,std::vector<double> >& nodecoords);
 
 //! Rewind one Element
-vector<int> RewindEle(vector<int> old_nodeids, const DRT::Element::DiscretizationType distype);
+std::vector<int> RewindEle(std::vector<int> old_nodeids, const DRT::Element::DiscretizationType distype);
 
 }
 

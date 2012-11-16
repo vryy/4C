@@ -143,15 +143,15 @@ void DRT::ELEMENTS::So_sh8::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            maf 04/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_sh8::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::So_sh8::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // extract base class So_hex8 Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   DRT::ELEMENTS::So_hex8::Unpack(basedata);
   // thickdir

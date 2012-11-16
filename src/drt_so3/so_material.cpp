@@ -74,7 +74,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
                     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* plglstrain,
                     LINALG::Matrix<3,3>* defgrd,
                     const int gp,
-                    ParameterList&  params)
+                    Teuchos::ParameterList&  params)
 {
 #ifdef DEBUG
   // I'm not sure whether all of these are always supplied, we'll see....
@@ -570,7 +570,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
                     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
                     LINALG::Matrix<3,3>* defgrd,
                     const int gp,
-                    ParameterList&  params)         // algorithmic parameters e.g. time
+                    Teuchos::ParameterList&  params)         // algorithmic parameters e.g. time
 {
 #ifdef DEBUG
   // I'm not sure whether all of these are always supplied, we'll see....
@@ -725,7 +725,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_mat_sel(
   LINALG::Matrix<MAT::NUM_STRESS_3D,1>*                  glstrain,
   LINALG::Matrix<3,3>*                                   defgrd  ,
   const int                                              gp      ,
-  ParameterList&                                         params
+  Teuchos::ParameterList&                                         params
   )
 {
 
@@ -765,7 +765,7 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
                     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
                     LINALG::Matrix<3,3>* defgrd,
                     const int gp,
-                    ParameterList&  params)
+                    Teuchos::ParameterList&  params)
 {
 
   RCP<MAT::Material> mat = Material();
@@ -956,7 +956,7 @@ void DRT::ELEMENTS::So_hex20::soh20_mat_sel(
                     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
                     LINALG::Matrix<3,3>* defgrd,
                     const int gp,
-                    ParameterList&  params)
+                    Teuchos::ParameterList&  params)
 {
 
   RCP<MAT::Material> mat = Material();
@@ -1145,7 +1145,7 @@ void DRT::ELEMENTS::SoDisp::sodisp_mat_sel(
         LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
         double* density,
         LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
-        ParameterList&            params)         // algorithmic parameters e.g. time
+        Teuchos::ParameterList&   params)         // algorithmic parameters e.g. time
 {
 #ifdef DEBUG
   // I'm not sure whether all of these are always supplied, we'll see....
@@ -1237,7 +1237,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
                     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
                     LINALG::Matrix<3,3>* defgrd,
                     const int gp,
-                    ParameterList& params
+                    Teuchos::ParameterList& params
                     )
 {
 #ifdef DEBUG

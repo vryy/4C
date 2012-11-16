@@ -187,7 +187,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
         midtosid_
     );
     // sanity check
-    for (std::map<int,vector<int> >::iterator pair=midtosid_.begin();
+    for (std::map<int,std::vector<int> >::iterator pair=midtosid_.begin();
          pair!=midtosid_.end();
          ++pair)
     {
@@ -219,7 +219,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
   const Epetra_Map* dofrowmap = dis_->DofRowMap();
 
   vector<int>             mymasters;
-  vector<vector<double> > mymasters_vel(3);
+  vector<std::vector<double> > mymasters_vel(3);
 
   if(active_)
   {
@@ -246,7 +246,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
       }
 
     // collect masters on this proc and associated velocities
-    for (std::map<int,vector<int> >::iterator pair=midtosid_.begin();
+    for (std::map<int,std::vector<int> >::iterator pair=midtosid_.begin();
          pair!=midtosid_.end();
          ++pair)
     {
@@ -359,7 +359,7 @@ void FLD::TransferTurbulentInflowCondition::GetData(
   const DRT::Condition* cond     )
 {
 
-  const vector<int>* myid = cond->Get<vector<int> >("id");
+  const std::vector<int>* myid = cond->Get<std::vector<int> >("id");
   id=(*myid)[0];
 
   const string* mydirection = cond->Get<string>("transfer direction");
@@ -397,7 +397,7 @@ void FLD::TransferTurbulentInflowCondition::GetData(
   // find out whether we will use a time curve
   if (curve_ == -1)
   {
-    const vector<int>* curve = cond->Get<vector<int> >("curve");
+    const std::vector<int>* curve = cond->Get<std::vector<int> >("curve");
 
     // set curve number
     if (curve) curve_ = (*curve)[0];
@@ -510,7 +510,7 @@ void FLD::TransferTurbulentInflowCondition::SendBlock(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(
   vector<int>             & mymasters    ,
-  vector<vector<double> > & mymasters_vel,
+  vector<std::vector<double> > & mymasters_vel,
   vector<char>            & rblock
   )
 {
@@ -529,7 +529,7 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(
   }
 
   // position to extract
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
 
   // extract size
   int size=0;
@@ -543,7 +543,7 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(
     DRT::ParObject::ExtractfromPack(position,rblock,id);
     mymasters.push_back(id);
 
-    map<int,vector<int> >::iterator iter=midtosid_.find(id);
+    map<int,std::vector<int> >::iterator iter=midtosid_.find(id);
 
     if(iter!=midtosid_.end())
     {
@@ -567,7 +567,7 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(
       int sid;
       DRT::ParObject::ExtractfromPack(position,rblock,sid);
 
-      map<int,vector<int> >::iterator iter=midtosid_.find(mymasters[rr]);
+      map<int,std::vector<int> >::iterator iter=midtosid_.find(mymasters[rr]);
 
       if(iter!=midtosid_.end())
       {
@@ -616,7 +616,7 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(
     vector<int>             & mymasters    ,
-    vector<vector<double> > & mymasters_vel,
+    vector<std::vector<double> > & mymasters_vel,
     DRT::PackBuffer         & sblock
     )
 {
@@ -647,7 +647,7 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(
   // add slave ids
   for(int rr=0;rr<size;++rr)
   {
-    map<int,vector<int> >::iterator iter=midtosid_.find(mymasters[rr]);
+    map<int,std::vector<int> >::iterator iter=midtosid_.find(mymasters[rr]);
 
     if(iter==midtosid_.end())
     {
@@ -693,14 +693,14 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::SetValuesAvailableOnThisProc(
     vector<int>                 & mymasters,
-    vector<vector<double> >     & mymasters_vel,
+    vector<std::vector<double> >     & mymasters_vel,
     Teuchos::RCP<Epetra_Vector>   velnp)
 {
   const Teuchos::RCP<const Epetra_Map> activedbcdofs=dbcmaps_->CondMap();
 
   for(unsigned nn=0;nn<mymasters.size();++nn)
   {
-    map<int,vector<int> >::iterator iter=midtosid_.find(mymasters[nn]);
+    map<int,std::vector<int> >::iterator iter=midtosid_.find(mymasters[nn]);
 
     if(iter!=midtosid_.end())
     {

@@ -30,7 +30,7 @@ XFEM::DofManager::DofManager(
     const std::set<XFEM::PHYSICS::Field>&                fieldset,
     const XFEM::ElementAnsatz&                           element_ansatz,
     const Teuchos::ParameterList&                        params,
-    const Teuchos::RCP<map<int,vector<int> > >           pbcmap
+    const Teuchos::RCP<std::map<int,std::vector<int> > >           pbcmap
     ) :
   ih_(interfacehandle),
   pbcmap_(pbcmap)
@@ -149,7 +149,7 @@ void XFEM::DofManager::GatherUniqueEnrichments() const
   std::set<XFEM::Enrichment> unique_enrichments;
 
   // collect enrichments from nodal dofs
-  for (map<int, const std::set<XFEM::FieldEnr> >::const_iterator fieldenriter=nodalDofSet_.begin();
+  for (std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator fieldenriter=nodalDofSet_.begin();
   fieldenriter!=nodalDofSet_.end(); ++fieldenriter)
   {
     const std::set<XFEM::FieldEnr> enrfieldset = fieldenriter->second;
@@ -161,7 +161,7 @@ void XFEM::DofManager::GatherUniqueEnrichments() const
   }
 
   // collect enrichments from elemental dofs
-  for (map<int, const std::set<XFEM::FieldEnr> >::const_iterator fieldenriter=elementalDofs_.begin();
+  for (std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator fieldenriter=elementalDofs_.begin();
   fieldenriter!=elementalDofs_.end(); ++fieldenriter)
   {
     const std::set<XFEM::FieldEnr> enrfieldset = fieldenriter->second;
@@ -308,7 +308,7 @@ void XFEM::DofManager::fillNodalDofColDistributionMap(
 Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoStandardVector(
     const Epetra_Vector&                   xfemvector,
     const DRT::DofSet&                     outdofset,
-    const map<DofKey, DofGID>&     nodalDofDistributionMap,
+    const std::map<DofKey, DofGID>&        nodalDofDistributionMap,
     const std::set<XFEM::PHYSICS::Field>&  outputfields
 ) const
 {
@@ -415,7 +415,7 @@ Teuchos::RCP<Epetra_Vector> XFEM::DofManager::transformXFEMtoStandardVector(
  *----------------------------------------------------------------------*/
 void XFEM::DofManager::overwritePhysicalField(
     Teuchos::RCP<Epetra_Vector>&           vector,
-    const map<DofKey, DofGID>&     nodalDofDistributionMap,
+    const std::map<DofKey, DofGID>&        nodalDofDistributionMap,
     const XFEM::PHYSICS::Field&            physfield,
     const XFEM::Enrichment::EnrType&       enrichment,
     const double                           value,

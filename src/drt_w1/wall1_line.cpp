@@ -89,7 +89,7 @@ void DRT::ELEMENTS::Wall1Line::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                            mgit 03/07 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Wall1Line::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Wall1Line::Unpack(const std::vector<char>& data)
 {
   dserror("this line element does not support communication");
   return;

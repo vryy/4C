@@ -157,10 +157,10 @@ void MAT::ConstraintMixture::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  Unpack                                        (public)         12/10|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixture::Unpack(const vector<char>& data)
+void MAT::ConstraintMixture::Unpack(const std::vector<char>& data)
 {
   isinit_=true;
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -191,13 +191,13 @@ void MAT::ConstraintMixture::Unpack(const vector<char>& data)
   }
 
   // unpack fiber internal variables
-  a1_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> >(numgp));
-  a2_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> >(numgp));
-  a3_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> >(numgp));
-  a4_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> >(numgp));
-  vismassstress_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> > (numgp));
-  refmassdens_ = Teuchos::rcp(new vector<double> (numgp));
-  visrefmassdens_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> > (numgp));
+  a1_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >(numgp));
+  a2_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >(numgp));
+  a3_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >(numgp));
+  a4_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> >(numgp));
+  vismassstress_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> > (numgp));
+  refmassdens_ = Teuchos::rcp(new std::vector<double> (numgp));
+  visrefmassdens_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> > (numgp));
 
   for (int gp = 0; gp < numgp; ++gp) {
     LINALG::Matrix<3,1> alin;
@@ -224,7 +224,7 @@ void MAT::ConstraintMixture::Unpack(const vector<char>& data)
   // unpack history
   int sizehistory;
   ExtractfromPack(position, data, sizehistory);
-  history_ = Teuchos::rcp(new vector<ConstraintMixtureHistory> (sizehistory));
+  history_ = Teuchos::rcp(new std::vector<ConstraintMixtureHistory> (sizehistory));
   vector<char> datahistory;
   for (int idpast = 0; idpast < sizehistory; idpast++)
   {
@@ -249,9 +249,9 @@ void MAT::ConstraintMixture::Setup (const int numgp, DRT::INPUT::LineDefinition*
     dserror("unknown driving force for growth");
 
   // visualization
-  vismassstress_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> > (numgp));
-  refmassdens_ = Teuchos::rcp(new vector<double> (numgp));
-  visrefmassdens_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> > (numgp));
+  vismassstress_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> > (numgp));
+  refmassdens_ = Teuchos::rcp(new std::vector<double> (numgp));
+  visrefmassdens_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> > (numgp));
   for (int gp = 0; gp < numgp; gp++)
   {
     vismassstress_->at(gp)(0) = 0.0;
@@ -270,14 +270,14 @@ void MAT::ConstraintMixture::Setup (const int numgp, DRT::INPUT::LineDefinition*
   SetupHistory(numgp);
 
   // fiber vectors
-  a1_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> > (numgp));
-  a2_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> > (numgp));
-  a3_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> > (numgp));
-  a4_ = Teuchos::rcp(new vector<LINALG::Matrix<3,1> > (numgp));
+  a1_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> > (numgp));
+  a2_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> > (numgp));
+  a3_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> > (numgp));
+  a4_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> > (numgp));
 
   // read local (cylindrical) cosy-directions at current element
   vector<double> rad;
-  vector<double> axi;
+  std::vector<double> axi;
   vector<double> cir;
   linedef->ExtractDoubleVector("RAD",rad);
   linedef->ExtractDoubleVector("AXI",axi);
@@ -358,7 +358,7 @@ void MAT::ConstraintMixture::SetupHistory (const int numgp)
 //  massprodbasal_ = (1.0 - params_->phimuscle_ - params_->phielastin_) * params_->density_ / 10.0 / intdegr;
 
   // history
-  history_ = Teuchos::rcp(new vector<ConstraintMixtureHistory> (numpast));
+  history_ = Teuchos::rcp(new std::vector<ConstraintMixtureHistory> (numpast));
   for (int idpast = 0; idpast < numpast; idpast++)
   {
     history_->at(idpast).Setup(numgp, massprodbasal_);
@@ -506,7 +506,7 @@ void MAT::ConstraintMixture::Evaluate
     {
       // might be the case in prestressing as Update is not called during prestress
       // thus time has to be adapted and nothing else, as there is no growth & remodeling during prestress
-      const ParameterList& pslist = DRT::Problem::Instance()->StructuralDynamicParams();
+      const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->StructuralDynamicParams();
       INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
       if (pstype == INPAR::STR::prestress_mulf)
       {
@@ -773,7 +773,7 @@ void MAT::ConstraintMixture::EvaluateFiberFamily
 
   //--------------------------------------------------------------------------------------
   // prestress time
-//  const ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+//  const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
 //  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
 //  double pstime = -1.0 * params_->lifetime_ - dt;
 //  if (pstype == INPAR::STR::prestress_mulf)
@@ -2077,9 +2077,9 @@ void MAT::ConstraintMixtureHistory::Pack(DRT::PackBuffer& data) const
 /*----------------------------------------------------------------------*
  |  History: Unpack                               (public)         03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixtureHistory::Unpack(const vector<char>& data)
+void MAT::ConstraintMixtureHistory::Unpack(const std::vector<char>& data)
 {
-  vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -2095,14 +2095,14 @@ void MAT::ConstraintMixtureHistory::Unpack(const vector<char>& data)
   ExtractfromPack(position, data, b);
   numgp_ = b;
 
-  collagenstretch1_ = Teuchos::rcp(new vector<double> (numgp_));
-  collagenstretch2_ = Teuchos::rcp(new vector<double> (numgp_));
-  collagenstretch3_ = Teuchos::rcp(new vector<double> (numgp_));
-  collagenstretch4_ = Teuchos::rcp(new vector<double> (numgp_));
-  massprod1_ = Teuchos::rcp(new vector<double> (numgp_));
-  massprod2_ = Teuchos::rcp(new vector<double> (numgp_));
-  massprod3_ = Teuchos::rcp(new vector<double> (numgp_));
-  massprod4_ = Teuchos::rcp(new vector<double> (numgp_));
+  collagenstretch1_ = Teuchos::rcp(new std::vector<double> (numgp_));
+  collagenstretch2_ = Teuchos::rcp(new std::vector<double> (numgp_));
+  collagenstretch3_ = Teuchos::rcp(new std::vector<double> (numgp_));
+  collagenstretch4_ = Teuchos::rcp(new std::vector<double> (numgp_));
+  massprod1_ = Teuchos::rcp(new std::vector<double> (numgp_));
+  massprod2_ = Teuchos::rcp(new std::vector<double> (numgp_));
+  massprod3_ = Teuchos::rcp(new std::vector<double> (numgp_));
+  massprod4_ = Teuchos::rcp(new std::vector<double> (numgp_));
   for (int gp = 0; gp < numgp_; ++gp) {
     ExtractfromPack(position, data, a);
     collagenstretch1_->at(gp) = a;
@@ -2138,14 +2138,14 @@ void MAT::ConstraintMixtureHistory::Setup(const int ngp,const double massprodbas
 
   numgp_=ngp;
   // history variables
-  collagenstretch1_ = Teuchos::rcp(new vector<double> (numgp_));
-  collagenstretch2_ = Teuchos::rcp(new vector<double> (numgp_));
-  collagenstretch3_ = Teuchos::rcp(new vector<double> (numgp_));
-  collagenstretch4_ = Teuchos::rcp(new vector<double> (numgp_));
-  massprod1_ = Teuchos::rcp(new vector<double> (numgp_));
-  massprod2_ = Teuchos::rcp(new vector<double> (numgp_));
-  massprod3_ = Teuchos::rcp(new vector<double> (numgp_));
-  massprod4_ = Teuchos::rcp(new vector<double> (numgp_));
+  collagenstretch1_ = Teuchos::rcp(new std::vector<double> (numgp_));
+  collagenstretch2_ = Teuchos::rcp(new std::vector<double> (numgp_));
+  collagenstretch3_ = Teuchos::rcp(new std::vector<double> (numgp_));
+  collagenstretch4_ = Teuchos::rcp(new std::vector<double> (numgp_));
+  massprod1_ = Teuchos::rcp(new std::vector<double> (numgp_));
+  massprod2_ = Teuchos::rcp(new std::vector<double> (numgp_));
+  massprod3_ = Teuchos::rcp(new std::vector<double> (numgp_));
+  massprod4_ = Teuchos::rcp(new std::vector<double> (numgp_));
   for (int gp = 0; gp < numgp_; gp++)
   {
     collagenstretch1_->at(gp) = 1.0;
@@ -2241,12 +2241,12 @@ void MAT::ConstraintMixtureOutputToGmsh
     const DRT::Element* actele = dis->lColElement(iele);
 
     // build current configuration
-    vector<int> lm;
-    vector<int> lmowner;
-    vector<int> lmstride;
+    std::vector<int> lm;
+    std::vector<int> lmowner;
+    std::vector<int> lmstride;
     actele->LocationVector(*dis,lm,lmowner,lmstride);
     Teuchos::RCP<const Epetra_Vector> disp = dis->GetState("displacement");
-    vector<double> mydisp(lm.size(),0);
+    std::vector<double> mydisp(lm.size(),0);
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
     Teuchos::RCP<MAT::Material> mat = actele->Material();

@@ -19,7 +19,7 @@ flows.
   ---------------------------------------------------------------------*/
 COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
   RCP<DRT::Discretization>   actdis,
-  ParameterList&                     params)
+  Teuchos::ParameterList&                     params)
   :
   discret_(actdis),
   params_ (params)
@@ -107,7 +107,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
   // the integral/volume sampling. If an element has 4 nodes
   // in that plane and the remaining nodes are greater than the
   // plane, it belongs to said plane.
-  nodeplanes_ = Teuchos::rcp(new vector<double> );
+  nodeplanes_ = Teuchos::rcp(new std::vector<double> );
 
   // allocate array for bounding box
   //
@@ -242,7 +242,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
        // Unpack received block into set of all planes.
        {
-          vector<double> coordsvec;
+          std::vector<double> coordsvec;
 
           coordsvec.clear();
 
@@ -298,7 +298,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
   for (size_t i = 0; i < numphase_; i++)
   {
-    sumvol_[i] = Teuchos::rcp(new vector<double>);
+    sumvol_[i] = Teuchos::rcp(new std::vector<double>);
     sumvol_[i]->resize(size,0.0);
   }
 
@@ -325,42 +325,42 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
   for (size_t i = 0; i < numphase_; i++)
   {
-    pointsumnode_[i] =  Teuchos::rcp(new vector<double> );
+    pointsumnode_[i] =  Teuchos::rcp(new std::vector<double> );
     pointsumnode_[i]->resize(size,0.0);
 
     // first order moments
-    pointsumu_[i] =  Teuchos::rcp(new vector<double> );
+    pointsumu_[i] =  Teuchos::rcp(new std::vector<double> );
     pointsumu_[i]->resize(size,0.0);
 
-    pointsumv_[i] =  Teuchos::rcp(new vector<double> );
+    pointsumv_[i] =  Teuchos::rcp(new std::vector<double> );
     pointsumv_[i]->resize(size,0.0);
 
-    pointsumw_[i] =  Teuchos::rcp(new vector<double> );
+    pointsumw_[i] =  Teuchos::rcp(new std::vector<double> );
     pointsumw_[i]->resize(size,0.0);
 
-    pointsump_[i] =  Teuchos::rcp(new vector<double> );
+    pointsump_[i] =  Teuchos::rcp(new std::vector<double> );
     pointsump_[i]->resize(size,0.0);
 
     // second order moments
-    pointsumsqu_[i] =  Teuchos::rcp(new vector<double> );
+    pointsumsqu_[i] =  Teuchos::rcp(new std::vector<double> );
     pointsumsqu_[i]->resize(size,0.0);
 
-    pointsumsqv_[i] =  Teuchos::rcp(new vector<double> );
+    pointsumsqv_[i] =  Teuchos::rcp(new std::vector<double> );
     pointsumsqv_[i]->resize(size,0.0);
 
-    pointsumsqw_[i] =  Teuchos::rcp(new vector<double> );
+    pointsumsqw_[i] =  Teuchos::rcp(new std::vector<double> );
     pointsumsqw_[i]->resize(size,0.0);
 
-    pointsumsqp_[i] =  Teuchos::rcp(new vector<double> );
+    pointsumsqp_[i] =  Teuchos::rcp(new std::vector<double> );
     pointsumsqp_[i]->resize(size,0.0);
 
-    pointsumuv_[i] =  Teuchos::rcp(new vector<double> );
+    pointsumuv_[i] =  Teuchos::rcp(new std::vector<double> );
     pointsumuv_[i]->resize(size,0.0);
 
-    pointsumuw_[i] =  Teuchos::rcp(new vector<double> );
+    pointsumuw_[i] =  Teuchos::rcp(new std::vector<double> );
     pointsumuw_[i]->resize(size,0.0);
 
-    pointsumvw_[i] =  Teuchos::rcp(new vector<double> );
+    pointsumvw_[i] =  Teuchos::rcp(new std::vector<double> );
     pointsumvw_[i]->resize(size,0.0);
   }
 
@@ -608,15 +608,15 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
   const int size = sumvol_[0]->size();
 
   // generate processor local result vectors
-  vector<RCP<vector<double> > > locvol( numphase_);
-  vector<RCP<vector<double> > > globvol(numphase_);
+  vector<RCP<std::vector<double> > > locvol( numphase_);
+  vector<RCP<std::vector<double> > > globvol(numphase_);
 
   for (size_t i = 0; i < numphase_; i++)
   {
-    locvol[i] = Teuchos::rcp(new vector<double> );
+    locvol[i] = Teuchos::rcp(new std::vector<double> );
     locvol[i]->resize(size,0.0);
 
-    globvol[i] = Teuchos::rcp(new vector<double>);
+    globvol[i] = Teuchos::rcp(new std::vector<double>);
     globvol[i]->resize(size,0.0);
   }
 
@@ -637,13 +637,13 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
   discret_->SetState("u and p (n+1,converged)", fullvelnp_);
 
   // call loop over elements
-  discret_->Evaluate(eleparams, null, null, null, null, null);
+  discret_->Evaluate(eleparams, null, null, null, null,Teuchos::null);
   discret_->ClearState();
 
 
   //----------------------------------------------------------------------
   // add contributions from all processors
-  // it looks a bit messy due to the vector<RCP<vector<double> > > construct
+  // it looks a bit messy due to the vector<RCP<std::vector<double> > > construct
   for (size_t i = 0; i < numphase_; i++)
   {
     discret_->Comm().SumAll(&((*(locvol[i]))[0]), &((*(globvol[i]))[0]), size);

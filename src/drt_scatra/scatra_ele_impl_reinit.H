@@ -79,9 +79,9 @@ public:
   //! Evaluate
   virtual int Evaluate(
     DRT::Element*              ele,            //!< the element we are dealing with
-    ParameterList&             params,         //!< ?
+    Teuchos::ParameterList&    params,         //!< ?
     DRT::Discretization&       discretization, //!< the discretization the element is part of
-    vector<int>&               lm,             //!< ?
+    std::vector<int>&          lm,             //!< ?
     Epetra_SerialDenseMatrix&  elemat1_epetra, //!< ?
     Epetra_SerialDenseMatrix&  elemat2_epetra, //!< ?
     Epetra_SerialDenseVector&  elevec1_epetra, //!< ?
@@ -232,7 +232,7 @@ private:
   //! calculate error for steady state check
   virtual void CalErrorsReinitialization(
     const DRT::Element*          ele,   //!< the element
-    ParameterList&               params //!< parameter list
+    Teuchos::ParameterList&      params //!< parameter list
   );
 
   //! calculate element matrix and rhs vector (One-Step-Theta)
@@ -359,24 +359,24 @@ private:
   LINALG::Matrix<nsd_,1> gradphi_;
 
   //! scalar at t_(n)
-  vector<LINALG::Matrix<nen_,1> > ephin_;
+  std::vector<LINALG::Matrix<nen_,1> > ephin_;
   //! scalar at t_(n+1) or t_(n+alpha_F)
-  vector<LINALG::Matrix<nen_,1> > ephinp_;
+  std::vector<LINALG::Matrix<nen_,1> > ephinp_;
   //! scalar at t_(n+alpha_M)
-  vector<LINALG::Matrix<nen_,1> > ephiam_;
+  std::vector<LINALG::Matrix<nen_,1> > ephiam_;
 
   //! vector containing all values from previous timelevel n in gausspoint
-  vector<double> hist_;
+  std::vector<double> hist_;
   //! history vector of transported scalars
-  vector<LINALG::Matrix<nen_,1> > ehist_;
+  std::vector<LINALG::Matrix<nen_,1> > ehist_;
 
   //! scalar at t_(0) used for reinitialization as reference
-  vector<LINALG::Matrix<nen_,1> > ephi0_Reinit_Reference_;
+  std::vector<LINALG::Matrix<nen_,1> > ephi0_Reinit_Reference_;
   //! scalar at t_(0) used for reinitialization as reference
-  vector<LINALG::Matrix<nen_,1> > ephi0_penalty_;
+  std::vector<LINALG::Matrix<nen_,1> > ephi0_penalty_;
 
   //! fine-scale solution ?
-  vector<LINALG::Matrix<nen_,1> > fsphinp_;
+  std::vector<LINALG::Matrix<nen_,1> > fsphinp_;
 
   //! gradient of phi at global time for reinitialization(initialization for pseudo time loop)
   LINALG::Matrix<nsd_,1> grad_phi_0;
@@ -427,22 +427,22 @@ private:
   /*========================================================================*/
 
   //! density at t_(n)
-  vector<double> densn_;
+  std::vector<double> densn_;
   //! density at t_(n+1) or t_(n+alpha_F)
-  vector<double> densnp_;
+  std::vector<double> densnp_;
   //! density at t_(n+alpha_M)
-  vector<double> densam_;
+  std::vector<double> densam_;
   //! factor for density derivative (at t_(n+1) or t_(n+alpha_F))
-  vector<double> densgradfac_;
+  std::vector<double> densgradfac_;
 
   //! diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
-  vector<double> diffus_;
+  std::vector<double> diffus_;
   //! all-scale or fine-scale subgrid diffusivities (one per transported scalar)
-  vector<double> sgdiff_;
+  std::vector<double> sgdiff_;
   //! reaction coefficient
-  vector<double> reacoeff_;
+  std::vector<double> reacoeff_;
   //! reaction coefficent derivative (needed for matrix contribution)
-  vector<double> reacoeffderiv_;
+  std::vector<double> reacoeffderiv_;
 
   //! specific heat capacity (either at constant pressure or at constant volume)
   double shc_;
@@ -486,27 +486,27 @@ private:
   //! (global) Laplacian of shape functions at integration point
   LINALG::Matrix<nen_,1> laplace_;
   //! rhs force in Gauss point
-  vector<double> rhs_;
+  std::vector<double> rhs_;
   //! rhs of temperature equation in case of reactive equation system
-  vector<double> reatemprhs_;
+  std::vector<double> reatemprhs_;
   //! bodyforce in element nodesx
-  vector<LINALG::Matrix<nen_,1> > bodyforce_;
+  std::vector<LINALG::Matrix<nen_,1> > bodyforce_;
   //! residual of scalar transport equation
-  vector<double> scatrares_;
+  std::vector<double> scatrares_;
   //! convective term (part of residual) ?
-  vector<double> conv_phi_;
+  std::vector<double> conv_phi_;
   //! diffusive term (part of residual) ?
-  vector<double> diff_phi_;
+  std::vector<double> diff_phi_;
   //! reactive term (part of residual) ?
-  vector<double> rea_phi_;
+  std::vector<double> rea_phi_;
 
   //! the stabilisation parameters (one per transported scalar)
-  vector<double> tau_;
+  std::vector<double> tau_;
   //! derivative of stabilization parameter with respect to el. potential (ELCH)
-  vector<LINALG::Matrix<nen_,1> > tauderpot_;
+  std::vector<LINALG::Matrix<nen_,1> > tauderpot_;
 
   //! reconstructed flux values via L2 projection
-  vector<LINALG::Matrix<nsd_,nen_> > efluxreconstr_;
+  std::vector<LINALG::Matrix<nsd_,nen_> > efluxreconstr_;
 
   /*========================================================================*/
   //! @name Miscellaneous - to be done!!!

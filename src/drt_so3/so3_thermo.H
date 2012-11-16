@@ -189,7 +189,7 @@ namespace ELEMENTS
     //!
     //!  \return 0 if successful, negative otherwise
     int Evaluate(
-      ParameterList& params,  //!< ParameterList for communication between control routine and elements
+      Teuchos::ParameterList& params,  //!< ParameterList for communication between control routine and elements
       DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
       DRT::Element::LocationArray& la,  //!< location array for de-assembly
       Epetra_SerialDenseMatrix& elemat1,  //!< (stiffness-)matrix to be filled by element.
@@ -202,7 +202,7 @@ namespace ELEMENTS
     // PreEvaluate undertakes the task to calculate coupling term of matrix
     //! evaluation
     void PreEvaluate(
-      ParameterList& params,  //!< ParameterList for communication between control routine and elements
+      Teuchos::ParameterList& params,  //!< ParameterList for communication between control routine and elements
       DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
       DRT::Element::LocationArray& la //!< location array for de-assembly
       );
@@ -245,7 +245,7 @@ namespace ELEMENTS
     //! vector of inverses of the jacobian in material frame
     vector<LINALG::Matrix<nsd_,nsd_> > invJ_;
     //! determinant of Jacobian in material frame
-    vector<double> detJ_;
+    std::vector<double> detJ_;
     //! container containing all kind of solid3 thisandthat
     DRT::Container data_;
     //! vector of coordinates of current integration point in reference coordinates
@@ -278,7 +278,7 @@ namespace ELEMENTS
     //!
     //! \return 0 if successful, negative otherwise
     int EvaluateCouplWithThr(
-      ParameterList& params,  //!< ParameterList for communication between control routine and elements
+      Teuchos::ParameterList& params,  //!< ParameterList for communication between control routine and elements
       DRT::Discretization& discretization,  //!< pointer to discretization for de-assembly
       DRT::Element::LocationArray& la,  //!< location array for de-assembly
       Epetra_SerialDenseMatrix& elemat1,  //!< (stiffness-)matrix to be filled by element.
@@ -291,8 +291,8 @@ namespace ELEMENTS
     //! Calculate temperature coupling term for the internal force (geometric linear)
     virtual void lin_fint_tsi(
       DRT::Element::LocationArray& la,  //!< location array
-      vector<double>& disp,  //!< current displacements
-      vector<double>& residual,  //!< current residual displ
+      std::vector<double>& disp,  //!< current displacements
+      std::vector<double>& residual,  //!< current residual displ
       vector<double>& temp, //!< current temperature
       LINALG::Matrix<numdofperelement_,1>* force,  //!< element internal force vector
       LINALG::Matrix<numgpt_1,numstr_>* elestress,  //!< stresses at GP
@@ -303,15 +303,15 @@ namespace ELEMENTS
     //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
     virtual void lin_kdT_tsi(
       DRT::Element::LocationArray& la,
-      vector<double>& disp,  //!< (i): current displacement
+      std::vector<double>& disp,  //!< (i): current displacement
       LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT  //!< (o): mechanical thermal stiffness term at current gp
       );
 
     //! Calculate nonlinear stiffness and mass matrix with temperature fraction
     virtual void nln_stifffint_tsi(
       DRT::Element::LocationArray& la,  //!< location array
-      vector<double>& disp,  //!< current displacements
-      vector<double>& residual,  //!< current residual displ
+      std::vector<double>& disp,  //!< current displacements
+      std::vector<double>& residual,  //!< current residual displ
       vector<double>& temp, //!< current temperature
       LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
       LINALG::Matrix<numdofperelement_,1>* force,  //!< element internal force vector
@@ -323,7 +323,7 @@ namespace ELEMENTS
     //! Calculate mechanical thermal stiffness term needed for monolithic TSI K_dT
     virtual void nln_kdT_tsi(
       DRT::Element::LocationArray& la,
-      vector<double>& disp,  //!< (i): current displacement
+      std::vector<double>& disp,  //!< (i): current displacement
       LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT  //!< (o): mechanical thermal stiffness term at current gp
       );
 

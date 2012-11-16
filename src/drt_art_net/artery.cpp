@@ -153,7 +153,7 @@ void DRT::ELEMENTS::Artery::Pack(DRT::PackBuffer& data) const
  |  Unpack data                                                (public) |
  |                                                         ismail 01/09 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Artery::Unpack(const vector<char>& data)
+void DRT::ELEMENTS::Artery::Unpack(const std::vector<char>& data)
 {
 	vector<char>::size_type position = 0;
   // extract type
@@ -162,7 +162,7 @@ void DRT::ELEMENTS::Artery::Unpack(const vector<char>& data)
 
   dsassert(type == UniqueParObjectId(), "wrong instance type data");
   // extract base class Element
-  vector<char> basedata(0);
+  std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
   // Gaussrule

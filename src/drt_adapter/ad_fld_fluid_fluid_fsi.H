@@ -62,7 +62,7 @@ namespace ADAPTER {
         Teuchos::RCP<DRT::Discretization> embfluiddis,
         Teuchos::RCP<DRT::Discretization> bgfluiddis,
         Teuchos::RCP<LINALG::Solver> solver,
-        Teuchos::RCP<ParameterList> params,
+        Teuchos::RCP<Teuchos::ParameterList> params,
         bool isale,
         bool dirichletcond,
         bool monolithicfluidfluidfsi);

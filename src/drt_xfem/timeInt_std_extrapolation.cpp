@@ -931,8 +931,8 @@ void XFEM::ExtrapolationNew::ExtrapolationMain(
     vector<LINALG::Matrix<nsd,1> > velstartpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
     vector<LINALG::Matrix<nsd,1> > velmidpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
 
-    vector<double> presstartpoint(oldVectors_.size(),0.0);
-    vector<double> presmidpoint(oldVectors_.size(),0.0);
+    std::vector<double> presstartpoint(oldVectors_.size(),0.0);
+    std::vector<double> presmidpoint(oldVectors_.size(),0.0);
 
     int side = interfaceSide(data->phiValue_);
     callInterpolation(ele,xistartpoint,velstartpoint,presstartpoint,side);
@@ -943,7 +943,7 @@ void XFEM::ExtrapolationNew::ExtrapolationMain(
 
     // compute the final velocities and pressure due to the Extrapol
     vector<LINALG::Matrix<nsd,1> > velendpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
-    vector<double> presendpoint(oldVectors_.size(),0.0);
+    std::vector<double> presendpoint(oldVectors_.size(),0.0);
 
     for (size_t index=0;index<oldVectors_.size();index++)
     {
@@ -965,7 +965,7 @@ void XFEM::ExtrapolationNew::ExtrapolationMain(
   {
     // get the velocities and the pressures at the start- and midpoint
     vector<LINALG::Matrix<nsd,1> > velmidpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
-    vector<double> presmidpoint(oldVectors_.size(),0.0);
+    std::vector<double> presmidpoint(oldVectors_.size(),0.0);
 
     int side = interfaceSide(data->phiValue_);
     callInterpolation(ele,ximidpoint,velmidpoint,presmidpoint,side);
@@ -1289,7 +1289,7 @@ void XFEM::ExtrapolationNew::exportDataToNodeProc()
 
   // array of vectors which stores data for
   // every processor in one vector
-  vector<vector<TimeIntData> > dataVec(numproc_);
+  vector<std::vector<TimeIntData> > dataVec(numproc_);
 
   // fill vectors with the data
   for (vector<TimeIntData>::iterator data=timeIntData_->begin();

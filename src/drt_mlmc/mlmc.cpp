@@ -581,7 +581,7 @@ void STR::MLMC::ProlongateResults()
   actdis_fine_->SetState("velocity",vel_);
 
   // Evaluate Stresses based on interpolated displacements
-  //actdis_fine_->Evaluate(p,null,null,null,null,null);
+  //actdis_fine_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   //actdis_fine_->ClearState();
   // Write to file
   // interpolated stresses from disp field
@@ -613,7 +613,7 @@ void STR::MLMC::ProlongateResults()
   const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
   p.set("gpstrainmap", gpstrainmap);
 
-  actdis_coarse_->Evaluate(p,null,null,null,null,null);
+  actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   // st action to calc poststresse
   p.set("action","postprocess_stress");
@@ -626,7 +626,7 @@ void STR::MLMC::ProlongateResults()
   p.set("stresstype","ndxyz");
   // cout << " Debugging   LINE   " << __LINE__ << endl;
   actdis_coarse_->ClearState();
-  actdis_coarse_->Evaluate(p,null,null,null,null,null);
+  actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   actdis_coarse_->ClearState();
 
   // again for strains
@@ -640,7 +640,7 @@ void STR::MLMC::ProlongateResults()
   p.set("stresstype","ndxyz");
   // cout << " Debugging   LINE   " << __LINE__ << endl;
   actdis_coarse_->ClearState();
-  actdis_coarse_->Evaluate(p,null,null,null,null,null);
+  actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   actdis_coarse_->ClearState();
 
 
@@ -944,7 +944,7 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
 //      for (int i =0 ; i<500; i++)
 //      {
 //        random_field_->CreateNewSample(random_seed+i);
-//        vector<double> ele_center (3,1.0);
+//        std::vector<double> ele_center (3,1.0);
 //        // calc average psd
 //        //random_field_->GetPSDFromSample3D(sample_psd);
 //        random_field_->GetPSDFromSample(sample_psd);
@@ -974,7 +974,7 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
     if(discret_->lColElement(i)->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
     {
       MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(discret_->lColElement(i)->Material().get());
-      vector<double> ele_center;
+      std::vector<double> ele_center;
       ele_center = discret_->lColElement(i)->ElementCenterRefeCoords();
       // get dim of field
       if(random_field_->Dimension()==2)
@@ -1111,7 +1111,7 @@ void STR::MLMC::ResetPrestress()
       ParameterList p;
       // action for elements
       p.set("action","calc_struct_reset_discretization");
-      discret_->Evaluate(p,null,null,null,null,null);
+      discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
      }
     break;
     case INPAR::STR::prestress_id:
@@ -1256,7 +1256,7 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
  p.set("gpstrainmap", gpstrainmap);
 
 
-  actdis_coarse_->Evaluate(p,null,null,null,null,null);
+  actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   actdis_coarse_->ClearState();
 
 
@@ -1271,7 +1271,7 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   p.set("stresstype","ndxyz");
 
   //actdis_coarse_->ClearState();
-  actdis_coarse_->Evaluate(p,null,null,null,null,null);
+  actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   actdis_coarse_->ClearState();
 
   // again for strains
@@ -1283,7 +1283,7 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   p.set("stresstype","ndxyz");
 
   actdis_coarse_->ClearState();
-  actdis_coarse_->Evaluate(p,null,null,null,null,null);
+  actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   actdis_coarse_->ClearState();
 
   // also get element stresses
@@ -1292,8 +1292,8 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   p.set("gpstressmap", gpstressmap);
   RCP<Epetra_MultiVector> elestress = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
   p.set("poststress",elestress);
-  actdis_coarse_->Evaluate(p,null,null,null,null,null);
-  if (elestress==null)
+  actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  if (elestress==Teuchos::null)
   {
     dserror("vector containing element center stresses/strains not available");
   }
@@ -1303,8 +1303,8 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   p.set("gpstressmap", gpstrainmap);
   RCP<Epetra_MultiVector> elestrains = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
   p.set("poststress",elestrains);
-  actdis_coarse_->Evaluate(p,null,null,null,null,null);
-  if (elestress==null)
+  actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  if (elestress==Teuchos::null)
   {
     dserror("vector containing element center stresses/strains not available");
   }
@@ -1433,7 +1433,7 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
 
   for(unsigned int i = 0; i<my_output_elements_.size(); i++)
   {
-    RCP <vector<double> > my_c_disp = Teuchos::rcp(new vector<double> (3, 0.0));
+    RCP <vector<double> > my_c_disp = Teuchos::rcp(new std::vector<double> (3, 0.0));
     int myNumNodes= actdis_coarse_->gElement(my_output_elements_[i])->NumNode();
     const int* myNodeIds = actdis_coarse_->gElement(my_output_elements_[i])->NodeIds();
     for (int k=0; k< myNumNodes ; k++)
@@ -1447,7 +1447,7 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
     }
     my_output_elements_c_disp.push_back(my_c_disp);
 
-    RCP <vector<double> > mat_params = Teuchos::rcp(new vector<double>);
+    RCP <vector<double> > mat_params = Teuchos::rcp(new std::vector<double>);
     // get the mat parameters
     if(actdis_coarse_->gElement(my_output_elements_[i])->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
     {
@@ -1494,8 +1494,8 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
   const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
   p.set("gpstrainmap", gpstrainmap);
 
-  //actdis_coarse_->Evaluate(p,null,null,null,null,null);
-  Evaluate2(p,null,null,null,null,null);
+  //actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  Evaluate2(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   actdis_coarse_->ClearState();
 
   // also get element stresses
@@ -1504,9 +1504,9 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
   p.set("gpstressmap", gpstressmap);
   RCP<Epetra_MultiVector> elestress = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
   p.set("poststress",elestress);
-  Evaluate2(p,null,null,null,null,null);
-  //actdis_coarse_->Evaluate(p,null,null,null,null,null);
-  if (elestress==null)
+  Evaluate2(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  //actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  if (elestress==Teuchos::null)
   {
     dserror("vector containing element center stresses/strains not available");
   }
@@ -1514,9 +1514,9 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
   p.set("gpstressmap", gpstrainmap);
   RCP<Epetra_MultiVector> elestrains = Teuchos::rcp(new Epetra_MultiVector(*(actdis_coarse_->ElementRowMap()),6));
   p.set("poststress",elestrains);
-  Evaluate2(p,null,null,null,null,null);
-  //actdis_coarse_->Evaluate(p,null,null,null,null,null);
-  if (elestress==null)
+  Evaluate2(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  //actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+  if (elestress==Teuchos::null)
   {
     dserror("vector containing element center stresses/strains not available");
   }
@@ -1524,8 +1524,8 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
   // hence loop over the elements
   for(unsigned int i = 0; i<my_output_elements_.size(); i++)
   {
-    RCP <vector<double> > element_c_stresses = Teuchos::rcp(new vector<double>);
-    RCP <vector<double> > element_c_strains = Teuchos::rcp(new vector<double>);
+    RCP <vector<double> > element_c_stresses = Teuchos::rcp(new std::vector<double>);
+    RCP <vector<double> > element_c_strains = Teuchos::rcp(new std::vector<double>);
     for(int k = 0;k<6 ; k++)
     {
       element_c_stresses->push_back((*elestress)[k][(elestress->Map().LID(my_output_elements_[i]))]);
@@ -1559,10 +1559,10 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
     for ( myit=my_output_element_map.begin() ; myit != my_output_element_map.end(); myit++ )
     {
       // get back all the data
-     const vector<double> * stresses = myit->second()->Get< vector <double> >("stresses");
-     const vector<double> * strains = myit->second()->Get< vector <double> >("strains");
-     const vector<double> * mat_params = myit->second()->Get< vector <double> >("mat_params");
-     const vector<double> * disp = myit->second()->Get< vector <double> >("disp");
+     const std::vector<double> * stresses = myit->second()->Get< vector <double> >("stresses");
+     const std::vector<double> * strains = myit->second()->Get< vector <double> >("strains");
+     const std::vector<double> * mat_params = myit->second()->Get< vector <double> >("mat_params");
+     const std::vector<double> * disp = myit->second()->Get< vector <double> >("disp");
      // cout << "my_output_element_map first " << myit->first << *(myit->second)  << endl;
 
 

@@ -22,8 +22,8 @@ Maintainer: Lena Wiechert
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 LINALG::BGS2x2_Operator::BGS2x2_Operator(RCP<Epetra_Operator> A,
-                                         const ParameterList& list1,
-                                         const ParameterList& list2,
+                                         const Teuchos::ParameterList& list1,
+                                         const Teuchos::ParameterList& list2,
                                          int global_iter,
                                          double global_omega,
                                          int block1_iter,
@@ -58,7 +58,7 @@ LINALG::BGS2x2_Operator::BGS2x2_Operator(RCP<Epetra_Operator> A,
   }
 
   A_ = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(A);
-  if (A_!=null)
+  if (A_!=Teuchos::null)
   {
     // Make a shallow copy of the block matrix as the preconditioners on the
     // blocks will be reused and the next assembly will replace the block
@@ -81,13 +81,13 @@ LINALG::BGS2x2_Operator::BGS2x2_Operator(RCP<Epetra_Operator> A,
  *----------------------------------------------------------------------*/
 void LINALG::BGS2x2_Operator::SetupBlockPreconditioners()
 {
-  Teuchos::RCP<ParameterList> rcplist1 = Teuchos::rcp(&list1_,false);
+  Teuchos::RCP<Teuchos::ParameterList> rcplist1 = Teuchos::rcp(&list1_,false);
   Teuchos::RCP<LINALG::Solver> s1 = Teuchos::rcp(new LINALG::Solver(rcplist1,A_->Comm(),outfile_));
   solver1_ = Teuchos::rcp(new LINALG::Preconditioner(s1));
   const LINALG::SparseMatrix& Op11 = A_->Matrix(firstind_,firstind_);
   solver1_->Setup(Op11.EpetraMatrix());
 
-  Teuchos::RCP<ParameterList> rcplist2 = Teuchos::rcp(&list2_,false);
+  Teuchos::RCP<Teuchos::ParameterList> rcplist2 = Teuchos::rcp(&list2_,false);
   Teuchos::RCP<LINALG::Solver> s2 = Teuchos::rcp(new LINALG::Solver(rcplist2,A_->Comm(),outfile_));
   solver2_ = Teuchos::rcp(new LINALG::Preconditioner(s2));
   const LINALG::SparseMatrix& Op22 = A_->Matrix(secind_,secind_);

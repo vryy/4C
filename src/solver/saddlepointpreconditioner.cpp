@@ -47,7 +47,7 @@
 
 #include "float.h" // for DBL_MAX and DBL_MIN
 
-LINALG::SaddlePointPreconditioner::SaddlePointPreconditioner(RCP<Epetra_Operator> A, const ParameterList& params, FILE* outfile)
+LINALG::SaddlePointPreconditioner::SaddlePointPreconditioner(RCP<Epetra_Operator> A, const Teuchos::ParameterList& params, FILE* outfile)
 :
 Epetra_Operator(),
 label_("LINALG::SaddlePointPreconditioner"),
@@ -558,7 +558,7 @@ int LINALG::SaddlePointPreconditioner::VCycle(const Epetra_MultiVector& Xvel, co
   return 0;
 }
 
-void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const ParameterList& origlist)
+void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Teuchos::ParameterList& origlist)
 {
 
 #ifdef WRITEOUTSTATISTICS
@@ -579,15 +579,15 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Para
   int nlnode;         // number of nodes (local)
 
 
-  Teuchos::RCP<Epetra_MultiVector> curvelNS = null;   // variables for null space
-  Teuchos::RCP<Epetra_MultiVector> nextvelNS = null;
-  Teuchos::RCP<Epetra_MultiVector> curpreNS = null;
-  Teuchos::RCP<Epetra_MultiVector> nextpreNS = null;
+  Teuchos::RCP<Epetra_MultiVector> curvelNS = Teuchos::null;   // variables for null space
+  Teuchos::RCP<Epetra_MultiVector> nextvelNS = Teuchos::null;
+  Teuchos::RCP<Epetra_MultiVector> curpreNS = Teuchos::null;
+  Teuchos::RCP<Epetra_MultiVector> nextpreNS = Teuchos::null;
 
   ///////////////// set parameter list
-  RCP<ParameterList> spparams = Teuchos::rcp(new ParameterList());     // all paramaters
-  RCP<ParameterList> velparams = Teuchos::rcp(new ParameterList());    // parameters (velocity specific)
-  RCP<ParameterList> preparams = Teuchos::rcp(new ParameterList());    // parameters (pressure specific)
+  RCP<Teuchos::ParameterList> spparams = Teuchos::rcp(new Teuchos::ParameterList());     // all paramaters
+  RCP<Teuchos::ParameterList> velparams = Teuchos::rcp(new Teuchos::ParameterList());    // parameters (velocity specific)
+  RCP<Teuchos::ParameterList> preparams = Teuchos::rcp(new Teuchos::ParameterList());    // parameters (pressure specific)
 
   // obtain common ML parameters from FLUID SOLVER block for coarsening from the dat file
   // we need at least "ML Parameters"."PDE equations" and "nullspace" information
@@ -644,7 +644,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Para
 
   /////////////////// transform Input matrix
   Ainput_ = Teuchos::rcp_dynamic_cast<BlockSparseMatrixBase>(A);
-  if(Ainput_ != null)
+  if(Ainput_ != Teuchos::null)
   {
     mmex_ = Ainput_->RangeExtractor();
   }
@@ -687,7 +687,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Para
   velparams->sublist("AMGBS Parameters").set("PDE equations",nv);             // adapt nPDE (only velocity dofs)
   velparams->sublist("AMGBS Parameters").set("null space: dimension",nv);
   const int vlength = (*Ainput_)(0,0).RowMap().NumMyElements();
-  RCP<vector<double> > vnewns = Teuchos::rcp(new vector<double>(nv*vlength,0.0));
+  RCP<std::vector<double> > vnewns = Teuchos::rcp(new std::vector<double>(nv*vlength,0.0));
   for (int i=0; i<nlnode; ++i)
   {
     (*vnewns)[i*nv] = 1.0;
@@ -705,7 +705,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Para
   preparams->sublist("AMGBS Parameters").set("PDE equations",1);               // adapt nPDE (only one pressure dof)
   preparams->sublist("AMGBS Parameters").set("null space: dimension", 1);
   const int plength = (*Ainput_)(1,1).RowMap().NumMyElements();
-  RCP<vector<double> > pnewns = Teuchos::rcp(new vector<double>(plength,1.0));
+  RCP<std::vector<double> > pnewns = Teuchos::rcp(new std::vector<double>(plength,1.0));
   preparams->sublist("AMGBS Parameters").set("null space: vectors",&((*pnewns)[0]));
   preparams->sublist("AMGBS Parameters").remove("nullspace",false);
 
@@ -725,7 +725,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Para
   {
     /////////////////////////////////////////////////////////
     /////////////////////// AGGREGATION PROCESS
-    RCP<Epetra_IntVector> velaggs = null; //rcp(new Epetra_IntVector(A11_[curlevel]->RowMap(),true));
+    RCP<Epetra_IntVector> velaggs = Teuchos::null; //rcp(new Epetra_IntVector(A11_[curlevel]->RowMap(),true));
 
     ////////////// determine aggregates using the velocity block matrix A11_[curlevel]
     RCP<AggregationMethod> aggm = AggregationMethodFactory::Create("Uncoupled",NULL);
@@ -793,7 +793,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Para
     //////////////////// create pre- and postsmoothers
     std::stringstream stream;
     stream << "braess-sarazin: list (level " << curlevel << ")";
-    ParameterList& subparams = spparams->sublist("AMGBS Parameters").sublist(stream.str());
+    Teuchos::ParameterList& subparams = spparams->sublist("AMGBS Parameters").sublist(stream.str());
 
     // copy ML Parameters or IFPACK Parameters from FLUID PRESSURE SOLVER block
     if(curlevel==0)
@@ -841,7 +841,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Para
   //////////////////// setup coarsest smoother
   std::stringstream stream;
   stream << "braess-sarazin: list (level " << nlevels_ << ")";
-  ParameterList& subparams = spparams->sublist("AMGBS Parameters").sublist(stream.str());
+  Teuchos::ParameterList& subparams = spparams->sublist("AMGBS Parameters").sublist(stream.str());
 
   // copy ML Parameters or IFPACK Parameters from FLUID PRESSURE SOLVER block
   subparams.set("pressure correction approx: type",subparams.get("coarse: type","ILU"));
