@@ -70,7 +70,7 @@ private:
   double d_;
 
   //! \briefdistribution params of target marginal distribution
-  vector<double> distribution_params_;
+  std::vector<double> distribution_params_;
 
    //! \brief sigma as calculated from pdf parameters
   double sigma_0_;
@@ -81,7 +81,7 @@ private:
   double mean_;
 
   // holds the discrete power spectral density of the random field
-  vector<double> discrete_PSD_;
+  std::vector<double> discrete_PSD_;
 
   //! \brief Simulation parameters
   //! \brief length of random field
@@ -102,20 +102,20 @@ private:
   double dx_;
 
   //! \brief vectors to store the random phase angles
-  vector<double>  Phi_0_ ;
-  vector<double>  Phi_1_ ;
-  vector<double>  Phi_2_ ;
-  vector<double>  Phi_3_ ;
+  std::vector<double>  Phi_0_ ;
+  std::vector<double>  Phi_1_ ;
+  std::vector<double>  Phi_2_ ;
+  std::vector<double>  Phi_3_ ;
 
   //! \brief/ seed for random number generator
   unsigned int  seed_;
 
   //! \brief parameters for evaluation i.e corners of the bounding box of the discretization
   //! \brief min bounding box
-  vector<double> bb_min_;
+  std::vector<double> bb_min_;
 
   //! \brief max bounding box
-  vector<double> bb_max_;
+  std::vector<double> bb_max_;
 
   //! \brief we need Pi
   double pi_;
@@ -137,7 +137,7 @@ public:
   void CreateNewSample(unsigned int seed);
 
   //! \brief get value of random field at a specific location
-  double EvalFieldAtLocation(vector<double> location, bool writetofile, bool output);
+  double EvalFieldAtLocation(std::vector<double> location, bool writetofile, bool output);
 
   //! \brief write random field To file
   void WriteRandomFieldToFile();

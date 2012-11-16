@@ -93,6 +93,7 @@ GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretizati
       break;
     default:
       dserror("Unknown Correlation structure");
+      break;
   }
 
   //
@@ -135,6 +136,7 @@ GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretizati
        break;
     default:
       dserror("Unknown Marginal pdf");
+      break;
   }
 
   // Get calculation method
@@ -150,6 +152,7 @@ GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretizati
        break;
     default:
       dserror("Unknown Calculation Method for RF choose fft or cos");
+      break;
   }
 
 
@@ -707,13 +710,13 @@ double GenRandomField::SimGaussRandomFieldCOS3D(double x, double y, double z)
 void GenRandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discret)
 {
   // root bounding Box
-  vector<double> maxrbb;
+  std::vector<double> maxrbb;
 
   maxrbb.push_back(-10.0e19);
   maxrbb.push_back(-10.0e19);
   maxrbb.push_back(-10.0e19);
 
-  vector<double> minrbb;
+  std::vector<double> minrbb;
   minrbb.push_back(10.0e19);
   minrbb.push_back(10.0e19);
   minrbb.push_back(10.0e19);
@@ -759,7 +762,7 @@ void GenRandomField::ComputeBoundingBox(Teuchos::RCP<DRT::Discretization> discre
   }
 
 }
-double GenRandomField::EvalFieldAtLocation(vector<double> location, bool writetofile, bool output)
+double GenRandomField::EvalFieldAtLocation(std::vector<double> location, bool writetofile, bool output)
 {
   // manage the two different variants for evalutation in here so that it cannot be seen from the outside
   // and so that we can call the same function with the same syntax
@@ -875,6 +878,7 @@ void GenRandomField::TranslateToNonGaussian()
     break;
     default:
       dserror("Only lognormal and beta distribution supported fix your input file");
+      break;
   }
 }
 // Overloaded function to translate single point only
@@ -904,6 +908,7 @@ void GenRandomField::TranslateToNonGaussian( double *value)
     break;
     default:
       dserror("Only lognormal and beta distribution supported fix your input file");
+      break;
   }
 }
 // Transform PSD of underlying gauusian process
@@ -914,10 +919,10 @@ void GenRandomField::SpectralMatching()
   double error_numerator;
   double error_denominator;
   // Target PSD of non gassian field
-  vector<double> PSD_ng_target;
-  vector<double> PSD_ng(N_*N_,0.0);
-  vector<double> PSD_ul_g(N_*N_,0.0);
-  vector<double> rho(2*N_*2*N_,0.0);
+  std::vector<double> PSD_ng_target;
+  std::vector<double> PSD_ng(N_*N_,0.0);
+  std::vector<double> PSD_ul_g(N_*N_,0.0);
+  std::vector<double> rho(2*N_*2*N_,0.0);
 
   PSD_ng_target=discrete_PSD_;
 
@@ -1161,10 +1166,10 @@ void GenRandomField::SpectralMatching3D()
   double error_numerator;
   double error_denominator;
   // Target PSD of non gassian field
-  vector<double> PSD_ng_target;
-  vector<double> PSD_ng(N_*N_*N_,0.0);
-  vector<double> PSD_ul_g(N_*N_*N_,0.0);
-  vector<double> rho(2*N_*2*N_*2*N_,0.0);
+  std::vector<double> PSD_ng_target;
+  std::vector<double> PSD_ng(N_*N_*N_,0.0);
+  std::vector<double> PSD_ul_g(N_*N_*N_,0.0);
+  std::vector<double> rho(2*N_*2*N_*2*N_,0.0);
 
   PSD_ng_target=discrete_PSD_;
 
@@ -1468,10 +1473,10 @@ void GenRandomField::SpectralMatching3D3D()
   double error_numerator;
   double error_denominator;
   // Target PSD of non gassian field
-  vector<double> PSD_ng_target;
-  vector<double> PSD_ng(N_*N_*N_,0.0);
-  vector<double> PSD_ul_g(N_*N_*N_,0.0);
-  vector<double> rho(2*N_*2*N_*2*N_,0.0);
+  std::vector<double> PSD_ng_target;
+  std::vector<double> PSD_ng(N_*N_*N_,0.0);
+  std::vector<double> PSD_ul_g(N_*N_*N_,0.0);
+  std::vector<double> rho(2*N_*2*N_*2*N_,0.0);
 
   PSD_ng_target=discrete_PSD_;
   // do i need to set this zero??
