@@ -25,12 +25,12 @@ Maintainer: Jonas Biehler
 #include "../drt_mat/aaaneohooke_stopro.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "gen_randomfield.H"
-
+#include "../drt_io/io.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_io/io_control.H"
-#include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 
@@ -41,25 +41,25 @@ Maintainer: Jonas Biehler
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_element.H"
 
+
 /*----------------------------------------------------------------------*/
 /* standard constructor */
 STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
-                Teuchos::RCP<LINALG::Solver> solver,
                 Teuchos::RCP<IO::DiscretizationWriter> output)
   : discret_(dis),
-    solver_(solver),
     output_(output)
     //sti_(Teuchos::null)
 {
 
   // get coarse and fine discretizations
 
-    actdis_coarse_ = DRT::Problem::Instance(0)->GetDis("fluid");
-    // set degrees of freedom in the discretization
-    if (not actdis_coarse_->Filled()) actdis_coarse_->FillComplete();
-  //int myrank = dis->Comm().MyPID();
+    actdis_coarse_ = DRT::Problem::Instance(0)->GetDis("structure");
 
-  reset_out_count_=0;
+    // set degrees of freedom in the discretization
+    if (not actdis_coarse_->Filled() || not actdis_coarse_->HaveDofs()) actdis_coarse_->FillComplete();
+
+
+
 
     filename_ = DRT::Problem::Instance()->OutputControlFile()->FileName();
 
@@ -81,6 +81,12 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   // prolongate results yes/no
   prolongate_res_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"PROLONGATERES");
 
+  // use deterministic value yes/no
+  use_det_value_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"USEDETVALUE");
+
+   // get det value if needed
+  det_value_ =mlmcp.get<double>("DETVALUE");
+
   // get starting random seed
   start_random_seed_ = mlmcp.get<int>("INITRANDOMSEED");
 
@@ -95,13 +101,13 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
 
   // get OutputElements
 
-    double word;
-    std::istringstream bsdampingstream(Teuchos::getNumericStringParameter(mlmcp,"OUTPUT_ELEMENT_IDS"));
-    while (bsdampingstream >> word)
-      AllMyOutputEleIds_.push_back(int (word));
+  double word;
+  std::istringstream bsdampingstream(Teuchos::getNumericStringParameter(mlmcp,"OUTPUT_ELEMENT_IDS"));
+  while (bsdampingstream >> word)
+	  AllMyOutputEleIds_.push_back(int (word));
 
   if(AllMyOutputEleIds_.front()== -1)
-    cout << RED_LIGHT "No elements specified for output " END_COLOR << endl;
+	  IO::cout << RED_LIGHT "No elements specified for output " END_COLOR << IO::endl;
 
   // In element critirion xsi_i < 1 + eps  eps = MLMCINELETOL
   InEleRange_ = 1.0 + 10e-3;
@@ -123,8 +129,9 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
 
 
    SetupEvalDisAtEleCenters(AllMyOutputEleIds_);
-  //int mygroup =i;
-  //local_numruns_=numruns_pergroup;
+
+
+   reduced_output_ = DRT::INPUT::IntegralValue<int>(mlmcp ,"REDUCED_OUTPUT");
 
 
 
@@ -135,10 +142,10 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
   meshfilename_helper2 = meshfilename_helper1.str();
   // strip path from name
   string::size_type pos = meshfilename_helper2.find_last_of('/');
-      if (pos==string::npos)
-              meshfilename_ = meshfilename_helper2;
-       else
-              meshfilename_ = meshfilename_helper2.substr(pos+1);
+  if (pos==string::npos)
+	  meshfilename_ = meshfilename_helper2;
+  else
+	  meshfilename_ = meshfilename_helper2.substr(pos+1);
 
   //init stuff that is only needed when we want to prolongate the results to a finer mesh,
   // and hence have a fine discretization
@@ -150,7 +157,7 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
     // set degrees of freedom in the discretization
     if (not actdis_fine_->Filled()) actdis_fine_->FillComplete();
     // Get coarse Grid problem instance
-    cout << "before def actidis fine " << endl;
+
     output_control_fine_ = Teuchos::rcp(new IO::OutputControl(actdis_fine_->Comm(), "structure", "Polynomial", filename_, filename_, 3, 0, 20));
     output_fine_ = Teuchos::rcp(new IO::DiscretizationWriter(actdis_fine_,output_control_fine_));
 
@@ -206,11 +213,11 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
 /* analyse */
 void STR::MLMC::Integrate()
 {
+
   // init vector to store displacemnet
 
   //Teuchos::RCP<Epetra_Vector> dis_coarse = Teuchos::rcp(new Epetra_Vector(*actdis_coarse_->DofRowMap(),true));
   Teuchos::RCP<const Epetra_Vector> dis_coarse = Teuchos::null;
-
 
   const int myrank = discret_->Comm().MyPID();
 
@@ -225,29 +232,40 @@ void STR::MLMC::Integrate()
 
   // get initial random seed from inputfile
   unsigned int random_seed= mlmcp.get<int>("INITRANDOMSEED");
+
   do
   {
-    //cout << "numbrun_ " << numb_run_ << endl;
     if (myrank == 0)
     {
-      cout << GREEN_LIGHT "================================================================================" << endl;
-      cout << "                            MULTILEVEL MONTE CARLO                              " << endl;
-      cout << "                              RUN: " << numb_run_ << "  of  " << numruns  << endl;
-      cout << "================================================================================" END_COLOR << endl;
+      IO::cout << GREEN_LIGHT "================================================================================" << IO::endl;
+      IO::cout << "                            MULTILEVEL MONTE CARLO                              " << IO::endl;
+      IO::cout << "                              RUN: " << numb_run_ << "  of  " << numruns  << IO::endl;
+      IO::cout << "================================================================================" END_COLOR << IO::endl;
     }
-    //double t1 = timer.ElapsedTime();
-    if (myrank == 0)
+
+    if (myrank == 0 )
     {
-      //cout << RED_LIGHT " PRESTRESS NOT RESET " END_COLOR << endl;
-      cout << GREEN_LIGHT " RESET PRESTRESS " END_COLOR << endl;
+      IO::cout << GREEN_LIGHT " RESET PRESTRESS " END_COLOR << IO::endl;
     }
-     ResetPrestress();
+    ResetPrestress();
     SetupStochMat((random_seed+(unsigned int)numb_run_));
     discret_->Comm().Barrier();
+    IO::cout << "check" << IO::endl;
 
-    //double t2 = timer.ElapsedTime();
-    output_->NewResultFile(filename_,(numb_run_));
-    //cout << "ATTENTION NO NEW RESULTFILE CREATED" << endl;
+    if(!reduced_output_)
+    {
+      cout << "Test in here 2" << endl;
+      output_->NewResultFile(filename_,(numb_run_));
+      output_->WriteMesh(1, 0.01);
+      IO::cout << "check2" << IO::endl;
+    }
+
+    else
+    {
+      IO::cout << "ATTENTION NO NEW RESULTFILE CREATED" << IO::endl;
+    }
+
+
 
     // get input lists
     const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -272,7 +290,7 @@ void STR::MLMC::Integrate()
         // create an adapterbase and adapter
         ADAPTER::StructureBaseAlgorithm adapterbase(DRT::Problem::Instance()->StructuralDynamicParams(), structdis);
         ADAPTER::Structure& structadaptor = const_cast<ADAPTER::Structure&>(adapterbase.StructureField());
-
+    
         // do restart
         const int restart = DRT::Problem::Instance()->Restart();
         if (restart)
@@ -286,8 +304,12 @@ void STR::MLMC::Integrate()
         DRT::Problem::Instance()->AddFieldTest(structadaptor.CreateFieldTest());
         DRT::Problem::Instance()->TestAll(structadaptor.DofRowMap()->Comm());
 
-        Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
-        Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
+        if(!reduced_output_)
+        {
+          Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
+          Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
+        }
+
 
         // time to go home...
       }
@@ -325,6 +347,115 @@ void STR::MLMC::Integrate()
   //ReadResultsFromLowerLevel(12);
   return;
 }
+/*----------------------------------------------------------------------*/
+/* Nice and clean version with for not resetting prestress*/
+void STR::MLMC::IntegrateNoReset()
+{
+  // init vector to store displacemnet
+  Teuchos::RCP<const Epetra_Vector> dis_coarse = Teuchos::null;
+  Teuchos::RCP<const Epetra_Vector> dis_coarse2 = Teuchos::null;
+
+  const int myrank = discret_->Comm().MyPID();
+
+  const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
+
+  // nested par hack
+  int numruns =numruns_pergroup_+start_run_;
+
+  // get initial random seed from inputfile
+  unsigned int random_seed= mlmcp.get<int>("INITRANDOMSEED");
+
+  do
+  {
+    if (myrank == 0)
+    {
+      IO::cout << GREEN_LIGHT "================================================================================" << IO::endl;
+      IO::cout << "                            MULTILEVEL MONTE CARLO                              " << IO::endl;
+      IO::cout << "           IO::endl               RUN: " << numb_run_ << "  of  " << numruns  << IO::endl;
+      IO::cout << "================================================================================" END_COLOR << IO::endl;
+    }
+    if (myrank == 0)
+    {
+      IO::cout << RED_LIGHT " PRESTRESS NOT RESET " END_COLOR << IO::endl;
+      //IO::cout << GREEN_LIGHT " RESET PRESTRESS " END_COLOR << IO::endl;
+    }
+     //ResetPrestress();
+    SetupStochMat((random_seed+(unsigned int)numb_run_));
+    discret_->Comm().Barrier();
+    output_->NewResultFile(filename_,(numb_run_));
+
+
+    // get input lists
+    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
+    // major switch to different time integrators
+    switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
+    {
+      case INPAR::STR::dyna_statics:
+      case INPAR::STR::dyna_genalpha:
+      case INPAR::STR::dyna_onesteptheta:
+      case INPAR::STR::dyna_gemm:
+      case INPAR::STR::dyna_expleuler:
+      case INPAR::STR::dyna_centrdiff:
+      case INPAR::STR::dyna_ab2:
+      case INPAR::STR::dyna_euma:
+      case INPAR::STR::dyna_euimsto:
+      {
+        // instead of calling dyn_nlnstructural_drt(); here build the adapter here so that we have acces to the results
+        // What follows is basicaly a copy of whats usually in dyn_nlnstructural_drt();
+        // create an adapterbase and adapter
+        // access the structural discretization
+        Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+        ADAPTER::StructureBaseAlgorithm adapterbase(DRT::Problem::Instance()->StructuralDynamicParams(), structdis);
+        ADAPTER::Structure& structadaptor = const_cast<ADAPTER::Structure&>(adapterbase.StructureField());
+
+        // do restart
+        const int restart = DRT::Problem::Instance()->Restart();
+        if (restart)
+        {
+          structadaptor.ReadRestart(restart);
+        }
+        /// Try some nasty stuff
+        double mytesttime=0.31;
+        if (numb_run_-start_run_!= 0)
+        {
+          dis_coarse2= Teuchos::rcp(new const Epetra_Vector(*(structadaptor.Dispn())));
+          IO::cout << "disp " << (*dis_coarse2)[2] << IO::endl;
+          IO::cout << "strating at t= 0.3" << IO::endl;
+          structadaptor.SetTime(mytesttime);
+          structadaptor.GetTime();
+        }
+        structadaptor.Integrate();
+
+        dis_coarse= Teuchos::rcp(new const Epetra_Vector(*(structadaptor.Dispn())));
+
+        IO::cout << "disp " << (*dis_coarse)[2] << IO::endl;
+        // test results
+        DRT::Problem::Instance()->AddFieldTest(structadaptor.CreateFieldTest());
+        DRT::Problem::Instance()->TestAll(structadaptor.DofRowMap()->Comm());
+
+
+        if(!reduced_output_)
+        {
+          Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
+          Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
+        }
+
+        // time to go home...
+      }
+        break;
+      default:
+        dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
+    }
+
+    EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_2pk,INPAR::STR::strain_gl);
+    EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_cauchy  ,INPAR::STR::strain_ea);
+
+    numb_run_++;
+    } while (numb_run_< numruns);
+  return;
+}
+
 //---------------------------------------------------------------------------------------------
 void STR::MLMC::SetupProlongatorParallel()
 {
@@ -423,33 +554,33 @@ void STR::MLMC::SetupProlongatorParallel()
   // Assembly
   prolongator_disp_crs_->GlobalAssemble(*dmap_disp,*rmap_disp,true);
   prolongator_stress_crs_->GlobalAssemble(*dmap_stress,*rmap_stress,true);
-  cout << "################################################### " << endl;
-  cout << "   SUCCESSFULLY INITIALIZED  PROLONGATOR" << endl;
-  cout <<  num_outliers << " Nodes do not lie within a background element " << endl;
-  cout << "################################################### " << endl;
+  IO::cout << "################################################### " << IO::endl;
+  IO::cout << "   SUCCESSFULLY INITIALIZED  PROLONGATOR" << IO::endl;
+  IO::cout <<  num_outliers << " Nodes do not lie within a background element " << IO::endl;
+  IO::cout << "################################################### " << IO::endl;
 }
 //---------------------------------------------------------------------------------------------
 void STR::MLMC::SetupProlongator()
 {
   // This functions calculates the prolongtators for the displacement and the nodal stresses
-  cout << "debugging in  LINE "<<  __LINE__<< endl;
+
   // 3D Problem
   int num_columns_prolongator_disp = actdis_fine_->NumGlobalNodes()*3;
   int num_columns_prolongator_stress = actdis_fine_->NumGlobalNodes();
 
   double xsi[3] = {0.0, 0.0,0.0};
-  cout << "debugging in  LINE "<<  __LINE__<< endl;
+
   // loop over nodes of fine dis
   int num_nodes;
   int bg_ele_id;
   num_nodes = actdis_fine_->NumGlobalNodes();
-  cout << "debugging in  LINE "<<  __LINE__<< endl;
+
   // init prolongators
-  cout << "num_columns proongator "  << num_columns_prolongator_disp << endl;
-  cout << "num_columns proongator stress  "  << num_columns_prolongator_stress << endl;
+  IO::cout << "num_columns proongator "  << num_columns_prolongator_disp << IO::endl;
+  IO::cout << "num_columns proongator stress  "  << num_columns_prolongator_stress << IO::endl;
   prolongator_disp_ = Teuchos::rcp(new Epetra_MultiVector(*actdis_coarse_->DofRowMap(),num_columns_prolongator_disp,true));
   prolongator_stress_ = Teuchos::rcp(new Epetra_MultiVector(*actdis_coarse_->NodeRowMap(),num_columns_prolongator_stress,true));
-  cout << "debugging in  LINE "<<  __LINE__<< endl;
+
   for (int i = 0; i < num_nodes ; i++)
   {
 
@@ -482,7 +613,7 @@ void STR::MLMC::SetupProlongator()
 //---------------------------------------------------------------------------------------------
 void STR::MLMC::ProlongateResults()
 {
-  cout << "Prolongating Resuts " << endl;
+  IO::cout << "Prolongating Resuts " << IO::endl;
   // To avoid messing with the timeintegration we read in the results of the coarse discretization here
   // Get coarse Grid problem instance
   std::stringstream name;
@@ -527,7 +658,6 @@ void STR::MLMC::ProlongateResults()
 
 
   // Write interpolated displacement to file
-  cout << " before displacement  " << endl;
   output_fine_->WriteVector("displacement", dis_fine, output_fine_->dofvector);
   Teuchos::RCP<Epetra_Vector> dis_fine_single = Teuchos::rcp(new Epetra_Vector(*actdis_fine_->DofRowMap(),true));
 
@@ -624,7 +754,7 @@ void STR::MLMC::ProlongateResults()
 
   p.set("poststress", poststress);
   p.set("stresstype","ndxyz");
-  // cout << " Debugging   LINE   " << __LINE__ << endl;
+
   actdis_coarse_->ClearState();
   actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   actdis_coarse_->ClearState();
@@ -638,7 +768,7 @@ void STR::MLMC::ProlongateResults()
   p.set("poststress", poststrain);
   p.set("gpstressmap", gpstrainmap);
   p.set("stresstype","ndxyz");
-  // cout << " Debugging   LINE   " << __LINE__ << endl;
+
   actdis_coarse_->ClearState();
   actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   actdis_coarse_->ClearState();
@@ -657,7 +787,7 @@ void STR::MLMC::ProlongateResults()
     dserror("stuff went wrong");
   }
 
-  cout << " before prolongated gauss 2pk stresses " << endl;
+  IO::cout << " before prolongated gauss 2pk stresses " << IO::endl;
   output_fine_->WriteVector("prolongated_gauss_2PK_stresses_xyz", poststress_fine, output_fine_->nodevector);
   output_fine_->WriteVector("prolongated_gauss_GL_strains_xyz", poststrain_fine, output_fine_->nodevector);
   // do some statistics
@@ -691,7 +821,7 @@ int STR::MLMC::FindBackgroundElement(DRT::Node node, Teuchos::RCP<DRT::Discretiz
     DRT::Element* ele = background_dis->gElement(globel_ele_id);
     //inEle = CheckIfNodeInElement(node, *ele);
     pseudo_distance = CheckIfNodeInElement(node, *ele, xsi);
-    //cout << " pseudo_distance  " << pseudo_distance  << endl;
+    //IO::cout << " pseudo_distance  " << pseudo_distance  << IO::endl;
     // check if node is in Element
     if (pseudo_distance < min_pseudo_distance)
     {
@@ -705,14 +835,14 @@ int STR::MLMC::FindBackgroundElement(DRT::Node node, Teuchos::RCP<DRT::Discretiz
   // Debug
   if(min_pseudo_distance < InEleRange_)
   {
-    //cout << "found background element Ele ID is " <<  back_ground_ele_id << endl;
-    //cout << "Local Coordinates are "<< "xsi_0 " << xsi[0] << " xsi_1 " << xsi[1] << " xsi_2 " << xsi[2] << endl;
+    //IO::cout << "found background element Ele ID is " <<  back_ground_ele_id << IO::endl;
+    //IO::cout << "Local Coordinates are "<< "xsi_0 " << xsi[0] << " xsi_1 " << xsi[1] << " xsi_2 " << xsi[2] << IO::endl;
 
   }
   else
   {
-   //cout << "did not find background element, closest element is: Ele ID: " << back_ground_ele_id << endl;
-   //cout << "Local Coordinates are "<< "xsi_0 " << background_xsi[0] << " xsi_1 " << background_xsi[1] << " xsi_2 " << background_xsi[2] << endl;
+   //IO::cout << "did not find background element, closest element is: Ele ID: " << back_ground_ele_id << IO::endl;
+   //IO::cout << "Local Coordinates are "<< "xsi_0 " << background_xsi[0] << " xsi_1 " << background_xsi[1] << " xsi_2 " << background_xsi[2] << IO::endl;
    // dserror("stop right here");
    // write closest element xsi* into  pointer
     xsi[0]=background_xsi[0];
@@ -750,22 +880,19 @@ double STR::MLMC::CheckIfNodeInElement(DRT::Node& node, DRT::Element& ele, doubl
         {
           EvaluateF(f,node,ele,xsi);
           conv = sqrt(f[0]*f[0]+f[1]*f[1]+f[2]*f[2]);
-          //cout << "Iteration " << k << ": -> |f|=" << conv << endl;
+          //IO::cout << "Iteration " << k << ": -> |f|=" << conv << IO::endl;
           if (conv <= convtol_) break;
 
           EvaluateGradF(df,node,ele,xsi);
 
           // solve dxsi = - inv(df) * f
-          //cout << "herer "<< endl;
           df.Invert();
-          //cout << "after " << endl;
-          //cout << "xsi_0 " << xsi[0] << "xsi_1 " << xsi[1] << "xsi_2 " << xsi[2] << endl;
+
 
           // update xsi
           xsi[0] += -df(0,0)*f[0] - df(1,0)*f[1] - df(2,0)*f[2];
           xsi[1] += -df(0,1)*f[0] - df(1,1)*f[1] - df(2,1)*f[2];
           xsi[2] += -df(0,2)*f[0] - df(1,2)*f[1] - df(2,2)*f[2];
-          //cout << "iteration " << k<< "xsi: " << xsi[0] <<" " << xsi[1] << " "<<  xsi[2]<<endl ;
         }
 
       // Newton iteration unconverged
@@ -888,7 +1015,8 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
 
   // loop all materials in problem
   const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
-  if (myrank == 0) printf("No. material laws considered : %d\n",(int) mats.size());
+  if (myrank == 0)
+    IO::cout << "No. material laws considered: " << (int)mats.size() << IO::endl;
   map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); curr++)
   {
@@ -904,69 +1032,73 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
        break;
       default:
       {
-       cout << "MAT CURR " << actmat->Type() << "not stochastic" << endl;
+       IO::cout << "MAT CURR " << actmat->Type() << "not stochastic" << IO::endl;
       }
 
     }
   } // EOF loop over mats
   if (!stochmat_flag)// ignore unknown materials ?
           {
-            //cout << "Mat Type   " << actmat->Type() << endl;
+            //IO::cout << "Mat Type   " << actmat->Type() << IO::endl;
             dserror("No stochastic material supplied");
           }
   // get elements on proc use col map to init ghost elements as well
   Teuchos::RCP<Epetra_Vector> my_ele = Teuchos::rcp(new Epetra_Vector(*discret_->ElementColMap(),true));
-  cout << "numb_run_" << numb_run_ << "start_run_ " << start_run_ << endl;
-  if (numb_run_-start_run_== 0 )
-  {
-    random_field_ = Teuchos::rcp(new GenRandomField(random_seed,discret_));
-    if (0)
-    {
-      // little testing loop
-      // Get size
-      //int size = random_field_->SizePerDim();
-      //int  NumCosTerms = random_field_->NumberOfCosTerms();
+  // for doing quick deterministic computations instead of using a field use det_value instead
+  // we do this so we can use our custom element output while doing deterministic simulation
 
-      //int dim =random_field_->Dimension();
-      //int mysize = std::pow(size,double(dim));
-      //cout << "stopped  calculation of sample psd " << endl;
-      //Teuchos::RCP<Teuchos::Array <double> > sample_psd= Teuchos::rcp( new Teuchos::Array<double>(mysize,0.0));
-      //Teuchos::RCP<Teuchos::Array <double> > average_psd= Teuchos::rcp( new Teuchos::Array<double>(mysize,0.0));
-      //random_field_->GetPSDFromSample3D(sample_psd);
-      //random_field_->GetPSDFromSample(sample_psd);
-      //random_field_->WriteSamplePSDToFile(sample_psd);
-      // eof testing
-      //dserror("stop here");
-//      Teuchos::RCP<Teuchos::Array <double> > average_psd=
-//          Teuchos::rcp( new Teuchos::Array<double>(size*size,0.0));
-//      Teuchos::RCP<Teuchos::Array <double> > sample_psd=
-//             Teuchos::rcp( new Teuchos::Array<double>(size*size,0.0));
-//      for (int i =0 ; i<500; i++)
-//      {
-//        random_field_->CreateNewSample(random_seed+i);
-//        std::vector<double> ele_center (3,1.0);
-//        // calc average psd
-//        //random_field_->GetPSDFromSample3D(sample_psd);
-//        random_field_->GetPSDFromSample(sample_psd);
-//        for (int j=0;j<size *size;j++)
-//        {
-//          (*average_psd)[j]+=1/500.*(*sample_psd)[j];
-//        }
-//        cout << "Run " << i << " of 1000" << endl;
-//      }
-//      std::ofstream File;
-//      File.open("Psd_average.txt",std::ios::app);
-//      for (int j=0;j<size*size;j++)
-//      {
-//          File << (*average_psd)[j] << endl;
-//      }
-//      File.close();
-//      dserror("DONE stop now");
-    }
-  }
-  else
+  if (!use_det_value_)
   {
-    random_field_->CreateNewSample(random_seed);
+    if (numb_run_-start_run_== 0 )
+    {
+      random_field_ = Teuchos::rcp(new GenRandomField(random_seed,discret_));
+      if (0)
+      {
+        // little testing loop
+        // Get size
+        //int size = random_field_->SizePerDim();
+        //int  NumCosTerms = random_field_->NumberOfCosTerms();
+        //int dim =random_field_->Dimension();
+        //int mysize = pow(size,double(dim));
+        //IO::cout << "stopped  calculation of sample psd " << IO::endl;
+        //Teuchos::RCP<Teuchos::Array <double> > sample_psd= Teuchos::rcp( new Teuchos::Array<double>(mysize,0.0));
+        //Teuchos::RCP<Teuchos::Array <double> > average_psd= Teuchos::rcp( new Teuchos::Array<double>(mysize,0.0));
+        //random_field_->GetPSDFromSample3D(sample_psd);
+        //random_field_->GetPSDFromSample(sample_psd);
+        //random_field_->WriteSamplePSDToFile(sample_psd);
+        // eof testing
+        //dserror("stop here");
+  //      Teuchos::RCP<Teuchos::Array <double> > average_psd=
+  //          Teuchos::rcp( new Teuchos::Array<double>(size*size,0.0));
+  //      Teuchos::RCP<Teuchos::Array <double> > sample_psd=
+  //             Teuchos::rcp( new Teuchos::Array<double>(size*size,0.0));
+  //      for (int i =0 ; i<500; i++)
+  //      {
+  //        random_field_->CreateNewSample(random_seed+i);
+  //        vector<double> ele_center (3,1.0);
+  //        // calc average psd
+  //        //random_field_->GetPSDFromSample3D(sample_psd);
+  //        random_field_->GetPSDFromSample(sample_psd);
+  //        for (int j=0;j<size *size;j++)
+  //        {
+  //          (*average_psd)[j]+=1/500.*(*sample_psd)[j];
+  //        }
+  //        IO::cout << "Run " << i << " of 1000" << IO::endl;
+  //      }
+  //      ofstream File;
+  //      File.open("Psd_average.txt",ios::app);
+  //      for (int j=0;j<size*size;j++)
+  //      {
+  //          File << (*average_psd)[j] << IO::endl;
+  //      }
+  //      File.close();
+  //      dserror("DONE stop now");
+      }
+    }
+    else
+    {
+      random_field_->CreateNewSample(random_seed);
+    }
   }
   // loop over all elements
   for (int i=0; i< (discret_->NumMyColElements()); i++)
@@ -976,23 +1108,34 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
       MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(discret_->lColElement(i)->Material().get());
       std::vector<double> ele_center;
       ele_center = discret_->lColElement(i)->ElementCenterRefeCoords();
-      // get dim of field
-      if(random_field_->Dimension()==2)
+      if(use_det_value_)
       {
-        //special hack here assuming circular geometry with r=25 mm
-        double phi= acos(ele_center[0]/25);
-        //compute x coord
-        ele_center[0]=phi*25;
-        ele_center[1]=ele_center[2];
+        stoch_mat_par=det_value_;
+        IO::cout << "WARNING NOT USING RANDOM FIELD BUT DET_VALUE INSTEAD" << IO::endl;
       }
-      if (i==0)
-        stoch_mat_par = random_field_->EvalFieldAtLocation(ele_center,false,true);
       else
-        stoch_mat_par = random_field_->EvalFieldAtLocation(ele_center,false,false);
-
-      aaa_stopro->Init(stoch_mat_par,"beta");
+      {
+        // get dim of field
+        if(random_field_->Dimension()==2)
+        {
+          //special hack here assuming circular geometry with r=25 mm
+          double phi= acos(ele_center[0]/25);
+          //compute x coord
+          ele_center[0]=phi*25;
+          ele_center[1]=ele_center[2];
+          
+          //IO::cout << "No Spherical Field" << IO::endl;
+          //ele_center[1]=ele_center[2];
+        }
+        if (i==0)
+          stoch_mat_par = random_field_->EvalFieldAtLocation(ele_center,false,true);
+        else
+          stoch_mat_par = random_field_->EvalFieldAtLocation(ele_center,false,false);
       }
-    } // EOF loop elements
+        aaa_stopro->Init(stoch_mat_par,"beta");
+
+    }
+  } // EOF loop elements
 
 }
 
@@ -1103,7 +1246,7 @@ void STR::MLMC::ResetPrestress()
     {
     case INPAR::STR::prestress_none:
     {
-      cout << "nothing to do";
+      IO::cout << "nothing to do no prestressing used " << IO::endl;
     }
     break;
     case INPAR::STR::prestress_mulf:
@@ -1121,6 +1264,7 @@ void STR::MLMC::ResetPrestress()
     break;
     default:
       dserror("Unknown type of prestressing");
+      break;
     }
 }
 
@@ -1297,7 +1441,7 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   {
     dserror("vector containing element center stresses/strains not available");
   }
-  cout << "Result stress" << *elestress << endl;
+  IO::cout << "Result stress" << *elestress << IO::endl;
   dserror("stop here");
   // and strains
   p.set("gpstressmap", gpstrainmap);
@@ -1411,8 +1555,10 @@ void STR::MLMC::SetupEvalDisAtEleCenters(vector <int> AllOutputEleIds)
   {
     NumMyElements= 0;
   }
-  cout << "Proc "<< actdis_coarse_->Comm().MyPID() << " NumOutputele " << my_output_elements_.size() << endl;
-  // move from vctor to array
+
+  IO::cout << "Proc "<< actdis_coarse_->Comm().MyPID() << " NumOutputele " << my_output_elements_.size() << IO::endl;
+
+  // move from vector to array
   int mysize = AllOutputEleIds.size();
   int ArrayAllOutputEleIds[mysize];
   for (int i=0; i< mysize; i++)
@@ -1420,12 +1566,11 @@ void STR::MLMC::SetupEvalDisAtEleCenters(vector <int> AllOutputEleIds)
     ArrayAllOutputEleIds[i]=AllOutputEleIds[i];
   }
 
-
   OutputMap_ = Teuchos::rcp(new Epetra_Map (NumGlobalMapElements,NumMyElements,&(ArrayAllOutputEleIds[0]),0,actdis_coarse_->Comm()));
 }
 void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPAR::STR::StressType iostress,INPAR::STR::StrainType iostrain )
 {
-  cout << "Proc "<< actdis_coarse_->Comm().MyPID() << " NumOutputele " << my_output_elements_.size() << endl;
+  IO::cout << "Proc "<< actdis_coarse_->Comm().MyPID() << " NumOutputele " << my_output_elements_.size() << IO::endl;
   vector < Teuchos::RCP< vector <double > > > my_output_elements_c_disp;
   vector < Teuchos::RCP< vector <double > > > my_output_elements_c_stresses;
   vector < Teuchos::RCP< vector <double > > > my_output_elements_c_strains;
@@ -1563,7 +1708,7 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
      const std::vector<double> * strains = myit->second()->Get< vector <double> >("strains");
      const std::vector<double> * mat_params = myit->second()->Get< vector <double> >("mat_params");
      const std::vector<double> * disp = myit->second()->Get< vector <double> >("disp");
-     // cout << "my_output_element_map first " << myit->first << *(myit->second)  << endl;
+     // IO::cout << "my_output_element_map first " << myit->first << *(myit->second)  << IO::endl;
 
 
     // assamble name for outputfile
@@ -1592,7 +1737,7 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
       File.open(name2.c_str(),std::ios::out);
       if (File.is_open())
       {
-        File << "run id   "<< "disp x  disp y disp z stress xx  stress yy stress zz stress xy stress yz stress xz strain xx  strain yy strain zz strain xy strain yz strain xz mat_param1 mat_param2 "
+        File << "runid "<< "dispx dispy dispz stressxx stressyy stresszz stressxy stressyz stressxz strainxx  strainyy strainzz strainxy strainyz strainxz mat_param1 mat_param2"
             << endl;
         File.close();
       }
@@ -1606,15 +1751,15 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
     File << numb_run_ ;
     for(unsigned int i=0;i<disp->size();i++)
     {
-      File <<  "  " << (*disp)[i];
+      File <<  " " << (*disp)[i];
     }
     for(unsigned int i=0;i<stresses->size();i++)
     {
-      File <<  "  " << (*stresses)[i];
+      File <<  " " << (*stresses)[i];
     }
     for(unsigned int i=0;i<stresses->size();i++)
     {
-      File <<  "  " << (*strains)[i];
+      File <<  " " << (*strains)[i];
     }
     for(int i=0;i<2;i++)
     {

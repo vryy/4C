@@ -41,7 +41,9 @@ void STR::mlmc()
   actdis = DRT::Problem::Instance()->GetDis("structure");
 
   // set degrees of freedom in the discretization
-  if (not actdis->Filled()) actdis->FillComplete();
+  if (not actdis->Filled() || not actdis->HaveDofs()) actdis->FillComplete();
+
+
 
   // context for output and restart
   Teuchos::RCP<IO::DiscretizationWriter> output
@@ -62,17 +64,26 @@ void STR::mlmc()
   if (linsolvernumber == (-1))
     dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
 
-  Teuchos::RCP<LINALG::Solver> solver
-    = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
-                                      actdis->Comm(),
-                                      DRT::Problem::Instance()->ErrorFile()->Handle()));
-  actdis->ComputeNullSpaceIfNecessary(solver->Params());
+  //Teuchos::RCP<LINALG::Solver> solver
+  //  = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(linsolvernumber),
+   //                                   actdis->Comm(),
+   //                                   NULL));
+   //                                   //DRT::Problem::Instance()->ErrorFile()->Handle()));
+ // actdis->ComputeNullSpaceIfNecessary(solver->Params());
   bool perform_mlmc = Teuchos::getIntegralValue<int>(mlmcp,"MLMC");
-  //cout << perform_mlmc << "see if we come in here" << __LINE__ << __FILE__ <<endl;
+  bool reset_prestress =Teuchos::getIntegralValue<int>(mlmcp,"RESETPRESTRESS");
   if (perform_mlmc==true)
   {
-    STR::MLMC mc(actdis,solver,output);
-    mc.Integrate();
+    STR::MLMC mc(actdis,output);
+    // Use another integrate function if we do not reset the prestress
+    if(reset_prestress)
+    {
+    	mc.Integrate();
+    }
+    else
+    {
+    	mc.IntegrateNoReset();
+    }
   }
   else
   {
