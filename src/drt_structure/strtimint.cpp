@@ -16,6 +16,7 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*/
 /* headers */
 #include <iostream>
+#include "../drt_io/io_pstream.H"
 #include "Epetra_SerialDenseVector.h"
 #include "Teuchos_TimeMonitor.hpp"
 
@@ -64,15 +65,15 @@ Maintainer: Alexander Popp
 /* print tea time logo */
 void STR::TimInt::Logo()
 {
-  std::cout << "Welcome to Structural Time Integration " << std::endl;
-  std::cout << "     __o__                          __o__" << std::endl;
-  std::cout << "__  /-----\\__                  __  /-----\\__" << std::endl;
-  std::cout << "\\ \\/       \\ \\    |       \\    \\ \\/       \\ \\" << std::endl;
-  std::cout << " \\ |  tea  | |    |-------->    \\ |  tea  | |" << std::endl;
-  std::cout << "  \\|       |_/    |       /      \\|       |_/" << std::endl;
-  std::cout << "    \\_____/   ._                   \\_____/   ._ _|_ /|" << std::endl;
-  std::cout << "              | |                            | | |   |" << std::endl;
-  std::cout << std::endl;
+ IO::cout << "Welcome to Structural Time Integration " <<IO::endl;
+ IO::cout << "     __o__                          __o__" <<IO::endl;
+ IO::cout << "__  /-----\\__                  __  /-----\\__" <<IO::endl;
+ IO::cout << "\\ \\/       \\ \\    |       \\    \\ \\/       \\ \\" <<IO::endl;
+ IO::cout << " \\ |  tea  | |    |-------->    \\ |  tea  | |" <<IO::endl;
+ IO::cout << "  \\|       |_/    |       /      \\|       |_/" <<IO::endl;
+ IO::cout << "    \\_____/   ._                   \\_____/   ._ _|_ /|" <<IO::endl;
+ IO::cout << "              | |                            | | |   |" <<IO::endl;
+ IO::cout <<IO::endl;
 }
 
 /*----------------------------------------------------------------------*/
@@ -1895,6 +1896,7 @@ void STR::TimInt::Integrate()
   // (NOTE: popp 03/2010: we have to add eps to avoid the very
   // awkward effect that the time loop stops one step too early)
   double eps = 1.0e-12;
+  //cout << "we are in timint and the time is" << timen_ << endl;
   while ( (timen_ <= timemax_+eps) and (stepn_ <= stepmax_) )
   {
     // prepare contact for new time step

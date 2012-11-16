@@ -16,6 +16,7 @@ Maintainer: Alexander Popp
 #include "strtimint_statics.H"
 #include "stru_aux.H"
 #include "../drt_io/io.H"
+#include "../drt_io/io_pstream.H"
 #include "../linalg/linalg_utils.H"
 
 /*======================================================================*/
@@ -58,9 +59,9 @@ STR::TimIntStatics::TimIntStatics
   if (myrank_ == 0)
   {
     // check if we are in prestressin mode
-    if (pstype == INPAR::STR::prestress_mulf) std::cout << "with static MULF prestress" << std::endl;
-    else if (pstype == INPAR::STR::prestress_id) std::cout << "with static INVERSE DESIGN prestress" << std::endl;
-    else std::cout << "with statics" << std::endl;
+    if (pstype == INPAR::STR::prestress_mulf) IO::cout << "with static MULF prestress" << IO::endl;
+    else if (pstype == INPAR::STR::prestress_id) IO::cout << "with static INVERSE DESIGN prestress" << IO::endl;
+    else IO::cout << "with statics" << IO::endl;
   }
   
 
