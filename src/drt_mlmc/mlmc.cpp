@@ -316,6 +316,7 @@ void STR::MLMC::Integrate()
         break;
       default:
         dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
+        break;
     }
 
     EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_2pk,INPAR::STR::strain_gl);
@@ -419,11 +420,11 @@ void STR::MLMC::IntegrateNoReset()
         double mytesttime=0.31;
         if (numb_run_-start_run_!= 0)
         {
-          dis_coarse2= Teuchos::rcp(new const Epetra_Vector(*(structadaptor.Dispn())));
-          IO::cout << "disp " << (*dis_coarse2)[2] << IO::endl;
-          IO::cout << "strating at t= 0.3" << IO::endl;
-          structadaptor.SetTime(mytesttime);
-          structadaptor.GetTime();
+//          dis_coarse2= Teuchos::rcp(new const Epetra_Vector(*(structadaptor.Dispn())));
+//          IO::cout << "disp " << (*dis_coarse2)[2] << IO::endl;
+//          IO::cout << "strating at t= 0.3" << IO::endl;
+//          structadaptor.SetTime(mytesttime);
+//          structadaptor.GetTime();
         }
         structadaptor.Integrate();
 
@@ -446,6 +447,7 @@ void STR::MLMC::IntegrateNoReset()
         break;
       default:
         dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
+        break;
     }
 
     EvalDisAtEleCenters(dis_coarse,INPAR::STR::stress_2pk,INPAR::STR::strain_gl);
@@ -1033,6 +1035,7 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
       default:
       {
        IO::cout << "MAT CURR " << actmat->Type() << "not stochastic" << IO::endl;
+       break;
       }
 
     }
