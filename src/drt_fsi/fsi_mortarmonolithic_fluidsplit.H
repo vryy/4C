@@ -1,6 +1,6 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file fsi_mortarmonolithic_fluidsplit.h
+\file fsi_mortarmonolithic_fluidsplit.H
 
 \brief Solve FSI problem with non-matching grids using a monolithic scheme
 with condensed fluid interface velocities
@@ -112,9 +112,8 @@ namespace FSI
     /// recover Lagrange multiplier at the interface needed for rhs in next time step
     virtual void RecoverLagrangeMultiplier();
 
-    /// Additional safety check of kinematic constraint during a single time step:
-    /*!
-     * Constraint equation:
+    //! Additional safety check of kinematic constraint during a single time step:
+    /* Constraint equation:
      *
      * \f$D \mathbf{d}_{\Gamma}^{n+1} - D \mathbf{d}_{\Gamma}^{n}
      *      - \tau * M * \Delta \mathbf{u}_{\Gamma}^{n+1} - \Delta t M * \mathbf{u}_{\Gamma}^{n} \doteq \mathbf{0}\f$
@@ -129,9 +128,8 @@ namespace FSI
      */
     virtual void CheckKinematicConstraint();
 
-    /// Additional safety check of dynamic equilibrium during a single time step:
-    /*!
-     * Dynamic equilibrium at the interface:
+    //! Additional safety check of dynamic equilibrium during a single time step:
+    /* Dynamic equilibrium at the interface:
      *
      * \f$M^{T} \mathbf{\lambda} - D^{T} \mathbf{\lambda} = \mathbf{0}
      *
@@ -185,7 +183,7 @@ namespace FSI
         Teuchos::RCP<const Epetra_Vector> sv,   ///< structural displacements
         Teuchos::RCP<const Epetra_Vector> fv,   ///< fluid velocities and pressure
         Teuchos::RCP<const Epetra_Vector> av,   ///< ale displacements
-        double fluidscale                       ///< residual scaling for fluid
+        const double fluidscale                 ///< residual scaling for fluid
     );
 
     /// block system matrix
@@ -244,12 +242,6 @@ namespace FSI
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the fluid)
     //! evaluated at old time step \f$t_n\f$ but needed for next time step \f$t_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> lambda_;
-
-    //! interface force \f$f_{\Gamma,i+1}^{F,n+1}\f$ onto the fluid at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const Epetra_Vector> fgcur_;
-
-    //! interface force \f$f_{\Gamma,i}^{F,n+1}\f$ onto the fluid at previous NOX iteration \f$i\f$
-    Teuchos::RCP<const Epetra_Vector> fgprev_;
 
     //! interface structure displacement increment \f$\Delta(\Delta d_{\Gamma,i+1}^{n+1})\f$ at current NOX iteration \f$i+1\f$
     Teuchos::RCP<Epetra_Vector> ddginc_;

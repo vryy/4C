@@ -53,31 +53,31 @@ FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(const Epetra_Comm& c
 {
   notsetup_ = true;
 
-  coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
-  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupsfm_  = Teuchos::rcp(new ADAPTER::CouplingMortar());
+  icoupfa_  = Teuchos::rcp(new ADAPTER::Coupling());
   fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 
-  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  aigtransform_   = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmiitransform_  = Teuchos::rcp(new UTILS::MatrixColTransform);
 
   // Recovery of Lagrange multiplier happens on fluid field
-  lambda_ = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap(),true));
+  lambda_   = Teuchos::rcp(new Epetra_Vector(*FluidField().Interface()->FSICondMap(),true));
   fmgiprev_ = Teuchos::null;
-  fmgicur_ = Teuchos::null;
+  fmgicur_  = Teuchos::null;
   fmggprev_ = Teuchos::null;
-  fmggcur_ = Teuchos::null;
-  fgiprev_ = Teuchos::null;
-  fgicur_ = Teuchos::null;
-  fggprev_ = Teuchos::null;
-  fggcur_ = Teuchos::null;
+  fmggcur_  = Teuchos::null;
+  fgiprev_  = Teuchos::null;
+  fgicur_   = Teuchos::null;
+  fggprev_  = Teuchos::null;
+  fggcur_   = Teuchos::null;
 
 #ifdef DEBUG
-  if (coupsfm_ == Teuchos::null) { dserror("Allocation of 'coupsfm_' failed."); }
-  if (icoupfa_ == Teuchos::null) { dserror("Allocation of 'icoupfa_' failed."); }
-  if (fscoupfa_ == Teuchos::null) { dserror("Allocation of 'fscoupfa_' failed."); }
-  if (aigtransform_ == Teuchos::null) { dserror("Allocation of 'aigtransform_' failed."); }
-  if (fmiitransform_ == Teuchos::null) { dserror("Allocation of 'fmiitransform_' failed."); }
-  if (lambda_ == Teuchos::null) { dserror("Allocation of 'lambda_' failed."); }
+  if (coupsfm_ == Teuchos::null)        { dserror("Allocation of 'coupsfm_' failed."); }
+  if (icoupfa_ == Teuchos::null)        { dserror("Allocation of 'icoupfa_' failed."); }
+  if (fscoupfa_ == Teuchos::null)       { dserror("Allocation of 'fscoupfa_' failed."); }
+  if (aigtransform_ == Teuchos::null)   { dserror("Allocation of 'aigtransform_' failed."); }
+  if (fmiitransform_ == Teuchos::null)  { dserror("Allocation of 'fmiitransform_' failed."); }
+  if (lambda_ == Teuchos::null)         { dserror("Allocation of 'lambda_' failed."); }
 #endif
 
   return;
@@ -167,15 +167,15 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
 
     aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap()));
 
-    vector<int> pciter;
+    std::vector<int> pciter;
     std::vector<double> pcomega;
-    vector<int> spciter;
+    std::vector<int> spciter;
     std::vector<double> spcomega;
-    vector<int> fpciter;
+    std::vector<int> fpciter;
     std::vector<double> fpcomega;
-    vector<int> apciter;
+    std::vector<int> apciter;
     std::vector<double> apcomega;
-    vector<string> blocksmoother;
+    std::vector<std::string> blocksmoother;
     std::vector<double> schuromega;
     {
       int    word1;
@@ -213,7 +213,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
           apcomega.push_back(word2);
       }
       {
-        string word;
+        std::string word;
         std::istringstream blocksmootherstream(Teuchos::getNumericStringParameter(fsidyn,"BLOCKSMOOTHER"));
         while (blocksmootherstream >> word)
           blocksmoother.push_back(word);
@@ -265,11 +265,11 @@ void FSI::MortarMonolithicFluidSplit::SetupSystem()
     if(aleproj_ != INPAR::FSI::ALEprojection_none)
     {
       // set up sliding ale utils
-      slideale_ = Teuchos::rcp(new FSI::UTILS::SlideAleUtils(StructureField()->Discretization(),
-                                                    FluidField().Discretization(),
-                                                    *coupsfm_,
-                                                    true,
-                                                    aleproj_));
+      slideale_ = Teuchos::rcp(new FSI::UTILS::SlideAleUtils(	StructureField()->Discretization(),
+                                                    					FluidField().Discretization(),
+					                                                    *coupsfm_,
+          					                                          true,
+                    					                                aleproj_));
 
       iprojdispinc_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->SlaveDofRowMap(),true));
       iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->SlaveDofRowMap(),true));
@@ -310,7 +310,7 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     const double scale     = FluidField().ResidualScaling();
 
     // get fluid matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf = FluidField().BlockSystemMatrix();
+    const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf = FluidField().BlockSystemMatrix();
 
 #ifdef DEBUG
     if (blockf==Teuchos::null) { dserror("Expected Teuchos::rcp to fluid block matrix."); }
@@ -429,7 +429,6 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     duiinc_ = LINALG::CreateVector(*FluidField().Interface()->OtherMap(),true);
     veliprev_ = Teuchos::null;
     velgprev_ = Teuchos::null;
-    fgcur_ = LINALG::CreateVector(*FluidField().Interface()->FSICondMap(),true);
     fgicur_ = Teuchos::null;
     fggcur_ = Teuchos::null;
   }
@@ -437,11 +436,6 @@ void FSI::MortarMonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
   // NOX expects the 'positive' residual. The negative sign for the
   // linearized Newton system J*dx=-r is done internally by NOX.
   f.Scale(-1.);
-
-  // store interface force onto the fluid to know it in the next time step as previous force
-  // in order to recover the Lagrange multiplier
-  fgprev_ = fgcur_;
-  fgcur_ = FluidField().Interface()->ExtractFSICondVector(FluidField().RHS());
 }
 
 
@@ -469,9 +463,9 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
 #ifdef DEBUG
   if (mortarp == Teuchos::null) { dserror("Expected Teuchos::rcp to mortar matrix P."); }
-  if (s==Teuchos::null) { dserror("expect structure block matrix"); }
-  if (f==Teuchos::null) { dserror("expect fluid block matrix"); }
-  if (a==Teuchos::null) { dserror("expect ale block matrix"); }
+  if (s==Teuchos::null)         { dserror("expect structure block matrix"); }
+  if (f==Teuchos::null)         { dserror("expect fluid block matrix"); }
+  if (a==Teuchos::null)         { dserror("expect ale block matrix"); }
 #endif
 
   // extract submatrices
@@ -500,14 +494,14 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   // Block numbering in comments ranges from (1,1) to (4,4).
 
   // ---------Addressing contribution to block (2,2)
-  RCP<LINALG::SparseMatrix> fgg = MLMultiply(f->Matrix(1,1),false,*mortarp,false,false,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> fgg = MLMultiply(f->Matrix(1,1),false,*mortarp,false,false,false,true);
   fgg = MLMultiply(*mortarp,true,*fgg,false,false,false,true);
 
   s->Add(*fgg,false,scale*timescale*(1.-stiparam)/(1.-ftiparam),1.0);
 
   // ---------Addressing contribution to block (2,3)
-  RCP<LINALG::SparseMatrix> fgi = MLMultiply(*mortarp,true,f->Matrix(1,0),false,false,false,true);
-  RCP<LINALG::SparseMatrix> lfgi = Teuchos::rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
+  Teuchos::RCP<LINALG::SparseMatrix> fgi = MLMultiply(*mortarp,true,f->Matrix(1,0),false,false,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> lfgi = Teuchos::rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
 
   lfgi->Add(*fgi,false,scale,0.0);
   lfgi->Complete(fgi->DomainMap(),s->RangeMap());
@@ -525,8 +519,8 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 #endif
 
   // ---------Addressing contribution to block (3,2)
-  RCP<LINALG::SparseMatrix> fig = MLMultiply(f->Matrix(0,1),false,*mortarp,false,false,false,true);
-  RCP<LINALG::SparseMatrix> lfig = Teuchos::rcp(new LINALG::SparseMatrix(fig->RowMap(),81,false));
+  Teuchos::RCP<LINALG::SparseMatrix> fig = MLMultiply(f->Matrix(0,1),false,*mortarp,false,false,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> lfig = Teuchos::rcp(new LINALG::SparseMatrix(fig->RowMap(),81,false));
 
   lfig->Add(*fig,false,timescale,0.0);
   lfig->Complete(s->DomainMap(),fig->RangeMap());
@@ -556,7 +550,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 #endif
 
   // ---------Addressing contribution to block (4,2)
-  RCP<LINALG::SparseMatrix> laig = Teuchos::rcp(new LINALG::SparseMatrix(aii.RowMap(),81,false));
+  Teuchos::RCP<LINALG::SparseMatrix> laig = Teuchos::rcp(new LINALG::SparseMatrix(aii.RowMap(),81,false));
   (*aigtransform_)(a->FullRowMap(),
                    a->FullColMap(),
                    aig,
@@ -565,7 +559,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
                    *laig);
 
   laig->Complete(f->Matrix(1,1).DomainMap(),aii.RangeMap());
-  RCP<LINALG::SparseMatrix> llaig = MLMultiply(*laig,false,*mortarp,false,false,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> llaig = MLMultiply(*laig,false,*mortarp,false,false,false,true);
   laig = Teuchos::rcp(new LINALG::SparseMatrix(llaig->RowMap(),81,false));
 
   laig->Add(*llaig,false,1.0,0.0);
@@ -596,18 +590,18 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
     // reuse transform objects to add shape derivative matrices to structural blocks
 
     // ---------Addressing contribution to block (2,2)
-    RCP<LINALG::SparseMatrix> fmgg = MLMultiply(mmm->Matrix(1,1),false,*mortarp,false,false,false,true);
+    Teuchos::RCP<LINALG::SparseMatrix> fmgg = MLMultiply(mmm->Matrix(1,1),false,*mortarp,false,false,false,true);
     fmgg = MLMultiply(*mortarp,true,*fmgg,false,false,false,true);
 
-    RCP<LINALG::SparseMatrix> lfmgg = Teuchos::rcp(new LINALG::SparseMatrix(fmgg->RowMap(),81,false));
+    Teuchos::RCP<LINALG::SparseMatrix> lfmgg = Teuchos::rcp(new LINALG::SparseMatrix(fmgg->RowMap(),81,false));
     lfmgg->Add(*fmgg,false,1.0,0.0);
     lfmgg->Complete(s->DomainMap(),fmgg->RangeMap());
 
     s->Add(*lfmgg,false,scale*(1.-stiparam)/(1.-ftiparam),1.0);
 
     // ---------Addressing contribution to block (3,2)
-    RCP<LINALG::SparseMatrix> fmig = MLMultiply(mmm->Matrix(0,1),false,*mortarp,false,false,false,true);
-    RCP<LINALG::SparseMatrix> lfmig = Teuchos::rcp(new LINALG::SparseMatrix(fmig->RowMap(),81,false));
+    Teuchos::RCP<LINALG::SparseMatrix> fmig = MLMultiply(mmm->Matrix(0,1),false,*mortarp,false,false,false,true);
+    Teuchos::RCP<LINALG::SparseMatrix> lfmig = Teuchos::rcp(new LINALG::SparseMatrix(fmig->RowMap(),81,false));
 
     lfmig->Add(*fmig,false,1.0,0.0);
     lfmig->Complete(s->DomainMap(),fmig->RangeMap());
@@ -632,7 +626,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
                       false);
 
 
-    RCP<LINALG::SparseMatrix> lfmgi = Teuchos::rcp(new LINALG::SparseMatrix(fmgi.RowMap(),81,false));
+    Teuchos::RCP<LINALG::SparseMatrix> lfmgi = Teuchos::rcp(new LINALG::SparseMatrix(fmgi.RowMap(),81,false));
     (*fmiitransform_)(mmm->FullRowMap(),
                       mmm->FullColMap(),
                       fmgi,
@@ -643,7 +637,7 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
 
     // ---------Addressing contribution to block (2,4)
     lfmgi->Complete(aii.DomainMap(),mortarp->RangeMap());
-    RCP<LINALG::SparseMatrix> llfmgi = MLMultiply(*mortarp,true,*lfmgi,false,false,false,true);
+    Teuchos::RCP<LINALG::SparseMatrix> llfmgi = MLMultiply(*mortarp,true,*lfmgi,false,false,false,true);
     lfmgi = Teuchos::rcp(new LINALG::SparseMatrix(s->RowMap(),81,false));
 
     lfmgi->Add(*llfmgi,false,scale,0.0);
@@ -686,10 +680,10 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   // --------------------------------------------------------------------------
   // store parts of fluid matrix to know them in the next iteration as previous
   // iteration matrices
-  fgiprev_ = fgicur_;
-  fggprev_ = fggcur_;
-  fgicur_ = Teuchos::rcp(new LINALG::SparseMatrix(f->Matrix(1,0)));
-  fggcur_ = Teuchos::rcp(new LINALG::SparseMatrix(f->Matrix(1,1)));
+  fgiprev_  = fgicur_;
+  fggprev_  = fggcur_;
+  fgicur_   = Teuchos::rcp(new LINALG::SparseMatrix(f->Matrix(1,0)));
+  fggcur_   = Teuchos::rcp(new LINALG::SparseMatrix(f->Matrix(1,1)));
 
   // store parts of fluid shape derivative matrix to know them in the next
   // iteration as previous iteration matrices
@@ -890,7 +884,7 @@ void FSI::MortarMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
                                          Teuchos::RCP<const Epetra_Vector> sv,
                                          Teuchos::RCP<const Epetra_Vector> fv,
                                          Teuchos::RCP<const Epetra_Vector> av,
-                                         double fluidscale)
+                                         const double fluidscale)
 {
 
   // extract inner dofs
@@ -931,7 +925,7 @@ void FSI::MortarMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
 
       Teuchos::RCP<Epetra_Vector> tmprhsfull = StructureField()->Interface()->InsertFSICondVector(tmprhs);
 
-      modsv->Update(-(stiparam-(ftiparam*(1.0-stiparam))/(1.0-ftiparam)), *tmprhsfull, 1.0);
+      modsv->Update(stiparam-(ftiparam*(1.0-stiparam))/(1.0-ftiparam), *tmprhsfull, 1.0);
     }
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modsv->Map(),true));
@@ -996,6 +990,7 @@ FSI::MortarMonolithicFluidSplit::CreateLinearSystem(ParameterList& nlParams,
     break;
   default:
     dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
+    break;
   }
 
   return linSys;
@@ -1183,7 +1178,7 @@ void FSI::MortarMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
   if (disgprev_ != Teuchos::null)
     ddginc_->Update(1.0, *scx, -1.0, *disgprev_, 0.0);    // compute current iteration increment
   else
-    ddginc_ = Teuchos::rcp(new Epetra_Vector(*scx));               // first iteration increment
+    ddginc_ = Teuchos::rcp(new Epetra_Vector(*scx));      // first iteration increment
 
   disgprev_ = scx;                                        // store current step increment
   // ------------------------------------
@@ -1192,7 +1187,7 @@ void FSI::MortarMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epe
   if (aleiprev_ != Teuchos::null)
     ddialeinc_->Update(1.0, *aox, -1.0, *aleiprev_, 0.0); // compute current iteration increment
   else
-    ddialeinc_ = Teuchos::rcp(new Epetra_Vector(*aox));            // first iteration increment
+    ddialeinc_ = Teuchos::rcp(new Epetra_Vector(*aox));   // first iteration increment
 
   aleiprev_ = aox;                                        // store current step increment
   // ------------------------------------
@@ -1230,7 +1225,7 @@ void FSI::MortarMonolithicFluidSplit::Update()
     slideale_->EvaluateMortar(StructureField()->ExtractInterfaceDispnp(), iprojdisp_, *coupsfm_);
     slideale_->EvaluateFluidMortar(idispale,iprojdisp_);
 
-    RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*iprojdisp_));
+    Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*iprojdisp_));
     temp->ReplaceMap(idispale->Map());
     Teuchos::RCP<Epetra_Vector> acx = icoupfa_->MasterToSlave(temp);
     AleField().ApplyInterfaceDisplacements(acx);
@@ -1265,12 +1260,16 @@ void FSI::MortarMonolithicFluidSplit::Output()
 
   // output Lagrange multiplier
   {
+    /* 'lambda_' is only defined on the interface. So, insert 'lambda_' into
+     * 'lambdafull' that is defined on the entire fluid field. Then, write
+     * output or restart data.
+     */
     Teuchos::RCP<Epetra_Vector> lambdafull = FluidField().Interface()->InsertFSICondVector(lambda_);
     const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
     const int upres = fsidyn.get<int>("UPRES");
-    if (uprestart != 0 && FluidField().Step() % uprestart == 0 || FluidField().Step() % upres)
-      FluidField().DiscWriter()->WriteVector("lambda", lambdafull);
+    if ((uprestart != 0 && FluidField().Step() % uprestart == 0) || FluidField().Step() % upres)
+      FluidField().DiscWriter()->WriteVector("fsilambda", lambdafull);
   }
 
   AleField().      Output();
@@ -1294,7 +1293,7 @@ void FSI::MortarMonolithicFluidSplit::ReadRestart(int step)
   {
     Teuchos::RCP<Epetra_Vector> lambdafull = Teuchos::rcp(new Epetra_Vector(*FluidField().DofRowMap(),true));
     IO::DiscretizationReader reader = IO::DiscretizationReader(FluidField().Discretization(),step);
-    reader.ReadVector(lambdafull, "lambda");
+    reader.ReadVector(lambdafull, "fsilambda");
     lambda_ = FluidField().Interface()->ExtractFSICondVector(lambdafull);
   }
 
@@ -1353,16 +1352,16 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
   const Teuchos::RCP<LINALG::SparseMatrix> mortardinv = coupsfm_->GetDinvMatrix();
 
 #ifdef DEBUG
-  if (mortarp == Teuchos::null) { dserror("Expected Teuchos::rcp to mortar matrix P."); }
-  if (mortardinv == Teuchos::null) { dserror("Expected Teuchos::rcp to mortar matrix D^{-1}."); }
+  if (mortarp == Teuchos::null)    { dserror("Expected rcp to mortar matrix P."); }
+  if (mortardinv == Teuchos::null) { dserror("Expected rcp to mortar matrix D^{-1}."); }
 #endif
 
   // get fluid shape derivative matrix
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
+  const Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
 
   // some often re-used vectors
-  Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::null;     // stores intermediate result of terms (3)-(8)
-  Teuchos::RCP<Epetra_Vector> auxvec = Teuchos::null;     // just for convenience
+  Teuchos::RCP<Epetra_Vector> tmpvec    = Teuchos::null;  // stores intermediate result of terms (3)-(8)
+  Teuchos::RCP<Epetra_Vector> auxvec    = Teuchos::null;  // just for convenience
   Teuchos::RCP<Epetra_Vector> auxauxvec = Teuchos::null;  // just for convenience
 
 
@@ -1373,7 +1372,7 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
    *
    * (1)  - ftiparam / (1.-ftiparam) * lambda^{n}
    *
-   * (2)  + 1. / (1.-ftiparam) * D^{-T} * tmpvec
+   * (2)  - 1. / (1.-ftiparam) * D^{-T} * tmpvec
    *
    * with tmpvec =
    *
@@ -1405,14 +1404,13 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
    */
 
   // ---------Addressing term (1)
-  lambda_->Update(-ftiparam,*lambda_,0.0);
+  lambda_->Update(ftiparam,*lambda_,0.0);
   // ---------End of term (1)
 
   // ---------Addressing term (3)
   Teuchos::RCP<Epetra_Vector> fluidresidual = FluidField().Interface()->ExtractFSICondVector(FluidField().RHS());
-  fluidresidual->Scale(-1.0);  // scale by -1.0 to get fluid residual, not RHS
+  fluidresidual->Scale(-1.0);
   tmpvec = Teuchos::rcp(new Epetra_Vector(*fluidresidual));
-//  tmpvec = Teuchos::rcp(new Epetra_Vector(*fgprev_));
   // ---------End of term (3)
 
   // ---------Addressing term (4)
@@ -1428,10 +1426,8 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
   {
     auxvec = Teuchos::rcp(new Epetra_Vector(mortarp->RangeMap(),true));
     mortarp->Apply(*ddginc_,*auxvec);
-    int err = fmggprev_->Apply(*auxvec,*auxauxvec);
-    if (err!=0) { dserror("Failed!"); }
-    err = tmpvec->Update(1.0,*auxauxvec,1.0);
-    if (err!=0) { dserror("Failed!"); }
+    fmggprev_->Apply(*auxvec,*auxauxvec);
+    tmpvec->Update(1.0,*auxauxvec,1.0);
   }
   // ---------End of term (5)
 
@@ -1445,7 +1441,7 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
   if (fmgiprev_!=Teuchos::null)
   {
     /* For matrix-vector-product, the DomainMap() of the matrix and the Map() of the vector
-     * have to match.DomaintMap() containts inner velocity DOFs and all pressure DOFs.
+     * have to match.DomaintMap() contains inner velocity DOFs and all pressure DOFs.
      * The inner ale displacement increment is converted to the fluid map using AleToFluid().
      * This results in a map that contains all velocity but no pressure DOFs.
      *
@@ -1456,7 +1452,7 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
      * DOFs after calling AleToFluid(). Afterwards, a second map extractor 'velotherpressuremapext'
      * is used to append pressure DOFs filled with zeros.
      *
-     * Finally, maps match and matrix-vetor-multiplication can be done.
+     * Finally, maps match and matrix-vector-multiplication can be done.
      */
 
     // extract inner velocity DOFs after calling AleToFluid()
@@ -1470,7 +1466,7 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
     auxauxvec = Teuchos::rcp(new Epetra_Vector(fmgiprev_->DomainMap(), true));
     velotherpressuremapext.InsertCondVector(auxvec,auxauxvec);
 
-    // prepare vector to store result of matrix-vetor-product
+    // prepare vector to store result of matrix-vector-product
     auxvec = Teuchos::rcp(new Epetra_Vector(fmgiprev_->RangeMap(),true));
 
     // Now, do the actual matrix-vector-product
@@ -1495,7 +1491,7 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
   // ---------End of term (2)
 
   // Finally, divide by (1.0-ftiparam) which is common to all terms
-  lambda_->Scale(1.0/(1.0-ftiparam));
+  lambda_->Scale(-1.0/(1.0-ftiparam));
 
   // Finally, the Lagrange multiplier lambda_ is recovered here. It has the unit [N/m^2].
   // Actual nodal forces are obtained by multiplication with mortar matrices M or D later on.
@@ -1516,8 +1512,8 @@ void FSI::MortarMonolithicFluidSplit::CheckKinematicConstraint()
   const Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMMatrix();
 
 #ifdef DEBUG
-  if (mortarm == Teuchos::null) { dserror("Expected Teuchos::rcp to mortar matrix M."); }
-  if (mortard == Teuchos::null) { dserror("Expected Teuchos::rcp to mortar matrix D."); }
+  if (mortarm == Teuchos::null) { dserror("Expected rcp to mortar matrix M."); }
+  if (mortard == Teuchos::null) { dserror("Expected rcp to mortar matrix D."); }
 #endif
 
   // get interface displacements and velocities
@@ -1559,12 +1555,12 @@ void FSI::MortarMonolithicFluidSplit::CheckKinematicConstraint()
   ios_base::fmtflags flags = Utils()->out().flags();
 
   Utils()->out() << std::scientific
-                   << "\nViolation of kinematic interface constraint:\n"
-                   << "L_2-norm: "
-                   << violationl2
-                   << "        L_inf-norm: "
-                   << violationinf
-                   << "\n";
+                 << "\nViolation of kinematic interface constraint:\n"
+                 << "L_2-norm: "
+                 << violationl2
+                 << "        L_inf-norm: "
+                 << violationinf
+                 << "\n";
   Utils()->out().flags(flags);
 
   return;
@@ -1577,8 +1573,8 @@ void FSI::MortarMonolithicFluidSplit::CheckDynamicEquilibrium()
   const Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMMatrix();
 
 #ifdef DEBUG
-  if (mortarm == Teuchos::null) { dserror("Expected Teuchos::rcp to mortar matrix M."); }
-  if (mortard == Teuchos::null) { dserror("Expected Teuchos::rcp to mortar matrix D."); }
+  if (mortarm == Teuchos::null) { dserror("Expected rcp to mortar matrix M."); }
+  if (mortard == Teuchos::null) { dserror("Expected rcp to mortar matrix D."); }
 #endif
 
   // auxiliary vectors
@@ -1606,12 +1602,12 @@ void FSI::MortarMonolithicFluidSplit::CheckDynamicEquilibrium()
   ios_base::fmtflags flags = Utils()->out().flags();
 
   Utils()->out() << std::scientific
-                   << "\nViolation of dynamic interface equilibrium:\n"
-                   << "L_2-norm: "
-                   << violationl2
-                   << "        L_inf-norm: "
-                   << violationinf
-                   << "\n";
+                 << "\nViolation of dynamic interface equilibrium:\n"
+                 << "L_2-norm: "
+                 << violationl2
+                 << "        L_inf-norm: "
+                 << violationinf
+                 << "\n";
   Utils()->out().flags(flags);
 
   return;
