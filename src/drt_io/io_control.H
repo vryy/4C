@@ -51,6 +51,7 @@ namespace IO
                   int ndim,
                   int restart,
                   int filesteps,
+                  int create_controlfile,
                   bool adaptname = true);
 
     /// output prefix we write to
@@ -80,6 +81,8 @@ namespace IO
     /// input filename
     std::string InputFileName() const { return inputfile_;}
 
+    int BinIO() const { return create_controlfile_; }
+
     /// overwrites result files for the inverse analysis
     void OverwriteResultFile();
     /// creates new result files for the inverse analysis
@@ -95,6 +98,7 @@ namespace IO
     std::string restartname_;
     std::fstream controlfile_;
     int filesteps_;
+    int create_controlfile_;
   };
 
 
@@ -109,6 +113,7 @@ namespace IO
     MAP* ControlFile() { return &table_; }
 
     std::string FileName() const { return filename_; }
+
 
   private:
 
@@ -134,7 +139,8 @@ namespace IO
     /// constructor
     ErrorFileControl(
       const Epetra_Comm& comm,  ///< communicator
-      const std::string filename  ///< output file name prefix
+      const std::string filename, ///< output file name prefix
+      int create_errorfiles       // do we need to create errorfiles
     );
 
     /// destructor

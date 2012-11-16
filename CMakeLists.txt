@@ -117,8 +117,7 @@ option (FS3I_INCACouplingTest "Nightly test for FS3I_INCA_coupling turned off" O
 
 #   additional features
 
-option (BINIO "binary io" ON)
-if (BINIO)
+
   find_package(HDF5 REQUIRED)
   if (HDF5_FOUND)
     include_directories(${HDF5_INCLUDE_DIRS})
@@ -128,8 +127,7 @@ if (BINIO)
       ${HDF5_LIBRARIES}
       )
   endif(HDF5_FOUND)
-  add_definitions("-DBINIO")
-endif(BINIO)
+
 
 find_package(Qhull REQUIRED)
 if (QHULL_FOUND)
@@ -2688,6 +2686,8 @@ baci_test(two_phase_water_column_fem_don 1 "")
 baci_test(two_phase_water_column_fem_don 2 "")
 baci_test(two_phase_water_column_kinksp_donqs 1 "")
 baci_test(two_phase_water_column_kinksp_donqs 2 "")
+baci_test(art_aorta_2D_lognorm_field 1 "")
+baci_test(art_aorta_3D_lognorm_field_FFT 1 "")
 baci_test_Nested_Par(tsi_heatconvection_monolithic tsi_heatconvection_monolithic "")
 baci_test_Nested_Par(sohex8_multiscale_macro sohex8_multiscale_npsupport "1")
 baci_test_Nested_Par(sohex8_multiscale_macro_2micro sohex8_multiscale_npsupport "1")

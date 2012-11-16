@@ -46,8 +46,9 @@ Maintainer: Ulrich Kuettler
 #include "../drt_comm/comm_utils.H"
 #include "../drt_inpar/inpar_problemtype.H"
 
-#include "../drt_io/io_control.H"
 #include "../drt_io/io_pstream.H"
+#include "../drt_io/io_control.H"
+//#include "../drt_io/io_pstream.H"
 
 /*----------------------------------------------------------------------*/
 // the instances
@@ -466,8 +467,8 @@ void DRT::Problem::ReadConditions(DRT::INPUT::DatFileReader& reader)
   Epetra_Time time(*reader.Comm());
   if (reader.Comm()->MyPID()==0)
   {
-    std::cout << "Read conditions                          in....";
-    std::cout.flush();
+    IO::cout << "Read conditions                          in....";
+    IO::cout.flush();
   }
 
   //------------------------------- read number of design objects we have
@@ -687,8 +688,10 @@ void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, std::string inputfil
                                                       NDim(),
                                                       Restart(),
                                                       IOParams().get<int>("FILESTEPS"),
+                                                      DRT::INPUT::IntegralValue<int>(IOParams(),"OUTPUT_BIN"),
                                                       true));
-
+ if(!DRT::INPUT::IntegralValue<int>(IOParams(),"OUTPUT_BIN"))
+  IO::cout<< " Warning no binary Output will be written " << IO::endl;
 }
 
 
@@ -696,7 +699,7 @@ void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, std::string inputfil
 /*----------------------------------------------------------------------*/
 void DRT::Problem::OpenErrorFile(const Epetra_Comm& comm, std::string prefix)
 {
-  errorfilecontrol_ = Teuchos::rcp(new IO::ErrorFileControl(comm, prefix));
+    errorfilecontrol_ = Teuchos::rcp(new IO::ErrorFileControl(comm, prefix, DRT::INPUT::IntegralValue<int>(IOParams(),"OUTPUT_BIN")));
 }
 
 

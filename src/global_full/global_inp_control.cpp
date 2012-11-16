@@ -38,8 +38,7 @@ void ntainp_ccadiscret(
   int group = problem->GetNPGroup()->GroupId();
   NP_TYPE npType = problem->GetNPGroup()->NpType();
 
-  // create error files
-  problem->OpenErrorFile(*lcomm,outputfile_kenner);
+
 
   // and now the actual reading
   DRT::INPUT::DatFileReader reader(inputfile_name,
@@ -48,6 +47,9 @@ void ntainp_ccadiscret(
   problem->ReadParameter(reader);
 
   SetupParallelOutput(outputfile_kenner, lcomm, group);
+
+  // create error files
+  problem->OpenErrorFile(*lcomm,outputfile_kenner);
 
   // input of materials
   problem->ReadMaterials(reader);
@@ -109,7 +111,8 @@ void ntainp_ccadiscret(
                            outputfile_kenner,
                            restartfile_kenner);
 
-  if (lcomm->MyPID()==0)
+
+  if (lcomm->MyPID()==0 && npType!=copy_dat_file)
     problem->WriteInputParameters();
 
   // before we destroy the reader we want to know about unused sections

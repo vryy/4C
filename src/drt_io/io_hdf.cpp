@@ -13,7 +13,6 @@ Maintainer: Ulrich Kuettler
 */
 /*----------------------------------------------------------------------*/
 
-#ifdef BINIO
 
 #include <iostream>
 #include "io_hdf.H"
@@ -236,6 +235,7 @@ IO::HDFReader::ReadCharData(std::string path, int start, int end) const
     }
     default:
       dserror("HDF5 rank=%d unsupported", rank);
+      break;
     }
   }
   return data;
@@ -295,6 +295,7 @@ IO::HDFReader::ReadIntData(std::string path, int start, int end) const
     }
     default:
       dserror("HDF5 rank=%d unsupported", rank);
+      break;
     }
   }
   return data;
@@ -352,6 +353,7 @@ IO::HDFReader::ReadDoubleData(std::string path, int start, int end, std::vector<
     }
     default:
       dserror("HDF5 rank=%d unsupported", rank);
+      break;
     }
   }
   return data;
@@ -466,4 +468,4 @@ void IO::HDFReader::CalculateRange(int new_proc_num, int my_id, int& start, int&
   }
 }
 
-#endif
+

@@ -122,11 +122,11 @@ private:
                  MAP*& result_info,
                  MAP*& file_info);
 
-#ifdef BINIO
+
 
   /// Open data files.
   Teuchos::RCP<HDFReader> OpenFiles(const char* filestring, MAP* result_step);
-#endif
+
 
   //! my discretization
   Teuchos::RCP<DRT::Discretization> dis_;
@@ -137,10 +137,12 @@ private:
   /// control file entry of this step
   MAP *restart_step_;
 
-#ifdef BINIO
+  bool binio_;
+
+
   Teuchos::RCP<HDFReader> reader_;
   Teuchos::RCP<HDFReader> meshreader_;
-#endif
+
 };
 
 
@@ -300,14 +302,14 @@ private:
   int step_;
   double time_;
 
-#ifdef BINIO
+
   hid_t meshfile_;
   hid_t resultfile_;
   std::string meshfilename_;
   std::string resultfilename_;
   hid_t meshgroup_;
   hid_t resultgroup_;
-#endif
+
 
   /// cache to remember maps we have already written
   std::map<const Epetra_BlockMapData*, std::string> mapcache_;
@@ -319,6 +321,10 @@ private:
   int meshfile_changed_;
 
   Teuchos::RCP<OutputControl> output_;
+
+  // do we want binary output
+  bool binio_;
+
 };
 
 }

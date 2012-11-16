@@ -726,7 +726,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // are these needed?
   setStringToIntegralParameter<int>("OUTPUT_OUT","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("OUTPUT_GID","No","",yesnotuple,yesnovalue,&io);
-  setStringToIntegralParameter<int>("OUTPUT_BIN","No","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("OUTPUT_BIN","yes","",yesnotuple,yesnovalue,&io);
 
   setStringToIntegralParameter<int>("STRUCT_DISP","Yes","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("STRUCT_SE","No","output of strain energy",yesnotuple,yesnovalue,&io);
@@ -1325,6 +1325,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      "Instead of doing proper MC simulation use DETVALUE for the stochastic parameter",
                                      yesnotuple,yesnovalue,&mlmcp);
   DoubleParameter("DETVALUE",4.61,"Use this value for all elements",&mlmcp);
+  setStringToIntegralParameter<int>("RESETPRESTRESS","YES",
+                                     "Reset prestress after each run but start afterwards",
+                                     yesnotuple,yesnovalue,&mlmcp);
 
   /*----------------------------------------------------------------------*/
   /* parameters for mortar coupling */

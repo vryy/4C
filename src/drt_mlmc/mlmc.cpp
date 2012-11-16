@@ -417,7 +417,7 @@ void STR::MLMC::IntegrateNoReset()
           structadaptor.ReadRestart(restart);
         }
         /// Try some nasty stuff
-        double mytesttime=0.31;
+        //double mytesttime=0.31;
         if (numb_run_-start_run_!= 0)
         {
 //          dis_coarse2= Teuchos::rcp(new const Epetra_Vector(*(structadaptor.Dispn())));

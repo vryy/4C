@@ -30,9 +30,7 @@ IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization>
   : dis_(dis),
     input_(input)
 {
-#ifdef BINIO
   FindResultGroup(step, input_->ControlFile());
-#endif
 }
 
 
@@ -43,9 +41,7 @@ IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization>
   : dis_(dis),
     input_(DRT::Problem::Instance()->InputControlFile())
 {
-#ifdef BINIO
   FindResultGroup(step, input_->ControlFile());
-#endif
 }
 
 
@@ -53,7 +49,6 @@ IO::DiscretizationReader::DiscretizationReader(Teuchos::RCP<DRT::Discretization>
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_Vector> vec, std::string name)
 {
-#ifdef BINIO
   MAP* result = map_read_map(restart_step_, name.c_str());
   int columns;
   if (map_find_int(result,"columns",&columns))
@@ -62,7 +57,6 @@ void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_Vector> vec, std::
       dserror("got multivector with name '%s', vector expected", name.c_str());
   }
   ReadMultiVector(vec, name);
-#endif
 }
 
 /*----------------------------------------------------------------------*/
@@ -70,7 +64,6 @@ void IO::DiscretizationReader::ReadVector(Teuchos::RCP<Epetra_Vector> vec, std::
 void IO::DiscretizationReader::ReadSerialDenseMatrix(Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > mapdata,
                                                      std::string name)
 {
-#ifdef BINIO
   MAP* result = map_read_map(restart_step_, name.c_str());
   std::string id_path = map_read_string(result, "ids");
   std::string value_path = map_read_string(result, "values");
@@ -93,7 +86,6 @@ void IO::DiscretizationReader::ReadSerialDenseMatrix(Teuchos::RCP<std::map<int, 
     DRT::ParObject::ExtractfromPack(position, *data, *matrix);
     (*mapdata)[elemap->GID(i)]=matrix;
   }
-#endif
 }
 
 
@@ -101,7 +93,6 @@ void IO::DiscretizationReader::ReadSerialDenseMatrix(Teuchos::RCP<std::map<int, 
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationReader::ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> vec, std::string name)
 {
-#ifdef BINIO
   MAP* result = map_read_map(restart_step_, name.c_str());
   std::string id_path = map_read_string(result, "ids");
   std::string value_path = map_read_string(result, "values");
@@ -112,7 +103,6 @@ void IO::DiscretizationReader::ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> 
   }
   Teuchos::RCP<Epetra_MultiVector> nv = reader_->ReadResultData(id_path, value_path, columns, dis_->Comm());
   LINALG::Export(*nv, *vec);
-#endif
 }
 
 
@@ -120,7 +110,6 @@ void IO::DiscretizationReader::ReadMultiVector(Teuchos::RCP<Epetra_MultiVector> 
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationReader::ReadMesh(int step)
 {
-#ifdef BINIO
   FindMeshGroup(step, input_->ControlFile());
 
   Teuchos::RCP<std::vector<char> > nodedata =
@@ -144,8 +133,6 @@ void IO::DiscretizationReader::ReadMesh(int step)
   dis_->UnPackMyNodes(nodedata);
   dis_->UnPackMyElements(elementdata);
   dis_->Redistribute(*noderowmap,*nodecolmap);
-
-#endif
   return;
 }
 
@@ -154,7 +141,6 @@ void IO::DiscretizationReader::ReadMesh(int step)
 void IO::DiscretizationReader::ReadRedundantDoubleVector( Teuchos::RCP<std::vector<double> >& doublevec,
 							  const std::string name)
 {
-#ifdef BINIO
   int length;
 
   if (dis_->Comm().MyPID() == 0)
@@ -178,7 +164,6 @@ void IO::DiscretizationReader::ReadRedundantDoubleVector( Teuchos::RCP<std::vect
 
   // now distribute information to all procs
   dis_->Comm().Broadcast ( &((*doublevec)[0]), length, 0 );
-#endif
   return;
 }
 
@@ -207,7 +192,6 @@ void IO::DiscretizationReader::FindGroup(int step,
                                          MAP*& result_info,
                                          MAP*& file_info)
 {
-#ifdef BINIO
 
   SYMBOL *symbol;
 
@@ -275,7 +259,6 @@ void IO::DiscretizationReader::FindGroup(int step,
     dserror("no restart file definitions found in control file");
   }
 
-#endif
 }
 
 
@@ -283,7 +266,7 @@ void IO::DiscretizationReader::FindGroup(int step,
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationReader::FindResultGroup(int step, MAP* file)
 {
-#ifdef BINIO
+
 
   MAP *result_info = NULL;
   MAP *file_info = NULL;
@@ -293,7 +276,7 @@ void IO::DiscretizationReader::FindResultGroup(int step, MAP* file)
 
   restart_step_ = result_info;
 
-#endif
+
 }
 
 
@@ -301,8 +284,6 @@ void IO::DiscretizationReader::FindResultGroup(int step, MAP* file)
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationReader::FindMeshGroup(int step, MAP* file)
 {
-#ifdef BINIO
-
   MAP *result_info = NULL;
   MAP *file_info = NULL;
 
@@ -310,12 +291,9 @@ void IO::DiscretizationReader::FindMeshGroup(int step, MAP* file)
   meshreader_ = OpenFiles("mesh_file",file_info);
 
   // We do not need result_info as we are interested in the mesh files only.
-
-#endif
 }
 
 
-#ifdef BINIO
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -350,7 +328,6 @@ IO::DiscretizationReader::OpenFiles(const char* filestring,
   return reader;
 }
 
-#endif
 
 
 /*----------------------------------------------------------------------*/
@@ -361,23 +338,18 @@ IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization>
   dis_(dis),
   step_(0),
   time_(0),
-#ifdef BINIO
   meshfile_(-1),
   resultfile_(-1),
   meshfilename_(),
   resultfilename_(),
   meshgroup_(-1),
   resultgroup_(-1),
-#endif
   resultfile_changed_(-1),
   meshfile_changed_(-1),
-  output_(output)
+  output_(output),
+  binio_(output->BinIO())
 {
-#ifdef BINIO
   Check();
-#else
-  cerr << "compiled without BINIO: no output will be written\n";
-#endif
 }
 
 
@@ -388,23 +360,18 @@ IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization>
   dis_(dis),
   step_(0),
   time_(0),
-#ifdef BINIO
   meshfile_(-1),
   resultfile_(-1),
   meshfilename_(),
   resultfilename_(),
   meshgroup_(-1),
   resultgroup_(-1),
-#endif
   resultfile_changed_(-1),
   meshfile_changed_(-1),
-  output_(DRT::Problem::Instance()->OutputControlFile())
+  output_(DRT::Problem::Instance()->OutputControlFile()),
+  binio_(DRT::Problem::Instance()->OutputControlFile()->BinIO())
 {
-#ifdef BINIO
   Check();
-#else
-  cerr << "compiled without BINIO: no output will be written\n";
-#endif
 }
 
 
@@ -412,7 +379,6 @@ IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization>
 /*----------------------------------------------------------------------*/
 IO::DiscretizationWriter::~DiscretizationWriter()
 {
-#ifdef BINIO
   if (meshfile_ != -1)
   {
     const herr_t status = H5Fclose(meshfile_);
@@ -450,7 +416,6 @@ IO::DiscretizationWriter::~DiscretizationWriter()
       dserror("Failed to close HDF file %s", resultfilename_.c_str());
     }
   }
-#endif
 }
 
 
@@ -480,36 +445,37 @@ void IO::DiscretizationWriter::Check()
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::CreateMeshFile(const int step)
 {
-#ifdef BINIO
+  if(binio_)
+  {
 
-  std::ostringstream meshname;
+    std::ostringstream meshname;
 
-  meshname << output_->FileName()
+    meshname << output_->FileName()
            << ".mesh."
            << dis_->Name()
            << ".s" << step
     ;
-  meshfilename_ = meshname.str();
-  if (dis_->Comm().NumProc() > 1) {
+    meshfilename_ = meshname.str();
+    if (dis_->Comm().NumProc() > 1) {
     meshname << ".p"
              << dis_->Comm().MyPID();
-  }
+    }
 
-  if (meshfile_ != -1)
-  {
+    if (meshfile_ != -1)
+    {
     const herr_t status = H5Fclose(meshfile_);
     if (status < 0)
     {
       dserror("Failed to close HDF file %s", meshfilename_.c_str());
     }
-  }
+    }
 
-  meshfile_ = H5Fcreate(meshname.str().c_str(),
+    meshfile_ = H5Fcreate(meshname.str().c_str(),
                         H5F_ACC_TRUNC,H5P_DEFAULT,H5P_DEFAULT);
-  if (meshfile_ < 0)
+    if (meshfile_ < 0)
     dserror("Failed to open file %s", meshname.str().c_str());
-  meshfile_changed_ = step;
-#endif
+    meshfile_changed_ = step;
+  }
 }
 
 
@@ -517,8 +483,8 @@ void IO::DiscretizationWriter::CreateMeshFile(const int step)
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::CreateResultFile(const int step)
 {
-#ifdef BINIO
-
+  if(binio_)
+  {
   std::ostringstream resultname;
   resultname << output_->FileName()
              << ".result."
@@ -548,7 +514,7 @@ void IO::DiscretizationWriter::CreateResultFile(const int step)
   if (resultfile_ < 0)
     dserror("Failed to open file %s", resultname.str().c_str());
   resultfile_changed_ = step;
-#endif
+  }
 }
 
 
@@ -556,9 +522,12 @@ void IO::DiscretizationWriter::CreateResultFile(const int step)
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::NewResultFile(int numb_run)
 {
-  resultfile_changed_ = -1;
-  meshfile_changed_ = -1;
-  output_->NewResultFile(numb_run);
+  if(binio_)
+  {
+    resultfile_changed_ = -1;
+    meshfile_changed_ = -1;
+    output_->NewResultFile(numb_run);
+  }
 }
 
 
@@ -566,18 +535,24 @@ void IO::DiscretizationWriter::NewResultFile(int numb_run)
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::NewResultFile(std::string name_appendix, int numb_run)
 {
-  resultfile_changed_ = -1;
-  meshfile_changed_ = -1;
-  output_->NewResultFile(name_appendix, numb_run);
+  if(binio_)
+  {
+    resultfile_changed_ = -1;
+    meshfile_changed_ = -1;
+    output_->NewResultFile(name_appendix, numb_run);
+  }
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::OverwriteResultFile()
 {
-  resultfile_changed_ = -1;
-  meshfile_changed_ = -1;
-  output_->OverwriteResultFile();
+  if(binio_)
+  {
+    resultfile_changed_ = -1;
+    meshfile_changed_ = -1;
+    output_->OverwriteResultFile();
+  }
 }
 
 
@@ -585,42 +560,42 @@ void IO::DiscretizationWriter::OverwriteResultFile()
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::NewStep(const int step, const double time)
 {
-#ifdef BINIO
-
-  bool write_file = false;
-
-  step_ = step;
-  time_ = time;
-  std::ostringstream groupname;
-  groupname << "step" << step_;
-
-  if (resultgroup_ != -1)
+  if(binio_)
   {
-    const herr_t status = H5Gclose(resultgroup_);
-    if (status < 0)
+    bool write_file = false;
+
+    step_ = step;
+    time_ = time;
+    std::ostringstream groupname;
+    groupname << "step" << step_;
+
+    if (resultgroup_ != -1)
     {
-      dserror("Failed to close HDF group in file %s",resultfilename_.c_str());
+      const herr_t status = H5Gclose(resultgroup_);
+      if (status < 0)
+      {
+        dserror("Failed to close HDF group in file %s",resultfilename_.c_str());
+      }
     }
-  }
 
-  if (step_ - resultfile_changed_ >= output_->FileSteps() or
+    if (step_ - resultfile_changed_ >= output_->FileSteps() or
       resultfile_changed_ == -1)
-  {
+    {
     CreateResultFile(step_);
     write_file = true;
-  }
+    }
 
-  resultgroup_ = H5Gcreate(resultfile_,groupname.str().c_str(),0);
-  if (resultgroup_ < 0)
+    resultgroup_ = H5Gcreate(resultfile_,groupname.str().c_str(),0);
+    if (resultgroup_ < 0)
     dserror("Failed to write HDF-group in resultfile");
 
-  if (dis_->Comm().MyPID() == 0)
-  {
-    output_->ControlFile()
-      << "result:\n"
-      << "    field = \"" << dis_->Name() << "\"\n"
-      << "    time = " << time << "\n"
-      << "    step = " << step << "\n\n";
+    if (dis_->Comm().MyPID() == 0)
+    {
+      output_->ControlFile()
+        << "result:\n"
+        << "    field = \"" << dis_->Name() << "\"\n"
+        << "    time = " << time << "\n"
+        << "    step = " << step << "\n\n";
 
     if (write_file)
     {
@@ -639,13 +614,13 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
         << "    result_file = \"" << filename << "\"\n\n";
     }
     output_->ControlFile() << std::flush;
+    }
+    const herr_t status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
+    if (status < 0)
+    {
+      dserror("Failed to flush HDF file %s", resultfilename_.c_str());
+    }
   }
-  const herr_t status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
-  if (status < 0)
-  {
-    dserror("Failed to flush HDF file %s", resultfilename_.c_str());
-  }
-#endif
 }
 
 /*----------------------------------------------------------------------*/
@@ -653,19 +628,19 @@ void IO::DiscretizationWriter::NewStep(const int step, const double time)
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteDouble(const std::string name, const double value)
 {
-#ifdef BINIO
-
-  if (dis_->Comm().MyPID() == 0)
+  if(binio_)
   {
-    // using a local stringstream we make sure that we do not change
-    // the output formatting of control file permanently
-    std::stringstream s;
-     s<< "    " << name << " = " << std::scientific << std::setprecision(16)
-      << value << "\n\n" << std::flush;
-    output_->ControlFile()<<s.str() << std::flush;
+    if (dis_->Comm().MyPID() == 0)
+    {
+      // using a local stringstream we make sure that we do not change
+      // the output formatting of control file permanently
+      std::stringstream s;
+       s<< "    " << name << " = " << std::scientific << std::setprecision(16)
+        << value << "\n\n" << std::flush;
+      output_->ControlFile()<<s.str() << std::flush;
+    }
   }
 
-#endif
 }
 
 /*----------------------------------------------------------------------*/
@@ -673,14 +648,15 @@ void IO::DiscretizationWriter::WriteDouble(const std::string name, const double 
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteInt(const std::string name, const int value)
 {
-#ifdef BINIO
-
-  if (dis_->Comm().MyPID() == 0)
+  if(binio_)
   {
-    output_->ControlFile()
-      << "    " << name << " = " << value << "\n\n" << std::flush;
+
+    if (dis_->Comm().MyPID() == 0)
+    {
+      output_->ControlFile()
+        << "    " << name << " = " << value << "\n\n" << std::flush;
+    }
   }
-#endif
 }
 
 /*----------------------------------------------------------------------*/
@@ -689,110 +665,110 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
                                            Teuchos::RCP<Epetra_MultiVector> vec,
                                            IO::DiscretizationWriter::VectorType vt)
 {
-#ifdef BINIO
-
-  std::string valuename = name + ".values";
-  double* data = vec->Values();
-  const hsize_t size = vec->MyLength() * vec->NumVectors();
-  if (size != 0)
+  if(binio_)
   {
-    const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),1,&size,data);
-    if (make_status < 0)
-      dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
-  }
-  else
-  {
-    const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),0,&size,data);
-    if (make_status < 0)
-      dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
-  }
 
-  std::string idname;
-
-  // We maintain a map cache to avoid rewriting the same map all the
-  // time. The idea is that a map is never modified once it is
-  // constructed. Thus the internal data class can be used to find
-  // identical maps easily. This will not find all identical maps, but
-  // all maps with the same data pointer are guaranteed to be
-  // identical.
-
-  std::ostringstream groupname;
-  groupname << "/step"
-            << step_
-            << "/"
-    ;
-
-  valuename = groupname.str()+valuename;
-
-  const Epetra_BlockMapData* mapdata = vec->Map().DataPtr();
-  std::map<const Epetra_BlockMapData*, std::string>::const_iterator m = mapcache_.find(mapdata);
-  if (m!=mapcache_.end())
-  {
-    // the map has been written already, just link to it again
-    idname = m->second;
-  }
-  else
-  {
-    const hsize_t mapsize = vec->MyLength();
-    idname = name + ".ids";
-    int* ids = vec->Map().MyGlobalElements();
+    std::string valuename = name + ".values";
+    double* data = vec->Values();
+    const hsize_t size = vec->MyLength() * vec->NumVectors();
     if (size != 0)
     {
-      const herr_t make_status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),1,&mapsize,ids);
+      const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),1,&size,data);
       if (make_status < 0)
-        dserror("Failed to create dataset in HDF-resultfile");
+        dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
     }
     else
     {
-      const herr_t make_status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),0,&mapsize,ids);
+      const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),0,&size,data);
       if (make_status < 0)
-        dserror("Failed to create dataset in HDF-resultfile");
+        dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
     }
 
-    idname = groupname.str()+idname;
+    std::string idname;
 
-    // remember where we put the map
-    mapcache_[mapdata] = idname;
+    // We maintain a map cache to avoid rewriting the same map all the
+    // time. The idea is that a map is never modified once it is
+    // constructed. Thus the internal data class can be used to find
+    // identical maps easily. This will not find all identical maps, but
+    // all maps with the same data pointer are guaranteed to be
+    // identical.
 
-    // Make a copy of the map. This is a RCP copy internally. We just make
-    // sure here the map stays alive as long as we keep our cache. Otherwise
-    // subtle errors could occur.
-    mapstack_.push_back(vec->Map());
-  }
+    std::ostringstream groupname;
+    groupname << "/step"
+              << step_
+              << "/"
+      ;
 
-  if (dis_->Comm().MyPID() == 0)
-  {
-    std::string vectortype;
-    switch (vt)
+    valuename = groupname.str()+valuename;
+
+    const Epetra_BlockMapData* mapdata = vec->Map().DataPtr();
+    std::map<const Epetra_BlockMapData*, std::string>::const_iterator m = mapcache_.find(mapdata);
+    if (m!=mapcache_.end())
     {
-    case dofvector:
-      vectortype = "dof";
-      break;
-    case nodevector:
-      vectortype = "node";
-      break;
-    case elementvector:
-      vectortype = "element";
-      break;
-    default:
-      dserror("unknown vector type %d", vt);
-      break;
+      // the map has been written already, just link to it again
+      idname = m->second;
     }
-    output_->ControlFile()
-      << "    " << name << ":\n"
-      << "        type = \"" << vectortype << "\"\n"
-      << "        columns = " << vec->NumVectors() << "\n"
-      << "        values = \"" << valuename.c_str() << "\"\n"
-      << "        ids = \"" << idname.c_str() << "\"\n\n"  // different names + other informations?
-      << std::flush;
-  }
-  const herr_t flush_status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
-  if (flush_status < 0)
-  {
-    dserror("Failed to flush HDF file %s", resultfilename_.c_str());
-  }
+    else
+    {
+      const hsize_t mapsize = vec->MyLength();
+      idname = name + ".ids";
+      int* ids = vec->Map().MyGlobalElements();
+      if (size != 0)
+      {
+        const herr_t make_status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),1,&mapsize,ids);
+        if (make_status < 0)
+          dserror("Failed to create dataset in HDF-resultfile");
+      }
+      else
+      {
+        const herr_t make_status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),0,&mapsize,ids);
+        if (make_status < 0)
+          dserror("Failed to create dataset in HDF-resultfile");
+      }
 
-#endif
+      idname = groupname.str()+idname;
+
+      // remember where we put the map
+      mapcache_[mapdata] = idname;
+
+      // Make a copy of the map. This is a RCP copy internally. We just make
+      // sure here the map stays alive as long as we keep our cache. Otherwise
+      // subtle errors could occur.
+      mapstack_.push_back(vec->Map());
+    }
+
+    if (dis_->Comm().MyPID() == 0)
+    {
+      std::string vectortype;
+      switch (vt)
+      {
+      case dofvector:
+        vectortype = "dof";
+        break;
+      case nodevector:
+        vectortype = "node";
+        break;
+      case elementvector:
+        vectortype = "element";
+        break;
+      default:
+        dserror("unknown vector type %d", vt);
+        break;
+      }
+      output_->ControlFile()
+        << "    " << name << ":\n"
+        << "        type = \"" << vectortype << "\"\n"
+        << "        columns = " << vec->NumVectors() << "\n"
+        << "        values = \"" << valuename.c_str() << "\"\n"
+        << "        ids = \"" << idname.c_str() << "\"\n\n"  // different names + other informations?
+        << std::flush;
+    }
+    const herr_t flush_status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
+    if (flush_status < 0)
+    {
+      dserror("Failed to flush HDF file %s", resultfilename_.c_str());
+    }
+  }
 }
 
 
@@ -803,100 +779,101 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
                                            const Epetra_Map& elemap,
                                            IO::DiscretizationWriter::VectorType vt)
 {
-#ifdef BINIO
-
-  std::string valuename = name + ".values";
-  const hsize_t size = vec.size();
-  const char* data = &vec[0];
-  if (size != 0)
+  if(binio_)
   {
-    const herr_t make_status = H5LTmake_dataset_char(resultgroup_,valuename.c_str(),1,&size,data);
-    if (make_status < 0)
-      dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
-  }
-  else
-  {
-    const herr_t make_status = H5LTmake_dataset_char(resultgroup_,valuename.c_str(),0,&size,data);
-    if (make_status < 0)
-      dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
-  }
 
-  std::string idname;
-
-  // We maintain a map cache to avoid rewriting the same map all the
-  // time. The idea is that a map is never modified once it is
-  // constructed. Thus the internal data class can be used to find
-  // identical maps easily. This will not find all identical maps, but
-  // all maps with the same data pointer are guaranteed to be
-  // identical.
-
-  std::ostringstream groupname;
-  groupname << "/step"
-            << step_
-            << "/"
-    ;
-
-  valuename = groupname.str()+valuename;
-
-  const Epetra_BlockMapData* mapdata = elemap.DataPtr();
-  std::map<const Epetra_BlockMapData*, std::string>::const_iterator m = mapcache_.find(mapdata);
-  if (m!=mapcache_.end())
-  {
-    // the map has been written already, just link to it again
-    idname = m->second;
-  }
-  else
-  {
-    const hsize_t mapsize = elemap.NumMyElements();
-    idname = name + ".ids";
-    int* ids = elemap.MyGlobalElements();
-    const herr_t make_status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),1,&mapsize,ids);
-    if (make_status < 0)
-      dserror("Failed to create dataset in HDF-resultfile");
-
-    idname = groupname.str()+idname;
-
-    // remember where we put the map
-    mapcache_[mapdata] = idname;
-
-    // Make a copy of the map. This is a RCP copy internally. We just make
-    // sure here the map stays alive as long as we keep our cache. Otherwise
-    // subtle errors could occur.
-    mapstack_.push_back(elemap);
-  }
-
-  if (dis_->Comm().MyPID() == 0)
-  {
-    std::string vectortype;
-    switch (vt)
+    std::string valuename = name + ".values";
+    const hsize_t size = vec.size();
+    const char* data = &vec[0];
+    if (size != 0)
     {
-    case dofvector:
-      vectortype = "dof";
-      break;
-    case nodevector:
-      vectortype = "node";
-      break;
-    case elementvector:
-      vectortype = "element";
-      break;
-    default:
-      dserror("unknown vector type %d", vt);
-      break;
+      const herr_t make_status = H5LTmake_dataset_char(resultgroup_,valuename.c_str(),1,&size,data);
+      if (make_status < 0)
+        dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
     }
-    output_->ControlFile()
-      << "    " << name << ":\n"
-      << "        type = \"" << vectortype << "\"\n"
-      << "        columns = 1\n"
-      << "        values = \"" << valuename << "\"\n"
-      << "        ids = \"" << idname << "\"\n\n" // different names + other informations?
-      << std::flush;
+    else
+    {
+      const herr_t make_status = H5LTmake_dataset_char(resultgroup_,valuename.c_str(),0,&size,data);
+      if (make_status < 0)
+        dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+    }
+
+    std::string idname;
+
+    // We maintain a map cache to avoid rewriting the same map all the
+    // time. The idea is that a map is never modified once it is
+    // constructed. Thus the internal data class can be used to find
+    // identical maps easily. This will not find all identical maps, but
+    // all maps with the same data pointer are guaranteed to be
+    // identical.
+
+    std::ostringstream groupname;
+    groupname << "/step"
+              << step_
+              << "/"
+      ;
+
+    valuename = groupname.str()+valuename;
+
+    const Epetra_BlockMapData* mapdata = elemap.DataPtr();
+    std::map<const Epetra_BlockMapData*, std::string>::const_iterator m = mapcache_.find(mapdata);
+    if (m!=mapcache_.end())
+    {
+      // the map has been written already, just link to it again
+      idname = m->second;
+    }
+    else
+    {
+      const hsize_t mapsize = elemap.NumMyElements();
+      idname = name + ".ids";
+      int* ids = elemap.MyGlobalElements();
+      const herr_t make_status = H5LTmake_dataset_int(resultgroup_,idname.c_str(),1,&mapsize,ids);
+      if (make_status < 0)
+        dserror("Failed to create dataset in HDF-resultfile");
+
+      idname = groupname.str()+idname;
+
+      // remember where we put the map
+      mapcache_[mapdata] = idname;
+
+      // Make a copy of the map. This is a RCP copy internally. We just make
+      // sure here the map stays alive as long as we keep our cache. Otherwise
+      // subtle errors could occur.
+      mapstack_.push_back(elemap);
+    }
+
+    if (dis_->Comm().MyPID() == 0)
+    {
+      std::string vectortype;
+      switch (vt)
+      {
+      case dofvector:
+        vectortype = "dof";
+        break;
+      case nodevector:
+        vectortype = "node";
+        break;
+      case elementvector:
+        vectortype = "element";
+        break;
+      default:
+        dserror("unknown vector type %d", vt);
+        break;
+      }
+      output_->ControlFile()
+        << "    " << name << ":\n"
+        << "        type = \"" << vectortype << "\"\n"
+        << "        columns = 1\n"
+        << "        values = \"" << valuename << "\"\n"
+        << "        ids = \"" << idname << "\"\n\n" // different names + other informations?
+        << std::flush;
+    }
+    const herr_t flush_status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
+    if (flush_status < 0)
+    {
+      dserror("Failed to flush HDF file %s", resultfilename_.c_str());
+    }
   }
-  const herr_t flush_status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
-  if (flush_status < 0)
-  {
-    dserror("Failed to flush HDF file %s", resultfilename_.c_str());
-  }
-#endif
 }
 
 
@@ -905,240 +882,241 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
  *----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteCondition(const std::string condname) const
 {
-#ifdef BINIO
-  // put condition into block
-  Teuchos::RCP<std::vector<char> > block = dis_->PackCondition(condname);
-
-  // write block to file. Note: Block can be empty, if the condition is not found,
-  // which means it is not used -> so no dserror() here
-  if(!block->empty())
+  if(binio_)
   {
-    if (dis_->Comm().MyPID() == 0)
-    {
-      output_->ControlFile() << "    condition = \"" << condname << "\"\n";
-    }
+    // put condition into block
+    Teuchos::RCP<std::vector<char> > block = dis_->PackCondition(condname);
 
-    hsize_t dim = static_cast<hsize_t>(block->size());
-    const herr_t status = H5LTmake_dataset_char(
-            meshgroup_,
-            condname.c_str(),
-            1,
-            &dim,
-            &((*block)[0]));
-    if (status < 0)
-      dserror("Failed to create dataset in HDF-meshfile");
+    // write block to file. Note: Block can be empty, if the condition is not found,
+    // which means it is not used -> so no dserror() here
+    if(!block->empty())
+    {
+      if (dis_->Comm().MyPID() == 0)
+      {
+        output_->ControlFile() << "    condition = \"" << condname << "\"\n";
+      }
+
+      hsize_t dim = static_cast<hsize_t>(block->size());
+      const herr_t status = H5LTmake_dataset_char(
+              meshgroup_,
+              condname.c_str(),
+              1,
+              &dim,
+              &((*block)[0]));
+      if (status < 0)
+        dserror("Failed to create dataset in HDF-meshfile");
+    }
   }
-#endif
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 {
-#ifdef BINIO
 
-
-  bool write_file = false;
-
-  if (step - meshfile_changed_ >= output_->FileSteps() or
-      meshfile_changed_ == -1)
+  if(binio_)
   {
-    CreateMeshFile(step);
-    write_file = true;
-  }
-  std::ostringstream name;
-  name << "step" << step;
-  meshgroup_ = H5Gcreate(meshfile_,name.str().c_str(),0);
-  if (meshgroup_ < 0)
-    dserror("Failed to write group in HDF-meshfile");
+    bool write_file = false;
 
-  // only procs with row elements need to write data
-  Teuchos::RCP<std::vector<char> > elementdata = dis_->PackMyElements();
-  hsize_t dim = static_cast<hsize_t>(elementdata->size());
-  if (dim != 0)
-  {
-    const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",1,&dim,&((*elementdata)[0]));
-    if (element_status < 0)
-      dserror("Failed to create dataset in HDF-meshfile");
-  }
-  else
-  {
-    const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",0,&dim,&((*elementdata)[0]));
-    if (element_status < 0)
-      dserror("Failed to create dataset in HDF-meshfile on proc %d which does not have row elements", dis_->Comm().MyPID());
-  }
-
-  // only procs with row nodes need to write data
-  Teuchos::RCP<std::vector<char> > nodedata = dis_->PackMyNodes();
-  dim = static_cast<hsize_t>(nodedata->size());
-  if (dim != 0)
-  {
-    const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",1,&dim,&((*nodedata)[0]));
-    if (node_status < 0)
-      dserror("Failed to create dataset in HDF-meshfile");
-  }
-  else
-  {
-    const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",0,&dim,&((*nodedata)[0]));
-    if (node_status < 0)
-      dserror("Failed to create dataset in HDF-meshfile on proc %d which does not have row nodes", dis_->Comm().MyPID());
-  }
-
-  // ... write other mesh informations
-  if (dis_->Comm().MyPID() == 0)
-  {
-    output_->ControlFile()
-      << "field:\n"
-      << "    field = \"" << dis_->Name() << "\"\n"
-      << "    time = " << time << "\n"
-      << "    step = " << step << "\n\n"
-      << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
-      << "    num_ele = " << dis_->NumGlobalElements() << "\n"
-      << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements() << "\n\n"
-      ;
-
-    WriteCondition("SurfacePeriodic");
-    WriteCondition("LinePeriodic");
-
-    // knotvectors for nurbs-discretisation
-    WriteKnotvector();
-
-    if (write_file)
+    if (step - meshfile_changed_ >= output_->FileSteps() or
+        meshfile_changed_ == -1)
     {
-      if (dis_->Comm().NumProc() > 1)
-      {
-        output_->ControlFile()
-          << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
-      }
-      std::string filename;
-      std::string::size_type pos = meshfilename_.find_last_of('/');
-      if (pos==std::string::npos)
-        filename = meshfilename_;
-      else
-        filename = meshfilename_.substr(pos+1);
-      output_->ControlFile()
-        << "    mesh_file = \"" << filename << "\"\n\n";
+      CreateMeshFile(step);
+      write_file = true;
     }
-    output_->ControlFile() << std::flush;
+    std::ostringstream name;
+    name << "step" << step;
+    meshgroup_ = H5Gcreate(meshfile_,name.str().c_str(),0);
+    if (meshgroup_ < 0)
+      dserror("Failed to write group in HDF-meshfile");
+
+    // only procs with row elements need to write data
+    Teuchos::RCP<std::vector<char> > elementdata = dis_->PackMyElements();
+    hsize_t dim = static_cast<hsize_t>(elementdata->size());
+    if (dim != 0)
+    {
+      const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",1,&dim,&((*elementdata)[0]));
+      if (element_status < 0)
+        dserror("Failed to create dataset in HDF-meshfile");
+    }
+    else
+    {
+      const herr_t element_status = H5LTmake_dataset_char(meshgroup_,"elements",0,&dim,&((*elementdata)[0]));
+      if (element_status < 0)
+        dserror("Failed to create dataset in HDF-meshfile on proc %d which does not have row elements", dis_->Comm().MyPID());
+    }
+
+    // only procs with row nodes need to write data
+    Teuchos::RCP<std::vector<char> > nodedata = dis_->PackMyNodes();
+    dim = static_cast<hsize_t>(nodedata->size());
+    if (dim != 0)
+    {
+      const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",1,&dim,&((*nodedata)[0]));
+      if (node_status < 0)
+        dserror("Failed to create dataset in HDF-meshfile");
+    }
+    else
+    {
+      const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",0,&dim,&((*nodedata)[0]));
+      if (node_status < 0)
+        dserror("Failed to create dataset in HDF-meshfile on proc %d which does not have row nodes", dis_->Comm().MyPID());
+    }
+
+    // ... write other mesh informations
+    if (dis_->Comm().MyPID() == 0)
+    {
+      output_->ControlFile()
+        << "field:\n"
+        << "    field = \"" << dis_->Name() << "\"\n"
+        << "    time = " << time << "\n"
+        << "    step = " << step << "\n\n"
+        << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
+        << "    num_ele = " << dis_->NumGlobalElements() << "\n"
+        << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements() << "\n\n"
+        ;
+
+      WriteCondition("SurfacePeriodic");
+      WriteCondition("LinePeriodic");
+
+      // knotvectors for nurbs-discretisation
+      WriteKnotvector();
+
+      if (write_file)
+      {
+        if (dis_->Comm().NumProc() > 1)
+        {
+          output_->ControlFile()
+            << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
+        }
+        std::string filename;
+        std::string::size_type pos = meshfilename_.find_last_of('/');
+        if (pos==std::string::npos)
+          filename = meshfilename_;
+        else
+          filename = meshfilename_.substr(pos+1);
+        output_->ControlFile()
+          << "    mesh_file = \"" << filename << "\"\n\n";
+      }
+      output_->ControlFile() << std::flush;
+    }
+    const herr_t flush_status = H5Fflush(meshgroup_,H5F_SCOPE_LOCAL);
+    if (flush_status < 0)
+    {
+      dserror("Failed to flush HDF file %s", meshfilename_.c_str());
+    }
+    const herr_t close_status = H5Gclose(meshgroup_);
+    if (close_status < 0)
+    {
+      dserror("Failed to close HDF group in file %s", meshfilename_.c_str());
+    }
   }
-  const herr_t flush_status = H5Fflush(meshgroup_,H5F_SCOPE_LOCAL);
-  if (flush_status < 0)
-  {
-    dserror("Failed to flush HDF file %s", meshfilename_.c_str());
-  }
-  const herr_t close_status = H5Gclose(meshgroup_);
-  if (close_status < 0)
-  {
-    dserror("Failed to close HDF group in file %s", meshfilename_.c_str());
-  }
-#endif
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteMesh(const int step, const double time, std::string name_base_file )
 {
-#ifdef BINIO
-
-  // ... write other mesh informations
-  if (dis_->Comm().MyPID() == 0)
+  if(binio_)
   {
-    output_->ControlFile()
-      << "field:\n"
-      << "    field = \"" << dis_->Name() << "\"\n"
-      << "    time = " << time << "\n"
-      << "    step = " << step << "\n\n"
-      << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
-      << "    num_ele = " << dis_->NumGlobalElements() << "\n"
-      << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements() << "\n\n"
-      ;
-
-    //WriteCondition("SurfacePeriodic");
-    //WriteCondition("LinePeriodic");
-
-    // knotvectors for nurbs-discretisation
-    //WriteKnotvector();
-    // create name for meshfile as in createmeshfile which is not called here
-    std::ostringstream meshname;
-
-    meshname << name_base_file
-               << ".mesh."
-               << dis_->Name()
-               << ".s" << step
-        ;
-      meshfilename_ = meshname.str();
-
-      if (dis_->Comm().NumProc() > 1)
-      {
-        output_->ControlFile()
-          << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
-      }
-      std::string filename;
-      std::string::size_type pos = meshfilename_.find_last_of('/');
-      if (pos==std::string::npos)
-        filename = meshfilename_;
-      else
-        filename = meshfilename_.substr(pos+1);
+    // ... write other mesh informations
+    if (dis_->Comm().MyPID() == 0)
+    {
       output_->ControlFile()
-        << "    mesh_file = \"" << filename << "\"\n\n";
-       // << "    mesh_file = \"" << name_base_file << "\"\n\n";
+        << "field:\n"
+        << "    field = \"" << dis_->Name() << "\"\n"
+        << "    time = " << time << "\n"
+        << "    step = " << step << "\n\n"
+        << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
+        << "    num_ele = " << dis_->NumGlobalElements() << "\n"
+        << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements() << "\n\n"
+        ;
 
-    output_->ControlFile() << std::flush;
+      //WriteCondition("SurfacePeriodic");
+      //WriteCondition("LinePeriodic");
+
+      // knotvectors for nurbs-discretisation
+      //WriteKnotvector();
+      // create name for meshfile as in createmeshfile which is not called here
+      std::ostringstream meshname;
+
+      meshname << name_base_file
+                 << ".mesh."
+                 << dis_->Name()
+                 << ".s" << step
+          ;
+        meshfilename_ = meshname.str();
+
+        if (dis_->Comm().NumProc() > 1)
+        {
+          output_->ControlFile()
+            << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
+        }
+        std::string filename;
+        std::string::size_type pos = meshfilename_.find_last_of('/');
+        if (pos==std::string::npos)
+          filename = meshfilename_;
+        else
+          filename = meshfilename_.substr(pos+1);
+        output_->ControlFile()
+          << "    mesh_file = \"" << filename << "\"\n\n";
+         // << "    mesh_file = \"" << name_base_file << "\"\n\n";
+
+      output_->ControlFile() << std::flush;
+    }
   }
 
-#endif
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteElementData()
 {
-#ifdef BINIO
-  std::map<std::string,int>::const_iterator fool;
-  std::map<std::string,int> names;   // contains name and dimension of data
-
-  // loop all elements and build map of data names and dimensions
-  const Epetra_Map* elerowmap = dis_->ElementRowMap();
-  for (int i=0; i<elerowmap->NumMyElements(); ++i)
+  if(binio_)
   {
-    // get names and dimensions from every element
-    dis_->lRowElement(i)->VisNames(names);
-  }
+    std::map<std::string,int>::const_iterator fool;
+    std::map<std::string,int> names;   // contains name and dimension of data
 
-  // By applying GatherAll we get the combined map including all elemental values
-  // which where found by VisNames
-  const Epetra_Comm& comm = dis_->Comm();
-  LINALG::GatherAll(names, comm);
-
-  // make sure there's no name with a dimension of less than 1
-  for (fool = names.begin(); fool!= names.end(); ++fool)
-    if (fool->second<1) dserror("Dimension of data must be at least 1");
-
-  // loop all names aquired form the elements and fill data vectors
-  for (fool = names.begin(); fool!= names.end(); ++fool)
-  {
-    const int dimension = fool->second;
-    std::vector<double> eledata(dimension);
-
-    // MultiVector stuff from the elements is put in
-    Epetra_MultiVector sysdata(*elerowmap,dimension,true);
-
+    // loop all elements and build map of data names and dimensions
+    const Epetra_Map* elerowmap = dis_->ElementRowMap();
     for (int i=0; i<elerowmap->NumMyElements(); ++i)
     {
-      // zero is the default value if not all elements write the same element data
-      for (int idim=0; idim<dimension; ++idim) eledata[idim] = 0.0;
-
-      // get data for a given name from element & put in sysdata
-      dis_->lRowElement(i)->VisData(fool->first,eledata);
-      if ((int)eledata.size() != dimension)
-        dserror("element manipulated size of visualization data");
-      for (int j=0; j<dimension; ++j) (*sysdata(j))[i] = eledata[j];
+      // get names and dimensions from every element
+      dis_->lRowElement(i)->VisNames(names);
     }
 
-    WriteVector(fool->first, Teuchos::rcp(&sysdata,false), IO::DiscretizationWriter::elementvector);
+    // By applying GatherAll we get the combined map including all elemental values
+    // which where found by VisNames
+    const Epetra_Comm& comm = dis_->Comm();
+    LINALG::GatherAll(names, comm);
 
-  } // for (fool = names.begin(); fool!= names.end(); ++fool)
+    // make sure there's no name with a dimension of less than 1
+    for (fool = names.begin(); fool!= names.end(); ++fool)
+      if (fool->second<1) dserror("Dimension of data must be at least 1");
 
-#endif
+    // loop all names aquired form the elements and fill data vectors
+    for (fool = names.begin(); fool!= names.end(); ++fool)
+    {
+      const int dimension = fool->second;
+      std::vector<double> eledata(dimension);
+
+      // MultiVector stuff from the elements is put in
+      Epetra_MultiVector sysdata(*elerowmap,dimension,true);
+
+      for (int i=0; i<elerowmap->NumMyElements(); ++i)
+      {
+        // zero is the default value if not all elements write the same element data
+        for (int idim=0; idim<dimension; ++idim) eledata[idim] = 0.0;
+
+        // get data for a given name from element & put in sysdata
+        dis_->lRowElement(i)->VisData(fool->first,eledata);
+        if ((int)eledata.size() != dimension)
+          dserror("element manipulated size of visualization data");
+        for (int j=0; j<dimension; ++j) (*sysdata(j))[i] = eledata[j];
+      }
+
+      WriteVector(fool->first, Teuchos::rcp(&sysdata,false), IO::DiscretizationWriter::elementvector);
+
+    } // for (fool = names.begin(); fool!= names.end(); ++fool)
+  }
 }
 
 
@@ -1147,42 +1125,43 @@ void IO::DiscretizationWriter::WriteElementData()
  *----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteKnotvector() const
 {
-#ifdef BINIO
-  // try a dynamic cast of the discretisation to a nurbs discretisation
-  DRT::NURBS::NurbsDiscretization* nurbsdis
-    =
-    dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis_));
-
-  if(nurbsdis!=NULL)
+  if(binio_)
   {
-    // get knotvector from nurbsdis
-    Teuchos::RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+    // try a dynamic cast of the discretisation to a nurbs discretisation
+    DRT::NURBS::NurbsDiscretization* nurbsdis
+      =
+      dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(*dis_));
 
-    // put knotvector into block
-    DRT::PackBuffer block;
-    knots->Pack(block);
-    block.StartPacking();
-    knots->Pack(block);
+    if(nurbsdis!=NULL)
+    {
+      // get knotvector from nurbsdis
+      Teuchos::RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
-    // write block to file
-    if(!block().empty())
-    {
-      hsize_t dim = static_cast<hsize_t>(block().size());
-      const herr_t status = H5LTmake_dataset_char(
-        meshgroup_,
-        "knotvector",
-        1,
-        &dim,
-        &(block()[0]));
-      if (status < 0)
-        dserror("Failed to create dataset in HDF-meshfile");
-    }
-    else
-    {
-      dserror("block empty --- couldn't write knots\n");
+      // put knotvector into block
+      DRT::PackBuffer block;
+      knots->Pack(block);
+      block.StartPacking();
+      knots->Pack(block);
+
+      // write block to file
+      if(!block().empty())
+      {
+        hsize_t dim = static_cast<hsize_t>(block().size());
+        const herr_t status = H5LTmake_dataset_char(
+          meshgroup_,
+          "knotvector",
+          1,
+          &dim,
+          &(block()[0]));
+        if (status < 0)
+          dserror("Failed to create dataset in HDF-meshfile");
+      }
+      else
+      {
+        dserror("block empty --- couldn't write knots\n");
+      }
     }
   }
-#endif
 
   return;
 }
@@ -1193,48 +1172,49 @@ void IO::DiscretizationWriter::WriteKnotvector() const
   void IO::DiscretizationWriter::WriteRedundantDoubleVector(const std::string name,
 							    Teuchos::RCP<std::vector<double> > doublevec)
 {
-#ifdef BINIO
-  if (dis_->Comm().MyPID() == 0)
+  if(binio_)
   {
-    // only proc0 writes the vector entities to the binary data
-    // an appropriate name has to be provided
-    std::string valuename = name + ".values";
-    const hsize_t size = doublevec->size();
-    if (size != 0)
+    if (dis_->Comm().MyPID() == 0)
     {
-      const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),1,&size,&((*doublevec)[0]));
-      if (make_status < 0)
-        dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
-    }
-    else
-    {
-      const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),0,&size,&((*doublevec)[0]));
-      if (make_status < 0)
-        dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
-    }
+      // only proc0 writes the vector entities to the binary data
+      // an appropriate name has to be provided
+      std::string valuename = name + ".values";
+      const hsize_t size = doublevec->size();
+      if (size != 0)
+      {
+        const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),1,&size,&((*doublevec)[0]));
+        if (make_status < 0)
+          dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+      }
+      else
+      {
+        const herr_t make_status = H5LTmake_dataset_double(resultgroup_,valuename.c_str(),0,&size,&((*doublevec)[0]));
+        if (make_status < 0)
+          dserror("Failed to create dataset in HDF-resultfile. status=%d", make_status);
+      }
 
-    // do I need the following naming stuff?
-    std::ostringstream groupname;
+      // do I need the following naming stuff?
+      std::ostringstream groupname;
 
-    groupname << "/step"
-	      << step_
-	      << "/"
-      ;
+      groupname << "/step"
+          << step_
+          << "/"
+        ;
 
-    valuename = groupname.str()+valuename;
+      valuename = groupname.str()+valuename;
 
-    // a comment is also added to the control file
-    output_->ControlFile()
-      << "    " << name << ":\n"
-      << "        values = \"" << valuename.c_str() << "\"\n\n"
-      << std::flush;
+      // a comment is also added to the control file
+      output_->ControlFile()
+        << "    " << name << ":\n"
+        << "        values = \"" << valuename.c_str() << "\"\n\n"
+        << std::flush;
 
-    const herr_t flush_status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
-    if (flush_status < 0)
-    {
-      dserror("Failed to flush HDF file %s", resultfilename_.c_str());
-    }
-  } // endif proc0
+      const herr_t flush_status = H5Fflush(resultgroup_,H5F_SCOPE_LOCAL);
+      if (flush_status < 0)
+      {
+        dserror("Failed to flush HDF file %s", resultfilename_.c_str());
+      }
+    } // endif proc0
+  }
 
-#endif
 }

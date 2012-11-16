@@ -149,13 +149,15 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
                                  int ndim,
                                  int restart,
                                  int filesteps,
+                                 int create_controlfile,
                                  bool adaptname)
   : problemtype_(problemtype),
     inputfile_(inputfile),
     ndim_(ndim),
     filename_(outputname),
     restartname_(restartname),
-    filesteps_(filesteps)
+    filesteps_(filesteps),
+    create_controlfile_(create_controlfile)
 {
   if (restart)
   {
@@ -224,9 +226,12 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
   {
     std::stringstream name;
     name << filename_ << ".control";
+    if(create_controlfile_)
+    {
     controlfile_.open(name.str().c_str(),std::ios_base::out);
     if (not controlfile_)
       dserror("could not open control file '%s' for writing", name.str().c_str());
+    }
 
     time_t time_value;
     time_value = time(NULL);
@@ -235,27 +240,29 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
     struct passwd *user_entry;
     user_entry = getpwuid(getuid());
     gethostname(hostname, 30);
-
-    controlfile_ << "# baci output control file\n"
-                 << "# created by "
-                 << user_entry->pw_name
-                 << " on " << hostname << " at " << ctime(&time_value)
-                 << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
-                 << "input_file = \"" << inputfile << "\"\n"
-                 << "problem_type = \"" << problemtype << "\"\n"
-                 << "spatial_approximation = \"" << spatial_approx << "\"\n"
-                 << "ndim = " << ndim << "\n"
-                 << "\n";
-
-    // insert back reference
-    if (restart)
+    if(create_controlfile_)
     {
-      controlfile_ << "restarted_run = \""
-                   << restartname_
-                   << "\"\n\n";
-    }
+      controlfile_ << "# baci output control file\n"
+                   << "# created by "
+                   << user_entry->pw_name
+                   << " on " << hostname << " at " << ctime(&time_value)
+                   << "# using code revision " << (CHANGEDREVISION+0) << " \n\n"
+                   << "input_file = \"" << inputfile << "\"\n"
+                   << "problem_type = \"" << problemtype << "\"\n"
+                   << "spatial_approximation = \"" << spatial_approx << "\"\n"
+                   << "ndim = " << ndim << "\n"
+                   << "\n";
 
-    controlfile_ << std::flush;
+      // insert back reference
+      if (restart && create_controlfile_)
+      {
+        controlfile_ << "restarted_run = \""
+                     << restartname_
+                     << "\"\n\n";
+      }
+
+      controlfile_ << std::flush;
+    }
   }
 }
 
@@ -416,7 +423,8 @@ IO::InputControl::~InputControl()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 IO::ErrorFileControl::ErrorFileControl(const Epetra_Comm& comm,
-                                       const std::string outputname)
+                                       const std::string outputname,
+                                       int create_errorfiles)
   : filename_(outputname),
     errfile_(NULL)
 {
@@ -427,14 +435,18 @@ IO::ErrorFileControl::ErrorFileControl(const Epetra_Comm& comm,
     errname_ = filename_ + mypid.str() + ".err";
   }
 
-  // open error files (one per processor)
-  errfile_ = fopen(errname_.c_str(), "w");
-  if (errfile_ == NULL)
-    dserror("Opening of output file %s failed\n", errname_.c_str());
+   //open error files (one per processor)
+  //int create_errorfiles =0;
+  if (create_errorfiles)
+  {
+    errfile_ = fopen(errname_.c_str(), "w");
+    if (errfile_ == NULL)
+      dserror("Opening of output file %s failed\n", errname_.c_str());
+  }
 
   // inform user
   if (comm.MyPID() == 0)
-    printf("errors are reported to     %s\n", errname_.c_str());
+    IO::cout << "errors are reported to " <<  errname_.c_str() << IO::endl;
 }
 
 /*----------------------------------------------------------------------*/
