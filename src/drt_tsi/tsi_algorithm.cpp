@@ -45,7 +45,8 @@ TSI::Algorithm::Algorithm(const Epetra_Comm& comm)
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams(), structdis));
   structure_ = structure->StructureFieldrcp();
 
-  Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermo = Teuchos::rcp(new ADAPTER::ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()));
+  Teuchos::RCP<ADAPTER::ThermoBaseAlgorithm> thermo
+    = Teuchos::rcp(new ADAPTER::ThermoBaseAlgorithm(DRT::Problem::Instance()->TSIDynamicParams()));
   thermo_ = thermo->ThermoFieldrcp();
 
   // initialise displacement field needed for Output()

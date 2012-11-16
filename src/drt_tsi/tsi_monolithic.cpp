@@ -248,13 +248,13 @@ void TSI::Monolithic::CreateLinearSolver()
   if (solvertype != INPAR::SOLVER::aztec_msr &&
       solvertype != INPAR::SOLVER::belos)
   {
-    cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << endl;
-    cout << " Note: the BGS2x2 preconditioner now "                  << endl;
-    cout << " uses the structural solver and thermal solver blocks"  << endl;
-    cout << " for building the internal inverses"                    << endl;
-    cout << " Remove the old BGS PRECONDITIONER BLOCK entries "      << endl;
-    cout << " in the dat files!"                                     << endl;
-    cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << endl;
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
+    std::cout << " Note: the BGS2x2 preconditioner now "                  << std::endl;
+    std::cout << " uses the structural solver and thermal solver blocks"  << std::endl;
+    std::cout << " for building the internal inverses"                    << std::endl;
+    std::cout << " Remove the old BGS PRECONDITIONER BLOCK entries "      << std::endl;
+    std::cout << " in the dat files!"                                     << std::endl;
+    std::cout << "!!!!!!!!!!!!!!!!!!!!!! ATTENTION !!!!!!!!!!!!!!!!!!!!!" << std::endl;
     dserror("aztec solver expected");
   }
   const int azprectype
@@ -348,7 +348,7 @@ void TSI::Monolithic::TimeLoop()
     printf("Ende Timeloop ThermoField()->ExtractTempn[0] %12.8f\n",(*ThermoField()->ExtractTempn())[0]);
 
     printf("Ende Timeloop disp %12.8f\n",(*StructureField()->Dispn())[0]);
-    cout << "dispn\n" << *(StructureField()->Dispn()) << endl;
+    std::cout << "dispn\n" << *(StructureField()->Dispn()) <<  std::endl;
 #endif // TSIMONOLITHASOUTPUT
 
   }  // NotFinished
@@ -363,7 +363,7 @@ void TSI::Monolithic::NewtonFull()
 {
 #ifndef TFSI
   if ( Comm().MyPID()==0 )
-    cout << "TSI::Monolithic::NewtonFull()" << endl;
+    std::cout << "TSI::Monolithic::NewtonFull()" << std::endl;
 #endif
 
   // we do a Newton-Raphson iteration here.
@@ -495,7 +495,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
 {
 #ifndef TFSI
   if (Comm().MyPID() == 0)
-    cout << "\n TSI::Monolithic::Evaluate()" << endl;
+    std::cout << "\n TSI::Monolithic::Evaluate()" << std::endl;
 #endif
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::Evaluate");
 
@@ -511,16 +511,16 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
     ExtractFieldVectors(x,sx,tx);
 
 #ifdef TSIMONOLITHASOUTPUT
-    cout << "Recent thermal increment DT_n+1^i\n" << *(tx) << endl;
-    cout << "Recent structural increment Dd_n+1^i\n" << *(sx) << endl;
+    std::cout << "Recent thermal increment DT_n+1^i\n" << *(tx) <<  std::endl;
+    std::cout << "Recent structural increment Dd_n+1^i\n" << *(sx) <<  std::endl;
 
-    cout << "Until here only old solution of Newton step. No update applied\n" << *(ThermoField()->Tempnp()) << endl;
+    std::cout << "Until here only old solution of Newton step. No update applied\n" << *(ThermoField()->Tempnp()) <<  std::endl;
 #endif // TSIMONOLITHASOUTPUT
   }
   // else(x=Teuchos::null): initialize the system
 
 #ifdef TSIMONOLITHASOUTPUT
-  cout << "Tempnp vor UpdateNewton\n" << *(ThermoField()->Tempnp()) << endl;
+  std::cout << "Tempnp vor UpdateNewton\n" << *(ThermoField()->Tempnp()) <<  std::endl;
   printf("Tempnp vor UpdateNewton ThermoField()->ExtractTempnp[0] %12.8f\n",(*ThermoField()->ExtractTempnp())[0]);
 #endif // TSIMONOLITHASOUTPUT
 
@@ -530,7 +530,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   ThermoField()->UpdateNewton(tx);
 
 #ifdef TSIMONOLITHASOUTPUT
-  cout << "Tempnp nach UpdateNewton\n" << *(ThermoField()->Tempnp()) << endl;
+  std::cout << "Tempnp nach UpdateNewton\n" << *(ThermoField()->Tempnp()) <<  std::endl;
   printf("Tempnp nach UpdateNewton ThermoField()->ExtractTempnp[0] %12.8f\n",(*ThermoField()->ExtractTempnp())[0]);
 #endif // TSIMONOLITHASOUTPUT
 
@@ -546,7 +546,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
 #endif
 
 #ifdef TSIPARALLEL
-  cout << Comm().MyPID() << " nach ApplyTemp!!" << endl;
+  std::cout << Comm().MyPID() << " nach ApplyTemp!!" <<  std::endl;
 #endif // TSIPARALLEL
 
 #ifdef TSIMONOLITHASOUTPUT
@@ -566,11 +566,11 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   //     ApplyDirichlettoSystem is called as well with roated stiff_!
   StructureField()->Evaluate(sx);
 #ifndef TFSI
-  cout << "  structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
+  std::cout << "  structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
 #endif
 
 #ifdef TSIMONOLITHASOUTPUT
-  cout << "STR fres_" << *StructureField()->RHS() << endl;
+  std::cout << "STR fres_" << *StructureField()->RHS() <<  std::endl;
 #endif // TSIMONOLITHASOUTPUT
 
   /// thermal field
@@ -595,8 +595,8 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
 #endif
 
 #ifdef TSIMONOLITHASOUTPUT
-  cout << "d_n+1 inserted in THR field\n" << *(StructureField()->Dispnp()) << endl;
-  cout << "v_n+1\n" << *veln_ << endl;
+  std::cout << "d_n+1 inserted in THR field\n" << *(StructureField()->Dispnp()) <<  std::endl;
+  std::cout << "v_n+1\n" << *veln_ <<  std::endl;
 #endif // TSIMONOLITHASOUTPUT
 
   // monolithic TSI accesses the linearised thermo problem
@@ -604,7 +604,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   //   PrepareSystemForNewtonSolve()
   ThermoField()->Evaluate();
 #ifndef TFSI
-  cout << "  thermo time for calling Evaluate: " << timerthermo.ElapsedTime() << "\n";
+  std::cout << "  thermo time for calling Evaluate: " << timerthermo.ElapsedTime() << "\n";
 #endif
 
 }  // Evaluate()
@@ -646,18 +646,18 @@ void TSI::Monolithic::SetupSystem()
 {
 #ifndef TFSI
   if ( Comm().MyPID()==0 )
-    cout << " TSI::Monolithic::SetupSystem()" << endl;
+    std::cout << " TSI::Monolithic::SetupSystem()" <<  std::endl;
 #endif
 
   // create combined map
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
 
 #ifdef TSIPARALLEL
-  cout << Comm().MyPID() << " :PID" << endl;
-  cout << "structure dofmap" << endl;
-  cout << *StructureField()->DofRowMap(0) << endl;
-  cout << "thermo dofmap" << endl;
-  cout << *StructureField()->DofRowMap(1) << endl;
+  std::cout << Comm().MyPID() << " :PID" <<  std::endl;
+  std::cout << "structure dofmap" <<  std::endl;
+  std::cout << *StructureField()->DofRowMap(0) <<  std::endl;
+  std::cout << "thermo dofmap" <<  std::endl;
+  std::cout << *StructureField()->DofRowMap(1) <<  std::endl;
 #endif // TSIPARALLEL
 
   // use its own DofRowMap, that is the 0th map of the discretization
@@ -696,7 +696,7 @@ void TSI::Monolithic::SetupSystemMatrix()
 {
 #ifndef TFSI
   if ( Comm().MyPID()==0 )
-    cout << " TSI::Monolithic::SetupSystemMatrix()" << endl;
+    std::cout << " TSI::Monolithic::SetupSystemMatrix()" <<  std::endl;
 #endif
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupSystemMatrix");
 
@@ -826,7 +826,7 @@ void TSI::Monolithic::SetupRHS()
 {
 #ifndef TFSI
   if ( Comm().MyPID()==0 )
-    cout << " TSI::Monolithic::SetupRHS()" << endl;
+    std::cout << " TSI::Monolithic::SetupRHS()" <<  std::endl;
 #endif
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupRHS");
 
@@ -873,7 +873,7 @@ void TSI::Monolithic::LinearSolve()
     *CombinedDBCMap()
     );
 #ifndef TFSI
-  if ( Comm().MyPID()==0 ) { cout << " DBC applied to TSI system" << endl; }
+  if ( Comm().MyPID()==0 ) { std::cout << " DBC applied to TSI system" <<  std::endl; }
 #endif
 
   // standard solver call
@@ -886,7 +886,7 @@ void TSI::Monolithic::LinearSolve()
              );
 
 #ifndef TFSI
-  if ( Comm().MyPID()==0 ) { cout << " Solved" << endl; }
+  if ( Comm().MyPID()==0 ) { std::cout << " Solved" <<  std::endl; }
 #endif
 
 #else // use bgs2x2_operator
@@ -907,7 +907,7 @@ void TSI::Monolithic::LinearSolve()
 
 #ifndef TFSI
   if ( Comm().MyPID()==0 )
-  { cout << " DBC applied to TSI system on proc" << Comm().MyPID() << endl; }
+  { std::cout << " DBC applied to TSI system on proc" << Comm().MyPID() <<  std::endl; }
 #endif
 
   solver_->Solve(
@@ -919,7 +919,7 @@ void TSI::Monolithic::LinearSolve()
              );
 
 #ifndef TFSI
-  if ( Comm().MyPID()==0 ) { cout << " Solved" << endl; }
+  if ( Comm().MyPID()==0 ) { std::cout << " Solved" <<  std::endl; }
 #endif
 
 #endif  // TSIBLOCKMATRIXMERGE
@@ -1189,7 +1189,7 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
 {
 #ifndef TFSI
   if ( Comm().MyPID()==0 )
-    cout << " TSI::Monolithic::ApplyStrCouplMatrix()" << endl;
+    std::cout << " TSI::Monolithic::ApplyStrCouplMatrix()" <<  std::endl;
 #endif
 
   // create the parameters for the discretization
@@ -1199,7 +1199,7 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
   // other parameters that might be needed by the elements
   sparams.set("delta time", Dt());
   sparams.set("total time", Time());
-//  cout << "STR Parameterliste\n " <<  sparams << endl;
+//  std::cout << "STR Parameterliste\n " <<  sparams <<  std::endl;
   StructureField()->Discretization()->ClearState();
   StructureField()->Discretization()->SetState(0,"displacement",StructureField()->Dispnp());
 
@@ -1263,7 +1263,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
 {
 #ifndef TFSI
   if ( Comm().MyPID()==0 )
-    cout << " TSI::Monolithic::ApplyThrCouplMatrix()" << endl;
+    std::cout << " TSI::Monolithic::ApplyThrCouplMatrix()" <<  std::endl;
 #endif
 
   // create the parameters for the discretization
@@ -1839,7 +1839,7 @@ void TSI::Monolithic::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
   CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
 
   // get vector of contact interfaces
-  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+  std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
 
   // this currently works only for one interface yet
   if (interface.size()>1)
@@ -1940,7 +1940,7 @@ void TSI::Monolithic::AssembleLinDM(LINALG::SparseMatrix& lindglobal,
         // owner of LM slave node can do the assembly, although it actually
         // might not own the corresponding rows in lindglobal (DISP slave node)
         // (FE_MATRIX automatically takes care of non-local assembly inside!!!)
-        //cout << "Assemble LinM: " << row << " " << col << " " << val << endl;
+        //std::cout << "Assemble LinM: " << row << " " << col << " " << val <<  std::endl;
         if (abs(val)>1.0e-12) linmglobal.FEAssemble(val,row,col);
       }
 
@@ -1970,7 +1970,7 @@ void TSI::Monolithic::AssembleThermContCondition(LINALG::SparseMatrix& lindisglo
   CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
 
   // get vector of contact interfaces
-  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+  std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
 
   // this currently works only for one interface yet
   if (interface.size()>1)

@@ -65,9 +65,9 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   displacementcoupling_
     = tsidyn.get<std::string>("COUPVARIABLE")=="Displacement";
   if (displacementcoupling_)
-    cout << "Coupling variable: displacement" << endl;
+    std::cout << "Coupling variable: displacement" << std::endl;
   else
-    cout << "Coupling variable: temperature" << endl;
+    std::cout << "Coupling variable: temperature" << std::endl;
 
   // if structure field is quasi-static --> CalcVelocity
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -127,14 +127,14 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 
 #ifdef TSIPARTITIONEDASOUTPUT
     // now check if the two dofmaps are available and then bye bye
-    cout << "structure dofmap" << endl;
-    cout << *StructureField()->DofRowMap(0) << endl;
-    cout << "thermo dofmap" << endl;
-    cout << *StructureField()->DofRowMap(1) << endl;
-    cout << "thermo dofmap" << endl;
-    cout << *ThermoField()->DofRowMap(0) << endl;
-    cout << "structure dofmap" << endl;
-    cout << *ThermoField()->DofRowMap(1) << endl;
+    std::cout << "structure dofmap" << std::endl;
+    std::cout << *StructureField()->DofRowMap(0) << std::endl;
+    std::cout << "thermo dofmap" << std::endl;
+    std::cout << *StructureField()->DofRowMap(1) << std::endl;
+    std::cout << "thermo dofmap" << std::endl;
+    std::cout << *ThermoField()->DofRowMap(0) << std::endl;
+    std::cout << "structure dofmap" << std::endl;
+    std::cout << *ThermoField()->DofRowMap(1) << std::endl;
 //    exit(0);
 #endif // TSIPARTITIONEDASOUTPUT
 
@@ -598,12 +598,12 @@ void TSI::Partitioned::OuterIterationLoop()
   // outer iteration loop starts
   if (Comm().MyPID()==0 and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
   {
-    cout<<"\n";
-    cout<<"**************************************************************\n";
-    cout<<"      OUTER ITERATION LOOP \n";
+    std::cout<<"\n";
+    std::cout<<"**************************************************************\n";
+    std::cout<<"      OUTER ITERATION LOOP \n";
     printf("      Time Step %3d/%3d \n",ThermoField()->GetTimeStep(),
       ThermoField()->GetTimeNumStep());
-    cout<<"**************************************************************\n";
+    std::cout<<"**************************************************************\n";
   }
 
   // call the TSI parameter list
@@ -815,8 +815,8 @@ void TSI::Partitioned::OuterIterationLoop()
   {
     if (Comm().MyPID()==0)
     {
-      cout << "Iterative staggered TSI with relaxation" << endl;
-      cout << "Have you set MAXOMEGA to the wished value?" << endl;
+      std::cout << "Iterative staggered TSI with relaxation" << std::endl;
+      std::cout << "Have you set MAXOMEGA to the wished value?" << std::endl;
     }
 
     // structural predictor
@@ -1286,10 +1286,10 @@ void TSI::Partitioned::DoStructureStep()
 #ifndef TFSI
   if (Comm().MyPID()==0)
   {
-    cout<<"\n";
-    cout<<"************************\n";
-    cout<<"    STRUCTURE SOLVER    \n";
-    cout<<"************************\n";
+    std::cout<<"\n";
+    std::cout<<"************************\n";
+    std::cout<<"    STRUCTURE SOLVER    \n";
+    std::cout<<"************************\n";
   }
 #endif
 
@@ -1312,10 +1312,10 @@ void TSI::Partitioned::DoThermoStep()
 #ifndef TFSI
   if (Comm().MyPID()==0)
   {
-    cout<<"\n";
-    cout<<"*********************\n";
-    cout<<"    THERMO SOLVER    \n";
-    cout<<"*********************\n";
+    std::cout<<"\n";
+    std::cout<<"*********************\n";
+    std::cout<<"    THERMO SOLVER    \n";
+    std::cout<<"*********************\n";
   }
 #endif
 
@@ -1385,10 +1385,10 @@ bool TSI::Partitioned::ConvergenceCheck(
       // test here increment
       if ( (Comm().MyPID()==0) and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
       {
-        cout<<"\n";
-        cout<<"***********************************************************************************\n";
-        cout<<"    OUTER ITERATION STEP    \n";
-        cout<<"***********************************************************************************\n";
+        std::cout<<"\n";
+        std::cout<<"***********************************************************************************\n";
+        std::cout<<"    OUTER ITERATION STEP    \n";
+        std::cout<<"***********************************************************************************\n";
         printf("+--------------+------------------------+--------------------+--------------------+\n");
         printf("|-  step/max  -|-  tol      [norm]     -|--  temp-inc      --|--  disp-inc      --|\n");
         printf("|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         |",
@@ -1416,10 +1416,10 @@ bool TSI::Partitioned::ConvergenceCheck(
       // test here increment/variable
       if ( (Comm().MyPID()==0) and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
       {
-        cout<<"\n";
-        cout<<"***********************************************************************************\n";
-        cout<<"    OUTER ITERATION STEP    \n";
-        cout<<"***********************************************************************************\n";
+        std::cout<<"\n";
+        std::cout<<"***********************************************************************************\n";
+        std::cout<<"    OUTER ITERATION STEP    \n";
+        std::cout<<"***********************************************************************************\n";
         printf("+--------------+------------------------+--------------------+--------------------+\n");
         printf("|-  step/max  -|-  tol      [norm]     -|--  temp-inc/temp --|--  disp-inc/disp --|\n");
         printf("|   %3d/%3d    |  %10.3E[L_2 ]      | %10.3E         | %10.3E         |",
