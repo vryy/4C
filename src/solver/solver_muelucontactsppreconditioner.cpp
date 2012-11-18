@@ -223,7 +223,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     // create Hierarchy
     ///////////////////////////////////////////////////////////////////////
 
-    Teuchos::RCP<Hierarchy> H = Teuchos::rcp(new Hierarchy());
+    Teuchos::RCP<Hierarchy> H = rcp(new Hierarchy());
     H->SetDefaultVerbLevel(MueLu::toMueLuVerbLevel(eVerbLevel));
     H->SetMaxCoarseSize(Teuchos::as<Xpetra::global_size_t>(maxCoarseSize));
     H->GetLevel(0)->Set("A",Teuchos::rcp_dynamic_cast<Matrix>(bOp));
@@ -333,7 +333,9 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     ///////////////////////////////////////////////////////////////////////
     // define RAPFactory
     ///////////////////////////////////////////////////////////////////////
-    Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp(new RAPFactory());
+    Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp(new RAPFactory(/*PFact, RFact*/));
+    AcFact->SetFactory("P",PFact);
+    AcFact->SetFactory("R",RFact);
     AcFact->SetRepairZeroDiagonal(true); // repair zero diagonal entries in Ac, that are resulting from Ptent with nullspacedim > ndofspernode
 
     ///////////////////////////////////////////////////////////////////////
@@ -420,7 +422,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   int sweeps   = smolevelsublist.get<int>("smoother: sweeps");
 
   // create SchurComp factory (SchurComplement smoother is provided by local FactoryManager)
-  Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory(omega));
+  Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory(/*MueLu::NoFactory::getRCP(),*/omega));
   SFact->SetFactory("A",MueLu::NoFactory::getRCP());
   Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(sweeps,omega)); // append SC smoother information
 
@@ -483,7 +485,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   int sweeps   = smolevelsublist.get<int>("smoother: sweeps");
 
   // create SchurComp factory (SchurComplement smoother is provided by local FactoryManager)
-  Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory(omega));
+  Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory(/*MueLu::NoFactory::getRCP(),*/omega));
   SFact->SetFactory("A",MueLu::NoFactory::getRCP());
   Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(sweeps,omega)); // append SC smoother information
 

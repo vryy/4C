@@ -227,7 +227,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
   Teuchos::RCP<NullspaceFactory> nspFact = Teuchos::rcp(new NullspaceFactory("Nullspace",PFact));
 
   // RAP factory with inter-level transfer of segregation block information (map extractor)
-  Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp( new RAPFactory() );
+  Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp( new RAPFactory(/*PFact, RFact*/) );
+  AcFact->SetFactory("P",PFact);
+  AcFact->SetFactory("R",RFact);
 
   // write out aggregates
   Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out",UCAggFact.get(), dropFact.get(),NULL /*amalgFact is not segAFact.get()*/));
@@ -461,7 +463,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     else ifpackList.set("relaxation: damping factor", 1.0);
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Jacobi");
-    smooProto = Teuchos::rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
   } else if(type == "Gauss-Seidel") {
     if(paramList.isParameter("coarse: sweeps"))
       ifpackList.set<int>("relaxation: sweeps", paramList.get<int>("coarse: sweeps"));
@@ -471,7 +473,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     else ifpackList.set("relaxation: damping factor", 1.0);
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Gauss-Seidel");
-    smooProto = Teuchos::rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
   } else if (type == "symmetric Gauss-Seidel") {
     if(paramList.isParameter("coarse: sweeps"))
       ifpackList.set<int>("relaxation: sweeps", paramList.get<int>("coarse: sweeps"));
@@ -481,14 +483,14 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     else ifpackList.set("relaxation: damping factor", 1.0);
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Symmetric Gauss-Seidel");
-    smooProto = Teuchos::rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
   } else if (type == "Chebyshev") {
     ifpackType = "CHEBYSHEV";
     if(paramList.isParameter("coarse: sweeps"))
       ifpackList.set("chebyshev: degree", paramList.get<int>("coarse: sweeps"));
     if(paramList.isParameter("coarse: Chebyshev alpha"))
       ifpackList.set("chebyshev: alpha", paramList.get<double>("coarse: Chebyshev alpha"));
-    smooProto = Teuchos::rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
   } else if(type == "IFPACK") {
 #ifdef HAVE_MUELU_IFPACK
     // TODO change to TrilinosSmoother as soon as Ifpack2 supports all preconditioners from Ifpack
@@ -519,7 +521,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 
   // create smoother factory
   TEUCHOS_TEST_FOR_EXCEPTION(smooProto == Teuchos::null, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: no smoother prototype. fatal error.");
-  SmooFact = Teuchos::rcp( new SmootherFactory(smooProto) );
+  SmooFact = rcp( new SmootherFactory(smooProto) );
 
   // check if pre- and postsmoothing is set
   std::string preorpost = "both";
