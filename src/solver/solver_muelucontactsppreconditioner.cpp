@@ -333,7 +333,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     ///////////////////////////////////////////////////////////////////////
     // define RAPFactory
     ///////////////////////////////////////////////////////////////////////
-    Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp(new RAPFactory(PFact, RFact));
+    Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp(new RAPFactory());
     AcFact->SetRepairZeroDiagonal(true); // repair zero diagonal entries in Ac, that are resulting from Ptent with nullspacedim > ndofspernode
 
     ///////////////////////////////////////////////////////////////////////
@@ -420,7 +420,8 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   int sweeps   = smolevelsublist.get<int>("smoother: sweeps");
 
   // create SchurComp factory (SchurComplement smoother is provided by local FactoryManager)
-  Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory(MueLu::NoFactory::getRCP(),omega));
+  Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory(omega));
+  SFact->SetFactory("A",MueLu::NoFactory::getRCP());
   Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(sweeps,omega)); // append SC smoother information
 
   // define SchurComplement solver
@@ -482,7 +483,8 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   int sweeps   = smolevelsublist.get<int>("smoother: sweeps");
 
   // create SchurComp factory (SchurComplement smoother is provided by local FactoryManager)
-  Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory(MueLu::NoFactory::getRCP(),omega));
+  Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory(omega));
+  SFact->SetFactory("A",MueLu::NoFactory::getRCP());
   Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(sweeps,omega)); // append SC smoother information
 
   // define SchurComplement solver

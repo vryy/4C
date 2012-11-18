@@ -342,7 +342,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   Teuchos::RCP<NullspaceFactory> nspFact = Teuchos::rcp(new NullspaceFactory("Nullspace",PtentFact));
 
   // RAP factory with inter-level transfer of segregation block information (map extractor)
-  Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp( new RAPFactory(PFact, RFact) );
+  Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp( new RAPFactory() );
   //AcFact->setVerbLevel(Teuchos::VERB_HIGH);
   AcFact->SetRepairZeroDiagonal(true); // repair zero diagonal entries in Ac, that are resulting from Ptent with nullspacedim > ndofspernode
 
@@ -359,7 +359,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   AcFact->AddTransferFactory(cmTransFact3);
 
   // transfer aggregate status to next coarser level (-> special aggregation strategy)
-  Teuchos::RCP<MueLu::AggStatTransferFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node, LocalMatOps> > aggStatFact = Teuchos::rcp(new MueLu::AggStatTransferFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node, LocalMatOps>("coarseAggStat",UCAggFact));
+  Teuchos::RCP<MueLu::AggStatTransferFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node, LocalMatOps> > aggStatFact = Teuchos::rcp(new MueLu::AggStatTransferFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node, LocalMatOps>("coarseAggStat"));
+  aggStatFact->SetFactory("coarseAggStat", UCAggFact);
   AcFact->AddTransferFactory(aggStatFact);
 
   ///////////////////////////////////////////////////////////////////////
