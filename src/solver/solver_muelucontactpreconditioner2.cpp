@@ -320,7 +320,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
 
   // aggregation factory
   //Teuchos::RCP<UCAggregationFactory> UCAggFact = Teuchos::rcp(new UCAggregationFactory(dropFact));
-  Teuchos::RCP<ExperimentalAggregationFactory> UCAggFact = Teuchos::rcp(new ExperimentalAggregationFactory(dropFact));
+  Teuchos::RCP<ExperimentalAggregationFactory> UCAggFact = Teuchos::rcp(new ExperimentalAggregationFactory());
   UCAggFact->SetMinNodesPerAggregate(minPerAgg);
   UCAggFact->SetMaxNeighAlreadySelected(maxNbrAlreadySelected);
   //UCAggFact->SetOrdering(MueLu::AggOptions::GRAPH);
@@ -329,7 +329,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   Teuchos::RCP<PFactory> PFact;
   Teuchos::RCP<RFactory> RFact;
 
-  Teuchos::RCP<PFactory> PtentFact = Teuchos::rcp(new TentativePFactory(UCAggFact));
+  Teuchos::RCP<PFactory> PtentFact = Teuchos::rcp(new TentativePFactory());
 
   // choose either nonsmoothed transfer operators or
   // PG-AMG smoothed aggregation transfer operators
@@ -345,7 +345,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     RFact = Teuchos::rcp( new TransPFactory(PFact) );
   } else {
     // Petrov Galerkin PG-AMG smoothed aggregation (energy minimization in ML)
-    PFact  = Teuchos::rcp( new PgPFactory(PtentFact,slaveDcAFact) ); // use slaveDcAFact for prolongator smoothing
+    PFact  = Teuchos::rcp( new PgPFactory(/*PtentFact,slaveDcAFact*/) ); // use slaveDcAFact for prolongator smoothing
     RFact  = Teuchos::rcp( new GenericRFactory() );
   }
 

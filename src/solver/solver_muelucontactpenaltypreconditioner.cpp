@@ -122,7 +122,6 @@ void LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup( bool create,
     mllist_.remove("aggregation: threshold",false); // no support for aggregation: threshold TODO
 
     // Setup MueLu Hierarchy
-    //Teuchos::RCP<Hierarchy> H = MLInterpreter::Setup(mllist_, mueluOp, nspVector);
     Teuchos::RCP<Hierarchy> H = SetupHierarchy(mllist_, mueluOp, nspVector);
     
     // set preconditioner
@@ -204,24 +203,11 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
   Teuchos::RCP<SingleLevelFactoryBase> segAFact = Teuchos::rcp(new MueLu::ContactAFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("A", NULL, map_extractor));
 
   // Coalesce and drop factory with constant number of Dofs per freedom
-  Teuchos::RCP<CoalesceDropFactory> dropFact = Teuchos::rcp(new CoalesceDropFactory(segAFact/*,nspFact*/));
-  //dropFact->SetFixedBlockSize(nDofsPerNode);
+  Teuchos::RCP<CoalesceDropFactory> dropFact = Teuchos::rcp(new CoalesceDropFactory(/*segAFact*//*,nspFact*/));
+  dropFact->SetFactory("A",segAFact);  // expert option
   
   // aggregation factory
-  /*Teuchos::RCP<UCAggregationFactory> UCAggFact = Teuchos::rcp(new UCAggregationFactory(dropFact));
-  // note: this class does not derive from VerboseObject. Therefore we cannot use GetOStream
-  if(verbosityLevel > 3) {
-  *out << "========================= Aggregate option summary  =========================" << std::endl;
-  *out << "min Nodes per aggregate :               " << minPerAgg << std::endl;
-  *out << "min # of root nbrs already aggregated : " << maxNbrAlreadySelected << std::endl;
-  *out << "aggregate ordering :                    NATURAL" << std::endl;
-  *out << "=============================================================================" << std::endl;
-  }
-  UCAggFact->SetMinNodesPerAggregate(minPerAgg); //TODO should increase if run anything other than 1D
-  UCAggFact->SetMaxNeighAlreadySelected(maxNbrAlreadySelected);
-  UCAggFact->SetOrdering(MueLu::AggOptions::NATURAL);
-  UCAggFact->SetPhase3AggCreation(0.5);*/
-  Teuchos::RCP<UncoupledAggregationFactory> UCAggFact = Teuchos::rcp(new UncoupledAggregationFactory(dropFact));
+  Teuchos::RCP<UncoupledAggregationFactory> UCAggFact = Teuchos::rcp(new UncoupledAggregationFactory(/*dropFact*/));
   UCAggFact->SetMinNodesPerAggregate(minPerAgg);
   UCAggFact->SetMaxNeighAlreadySelected(maxNbrAlreadySelected);
   UCAggFact->SetOrdering(MueLu::AggOptions::GRAPH);
@@ -230,7 +216,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
   /*Teuchos::RCP<PFactory> PtentFact = Teuchos::rcp(new TentativePFactory(UCAggFact,nspFact,segAFact));
   Teuchos::RCP<PFactory> PFact  = Teuchos::rcp( new PgPFactory(PtentFact,segAFact) );
   Teuchos::RCP<RFactory> RFact  = Teuchos::rcp( new GenericRFactory(PFact) );*/
-  Teuchos::RCP<PFactory> PFact = Teuchos::rcp(new TentativePFactory(UCAggFact,Teuchos::null /*amalgFact*/,Teuchos::null /*nspFact*/,segAFact));
+  Teuchos::RCP<PFactory> PFact = Teuchos::rcp(new TentativePFactory());
+  PFact->SetFactory("A",segAFact); // expert option
   Teuchos::RCP<RFactory> RFact  = Teuchos::rcp( new TransPFactory(PFact) );
 
   // define nullspace factory AFTER tentative PFactory (that generates the nullspace for the coarser levels)

@@ -315,7 +315,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   Teuchos::RCP<PFactory> PFact;
   Teuchos::RCP<RFactory> RFact;
 
-  Teuchos::RCP<PFactory> PtentFact = Teuchos::rcp(new TentativePFactory(UCAggFact));
+  Teuchos::RCP<PFactory> PtentFact = Teuchos::rcp(new TentativePFactory());
 
   // choose either nonsmoothed transfer operators or
   // PG-AMG smoothed aggregation transfer operators

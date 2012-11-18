@@ -240,19 +240,19 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     // set up block 11
     ///////////////////////////////////////////////////////////////////////
 
-    Teuchos::RCP<AmalgamationFactory> amalgFact11 = Teuchos::rcp(new AmalgamationFactory(A11Fact));
+    Teuchos::RCP<AmalgamationFactory> amalgFact11 = Teuchos::rcp(new AmalgamationFactory(/*A11Fact*/));
     //amalgFact11->setDefaultVerbLevel(Teuchos::VERB_EXTREME);
-    Teuchos::RCP<CoalesceDropFactory> dropFact11 = Teuchos::rcp(new CoalesceDropFactory(A11Fact,amalgFact11));
+    Teuchos::RCP<CoalesceDropFactory> dropFact11 = Teuchos::rcp(new CoalesceDropFactory(/*A11Fact,amalgFact11*/));
     //dropFact11->setDefaultVerbLevel(Teuchos::VERB_EXTREME);
-    Teuchos::RCP<UncoupledAggregationFactory> UCAggFact11 = Teuchos::rcp(new UncoupledAggregationFactory(dropFact11));
+    Teuchos::RCP<UncoupledAggregationFactory> UCAggFact11 = Teuchos::rcp(new UncoupledAggregationFactory(/*dropFact11*/));
     UCAggFact11->SetMinNodesPerAggregate(9); // 9
     UCAggFact11->SetMaxNeighAlreadySelected(1);
     UCAggFact11->SetOrdering(MueLu::AggOptions::GRAPH);
-    Teuchos::RCP<TentativePFactory> Ptent11Fact = Teuchos::rcp(new TentativePFactory(UCAggFact11,amalgFact11)); // check me
+    Teuchos::RCP<TentativePFactory> Ptent11Fact = Teuchos::rcp(new TentativePFactory(/*UCAggFact11,amalgFact11*/)); // check me
     Teuchos::RCP<TentativePFactory> P11Fact = Ptent11Fact;
     Teuchos::RCP<TransPFactory> R11Fact = Teuchos::rcp(new TransPFactory(P11Fact));
     Teuchos::RCP<NullspaceFactory> nspFact11 = Teuchos::rcp(new NullspaceFactory("Nullspace1",P11Fact));
-    Teuchos::RCP<CoarseMapFactory> coarseMapFact11 = Teuchos::rcp(new CoarseMapFactory(UCAggFact11,nspFact11));
+    Teuchos::RCP<CoarseMapFactory> coarseMapFact11 = Teuchos::rcp(new CoarseMapFactory(/*UCAggFact11,nspFact11*/));
     coarseMapFact11->setStridingData(stridingInfo1);
 
     ///////////////////////////////////////////////////////////////////////
@@ -297,11 +297,11 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     // Lagrange multiplier DOFs
     Teuchos::RCP<MueLu::ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > UCAggFact22 = Teuchos::rcp(new MueLu::ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>(UCAggFact11, amalgFact11));
 
-    Teuchos::RCP<AmalgamationFactory> amalgFact22 = Teuchos::rcp(new AmalgamationFactory(A22Fact));
+    Teuchos::RCP<AmalgamationFactory> amalgFact22 = Teuchos::rcp(new AmalgamationFactory(/*A22Fact*/));
 
     // use tentative prolongation operator (prolongation operator smoothing doesn't make sense since
     // the A11 block is not valid for smoothing)
-    Teuchos::RCP<TentativePFactory> P22Fact = Teuchos::rcp(new TentativePFactory(UCAggFact22, amalgFact22));
+    Teuchos::RCP<TentativePFactory> P22Fact = Teuchos::rcp(new TentativePFactory(/*UCAggFact22, amalgFact22*/));
     Teuchos::RCP<TransPFactory> R22Fact = Teuchos::rcp(new TransPFactory(P22Fact));
     Teuchos::RCP<NullspaceFactory> nspFact22 = Teuchos::rcp(new NullspaceFactory("Nullspace2",P22Fact));
     Teuchos::RCP<BlockedCoarseMapFactory> coarseMapFact22 = Teuchos::rcp(new BlockedCoarseMapFactory(coarseMapFact11,UCAggFact22,nspFact22));
