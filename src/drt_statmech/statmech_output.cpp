@@ -815,10 +815,13 @@ void STATMECH::StatMechManager::Output(const int ndim,
         filename << outputrootpath_ << "/StatMechOutput/ViscoElOutputProc.dat";
         ViscoelasticityOutput(time, dis, fint, filename);
 
-        // additional Density-Density-Correlation Output if required
-        std::ostringstream ddcorrfilename;
-        ddcorrfilename << outputrootpath_ << "/StatMechOutput/DensityDensityCorrFunction_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
-        //DDCorrOutput(dis, ddcorrfilename, istep, dt);
+        // additional Density-Density-Correlation Output
+        if((istep-istart_) % (10*statmechparams_.get<int> ("OUTPUTINTERVALS", 1)) == 0)
+        {
+          std::ostringstream ddcorrfilename;
+          ddcorrfilename << outputrootpath_ << "/StatMechOutput/DensityDensityCorrFunction_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+          DDCorrOutput(dis, ddcorrfilename, istep, dt);
+        }
       }
     }
     break;
