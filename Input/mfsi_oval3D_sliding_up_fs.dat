@@ -20,43 +20,27 @@ NUMDF                           6
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
 ALE_TYPE                        classic_lin
-MAXTIME                         4
-NUMSTEP                         41
-RESULTSEVRY                     1
-TIMESTEP                        0.1
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
-LINEAR_SOLVER                   3
+LINEAR_SOLVER                   1
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-ALPHA_F                         1
-ALPHA_M                         1
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-06
-GAMMA                           1
 GRIDVEL                         1
 INITIALFIELD                    zero_field
 ITEMAX                          10
 LIFTDRAG                        No
-MAXTIME                         1000
 NONLINITER                      fixed_point_like
-NUMSTASTEPS                     0
-NUMSTEP                         1
 PREDICTOR                       steady_state_predictor
-RESTARTEVRY                     20
 SIMPLER                         no
-STARTFUNCNO                     -1
-STARTINGALGO                    One_Step_Theta
-START_THETA                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.01
-UPRES                           1
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 CROSS-STRESS                    no_cross
 CSTAB                           cstab_qs
@@ -74,30 +58,19 @@ BASETOL                         1E-7
 CONVTOL                         1e-06
 COUPALGO                        iter_mortar_monolithicfluidsplit
 COUPMETHOD                      mtr
-COUPVARIABLE                    Displacement
 DEBUGOUTPUT                     No
-ENERGYCHECK                     No
-FLUIDPCITER                     1 1 1
-FLUIDPCOMEGA                    1.0 1.0 1.0
 INFNORMSCALING                  Yes
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
 MAXOMEGA                        0
-MAXTIME                         500
+MAXTIME                         50
 NUMSTEP                         5
 PARTITIONED                     DirichletNeumannSlideALE
 PRECONDREUSE                    10
-PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
-RELAX                           1
 RESTARTEVRY                     1
 SECONDORDER                     No
 SHAPEDERIVATIVES                No
-STRUCTPCITER                    1 1 1
-STRUCTPCOMEGA                   1.0 1.0 1.0
-PCITER                          1 1 1
-PCOMEGA                         1.0 1.0 1.0
 TIMESTEP                        10.0
-TOLENCHECK                      1e-07
 UPRES                           1
 SLIDEALEPROJ                    Curr
 -------------------------------------------------------------MORTAR COUPLING
@@ -125,7 +98,7 @@ PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-LINEAR_SOLVER                   2
+LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 ADAPTERDRIVE                    No
@@ -134,22 +107,13 @@ NORM_RESF                       Mix
 NORMCOMBI_RESFDISP              And
 DAMPING                         No
 DYNAMICTYP                      GenAlpha
-EIGEN                           0
 ITWANT                          0
 K_DAMP                          0.5
 MAXDT                           0
 MAXITER                         50
-MAXTIME                         5
 M_DAMP                          0.5
 NLNSOL                          fullnewton
-NUMSTEP                         200
 PREDICT                         ConstDisVelAcc
-RESULTSEVRY                     1
-RESEVRYERGY                     0
-RESTARTEVRY                     1
-RESULTDT                        0
-TIMEADAPT                       0
-TIMESTEP                        0.05
 TOLCONSTR                       1e-07
 TOLDISP                         1e-07
 TOLRES                          1e-07
@@ -164,13 +128,6 @@ BETA                            0.25
 GAMMA                           0.5
 GENAVG                          ImrLike
 --------------------------------------------------------------------SOLVER 1
-NAME                            Ale_Solver
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
-NAME                            Structure_Solver
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 3
-NAME                            Fluid_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.8E-5 DENSITY 1.0E-6
@@ -182,13 +139,8 @@ CURVE1 on EXPR FUNC (0.25*(1-cos(2*pi*t/120))) t1 0.0 t2 60.0
 CURVE1 on EXPR FUNC 0.5 t1 60.0 t2 360.0
 ----------------------------------------------------------------------CURVE2
 CURVE2 on EXPR FUNC (0.5*sin(2*pi*t/50)) t1 0.0 t2 100.0
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 0 0 0 FUNCTION y
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          2
@@ -224,6 +176,9 @@ DSURF                           2
 E 4 - 0 structure
 // coupling fluid
 E 5 - 0 fluid
+-----------------------------DESIGN FSI COUPLING CENTER DISP SURF CONDITIONS
+DSURF                           1
+E 4 -
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1851 DLINE 1
@@ -7144,17 +7099,11 @@ NODE 2482 COORD -8.43445003e-01 8.05823207e-01 -2.62499988e-01
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-//FLUID DIS fluid NODE 824 QUANTITY velx VALUE 8.013355277e-01 TOLERANCE 1e-8
-//FLUID DIS fluid NODE 824 QUANTITY vely VALUE -1.862853243e-02 TOLERANCE 1e-8
-//FLUID DIS fluid NODE 824 QUANTITY pressure VALUE 8.176887114e-07 TOLERANCE 1e-8
-//STRUCTURE DIS structure NODE 1963 QUANTITY dispx VALUE 6.978827997e-02 TOLERANCE 1e-8
-//STRUCTURE DIS structure NODE 1963 QUANTITY dispy VALUE -6.045794766e-02 TOLERANCE 1e-8
-//STRUCTURE DIS structure NODE 1963 QUANTITY dispz VALUE 0.000000000e00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 824 QUANTITY velx VALUE 8.007725038e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 824 QUANTITY vely VALUE -1.866831914e-02 TOLERANCE 1e-8
-FLUID DIS fluid NODE 824 QUANTITY pressure VALUE 8.088278382e-07 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 1963 QUANTITY dispx VALUE 5.735161781e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 1963 QUANTITY dispy VALUE -4.902373685e-02 TOLERANCE 1e-8
+FLUID DIS fluid NODE 824 QUANTITY velx VALUE 8.00338078926868479e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 824 QUANTITY vely VALUE -1.87004843111500847e-02 TOLERANCE 1e-8
+FLUID DIS fluid NODE 824 QUANTITY pressure VALUE 8.02091061668075838e-07 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 1963 QUANTITY dispx VALUE 4.75469935784822162e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 1963 QUANTITY dispy VALUE -4.02193588877326619e-02 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1963 QUANTITY dispz VALUE 0.000000000e00 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END
