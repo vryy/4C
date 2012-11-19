@@ -18,7 +18,6 @@ Maintainer: Georg Hammerl
 #include "ad_str_constr_merged.H"
 #include "ad_str_wrapper.H"
 #include "ad_str_lung.H"
-#include "ad_str_timint_poroelast.H"
 #include "ad_str_redairway.H"
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -356,17 +355,16 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
       const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
       const INPAR::POROELAST::SolutionSchemeOverFields coupling =
             DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(porodyn, "COUPALGO");
-      Teuchos::RCP<StructureTimIntImplPoro> tmpporostr = Teuchos::rcp(new StructureTimIntImplPoro(tmpstr));
-      if (tmpporostr->HaveConstraint())
+      if (tmpstr->HaveConstraint())
       {
         if (coupling == INPAR::POROELAST::Monolithic_structuresplit or coupling == INPAR::POROELAST::Monolithic_fluidsplit)
-          structure_ = Teuchos::rcp(new FSIStructureWrapper(tmpporostr));
+          structure_ = Teuchos::rcp(new FSIStructureWrapper(tmpstr));
         else
-          structure_ = Teuchos::rcp(new StructureConstrMerged(tmpporostr));
+          structure_ = Teuchos::rcp(new StructureConstrMerged(tmpstr));
       }
       else
       {
-          structure_ = Teuchos::rcp(new FSIStructureWrapper(tmpporostr));
+          structure_ = Teuchos::rcp(new FSIStructureWrapper(tmpstr));
       }
     }
     break;

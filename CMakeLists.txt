@@ -483,7 +483,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/ad_str_constr_merged.cpp
   src/drt_adapter/ad_str_lung.cpp
   src/drt_adapter/ad_str_redairway.cpp
-  src/drt_adapter/ad_str_timint_poroelast.cpp
   src/drt_adapter/ad_str_timint_adaptive.cpp
   src/drt_adapter/ad_str_wrapper.cpp
   src/drt_adapter/ad_str_fsiwrapper.cpp
