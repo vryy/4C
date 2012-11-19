@@ -4425,7 +4425,10 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
     int bindingspots = 0;
     int combicount = 0;
     Epetra_Vector anglesrow(*ddcorrrowmap_, true);
-    Epetra_MultiVector orderparameterbinsrow(*ddcorrrowmap_,2, true);
+    // including correlation on the same filament
+    Epetra_MultiVector orderparameterbinsincrow(*ddcorrrowmap_,2, true);
+    // excluding correlation on identical filament
+    Epetra_MultiVector orderparameterbinsexcrow(*ddcorrrowmap_,2, true);
     // loop over crosslinkermap_ (column map, same for all procs: maps all crosslink molecules)
     for(int mypid=0; mypid<discret_->Comm().NumProc(); mypid++)
     {
@@ -4455,43 +4458,43 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
                 LID(0,0) = i;
                 LID(1,0) = j;
 
-                // neglect correlation of binding site on the same filament
+                LINALG::Matrix<3,1> distance((currentpositions.find((int)LID(0,0)))->second);
+                distance -= (currentpositions.find((int)LID(1,0)))->second;
+
+                // current distance bin
+                int currdistbin = (int)floor(distance.Norm2()/maxdist*numbins);
+                // reduce bin if distance == maxdist
+                if(currdistbin==numbins)
+                  currdistbin--;
+
+                // direction between currently considered two nodes
+                LINALG::Matrix<3,1> direction(distance);
+                direction.Scale(1.0/direction.Norm2());
+                RCP<double> phifil = Teuchos::rcp(new double(0.0));
+                bool orientation = CheckOrientation(direction,nodaltriadscol,LID,phifil);
+
+                // increment count for that bin
+                orderparameterbinsincrow[0][currdistbin] += 1.0;
+                // order parameter
+                orderparameterbinsincrow[1][currdistbin] += (3.0*cos((*phifil))*cos((*phifil))-1)/2.0;
                 if((*filamentnumber_)[i]!=(*filamentnumber_)[j])
                 {
-                  LINALG::Matrix<3,1> distance((currentpositions.find((int)LID(0,0)))->second);
-                  distance -= (currentpositions.find((int)LID(1,0)))->second;
+                  orderparameterbinsexcrow[0][currdistbin] += 1.0;
+                  orderparameterbinsexcrow[1][currdistbin] += (3.0*cos((*phifil))*cos((*phifil))-1)/2.0;
+                }
+                // proximity check
+                if(distance.Norm2()>rmin && distance.Norm2()<rmax)
+                {
+                  // if angular constraints are met, increase binding spot count
+                  if(orientation)
+                    bindingspots++;
 
-                  // current distance bin
-                  int currdistbin = (int)floor(distance.Norm2()/maxdist*numbins);
-                  // reduce bin if distance == maxdist
-                  if(currdistbin==numbins)
-                    currdistbin--;
-
-                  // direction between currently considered two nodes
-                  LINALG::Matrix<3,1> direction(distance);
-                  direction.Scale(1.0/direction.Norm2());
-                  RCP<double> phifil = Teuchos::rcp(new double(0.0));
-                  bool orientation = CheckOrientation(direction,nodaltriadscol,LID,phifil);
-
-                  // increment count for that bin
-                  orderparameterbinsrow[0][currdistbin] += 1.0;
-                  // order parameter
-                  orderparameterbinsrow[1][currdistbin] += (3.0*cos((*phifil))*cos((*phifil))-1)/2.0;
-
-                  // proximity check
-                  if(distance.Norm2()>rmin && distance.Norm2()<rmax)
-                  {
-                    // if angular constraints are met, increase binding spot count
-                    if(orientation)
-                      bindingspots++;
-
-                    // determine the bin
-                    int	curranglebin = (int)floor((*phifil)/maxangle*numbins);
-                    // in case the distance is exactly periodlength*sqrt(3)
-                    if(curranglebin==numbins)
-                      curranglebin--;
-                    anglesrow[curranglebin] += 1.0;
-                  }
+                  // determine the bin
+                  int	curranglebin = (int)floor((*phifil)/maxangle*numbins);
+                  // in case the distance is exactly periodlength*sqrt(3)
+                  if(curranglebin==numbins)
+                    curranglebin--;
+                  anglesrow[curranglebin] += 1.0;
                 }
               }
               else
@@ -4516,28 +4519,38 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
     discret_->Comm().SumAll(&bindingspots,&bspotsglob,1);
 
     Epetra_Vector anglescol(*ddcorrcolmap_, true);
-    Epetra_MultiVector orderparameterbinscol(*ddcorrcolmap_,2, true);
-    Epetra_Import ddcorrimporter(*ddcorrcolmap_, *ddcorrrowmap_);
-    anglescol.Import(anglesrow, ddcorrimporter, Insert);
-    orderparameterbinscol.Import(orderparameterbinsrow,ddcorrimporter,Insert);
+    Epetra_MultiVector orderparameterbinsinccol(*ddcorrcolmap_,2, true);
+    Epetra_MultiVector orderparameterbinsexccol(*ddcorrcolmap_,2, true);
+    CommunicateVector(anglesrow,anglescol, false, true,false);
+    CommunicateMultiVector(orderparameterbinsincrow, orderparameterbinsinccol,false,true,false);
+    CommunicateMultiVector(orderparameterbinsexcrow, orderparameterbinsexccol,false,true,false);
 
     // Add the processor-specific data up
     std::vector<int> angles(numbins, 0);
-    std::vector<std::vector<double> > orderparameter(numbins, std::vector<double>(2,0.0));
+    std::vector<std::vector<double> > orderparameterinc(numbins, std::vector<double>(2,0.0));
+    std::vector<std::vector<double> > orderparameterexc(numbins, std::vector<double>(2,0.0));
     for(int i=0; i<numbins; i++)
       for(int pid=0; pid<discret_->Comm().NumProc(); pid++)
       {
         angles[i] += (int)anglescol[pid*numbins+i];
-        orderparameter[i][0] += orderparameterbinscol[0][pid*numbins+i];
-        orderparameter[i][1] += orderparameterbinscol[1][pid*numbins+i];
+        orderparameterinc[i][0] += orderparameterbinsinccol[0][pid*numbins+i];
+        orderparameterinc[i][1] += orderparameterbinsinccol[1][pid*numbins+i];
+        orderparameterexc[i][0] += orderparameterbinsexccol[0][pid*numbins+i];
+        orderparameterexc[i][1] += orderparameterbinsexccol[1][pid*numbins+i];
       }
 
     // average values
     for(int i=0; i<numbins; i++)
-      if(orderparameter[i][0]>0.0) // i.e. >0
-        orderparameter[i][1] /= orderparameter[i][0];
+      if(orderparameterinc[i][0]>0.0) // i.e. >0
+      {
+        orderparameterinc[i][1] /= orderparameterinc[i][0];
+        orderparameterexc[i][1] /= orderparameterexc[i][0];
+      }
       else
-        orderparameter[i][1] = -99.0;
+      {
+        orderparameterinc[i][1] = -99.0;
+        orderparameterexc[i][1] = -99.0;
+      }
 
     // write data to file
     if(!discret_->Comm().MyPID())
@@ -4551,7 +4564,7 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
 
       histogram<<bspotsglob<<"    "<<-99<<"    "<<-99<<endl;
       for(int i=0; i<numbins; i++)
-        histogram<<i+1<<"    "<<angles[i]<<"    "<<std::setprecision(12)<<orderparameter[i][1]<<"    "<<orderparameter[i][0]<<endl;
+        histogram<<i+1<<"    "<<angles[i]<<"    "<<std::setprecision(12)<<orderparameterinc[i][1]<<"    "<<orderparameterinc[i][0]<<"    "<<orderparameterexc[i][1]<<"    "<<orderparameterexc[i][0]<<endl;
       //write content into file and close it
       fprintf(fp, histogram.str().c_str());
       fclose(fp);
