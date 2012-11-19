@@ -1428,8 +1428,8 @@ void FSI::MortarMonolithicStructureSplit::CheckDynamicEquilibrium()
   violation->Norm2(&violationl2);
   violation->NormInf(&violationinf);
 
-  // scale L2-Norm with length of vector
-  violationl2 /= sqrt(violation->MyLength());
+  // scale L2-Norm with sqrt of length of interface vector
+  violationl2 /= sqrt(StructureField()->Interface()->FSICondMap()->NumGlobalElements());
 
   // output to screen
   ios_base::fmtflags flags = Utils()->out().flags();
