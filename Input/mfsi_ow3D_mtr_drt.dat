@@ -17,10 +17,6 @@ NUMDF                           6
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
 ALE_TYPE                        springs
-MAXTIME                         4
-NUMSTEP                         41
-RESULTSEVRY                     1
-TIMESTEP                        0.1
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       1
 NUMFLUIDDIS                     1
@@ -30,30 +26,19 @@ NUMTHERMDIS                     1
 LINEAR_SOLVER                   3
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
-ALPHA_F                         1
-ALPHA_M                         1
 CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-06
-GAMMA                           1
 GRIDVEL                         1
 INITIALFIELD                    zero_field
 ITEMAX                          10
 LIFTDRAG                        No
-MAXTIME                         1000
 NONLINITER                      fixed_point_like
-NUMSTASTEPS                     0
-NUMSTEP                         1
 PREDICTOR                       steady_state_predictor
-RESTARTEVRY                     20
 SIMPLER                         no
 STARTFUNCNO                     -1
-STARTINGALGO                    One_Step_Theta
-START_THETA                     1
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
-TIMESTEP                        0.01
-UPRES                           1
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 CROSS-STRESS                    no_cross
 CSTAB                           cstab_qs
@@ -73,9 +58,6 @@ COUPALGO                        iter_mortar_monolithicstructuresplit
 COUPMETHOD                      mtr
 COUPVARIABLE                    Displacement
 DEBUGOUTPUT                     No
-ENERGYCHECK                     No
-FLUIDPCITER 1 1 1
-FLUIDPCOMEGA 1.0 1.0 1.0
 INFNORMSCALING                  Yes
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
@@ -84,17 +66,10 @@ MAXTIME                         100
 NUMSTEP                         4
 PARTITIONED                     DirichletNeumann
 PRECONDREUSE                    10
-PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
-RELAX                           1
 RESTARTEVRY                     1
 SECONDORDER                     Yes
 SHAPEDERIVATIVES                Yes
-STRUCTPCITER 1 1 1
-STRUCTPCOMEGA 1.0 1.0 1.0
-PCITER 1 1 1
-PCOMEGA 1.0 1.0 1.0
 TIMESTEP                        0.05
-TOLENCHECK                      1e-06
 UPRES                           1
 -------------------------------------------------------------MORTAR COUPLING
 PARALLEL_REDIST                 No
@@ -130,22 +105,13 @@ NORM_RESF                       Mix
 NORMCOMBI_RESFDISP              And
 DAMPING                         No
 DYNAMICTYP                      GenAlpha
-EIGEN                           0
 ITWANT                          0
 K_DAMP                          0.5
 MAXDT                           0
 MAXITER                         50
-MAXTIME                         5
 M_DAMP                          0.5
 NLNSOL                          fullnewton
-NUMSTEP                         200
 PREDICT                         ConstDisVelAcc
-RESULTSEVRY                     1
-RESEVRYERGY                     0
-RESTARTEVRY                     1
-RESULTDT                        0
-TIMEADAPT                       0
-TIMESTEP                        0.05
 TOLCONSTR                       1e-07
 TOLDISP                         1e-07
 TOLRES                          1e-07
@@ -177,14 +143,8 @@ MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.3 DENS 500
 SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 5.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 0 0 0 FUNCTION 10*(y-1)
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         16
 NDLINE                          34
@@ -3568,10 +3528,10 @@ NODE 1132 COORD 1.00000000e+00 1.10000002e+00 -5.00000007e-02
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 60 QUANTITY dispy VALUE -3.5193282e-05 TOLERANCE 1e-9
-FLUID DIS fluid NODE 589 QUANTITY velx VALUE 2.97073606e-05 TOLERANCE 1e-9
-FLUID DIS fluid NODE 589 QUANTITY vely VALUE -7.06842091e-04 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 60 QUANTITY dispy VALUE -3.28504130468710919e-05 TOLERANCE 1e-9
+FLUID DIS fluid NODE 589 QUANTITY velx VALUE 3.00126570728137784e-05 TOLERANCE 1e-9
+FLUID DIS fluid NODE 589 QUANTITY vely VALUE -6.97217372818037919e-04 TOLERANCE 1e-9
 FLUID DIS fluid NODE 589 QUANTITY velz VALUE 0.0 TOLERANCE 1e-9
-FLUID DIS fluid NODE 589 QUANTITY pressure VALUE 6.14244456320129500e-03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 589 QUANTITY pressure VALUE 6.36244314389491916e-03 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END
