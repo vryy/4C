@@ -903,7 +903,7 @@ void FSI::MortarMonolithicFluidSplit::SetupVector(Epetra_Vector &f,
 
     // add fluid interface values to structure vector
     const Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface()->ExtractFSICondVector(fv);
-    const Teuchos::RCP<Epetra_Vector> scv = LINALG::CreateVector(*StructureField()->Interface()->FSICondMap());
+    const Teuchos::RCP<Epetra_Vector> scv = LINALG::CreateVector(*StructureField()->Interface()->FSICondMap(),true);
 
     // get the Mortar projection matrix P = D^{-1} * M
     const Teuchos::RCP<LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarTrafo();
@@ -1001,7 +1001,7 @@ FSI::MortarMonolithicFluidSplit::CreateLinearSystem(ParameterList& nlParams,
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::StatusTest::Combo>
 FSI::MortarMonolithicFluidSplit::CreateStatusTest(Teuchos::ParameterList& nlParams,
-                                         Teuchos::RCP<NOX::Epetra::Group> grp)
+                                                  Teuchos::RCP<NOX::Epetra::Group> grp)
 {
   // Create the convergence tests
   Teuchos::RCP<NOX::StatusTest::Combo> combo       =
@@ -1133,29 +1133,33 @@ FSI::MortarMonolithicFluidSplit::CreateStatusTest(Teuchos::ParameterList& nlPara
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MortarMonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-                                                 Teuchos::RCP<const Epetra_Vector>& sx,
-                                                 Teuchos::RCP<const Epetra_Vector>& fx,
-                                                 Teuchos::RCP<const Epetra_Vector>& ax)
+void FSI::MortarMonolithicFluidSplit::ExtractFieldVectors(
+    Teuchos::RCP<const Epetra_Vector> x,
+    Teuchos::RCP<const Epetra_Vector>& sx,
+    Teuchos::RCP<const Epetra_Vector>& fx,
+    Teuchos::RCP<const Epetra_Vector>& ax)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicOverlap::ExtractFieldVectors");
 
-  // We have overlap at the interface. Thus we need the interface part of the
+  // We have overlap at the interface where we condensed the fluid interface
+  // velocities form the global system. Thus we need the interface part of the
   // structure vector and append it to the fluid and ale vector. (With the
   // right translation.)
 
+  // get the Mortar projection matrix P = D^{-1} * M
+  const Teuchos::RCP<const LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarTrafo();
+
+  // process structure unknowns
   sx = Extractor().ExtractVector(x,0);
   Teuchos::RCP<const Epetra_Vector> scx = StructureField()->Interface()->ExtractFSICondVector(sx);
 
-  // get fluid displacements
-
+  // process ale unknowns
   Teuchos::RCP<const Epetra_Vector> fox = Extractor().ExtractVector(x,1);
 #ifdef FLUIDSPLITAMG
   fox = FluidField().Interface()->ExtractOtherVector(fox);
 #endif
-  Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_->GetMortarTrafo();
   Teuchos::RCP<Epetra_Vector> fcx = LINALG::CreateVector(*FluidField().Interface()->FSICondMap(),true);
-  mortar->Apply(*scx,*fcx);
+  mortarp->Apply(*scx,*fcx);
 
   // process ale unknowns based on fluid displacements
   Teuchos::RCP<Epetra_Vector> acx =  icoupfa_->MasterToSlave(fcx);
@@ -1517,16 +1521,16 @@ void FSI::MortarMonolithicFluidSplit::CheckKinematicConstraint()
 #endif
 
   // get interface displacements and velocities
-  const Teuchos::RCP<Epetra_Vector> disnp   = StructureField()->ExtractInterfaceDispnp();
-  const Teuchos::RCP<Epetra_Vector> disn    = StructureField()->ExtractInterfaceDispn();
-  const Teuchos::RCP<Epetra_Vector> velnp   = FluidField().ExtractInterfaceVelnp();
-  const Teuchos::RCP<Epetra_Vector> veln    = FluidField().ExtractInterfaceVeln();
+  const Teuchos::RCP<Epetra_Vector> disnp = StructureField()->ExtractInterfaceDispnp();
+  const Teuchos::RCP<Epetra_Vector> disn  = StructureField()->ExtractInterfaceDispn();
+  const Teuchos::RCP<Epetra_Vector> velnp = FluidField().ExtractInterfaceVelnp();
+  const Teuchos::RCP<Epetra_Vector> veln  = FluidField().ExtractInterfaceVeln();
 
   // prepare vectors for projected interface quantities
-  Teuchos::RCP<Epetra_Vector> disnpproj   = Teuchos::rcp(new Epetra_Vector(mortarm->RangeMap(),true));
-  Teuchos::RCP<Epetra_Vector> disnproj    = Teuchos::rcp(new Epetra_Vector(mortarm->RangeMap(),true));
-  Teuchos::RCP<Epetra_Vector> velnpproj   = Teuchos::rcp(new Epetra_Vector(mortard->RangeMap(),true));
-  Teuchos::RCP<Epetra_Vector> velnproj    = Teuchos::rcp(new Epetra_Vector(mortard->RangeMap(),true));
+  Teuchos::RCP<Epetra_Vector> disnpproj = Teuchos::rcp(new Epetra_Vector(mortarm->RangeMap(),true));
+  Teuchos::RCP<Epetra_Vector> disnproj  = Teuchos::rcp(new Epetra_Vector(mortarm->RangeMap(),true));
+  Teuchos::RCP<Epetra_Vector> velnpproj = Teuchos::rcp(new Epetra_Vector(mortard->RangeMap(),true));
+  Teuchos::RCP<Epetra_Vector> velnproj  = Teuchos::rcp(new Epetra_Vector(mortard->RangeMap(),true));
 
   // projection of interface displacements
   mortarm->Apply(*disnp,*disnpproj);
