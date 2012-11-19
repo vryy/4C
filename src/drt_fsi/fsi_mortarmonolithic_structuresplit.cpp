@@ -1,3 +1,20 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_mortarmonolithic_structuresplit.cpp
+
+\brief Solve FSI problem with non-matching grids using a monolithic scheme
+with condensed structure interface displacements
+
+<pre>
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
+</pre>
+*/
+
+/*----------------------------------------------------------------------*/
+
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_adapter/adapter_coupling_mortar.H"
@@ -32,17 +49,37 @@ FSI::MortarMonolithicStructureSplit::MortarMonolithicStructureSplit(const Epetra
   : BlockMonolithic(comm,timeparams),
     comm_(comm)
 {
-  notsetup_=true;
+  notsetup_ = true;
 
-  coupsfm_ = Teuchos::rcp(new ADAPTER::CouplingMortar());
-  icoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
+  coupsfm_  = Teuchos::rcp(new ADAPTER::CouplingMortar());
+  icoupfa_  = Teuchos::rcp(new ADAPTER::Coupling());
   fscoupfa_ = Teuchos::rcp(new ADAPTER::Coupling());
 
-  aigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmiitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
-  fmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+  aigtransform_   = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmiitransform_  = Teuchos::rcp(new UTILS::MatrixColTransform);
+  fmgitransform_  = Teuchos::rcp(new UTILS::MatrixColTransform);
   fsaigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
   fsmgitransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
+
+  // Recovery of Lagrange multiplier happens on structure field
+  lambda_   = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap(),true));
+  ddiinc_   = Teuchos::null;
+  disiprev_ = Teuchos::null;
+  disgprev_ = Teuchos::null;
+  sgiprev_  = Teuchos::null;
+  sggprev_  = Teuchos::null;
+
+#ifdef DEBUG
+  if (coupsfm_ == Teuchos::null)        { dserror("Allocation of 'coupsfm_' failed."); }
+  if (icoupfa_ == Teuchos::null)        { dserror("Allocation of 'icoupfa_' failed."); }
+  if (fscoupfa_ == Teuchos::null)       { dserror("Allocation of 'fscoupfa_' failed."); }
+  if (aigtransform_ == Teuchos::null)   { dserror("Allocation of 'aigtransform_' failed."); }
+  if (fmiitransform_ == Teuchos::null)  { dserror("Allocation of 'fmiitransform_' failed."); }
+  if (fmgitransform_ == Teuchos::null)  { dserror("Allocation of 'fmgitransform_' failed."); }
+  if (fsaigtransform_ == Teuchos::null) { dserror("Allocation of 'fsaigtransform_' failed."); }
+  if (fsmgitransform_ == Teuchos::null) { dserror("Allocation of 'fsmgitransform_' failed."); }
+  if (lambda_ == Teuchos::null)         { dserror("Allocation of 'lambda_' failed."); }
+#endif
 
   return;
 }
@@ -131,15 +168,15 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     aleresidual_ = Teuchos::rcp(new Epetra_Vector(*AleField().Interface()->OtherMap()));
 
     // get the PCITER from inputfile
-    vector<int> pciter;
+    std::vector<int> pciter;
     std::vector<double> pcomega;
-    vector<int> spciter;
+    std::vector<int> spciter;
     std::vector<double> spcomega;
-    vector<int> fpciter;
+    std::vector<int> fpciter;
     std::vector<double> fpcomega;
-    vector<int> apciter;
+    std::vector<int> apciter;
     std::vector<double> apcomega;
-    vector<string> blocksmoother;
+    std::vector<std::string> blocksmoother;
     std::vector<double> schuromega;
     {
       int    word1;
@@ -177,7 +214,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
           apcomega.push_back(word2);
       }
       {
-        string word;
+        std::string word;
         std::istringstream blocksmootherstream(Teuchos::getNumericStringParameter(fsidyn,"BLOCKSMOOTHER"));
         while (blocksmootherstream >> word)
           blocksmoother.push_back(word);
@@ -249,6 +286,7 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
 void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicStructureSplit::SetupRHS");
+
   SetupVector(f,
               StructureField()->RHS(),
               FluidField().RHS(),
@@ -258,18 +296,38 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
   // add additional ale residual
   Extractor().AddVector(*aleresidual_,2,f);
 
+  firstcall_ = firstcall;
+
+  // The following terms of rhs are only considered in the first Newton iteration.
+  // They transport information from the last time step into the system of equations.
   if (firstcall)
   {
+    // get the Mortar projection matrix P = D^{-1} * M
+    const Teuchos::RCP<LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarTrafo();
 
+    // some scaling factors for fluid
+    const double scale = FluidField().ResidualScaling();
+
+    // get single field block matrices
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
-    if (a==Teuchos::null)
-      dserror("expect ale block matrix");
 
+#ifdef DEBUG
+    if (mortarp==Teuchos::null) { dserror("Expected Teuchos::rcp to mortar matrix P."); }
+    if (s==Teuchos::null)       { dserror("Expected Teuchos::rcp to structure block matrix."); }
+    if (a==Teuchos::null)       { dserror("Expected Teuchos::rcp to ALE block matrix."); }
+#endif
+
+    // extract submatrices
     LINALG::SparseMatrix& aig = a->Matrix(0,1);
 
-    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
+    // some often re-used vectors
+    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::null;
+
+    rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap()));
     Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
 
+    // only if relative movement between ale and structure is possible
     if (aleproj_!= INPAR::FSI::ALEprojection_none)
     {
 
@@ -292,33 +350,27 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
 
     Extractor().AddVector(*rhs,2,f);
 
-    // structure
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
-    Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_->GetMortarTrafo();
+    Teuchos::RCP<Epetra_Vector> tmprhs = Teuchos::rcp(new Epetra_Vector(mortarp->RowMap()));
 
-
-    Teuchos::RCP<Epetra_Vector> tmprhs = Teuchos::rcp(new Epetra_Vector(mortar->RowMap()));
     rhs = Teuchos::rcp(new Epetra_Vector(s->Matrix(0,1).RowMap()));
 
-    mortar->Apply(*fveln,*tmprhs);
+    mortarp->Apply(*fveln,*tmprhs);
     s->Matrix(0,1).Apply(*tmprhs,*rhs);
     rhs->Scale(-1.*Dt());
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
     LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
 
-
     Extractor().AddVector(*rhs,0,f);
     rhs = Teuchos::rcp(new Epetra_Vector(s->Matrix(1,1).RowMap()));
     s->Matrix(1,1).Apply(*tmprhs,*rhs);
-    tmprhs = Teuchos::rcp(new Epetra_Vector(mortar->DomainMap()));
+    tmprhs = Teuchos::rcp(new Epetra_Vector(mortarp->DomainMap()));
 
-    mortar->SetUseTranspose(true);
-    mortar->Apply(*rhs,*tmprhs);
-    mortar->SetUseTranspose(false);
+    mortarp->SetUseTranspose(true);
+    mortarp->Apply(*rhs,*tmprhs);
+    mortarp->SetUseTranspose(false);
 
     rhs = FluidField().Interface()->InsertFSICondVector(tmprhs);
-    double scale     = FluidField().ResidualScaling();
     rhs->Scale(-1.*Dt()/scale);
 
     zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
@@ -383,8 +435,17 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
         Extractor().AddVector(*veln,0,f);
       }
     }
+
+    // Reset quantities for previous iteration step since they still store values from the last time step
+    ddiinc_   = LINALG::CreateVector(*StructureField()->Interface()->OtherMap(),true);
+    disiprev_ = Teuchos::null;
+    disgprev_ = Teuchos::null;
+    sgicur_   = Teuchos::null;
+    sggcur_   = Teuchos::null;
   }
-  // NOX expects a different sign here.
+
+  // NOX expects the 'positive' residual. The negative sign for the
+  // linearized Newton system J*dx=-r is done internally by NOX.
   f.Scale(-1.);
 }
 
@@ -395,43 +456,45 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicStructureSplit::SetupSystemMatrix");
 
-  // extract Jacobian matrices and put them into composite system
-  // matrix W
+  // get the Mortar projection matrix P = D^{-1} * M
+  Teuchos::RCP<LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarTrafo();
 
-  //const ADAPTER::Coupling& coupsf = StructureFluidCoupling();
-  //const ADAPTER::Coupling& coupsa = StructureAleCoupling();
+  // get single field block matrices
+  const Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
+  if (s==Teuchos::null) dserror("expect structure block matrix");
+  const Teuchos::RCP<LINALG::SparseMatrix> f = FluidField().SystemMatrix();
+  if (f==Teuchos::null) dserror("expect fluid matrix");
+  const Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+  if (a==Teuchos::null) dserror("expect ale block matrix");
 
-  Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_->GetMortarTrafo();
-
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
-  if (s==Teuchos::null)
-    dserror("expect structure block matrix");
-  Teuchos::RCP<LINALG::SparseMatrix> f = FluidField().SystemMatrix();
-  if (f==Teuchos::null)
-    dserror("expect fluid matrix");
-  Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
-  if (a==Teuchos::null)
-    dserror("expect ale block matrix");
-
+  // extract submatrices
   LINALG::SparseMatrix& aii = a->Matrix(0,0);
   LINALG::SparseMatrix& aig = a->Matrix(0,1);
 
-  /*----------------------------------------------------------------------*/
+  // scaling factors for fluid
+  const double scale     = FluidField().ResidualScaling();
+  const double timescale = FluidField().TimeScaling();
 
-  double scale     = FluidField().ResidualScaling();
-  double timescale = FluidField().TimeScaling();
-  // build block matrix
-  // The maps of the block matrix have to match the maps of the blocks we
-  // insert here.
+  // get time integration parameters of structure and fluid time integrators
+  // to enable consistent time integration among the fields
+  const double stiparam = StructureField()->TimIntParam();
+  const double ftiparam = FluidField().TimIntParam();
 
   // Uncomplete fluid matrix to be able to deal with slightly defective
   // interface meshes.
   f->UnComplete();
 
+  // --------------------------------------------------------------------------
+  // BEGIN building the global 4x4 system matrix
+  // --------------------------------------------------------------------------
+  // Contributions to blocks in system matrix are listed separately.
+  // Block numbering in comments ranges from (1,1) to (4,4).
+
   mat.Assign(0,0,View,s->Matrix(0,0));
 
-  RCP<LINALG::SparseMatrix> sig = MLMultiply(s->Matrix(0,1),false,*mortar,false,false,false,true);
-  RCP<LINALG::SparseMatrix> lsig = Teuchos::rcp(new LINALG::SparseMatrix(sig->RowMap(),81,false));
+  // ----------Addressing contribution to block (1,3)
+  Teuchos::RCP<LINALG::SparseMatrix> sig = MLMultiply(s->Matrix(0,1),false,*mortarp,false,false,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> lsig = Teuchos::rcp(new LINALG::SparseMatrix(sig->RowMap(),81,false));
 
   lsig->Add(*sig,false,1./timescale,0.0);
   lsig->Complete(f->DomainMap(),sig->RangeMap());
@@ -440,22 +503,24 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
 
   mat.Assign(0,1,View,*lsig);
 
-  RCP<LINALG::SparseMatrix> sgi = MLMultiply(*mortar,true,s->Matrix(1,0),false,false,false,true);
-  RCP<LINALG::SparseMatrix> lsgi = Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
+  // ----------Addressing contribution to block (3,1)
+  Teuchos::RCP<LINALG::SparseMatrix> sgi = MLMultiply(*mortarp,true,s->Matrix(1,0),false,false,false,true);
+  Teuchos::RCP<LINALG::SparseMatrix> lsgi = Teuchos::rcp(new LINALG::SparseMatrix(f->RowMap(),81,false));
 
-  lsgi->Add(*sgi,false,1./scale,0.0);
+  lsgi->Add(*sgi,false,(1.-ftiparam)/((1.-stiparam)*scale),0.0);
   lsgi->Complete(sgi->DomainMap(),f->RangeMap());
 
   lsgi->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
 
   mat.Assign(1,0,View,*lsgi);
 
-  RCP<LINALG::SparseMatrix> sgg = MLMultiply(s->Matrix(1,1),false,*mortar,false,false,false,true);
-  sgg = MLMultiply(*mortar,true,*sgg,false,false,false,true);
+  // ----------Addressing contribution to block (3,3)
+  Teuchos::RCP<LINALG::SparseMatrix> sgg = MLMultiply(s->Matrix(1,1),false,*mortarp,false,false,false,true);
+  sgg = MLMultiply(*mortarp,true,*sgg,false,false,false,true);
 
   sgg->ApplyDirichlet( *(FluidField().GetDBCMapExtractor()->CondMap()),false);
 
-  f->Add(*sgg,false,1./(scale*timescale),1.0);
+  f->Add(*sgg,false,(1.-ftiparam)/((1.-stiparam)*scale*timescale),1.0);
   mat.Assign(1,1,View,*f);
 
   (*aigtransform_)(a->FullRowMap(),
@@ -472,12 +537,16 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
   if (mmm!=Teuchos::null)
   {
+    // extract submatrices
     LINALG::SparseMatrix& fmii = mmm->Matrix(0,0);
     LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
     LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
     LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
 
+    // ----------Addressing contribution to block (3,3)
     mat.Matrix(1,1).Add(fmgg,false,1./timescale,1.0);
+
+    // ----------Addressing contribution to block (2,3)
     mat.Matrix(1,1).Add(fmig,false,1./timescale,1.0);
 
     const ADAPTER::Coupling& coupfa = FluidAleCoupling();
@@ -543,12 +612,22 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
 
   // done. make sure all blocks are filled.
   mat.Complete();
+  //
+  // --------------------------------------------------------------------------
+  // END building the global system matrix
+  // --------------------------------------------------------------------------
+
+  // store parts of structural matrix to know them in the next iteration as previous iteration matrices
+  sgiprev_  = sgicur_;
+  sggprev_  = sggcur_;
+  sgicur_   = Teuchos::rcp(new LINALG::SparseMatrix(s->Matrix(1,0)));
+  sggcur_   = Teuchos::rcp(new LINALG::SparseMatrix(s->Matrix(1,1)));
 }
 
 void FSI::MortarMonolithicStructureSplit::Update()
 {
 
-  // update history variabels for sliding ale
+  // update history variables for sliding ale
   if (aleproj_!= INPAR::FSI::ALEprojection_none)
   {
     iprojdisp_ = Teuchos::rcp(new Epetra_Vector(*coupsfm_->MasterDofRowMap(),true));
@@ -567,7 +646,7 @@ void FSI::MortarMonolithicStructureSplit::Update()
     slideale_->EvaluateMortar(StructureField()->ExtractInterfaceDispnp(), iprojdisp_, *coupsfm_);
     slideale_->EvaluateFluidMortar(idispale,iprojdisp_);
 
-    RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*iprojdisp_));
+    Teuchos::RCP<Epetra_Vector> temp = Teuchos::rcp(new Epetra_Vector(*iprojdisp_));
     temp->ReplaceMap(idispale->Map());
     Teuchos::RCP<Epetra_Vector> acx = icoupfa_->MasterToSlave(temp);
     AleField().ApplyInterfaceDisplacements(acx);
@@ -651,7 +730,9 @@ void FSI::MortarMonolithicStructureSplit::ScaleSystem(LINALG::BlockSparseMatrixB
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MortarMonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+void FSI::MortarMonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat,
+                                                          Epetra_Vector& x,
+                                                          Epetra_Vector& b)
 {
   const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
   const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
@@ -753,28 +834,46 @@ void FSI::MortarMonolithicStructureSplit::SetupVector(Epetra_Vector &f,
                                                 Teuchos::RCP<const Epetra_Vector> sv,
                                                 Teuchos::RCP<const Epetra_Vector> fv,
                                                 Teuchos::RCP<const Epetra_Vector> av,
-                                                double fluidscale)
+                                                const double fluidscale)
 {
-  // extract the inner and boundary dofs of all three fields
-
+  // extract inner dofs
   Teuchos::RCP<Epetra_Vector> sov = StructureField()->Interface()->ExtractOtherVector(sv);
   Teuchos::RCP<Epetra_Vector> aov = AleField()      .Interface()->ExtractOtherVector(av);
 
   if (fluidscale!=0)
   {
+    // get time integration parameters of structure an fluid time integrators
+    // to enable consistent time integration among the fields
+    const double stiparam = StructureField()->TimIntParam();
+    const double ftiparam = FluidField().TimIntParam();
+
+    // get the Mortar projection matrix P = D^{-1} * M
+    const Teuchos::RCP<LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarTrafo();
+
     // add structure interface values to fluid vector
 
-    Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_->GetMortarTrafo();
+    const Teuchos::RCP<Epetra_Vector> scv = StructureField()->Interface()->ExtractFSICondVector(sv);
+    const Teuchos::RCP<Epetra_Vector> fcv = LINALG::CreateVector(*FluidField().Interface()->FSICondMap(),true);
 
-    Teuchos::RCP<Epetra_Vector> fcv = FluidField().Interface()->ExtractFSICondVector(fv);
-    Teuchos::RCP<Epetra_Vector> scv = StructureField()->Interface()->ExtractFSICondVector(sv);
-
-    mortar->SetUseTranspose(true);
-    mortar->Apply(*scv,*fcv);
-    mortar->SetUseTranspose(false);
+    mortarp->Multiply(true,*scv,*fcv);
 
     Teuchos::RCP<Epetra_Vector> modfv = FluidField().Interface()->InsertFSICondVector(fcv);
-    modfv->Update(1.0, *fv, 1./fluidscale);
+    modfv->Update(1.0, *fv, (1.0-ftiparam)/((1.0-stiparam)*fluidscale));
+
+    // add contribution of Lagrange multiplier from previous time step
+    if (lambda_ != Teuchos::null)
+    {
+      // get the Mortar matrix M
+      const Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMMatrix();
+
+      Teuchos::RCP<Epetra_Vector> tmprhs = Teuchos::rcp(new Epetra_Vector(mortarm->DomainMap(),true));
+
+      mortarm->Multiply(true,*lambda_,*tmprhs);
+
+      Teuchos::RCP<Epetra_Vector> tmprhsfull = FluidField().Interface()->InsertFSICondVector(tmprhs);
+
+      modfv->Update((-ftiparam+(stiparam*(1.0-ftiparam))/(1.0-stiparam))/fluidscale, *tmprhsfull, 1.0);
+    }
 
     Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(modfv->Map(),true));
     LINALG::ApplyDirichlettoSystem(modfv,zeros,*(FluidField().GetDBCMapExtractor()->CondMap()));
@@ -803,14 +902,15 @@ FSI::MortarMonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
   Teuchos::ParameterList& newtonParams = dirParams.sublist("Newton");
-  Teuchos::ParameterList* lsParams = NULL;
+//  Teuchos::ParameterList* lsParams = NULL;
+  Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
-  // in case of nonlinCG the linear solver list is somewhere else
-  if (dirParams.get("Method","User Defined")=="User Defined")
-    lsParams = &(newtonParams.sublist("Linear Solver"));
-  else if (dirParams.get("Method","User Defined")=="NonlinearCG")
-    lsParams = &(dirParams.sublist("Nonlinear CG").sublist("Linear Solver"));
-  else dserror("Unknown nonlinear method");
+//  // in case of nonlinCG the linear solver list is somewhere else
+//  if (dirParams.get("Method","User Defined")=="User Defined")
+//    lsParams = &(newtonParams.sublist("Linear Solver"));
+//  else if (dirParams.get("Method","User Defined")=="NonlinearCG")
+//    lsParams = &(dirParams.sublist("Nonlinear CG").sublist("Linear Solver"));
+//  else dserror("Unknown nonlinear method");
 
   NOX::Epetra::Interface::Jacobian* iJac = this;
   NOX::Epetra::Interface::Preconditioner* iPrec = this;
@@ -821,17 +921,24 @@ FSI::MortarMonolithicStructureSplit::CreateLinearSystem(ParameterList& nlParams,
   {
   case INPAR::FSI::PreconditionedKrylov:
   case INPAR::FSI::FSIAMG:
-
-    linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem( printParams,
-                                                           *lsParams,
-                                                           Teuchos::rcp(iJac,false),
-                                                           J,
-                                                           Teuchos::rcp(iPrec,false),
-                                                           M,
-                                                           noxSoln));
+//    linSys = Teuchos::rcp(new FSI::MonolithicLinearSystem( printParams,
+//                                                           *lsParams,
+//                                                           Teuchos::rcp(iJac,false),
+//                                                           J,
+//                                                           Teuchos::rcp(iPrec,false),
+//                                                           M,
+//                                                           noxSoln));
+    linSys = Teuchos::rcp(new NOX::Epetra::LinearSystemAztecOO(printParams,
+                                                               lsParams,
+                                                               Teuchos::rcp(iJac,false),
+                                                               J,
+                                                               Teuchos::rcp(iPrec,false),
+                                                               M,
+                                                               noxSoln));
     break;
   default:
     dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
+    break;
   }
 
   return linSys;
@@ -974,27 +1081,36 @@ FSI::MortarMonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList& nl
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
-                                                        Teuchos::RCP<const Epetra_Vector>& sx,
-                                                        Teuchos::RCP<const Epetra_Vector>& fx,
-                                                        Teuchos::RCP<const Epetra_Vector>& ax)
+void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(
+    Teuchos::RCP<const Epetra_Vector> x,
+    Teuchos::RCP<const Epetra_Vector>& sx,
+    Teuchos::RCP<const Epetra_Vector>& fx,
+    Teuchos::RCP<const Epetra_Vector>& ax)
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicStructureSplit::ExtractFieldVectors");
+
+  // We have overlap at the interface where we condensed the structure interface
+  // displacements form the global system. Thus we need the interface part of the
+  // velocity vector and append it to the structure and ale vector. (With the
+  // right translation.)
+
+  // get the Mortar projection matrix P = D^{-1} * M
+  const Teuchos::RCP<const LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarTrafo();
+
+  // process fluid unknowns
   fx = Extractor().ExtractVector(x,1);
-  Teuchos::RCP<LINALG::SparseMatrix> mortar = coupsfm_->GetMortarTrafo();
 
   // process structure unknowns
-
   Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface()->ExtractFSICondVector(fx);
   FluidField().VelocityToDisplacement(fcx);
   Teuchos::RCP<const Epetra_Vector> sox = Extractor().ExtractVector(x,0);
   Teuchos::RCP<Epetra_Vector> scx = LINALG::CreateVector(*StructureField()->Interface()->FSICondMap());
-  mortar->Apply(*fcx,*scx);
+  mortarp->Apply(*fcx,*scx);
   Teuchos::RCP<Epetra_Vector> s = StructureField()->Interface()->InsertOtherVector(sox);
   StructureField()->Interface()->InsertFSICondVector(scx, s);
   sx = s;
-  // process ale unknowns
 
+  // process ale unknowns
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
   Teuchos::RCP<Epetra_Vector> acx = icoupfa_->MasterToSlave(fcx);
 
@@ -1012,16 +1128,46 @@ void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(Teuchos::RCP<const
   }
 
   ax = a;
+
+  // Store field vectors to know them later on as previous quantities
+  if (disiprev_ != Teuchos::null)
+    ddiinc_->Update(1.0, *sox, -1.0, *disiprev_, 0.0);  // compute current iteration increment
+  else
+    ddiinc_ = Teuchos::rcp(new Epetra_Vector(*sox));    // first iteration increment
+
+  disiprev_ = sox;                                      // store current step increment
+
+  if (velgprev_ != Teuchos::null)
+    duginc_->Update(1.0, *fcx, -1.0, *velgprev_, 0.0);  // compute current iteration increment
+  else
+    duginc_ = Teuchos::rcp(new Epetra_Vector(*fcx));    // first iteration increment
+
+  velgprev_ = fcx;                                      // store current step increment
 }
 
 void FSI::MortarMonolithicStructureSplit::Output()
 {
   StructureField()->Output();
+
+  // output Lagrange multiplier
+  {
+    /* 'lambda_' is only defined on the interface. So, insert 'lambda_' into
+     * 'lambdafull' that is defined on the entire structure field. Then, write
+     * output or restart data.
+     */
+    Teuchos::RCP<Epetra_Vector> lambdafull = StructureField()->Interface()->InsertFSICondVector(lambda_);
+    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+    const int uprestart = fsidyn.get<int>("RESTARTEVRY");
+    const int upres = fsidyn.get<int>("UPRES");
+    if ((uprestart != 0 && FluidField().Step() % uprestart == 0) || FluidField().Step() % upres)
+      StructureField()->DiscWriter()->WriteVector("fsilambda", lambdafull);
+  }
+
   FluidField().    Output();
 
   if (aleproj_!= INPAR::FSI::ALEprojection_none)
   {
-    const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+    const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     int uprestart = fsidyn.get<int>("RESTARTEVRY");
     if (uprestart != 0 && FluidField().Step() % uprestart == 0)
     {
@@ -1045,6 +1191,14 @@ void FSI::MortarMonolithicStructureSplit::Output()
 
 void FSI::MortarMonolithicStructureSplit::ReadRestart(int step)
 {
+  // read Lagrange multiplier
+  {
+    Teuchos::RCP<Epetra_Vector> lambdafull = Teuchos::rcp(new Epetra_Vector(*StructureField()->DofRowMap(),true));
+    IO::DiscretizationReader reader = IO::DiscretizationReader(StructureField()->Discretization(),step);
+    reader.ReadVector(lambdafull, "fsilambda");
+    lambda_ = StructureField()->Interface()->ExtractFSICondVector(lambdafull);
+  }
+
   StructureField()->ReadRestart(step);
   FluidField().ReadRestart(step);
 
@@ -1065,4 +1219,229 @@ void FSI::MortarMonolithicStructureSplit::ReadRestart(int step)
 
   if (aleproj_!= INPAR::FSI::ALEprojection_none)
     slideale_->EvaluateMortar(StructureField()->ExtractInterfaceDispn(), iprojdisp_, *coupsfm_);
+}
+
+void FSI::MortarMonolithicStructureSplit::RecoverLagrangeMultiplier()
+{
+  // get time integration parameter of structural time integrator
+  // to enable consistent time integration among the fields
+  const double stiparam = StructureField()->TimIntParam();
+
+  // some scaling factors for fluid
+//  const double timescale = FluidField().TimeScaling();
+
+  // get the Mortar projection matrix P = D^{-1} * M
+  const Teuchos::RCP<LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarTrafo();
+
+  // get the inverted Mortar matrix D^{-1}
+  const Teuchos::RCP<LINALG::SparseMatrix> mortardinv = coupsfm_->GetDinvMatrix();
+
+#ifdef DEBUG
+  if (mortarp == Teuchos::null)    { dserror("Expected Teuchos::rcp to mortar matrix P."); }
+  if (mortardinv == Teuchos::null) { dserror("Expected Teuchos::rcp to mortar matrix D^{-1}."); }
+#endif
+
+  // some often re-used vectors
+  Teuchos::RCP<Epetra_Vector> tmpvec    = Teuchos::null;  // stores intermediate result of terms (3)-(8)
+  Teuchos::RCP<Epetra_Vector> auxvec    = Teuchos::null;  // just for convenience
+  Teuchos::RCP<Epetra_Vector> auxauxvec = Teuchos::null;  // just for convenience
+
+  /* Recovery of Lagrange multiplier lambda^{n+1} is done by the following
+   * condensation expression:
+   *
+   * lambda^{n+1} =
+   *
+   * (1)  - stiparam / (1.-stiparam) * lambda^{n}
+   *
+   * (2)  + 1. / (1.-stiparam) * D^{-T} * tmpvec
+   *
+   * with tmpvec =
+   *
+   * (3)    r_{\Gamma}^{S,n+1}
+   *
+   * (4)  + S_{\Gamma I} * \Delta d_{I}^{S,n+1}
+   *
+   * (5)  + tau * S_{\Gamma\Gamma} * P * \Delta u_{\Gamma}^{F,n+1}
+   *
+   * (6)  + dt * S_{\Gamma\Gamma} * P * u_{\Gamma}^n]
+   *
+   * Remark on term (6):
+   * Term (6) has to be considered only in the first Newton iteration.
+   * Hence, it will usually not be computed since in general we need more
+   * than one nonlinear iteration until convergence.
+   *
+   * Remarks on all terms:
+   * +  Division by -(1.0 - stiparam) will be done in the end
+   *    since this is common to all terms
+   * +  tau: time scaling factor for interface time integration (tau = 1/FluidField().TimeScaling())
+   * +  neglecting terms (4)-(6) should not alter the results significantly
+   *    since at the end of the time step the solution increments tend to zero.
+   *
+   *                                                 Matthias Mayr (10/2012)
+   */
+
+  // ---------Addressing term (1)
+  lambda_->Update(-stiparam,*lambda_,0.0);
+  // ---------End of term (1)
+
+  // ---------Addressing term (3)
+  Teuchos::RCP<Epetra_Vector> structureresidual = StructureField()->Interface()->ExtractFSICondVector(StructureField()->RHS());
+  structureresidual->Scale(-1.0); // invert sign to obtain residual, not rhs
+  tmpvec = Teuchos::rcp(new Epetra_Vector(*structureresidual));
+  // ---------End of term (3)
+
+  /* You might want to comment out terms (4) to (6) since they tend to
+   * introduce oscillations in the Lagrange multiplier field for certain
+   * material properties of the structure.
+   *                                                    Matthias Mayr 11/2012
+  // ---------Addressing term (4)
+  auxvec = Teuchos::rcp(new Epetra_Vector(sgiprev_->RangeMap(),true));
+  sgiprev_->Apply(*ddiinc_,*auxvec);
+  tmpvec->Update(1.0,*auxvec,1.0);
+  // ---------End of term (4)
+
+  // ---------Addressing term (5)
+  auxvec = Teuchos::rcp(new Epetra_Vector(mortarp->RangeMap(),true));
+  mortarp->Apply(*duginc_,*auxvec);
+  auxauxvec = Teuchos::rcp(new Epetra_Vector(sggprev_->RangeMap(),true));
+  sggprev_->Apply(*auxvec,*auxauxvec);
+  tmpvec->Update(1.0/timescale,*auxauxvec,1.0);
+  // ---------End of term (5)
+
+  // ---------Addressing term (6)
+  if (firstcall_)
+  {
+    auxvec = Teuchos::rcp(new Epetra_Vector(mortarp->RangeMap(),true));
+    mortarp->Apply(*FluidField().ExtractInterfaceVeln(),*auxvec);
+    auxauxvec = Teuchos::rcp(new Epetra_Vector(sggprev_->RangeMap(),true));
+    sggprev_->Apply(*auxvec,*auxauxvec);
+    tmpvec->Update(Dt(),*auxauxvec,1.0);
+  }
+  // ---------End of term (6)
+   *
+   */
+
+  // ---------Addressing term (2)
+  auxvec = Teuchos::rcp(new Epetra_Vector(mortardinv->DomainMap(),true));
+  mortardinv->Multiply(true,*tmpvec,*auxvec);
+  lambda_->Update(1.0,*auxvec,1.0);
+  // ---------End of term (2)
+
+  // finally, divide by -(1.-stiparam) which is common to all terms
+  lambda_->Scale(1./(1.0-stiparam));
+
+  // Finally, the Lagrange multiplier lambda_ is recovered here. It has the unit [N/m^2].
+  // Actual nodal forces are obtained by multiplication with mortar matrices M or D later on.
+
+  CheckKinematicConstraint();
+  CheckDynamicEquilibrium();
+
+  return;
+}
+
+
+void FSI::MortarMonolithicStructureSplit::CheckKinematicConstraint()
+{
+  // some scaling factors for fluid
+  const double timescale  = FluidField().TimeScaling();
+
+  // get the Mortar matrices D and M
+  const Teuchos::RCP<LINALG::SparseMatrix> mortard = coupsfm_->GetDMatrix();
+  const Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMMatrix();
+
+  // get interface displacements and velocities
+  Teuchos::RCP<Epetra_Vector> disnp   = StructureField()->ExtractInterfaceDispnp();
+  Teuchos::RCP<Epetra_Vector> disn    = StructureField()->ExtractInterfaceDispn();
+  Teuchos::RCP<Epetra_Vector> velnp   = FluidField().ExtractInterfaceVelnp();
+  Teuchos::RCP<Epetra_Vector> veln    = FluidField().ExtractInterfaceVeln();
+
+  // prepare vectors for projected interface quantities
+  Teuchos::RCP<Epetra_Vector> disnpproj   = Teuchos::rcp(new Epetra_Vector(mortard->RangeMap(),true));
+  Teuchos::RCP<Epetra_Vector> disnproj    = Teuchos::rcp(new Epetra_Vector(mortard->RangeMap(),true));
+  Teuchos::RCP<Epetra_Vector> velnpproj   = Teuchos::rcp(new Epetra_Vector(mortarm->RangeMap(),true));
+  Teuchos::RCP<Epetra_Vector> velnproj    = Teuchos::rcp(new Epetra_Vector(mortarm->RangeMap(),true));
+
+  // projection of interface displacements
+  mortard->Apply(*disnp,*disnpproj);
+  mortard->Apply(*disn,*disnproj);
+
+  // projection of interface velocities
+  mortarm->Apply(*velnp,*velnpproj);
+  mortarm->Apply(*veln,*velnproj);
+
+  // calculate violation of kinematic interface constraint
+  Teuchos::RCP<Epetra_Vector> violation = Teuchos::rcp(new Epetra_Vector(*disnpproj));
+  violation->Update(-1.0, *disnproj, 1.0);
+  violation->Update(-1.0/timescale,*velnpproj,1.0/timescale,*velnproj,1.0);
+  violation->Update(-Dt(),*velnproj,1.0);
+
+  // calculate some norms
+  double violationl2 = 0.0;
+  double violationinf = 0.0;
+  violation->Norm2(&violationl2);
+  violation->NormInf(&violationinf);
+
+  // scale L2-Norm with length of vector
+  violationl2 /= sqrt(violation->MyLength());
+
+  // output to screen
+  ios_base::fmtflags flags = Utils()->out().flags();
+
+  Utils()->out() << std::scientific
+                 << "\nViolation of kinematic interface constraint:\n"
+                 << "L_2-norm: "
+                 << violationl2
+                 << "        L_inf-norm: "
+                 << violationinf
+                 << "\n";
+  Utils()->out().flags(flags);
+
+  return;
+}
+
+void FSI::MortarMonolithicStructureSplit::CheckDynamicEquilibrium()
+{
+  // get the Mortar matrices D and M
+  const Teuchos::RCP<LINALG::SparseMatrix> mortard = coupsfm_->GetDMatrix();
+  const Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMMatrix();
+
+#ifdef DEBUG
+  if (mortarm == Teuchos::null) { dserror("Expected rcp to mortar matrix M."); }
+  if (mortard == Teuchos::null) { dserror("Expected rcp to mortar matrix D."); }
+#endif
+
+  // auxiliary vectors
+  Teuchos::RCP<Epetra_Vector> tractionmaster = Teuchos::rcp(new Epetra_Vector(mortarm->DomainMap(),true));
+  Teuchos::RCP<Epetra_Vector> tractionslave = Teuchos::rcp(new Epetra_Vector(mortard->DomainMap(),true));
+
+  // calculate forces on master and slave side
+  mortarm->Multiply(true,*lambda_,*tractionmaster);
+  mortard->Multiply(true,*lambda_,*tractionslave);
+
+  // calculate violation of dynamic equilibrium
+  Teuchos::RCP<Epetra_Vector> violation = Teuchos::rcp(new Epetra_Vector(*tractionmaster));
+  violation->Update(-1.0,*tractionslave,1.0);
+
+  // calculate some norms
+  double violationl2 = 0.0;
+  double violationinf = 0.0;
+  violation->Norm2(&violationl2);
+  violation->NormInf(&violationinf);
+
+  // scale L2-Norm with length of vector
+  violationl2 /= sqrt(violation->MyLength());
+
+  // output to screen
+  ios_base::fmtflags flags = Utils()->out().flags();
+
+  Utils()->out() << std::scientific
+                 << "\nViolation of dynamic interface equilibrium:\n"
+                 << "L_2-norm: "
+                 << violationl2
+                 << "        L_inf-norm: "
+                 << violationinf
+                 << "\n";
+  Utils()->out().flags(flags);
+
+  return;
 }
