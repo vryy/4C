@@ -76,8 +76,15 @@ FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::Monolithic> fsi,
     }
     case fsi_iter_mortar_monolithicstructuresplit:
     {
-      slavedisc_ = Teuchos::null;
-      fsilambda_ = Teuchos::null;
+      const Teuchos::RCP<FSI::MortarMonolithicStructureSplit>& fsiobject
+        = Teuchos::rcp_dynamic_cast<FSI::MortarMonolithicStructureSplit>(fsi);
+
+      if (fsiobject == Teuchos::null)
+        dserror("Cast to FSI::MortarMonolithicStructureSplit failed.");
+
+      // Lagrange multipliers live on the slave field
+      slavedisc_ = fsiobject->StructureField()->Discretization();
+      fsilambda_ = fsiobject->lambda_;
 
       break;
     }
