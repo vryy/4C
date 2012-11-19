@@ -1325,10 +1325,10 @@ void FSI::MonolithicStructureSplit::RecoverLagrangeMultiplier()
   tmpvec = Teuchos::rcp(new Epetra_Vector(*structureresidual));
   // ---------End of term (3)
 
-  /* Commented out terms (4) to (6) since they tend to introduce oscillations
-   * in the Lagrange multiplier field for certain material properties of the
-   * structure
-   *                                                     Matthias Mayr 11/2012
+  /* You might want to comment out terms (4) to (6) since they tend to
+   * introduce oscillations in the Lagrange multiplier field for certain
+   * material properties of the structure.
+   *                                                    Matthias Mayr 11/2012
   // ---------Addressing term (4)
   auxvec = Teuchos::rcp(new Epetra_Vector(sgiprev_->RangeMap(),true));
   sgiprev_->Apply(*ddiinc_,*auxvec);
