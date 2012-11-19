@@ -79,12 +79,10 @@ namespace INPUT
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DatFileReader::DatFileReader(std::string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag, bool dumpinput)
+DatFileReader::DatFileReader(std::string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag)
   : filename_(filename), comm_(comm), outflag_(outflag)
 {
   ReadDat();
-  if (dumpinput)
-    DumpInput();
 }
 
 
@@ -1046,26 +1044,36 @@ void DatFileReader::ReadDat()
 void DatFileReader::DumpInput()
 {
 #ifdef DEBUG
+
+  Teuchos::RCP<IO::ErrorFileControl> errcontrol = DRT::Problem::Instance()->ErrorFile();
+  if (errcontrol==Teuchos::null)
+    dserror("ErrorFileControl not allocated");
   FILE* out_err = DRT::Problem::Instance()->ErrorFile()->Handle();
 
-  if (comm_->MyPID()==0 and out_err!=NULL)
+  if (out_err!=NULL)
   {
-    fprintf(out_err,
-            "============================================================================\n"
-            "broadcasted copy of input file:\n"
-            "============================================================================\n"
-      );
-    for (size_t i=0; i<lines_.size()-1; ++i)
+    if (comm_==Teuchos::null)
+      dserror("No communicator available");
+    if (comm_->MyPID()==0)
     {
-      fprintf(out_err,"%s\n", lines_[i]);
-    }
-    fprintf(out_err,
-            "============================================================================\n"
-            "end of broadcasted copy of input file\n"
-            "============================================================================\n"
+      fprintf(out_err,
+          "============================================================================\n"
+          "broadcasted copy of input file:\n"
+          "============================================================================\n"
       );
-    fflush(out_err);
+      for (size_t i=0; i<lines_.size()-1; ++i)
+      {
+        fprintf(out_err,"%s\n", lines_[i]);
+      }
+      fprintf(out_err,
+          "============================================================================\n"
+          "end of broadcasted copy of input file\n"
+          "============================================================================\n"
+      );
+      fflush(out_err);
+    }
   }
+
 #endif
 }
 

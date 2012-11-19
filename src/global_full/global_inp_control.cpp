@@ -115,6 +115,14 @@ void ntainp_ccadiscret(
   if (lcomm->MyPID()==0 && npType!=copy_dat_file)
     problem->WriteInputParameters();
 
+  /// dump input file contents to error file (DEBUG-mode only)
+  if (npType==copy_dat_file)
+  {
+    if (group==0) reader.DumpInput();
+  }
+  else
+    reader.DumpInput();
+
   // before we destroy the reader we want to know about unused sections
   if (npType==copy_dat_file)
   {

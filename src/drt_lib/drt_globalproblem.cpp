@@ -697,9 +697,15 @@ void DRT::Problem::OpenControlFile(const Epetra_Comm& comm, std::string inputfil
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::Problem::OpenErrorFile(const Epetra_Comm& comm, std::string prefix)
+void DRT::Problem::OpenErrorFile(const Epetra_Comm& comm, std::string prefix, const bool enforceopening)
 {
-    errorfilecontrol_ = Teuchos::rcp(new IO::ErrorFileControl(comm, prefix, DRT::INPUT::IntegralValue<int>(IOParams(),"OUTPUT_BIN")));
+  bool openfile = enforceopening;
+  if (enforceopening == false)
+  {
+    // what's given in the input file?
+    openfile = DRT::INPUT::IntegralValue<int>(IOParams(),"OUTPUT_BIN");
+  }
+    errorfilecontrol_ = Teuchos::rcp(new IO::ErrorFileControl(comm, prefix,openfile));
 }
 
 

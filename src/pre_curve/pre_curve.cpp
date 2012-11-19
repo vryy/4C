@@ -86,7 +86,7 @@ int main(int argc, char** argv)
 #endif
 
   // and now the actual reading (no dump to the non-existing error file!)
-  DRT::INPUT::DatFileReader reader(datfile.c_str(), comm, 0, false);
+  DRT::INPUT::DatFileReader reader(datfile.c_str(), comm, 0);
 
   /*---------------------------------------------- input of time curves */
   DRT::UTILS::TimeCurveManager manager;

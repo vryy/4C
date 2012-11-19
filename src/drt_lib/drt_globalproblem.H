@@ -231,7 +231,7 @@ public:
   void OpenControlFile(const Epetra_Comm& comm, std::string inputfile, std::string prefix, std::string restartkenner);
 
   /// error files
-  void OpenErrorFile(const Epetra_Comm& comm, std::string prefix);
+  void OpenErrorFile(const Epetra_Comm& comm, std::string prefix, const bool enforceopening = false);
 
   /// control file for restart read
   Teuchos::RCP<IO::InputControl> InputControlFile() { return inputcontrol_; }

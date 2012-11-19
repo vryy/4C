@@ -598,7 +598,7 @@ FLUID_WALL_SHEAR_STRESS         No
 OUTPUT_BIN                      No
 //
 //     Yes,No,yes,no,YES,NO
-OUTPUT_GID                      No
+OUTPUT_GID                      Yes
 //
 //     Yes,No,yes,no,YES,NO
 OUTPUT_OUT                      No

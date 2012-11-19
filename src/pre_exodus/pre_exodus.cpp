@@ -154,11 +154,18 @@ int main(
     return 0;
   }
 
-  // create error file
+  // create error file (enforce the file opening!)
   if (datfile!="")
-    problem->OpenErrorFile(*comm, datfile);
+  {
+    const string basename = datfile.substr(0,datfile.find_last_of(".")) + "_pre";
+    IO::cout.setup(true,false,false,comm,0,0,basename);    // necessary setup of IO::cout
+    problem->OpenErrorFile(*comm,basename,true);
+  }
   else
-    problem->OpenErrorFile(*comm, "xxx");
+  {
+    IO::cout.setup(true,false,false,comm,0,0,"xxx_pre");   // necessary setup of IO::cout
+    problem->OpenErrorFile(*comm,"xxx_pre",true);
+  }
 
   // centerline related: transfer separate doubles into vector
   cline_coordcorr[0] = clinedx;

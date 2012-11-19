@@ -68,7 +68,7 @@ namespace INPUT
   ElementReader and NodeReader, respectively.
 
   The point of having this reader is to allow for special problem
-  types that need to read more that one dat file. (Scary!) This can be
+  types that need to read more than one dat file. (Scary!) This can be
   done be creating a new (additional) reader to read the additional
   file.
 
@@ -81,7 +81,7 @@ class DatFileReader
 public:
 
   /// construct a reader for a given file
-  DatFileReader(std::string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag=0, bool dumpinput=true);
+  DatFileReader(std::string filename, Teuchos::RCP<Epetra_Comm> comm, int outflag=0);
 
   /// return my inputfile name
   std::string MyInputfileName() const;
@@ -129,6 +129,9 @@ public:
     Teuchos::RCP<DRT::NURBS::Knotvector> & disknots
     );
 
+  /// dump input file contents to error file
+  void DumpInput();
+
   /// print unknown section names found in the input file
   bool PrintUnknownSections();
 
@@ -142,9 +145,6 @@ private:
 
   /// actual read dat file, store and broadcast general sections
   void ReadDat();
-
-  /// dump input file contents to error file
-  void DumpInput();
 
   /// input file name
   std::string filename_;
