@@ -3474,6 +3474,11 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
   // also update special flag for semi-smooth Newton convergence
   activesetssconv_ = activesetconv_;
 
+  // update zig-zagging history (shift by one)
+  if (zigzagtwo_!=Teuchos::null) zigzagthree_  = Teuchos::rcp(new Epetra_Map(*zigzagtwo_));
+  if (zigzagone_!=Teuchos::null) zigzagtwo_    = Teuchos::rcp(new Epetra_Map(*zigzagone_));
+  if (gactivenodes_!=Teuchos::null) zigzagone_ = Teuchos::rcp(new Epetra_Map(*gactivenodes_));
+
   // (re)setup active global Epetra_Maps
   gactivenodes_ = Teuchos::null;
   gactivedofs_ = Teuchos::null;
@@ -3498,6 +3503,77 @@ void CONTACT::CoLagrangeStrategy::UpdateActiveSetSemiSmooth()
       gslipdofs_ = LINALG::MergeMap(gslipdofs_,interface_[i]->SlipDofs(),false);
       gslipt_ = LINALG::MergeMap(gslipt_,interface_[i]->SlipTDofs(),false);
     } 
+  }
+
+  // CHECK FOR ZIG-ZAGGING / JAMMING OF THE ACTIVE SET
+  // *********************************************************************
+  // A problem of the active set strategy which sometimes arises is known
+  // from optimization literature as jamming or zig-zagging. This means
+  // that within a load/time-step the semi-smmoth Newton algorithm can get
+  // stuck between more than one intermediate solution due to the fact that
+  // the active set decision is a discrete decision. Hence the semi-smooth
+  // Newton algorithm fails to converge. The non-uniquenesss results either
+  // from highly curved contact surfaces or from the FE discretization.
+  // *********************************************************************
+  // To overcome this problem we monitor the development of the active
+  // set scheme in our contact algorithms. We can identify zig-zagging by
+  // comparing the current active set with the active set of the second-
+  // and third-last iteration. If an identity occurs, we interfere and
+  // let the semi-smooth Newton algorithm restart from another active set
+  // (e.g. intermediate set between the two problematic candidates), thus
+  // leasding to some kind of damped / modified semi-smooth Newton method.
+  // This very simple approach helps stabilizing the contact algorithm!
+  // *********************************************************************
+  int zigzagging = 0;
+  // FIXGIT: For friction zig-zagging is not eliminated
+  if (ftype != INPAR::CONTACT::friction_tresca && ftype != INPAR::CONTACT::friction_coulomb)
+  {
+    // frictionless contact
+    if (ActiveSetSteps()>2)
+    {
+      if (zigzagtwo_!=Teuchos::null)
+      {
+        if (zigzagtwo_->SameAs(*gactivenodes_))
+        {
+          // detect zig-zagging
+          zigzagging = 1;
+        }
+      }
+
+      if (zigzagthree_!=Teuchos::null)
+      {
+        if (zigzagthree_->SameAs(*gactivenodes_))
+        {
+          // detect zig-zagging
+          zigzagging = 2;
+        }
+      }
+    }
+  } // if (ftype != INPAR::CONTACT::friction_tresca && ftype != INPAR::CONTACT::friction_coulomb)
+
+  // output to screen
+  if (Comm().MyPID()==0)
+  {
+    if (zigzagging==1)
+    {
+      std::cout << "DETECTED 1-2 ZIG-ZAGGING OF ACTIVE SET................." << endl;
+    }
+    else if (zigzagging==2)
+    {
+      std::cout << "DETECTED 1-2-3 ZIG-ZAGGING OF ACTIVE SET................" << endl;
+    }
+    else
+    {
+      // do nothing, no zig-zagging
+    }
+  }
+
+  // reset zig-zagging history
+  if (activesetconv_==true)
+  {
+    zigzagone_  = Teuchos::null;
+    zigzagtwo_  = Teuchos::null;
+    zigzagthree_= Teuchos::null;
   }
 
   // output of active set status to screen
