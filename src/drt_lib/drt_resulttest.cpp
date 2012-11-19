@@ -65,8 +65,6 @@ void DRT::ResultTest::TestSpecial(DRT::INPUT::LineDefinition& res, int& nerr, in
 /*----------------------------------------------------------------------*/
 int DRT::ResultTest::CompareValues(double actresult, DRT::INPUT::LineDefinition& res)
 {
-  FILE *err = DRT::Problem::Instance()->ErrorFile()->Handle();
-
   int node;
   res.ExtractInt("NODE",node);
   std::string quantity;
@@ -84,8 +82,12 @@ int DRT::ResultTest::CompareValues(double actresult, DRT::INPUT::LineDefinition&
   int ret = 0;
 
   // write to error file
-  fprintf(err,"actual = %.17e, given = %.17e, diff = %.17e\n",
-          actresult, givenresult, actresult-givenresult);
+  FILE *err = DRT::Problem::Instance()->ErrorFile()->Handle();
+  if (err != NULL)
+  {
+    fprintf(err,"actual = %.17e, given = %.17e, diff = %.17e\n",
+            actresult, givenresult, actresult-givenresult);
+  }
 
   // prepare string stream 'msghead' containing general information on the current test
   std::stringstream msghead;
@@ -149,7 +151,6 @@ void DRT::ResultTestManager::AddFieldTest(Teuchos::RCP<ResultTest> test)
 /*----------------------------------------------------------------------*/
 void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
 {
-  FILE *err = DRT::Problem::Instance()->ErrorFile()->Handle();
   int nerr = 0;                     // number of tests with errors
   int test_count = 0;               // number of tests performed
   const int size = results_.size(); // total number of tests
@@ -184,7 +185,11 @@ void DRT::ResultTestManager::TestAll(const Epetra_Comm& comm)
     dserror("Result check failed with %d errors out of %d tests", numerr, size);
   }
   else
-    fprintf(err,"===========================================\n");
+  {
+    FILE *err = DRT::Problem::Instance()->ErrorFile()->Handle();
+    if (err != NULL)
+      fprintf(err,"===========================================\n");
+  }
 
   /* test_count == -1 means we had a special test routine. It's thus
    * illegal to use both a special routine and single tests. But who
