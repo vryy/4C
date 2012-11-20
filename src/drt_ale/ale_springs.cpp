@@ -495,7 +495,16 @@ void ALE::AleSprings::EvaluateElements()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ALE::AleSprings::ExtractDisplacement() const
+Teuchos::RCP<Epetra_Vector> ALE::AleSprings::ExtractDispnp() const
 {
   return incr_;
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> ALE::AleSprings::ExtractDispn() const
+{
+  dserror("Not implemented, yet.");
+  return Teuchos::null;
 }

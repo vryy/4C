@@ -200,14 +200,3 @@ void ALE::AleLaplace::EvaluateElements()
 
   sysmat_->Complete();
 }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ALE::AleLaplace::ExtractDisplacement() const
-{
-  // We know that the ale dofs are coupled with their original map. So
-  // we just return them here.
-  return dispnp_;
-}
-

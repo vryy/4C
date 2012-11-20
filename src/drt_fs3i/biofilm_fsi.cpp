@@ -171,8 +171,8 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   struidispnp_= fsi_->StructureField()->ExtractInterfaceDispn();
   struiveln_= fsi_->StructureField()->ExtractInterfaceDispn();
 
-  struct_growth_disp= AleToStructField(ale_->ExtractDisplacement());
-  fluid_growth_disp= AleToFluidField(fsi_->AleField().ExtractDisplacement());
+  struct_growth_disp= AleToStructField(ale_->ExtractDispnp());
+  fluid_growth_disp= AleToFluidField(fsi_->AleField().ExtractDispnp());
 
   idispn_->PutScalar(0.0);
   idispnp_->PutScalar(0.0);
@@ -459,7 +459,7 @@ void FS3I::BiofilmFSI::FluidAleSolve(
   fsi_->AleField().Solve();
 
   //change nodes reference position
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(fsi_->AleField().ExtractDisplacement());
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(fsi_->AleField().ExtractDispnp());
   RCP<DRT::Discretization> fluiddis = fsi_->FluidField().Discretization();
 
   fluid_growth_disp->Update(1,*fluiddisp,1.0);
@@ -467,7 +467,7 @@ void FS3I::BiofilmFSI::FluidAleSolve(
   ChangeConfig(fluiddis, fluiddisp);
 
   //change nodes reference position also for ale field
-  Teuchos::RCP<Epetra_Vector> fluidaledisp = fsi_->AleField().ExtractDisplacement();
+  Teuchos::RCP<Epetra_Vector> fluidaledisp = fsi_->AleField().ExtractDispnp();
   RCP<DRT::Discretization> fluidaledis = fsi_->AleField().Discretization();
   ChangeConfig(fluidaledis, fluidaledisp);
 
@@ -494,7 +494,7 @@ void FS3I::BiofilmFSI::StructAleSolve(
   ale_->Solve();
 
   //change nodes reference position
-  Teuchos::RCP<Epetra_Vector> structdisp = AleToStructField(ale_->ExtractDisplacement());
+  Teuchos::RCP<Epetra_Vector> structdisp = AleToStructField(ale_->ExtractDispnp());
   RCP<DRT::Discretization> structdis = fsi_->StructureField()->Discretization();
 
   struct_growth_disp->Update(1,*structdisp,1.0);
@@ -505,7 +505,7 @@ void FS3I::BiofilmFSI::StructAleSolve(
 
   //change nodes reference position also for ale field
   RCP<DRT::Discretization> structaledis = ale_->Discretization();
-  ChangeConfig(structaledis, ale_->ExtractDisplacement());
+  ChangeConfig(structaledis, ale_->ExtractDispnp());
 
   //change nodes reference position also for scatra structure field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> struscatra = scatravec_[1];
@@ -699,7 +699,7 @@ void FS3I::BiofilmFSI::StructGmshOutput()
     gmshfilecontent << "};" << endl;
   }
 
-  Teuchos::RCP<Epetra_Vector> strucaletdisp = ale_->ExtractDisplacement();
+  Teuchos::RCP<Epetra_Vector> strucaletdisp = ale_->ExtractDispnp();
 
   {
     // add 'View' to Gmsh postprocessing file
@@ -745,7 +745,7 @@ void FS3I::BiofilmFSI::FluidGmshOutput()
     gmshfilecontent << "};" << endl;
   }
 
-  Teuchos::RCP<Epetra_Vector> fluidaledisp = fsi_->AleField().ExtractDisplacement();
+  Teuchos::RCP<Epetra_Vector> fluidaledisp = fsi_->AleField().ExtractDispnp();
 
   {
     // add 'View' to Gmsh postprocessing file

@@ -128,8 +128,11 @@ public:
 
   //! @name Extract displacement
 
-  /// the whole displacement field is extracted here
-  virtual Teuchos::RCP<Epetra_Vector> ExtractDisplacement() const = 0;
+  /// the whole displacement field at time step \f$t^{n+1}\f$ is extracted here
+  virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp() const = 0;
+
+  /// the whole displacement field at time step \f$t^{n}\f$ is extracted here
+  virtual Teuchos::RCP<Epetra_Vector> ExtractDispn() const = 0;
 
   //@}
 

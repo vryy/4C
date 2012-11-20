@@ -527,7 +527,7 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
 
   // Call all elements and assemble rhs and matrices
   // We only need the rhs here because NOX will ask for the rhs
-  // only. But the Jacobian is stored internally and will be returnd
+  // only. But the Jacobian is stored internally and will be returned
   // later on without looking at x again!
 
   Utils()->out() << "\nEvaluate elements\n";
@@ -545,7 +545,7 @@ void FSI::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   }
 
   // transfer the current ale mesh positions to the fluid field
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().ExtractDisplacement());
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().ExtractDispnp());
   FluidField().ApplyMeshDisplacement(fluiddisp);
 
   {

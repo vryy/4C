@@ -951,7 +951,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Update()
   if (monolithic_approach_!= INPAR::XFEM::XFFSI_Full_Newton and aleupdate)
   {
     AleField().SolveAleXFluidFluidFSI();
-    FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDisplacement()));
+    FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDispnp()));
   }
 
   StructureField()->Update();

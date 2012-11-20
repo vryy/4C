@@ -198,14 +198,3 @@ void ALE::AleSpringsFixedRef::EvaluateElements()
 
   sysmat_->Complete();
 }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ALE::AleSpringsFixedRef::ExtractDisplacement() const
-{
-  // We know that the ale dofs are coupled with their original map. So
-  // we just return them here.
-  return dispnp_;
-}
-

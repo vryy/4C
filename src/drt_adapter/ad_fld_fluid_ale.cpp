@@ -147,7 +147,7 @@ void ADAPTER::FluidAle::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
   // notice.
 
   AleField().Solve();
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().ExtractDisplacement());
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().ExtractDispnp());
   FluidField().ApplyMeshDisplacement(fluiddisp);
 
   // no computation of fluid velocities in case only structure and ALE are to compute
@@ -182,7 +182,7 @@ void ADAPTER::FluidAle::ApplyInterfaceValues(Teuchos::RCP<Epetra_Vector> idisp,
     AleField().ApplyFreeSurfaceDisplacements(fscoupfa_->MasterToSlave(fsdispnp));
   }
 
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().ExtractDisplacement());
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().ExtractDispnp());
   FluidField().ApplyMeshDisplacement(fluiddisp);
 
 }
@@ -201,7 +201,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FluidAle::RelaxationSolve(Teuchos::RCP<Epet
   AleField().ApplyInterfaceDisplacements(FluidToAle(idisp));
 
   AleField().Solve();
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().ExtractDisplacement());
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().ExtractDispnp());
   fluiddisp->Scale(1./dt);
 
   FluidField().ApplyMeshVelocity(fluiddisp);

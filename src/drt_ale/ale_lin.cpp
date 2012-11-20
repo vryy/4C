@@ -254,15 +254,3 @@ void ALE::AleLinear::SolveAleXFluidFluidFSI()
   xfftoggle_->PutScalar(0.0);
   xffinterface_->InsertXFluidFluidCondVector(dispnp_xff,xfftoggle_);
 }
-
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Vector> ALE::AleLinear::ExtractDisplacement() const
-{
-  // We know that the ale dofs are coupled with their original map. So
-  // we just return them here.
-  return dispnp_;
-}
-
-

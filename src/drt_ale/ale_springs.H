@@ -49,7 +49,16 @@ public:
 
   Teuchos::RCP<LINALG::Preconditioner> ConstPreconditioner() { return Teuchos::null; }
 
-  virtual Teuchos::RCP<Epetra_Vector> ExtractDisplacement() const;
+  //! @name Access methods
+
+  /// the whole displacement field at time step \f$t^{n+1}\f$ is extracted here
+  virtual Teuchos::RCP<Epetra_Vector> ExtractDispnp() const;
+
+  /// the whole displacement field at time step \f$t^{n}\f$ is extracted here
+  virtual Teuchos::RCP<Epetra_Vector> ExtractDispn() const;
+
+  //@}
+
 
 private:
 

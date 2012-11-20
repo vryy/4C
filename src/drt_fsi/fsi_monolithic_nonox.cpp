@@ -292,7 +292,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
    }
 
    // transfer the current ale mesh positions to the fluid field
-   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().ExtractDisplacement());
+   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluid(AleField().ExtractDispnp());
    FluidField().ApplyMeshDisplacement(fluiddisp);
 
    {

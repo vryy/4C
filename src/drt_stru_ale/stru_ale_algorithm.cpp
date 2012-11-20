@@ -110,7 +110,7 @@ void STRU_ALE::Algorithm::TimeLoop()
     // FIXGIT: Has to be done with transformation of vector
     RCP<Epetra_Vector> idis = Teuchos::rcp(new Epetra_Vector(*(StructureField().Discretization()->DofRowMap()),true));
     for (int i=0; i<idis->MyLength(); ++i)
-      (*idis)[i]=(*(AleField().ExtractDisplacement()))[i];
+      (*idis)[i]=(*(AleField().ExtractDispnp()))[i];
     
     // application of mesh displacements to structural field, 
     // mapping of results
