@@ -29,7 +29,8 @@ Maintainer: Lasse Jagschies
  *----------------------------------------------------------------------*/
 MAT::PAR::Myocard::Myocard( Teuchos::RCP<MAT::PAR::Material> matdata )
 : Parameter(matdata),
-  diffusivity(matdata->GetDouble("DIFFUSIVITY")),
+  maindirdiffusivity(matdata->GetDouble("MAIN_DIFFUSIVITY")),
+  offdirdiffusivity(matdata->GetDouble("OFF_DIFFUSIVITY")),
   u_o(matdata->GetDouble("U_O")), //
   u_u(matdata->GetDouble("U_U")),
   Theta_v(matdata->GetDouble("THETA_V")),
@@ -171,8 +172,8 @@ void MAT::Myocard::Unpack(const std::vector<char>& data)
 void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
     {
     // get conductivity values of main fibre direction and
-    const double maindirdiffusivity = params_->diffusivity; //Todo replace by real values
-    const double offdirdiffusivity  = 0.3*params_->diffusivity; // "
+    const double maindirdiffusivity = params_->maindirdiffusivity;
+    const double offdirdiffusivity  = params_->maindirdiffusivity;
 
     // read local eigenvectors of diffusion tensor at current element
     std::vector<double> rad;
@@ -232,52 +233,54 @@ void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  calculate reaction coefficient                           ljag 06/12 |
- *----------------------------------------------------------------------*/
-// TODO find and implement an appropriate model for the cell ionic currents during depolarisation.
-// [1] AL Hodgkin and AF Huxley - A quantatice description of membrane current and its application to conduction and excitation in nerve
-// [2] D Noble - A modification of the Hodgkin-Huxley equations applicable to purkinje fibre action and pace-maker potentials
-// [3] CH Luo and Y Rudy - A model of the ventricular cardiac action potential. Depolarization, repolarization and their interaction
-// [4] AG Kleber and Y Rudy - Basic mechanisms of cardiac impulse propagation and associated arrhythmias
-// [5] Fenton and Karma - Vortex dynamics in three-dimensional continuous myocardium with fiber rotation: Filament instability and fibrillation
-// [6] Cherry and Fenton - Suppression of alternans and conduction blocks despite steep APD restitution:  electrotonic, memory and conduction velocity restitution effects
-// [7] Bueno-Orovio et. al. - Minimal model for human ventricular action potentials in tissue
-// [8] Rush and Larsen - A practical algorithm for solving dynamic membrane equations
-// [9] ten Tusscher et. al. - A model for human ventricular tissue
+void MAT::Myocard::ComputeDiffusivity(LINALG::Matrix<1,1>& diffus3) const
+{
+    diffus3(0,0) = difftensor_(0,0); return;
+}
+void MAT::Myocard::ComputeDiffusivity(LINALG::Matrix<2,2>& diffus3) const
+{
+    for (int i=0; i<2; i++){for (int j=0; j<2; j++){diffus3(i,j) = difftensor_(i,j);}}
+    return;
+}
+void MAT::Myocard::ComputeDiffusivity(LINALG::Matrix<3,3>& diffus3) const
+{
+    for (int i=0; i<3; i++){for (int j=0; j<3; j++){diffus3(i,j) = difftensor_(i,j);}}
+    return;
+}
+
 
 double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt) const
 {
+    const double p = 1000;
     // Phenomenological model [5]-[8]
-
     // calculate voltage dependent time constants ([7] page 545)
-     const double Tau_vm = GatingFunction(params_->Tau_v1m, params_->Tau_v2m, phi, params_->Theta_vm);
-     const double Tau_wm = params_->Tau_w1m + (params_->Tau_w2m - params_->Tau_w1m)*(1.0 + tanh(params_->k_wm*(phi - params_->u_wm)))/2.0;
-     const double Tau_so = params_->Tau_so1 + (params_->Tau_so2 - params_->Tau_so1)*(1.0 + tanh(params_->k_so*(phi - params_->u_so)))/2.0;
-     const double Tau_s = GatingFunction(params_->Tau_s1, params_->Tau_s2, phi, params_->Theta_w);
-     const double Tau_o = GatingFunction(params_->Tau_o1, params_->Tau_o2, phi, params_->Theta_o);
+     const double Tau_vm = GatingFunction(params_->Tau_v1m, params_->Tau_v2m, p, phi, params_->Theta_vm);
+     const double Tau_wm = GatingFunction(params_->Tau_w1m, params_->Tau_w2m, params_->k_wm, phi, params_->u_wm);
+     const double Tau_so = GatingFunction(params_->Tau_so1, params_->Tau_so2, params_->k_so, phi, params_->u_so);
+     const double Tau_s = GatingFunction(params_->Tau_s1, params_->Tau_s2, p, phi, params_->Theta_w);
+     const double Tau_o = GatingFunction(params_->Tau_o1, params_->Tau_o2, p, phi, params_->Theta_o);
 
      // calculate infinity values ([7] page 545)
-     const double v_inf = GatingFunction(1.0, 0.0, phi, params_->Theta_vm);
-     const double w_inf = GatingFunction(1.0 - phi/params_->Tau_winf, params_->w_infs, phi, params_->Theta_o);
+     const double v_inf = GatingFunction(1.0, 0.0, p, phi, params_->Theta_vm);
+     const double w_inf = GatingFunction(1.0 - phi/params_->Tau_winf, params_->w_infs, p, phi, params_->Theta_o);
 
      // calculate gating variables according to [8]
-     const double exp_v = -GatingFunction(dt/Tau_vm, dt/params_->Tau_vp, phi, params_->Theta_v);
-     const double exp_w = -GatingFunction(dt/Tau_wm, dt/params_->Tau_wp, phi, params_->Theta_w);
+     double rhs = GatingFunction(v_inf/Tau_vm, 0.0, p, phi, params_->Theta_v);
+     double A = -GatingFunction(1.0/Tau_vm, 1/params_->Tau_vp, p, phi, params_->Theta_v);
+     const double v = 1/(1/dt-A)*(1/dt*v0_ + rhs);
 
-     const double v = GatingFunction(v_inf, 0.0, phi, params_->Theta_v) + GatingFunction(v0_ - v_inf, v0_, phi, params_->Theta_v)*exp(exp_v);
-     const double w = GatingFunction(w_inf, 0.0, phi, params_->Theta_w) + GatingFunction(w0_ - w_inf, w0_, phi, params_->Theta_w)*exp(exp_w);
-     const double s = (1.0 + tanh(params_->k_s*(phi - params_->u_s)))/2.0 + (s0_ - (1.0 + tanh(params_->k_s*(phi - params_->u_s)))/2.0)*exp(-dt/Tau_s);
+     rhs = GatingFunction(w_inf/Tau_wm, 0.0, p, phi, params_->Theta_w);
+     A = -GatingFunction(1.0/Tau_wm, 1/params_->Tau_wp, p, phi, params_->Theta_w);
+     const double w = 1/(1/dt-A)*(1/dt*w0_ + rhs);
 
-     // update initial values according to [8]
-     //v0_ = v;
-     //w0_ = w;
-     //s0_ = s;
+     rhs = GatingFunction(0.0, 1.0/Tau_s, params_->k_s, phi, params_->u_s);
+     A = -1.0/Tau_s;
+     const double s = 1/(1/dt-A)*(1/dt*s0_ + rhs);
 
      // calculate currents J_fi, J_so and J_si ([7] page 545)
-     const double J_fi = -GatingFunction(0.0, v*(phi - params_->Theta_v)*(params_->u_u - phi)/params_->Tau_fi, phi, params_->Theta_v); // fast inward current
-     const double J_so = GatingFunction((phi - params_->u_o)/Tau_o, 1.0/Tau_so, phi, params_->Theta_w);// slow outward current
-     const double J_si = -GatingFunction(0.0, w*s/params_->Tau_si, phi, params_->Theta_w); // slow inward current
+     const double J_fi = -GatingFunction(0.0, v*(phi - params_->Theta_v)*(params_->u_u - phi)/params_->Tau_fi, p, phi, params_->Theta_v); // fast inward current
+     const double J_so = GatingFunction((phi - params_->u_o)/Tau_o, 1.0/Tau_so, p, phi, params_->Theta_w);// slow outward current
+     const double J_si = -GatingFunction(0.0, w*s/params_->Tau_si, p, phi, params_->Theta_w); // slow inward current
 
      const double reacoeff = (J_fi + J_so + J_si);
 
@@ -290,48 +293,51 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt) con
 double MAT::Myocard::ComputeReactionCoeffDeriv(const double phi, const double dt) const
 {
     // Phenomenological model [5]-[8]
+/*
+    /// Model parameter
+    const double u_o = params_->u_o;
+    const double u_u = params_->u_u;
+    const double Theta_v = params_->Theta_v;
+    const double Theta_w = params_->Theta_w;
+    const double Theta_vm = params_->Theta_vm;
+    const double Theta_o = params_->Theta_o;
+    const double Tau_v1m = params_->Tau_v1m;
+    const double Tau_v2m = params_->Tau_v2m;
+    const double Tau_vp = params_->Tau_vp;
+    const double Tau_w1m = params_->Tau_w1m;
+    const double Tau_w2m = params_->Tau_w2m;
+    const double k_wm = params_->k_wm;
+    const double u_wm = params_->u_wm;
+    const double Tau_wp = params_->Tau_wp;
+    const double Tau_fi = params_->Tau_fi;
+    const double Tau_o1 = params_->Tau_o1;
+    const double Tau_o2 = params_->Tau_o2;
+    const double Tau_so1 = params_->Tau_so1;
+    const double Tau_so2 = params_->Tau_so2;
+    const double k_so = params_->k_so;
+    const double u_so = params_->u_so;
+    const double Tau_s1 = params_->Tau_s1;
+    const double Tau_s2 = params_->Tau_s2;
+    const double k_s = params_->k_s;
+    const double u_s = params_->u_s;
+    const double Tau_si = params_->Tau_si;
+    const double Tau_winf = params_->Tau_winf;
+    const double w_infs = params_->w_infs;
 
-    // calculate voltage dependent time constants ([7] page 545)
-    //const double Tau_vm = GatingFunction(params_->Tau_v1m, params_->Tau_v2m, phi, params_->Theta_vm);
-    //const double Tau_wm = params_->Tau_w1m + (params_->Tau_w2m - params_->Tau_w1m)*(1.0 + tanh(params_->k_wm*(phi - params_->u_wm)))/2.0;
-    //const double Tau_so = params_->Tau_so1 + (params_->Tau_so2 - params_->Tau_so1)*(1.0 + tanh(params_->k_so*(phi - params_->u_so)))/2.0;
-    //const double Tau_s = GatingFunction(params_->Tau_s1, params_->Tau_s2, phi, params_->Theta_w);
-    //const double Tau_o = GatingFunction(params_->Tau_o1, params_->Tau_o2, phi, params_->Theta_o);
+    const double p = 1000;
+    const double jac = (p*(pow(tanh(p*(Theta_w - phi)), 2.0) - 1.0))/(2.0*(Tau_so1 - (Tau_so1 - Tau_so2)*(tanh(k_so*(phi - u_so))/2.0 + 1.0/2.0))) - (tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)/(Tau_o1 + (Tau_o1 - Tau_o2)*(tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)) - (p*(pow(tanh(p*(Theta_w - phi)), 2.0) - 1.0)*(phi - u_o))/(2.0*(Tau_o1 + (Tau_o1 - Tau_o2)*(tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0))) - ((Theta_v - phi)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)*(v0_/dt + ((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)*(tanh(p*(Theta_vm - phi))/2.0 + 1.0/2.0))/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0))))/(Tau_fi*((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)) - (tanh(p*(Theta_v - phi))/2.0 - 1.0/2.0)/Tau_vp + 1.0/dt)) + ((tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)*(phi - u_u)*(v0_/dt + ((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)*(tanh(p*(Theta_vm - phi))/2.0 + 1.0/2.0))/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0))))/(Tau_fi*((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)) - (tanh(p*(Theta_v - phi))/2.0 - 1.0/2.0)/Tau_vp + 1.0/dt)) - (k_so*(Tau_so1 - Tau_so2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)*(pow(tanh(k_so*(phi - u_so)), 2.0) - 1.0))/(2.0*pow((Tau_so1 - (Tau_so1 - Tau_so2)*(tanh(k_so*(phi - u_so))/2.0 + 1.0/2.0)), 2.0)) - ((Theta_v - phi)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)*(phi - u_u)*((p*(tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)*(pow(tanh(p*(Theta_vm - phi)), 2.0) - 1.0))/(2.0*(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0))) + (p*(tanh(p*(Theta_vm - phi))/2.0 + 1.0/2.0)*(pow(tanh(p*(Theta_v - phi)), 2.0) - 1.0))/(2.0*(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0))) - (p*(Tau_v1m - Tau_v2m)*(tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)*(tanh(p*(Theta_vm - phi))/2.0 + 1.0/2.0)*(pow(tanh(p*(Theta_vm - phi)), 2.0) - 1.0))/(2.0*pow((Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)), 2.0))))/(Tau_fi*((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)) - (tanh(p*(Theta_v - phi))/2.0 - 1.0/2.0)/Tau_vp + 1.0/dt)) + (p*(Tau_o1 - Tau_o2)*(tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)*(pow(tanh(p*(Theta_o - phi)), 2.0) - 1.0)*(phi - u_o))/(2.0*pow((Tau_o1 + (Tau_o1 - Tau_o2)*(tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)), 2.0)) + (((tanh(k_s*(phi - u_s))/2.0 + 1.0/2.0)/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + s0_/dt)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)*(((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)*((tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)/Tau_winf + 1.0/Tau_winf + (p*(pow(tanh(p*(Theta_o - phi)), 2.0) - 1.0)*(w_infs + phi/Tau_winf - 1.0))/2.0))/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)) + (p*(pow(tanh(p*(Theta_w - phi)), 2.0) - 1.0)*((tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)*(w_infs + phi/Tau_winf - 1.0) + phi/Tau_winf - 1.0))/(2.0*(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0))) - (k_wm*(Tau_w1m - Tau_w2m)*(tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)*(pow(tanh(k_wm*(phi - u_wm)), 2.0) - 1.0)*((tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)*(w_infs + phi/Tau_winf - 1.0) + phi/Tau_winf - 1.0))/(2.0*pow((Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)), 2.0))))/(Tau_si*(1.0/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + 1.0/dt)*((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)) - (tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)/Tau_wp + 1.0/dt)) + ((w0_/dt - ((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)*((tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)*(w_infs + phi/Tau_winf - 1.0) + phi/Tau_winf - 1.0))/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)))*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)*((k_s*(pow(tanh(k_s*(phi - u_s)), 2.0) - 1.0))/(2.0*(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0))) + (p*(Tau_s1 - Tau_s2)*(pow(tanh(p*(Theta_w - phi)), 2.0) - 1.0)*(tanh(k_s*(phi - u_s))/2.0 + 1.0/2.0))/(2.0*pow((Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)), 2.0))))/(Tau_si*(1.0/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + 1.0/dt)*((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)) - (tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)/Tau_wp + 1.0/dt)) - (p*((tanh(k_s*(phi - u_s))/2.0 + 1.0/2.0)/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + s0_/dt)*(w0_/dt - ((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)*((tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)*(w_infs + phi/Tau_winf - 1.0) + phi/Tau_winf - 1.0))/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)))*(pow(tanh(p*(Theta_w - phi)), 2.0) - 1.0))/(2.0*Tau_si*(1.0/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + 1.0/dt)*((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)) - (tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)/Tau_wp + 1.0/dt)) - (p*(Theta_v - phi)*(pow(tanh(p*(Theta_vm - phi)), 2.0) - 1.0)*(phi - u_u)*(v0_/dt + ((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)*(tanh(p*(Theta_vm - phi))/2.0 + 1.0/2.0))/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0))))/(2.0*Tau_fi*((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)) - (tanh(p*(Theta_v - phi))/2.0 - 1.0/2.0)/Tau_vp + 1.0/dt)) - ((Theta_v - phi)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)*(phi - u_u)*(v0_/dt + ((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)*(tanh(p*(Theta_vm - phi))/2.0 + 1.0/2.0))/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)))*((p*(pow(tanh(p*(Theta_v - phi)), 2.0) - 1.0))/(2.0*Tau_vp) - (p*(pow(tanh(p*(Theta_v - phi)), 2.0) - 1.0))/(2.0*(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0))) + (p*(Tau_v1m - Tau_v2m)*(tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)*(pow(tanh(p*(Theta_vm - phi)), 2.0) - 1.0))/(2.0*pow((Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)), 2.0))))/(Tau_fi*pow(((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)) - (tanh(p*(Theta_v - phi))/2.0 - 1.0/2.0)/Tau_vp + 1.0/dt), 2.0)) - (((tanh(k_s*(phi - u_s))/2.0 + 1.0/2.0)/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + s0_/dt)*(w0_/dt - ((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)*((tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)*(w_infs + phi/Tau_winf - 1.0) + phi/Tau_winf - 1.0))/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)))*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)*((p*(pow(tanh(p*(Theta_w - phi)), 2.0) - 1.0))/(2.0*Tau_wp) - (p*(pow(tanh(p*(Theta_w - phi)), 2.0) - 1.0))/(2.0*(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0))) + (k_wm*(Tau_w1m - Tau_w2m)*(tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)*(pow(tanh(k_wm*(phi - u_wm)), 2.0) - 1.0))/(2.0*pow((Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)), 2.0))))/(Tau_si*(1.0/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + 1.0/dt)*pow(((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)) - (tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)/Tau_wp + 1.0/dt), 2.0)) - (p*((tanh(k_s*(phi - u_s))/2.0 + 1.0/2.0)/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + s0_/dt)*(Tau_s1 - Tau_s2)*(w0_/dt - ((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)*((tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)*(w_infs + phi/Tau_winf - 1.0) + phi/Tau_winf - 1.0))/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)))*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)*(pow(tanh(p*(Theta_w - phi)), 2.0) - 1.0))/(2.0*Tau_si*pow((Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)), 2.0)*pow((1.0/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + 1.0/dt), 2.0)*((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)) - (tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)/Tau_wp + 1.0/dt));
 
-    // calculate infinity values ([7] page 545)
-    //const double v_inf = GatingFunction(1.0, 0.0, phi, params_->Theta_vm);
-    //const double w_inf = GatingFunction((1.0 - phi/params_->Tau_winf), params_->w_infs, phi, params_->Theta_o);
-
-    // calculate gating variables according to [8]
-    //const double exp_v = -dt*GatingFunction(1.0/Tau_vm, 1.0/params_->Tau_vp, phi, params_->Theta_v);
-    //const double exp_w = -dt*GatingFunction(1.0/Tau_wm, 1.0/params_->Tau_wp, phi, params_->Theta_w);
-
-    //const double v = GatingFunction(v_inf, 0.0, phi, params_->Theta_v) + GatingFunction(v0_ - v_inf, v0_, phi, params_->Theta_v)*exp(exp_v);
-    //const double w = GatingFunction(w_inf, 0.0, phi, params_->Theta_w) + GatingFunction(w0_ - w_inf, w0_, phi, params_->Theta_w)*exp(exp_w);
-    //const double s = (1.0 + tanh(params_->k_s*(phi - params_->u_s)))/2.0 - (s0_ + tanh(params_->k_s*(phi - params_->u_s)))/2.0*exp(-dt/Tau_s);
-
-    // calculate derivatives of variables
-    //const double dw_inf = -GatingFunction(1.0/params_->Tau_winf, 0.0, phi, params_->Theta_o);
-
-    //const double dw = GatingFunction(dw_inf, 0.0, phi, params_->Theta_w) - GatingFunction(1.0 - dw_inf, dw_inf, phi, params_->Theta_w)*exp(-dt/GatingFunction(Tau_wm, params_->Tau_wp, phi, params_->Theta_w));
-    //const double ds = (1.0 - pow(tanh(params_->k_s*(phi - params_->u_s)), 2))*(1.0 - exp(dt/Tau_s));
-
-    //const double dJ_fi = -v*GatingFunction(0.0, 1.0/params_->Tau_fi, phi, params_->Theta_v)*(params_->Theta_v + params_->u_u - 2*phi);
-    //const double dJ_so = GatingFunction(1.0/Tau_o, 0.0, phi, params_->Theta_w);
-    //const double dJ_si = -GatingFunction(0.0, 1.0/params_->Tau_si, phi, params_->Theta_w)*(w*ds + dw*s);
-
-    //const double reacoeffderiv = (dJ_fi + dJ_so + dJ_si);
-
-    return 0.0;
+*/
+    return 0;
 }
 
 /*----------------------------------------------------------------------*
  |                                                           ljag 06/12 |
  *----------------------------------------------------------------------*/
-double MAT::Myocard::GatingFunction(const double Gate1, const double Gate2, const double var, const double thresh) const
+double MAT::Myocard::GatingFunction(const double Gate1, const double Gate2, const double p, const double var, const double thresh) const
 {
-    if (var<thresh) return Gate1;
-    else return Gate2;
+    double Erg = Gate1+(Gate2-Gate1)*(1.0+tanh(p*(var-thresh)))/2;
+    return Erg;
 }
 
 
@@ -341,29 +347,36 @@ double MAT::Myocard::GatingFunction(const double Gate1, const double Gate2, cons
 void MAT::Myocard::Update(const double phi, const double dt)
 {
 
+    const double p = 1000;
     // calculate voltage dependent time constants ([7] page 545)
-     const double Tau_vm = GatingFunction(params_->Tau_v1m, params_->Tau_v2m, phi, params_->Theta_vm);
-     const double Tau_wm = params_->Tau_w1m + (params_->Tau_w2m - params_->Tau_w1m)*(1.0 + tanh(params_->k_wm*(phi - params_->u_wm)))/2.0;
-     //const double Tau_so = params_->Tau_so1 + (params_->Tau_so2 - params_->Tau_so1)*(1.0 + tanh(params_->k_so*(phi - params_->u_so)))/2.0;
-     const double Tau_s = GatingFunction(params_->Tau_s1, params_->Tau_s2, phi, params_->Theta_w);
-     //const double Tau_o = GatingFunction(params_->Tau_o1, params_->Tau_o2, phi, params_->Theta_o);
+    const double Tau_vm = GatingFunction(params_->Tau_v1m, params_->Tau_v2m, p, phi, params_->Theta_vm);
+    const double Tau_wm = GatingFunction(params_->Tau_w1m, params_->Tau_w2m, params_->k_wm, phi, params_->u_wm);
+    //const double Tau_so = params_->Tau_so1 + (params_->Tau_so2 - params_->Tau_so1)*(1.0 + tanh(params_->k_so*(phi - params_->u_so)))/2.0;
+    const double Tau_s = GatingFunction(params_->Tau_s1, params_->Tau_s2, p, phi, params_->Theta_w);
+    //const double Tau_o = GatingFunction(params_->Tau_o1, params_->Tau_o2, phi, params_->Theta_o);
 
-     // calculate infinity values ([7] page 545)
-     const double v_inf = GatingFunction(1.0, 0.0, phi, params_->Theta_vm);
-     const double w_inf = GatingFunction(1.0 - phi/params_->Tau_winf, params_->w_infs, phi, params_->Theta_o);
+    // calculate infinity values ([7] page 545)
+    const double v_inf = GatingFunction(1.0, 0.0, p, phi, params_->Theta_vm);
+    const double w_inf = GatingFunction(1.0 - phi/params_->Tau_winf, params_->w_infs, p, phi, params_->Theta_o);
 
-     // calculate gating variables according to [8]
-     const double exp_v = -GatingFunction(dt/Tau_vm, dt/params_->Tau_vp, phi, params_->Theta_v);
-     const double exp_w = -GatingFunction(dt/Tau_wm, dt/params_->Tau_wp, phi, params_->Theta_w);
+    // calculate gating variables according to [8]
+    double rhs = v_inf/Tau_vm*GatingFunction(1.0, 0.0, p, phi, params_->Theta_v);
+    double A = -GatingFunction(1.0/Tau_vm, 1/params_->Tau_vp, p, phi, params_->Theta_v);
+    const double v = 1/(1/dt-A)*(1/dt*v0_ + rhs);
 
-     const double v = GatingFunction(v_inf, 0.0, phi, params_->Theta_v) + GatingFunction(v0_ - v_inf, v0_, phi, params_->Theta_v)*exp(exp_v);
-     const double w = GatingFunction(w_inf, 0.0, phi, params_->Theta_w) + GatingFunction(w0_ - w_inf, w0_, phi, params_->Theta_w)*exp(exp_w);
-     const double s = (1.0 + tanh(params_->k_s*(phi - params_->u_s)))/2.0 + (s0_ - (1.0 + tanh(params_->k_s*(phi - params_->u_s)))/2.0)*exp(-dt/Tau_s);
+    rhs = w_inf/Tau_wm*GatingFunction(1.0, 0.0, p, phi, params_->Theta_w);
+    A = -GatingFunction(1.0/Tau_wm, 1/params_->Tau_wp, p, phi, params_->Theta_w);
+    const double w = 1/(1/dt-A)*(1/dt*w0_ + rhs);
 
-     // update initial values according to [8]
-     v0_ = v;
-     w0_ = w;
-     s0_ = s;
-     return;
+    rhs = GatingFunction(0.0, 1.0/Tau_s, params_->k_s, phi, params_->u_s);
+    A = -1.0/Tau_s;
+    const double s = 1/(1/dt-A)*(1/dt*s0_ + rhs);
+
+    // update initial values according to [8]
+    v0_ = v;
+    w0_ = w;
+    s0_ = s;
+
+    return;
 }
 

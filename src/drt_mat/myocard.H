@@ -51,7 +51,8 @@ namespace MAT
 	    //@{
 
 	    /// Diffusivity
-	    const double diffusivity;
+	    const double maindirdiffusivity;
+	    const double offdirdiffusivity;
 
 	    /// Model parameter
 	    const double u_o; //
@@ -173,7 +174,9 @@ namespace MAT
 
 
 	/// diffusivity
-	double ComputeDiffusivity() const { if (params_ == NULL) dserror("UUUPS"); return params_->diffusivity; }
+	void ComputeDiffusivity(LINALG::Matrix<1,1>& diffus3) const;
+	void ComputeDiffusivity(LINALG::Matrix<2,2>& diffus3) const;
+	void ComputeDiffusivity(LINALG::Matrix<3,3>& diffus3) const;
 
 	/// compute reaction coefficient
 	double ComputeReactionCoeff(const double phi, const double dt) const;
@@ -182,7 +185,7 @@ namespace MAT
 	double ComputeReactionCoeffDeriv(const double csnp, const double dt) const;
 
 	/// compute Heaviside step function
-	double GatingFunction(const double Gate1, const double Gate2, const double var, const double thresh) const;
+	double GatingFunction(const double Gate1, const double Gate2, const double p, const double var, const double thresh) const;
 
 	/// time update for this material
 	void Update(const double phi, const double dt);

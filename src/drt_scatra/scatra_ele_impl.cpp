@@ -205,7 +205,8 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     is_elch_((numdofpernode_ - numscal_) == 1),  // bool set implicitely
     is_ale_(false),           // bool set
     is_reactive_(false),      // bool set
-    diffreastafac_(0.0),      // set double (SUPG)
+    diffreastafac_(0.0),       // set double (SUPG)
+    is_anisotropic_(false),   // bool set
     is_stationary_(false),    // bool set
     is_genalpha_(false),      // bool set
     is_incremental_(false),   // bool set
@@ -260,6 +261,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     densam_(numscal_,1.0),       // size of vector + initialized to zero
     densgradfac_(numscal_,0.0),  // size of vector + initialized to zero
     diffus_(numscal_,0.0),       // size of vector + initialized to zero
+    diffus3_(numscal_),          // size of vector
     sgdiff_(numscal_,0.0),       // size of vector + initialized to zero
     reacterm_(numscal_,0.0),     // size of vector + initialized to zero
     reacoeff_(numscal_,0.0),     // size of vector + initialized to zero
@@ -346,6 +348,13 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   if (scatratype == INPAR::SCATRA::scatratype_undefined)
     dserror("Set parameter SCATRATYPE in your input file!");
 
+  // set diffusion tensor to identity
+for(int k=0; k<numscal_; k++)
+  {
+    for(int i=0; i<nsd_; i++){ for(int j=0; j<nsd_; j++){ diffus3_[k](i,j)=0; }}
+    for(int i=0; i<nsd_; i++){ diffus3_[k](i,i) = 1; }
+  }
+  
   // check for the action parameter
   const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
   switch (action)
@@ -800,7 +809,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
 #if 0
     // for debugging of matrix entries
-    if(ele->Id()==2) // and (time < 3 or time > 99.0))
+    if((ele->Id()==2) and (time < 1.05 and time > 1.0))
     {
       FDcheck(
         ele,
@@ -815,7 +824,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         whichfssgd,
         assgd,
         fssgd,
-        turbmodel,
+        turbmodel_,
         Cs,
         tpn,
         frt,
@@ -2256,7 +2265,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
       }
       else if (singlemat->MaterialType() == INPAR::MAT::m_myocard)
       {
-        Teuchos::RCP<const MAT::Myocard> actsinglemat
+        const Teuchos::RCP<const MAT::Myocard> actsinglemat
         = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(singlemat);
 
         dsassert(numdofpernode_==1,"more than 1 dof per node for Myocard material");
@@ -2265,17 +2274,19 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
         shc_ = 1.0;
 
         // compute diffusivity
-        diffus_[k] = actsinglemat->ComputeDiffusivity();
+        diffus_[k] = 1.0;
+        actsinglemat->ComputeDiffusivity(diffus3_[k]);
 
         // set constant density
         densnp_[k] = 1.0;
         densam_[k] = 1.0;
         densn_[k] = 1.0;
         densgradfac_[k] = 0.0;
-
-        // set reaction flag to true
+        
+        // set reaction and anisotropic flag to true
         is_reactive_ = true;
-
+        is_anisotropic_ = true;
+        
         // get reaction coeff. and set temperature rhs for reactive equation system to zero
         const double csnp = funct_.Dot(ephinp_[k]);
         reacoeffderiv_[k] = actsinglemat->ComputeReactionCoeffDeriv(csnp, dt);
@@ -2747,8 +2758,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
         // set specific heat capacity at constant pressure to 1.0
         shc_ = 1.0;
 
-        // compute diffusivity
-        diffus_[0] = actmat->ComputeDiffusivity();
+        // set diffusivity to one
+        diffus_[0] = 1.0;
+
+        //get diffusion tensor
+       actmat->ComputeDiffusivity(diffus3_[0]);
 
         // set constant density
         densnp_[0] = 1.0;
@@ -2756,8 +2770,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
         densn_[0] = 1.0;
         densgradfac_[0] = 0.0;
 
-        // set reaction flag to true
+        // set reaction and anisotropic flag to true
         is_reactive_ = true;
+        is_anisotropic_ = true;
 
         // get reaction coeff. and set temperature rhs for reactive equation system to zero
         const double csnp = funct_.Dot(ephinp_[0]);
@@ -2847,7 +2862,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
     {
       const int fui = ui*numdofpernode_+k;
       double laplawf(0.0);
-      GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
+      // in case of anisotropic diffusion, multiply 'derxy_' with diffusion tensor 'diffus3_'
+      // inside 'GetLaplacianWeakForm'
+      if (is_anisotropic_) GetLaplacianWeakForm(laplawf, derxy_, diffus3_[0],ui,vi);
+      else GetLaplacianWeakForm(laplawf, derxy_, ui,vi);
       emat(fvi,fui) += fac_diffus*laplawf;
     }
   }
@@ -3267,13 +3285,31 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
 
 // diffusive term
   vrhs = rhsfac*diffus_[k];
-  for (int vi=0; vi<nen_; ++vi)
-  {
-    const int fvi = vi*numdofpernode_+k;
 
-    double laplawf(0.0);
-    GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
-    erhs[fvi] -= vrhs*laplawf;
+// in case of anisotropic diffusion, multiply 'gradphi_' with diffusion tensor 'diffus3_'
+  if (is_anisotropic_)
+  {
+    LINALG::Matrix<nsd_,1> gradphianiso(true);
+    gradphianiso.Multiply(diffus3_[k],gradphi_);
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const int fvi = vi*numdofpernode_+k;
+
+      double laplawf(0.0);
+      GetLaplacianWeakFormRHS(laplawf,derxy_,gradphianiso,vi);
+      erhs[fvi] -= vrhs*laplawf;
+    }
+  }
+  else
+  {
+    for (int vi=0; vi<nen_; ++vi)
+    {
+      const int fvi = vi*numdofpernode_+k;
+
+      double laplawf(0.0);
+      GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
+      erhs[fvi] -= vrhs*laplawf;
+    }
   }
 
 //----------------------------------------------------------------
@@ -3565,6 +3601,29 @@ inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianWeakForm(
   }
   return;
 }; // ScaTraImpl<distype>::GetLaplacianWeakForm
+
+/*----------------------------------------------------------------------*
+ |  calculate the Laplacian (weak form)             (private) ljag 11/12 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianWeakForm(
+  double& val,
+  const LINALG::Matrix<nsd_,nen_>& derxy,
+  const LINALG::Matrix<nsd_,nsd_>& diffus3,
+  const int vi,
+  const int ui)
+{
+  val = 0.0;
+  for (int j = 0; j<nsd_; j++)
+  {
+  for (int i = 0; i<nsd_; i++)
+      {
+      val += derxy(j, vi)*diffus3(j,i)*derxy(i, ui);
+      }
+  }
+  return;
+}; // ScaTraImpl<distype>::GetLaplacianWeakForm
+
 
 /*----------------------------------------------------------------------*
  |  calculate rhs of Laplacian (weak form)          (private) gjb 04/10 |
@@ -4420,6 +4479,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
       }
 
       // calculate the right hand side for the perturbed vector
+
       Sysmat(
         ele,
         checkmat1,
@@ -4436,6 +4496,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
         turbmodel,
         Cs,
         tpn,
+        0., // Dummy
+        false, // Dummy
+        0., // Dummy
+        INPAR::FLUID::strainrate, // Dummy
+        INPAR::FLUID::cube_edge, // Dummy
+        0., // Dummy
+        false, // Dummy
+        0., // Dummy
+        0., // Dummy
+        false, // Dummy
         frt,
         scatratype);
 
@@ -4534,6 +4604,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiffMatrix(
         {
           const int fui = ui*numdofpernode_+k;
           double laplawf(0.0);
+          if(is_anisotropic_) dserror("Subgrid diffusivity not implemented for anisotropic materials.");
           GetLaplacianWeakForm(laplawf, derxy_,ui,vi);
           emat(fvi,fui) += kartfac*laplawf;
 
@@ -5859,7 +5930,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
           // b) derivative w.r.t. electric potential
           double laplacewf(0.0);
-          GetLaplacianWeakForm(laplacewf, derxy_,ui,vi);
+          GetLaplacianWeakForm(laplacewf, derxy_, ui,vi);
           matvalpot -= timetaufac*residual*diffus_valence_k*frt*laplacewf;
 
           // migration convective stabilization of convective term

@@ -196,6 +196,15 @@ private:
   inline void GetLaplacianWeakForm(
     double&                          val,   //!< ?
     const LINALG::Matrix<nsd_,nen_>& derxy, //!< ?
+    const LINALG::Matrix<nsd_,nsd_>& diffus3_, //!< ?
+    const int                        vi,    //!< ?
+    const int                        ui     //!< ?
+  );
+
+  //! calculate the Laplacian (weak form)
+  inline void GetLaplacianWeakForm(
+    double&                          val,   //!< ?
+    const LINALG::Matrix<nsd_,nen_>& derxy, //!< ?
     const int                        vi,    //!< ?
     const int                        ui     //!< ?
   );
@@ -566,6 +575,9 @@ private:
   //! (sign) factor for diffusive and reactive stabilization terms
   double diffreastafac_;
 
+  //! flag for anisotropic diffusion problems
+  bool is_anisotropic_;
+
   //! flag for stationary algorithm
   bool is_stationary_;
   //! flag for generalized-alpha time integration
@@ -720,6 +732,8 @@ private:
 
   //! diffusivity / diffusivities (in case of systems) or (thermal conductivity/specific heat) in case of loma
   std::vector<double> diffus_;
+  //! diffusion tensor used for anisotropic diffusion
+  std::vector<LINALG::Matrix<nsd_,nsd_> > diffus3_;
   //! all-scale or fine-scale subgrid diffusivities (one per transported scalar)
   std::vector<double> sgdiff_;
   //! general reaction term R(phi) (without density)

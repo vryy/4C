@@ -187,10 +187,11 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "Myocard muscle material",
                                             INPAR::MAT::m_myocard));
 
-    AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
+    AddNamedReal(m,"MAIN_DIFFUSIVITY","conductivity in fiber direction");
+    AddNamedReal(m,"OFF_DIFFUSIVITY","conductivity perpendicular to fiber direction");
     AddNamedReal(m,"U_O","base level potential");
     AddNamedReal(m,"U_U","maximum exited potential");
-    AddNamedReal(m,"THETA_V","exitation threshold");
+    AddNamedReal(m,"THETA_V","excitation threshold");
     AddNamedReal(m,"THETA_W","slow current threshold");
     AddNamedReal(m,"THETA_VM","v gate time constant threshold");
     AddNamedReal(m,"THETA_O","slow outward current time constant threshold");
