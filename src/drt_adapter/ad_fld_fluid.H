@@ -406,6 +406,7 @@ namespace ADAPTER {
     /// Some applications need only access to velocity-related values of an fluid result vector.
     virtual Teuchos::RCP<const Epetra_Vector> ExtractVelocityPart(Teuchos::RCP<const Epetra_Vector> velpres) = 0;
 
+    /// Some applications need only access to pressure-related values of an fluid result vector.
     virtual Teuchos::RCP<const Epetra_Vector> ExtractPressurePart(Teuchos::RCP<const Epetra_Vector> velpres) = 0;
 
     //@}
