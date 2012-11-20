@@ -177,7 +177,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::Setup(DRT::INPUT::LineDefinition* 
       // we set locsys(:,2) = fiber1, since in function SetFiberVecs
       // the fiber orientation will be calculated via
       // ca = cos(gamma)*locsys(:,2) + sin(gamma)*locsys(:,1)
-      //    = locsys(:,2) for gamme=0.0
+      //    = locsys(:,2) for gamma=0.0
       for (int i=0; i<3; ++i)
       {
         locsys(i,2) = fiber1[i]/f1norm;

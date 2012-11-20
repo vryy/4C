@@ -446,7 +446,7 @@ namespace DRT
       ///  A int value is expected in the dat file.
       explicit BoolMaterialComponent(
         std::string name,  ///< variable name in DRT::Material
-        const bool defaultvalue=false,  ///< a default value
+        const bool defaultvalue = false,  ///< a default value
         bool optional=false
         );
 

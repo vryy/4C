@@ -343,15 +343,10 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::IntVectorMaterialComponent::Read(
   Teuchos::RCP<MAT::PAR::Material> material
   )
 {
-	// Additional query of NUMMAT necessary, when multiple materials of the same type but different size
-	// of the intVector are implemented.
-  if (length_ == -1 or lengthname_ == "NUMMAT")
-  {
-    if (lengthname_ != "*UNDEFINED*")
-      length_ = material->GetInt(lengthname_);
-    else
-      dserror("Trouble to get length of int vector material component.");
-  }
+  if (lengthname_ != "*UNDEFINED*")
+    length_ = material->GetInt(lengthname_);
+  else
+    dserror("Trouble to get length of int vector material component.");
 
   std::vector<int> numbers(length_,defaultvalue_);
 
@@ -517,13 +512,10 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::RealVectorMaterialComponent::Read(
   Teuchos::RCP<MAT::PAR::Material> material
   )
 {
-  if (length_ == -1)
-  {
-    if (lengthname_ != "*UNDEFINED*")
-      length_ = material->GetInt(lengthname_);
-    else
-      dserror("Trouble to get length of real vector material component.");
-  }
+  if (lengthname_ != "*UNDEFINED*")
+    length_ = material->GetInt(lengthname_);
+  else
+    dserror("Trouble to get length of real vector material component.");
 
   std::vector<double> numbers(length_,defaultvalue_);
 
@@ -607,9 +599,32 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::BoolMaterialComponent::Read(
   (*condline) >> sval;
 
   int ival = -1;
-  if (sval == lineTrue_)
+
+  // added the treatment of the case, if the paramter is optional and therefore not existent in condline
+  // Furthermore expanded the existing case to allow the input Yes, YES, yes, TRUE, true, True etc ...
+  //																																														nagler 2012
+
+  // Setting ival for optional input
+  if (("" == sval) and (optional_))
+	{
+  	if (false == defaultvalue_)
+  	{
+  		ival = 0;;
+  	}
+  	else if (true == defaultvalue_)
+  	{
+  		ival = 1;
+  	}
+  	else
+  	{
+  		dserror("Failed to interpret given default value '%s'", defaultvalue_);
+  	}
+	}
+
+  // setting ival according to given value
+  else if (("Yes" == sval) or ("YES" == sval) or ("yes" == sval) or ("True" == sval) or ("TRUE" == sval) or ("true" == sval))
     ival = 1;
-  else if (sval == lineFalse_)
+  else if (("No" == sval) or ("NO" == sval) or ("no" == sval) or ("False" == sval) or ("FALSE" == sval) or ("false" == sval))
     ival = 0;
   else
     dserror("Failed to read Boolean value '%s' while reading Boolean variable '%s' in '%s'",
