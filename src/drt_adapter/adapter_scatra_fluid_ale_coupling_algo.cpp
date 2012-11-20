@@ -109,7 +109,7 @@ void ADAPTER::ScaTraFluidAleCouplingAlgorithm::FluidAleNonlinearSolve(
   // notice.
 
   AleField().Solve();
-  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().ExtractDisplacement());
+  Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(AleField().ExtractDispnp());
   FluidField().ApplyMeshDisplacement(fluiddisp);
 
   // no computation of fluid velocities in case only ScaTra and ALE are to compute
