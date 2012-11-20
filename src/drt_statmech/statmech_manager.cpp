@@ -1490,7 +1490,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int& istep, const
         AddNewCrosslinkerElement(newcrosslinkerGID,&globalnodeids[0],xrefe,rotrefe,*discret_);
       // add all new elements to contact discretization on all Procs
       if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
-        AddNewCrosslinkerElement(newcrosslinkerGID,&globalnodeids[0],xrefe,xrefe,beamcmanager->ContactDiscret());
+        AddNewCrosslinkerElement(newcrosslinkerGID,&globalnodeids[0],xrefe,rotrefe,beamcmanager->ContactDiscret());
     }
   }
   // synchronization for problem discretization
