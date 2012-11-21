@@ -17,17 +17,10 @@ Maintainer: Caroline Danowski
 #ifndef TSI_UTILS_H
 #define TSI_UTILS_H
 
-#include <set>
-#include <string>
-#include <functional>
-#include <iostream>
-
 /*----------------------------------------------------------------------*
- |  headers                                                  dano 11/09 |
+ |  header                                                   dano 11/09 |
  *----------------------------------------------------------------------*/
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_mapextractor.H"
-#include "../drt_lib/drt_condition_utils.H"
 
 /*----------------------------------------------------------------------*
  |                                                           dano 11/09 |

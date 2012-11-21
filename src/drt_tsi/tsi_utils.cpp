@@ -25,18 +25,19 @@ Maintainer: Caroline Danowski
  | headers                                                   dano 12/09 |
  *----------------------------------------------------------------------*/
 #include "tsi_utils.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_material.H"
-#include "../drt_mat/matpar_bundle.H"
-#include "../drt_mat/material.H"
-#include "../drt_mat/matpar_parameter.H"
-#include "../drt_thermo/thermo_element.H"
-#include "../drt_lib/drt_utils_createdis.H"
-#include "../drt_lib/drt_condition_utils.H"
-#include <Epetra_Time.h>
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+#include "../drt_lib/drt_utils_createdis.H"
+#include "../drt_lib/drt_globalproblem.H"
+
+#include "../drt_thermo/thermo_element.H"
+#include "../drt_so3/so3_thermo.H"
+//// TODO 2012-11-12
+//#include "../drt_so3/so_hex8.H"
+
+
+/*----------------------------------------------------------------------*
+ | remove flag thermo from condition                         dano 12/11 |
+ *----------------------------------------------------------------------*/
 std::map<std::string,std::string> TSI::UTILS::ThermoStructureCloneStrategy::ConditionsToCopy()
 {
   std::map<std::string,std::string> conditions_to_copy;
@@ -56,8 +57,9 @@ std::map<std::string,std::string> TSI::UTILS::ThermoStructureCloneStrategy::Cond
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | check material of cloned element                          dano 12/11 |
+ *----------------------------------------------------------------------*/
 void TSI::UTILS::ThermoStructureCloneStrategy::CheckMaterialType(const int matid)
 {
 //  //// We take the material with the ID specified by the user
@@ -68,8 +70,9 @@ void TSI::UTILS::ThermoStructureCloneStrategy::CheckMaterialType(const int matid
 }
 
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | set element data for cloned element                       dano 12/11 |
+ *----------------------------------------------------------------------*/
 void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
   Teuchos::RCP<DRT::Element> newele,
   DRT::Element* oldele,
@@ -81,24 +84,46 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
   // This is again really ugly as we have to extract the actual
   // element type in order to access the material property
 
+  // initialise kinematic type to geo_linear.
+  // kintype is passed to the cloned thermo element
+  GenKinematicType kintype = geo_linear;
+  DRT::ELEMENTS::So3_Base* so3_base = dynamic_cast<DRT::ELEMENTS::So3_Base*>(oldele);
+  if (so3_base!=NULL)
+  {
+    kintype = so3_base->GetKinematicType();
+  }
+  else
+  {
+    DRT::ELEMENTS::So_hex8* so_hex8 = dynamic_cast<DRT::ELEMENTS::So_hex8*>(oldele);
+    if (so_hex8!=NULL)
+    {
+      // old implementation in structural element only availble for linear case
+      kintype = geo_linear;
+      if (kintype == geo_nonlinear)
+        dserror("not available for geometrically nonlinear analysis");
+    }
+  }
+
   // note: SetMaterial() was reimplemented by the thermo element!
 #if defined(D_THERMO)
-      DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(newele.get());
-      if (therm!=NULL)
-      {
-        therm->SetMaterial(matid);
-        therm->SetDisType(oldele->Shape()); // set distype as well!
-      }
-      else
+  DRT::ELEMENTS::Thermo* therm = dynamic_cast<DRT::ELEMENTS::Thermo*>(newele.get());
+  if (therm!=NULL)
+  {
+    therm->SetMaterial(matid);
+    therm->SetDisType(oldele->Shape());  // set distype as well!
+    therm->SetKinematicType(kintype);  // set kintype in cloned thermal element
+  }
+  else
 #endif
-    {
-      dserror("unsupported element type '%s'", typeid(*newele).name());
-    }
+  {
+    dserror("unsupported element type '%s'", typeid(*newele).name());
+  }
   return;
 }
 
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | cloned element has to be a THERMO element                 dano 12/11 |
+ *----------------------------------------------------------------------*/
 bool TSI::UTILS::ThermoStructureCloneStrategy::DetermineEleType(
   DRT::Element* actele,
   const bool ismyele,

@@ -28,13 +28,14 @@ template<class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::So3_Thermo(
   int id,
   int owner
-  ):
-  so3_ele(id,owner),
+  )
+: so3_ele(id,owner),
+  So3_Base(),
   intpoints_(distype)
 {
   numgpt_ = intpoints_.NumPoints();
   ishigherorder_ = DRT::UTILS::secondDerivativesZero<distype>();
-  kintype_ = so3_thermo_nonlinear;
+  kintype_ = geo_nonlinear;
   return;
 }
 
@@ -45,11 +46,11 @@ DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::So3_Thermo(
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::So3_Thermo(
   const DRT::ELEMENTS::So3_Thermo<so3_ele,distype>& old
-  ):
-  so3_ele(old),
+  )
+: so3_ele(old),
+  So3_Base(),
   intpoints_(distype),
-  ishigherorder_(old.ishigherorder_),
-  kintype_(old.kintype_)
+  ishigherorder_(old.ishigherorder_)
 {
   numgpt_ = intpoints_.NumPoints();
   return;
@@ -124,8 +125,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Unpack(
   so3_ele::ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
   // kintype_
-//  so3_ele::ExtractfromPack(position,data,kintype_);
-  kintype_ = static_cast<KinematicType>( so3_ele::ExtractInt(position,data) );
+  kintype_ = static_cast<GenKinematicType>( so3_ele::ExtractInt(position,data) );
   // detJ_
   so3_ele::ExtractfromPack(position,data,detJ_);
   // invJ_
@@ -186,10 +186,10 @@ bool DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::ReadElement(
 
   // geometrically linear
   if(buffer=="linear")
-    kintype_ = so3_thermo_linear;
+    kintype_ = geo_linear;
   // geometrically non-linear with Total Lagrangean approach
   else if (buffer=="nonlinear")
-    kintype_ = so3_thermo_nonlinear;
+    kintype_ = geo_nonlinear;
   else
     dserror("Reading of SO3_THERMO element failed! KINEM unknown");
 
