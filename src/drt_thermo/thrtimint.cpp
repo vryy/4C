@@ -136,9 +136,9 @@ THR::TimInt::TimInt(
   // create empty interface force vector
   fifc_ = LINALG::CreateVector(*dofrowmap_, true);
 
-  // create empty matrices
+  // create empty matrix
   tang_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
-//  capa_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap_, 81, true, true));
+  // we condensed the capacity matrix out of the system
 
   // -------------------------------------------------------------------
   // set initial field
@@ -475,18 +475,27 @@ void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
   Teuchos::RCP<std::vector<char> > heatfluxdata
     = Teuchos::rcp(new std::vector<char>());
   p.set("heatflux", heatfluxdata);
-  p.set("ioheatflux", writeheatflux_);
+  p.set<int>("ioheatflux", writeheatflux_);
 
   Teuchos::RCP<std::vector<char> > tempgraddata
     = Teuchos::rcp(new std::vector<char>());
   p.set("tempgrad", tempgraddata);
-  p.set("iotempgrad", writetempgrad_);
+  p.set<int>("iotempgrad", writetempgrad_);
 
   // set vector values needed by elements
   discret_->ClearState();
   // SetState(0,...) in case of multiple dofsets (e.g. TSI)
   discret_->SetState(0, "residual temperature", zeros_);
   discret_->SetState(0, "temperature", (*temp_)(0));
+  // set displacements and velocities for the coupled TSI problem
+  if(disn_!=Teuchos::null)
+  {
+    discret_->SetState(1,"displacement",disn_);
+  }
+  if(veln_!=Teuchos::null)
+  {
+    discret_->SetState(1,"velocity",veln_);
+  }
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                      Teuchos::null, Teuchos::null, Teuchos::null);
   discret_->ClearState();

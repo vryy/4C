@@ -31,6 +31,8 @@ Maintainer: Caroline Danowski
 #include "../drt_lib/drt_parobjectfactory.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
+#include "../drt_tsi/kinematictype.H"
+
 /*----------------------------------------------------------------------*/
 namespace DRT
 {
@@ -418,21 +420,31 @@ namespace ELEMENTS
       Epetra_SerialDenseMatrix* elemat1
       );
 
-
     //@}
 
-    //@}
+    //! kinematic type passed from structural element
+    virtual void SetKinematicType(GenKinematicType kintype)
+    {
+      kintype_ = kintype;
+      return;
+    };
+    //! kinematic type
+    GenKinematicType kintype_;
+
+    int KinType() const
+    {
+      return kintype_;
+    }
 
   private:
 
-    //! container containing all kind of element this-and-that
-    DRT::Container data_;
     //! number of dofs per node (for systems of thermo equations)
     //! (storage neccessary because we don´t know the material in the post filters anymore)
     static const int numdofpernode_ = 1;
     //! the element discretization type
     DRT::Element::DiscretizationType distype_;
-
+    //! container containing all kind of element this-and-that
+    DRT::Container data_;
 
     //! don't want = operator
     Thermo& operator = (const Thermo& old);

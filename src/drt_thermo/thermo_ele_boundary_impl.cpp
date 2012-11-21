@@ -274,13 +274,13 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
 #ifdef THRASOUTPUT
     if (ele->Id()==0)
     {
-      cout << "ele Id= " << ele->Id() << endl;
+      std::cout << "ele Id= " << ele->Id() << std::endl;
       // print all parameters read from the current condition
-      cout<<"type of boundary condition  = "<<*tempstate<<endl;
-      cout<<"heat convection coefficient = "<<coeff<<endl;
-      cout<<"surrounding temperature     = "<<surtemp<<endl;
-      cout<<"time curve                  = "<<curvenum<<endl;
-      cout<<"total time                  = "<<time<<endl;
+      std::cout<<"type of boundary condition  = "<<*tempstate<<std::endl;
+      std::cout<<"heat convection coefficient = "<<coeff<<std::endl;
+      std::cout<<"surrounding temperature     = "<<surtemp<<std::endl;
+      std::cout<<"time curve                  = "<<curvenum<<std::endl;
+      std::cout<<"total time                  = "<<time<<std::endl;
     }
 #endif // THRASOUTPUT
 

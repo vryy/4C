@@ -24,8 +24,7 @@ Maintainer: Caroline Danowski
  |  headers                                                    gjb 01/08|
  *----------------------------------------------------------------------*/
 #include "thermo_ele_impl_utils.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
-#include <Epetra_IntSerialDenseVector.h>
+#include "../drt_inpar/inpar_thermo.H"
 
 /*----------------------------------------------------------------------*
  |                                                             gjb 01/08|
@@ -232,7 +231,6 @@ namespace ELEMENTS
       std::vector<double>& vel,  //!< current velocities
       const double& stepsize,  //!< time step size
       LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  //!< conductivity matrix
-      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa,  //!< capacity matrix
       LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
       LINALG::Matrix<nen_*numdofpernode_,1>* efext,  //!< external force
       LINALG::Matrix<nquad_,nsd_>* eheatflux,  //!< heat fluxes at Gauss points
@@ -259,6 +257,75 @@ namespace ELEMENTS
       LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* econdcoupl  //!< k_Tu matrix
       );
 
+    //@}
+
+    //! @name geometrically nonlinear TSI analysis
+
+    //! calculate element vectors (internal/external) and a few matrices
+    //! considering current displacement solution
+    //! no routine CalculateNlnFintCondCapa(): only capacity matrix is independent
+    //! of the displacments
+    //! --> all terms are coupled to the displacements/velocities
+    void CalculateNlnCouplFintCondCapa(
+      DRT::Element* ele,  //!< the element whose matrix is calculated
+      const double& time,  //!< current time
+      std::vector<double>& disp,  //!< current displacements
+      std::vector<double>& vel,  //!< current velocities
+      const double& stepsize,  //!< time step size
+      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  //!< conductivity matrix
+      LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa,  //!< capacity matrix
+      LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
+      LINALG::Matrix<nquad_,nsd_>* eheatflux,  //!< heat fluxes at Gauss points
+      LINALG::Matrix<nquad_,nsd_>* etempgrad,  //!< temperature gradients at Gauss points
+      const INPAR::THR::HeatFluxType ioheatflux,  // heat flux output option
+      const INPAR::THR::TempGradType iotempgrad  // tempgrad output option
+      );
+
+    //! calculate thermal-mechanical system matrix k_Td needed in monolithic TSI
+    void CalculateNlnCouplCond(
+      DRT::Element* ele,  //!< the element whose matrix is calculated
+      std::vector<double>& disp,  //!< current displacements
+      std::vector<double>& vel,  //!< current velocities
+      Teuchos::ParameterList& params,  //!< parameter list, containing e.g., dt,theta
+      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* econdcoupl  //!< k_Tu matrix
+      );
+
+    //! build nonlinear B-operator
+    void CalculateBoplin(
+      LINALG::Matrix<6,nsd_*nen_*numdofpernode_>* boplin,
+      LINALG::Matrix<nsd_,nen_>* N_XYZ
+      );
+
+    //! build nonlinear B-operator
+    void CalculateBop(
+      LINALG::Matrix<6,nsd_*nen_*numdofpernode_>* bop,
+      LINALG::Matrix<nsd_,nsd_>* defgrd,
+      LINALG::Matrix<nsd_,nen_>* N_XYZ
+      );
+
+    //! build derivatives of right Cauchy-Green deformation tensor C
+    //! build the inverse of C^{-1} and the time derivative C'
+    void CalculateCauchyGreens(
+      LINALG::Matrix<6,1>& cauchygreenratevct,
+      LINALG::Matrix<6,1>& invcauchygreenvct,
+      LINALG::Matrix<nsd_,nsd_>& invcauchygreen,
+      LINALG::Matrix<nsd_,nsd_>* defgrd,
+      LINALG::Matrix<nsd_,nsd_>* defgrdrate,
+      LINALG::Matrix<nsd_,nsd_>* invdefgrd
+      );
+
+    //! get corresponding structural material
+    void GetStrMaterial(
+      DRT::Element* ele,  //!< the element whose matrix is calculated
+      LINALG::Matrix<6,1>* ctemp,  //!< temperature-dependent material tangent
+      Teuchos::RCP<MAT::Material> structmat
+      );
+
+    //! calculate reactive term
+    void CalculateReactiveTerm(
+      LINALG::Matrix<6,1>* ctemp,  // temperature-dependent material tangent
+      LINALG::Matrix<6,1>* strainvel  // strain rate
+      );
     //@}
 
     //! actual values of temperatures

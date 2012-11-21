@@ -11,12 +11,12 @@ Maintainer: Caroline Danowski
 */
 
 /*----------------------------------------------------------------------*
- |  definitions                                                gjb 01/08|
+ | definitions                                                gjb 01/08 |
  *----------------------------------------------------------------------*/
 #ifdef D_THERMO
 
 /*----------------------------------------------------------------------*
- |  headers                                                    gjb 01/08|
+ | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
 #include "thermo_element.H"
 #include "../drt_lib/drt_discret.H"
@@ -28,11 +28,13 @@ Maintainer: Caroline Danowski
 #include "../drt_mat/thermostvenantkirchhoff.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-using namespace DRT::UTILS;
-
 DRT::ELEMENTS::ThermoType DRT::ELEMENTS::ThermoType::instance_;
 
 
+/*----------------------------------------------------------------------*
+ | create the new element type (public)                      dano 09/09 |
+ | is called in ElementRegisterType                                     |
+ *----------------------------------------------------------------------*/
 DRT::ParObject* DRT::ELEMENTS::ThermoType::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::Thermo* object =
@@ -42,10 +44,16 @@ DRT::ParObject* DRT::ELEMENTS::ThermoType::Create( const std::vector<char> & dat
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create( const string eletype,
-                                                            const string eledistype,
-                                                            const int id,
-                                                            const int owner )
+/*----------------------------------------------------------------------*
+ | create the new element type (public)                      dano 09/09 |
+ | is called from ParObjectFactory                                      |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create(
+  const string eletype,
+  const string eledistype,
+  const int id,
+  const int owner
+  )
 {
   if ( eletype=="THERMO" )
   {
@@ -56,33 +64,71 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create( const string elety
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create( const int id, const int owner )
+/*----------------------------------------------------------------------*
+ | create the new element type (public)                      dano 09/09 |
+ | virtual method of ElementType                                        |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create(
+  const int id,
+  const int owner
+  )
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Thermo(id,owner));
   return ele;
 }
 
 
-void DRT::ELEMENTS::ThermoType::NodalBlockInformation( Element * dwele, int & numdf, int & dimns, int & nv, int & np )
+/*----------------------------------------------------------------------*
+ |                                                           dano 08/12 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::ThermoType::NodalBlockInformation(
+  Element * dwele,
+  int & numdf,
+  int & dimns,
+  int & nv,
+  int & np
+  )
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
   dimns = numdf;
   nv = numdf;
 }
 
-void DRT::ELEMENTS::ThermoType::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
+
+/*----------------------------------------------------------------------*
+ | ctor (public)                                             dano 08/12 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::ThermoType::ComputeNullSpace(
+  DRT::Discretization & dis,
+  std::vector<double> & ns,
+  const double * x0,
+  int numdf,
+  int dimns
+  )
 {
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoBoundaryType::Create( const int id, const int owner )
+/*----------------------------------------------------------------------*
+ | create the new element type (public)                      dano 09/09 |
+ | is called from ParObjectFactory                                      |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoBoundaryType::Create(
+  const int id,
+  const int owner
+  )
 {
   //return Teuchos::rcp(new DRT::ELEMENTS::ThermoBoundary(id,owner));
   return Teuchos::null;
 }
 
 
-void DRT::ELEMENTS::ThermoType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+/*----------------------------------------------------------------------*
+ | setup element                                             dano 09/09 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::ThermoType::SetupElementDefinition(
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions
+  )
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["THERMO"];
 
@@ -177,30 +223,34 @@ DRT::ELEMENTS::ThermoBoundaryType DRT::ELEMENTS::ThermoBoundaryType::instance_;
 
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            dano 09/09 |
+ | ctor (public)                                             dano 09/09 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Thermo::Thermo(int id, int owner) :
-DRT::Element(id,owner),
-data_(),
-distype_(dis_none)
+DRT::ELEMENTS::Thermo::Thermo(int id, int owner)
+: DRT::Element(id,owner),
+  distype_(dis_none)
+{
+  // default: geometrically linear, also including purely thermal probelm
+  kintype_ = geo_linear;
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | copy-ctor (public)                                        dano 09/09 |
+ *----------------------------------------------------------------------*/
+DRT::ELEMENTS::Thermo::Thermo(const DRT::ELEMENTS::Thermo& old)
+: DRT::Element(old),
+  kintype_(old.kintype_),
+  distype_(old.distype_),
+  data_(old.data_)
 {
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       dano 09/09 |
- *----------------------------------------------------------------------*/
-DRT::ELEMENTS::Thermo::Thermo(const DRT::ELEMENTS::Thermo& old) :
-DRT::Element(old),
-data_(old.data_),
-distype_(old.distype_)
-{
-  return;
-}
 
 /*----------------------------------------------------------------------*
- |  Deep copy this instance of Thermo and return pointer to it (public) |
- |                                                           dano 09/09 |
+ | deep copy this instance of Thermo and return              dano 09/09 |
+ | pointer to it (public)                                               |
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::Thermo::Clone() const
 {
@@ -208,18 +258,18 @@ DRT::Element* DRT::ELEMENTS::Thermo::Clone() const
   return newelement;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Return the shape of a Thermo element                      (public)  |
- |                                                           dano 09/09 |
+ | return the shape of a Thermo element (public)             dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::Thermo::Shape() const
 {
   return distype_;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Pack data                                                  (public) |
- |                                                           dano 09/09 |
+ | pack data (public)                                        dano 09/09 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Thermo::Pack(DRT::PackBuffer& data) const
 {
@@ -231,18 +281,19 @@ void DRT::ELEMENTS::Thermo::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,type);
   // add base class Element
   Element::Pack(data);
+  // kintype
+  AddtoPack(data,kintype_);
   // distype
   AddtoPack(data,distype_);
-
   // data_
   AddtoPack(data,data_);
 
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Unpack data                                                (public) |
- |                                                           dano 09/09 |
+ | unpack data (public)                                      dano 09/09 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
 {
@@ -255,6 +306,8 @@ void DRT::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
+  // kintype_
+  kintype_ = static_cast<GenKinematicType>( ExtractInt(position,data) );
   // distype
   distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
 
@@ -267,32 +320,35 @@ void DRT::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            dano 09/09 |
+ | dtor (public)                                             dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::Thermo::~Thermo()
 {
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  print this element (public)                              dano 09/09 |
+ | print this element (public)                               dano 09/09 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Thermo::Print(std::ostream& os) const
 {
   os << "Thermo element";
   Element::Print(os);
-  cout << endl;
-  cout << "DiscretizationType:  "<<distype_<< endl;
-  cout << endl;
-  cout << "Number DOF per Node: "<<numdofpernode_<< endl;
-  cout << endl;
-  cout << data_;
+  std::cout << std::endl;
+  std::cout << "DiscretizationType:  "<<distype_<< std::endl;
+  std::cout << std::endl;
+  std::cout << "Number DOF per Node: "<<numdofpernode_<< std::endl;
+  std::cout << std::endl;
+  std::cout << data_;
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  get vector of lines            (public)                  dano 09/09 |
+ | get vector of lines (public)                              dano 09/09 |
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Thermo::Lines()
 {
@@ -314,8 +370,9 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Thermo::Lines()
   }
 }
 
+
 /*----------------------------------------------------------------------*
- |  get vector of surfaces (public)                          dano 09/09 |
+ | get vector of surfaces (public)                           dano 09/09 |
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Thermo::Surfaces()
 {
@@ -343,8 +400,9 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Thermo::Surfaces()
   }
 }
 
+
 /*----------------------------------------------------------------------*
- |  get vector of volumes (length 1) (public)                dano 09/09|
+ | get vector of volumes (length 1) (public)                 dano 09/09 |
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Thermo::Volumes()
 {
@@ -361,8 +419,9 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Thermo::Volumes()
   }
 }
 
+
 /*----------------------------------------------------------------------*
- |  Return names of visualization data (public)               dano 09/09|
+ | return names of visualization data (public)               dano 09/09 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Thermo::VisNames(std::map<std::string,int>& names)
 {
@@ -379,8 +438,9 @@ void DRT::ELEMENTS::Thermo::VisNames(std::map<std::string,int>& names)
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Return visualization data (public)                        dano 09/09|
+ | return visualization data (public)                        dano 09/09 |
  *----------------------------------------------------------------------*/
 bool DRT::ELEMENTS::Thermo::VisData(
   const std::string& name,
@@ -404,17 +464,14 @@ bool DRT::ELEMENTS::Thermo::VisData(
   } // loop over temperatures
 
   return false;
-}
-
-
-//=======================================================================
-//=======================================================================
-//=======================================================================
-//=======================================================================
+}  // VisData()
+/*----------------------------------------------------------------------------*
+ | ENDE DRT::ELEMENTS::Thermo
+ *----------------------------------------------------------------------------*/
 
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                            dano 09/09 |
+ | ctor (public)                                             dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(
   int id,
@@ -424,8 +481,8 @@ DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(
   DRT::Node** nodes,
   DRT::ELEMENTS::Thermo* parent,
   const int lbeleid
-  ) :
-  DRT::Element(id,owner),
+  )
+: DRT::Element(id,owner),
   parent_(parent),
   lbeleid_(lbeleid)
 {
@@ -434,19 +491,23 @@ DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  copy-ctor (public)                                       dano 09/09 |
+ | copy-ctor (public)                                        dano 09/09 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(const DRT::ELEMENTS::ThermoBoundary& old) :
-DRT::Element(old),
-parent_(old.parent_),
-lbeleid_(old.lbeleid_)
+DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(
+  const DRT::ELEMENTS::ThermoBoundary& old
+  )
+: DRT::Element(old),
+  parent_(old.parent_),
+  lbeleid_(old.lbeleid_)
 {
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Deep copy this instance return pointer to it    (public) dano 09/09 |
+ | deep copy this instance return pointer to it (public)     dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::Element* DRT::ELEMENTS::ThermoBoundary::Clone() const
 {
@@ -454,8 +515,9 @@ DRT::Element* DRT::ELEMENTS::ThermoBoundary::Clone() const
   return newelement;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Return shape of this element                   (public)  dano 09/09 |
+ | return shape of this element (public)                     dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::Element::DiscretizationType DRT::ELEMENTS::ThermoBoundary::Shape() const
 {
@@ -477,8 +539,9 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::ThermoBoundary::Shape() const
   return dis_none;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Pack data (public)                                       dano 09/09 |
+ | pack data (public)                                        dano 09/09 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ThermoBoundary::Pack(std::vector<char>& data) const
 {
@@ -487,8 +550,9 @@ void DRT::ELEMENTS::ThermoBoundary::Pack(std::vector<char>& data) const
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Unpack data (public)                                     dano 09/09 |
+ | unpack data (public)                                      dano 09/09 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ThermoBoundary::Unpack(const std::vector<char>& data)
 {
@@ -496,16 +560,18 @@ void DRT::ELEMENTS::ThermoBoundary::Unpack(const std::vector<char>& data)
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  dtor (public)                                            dano 09/09 |
+ | dtor (public)                                             dano 09/09 |
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ThermoBoundary::~ThermoBoundary()
 {
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  print this element (public)                              dano 09/09 |
+ | print this element (public)                               dano 09/09 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ThermoBoundary::Print(std::ostream& os) const
 {
@@ -514,8 +580,9 @@ void DRT::ELEMENTS::ThermoBoundary::Print(std::ostream& os) const
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  get vector of lines (public)                             dano 09/09 |
+ | get vector of lines (public)                              dano 09/09 |
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::ThermoBoundary::Lines()
 {
@@ -531,8 +598,9 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::ThermoBoundary::Lines()
   return lines;
 }
 
+
 /*----------------------------------------------------------------------*
- |  get vector of lines (public)                             dano 09/09 |
+ | get vector of lines (public)                              dano 09/09 |
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::ThermoBoundary::Surfaces()
 {
@@ -547,6 +615,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::ThermoBoundary::Surfaces
   std::vector<Teuchos::RCP<DRT::Element> > surfaces(0);
   return surfaces;
 }
+
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef D_THERMO

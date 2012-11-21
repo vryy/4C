@@ -18,10 +18,12 @@ Maintainer: Caroline Danowski
  *----------------------------------------------------------------------*/
 #ifdef D_THERMO
 
+
 /*----------------------------------------------------------------------*
  |  headers                                                  dano 09/09 |
  *----------------------------------------------------------------------*/
 #include "thermo_ele_boundary_impl.H"
+
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            dano 09/09 |
@@ -56,6 +58,7 @@ int DRT::ELEMENTS::ThermoBoundary::Evaluate(
     );
 }
 
+
 /*----------------------------------------------------------------------*
  |  evaluate the element for volume coupling (public)        dano 02/10 |
  *----------------------------------------------------------------------*/
@@ -76,7 +79,6 @@ int DRT::ELEMENTS::ThermoBoundary::Evaluate(
   // If this element has special features/ methods that do not fit in the
   // generalized implementation class, you have to do a switch here in order to
   // call element-specific routines
-  cout<<"entering boundary ele with LocationArray la "<<endl;
   return DRT::ELEMENTS::TemperBoundaryImplInterface::Impl(this)->Evaluate(
     this,
     params,
@@ -89,6 +91,7 @@ int DRT::ELEMENTS::ThermoBoundary::Evaluate(
     elevec3
     );
 } // Evaluate in case of multiple dofsets
+
 
 /*----------------------------------------------------------------------*
  |  Integrate a Surface/Line Neumann boundary condition      dano 09/09 |
@@ -117,6 +120,7 @@ int DRT::ELEMENTS::ThermoBoundary::EvaluateNeumann(
     elevec1
     );
 }
+
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifdef D_THERMO
