@@ -1281,6 +1281,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
     "time integrator",
     DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP")
     );
+  tparams.set<int>("structural time integrator",strmethodname_);
   switch (DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP"))
   {
     // static analysis
@@ -1291,12 +1292,22 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
     // dynamic analysis
     case INPAR::THR::dyna_onesteptheta :
     {
+      // K_Td = theta . k_Td^e
       double theta_ = tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
       tparams.set("theta",theta_);
+      // put the structural theta value to the thermal parameter list
+      double str_theta_ = sdyn_.sublist("ONESTEPTHETA").get<double>("THETA");
+      tparams.set("str_THETA", str_theta_);
       break;
     }
     case INPAR::THR::dyna_genalpha :
     {
+      // put the structural theta value to the thermal parameter list
+      double str_beta_ = sdyn_.sublist("GENALPHA").get<double>("BETA");
+      double str_gamma_ = sdyn_.sublist("GENALPHA").get<double>("GAMMA");
+      tparams.set("str_BETA", str_beta_);
+      tparams.set("str_GAMMA", str_gamma_);
+
       dserror("Genalpha not yet implemented");
       break;
     }
@@ -1329,39 +1340,6 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   // evaluate the thermal-mechancial system matrix on the thermal element
   ThermoField()->Discretization()->Evaluate(tparams,thermostrategy);
   ThermoField()->Discretization()->ClearState();
-
-  // consider linearisation of velocities due to displacements
-  // major switch to different time integrators
-  switch (strmethodname_)
-  {
-    case  INPAR::STR::dyna_statics :
-    {
-      // Lin (v_n+1) . \Delta d_n+1 = 1/dt, cf. Diss N. Karajan (2009) for quasistatic approach
-      const double fac = 1.0/Dt();
-      k_ts->Scale(fac);
-      break;
-    }
-    case  INPAR::STR::dyna_onesteptheta :
-    {
-      double theta = sdyn_.sublist("ONESTEPTHETA").get<double>("THETA");
-      const double fac = 1.0 / ( theta * Dt() );
-      k_ts->Scale(fac);
-      break;
-    }
-    case  INPAR::STR::dyna_genalpha :
-    {
-      double beta = sdyn_.sublist("GENALPHA").get<double>("BETA");
-      double gamma = sdyn_.sublist("GENALPHA").get<double>("GAMMA");
-      // Lin (v_n+1) . \Delta d_n+1 = (gamma) / (beta . dt)
-      const double fac =  gamma / ( beta * Dt() );
-      k_ts->Scale(fac);
-    }
-    default :
-    {
-      dserror("Don't know what to do...");
-      break;
-    }
-  }  // end of switch(strmethodname_)
 
 }  // ApplyThrCouplMatrix()
 
