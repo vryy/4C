@@ -1769,6 +1769,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"TOL","tolerance for local Newton iteration");
     AddNamedString(m,"GROWTHFORCE","driving force of growth (Single, All)","Single");
     AddNamedString(m,"INITSTRETCH","how to set stretches in the beginning (None, Homeo)","None");
+    AddNamedInt(m,"CURVE","number of timecurve for increase of prestretch in time",0);
     AddNamedString(m,"DEGOPTION","which degradation function (Lin, Cos, Exp)","Lin");
 
     AppendMaterialDefinition(matlist,m);

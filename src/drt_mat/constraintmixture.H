@@ -99,6 +99,8 @@ namespace MAT
       const string* growthforce_;
       /// how to set stretches in the beginning
       const string* initstretch_;
+      /// number of timecurve for increase of prestretch in time
+      const int timecurve_;
       /// which degradation function
       const string degoption_;
       /// tolerance for degradation
@@ -304,6 +306,24 @@ namespace MAT
     double GetMassDensity(int gp) const {return refmassdens_->at(gp);}
     /// Return actual mass density in reference configuration
     LINALG::Matrix<3,1> GetMassDensityCollagen(int gp) const {return visrefmassdens_->at(gp);}
+    /// Return prestretch of collagen fibers
+    LINALG::Matrix<3,1> GetPrestretch(int gp) const
+    {
+      LINALG::Matrix<3,1> visprestretch(true);
+      visprestretch(0) = localprestretch_->at(gp)(0);
+      visprestretch(1) = localprestretch_->at(gp)(1);
+      visprestretch(2) = localprestretch_->at(gp)(2);
+      return visprestretch;
+    }
+    /// Return prestretch of collagen fibers
+    LINALG::Matrix<3,1> GetHomstress(int gp) const
+    {
+      LINALG::Matrix<3,1> visprestretch(true);
+      visprestretch(0) = localhomstress_->at(gp)(0);
+      visprestretch(1) = localhomstress_->at(gp)(1);
+      visprestretch(2) = localhomstress_->at(gp)(2);
+      return visprestretch;
+    }
     /// Return circumferential fiber direction
     Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > Geta1() const {return a1_;}
     /// Return axial fiber direction
@@ -337,7 +357,12 @@ namespace MAT
     Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > a4_;
     /// indicates if material is initialized
     bool isinit_;
+    /// homeostatic prestretch of collagen fibers
+    Teuchos::RCP<std::vector<LINALG::Matrix<4,1> > > localprestretch_;
+    /// homeostatic stress for growth
+    Teuchos::RCP<std::vector<LINALG::Matrix<4,1> > > localhomstress_;
 
+    /// history
     Teuchos::RCP<std::vector<ConstraintMixtureHistory> > history_;
 
     /// compute stress and cmat

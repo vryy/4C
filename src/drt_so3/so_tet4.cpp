@@ -441,7 +441,7 @@ void DRT::ELEMENTS::So_tet4::VisNames(std::map<string,int>& names)
 {
   // Put the owner of this element into the file (use base class method for this)
   DRT::Element::VisNames(names);
-  if ((Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular))
+  if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular)
   {
     string fiber = "Fiber1";
     names[fiber] = 3; // 3-dim vector
@@ -530,6 +530,10 @@ void DRT::ELEMENTS::So_tet4::VisNames(std::map<string,int>& names)
     fiber = "referentialMassDensity";
     names[fiber] = 1;
     fiber = "CollagenMassDensity";
+    names[fiber] = 3;
+    fiber = "Prestretch";
+    names[fiber] = 3;
+    fiber = "Homstress";
     names[fiber] = 3;
   }
 
@@ -806,6 +810,28 @@ bool DRT::ELEMENTS::So_tet4::VisData(const string& name, std::vector<double>& da
       LINALG::Matrix<3,1> temp(true);
       for (int iter=0; iter<NUMGPT_SOTET4; iter++)
         temp.Update(1.0,cons->GetMassDensityCollagen(iter),1.0);
+      data[0] = temp(0)/NUMGPT_SOTET4;
+      data[1] = temp(1)/NUMGPT_SOTET4;
+      data[2] = temp(2)/NUMGPT_SOTET4;
+    }
+    else if (name == "Prestretch")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
+      LINALG::Matrix<3,1> temp(true);
+      for (int iter=0; iter<NUMGPT_SOTET4; iter++)
+        temp.Update(1.0,cons->GetPrestretch(iter),1.0);
+      data[0] = temp(0)/NUMGPT_SOTET4;
+      data[1] = temp(1)/NUMGPT_SOTET4;
+      data[2] = temp(2)/NUMGPT_SOTET4;
+    }
+    else if (name == "Homstress")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
+      LINALG::Matrix<3,1> temp(true);
+      for (int iter=0; iter<NUMGPT_SOTET4; iter++)
+        temp.Update(1.0,cons->GetHomstress(iter),1.0);
       data[0] = temp(0)/NUMGPT_SOTET4;
       data[1] = temp(1)/NUMGPT_SOTET4;
       data[2] = temp(2)/NUMGPT_SOTET4;

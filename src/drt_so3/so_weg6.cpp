@@ -501,6 +501,10 @@ void DRT::ELEMENTS::So_weg6::VisNames(std::map<string,int>& names)
     names[fiber] = 1;
     fiber = "CollagenMassDensity";
     names[fiber] = 3;
+    fiber = "Prestretch";
+    names[fiber] = 3;
+    fiber = "Homstress";
+    names[fiber] = 3;
   }
   if (Material()->MaterialType() == INPAR::MAT::m_aaaneohooke_stopro)
   {
@@ -820,6 +824,28 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, std::vector<double>& da
       LINALG::Matrix<3,1> temp(true);
       for (int iter=0; iter<NUMGPT_WEG6; iter++)
         temp.Update(1.0,cons->GetMassDensityCollagen(iter),1.0);
+      data[0] = temp(0)/NUMGPT_WEG6;
+      data[1] = temp(1)/NUMGPT_WEG6;
+      data[2] = temp(2)/NUMGPT_WEG6;
+    }
+    else if (name == "Prestretch")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
+      LINALG::Matrix<3,1> temp(true);
+      for (int iter=0; iter<NUMGPT_WEG6; iter++)
+        temp.Update(1.0,cons->GetPrestretch(iter),1.0);
+      data[0] = temp(0)/NUMGPT_WEG6;
+      data[1] = temp(1)/NUMGPT_WEG6;
+      data[2] = temp(2)/NUMGPT_WEG6;
+    }
+    else if (name == "Homstress")
+    {
+      if ((int)data.size()!=3)
+        dserror("size mismatch");
+      LINALG::Matrix<3,1> temp(true);
+      for (int iter=0; iter<NUMGPT_WEG6; iter++)
+        temp.Update(1.0,cons->GetHomstress(iter),1.0);
       data[0] = temp(0)/NUMGPT_WEG6;
       data[1] = temp(1)/NUMGPT_WEG6;
       data[2] = temp(2)/NUMGPT_WEG6;
