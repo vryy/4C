@@ -21,17 +21,8 @@ NUMFIELD                        3
 RESTART                         0
 --------------------------------------------------------------------------IO
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-LINEAR_SOLVER                   2
+LINEAR_SOLVER                   1
 DYNAMICTYP                      GenAlpha
-EIGEN                           0
-RESULTSEVRY                     1
-RESTARTEVRY                     20
-TIMESTEP                        0.05
-NUMSTEP                         200
-MAXTIME                         5.0
-DAMPING                         No
-M_DAMP                          0.5
-K_DAMP                          0.5
 TOLDISP                         1.0E-10
 MAXITER                         50
 PREDICT                         ConstDisVelAcc
@@ -42,63 +33,34 @@ ALPHA_M                         0.0
 BETA                            0.5
 GAMMA                           1.0
 ---------------------------------------------------------------FLUID DYNAMIC
-LINEAR_SOLVER                   3
+LINEAR_SOLVER                   1
 TIMEINTEGR                      Np_Gen_Alpha
-UPRES                           1
-RESTARTEVRY                     1
-MAXTIME                         1000.0
-NUMSTEP                         1000
-TIMESTEP                        0.05
-THETA                           1.0
 NONLINITER                      fixed_point_like
 ITEMAX                          10
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-8
-STARTINGALGO                    One_Step_Theta
-NUMSTASTEPS                     0
-START_THETA                     1.00
 INITIALFIELD                    zero_field
-STARTFUNCNO                     2
 ALPHA_F                         1.0
 ALPHA_M                         1.0
 GAMMA                           1.0
+PREDICTOR                       steady_state_predictor
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
-STABTYPE                        residual_based
-TDS                             quasistatic
-TRANSIENT                       no_transient
-SUPG                            yes_supg
-PSPG                            yes_pspg
 VSTAB                           vstab_gls
-CSTAB                           cstab_qs
-CROSS-STRESS                    no_cross
-REYNOLDS-STRESS                 no_reynolds
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
-TIMESTEP                        0.1
-NUMSTEP                         41
-MAXTIME                         4.0
 ALE_TYPE                        classic_lin
-RESULTSEVRY                     1
 -----------------------------------------------------------------FSI DYNAMIC
-MAXTIME                         1000.0
+MAXTIME                         1
 TIMESTEP                        0.1
 NUMSTEP                         10
 UPRES                           1
-RESTARTEVRY                     1
+RESTARTEVRY                     2
 COUPALGO                        iter_monolithicfluidsplit
 ENERGYCHECK                     yes
 TOLENCHECK                      1.0
-RELAX                           0.825
 ITEMAX                          100
 CONVTOL                         1.0E-10
 --------------------------------------------------------------------SOLVER 1
-NAME                            Ale_Solver
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
-NAME                            Structure_Solver
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 3
-NAME                            Fluid_Solver
 SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         14
@@ -7070,15 +7032,12 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 //CURVE1 on Explicit FUNC f(t)=exp(1-1:t) c1 1.0 c2 1.0
 CURVE1 on Explicit FUNC f(t)=1-cos(2*PI*C1*t) c1 0.2 c2 1.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
-//FLUID DIS fluid NODE 2155 QUANTITY vely VALUE 3.425417805e-04 TOLERANCE 1e-7
-//FLUID DIS fluid NODE 2155 QUANTITY pressure VALUE -2.443060086e-03 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 1834 QUANTITY dispx VALUE -3.36128818767769964e-05 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 1834 QUANTITY dispy VALUE -3.69148584207258873e-04 TOLERANCE 1e-9
 FLUID DIS fluid NODE 2155 QUANTITY vely VALUE 3.234233451e-04 TOLERANCE 1e-7
 FLUID DIS fluid NODE 2155 QUANTITY pressure VALUE -2.338798608e-03 TOLERANCE 1e-7
-//STRUCTURE DIS structure NODE 1782 POSITION sol(1,2) NAME dy VALUE -0.0000026252202840 TOLERANCE 1e-8
+ALE DIS ale NODE 1380 QUANTITY dispx VALUE -1.94610593569234957e-05 TOLERANCE 1e-9
+ALE DIS ale NODE 1380 QUANTITY dispy VALUE -1.64634946311363264e-04 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END
