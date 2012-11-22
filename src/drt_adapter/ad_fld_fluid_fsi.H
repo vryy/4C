@@ -160,7 +160,7 @@ namespace ADAPTER {
         int iter = -1);
 
   protected:
-    /// A castet pointer to the fluid itself
+    /// A casted pointer to the fluid itself
     Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpl_;
 
     //! @name local copies of input parameters
@@ -171,7 +171,9 @@ namespace ADAPTER {
 
     /// the interface map setup for fsi interface, free surface, interior translation
     Teuchos::RCP<FLD::UTILS::MapExtractor> interface_;
-    Teuchos::RCP<Epetra_Vector>            interfaceforcen_;  /// interface force at old time level t_n
+
+    /// interface force at old time level t_n
+    Teuchos::RCP<Epetra_Vector>            interfaceforcen_;
 
     /// ALE dof map
     Teuchos::RCP<LINALG::MapExtractor>     meshmap_;
