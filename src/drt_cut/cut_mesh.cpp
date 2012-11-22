@@ -1062,7 +1062,7 @@ void GEO::CUT::Mesh::FindFacetPositions()
     {
       const plain_facet_set & facets = c->Facets();
 
-      bool haveundecided = false;
+  //    bool haveundecided = false;
 
       Point::PointPosition position = Point::undecided;
       for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
@@ -1072,7 +1072,7 @@ void GEO::CUT::Mesh::FindFacetPositions()
         switch ( fp )
         {
         case Point::undecided:
-          haveundecided = true;
+  //        haveundecided = true;
           break;
         case Point::oncutsurface:
           break;
