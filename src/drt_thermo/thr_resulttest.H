@@ -5,29 +5,32 @@
 \brief testing of thermo calculation results
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Caroline Danowski
+            danowski@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15253
 </pre>
 */
+
+
 /*----------------------------------------------------------------------*
- |  definitions                                                   08/09 |
+ | definitions                                               dano 08/09 |
  *----------------------------------------------------------------------*/
 #ifndef THR_RESULTTEST_H
 #define THR_RESULTTEST_H
 
 
 /*----------------------------------------------------------------------*
- |  headers                                                       08/09 |
+ | headers                                                   dano 08/09 |
  *----------------------------------------------------------------------*/
 #include "thrtimint.H"
 #include "../drt_lib/drt_resulttest.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io.H"
 
+
 /*----------------------------------------------------------------------*
- |  belongs to thermal dynamics namespace                         08/09 |
+ | belongs to thermal dynamics namespace                     dano 08/09 |
  *----------------------------------------------------------------------*/
 namespace THR
 {
@@ -70,5 +73,6 @@ namespace THR
 
 }  // namespace THR
 
+
 /*----------------------------------------------------------------------*/
-#endif // #ifndef THR_RESULTTEST_H
+#endif  // THR_RESULTTEST_H

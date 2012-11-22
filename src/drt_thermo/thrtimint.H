@@ -10,30 +10,22 @@ Maintainer: Burkhard Bornemann
 </pre>
 */
 
+
 /*----------------------------------------------------------------------*
- |  definitions                                             bborn 06/08 |
+ | definitions                                              bborn 06/08 |
  *----------------------------------------------------------------------*/
 #ifndef THRTIMINT_H
 #define THRTIMINT_H
 
+
 /*----------------------------------------------------------------------*
- |  headers                                                 bborn 06/08 |
+ | headers                                                  bborn 06/08 |
  *----------------------------------------------------------------------*/
-#include <iostream>
-
-#include "Epetra_Operator.h"
-#include "Epetra_RowMatrix.h"
-
 #include "../drt_adapter/adapter_thermo.H"
 #include "thr_contact.H"
-#include "../drt_io/io_control.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_inpar/inpar_thermo.H"
-//#include "../drt_io/io.H"
-#include "../drt_mortar/mortar_manager_base.H"
-
 #include "thrtimint_mstep.H"
+#include "../drt_io/io_control.H"
+//#include "../drt_mortar/mortar_manager_base.H"
 
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                    bborn 08/09 |

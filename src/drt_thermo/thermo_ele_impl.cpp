@@ -114,7 +114,7 @@ DRT::ELEMENTS::TemperImplInterface* DRT::ELEMENTS::TemperImplInterface::Impl(
   }
   return NULL;
 
-}  // TemperImperInterface::Impl
+}  // TemperImperInterface::Impl()
 
 
 /*----------------------------------------------------------------------*
@@ -609,14 +609,14 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         NULL
         );
 
-    if (plasticmat_)
-      CalculateInternalDissipation(
-        ele,
-        myvel,
-        stepsize,
-        NULL,
-        &efint
-        );
+      if (plasticmat_)
+        CalculateInternalDissipation(
+          ele,
+          myvel,
+          stepsize,
+          NULL,
+          &efint
+          );
     }  // end geo_linear TSI
 
     // geometrically nonlinear TSI problem
@@ -1093,7 +1093,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       if ( (discretization.HasState(1,"displacement")) &&
          (discretization.HasState(1,"velocity")) )
       {
-        vector<double> mydisp((la[1].lm_).size());
+        std::vector<double> mydisp((la[1].lm_).size());
         // get the displacements
         Teuchos::RCP<const Epetra_Vector> disp
           = discretization.GetState(1,"displacement");
@@ -1102,7 +1102,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // extract the displacements
         DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
 
-        vector<double> myvel((la[1].lm_).size());
+        std::vector<double> myvel((la[1].lm_).size());
         // get the velocities
         Teuchos::RCP<const Epetra_Vector> vel
           = discretization.GetState(1,"velocity");
@@ -1232,8 +1232,6 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   }
 
 #ifdef THRASOUTPUT
-  std::cout << "etang end of Evaluate thermo_ele_impl\n" << etang << std::endl;
-  std::cout << "efint end of Evaluate thermo_ele_impl\n" << efint << std::endl;
   std::cout << "etemp_ end of Evaluate thermo_ele_impl\n" << etemp_ << std::endl;
 #endif // THRASOUTPUT
 
@@ -1424,7 +1422,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
   DRT::Element* ele,  // the element whose matrix is calculated
   const double& time,  // current time
   std::vector<double>& disp,  // current displacements
-  vector<double>& vel,  // current velocities
+  std::vector<double>& vel,  // current velocities
   const double& stepsize,
   LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  // conductivity matrix
   LINALG::Matrix<nen_*numdofpernode_,1>* efint,  // internal force
@@ -1452,8 +1450,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
 
   // thermal material tangent
   LINALG::Matrix<6,1> ctemp(true);
+  // get constant initial temperature from the material
+  double thetainit = 0.0;
   Teuchos::RCP<MAT::Material> structmat = Teuchos::null;
-  GetStrMaterial(ele, &ctemp, structmat);
+  GetStrMaterial(ele, &ctemp, &thetainit, structmat);
   // insert the negative value of the coupling term (c.f. energy balance)
   ctemp.Scale(-1.0);
 
@@ -1593,7 +1593,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
   DRT::Element* ele,  // the element whose matrix is calculated
   std::vector<double>& disp,  // current displacements
-  vector<double>& vel,  // current velocities
+  std::vector<double>& vel,  // current velocities
   LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl  // conductivity matrix
   )
 {
@@ -1613,8 +1613,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
   LINALG::Matrix<6,6> cmat(true);
   // thermal material tangent
   LINALG::Matrix<6,1> ctemp(true);
+  // get constant initial temperature from the material
+  double thetainit = 0.0;
   // TODO 2012-11-14 in case of different material, pass structmat here, too
-  GetStrMaterial(ele, &ctemp, Teuchos::null);
+  GetStrMaterial(ele, &ctemp, &thetainit, Teuchos::null);
   // insert the negative value of the coupling term (c.f. energy balance)
   ctemp.Scale(-1.0);
 
@@ -1688,8 +1690,8 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
   DRT::Element* ele,  // the element whose matrix is calculated
   const double& time,  // current time
-  vector<double>& disp,  // current displacements
-  vector<double>& vel,  // current velocities
+  std::vector<double>& disp,  // current displacements
+  std::vector<double>& vel,  // current velocities
   const double& stepsize,  // time increment
   LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  // conductivity matrix
   LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa,  // capacity matrix
@@ -1749,8 +1751,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
 
   // thermal material tangent
   LINALG::Matrix<6,1> ctemp(true);
+  // get constant initial temperature from the material
+  double thetainit = 0.0;
   // TODO 2012-11-14 in case of different material, pass structmat here, too
-  GetStrMaterial(ele, &ctemp, Teuchos::null);
+  GetStrMaterial(ele, &ctemp, &thetainit, Teuchos::null);
   // insert the negative value of the coupling term (c.f. energy balance)
   ctemp.Scale(-1.0);
 
@@ -1799,15 +1803,15 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
     // ------- derivatives of right Cauchy-Green deformation tensor C
     // build the rate of C: C'= F^T . F' + (F')^T . F
     // OR: C' = F^T . F' if applied to symmetric tensor
-    // save C' as rate vector cauchygreenrate
+    // save C' as rate vector Crate
     // C' = { C11', C22', C33', C12', C23', C31 }
-    LINALG::Matrix<6,1> cauchygreenratevct(false);
+    LINALG::Matrix<6,1> Cratevct(false);
     // build the inverse C: C^{-1} = F^{-1} . F^{-T}
-    LINALG::Matrix<nsd_,nsd_> invcauchygreen(false);
-    // invcauchygreenvct: C^{-1} in Voight-/vector notation
+    LINALG::Matrix<nsd_,nsd_> invC(false);
+    // invCvct: C^{-1} in Voight-/vector notation
     // C^{-1} = { C11^{-1}, C22^{-1}, C33^{-1}, C12^{-1}, C23^{-1}, C31^{-1} }
-    LINALG::Matrix<6,1> invcauchygreenvct(false);
-    CalculateCauchyGreens(cauchygreenratevct,invcauchygreenvct,invcauchygreen,&defgrd,&defgrdrate,&invdefgrd);
+    LINALG::Matrix<6,1> invCvct(false);
+    CalculateCauchyGreens(Cratevct,invCvct,invC,&defgrd,&defgrdrate,&invdefgrd);
 
     // -------------------------- calculate strain rates / velocities
     LINALG::Matrix<6,1> strainvel(true);
@@ -1826,7 +1830,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
     // store heatflux
     // (3x1)  (3x3) . (3x1)
     LINALG::Matrix<nsd_,1> initialheatflux(true);
-    initialheatflux.Multiply(invcauchygreen,heatflux_);
+    initialheatflux.Multiply(invC,heatflux_);
     // put the initial, material heatflux onto heatflux_
     heatflux_.Update(0.0, initialheatflux, 1.0);
     // from here on heatflux_ == -Q
@@ -1834,6 +1838,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
     // ---------------------------------------------- post processing
     // store the temperature gradient for postprocessing
     // return gp tempgrad (only in case of tempgrad output)
+    // RK: Grad T
+    // AK: grad T --> grad T = Grad T . F^{-1}
     switch (iotempgrad)
     {
     case INPAR::THR::tempgrad_initial:
@@ -1850,10 +1856,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
       // etempgrad = grad T = Grad T . F^{-1} =  F^{-T} . Grad T
       // (8x3)        (3x1)   (3x1)    (3x3)     (3x3)    (3x1)
       // spatial temperature gradient
-      LINALG::Matrix<nsd_,1> currentgradtemp(false);
-      currentgradtemp.MultiplyTN(invdefgrd,gradtemp_);
+      LINALG::Matrix<nsd_,1> currentgradT(false);
+      currentgradT.MultiplyTN(invdefgrd,gradtemp_);
       for (int idim=0; idim<nsd_; ++idim)
-        (*etempgrad)(iquad,idim) = currentgradtemp(idim);
+        (*etempgrad)(iquad,idim) = currentgradT(idim);
     }
     break;
     case INPAR::THR::tempgrad_none:
@@ -1864,13 +1870,17 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
     default:
      dserror("requested tempgrad type not available");
     break;
-    }
+    }  // iotempgrad
 
     // return gp heatfluxes (only in case of heatflux/tempgrad output)
+    // RK: Q = -k_0 . invC . Grad T
+    // AK: q = -k . grad T --> q =  1/(detF) . F .Q
+    // with k_0 = J . k = detF . k
     switch (ioheatflux)
     {
     case INPAR::THR::heatflux_initial:
     {
+      // eheatflux := Q = -k_0 . invC . Grad T
       if (eheatflux == NULL) dserror("heat flux data not available");
       for (int idim=0; idim<nsd_; ++idim)
         (*eheatflux)(iquad,idim) = heatflux_(idim);
@@ -1878,9 +1888,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
     break;
     case INPAR::THR::heatflux_current:
     {
-      // TODO bug in output for current values 2012-08-30
       if (eheatflux == NULL) dserror("heat flux data not available");
-      // eheatflux = q = 1/(detF) . F .Q
+      // eheatflux := q = 1/(detF) . F .Q
       // (8x3)     (3x1)            (3x3)  (3x1)
       const double detF = defgrd.Determinant();
       LINALG::Matrix<nsd_,1> spatialq;
@@ -1891,13 +1900,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
     break;
     case INPAR::THR::heatflux_none:
     {
-      // no postprocessing of heat fluxes
+      // no postprocessing of heat fluxes, continue!
     }
     break;
     default:
       dserror("requested heat flux type not available");
     break;
-    }
+    }  // ioheatflux
 
 #ifdef THRASOUTPUT
     if (etempgrad != NULL)
@@ -1910,7 +1919,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
     // scalar product: ctempcdot = -(m * I) : 1/2 C' = -C_temp : 1/2 C'
     double CtempCdot = 0.0;
     for (int i=0; i<6; ++i)
-      CtempCdot += ctemp(i,0)*(1/2.0)*cauchygreenratevct(i,0);
+      CtempCdot += ctemp(i,0)*(1/2.0)*Cratevct(i,0);
 
     // build the product of the shapefunctions and element temperatures
     LINALG::Matrix<1,1> nt(true);
@@ -1952,7 +1961,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
       // with C_mat = k * I
       LINALG::Matrix<nsd_,nen_> aop(false); // (3x8)
       // -q = C_mat . C^{-1} . B
-      aop.MultiplyNN(invcauchygreen,derxy_); //(nsd_xnsd_)(nsd_x8)
+      aop.MultiplyNN(invC,derxy_); //(nsd_xnsd_)(nsd_x8)
       LINALG::Matrix<nsd_,nen_> aop1(false); // (3x8)
       aop1.MultiplyNN(cmat_,aop); //(nsd_Xnsd_)(nsd_x8)
       etang->MultiplyTN(fac_,derxy_,aop1,1.0); //(8x8)=(8x3)(3x8)
@@ -1981,7 +1990,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
       std::cout << "CouplNlnFintCondCapa\n" << std::endl;
       std::cout << "ele Id= " << ele->Id() << std::endl;
       std::cout << "ctemp_\n" << ctemp << std::endl;
-      std::cout << "cauchygreenratevct\n" << cauchygreenratevct << std::endl;
+      std::cout << "Cratevct\n" << Cratevct << std::endl;
       std::cout << "nccdot\n" << nccdot << std::endl;
       std::cout << "nctemp\n" << nctemp << std::endl;
       std::cout << "defgrd\n" << defgrd << std::endl;
@@ -2003,8 +2012,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplCond(
   DRT::Element* ele,  // the element whose matrix is calculated
-  vector<double>& disp,  // current displacements
-  vector<double>& vel,  // current velocities
+  std::vector<double>& disp,  // current displacements
+  std::vector<double>& vel,  // current velocities
   Teuchos::ParameterList& params,  // parameter list
   LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl
   )
@@ -2058,8 +2067,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplCond(
 
   // thermal material tangent
   LINALG::Matrix<6,1> ctemp(true);
+  // get constant initial temperature from the material
+  double thetainit = 0.0;
   // TODO 2012-11-14 in case of different material, pass structmat here, too
-  GetStrMaterial(ele, &ctemp, Teuchos::null);
+  GetStrMaterial(ele, &ctemp, &thetainit, Teuchos::null);
   // insert the negative value of the coupling term (c.f. energy balance)
   ctemp.Scale(-1.0);
 
@@ -2148,52 +2159,55 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplCond(
     // ------- derivatives of right Cauchy-Green deformation tensor C
 
     // build the rate of C: C'= F^T . F' + (F')^T . F
-    // OR: C' = F^T . F' is applied to symmetric tensor
-    // save C' as rate vector cauchygreenrate
+    // save C' as rate vector Crate
     // C' = { C11', C22', C33', C12', C23', C31 }
-    LINALG::Matrix<6,1> cauchygreenratevct(false);
+    LINALG::Matrix<6,1> Cratevct(false);
     // build the inverse C: C^{-1} = F^{-1} . F^{-T}
-    LINALG::Matrix<nsd_,nsd_> invcauchygreen(false);
-    // invcauchygreenvct: C^{-1} in Voight-/vector notation
+    LINALG::Matrix<nsd_,nsd_> invC(false);
+    // invCvct: C^{-1} in Voight-/vector notation
     // C^{-1} = { C11^{-1}, C22^{-1}, C33^{-1}, C12^{-1}, C23^{-1}, C31^{-1} }
-    LINALG::Matrix<6,1> invcauchygreenvct(false);
+    LINALG::Matrix<6,1> invCvct(false);
     // calculation is done in CalculateCauchyGreens, return C', C^{-1}
     CalculateCauchyGreens(
-      cauchygreenratevct,
-      invcauchygreenvct,
-      invcauchygreen,
+      Cratevct,
+      invCvct,
+      invC,
       &defgrd,
       &defgrdrate,
       &invdefgrd
       );
 
-    // calculate linearisation of C'
+    // -------------------------------- calculate linearisation of C'
     // C_T : 1/2 C'_lin --> symmetric part of C'_lin is sufficient
-    // C'_lin = 1/2 . [ 1/(theta . dt) . (B^T + B) + (F')^T . B_L + B_L^T . F' ]
-    // (6x24)                          (24x6)(6x24)  (3x3)   (24x6) (6x24) (3x3)
-    //                                     (24x6)       (24x6)        (24x6)
-    // C'_lin = 1/(theta . Dt) [ B^T + B ] + [ (F')^T . B_L + B_L^T . F' ]
-    // C_T : 1/2 C'_lin = C_T : 1/(theta . Dt) B + B'
-    // with B' = F' . B_L: calculate rate of B
-    // --> 1/2 C'_lin = sym C'_lin = 1/(theta . Dt) . B + B'
+    // C'_lin = dCrate/dd = 1/2 . [ 1/(theta . dt) . (B^T + B) + (F')^T . B_L + B_L^T . F' ]
+    //        = 1/(theta . dt) [ B^T + B ] + [ (F')^T . B_L + ( (F')^T . B_L )^T ]
+    // C_T : 1/2 C'_lin = C_T : [ 1/(theta . Dt) B + B' ]
+    // --> use only the symmetric part of C'_lin
+
+    // with B' = (F')^T . B_L: calculate rate of B
     LINALG::Matrix<6,nen_*nsd_> boprate;  // (6x24)
     CalculateBop(&boprate,&defgrdrate,&derxy_);
 
-    // calculate linearisation of C^{-1}
-    // TODO 2012-11-19 check linearisation again!!! symmetric assumption valid??
-    // C^{-1}_lin = - F^{-1} . ( B_L . F^{-1} + F^{-T} . B_L^T ) . F^{-T}
-    //            = - F^{-1} . ( B_L . F^{-1} + (B_L . F^{-1})^T ) . F^{-T}
-    // with B_L . F^{-1} + (B_L . F^{-1})^T: --> sym: 2 . B_L . F^{-1}
-    //            = - F^{-1} . F^{-1} . 2 . B_L . F^{-1}
-    //            = - 2 . B_L . F^{-1} (F^{-1} . F^{-1})^T
-    // be careful: F != F^T, i.e. F is unsymmetric and vector notation (6x1) NOT allowed!
-    LINALG::Matrix<nsd_,nsd_> invdefgrd2;  // (6x24)
-    invdefgrd2.Update(1.0,invdefgrd);
-    invdefgrd2.EMultiply(1.0,invdefgrd);
-    // mit BopInv = B_L . F^{-1}
-    LINALG::Matrix<6,nen_*nsd_> invcauchygreenlin;  // (6x24)
-    CalculateBop(&invcauchygreenlin,&invdefgrd2,&derxy_);
-    invcauchygreenlin.Scale(-2.0);
+    // ---------------------------- calculate linearisation of C^{-1}
+    // calculate linearisation of C^{-1} according to so3_poro_evaluate
+    // C^{-1}_lin = dCinv_dd = - F^{-1} . ( B_L . F^{-1} + F^{-T} . B_L^T ) . F^{-T}
+    //                       = - F^{-1} . ( B_L . F^{-1} + (B_L . F^{-1})^T ) . F^{-T}
+    LINALG::Matrix<6,nen_*nsd_> dCinv_dd (true);
+    for (int n=0; n<nen_; ++n)
+      for (int k=0; k<nsd_; ++k)
+      {
+        const int gid = n*nsd_+k;
+        for (int i=0; i<nsd_; ++i)
+        {
+          dCinv_dd(0,gid) += -2*invC(0,i)*derxy_(i,n)*invdefgrd(0,k);
+          dCinv_dd(1,gid) += -2*invC(1,i)*derxy_(i,n)*invdefgrd(1,k);
+          dCinv_dd(2,gid) += -2*invC(2,i)*derxy_(i,n)*invdefgrd(2,k);
+          /* ~~~ */
+          dCinv_dd(3,gid) += -invC(0,i)*derxy_(i,n)*invdefgrd(1,k)-invdefgrd(0,k)*derxy_(i,n)*invC(1,i);
+          dCinv_dd(4,gid) += -invC(1,i)*derxy_(i,n)*invdefgrd(2,k)-invdefgrd(1,k)*derxy_(i,n)*invC(2,i);
+          dCinv_dd(5,gid) += -invC(2,i)*derxy_(i,n)*invdefgrd(0,k)-invdefgrd(2,k)*derxy_(i,n)*invC(0,i);
+        }
+      }
 
     // BUILD EFFECTIVE TANGENT ACC TO TIME INTEGRATOR
     // check the time integrator
@@ -2241,13 +2255,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplCond(
       etangcoupl->Multiply(fac_,nntc,boprate,1.0);
       etangcoupl->Multiply( (fac_/(theta*stepsize)), nntc, bop, 1.0);
       // k^e_Td = k^e_Td - theta . ( B_T^T . C_mat . C^{-1}_lin . B_T . T . detJ . w(gp) )
-      //        = k^e_Td + theta . ( B_T^T . C_mat . B_T . T . C^{-T}_lin . detJ . w(gp) )
+      //        = k^e_Td + theta . ( B_T^T . C_mat . B_T . T . C^{-1}_lin . detJ . w(gp) )
       // (8x24)                      (8x3)   (3x3)  (3x8)(8x1)  (6x24)
       //                                 (8x3)        (3x1)
       //                                       (8x1) (1x24)
-      //        = k^e_Td + theta . ( B_T^T . B_T . T . C_mat . C^{-T}_lin . detJ . w(gp) )
+      //        = k^e_Td + theta . ( B_T^T . B_T . T . C_mat . C^{-1}_lin . detJ . w(gp) )
       // (8x24)                      (8x3)  (3x8)(8x1) (1x6) (6x24)
-      etangcoupl->MultiplyNN(fac_,bgradTcmat,invcauchygreenlin,1.0);
+      etangcoupl->MultiplyNN(fac_,bgradTcmat,dCinv_dd,1.0);
     }  // (etangcoupl != NULL)
 
   }  // ---------------------------------- end loop over Gauss Points
@@ -2256,13 +2270,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplCond(
 
 
 /*----------------------------------------------------------------------*
- |  calculate internal dissipation term, used in case of     dano 08/11 |
- |  plastic material (private)                                          |
+ | calculate internal dissipation term, used in case of      dano 08/11 |
+ | plastic material (private)                                           |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateInternalDissipation(
   DRT::Element* ele,  // the element whose matrix is calculated
-  vector<double>& vel,  // current velocities
+  std::vector<double>& vel,  // current velocities
   const double& stepsize,
   LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  // conductivity matrix
   LINALG::Matrix<nen_*numdofpernode_,1>* efint  // internal force
@@ -2286,11 +2300,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateInternalDissipation(
 
   // thermal material tangent
   LINALG::Matrix<6,1> ctemp(true);
+  // get constant initial temperature from the material
+  double thetainit = 0.0;
   Teuchos::RCP<MAT::Material> structmat = Teuchos::null;
-  GetStrMaterial(ele, &ctemp, structmat);
+  GetStrMaterial(ele, &ctemp, &thetainit, structmat);
   // insert the negative value of the coupling term (c.f. energy balance)
   // TODO 2012-11-14 so far no scaling was used, correct??
-    // ctemp.Scale(-1.0);
+  // ctemp.Scale(-1.0);
 
   // ------------------------------- integration loop for one element
 
@@ -2832,9 +2848,9 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateBop(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateCauchyGreens(
-  LINALG::Matrix<6,1>& cauchygreenratevct,  // (io) C' in vector notation
-  LINALG::Matrix<6,1>& invcauchygreenvct,  // (io) C^{-1} in vector notation
-  LINALG::Matrix<nsd_,nsd_>& invcauchygreen,  // (io) C^{-1} in tensor notation
+  LINALG::Matrix<6,1>& Cratevct,  // (io) C' in vector notation
+  LINALG::Matrix<6,1>& invCvct,  // (io) C^{-1} in vector notation
+  LINALG::Matrix<nsd_,nsd_>& invC,  // (io) C^{-1} in tensor notation
   LINALG::Matrix<nsd_,nsd_>* defgrd,  // (i) deformation gradient
   LINALG::Matrix<nsd_,nsd_>* defgrdrate,  // (i) rate of deformation gradient
   LINALG::Matrix<nsd_,nsd_>* invdefgrd  // (i) inverse of deformation gradient
@@ -2844,31 +2860,31 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCauchyGreens(
   // rate of right Cauchy-Green tensor C' = F^T . F' + (F')^T . F
   // C'= F^T . F' + (F')^T . F
   // OR: C' = F^T . F' when applied to symmetric tensor
-  LINALG::Matrix<nsd_,nsd_> cauchygreenrate(false);
-  cauchygreenrate.MultiplyTN((*defgrd), (*defgrdrate));
-  cauchygreenrate.MultiplyTN(1.0, (*defgrdrate), (*defgrd), 1.0);
+  LINALG::Matrix<nsd_,nsd_> Crate(false);
+  Crate.MultiplyTN((*defgrd), (*defgrdrate));
+  Crate.MultiplyTN(1.0, (*defgrdrate), (*defgrd), 1.0);
 
   // copy to matrix notation
-  // rate vector cauchygreenrate C'
+  // rate vector Crate C'
   // C' = { C11', C22', C33', C12', C23', C31' }
-  cauchygreenratevct(0) = cauchygreenrate(0,0);
-  cauchygreenratevct(1) = cauchygreenrate(1,1);
-  cauchygreenratevct(2) = cauchygreenrate(2,2);
-  cauchygreenratevct(3) = cauchygreenrate(0,1);
-  cauchygreenratevct(4) = cauchygreenrate(1,2);
-  cauchygreenratevct(5) = cauchygreenrate(2,0);
+  Cratevct(0) = Crate(0,0);
+  Cratevct(1) = Crate(1,1);
+  Cratevct(2) = Crate(2,2);
+  Cratevct(3) = Crate(0,1);
+  Cratevct(4) = Crate(1,2);
+  Cratevct(5) = Crate(2,0);
 
   // build the inverse of the right Cauchy-Green deformation gradient C^{-1}
   // C^{-1} = F^{-1} . F^{-T}
-  invcauchygreen.MultiplyNT((*invdefgrd), (*invdefgrd));
-  // invcauchygreenvct: C^{-1} in Voight-/vector notation
+  invC.MultiplyNT((*invdefgrd), (*invdefgrd));
+  // invCvct: C^{-1} in Voight-/vector notation
   // C^{-1} = { C11^{-1}, C22^{-1}, C33^{-1}, C12^{-1}, C23^{-1}, C31^{-1} }
-  invcauchygreenvct(0) = invcauchygreen(0,0);
-  invcauchygreenvct(1) = invcauchygreen(1,1);
-  invcauchygreenvct(2) = invcauchygreen(2,2);
-  invcauchygreenvct(3) = invcauchygreen(0,1);
-  invcauchygreenvct(4) = invcauchygreen(1,2);
-  invcauchygreenvct(5) = invcauchygreen(2,0);
+  invCvct(0) = invC(0,0);
+  invCvct(1) = invC(1,1);
+  invCvct(2) = invC(2,2);
+  invCvct(3) = invC(0,1);
+  invCvct(4) = invC(1,2);
+  invCvct(5) = invC(2,0);
 
 }  // CalculateCauchyGreens()
 
@@ -2879,7 +2895,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCauchyGreens(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::GetStrMaterial(
   DRT::Element* ele,  // the element whose matrix is calculated
-  LINALG::Matrix<6,1>* ctemp,  // temperature-dependent material tangent
+  LINALG::Matrix<6,1>* ctemp,  // temperature-dependent material tangent,
+  double* thetainit,
   Teuchos::RCP<MAT::Material> structmat
   )
 {
@@ -2908,11 +2925,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::GetStrMaterial(
 //  std::cout << "h = " << h << std::endl;
 //  double h2 = h^2;
 #endif  // CALCSTABILOFREACTTERM
-
-  // TODO 2012-11-13 thetainit needed here?
-#ifdef COUPLEINITTEMPERATURE
-  double thetainit = 0.0;
-#endif  // COUPLEINITTEMPERATURE
 
     // call ThermoStVenantKirchhoff material and get the temperature dependent
     // tangent ctemp
@@ -2948,6 +2960,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::GetStrMaterial(
 
   }  // if structural discretisation exists
 }  // GetSTRMaterial()
+
 
 #ifdef CALCSTABILOFREACTTERM
 /*----------------------------------------------------------------------*

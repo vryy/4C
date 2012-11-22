@@ -14,7 +14,7 @@ Maintainer: Burkhard Bornemann
 
 
 /*----------------------------------------------------------------------*
- |  headers                                                 bborn 08/09 |
+ | headers                                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
 #include <iostream>
 #include "Epetra_SerialDenseMatrix.h"
@@ -27,8 +27,9 @@ Maintainer: Burkhard Bornemann
 
 #include "../drt_io/io_control.H"
 
+
 /*----------------------------------------------------------------------*
- |  print thermal time logo                                  dano 08/09 |
+ | print thermal time logo                                   dano 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::Logo()
 {
@@ -36,10 +37,11 @@ void THR::TimInt::Logo()
   std::cout << "      _______________________________" << std::endl;
   std::cout << "  ===(_________|_|_|_|_|_37°C_|_|____)" << std::endl;
   std::cout << std::endl;
-}
+}  // Logo()
+
 
 /*----------------------------------------------------------------------*
- |  constructor                                             bborn 08/09 |
+ | constructor                                              bborn 08/09 |
  *----------------------------------------------------------------------*/
 THR::TimInt::TimInt(
   const Teuchos::ParameterList& ioparams,
@@ -151,11 +153,12 @@ THR::TimInt::TimInt(
 
   // stay with us
   return;
-}
+}  // cstr
+
 
 /*----------------------------------------------------------------------*
- |  equilibrate system at initial state                     bborn 08/09 |
- |  and identify consistent temperature rate (only dynamic case)        |
+ | equilibrate system at initial state                      bborn 08/09 |
+ | and identify consistent temperature rate (only dynamic case)         |
  *----------------------------------------------------------------------*/
 void THR::TimInt::DetermineCapaConsistTempRate()
 {
@@ -231,11 +234,11 @@ void THR::TimInt::DetermineCapaConsistTempRate()
 
   // leave this hell
   return;
-}
+}  // DetermineCapaConsistTempRate()
 
 
 /*----------------------------------------------------------------------*
- |  evaluate Dirichlet BC at t_{n+1}                       bborn 06/08  |
+ | evaluate Dirichlet BC at t_{n+1}                         bborn 06/08 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyDirichletBC(
   const double time,
@@ -266,22 +269,26 @@ void THR::TimInt::ApplyDirichletBC(
 
   // ciao
   return;
-}
+}  // ApplyDirichletBC()
+
 
 /*----------------------------------------------------------------------*
- |  Prepare thermal contact                                   mgit 06/11 |
+ | prepare thermal contact                                   mgit 06/11 |
  *----------------------------------------------------------------------*/
-void THR::TimInt:: PrepareThermoContact(Teuchos::RCP<MORTAR::ManagerBase> cmtman,
-                                        Teuchos::RCP<DRT::Discretization> discretstruct)
+void THR::TimInt:: PrepareThermoContact(
+  Teuchos::RCP<MORTAR::ManagerBase> cmtman,
+  Teuchos::RCP<DRT::Discretization> discretstruct
+  )
 {
 
   // thermo contact manager
   thermcontman_ = Teuchos::rcp(new THR::ThermoContactMan(cmtman,discretstruct,discret_));
   return;
-}
+}  // PrepareThermoContact()
+
 
 /*----------------------------------------------------------------------*
- |  Update time and step counter                            bborn 06/08 |
+ | update time and step counter                            bborn 06/08 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::UpdateStepTime()
 {
@@ -294,10 +301,11 @@ void THR::TimInt::UpdateStepTime()
 
   // new deal
   return;
-}
+}  // UpdateStepTime()
+
 
 /*----------------------------------------------------------------------*
- |  Reset configuration after time step                     bborn 06/08 |
+ | reset configuration after time step                      bborn 06/08 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ResetStep()
 {
@@ -318,10 +326,11 @@ void THR::TimInt::ResetStep()
 
   // I am gone
   return;
-}
+}  // ResetStep()
+
 
 /*----------------------------------------------------------------------*
- |  Read and set restart values                             bborn 06/08 |
+ | read and set restart values                              bborn 06/08 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ReadRestart(const int step)
 {
@@ -340,10 +349,11 @@ void THR::TimInt::ReadRestart(const int step)
   // fix pointer to #dofrowmap_, which has not really changed, but is
   // located at different place
   dofrowmap_ = discret_->DofRowMap();
-}
+}  // ReadRestart()
+
 
 /*----------------------------------------------------------------------*
- |  Read and set restart state                              bborn 06/08 |
+ | read and set restart state                               bborn 06/08 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ReadRestartState()
 {
@@ -354,10 +364,11 @@ void THR::TimInt::ReadRestartState()
   rate_->UpdateSteps(*raten_);
   reader.ReadMesh(step_);
   return;
-}
+}  // ReadRestartState()
+
 
 /*----------------------------------------------------------------------*
- |  output to file                                          mwgee 03/07 |
+ | output to file                                           mwgee 03/07 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::OutputStep()
 {
@@ -398,10 +409,11 @@ void THR::TimInt::OutputStep()
 
   // what's next?
   return;
-}
+}  // OutputStep()
+
 
 /*----------------------------------------------------------------------*
- |  write restart                                           mwgee 03/07 |
+ | write restart                                            mwgee 03/07 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::OutputRestart(bool& datawritten)
 {
@@ -436,11 +448,12 @@ void THR::TimInt::OutputRestart(bool& datawritten)
 
   // we will say what we did
   return;
-}
+}  // OutputRestart()
+
 
 /*----------------------------------------------------------------------*
- |  output temperature,temperature rate                     bborn 06/08 |
- |  originally by mwgee 03/07                                           |
+ | output temperature,temperature rate                      bborn 06/08 |
+ | originally by mwgee 03/07                                            |
  *----------------------------------------------------------------------*/
 void THR::TimInt::OutputState(bool& datawritten)
 {
@@ -456,11 +469,12 @@ void THR::TimInt::OutputState(bool& datawritten)
 
   // leave for good
   return;
-}
+}  // OutputState()
+
 
 /*----------------------------------------------------------------------*
- |  heatflux calculation and output                         bborn 06/08 |
- |  originally by lw                                                    |
+ | heatflux calculation and output                          bborn 06/08 |
+ | originally by lw                                                     |
  *----------------------------------------------------------------------*/
 void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
 {
@@ -547,127 +561,13 @@ void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
                          *(discret_->ElementColMap()));
   }
 
-  // the way they do the output in SCATRA  10.11.09
-
-/*  // get a vector layout from the discretization to construct matching
-  // vectors and matrices
-  //                 local <-> global dof numbering
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-
-  // output heatflux
-  if (writeheatflux_ != INPAR::THR::heatflux_none)
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action", "process_heatflux");
-    // other parameters that might be needed by the elements
-    p.set("total time", (*time_)[0]);
-    p.set("delta time", (*dt_)[0]);
-    p.set("ioheatflux", writeheatflux_);
-
-    // We have to treat each spatial direction separately
-    Teuchos::RCP<Epetra_Vector> fluxx = LINALG::CreateVector(*dofrowmap,true);
-    Teuchos::RCP<Epetra_Vector> fluxy = LINALG::CreateVector(*dofrowmap,true);
-    Teuchos::RCP<Epetra_Vector> fluxz = LINALG::CreateVector(*dofrowmap,true);
-
-    // set vector values needed by elements
-    discret_->ClearState();
-    //discret_->SetState("residual temperature", zeros_);
-    discret_->SetState("temperature", (*temp_)(0));
-    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                       fluxx,fluxy,fluxz);
-    discret_->ClearState();
-
-    // empty vector for heat flux vectors (always 3D)
-    Teuchos::RCP<Epetra_MultiVector> flux = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
-    // insert values into final flux vector for visualization
-    for (int i = 0;i<flux->MyLength();++i)
-    {
-      flux->ReplaceMyValue(i,0,(*fluxx)[i]);
-      flux->ReplaceMyValue(i,1,(*fluxy)[i]);
-      flux->ReplaceMyValue(i,2,(*fluxz)[i]);
-    }
-
-    // post_drt_ensight does not support multivectors based on the dofmap
-    // for now, I create single vectors that can be handled by the filter
-
-    // get the noderowmap
-    const Epetra_Map* noderowmap = discret_->NodeRowMap();
-    Teuchos::RCP<Epetra_MultiVector> fluxk = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-
-    for (int i = 0;i<fluxk->MyLength();++i)
-    {
-      DRT::Node* actnode = discret_->lRowNode(i);
-      int dofgid = discret_->Dof(actnode,k-1);
-      fluxk->ReplaceMyValue(i,0,((*flux)[0])[(flux->Map()).LID(dofgid)]);
-      fluxk->ReplaceMyValue(i,1,((*flux)[1])[(flux->Map()).LID(dofgid)]);
-      fluxk->ReplaceMyValue(i,2,((*flux)[2])[(flux->Map()).LID(dofgid)]);
-    }
-
-    output_->WriteVector("heatflux", fluxk, IO::DiscretizationWriter::nodevector);
-  }
-
-  // output temperature gradient
-  if (writetempgrad_ != INPAR::THR::tempgrad_none)
-  {
-    // create the parameters for the discretization
-    ParameterList p;
-    // action for elements
-    p.set("action", "process_tempgrad");
-    // other parameters that might be needed by the elements
-    p.set("total time", (*time_)[0]);
-    p.set("delta time", (*dt_)[0]);
-    p.set("iotempgrad", writetempgrad_);
-
-    // We have to treat each spatial direction separately
-    Teuchos::RCP<Epetra_Vector> fluxx = LINALG::CreateVector(*dofrowmap,true);
-    Teuchos::RCP<Epetra_Vector> fluxy = LINALG::CreateVector(*dofrowmap,true);
-    Teuchos::RCP<Epetra_Vector> fluxz = LINALG::CreateVector(*dofrowmap,true);
-
-    // set vector values needed by elements
-    discret_->ClearState();
-    //discret_->SetState("residual temperature", zeros_);
-    discret_->SetState("temperature", (*temp_)(0));
-    discret_->Evaluate(p, Teuchos::null, Teuchos::null,
-                       fluxx,fluxy,fluxz);
-    discret_->ClearState();
-
-    // empty vector for (normal) mass or heat flux vectors (always 3D)
-    Teuchos::RCP<Epetra_MultiVector> flux = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap,3,true));
-    // insert values into final flux vector for visualization
-    for (int i = 0;i<flux->MyLength();++i)
-    {
-      flux->ReplaceMyValue(i,0,(*fluxx)[i]);
-      flux->ReplaceMyValue(i,1,(*fluxy)[i]);
-      flux->ReplaceMyValue(i,2,(*fluxz)[i]);
-    }
-
-    // post_drt_ensight does not support multivectors based on the dofmap
-    // for now, I create single vectors that can be handled by the filter
-
-    // get the noderowmap
-    const Epetra_Map* noderowmap = discret_->NodeRowMap();
-    Teuchos::RCP<Epetra_MultiVector> fluxk = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-
-    for (int i = 0;i<fluxk->MyLength();++i)
-    {
-      DRT::Node* actnode = discret_->lRowNode(i);
-      int dofgid = discret_->Dof(actnode,k-1);
-      fluxk->ReplaceMyValue(i,0,((*flux)[0])[(flux->Map()).LID(dofgid)]);
-      fluxk->ReplaceMyValue(i,1,((*flux)[1])[(flux->Map()).LID(dofgid)]);
-      fluxk->ReplaceMyValue(i,2,((*flux)[2])[(flux->Map()).LID(dofgid)]);
-    }
-
-    output_->WriteVector("tempgrad", fluxk, IO::DiscretizationWriter::nodevector);
-  }
-*/
   // leave me alone
   return;
-}
+}  // OutputHeatfluxTempgrad()
+
 
 /*----------------------------------------------------------------------*
- |  output system energies                                  bborn 06/08 |
+ | output system energies                                   bborn 06/08 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::OutputEnergy()
 {
@@ -723,7 +623,8 @@ void THR::TimInt::OutputEnergy()
 
   // in God we trust
   return;
-}
+}  // OutputEnergy()
+
 
 /*----------------------------------------------------------------------*
  | thermal result test                                       dano 01/12 |
@@ -731,10 +632,11 @@ void THR::TimInt::OutputEnergy()
 Teuchos::RCP<DRT::ResultTest> THR::TimInt::CreateFieldTest()
 {
   return Teuchos::rcp(new THR::ResultTest(*this));
-}
+}  // CreateFieldTest()
+
 
 /*----------------------------------------------------------------------*
- |  evaluate external forces at t_{n+1}                     bborn 06/08 |
+ | evaluate external forces at t_{n+1}                      bborn 06/08 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyForceExternal(
   const double time,  //!< evaluation time
@@ -761,11 +663,11 @@ void THR::TimInt::ApplyForceExternal(
 
   // go away
   return;
-}
+}  // ApplyForceExternal()
 
 
 /*----------------------------------------------------------------------*
- |  evaluate convection boundary conditions at t_{n+1}       dano 01/11 |
+ | evaluate convection boundary conditions at t_{n+1}        dano 01/11 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyForceExternalConv(
   Teuchos::ParameterList& p,
@@ -773,9 +675,18 @@ void THR::TimInt::ApplyForceExternalConv(
   const Teuchos::RCP<Epetra_Vector> tempn,  //!< temperature state T_n
   const Teuchos::RCP<Epetra_Vector> temp,  //!< temperature state T_n+1
   Teuchos::RCP<Epetra_Vector>& fext,  //!< external force
-  RCP<LINALG::SparseOperator> tang  //!< tangent at time n+1
+  Teuchos::RCP<LINALG::SparseOperator> tang  //!< tangent at time n+1
   )
 {
+  // for heat convection von Neumann boundary conditions, i.e. q_c^, the
+  // calculation depends on the deformation, i.e. differentiation between
+  // geo_linear and geo_nonlinear is required
+  // - geo_linear:
+  //   - use CalculateFindCondCapa(), contribution to linearisation for k_TT
+  // geo_nonlinear:
+  //   - use CalculateNlnFindCondCapa() considering deformation d_{n+1}
+  //   - contribution due to linearisation for k_TT AND k_Td
+
   // action for elements
   const std::string action = "calc_thermo_fextconvection";
   p.set("action", action);
@@ -788,6 +699,11 @@ void THR::TimInt::ApplyForceExternalConv(
   discret_->ClearState();
   discret_->SetState(0,"old temperature", tempn);  // T_n (*temp_)(0)
   discret_->SetState(0,"temperature", temp);  // T_{n+1} tempn_
+  // for geometrically nonlinear analysis the displacements are required
+  if(disn_!=Teuchos::null)
+  {
+    discret_->SetState(1,"displacement", disn_);  // d_{n+1}
+  }
   // get load vector
   // use general version of EvaluateCondition(), following the example set by ScaTra::EvaluateElectrodeKinetics()
   std::string condstring("ThermoConvections");
@@ -796,9 +712,11 @@ void THR::TimInt::ApplyForceExternalConv(
 
   // go away
   return;
-}
+}  // ApplyForceExternalConv()
+
+
 /*----------------------------------------------------------------------*
- |  evaluate ordinary internal force, its tangent at state  bborn 06/08 |
+ | evaluate ordinary internal force, its tangent at state   bborn 06/08 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyForceTangInternal(
   Teuchos::ParameterList& p,
@@ -837,11 +755,12 @@ void THR::TimInt::ApplyForceTangInternal(
 
   // that's it
   return;
-}
+}  // ApplyForceTangInternal()
+
 
 /*----------------------------------------------------------------------*
- |  evaluate ordinary internal force, its tangent at state  bborn 10/09 |
- |  overloaded function specified for ost time integration              |
+ | evaluate ordinary internal force, its tangent at state   bborn 10/09 |
+ | overloaded function specified for ost time integration               |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyForceTangInternal(
   Teuchos::ParameterList& p,
@@ -882,10 +801,11 @@ void THR::TimInt::ApplyForceTangInternal(
 
   // that's it
   return;
-}
+}  // ApplyForceTangInternal()
+
 
 /*----------------------------------------------------------------------*
- |  evaluate ordinary internal force                        bborn 06/08 |
+ | evaluate ordinary internal force                         bborn 06/08 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyForceInternal(
   Teuchos::ParameterList& p,
@@ -925,12 +845,12 @@ void THR::TimInt::ApplyForceInternal(
 
   // where the fun starts
   return;
-}
+}  // ApplyForceTangInternal()
 
 
 /*----------------------------------------------------------------------*
- |  get current displacements and  velocities from the       dano 05/10 |
- |  structure discretization                                            |
+ | get current displacements and  velocities from the        dano 05/10 |
+ | structure discretization                                             |
  *----------------------------------------------------------------------*/
 void THR::TimInt::ApplyStructVariables(
   Teuchos::RCP<const Epetra_Vector> disp,  ///< the current displacements
@@ -966,12 +886,12 @@ void THR::TimInt::ApplyStructVariables(
 
 
 /*----------------------------------------------------------------------*
- |  set initial field for temperature (compare ScaTra)       dano 06/10 |
+ | set initial field for temperature (according to ScaTra)   dano 06/10 |
  *----------------------------------------------------------------------*/
 void THR::TimInt::SetInitialField(
-    const INPAR::THR::InitialField init,
-    const int startfuncno
-    )
+  const INPAR::THR::InitialField init,
+  const int startfuncno
+  )
 {
   switch(init)
   {
@@ -982,7 +902,8 @@ void THR::TimInt::SetInitialField(
     (*temp_)(0)->PutScalar(0.0);
     tempn_->PutScalar(0.0);
     break;
-  }
+  }  // initfield_zero_field
+
   case INPAR::THR::initfield_field_by_function:
   {
     const Epetra_Map* dofrowmap = discret_->DofRowMap();
@@ -1014,9 +935,9 @@ void THR::TimInt::SetInitialField(
         if (err2 != 0) dserror("dof not on proc");
       }
     }
-
     break;
-  }
+  }  // initfield_field_by_function
+
   case INPAR::THR::initfield_field_by_condition:
   {
     // access the initial field condition
@@ -1056,7 +977,6 @@ void THR::TimInt::SetInitialField(
             Teuchos::RCP<Epetra_Vector> vec = (*temp_)(0);
             int err1 = vec->ReplaceMyValues(1,&temp0,&doflid);
             if (err1 != 0) dserror("dof not on proc");
-//            temp_->ReplaceMyValues(1,&temp0,&doflid);
             // initialize also the solution vector. These values are a pretty good guess for the
             // solution after the first time step (much better than starting with a zero vector)
             int err2 = tempn_->ReplaceMyValues(1,&temp0,&doflid);
@@ -1066,25 +986,23 @@ void THR::TimInt::SetInitialField(
       }
     }
     break;
-  }
+  }  // initfield_field_by_condition
 
   default:
     dserror("Unknown option for initial field: %d", init);
   } // switch(init)
 
   return;
-} // THR::TimIntImpl::SetInitialField
+}  // SetInitialField()
 
 
 /*----------------------------------------------------------------------*
-| apply interface loads to the thermo field                 ghamm 12/10 |
+ | apply interface loads to the thermo field                ghamm 12/10 |
  *----------------------------------------------------------------------*/
-void THR::TimInt::SetForceInterface
-(
-  Teuchos::RCP<Epetra_Vector> ithermoload
-)
+void THR::TimInt::SetForceInterface(Teuchos::RCP<Epetra_Vector> ithermoload)
 {
   fifc_->Update(1.0, *ithermoload, 0.0);
-}
+}  // SetForceInterface()
+
 
 /*----------------------------------------------------------------------*/

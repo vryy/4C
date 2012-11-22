@@ -10,16 +10,19 @@ Maintainer: Burkhard Bornemann
 </pre>
 */
 
+
 /*----------------------------------------------------------------------*
- |  definitions                                              dano 06/09 |
+ | definitions                                               dano 06/09 |
  *----------------------------------------------------------------------*/
 #ifndef THRTIMINT_STATICS_H
 #define THRTIMINT_STATICS_H
 
+
 /*----------------------------------------------------------------------*
- |  headers                                                  dano 06/09 |
+ | headers                                                   dano 06/09 |
  *----------------------------------------------------------------------*/
 #include "thrtimint_impl.H"
+
 
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                    bborn 08/09 |
@@ -205,6 +208,7 @@ namespace THR
   };  // class TimIntStatics
 
 }  // namespace THR
+
 
 /*----------------------------------------------------------------------*/
 #endif  // #ifndef THRTIMINT_STATICS_H

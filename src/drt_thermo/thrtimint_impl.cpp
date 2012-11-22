@@ -612,8 +612,8 @@ void THR::TimIntImpl::UpdateIter(
 }
 
 /*----------------------------------------------------------------------*
- |  Update iteration incrementally with prescribed          bborn 08/09 |
- |  residual temperatures                                               |
+ | Update iteration incrementally with prescribed           bborn 08/09 |
+ | residual temperatures                                                |
  *----------------------------------------------------------------------*/
 void THR::TimIntImpl::UpdateIterIncrementally(
   const Teuchos::RCP<const Epetra_Vector> tempi  //!< input residual temperatures
@@ -631,7 +631,8 @@ void THR::TimIntImpl::UpdateIterIncrementally(
 
   // leave this place
   return;
-}
+}  // UpdateIterIncrementally()
+
 
 /*----------------------------------------------------------------------*
  | update time step                                         bborn 08/09 |
@@ -644,7 +645,8 @@ void THR::TimIntImpl::Update()
   // update time and step
   UpdateStepTime();
   return;
-}
+}  // Update()
+
 
 /*----------------------------------------------------------------------*
  | update Newton step                                        dano 02/11 |
@@ -659,11 +661,12 @@ void THR::TimIntImpl::UpdateNewton(Teuchos::RCP<const Epetra_Vector> tempi)
   UpdateIterIncrementally(tempi);
 
   return;
-}
+}  // UpdateNewton()
+
 
 /*----------------------------------------------------------------------*
- |  print to screen                                         bborn 08/09 |
- |  originally by lw 12/07                                              |
+ | print to screen                                          bborn 08/09 |
+ | originally by lw 12/07                                               |
  *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrintPredictor()
 {
@@ -702,11 +705,12 @@ void THR::TimIntImpl::PrintPredictor()
 
   // leave your hat on
   return;
-}
+}  // PrintPredictor()
+
 
 /*----------------------------------------------------------------------*
- |  print Newton-Raphson iteration to screen and error file bborn 08/09 |
- |  originally by lw 12/07, tk 01/08                                    |
+ | print Newton-Raphson iteration to screen and error file  bborn 08/09 |
+ | originally by lw 12/07, tk 01/08                                     |
  *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrintNewtonIter()
 {
@@ -728,10 +732,11 @@ void THR::TimIntImpl::PrintNewtonIter()
 
   // see you
   return;
-}
+}  // PrintNewtonIter()
+
 
 /*----------------------------------------------------------------------*
- |  print header                                            bborn 08/09 |
+ | print header                                             bborn 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
 {
@@ -787,11 +792,12 @@ void THR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
 
   // nice to have met you
   return;
-}
+}  // PrintNewtonIterHeader()
+
 
 /*----------------------------------------------------------------------*
- |  print Newton-Raphson iteration to screen                bborn 08/09 |
- |  originally by lw 12/07, tk 01/08                                    |
+ | print Newton-Raphson iteration to screen                 bborn 08/09 |
+ | originally by lw 12/07, tk 01/08                                     |
  *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
 {
@@ -847,19 +853,21 @@ void THR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
 
   // nice to have met you
   return;
-}
+}  // PrintNewtonIterText()
+
 
 /*----------------------------------------------------------------------*
- |  print statistics of converged NRI                       bborn 08/09 |
+ | print statistics of converged NRI                        bborn 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrintNewtonConv()
 {
   // somebody did the door
   return;
-}
+}  // PrintNewtonConv()
+
 
 /*----------------------------------------------------------------------*
- |  print step summary                                      bborn 08/09 |
+ | print step summary                                       bborn 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrintStep()
 {
@@ -878,10 +886,11 @@ void THR::TimIntImpl::PrintStep()
 
   // fall asleep
   return;
-}
+}  // PrintStep()
+
 
 /*----------------------------------------------------------------------*
- |  print step summary                                      bborn 08/09 |
+ | print step summary                                       bborn 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimIntImpl::PrintStepText(FILE* ofile)
 {
@@ -902,7 +911,7 @@ void THR::TimIntImpl::PrintStepText(FILE* ofile)
 
   // fall asleep
   return;
-}
+}  // PrintStepText()
 
 
 /*----------------------------------------------------------------------*/

@@ -11,16 +11,16 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*
- |  definitions                                              dano 08/09 |
+ | definitions                                               dano 08/09 |
  *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  headers                                                  dano 08/09 |
+ | headers                                                   dano 08/09 |
  *----------------------------------------------------------------------*/
 #include "thrtimint_statics.H"
 
 /*----------------------------------------------------------------------*
- |  constructor                                              dano 08/09 |
+ | constructor                                               dano 08/09 |
  *----------------------------------------------------------------------*/
 THR::TimIntStatics::TimIntStatics(
   const Teuchos::ParameterList& ioparams,
@@ -74,9 +74,10 @@ THR::TimIntStatics::TimIntStatics(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Consistent predictor with constant temperatures          dano 08/09 |
- |  and consistent temperature rates and temperatures                   |
+ | consistent predictor with constant temperatures           dano 08/09 |
+ | and consistent temperature rates and temperatures                    |
  *----------------------------------------------------------------------*/
 void THR::TimIntStatics::PredictConstTempConsistRate()
 {
@@ -89,11 +90,12 @@ void THR::TimIntStatics::PredictConstTempConsistRate()
 
   //! watch out
   return;
-}
+}  // PredictConstTempConsistRate()
+
 
 /*----------------------------------------------------------------------*
- |  evaluate residual force and its tangent, ie derivative   dano 08/09 |
- |  with respect to end-point temperatures \f$T_{n+1}\f$                |
+ | evaluate residual force and its tangent, ie derivative    dano 08/09 |
+ | with respect to end-point temperatures \f$T_{n+1}\f$                 |
  *----------------------------------------------------------------------*/
 void THR::TimIntStatics::EvaluateRhsTangResidual()
 {
@@ -137,11 +139,12 @@ void THR::TimIntStatics::EvaluateRhsTangResidual()
 
   //! hallelujah
   return;
-}
+}  // EvaluateRhsTangResidual()
+
 
 /*----------------------------------------------------------------------*
- |  calculate characteristic/reference norms for             dano 08/09 |
- |  temperatures originally by lw                                       |
+ | calculate characteristic/reference norms for              dano 08/09 |
+ | temperatures originally by lw                                        |
  *----------------------------------------------------------------------*/
 double THR::TimIntStatics::CalcRefNormTemperature()
 {
@@ -156,11 +159,12 @@ double THR::TimIntStatics::CalcRefNormTemperature()
 
   //! rise your hat
   return charnormtemp;
-}
+}  // CalcRefNormTemperature()
+
 
 /*----------------------------------------------------------------------*
- |  calculate characteristic/reference norms for forces      dano 08/09 |
- |  originally by lw                                                    |
+ | calculate characteristic/reference norms for forces       dano 08/09 |
+ | originally by lw                                                     |
  *----------------------------------------------------------------------*/
 double THR::TimIntStatics::CalcRefNormForce()
 {
@@ -184,10 +188,11 @@ double THR::TimIntStatics::CalcRefNormForce()
 
   //! return char norm
   return max(fintnorm, max(fextnorm, freactnorm));
-}
+}  // CalcRefNormForce()
+
 
 /*----------------------------------------------------------------------*
- |  incremental iteration update of state                    dano 08/09 |
+ | incremental iteration update of state                     dano 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimIntStatics::UpdateIterIncrementally()
 {
@@ -197,10 +202,11 @@ void THR::TimIntStatics::UpdateIterIncrementally()
 
   //! bye
   return;
-}
+}  // UpdateIterIncrementally()
+
 
 /*----------------------------------------------------------------------*
- |  iterative iteration update of state                      dano 08/09 |
+ | iterative iteration update of state                       dano 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimIntStatics::UpdateIterIteratively()
 {
@@ -210,10 +216,11 @@ void THR::TimIntStatics::UpdateIterIteratively()
 
   //! bye
   return;
-}
+}  // UpdateIterIteratively()
+
 
 /*----------------------------------------------------------------------*
- |  update after time step                                   dano 08/09 |
+ | update after time step                                    dano 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimIntStatics::UpdateStepState()
 {
@@ -248,10 +255,11 @@ void THR::TimIntStatics::UpdateStepState()
 
   //! look out
   return;
-}
+}  // UpdateStepState()
+
 
 /*----------------------------------------------------------------------*
- |  read restart forces                                      dano 08/09 |
+ | read restart forces                                       dano 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimIntStatics::ReadRestartForce()
 {
@@ -263,10 +271,11 @@ void THR::TimIntStatics::ReadRestartForce()
   ApplyForceInternal((*time_)[0], 0.0, (*temp_)(0), zeros_, fint_);
 
   return;
-}
+}  // ReadRestartForce()
+
 
 /*----------------------------------------------------------------------*
- |  evaluate the internal force and the tangent              dano 08/09 |
+ | evaluate the internal force and the tangent               dano 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimIntStatics::ApplyForceTangInternal(
   const double time,  //!< evaluation time
@@ -285,10 +294,11 @@ void THR::TimIntStatics::ApplyForceTangInternal(
   TimInt::ApplyForceTangInternal(p,time,dt,temp,tempi,fint,tang);
   //! finish
   return;
-}
+}  // ApplyForceTangInternal()
+
 
 /*----------------------------------------------------------------------*
- |  evaluate the internal force                              dano 08/09 |
+ | evaluate the internal force                               dano 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimIntStatics::ApplyForceInternal(
   const double time,  //!< evaluation time
@@ -306,11 +316,11 @@ void THR::TimIntStatics::ApplyForceInternal(
   TimInt::ApplyForceInternal(p,time,dt,temp,tempi,fint);
   //! finish
   return;
-}
+}  // ApplyForceTangInternal()
 
 
 /*----------------------------------------------------------------------*
- |  evaluate the convective boundary condition               dano 01/11 |
+ | evaluate the convective boundary condition                dano 01/11 |
  *----------------------------------------------------------------------*/
 void THR::TimIntStatics::ApplyForceExternalConv(
   const double time,  //!< evaluation time
@@ -328,7 +338,7 @@ void THR::TimIntStatics::ApplyForceExternalConv(
   TimInt::ApplyForceExternalConv(p,time,tempn,temp,fext,tang);
   // finish
   return;
-}
+}  // ApplyForceExternalConv()
 
 
 /*----------------------------------------------------------------------*/

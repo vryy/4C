@@ -53,7 +53,7 @@ discretthermo_(discretthermo)
 }
 
 /*----------------------------------------------------------------------*
- |  Modify thermal system of equation towards thermal contact mgit 09/10|
+ | modify thermal system of equation towards thermal contact mgit 09/10 |
  *----------------------------------------------------------------------*/
 void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix>& tang,
                                                Teuchos::RCP<Epetra_Vector>& feff,
@@ -71,7 +71,7 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
 
   // convert maps (from structure discretization to thermo discretization)
   // slave-, active-, inactive-, master-, activemaster-, n- smdofs
-  RCP<Epetra_Map> sdofs,adofs,idofs,mdofs,amdofs,ndofs,smdofs;
+  Teuchos::RCP<Epetra_Map> sdofs,adofs,idofs,mdofs,amdofs,ndofs,smdofs;
   ConvertMaps (sdofs,adofs,mdofs);
 
   // map of active and master dofs
@@ -80,7 +80,7 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
   smdofs = LINALG::MergeMap(sdofs,mdofs,false);
 
   // row map of thermal problem
-  RCP<Epetra_Map> problemrowmap = Teuchos::rcp(new Epetra_Map(*(discretthermo_->DofRowMap(0))));
+  Teuchos::RCP<Epetra_Map> problemrowmap = Teuchos::rcp(new Epetra_Map(*(discretthermo_->DofRowMap(0))));
   
   // split problemrowmap in n+am
   ndofs = LINALG::SplitMap(*problemrowmap,*smdofs);
@@ -96,13 +96,13 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     return;
 
   // new matrices to build up 
-  RCP<LINALG::SparseMatrix> tangmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang);
-  RCP<LINALG::SparseMatrix> tangnew = Teuchos::rcp(new LINALG::SparseMatrix(*problemrowmap,81,true,false,tangmatrix->GetMatrixtype()));
-  RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*problemrowmap);
+  Teuchos::RCP<LINALG::SparseMatrix> tangmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang);
+  Teuchos::RCP<LINALG::SparseMatrix> tangnew = Teuchos::rcp(new LINALG::SparseMatrix(*problemrowmap,81,true,false,tangmatrix->GetMatrixtype()));
+  Teuchos::RCP<Epetra_Vector> feffnew = LINALG::CreateVector(*problemrowmap);
 
   // assemble Mortar Matrices D and M in thermo dofs for active nodes
-  RCP<LINALG::SparseMatrix> dmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*sdofs,10));
-  RCP<LINALG::SparseMatrix> mmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*sdofs,100));
+  Teuchos::RCP<LINALG::SparseMatrix> dmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*sdofs,10));
+  Teuchos::RCP<LINALG::SparseMatrix> mmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*sdofs,100));
 
   TransformDM(*dmatrix,*mmatrix,sdofs,mdofs);
   
@@ -124,7 +124,7 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
 
     // get vector of contact interfaces
-    vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+    std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
 
     // this currently works only for one interface yet and for one heat
     // transfer coefficient
@@ -144,29 +144,29 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     double delta = heattranss/(heattranss+heattransm);
 
     // assemble Matrix B in addition to D and M
-    RCP<LINALG::SparseMatrix> bmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*mdofs,10));
+    Teuchos::RCP<LINALG::SparseMatrix> bmatrix = Teuchos::rcp(new LINALG::SparseMatrix(*mdofs,10));
     AssembleB(*bmatrix);
   
     // Fill Complete
     bmatrix->Complete();
     
     // assemble mechanical dissipation for master side
-    RCP<Epetra_Vector> mechdissratemaster = LINALG::CreateVector(*mdofs,true);
+    Teuchos::RCP<Epetra_Vector> mechdissratemaster = LINALG::CreateVector(*mdofs,true);
     AssembleMechDissMaster(*mechdissratemaster,dt);
     
     // assemble mechanical dissipation for slave side
-    RCP<Epetra_Vector> mechdissrateslave = LINALG::CreateVector(*sdofs,true);
+    Teuchos::RCP<Epetra_Vector> mechdissrateslave = LINALG::CreateVector(*sdofs,true);
     AssembleMechDissSlave(*mechdissrateslave,dt);
    
     // split matrices
-    RCP<Epetra_Map> tmp;
-    RCP<LINALG::SparseMatrix> dmatrixa,mmatrixa,mmatrixat,bmatrixa,tmp1,tmp2,tmp3,tmp4,tmp5,tmp6;
+    Teuchos::RCP<Epetra_Map> tmp;
+    Teuchos::RCP<LINALG::SparseMatrix> dmatrixa,mmatrixa,mmatrixat,bmatrixa,tmp1,tmp2,tmp3,tmp4,tmp5,tmp6;
     LINALG::SplitMatrix2x2(dmatrix,adofs,idofs,sdofs,tmp,dmatrixa,tmp1,tmp2,tmp3);
     LINALG::SplitMatrix2x2(mmatrix,adofs,idofs,mdofs,tmp,mmatrixa,tmp4,tmp5,tmp6);
 
     // master node participating the active interface
-    RCP<Epetra_Map> masterpar = Teuchos::rcp(new Epetra_Map(mmatrixa->ColMap()));
-    RCP<Epetra_Map> masternotpar =  LINALG::SplitMap(*mdofs,*masterpar);
+    Teuchos::RCP<Epetra_Map> masterpar = Teuchos::rcp(new Epetra_Map(mmatrixa->ColMap()));
+    Teuchos::RCP<Epetra_Map> masternotpar =  LINALG::SplitMap(*mdofs,*masterpar);
     
     // split matrices
     LINALG::SplitMatrix2x2(bmatrix,masterpar,masternotpar,mdofs,tmp,bmatrixa,tmp4,tmp5,tmp6);
@@ -200,47 +200,47 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     
     // modify right hand side -------------------------------------------- 
     // slave and master temperature vectors  
-    RCP<Epetra_Vector> fs, fm;
+    Teuchos::RCP<Epetra_Vector> fs, fm;
     LINALG::SplitVector(*problemrowmap,*temp,sdofs,fs,mdofs,fm);
     
     // add existing feff 
     feffnew->Update(1.0,*feff,1.0);
     
     // add B.T (master row)
-    RCP <Epetra_Vector> BdotTemp = Teuchos::rcp(new Epetra_Vector(*masterpar));
+    Teuchos::RCP <Epetra_Vector> BdotTemp = Teuchos::rcp(new Epetra_Vector(*masterpar));
     bmatrixa->Multiply(false,*fm,*BdotTemp);
-    RCP<Epetra_Vector> BdotTempexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
+    Teuchos::RCP<Epetra_Vector> BdotTempexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
     LINALG::Export(*BdotTemp,*BdotTempexp);
     feffnew->Update(+beta,*BdotTempexp,1.0);
     
     // add M(T).T (master row)
-    RCP <Epetra_Vector> MTdotTemp = Teuchos::rcp(new Epetra_Vector(*masterpar));
+    Teuchos::RCP <Epetra_Vector> MTdotTemp = Teuchos::rcp(new Epetra_Vector(*masterpar));
     mmatrixat->Multiply(true,*fs,*MTdotTemp);
-    RCP<Epetra_Vector> MTdotTempexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
+    Teuchos::RCP<Epetra_Vector> MTdotTempexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
     LINALG::Export(*MTdotTemp,*MTdotTempexp);
     feffnew->Update(-beta,*MTdotTempexp,1.0);
 
     // add M.T (slave row)
-    RCP <Epetra_Vector> MdotTemp = Teuchos::rcp(new Epetra_Vector(*adofs));
+    Teuchos::RCP <Epetra_Vector> MdotTemp = Teuchos::rcp(new Epetra_Vector(*adofs));
     mmatrixa->Multiply(false,*fm,*MdotTemp);
-    RCP<Epetra_Vector> MdotTempexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
+    Teuchos::RCP<Epetra_Vector> MdotTempexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
     LINALG::Export(*MdotTemp,*MdotTempexp);
     feffnew->Update(-beta,*MdotTempexp,1.0);
 
     // add D.T (slave row)
-    RCP <Epetra_Vector> DdotTemp = Teuchos::rcp(new Epetra_Vector(*adofs));
+    Teuchos::RCP <Epetra_Vector> DdotTemp = Teuchos::rcp(new Epetra_Vector(*adofs));
     dmatrixa->Multiply(false,*fs,*DdotTemp);
-    RCP<Epetra_Vector> DdotTempexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
+    Teuchos::RCP<Epetra_Vector> DdotTempexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
     LINALG::Export(*DdotTemp,*DdotTempexp);
     feffnew->Update(+beta,*DdotTempexp,1.0);
     
     // mechanical dissipation master side
-    RCP<Epetra_Vector> mechdissratemasterexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
+    Teuchos::RCP<Epetra_Vector> mechdissratemasterexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
     LINALG::Export(*mechdissratemaster,*mechdissratemasterexp);
     feffnew->Update(-(1-delta),*mechdissratemasterexp,1.0);
 
     // mechanical dissipation slave side
-    RCP<Epetra_Vector> mechdissrateslaveexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
+    Teuchos::RCP<Epetra_Vector> mechdissrateslaveexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
     LINALG::Export(*mechdissrateslave,*mechdissrateslaveexp);
     feffnew->Update(-delta,*mechdissrateslaveexp,1.0);
     
@@ -253,23 +253,23 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     //********************************************************************
    
     // assemble Matrix A (in addition to D and M)
-    RCP<LINALG::SparseMatrix> amatrix = Teuchos::rcp(new LINALG::SparseMatrix(*sdofs,10));
+    Teuchos::RCP<LINALG::SparseMatrix> amatrix = Teuchos::rcp(new LINALG::SparseMatrix(*sdofs,10));
     TransformA(*amatrix,sdofs);
     
     // Fill Complete
     amatrix->Complete();
   
     // active part of dmatrix and mmatrix
-    RCP<Epetra_Map> tmp;
-    RCP<LINALG::SparseMatrix> dmatrixa,mmatrixa,amatrixa,tmp1,tmp2,tmp3,tmp4,tmp5,tmp6;
+    Teuchos::RCP<Epetra_Map> tmp;
+    Teuchos::RCP<LINALG::SparseMatrix> dmatrixa,mmatrixa,amatrixa,tmp1,tmp2,tmp3,tmp4,tmp5,tmp6;
     LINALG::SplitMatrix2x2(dmatrix,adofs,idofs,adofs,idofs,dmatrixa,tmp1,tmp2,tmp3);
     LINALG::SplitMatrix2x2(mmatrix,adofs,idofs,mdofs,tmp,mmatrixa,tmp4,tmp5,tmp6);
     LINALG::SplitMatrix2x2(amatrix,adofs,idofs,sdofs,tmp,amatrixa,tmp4,tmp5,tmp6);
   
     // matrices from linearized thermal contact condition
-    RCP<LINALG::SparseMatrix>  thermcontLM = Teuchos::rcp(new LINALG::SparseMatrix(*adofs,3));
-    RCP<LINALG::SparseMatrix>  thermcontTEMP = Teuchos::rcp(new LINALG::SparseMatrix(*adofs,3));
-    RCP<Epetra_Vector>         thermcontRHS = LINALG::CreateVector(*adofs,true);
+    Teuchos::RCP<LINALG::SparseMatrix>  thermcontLM = Teuchos::rcp(new LINALG::SparseMatrix(*adofs,3));
+    Teuchos::RCP<LINALG::SparseMatrix>  thermcontTEMP = Teuchos::rcp(new LINALG::SparseMatrix(*adofs,3));
+    Teuchos::RCP<Epetra_Vector>         thermcontRHS = LINALG::CreateVector(*adofs,true);
   
     // assemble thermal contact condition
     AssembleThermContCondition(*thermcontLM,*thermcontTEMP,*thermcontRHS,*dmatrixa,*mmatrixa,*amatrixa,adofs,mdofs,temp,dt);
@@ -282,7 +282,7 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     thermcondLM_ = thermcontLM;
     
     // assemble mechanical dissipation for master side
-    RCP<Epetra_Vector> mechdissrate;
+    Teuchos::RCP<Epetra_Vector> mechdissrate;
     if(cmtman_->GetStrategy().Friction())
     {  
       mechdissrate = LINALG::CreateVector(*mdofs,true);
@@ -296,8 +296,8 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     /**********************************************************************/
     /* Create inv(D)                                                      */
     /**********************************************************************/
-    RCP<LINALG::SparseMatrix> invd = Teuchos::rcp(new LINALG::SparseMatrix(*dmatrix));
-    RCP<Epetra_Vector> diag = LINALG::CreateVector(*sdofs,true);
+    Teuchos::RCP<LINALG::SparseMatrix> invd = Teuchos::rcp(new LINALG::SparseMatrix(*dmatrix));
+    Teuchos::RCP<Epetra_Vector> diag = LINALG::CreateVector(*sdofs,true);
     int err = 0;
   
     // extract diagonal of invd into diag
@@ -315,24 +315,24 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     err = invd->ReplaceDiagonalValues(*diag);
   
     // do the multiplication M^ = inv(D) * M
-    RCP<LINALG::SparseMatrix> mhatmatrix;
+    Teuchos::RCP<LINALG::SparseMatrix> mhatmatrix;
     mhatmatrix = LINALG::MLMultiply(*invd,false,*mmatrix,false,false,false,true);
   
     /**********************************************************************/
     /* Split tang into 3x3 block matrix                                  */
     /**********************************************************************/
     // we want to split k into 3 groups s,m,n = 9 blocks
-    RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
+    Teuchos::RCP<LINALG::SparseMatrix> kss, ksm, ksn, kms, kmm, kmn, kns, knm, knn;
   
     // temporarily we need the blocks ksmsm, ksmn, knsm
     // (FIXME: because a direct SplitMatrix3x3 is still missing!)
-    RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
+    Teuchos::RCP<LINALG::SparseMatrix> ksmsm, ksmn, knsm;
   
     // some temporary RCPs
-    RCP<Epetra_Map> tempmap;
-    RCP<LINALG::SparseMatrix> tempmtx1;
-    RCP<LINALG::SparseMatrix> tempmtx2;
-    RCP<LINALG::SparseMatrix> tempmtx3;
+    Teuchos::RCP<Epetra_Map> tempmap;
+    Teuchos::RCP<LINALG::SparseMatrix> tempmtx1;
+    Teuchos::RCP<LINALG::SparseMatrix> tempmtx2;
+    Teuchos::RCP<LINALG::SparseMatrix> tempmtx3;
   
     // split into slave/master part + structure part
     LINALG::SplitMatrix2x2(tangmatrix,smdofs,ndofs,smdofs,ndofs,ksmsm,ksmn,knsm,knn);
@@ -346,10 +346,10 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     /* Split feff into 3 subvectors                                       */
     /**********************************************************************/
     // we want to split f into 3 groups s.m,n
-    RCP<Epetra_Vector> fs, fm, fn;
+    Teuchos::RCP<Epetra_Vector> fs, fm, fn;
   
     // temporarily we need the group sm
-    RCP<Epetra_Vector> fsm;
+    Teuchos::RCP<Epetra_Vector> fsm;
   
     // do the vector splitting smn -> sm+n -> s+m+n
     LINALG::SplitVector(*problemrowmap,*feff,smdofs,fsm,ndofs,fn);
@@ -359,10 +359,10 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     /* Split slave quantities into active / inactive                      */
     /**********************************************************************/
     // we want to split kssmod into 2 groups a,i = 4 blocks
-    RCP<LINALG::SparseMatrix> kaa, kai, kia, kii;
+    Teuchos::RCP<LINALG::SparseMatrix> kaa, kai, kia, kii;
   
     // we want to split ksn / ksm / kms into 2 groups a,i = 2 blocks
-    RCP<LINALG::SparseMatrix> kan, kin, kam, kim, kma, kmi;
+    Teuchos::RCP<LINALG::SparseMatrix> kan, kin, kam, kim, kma, kmi;
   
     // do the splitting
     LINALG::SplitMatrix2x2(kss,adofs,idofs,adofs,idofs,kaa,kai,kia,kii);
@@ -371,8 +371,8 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     LINALG::SplitMatrix2x2(kms,mdofs,tempmap,adofs,idofs,kma,kmi,tempmtx1,tempmtx2);
   
     // we want to split fsmod into 2 groups a,i
-    RCP<Epetra_Vector> fa = Teuchos::rcp(new Epetra_Vector(*adofs));
-    RCP<Epetra_Vector> fi = Teuchos::rcp(new Epetra_Vector(*idofs));
+    Teuchos::RCP<Epetra_Vector> fa = Teuchos::rcp(new Epetra_Vector(*adofs));
+    Teuchos::RCP<Epetra_Vector> fi = Teuchos::rcp(new Epetra_Vector(*idofs));
   
     // do the vector splitting s -> a+i
     LINALG::SplitVector(*sdofs,*fs,adofs,fa,idofs,fi);
@@ -382,8 +382,8 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     int iset = idofs->NumGlobalElements();
   
     // active part of invd and mhatmatrix
-    RCP<Epetra_Map> tmpmap;
-    RCP<LINALG::SparseMatrix> invda,mhata;
+    Teuchos::RCP<Epetra_Map> tmpmap;
+    Teuchos::RCP<LINALG::SparseMatrix> invda,mhata;
     LINALG::SplitMatrix2x2(invd,sdofs,tmpmap,adofs,idofs,invda,tmp1,tmp2,tmp3);
     LINALG::SplitMatrix2x2(mhatmatrix,adofs,idofs,mdofs,tmpmap,mhata,tmp1,tmp2,tmp3);
     
@@ -404,43 +404,43 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     // kns: nothing to do
   
     // kmn: add T(mbaractive)*kan
-    RCP<LINALG::SparseMatrix> kmnmod = Teuchos::rcp(new LINALG::SparseMatrix(*mdofs,100));
+    Teuchos::RCP<LINALG::SparseMatrix> kmnmod = Teuchos::rcp(new LINALG::SparseMatrix(*mdofs,100));
     kmnmod->Add(*kmn,false,1.0,1.0);
-    RCP<LINALG::SparseMatrix> kmnadd = LINALG::MLMultiply(*mhata,true,*kan,false,false,false,true);
+    Teuchos::RCP<LINALG::SparseMatrix> kmnadd = LINALG::MLMultiply(*mhata,true,*kan,false,false,false,true);
     kmnmod->Add(*kmnadd,false,1.0,1.0);
     kmnmod->Complete(kmn->DomainMap(),kmn->RowMap());
   
     // kmm: add T(mbaractive)*kam
-    RCP<LINALG::SparseMatrix> kmmmod = Teuchos::rcp(new LINALG::SparseMatrix(*mdofs,100));
+    Teuchos::RCP<LINALG::SparseMatrix> kmmmod = Teuchos::rcp(new LINALG::SparseMatrix(*mdofs,100));
     kmmmod->Add(*kmm,false,1.0,1.0);
-    RCP<LINALG::SparseMatrix> kmmadd = LINALG::MLMultiply(*mhata,true,*kam,false,false,false,true);
+    Teuchos::RCP<LINALG::SparseMatrix> kmmadd = LINALG::MLMultiply(*mhata,true,*kam,false,false,false,true);
     kmmmod->Add(*kmmadd,false,1.0,1.0);
     kmmmod->Complete(kmm->DomainMap(),kmm->RowMap());
   
     // kmi: add T(mbaractive)*kai
-    RCP<LINALG::SparseMatrix> kmimod;
+    Teuchos::RCP<LINALG::SparseMatrix> kmimod;
     if (iset)
     {
       kmimod = Teuchos::rcp(new LINALG::SparseMatrix(*mdofs,100));
       kmimod->Add(*kmi,false,1.0,1.0);
-      RCP<LINALG::SparseMatrix> kmiadd = LINALG::MLMultiply(*mhata,true,*kai,false,false,false,true);
+      Teuchos::RCP<LINALG::SparseMatrix> kmiadd = LINALG::MLMultiply(*mhata,true,*kai,false,false,false,true);
       kmimod->Add(*kmiadd,false,1.0,1.0);
       kmimod->Complete(kmi->DomainMap(),kmi->RowMap());
     }
   
     // kmi: add T(mbaractive)*kaa
-    RCP<LINALG::SparseMatrix> kmamod;
+    Teuchos::RCP<LINALG::SparseMatrix> kmamod;
     if (aset)
     {
       kmamod = Teuchos::rcp(new LINALG::SparseMatrix(*mdofs,100));
       kmamod->Add(*kma,false,1.0,1.0);
-      RCP<LINALG::SparseMatrix> kmaadd = LINALG::MLMultiply(*mhata,true,*kaa,false,false,false,true);
+      Teuchos::RCP<LINALG::SparseMatrix> kmaadd = LINALG::MLMultiply(*mhata,true,*kaa,false,false,false,true);
       kmamod->Add(*kmaadd,false,1.0,1.0);
       kmamod->Complete(kma->DomainMap(),kma->RowMap());
     }
   
     // kan: thermcontlm*invd*kan
-    RCP<LINALG::SparseMatrix> kanmod;
+    Teuchos::RCP<LINALG::SparseMatrix> kanmod;
     if (aset)
     {
       kanmod = LINALG::MLMultiply(*thermcontLM,false,*invda,false,false,false,true);
@@ -449,7 +449,7 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     }
   
     // kam: thermcontlm*invd*kam
-    RCP<LINALG::SparseMatrix> kammod;
+    Teuchos::RCP<LINALG::SparseMatrix> kammod;
     if (aset)
     {
       kammod = LINALG::MLMultiply(*thermcontLM,false,*invda,false,false,false,true);
@@ -458,7 +458,7 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     }
   
     // kai: thermcontlm*invd*kai
-    RCP<LINALG::SparseMatrix> kaimod;
+    Teuchos::RCP<LINALG::SparseMatrix> kaimod;
     if (aset && iset)
     {
       kaimod = LINALG::MLMultiply(*thermcontLM,false,*invda,false,false,false,true);
@@ -467,7 +467,7 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     }
   
     // kaa: thermcontlm*invd*kaa
-    RCP<LINALG::SparseMatrix> kaamod;
+    Teuchos::RCP<LINALG::SparseMatrix> kaamod;
     if (aset)
     {
       kaamod = LINALG::MLMultiply(*thermcontLM,false,*invda,false,false,false,true);
@@ -478,15 +478,15 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     // Modifications towards rhs
     // FIXGIT: pay attention to genalpha
     // fm: add T(mbaractive)*fa
-    RCP<Epetra_Vector> fmmod = Teuchos::rcp(new Epetra_Vector(*mdofs));
+    Teuchos::RCP<Epetra_Vector> fmmod = Teuchos::rcp(new Epetra_Vector(*mdofs));
     mhata->Multiply(true,*fa,*fmmod);
     fmmod->Update(1.0,*fm,1.0);
   
     // fa: mutliply with thermcontlm
-    RCP<Epetra_Vector> famod;
+    Teuchos::RCP<Epetra_Vector> famod;
     {
       famod = Teuchos::rcp(new Epetra_Vector(*adofs));
-      RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*thermcontLM,false,*invda,false,false,false,true);
+      Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::MLMultiply(*thermcontLM,false,*invda,false,false,false,true);
       temp->Multiply(false,*fa,*famod);
     }
   
@@ -518,25 +518,25 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     if (aset) tangnew->Add(*kaamod,false,-1.0,1.0);
   
     // add n subvector to feffnew
-    RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
+    Teuchos::RCP<Epetra_Vector> fnexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
     LINALG::Export(*fn,*fnexp);
     feffnew->Update(1.0,*fnexp,1.0);
   
     // add m subvector to feffnew
-    RCP<Epetra_Vector> fmmodexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
+    Teuchos::RCP<Epetra_Vector> fmmodexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
     LINALG::Export(*fmmod,*fmmodexp);
     feffnew->Update(1.0,*fmmodexp,1.0);
 
     // add mechanical dissipation to feffnew, only in frictional case
     if (cmtman_->GetStrategy().Friction())
     {  
-      RCP<Epetra_Vector> mechdissrateexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
+      Teuchos::RCP<Epetra_Vector> mechdissrateexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
       LINALG::Export(*mechdissrate,*mechdissrateexp);
       feffnew->Update(+1.0,*mechdissrateexp,1.0);
     }
       
     // add i subvector to feffnew
-    RCP<Epetra_Vector> fiexp;
+    Teuchos::RCP<Epetra_Vector> fiexp;
     if (iset)
     {
       fiexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
@@ -545,7 +545,7 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     }
   
     // add a subvector to feffnew
-    RCP<Epetra_Vector> famodexp;
+    Teuchos::RCP<Epetra_Vector> famodexp;
     if (aset)
     {
       famodexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
@@ -557,7 +557,7 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
     tangnew->Add(*thermcontTEMP,false,+1.0,+1.0);
   
     // add rhs of thermal contact condition to feffnew
-    RCP<Epetra_Vector> thermcontRHSexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
+    Teuchos::RCP<Epetra_Vector> thermcontRHSexp = Teuchos::rcp(new Epetra_Vector(*problemrowmap));
     LINALG::Export(*thermcontRHS,*thermcontRHSexp);
     feffnew->Update(+1.0,*thermcontRHSexp,1.0);
   
@@ -578,9 +578,9 @@ void THR::ThermoContactMan::ApplyThermoContact(Teuchos::RCP<LINALG::SparseMatrix
 /*----------------------------------------------------------------------*
  | convert maps form structure dofs to thermo dofs            mgit 04/10 |
  *----------------------------------------------------------------------*/
-void THR::ThermoContactMan::ConvertMaps(RCP<Epetra_Map>& slavedofs,
-                                        RCP<Epetra_Map>& activedofs,
-                                        RCP<Epetra_Map>& masterdofs)
+void THR::ThermoContactMan::ConvertMaps(Teuchos::RCP<Epetra_Map>& slavedofs,
+                                        Teuchos::RCP<Epetra_Map>& activedofs,
+                                        Teuchos::RCP<Epetra_Map>& masterdofs)
 {
 
   // stactic cast of mortar strategy to contact strategy
@@ -588,7 +588,7 @@ void THR::ThermoContactMan::ConvertMaps(RCP<Epetra_Map>& slavedofs,
   CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
 
   // get vector of contact interfaces
-  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+  std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
 
   // this currently works only for one interface yet
   if (interface.size()>1)
@@ -598,11 +598,11 @@ void THR::ThermoContactMan::ConvertMaps(RCP<Epetra_Map>& slavedofs,
   for (int m=0; m<(int)interface.size(); ++m)
   {
     // slave nodes/dofs
-    const RCP<Epetra_Map> slavenodes = interface[m]->SlaveRowNodes();
+    const Teuchos::RCP<Epetra_Map> slavenodes = interface[m]->SlaveRowNodes();
 
     // define local variables
     int slavecountnodes = 0;
-    vector<int> myslavegids(slavenodes->NumMyElements());
+    std::vector<int> myslavegids(slavenodes->NumMyElements());
 
     // loop over all slave nodes of the interface
     for (int i=0;i<slavenodes->NumMyElements();++i)
@@ -630,11 +630,11 @@ void THR::ThermoContactMan::ConvertMaps(RCP<Epetra_Map>& slavedofs,
     slavedofs = Teuchos::rcp(new Epetra_Map(gslavecountnodes,slavecountnodes,&myslavegids[0],0,*comm_));
 
     // active nodes/dofs
-    const RCP<Epetra_Map> activenodes = interface[m]->ActiveNodes();
+    const Teuchos::RCP<Epetra_Map> activenodes = interface[m]->ActiveNodes();
 
     // define local variables
     int countnodes = 0;
-    vector<int> mynodegids(activenodes->NumMyElements());
+    std::vector<int> mynodegids(activenodes->NumMyElements());
 
     // loop over all active nodes of the interface
     for (int i=0;i<activenodes->NumMyElements();++i)
@@ -662,11 +662,11 @@ void THR::ThermoContactMan::ConvertMaps(RCP<Epetra_Map>& slavedofs,
     activedofs = Teuchos::rcp(new Epetra_Map(gcountnodes,countnodes,&mynodegids[0],0,*comm_));
 
     // master nodes/dofs
-    const RCP<Epetra_Map> masternodes = interface[m]->MasterRowNodes();
+    const Teuchos::RCP<Epetra_Map> masternodes = interface[m]->MasterRowNodes();
 
     // define local variables
     int mastercountnodes = 0;
-    vector<int> mymastergids(masternodes->NumMyElements());
+    std::vector<int> mymastergids(masternodes->NumMyElements());
 
     // loop over all active nodes of the interface
     for (int i=0;i<masternodes->NumMyElements();++i)
@@ -701,8 +701,8 @@ void THR::ThermoContactMan::ConvertMaps(RCP<Epetra_Map>& slavedofs,
  *----------------------------------------------------------------------*/
 void THR::ThermoContactMan::TransformDM(LINALG::SparseMatrix& dmatrix,
                                        LINALG::SparseMatrix& mmatrix,
-                                       RCP<Epetra_Map>& slavedofs,
-                                       RCP<Epetra_Map>& masterdofs)
+                                       Teuchos::RCP<Epetra_Map>& slavedofs,
+                                       Teuchos::RCP<Epetra_Map>& masterdofs)
 {
   // static cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
@@ -719,7 +719,7 @@ void THR::ThermoContactMan::TransformDM(LINALG::SparseMatrix& dmatrix,
   /****************************************************** D-matrix ******/
   
   // mortar matrix D in structural dofs 
-  RCP<Epetra_CrsMatrix> dstruct = (cstrategy.DMatrix())->EpetraMatrix();
+  Teuchos::RCP<Epetra_CrsMatrix> dstruct = (cstrategy.DMatrix())->EpetraMatrix();
   
   // row and column map of mortar matrices
   const Epetra_Map& rowmap = dstruct->RowMap();
@@ -731,11 +731,11 @@ void THR::ThermoContactMan::TransformDM(LINALG::SparseMatrix& dmatrix,
     rowsetred.insert(rowmap.GID(myrow));
   
   // map of every dim-th dof (row map)
-  RCP<Epetra_Map> rowmapred = LINALG::CreateMap(rowsetred,*comm_);
+  Teuchos::RCP<Epetra_Map> rowmapred = LINALG::CreateMap(rowsetred,*comm_);
   
   // mortar matrices in reduced structural dofs
   // this means no loss of information
-  RCP<LINALG::SparseMatrix> dstructred = Teuchos::rcp(new LINALG::SparseMatrix(*rowmapred,10)) ;
+  Teuchos::RCP<LINALG::SparseMatrix> dstructred = Teuchos::rcp(new LINALG::SparseMatrix(*rowmapred,10)) ;
 
   // loop over all rows of mortar matrix D 
   for (myrow=0; myrow<dstruct->NumMyRows(); myrow=myrow+dim)
@@ -776,7 +776,7 @@ void THR::ThermoContactMan::TransformDM(LINALG::SparseMatrix& dmatrix,
   /****************************************************** M-matrix ******/
   
   // mortar matrix M in structural dofs 
-  RCP<Epetra_CrsMatrix> mstruct = (cstrategy.MMatrix())->EpetraMatrix();
+  Teuchos::RCP<Epetra_CrsMatrix> mstruct = (cstrategy.MMatrix())->EpetraMatrix();
   
   // row and column map of mortar matrix M
   const Epetra_Map& rowmapm = mstruct->RowMap();
@@ -797,11 +797,11 @@ void THR::ThermoContactMan::TransformDM(LINALG::SparseMatrix& dmatrix,
   rowmapred = LINALG::CreateMap(rowsetred,*comm_);
   
   // map of every dim-th dof (domain map)
-  RCP<Epetra_Map> domainmapred = LINALG::CreateMap(domainsetred,*comm_);
+  Teuchos::RCP<Epetra_Map> domainmapred = LINALG::CreateMap(domainsetred,*comm_);
   
   // mortar matrix M in reduced structural dofs
   // this means no loss of information
-  RCP<LINALG::SparseMatrix> mstructred = Teuchos::rcp(new LINALG::SparseMatrix(*rowmapred,100)) ;
+  Teuchos::RCP<LINALG::SparseMatrix> mstructred = Teuchos::rcp(new LINALG::SparseMatrix(*rowmapred,100)) ;
 
   // loop over all rows of mortar matrix M 
   for (myrow=0; myrow<mstruct->NumMyRows(); myrow=myrow+dim)
@@ -878,7 +878,7 @@ void THR::ThermoContactMan::TransformDM(LINALG::SparseMatrix& dmatrix,
  | transform matrix A in thermo dofs                          mgit 10/10 |
  *----------------------------------------------------------------------*/
 void THR::ThermoContactMan::TransformA(LINALG::SparseMatrix& amatrix,
-                                       RCP<Epetra_Map>& slavedofs)
+                                       Teuchos::RCP<Epetra_Map>& slavedofs)
 {
   // stactic cast of mortar strategy to contact strategy
   MORTAR::StrategyBase& strategy = cmtman_->GetStrategy();
@@ -895,7 +895,7 @@ void THR::ThermoContactMan::TransformA(LINALG::SparseMatrix& amatrix,
   /****************************************************** A-matrix ******/
   
   // matrix A in structural dofs 
-  RCP<Epetra_CrsMatrix> astruct = (cstrategy.AMatrix())->EpetraMatrix();
+  Teuchos::RCP<Epetra_CrsMatrix> astruct = (cstrategy.AMatrix())->EpetraMatrix();
   
   // row and column map of mortar matrices
   const Epetra_Map& rowmap = astruct->RowMap();
@@ -907,11 +907,11 @@ void THR::ThermoContactMan::TransformA(LINALG::SparseMatrix& amatrix,
     rowsetred.insert(rowmap.GID(myrow));
   
   // map of every dim-th dof (row map)
-  RCP<Epetra_Map> rowmapred = LINALG::CreateMap(rowsetred,*comm_);
+  Teuchos::RCP<Epetra_Map> rowmapred = LINALG::CreateMap(rowsetred,*comm_);
   
   // mortar matrices in reduced structural dofs
   // this means no loss of information
-  RCP<LINALG::SparseMatrix> astructred = Teuchos::rcp(new LINALG::SparseMatrix(*rowmapred,10)) ;
+  Teuchos::RCP<LINALG::SparseMatrix> astructred = Teuchos::rcp(new LINALG::SparseMatrix(*rowmapred,10)) ;
 
   // loop over all rows of matrix A
   for (myrow=0; myrow<astruct->NumMyRows(); myrow=myrow+dim)
@@ -958,7 +958,7 @@ void THR::ThermoContactMan::AssembleB(LINALG::SparseMatrix& bmatrix)
   CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
 
   // get vector of contact interfaces
-  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+  std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
 
   // this currently works only for one interface yet
   if (interface.size()>1)
@@ -968,7 +968,7 @@ void THR::ThermoContactMan::AssembleB(LINALG::SparseMatrix& bmatrix)
   for (int m=0; m<(int)interface.size(); ++m)
   {
     // master nodes (full map)
-    const RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(interface[m]->MasterRowNodes()));
+    const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(interface[m]->MasterRowNodes()));
 
     // loop over all slave nodes of the interface
     for (int i=0;i<masternodes->NumMyElements();++i)
@@ -990,7 +990,7 @@ void THR::ThermoContactMan::AssembleB(LINALG::SparseMatrix& bmatrix)
       int mastergid=0;
       std::set<int>::iterator mcurr;
       int size = 0;
-      vector<map<int,double> > bmap;
+      std::vector<map<int,double> > bmap;
 
       bmap = cnode->GetB();
       bnodes = cnode->GetBNodes();
@@ -1076,7 +1076,7 @@ void THR::ThermoContactMan::AssembleMechDissMaster(Epetra_Vector& mechdissrate,d
   CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
 
   // get vector of contact interfaces
-  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+  std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
 
   // this currently works only for one interface yet
   if (interface.size()>1)
@@ -1091,7 +1091,7 @@ void THR::ThermoContactMan::AssembleMechDissMaster(Epetra_Vector& mechdissrate,d
     // mortar integrals and mechanical dissipation 
 
     // master nodes
-    const RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(interface[m]->MasterRowNodes()));
+    const Teuchos::RCP<Epetra_Map> masternodes = LINALG::AllreduceEMap(*(interface[m]->MasterRowNodes()));
 
     // loop over all masternodes nodes of the interface
     for (int i=0;i<masternodes->NumMyElements();++i)
@@ -1119,8 +1119,8 @@ void THR::ThermoContactMan::AssembleMechDissMaster(Epetra_Vector& mechdissrate,d
         int rowtemp = discretstruct_->Dof(1,nodeges)[0];
 
         Epetra_SerialDenseVector mechdissiprate(1);
-        vector<int> dof(1);
-        vector<int> owner(1);
+        std::vector<int> dof(1);
+        std::vector<int> owner(1);
 
         mechdissiprate(0) = mechdissglobal;
         dof[0] = rowtemp;
@@ -1145,7 +1145,7 @@ void THR::ThermoContactMan::AssembleMechDissSlave(Epetra_Vector& mechdissrate,do
   CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
 
   // get vector of contact interfaces
-  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+  std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
 
   // this currently works only for one interface yet
   if (interface.size()>1)
@@ -1155,7 +1155,7 @@ void THR::ThermoContactMan::AssembleMechDissSlave(Epetra_Vector& mechdissrate,do
   for (int m=0; m<(int)interface.size(); ++m)
   {
      // slave nodes
-    const RCP<Epetra_Map> slavenodes = interface[m]->SlaveRowNodes();
+    const Teuchos::RCP<Epetra_Map> slavenodes = interface[m]->SlaveRowNodes();
 
     // loop over all slave nodes of the interface
     for (int i=0;i<slavenodes->NumMyElements();++i)
@@ -1171,8 +1171,8 @@ void THR::ThermoContactMan::AssembleMechDissSlave(Epetra_Vector& mechdissrate,do
       int rowtemp = discretstruct_->Dof(1,nodeges)[0];
 
       Epetra_SerialDenseVector mechdissiprate(1);
-      vector<int> dof(1);
-      vector<int> owner(1);
+      std::vector<int> dof(1);
+      std::vector<int> owner(1);
 
       mechdissiprate(0) = 1/dt*cnode->MechDiss();
       dof[0] = rowtemp;
@@ -1196,8 +1196,8 @@ void THR::ThermoContactMan::AssembleThermContCondition(LINALG::SparseMatrix& the
                                                        LINALG::SparseMatrix& dmatrix,
                                                        LINALG::SparseMatrix& mmatrix,
                                                        LINALG::SparseMatrix& amatrix,
-                                                       RCP<Epetra_Map> activedofs,
-                                                       RCP<Epetra_Map> masterdofs,
+                                                       Teuchos::RCP<Epetra_Map> activedofs,
+                                                       Teuchos::RCP<Epetra_Map> masterdofs,
                                                        Teuchos::RCP<Epetra_Vector>& temp,
                                                        double dt)
 {
@@ -1206,7 +1206,7 @@ void THR::ThermoContactMan::AssembleThermContCondition(LINALG::SparseMatrix& the
   CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
 
   // get vector of contact interfaces
-  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+  std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
 
   // this currently works only for one interface yet and for one heat
   // transfer coefficient
@@ -1235,18 +1235,18 @@ void THR::ThermoContactMan::AssembleThermContCondition(LINALG::SparseMatrix& the
   thermcontTEMP.Add(dmatrix,false,-beta,1.0);
   thermcontTEMP.Add(mmatrix,false,+beta,1.0);
 
-  RCP<Epetra_Vector> fa, fm, rest1, rest2;
+  Teuchos::RCP<Epetra_Vector> fa, fm, rest1, rest2;
 
   // row map of thermal problem
-  RCP<Epetra_Map> problemrowmap = Teuchos::rcp(new Epetra_Map(*(discretthermo_->DofRowMap(0))));
+  Teuchos::RCP<Epetra_Map> problemrowmap = Teuchos::rcp(new Epetra_Map(*(discretthermo_->DofRowMap(0))));
 
   LINALG::SplitVector(*problemrowmap,*temp,activedofs,fa,masterdofs,fm);
 
-  RCP <Epetra_Vector> DdotTemp = Teuchos::rcp(new Epetra_Vector(*activedofs));
+  Teuchos::RCP <Epetra_Vector> DdotTemp = Teuchos::rcp(new Epetra_Vector(*activedofs));
   dmatrix.Multiply(false,*fa,*DdotTemp);
   thermcontRHS.Update(+beta,*DdotTemp,1.0);
 
-  RCP <Epetra_Vector> MdotTemp = Teuchos::rcp(new Epetra_Vector(*activedofs));
+  Teuchos::RCP <Epetra_Vector> MdotTemp = Teuchos::rcp(new Epetra_Vector(*activedofs));
   mmatrix.Multiply(false,*fm,*MdotTemp);
   thermcontRHS.Update(-beta,*MdotTemp,1.0);
   
@@ -1275,7 +1275,7 @@ void THR::ThermoContactMan::AssembleThermContCondition(LINALG::SparseMatrix& the
     for (int m=0; m<(int)interface.size(); ++m)
     {
       // slave nodes (full map)
-      const RCP<Epetra_Map> slavenodes = interface[m]->SlaveRowNodes();
+      const Teuchos::RCP<Epetra_Map> slavenodes = interface[m]->SlaveRowNodes();
   
       // loop over all slave nodes of the interface
       for (int i=0;i<slavenodes->NumMyElements();++i)
@@ -1293,8 +1293,8 @@ void THR::ThermoContactMan::AssembleThermContCondition(LINALG::SparseMatrix& the
           rowtemp = discretstruct_->Dof(1,nodeges)[0];
   
         Epetra_SerialDenseVector mechdissiprate(1);
-        vector<int> dof(1);
-        vector<int> owner(1);
+        std::vector<int> dof(1);
+        std::vector<int> owner(1);
   
         mechdissiprate(0) = (-1)*delta/dt*cnode->MechDiss();
         dof[0] = rowtemp;
@@ -1312,7 +1312,7 @@ void THR::ThermoContactMan::AssembleThermContCondition(LINALG::SparseMatrix& the
 /*----------------------------------------------------------------------*
  | Initialize thermal LM                                       mgit 05/11|
  *----------------------------------------------------------------------*/
-void THR::ThermoContactMan::InitializeThermLM(RCP<Epetra_Map> sthermdofs)
+void THR::ThermoContactMan::InitializeThermLM(Teuchos::RCP<Epetra_Map> sthermdofs)
 {
  
   // initialize thermal LM
@@ -1324,7 +1324,7 @@ void THR::ThermoContactMan::InitializeThermLM(RCP<Epetra_Map> sthermdofs)
 /*----------------------------------------------------------------------*
  | Recovery method                                            mgit 05/11|
  *----------------------------------------------------------------------*/
-void THR::ThermoContactMan::RecoverThermLM(RCP<Epetra_Vector> tempi)
+void THR::ThermoContactMan::RecoverThermLM(Teuchos::RCP<Epetra_Vector> tempi)
 {
  
   // check if contact contributions are present,
@@ -1339,7 +1339,7 @@ void THR::ThermoContactMan::RecoverThermLM(RCP<Epetra_Vector> tempi)
   // necessary maps 
   // convert maps (from structure discretization to thermo discretization)
   // slave-, active-, inactive-, master-, activemaster-, n- smdofs
-  RCP<Epetra_Map> sdofs,adofs,idofs,mdofs,amdofs,ndofs,smdofs;
+  Teuchos::RCP<Epetra_Map> sdofs,adofs,idofs,mdofs,amdofs,ndofs,smdofs;
   ConvertMaps (sdofs,adofs,mdofs);
  
   // check if contact contributions are present,
@@ -1350,7 +1350,7 @@ void THR::ThermoContactMan::RecoverThermLM(RCP<Epetra_Vector> tempi)
   smdofs = LINALG::MergeMap(sdofs,mdofs,false);
  
   // row map of thermal problem
-  RCP<Epetra_Map> problemrowmap = Teuchos::rcp(new Epetra_Map(*(discretthermo_->DofRowMap(0))));
+  Teuchos::RCP<Epetra_Map> problemrowmap = Teuchos::rcp(new Epetra_Map(*(discretthermo_->DofRowMap(0))));
   
   // split problemrowmap in n+am
   ndofs = LINALG::SplitMap(*problemrowmap,*smdofs);
@@ -1359,26 +1359,26 @@ void THR::ThermoContactMan::RecoverThermLM(RCP<Epetra_Vector> tempi)
     //if (shapefcn!=INPAR::MORTAR::shape_dual) dserror("Condensation only for dual LM");
         
     // extract slave temperatures from tempi
-    RCP<Epetra_Vector> tempis = Teuchos::rcp(new Epetra_Vector(*sdofs));
+    Teuchos::RCP<Epetra_Vector> tempis = Teuchos::rcp(new Epetra_Vector(*sdofs));
     if (sdofs->NumGlobalElements()) LINALG::Export(*tempi, *tempis);
 
    // extract master displacements from disi
-    RCP<Epetra_Vector> tempim = Teuchos::rcp(new Epetra_Vector(*mdofs));
+    Teuchos::RCP<Epetra_Vector> tempim = Teuchos::rcp(new Epetra_Vector(*mdofs));
     if (mdofs->NumGlobalElements()) LINALG::Export(*tempi, *tempim);
 
     // extract other displacements from disi
-    RCP<Epetra_Vector> tempin = Teuchos::rcp(new Epetra_Vector(*ndofs));
+    Teuchos::RCP<Epetra_Vector> tempin = Teuchos::rcp(new Epetra_Vector(*ndofs));
     if (ndofs->NumGlobalElements()) LINALG::Export(*tempi,*tempin);
 
     // condensation has been performed for active LM only,
     // thus we construct a modified invd matrix here which
     // only contains the active diagonal block
     // (this automatically renders the incative LM to be zero)
-    RCP<LINALG::SparseMatrix> invda;
-    RCP<Epetra_Map> tempmap;
-    RCP<LINALG::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
+    Teuchos::RCP<LINALG::SparseMatrix> invda;
+    Teuchos::RCP<Epetra_Map> tempmap;
+    Teuchos::RCP<LINALG::SparseMatrix> tempmtx1, tempmtx2, tempmtx3;
     LINALG::SplitMatrix2x2(invd_,adofs,tempmap,adofs,tempmap,invda,tempmtx1,tempmtx2,tempmtx3);
-    RCP<LINALG::SparseMatrix> invdmod = Teuchos::rcp(new LINALG::SparseMatrix(*sdofs,10));
+    Teuchos::RCP<LINALG::SparseMatrix> invdmod = Teuchos::rcp(new LINALG::SparseMatrix(*sdofs,10));
     invdmod->Add(*invda,false,1.0,1.0);
     invdmod->Complete();
 
@@ -1388,14 +1388,14 @@ void THR::ThermoContactMan::RecoverThermLM(RCP<Epetra_Vector> tempi)
 
     // full update
     z_->Update(1.0,*fs_,0.0);
-    RCP<Epetra_Vector> mod = Teuchos::rcp(new Epetra_Vector(*sdofs));
+    Teuchos::RCP<Epetra_Vector> mod = Teuchos::rcp(new Epetra_Vector(*sdofs));
     kss_->Multiply(false,*tempis,*mod);
     z_->Update(-1.0,*mod,1.0);
     ksm_->Multiply(false,*tempim,*mod);
     z_->Update(-1.0,*mod,1.0);
     ksn_->Multiply(false,*tempin,*mod);
     z_->Update(-1.0,*mod,1.0);
-    RCP<Epetra_Vector> zcopy = Teuchos::rcp(new Epetra_Vector(*z_));
+    Teuchos::RCP<Epetra_Vector> zcopy = Teuchos::rcp(new Epetra_Vector(*z_));
     invdmod->Multiply(true,*zcopy,*z_);
     
   return;

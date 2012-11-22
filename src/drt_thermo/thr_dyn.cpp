@@ -12,13 +12,13 @@ Maintainer: Burkhard Bornemann
 */
 
 /*----------------------------------------------------------------------*
- |  definitions                                               gjb 01/08 |
+ | definitions                                                gjb 01/08 |
  *----------------------------------------------------------------------*/
 
 #include <Teuchos_TimeMonitor.hpp>
 
 /*----------------------------------------------------------------------*
- |  headers                                                   gjb 01/08 |
+ | headers                                                   gjb 01/08 |
  *----------------------------------------------------------------------*/
 #include "thr_dyn.H"
 #include "../drt_inpar/drt_validparameters.H"
@@ -27,7 +27,7 @@ Maintainer: Burkhard Bornemann
 #include "thr_resulttest.H"
 
 /*----------------------------------------------------------------------*
- | Main control routine for (in)stationary heat conduction              |
+ | main control routine for (in)stationary heat conduction              |
  *----------------------------------------------------------------------*/
 void thr_dyn_drt()
 {
@@ -65,7 +65,7 @@ void thr_dyn_drt()
   // done
   return;
 
-} // end of thr_dyn_drt()
+} // thr_dyn_drt()
 
 
 /*----------------------------------------------------------------------*/

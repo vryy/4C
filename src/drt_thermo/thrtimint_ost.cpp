@@ -14,12 +14,12 @@ Maintainer: Burkhard Bornemann
 
 
 /*----------------------------------------------------------------------*
- |  headers                                                  dano 08/09 |
+ | headers                                                   dano 08/09 |
  *----------------------------------------------------------------------*/
 #include "thrtimint_ost.H"
 
 /*----------------------------------------------------------------------*
- |  constructor                                              dano 08/09 |
+ | constructor                                               dano 08/09 |
  *----------------------------------------------------------------------*/
 THR::TimIntOneStepTheta::TimIntOneStepTheta(
   const Teuchos::ParameterList& ioparams,
@@ -92,9 +92,10 @@ THR::TimIntOneStepTheta::TimIntOneStepTheta(
   return;
 }
 
+
 /*----------------------------------------------------------------------*
- |  Consistent predictor with constant temperatures          dano 08/09 |
- |  and consistent temperature rates and temperatures                   |
+ | consistent predictor with constant temperatures           dano 08/09 |
+ | and consistent temperature rates and temperatures                    |
  *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::PredictConstTempConsistRate()
 {
@@ -113,11 +114,12 @@ void THR::TimIntOneStepTheta::PredictConstTempConsistRate()
 
   // watch out
   return;
-}
+}  // PredictConstTempConsistRate()
+
 
 /*----------------------------------------------------------------------*
- |  evaluate residual force and its tangent, ie derivative   dano 08/09 |
- |  with respect to end-point temperatures \f$T_{n+1}\f$                |
+ | evaluate residual force and its tangent, ie derivative    dano 08/09 |
+ | with respect to end-point temperatures \f$T_{n+1}\f$                 |
  *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
 {
@@ -179,11 +181,12 @@ void THR::TimIntOneStepTheta::EvaluateRhsTangResidual()
 
   // hallelujah
   return;
-}
+}  // EvaluateRhsTangResidual()
+
 
 /*----------------------------------------------------------------------*
- |  evaluate theta-state vectors by averaging                dano 08/09 |
- |  end-point vector                                                    |
+ | evaluate theta-state vectors by averaging                 dano 08/09 |
+ | end-point vector                                                     |
  *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::EvaluateMidState()
 {
@@ -197,11 +200,12 @@ void THR::TimIntOneStepTheta::EvaluateMidState()
 
   // jump
   return;
-}
+}  // EvaluateMidState()
+
 
 /*----------------------------------------------------------------------*
- |  calculate characteristic/reference norms for             dano 08/09 |
- |  temperatures originally by lw                                       |
+ | calculate characteristic/reference norms for              dano 08/09 |
+ | temperatures originally by lw                                        |
  *----------------------------------------------------------------------*/
 double THR::TimIntOneStepTheta::CalcRefNormTemperature()
 {
@@ -216,11 +220,12 @@ double THR::TimIntOneStepTheta::CalcRefNormTemperature()
 
   // rise your hat
   return charnormtemp;
-}
+}  // CalcRefNormTemperature()
+
 
 /*----------------------------------------------------------------------*
- |  calculate characteristic/reference norms for forces      dano 08/09 |
- |  originally by lw                                                    |
+ | calculate characteristic/reference norms for forces       dano 08/09 |
+ | originally by lw                                                     |
  *----------------------------------------------------------------------*/
 double THR::TimIntOneStepTheta::CalcRefNormForce()
 {
@@ -248,10 +253,11 @@ double THR::TimIntOneStepTheta::CalcRefNormForce()
 
   // return char norm
   return max(fcapnorm, max(fintnorm, max(fextnorm, freactnorm)));
-}
+}  // CalcRefNormForce()
+
 
 /*----------------------------------------------------------------------*
- |  incremental iteration update of state                    dano 08/09 |
+ | incremental iteration update of state                     dano 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::UpdateIterIncrementally()
 {
@@ -278,10 +284,11 @@ void THR::TimIntOneStepTheta::UpdateIterIncrementally()
 
   // bye
   return;
-}
+}  // UpdateIterIncrementally()
+
 
 /*----------------------------------------------------------------------*
- |  iterative iteration update of state                      dano 08/09 |
+ | iterative iteration update of state                       dano 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::UpdateIterIteratively()
 {
@@ -294,10 +301,11 @@ void THR::TimIntOneStepTheta::UpdateIterIteratively()
 
   // bye
   return;
-}
+}  // UpdateIterIteratively()
+
 
 /*----------------------------------------------------------------------*
- |  update after time step                                   dano 08/09 |
+ | update after time step                                    dano 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::UpdateStepState()
 {
@@ -338,10 +346,11 @@ void THR::TimIntOneStepTheta::UpdateStepState()
 
   // look out
   return;
-}
+}  // UpdateStepState()
+
 
 /*----------------------------------------------------------------------*
- |  read restart forces                                      dano 08/09 |
+ | read restart forces                                       dano 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::ReadRestartForce()
 {
@@ -358,10 +367,11 @@ void THR::TimIntOneStepTheta::ReadRestartForce()
   tang_->Reset();
   
   return;
-}
+}  // ReadRestartForce()
+
 
 /*----------------------------------------------------------------------*
- |  evaluate the internal force and the tangent              dano 08/09 |
+ | evaluate the internal force and the tangent               dano 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::ApplyForceTangInternal(
   const double time,  //!< evaluation time
@@ -381,10 +391,11 @@ void THR::TimIntOneStepTheta::ApplyForceTangInternal(
   TimInt::ApplyForceTangInternal(p,time,dt,temp,tempi,fcap,fint,tang);
   // finish
   return;
-}
+}  // ApplyForceTangInternal()
+
 
 /*----------------------------------------------------------------------*
- |  evaluate the internal force                              dano 08/09 |
+ | evaluate the internal force                               dano 08/09 |
  *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::ApplyForceInternal(
   const double time,  //!< evaluation time
@@ -402,10 +413,11 @@ void THR::TimIntOneStepTheta::ApplyForceInternal(
   TimInt::ApplyForceInternal(p,time,dt,temp,tempi,fint);
   // finish
   return;
-}
+}  // ApplyForceTangInternal()
+
 
 /*----------------------------------------------------------------------*
- |  evaluate the convective boundary condition               dano 12/10 |
+ | evaluate the convective boundary condition                dano 12/10 |
  *----------------------------------------------------------------------*/
 void THR::TimIntOneStepTheta::ApplyForceExternalConv(
   const double time,  //!< evaluation time
@@ -423,6 +435,7 @@ void THR::TimIntOneStepTheta::ApplyForceExternalConv(
   TimInt::ApplyForceExternalConv(p,time,tempn,temp,fext,tang);
   // finish
   return;
-}
+}  // ApplyForceExternalConv()
+
 
 /*----------------------------------------------------------------------*/

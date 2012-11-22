@@ -11,19 +11,22 @@ Maintainer: Burkhard Bornemann
 </pre>
 */
 
+
 /*----------------------------------------------------------------------*
- |  definitions                                              dano 08/09 |
+ | definitions                                               dano 08/09 |
  *----------------------------------------------------------------------*/
 #ifndef THRTIMINT_OST_H
 #define THRTIMINT_OST_H
 
+
 /*----------------------------------------------------------------------*
- |  headers                                                  dano 08/09 |
+ | headers                                                   dano 08/09 |
  *----------------------------------------------------------------------*/
 #include "thrtimint_impl.H"
 
+
 /*----------------------------------------------------------------------*
- |  belongs to thermal dynamics namespace                    dano 08/09 |
+ | belongs to thermal dynamics namespace                     dano 08/09 |
  *----------------------------------------------------------------------*/
 namespace THR
   {

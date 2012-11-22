@@ -13,7 +13,7 @@ Maintainer: Caroline Danowski
 */
 
 /*----------------------------------------------------------------------*
- |  definitions                                              dano 09/09 |
+ | definitions                                               dano 09/09 |
  *----------------------------------------------------------------------*/
 #ifdef D_THERMO
 
@@ -22,14 +22,10 @@ Maintainer: Caroline Danowski
 
 
 /*----------------------------------------------------------------------*
- |  headers                                                  dano 09/09 |
+ | headers                                                   dano 09/09 |
  *----------------------------------------------------------------------*/
 #include "thermo_ele_impl_utils.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "thermo_element.H"
-
-// forward declarations
-//struct _MATERIAL;
 
 
 /*----------------------------------------------------------------------*
@@ -54,22 +50,6 @@ namespace ELEMENTS
     TemperBoundaryImplInterface() {}
     //! Empty destructor
     virtual ~TemperBoundaryImplInterface() {}
-
-    //! Evaluate the element
-    //!
-    //! This class does not provide a definition for this function, it
-    //! must be defined in TemperBoundaryImpl.
-    virtual int Evaluate(
-      DRT::ELEMENTS::ThermoBoundary* ele,
-      Teuchos::ParameterList& params,
-      DRT::Discretization& discretization,
-      std::vector<int>& lm,
-      Epetra_SerialDenseMatrix& elemat1_epetra,
-      Epetra_SerialDenseMatrix& elemat2_epetra,
-      Epetra_SerialDenseVector& elevec1_epetra,
-      Epetra_SerialDenseVector& elevec2_epetra,
-      Epetra_SerialDenseVector& elevec3_epetra
-      ) = 0;
 
     //! Evaluate the element in the case of multiple dofsets
     //!
@@ -155,20 +135,7 @@ namespace ELEMENTS
     static const int nquad_ = THR::DisTypeToNumGaussPoints<distype>::nquad;
 
 
-    //! Evaluate
-    virtual int Evaluate(
-      DRT::ELEMENTS::ThermoBoundary* ele,
-      Teuchos::ParameterList& params,
-      DRT::Discretization& discretization,
-      std::vector<int>& lm,
-      Epetra_SerialDenseMatrix& elemat1_epetra,
-      Epetra_SerialDenseMatrix& elemat2_epetra,
-      Epetra_SerialDenseVector& elevec1_epetra,
-      Epetra_SerialDenseVector& elevec2_epetra,
-      Epetra_SerialDenseVector& elevec3_epetra
-      );
-
-    //! Evaluate in case of multiple dofsets
+    //! Evaluate (la required in case of multiple dofsets)
     virtual int Evaluate(
       DRT::ELEMENTS::ThermoBoundary* ele,
       Teuchos::ParameterList& params,

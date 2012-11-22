@@ -10,10 +10,12 @@ Maintainer: Caroline Danowski
 </pre>
 */
 
+
 /*----------------------------------------------------------------------*
  | definitions                                                gjb 01/08 |
  *----------------------------------------------------------------------*/
 #ifdef D_THERMO
+
 
 /*----------------------------------------------------------------------*
  | headers                                                    gjb 01/08 |
@@ -30,7 +32,6 @@ Maintainer: Caroline Danowski
 
 DRT::ELEMENTS::ThermoType DRT::ELEMENTS::ThermoType::instance_;
 
-
 /*----------------------------------------------------------------------*
  | create the new element type (public)                      dano 09/09 |
  | is called in ElementRegisterType                                     |
@@ -41,7 +42,7 @@ DRT::ParObject* DRT::ELEMENTS::ThermoType::Create( const std::vector<char> & dat
     new DRT::ELEMENTS::Thermo(-1,-1);
   object->Unpack(data);
   return object;
-}
+}  // Create()
 
 
 /*----------------------------------------------------------------------*
@@ -61,7 +62,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create(
     return ele;
   }
   return Teuchos::null;
-}
+}  // Create()
 
 
 /*----------------------------------------------------------------------*
@@ -75,7 +76,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create(
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Thermo(id,owner));
   return ele;
-}
+}  // Create()
 
 
 /*----------------------------------------------------------------------*
@@ -92,7 +93,7 @@ void DRT::ELEMENTS::ThermoType::NodalBlockInformation(
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
   dimns = numdf;
   nv = numdf;
-}
+}  // NodalBlockInformation()
 
 
 /*----------------------------------------------------------------------*
@@ -106,7 +107,7 @@ void DRT::ELEMENTS::ThermoType::ComputeNullSpace(
   int dimns
   )
 {
-}
+}  // ComputeNullSpace()
 
 
 /*----------------------------------------------------------------------*
@@ -120,7 +121,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoBoundaryType::Create(
 {
   //return Teuchos::rcp(new DRT::ELEMENTS::ThermoBoundary(id,owner));
   return Teuchos::null;
-}
+}  // Create()
 
 
 /*----------------------------------------------------------------------*
@@ -216,7 +217,7 @@ void DRT::ELEMENTS::ThermoType::SetupElementDefinition(
     .AddIntVector("LINE3",3)
     .AddNamedInt("MAT")
     ;
-}
+}  // SetupElementDefinition()
 
 
 DRT::ELEMENTS::ThermoBoundaryType DRT::ELEMENTS::ThermoBoundaryType::instance_;
@@ -232,7 +233,7 @@ DRT::ELEMENTS::Thermo::Thermo(int id, int owner)
   // default: geometrically linear, also including purely thermal probelm
   kintype_ = geo_linear;
   return;
-}
+}  // ctor
 
 
 /*----------------------------------------------------------------------*
@@ -245,7 +246,7 @@ DRT::ELEMENTS::Thermo::Thermo(const DRT::ELEMENTS::Thermo& old)
   data_(old.data_)
 {
   return;
-}
+}  // copy-ctor
 
 
 /*----------------------------------------------------------------------*
@@ -256,7 +257,7 @@ DRT::Element* DRT::ELEMENTS::Thermo::Clone() const
 {
   DRT::ELEMENTS::Thermo* newelement = new DRT::ELEMENTS::Thermo(*this);
   return newelement;
-}
+}  // Clone()
 
 
 /*----------------------------------------------------------------------*
@@ -265,7 +266,7 @@ DRT::Element* DRT::ELEMENTS::Thermo::Clone() const
 DRT::Element::DiscretizationType DRT::ELEMENTS::Thermo::Shape() const
 {
   return distype_;
-}
+}  // Shape()
 
 
 /*----------------------------------------------------------------------*
@@ -289,7 +290,7 @@ void DRT::ELEMENTS::Thermo::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,data_);
 
   return;
-}
+}  // Pack()
 
 
 /*----------------------------------------------------------------------*
@@ -318,7 +319,7 @@ void DRT::ELEMENTS::Thermo::Unpack(const std::vector<char>& data)
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
   return;
-}
+}  // Unpack()
 
 
 /*----------------------------------------------------------------------*
@@ -344,7 +345,7 @@ void DRT::ELEMENTS::Thermo::Print(std::ostream& os) const
   std::cout << std::endl;
   std::cout << data_;
   return;
-}
+}  // Print()
 
 
 /*----------------------------------------------------------------------*
@@ -368,7 +369,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Thermo::Lines()
     lines[0]= Teuchos::rcp(this, false);
     return lines;
   }
-}
+}  // Lines()
 
 
 /*----------------------------------------------------------------------*
@@ -398,7 +399,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Thermo::Surfaces()
     dserror("Surfaces() for 1D-Thermo element not implemented");
     return DRT::Element::Surfaces();
   }
-}
+}  // Surfaces()
 
 
 /*----------------------------------------------------------------------*
@@ -417,7 +418,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Thermo::Volumes()
     dserror("Surfaces() for 1D-/2D-Thermo element not implemented");
     return DRT::Element::Volumes();
   }
-}
+}  // Volumes()
 
 
 /*----------------------------------------------------------------------*
@@ -436,7 +437,7 @@ void DRT::ELEMENTS::Thermo::VisNames(std::map<std::string,int>& names)
   } // loop over temperatures
 
   return;
-}
+}  // VisNames()
 
 
 /*----------------------------------------------------------------------*
@@ -465,6 +466,7 @@ bool DRT::ELEMENTS::Thermo::VisData(
 
   return false;
 }  // VisData()
+
 /*----------------------------------------------------------------------------*
  | ENDE DRT::ELEMENTS::Thermo
  *----------------------------------------------------------------------------*/
@@ -489,7 +491,7 @@ DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
   return;
-}
+}  // ctor
 
 
 /*----------------------------------------------------------------------*
@@ -503,7 +505,7 @@ DRT::ELEMENTS::ThermoBoundary::ThermoBoundary(
   lbeleid_(old.lbeleid_)
 {
   return;
-}
+}  // copy-ctor
 
 
 /*----------------------------------------------------------------------*
@@ -513,7 +515,7 @@ DRT::Element* DRT::ELEMENTS::ThermoBoundary::Clone() const
 {
   DRT::ELEMENTS::ThermoBoundary* newelement = new DRT::ELEMENTS::ThermoBoundary(*this);
   return newelement;
-}
+}  // Clone()
 
 
 /*----------------------------------------------------------------------*
@@ -537,7 +539,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::ThermoBoundary::Shape() const
     dserror("unexpected number of nodes %d", NumNode());
   }
   return dis_none;
-}
+}  // Shape()
 
 
 /*----------------------------------------------------------------------*
@@ -548,7 +550,7 @@ void DRT::ELEMENTS::ThermoBoundary::Pack(std::vector<char>& data) const
   dserror("This ThermoBoundary element does not support communication");
 
   return;
-}
+}  // Pack()
 
 
 /*----------------------------------------------------------------------*
@@ -558,7 +560,7 @@ void DRT::ELEMENTS::ThermoBoundary::Unpack(const std::vector<char>& data)
 {
   dserror("This ThermoBoundary element does not support communication");
   return;
-}
+}  // Unpack()
 
 
 /*----------------------------------------------------------------------*
@@ -578,7 +580,7 @@ void DRT::ELEMENTS::ThermoBoundary::Print(std::ostream& os) const
   os << "ThermoBoundary ";
   Element::Print(os);
   return;
-}
+}  // Print()
 
 
 /*----------------------------------------------------------------------*
@@ -596,7 +598,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::ThermoBoundary::Lines()
   dserror("Lines of ThermoBoundary not implemented");
   std::vector<Teuchos::RCP<DRT::Element> > lines(0);
   return lines;
-}
+}  // Lines()
 
 
 /*----------------------------------------------------------------------*
@@ -614,7 +616,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::ThermoBoundary::Surfaces
   dserror("Surfaces of ThermoBoundary not implemented");
   std::vector<Teuchos::RCP<DRT::Element> > surfaces(0);
   return surfaces;
-}
+}  // Surfaces()
 
 
 /*----------------------------------------------------------------------*/

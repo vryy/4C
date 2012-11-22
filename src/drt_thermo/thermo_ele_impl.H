@@ -13,7 +13,7 @@ Maintainer: Caroline Danowski
 */
 
 /*----------------------------------------------------------------------*
- |  definitions                                                gjb 01/08|
+ | definitions                                                gjb 01/08 |
  *----------------------------------------------------------------------*/
 #ifdef D_THERMO
 
@@ -21,13 +21,13 @@ Maintainer: Caroline Danowski
 #define THERMO_ELE_IMPL_H
 
 /*----------------------------------------------------------------------*
- |  headers                                                    gjb 01/08|
+ | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
 #include "thermo_ele_impl_utils.H"
 #include "../drt_inpar/inpar_thermo.H"
 
 /*----------------------------------------------------------------------*
- |                                                             gjb 01/08|
+ |                                                            gjb 01/08 |
  *----------------------------------------------------------------------*/
 namespace DRT
 {
@@ -306,9 +306,9 @@ namespace ELEMENTS
     //! build derivatives of right Cauchy-Green deformation tensor C
     //! build the inverse of C^{-1} and the time derivative C'
     void CalculateCauchyGreens(
-      LINALG::Matrix<6,1>& cauchygreenratevct,
-      LINALG::Matrix<6,1>& invcauchygreenvct,
-      LINALG::Matrix<nsd_,nsd_>& invcauchygreen,
+      LINALG::Matrix<6,1>& Cratevct,
+      LINALG::Matrix<6,1>& invCvct,
+      LINALG::Matrix<nsd_,nsd_>& invC,
       LINALG::Matrix<nsd_,nsd_>* defgrd,
       LINALG::Matrix<nsd_,nsd_>* defgrdrate,
       LINALG::Matrix<nsd_,nsd_>* invdefgrd
@@ -317,8 +317,9 @@ namespace ELEMENTS
     //! get corresponding structural material
     void GetStrMaterial(
       DRT::Element* ele,  //!< the element whose matrix is calculated
-      LINALG::Matrix<6,1>* ctemp,  //!< temperature-dependent material tangent
-      Teuchos::RCP<MAT::Material> structmat
+      LINALG::Matrix<6,1>* ctemp,  //!< (io) temperature-dependent material tangent
+      double* thetainit,  //!< (io) constant initial temperature
+      Teuchos::RCP<MAT::Material> structmat  //!< temperature-dependent solid material
       );
 
     //! calculate reactive term

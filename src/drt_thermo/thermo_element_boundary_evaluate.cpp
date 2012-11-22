@@ -14,53 +14,19 @@ Maintainer: Caroline Danowski
 */
 
 /*----------------------------------------------------------------------*
- |  definitions                                              dano 09/09 |
+ | definitions                                               dano 09/09 |
  *----------------------------------------------------------------------*/
 #ifdef D_THERMO
 
 
 /*----------------------------------------------------------------------*
- |  headers                                                  dano 09/09 |
+ | headers                                                   dano 09/09 |
  *----------------------------------------------------------------------*/
 #include "thermo_ele_boundary_impl.H"
 
 
 /*----------------------------------------------------------------------*
- |  evaluate the element (public)                            dano 09/09 |
- *----------------------------------------------------------------------*/
-int DRT::ELEMENTS::ThermoBoundary::Evaluate(
-  Teuchos::ParameterList& params,
-  DRT::Discretization& discretization,
-  std::vector<int>& lm,
-  Epetra_SerialDenseMatrix& elemat1,
-  Epetra_SerialDenseMatrix& elemat2,
-  Epetra_SerialDenseVector& elevec1,
-  Epetra_SerialDenseVector& elevec2,
-  Epetra_SerialDenseVector& elevec3
-  )
-{
-  // all physics-related stuff is included in the implementation class that can
-  // be used in principle inside any element (at the moment: only Thermo
-  // boundary element)
-  // If this element has special features/ methods that do not fit in the
-  // generalized implementation class, you have to do a switch here in order to
-  // call element-specific routines
-  return DRT::ELEMENTS::TemperBoundaryImplInterface::Impl(this)->Evaluate(
-    this,
-    params,
-    discretization,
-    lm,
-    elemat1,
-    elemat2,
-    elevec1,
-    elevec2,
-    elevec3
-    );
-}
-
-
-/*----------------------------------------------------------------------*
- |  evaluate the element for volume coupling (public)        dano 02/10 |
+ | evaluate the element for volume coupling (public)         dano 02/10 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::ThermoBoundary::Evaluate(
   Teuchos::ParameterList& params,
@@ -94,7 +60,7 @@ int DRT::ELEMENTS::ThermoBoundary::Evaluate(
 
 
 /*----------------------------------------------------------------------*
- |  Integrate a Surface/Line Neumann boundary condition      dano 09/09 |
+ | integrate a Surface/Line Neumann boundary condition       dano 09/09 |
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::ThermoBoundary::EvaluateNeumann(
   Teuchos::ParameterList& params,

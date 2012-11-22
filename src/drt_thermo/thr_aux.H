@@ -12,11 +12,13 @@ Maintainer: Burkhard Bornemann
 </pre>
 */
 
+
 /*----------------------------------------------------------------------*
  | definitions                                              bborn 08/09 |
  *----------------------------------------------------------------------*/
 #ifndef THR_AUX_H
 #define THR_AUX_H
+
 
 /*----------------------------------------------------------------------*
  | headers                                                  bborn 08/09 |
@@ -25,6 +27,7 @@ Maintainer: Burkhard Bornemann
 #include "Epetra_Vector.h"
 
 #include "../drt_inpar/inpar_thermo.H"
+
 
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                    bborn 08/09 |
@@ -43,8 +46,8 @@ namespace AUX
 
   //! Determine norm of force residual
   double CalculateVectorNorm(
-    const enum INPAR::THR::VectorNorm norm,  ///< norm to use
-    const Teuchos::RCP<Epetra_Vector> vect  ///< the vector of interest
+    const enum INPAR::THR::VectorNorm norm,  //!< norm to use
+    const Teuchos::RCP<Epetra_Vector> vect  //!< the vector of interest
     );
 
 }  // namespace AUX

@@ -12,17 +12,15 @@ Maintainer: Burkhard Bornemann
 </pre>
 */
 
-/*----------------------------------------------------------------------*
- |  definitions                                              bborn 08/09 |
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  headers                                                  bborn 08/09 |
+ | headers                                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
 #include "thr_aux.H"
 
+
 /*----------------------------------------------------------------------*
- |  Calculate vector norm                                    bborn 08/09 |
+ | Calculate vector norm                                    bborn 08/09 |
  *----------------------------------------------------------------------*/
 double THR::AUX::CalculateVectorNorm(
   const enum INPAR::THR::VectorNorm norm,
@@ -62,6 +60,7 @@ double THR::AUX::CalculateVectorNorm(
     dserror("Cannot handle vector norm");
     return 0;
   }
-} // CalculateVectorNorm
+} // CalculateVectorNorm()
+
 
 /*----------------------------------------------------------------------*/

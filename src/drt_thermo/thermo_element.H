@@ -16,7 +16,7 @@ Maintainer: Caroline Danowski
 */
 
 /*----------------------------------------------------------------------*
- |  definitions                                                gjb 01/08|
+ | definitions                                                gjb 01/08 |
  *----------------------------------------------------------------------*/
 #ifdef D_THERMO
 
@@ -24,14 +24,15 @@ Maintainer: Caroline Danowski
 #define THERMO_ELEMENT_H
 
 /*----------------------------------------------------------------------*
- |  headers                                                    gjb 01/08|
+ | headers                                                    gjb 01/08 |
  *----------------------------------------------------------------------*/
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
-#include "../drt_lib/drt_parobjectfactory.H"
+
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
 #include "../drt_tsi/kinematictype.H"
+
 
 /*----------------------------------------------------------------------*/
 namespace DRT
@@ -314,49 +315,6 @@ namespace ELEMENTS
 
     //! @name Evaluation
 
-//    //! \brief Evaluate an element, i.e. call the implementation to evaluate
-//    //! element tangent, capacity, internal forces or evaluate errors, statistics
-//    //! or updates etc. directly.
-//    //!
-//    //! Following implementations of the element are allowed:
-//    //! <pre>
-//    //!  o Evaluation of thermal system matrix and residual for the One-Step-Theta
-//    //!
-//    //!  o Evaluation of thermal system matrix and residual for the stationary thermal solver
-//    //! </pre>
-//    //!
-//    //! \param params (in/out): ParameterList for communication between control routine
-//    //!                         and elements
-//    //! \param discretization (in): A reference to the underlying discretization
-//    //! \param lm (in):         location vector of this element
-//    //! \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-//    //!                         the controlling method does not expect the element to fill
-//    //!                         this matrix.
-//    //! \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-//    //!                         the controlling method does not expect the element to fill
-//    //!                         this matrix.
-//    //! \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-//    //!                         the controlling method does not expect the element
-//    //!                         to fill this vector
-//    //! \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-//    //!                         the controlling method does not expect the element
-//    //!                         to fill this vector
-//    //! \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-//    //!                         the controlling method does not expect the element
-//    //!                         to fill this vector
-//    //! \return 0 if successful, negative otherwise
-//    int Evaluate(
-//      Teuchos::ParameterList& params,
-//      DRT::Discretization& discretization,
-//      std::vector<int>& lm,
-//      Epetra_SerialDenseMatrix& elemat1,
-//      Epetra_SerialDenseMatrix& elemat2,
-//      Epetra_SerialDenseVector& elevec1,
-//      Epetra_SerialDenseVector& elevec2,
-//      Epetra_SerialDenseVector& elevec3
-//      );
-
-
     //! \brief Evaluate an element, i.e. call the implementation to evaluate element
     //! tangent, capacity, internal forces or evaluate errors, statistics or updates
     //! etc. directly.
@@ -631,42 +589,6 @@ namespace ELEMENTS
 
     //! @name Evaluation
 
-    //! \brief Evaluate an element
-    //!
-    //! Evaluate Thermo element tangent, capacity, internal forces etc
-    //!
-    //! \param params (in/out): ParameterList for communication between control routine
-    //!                         and elements
-    //! \param discretization (in): A reference to the underlying discretization
-    //! \param lm (in):         location vector of this element, vector of degrees of freedom adressed by this element
-    //! \param elemat1 (out)  : matrix to be filled by element. If NULL on input,
-    //!                         the controlling method does not expect the element to fill
-    //!                         this matrix.
-    //! \param elemat2 (out)  : matrix to be filled by element. If NULL on input,
-    //!                         the controlling method does not expect the element to fill
-    //!                         this matrix.
-    //! \param elevec1 (out)  : vector to be filled by element. If NULL on input,
-    //!                         the controlling method does not expect the element
-    //!                         to fill this vector
-    //! \param elevec2 (out)  : vector to be filled by element. If NULL on input,
-    //!                         the controlling method does not expect the element
-    //!                         to fill this vector
-    //! \param elevec3 (out)  : vector to be filled by element. If NULL on input,
-    //!                         the controlling method does not expect the element
-    //!                         to fill this vector
-    //! \return 0 if successful, negative otherwise
-    int Evaluate(
-      Teuchos::ParameterList& params,
-      DRT::Discretization& discretization,
-      std::vector<int>& lm,
-      Epetra_SerialDenseMatrix& elemat1,
-      Epetra_SerialDenseMatrix& elemat2,
-      Epetra_SerialDenseVector& elevec1,
-      Epetra_SerialDenseVector& elevec2,
-      Epetra_SerialDenseVector& elevec3
-      );
-
-    // 29.01.10 new method for volume coupling
     //! \brief Evaluate an element
     //!
     //! Evaluate Thermo element tangent, capacity, internal forces etc

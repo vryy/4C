@@ -12,35 +12,31 @@ Maintainer: Caroline Danowski
 </pre>
  */
 
+
 /*----------------------------------------------------------------------*
- |  definitions                                              dano 09/09 |
+ | definitions                                               dano 09/09 |
  *----------------------------------------------------------------------*/
 #ifdef D_THERMO
 
+
 /*----------------------------------------------------------------------*
- |  headers                                                  dano 09/09 |
+ | headers                                                   dano 09/09 |
  *----------------------------------------------------------------------*/
-#include <cstdlib>
 #include "thermo_ele_boundary_impl.H"
-#include "thermo_ele_impl.H"
-#include "../drt_lib/drt_globalproblem.H"
-#include "../drt_lib/drt_timecurve.H"
-#include "../drt_lib/drt_discret.H"
-#include "../drt_lib/drt_utils.H"
-#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_geometry/position_array.H"
-#include "../drt_fem_general/drt_utils_boundary_integration.H"
-#include "../linalg/linalg_serialdensematrix.H"
-#include "../drt_lib/drt_function.H"
-
 #include "../drt_inpar/inpar_thermo.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_discret.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
+#include "../drt_geometry/position_array.H"
 
-#include "../drt_tsi/tsi_defines.H"
 
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
  *----------------------------------------------------------------------*/
-DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInterface::Impl(DRT::Element* ele)
+DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInterface::Impl(
+  DRT::Element* ele
+  )
 {
   // we assume here, that numdofpernode is equal for every node within
   // the discretization and does not change during the computations
@@ -101,7 +97,8 @@ DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInt
     dserror("Shape %d (%d nodes) not supported", ele->Shape(), ele->NumNode());
   }
   return NULL;
-}
+}  // Impl()
+
 
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
@@ -111,16 +108,17 @@ DRT::ELEMENTS::TemperBoundaryImpl<distype>::TemperBoundaryImpl(
   int numdofpernode
   )
 : numdofpernode_(numdofpernode),
-    xyze_(true),  // initialize to zero
-    xsi_(true),
-    funct_(true),
-    deriv_(true),
-    derxy_(true),
-    normal_(true),
-    fac_(0.0)
+  xyze_(true),  // initialize to zero
+  xsi_(true),
+  funct_(true),
+  deriv_(true),
+  derxy_(true),
+  normal_(true),
+  fac_(0.0)
 {
   return;
-}
+}  // TemperBoundaryImpl()
+
 
 /*----------------------------------------------------------------------*
  |                                                           dano 09/09 |
@@ -130,7 +128,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
   DRT::ELEMENTS::ThermoBoundary* ele,
   Teuchos::ParameterList& params,
   DRT::Discretization& discretization,
-  std::vector<int>& lm,
+  DRT::Element::LocationArray& la,
   Epetra_SerialDenseMatrix& elemat1_epetra,
   Epetra_SerialDenseMatrix& elemat2_epetra,
   Epetra_SerialDenseVector& elevec1_epetra,
@@ -158,7 +156,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     // determine constant normal to this element
     GetConstNormal(normal_,xyze_);
 
-    // loop over the element nodes
+    // loop over the boundary element nodes
     for (int j=0;j<nen_;j++)
     {
       const int nodegid = (ele->Nodes()[j])->Id();
@@ -183,7 +181,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
     IntegrateShapeFunctions(ele,params,elevec1_epetra,addarea);
   }
-  // surface heat transfer boundary condition
+  // surface heat transfer boundary condition q^_c = h (T - T_infty)
   else if (action == "calc_thermo_fextconvection")
   {
     // get node coordinates (we have a nsd_+1 dimensional domain!)
@@ -204,11 +202,13 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     const int curvenum = cond->GetInt("curve");
     const double time = params.get<double>("total time");
 
+    // get surrounding temperature T_infty from input file
     double surtemp = cond->GetDouble("surtemp");
-    // increase the surrounding temperature step by step (scale with a time curve)
+    // increase the surrounding temperature T_infty step by step
+    // can be scaled with a time curve, get time curve number from input file
     const int surtempcurvenum = cond->GetInt("surtempcurve");
 
-    // find out whether we shall use a time curve and get the factor
+    // find out whether we shall use a time curve for q^_c and get the factor
     double curvefac = 1.0;
     if (curvenum>=0)
     {
@@ -236,12 +236,12 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
       if (discretization.HasState("temperature"))
       {
         // get actual values of temperature from global location vector
-        std::vector<double> mytempnp(lm.size());
+        std::vector<double> mytempnp((la[0].lm_).size());
         Teuchos::RCP<const Epetra_Vector> tempnp
           = discretization.GetState("temperature");
         if (tempnp == Teuchos::null) dserror("Cannot get state vector 'tempnp'");
 
-        DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,lm);
+        DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[0].lm_);
         // build the element temperature
         LINALG::Matrix<nen_,1> etemp(&(mytempnp[0]),true);  // view only!
         etemp_.Update(etemp);  // copy
@@ -255,12 +255,12 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
       if (discretization.HasState("old temperature"))
       {
         // get actual values of temperature from global location vector
-        std::vector<double> mytempn(lm.size());
+        std::vector<double> mytempn((la[0].lm_).size());
         Teuchos::RCP<const Epetra_Vector> tempn
           = discretization.GetState("old temperature");
         if (tempn == Teuchos::null) dserror("Cannot get state vector 'tempn'");
 
-        DRT::UTILS::ExtractMyValues(*tempn,mytempn,lm);
+        DRT::UTILS::ExtractMyValues(*tempn,mytempn,la[0].lm_);
         // build the element temperature
         LINALG::Matrix<nen_,1> etemp(&(mytempn[0]),true);  // view only!
         etemp_.Update(etemp);  // copy
@@ -276,11 +276,11 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     {
       std::cout << "ele Id= " << ele->Id() << std::endl;
       // print all parameters read from the current condition
-      std::cout<<"type of boundary condition  = "<<*tempstate<<std::endl;
-      std::cout<<"heat convection coefficient = "<<coeff<<std::endl;
-      std::cout<<"surrounding temperature     = "<<surtemp<<std::endl;
-      std::cout<<"time curve                  = "<<curvenum<<std::endl;
-      std::cout<<"total time                  = "<<time<<std::endl;
+      std::cout << "type of boundary condition  = " << *tempstate << std::endl;
+      std::cout << "heat convection coefficient = " << coeff << std::endl;
+      std::cout << "surrounding temperature     = " << surtemp << std::endl;
+      std::cout << "time curve                  = " << curvenum << std::endl;
+      std::cout << "total time                  = " << time << std::endl;
     }
 #endif // THRASOUTPUT
 
@@ -334,99 +334,11 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     dserror("Unknown type of action for Temperature Implementation: %s",action.c_str());
 
   return 0;
-} // Evaluate
+} // Evaluate()
 
 
 /*----------------------------------------------------------------------*
- | Evaluate the element in case of volume coupling           dano 02/10 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
-  DRT::ELEMENTS::ThermoBoundary* ele,
-  Teuchos::ParameterList& params,
-  DRT::Discretization& discretization,
-  DRT::Element::LocationArray& la,
-  Epetra_SerialDenseMatrix& elemat1_epetra,
-  Epetra_SerialDenseMatrix& elemat2_epetra,
-  Epetra_SerialDenseVector& elevec1_epetra,
-  Epetra_SerialDenseVector& elevec2_epetra,
-  Epetra_SerialDenseVector& elevec3_epetra
-  )
-{
-  //if (la.Size()==1)
-  {
-    return Evaluate(
-      ele,
-      params,
-      discretization,
-      la[0].lm_, // location vector is build by the first column of la
-      elemat1_epetra,
-      elemat2_epetra,
-      elevec1_epetra,
-      elevec2_epetra,
-      elevec3_epetra
-      );
-  }
-
-  // First, do the things that are needed for all actions:
-  // get the material (of the parent element)
-  DRT::ELEMENTS::Thermo* parentele = ele->ParentElement();
-  Teuchos::RCP<MAT::Material> mat = parentele->Material();
-
-  // Now, check for the action parameter
-  const std::string action = params.get<std::string>("action","none");
-  if (action == "calc_normal_vectors")
-  {
-    // access the global vector
-    const Teuchos::RCP<Epetra_MultiVector> normals
-      = params.get< Teuchos::RCP<Epetra_MultiVector> >("normal vectors", Teuchos::null);
-    if (normals == Teuchos::null) dserror("Could not access vector 'normal vectors'");
-
-    // get node coordinates (we have a nsd_+1 dimensional domain!)
-    GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
-
-    // determine constant normal to this element
-    GetConstNormal(normal_,xyze_);
-
-    // loop over the element nodes
-    for (int j=0;j<nen_;j++)
-    {
-      const int nodegid = (ele->Nodes()[j])->Id();
-      if (normals->Map().MyGID(nodegid) )
-      { // OK, the node belongs to this processor
-
-        // scaling to a unit vector is performed on the global level after
-        // assembly of nodal contributions since we have no reliable information
-        // about the number of boundary elements adjacent to a node
-        for (int dim=0; dim<(nsd_+1); dim++)
-        {
-          normals->SumIntoGlobalValue(nodegid,dim,normal_(dim));
-        }
-      }
-      // else: the node belongs to another processor; the ghosted
-      //       element will contribute the right value on that proc
-    }
-  }
-  else if (action == "integrate_shape_functions")
-  {
-    // NOTE: add area value only for elements which are NOT ghosted!
-    const bool addarea = (ele->Owner() == discretization.Comm().MyPID());
-    IntegrateShapeFunctions(ele,params,elevec1_epetra,addarea);
-  }
-  // surface heat convection boundary condition
-  else if (action == "calc_thermo_fextconvection")
-  {
-    dserror("EvaluateCondition is used with the location vector lm");
-  }
-  else
-    dserror("Unknown type of action for Temperature Implementation: %s",action.c_str());
-
-  return 0;
-} // Evaluate
-
-
-/*----------------------------------------------------------------------*
- |  Integrate a Surface/Line Neumann boundary condition       gjb 01/09 |
+ | integrate a Surface/Line Neumann boundary condition        gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
@@ -519,10 +431,11 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
   } //end of loop over integration points
 
   return 0;
-}
+}  // EvaluateNeumann()
+
 
 /*----------------------------------------------------------------------*
- | evaluate an convective thermo boundary condition (private) dano 12/10|
+ | evaluate an convective thermo boundary condition          dano 12/10 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateThermoConvection(
@@ -609,12 +522,11 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateThermoConvection(
 
   return;
 
-} // TemperBoundaryImpl<distype>::EvaluateThermoConvection()
-
+} // EvaluateThermoConvection()
 
 
 /*----------------------------------------------------------------------*
- |  evaluate shape functions and int. factor at int. point    gjb 01/09 |
+ | evaluate shape functions and int. factor at int. point     gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
@@ -641,11 +553,11 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
 
   // say goodbye
   return;
-}
+}  // EvalShapeFuncAndIntFac()
 
 
 /*----------------------------------------------------------------------*
- |  get constant normal                                       gjb 01/09 |
+ | get constant normal                                        gjb 01/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
@@ -686,11 +598,11 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
   normal.Scale(1/length);
 
   return;
-}
+}  // GetConstNormal()
 
 
 /*----------------------------------------------------------------------*
- |  Integrate shapefunctions over surface (private)           gjb 02/09 |
+ | integrate shapefunctions over surface (private)            gjb 02/09 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(
@@ -736,7 +648,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(
 
   return;
 
-} //TemperBoundaryImpl<distype>::IntegrateShapeFunction
+}  // IntegrateShapeFunction()
 
 
 /*----------------------------------------------------------------------*/
