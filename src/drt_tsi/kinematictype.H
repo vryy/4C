@@ -20,7 +20,6 @@
 
 //! kinematic types of the underlying elements
 //! default: total Lagrange, i.e. nonlinear
-// TODO 2012-11-12 typedef enum KinematicType
 enum GenKinematicType
 {
   geo_linear,
@@ -31,3 +30,4 @@ enum GenKinematicType
 
 /*----------------------------------------------------------------------*/
 #endif  // KINEMATICTYPE_H
+

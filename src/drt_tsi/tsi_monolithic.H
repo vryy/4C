@@ -13,11 +13,13 @@ Maintainer: Caroline Danowski
 </pre>
 */
 
+
 /*----------------------------------------------------------------------*
  | definitions                                               dano 11/10 |
  *----------------------------------------------------------------------*/
 #ifndef TSI_MONOLITHIC_H
 #define TSI_MONOLITHIC_H
+
 
 /*----------------------------------------------------------------------*
  | headers                                                   dano 11/10 |
@@ -25,6 +27,7 @@ Maintainer: Caroline Danowski
 #include "tsi_algorithm.H"
 #include "../drt_inpar/inpar_tsi.H"
 #include "../drt_inpar/inpar_structure.H"
+
 
 /*----------------------------------------------------------------------*
  |                                                           dano 11/10 |
@@ -34,6 +37,7 @@ namespace THR
 {
   class ThermoContactMan;
 }
+
 
 namespace LINALG
 {
@@ -52,6 +56,7 @@ namespace DRT
   }
 }
 
+
 namespace MORTAR
 {
   class ManagerBase;
@@ -61,6 +66,7 @@ namespace FS3I
 {
   class AeroTFSI;
 }
+
 
 //! TSI: Thermo-Structure Interaction
 namespace TSI

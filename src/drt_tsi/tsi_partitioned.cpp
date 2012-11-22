@@ -142,7 +142,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
     if(StructureField()->ContactManager() != Teuchos::null)
       ThermoField()->PrepareThermoContact(StructureField()->ContactManager(),StructureField()->Discretization());
 
-}  // Constructor
+}  // cstr
 
 
 /*----------------------------------------------------------------------*
@@ -163,7 +163,7 @@ void TSI::Partitioned::ReadRestart(int step)
   SetTimeStep(ThermoField()->GetTime(),step);
 
   return;
-}  // ReadRestart
+}  // ReadRestart()
 
 
 /*----------------------------------------------------------------------*

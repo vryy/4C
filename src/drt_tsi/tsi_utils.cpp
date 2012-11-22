@@ -11,15 +11,17 @@ Maintainer: Caroline Danowski
             089 - 289-15253
 </pre>
 */
+
+
 /*----------------------------------------------------------------------*
  | definitions                                               dano 12/09 |
  *----------------------------------------------------------------------*/
-
 #ifdef PARALLEL
 #include <Epetra_MpiComm.h>
 #else
 #include <Epetra_SerialComm.h>
 #endif
+
 
 /*----------------------------------------------------------------------*
  | headers                                                   dano 12/09 |
@@ -31,8 +33,6 @@ Maintainer: Caroline Danowski
 
 #include "../drt_thermo/thermo_element.H"
 #include "../drt_so3/so3_thermo.H"
-//// TODO 2012-11-12
-//#include "../drt_so3/so_hex8.H"
 
 
 /*----------------------------------------------------------------------*
@@ -54,7 +54,7 @@ std::map<std::string,std::string> TSI::UTILS::ThermoStructureCloneStrategy::Cond
   conditions_to_copy.insert(std::pair<std::string,std::string>("ThermoConvections","ThermoConvections"));
 
   return conditions_to_copy;
-}
+}  // ConditionsToCopy()
 
 
 /*----------------------------------------------------------------------*
@@ -62,12 +62,13 @@ std::map<std::string,std::string> TSI::UTILS::ThermoStructureCloneStrategy::Cond
  *----------------------------------------------------------------------*/
 void TSI::UTILS::ThermoStructureCloneStrategy::CheckMaterialType(const int matid)
 {
-//  //// We take the material with the ID specified by the user
-//  //// Here we check first, whether this material is of admissible type
+  // We take the material with the ID specified by the user
+  // Here we check first, whether this material is of admissible type
 //  INPAR::MAT::MaterialType mtype = DRT::Problem::Instance()->Materials()->ById(matid)->Type();
 //  if ((mtype != INPAR::MAT::m_th_fourier_iso))
-//  dserror("Material with ID %d is not admissible for thermo elements",matid);
-}
+//    dserror("Material with ID %d is not admissible for thermo elements",matid);
+
+}  // CheckMaterialType()
 
 
 /*----------------------------------------------------------------------*
@@ -119,7 +120,8 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
     dserror("unsupported element type '%s'", typeid(*newele).name());
   }
   return;
-}
+}  // SetElementData()
+
 
 /*----------------------------------------------------------------------*
  | cloned element has to be a THERMO element                 dano 12/11 |
@@ -134,7 +136,7 @@ bool TSI::UTILS::ThermoStructureCloneStrategy::DetermineEleType(
   eletype.push_back("THERMO");
 
   return true; // yes, we copy EVERY element (no submeshes)
-}
+}  // DetermineEleType()
 
 
 /*----------------------------------------------------------------------*
@@ -163,7 +165,7 @@ void TSI::UTILS::SetupTSI(const Epetra_Comm& comm)
   }
   else
       dserror("Structure AND Thermo discretization present. This is not supported.");
-}
+}  // SetupTSI()
 
 
 /*----------------------------------------------------------------------*
@@ -202,7 +204,7 @@ void TSI::printlogo()
   <<"         .\n"
   <<"         .\n"
   <<"\n"<<std::endl;
-}
+}  // printlogo()
 
 
 /*----------------------------------------------------------------------*/

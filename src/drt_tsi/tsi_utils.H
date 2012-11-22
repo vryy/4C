@@ -11,23 +11,26 @@ Maintainer: Caroline Danowski
             089 - 289-15253
 </pre>
 */
+
 /*----------------------------------------------------------------------*
  | definitions                                               dano 11/09 |
  *----------------------------------------------------------------------*/
 #ifndef TSI_UTILS_H
 #define TSI_UTILS_H
 
+
 /*----------------------------------------------------------------------*
- |  header                                                   dano 11/09 |
+ | header                                                    dano 11/09 |
  *----------------------------------------------------------------------*/
 #include "../drt_lib/drt_discret.H"
+
 
 /*----------------------------------------------------------------------*
  |                                                           dano 11/09 |
  *----------------------------------------------------------------------*/
 namespace TSI
 {
-/// TSI::UTILS: Random stuff that might be helpful when dealing with TSI problems
+//! TSI::UTILS: Random stuff that might be helpful when dealing with TSI problems
 namespace UTILS
 {
   //! \brief implementation of special clone strategy for automatic generation
@@ -36,21 +39,21 @@ namespace UTILS
   {
   public:
 
-    /// constructor
+    //! constructor
     explicit ThermoStructureCloneStrategy(){}
-    /// destructor
+    //! destructor
     virtual ~ThermoStructureCloneStrategy() {}
 
   protected:
 
-    /// determine element type string and whether element is copied or not
+    //! determine element type string and whether element is copied or not
     bool DetermineEleType(
       DRT::Element* actele,
       const bool ismyele,
       std::vector<string>& eletype
       );
 
-    /// set element-specific data (material etc.)
+    //! set element-specific data (material etc.)
     void SetElementData(
       Teuchos::RCP<DRT::Element> newele,
       DRT::Element* oldele,
@@ -58,25 +61,26 @@ namespace UTILS
       const bool isnurbs
       );
 
-    /// returns conditions names to be copied (source and target name)
+    //! returns conditions names to be copied (source and target name)
     std::map<string,string> ConditionsToCopy();
 
-    /// check for correct material
+    //! check for correct material
     void CheckMaterialType(const int matid);
 
   private:
 
   }; // class ThermoStructureCloneStrategy
 
-  /// setup TSI, clone the structural discretization
+  //! setup TSI, clone the structural discretization
   void SetupTSI(const Epetra_Comm& comm);
 
 } // namespace UTILS
 
-  /*! prints the BACI tsi-logo on the screen */
+  //! prints the BACI tsi-logo on the screen
   void printlogo();
 
 } // namespace TSI
+
 
 /*----------------------------------------------------------------------*/
 #endif // TSI_UTILS_H

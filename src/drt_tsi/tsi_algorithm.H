@@ -13,6 +13,7 @@ Maintainer: Caroline Danowski
 </pre>
 */
 
+
 /*----------------------------------------------------------------------*
  | definitions                                               dano 12/09 |
  *----------------------------------------------------------------------*/
@@ -28,6 +29,7 @@ Maintainer: Caroline Danowski
 
 #include <Epetra_Vector.h>
 
+
 /*----------------------------------------------------------------------*
  | forward declarations                                      dano 02/12 |
  *----------------------------------------------------------------------*/
@@ -36,10 +38,12 @@ namespace DRT
   class Discretization;
 }
 
+
 namespace FS3I
 {
   class AeroTFSI;
 }
+
 
 namespace ADAPTER
 {
@@ -145,10 +149,10 @@ namespace TSI
     //! @name Underlying fields
 
     //! underlying structure of the FSI problem
-    Teuchos::RCP< ::ADAPTER::Structure>    structure_;
+    Teuchos::RCP< ::ADAPTER::Structure> structure_;
 
     //! underlying fluid of the FSI problem
-    Teuchos::RCP< ::ADAPTER::Thermo>       thermo_;
+    Teuchos::RCP< ::ADAPTER::Thermo> thermo_;
 
     //@}
 

@@ -13,15 +13,16 @@ Maintainer: Caroline Danowski
 </pre>
 */
 
-/*----------------------------------------------------------------------*
- |  definitions                                             bborn 08/09 |
- *----------------------------------------------------------------------*/
 
+/*----------------------------------------------------------------------*
+ | definitions                                              bborn 08/09 |
+ *----------------------------------------------------------------------*/
 #ifndef ADAPTER_THERMO_H
 #define ADAPTER_THERMO_H
 
+
 /*----------------------------------------------------------------------*
- |  headers                                                 bborn 08/09 |
+ | headers                                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
@@ -31,7 +32,10 @@ Maintainer: Caroline Danowski
 
 #include "../drt_inpar/inpar_thermo.H"
 
-// forward declarations
+
+/*----------------------------------------------------------------------*
+ | forward declarations                                      dano 02/11 |
+ *----------------------------------------------------------------------*/
 namespace DRT
 {
   class Discretization;
@@ -42,10 +46,12 @@ namespace DRT
   }
 }
 
+
 namespace IO
 {
   class DiscretizationWriter;
 }
+
 
 namespace LINALG
 {
@@ -56,18 +62,21 @@ namespace LINALG
   class MultiMapExtractor;
 }
 
+
 namespace MORTAR
 {
   class ManagerBase;
 }
+
 
 namespace THR
 {
   class ThermoContactMan;
 }
 
+
 /*----------------------------------------------------------------------*
- |  adapting adapter                                        bborn 08/09 |
+ | adapting adapter                                         bborn 08/09 |
  *----------------------------------------------------------------------*/
 namespace ADAPTER
 {

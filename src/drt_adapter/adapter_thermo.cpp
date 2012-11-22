@@ -12,12 +12,9 @@ Maintainer: Caroline Danowski
 </pre>
 */
 
-/*----------------------------------------------------------------------*
- |  definitions                                             bborn 08/09 |
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
- |  headers                                                 bborn 08/09 |
+ | headers                                                  bborn 08/09 |
  *----------------------------------------------------------------------*/
 #include "adapter_thermo.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -33,12 +30,14 @@ Maintainer: Caroline Danowski
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 
+
 /*----------------------------------------------------------------------*
  |                                                          bborn 08/09 |
  *----------------------------------------------------------------------*/
 ADAPTER::Thermo::~Thermo()
 {
 }
+
 
 /*----------------------------------------------------------------------*
  |                                                          bborn 08/09 |
@@ -48,12 +47,14 @@ ADAPTER::ThermoBaseAlgorithm::ThermoBaseAlgorithm(const Teuchos::ParameterList& 
   SetupThermo(prbdyn);
 }
 
+
 /*----------------------------------------------------------------------*
  |                                                          bborn 08/09 |
  *----------------------------------------------------------------------*/
 ADAPTER::ThermoBaseAlgorithm::~ThermoBaseAlgorithm()
 {
 }
+
 
 /*----------------------------------------------------------------------*
  |                                                          bborn 08/09 |
@@ -78,7 +79,8 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(const Teuchos::ParameterList& prb
     break;
   }
 
-}
+}  // SetupThermo()
+
 
 /*----------------------------------------------------------------------*
  | setup of thermal time integration                        bborn 08/09 |
@@ -192,10 +194,11 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(
 
   // see you
   return;
-}
+}  // SetupTimInt()
+
 
 /*----------------------------------------------------------------------*
- | Integrate                                                bborn 08/09 |
+ | integrate                                                bborn 08/09 |
  *----------------------------------------------------------------------*/
 void ADAPTER::Thermo::Integrate()
 {
@@ -242,6 +245,7 @@ void ADAPTER::Thermo::Integrate()
 
   // Jump you f***ers
   return;
-}
+}  // Integrate()
+
 
 /*----------------------------------------------------------------------*/
