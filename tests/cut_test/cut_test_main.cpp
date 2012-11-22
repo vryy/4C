@@ -496,6 +496,7 @@ int main( int argc, char ** argv )
   case Teuchos::CommandLineProcessor::PARSE_HELP_PRINTED:
     return 0;
   case Teuchos::CommandLineProcessor::PARSE_UNRECOGNIZED_OPTION:
+  default:
     std::cerr << argv[0] << ": unrecognized option\n";
     MPI_Finalize();
     return 1;
