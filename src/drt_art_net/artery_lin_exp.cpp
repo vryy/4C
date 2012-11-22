@@ -726,7 +726,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
   double Ao1 = 0.0;
   double Ao2 = 0.0;
   // Define blood material variables
-  double visc = 0.0;
+  //  double visc = 0.0;
   double dens = 0.0;
   // Define artery's material variables
   double t1  = 0.0;
@@ -748,7 +748,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
     // Read in blood density
     dens   = actmat->Density();
     // Read in blood viscosity
-    visc   = actmat->Viscosity();
+    //    visc   = actmat->Viscosity();
     // Read in artery's thickness at node 1
     t1     = actmat->Th();
     // Read in artery's thickness at node 2
@@ -984,7 +984,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
   double Ao1 = 0.0;
   double Ao2 = 0.0;
   // Define blood material variables
-  double visc=0.0;
+  //  double visc=0.0;
   double dens=0.0;
   // Define artery's material variables
   double t1 = 0.0;
@@ -1006,7 +1006,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
     // Read in blood density
     dens   = actmat->Density();
     // Read in blood viscosity
-    visc   = actmat->Viscosity();
+    //    visc   = actmat->Viscosity();
     // Read in artery's thickness at node 1
     t1     = actmat->Th();
     // Read in artery's thickness at node 2
@@ -1433,7 +1433,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
   double Ao1 = 0.0;
   double Ao2 = 0.0;
   // Define blood material variables
-  double visc=0.0;
+  //  double visc=0.0;
   //  double dens=0.0;
   // Define artery's material variables
   double t1 = 0.0;
@@ -1455,7 +1455,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
     // Read in blood density
     //    dens   = actmat->Density();
     // Read in blood viscosity
-    visc   = actmat->Viscosity();
+    //    visc   = actmat->Viscosity();
     // Read in artery's thickness at node 1
     t1     = actmat->Th();
     // Read in artery's thickness at node 2

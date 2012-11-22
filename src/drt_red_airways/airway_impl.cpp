@@ -599,11 +599,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
 #endif
 
     // get element information from the previous time step
-    double qcn =0.0;
     double qln =0.0;
     //  ele->getVars("capacitor_flow",qcn);
     //  ele->getVars("inductor_flow",qln);
-    qcn = q_in - q_out;
     qln =  (epn(2)-epn(1))/R;
 
     //------------------------------------------------------------
@@ -614,6 +612,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     rhs(1) =  0.0;
     rhs(2) = -qln;
 #else
+    double qcn =0.0;
+    qcn = q_in - q_out;
     rhs(0) = -qcn - epn(0)*2.0*C/dt + qln + dt/(2.0*I)*(epn(0)-epn(2));
     rhs(1) = 0.0;
     rhs(2) = -qln - dt/(2.0*I)*(epn(0)-epn(2));
@@ -1635,7 +1635,8 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
 
     // get element information from the previous time step
     //    double qcn=0.0;
-    double qln=0.0;
+    //    double qln=0.0;
+    //    qln  = eqout_n;
     //  qcn = eqin_n - eqout_n;
 
     // -----------------------------------------------------------
@@ -1643,7 +1644,6 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
     // qln = qRn (qRn: flow in resistor at n)
     // -----------------------------------------------------------
     double qlnp = 0.0;
-    qln  = eqout_n;
     qlnp = (epnp(2) - epnp(1))/R;
 
     // -----------------------------------------------------------
