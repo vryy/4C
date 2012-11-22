@@ -19,8 +19,6 @@ Maintainer: Georg Bauer
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
-using namespace std;
-using namespace Teuchos;
 
 // forward declarations
 namespace DRT
@@ -36,7 +34,7 @@ namespace FLD
 //! return specific component of rotated global vector result
 double GetComponentOfRotatedVectorField(
     const int idf,                            ///< the component id 0,1 (and 2)
-    const RCP<const Epetra_Vector> proc0data, ///< the data vector
+    const Teuchos::RCP<const Epetra_Vector> proc0data, ///< the data vector
     const int lid,                            ///< local dof id (w.r.t proc0data) of component idf
     const double rotangle                     ///< angle of rotation (RAD)
 );
@@ -54,8 +52,8 @@ inline double GetRotAngleFromCondition(
 
 //! Get all relevant slave nodes of rotationally symmetric periodic bc's
 void GetRelevantSlaveNodesOfRotSymPBC(
-    map<int,double>& pbcslavenodemap, ///< map to be filled with node gids and rotation angles
-    RCP<DRT::Discretization> dis);    ///< discretization
+    std::map<int,double>& pbcslavenodemap, ///< map to be filled with node gids and rotation angles
+    Teuchos::RCP<DRT::Discretization> dis);///< discretization
 
 } // namespace FLD
 

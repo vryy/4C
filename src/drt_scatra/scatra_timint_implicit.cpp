@@ -1256,7 +1256,7 @@ void SCATRA::ScaTraTimIntImpl::TimeLoop()
   } // while
 
   // print the results of time measurements
-  TimeMonitor::summarize();
+  Teuchos::TimeMonitor::summarize();
 
   return;
 } // ScaTraTimIntImpl::TimeLoop

@@ -21,7 +21,6 @@
 #include "../linalg/linalg_utils.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 
-using namespace DRT::UTILS;
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                            g.bau 03/07|
@@ -565,8 +564,8 @@ void DRT::ELEMENTS::Ale2::static_ke(
   Epetra_SerialDenseMatrix d(4,4);
 
   // gaussian points
-  const GaussRule2D gaussrule = getOptimalGaussrule(distype);
-  const IntegrationPoints2D  intpoints(gaussrule);
+  const DRT::UTILS::GaussRule2D gaussrule = getOptimalGaussrule(distype);
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
 
   // integration loops
   for (int iquad=0;iquad<intpoints.nquad;iquad++)
@@ -793,8 +792,8 @@ void DRT::ELEMENTS::Ale2::static_ke_laplace(
 //  Epetra_SerialDenseMatrix      d(4,4);
 
   // gaussian points
-  const GaussRule2D gaussrule = getOptimalGaussrule(distype);
-  const IntegrationPoints2D  intpoints(gaussrule);
+  const DRT::UTILS::GaussRule2D gaussrule = getOptimalGaussrule(distype);
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule);
   double             min_detF = 0.0;         /* minimal Jacobian determinant   */
   ale2_min_jaco(Shape(),xyze,&min_detF);
 

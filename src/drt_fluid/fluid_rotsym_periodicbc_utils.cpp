@@ -20,8 +20,6 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_condition.H"
 
 
-using namespace Teuchos;
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 double FLD::GetComponentOfRotatedVectorField
@@ -102,11 +100,11 @@ double FLD::GetRotAngleFromCondition(const DRT::Condition* cond)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FLD::GetRelevantSlaveNodesOfRotSymPBC(
-    map<int,double>& pbcslavenodemap,
-    RCP<DRT::Discretization> dis)
+    std::map<int,double>& pbcslavenodemap,
+    Teuchos::RCP<DRT::Discretization> dis)
 {
   // get all periodic boundary conditions
-  vector<DRT::Condition*> mypbccond;
+  std::vector<DRT::Condition*> mypbccond;
   dis->GetCondition("SurfacePeriodic",mypbccond);
   if(mypbccond.empty())
   {

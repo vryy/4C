@@ -44,8 +44,6 @@ Maintainer: Andreas Ehrl
 #include "../drt_mat/structporo.H"
 
 
-using namespace DRT::UTILS;
-
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidBoundaryImplInterface* DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(const DRT::Element* ele)
@@ -930,7 +928,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
   // get local node coordinates of the element
   // function gives back a matrix with the local node coordinates of the element (nsd_,bdrynen_)
   // the function gives back an Epetra_SerialDenseMatrix!!!
-  Epetra_SerialDenseMatrix xsi_ele = getEleNodeNumbering_nodes_paramspace(distype);
+  Epetra_SerialDenseMatrix xsi_ele = DRT::UTILS::getEleNodeNumbering_nodes_paramspace(distype);
 
   // ============================== loop over nodes ==========================
   for (int inode=0;inode<bdrynen_; ++inode)
@@ -2838,7 +2836,7 @@ template <DRT::Element::DiscretizationType bndydistype,
             gps(iquad,idim) = gpcoord[idim];
           }
         }
-        BoundaryGPToParentGP3(pqxg     ,
+        DRT::UTILS::BoundaryGPToParentGP3(pqxg     ,
                                   gps,
                                   pdistype   ,
                                   bndydistype,
@@ -3119,7 +3117,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       }
       if(nsd==2)
       {
-        BoundaryGPToParentGP2(pqxg,
+        DRT::UTILS::BoundaryGPToParentGP2(pqxg,
                             gps,
                             pdistype,
                             bndydistype,
@@ -3127,7 +3125,7 @@ template <DRT::Element::DiscretizationType bndydistype,
       }
       else if(nsd==3)
       {
-        BoundaryGPToParentGP3(pqxg,
+        DRT::UTILS::BoundaryGPToParentGP3(pqxg,
                             gps,
                             pdistype,
                             bndydistype,

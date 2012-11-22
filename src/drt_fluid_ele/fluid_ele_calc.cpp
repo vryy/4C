@@ -2287,10 +2287,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
                  re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
 
     // respective "switching" parameters
-    const double xi01 = max(re01,1.0);
-    const double xi11 = max(re11,1.0);
-    const double xi02 = max(re02,1.0);
-    const double xi12 = max(re12,1.0);
+    const double xi01 = std::max(re01,1.0);
+    const double xi11 = std::max(re11,1.0);
+    const double xi02 = std::max(re02,1.0);
+    const double xi12 = std::max(re12,1.0);
 
     tau_(0) = DSQR(strle)/(DSQR(strle)*densaf_*sigma_tot*xi01+(4.0*visceff_/mk)*xi02);
     tau_(1) = DSQR(hk)/(DSQR(hk)*densaf_*sigma_tot*xi11+(4.0*visceff_/mk)*xi12);
@@ -2324,10 +2324,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
                  re12 = mk * densaf_ * vel_norm * hk / (2.0 * visceff_);
 
     // respective "switching" parameters
-    const double xi01 = max(re01,1.0);
-    const double xi11 = max(re11,1.0);
-    const double xi02 = max(re02,1.0);
-    const double xi12 = max(re12,1.0);
+    const double xi01 = std::max(re01,1.0);
+    const double xi11 = std::max(re11,1.0);
+    const double xi02 = std::max(re02,1.0);
+    const double xi12 = std::max(re12,1.0);
 
     tau_(0) = DSQR(strle)/(DSQR(strle)*densaf_*reacoeff_*xi01+(4.0*visceff_/mk)*xi02);
     tau_(1) = DSQR(hk)/(DSQR(hk)*densaf_*reacoeff_*xi11+(4.0*visceff_/mk)*xi12);
@@ -2468,7 +2468,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     const double re11 = 2.0 * visceff_ / (mk * densaf_ * sigma_tot * DSQR(hk));
 
     // respective "switching" parameter
-    const double xi11 = max(re11,1.0);
+    const double xi11 = std::max(re11,1.0);
 
     // constant c_u as suggested in Badia and Codina (2010), method A
     // (set to be 4.0 in Badia and Codina (2010), 1.0 in Franca et al. (2005))

@@ -19,7 +19,6 @@ Here is everything related with reading a bc file
 #include "pre_exodus_reader.H"
 
 
-using namespace Teuchos;
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

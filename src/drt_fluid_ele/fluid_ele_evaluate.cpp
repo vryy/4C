@@ -44,7 +44,6 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 #include "../drt_opti/topopt_fluidAdjoint3_interface.H"
 #include "../drt_opti/topopt_fluidAdjoint3_impl_parameter.H"
 
-using namespace DRT::UTILS;
 
 /*
   Depending on the type of action and the element type (tet, hex etc.),
@@ -124,7 +123,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
   RCP<MAT::Material> mat = Material();
 
   // get space dimensions
-  const int nsd = getDimension(Shape());
+  const int nsd = DRT::UTILS::getDimension(Shape());
 
   switch(act)
   {

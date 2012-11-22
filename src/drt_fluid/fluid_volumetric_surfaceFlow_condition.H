@@ -31,8 +31,6 @@ Maintainer: Mahmoud Ismail
 #include "../drt_io/io.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 
-using namespace std;
-using namespace Teuchos;
 
 namespace FLD
 {

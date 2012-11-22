@@ -20,7 +20,6 @@ Here is everything related with writing a dat-file
 
 #include "pre_exodus_readbc.H"
 
-using namespace Teuchos;
 
 /*!
 \brief EXODUS: namespace of the ExodusII-to-BACI preprocessing tool
@@ -65,7 +64,7 @@ void WriteDatEles(const vector<EXODUS::elem_def>& eledefs, const EXODUS::Mesh& m
     const map<int,map<int,std::vector<std::vector<double> > > >& elecenterlineinfo);
 
 //! Elements from eblock
-void DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, int& struele, ostream& dat,
+void DatEles(Teuchos::RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, int& struele, ostream& dat,
     const map<int,map<int,std::vector<std::vector<double> > > >& elecenterlineinfo,const int eb_id);
 
 inline string CondGeomTypeToString(const EXODUS::cond_def& def)

@@ -44,8 +44,6 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 
-using namespace std;
-using namespace Teuchos;
 
 //forward declarations
 
@@ -857,7 +855,7 @@ protected:
   FLD::UTILS::KSPMapExtractor kspsplitter_;
 
   /// connection between master and slave nodes on this proc (based on row map!!!!)
-  RCP<map<int,std::vector<int> > > pbcmapmastertoslave_;
+  RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave_;
 
   /// a manager doing the transfer of boundary data for
   /// turbulent inflow profiles from a separate (periodic) domain

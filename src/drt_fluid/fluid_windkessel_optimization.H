@@ -33,8 +33,6 @@ Maintainer: Mahmoud Ismail
 #include "fluidimpedancecondition.H"
 #include <Epetra_SerialDenseSolver.h>
 
-using namespace std;
-using namespace Teuchos;
 
 namespace FLD
 {

@@ -19,7 +19,6 @@
 #include "../drt_lib/drt_linedefinition.H"
 
 
-using namespace DRT::UTILS;
 
 DRT::ELEMENTS::Ale3Type DRT::ELEMENTS::Ale3Type::instance_;
 

@@ -122,7 +122,7 @@ int main(
   My_CLP.setOption("clinedx",&clinedx,"move centerline coords to align with mesh: delta x");
   My_CLP.setOption("clinedy",&clinedy,"move centerline coords to align with mesh: delta y");
   My_CLP.setOption("clinedz",&clinedz,"move centerline coords to align with mesh: delta z");
-  map<int,map<int,std::vector<std::vector<double> > > >elecenterlineinfo;
+  std::map<int,std::map<int,std::vector<std::vector<double> > > >elecenterlineinfo;
 
   // check for quad->tri conversion
   My_CLP.setOption("quadtri","noquadtri",&quadtri,"transform quads to tris by cutting in two halves");
@@ -130,16 +130,16 @@ int main(
   // print parobject types (needed for making automatic object registration working)
   My_CLP.setOption("printparobjecttypes",&printparobjecttypes,"print names of parobject types (registration hack)");
 
-  CommandLineProcessor::EParseCommandLineReturn
+  Teuchos::CommandLineProcessor::EParseCommandLineReturn
     parseReturn = My_CLP.parse(argc,argv);
 
-  if (parseReturn == CommandLineProcessor::PARSE_HELP_PRINTED)
+  if (parseReturn == Teuchos::CommandLineProcessor::PARSE_HELP_PRINTED)
   {
     // free the global problem instance
     problem->Done();
     return 0;
   }
-  if (parseReturn != CommandLineProcessor::PARSE_SUCCESSFUL)
+  if (parseReturn != Teuchos::CommandLineProcessor::PARSE_SUCCESSFUL)
   {
     dserror("CommandLineProcessor reported an error");
   }
@@ -350,7 +350,7 @@ int main(
 
     // screen info
     cout << "creating and checking BACI input file       --> " << datfile << endl;
-    RCP<Time> timer = TimeMonitor::getNewTimer("pre-exodus timer");
+    Teuchos::RCP<Teuchos::Time> timer = Teuchos::TimeMonitor::getNewTimer("pre-exodus timer");
 
     // check for positive Element-Center-Jacobians and otherwise rewind them
     {
@@ -479,8 +479,8 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   defaultbc<<"------------------------------------------------BCSPECS"<<endl<<endl;
 
   // write ElementBlocks with specification proposal
-  const map<int,RCP<EXODUS::ElementBlock> > myblocks = mymesh.GetElementBlocks();
-  map<int,RCP<EXODUS::ElementBlock> >::const_iterator it;
+  const std::map<int,RCP<EXODUS::ElementBlock> > myblocks = mymesh.GetElementBlocks();
+  std::map<int,RCP<EXODUS::ElementBlock> >::const_iterator it;
   for (it = myblocks.begin(); it != myblocks.end(); ++it){
     it->second->Print(defaultbc);
     defaultbc<<"*eb"<< it->first << "=\"ELEMENT\""<<endl
@@ -493,8 +493,8 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   }
 
   // write NodeSets with specification proposal
-  const map<int,EXODUS::NodeSet> mynodesets = mymesh.GetNodeSets();
-  map<int,EXODUS::NodeSet>::const_iterator ins;
+  const std::map<int,EXODUS::NodeSet> mynodesets = mymesh.GetNodeSets();
+  std::map<int,EXODUS::NodeSet>::const_iterator ins;
   for (ins =mynodesets.begin(); ins != mynodesets.end(); ++ins){
     ins->second.Print(defaultbc);
     defaultbc<<"*ns"<< ins->first << "=\"CONDITION\""<<endl
@@ -504,8 +504,8 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   }
 
   // write SideSets with specification proposal
-  const map<int,EXODUS::SideSet> mysidesets = mymesh.GetSideSets();
-  map<int,EXODUS::SideSet>::const_iterator iss;
+  const std::map<int,EXODUS::SideSet> mysidesets = mymesh.GetSideSets();
+  std::map<int,EXODUS::SideSet>::const_iterator iss;
   for (iss = mysidesets.begin(); iss!=mysidesets.end(); ++iss){
     iss->second.Print(defaultbc);
     defaultbc<<"*ss"<< iss->first << "=\"CONDITION\""<<endl

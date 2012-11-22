@@ -514,7 +514,7 @@ bool ELCH::Algorithm::ConvergenceCheck( int itnum,
   //     | concentration_n+1 |_2
 
   bool stopnonliniter = false;
-  RCP<LINALG::MapExtractor> conpotsplitter = ScaTraField().Splitter();
+  Teuchos::RCP<LINALG::MapExtractor> conpotsplitter = ScaTraField().Splitter();
   // Variables to save different L2 - Norms
 
   double potincnorm_L2(0.0);

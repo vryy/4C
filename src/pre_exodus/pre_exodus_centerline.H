@@ -24,19 +24,19 @@ std::map<int,double> NdCenterlineThickness(string cline,const std::set<int>& nod
 class Centerline
 {
 private:
-  RCP<std::map<int,std::vector<double> > > points_; /// centerline points
-  RCP<std::map<int,double> > diam_; /// diameter of the best fit circle in centerline point
+  Teuchos::RCP<std::map<int,std::vector<double> > > points_; /// centerline points
+  Teuchos::RCP<std::map<int,double> > diam_; /// diameter of the best fit circle in centerline point
 
 public:
   //ctor
   Centerline(string,std::vector<double> coordcorr);
-  Centerline(const EXODUS::NodeSet& ns, const RCP<map<int,std::vector<double> > > nodes);
+  Centerline(const EXODUS::NodeSet& ns, const Teuchos::RCP<map<int,std::vector<double> > > nodes);
   //dtor
   ~Centerline();
   //returns points_
-  RCP<map<int,std::vector<double> > > GetPoints() const {return points_;};
+  Teuchos::RCP<map<int,std::vector<double> > > GetPoints() const {return points_;};
   //returns diam_
-  RCP<map<int,double> > GetDiams() const {return diam_;};
+  Teuchos::RCP<map<int,double> > GetDiams() const {return diam_;};
   //displays points_ on console
   void PrintPoints();
   //creates gmsh-file to visualize points

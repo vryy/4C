@@ -61,8 +61,6 @@ Maintainer: Ursula Rasthofer
 
 #include "../drt_mat/newtonianfluid.H"
 
-using namespace std;
-using namespace Teuchos;
 
 //forward declaration
 namespace DRT

@@ -35,8 +35,6 @@ namespace LINALG
   class MapExtractor;
 }
 
-using namespace std;
-using namespace Teuchos;
 
 // forward declarations
 namespace DRT
@@ -65,7 +63,7 @@ public:
 
   */
   TurbulenceStatisticsGeneralMean(
-    RCP<DRT::Discretization> discret        ,
+    Teuchos::RCP<DRT::Discretization> discret        ,
     string                   homdir         ,
     LINALG::MapExtractor&    velpressplitter,
     const bool               withscatra
@@ -95,9 +93,9 @@ public:
 
   */
   void AddToCurrentTimeAverage(const double             dt ,
-                               const RCP<Epetra_Vector> vec,
-                               const RCP<Epetra_Vector> scavec = Teuchos::null,
-                               const RCP<Epetra_Vector> scatravec = Teuchos::null);
+                               const Teuchos::RCP<Epetra_Vector> vec,
+                               const Teuchos::RCP<Epetra_Vector> scavec = Teuchos::null,
+                               const Teuchos::RCP<Epetra_Vector> scatravec = Teuchos::null);
 
   /*!
   \brief Perform a averaging of the current, already time averaged
@@ -181,8 +179,8 @@ public:
 
   */
   void AddScaTraResults(
-      RCP<DRT::Discretization> scatradis,
-      RCP<Epetra_Vector> myphinp);
+      Teuchos::RCP<DRT::Discretization> scatradis,
+      Teuchos::RCP<Epetra_Vector> myphinp);
 
   /*!
   \brief Do output of ScaTra mean field for visualization/restart
@@ -199,22 +197,22 @@ public:
 private:
 
   //! the fluid discretization
-  RCP<DRT::Discretization>     discret_        ;
+  Teuchos::RCP<DRT::Discretization> discret_;
 
   //! dofset containing fluid standard dofs (no XFEM dofs)
   Teuchos::RCP<const DRT::DofSet> standarddofset_;
 
   //! the scatra discretization
-  RCP<DRT::Discretization>     scatradis_      ;
+  Teuchos::RCP<DRT::Discretization> scatradis_;
 
   //! a splitter between velocities and pressure dofs
   LINALG::MapExtractor&        velpressplitter_;
 
   //! vector containing homogeneous directions
-  vector<int>                  homdir_         ;
+  std::vector<int>             homdir_         ;
 
   //! previous averages, done in time and space
-  RCP<Epetra_Vector>           prev_avg_       ;
+  Teuchos::RCP<Epetra_Vector>  prev_avg_       ;
   //! number of time steps included in the previous average
   int                          prev_n_         ;
   //! time covered by previous average
@@ -222,7 +220,7 @@ private:
 
 
   //! current averages, done in time and space
-  RCP<Epetra_Vector>           curr_avg_       ;
+  Teuchos::RCP<Epetra_Vector>  curr_avg_       ;
   //! number of time steps included in the current average
   int                          curr_n_         ;
   //! time covered by current average
@@ -231,13 +229,13 @@ private:
   //! flag for additional averaging of scalar field
   bool                         withscatra_     ;
   //! previous scalar field averages, done in time and space
-  RCP<Epetra_Vector>           prev_avg_sca_   ;
+  Teuchos::RCP<Epetra_Vector>  prev_avg_sca_   ;
   //! current scalar field averages, done in time and space
-  RCP<Epetra_Vector>           curr_avg_sca_   ;
+  Teuchos::RCP<Epetra_Vector>  curr_avg_sca_   ;
   //! previous scalar field averages, done in time and space
-  RCP<Epetra_Vector>           prev_avg_scatra_;
+  Teuchos::RCP<Epetra_Vector>  prev_avg_scatra_;
   //! current scalar field averages, done in time and space
-  RCP<Epetra_Vector>           curr_avg_scatra_;
+  Teuchos::RCP<Epetra_Vector>  curr_avg_scatra_;
 
   //! compare operator for doubles up to a precision of 1e-8
   struct doublecomp {

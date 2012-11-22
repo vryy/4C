@@ -339,21 +339,21 @@ namespace FLD
     discret_         (timeint.discret_     ),
     params_          (timeint.params_      ),
     alefluid_        (false                ),
-    myaccnp_         (null                 ), // size is not fixed as we deal with xfem problems
-    myaccn_          (null                 ), // size is not fixed
-    myaccam_         (null                 ), // size is not fixed
-    myveln_          (null                 ), // size is not fixed
-    myvelaf_         (null                 ), // size is not fixed
-    myhist_          (null                 ), // size is not fixed
-    myscaaf_         (null                 ),
-    myscaam_         (null                 ),
+    myaccnp_         (Teuchos::null        ), // size is not fixed as we deal with xfem problems
+    myaccn_          (Teuchos::null        ), // size is not fixed
+    myaccam_         (Teuchos::null        ), // size is not fixed
+    myveln_          (Teuchos::null        ), // size is not fixed
+    myvelaf_         (Teuchos::null        ), // size is not fixed
+    myhist_          (Teuchos::null        ), // size is not fixed
+    myscaaf_         (Teuchos::null        ),
+    myscaam_         (Teuchos::null        ),
     mydispnp_        (Teuchos::null        ),
-    mydispn_         (null                 ),
-    mygridvelaf_     (null                 ),
-    myfilteredvel_   (null                 ),
-    myfilteredreystr_(null                 ),
-    myfsvelaf_       (null                 ),
-    myfsscaaf_       (null                 ),
+    mydispn_         (Teuchos::null        ),
+    mygridvelaf_     (Teuchos::null        ),
+    myfilteredvel_   (Teuchos::null        ),
+    myfilteredreystr_(Teuchos::null        ),
+    myfsvelaf_       (Teuchos::null        ),
+    myfsscaaf_       (Teuchos::null        ),
     flow_            (no_special_flow      ),
     withscatra_      (false                ),
     turbmodel_      (INPAR::FLUID::no_model),

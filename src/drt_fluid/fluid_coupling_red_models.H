@@ -27,14 +27,9 @@ Maintainer: Mahmoud Ismail
 #include "../drt_lib/drt_discret.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_art_net/art_net_dyn_drt.H"
-//#include "../drt_art_net/artnetexplicitintegration.H"
 #include "../drt_red_airways/red_airways_dyn_drt.H"
-//#include "../drt_red_airways/airwayimplicitintegration.H"
-
 #include "../drt_io/io.H"
 
-using namespace std;
-using namespace Teuchos;
 
 namespace FLD
 {

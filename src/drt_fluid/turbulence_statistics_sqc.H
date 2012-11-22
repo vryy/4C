@@ -58,9 +58,6 @@ Maintainer: Volker Gravemeier
 #include "../linalg/linalg_utils.H"
 
 
-using namespace std;
-using namespace Teuchos;
-
 namespace FLD
 {
 

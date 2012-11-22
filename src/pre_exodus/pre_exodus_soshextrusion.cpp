@@ -22,7 +22,6 @@ Here everything related with solid-shell body extrusion
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "pre_exodus_centerline.H"
 
-using namespace Teuchos;
 
 
 /* Method to extrude a surface to become a volumetric body */
@@ -31,15 +30,15 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
 {
   int highestnid = basemesh.GetNumNodes();  // this is the currently highest id, a new node must become highestnid+1
   //map<int,std::vector<double> > newnodes;
-  RCP<map<int,std::vector<double> > > newnodes = Teuchos::rcp(new std::map<int,std::vector<double> >);          // here the new nodes are stored
-  map<int,RCP<EXODUS::ElementBlock> > neweblocks;   // here the new EBlocks are stored
+  Teuchos::RCP<map<int,std::vector<double> > > newnodes = Teuchos::rcp(new std::map<int,std::vector<double> >);          // here the new nodes are stored
+  map<int,Teuchos::RCP<EXODUS::ElementBlock> > neweblocks;   // here the new EBlocks are stored
   map<int,EXODUS::NodeSet> newnodesets;             // here the new NS are stored
   map<int,EXODUS::SideSet> newsidesets;             // here the new SS are stored
   int highestblock = basemesh.GetNumElementBlocks(); // check whether there are ebs at all
   int highestns = basemesh.GetNumNodeSets();// check whether there are nss at all
   int highestss = basemesh.GetNumSideSets();
-  map<int,RCP<EXODUS::ElementBlock> > ebs = basemesh.GetElementBlocks();
-  map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_ebs;
+  map<int,Teuchos::RCP<EXODUS::ElementBlock> > ebs = basemesh.GetElementBlocks();
+  map<int,Teuchos::RCP<EXODUS::ElementBlock> >::const_iterator i_ebs;
   if (highestblock!=0) highestblock = ebs.rbegin()->first+1; // if there are ebs get the highest number, not necessarily consecutive
   else highestblock = 1; // case of no eblocks at all -> starts with 1 due to exodus format
 
@@ -131,7 +130,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     const std::set<int> free_edge_nodes = FreeEdgeNodes(ele_conn,ele_neighbor);
 
     // loop through all its elements to create new connectivity  ***************
-    RCP<map<int,std::vector<int> > > newconn = Teuchos::rcp(new std::map<int,std::vector<int> >);
+    Teuchos::RCP<map<int,std::vector<int> > > newconn = Teuchos::rcp(new std::map<int,std::vector<int> >);
     int newele = 0;
 
     map<int,std::vector<int> > newsideset; // this sideset will become the new extruded out-'side'
@@ -567,15 +566,15 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     }
     case sideset:{ // SideSets can have different types of eles and have to be checked individually
       map<int,std::vector<int> >::const_iterator i_ele;
-      RCP<map<int,std::vector<int> > > hexconn = Teuchos::rcp(new std::map<int,std::vector<int> >);
+      Teuchos::RCP<map<int,std::vector<int> > > hexconn = Teuchos::rcp(new std::map<int,std::vector<int> >);
       int hexcounter = 0;
-      RCP<map<int,std::vector<int> > > wegconn = Teuchos::rcp(new std::map<int,std::vector<int> >);
+      Teuchos::RCP<map<int,std::vector<int> > > wegconn = Teuchos::rcp(new std::map<int,std::vector<int> >);
       int wegcounter = 0;
 
       // case of 2 eblocks over extrusion (diveblocks > 0) ===================
-      RCP<map<int,std::vector<int> > > hexconn2 = Teuchos::rcp(new std::map<int,std::vector<int> >);
+      Teuchos::RCP<map<int,std::vector<int> > > hexconn2 = Teuchos::rcp(new std::map<int,std::vector<int> >);
       int hexcounter2 = 0;
-      RCP<map<int,std::vector<int> > > wegconn2 = Teuchos::rcp(new std::map<int,std::vector<int> >);
+      Teuchos::RCP<map<int,std::vector<int> > > wegconn2 = Teuchos::rcp(new std::map<int,std::vector<int> >);
       int wegcounter2 = 0;
       int innerelecounter = -1;
       // =====================================================================
@@ -646,31 +645,31 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
         std::ostringstream hexblockname;
         hexblockname << blockname.str() << "h" << highestblock;
         const string hexname = hexblockname.str();
-        RCP<EXODUS::ElementBlock> neweblock = Teuchos::rcp(new ElementBlock(ElementBlock::hex8,hexconn,hexname));
-        neweblocks.insert(std::pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
+        Teuchos::RCP<EXODUS::ElementBlock> neweblock = Teuchos::rcp(new ElementBlock(ElementBlock::hex8,hexconn,hexname));
+        neweblocks.insert(std::pair<int,Teuchos::RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
         highestblock ++;
       }
       if (hexcounter2>0){
         std::ostringstream hexblockname;
         hexblockname << blockname.str() << "h" << highestblock;
         const string hexname = hexblockname.str();
-        RCP<EXODUS::ElementBlock> neweblock = Teuchos::rcp(new ElementBlock(ElementBlock::hex8,hexconn2,hexname));
-        neweblocks.insert(std::pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
+        Teuchos::RCP<EXODUS::ElementBlock> neweblock = Teuchos::rcp(new ElementBlock(ElementBlock::hex8,hexconn2,hexname));
+        neweblocks.insert(std::pair<int,Teuchos::RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
         highestblock ++;
       }
 
       if (wegcounter>0){
         std::ostringstream wegblockname;
         wegblockname << blockname.str() << "w" << highestblock;
-        RCP<EXODUS::ElementBlock> neweblock = Teuchos::rcp(new ElementBlock(ElementBlock::wedge6,wegconn,wegblockname.str()));
-        neweblocks.insert(std::pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
+        Teuchos::RCP<EXODUS::ElementBlock> neweblock = Teuchos::rcp(new ElementBlock(ElementBlock::wedge6,wegconn,wegblockname.str()));
+        neweblocks.insert(std::pair<int,Teuchos::RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
         highestblock ++;
       }
       if (wegcounter2>0){
         std::ostringstream wegblockname;
         wegblockname << blockname.str() << "w" << highestblock;
-        RCP<EXODUS::ElementBlock> neweblock = Teuchos::rcp(new ElementBlock(ElementBlock::wedge6,wegconn2,wegblockname.str()));
-        neweblocks.insert(std::pair<int,RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
+        Teuchos::RCP<EXODUS::ElementBlock> neweblock = Teuchos::rcp(new ElementBlock(ElementBlock::wedge6,wegconn2,wegblockname.str()));
+        neweblocks.insert(std::pair<int,Teuchos::RCP<EXODUS::ElementBlock> >(highestblock,neweblock));
         highestblock ++;
       }
 

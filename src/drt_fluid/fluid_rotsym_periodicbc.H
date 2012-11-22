@@ -17,12 +17,9 @@ Maintainer: Georg Bauer
 
 #include <vector>
 
-using namespace std;
-
 
 #include "fluid_rotsym_periodicbc_utils.H"
 
-using namespace Teuchos;
 
 /*!
 \brief  This class manages local transformations(rotation) of velocity fields
@@ -117,7 +114,7 @@ public:
 
 
     /// rotate velocity vector used in element routine if necessary
-    void RotateMyValuesIfNecessary(vector<double>& myvalues)
+    void RotateMyValuesIfNecessary(std::vector<double>& myvalues)
     {
       if(HasRotSymmPBC())
       {
@@ -209,7 +206,7 @@ protected:
 private:
 
   //! vector of local slave node ids of the applied periodic surface boundary conditions
-  vector<int> slavenodelids_;
+  std::vector<int> slavenodelids_;
 
   //! angle of rotation (slave plane <--> master plane)
   double rotangle_;

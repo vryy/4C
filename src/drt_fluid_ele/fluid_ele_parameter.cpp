@@ -22,7 +22,6 @@ Maintainer: Andreas Ehrl
 #include "fluid_ele_parameter.H"
 #include "../drt_lib/drt_dserror.H"
 
-using namespace std;
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
@@ -126,9 +125,9 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
   else
   {
     if (myrank == 0)
-      cout << endl << (" Warning: general fluid parameters should be set only once!!\n "
+      std::cout << std::endl << (" Warning: general fluid parameters should be set only once!!\n "
         "If you run a turbulent inflow generation, calling this function twice is ok!\n "
-        "Otherwise: Check, why you enter this function a second time!!!") << endl << endl;
+        "Otherwise: Check, why you enter this function a second time!!!") << std::endl << std::endl;
   }
 
 //----------------------------------------------------------------------
@@ -196,7 +195,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
 
   if (not is_stationary_ and is_conservative_)
   {
-    cout << endl << "Warning: missing time derivative terms in conservative formulation (for variable density flows)!!" << endl;
+    std::cout << std::endl << "Warning: missing time derivative terms in conservative formulation (for variable density flows)!!" << std::endl;
   }
   // set further parameters which are specific for a physical type
   if (physicaltype_ == INPAR::FLUID::topopt)
@@ -413,13 +412,13 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTimeParameter( Teuchos::Paramet
   if (dt_ < 0.0 or theta_ < 0.0 or time_ < 0.0 or omtheta_ < 0.0 or gamma_ < 0.0
       or alphaF_ < 0.0 or alphaM_ < 0.0)
   {
-    cout<<"dt_: "<<dt_<<endl;
-    cout<<"theta_ "<<theta_<<endl;
-    cout<<"time_ "<<time_<<endl;
-    cout<<"omtheta_ "<<omtheta_<<endl;
-    cout<<"gamma_ "<<gamma_<<endl;
-    cout<<"alphaF_ "<<alphaF_<<endl;
-    cout<<"alphaM_ "<<alphaM_<<endl;
+    std::cout<<"dt_: "<<dt_<<std::endl;
+    std::cout<<"theta_ "<<theta_<<std::endl;
+    std::cout<<"time_ "<<time_<<std::endl;
+    std::cout<<"omtheta_ "<<omtheta_<<std::endl;
+    std::cout<<"gamma_ "<<gamma_<<std::endl;
+    std::cout<<"alphaF_ "<<alphaF_<<std::endl;
+    std::cout<<"alphaM_ "<<alphaM_<<std::endl;
     dserror("Negative (or no) time-integration parameter or time-step length supplied");
   }
 }
@@ -526,10 +525,10 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::P
       Csgs_phi_ = turbmodelparamsmfs.get<double>("CSGS_PHI");
       adapt_Csgs_phi_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs,"ADAPT_CSGS_PHI");
 
-      if (turbmodelparamsmfs.get<string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
+      if (turbmodelparamsmfs.get<std::string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
        alpha_ = 3.0;
-      else if (turbmodelparamsmfs.get<string>("SCALE_SEPARATION") == "box_filter"
-            or turbmodelparamsmfs.get<string>("SCALE_SEPARATION") == "geometric_multigrid_operator")
+      else if (turbmodelparamsmfs.get<std::string>("SCALE_SEPARATION") == "box_filter"
+            or turbmodelparamsmfs.get<std::string>("SCALE_SEPARATION") == "geometric_multigrid_operator")
        alpha_ = 2.0;
       else
        dserror("Unknown filter type!");
@@ -538,24 +537,24 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::P
 
       N_ = turbmodelparamsmfs.get<double>("N");
 
-      if (turbmodelparamsmfs.get<string>("REF_VELOCITY") == "strainrate")
+      if (turbmodelparamsmfs.get<std::string>("REF_VELOCITY") == "strainrate")
        refvel_ = INPAR::FLUID::strainrate;
-      else if (turbmodelparamsmfs.get<string>("REF_VELOCITY") == "resolved")
+      else if (turbmodelparamsmfs.get<std::string>("REF_VELOCITY") == "resolved")
        refvel_ = INPAR::FLUID::resolved;
-      else if (turbmodelparamsmfs.get<string>("REF_VELOCITY") == "fine_scale")
+      else if (turbmodelparamsmfs.get<std::string>("REF_VELOCITY") == "fine_scale")
        refvel_ = INPAR::FLUID::fine_scale;
       else
        dserror("Unknown velocity!");
 
-      if (turbmodelparamsmfs.get<string>("REF_LENGTH") == "cube_edge")
+      if (turbmodelparamsmfs.get<std::string>("REF_LENGTH") == "cube_edge")
        reflength_ = INPAR::FLUID::cube_edge;
-      else if (turbmodelparamsmfs.get<string>("REF_LENGTH") == "sphere_diameter")
+      else if (turbmodelparamsmfs.get<std::string>("REF_LENGTH") == "sphere_diameter")
        reflength_ = INPAR::FLUID::sphere_diameter;
-      else if (turbmodelparamsmfs.get<string>("REF_LENGTH") == "streamlength")
+      else if (turbmodelparamsmfs.get<std::string>("REF_LENGTH") == "streamlength")
        reflength_ = INPAR::FLUID::streamlength;
-      else if (turbmodelparamsmfs.get<string>("REF_LENGTH") == "gradient_based")
+      else if (turbmodelparamsmfs.get<std::string>("REF_LENGTH") == "gradient_based")
        reflength_ = INPAR::FLUID::gradient_based;
-      else if (turbmodelparamsmfs.get<string>("REF_LENGTH") == "metric_tensor")
+      else if (turbmodelparamsmfs.get<std::string>("REF_LENGTH") == "metric_tensor")
        reflength_ = INPAR::FLUID::metric_tensor;
       else
        dserror("Unknown length!");
@@ -565,16 +564,16 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::P
 
       near_wall_limit_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs,"NEAR_WALL_LIMIT");
 
-      if (turbmodelparamsmfs.get<string>("EVALUATION_B") == "element_center")
+      if (turbmodelparamsmfs.get<std::string>("EVALUATION_B") == "element_center")
       B_gp_ = false;
-      else if (turbmodelparamsmfs.get<string>("EVALUATION_B") == "integration_point")
+      else if (turbmodelparamsmfs.get<std::string>("EVALUATION_B") == "integration_point")
       B_gp_ = true;
       else
         dserror("Unknown evaluation point!");
 
       beta_ = turbmodelparamsmfs.get<double>("BETA");
 
-      if (turbmodelparamsmfs.get<string>("CONVFORM") == "conservative")
+      if (turbmodelparamsmfs.get<std::string>("CONVFORM") == "conservative")
        mfs_is_conservative_ = true;
       else
        mfs_is_conservative_ = false;
@@ -638,123 +637,123 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementPoroParameter( Teuchos::Paramet
 //----------------------------------------------------------------------*/
 void DRT::ELEMENTS::FluidEleParameter::PrintFluidParameter()
 {
-    cout << endl << "|-----------------------------------------------------------------------------" << endl;
-    cout << "|  General Fluid parameter: " << endl;
-    cout << "|-----------------------------------------------------------------------------" << endl;
+    std::cout << std::endl << "|-----------------------------------------------------------------------------" << std::endl;
+    std::cout << "|  General Fluid parameter: " << std::endl;
+    std::cout << "|-----------------------------------------------------------------------------" << std::endl;
     //! flag SetGeneralParameter was called
-    cout << "|    method SetElmentGeneralFluidParameter was called:    " << set_general_fluid_parameter_ << endl;
+    std::cout << "|    method SetElmentGeneralFluidParameter was called:    " << set_general_fluid_parameter_ << std::endl;
     //! flag to (de)activate generalized-alpha time-integration scheme
-    cout << "|    generalized alpha time integration active:    " << is_genalpha_ << endl;
+    std::cout << "|    generalized alpha time integration active:    " << is_genalpha_ << std::endl;
     //! flag to (de)activate generalized-alpha-np1 time-integration scheme
-    cout << "|    generalized alpha time integration np:    " << is_genalpha_np_ << endl;
+    std::cout << "|    generalized alpha time integration np:    " << is_genalpha_np_ << std::endl;
     //! flag to (de)activate conservative formulation
-    cout << "|    conservative formulation:    " << is_conservative_ << endl;
+    std::cout << "|    conservative formulation:    " << is_conservative_ << std::endl;
     //! flag to (de)activate stationary formulation
-    cout << "|    steady state:    " << is_stationary_ << endl;
+    std::cout << "|    steady state:    " << is_stationary_ << std::endl;
     //! flag to (de)activate Newton linearization
-    cout << "|    Newton linearization:    " << is_newton_ << endl;
+    std::cout << "|    Newton linearization:    " << is_newton_ << std::endl;
     //! flag to (de)activate second derivatives
-    cout << "|    use inconsistent:    " << is_inconsistent_ << endl;
+    std::cout << "|    use inconsistent:    " << is_inconsistent_ << std::endl;
     //! flag to (de)activate potential reactive terms
-    cout << "|    reaction term:    " << reaction_ << endl;
+    std::cout << "|    reaction term:    " << reaction_ << std::endl;
     //! flag to (de)aktivate porous darcy flow
-    cout << "|    darcy equation:    " << darcy_ << endl;
+    std::cout << "|    darcy equation:    " << darcy_ << std::endl;
     //! flag to (de)aktivate reaction due to topology optimization
-    cout << "|    reaction term due to topology optimization:    " << reaction_topopt_ << endl;
+    std::cout << "|    reaction term due to topology optimization:    " << reaction_topopt_ << std::endl;
     //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
-    cout << "|    physical type:    "<< physicaltype_ << endl;
+    std::cout << "|    physical type:    "<< physicaltype_ << std::endl;
     //! Flag to (de)activate time-dependent subgrid stabilization
-    cout << "|    time-dependent subgrid stabilization:    " << tds_ << endl;
+    std::cout << "|    time-dependent subgrid stabilization:    " << tds_ << std::endl;
     //! Flag to (de)activate time-dependent term in large-scale momentum equation
-    cout << "|    time dependent term:    " << transient_ << endl;
+    std::cout << "|    time dependent term:    " << transient_ << std::endl;
     //! Flag to (de)activate PSPG stabilization
-    cout << "|    PSPG:    " << pspg_ << endl;
+    std::cout << "|    PSPG:    " << pspg_ << std::endl;
     //! Flag to (de)activate SUPG stabilization
-    cout << "|    SUPG:    " << supg_<< endl ;
+    std::cout << "|    SUPG:    " << supg_<< std::endl ;
     //! Flag to (de)activate viscous term in residual-based stabilization
-    cout << "|    VSTAB:    " << vstab_ << endl;
+    std::cout << "|    VSTAB:    " << vstab_ << std::endl;
     //! Flag to (de)activate least-squares stabilization of continuity equation
-    cout << "|    Grad-Div-Stab:    " << cstab_ << endl ;
+    std::cout << "|    Grad-Div-Stab:    " << cstab_ << std::endl ;
     //! Flag to (de)activate reactive term in residual-based stabilization
-    cout << "|    reactive stabilization:    " << rstab_ << endl;
+    std::cout << "|    reactive stabilization:    " << rstab_ << std::endl;
     //! Flag to (de)activate cross-stress term -> residual-based VMM
-    cout << "|    cross-stress term:    " << cross_ << endl;
+    std::cout << "|    cross-stress term:    " << cross_ << std::endl;
     //! Flag to (de)activate Reynolds-stress term -> residual-based VMM
-    cout << "|    Reynolds-stress term:    " << reynolds_ << endl;
+    std::cout << "|    Reynolds-stress term:    " << reynolds_ << std::endl;
     //! (sign) factor for viscous and reactive stabilization terms
-    cout << "|    viscous and reactive stabilization factor:    " << viscreastabfac_ << endl;
+    std::cout << "|    viscous and reactive stabilization factor:    " << viscreastabfac_ << std::endl;
     //! Flag to define tau
-    cout << "|    Definition of stabilization parameter:    " << whichtau_ << endl;
+    std::cout << "|    Definition of stabilization parameter:    " << whichtau_ << std::endl;
     //! flag to (de)activate fine-scale subgrid viscosity
-    cout << "|    fine-scale subgrid viscosity::    " << fssgv_ << endl;
+    std::cout << "|    fine-scale subgrid viscosity::    " << fssgv_ << std::endl;
     //! flag for material evaluation at Gaussian integration points
-    cout << "|    material evaluation at Gaussian integration points:    " << mat_gp_ << endl;
+    std::cout << "|    material evaluation at Gaussian integration points:    " << mat_gp_ << std::endl;
     //! flag for stabilization parameter evaluation at Gaussian integration points
-    cout << "|    stabilization parameter evaluation at Gaussian integration points:    " << tau_gp_ << endl;
-    cout << "|---------------------------------------------------------------------------" << endl;
+    std::cout << "|    stabilization parameter evaluation at Gaussian integration points:    " << tau_gp_ << std::endl;
+    std::cout << "|---------------------------------------------------------------------------" << std::endl;
 
-    cout << endl << "|---------------------------------------------------------------------------" << endl;
-    cout << "|  Time parameter: " << endl;
-    cout << "|---------------------------------------------------------------------------" << endl;
+    std::cout << std::endl << "|---------------------------------------------------------------------------" << std::endl;
+    std::cout << "|  Time parameter: " << std::endl;
+    std::cout << "|---------------------------------------------------------------------------" << std::endl;
     //! time algorithm
-    cout << "|    time algorithm:    " << timealgo_ << endl;
+    std::cout << "|    time algorithm:    " << timealgo_ << std::endl;
     //! actual time to evaluate the body BC
-    cout << "|    time:    " << time_ << endl;
+    std::cout << "|    time:    " << time_ << std::endl;
     //! time-step length
-    cout << "|    time step:    " << dt_ << endl;
+    std::cout << "|    time step:    " << dt_ << std::endl;
     //! timefac = dt_ * ("pseudo"-)theta_
-    cout << "|    time factor:    " << timefac_ << endl;
+    std::cout << "|    time factor:    " << timefac_ << std::endl;
     //! factor for left-hand side due to one-step-theta time-integration scheme
-    cout << "|    theta:    " << theta_ << endl;
+    std::cout << "|    theta:    " << theta_ << std::endl;
     //! factor for right-hand side due to one-step-theta time-integration scheme
-    cout << "|    (1-theta):    " << omtheta_ << endl;
+    std::cout << "|    (1-theta):    " << omtheta_ << std::endl;
     //! generalised-alpha parameter (connecting velocity and acceleration)
-    cout << "|    gamma:    " << gamma_ << endl;
+    std::cout << "|    gamma:    " << gamma_ << std::endl;
     //! generalised-alpha parameter (velocity)
-    cout << "|    alpha_F:    " << alphaF_ << endl;
+    std::cout << "|    alpha_F:    " << alphaF_ << std::endl;
     //! generalised-alpha parameter (acceleration)
-    cout << "|    alpha_M:    " << alphaM_ << endl;
+    std::cout << "|    alpha_M:    " << alphaM_ << std::endl;
     //! generalised-alpha parameter, alphaF_*gamma_*dt_
-    cout << "|    time factor mat_u:    " << afgdt_ << endl;
+    std::cout << "|    time factor mat_u:    " << afgdt_ << std::endl;
     //! time integration factor for the right hand side (boundary elements)
-    cout << "|    time factor rhs:    " << timefacrhs_ << endl;
+    std::cout << "|    time factor rhs:    " << timefacrhs_ << std::endl;
     //! time integration factor for the left hand side (pressure)
-    cout << "|    time factor mat_p:    " << timefacpre_ << endl;
-    cout << "|---------------------------------------------------------------------------" << endl;
+    std::cout << "|    time factor mat_p:    " << timefacpre_ << std::endl;
+    std::cout << "|---------------------------------------------------------------------------" << std::endl;
 
-    cout << endl << "|---------------------------------------------------------------------------" << endl;
-    cout << "|  Turbulence parameter: " << endl;
-    cout << "|---------------------------------------------------------------------------" << endl;
+    std::cout << std::endl << "|---------------------------------------------------------------------------" << std::endl;
+    std::cout << "|  Turbulence parameter: " << std::endl;
+    std::cout << "|---------------------------------------------------------------------------" << std::endl;
     //! flag to define turbulence model
-    cout << "|    turbulence model:    " << turb_mod_action_ << endl;
+    std::cout << "|    turbulence model:    " << turb_mod_action_ << std::endl;
     //! smagorinsky constant
-    cout << "|    smagorinsky constant:    " << Cs_ << endl;
+    std::cout << "|    smagorinsky constant:    " << Cs_ << std::endl;
     //! comment missing
-    cout << "|    Cs_averaged_ is    " << Cs_averaged_ << endl;
+    std::cout << "|    Cs_averaged_ is    " << Cs_averaged_ << std::endl;
     //! scale similarity constant
-    cout << "|    Cl_ is    " << Cl_ << endl;
+    std::cout << "|    Cl_ is    " << Cl_ << std::endl;
     /// multifractal subgrid-scales
-    cout << "|    Csgs_ is    " << Csgs_ << endl;
+    std::cout << "|    Csgs_ is    " << Csgs_ << std::endl;
     //! comment missing
-    cout << "|    alpha_ is    " << alpha_ << endl;
+    std::cout << "|    alpha_ is    " << alpha_ << std::endl;
     //! comment missing
-    cout << "|    CalcN_ is    " << CalcN_ << endl;
+    std::cout << "|    CalcN_ is    " << CalcN_ << std::endl;
     //! comment missing
-    cout << "|    N_ is    " << N_ << endl;
+    std::cout << "|    N_ is    " << N_ << std::endl;
     //! comment missing
-    cout << "|    refvel_ is    " << refvel_ << endl;
+    std::cout << "|    refvel_ is    " << refvel_ << std::endl;
     //! comment missing
-    cout << "|    reflength_ is    " << reflength_ << endl;
+    std::cout << "|    reflength_ is    " << reflength_ << std::endl;
     //! comment missing
-    cout << "|    c_nu_ is    " << c_nu_ << endl;
+    std::cout << "|    c_nu_ is    " << c_nu_ << std::endl;
     //! comment missing
-    cout << "|    near_wall_limit_ is    " << near_wall_limit_ << endl;
+    std::cout << "|    near_wall_limit_ is    " << near_wall_limit_ << std::endl;
     //! comment missing
-    cout << "|    B_gp_ is    " << B_gp_ << endl;
+    std::cout << "|    B_gp_ is    " << B_gp_ << std::endl;
     //! comment missing
-    cout << "|    beta_ is    " << beta_ << endl;
+    std::cout << "|    beta_ is    " << beta_ << std::endl;
     //! channel length to normalize the normal wall distance
-    cout << "|    channel length to normalize the normal wall distance:    " << l_tau_ << endl;
-    cout << "|---------------------------------------------------------------------------" << endl;
+    std::cout << "|    channel length to normalize the normal wall distance:    " << l_tau_ << std::endl;
+    std::cout << "|---------------------------------------------------------------------------" << std::endl;
 
 }

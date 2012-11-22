@@ -27,8 +27,6 @@ Validate a given BACI input file (after all preprocessing steps)
 #include "../drt_lib/drt_inputreader.H"
 
 
-using namespace Teuchos;
-using namespace EXODUS;
 using std::vector;
 
 
@@ -142,7 +140,7 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
   Epetra_SerialDenseMatrix    deriv(NSD, iel);
 
   // go through all elements
-  RCP<map<int,std::vector<int> > > eleconn = eb->GetEleConn();
+  Teuchos::RCP<map<int,std::vector<int> > > eleconn = eb->GetEleConn();
   map<int,std::vector<int> >::iterator i_ele;
   int numrewindedeles=0;
   for(i_ele=eleconn->begin();i_ele!=eleconn->end();++i_ele){
@@ -219,7 +217,7 @@ int EXODUS::ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::Dis
 
   // go through all elements
   int invalids = 0;
-  RCP<map<int,std::vector<int> > > eleconn = eb->GetEleConn();
+  Teuchos::RCP<map<int,std::vector<int> > > eleconn = eb->GetEleConn();
   map<int,std::vector<int> >::iterator i_ele;
   for(i_ele=eleconn->begin();i_ele!=eleconn->end();++i_ele){
     for (int igp = 0; igp < intpoints.nquad; ++igp) {

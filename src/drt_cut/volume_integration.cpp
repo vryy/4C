@@ -15,7 +15,6 @@ equations
 #include "cut_options.H"
 #include <Epetra_MultiVector.h>
 
-using namespace std;
 
 /*--------------------------------------------------------------------------*
          compute the rhs of the moment fitting equations

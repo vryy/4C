@@ -75,8 +75,6 @@ Maintainer: Ursula Rasthofer
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_scatra/scatra_ele_action.H"
 
-using namespace std;
-using namespace Teuchos;
 
 namespace FLD
 {

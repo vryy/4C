@@ -25,8 +25,6 @@ Maintainer: Ursula Rasthofer
 #include "Teuchos_ParameterList.hpp"
 #include "../drt_inpar/inpar_fluid.H"
 
-using namespace std;
-using namespace Teuchos;
 
 //forward declarations
 namespace DRT
@@ -102,7 +100,7 @@ public:
   similarity model)
 
   */
-  void StoreNodalValues(int step, const RCP<Epetra_Vector>   stress12);
+  void StoreNodalValues(int step, const Teuchos::RCP<Epetra_Vector>   stress12);
 
   /*!
   \brief Include current quantities in the time
@@ -171,8 +169,8 @@ public:
 
   */
   void AddScaTraResults(
-      RCP<DRT::Discretization> scatradis,
-      RCP<Epetra_Vector> myphinp);
+      Teuchos::RCP<DRT::Discretization> scatradis,
+      Teuchos::RCP<Epetra_Vector> myphinp);
 
   /*!
   \brief   Write (dump) the scatra-specific mean fields to the result file
@@ -186,7 +184,7 @@ public:
   \brief remote access method to general mean statistics manager
 
   */
-  const RCP<TurbulenceStatisticsGeneralMean> GetTurbulenceStatisticsGeneralMean() const
+  const Teuchos::RCP<TurbulenceStatisticsGeneralMean> GetTurbulenceStatisticsGeneralMean() const
     { return statistics_general_mean_; }
 
 private:
@@ -209,9 +207,9 @@ private:
   int                                  dumperiod_  ;
 
   //! the fluid discretization
-  RCP<DRT::Discretization>             discret_    ;
+  Teuchos::RCP<DRT::Discretization>    discret_    ;
   //! the scatra discretization
-  RCP<DRT::Discretization>             scatradis_  ;
+  Teuchos::RCP<DRT::Discretization>    scatradis_  ;
 
   //! parameterlist of the discretization including time params,
   //! stabilization params and turbulence sublist
@@ -219,38 +217,38 @@ private:
 
   //! parameterlist specially designed for the evaluation of
   //! gausspoint statistics
-  ParameterList                        eleparams_  ;
+  Teuchos::ParameterList               eleparams_  ;
 
   //! decides whether we use an Eulerian or an ALE formulation
   bool                                 alefluid_   ;
 
   //! all my solution vectors needed for element evaluation
-  RCP<Epetra_Vector>                   myaccnp_    ;
-  RCP<Epetra_Vector>                   myaccn_     ;
-  RCP<Epetra_Vector>                   myaccam_    ;
+  Teuchos::RCP<Epetra_Vector>           myaccnp_    ;
+  Teuchos::RCP<Epetra_Vector>           myaccn_     ;
+  Teuchos::RCP<Epetra_Vector>           myaccam_    ;
 
-  RCP<Epetra_Vector>                   myvelnp_    ;
-  RCP<Epetra_Vector>                   myveln_     ;
-  RCP<Epetra_Vector>                   myvelaf_    ;
+  Teuchos::RCP<Epetra_Vector>           myvelnp_    ;
+  Teuchos::RCP<Epetra_Vector>           myveln_     ;
+  Teuchos::RCP<Epetra_Vector>           myvelaf_    ;
 
-  RCP<Epetra_Vector>                   myhist_    ;
+  Teuchos::RCP<Epetra_Vector>           myhist_    ;
 
-  RCP<Epetra_Vector>                   myscaaf_    ;
-  RCP<Epetra_Vector>                   myscaam_    ;
+  Teuchos::RCP<Epetra_Vector>           myscaaf_    ;
+  Teuchos::RCP<Epetra_Vector>           myscaam_    ;
   //! scatra result vector (defined on the scatra dofrowmap!)
-  RCP<Epetra_Vector>                   myfullphinp_;
+  Teuchos::RCP<Epetra_Vector>           myfullphinp_;
 
-  RCP<Epetra_Vector>                   mydispnp_   ;
-  RCP<Epetra_Vector>                   mydispn_    ;
+  Teuchos::RCP<Epetra_Vector>           mydispnp_   ;
+  Teuchos::RCP<Epetra_Vector>           mydispn_    ;
 
-  RCP<Epetra_Vector>                   mygridvelaf_;
+  Teuchos::RCP<Epetra_Vector>           mygridvelaf_;
 
-  RCP<Epetra_Vector>                   myforce_    ;
+  Teuchos::RCP<Epetra_Vector>           myforce_    ;
 
-  RCP<Epetra_MultiVector>              myfilteredvel_;
-  RCP<Epetra_MultiVector>              myfilteredreystr_;
-  RCP<Epetra_Vector>                   myfsvelaf_    ;
-  RCP<Epetra_Vector>                   myfsscaaf_;
+  Teuchos::RCP<Epetra_MultiVector>      myfilteredvel_;
+  Teuchos::RCP<Epetra_MultiVector>      myfilteredreystr_;
+  Teuchos::RCP<Epetra_Vector>           myfsvelaf_    ;
+  Teuchos::RCP<Epetra_Vector>           myfsscaaf_;
 
 
   //! specifies the special flow
@@ -289,28 +287,28 @@ private:
   //! averaging takes place in time, if hom. directions have been specified
   //! additionally along these lines
   bool out_mean_;
-  RCP<TurbulenceStatisticsGeneralMean> statistics_general_mean_;
+  Teuchos::RCP<TurbulenceStatisticsGeneralMean> statistics_general_mean_;
 
   //! turbulence statistics for turbulent channel flow
-  RCP<TurbulenceStatisticsCha>         statistics_channel_;
+  Teuchos::RCP<TurbulenceStatisticsCha>         statistics_channel_;
 
   //! turbulence statistics for turbulent multi phase channel flow
-  RCP<COMBUST::TurbulenceStatisticsBcf> statistics_channel_multiphase_;
+  Teuchos::RCP<COMBUST::TurbulenceStatisticsBcf> statistics_channel_multiphase_;
 
   //! turbulence statistics for a rotating circular cylinder
-  RCP<TurbulenceStatisticsCcy>         statistics_ccy_;
+  Teuchos::RCP<TurbulenceStatisticsCcy>         statistics_ccy_;
 
   //! turbulence statistics for lid-driven cavity
-  RCP<TurbulenceStatisticsLdc>         statistics_ldc_;
+  Teuchos::RCP<TurbulenceStatisticsLdc>         statistics_ldc_;
 
   //! turbulence statistics for backward-facing step
-  RCP<TurbulenceStatisticsBfs>         statistics_bfs_;
+  Teuchos::RCP<TurbulenceStatisticsBfs>         statistics_bfs_;
 
   //! turbulence statistics for ORACLES
-  RCP<COMBUST::TurbulenceStatisticsORACLES> statistics_oracles_;
+  Teuchos::RCP<COMBUST::TurbulenceStatisticsORACLES> statistics_oracles_;
 
   //! turbulence statistics for square cylinder
-  RCP<TurbulenceStatisticsSqc>         statistics_sqc_;
+  Teuchos::RCP<TurbulenceStatisticsSqc>         statistics_sqc_;
 
 }; // end class TurbulenceStatisticManager
 

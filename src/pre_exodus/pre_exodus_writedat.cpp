@@ -22,8 +22,6 @@ Here is everything related with writing a dat-file
 #include "../drt_lib/drt_conditiondefinition.H"
 
 
-using namespace Teuchos;
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 int EXODUS::WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
@@ -380,8 +378,8 @@ const std::set<int> EXODUS::GetNsFromBCEntity(const EXODUS::cond_def& e, const E
     return ns.GetNodeSet();
   } else if (e.me==EXODUS::bceb){
     std::set<int> allnodes;
-    RCP<EXODUS::ElementBlock> eb = m.GetElementBlock(e.id);
-    RCP<const map<int,std::vector<int> > > eles = eb->GetEleConn();
+    Teuchos::RCP<EXODUS::ElementBlock> eb = m.GetElementBlock(e.id);
+    Teuchos::RCP<const map<int,std::vector<int> > > eles = eb->GetEleConn();
     map<int,std::vector<int> >::const_iterator i_ele;
     for(i_ele=eles->begin(); i_ele != eles->end(); ++i_ele){
       const std::vector<int> nodes = i_ele->second;
@@ -412,7 +410,7 @@ void EXODUS::WriteDatNodes(const EXODUS::Mesh& mymesh, ostream& dat)
 {
   dat << "-------------------------------------------------------NODE COORDS" << endl;
   dat.precision(16);
-  RCP<map<int,std::vector<double> > > nodes = mymesh.GetNodes();
+  Teuchos::RCP<map<int,std::vector<double> > > nodes = mymesh.GetNodes();
   map<int,std::vector<double> >::const_iterator i_node;
   for (i_node = nodes->begin(); i_node != nodes->end(); ++i_node)
   {
@@ -459,7 +457,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   for(i_et=strus.begin();i_et!=strus.end();++i_et)
   {
     EXODUS::elem_def acte = *i_et;
-    RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
+    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
     EXODUS::DatEles(eb,acte,startele,dat,elecenterlineinfo,acte.id);
   }
 
@@ -468,7 +466,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   for(i_et=fluids.begin();i_et!=fluids.end();++i_et)
   {
     EXODUS::elem_def acte = *i_et;
-    RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
+    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
     EXODUS::DatEles(eb,acte,startele,dat,elecenterlineinfo,acte.id);
   }
 
@@ -477,7 +475,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   for(i_et=ales.begin();i_et!=ales.end();++i_et)
   {
     EXODUS::elem_def acte = *i_et;
-    RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
+    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
     EXODUS::DatEles(eb,acte,startele,dat,elecenterlineinfo,acte.id);
   }
 
@@ -486,7 +484,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   for(i_et=transport.begin();i_et!=transport.end();++i_et)
   {
     EXODUS::elem_def acte = *i_et;
-    RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
+    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
     EXODUS::DatEles(eb,acte,startele,dat,elecenterlineinfo,acte.id);
   }
 
@@ -495,7 +493,7 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
   for(i_et=thermo.begin();i_et!=thermo.end();++i_et)
   {
     EXODUS::elem_def acte = *i_et;
-    RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
+    Teuchos::RCP<EXODUS::ElementBlock> eb = mymesh.GetElementBlock(acte.id);
     EXODUS::DatEles(eb,acte,startele,dat,elecenterlineinfo,acte.id);
   }
 
@@ -505,10 +503,10 @@ void EXODUS::WriteDatEles(const vector<elem_def>& eledefs, const EXODUS::Mesh& m
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::DatEles(RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, int& startele, ostream& datfile,
+void EXODUS::DatEles(Teuchos::RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, int& startele, ostream& datfile,
     const map<int,map<int,std::vector<std::vector<double> > > >& elescli,const int eb_id)
 {
-  RCP<const map<int,std::vector<int> > > eles = eb->GetEleConn();
+  Teuchos::RCP<const map<int,std::vector<int> > > eles = eb->GetEleConn();
   map<int,std::vector<int> >::const_iterator i_ele;
   for (i_ele=eles->begin();i_ele!=eles->end();++i_ele)
   {

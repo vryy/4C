@@ -49,8 +49,6 @@ Maintainer: Peter Gamnitzer
 #include "Epetra_SerialDenseMatrix.h"
 
 
-using namespace std;
-using namespace Teuchos;
 
 namespace DRT
 {
@@ -77,9 +75,9 @@ public:
   </pre>
 
   */
-  TurbulenceStatisticsCcy(RCP<DRT::Discretization> actdis             ,
+  TurbulenceStatisticsCcy(Teuchos::RCP<DRT::Discretization> actdis             ,
                           bool                             alefluid           ,
-                          RCP<Epetra_Vector>       dispnp             ,
+                          Teuchos::RCP<Epetra_Vector>       dispnp             ,
                           Teuchos::ParameterList&                   params             ,
                           const bool                       withscatra);
 
@@ -143,7 +141,7 @@ public:
   flow around a rotating circular cylinder
 
   */
-  vector<double> ReturnShellPlaneRadius()
+  std::vector<double> ReturnShellPlaneRadius()
     {
       return(*nodeshells_);
     };
@@ -152,8 +150,8 @@ public:
 
   // Add results from scalar transport field solver to statistics
   void AddScaTraResults(
-      RCP<DRT::Discretization> scatradis,
-      RCP<Epetra_Vector> phinp);
+      Teuchos::RCP<DRT::Discretization> scatradis,
+      Teuchos::RCP<Epetra_Vector> phinp);
 
 protected:
 
@@ -191,16 +189,16 @@ private:
   int                              countrecord_;
 
   //! The discretisation (required for nodes, dofs etc;)
-  RCP<DRT::Discretization> discret_;
+  Teuchos::RCP<DRT::Discretization> discret_;
 
   //! the scatra discretization
-  RCP<DRT::Discretization> scatradis_;
+  Teuchos::RCP<DRT::Discretization> scatradis_;
 
   //! flag for ale discretisation
   bool                             alefluid_;
 
   //! node displacements due to mesh motion
-  RCP<Epetra_Vector>       dispnp_;
+  Teuchos::RCP<Epetra_Vector>       dispnp_;
 
   //! contains plane normal direction etc --- this is the original
   //! fluid dynamic parameterlist
@@ -209,17 +207,17 @@ private:
   //! parameterlist for the element call when averages of residuals
   //! are calculated --- used for communication between element
   //! and averaging methods
-  ParameterList                    eleparams_;
+  Teuchos::ParameterList                    eleparams_;
 
   //! pointer to mean vel/pres field
-  RCP<Epetra_Vector>       meanvelnp_;
+  Teuchos::RCP<Epetra_Vector>       meanvelnp_;
 
   //! the dim_-coordinates of the homogeneous planes containing nodes
-  RCP<std::vector<double> >     nodeshells_;
+  Teuchos::RCP<std::vector<double> >     nodeshells_;
 
   //! the dim_-coordinates of the homogeneous planes --- including
   //additional sampling planes
-  RCP<std::vector<double> >     shellcoordinates_;
+  Teuchos::RCP<std::vector<double> >     shellcoordinates_;
 
   //!--------------------------------------------------
   //!       the pointwise averaged stuff
@@ -227,29 +225,29 @@ private:
   //
 
   //! sum over u (over one plane in each component)
-  RCP<std::vector<double> >     pointsumu_;
+  Teuchos::RCP<std::vector<double> >     pointsumu_;
   //! sum over v (over one plane in each component)
-  RCP<std::vector<double> >     pointsumv_;
+  Teuchos::RCP<std::vector<double> >     pointsumv_;
   //! sum over w (over one plane in each component)
-  RCP<std::vector<double> >     pointsumw_;
+  Teuchos::RCP<std::vector<double> >     pointsumw_;
   //! sum over p (over one plane in each component)
-  RCP<std::vector<double> >     pointsump_;
+  Teuchos::RCP<std::vector<double> >     pointsump_;
 
   //! sum over u^2 (over one plane in each component)
-  RCP<std::vector<double> >     pointsumuu_;
+  Teuchos::RCP<std::vector<double> >     pointsumuu_;
   //! sum over v^2 (over one plane in each component)
-  RCP<std::vector<double> >     pointsumvv_;
+  Teuchos::RCP<std::vector<double> >     pointsumvv_;
   //! sum over w^2 (over one plane in each component)
-  RCP<std::vector<double> >     pointsumww_;
+  Teuchos::RCP<std::vector<double> >     pointsumww_;
   //! sum over p^2 (over one plane in each component)
-  RCP<std::vector<double> >     pointsumpp_;
+  Teuchos::RCP<std::vector<double> >     pointsumpp_;
 
   //! sum over uv (over one plane in each component)
-  RCP<std::vector<double> >     pointsumuv_;
+  Teuchos::RCP<std::vector<double> >     pointsumuv_;
   //! sum over uw (over one plane in each component)
-  RCP<std::vector<double> >     pointsumuw_;
+  Teuchos::RCP<std::vector<double> >     pointsumuw_;
   //! sum over vw (over one plane in each component)
-  RCP<std::vector<double> >     pointsumvw_;
+  Teuchos::RCP<std::vector<double> >     pointsumvw_;
 
   // for additional scalar transport
 
@@ -260,20 +258,20 @@ private:
   int                              numscatradofpernode_;
 
   //! pointer to mean scalar field
-  RCP<Epetra_Vector>       meanscanp_;
+  Teuchos::RCP<Epetra_Vector>       meanscanp_;
 
   //! pointer to mean field of all scatra results
-  RCP<Epetra_Vector>       meanfullphinp_;
+  Teuchos::RCP<Epetra_Vector>       meanfullphinp_;
 
   //! sum over c (over one plane in each component)
-  RCP<std::vector<double> >     pointsumc_;
+  Teuchos::RCP<std::vector<double> >     pointsumc_;
   //! sum over c^2 (over one plane in each component)
-  RCP<std::vector<double> >     pointsumcc_;
+  Teuchos::RCP<std::vector<double> >     pointsumcc_;
 
   //! sum over c (over one plane in each component)
-  RCP<Epetra_SerialDenseMatrix>     pointsumphi_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     pointsumphi_;
   //! sum over c^2 (over one plane in each component)
-  RCP<Epetra_SerialDenseMatrix>     pointsumphiphi_;
+  Teuchos::RCP<Epetra_SerialDenseMatrix>     pointsumphiphi_;
 
 };
 

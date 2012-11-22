@@ -26,8 +26,6 @@ Maintainer: Christiane Förster
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
 
-using namespace std;
-using namespace Teuchos;
 
 namespace FLD
 {

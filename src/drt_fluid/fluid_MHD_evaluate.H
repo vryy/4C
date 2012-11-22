@@ -21,7 +21,6 @@ Maintainer: Peter Gamnitzer
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterList.hpp>
 
-using namespace Teuchos;
 
 // forward declarations
 namespace DRT
@@ -59,7 +58,7 @@ public:
 
   */
   FluidMHDEvaluate(
-    RCP<DRT::Discretization>    actdis);
+    Teuchos::RCP<DRT::Discretization>    actdis);
 
    /*!
   \brief Destructor
@@ -79,13 +78,13 @@ public:
 private:
 
   //! the parent discretization
-  RCP<DRT::Discretization>    pdiscret_;
+  Teuchos::RCP<DRT::Discretization>    pdiscret_;
   //! the boundary discretisation
-  RCP<DRT::Discretization>    bnd_discret_;
+  Teuchos::RCP<DRT::Discretization>    bnd_discret_;
   //! dofrowmap for 
-  RCP<Epetra_Map>             subdofrowmap_;
+  Teuchos::RCP<Epetra_Map>             subdofrowmap_;
   //! (small) system FEmatrix for boundary discretisation
-  RCP<LINALG::SparseMatrix>   bndmat_;
+  Teuchos::RCP<LINALG::SparseMatrix>   bndmat_;
 
 
 };

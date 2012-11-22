@@ -18,7 +18,6 @@
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-using namespace DRT::UTILS;
 
 DRT::ELEMENTS::Ale2Type DRT::ELEMENTS::Ale2Type::instance_;
 
@@ -208,25 +207,26 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Surfaces()
 }
 
 
-GaussRule2D DRT::ELEMENTS::Ale2::getOptimalGaussrule(const DiscretizationType& distype)
+DRT::UTILS::GaussRule2D DRT::ELEMENTS::Ale2::getOptimalGaussrule(const DiscretizationType& distype)
 {
-    GaussRule2D rule = intrule2D_undefined;
+    DRT::UTILS::GaussRule2D rule = DRT::UTILS::intrule2D_undefined;
     switch (distype)
     {
     case quad4: case nurbs4:
-        rule = intrule_quad_4point;
+        rule = DRT::UTILS::intrule_quad_4point;
         break;
     case quad8: case quad9: case nurbs9:
-        rule = intrule_quad_9point;
+        rule = DRT::UTILS::intrule_quad_9point;
         break;
     case tri3:
-        rule = intrule_tri_3point;
+        rule = DRT::UTILS::intrule_tri_3point;
         break;
     case tri6:
-        rule = intrule_tri_6point;
+        rule = DRT::UTILS::intrule_tri_6point;
         break;
     default:
         dserror("unknown number of nodes for gaussrule initialization");
+        break;
   }
   return rule;
 }

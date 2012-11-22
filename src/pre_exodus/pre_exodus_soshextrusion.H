@@ -26,7 +26,6 @@ Here everything related with solid-shell body extrusion
 #include "pre_exodus_reader.H"
 
 
-using namespace Teuchos;
 
 namespace EXODUS
 {

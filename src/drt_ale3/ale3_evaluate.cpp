@@ -21,7 +21,6 @@
 #include "../drt_lib/drt_utils.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 
-using namespace DRT::UTILS;
 
 
 DRT::ELEMENTS::Ale3_Impl_Interface* DRT::ELEMENTS::Ale3_Impl_Interface::Impl(DRT::ELEMENTS::Ale3* ele)
@@ -286,8 +285,8 @@ inline void DRT::ELEMENTS::Ale3_Impl<distype>::ElementNodeNormal(
   LINALG::Matrix<3,  3  > xji;
 
   // gaussian points
-  const GaussRule3D gaussrule = getOptimalGaussrule();
-  const IntegrationPoints3D  intpoints(gaussrule);
+  const DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule();
+  const DRT::UTILS::IntegrationPoints3D  intpoints(gaussrule);
 
   // integration loops
   for (int iquad=0;iquad<intpoints.nquad;iquad++)
@@ -1414,8 +1413,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke(
   double vol=0.;
 
   // gaussian points
-  const GaussRule3D gaussrule = getOptimalGaussrule();
-  const IntegrationPoints3D  intpoints(gaussrule);
+  const DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule();
+  const DRT::UTILS::IntegrationPoints3D  intpoints(gaussrule);
 
   // integration loops
   for (int iquad=0;iquad<intpoints.nquad;iquad++)
@@ -1869,8 +1868,8 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(
   double vol=0.;
 
   // gaussian points
-  const GaussRule3D gaussrule = getOptimalGaussrule();
-  const IntegrationPoints3D  intpoints(gaussrule);
+  const DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule();
+  const DRT::UTILS::IntegrationPoints3D  intpoints(gaussrule);
 
   // This whole method was copied from the ALE2 element and extended to 3D.
   // ToDo: proper computation and usage of min_detF. Is there any detailed literature
@@ -1961,30 +1960,30 @@ void DRT::ELEMENTS::Ale3_Impl<distype>::static_ke_laplace(
 
 // get optimal gaussrule for discretization type
 template <DRT::Element::DiscretizationType distype>
-inline GaussRule3D DRT::ELEMENTS::Ale3_Impl<distype>::getOptimalGaussrule()
+inline DRT::UTILS::GaussRule3D DRT::ELEMENTS::Ale3_Impl<distype>::getOptimalGaussrule()
 {
     switch (distype)
     {
     case DRT::Element::hex8:
     case DRT::Element::nurbs8:
-      return intrule_hex_8point;
+      return DRT::UTILS::intrule_hex_8point;
     case DRT::Element::hex20:
     case DRT::Element::hex27:
     case DRT::Element::nurbs27:
-      return intrule_hex_27point;
+      return DRT::UTILS::intrule_hex_27point;
     case DRT::Element::tet4:
-      return intrule_tet_4point;
+      return DRT::UTILS::intrule_tet_4point;
     case DRT::Element::tet10:
-      return intrule_tet_5point;
+      return DRT::UTILS::intrule_tet_5point;
     case DRT::Element::wedge6:
-      return intrule_wedge_6point;
+      return DRT::UTILS::intrule_wedge_6point;
     case DRT::Element::wedge15:
-      return intrule_wedge_9point;
+      return DRT::UTILS::intrule_wedge_9point;
     case DRT::Element::pyramid5:
-      return intrule_pyramid_8point;
+      return DRT::UTILS::intrule_pyramid_8point;
     default:
       dserror("unknown number of nodes for gaussrule initialization");
-      return intrule3D_undefined;
+      return DRT::UTILS::intrule3D_undefined;
     }
 }
 

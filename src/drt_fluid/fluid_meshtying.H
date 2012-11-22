@@ -19,8 +19,6 @@ Maintainer: Andreas Ehrl
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 
-using namespace std;
-using namespace Teuchos;
 
 //forward declarations
 namespace DRT
@@ -73,7 +71,7 @@ class Meshtying
   public:
 
     //! Constructor
-    Meshtying(RCP<DRT::Discretization>      dis,                      ///> actual discretisation
+    Meshtying(Teuchos::RCP<DRT::Discretization>      dis,                      ///> actual discretisation
               LINALG::Solver&               solver,
               Teuchos::ParameterList&       params,                   ///> meshting parameter list
               const UTILS::MapExtractor*    surfacesplitter = NULL);  ///> surface splitter
@@ -82,25 +80,25 @@ class Meshtying
     virtual ~Meshtying(){return;};
 
     //! Set up mesh-tying framework
-    RCP<LINALG::SparseOperator> Setup();
+    Teuchos::RCP<LINALG::SparseOperator> Setup();
 
     //! Prepare matrix and residual for meshtying
-    void PrepareMeshtyingSystem(RCP<LINALG::SparseOperator>&  sysmat,     ///> sysmat established by the element routine
-                      RCP<Epetra_Vector>&                     residual);  ///> residual established by the element routine
+    void PrepareMeshtyingSystem(Teuchos::RCP<LINALG::SparseOperator>&  sysmat,     ///> sysmat established by the element routine
+                      Teuchos::RCP<Epetra_Vector>&                     residual);  ///> residual established by the element routine
 
     //! Solve mesh-tying problem
     void SolveMeshtying(LINALG::Solver&                 solver,
-                        RCP<LINALG::SparseOperator>     sysmat,
-                        RCP<Epetra_Vector>&              incvel,
-                        RCP<Epetra_Vector>              residual,
+                        Teuchos::RCP<LINALG::SparseOperator>     sysmat,
+                        Teuchos::RCP<Epetra_Vector>&              incvel,
+                        Teuchos::RCP<Epetra_Vector>              residual,
                         int                             itnum,
-                        RCP<Epetra_MultiVector>         w,
-                        RCP<Epetra_MultiVector>         c,
+                        Teuchos::RCP<Epetra_MultiVector>         w,
+                        Teuchos::RCP<Epetra_MultiVector>         c,
                         bool                            project
                         );
 
     //! Adjust null-space for Krylov projector (slave node are in-active)
-    void KrylovProjection(RCP<Epetra_Vector>   c);
+    void KrylovProjection(Teuchos::RCP<Epetra_Vector>   c);
 
     //! Time update for Lagrange multiplier
     void UpdateLag();
@@ -109,96 +107,96 @@ class Meshtying
     void OutputSetUp();
 
     //! Output: split sparse matrix
-    void OutputSparseMatrixSplit(RCP<LINALG::SparseOperator>  conmat);
+    void OutputSparseMatrixSplit(Teuchos::RCP<LINALG::SparseOperator>  conmat);
 
     //! Output: single blocks of the block matrix
-    void OutputBlockMatrix(RCP<LINALG::SparseOperator>      blockmatrix,
-                           RCP<Epetra_Vector>               residual);
+    void OutputBlockMatrix(Teuchos::RCP<LINALG::SparseOperator>      blockmatrix,
+                           Teuchos::RCP<Epetra_Vector>               residual);
 
     //! Output: split vector
-    void OutputVectorSplit(RCP<Epetra_Vector>  vector);
+    void OutputVectorSplit(Teuchos::RCP<Epetra_Vector>  vector);
 
     //! Analyze system matrix
     void AnalyzeMatrix(
-        RCP<LINALG::SparseMatrix>        sparsematrix); ///> sparse matrix to analyze
+        Teuchos::RCP<LINALG::SparseMatrix>        sparsematrix); ///> sparse matrix to analyze
 
     //! Replace matrix entries
     /// Replace computed identity matrix by a real identity matrix
     void ReplaceMatrixEntries(
-        RCP<LINALG::SparseMatrix>        sparsematrix); ///> sparse matrix to analyze
+        Teuchos::RCP<LINALG::SparseMatrix>        sparsematrix); ///> sparse matrix to analyze
 
   private:
 
     //! Adjust the residual for a saddle point system (PrepareMeshtyingSystem)
-    void ResidualSaddlePointSystem(RCP<Epetra_Vector>  residual);   ///> residual established by the element routine
+    void ResidualSaddlePointSystem(Teuchos::RCP<Epetra_Vector>  residual);   ///> residual established by the element routine
 
     //! Prepare condensation for a block matrix (PrepareMeshtyingSystem)
-    void CondensationBlockMatrix(RCP<LINALG::SparseOperator>&   sysmat,     ///> sysmat established by the element routine
-                                 RCP<Epetra_Vector>&            residual);  ///> residual established by the element routine
+    void CondensationBlockMatrix(Teuchos::RCP<LINALG::SparseOperator>&   sysmat,     ///> sysmat established by the element routine
+                                 Teuchos::RCP<Epetra_Vector>&            residual);  ///> residual established by the element routine
 
     //! Prepare condensation for sparse matrix (PrepareMeshtyingSystem)
     void CondensationSparseMatrix(
-        RCP<LINALG::SparseOperator>&   sysmat,      ///> sysmat established by the element routine
-        RCP<Epetra_Vector>&            residual);   ///> residual established by the element routine
+        Teuchos::RCP<LINALG::SparseOperator>&   sysmat,      ///> sysmat established by the element routine
+        Teuchos::RCP<Epetra_Vector>&            residual);   ///> residual established by the element routine
 
-    //! Split sparse matrix and save blocks in a std::vector<RCP<Epetra_Vector> >
-    void SplitMatrix(RCP<LINALG::SparseOperator>                matrix,         ///> sysmat established by the element routine
-                     std::vector<RCP<LINALG::SparseMatrix> >&   splitmatrix);   ///> container for the split blocks
+    //! Split sparse matrix and save blocks in a std::vector<Teuchos::RCP<Epetra_Vector> >
+    void SplitMatrix(Teuchos::RCP<LINALG::SparseOperator>                matrix,         ///> sysmat established by the element routine
+                     std::vector<Teuchos::RCP<LINALG::SparseMatrix> >&   splitmatrix);   ///> container for the split blocks
 
-    //! Split vector and save parts in a std::vector<RCP<Epetra_Vector> >
-    void SplitVector(RCP<Epetra_Vector>                   vector,           ///> vector to split
-                     std::vector<RCP<Epetra_Vector> >&    splitvector);     ///> container for the split vector
+    //! Split vector and save parts in a std::vector<Teuchos::RCP<Epetra_Vector> >
+    void SplitVector(Teuchos::RCP<Epetra_Vector>                   vector,           ///> vector to split
+                     std::vector<Teuchos::RCP<Epetra_Vector> >&    splitvector);     ///> container for the split vector
 
-    //! Split vector and save parts in a std::vector<RCP<Epetra_Vector> >
-    void SplitVectorBasedOn3x3(RCP<Epetra_Vector> orgvector,        ///> original vector based on 3x3 blockmatrix
-                               RCP<Epetra_Vector> vectorbasedon2x2);     ///> split vector based on 2x2 blockmatrix
+    //! Split vector and save parts in a std::vector<Teuchos::RCP<Epetra_Vector> >
+    void SplitVectorBasedOn3x3(Teuchos::RCP<Epetra_Vector> orgvector,        ///> original vector based on 3x3 blockmatrix
+                               Teuchos::RCP<Epetra_Vector> vectorbasedon2x2);     ///> split vector based on 2x2 blockmatrix
 
     //! Condensation operation for a sparse matrix:
     /// the sysmat is manipulated via a second sparse matrix
     /// Assembling is slower, since the graph cannot be saved
     void CondensationOperationSparseMatrix(
-        RCP<LINALG::SparseOperator>&              sysmat,         ///> sysmat established by the element routine
-        RCP<Epetra_Vector>&                       residual,       ///> residual established by the element routine
-        std::vector<RCP<LINALG::SparseMatrix> > & splitmatrix,    ///> container with split original sysmat
-        std::vector<RCP<Epetra_Vector> >&         splitvector);   ///> container with split original residual
+        Teuchos::RCP<LINALG::SparseOperator>&              sysmat,         ///> sysmat established by the element routine
+        Teuchos::RCP<Epetra_Vector>&                       residual,       ///> residual established by the element routine
+        std::vector<Teuchos::RCP<LINALG::SparseMatrix> > & splitmatrix,    ///> container with split original sysmat
+        std::vector<Teuchos::RCP<Epetra_Vector> >&         splitvector);   ///> container with split original residual
 
     //! Condensation operation for a block matrix
     /// the original blocks (nn, nm, mn, mm) are manipulated directly;
     /// the remaining blocks (ns, ms, ss, sn, sm) are not touched at all,
     /// since finally a 2x2 block matrix is solved
     void CondensationOperationBlockMatrix(
-        RCP<LINALG::SparseOperator>&              sysmat,         ///> sysmat established by the element routine
-        RCP<Epetra_Vector>&                       residual,       ///> residual established by the element routine
-        std::vector<RCP<Epetra_Vector> >&         splitvector);   ///> container with split original residual
+        Teuchos::RCP<LINALG::SparseOperator>&              sysmat,         ///> sysmat established by the element routine
+        Teuchos::RCP<Epetra_Vector>&                       residual,       ///> residual established by the element routine
+        std::vector<Teuchos::RCP<Epetra_Vector> >&         splitvector);   ///> container with split original residual
 
     //! Compute and update the increments of the slave node (Condensation)
-    void UpdateSlaveDOF(RCP<Epetra_Vector>&   inc);
+    void UpdateSlaveDOF(Teuchos::RCP<Epetra_Vector>&   inc);
 
     //! Prepare the saddle point system in sparse matrix
     /// the system can only be solved by Umfpack
     void PrepareSaddlePointSystem(
-        RCP<LINALG::SparseOperator>    sysmat,            ///> sysmat established by the element routine
-        RCP<LINALG::SparseMatrix>      mergedsysmat,      ///> merged sysmat (including Lagrange multiplier)
-        RCP<Epetra_Vector>             residual,          ///> residual established by the element routine
-        RCP<Epetra_Vector>             mergedresidual);   ///> merged residual (including Lagrange multiplier)
+        Teuchos::RCP<LINALG::SparseOperator>    sysmat,            ///> sysmat established by the element routine
+        Teuchos::RCP<LINALG::SparseMatrix>      mergedsysmat,      ///> merged sysmat (including Lagrange multiplier)
+        Teuchos::RCP<Epetra_Vector>             residual,          ///> residual established by the element routine
+        Teuchos::RCP<Epetra_Vector>             mergedresidual);   ///> merged residual (including Lagrange multiplier)
 
     //! Prepare the saddle point system in block matrix
     /// the system can only be solved by SIMPLER algorithm
     void PrepareSaddlePointSystemPC(
-        RCP<LINALG::SparseOperator>        sysmat,            ///> sysmat established by the element routine
-        RCP<LINALG::BlockSparseMatrixBase> blocksysmat,       ///> merged sysmat (including Lagrange multiplier)
-        RCP<Epetra_Vector>                 residual,          ///> residual established by the element routine
-        RCP<Epetra_Vector>                 mergedresidual);   ///> merged residual (including Lagrange multiplier)
+        Teuchos::RCP<LINALG::SparseOperator>        sysmat,            ///> sysmat established by the element routine
+        Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocksysmat,       ///> merged sysmat (including Lagrange multiplier)
+        Teuchos::RCP<Epetra_Vector>                 residual,          ///> residual established by the element routine
+        Teuchos::RCP<Epetra_Vector>                 mergedresidual);   ///> merged residual (including Lagrange multiplier)
 
     //! Update increment and Lagrange multiplier after each Newton iteration
     void UpdateSaddlePointSystem(
-        RCP<Epetra_Vector>      inc,            ///> original increment
-        RCP<Epetra_Vector>      mergedinc);     ///> merged increment
+        Teuchos::RCP<Epetra_Vector>      inc,            ///> original increment
+        Teuchos::RCP<Epetra_Vector>      mergedinc);     ///> merged increment
 
   private:
 
     //! discretisation
-    RCP<DRT::Discretization> discret_;
+    Teuchos::RCP<DRT::Discretization> discret_;
 
     LINALG::Solver& solver_;                        // standard solver object
 
@@ -220,37 +218,37 @@ class Meshtying
     const Epetra_Map* dofrowmap_;
 
     //! dof row map of the complete system
-    RCP<Epetra_Map> problemrowmap_;
+    Teuchos::RCP<Epetra_Map> problemrowmap_;
 
     //! dof rowmap of all nodes, which are not on the interface
-    RCP<Epetra_Map> gndofrowmap_;
+    Teuchos::RCP<Epetra_Map> gndofrowmap_;
 
     //! slave & master dof rowmap
-    RCP<Epetra_Map> gsmdofrowmap_;
+    Teuchos::RCP<Epetra_Map> gsmdofrowmap_;
 
     //! slave dof rowmap
-    RCP<Epetra_Map> gsdofrowmap_;
+    Teuchos::RCP<Epetra_Map> gsdofrowmap_;
 
     //! master dof rowmap
-    RCP<Epetra_Map> gmdofrowmap_;
+    Teuchos::RCP<Epetra_Map> gmdofrowmap_;
 
     //! dof row map of the complete system and the lagrange multiplier
-    RCP<Epetra_Map> glmdofrowmap_;
+    Teuchos::RCP<Epetra_Map> glmdofrowmap_;
 
     //! merged map for saddle point system and 2x2 block matrix
-    RCP<Epetra_Map> mergedmap_;
+    Teuchos::RCP<Epetra_Map> mergedmap_;
 
     //! lagrange multiplier at time n+1
-    RCP<Epetra_Vector> lag_;
+    Teuchos::RCP<Epetra_Vector> lag_;
 
     //! lagrange multiplier at time n
-    RCP<Epetra_Vector> lagold_;
+    Teuchos::RCP<Epetra_Vector> lagold_;
 
     //! time integration factor (only necessary for saddle point system)
     double theta_;
 
     //! adapter to mortar framework
-   Teuchos::RCP<ADAPTER::CouplingMortar> adaptermeshtying_;
+    Teuchos::RCP<ADAPTER::CouplingMortar> adaptermeshtying_;
 
     //! 2x2 (3x3) block matrix for solving condensed system (3x3 block matrix)
     Teuchos::RCP<LINALG::SparseOperator> sysmatsolve_;

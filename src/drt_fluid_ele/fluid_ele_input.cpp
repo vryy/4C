@@ -14,7 +14,6 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 #include "fluid_ele.H"
 #include "../drt_lib/drt_linedefinition.H"
 
-using namespace DRT::UTILS;
 
 
 /*----------------------------------------------------------------------*/

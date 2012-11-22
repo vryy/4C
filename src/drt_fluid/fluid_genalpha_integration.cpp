@@ -49,23 +49,23 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // -------------------------------------------------------------------
   // create timers and time monitor
   // -------------------------------------------------------------------
-  timedyntot_           = TimeMonitor::getNewTimer("dynamic routine total"          );
-  timedyninit_          = TimeMonitor::getNewTimer(" + initial phase"               );
-  timedynloop_          = TimeMonitor::getNewTimer(" + time loop"                   );
-  timenlnloop_          = TimeMonitor::getNewTimer("   + nonlinear iteration"       );
-  timesparsitypattern_  = TimeMonitor::getNewTimer("      + set up and complete sparsity pattern");
-  timeeleloop_          = TimeMonitor::getNewTimer("      + element calls"          );
-  timenonlinup_         = TimeMonitor::getNewTimer("      + update and calc. of intermediate sols");
-  timeapplydirich_      = TimeMonitor::getNewTimer("      + apply dirich cond."   );
-  timeevaldirich_       = TimeMonitor::getNewTimer("      + evaluate dirich cond.");
-  timesolver_           = TimeMonitor::getNewTimer("      + solver calls"         );
-  timeout_              = TimeMonitor::getNewTimer("      + output and statistics");
+  timedyntot_           = Teuchos::TimeMonitor::getNewTimer("dynamic routine total"          );
+  timedyninit_          = Teuchos::TimeMonitor::getNewTimer(" + initial phase"               );
+  timedynloop_          = Teuchos::TimeMonitor::getNewTimer(" + time loop"                   );
+  timenlnloop_          = Teuchos::TimeMonitor::getNewTimer("   + nonlinear iteration"       );
+  timesparsitypattern_  = Teuchos::TimeMonitor::getNewTimer("      + set up and complete sparsity pattern");
+  timeeleloop_          = Teuchos::TimeMonitor::getNewTimer("      + element calls"          );
+  timenonlinup_         = Teuchos::TimeMonitor::getNewTimer("      + update and calc. of intermediate sols");
+  timeapplydirich_      = Teuchos::TimeMonitor::getNewTimer("      + apply dirich cond."   );
+  timeevaldirich_       = Teuchos::TimeMonitor::getNewTimer("      + evaluate dirich cond.");
+  timesolver_           = Teuchos::TimeMonitor::getNewTimer("      + solver calls"         );
+  timeout_              = Teuchos::TimeMonitor::getNewTimer("      + output and statistics");
 
   // time measurement --- start TimeMonitor tm0
-  tm0_ref_        = Teuchos::rcp(new TimeMonitor(*timedyntot_ ));
+  tm0_ref_        = Teuchos::rcp(new Teuchos::TimeMonitor(*timedyntot_ ));
 
   // time measurement --- start TimeMonitor tm7
-  tm7_ref_        = Teuchos::rcp(new TimeMonitor(*timedyninit_ ));
+  tm7_ref_        = Teuchos::rcp(new Teuchos::TimeMonitor(*timedyninit_ ));
 
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
@@ -395,7 +395,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeloop()
 {
 
   // start time measurement for timeloop
-  tm2_ref_ = Teuchos::rcp(new TimeMonitor(*timedynloop_));
+  tm2_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timedynloop_));
 
   bool stop_timeloop=false;
   while (stop_timeloop==false)
@@ -443,7 +443,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeloop()
   {
     cout<<"\n"<<"\n";
   }
-  TimeMonitor::summarize();
+  Teuchos::TimeMonitor::summarize();
 
 
   return;
@@ -480,12 +480,12 @@ void FLD::FluidGenAlphaIntegration::GenAlphaPrepareTimeStep()
   //         evaluate dirichlet and neumann boundary conditions
   // -------------------------------------------------------------------
   // start time measurement for application of dirichlet conditions
-  tm1_ref_ = Teuchos::rcp(new TimeMonitor(*timeevaldirich_));
+  tm1_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timeevaldirich_));
 
   this->GenAlphaApplyDirichletAndNeumann();
 
   // end time measurement for application of dirichlet conditions
-  tm1_ref_=null;
+  tm1_ref_=Teuchos::null;
 
   // -------------------------------------------------------------------
   //           preparation of AVM3-based scale separation
@@ -543,7 +543,7 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   }
 
   // start time measurement for nonlinear iteration
-  tm6_ref_ = Teuchos::rcp(new TimeMonitor(*timenlnloop_));
+  tm6_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timenlnloop_));
 
   // -------------------------------------------------------------------
   //  Evaluate acceleration and velocity at the intermediate time level
@@ -552,7 +552,7 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
   //                             -> (0)
   // -------------------------------------------------------------------
   // start time measurement for nonlinear update
-  tm9_ref_ = Teuchos::rcp(new TimeMonitor(*timenonlinup_));
+  tm9_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timenonlinup_));
 
   this->GenAlphaComputeIntermediateSol();
 
@@ -613,7 +613,7 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     // solve for increments
     // -------------------------------------------------------------------
     // start time measurement for solver call
-    tm5_ref_ = Teuchos::rcp(new TimeMonitor(*timesolver_));
+    tm5_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timesolver_));
 
     // get cpu time
     tcpu=Teuchos::Time::wallTime();
@@ -621,11 +621,11 @@ void FLD::FluidGenAlphaIntegration::DoGenAlphaPredictorCorrectorIteration(
     this->GenAlphaCalcIncrement(badestnlnnorm);
 
     // end time measurement for application of dirichlet conditions
-    tm5_ref_=null;
+    tm5_ref_=Teuchos::null;
     dtsolve_=Teuchos::Time::wallTime()-tcpu;
 
     // start time measurement for nonlinear update
-    tm9_ref_ = Teuchos::rcp(new TimeMonitor(*timenonlinup_));
+    tm9_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timenonlinup_));
 
     // -------------------------------------------------------------------
     // update estimates by incremental solution
@@ -985,8 +985,8 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeUpdate()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidGenAlphaIntegration::GenAlphaStatisticsAndOutput()
 {
-  // time measurement --- start TimeMonitor tm8
-  tm8_ref_ = Teuchos::rcp(new TimeMonitor(*timeout_ ));
+  // time measurement --- start Teuchos::TimeMonitor tm8
+  tm8_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timeout_ ));
 
   // -------------------------------------------------------------------
   //   add calculated velocity to mean value calculation (statistics)
@@ -1287,9 +1287,9 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   // performance reasons
   // start time measurement for generation of sparsity pattern
   {
-    RCP<TimeMonitor> timesparsitypattern_ref_
+    RCP<Teuchos::TimeMonitor> timesparsitypattern_ref_
       =
-      Teuchos::rcp(new TimeMonitor(*timesparsitypattern_));
+      Teuchos::rcp(new Teuchos::TimeMonitor(*timesparsitypattern_));
 
     sysmat_->Zero();
 
@@ -1298,14 +1298,14 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
       shapederivatives_->Zero();
     }
 
-    timesparsitypattern_ref_=null;
+    timesparsitypattern_ref_=Teuchos::null;
   }
 
   // Neumann loads to residual
   residual_->Update(1.0,*neumann_loads_,0.0);
 
   // start time measurement for element call
-  tm3_ref_ = Teuchos::rcp(new TimeMonitor(*timeeleloop_));
+  tm3_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timeeleloop_));
 
   // add stabilization term at Neumann outflow boundary if required
   if(outflow_stab_ == "yes_outstab")
@@ -1599,11 +1599,11 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   }
 
   // end time measurement for element call
-  tm3_ref_=null;
+  tm3_ref_=Teuchos::null;
 
   // start time measurement for generation of sparsity pattern
   {
-    RCP<TimeMonitor> timesparsitypattern_ref_ = Teuchos::rcp(new TimeMonitor(*timesparsitypattern_));
+    RCP<Teuchos::TimeMonitor> timesparsitypattern_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timesparsitypattern_));
     // finalize the system matrix
     sysmat_->Complete();
 
@@ -1624,7 +1624,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   // residuals are supposed to be zero at boundary conditions
   // -------------------------------------------------------------------
   // start time measurement for application of dirichlet conditions
-  tm4_ref_ = Teuchos::rcp(new TimeMonitor(*timeapplydirich_));
+  tm4_ref_ = Teuchos::rcp(new Teuchos::TimeMonitor(*timeapplydirich_));
 
   {
     // cast EpetraOperator sysmat_ to a LINALG::SparseMatrix in order to
@@ -1793,7 +1793,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   }
 
   // end time measurement for application of dirichlet conditions
-  tm4_ref_=null;
+  tm4_ref_=Teuchos::null;
 
   // end measurement element call
   dtele_=Teuchos::Time::wallTime()-tcpu;
@@ -2187,7 +2187,7 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
 
     // get plain aggregation Ptent
     RCP<Epetra_CrsMatrix> crsPtent;
-    GetPtent(*SystemMatrix()->EpetraMatrix(),mlparams,nullspace,crsPtent);
+    MLAPI::GetPtent(*SystemMatrix()->EpetraMatrix(),mlparams,nullspace,crsPtent);
     LINALG::SparseMatrix Ptent(crsPtent);
 
     // compute scale-separation matrix: S = I - Ptent*Ptent^T

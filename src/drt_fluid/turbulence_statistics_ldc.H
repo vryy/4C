@@ -54,8 +54,6 @@ Maintainer: Volker Gravemeier
 #include "../drt_inpar/inpar_fluid.H"
 
 
-using namespace std;
-using namespace Teuchos;
 
 namespace FLD
 {

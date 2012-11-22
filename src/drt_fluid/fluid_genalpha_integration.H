@@ -111,9 +111,6 @@ Maintainer: Peter Gamnitzer
 #include <iostream>
 #include <Teuchos_TimeMonitor.hpp>
 
-using namespace std;
-using namespace Teuchos;
-using namespace MLAPI;
 
 namespace FLD {
 

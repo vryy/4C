@@ -25,7 +25,8 @@ is handed to a c++ object mesh.
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_element.H"
 
-using namespace Teuchos;
+
+using std::map;
 using std::vector;
 
 namespace EXODUS
@@ -49,8 +50,8 @@ public:
 
   //! extension constructor, adds Elementblock and nodes to a basemesh
   Mesh(const Mesh& basemesh,
-       const RCP<map<int,std::vector<double> > > extNodes,
-       const map<int,RCP<ElementBlock> >& extBlocks,
+       const Teuchos::RCP<map<int,std::vector<double> > > extNodes,
+       const map<int,Teuchos::RCP<ElementBlock> >& extBlocks,
        const map<int,NodeSet>& extNodesets,
        const map<int,SideSet>& extSidesets,
        const string newtitle);
@@ -86,13 +87,13 @@ public:
   string GetTitle() const;
 
   //! Get ElementBlock map
-  map<int,RCP<ElementBlock> > GetElementBlocks() const {return elementBlocks_;}
+  map<int,Teuchos::RCP<ElementBlock> > GetElementBlocks() const {return elementBlocks_;}
 
   //! Get Number of ElementBlocks
   int GetNumElementBlocks() const {return elementBlocks_.size();}
 
   //! Get one ElementBlock
-  RCP<ElementBlock> GetElementBlock(const int id) const;
+  Teuchos::RCP<ElementBlock> GetElementBlock(const int id) const;
 
   //! Get NodeSet map
   map<int,NodeSet> GetNodeSets() const {return nodeSets_;}
@@ -137,7 +138,7 @@ public:
   std::set<int> GetSideSetNodes(const EXODUS::SideSet& sideset, const std::map<int,std::vector<int> >& sideconn) const;
 
   //! Get Node map
-  RCP<map<int,std::vector<double> > > GetNodes() const {return nodes_;}
+  Teuchos::RCP<map<int,std::vector<double> > > GetNodes() const {return nodes_;}
 
   //! Get one nodal coords
   vector<double> GetNode(const int NodeID) const;
@@ -155,7 +156,7 @@ public:
   void WriteMesh(const string newexofilename) const;
 
   //! Add Element Block to mesh
-  void AddElementBlock(const RCP<EXODUS::ElementBlock> eblock) const;
+  void AddElementBlock(const Teuchos::RCP<EXODUS::ElementBlock> eblock) const;
 
   //! Erase Element Block from mesh
   void EraseElementBlock(const int id);
@@ -180,9 +181,9 @@ public:
   void PlotConnGmsh(const string fname,const EXODUS::Mesh& mymesh, const map<int,std::vector<int> >& conn) const;
 
 private:
-  RCP<map<int,std::vector<double> > > nodes_;
+  Teuchos::RCP<map<int,std::vector<double> > > nodes_;
 
-  map<int,RCP<ElementBlock> > elementBlocks_;
+  map<int,Teuchos::RCP<ElementBlock> > elementBlocks_;
 
   map<int,NodeSet> nodeSets_;
 
@@ -237,7 +238,7 @@ public:
   };
 
   ElementBlock(ElementBlock::Shape DisType,
-               RCP<map<int,std::vector<int> > >& eleconn,    // Element connectivity
+               Teuchos::RCP<map<int,std::vector<int> > >& eleconn,    // Element connectivity
                string name);
 
   virtual ~ElementBlock();
@@ -246,7 +247,7 @@ public:
 
   int GetNumEle() const {return eleconn_->size();}
 
-  RCP<map<int,std::vector<int> > > GetEleConn() const {return eleconn_;}
+  Teuchos::RCP<map<int,std::vector<int> > > GetEleConn() const {return eleconn_;}
 
   vector<int> GetEleNodes(int i) const;
 
@@ -262,7 +263,7 @@ private:
   Shape distype_;
 
   //! Element Connectivity
-  RCP<map<int,std::vector<int> > > eleconn_;
+  Teuchos::RCP<std::map<int,std::vector<int> > > eleconn_;
 
   string name_;
 };

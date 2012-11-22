@@ -7,7 +7,6 @@
 #include "pre_exodus_soshextrusion.H"// for Gmsh plot
 
 
-using namespace EXODUS;
 using std::vector;
 
 /*----------------------------------------------------------------------*/
@@ -42,8 +41,8 @@ map<int,map<int,std::vector<std::vector<double> > > > EXODUS::EleCenterlineInfo(
 	  myCLine.PlotCL_Gmsh();             //generation of accordant Gmsh-file
 
 	  // get rid of helper eb where the centerline ns was based on
-	  std::map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
-	  std::map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
+	  std::map<int,Teuchos::RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
+	  std::map<int,Teuchos::RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
 	  std::vector<int> eb_ids;
 	  // check for Centerline ElementBlock
 	  for(i_eb=ebs.begin();i_eb!=ebs.end();++i_eb)
@@ -101,8 +100,8 @@ map<int,map<int,std::vector<std::vector<double> > > > EXODUS::EleCenterlineInfo(
     myCLine.PlotCL_Gmsh();             //generation of accordant Gmsh-file
 
     // get rid of helper eb where the centerline ns was based on
-    std::map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
-    std::map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
+    std::map<int,Teuchos::RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
+    std::map<int,Teuchos::RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
     std::vector<int> eb_ids;
     // check for Centerline ElementBlock
     for(i_eb=ebs.begin();i_eb!=ebs.end();++i_eb)
@@ -186,8 +185,8 @@ map<int,map<int,std::vector<std::vector<double> > > > EXODUS::EleCenterlineInfo(
 
     // get ids of the eblocks you want to calculate the locsys's
     string identifier = "ext";
-    std::map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
-    std::map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
+    std::map<int,Teuchos::RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
+    std::map<int,Teuchos::RCP<EXODUS::ElementBlock> >::const_iterator i_eb;
     std::vector<int> eb_ids;
 
     for (i_eb=ebs.begin(); i_eb!=ebs.end(); ++i_eb) {
@@ -271,7 +270,7 @@ map<int,double> EXODUS::NdCenterlineThickness(string cline,const std::set<int>& 
 /*------------------------------------------------------------------------*
  |Ctor                                                            SP 06/08|
  *------------------------------------------------------------------------*/
-Centerline::Centerline(string filename,std::vector<double> coordcorr)
+EXODUS::Centerline::Centerline(string filename,std::vector<double> coordcorr)
 {
 	//initialization of points_
 	points_ = Teuchos::rcp(new std::map<int,std::vector<double> >);
@@ -364,7 +363,7 @@ Centerline::Centerline(string filename,std::vector<double> coordcorr)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Centerline::Centerline(const EXODUS::NodeSet& ns, const RCP<map<int,std::vector<double> > > nodes)
+EXODUS::Centerline::Centerline(const EXODUS::NodeSet& ns, const Teuchos::RCP<map<int,std::vector<double> > > nodes)
 {
   //initialization of points_
   points_ = Teuchos::rcp(new std::map<int,std::vector<double> >);
@@ -384,14 +383,14 @@ Centerline::Centerline(const EXODUS::NodeSet& ns, const RCP<map<int,std::vector<
 /*------------------------------------------------------------------------*
  |Dtor                                                            SP 06/08|
  *------------------------------------------------------------------------*/
-Centerline::~Centerline()
+EXODUS::Centerline::~Centerline()
 {
 }
 
 /*------------------------------------------------------------------------*
  |displays points_ on console                                      SP 06/08|
  *------------------------------------------------------------------------*/
-void Centerline::PrintPoints()
+void EXODUS::Centerline::PrintPoints()
 {
 	for(map<int,std::vector<double> >::const_iterator it = points_->begin(); it !=points_->end(); ++it)
 	{
@@ -402,7 +401,7 @@ void Centerline::PrintPoints()
 /*------------------------------------------------------------------------*
  |creates gmsh-file to visualize points                            SP 06/08|
  *------------------------------------------------------------------------*/
-void Centerline::PlotCL_Gmsh()
+void EXODUS::Centerline::PlotCL_Gmsh()
 {
   std::ofstream gmshFile("centerline.gmsh");
 	gmshFile << "View \" Centerline \" {" << endl;
@@ -506,8 +505,8 @@ map<int,map<int,std::vector<std::vector<double> > > > EXODUS::element_cosys(EXOD
   
   std::map <std::pair<int,int> ,vector <double> > np_eb_el;
   // Get all Element Blocks 
-  std::map<int,RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
-  std::map<int,RCP<EXODUS::ElementBlock> >::const_iterator i_ebs;
+  std::map<int,Teuchos::RCP<EXODUS::ElementBlock> > ebs = mymesh.GetElementBlocks();
+  std::map<int,Teuchos::RCP<EXODUS::ElementBlock> >::const_iterator i_ebs;
   // vector to store the  surface nodes of the each element
   std::vector<std::vector<double> > ele_surf_nodes;
   std::vector<std::vector<double> >:: iterator counter_ele_surfnodes;
