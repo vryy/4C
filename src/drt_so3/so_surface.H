@@ -136,8 +136,11 @@ public:
 
   virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
   {
+    if(nds == 0)
+      return NumDofPerNode(node);
+    else
     //ask the parent element for the number of dofs of the other dofset
-    return parent_->NumDofPerNode(nds,node);
+      return parent_->NumDofPerNode(nds,node);
   };
 
   /*!
