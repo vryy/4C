@@ -17,8 +17,6 @@ Maintainer: Martin Winklmaier
 #include "../drt_lib/standardtypes_cpp.H"
 
 
-using namespace std;
-
 
 //----------------------------------------------------------------------*/
 //    definition of the instance
@@ -131,48 +129,48 @@ void DRT::ELEMENTS::TopOptParam::SetGeneralOptimizationParameter( Teuchos::Param
 //----------------------------------------------------------------------*/
 void DRT::ELEMENTS::TopOptParam::PrintAdjointParameter() const
 {
-  cout << endl << "|-----------------------------------------------------------------------------" << endl;
-  cout << "|  Material parameter: " << endl;
-  cout << "|-----------------------------------------------------------------------------" << endl;
+  std::cout << std::endl << "|-----------------------------------------------------------------------------" << std::endl;
+  std::cout << "|  Material parameter: " << std::endl;
+  std::cout << "|-----------------------------------------------------------------------------" << std::endl;
   // boolean is true if objective contains dissipation
-  cout << "|    physical density    " << dens_ << endl;
+  std::cout << "|    physical density    " << dens_ << std::endl;
   // boolean is true if objective contains pressure drop
-  cout << "|    physical viscosity    " << visc_ << endl;
+  std::cout << "|    physical viscosity    " << visc_ << std::endl;
   // minimal inverse modelling porosity
-  cout << "|    minimal pseudo-porosity:    " << min_poro_ << endl;
+  std::cout << "|    minimal pseudo-porosity:    " << min_poro_ << std::endl;
   // maximal inverse modelling porosity
-  cout << "|    maximal pseudo-porosity:    " << max_poro_ << endl;
+  std::cout << "|    maximal pseudo-porosity:    " << max_poro_ << std::endl;
   // smearing factor between density and porosity
-  cout << "|    smearing factor:    " << smear_fac_ << endl;
+  std::cout << "|    smearing factor:    " << smear_fac_ << std::endl;
 
-  cout << "|  General optimization parameter: " << endl;
-  cout << "|-----------------------------------------------------------------------------" << endl;
+  std::cout << "|  General optimization parameter: " << std::endl;
+  std::cout << "|-----------------------------------------------------------------------------" << std::endl;
   // boolean is true if objective contains dissipation
-  cout << "|    objective dissipation on?    " << dissipation_ << endl;
+  std::cout << "|    objective dissipation on?    " << dissipation_ << std::endl;
   // boolean is true if objective contains pressure drop
-  cout << "|    objective pressure drop on?    " << pressure_drop_ << endl;
+  std::cout << "|    objective pressure drop on?    " << pressure_drop_ << std::endl;
   // objective's dissipation factor
-  cout << "|    objective dissipation factor:    " << dissipation_fac_ << endl;
+  std::cout << "|    objective dissipation factor:    " << dissipation_fac_ << std::endl;
   // objective's pressure drop factor
-  cout << "|    objective pressure drop factor:    " << pressure_drop_fac_ << endl;
+  std::cout << "|    objective pressure drop factor:    " << pressure_drop_fac_ << std::endl;
 
-  cout << endl << "|---------------------------------------------------------------------------" << endl;
-  cout << "|  Flow parameter: " << endl;
-  cout << "|---------------------------------------------------------------------------" << endl;
+  std::cout << std::endl << "|---------------------------------------------------------------------------" << std::endl;
+  std::cout << "|  Flow parameter: " << std::endl;
+  std::cout << "|---------------------------------------------------------------------------" << std::endl;
   //! flag to (de)activate stationary formulation
-  cout << "|    steady state:    " << is_stationary_ << endl;
+  std::cout << "|    steady state:    " << is_stationary_ << std::endl;
   //! time algorithm
-  cout << "|    time algorithm:    " << timealgo_ << endl;
+  std::cout << "|    time algorithm:    " << timealgo_ << std::endl;
   //! time-step length
-  cout << "|    time step:    " << dt_ << endl;
+  std::cout << "|    time step:    " << dt_ << std::endl;
   /// maximal number of time steps
-  cout << "|    maximal number of time steps:     " << max_timesteps_ << endl;
+  std::cout << "|    maximal number of time steps:     " << max_timesteps_ << std::endl;
   /// theta
-  cout << "|    theta:     " << theta_ << endl;
+  std::cout << "|    theta:     " << theta_ << std::endl;
   /// theta for pressure terms
-  cout << "|    theta:     " << theta_pre_ << endl;
+  std::cout << "|    theta:     " << theta_pre_ << std::endl;
   /// theta for divergence terms
-  cout << "|    theta:     " << theta_div_ << endl;
-  cout << "|---------------------------------------------------------------------------" << endl;
+  std::cout << "|    theta:     " << theta_div_ << std::endl;
+  std::cout << "|---------------------------------------------------------------------------" << std::endl;
 }  /// @name objective parameters
 

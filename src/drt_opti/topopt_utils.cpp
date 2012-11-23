@@ -18,14 +18,12 @@ Maintainer: Martin Winklmaier
 #include "../drt_mat/matpar_bundle.H"
 
 
-using namespace std;
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-map<string,string> TOPOPT::TopoptFluidCloneStrategy::ConditionsToCopy()
+std::map<string,string> TOPOPT::TopoptFluidCloneStrategy::ConditionsToCopy()
 {
-  map<string,string> conditions_to_copy;
+  std::map<string,string> conditions_to_copy;
 
   // when the fluid problem is periodic we also expect the optimization to be so:
   conditions_to_copy.insert(std::pair<string,string>("LinePeriodic","LinePeriodic"));
