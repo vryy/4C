@@ -567,7 +567,7 @@ std::map<int,double> FLD::UTILS::ComputeFlowRates(
     const RCP<Epetra_Vector>       velnp,
     const string                   condstring)
 {
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   // set action for elements
   eleparams.set<int>("action",FLD::calc_flowrate);
 
@@ -624,7 +624,7 @@ std::map<int,LINALG::Matrix<3,1> > FLD::UTILS::ComputeSurfaceImpulsRates(
     const RCP<Epetra_Vector>       velnp
     )
 {
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   // set action for elements
   eleparams.set("action","calc_impuls_rate");
 

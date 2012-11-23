@@ -254,7 +254,7 @@ int MORTAR::MortarElement::NumDofPerNode(const DRT::Node& node) const
 /*----------------------------------------------------------------------*
  |  evaluate element (public)                                mwgee 10/07|
  *----------------------------------------------------------------------*/
-int MORTAR::MortarElement::Evaluate(ParameterList&         params,
+int MORTAR::MortarElement::Evaluate(Teuchos::ParameterList& params,
                                 DRT::Discretization&       discretization,
                                 std::vector<int>&          lm,
                                 Epetra_SerialDenseMatrix&  elemat1,

@@ -344,7 +344,7 @@ private:
   For a turbulent channel flow, the averaging of the turbulent
   Prandtl number is done in here.
   */
-  void DynSmagComputePrt(ParameterList& extraparams,
+  void DynSmagComputePrt(Teuchos::ParameterList& extraparams,
                          int& numele_layer);
 
 

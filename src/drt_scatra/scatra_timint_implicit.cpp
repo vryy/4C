@@ -271,7 +271,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       dserror("Switch of the block matrix!!");
 
     // define parameter list for meshtying
-    ParameterList mshtparams;
+    Teuchos::ParameterList mshtparams;
     mshtparams.set("theta", params_->get<double>("THETA"));
     mshtparams.set<int>("mshtoption", msht_);
 
@@ -337,7 +337,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
   {
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",time_);
     discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
@@ -380,7 +380,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // set parameters associated to potential statistical flux evaluations
   // -------------------------------------------------------------------
   // get fluid turbulence sublist
-  ParameterList * turbparams =&(extraparams_->sublist("TURBULENCE MODEL"));
+  Teuchos::ParameterList * turbparams =&(extraparams_->sublist("TURBULENCE MODEL"));
 
   // parameters for statistical evaluation of normal fluxes
   samstart_  = turbparams->get<int>("SAMPLING_START");
@@ -490,7 +490,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       // transferred from the fluid field
       fsvel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
-      ParameterList * mfsparams =&(extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES"));
+      Teuchos::ParameterList * mfsparams =&(extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES"));
       if (mfsparams->get<string>("SCALE_SEPARATION")!= "algebraic_multigrid_operator")
        dserror("Only scale separation by plain algebraic multigrid available in scatra!");
 
@@ -1023,7 +1023,7 @@ void SCATRA::ScaTraTimIntImpl::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> 
       dserror("In the moment the only option is condensation in a sparse matrix");
 
     // define parameter list for meshtying
-    ParameterList mshtparams;
+    Teuchos::ParameterList mshtparams;
     mshtparams.set("theta", params_->get<double>("THETA"));
     mshtparams.set<int>("mshtoption", msht_);
 
@@ -1996,7 +1996,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
         }
         else if(*definition == "integration")
         {
-          ParameterList mode_params;
+          Teuchos::ParameterList mode_params;
 
           // set parameters for elements
           mode_params.set<int>("action",SCATRA::integrate_shape_functions);
@@ -2145,7 +2145,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyDirichletBC
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:      + apply dirich cond.");
 
   // needed parameters
-  ParameterList p;
+  Teuchos::ParameterList p;
   p.set("total time",time);  // actual time t_{n+1}
 
   // predicted Dirichlet values
@@ -2210,7 +2210,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
 
   // set time for evaluation of Neumann boundary conditions as parameter
   // depending on time-integration scheme
-  ParameterList p;
+  Teuchos::ParameterList p;
   SetTimeForNeumannEvaluation(p);
   p.set<int>("scatratype",scatratype_);
   p.set("isale",isale_);
@@ -2243,7 +2243,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   residual_->PutScalar(0.0);
 
   // create the parameters for the discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // action for elements
   if (reinitswitch_ == true)
@@ -2345,7 +2345,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
   // apply weak Dirichlet boundary conditions
   //----------------------------------------------------------------------
   {
-    ParameterList mhdbcparams;
+    Teuchos::ParameterList mhdbcparams;
 
     // set action for elements
     mhdbcparams.set<int>("action",SCATRA::bd_calc_weak_Dirichlet);
@@ -2938,7 +2938,7 @@ inline void SCATRA::ScaTraTimIntImpl::IncrementTimeAndStep()
 void SCATRA::ScaTraTimIntImpl::ElementMaterialTimeUpdate()
 {
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
   // action for elements
   p.set<int>("action", SCATRA::time_update_material);
   // further required parameters

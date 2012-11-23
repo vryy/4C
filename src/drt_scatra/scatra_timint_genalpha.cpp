@@ -281,7 +281,7 @@ void SCATRA::TimIntGenAlpha::ComputeThermPressure()
   phiaf_->Update(alphaF_,*phinp_,(1.0-alphaF_),*phin_,0.0);
 
   // define element parameter list
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // DO THIS BEFORE PHINP IS SET (ClearState() is called internally!!!!)
   // compute flux approximation and add it to the parameter list

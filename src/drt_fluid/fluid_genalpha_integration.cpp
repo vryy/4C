@@ -219,7 +219,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
   {
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",time_);
     discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
@@ -255,7 +255,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // -------------------------------------------------------------------
   // initialize turbulence-statistics evaluation
   // -------------------------------------------------------------------
-  ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
+  Teuchos::ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
   // flag for special flow: currently channel flow or flow in a lid-driven cavity
   special_flow_ = modelparams->get<string>("CANONICAL_FLOW","no");
@@ -274,7 +274,7 @@ FLD::FluidGenAlphaIntegration::FluidGenAlphaIntegration(
   // -------------------------------------------------------------------
   // initialize outflow boundary stabilization if required
   // -------------------------------------------------------------------
-  ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
+  Teuchos::ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
 
   // flag for potential Neumann-type outflow stabilization
   outflow_stab_ = stabparams->get<string>("OUTFLOW_STAB","yes_outstab");
@@ -802,7 +802,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaApplyDirichletAndNeumann()
     locsysman_->RotateGlobalToLocal(velnp_);
   }
 
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // total time required for Dirichlet conditions
   eleparams.set("total time",time_);
@@ -932,7 +932,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaTimeUpdate()
   if(params_->sublist("STABILIZATION").get<string>("TDS")=="time_dependent")
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     // action for elements
     eleparams.set<int>("action",FLD::calc_fluid_genalpha_update_for_subscales);
 
@@ -1311,7 +1311,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   if(outflow_stab_ == "yes_outstab")
   {
     // create the parameters for the discretization
-    ParameterList condparams;
+    Teuchos::ParameterList condparams;
 
     discret_->ClearState();
     discret_->SetState("velaf",velaf_);
@@ -1335,7 +1335,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   }
 
   // create the parameters for the discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // action for elements
   eleparams.set<int>("action",FLD::calc_fluid_genalpha_sysmat_and_residual);
@@ -1460,7 +1460,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
     RCP<Epetra_Vector> wdbcloads = LINALG::CreateVector(*(discret_->DofRowMap()),true);
 
-    ParameterList weakdbcparams;
+    Teuchos::ParameterList weakdbcparams;
 
     // set action for elements
     weakdbcparams.set<int>("action"    ,FLD::enforce_weak_dbc);
@@ -1515,7 +1515,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   if(MHDcnd.size()!=0)
   {
 
-    ParameterList mhdbcparams;
+    Teuchos::ParameterList mhdbcparams;
 
     // set action for elements
     mhdbcparams.set<int>("action"    ,FLD::mixed_hybrid_dbc);
@@ -1571,7 +1571,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
   //----------------------------------------------------------------------
   if(params_->get<string>("form of convective term")=="conservative")
   {
-    ParameterList apply_cons_params;
+    Teuchos::ParameterList apply_cons_params;
     // set action for elements
     apply_cons_params.set<int>("action",FLD::conservative_outflow_bc);
     apply_cons_params.set("timefac_mat" ,alphaF_*gamma_*dt_);
@@ -1738,7 +1738,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
       w_->PutScalar(0.0);
       c_->PutScalar(0.0);
 
-      ParameterList mode_params;
+      Teuchos::ParameterList mode_params;
 
       // set action for elements
       mode_params.set<int>("action",FLD::integrate_shape);
@@ -2105,7 +2105,7 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
   residual_->Update(1.0,*neumann_loads_,0.0);
 
   // create the parameters for the discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // action for elements
   eleparams.set<int>("action",FLD::calc_fluid_genalpha_sysmat_and_residual);
@@ -2487,7 +2487,7 @@ void FLD::FluidGenAlphaIntegration::SetInitialFlowField(
   // for safety purposes --- make the initial flow field compatible
   // to the initial Dirichlet boundary condition
   {
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // total time required for Dirichlet conditions
     eleparams.set("total time",time_);
@@ -2536,7 +2536,7 @@ void FLD::FluidGenAlphaIntegration::EvaluateErrorComparedToAnalyticalSol()
   case INPAR::FLUID::initfield_beltrami_flow:
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     eleparams.set<double>("L2 integrated velocity error",0.0);
     eleparams.set<double>("L2 integrated pressure error",0.0);
@@ -2668,7 +2668,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
       //--------------------------------------------------------------------
       /* output of stabilisation details */
       {
-        ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
+        Teuchos::ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
 
         // general
 
@@ -2754,7 +2754,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaEchoToScreen(
       //--------------------------------------------------------------------
       /* output of turbulence model if any */
       {
-        ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
+        Teuchos::ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
         if (modelparams->get<string>("TURBULENCE_APPROACH", "none")
             !=
@@ -3147,7 +3147,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidGenAlphaIntegration::CalcStresses()
 Teuchos::RCP<Epetra_Vector> FLD::FluidGenAlphaIntegration::IntegrateInterfaceShape(
   std::string condname)
 {
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   // set action for elements
   eleparams.set<int>("action",FLD::integrate_Shapefunction);
 
@@ -3341,7 +3341,7 @@ void FLD::FluidGenAlphaIntegration::SetScalarField(
 
 void FLD::FluidGenAlphaIntegration::SetElementGeneralFluidParameter()
 {
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_general_fluid_parameter);
 
@@ -3366,7 +3366,7 @@ void FLD::FluidGenAlphaIntegration::SetElementGeneralFluidParameter()
 // -------------------------------------------------------------------
 void FLD::FluidGenAlphaIntegration::SetElementTurbulenceParameter()
 {
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_turbulence_parameter);
 
@@ -3389,7 +3389,7 @@ void FLD::FluidGenAlphaIntegration::SetElementTurbulenceParameter()
 
 void FLD::FluidGenAlphaIntegration::SetElementTimeParameter()
 {
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_time_parameter);
 

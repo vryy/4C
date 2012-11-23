@@ -82,7 +82,7 @@ public:
   /*!
   \brief FluidWkOptimizationWrapper::SteadyStateIsObtained
   */
-  bool SteadyStateIsObtained(ParameterList params,
+  bool SteadyStateIsObtained(Teuchos::ParameterList params,
                              double        dt);
 
   /*!
@@ -102,7 +102,7 @@ public:
               RCP<DRT::Condition>   cond,
               RCP<std::vector<double> >  pressures,
               RCP<std::vector<double> >  flowrates,
-              ParameterList         params,
+              Teuchos::ParameterList     params,
               double                dt);
 
   /*!
@@ -113,7 +113,7 @@ public:
                 RCP<DRT::Condition>   cond,
                 RCP<std::vector<double> >  pressures,
                 RCP<std::vector<double> >  flowrates,
-                ParameterList         params,
+                Teuchos::ParameterList     params,
                 double                dt);
 
   /*!
@@ -124,7 +124,7 @@ public:
               RCP<DRT::Condition>   cond,
               RCP<std::vector<double> >  pressures,
               RCP<std::vector<double> >  flowrates,
-              ParameterList         params,
+              Teuchos::ParameterList     params,
               double                dt);
 
   /*!
@@ -135,7 +135,7 @@ public:
                 RCP<DRT::Condition>   cond,
                 RCP<std::vector<double> >  pressures,
                 RCP<std::vector<double> >  flowrates,
-                ParameterList         params,
+                Teuchos::ParameterList     params,
                 double                dt);
 
   /*!
@@ -146,7 +146,7 @@ public:
   /*!
   \brief FluidWkOptimizationWrapper::GetDesignVariables
   */
-  void Solve(ParameterList         params);
+  void Solve(Teuchos::ParameterList params);
 
   /*!
   \brief FluidWkOptimizationWrapper::UpdateResidual

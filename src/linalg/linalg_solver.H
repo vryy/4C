@@ -52,11 +52,9 @@ Maintainer: Michael Gee
 #include "../drt_inpar/inpar_solver.H"
 
 
-
 #include "../solver/solver_solvertype.H"
 #include "../solver/solver_preconditionertype.H"
 
-using namespace std;
 
 namespace LINALG
 {

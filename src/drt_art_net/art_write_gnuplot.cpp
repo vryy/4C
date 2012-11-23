@@ -53,8 +53,8 @@ Maintainer: Mahmoud Ismail
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( RCP<DRT::Discretization>  actdis,
-                                                            ParameterList & params):
+ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( Teuchos::RCP<DRT::Discretization>  actdis,
+    Teuchos::ParameterList & params):
   discret_(actdis)
 {
 
@@ -185,7 +185,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( RCP<DRT::Discretizat
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
-void ART::UTILS::ArtWriteGnuplotWrapper::Write(ParameterList & params)
+void ART::UTILS::ArtWriteGnuplotWrapper::Write(Teuchos::ParameterList & params)
 {
 
   //----------------------------------------------------------------------

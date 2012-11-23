@@ -100,7 +100,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   }
 
   // get turbulence model
-  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+  Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
   smagorinsky_=false;
   scalesimilarity_=false;
   multifractal_=false;
@@ -822,7 +822,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     RCP<std::vector<double> > local_Ci_delta_sq_sum =  Teuchos::rcp(new std::vector<double> (nodeplanes_->size()-1,0.0));
 
     // store them in parameterlist for access on the element
-    ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+    Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
 
     modelparams->set<RCP<std::vector<double> > >("planecoords_"         ,nodeplanes_          );
@@ -1757,7 +1757,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   // loop elements and perform integration over homogeneous plane
 
   // create the parameters for the discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // action for elements
   eleparams.set<int>("action",FLD::calc_turbulence_statistics);
@@ -1959,7 +1959,7 @@ const double eosfac)
   // loop elements and perform integration over homogeneous plane
 
   // create the parameters for the discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // action for elements
   eleparams.set<int>("action",FLD::calc_loma_statistics);
@@ -2197,7 +2197,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateScatraIntegralMeanValuesInPlanes()
   // loop elements and perform integration over homogeneous plane
 
   // create the parameters for the discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // action for elements
   eleparams.set<int>("action",FLD::calc_turbscatra_statistics);
@@ -2590,7 +2590,7 @@ void FLD::TurbulenceStatisticsCha::AddDynamicSmagorinskyQuantities()
   // get sublist of turbulence parameters from the fluid dynamic
   // parameter list --- it is used to transfer data between element
   // and statistics method
-  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+  Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
   // extract values for Cs, Cs_delta_sq_ and visceff from parameterlist
   // the values are stored in vectors --- each component corresponds to
@@ -2799,7 +2799,7 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
   const bool                                withscatra)
 {
   // action for elements
-  ParameterList paramsele;
+  Teuchos::ParameterList paramsele;
   paramsele.set<int>("action",FLD::calc_model_params_mfsubgr_scales);
   paramsele.sublist("MULTIFRACTAL SUBGRID SCALES") = params_.sublist("MULTIFRACTAL SUBGRID SCALES");
   paramsele.set("scalar", withscatra);
@@ -2824,7 +2824,7 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
 
 
   // store them in parameterlist for access on the element
-  ParameterList *  modelparams = &(paramsele.sublist("TURBULENCE MODEL"));
+  Teuchos::ParameterList *  modelparams = &(paramsele.sublist("TURBULENCE MODEL"));
 
   modelparams->set<RCP<std::vector<double> > >("planecoords"                ,nodeplanes_               );
   modelparams->set<RCP<std::vector<double> > >("local_N_stream_sum"         ,local_N_stream_sum         );

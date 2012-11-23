@@ -685,7 +685,7 @@ void STR::MLMC::ProlongateResults()
   RCP<Epetra_Vector>    dis_ = dis_fine_single;
   RCP<Epetra_Vector>    vel_ = Teuchos::rcp(new Epetra_Vector(*actdis_fine_->DofRowMap(),true));
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
   // action for elements
 
   p.set("action","calc_struct_stress");
@@ -1254,7 +1254,7 @@ void STR::MLMC::ResetPrestress()
     break;
     case INPAR::STR::prestress_mulf:
     {
-      ParameterList p;
+      Teuchos::ParameterList p;
       // action for elements
       p.set("action","calc_struct_reset_discretization");
       discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
@@ -1378,7 +1378,7 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   Teuchos::RCP<std::vector<char> > plstrain = Teuchos::rcp(new std::vector<char>());
 
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
   p.set("action","calc_struct_stress");
   p.set("stress", stress);
   p.set("plstrain",plstrain);
@@ -1618,7 +1618,7 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
   Teuchos::RCP<std::vector<char> > strain = Teuchos::rcp(new std::vector<char>());
   Teuchos::RCP<std::vector<char> > plstrain = Teuchos::rcp(new std::vector<char>());
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
   p.set("action","calc_struct_stress");
   p.set("stress", stress);
   p.set("plstrain",plstrain);

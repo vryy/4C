@@ -188,7 +188,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
 
   {
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",xfluid.time_);
     xfluid.discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
@@ -2285,7 +2285,7 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
 /*----------------------------------------------------------------------*
  |  check xfluid input parameters/ safety checks           schott 05/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::CheckXFluidParams( ParameterList& params_xfem,
+void FLD::XFluid::CheckXFluidParams( Teuchos::ParameterList& params_xfem,
                                      Teuchos::ParameterList& params_xf_gen,
                                      Teuchos::ParameterList& params_xf_stab)
 {
@@ -2357,7 +2357,7 @@ void FLD::XFluid::PrintStabilizationParams()
   // output of stabilization details
   if (myrank_==0)
   {
-    ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
+    Teuchos::ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
 
     cout << "+------------------------------------------------------------------------------------+" << endl;
     cout << "                              FLUID-STABILIZATION                      \n " << endl;
@@ -2436,7 +2436,7 @@ void FLD::XFluid::PrintStabilizationParams()
       dserror("do not combine edge-based stabilization with residual-based stabilization like SUPG/PSPG/CSTAB");
 
 
-    ParameterList *  interfstabparams=&(params_->sublist("XFLUID DYNAMIC/STABILIZATION"));
+    Teuchos::ParameterList *  interfstabparams=&(params_->sublist("XFLUID DYNAMIC/STABILIZATION"));
 
     cout << "+------------------------------------------------------------------------------------+" << endl;
     cout << "                              INTERFACE-STABILIZATION                       \n" << endl;
@@ -2802,7 +2802,7 @@ void FLD::XFluid::NonlinearSolve()
       const double tcpu=Teuchos::Time::wallTime();
 
       // create the parameters for the discretization
-      ParameterList eleparams;
+      Teuchos::ParameterList eleparams;
 
       // Set action type
       eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
@@ -3093,7 +3093,7 @@ void FLD::XFluid::TimeUpdate()
 {
   cout << "FLD::XFluid::TimeUpdate " << endl;
 
-  ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
+  Teuchos::ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
 
   if(stabparams->get<string>("TDS") == "time_dependent")
   { dserror("check this implementation");
@@ -3111,7 +3111,7 @@ void FLD::XFluid::TimeUpdate()
     AssembleMatAndRHS();
 
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // update time paramters
     if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
@@ -3640,7 +3640,7 @@ void FLD::XFluid::ReconstructGhostValues(RCP<LINALG::MapExtractor> ghost_penaly_
       const double tcpu=Teuchos::Time::wallTime();
 
       // create the parameters for the discretization
-      ParameterList eleparams;
+      Teuchos::ParameterList eleparams;
 
       // evaluate routine
       state_->GradientPenalty(eleparams, *discret_, *boundarydis_, vec, itnum);
@@ -4924,7 +4924,7 @@ void FLD::XFluid::SetInterfaceFields()
 void FLD::XFluid::SetDirichletNeumannBC()
 {
 
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // other parameters needed by the elements
     eleparams.set("total time",time_);
@@ -4958,7 +4958,7 @@ void FLD::XFluid::SetDirichletNeumannBC()
 void FLD::XFluid::SetElementGeneralFluidParameter()
 {
 
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_general_fluid_parameter);
 
@@ -4986,7 +4986,7 @@ void FLD::XFluid::SetElementGeneralFluidParameter()
 void FLD::XFluid::SetElementTurbulenceParameter()
 {
 
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_turbulence_parameter);
 
@@ -5009,7 +5009,7 @@ void FLD::XFluid::SetElementTurbulenceParameter()
 void FLD::XFluid::SetElementTimeParameter()
 {
 
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_time_parameter);
 

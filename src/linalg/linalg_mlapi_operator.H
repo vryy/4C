@@ -39,10 +39,6 @@ Maintainer: Michael Gee
 
 #include "../drt_lib/drt_dserror.H"
 
-using namespace std;
-using namespace MLAPI;
-using Teuchos::RCP;
-using Teuchos::ParameterList;
 
 namespace LINALG
 {
@@ -62,7 +58,7 @@ public:
   /*!
   \brief Standard Constructor
   */
-  explicit AMG_Operator(RCP<Epetra_RowMatrix> A,
+  explicit AMG_Operator(Teuchos::RCP<Epetra_RowMatrix> A,
                         Teuchos::ParameterList& params,
                         const bool compute);
 
@@ -94,7 +90,7 @@ public:
   \brief get input matrix
 
   */
-  RCP<Epetra_CrsMatrix> A() {return Ainput_;}
+  Teuchos::RCP<Epetra_CrsMatrix> A() {return Ainput_;}
 
   /*!
   \brief Get fine level OperatorDomainMap
@@ -184,7 +180,7 @@ private:
   /*!
   \brief Compute row wise 1-norm of a matrix
   */
-  MLAPI::MultiVector Row1Norm(Operator& A);
+  MLAPI::MultiVector Row1Norm(MLAPI::Operator& A);
 
   /*!
   \brief Get number of levels in hierarchy
@@ -194,48 +190,48 @@ private:
   /*!
   \brief Multigrid vcycle
   */
-  void Vcycle(const MultiVector& b_f, MultiVector& x_f, const int level) const;
+  void Vcycle(const MLAPI::MultiVector& b_f, MLAPI::MultiVector& x_f, const int level) const;
 
   /*!
   \brief Get smoother on a certain level
   */
-  inline const InverseOperator& S(const int level) const { return S_[level]; }
+  inline const MLAPI::InverseOperator& S(const int level) const { return S_[level]; }
 
   /*!
   \brief Get prolongation on a certain level
   */
-  inline const Operator& P(const int level) const { return P_[level]; }
+  inline const MLAPI::Operator& P(const int level) const { return P_[level]; }
 
   /*!
   \brief Get restruction on a certain level
   */
-  inline const Operator& R(const int level) const { return R_[level]; }
+  inline const MLAPI::Operator& R(const int level) const { return R_[level]; }
 
   /*!
   \brief Get matrix on a certain level
   */
-  inline const Operator& A(const int level) const { return A_[level]; }
+  inline const MLAPI::Operator& A(const int level) const { return A_[level]; }
 
   /*!
   \brief Get stabilization matrix on a certain level
   */
-  inline const Operator& Astab(const int level) const { return Astab_[level]; }
+  inline const MLAPI::Operator& Astab(const int level) const { return Astab_[level]; }
 
   /*!
   \brief Get original nonstab matrix on a certain level
   */
-  inline const Operator& Anonstab(const int level) const { return Anonstab_[level]; }
+  inline const MLAPI::Operator& Anonstab(const int level) const { return Anonstab_[level]; }
 
-  string                  label_;      // name of this operator
+  string                           label_;      // name of this operator
   Teuchos::ParameterList&          params_;     // ml parameter list (intput)
-  RCP<Epetra_CrsMatrix>   Ainput_;     // input matrix
-  int                     nlevel_;     // no. of grids in hierarchy
-  vector<Operator>        P_;          // the matrix hierarchy
-  vector<Operator>        R_;          // the matrix hierarchy
-  vector<Operator>        A_;          // the matrix hierarchy
-  vector<Operator>        Astab_;      // the matrix hierarchy
-  vector<Operator>        Anonstab_;   // the matrix hierarchy
-  vector<InverseOperator> S_;          // the matrix hierarchy
+  Teuchos::RCP<Epetra_CrsMatrix>   Ainput_;     // input matrix
+  int                              nlevel_;     // no. of grids in hierarchy
+  std::vector<MLAPI::Operator>        P_;          // the matrix hierarchy
+  std::vector<MLAPI::Operator>        R_;          // the matrix hierarchy
+  std::vector<MLAPI::Operator>        A_;          // the matrix hierarchy
+  std::vector<MLAPI::Operator>        Astab_;      // the matrix hierarchy
+  std::vector<MLAPI::Operator>        Anonstab_;   // the matrix hierarchy
+  std::vector<MLAPI::InverseOperator> S_;          // the matrix hierarchy
 
 
 }; // class  AMG_Operator : public virtual Epetra_Operator

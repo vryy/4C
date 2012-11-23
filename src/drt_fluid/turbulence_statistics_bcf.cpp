@@ -588,7 +588,7 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
   // loop elements and perform integration over homogeneous plane
 
   // create the parameters for the discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // action for elements
   eleparams.set("action","calc_turbulence_statistics");

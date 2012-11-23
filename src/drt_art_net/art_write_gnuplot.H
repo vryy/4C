@@ -50,7 +50,7 @@ namespace ART
       \brief Standard Constructor
       */
       ArtWriteGnuplotWrapper( RCP<DRT::Discretization>  actdis,
-                              ParameterList & params);
+          Teuchos::ParameterList & params);
 
       /*!
       \brief Destructor
@@ -60,7 +60,7 @@ namespace ART
       /*!
       \brief Standard write
       */
-      void Write(ParameterList & params);
+      void Write(Teuchos::ParameterList & params);
 
 
     private:
@@ -114,9 +114,9 @@ namespace ART
       /*!
       \Solve the write the results of an artery
       */
-      void Write(RCP<DRT::Discretization>  discret,
-                 ParameterList &           params,
-                 const std::vector<int> *       nodes);
+      void Write(Teuchos::RCP<DRT::Discretization>  discret,
+                 Teuchos::ParameterList &           params,
+                 const std::vector<int> *           nodes);
 
 
     private:

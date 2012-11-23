@@ -133,7 +133,7 @@ void ADAPTER::FluidLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initflowra
 
     int condID=cond.GetInt("coupling id");
 
-    ParameterList params;
+    Teuchos::ParameterList params;
     params.set("ConditionID",condID);
     params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
     params.set<int>("action",FLD::flowratederiv);
@@ -214,7 +214,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
 
     // Get ConditionID of current condition if defined and write value in parameterlist
     int condID=cond.GetInt("coupling id");
-    ParameterList params;
+    Teuchos::ParameterList params;
     params.set("ConditionID",condID);
     const double dt = Dt();
     params.set("dt", dt);

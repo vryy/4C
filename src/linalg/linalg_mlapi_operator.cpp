@@ -15,7 +15,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            mwgee 10/07|
  *----------------------------------------------------------------------*/
-LINALG::AMG_Operator::AMG_Operator(RCP<Epetra_RowMatrix> A,
+LINALG::AMG_Operator::AMG_Operator(Teuchos::RCP<Epetra_RowMatrix> A,
                                    Teuchos::ParameterList& params,
                                    const bool compute) :
 Epetra_Operator(),
@@ -34,7 +34,7 @@ nlevel_(0)
 /*----------------------------------------------------------------------*
  | v cycle (private)                                         mwgee 10/07|
  *----------------------------------------------------------------------*/
-void LINALG::AMG_Operator::Vcycle(const MultiVector& b_f, MultiVector& x_f,
+void LINALG::AMG_Operator::Vcycle(const MLAPI::MultiVector& b_f, MLAPI::MultiVector& x_f,
                                   const int level) const
 {
   // coarse grid solve
@@ -44,8 +44,8 @@ void LINALG::AMG_Operator::Vcycle(const MultiVector& b_f, MultiVector& x_f,
     return;
   }
 
-  MultiVector r_c(P(level).GetDomainSpace(),1,false);
-  MultiVector x_c(P(level).GetDomainSpace(),1,true);
+  MLAPI::MultiVector r_c(P(level).GetDomainSpace(),1,false);
+  MLAPI::MultiVector x_c(P(level).GetDomainSpace(),1,true);
 
   // presmoothing
   x_f = 0.0;
@@ -83,11 +83,11 @@ void LINALG::AMG_Operator::SetupNonSymStab()
   string eigenanalysis = Params().get("eigen-analysis: type", "cg");
 
   //--------------------------------------------- get input matrix wrapped
-  Space space(A()->RowMatrixRowMap());
-  Operator mlapiA(space,space,A().get(),false);
+  MLAPI::Space space(A()->RowMatrixRowMap());
+  MLAPI::Operator mlapiA(space,space,A().get(),false);
 
   //------------------------------------------------ get nullspace wrapped
-  MultiVector NS;
+  MLAPI::MultiVector NS;
   NS.Reshape(mlapiA.GetRangeSpace(),nsdim);
   for (int i=0; i<nsdim; ++i)
   {
@@ -107,15 +107,15 @@ void LINALG::AMG_Operator::SetupNonSymStab()
   A_[0]        = mlapiA;
   Astab_[0]    = mlapiA;
   Anonstab_[0] = mlapiA;
-  InverseOperator S;
-  Operator        Ptent;
-  Operator        Rtent;
-  Operator        P;
-  Operator        R;
-  MultiVector     NextNS;
-  Operator        Ac;
+  MLAPI::InverseOperator S;
+  MLAPI::Operator        Ptent;
+  MLAPI::Operator        Rtent;
+  MLAPI::Operator        P;
+  MLAPI::Operator        R;
+  MLAPI::MultiVector     NextNS;
+  MLAPI::Operator        Ac;
   // temporary parameter list for ml (using most of Params() but changing some)
-  ParameterList params(Params());
+  Teuchos::ParameterList params(Params());
   for (level=0; level<maxlevels-1; ++level)
   {
     //---------------------------------------stabilized current grid matrix
@@ -124,7 +124,7 @@ void LINALG::AMG_Operator::SetupNonSymStab()
     params.set("workspace: current level",level);
 
     //------------------------------------------------------- build smoother
-    ParameterList p;
+    Teuchos::ParameterList p;
     char levelstr[11];
     sprintf(levelstr,"(level %d)",level);
     string type = Params().get("smoother: type "+(string)levelstr,"symmetric Gauss-Seidel");
@@ -157,16 +157,16 @@ void LINALG::AMG_Operator::SetupNonSymStab()
     NS = -1.0 * NextNS;
 
     //----------------------------- build symmetric and nonsymmetric part of A
-    Operator Asym = GetTranspose(mlapiA);
+    MLAPI::Operator Asym = GetTranspose(mlapiA);
     Asym = 0.5 * (Asym + mlapiA);
-    Operator Askew = mlapiA - Asym;
+    MLAPI::Operator Askew = mlapiA - Asym;
 
     //---------------------------------------build row norms of Asym and Askew
-    MultiVector skewnorm = Row1Norm(Askew);
-    MultiVector symnorm  = Row1Norm(Asym);
+    MLAPI::MultiVector skewnorm = Row1Norm(Askew);
+    MLAPI::MultiVector symnorm  = Row1Norm(Asym);
 
     //------------------------------- build ratio between skewnorm and symnorm
-    MultiVector ratio(mlapiA.GetRangeSpace(),1,false);
+    MLAPI::MultiVector ratio(mlapiA.GetRangeSpace(),1,false);
     for (int i=0; i<ratio.GetMyLength(); ++i) ratio(i) = skewnorm(i)/symnorm(i);
     //cout << "skewnorm\n" << skewnorm << "symnorm\n" << symnorm << "ratio\n" << ratio;
     //cout << "fineratio\n" << ratio << endl;
@@ -181,13 +181,13 @@ void LINALG::AMG_Operator::SetupNonSymStab()
       else if (type=="power-method") lambdamax = MaxEigPowerMethod(mlapiA,true);
       else dserror("Unknown type of eigenanalysis for MLAPI");
       //cout << "Max eigenvalue = " << lambdamax << endl;
-      Operator I = GetIdentity(mlapiA.GetDomainSpace(),mlapiA.GetRangeSpace());
-      MultiVector Diag = GetDiagonal(mlapiA);
+      MLAPI::Operator I = GetIdentity(mlapiA.GetDomainSpace(),mlapiA.GetRangeSpace());
+      MLAPI::MultiVector Diag = GetDiagonal(mlapiA);
       Diag.Reciprocal();
       Diag.Scale(damping/lambdamax);
-      Operator Dinv = GetDiagonal(Diag);
-      Operator IminuswDinvA  = I - Dinv * mlapiA;
-      Operator IminuswDinvAT = I - Dinv * GetTranspose(mlapiA);
+      MLAPI::Operator Dinv = GetDiagonal(Diag);
+      MLAPI::Operator IminuswDinvA  = I - Dinv * mlapiA;
+      MLAPI::Operator IminuswDinvAT = I - Dinv * GetTranspose(mlapiA);
       P                      = IminuswDinvA * Ptent;
       R                      = IminuswDinvAT * Ptent;
       R                      = GetTranspose(R);
@@ -203,27 +203,27 @@ void LINALG::AMG_Operator::SetupNonSymStab()
     //------- coarsen matrix and build skew/sym part of coarse matrix
     //----------- use non stab. matrix to build nonstab coarse matrix
     Ac = GetRAP(R,Anonstab_[level],P);
-    Operator Acsym = GetTranspose(Ac);
+    MLAPI::Operator Acsym = GetTranspose(Ac);
     Acsym = 0.5 * (Acsym + Ac);
-    Operator Acskew = Ac - Acsym;
+    MLAPI::Operator Acskew = Ac - Acsym;
 
     //--------------------------- build row norms of Acsym and Acskew
-    MultiVector cskewnorm = Row1Norm(Acskew);
-    MultiVector csymnorm  = Row1Norm(Acsym);
+    MLAPI::MultiVector cskewnorm = Row1Norm(Acskew);
+    MLAPI::MultiVector csymnorm  = Row1Norm(Acsym);
 
     //---------------------- ratio between coarse skew/sym norms (ist)
-    MultiVector cratioist(Ac.GetRangeSpace(),1,false);
+    MLAPI::MultiVector cratioist(Ac.GetRangeSpace(),1,false);
     for (int i=0; i<cratioist.GetMyLength(); ++i) cratioist(i) = cskewnorm(i)/csymnorm(i);
     //cout << "cskewnorm\n" << cskewnorm << "csymnorm\n" << csymnorm << "cratioist\n" << cratioist;
     //cout << "cratioist\n" << cratioist;
 
     //---------------------------- coarsen ratio from fine level (soll)
-    MultiVector cratiosoll;
+    MLAPI::MultiVector cratiosoll;
     cratiosoll = Rtent * ratio;
     //cout << "cratiosoll\n" << cratiosoll;
 
     //---------------------------------- create vector of boost factors
-    MultiVector boost(Ac.GetRangeSpace(),1,false);
+    MLAPI::MultiVector boost(Ac.GetRangeSpace(),1,false);
     bool test = true;
     int printit = 0;
 #if 1 // boost stuff above 1.0 only
@@ -276,10 +276,10 @@ void LINALG::AMG_Operator::SetupNonSymStab()
 #endif
 
     //---------------------- build the boosting matrix B = diag(boost)
-    Operator B = GetDiagonal(boost);
+    MLAPI::Operator B = GetDiagonal(boost);
 
     //--------------------------------- boost the symmetric part of Ac
-    Operator Acstab = B*Acsym*B;
+    MLAPI::Operator Acstab = B*Acsym*B;
 #if 0
     if (printout)
     {
@@ -288,7 +288,7 @@ void LINALG::AMG_Operator::SetupNonSymStab()
       cout << Acstab;
     }
 #endif
-    Operator Acnonstab = Ac;
+    MLAPI::Operator Acnonstab = Ac;
     Ac = Ac + Acstab;
 
     //-------------------------------------- store values in hierarchy
@@ -312,7 +312,7 @@ void LINALG::AMG_Operator::SetupNonSymStab()
 
   //------------------------------------------------ setup coarse solver
   {
-    ParameterList p;
+    Teuchos::ParameterList p;
     S_[level].Reshape(A_[level],"Amesos-KLU",p);
   }
 
@@ -334,16 +334,16 @@ int LINALG::AMG_Operator::ApplyInverse(const Epetra_MultiVector& X,
 
   // create a space
   const Epetra_BlockMap& bmap = X.Map();
-  Space space;
+  MLAPI::Space space;
   space.Reshape(bmap.NumGlobalElements(),bmap.NumMyElements(),bmap.MyGlobalElements());
 
   // wrap incoming and outgoing vectors as MLAPI::MultiVector
   // note: Aztec might pass X and Y as physically identical objects,
   // so we deep copy here
-  MultiVector in(space,X.Pointers(),1);
-  MultiVector out(space,Y.Pointers(),1);
-  MultiVector b(space,1,false);
-  MultiVector x(space,1,true);
+  MLAPI::MultiVector in(space,X.Pointers(),1);
+  MLAPI::MultiVector out(space,Y.Pointers(),1);
+  MLAPI::MultiVector b(space,1,false);
+  MLAPI::MultiVector x(space,1,true);
   const int mylength = X.Map().NumMyElements();
   for (int i=0; i<mylength; ++i) b(i) = in(i);
 
@@ -360,15 +360,15 @@ int LINALG::AMG_Operator::ApplyInverse(const Epetra_MultiVector& X,
 /*----------------------------------------------------------------------*
  |  build row wise 1-norm (private)                          mwgee 10/07|
  *----------------------------------------------------------------------*/
-MLAPI::MultiVector LINALG::AMG_Operator::Row1Norm(Operator& A)
+MLAPI::MultiVector LINALG::AMG_Operator::Row1Norm(MLAPI::Operator& A)
 {
-  MultiVector norm(A.GetRangeSpace(),1,true);
+  MLAPI::MultiVector norm(A.GetRangeSpace(),1,true);
   const Epetra_RowMatrix* B = A.GetRowMatrix();
   if (!B) dserror("Cannot get Epetra_RowMatrix from MLAPI Operator");
   int nummyrows = B->NumMyRows();
   int maxnumentries = B->MaxNumEntries() * 2;
-  vector<double> vals(maxnumentries);
-  vector<int>    indices(maxnumentries);
+  std::vector<double> vals(maxnumentries);
+  std::vector<int>    indices(maxnumentries);
   for (int i=0; i<nummyrows; ++i)
   {
     int numentries;

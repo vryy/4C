@@ -57,9 +57,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_exporter.H"
 #include "linalg_blocksparsematrix.H"
 
-using namespace std;
-using Teuchos::RCP;
-using Teuchos::ParameterList;
 
 namespace IO
 {

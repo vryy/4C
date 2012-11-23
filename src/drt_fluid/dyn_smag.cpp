@@ -48,7 +48,7 @@ FLD::DynSmagFilter::DynSmagFilter(
   // -------------------------------------------------------------------
   // initialise the turbulence model
   // -------------------------------------------------------------------
-  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+  Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
   if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
       ==
@@ -181,7 +181,7 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
   // output of mean dynamic Samgorinsky parameters
   // reset to zero
   // turbulent channel flow only
-  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+  Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
   if (modelparams->get<string>("CANONICAL_FLOW","no")=="channel_flow_of_height_2"
       or modelparams->get<string>("CANONICAL_FLOW","no")=="loma_channel_flow_of_height_2"
       or modelparams->get<string>("CANONICAL_FLOW","no")=="scatra_channel_flow_of_height_2")
@@ -225,8 +225,8 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfPrt(
   // compute Cs, use averaging or clipping
   DynSmagComputePrt(extraparams,numele_layer);
 
-  ParameterList *  extramodelparams =&(extraparams.sublist("TURBULENCE MODEL"));
-  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+  Teuchos::ParameterList *  extramodelparams =&(extraparams.sublist("TURBULENCE MODEL"));
+  Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
   // add pointer to variables of statistics manager
   // output of mean dynamic Samgorinsky parameters
@@ -322,7 +322,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
     if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
     {
       // get planecoordinates
-      ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+      Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
       dir1coords_=modelparams->get<RCP<std::vector<double> > >("planecoords_",Teuchos::null);
 
       if(dir1coords_==Teuchos::null)
@@ -339,7 +339,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
     else if (special_flow_homdir_ == "x" or special_flow_homdir_ == "y" or special_flow_homdir_ == "z")
     {
       // get coordinates
-      ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+      Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
       dir1coords_=modelparams->get<RCP<std::vector<double> > >("dir1coords_",Teuchos::null);
       dir2coords_=modelparams->get<RCP<std::vector<double> > >("dir2coords_",Teuchos::null);
 
@@ -397,7 +397,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
   // compute Cs
 
   // generate a parameterlist for communication and control
-  ParameterList calc_smag_const_params;
+  Teuchos::ParameterList calc_smag_const_params;
   // action for elements
   calc_smag_const_params.set<int>("action",FLD::calc_smagorinsky_const);
 
@@ -577,7 +577,7 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
   col_Ci_delta_sq->PutScalar(0.0);
   LINALG::Export(*Ci_delta_sq,*col_Ci_delta_sq);
   // store in parameters
-  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+  Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
   modelparams->set<RCP<Epetra_Vector> >("col_Cs_delta_sq",col_Cs_delta_sq);
   modelparams->set<RCP<Epetra_Vector> >("col_Ci_delta_sq",col_Ci_delta_sq);
 
@@ -689,7 +689,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
     if (special_flow_homdir_ == "xy" or special_flow_homdir_ == "xz" or special_flow_homdir_ == "yz")
     {
       // get planecoordinates
-      ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+      Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
       dir1coords_=modelparams->get<RCP<std::vector<double> > >("planecoords_",Teuchos::null);
 
       if(dir1coords_==Teuchos::null)
@@ -706,7 +706,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
     else if (special_flow_homdir_ == "x" or special_flow_homdir_ == "y" or special_flow_homdir_ == "z")
     {
       // get coordinates
-      ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+      Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
       dir1coords_=modelparams->get<RCP<std::vector<double> > >("dir1coords_",Teuchos::null);
       dir2coords_=modelparams->get<RCP<std::vector<double> > >("dir2coords_",Teuchos::null);
 
@@ -756,7 +756,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
   // compute Prt
 
   // generate a parameterlist for communication and control
-  ParameterList calc_turb_prandtl_params;
+  Teuchos::ParameterList calc_turb_prandtl_params;
   // action for elements
   calc_turb_prandtl_params.set<int>("action",SCATRA::calc_turbulent_prandtl_number);
   calc_turb_prandtl_params.set<int>("scatratype",scatratype_);
@@ -917,7 +917,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
   col_Prt->PutScalar(0.0);
   LINALG::Export(*Prt,*col_Prt);
   // store in parameters
-  ParameterList *  modelparams =&(extraparams.sublist("TURBULENCE MODEL"));
+  Teuchos::ParameterList *  modelparams =&(extraparams.sublist("TURBULENCE MODEL"));
   modelparams->set<RCP<Epetra_Vector> >("col_ele_Prt",col_Prt);
 
   // ----------------------------------------------------
@@ -996,7 +996,7 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
   const int numdim =3;
 
   // generate a parameterlist for communication and control
-  ParameterList filterparams;
+  Teuchos::ParameterList filterparams;
   // action for elements
   filterparams.set<int>("action",FLD::calc_fluid_box_filter);
   filterparams.set("thermpress",thermpress);
@@ -1583,7 +1583,7 @@ void FLD::DynSmagFilter::ApplyBoxFilterScatra(
   const int numdim =3;
 
   // generate a parameterlist for communication and control
-  ParameterList filterparams;
+  Teuchos::ParameterList filterparams;
   // action for elements
   filterparams.set<int>("action",SCATRA::calc_scatra_box_filter);
   filterparams.set<int>("scatratype",scatratype_);

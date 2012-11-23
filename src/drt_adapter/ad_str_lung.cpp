@@ -157,7 +157,7 @@ void ADAPTER::StructureLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initvo
   if (!initvol->Map().SameAs(signvol->Map()))
     dserror("Structure lung volume constraint cannot be initialized");
 
-  ParameterList params;
+  Teuchos::ParameterList params;
   params.set("action","calc_struct_constrvol");
 
   // set displacements
@@ -262,7 +262,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
   if (!Discretization()->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
   // parameter list
-  ParameterList params;
+  Teuchos::ParameterList params;
   params.set("action", "calc_struct_volconstrstiff");
 
   // set displacements

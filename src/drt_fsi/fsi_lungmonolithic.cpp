@@ -598,7 +598,7 @@ void FSI::LungMonolithic::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Ep
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<NOX::Epetra::LinearSystem>
-FSI::LungMonolithic::CreateLinearSystem(ParameterList& nlParams,
+FSI::LungMonolithic::CreateLinearSystem(Teuchos::ParameterList& nlParams,
                                         NOX::Epetra::Vector& noxSoln,
                                         Teuchos::RCP<NOX::Utils> utils)
 {

@@ -253,7 +253,7 @@ void SCATRA::TimIntBDF2::ComputeThermPressure()
   else hist = thermpressn_;
 
   // define element parameter list
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // DO THIS BEFORE PHINP IS SET (ClearState() is called internally!!!!)
   // compute flux approximation and add it to the parameter list

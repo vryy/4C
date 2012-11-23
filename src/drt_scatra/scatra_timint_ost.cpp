@@ -261,7 +261,7 @@ void SCATRA::TimIntOneStepTheta::ComputeThermPressure()
   const double hist = thermpressn_ + (1.0-theta_)*dta_*thermpressdtn_;
 
   // define element parameter list
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // DO THIS BEFORE PHINP IS SET (ClearState() is called internally!!!!)
   // compute flux approximation and add it to the parameter list

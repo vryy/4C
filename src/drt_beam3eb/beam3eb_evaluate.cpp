@@ -1656,7 +1656,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(vector<double>& disp,
   #endif
 }
 
-void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(ParameterList& params,
+void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
                                              DRT::Discretization& discretization,
                                              DRT::Condition& condition,
                                              std::vector<int>& lm,

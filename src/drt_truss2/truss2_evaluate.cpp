@@ -243,7 +243,7 @@ int DRT::ELEMENTS::Truss2::EvaluateNeumann(Teuchos::ParameterList& params,
  | Evaluate PTC damping (public)                                                                  cyron 02/10|
  *----------------------------------------------------------------------------------------------------------*/
 
-int DRT::ELEMENTS::Truss2::EvaluatePTC(ParameterList& params,
+int DRT::ELEMENTS::Truss2::EvaluatePTC(Teuchos::ParameterList& params,
                                       Epetra_SerialDenseMatrix& elemat1,
                                       int& ActNumDof0)
 {

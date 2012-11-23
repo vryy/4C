@@ -30,7 +30,7 @@ Maintainer: Lena Yoshihara
  |  ctor (public)                                            lw 12/07|
  *-------------------------------------------------------------------*/
 UTILS::SurfStressManager::SurfStressManager(Teuchos::RCP<DRT::Discretization> discret,
-                                            ParameterList sdynparams,
+                                            Teuchos::ParameterList sdynparams,
                                             const std::string file_prefix):
   discret_(discret)
 {
@@ -164,11 +164,11 @@ void UTILS::SurfStressManager::ReadRestart(const int step,
 | interfacial phenomena                                              |
 *--------------------------------------------------------------------*/
 
-void UTILS::SurfStressManager::EvaluateSurfStress(ParameterList& p,
+void UTILS::SurfStressManager::EvaluateSurfStress(Teuchos::ParameterList& p,
                                                   const RCP<Epetra_Vector> dism,
                                                   const RCP<Epetra_Vector> disn,
-                                                  RCP<Epetra_Vector> fint,
-                                                  RCP<LINALG::SparseOperator> stiff)
+                                                  Teuchos::RCP<Epetra_Vector> fint,
+                                                  Teuchos::RCP<LINALG::SparseOperator> stiff)
 {
   // action for elements
   p.set("action","calc_surfstress_stiff");

@@ -540,7 +540,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   //----------------------------------------------------------------------
   // define homogeneous direction to compute averages of Smagorinsky constant
 
-  ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
+  Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
   // check if we want to compute averages of Smagorinsky constant
   if (modelparams->get<string>("PHYSICAL_MODEL","no_model") == "Dynamic_Smagorinsky")
   {

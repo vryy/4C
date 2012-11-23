@@ -21,10 +21,6 @@ Maintainer: Michael Gee
 
 #define DEBUGGING_ANA 0 // turn on to get debugging printouts
 
-using namespace std;
-using Teuchos::RCP;
-using Teuchos::rcp;
-using Teuchos::ParameterList;
 
 namespace LINALG
 {
@@ -331,7 +327,7 @@ public:
   /*!
   \brief The derived class shall return a clone of itself by calling its own copy-ctor
   */
-  virtual const RCP<LightWeightOperatorBase> Clone() const = 0;
+  virtual const Teuchos::RCP<LightWeightOperatorBase> Clone() const = 0;
 
   /*!
   \brief Use transpose of operator
@@ -418,7 +414,7 @@ public:
   op_(old.op_)
   {}
 
-  virtual const RCP<LightWeightOperatorBase> Clone() const
+  virtual const Teuchos::RCP<LightWeightOperatorBase> Clone() const
   { return Teuchos::rcp(new LightWeightOperator(*this));}
 
   virtual ~LightWeightOperator() {}
@@ -487,7 +483,7 @@ public:
 
   virtual ~OperatorTransposed() {}
 
-  virtual const RCP<LightWeightOperatorBase> Clone() const
+  virtual const Teuchos::RCP<LightWeightOperatorBase> Clone() const
   { return Teuchos::rcp(new OperatorTransposed(*this)); }
 
   virtual int SetUseTranspose(bool UseTranspose)
@@ -540,7 +536,7 @@ public:
 
 private:
 
-  const RCP<LightWeightOperatorBase> op_;
+  const Teuchos::RCP<LightWeightOperatorBase> op_;
 
 }; // class OperatorTransposed
 
@@ -573,7 +569,7 @@ public:
 
   virtual ~OperatorScaled() {}
 
-  virtual const RCP<LightWeightOperatorBase> Clone() const
+  virtual const Teuchos::RCP<LightWeightOperatorBase> Clone() const
   { return Teuchos::rcp(new OperatorScaled(*this)); }
 
   virtual int SetUseTranspose(bool UseTranspose)
@@ -622,8 +618,8 @@ public:
 
 private:
 
-  const RCP<LightWeightOperatorBase> op_;
-  const double                       scalar_;
+  const Teuchos::RCP<LightWeightOperatorBase> op_;
+  const double                                scalar_;
 
 }; // class OperatorScaled
 
@@ -658,7 +654,7 @@ public:
 
   virtual ~OperatorProduct() {}
 
-  virtual const RCP<LightWeightOperatorBase> Clone() const
+  virtual const Teuchos::RCP<LightWeightOperatorBase> Clone() const
   { return Teuchos::rcp(new OperatorProduct(*this)); }
 
   virtual int SetUseTranspose(bool UseTranspose)
@@ -700,9 +696,9 @@ public:
 
 private:
 
-  bool                               usetransposed_;
-  const RCP<LightWeightOperatorBase> left_;
-  const RCP<LightWeightOperatorBase> right_;
+  bool                                        usetransposed_;
+  const Teuchos::RCP<LightWeightOperatorBase> left_;
+  const Teuchos::RCP<LightWeightOperatorBase> right_;
 
 }; // class OperatorProduct
 
@@ -744,7 +740,7 @@ public:
 
   virtual ~OperatorSum() {}
 
-  virtual const RCP<LightWeightOperatorBase> Clone() const
+  virtual const Teuchos::RCP<LightWeightOperatorBase> Clone() const
   { return Teuchos::rcp(new OperatorSum(*this)); }
 
   virtual int SetUseTranspose(bool UseTranspose)
@@ -790,10 +786,10 @@ public:
 
 private:
 
-  int                                sign_;
-  bool                               usetransposed_;
-  const RCP<LightWeightOperatorBase> left_;
-  const RCP<LightWeightOperatorBase> right_;
+  int                                         sign_;
+  bool                                        usetransposed_;
+  const Teuchos::RCP<LightWeightOperatorBase> left_;
+  const Teuchos::RCP<LightWeightOperatorBase> right_;
 
 }; // class OperatorSum
 
@@ -854,7 +850,7 @@ public:
 
   virtual ~OperatorInverse() {}
 
-  virtual const RCP<LightWeightOperatorBase> Clone() const
+  virtual const Teuchos::RCP<LightWeightOperatorBase> Clone() const
   { return Teuchos::rcp(new OperatorInverse(*this)); }
 
   virtual int SetUseTranspose(bool UseTranspose)
@@ -897,10 +893,10 @@ public:
 
 private:
 
-  const bool             reset_;
-  RCP<LINALG::Solver>    defaultsolver_;
-  LINALG::Solver&        solver_;
-  const Epetra_Operator& op_;
+  const bool                   reset_;
+  Teuchos::RCP<LINALG::Solver> defaultsolver_;
+  LINALG::Solver&              solver_;
+  const Epetra_Operator&       op_;
 
 }; // class OperatorInverse
 
@@ -968,7 +964,7 @@ public:
   }
 
   /// RCP version of the above method
-  inline void operator = (const RCP<LINALG::ANA::Vector>& rhs)
+  inline void operator = (const Teuchos::RCP<LINALG::ANA::Vector>& rhs)
   { *this = *rhs; }
 
   /*!
@@ -985,7 +981,7 @@ public:
   }
 
   /// RCP version of the above method
-  inline void operator += (const RCP<LINALG::ANA::Vector>& rhs)
+  inline void operator += (const Teuchos::RCP<LINALG::ANA::Vector>& rhs)
   { *this += *rhs; }
 
   /*!
@@ -1002,7 +998,7 @@ public:
   }
 
   /// RCP version of the above method
-  inline void operator -= (const RCP<LINALG::ANA::Vector>& rhs)
+  inline void operator -= (const Teuchos::RCP<LINALG::ANA::Vector>& rhs)
   { *this -= *rhs; }
 
   /*!
@@ -1918,8 +1914,8 @@ public:
 
 private:
 
-  const RCP<LightWeightOperatorBase> op_;
-  const LINALG::ANA::LC_s_times_vec  right_;
+  const Teuchos::RCP<LightWeightOperatorBase> op_;
+  const LINALG::ANA::LC_s_times_vec           right_;
 
 }; // class LC_Operator_times_lcsv
 
@@ -1963,8 +1959,8 @@ public:
 
 private:
 
-  const RCP<LightWeightOperatorBase> op_;
-  const LINALG::ANA::LCBase&         right_;
+  const Teuchos::RCP<LightWeightOperatorBase> op_;
+  const LINALG::ANA::LCBase&                  right_;
 
 }; // class LC_Operator_times_lc
 
@@ -1998,19 +1994,19 @@ inline LINALG::ANA::LC_lcsv_minus_lcsv operator- (const LINALG::ANA::Vector& lef
 inline LINALG::ANA::LC_s_times_lc operator* (const double& scalar, const LINALG::ANA::LCBase& right) { return LINALG::ANA::LC_s_times_lc(scalar,right); }
 inline LINALG::ANA::LC_s_times_lc operator* (const LINALG::ANA::LCBase& left, const double& scalar) { return (scalar*left); }
 // RCP versions of the above operations
-inline LINALG::ANA::LC_s_times_vec operator* (const double& scalar, const RCP<const LINALG::ANA::Vector> vec) { return (scalar * (*vec)); }
-inline LINALG::ANA::LC_s_times_vec operator* (const RCP<const LINALG::ANA::Vector> vec, const double& scalar) { return (scalar * (*vec)); }
-inline LINALG::ANA::LC_s_times_vec operator/ (const RCP<const LINALG::ANA::Vector> vec, const double& scalar) { return ((*vec)/scalar); }
-inline LINALG::ANA::LC_vec_plus_lc operator+ (const RCP<const LINALG::ANA::Vector> vec, const LINALG::ANA::LCBase& right) { return ((*vec)+right); }
-inline LINALG::ANA::LC_vec_plus_lc operator+ (const LINALG::ANA::LCBase& left , const RCP<const LINALG::ANA::Vector> vec) { return (left + (*vec)); }
-inline LINALG::ANA::LC_vec_minus_lc operator- (const RCP<const LINALG::ANA::Vector> vec, const LINALG::ANA::LCBase& right) { return (*vec-right); }
-inline LINALG::ANA::LC_lc_minus_vec operator- (const LINALG::ANA::LCBase& left, const RCP<const LINALG::ANA::Vector> vec) { return (left-(*vec)); }
-inline LINALG::ANA::LC_vec_plus_lcsv operator+ (const RCP<const LINALG::ANA::Vector> vec, const LINALG::ANA::LC_s_times_vec& right) { return (*vec+right); }
-inline LINALG::ANA::LC_vec_plus_lcsv operator+ (const LINALG::ANA::LC_s_times_vec& left, const RCP<const LINALG::ANA::Vector> vec) { return (left+(*vec)); }
-inline LINALG::ANA::LC_vec_minus_lcsv operator- (const RCP<const LINALG::ANA::Vector> vec, const LINALG::ANA::LC_s_times_vec& right) { return (*vec - right); }
-inline LINALG::ANA::LC_lcsv_minus_vec operator- (const LINALG::ANA::LC_s_times_vec& left, const RCP<const LINALG::ANA::Vector> vec) { return (left-(*vec)); }
-inline LINALG::ANA::LC_lcsv_plus_lcsv operator+ (const RCP<const LINALG::ANA::Vector> left, const RCP<const LINALG::ANA::Vector> right) { return ((*left)+(*right)); }
-inline LINALG::ANA::LC_lcsv_minus_lcsv operator- (const RCP<const LINALG::ANA::Vector> left, const RCP<const LINALG::ANA::Vector> right) { return (*left - (*right)); }
+inline LINALG::ANA::LC_s_times_vec operator* (const double& scalar, const Teuchos::RCP<const LINALG::ANA::Vector> vec) { return (scalar * (*vec)); }
+inline LINALG::ANA::LC_s_times_vec operator* (const Teuchos::RCP<const LINALG::ANA::Vector> vec, const double& scalar) { return (scalar * (*vec)); }
+inline LINALG::ANA::LC_s_times_vec operator/ (const Teuchos::RCP<const LINALG::ANA::Vector> vec, const double& scalar) { return ((*vec)/scalar); }
+inline LINALG::ANA::LC_vec_plus_lc operator+ (const Teuchos::RCP<const LINALG::ANA::Vector> vec, const LINALG::ANA::LCBase& right) { return ((*vec)+right); }
+inline LINALG::ANA::LC_vec_plus_lc operator+ (const LINALG::ANA::LCBase& left , const Teuchos::RCP<const LINALG::ANA::Vector> vec) { return (left + (*vec)); }
+inline LINALG::ANA::LC_vec_minus_lc operator- (const Teuchos::RCP<const LINALG::ANA::Vector> vec, const LINALG::ANA::LCBase& right) { return (*vec-right); }
+inline LINALG::ANA::LC_lc_minus_vec operator- (const LINALG::ANA::LCBase& left, const Teuchos::RCP<const LINALG::ANA::Vector> vec) { return (left-(*vec)); }
+inline LINALG::ANA::LC_vec_plus_lcsv operator+ (const Teuchos::RCP<const LINALG::ANA::Vector> vec, const LINALG::ANA::LC_s_times_vec& right) { return (*vec+right); }
+inline LINALG::ANA::LC_vec_plus_lcsv operator+ (const LINALG::ANA::LC_s_times_vec& left, const Teuchos::RCP<const LINALG::ANA::Vector> vec) { return (left+(*vec)); }
+inline LINALG::ANA::LC_vec_minus_lcsv operator- (const Teuchos::RCP<const LINALG::ANA::Vector> vec, const LINALG::ANA::LC_s_times_vec& right) { return (*vec - right); }
+inline LINALG::ANA::LC_lcsv_minus_vec operator- (const LINALG::ANA::LC_s_times_vec& left, const Teuchos::RCP<const LINALG::ANA::Vector> vec) { return (left-(*vec)); }
+inline LINALG::ANA::LC_lcsv_plus_lcsv operator+ (const Teuchos::RCP<const LINALG::ANA::Vector> left, const Teuchos::RCP<const LINALG::ANA::Vector> right) { return ((*left)+(*right)); }
+inline LINALG::ANA::LC_lcsv_minus_lcsv operator- (const Teuchos::RCP<const LINALG::ANA::Vector> left, const Teuchos::RCP<const LINALG::ANA::Vector> right) { return (*left - (*right)); }
 
 
 /*----------------------------------------------------------------------*
@@ -2039,8 +2035,8 @@ inline LINALG::ANA::OperatorSum operator- (const Epetra_Operator& left, const Ep
 inline LINALG::ANA::OperatorSum operator- (const LINALG::ANA::LightWeightOperatorBase& left, const Epetra_Operator& right) { return LINALG::ANA::OperatorSum(left,LINALG::ANA::lw(right),-1); }
 inline LINALG::ANA::OperatorSum operator- (const Epetra_Operator& left, const LINALG::ANA::LightWeightOperatorBase& right) { return LINALG::ANA::OperatorSum(LINALG::ANA::lw(left),right,-1); }
 // RCP versions of the above operations
-inline LINALG::ANA::LC_Operator_times_lcsv operator* (const LINALG::ANA::LightWeightOperatorBase& op, const RCP<const LINALG::ANA::Vector> vec) { return op*(*vec); }
-inline LINALG::ANA::LC_Operator_times_lcsv operator* (const Epetra_Operator& op, const RCP<const LINALG::ANA::Vector> vec) { return op*(*vec); }
+inline LINALG::ANA::LC_Operator_times_lcsv operator* (const LINALG::ANA::LightWeightOperatorBase& op, const Teuchos::RCP<const LINALG::ANA::Vector> vec) { return op*(*vec); }
+inline LINALG::ANA::LC_Operator_times_lcsv operator* (const Epetra_Operator& op, const Teuchos::RCP<const LINALG::ANA::Vector> vec) { return op*(*vec); }
 
 
 /*----------------------------------------------------------------------*
@@ -2054,11 +2050,11 @@ double operator* (const LINALG::ANA::LC_s_times_vec& left, const LINALG::ANA::LC
 inline double operator* (const LINALG::ANA::LCBase& left, const LINALG::ANA::Vector& vec1) { return vec1*left; }
 inline double operator* (const LINALG::ANA::LC_s_times_vec& left, const LINALG::ANA::Vector& vec1) { return vec1*left; }
 // RCP versions of the above operations
-inline double operator* (const RCP<const LINALG::ANA::Vector> vec1, const RCP<const LINALG::ANA::Vector> vec2) { return (*vec1)*(*vec2); }
-inline double operator* (const RCP<const LINALG::ANA::Vector> vec1, const LINALG::ANA::LCBase& right) { return (*vec1)*right; }
-inline double operator* (const LINALG::ANA::LCBase& left, const RCP<const LINALG::ANA::Vector> vec1) { return (*vec1)*left; }
-inline double operator* (const RCP<const LINALG::ANA::Vector> vec1, const LINALG::ANA::LC_s_times_vec& right) { return (*vec1)*right; }
-inline double operator* (const LINALG::ANA::LC_s_times_vec& left, const RCP<const LINALG::ANA::Vector> vec1) { return (*vec1)*left; }
+inline double operator* (const Teuchos::RCP<const LINALG::ANA::Vector> vec1, const Teuchos::RCP<const LINALG::ANA::Vector> vec2) { return (*vec1)*(*vec2); }
+inline double operator* (const Teuchos::RCP<const LINALG::ANA::Vector> vec1, const LINALG::ANA::LCBase& right) { return (*vec1)*right; }
+inline double operator* (const LINALG::ANA::LCBase& left, const Teuchos::RCP<const LINALG::ANA::Vector> vec1) { return (*vec1)*left; }
+inline double operator* (const Teuchos::RCP<const LINALG::ANA::Vector> vec1, const LINALG::ANA::LC_s_times_vec& right) { return (*vec1)*right; }
+inline double operator* (const LINALG::ANA::LC_s_times_vec& left, const Teuchos::RCP<const LINALG::ANA::Vector> vec1) { return (*vec1)*left; }
 
 /*----------------------------------------------------------------------*
    pointwise multiplications of vectors (result is a vector)
@@ -2071,11 +2067,11 @@ inline LINALG::ANA::LC_vec_pointwise_lcsv  pw(const LINALG::ANA::LC_s_times_vec&
 inline LINALG::ANA::LC_lc_pointwise_lc     pw(const LINALG::ANA::LCBase& left, const LINALG::ANA::LCBase& right) { return LINALG::ANA::LC_lc_pointwise_lc(left,right); }
 inline LINALG::ANA::LC_lcsv_pointwise_lcsv pw(const LINALG::ANA::LC_s_times_vec& left, const LINALG::ANA::LC_s_times_vec& right) { return LINALG::ANA::LC_lcsv_pointwise_lcsv(left,right); }
 // RCP versions of the above operations
-inline LINALG::ANA::LC_vec_pointwise_vec   pw(const RCP<const LINALG::ANA::Vector> vec1, const RCP<const LINALG::ANA::Vector> vec2) { return LINALG::ANA::pw(*vec1,*vec2); }
-inline LINALG::ANA::LC_vec_pointwise_lc    pw(const RCP<const LINALG::ANA::Vector> vec , const LINALG::ANA::LCBase& right) { return LINALG::ANA::pw(*vec,right); }
-inline LINALG::ANA::LC_vec_pointwise_lc    pw(const LINALG::ANA::LCBase& left, const RCP<const LINALG::ANA::Vector> vec) { return LINALG::ANA::pw(left,*vec); }
-inline LINALG::ANA::LC_vec_pointwise_lcsv  pw(const RCP<const LINALG::ANA::Vector> vec , const LINALG::ANA::LC_s_times_vec& right) { return LINALG::ANA::pw(*vec,right); }
-inline LINALG::ANA::LC_vec_pointwise_lcsv  pw(const LINALG::ANA::LC_s_times_vec& left, const RCP<const LINALG::ANA::Vector> vec) { return LINALG::ANA::pw(left,*vec); }
+inline LINALG::ANA::LC_vec_pointwise_vec   pw(const Teuchos::RCP<const LINALG::ANA::Vector> vec1, const Teuchos::RCP<const LINALG::ANA::Vector> vec2) { return LINALG::ANA::pw(*vec1,*vec2); }
+inline LINALG::ANA::LC_vec_pointwise_lc    pw(const Teuchos::RCP<const LINALG::ANA::Vector> vec , const LINALG::ANA::LCBase& right) { return LINALG::ANA::pw(*vec,right); }
+inline LINALG::ANA::LC_vec_pointwise_lc    pw(const LINALG::ANA::LCBase& left, const Teuchos::RCP<const LINALG::ANA::Vector> vec) { return LINALG::ANA::pw(left,*vec); }
+inline LINALG::ANA::LC_vec_pointwise_lcsv  pw(const Teuchos::RCP<const LINALG::ANA::Vector> vec , const LINALG::ANA::LC_s_times_vec& right) { return LINALG::ANA::pw(*vec,right); }
+inline LINALG::ANA::LC_vec_pointwise_lcsv  pw(const LINALG::ANA::LC_s_times_vec& left, const Teuchos::RCP<const LINALG::ANA::Vector> vec) { return LINALG::ANA::pw(left,*vec); }
 /*----------------------------------------------------------------------*
    implicit transpose of an LINALG::ANA::LightWeightOperatorBase / Epetra_Operator
  *----------------------------------------------------------------------*/
@@ -2094,9 +2090,9 @@ inline LINALG::ANA::OperatorInverse inverse(const LINALG::SparseOperator& op) { 
 inline double norm2(const LINALG::ANA::Vector& vec) { double norm; vec.Norm2(&norm); return norm; }
 inline double norm1(const LINALG::ANA::Vector& vec) { double norm; vec.Norm1(&norm); return norm; }
 inline double norminf(const LINALG::ANA::Vector& vec) { double norm; vec.NormInf(&norm); return norm; }
-inline double norm2(const RCP<const LINALG::ANA::Vector>& vec) { return LINALG::ANA::norm2(*vec); }
-inline double norm1(const RCP<const LINALG::ANA::Vector>& vec) { return LINALG::ANA::norm1(*vec); }
-inline double norminf(const RCP<const LINALG::ANA::Vector>& vec) { return LINALG::ANA::norminf(*vec); }
+inline double norm2(const Teuchos::RCP<const LINALG::ANA::Vector>& vec) { return LINALG::ANA::norm2(*vec); }
+inline double norm1(const Teuchos::RCP<const LINALG::ANA::Vector>& vec) { return LINALG::ANA::norm1(*vec); }
+inline double norminf(const Teuchos::RCP<const LINALG::ANA::Vector>& vec) { return LINALG::ANA::norminf(*vec); }
 double norm2(const LINALG::ANA::LCBase& lc);
 double norm1(const LINALG::ANA::LCBase& lc);
 double norminf(const LINALG::ANA::LCBase& lc);

@@ -299,7 +299,7 @@ namespace FLD
     // providing colorful output for paraview
     if (out_mean_)
     {
-      ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
+      Teuchos::ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
       string homdir = modelparams->get<string>("HOMDIR","not_specified");
 
@@ -439,7 +439,7 @@ namespace FLD
     // providing colorful output for paraview
     if (out_mean_)
     {
-      ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
+      Teuchos::ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
       string homdir = modelparams->get<string>("HOMDIR","not_specified");
 
@@ -474,7 +474,7 @@ namespace FLD
   void TurbulenceStatisticManager::Setup()
   {
 
-    ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
+    Teuchos::ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
     if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
         ==

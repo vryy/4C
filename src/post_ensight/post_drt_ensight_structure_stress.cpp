@@ -221,7 +221,7 @@ void StructureEnsightWriter::WriteNodalStressStep(std::ofstream& file,
   const RCP<DRT::Discretization> dis = field_->discretization();
   const Epetra_Map* noderowmap = dis->NodeRowMap();
 
-  ParameterList p;
+  Teuchos::ParameterList p;
   p.set("action","postprocess_stress");
   p.set("stresstype","ndxyz");
   p.set("gpstressmap", data);
@@ -396,7 +396,7 @@ void StructureEnsightWriter::WriteElementCenterStressStep(std::ofstream& file,
   const RCP<DRT::Discretization> dis = field_->discretization();
   const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > data =
     result.read_result_serialdensematrix(groupname);
-  ParameterList p;
+  Teuchos::ParameterList p;
   p.set("action","postprocess_stress");
   p.set("stresstype","cxyz");
   p.set("gpstressmap", data);
@@ -702,7 +702,7 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
   const RCP<DRT::Discretization> dis = field_->discretization();
   const Epetra_Map* noderowmap = dis->NodeRowMap();
 
-  ParameterList p;
+  Teuchos::ParameterList p;
   p.set("action","postprocess_stress");
   p.set("stresstype","ndxyz");
   p.set("gpstressmap", data);
@@ -1055,7 +1055,7 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
 
   const RCP<DRT::Discretization> dis = field_->discretization();
 
-  ParameterList p;
+  Teuchos::ParameterList p;
   p.set("action","postprocess_stress");
   p.set("stresstype","cxyz");
   p.set("gpstressmap", data);

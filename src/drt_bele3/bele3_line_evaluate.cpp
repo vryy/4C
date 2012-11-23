@@ -231,7 +231,7 @@ double  DRT::ELEMENTS::Bele3Line::f2_substitution(
 /*----------------------------------------------------------------------*
  |  Integrate shapefunctions over line (public)              g.bau 07/07|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(ParameterList& params,
+void DRT::ELEMENTS::Bele3Line::IntegrateShapeFunction(Teuchos::ParameterList& params,
                   DRT::Discretization&       discretization,
                   const std::vector<int>&    lm,
                   Epetra_SerialDenseVector&  elevec1,

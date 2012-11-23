@@ -306,7 +306,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     // calculate interface normals in deformed configuration
     Teuchos::RCP<Epetra_Vector> nodalnormals = Teuchos::rcp(new Epetra_Vector(*(strudis->DofRowMap())));
     std::string condname = "FSICoupling";
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     eleparams.set("action","calc_cur_nodal_normals");
     strudis->ClearState();
     strudis->SetState("displacement",fsi_->StructureField()->Dispnp());
@@ -389,7 +389,7 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
 
   std::string condname = "FSICoupling";
 
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // set action for elements
   eleparams.set("action","calc_ref_nodal_normals");

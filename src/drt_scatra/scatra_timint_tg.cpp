@@ -111,7 +111,7 @@ void SCATRA::TimIntTaylorGalerkin::ComputeNeumannInflowTG(
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'TaylorGalerkinNeumannInflow'");
 
   // create parameter list
-  ParameterList condparams;
+  Teuchos::ParameterList condparams;
 
   // action for elements
   condparams.set<int>("scatratype",scatratype_);

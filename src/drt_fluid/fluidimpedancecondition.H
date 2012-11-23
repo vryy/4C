@@ -99,17 +99,17 @@ public:
   /*!
   \brief Wrapper for FluidImpedacnceBc::SetWindkesselParams
   */
-  void SetWindkesselParams(ParameterList & params, int condid);
+  void SetWindkesselParams(Teuchos::ParameterList & params, int condid);
 
   /*!
   \brief Wrapper for FluidImpedacnceBc::GetWindkesselParams
   */
-  void GetWindkesselParams(ParameterList & params, int condid);
+  void GetWindkesselParams(Teuchos::ParameterList & params, int condid);
 
  /*!
   \brief Wrapper for FluidImpedacnceBc::getResultsAtEndOfPeriod
   */
-  void getResultsOfAPeriod(ParameterList & params);
+  void getResultsOfAPeriod(Teuchos::ParameterList & params);
 
 private:
   /*!
@@ -191,17 +191,17 @@ protected:
   /*!
   \brief SetWindkesselParams
   */
-  void SetWindkesselParams(ParameterList & params);
+  void SetWindkesselParams(Teuchos::ParameterList & params);
 
   /*!
   \brief GetWindkesselParams
   */
-  void GetWindkesselParams(ParameterList & params);
+  void GetWindkesselParams(Teuchos::ParameterList & params);
 
   /*!
   \brief getResultsOfAPeriod
   */
-  void getResultsOfAPeriod(ParameterList & params,
+  void getResultsOfAPeriod(Teuchos::ParameterList & params,
                            int             condid);
 
   void UpdateResidual( RCP<Epetra_Vector> residual );

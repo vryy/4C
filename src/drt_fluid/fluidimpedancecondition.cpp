@@ -136,7 +136,7 @@ RCP<std::vector<double> > FLD::UTILS::FluidImpedanceWrapper::getPressures(int co
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidImpedanceWrapper::getResultsOfAPeriod(
-  ParameterList & params)
+  Teuchos::ParameterList & params)
 {
   // get an iterator to my map
   map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
@@ -222,7 +222,7 @@ void FLD::UTILS::FluidImpedanceWrapper::Impedances()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidImpedanceWrapper::SetWindkesselParams(
-  ParameterList  & params,
+  Teuchos::ParameterList  & params,
   int              condid)
 {
   // -------------------------------------------------------------------
@@ -244,8 +244,8 @@ void FLD::UTILS::FluidImpedanceWrapper::SetWindkesselParams(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidImpedanceWrapper::GetWindkesselParams(
-  ParameterList  & params,
-  int              condid)
+  Teuchos::ParameterList  & params,
+  int                       condid)
 {
   // -------------------------------------------------------------------
   // set the windkessel params associated with the coressponding
@@ -687,7 +687,7 @@ double FLD::UTILS::FluidImpedanceBc::Area( double& density, double& viscosity, i
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",FLD::areacalc);
   eleparams.set<double>("Area calculation", 0.0);
   eleparams.set<double>("viscosity", 0.0);
@@ -876,7 +876,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",FLD::calc_flowrate);
   eleparams.set("total time",time);
 
@@ -1025,7 +1025,7 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
     pressure = pressure/period_; // this cures the dimension; missing in Olufsen paper
   }
   // call the element to apply the pressure
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   // action for elements
   eleparams.set<int>("action",FLD::Outletimpedance);
 
@@ -1608,7 +1608,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generatio
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidImpedanceBc::SetWindkesselParams(ParameterList & params)
+void FLD::UTILS::FluidImpedanceBc::SetWindkesselParams(Teuchos::ParameterList & params)
 {
 
   k1_ = params.get<double> ("R1");
@@ -1626,7 +1626,7 @@ void FLD::UTILS::FluidImpedanceBc::SetWindkesselParams(ParameterList & params)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidImpedanceBc::GetWindkesselParams(ParameterList & params)
+void FLD::UTILS::FluidImpedanceBc::GetWindkesselParams(Teuchos::ParameterList & params)
 {
 
   params.set<double> ("R1",k1_);
@@ -1646,7 +1646,7 @@ void FLD::UTILS::FluidImpedanceBc::GetWindkesselParams(ParameterList & params)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidImpedanceBc::getResultsOfAPeriod(
-  ParameterList & params,
+  Teuchos::ParameterList & params,
   int             condid)
 {
 

@@ -133,7 +133,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
     // set elements to 'standard mode' so the parallel redistribution (includes call of FillComplete)
     // hidden in the construction of periodic boundary condition runs correctly
     // remark: the 'elementdofmanager' would get lost packing and unpacking the elements
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     eleparams.set("action","set_standard_mode");
     discret_->Evaluate(eleparams);
 
@@ -330,7 +330,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // ----------------------------------------------------
 
   // get list of turbulence parameters
-  ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
+  Teuchos::ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
   // read turbulence model
   string physmodel = modelparams->get<string>("PHYSICAL_MODEL","no_model");
@@ -663,7 +663,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
   //         evaluate dirichlet and neumann boundary conditions
   // -------------------------------------------------------------------
   {
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // other parameters needed by the elements
     eleparams.set("total time",time_);
@@ -785,7 +785,7 @@ void FLD::CombustFluidImplicitTimeInt::TransferDofInformationToElements(
     const Teuchos::RCP<XFEM::DofManager> dofmanager
     )
 {
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set("action","store_xfem_info");
   eleparams.set("dofmanager",dofmanager);
   eleparams.set("DLM_condensation",xparams_.get<bool>("DLM_condensation"));
@@ -1095,7 +1095,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
   {
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",time_);
 
@@ -1404,7 +1404,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         residual_->Update(1.0,*neumann_loads_,0.0);
 
         // create the parameters for the discretization
-        ParameterList eleparams;
+        Teuchos::ParameterList eleparams;
 
         // action for elements
         eleparams.set("action","calc_fluid_systemmat_and_residual");
@@ -1492,7 +1492,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
           if (neumanninflow_)
           {
             // create parameter list
-            ParameterList condparams;
+            Teuchos::ParameterList condparams;
 
             // action for elements
             condparams.set("action","calc_Neumann_inflow");
@@ -1628,7 +1628,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
           //---------------------------------------------------------
           // fill w_
           //---------------------------------------------------------
-          ParameterList eleparams;
+          Teuchos::ParameterList eleparams;
           // set action for elements
           eleparams.set("action","integrate_Shapefunction");
 
@@ -5050,7 +5050,7 @@ void FLD::CombustFluidImplicitTimeInt::SetupXFluidSplit(
 void FLD::CombustFluidImplicitTimeInt::Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph)
 {
   // the fluid dis must be set to standard mode in order to avoid trouble with the dofmanager
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set("action","set_standard_mode");
   discret_->Evaluate(eleparams);
 
@@ -5229,7 +5229,7 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol_Nits
   discret_->SetState("nodal increment",oldinc_);
 
   // create parameters for discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   eleparams.set("action", "calc_nitsche_error");
   eleparams.set<int>("Nitsche_Compare_Analyt", NitscheErrorType);
@@ -5371,7 +5371,7 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
   case INPAR::COMBUST::initfield_beltrami_flow:
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     eleparams.set<double>("L2 integrated velocity error",0.0);
     eleparams.set<double>("L2 integrated pressure error",0.0);

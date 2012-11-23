@@ -103,7 +103,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   Teuchos::RCP<Epetra_Vector> integratedshapefcts = LINALG::CreateVector(*dofrowmap,true);
 
   {
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",SCATRA::integrate_shape_functions);
     eleparams.set<int>("scatratype",scatratype_);
     // we integrate shape functions for the first numscal_ dofs per node!!
@@ -126,7 +126,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
   }
 
   // set action for elements
-  ParameterList params;
+  Teuchos::ParameterList params;
   params.set<int>("action",SCATRA::calc_flux_domain);
   params.set<int>("scatratype",scatratype_);
   params.set("frt",frt_);
@@ -229,7 +229,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       // zero out residual vector
       residual_->PutScalar(0.0);
 
-      ParameterList eleparams;
+      Teuchos::ParameterList eleparams;
       // action for elements
       eleparams.set<int>("action",SCATRA::calc_mat_and_rhs);
 
@@ -311,7 +311,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       discret_->GetCondition(condnames[i],cond);
 
       discret_->ClearState();
-      ParameterList params;
+      Teuchos::ParameterList params;
 
       params.set<int>("action",SCATRA::bd_add_convective_mass_flux);
       params.set<int>("scatratype",scatratype_);
@@ -371,7 +371,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     // now we evaluate the conditions and separate via ConditionID
     for (int condid = 0; condid < (int) cond.size(); condid++)
     {
-      ParameterList params;
+      Teuchos::ParameterList params;
 
       // calculate integral of shape functions over indicated boundary and it's area
       params.set("boundaryint",0.0);
@@ -558,7 +558,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     //   (2011) 1339–1359. DOI: 10.1002/nme.3107
 
     // create the parameters for the error calculation
-    ParameterList p;
+    Teuchos::ParameterList p;
     p.set<int>("action",SCATRA::calc_error);
     p.set<int>("scatratype",scatratype_);
     p.set("total time",time_);
@@ -600,7 +600,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     //   International Journal for Numerical Methods in Engineering, 2011
 
     // create the parameters for the error calculation
-    ParameterList p;
+    Teuchos::ParameterList p;
     p.set<int>("action",SCATRA::calc_error);
     p.set<int>("scatratype",scatratype_);
     p.set("total time",time_);
@@ -639,7 +639,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     // compute L2 norm of electroneutrality condition
 
     // create the parameters for the error calculation
-    ParameterList p;
+    Teuchos::ParameterList p;
     p.set<int>("action",SCATRA::calc_error);
     p.set<int>("scatratype",scatratype_);
     p.set("total time",time_);
@@ -718,7 +718,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
   {
     // evaluate Neumann boundary conditions at time t=0
     neumann_loads_->PutScalar(0.0);
-    ParameterList p;
+    Teuchos::ParameterList p;
     p.set("total time",time_);
     p.set<int>("scatratype",scatratype_);
     p.set("isale",isale_);
@@ -736,7 +736,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
   // call elements to calculate matrix and right-hand-side
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set<int>("action",SCATRA::calc_initial_time_deriv);
@@ -865,7 +865,7 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
     discret_->ClearState();
     discret_->SetState("phinp",phinp_);
     // set action for elements
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     eleparams.set<int>("action",SCATRA::calc_mean_scalars);
     eleparams.set("inverting",false);
     eleparams.set<int>("scatratype",scatratype_);
@@ -1107,7 +1107,7 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   discret_->SetState("timederivative",phidtnp_); // needed for double-layer capacity!
 
   // set action for elements
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::bd_calc_elch_electrode_kinetics);
   eleparams.set<int>("scatratype",scatratype_);
   eleparams.set("calc_status",true); // just want to have a status ouput!
@@ -1244,7 +1244,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure()
 {
   // get thermodynamic pressure and gas constant from material parameters
   // (if no temperature equation, zero values are returned)
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::get_material_parameters);
   eleparams.set<int>("scatratype",scatratype_);
   eleparams.set("isale",isale_);
@@ -1277,7 +1277,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialThermPressure()
 void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
 {
   // define element parameter list
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // DO THIS BEFORE PHINP IS SET (ClearState() is called internally!!!!)
   // compute flux approximation and add it to the parameter list
@@ -1371,7 +1371,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialMass()
   discret_->ClearState();
   discret_->SetState("phinp",phin_);
   // set action for elements
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::calc_mean_scalars);
   eleparams.set<int>("scatratype",scatratype_);
   // inverted scalar values are required here
@@ -1411,7 +1411,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeThermPressureFromMassCons()
   discret_->ClearState();
   discret_->SetState("phinp",phinp_);
   // set action for elements
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::calc_mean_scalars);
   eleparams.set<int>("scatratype",scatratype_);
   // inverted scalar values are required here
@@ -1530,7 +1530,7 @@ void SCATRA::ScaTraTimIntImpl::SurfacePermeability(
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ScaTraCoupling'");
 
   // create parameter list
-  ParameterList condparams;
+  Teuchos::ParameterList condparams;
 
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_surface_permeability);
@@ -1622,7 +1622,7 @@ RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::ComputeNormalVectors(
   discret_->ClearState();
 
   // set action for elements
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",SCATRA::bd_calc_normal_vectors);
   eleparams.set<int>("scatratype",scatratype_);
   eleparams.set<RCP<Epetra_MultiVector> >("normal vectors",normal);
@@ -1675,7 +1675,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeNeumannInflow(
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'TransportNeumannInflow'");
 
   // create parameter list
-  ParameterList condparams;
+  Teuchos::ParameterList condparams;
 
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_Neumann_inflow);
@@ -1715,7 +1715,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateConvectiveHeatTransfer(
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:       + evaluate condition 'ThermoConvections'");
 
   // create parameter list
-  ParameterList condparams;
+  Teuchos::ParameterList condparams;
 
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_convective_heat_transfer);
@@ -1884,7 +1884,7 @@ void SCATRA::ScaTraTimIntImpl::SetupElchNatConv()
       discret_->ClearState();
       discret_->SetState("phinp",phinp_);
       // set action for elements
-      ParameterList eleparams;
+      Teuchos::ParameterList eleparams;
       eleparams.set<int>("action",SCATRA::calc_mean_scalars);
       eleparams.set<int>("scatratype",scatratype_);
       eleparams.set("inverting",false);
@@ -2010,7 +2010,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPotentialField()
       // evaluate Neumann boundary conditions at time t=0
       /*{
         neumann_loads_->PutScalar(0.0);
-        ParameterList p;
+        Teuchos::ParameterList p;
         p.set("total time",time_);
         p.set<int>("scatratype",scatratype_);
         p.set("isale",isale_);
@@ -2027,7 +2027,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPotentialField()
       {
 
         // create the parameters for the discretization
-        ParameterList eleparams;
+        Teuchos::ParameterList eleparams;
 
         // action for elements
         eleparams.set<int>("action",SCATRA::calc_elch_initial_potential);
@@ -2091,7 +2091,7 @@ Epetra_SerialDenseVector SCATRA::ScaTraTimIntImpl::ComputeConductivity()
   // the initial concentration distribution has to be uniform to do so!!
 
   // create the parameters for the elements
-  ParameterList p;
+  Teuchos::ParameterList p;
   p.set<int>("action",SCATRA::calc_elch_conductivity);
   p.set<int>("scatratype",scatratype_);
   p.set("frt",frt_);
@@ -2367,7 +2367,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
   discret_->ClearState();
 
   // create an parameter list
-  ParameterList condparams;
+  Teuchos::ParameterList condparams;
 
   // action for elements
   condparams.set<int>("action",SCATRA::bd_calc_elch_electrode_kinetics);
@@ -2486,7 +2486,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
   sysmat_sd_->Zero();
 
   // create the parameters for the discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // action for elements, time factor and stationary flag
   eleparams.set<int>("action",SCATRA::calc_subgrid_diffusivity_matrix);
@@ -2588,7 +2588,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
 /*----------------------------------------------------------------------*
  |  scaling of AVM3-based subgrid-diffusivity matrix           vg 10/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::AVM3Scaling(ParameterList& eleparams)
+void SCATRA::ScaTraTimIntImpl::AVM3Scaling(Teuchos::ParameterList& eleparams)
 {
   // time measurement: avm3
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:            + avm3");
@@ -2699,7 +2699,7 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
     Epetra_SerialDenseVector evec3;
 
     // generate a parameterlist for communication and control
-    ParameterList myparams;
+    Teuchos::ParameterList myparams;
     // action for elements
     myparams.set<int>("action",SCATRA::calc_mean_Cai);
     myparams.set<int>("scatratype",scatratype_);

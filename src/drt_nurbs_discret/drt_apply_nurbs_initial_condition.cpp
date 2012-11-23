@@ -50,7 +50,7 @@ void DRT::NURBS::apply_nurbs_initial_condition(
 
   // Owing to experience a very accurate solution has to be enforced here!
   // Thus, we allocate an own solver with VERY strict tolerance!
-  ParameterList p(solverparams);
+  Teuchos::ParameterList p(solverparams);
   const double origtol = p.get<double>("AZTOL");
   const double newtol  = 1.0e-11;
   p.set("AZTOL",newtol);

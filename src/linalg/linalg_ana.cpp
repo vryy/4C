@@ -111,12 +111,12 @@ int LINALG::ANA::OperatorInverse::Apply(const Epetra_MultiVector& X, Epetra_Mult
 {
   // wrap column 0 of in and output vectors to Epetra_Vector
   const Epetra_Vector* invec = X(0);
-  RCP<Epetra_Vector> in = Teuchos::rcp(const_cast<Epetra_Vector*>(invec),false);
+  Teuchos::RCP<Epetra_Vector> in = Teuchos::rcp(const_cast<Epetra_Vector*>(invec),false);
   Epetra_Vector* outvec = Y(0);
-  RCP<Epetra_Vector> out = Teuchos::rcp(outvec,false);
+  Teuchos::RCP<Epetra_Vector> out = Teuchos::rcp(outvec,false);
 
   // wrap underlying operator
-  RCP<Epetra_Operator> rcpop = Teuchos::rcp(const_cast<Epetra_Operator*>(&op_),false);
+  Teuchos::RCP<Epetra_Operator> rcpop = Teuchos::rcp(const_cast<Epetra_Operator*>(&op_),false);
 
   out->PutScalar(0.0);
   solver_.Solve(rcpop,out,in,true,reset_);

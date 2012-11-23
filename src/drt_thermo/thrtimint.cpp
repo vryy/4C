@@ -182,7 +182,7 @@ void THR::TimInt::DetermineCapaConsistTempRate()
   // get initial internal force, tangent and capacity
   {
     // create the parameters for the discretization
-    ParameterList p;
+    Teuchos::ParameterList p;
     // action for elements
     p.set("action", "calc_thermo_fintcapa");
     // type of calling time integrator
@@ -249,7 +249,7 @@ void THR::TimInt::ApplyDirichletBC(
 {
   // apply DBCs
   // needed parameters
-  ParameterList p;
+  Teuchos::ParameterList p;
   p.set("total time", time);  // target time
 
   // predicted Dirichlet values
@@ -316,7 +316,7 @@ void THR::TimInt::ResetStep()
   // reset anything that needs to be reset at the element level
   {
     // create the parameters for the discretization
-    ParameterList p;
+    Teuchos::ParameterList p;
     p.set("action", "calc_thermo_reset_istep");
     // go to elements
     discret_->Evaluate(p, Teuchos::null, Teuchos::null,
@@ -479,7 +479,7 @@ void THR::TimInt::OutputState(bool& datawritten)
 void THR::TimInt::OutputHeatfluxTempgrad(bool& datawritten)
 {
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
   // action for elements
   p.set("action", "proc_thermo_heatflux");
   // other parameters that might be needed by the elements
@@ -574,7 +574,7 @@ void THR::TimInt::OutputEnergy()
   // internal/tempgrad energy
   double intergy = 0.0;  // total internal energy
   {
-    ParameterList p;
+    Teuchos::ParameterList p;
     // other parameters needed by the elements
     p.set("action", "calc_thermo_energy");
 

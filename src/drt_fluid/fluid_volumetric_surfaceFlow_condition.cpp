@@ -453,7 +453,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CenterOfMassCalculation(RCP<std::
   *normal = std::vector<double>(3,0.0);
 
   // fill the list od element evaluation
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",FLD::center_of_mass_calc);
   eleparams.set<double>("total area", 0.0);
   eleparams.set<RCP<std::vector<double> > >("center of mass", coords);
@@ -1087,7 +1087,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateVelocities(
   }
 #endif
 
-  RCP<Teuchos::ParameterList>  params = Teuchos::rcp(new ParameterList);
+  RCP<Teuchos::ParameterList>  params = Teuchos::rcp(new Teuchos::ParameterList);
 
   params->set<int>("Number of Harmonics",n_harmonics_);
   // condition id
@@ -1153,7 +1153,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::EvaluateTractionVelocityComp(
   double             theta,
   double             dta)
 {
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   //  double norm2= 0.0;
 
   eleparams.set("thsl",theta*dta);
@@ -1477,7 +1477,7 @@ void FLD::UTILS::FluidVolumetricSurfaceFlowBc::CorrectFlowRate
   // loop over all of the nodes
   RCP<Epetra_Vector> correction_velnp = LINALG::CreateVector(*cond_dofrowmap_,true);
 
-  RCP<Teuchos::ParameterList>  params = Teuchos::rcp(new ParameterList);
+  RCP<Teuchos::ParameterList>  params = Teuchos::rcp(new Teuchos::ParameterList);
 
   params->set<int>("Number of Harmonics",0);
   // condition id
@@ -1599,7 +1599,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::FlowRateCalculation(
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",action);
   eleparams.set("total time",time);
 
@@ -1635,7 +1635,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::PressureCalculation(
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   double pressure = 0.0;
   eleparams.set("action",action);
   eleparams.set("Inlet integrated pressure",pressure);
@@ -1850,7 +1850,7 @@ double FLD::UTILS::FluidVolumetricSurfaceFlowBc::Area(
 {
   // fill in parameter list for subsequent element evaluation
   // there's no assembly required here
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set<int>("action",FLD::areacalc);
   eleparams.set<double>("Area calculation", 0.0);
   eleparams.set<double>("viscosity", 0.0);

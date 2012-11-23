@@ -129,7 +129,7 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
   {
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",time_);
     discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
@@ -305,7 +305,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::PrepareTimeStep()
     // function since the Neumann terms are different for the adjoints and
     // usually the evaluateNeumann enters the fluid Neumann conditions where
     // we want another condition
-    ParameterList nbcparams;
+    Teuchos::ParameterList nbcparams;
 
     // set action for elements
     nbcparams.set<int>("action",FLD::ba_calc_adjoint_neumann);
@@ -427,7 +427,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
       residual_->Update(1.0,*neumann_loads_,0.0);
 
       // create the parameters for the discretization
-      ParameterList eleparams;
+      Teuchos::ParameterList eleparams;
 
       // set action type
       eleparams.set<int>("action",FLD::calc_adjoint_systemmat_and_residual);
@@ -462,7 +462,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
         if (neumanninflow_)
         {
           // create parameter list
-          ParameterList condparams;
+          Teuchos::ParameterList condparams;
 
           // action for elements
           condparams.set("action","calc_adjoint_Neumann_inflow");
@@ -1042,7 +1042,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
   const double viscosity = mat->viscosity_;
 
 
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_general_adjoint_parameter);
 
@@ -1080,7 +1080,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
 
 void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementTimeParameter() const
 {
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_adjoint_time_parameter);
 

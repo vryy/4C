@@ -576,7 +576,7 @@ void LOMA::Algorithm::EvaluateLomaODBlockMatFluid(
   )
 {
   // create parameters for fluid discretization
-  ParameterList fparams;
+  Teuchos::ParameterList fparams;
 
   // set action type
   fparams.set<int>("action",FLD::calc_loma_mono_odblock);

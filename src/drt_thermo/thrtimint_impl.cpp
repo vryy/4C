@@ -347,7 +347,7 @@ void THR::TimIntImpl::PredictTangTempConsistRate()
   // reset anything that needs to be reset at the element level
   {
     // create the parameters for the discretization
-    ParameterList p;
+    Teuchos::ParameterList p;
     p.set("action", "calc_thermo_reset_istep");
     // set the total time
     p.set("total time",(*time_)[0]);

@@ -381,7 +381,7 @@ private:
   //! parameterlist for the element call when averages of residuals
   //! are calculated --- used for communication between element
   //! and averaging methods
-  ParameterList                    eleparams_;
+  Teuchos::ParameterList   eleparams_;
 
   //! pointer to mean vel/pres and scalar field
   RCP<Epetra_Vector>       meanvelnp_;

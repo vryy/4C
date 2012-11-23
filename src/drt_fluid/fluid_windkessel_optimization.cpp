@@ -238,7 +238,7 @@ int FLD::UTILS::FluidWkOptimizationWrapper::GetObjectiveFunctionSize(RCP<DRT::Co
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::UTILS::FluidWkOptimizationWrapper::Solve(ParameterList params)
+void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params)
 {
 
   // -------------------------------------------------------------------
@@ -571,7 +571,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_du(
   RCP<DRT::Condition>   cond,
   RCP<std::vector<double> >  pressures,
   RCP<std::vector<double> >  flowrates,
-  ParameterList         params,
+  Teuchos::ParameterList     params,
   double                dt)
 {
   //  int    VarDim = 0;
@@ -665,7 +665,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_dphi(
   RCP<DRT::Condition>   cond,
   RCP<std::vector<double> >  pressures,
   RCP<std::vector<double> >  flowrates,
-  ParameterList         params,
+  Teuchos::ParameterList     params,
   double                dt)
 {
   //  int    VarDim = 0;
@@ -780,7 +780,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dL_du(
   RCP<DRT::Condition>   cond,
   RCP<std::vector<double> >  pressures,
   RCP<std::vector<double> >  flowrates,
-  ParameterList         params,
+  Teuchos::ParameterList     params,
   double                dt)
 {
 
@@ -900,7 +900,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dJ_dphi(
   RCP<DRT::Condition>   cond,
   RCP<std::vector<double> >  pressures,
   RCP<std::vector<double> >  flowrates,
-  ParameterList         params,
+  Teuchos::ParameterList     params,
   double                dt)
 {
   // Get name of objective function
@@ -969,7 +969,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dJ_dphi(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 bool FLD::UTILS::FluidWkOptimizationWrapper::SteadyStateIsObtained(
-  ParameterList params,
+  Teuchos::ParameterList params,
   double        dt)
 {
 
@@ -1162,7 +1162,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::UpdateResidual()
   map<const int, RCP<DRT::Condition> >::iterator  itr;
   for (itr = optwkmap_.begin(); itr != optwkmap_.end();itr++)
   {
-    ParameterList params;
+    Teuchos::ParameterList params;
 
     // -----------------------------------------------------------------
     // Get the dimension of the design variables
@@ -1273,7 +1273,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::GetDesignVariables(
     return;
   }
 
-  ParameterList params;
+  Teuchos::ParameterList params;
 
   // -----------------------------------------------------------------
   // Get the dimension of the design variables

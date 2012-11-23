@@ -253,7 +253,7 @@ void MAT::MicroMaterialGP::EasInit()
         actele->ElementType()==DRT::ELEMENTS::So_shw6Type::Instance())
     {
       // create the parameters for the discretization
-      ParameterList p;
+      Teuchos::ParameterList p;
       // action for elements
       p.set("action","multi_eas_init");
       p.set("lastalpha", lastalpha_);

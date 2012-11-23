@@ -60,7 +60,7 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
 
   ConstraintMatrix->Zero();
 
-  ParameterList params;
+  Teuchos::ParameterList params;
 
   // set action for elements
   params.set<int>("action",FLD::no_penetration);

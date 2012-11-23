@@ -398,7 +398,7 @@ void POROELAST::PoroBase::CalculateSurfPoro(const string& condstring)
 {
   //-------------------------------
   // create the parameters for the discretization
-  ParameterList p;
+  Teuchos::ParameterList p;
   // action for elements
   p.set("action", "calc_struct_area_poro");
   // other parameters that might be needed by the elements

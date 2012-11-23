@@ -27,9 +27,6 @@ Maintainer: Michael Gee
 #include "linalg_sparsematrix.H"
 #include "linalg_ana.H"
 
-using namespace std;
-using Teuchos::RCP;
-using Teuchos::ParameterList;
 
 namespace LINALG
 {
@@ -52,7 +49,7 @@ public:
   \param tau (in): threshold parameter, somewhere between 1.0 and about 4.0
   \param outlevel (in): level of output to screen (0 no output, >0 output)
   */
-  explicit DownwindMatrix(RCP<Epetra_CrsMatrix> A, const int nv,
+  explicit DownwindMatrix(Teuchos::RCP<Epetra_CrsMatrix> A, const int nv,
                           const int np, const double tau, const int outlevel);
 
   /*!
@@ -63,13 +60,13 @@ public:
   /*!
   \brief reindex a given matrix
   */
-  RCP<Epetra_CrsMatrix> Permute(Epetra_CrsMatrix* Aorig)
+  Teuchos::RCP<Epetra_CrsMatrix> Permute(Epetra_CrsMatrix* Aorig)
   {
     // shallow reindex the matrix
     EpetraExt::CrsMatrix_Reindex reindexer(*ndofrowmap_);
     Epetra_CrsMatrix& reA = reindexer(*Aorig);
     reA.FillComplete();
-    RCP<Epetra_CrsMatrix> dwA = Teuchos::rcp(new Epetra_CrsMatrix(Copy,DownwindRowMap(),reA.MaxNumEntries()));
+    Teuchos::RCP<Epetra_CrsMatrix> dwA = Teuchos::rcp(new Epetra_CrsMatrix(Copy,DownwindRowMap(),reA.MaxNumEntries()));
     dwA->Export(reA,*sexporter_,Insert);
     if (!dwA->Filled()) dwA->FillComplete();
     return dwA;
@@ -78,7 +75,7 @@ public:
   /*!
   \brief reindex a given vector
   */
-  RCP<Epetra_MultiVector> Permute(Epetra_MultiVector* xorig)
+  Teuchos::RCP<Epetra_MultiVector> Permute(Epetra_MultiVector* xorig)
   {
     Epetra_MultiVector* dwx = new Epetra_Vector(DownwindRowMap(),false);
     Permute(xorig,dwx);
@@ -160,11 +157,11 @@ private:
   const int                             bs_;          // total nodal block size (nv_ + np_)
   const double                          tau_;         // strong connections cutoff ratio
 
-  RCP<Epetra_Map>                       ndofrowmap_;  // result new row map of system
-  RCP<Epetra_Map>                       sndofrowmap_; // result new row map of system with dofs sorted in ascending order
+  Teuchos::RCP<Epetra_Map>              ndofrowmap_;  // result new row map of system
+  Teuchos::RCP<Epetra_Map>              sndofrowmap_; // result new row map of system with dofs sorted in ascending order
 
-  RCP<Epetra_Export>                    sexporter_;   // export from ndofrowmap_ to sndofrowmap_
-  RCP<Epetra_Export>                    rexporter_;   // export the other direction
+  Teuchos::RCP<Epetra_Export>           sexporter_;   // export from ndofrowmap_ to sndofrowmap_
+  Teuchos::RCP<Epetra_Export>           rexporter_;   // export the other direction
 
 }; // class  DownwindMatrix
 }  // namespace LINALG
