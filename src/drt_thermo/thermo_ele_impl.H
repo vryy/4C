@@ -254,7 +254,7 @@ namespace ELEMENTS
       DRT::Element* ele,  //!< the element whose matrix is calculated
       std::vector<double>& disp,  //!< current displacements
       std::vector<double>& vel,  //!< current velocities
-      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* econdcoupl  //!< k_Tu matrix
+      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl  //!< k_Tu matrix
       );
 
     //@}
@@ -287,7 +287,7 @@ namespace ELEMENTS
       std::vector<double>& disp,  //!< current displacements
       std::vector<double>& vel,  //!< current velocities
       Teuchos::ParameterList& params,  //!< parameter list, containing e.g., dt,theta
-      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* econdcoupl  //!< k_Tu matrix
+      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl  //!< k_Tu matrix
       );
 
     //! build nonlinear B-operator

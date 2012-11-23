@@ -224,6 +224,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   }
   // initialize capacity matrix
   ecapa_.Clear();
+
   // check for the action parameter
   const std::string action = params.get<std::string>("action","none");
 
@@ -250,6 +251,9 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_> etang(elemat1_epetra.A(),true);  // view only!
     LINALG::Matrix<nen_*numdofpernode_,1> efint(elevec1_epetra.A(),true);  // view only!
     // ecapa, efext, efcap not needed for this action
+    // econd: conductivity matrix
+    // etang: tangent of thermal problem.
+    // --> If dynamic analysis, i.e. T' != 0 --> etang consists of econd AND ecapa
 
     // default: purely thermal / geometrically linear TSI problem
     if (kintype == 0)
@@ -679,6 +683,11 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     LINALG::Matrix<nen_*numdofpernode_,1> efint(elevec1_epetra.A(),true);  // view only!
     LINALG::Matrix<nen_*numdofpernode_,1> efcap(elevec3_epetra.A(),true);  // view only!
     // efext not needed for this action
+
+    // etang: tangent of thermal problem == econd
+    // econd: conductivity matrix
+    // ecapa: capacity matrix
+    // --> If dynamic analysis, i.e. T' != 0 --> etang consists of econd AND ecapa
 
     // purely thermal / geometrically linear TSI problem
     if (kintype == 0)
@@ -1311,7 +1320,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
   DRT::Element* ele,  // the element whose matrix is calculated
   const double& time,  // current time
-  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  // conductivity matrix
+  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  // conductivity matrix
   LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa,  // capacity matrix
   LINALG::Matrix<nen_*numdofpernode_,1>* efint,  // internal force
   LINALG::Matrix<nen_*numdofpernode_,1>* efext,  // external force
@@ -1385,13 +1394,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
     }
 
     // conductivity matrix
-    if (etang != NULL)
+    if (econd != NULL)
     {
       // ke = ke + ( B^T . C_mat . B ) * detJ * w(gp)  with C_mat = k * I
       LINALG::Matrix<nsd_,nen_> aop(false); // (3x8)
       // -q = C * B
       aop.MultiplyNN(cmat_,derxy_); //(nsd_xnsd_)(nsd_xnen_)
-      etang->MultiplyTN(fac_,derxy_,aop,1.0); //(nen_xnen_)=(nen_xnsd_)(nsd_xnen_)
+      econd->MultiplyTN(fac_,derxy_,aop,1.0); //(nen_xnen_)=(nen_xnsd_)(nsd_xnen_)
     }
 
     // capacity matrix (equates the mass matrix in the structural field)
@@ -1408,7 +1417,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateFintCondCapa(
 
 #ifdef THRASOUTPUT
   if (efint != NULL) std::cout << "element No. = "<< ele->Id() << " efint f_Td CalculateFintCondCapa"<< *efint << std::endl;
-  if (etang != NULL) std::cout << "element No. = " << ele->Id() <<  " etang nach CalculateFintCondCapa"<< *etang << std::endl;
+  if (econd != NULL) std::cout << "element No. = " << ele->Id() <<  " econd nach CalculateFintCondCapa"<< *econd << std::endl;
 #endif  // THRASOUTPUT
 } // CalculateFintCondCapa
 
@@ -1424,7 +1433,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
   std::vector<double>& disp,  // current displacements
   std::vector<double>& vel,  // current velocities
   const double& stepsize,
-  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  // conductivity matrix
+  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  // conductivity matrix
   LINALG::Matrix<nen_*numdofpernode_,1>* efint,  // internal force
   LINALG::Matrix<nen_*numdofpernode_,1>* efext,  // external force
   LINALG::Matrix<nquad_,nsd_>* eheatflux,  // heat fluxes at Gauss points
@@ -1568,16 +1577,16 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
     }  // if (efint!=NULL)
 
     // update conductivity matrix (with displacement dependent term)
-    if (etang != NULL)
+    if (econd != NULL)
     {
       // k^e = k^e - ( N^T . (-m * I) . (B_d . (d^e)') . N ) * detJ * w(gp)
       // --> negative term enters the tangent (cf. L923) ctemp.Scale(-1.0);
-      etang->MultiplyNT(fac_,ncBv,funct_,1.0);
-    }  // if (etang!=NULL)
+      econd->MultiplyNT(fac_,ncBv,funct_,1.0);
+    }  // if (econd!=NULL)
 
 #ifdef THRASOUTPUT
     if (efint != NULL) std::cout << "element No. = "<< ele->Id() << " efint f_Td CalculateCouplFintCondCapa"<< *efint << std::endl;
-    if (etang != NULL) std::cout << "element No. = " << ele->Id() <<  " etang nach CalculateCouplFintCondCapa"<< *etang << std::endl;
+    if (econd != NULL) std::cout << "element No. = " << ele->Id() <<  " econd nach CalculateCouplFintCondCapa"<< *econd << std::endl;
 #endif  // THRASOUTPUT
 
   }  // ---------------------------------- end loop over Gauss Points
@@ -1693,7 +1702,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
   std::vector<double>& disp,  // current displacements
   std::vector<double>& vel,  // current velocities
   const double& stepsize,  // time increment
-  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  // conductivity matrix
+  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  // conductivity matrix
   LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* ecapa,  // capacity matrix
   LINALG::Matrix<nen_*numdofpernode_,1>* efint,  // internal force
   LINALG::Matrix<nquad_,nsd_>* eheatflux,  // heat fluxes at Gauss points
@@ -1954,7 +1963,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
 
     // --------------------------- integrate conductivity matrix k_TT
     // update conductivity matrix k_TT (with displacement dependent term)
-    if (etang != NULL)
+    if (econd != NULL)
     {
       // k^e_TT = k^e_TT + ( B_T^T . C_mat . C^{-1} . B_T ) * detJ * w(gp)
       // 3D:      (8x8)      (8x3)   (3x3)   (3x3)   (3x8)
@@ -1964,12 +1973,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
       aop.MultiplyNN(invC,derxy_); //(nsd_xnsd_)(nsd_x8)
       LINALG::Matrix<nsd_,nen_> aop1(false); // (3x8)
       aop1.MultiplyNN(cmat_,aop); //(nsd_Xnsd_)(nsd_x8)
-      etang->MultiplyTN(fac_,derxy_,aop1,1.0); //(8x8)=(8x3)(3x8)
+      econd->MultiplyTN(fac_,derxy_,aop1,1.0); //(8x8)=(8x3)(3x8)
       // k^e_TT = k^e_TT + ( N^T . (-C_temp) : 1/2  C' . N ) * detJ * w(gp)
       // --> negative term enters the tangent (cf. L923) ctemp.Scale(-1.0);
       // with CtempCdot = (-C_temp) : 1/2  C'
-      etang->MultiplyNT((fac_*CtempCdot),funct_,funct_,1.0);
-    }  // if (etang!=NULL)
+      econd->MultiplyNT((fac_*CtempCdot),funct_,funct_,1.0);
+    }  // if (econd!=NULL)
 
     // --------------------------------------- capacity matrix m_capa
     // capacity matrix is idependent of deformation
@@ -1999,7 +2008,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
     std::cout << "etemp_ CalculateNlnCouplFintCondCapa\n" << etemp_  << std::endl;
 
     if (efint != NULL) std::cout << "element No. = " << ele->Id() << " efint f_Td CalculateNlnCouplFintCondCapa"<< *efint << std::endl;
-    if (etang != NULL) std::cout << "element No. = " << ele->Id() << " etang nach CalculateNlnCouplFintCondCapa"<< *etang << std::endl;
+    if (econd != NULL) std::cout << "element No. = " << ele->Id() << " econd nach CalculateNlnCouplFintCondCapa"<< *econd << std::endl;
 #endif  // TSIMONOLITHASOUTPUT
 
 }  // CalculateNlnCouplFintCondCapa()
@@ -2278,7 +2287,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateInternalDissipation(
   DRT::Element* ele,  // the element whose matrix is calculated
   std::vector<double>& vel,  // current velocities
   const double& stepsize,
-  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  // conductivity matrix
+  LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  // conductivity matrix
   LINALG::Matrix<nen_*numdofpernode_,1>* efint  // internal force
   )
 {
@@ -2392,11 +2401,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateInternalDissipation(
     }
     
     // update/integrate coupling conductivity matrix (displacement dependent)
-    if (etang != NULL)
+    if (econd != NULL)
     {
       // k = k - ( N^T . C_mat^theta . epsilon_p' ) * detJ * w(gp)
       // with C_mat^theta = m * I
-      etang->MultiplyNT((fac_*(-plastictemppower)),funct_,funct_,1.0); // (8x8) = (8x1)(8x1)^T
+      econd->MultiplyNT((fac_*(-plastictemppower)),funct_,funct_,1.0); // (8x8) = (8x1)(8x1)^T
     }
 
 #ifdef TSIMONOLITHASOUTPUT
