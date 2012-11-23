@@ -219,6 +219,7 @@ public:
     NoPenetration,
     TotalTractionCorrectionBorderNodes,
     PoroCoupling,
+    PoroPartInt,
     RedAirwayVentilatorCond,
     RedAirwayTissue,
     RedAirwayNodeTissue

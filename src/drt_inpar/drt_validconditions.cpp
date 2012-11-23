@@ -3096,7 +3096,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     Teuchos::rcp(new ConditionDefinition("DESIGN SUFACE PORO PARTIAL INTEGRATION",
                                          "PoroPartInt",
                                          "Poro Partial Integration",
-                                         DRT::Condition::PoroCoupling,
+                                         DRT::Condition::PoroPartInt,
                                          true,
                                          DRT::Condition::Surface));
 

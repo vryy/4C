@@ -89,7 +89,7 @@ class So_hex27PoroType : public So_hex27Type
 {
 public:
 
-  std::string Name() const { return "So_hes27PoroType"; }
+  std::string Name() const { return "So_hex27PoroType"; }
 
   static So_hex27PoroType & Instance() { return instance_; };
 
