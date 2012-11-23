@@ -807,8 +807,10 @@ void STATMECH::StatMechManager::Output(const int ndim,
     break;
     case INPAR::STATMECH::statout_viscoelasticity:
     {
+      Teuchos::ParameterList sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+      int numstep = sdyn.get<int>("NUMSTEP", -1);
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps (or for the very last step)
-      if ((time>=starttime && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-8)
+      if ((time>=starttime && istep<numstep && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-8)
       {
         // name of file into which output is written
         std::ostringstream filename;

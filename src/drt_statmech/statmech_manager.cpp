@@ -1796,7 +1796,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double& timen,
   // note: searchforneighbours_ and crosslinkonsamefilament_ are not communicated
   // transfer vectors
   Epetra_Vector bspotstatusrow(*bspotrowmap_, true);
-  Epetra_MultiVector crosslinkerpositionstrans(*transfermap_, true);
+  Epetra_MultiVector crosslinkerpositionstrans(*transfermap_,3, true);
   Epetra_MultiVector crosslinkerbondtrans(*transfermap_, 2, true);
   Epetra_Vector numbondtrans(*transfermap_, true);
   Epetra_Vector crosslink2elementtrans(*transfermap_, true);
