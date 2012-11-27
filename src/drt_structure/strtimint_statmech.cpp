@@ -32,6 +32,7 @@ Maintainer: Kei Müller
 
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
+#include "../drt_beamCL/beamCL.H"
 #include "../drt_beam2/beam2.H"
 #include "../drt_beam2r/beam2r.H"
 #include "../drt_truss3/truss3.H"
@@ -39,6 +40,7 @@ Maintainer: Kei Müller
 
 
 //#define GMSHPTCSTEPS
+//#define MEASURETIME
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 08/08|
@@ -155,6 +157,15 @@ void STR::TimIntStatMech::RandomNumbersPerElement()
       if((statmechman_->GetPeriodLength())->at(0) > 0.0)
         statmechman_->PeriodicBoundaryBeam3iiInit(discret_->lColElement(i));
     }
+    else if ( eot == DRT::ELEMENTS::BeamCLType::Instance() )
+    {
+      //see whether current element needs more random numbers per time step than any other before
+      randomnumbersperlocalelement = max(randomnumbersperlocalelement,dynamic_cast<DRT::ELEMENTS::BeamCL*>(discret_->lColElement(i))->HowManyRandomNumbersINeed());
+
+      //in case of periodic boundary conditions beam3 elements require a special initialization if they are broken by the periodic boundaries in the initial configuration
+      if((statmechman_->GetPeriodLength())->at(0) > 0.0)
+        statmechman_->PeriodicBoundaryBeamCLInit(discret_->lColElement(i));
+    }
     else if ( eot == DRT::ELEMENTS::Beam2Type::Instance() )
     {
       //see whether current element needs more random numbers per time step than any other before
@@ -238,11 +249,17 @@ void STR::TimIntStatMech::Integrate()
   double eps = 1.0e-12;
   while( (timen_ <= timemax_+eps) and (stepn_ <= stepmax_) )
   {
+#ifdef MEASURETIME
+    const double t0 = Teuchos::Time::wallTime();
+#endif
+
     // preparations for contact in this time step
     BeamContactPrepareStep();
     // preparations for statistical mechanics in this time step
     StatMechPrepareStep();
-
+#ifdef MEASURETIME
+    const double t1 = Teuchos::Time::wallTime();
+#endif
     //redo time step in case of bad random configuration
     do
     {
@@ -272,16 +289,39 @@ void STR::TimIntStatMech::Integrate()
     }
     while(!isconverged_);
 
+#ifdef MEASURETIME
+    const double t2 = Teuchos::Time::wallTime();
+#endif
+
     //periodic shift of configuration at the end of the time step in order to avoid improper output
     statmechman_->PeriodicBoundaryShift(*disn_, ndim_, timen_, (*dt_)[0]);
+
+#ifdef MEASURETIME
+    const double t3 = Teuchos::Time::wallTime();
+#endif
 
     // update all that is relevant
     UpdateAndOutput();
 
+#ifdef MEASURETIME
+    const double t4 = Teuchos::Time::wallTime();
+#endif
+
     //special output for statistical mechanics
     StatMechOutput();
-  }
 
+#ifdef MEASURETIME
+    const double t5 = Teuchos::Time::wallTime();
+    if(!discret_->Comm().MyPID())
+    {
+      cout<<scientific<<"StatMechPrepareStep: "<<t1-t0<<" s"<<endl;
+      cout<<scientific<<"Newton             : "<<t2-t1<<" s"<<endl;
+      cout<<scientific<<"PeriodicShift      : "<<t3-t2<<" s"<<endl;
+      cout<<scientific<<"UpdateAndOutput    : "<<t4-t3<<" s"<<endl;
+      cout<<scientific<<"StatMechOutput     : "<<t5-t4<<" s"<<endl;
+    }
+#endif
+  }
   return;
 } // void STR::TimIntStatMech::Integrate()
 
