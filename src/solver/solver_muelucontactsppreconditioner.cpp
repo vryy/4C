@@ -50,7 +50,6 @@
 
 #include <MueLu_SegregationATransferFactory.hpp> // TODO remove me
 #include <MueLu_Aggregates.hpp>
-#include "MueLu_AggStatTransferFactory.hpp"
 #include <MueLu_AggregationExportFactory.hpp>
 #include <MueLu_BlockedPFactory.hpp>
 #include <MueLu_DirectSolver.hpp>
