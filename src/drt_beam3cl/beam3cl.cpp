@@ -38,7 +38,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::BeamCLType::Create( const string elety
                                                               const int    id,
                                                               const int    owner )
 {
-  if ( eletype=="BEAMCL" )
+  if ( eletype=="BEAM3CL" )
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::BeamCL(id,owner));
     return ele;
@@ -68,7 +68,7 @@ void DRT::ELEMENTS::BeamCLType::ComputeNullSpace( DRT::Discretization & dis, std
 
 void DRT::ELEMENTS::BeamCLType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
-  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["BEAMCL"];
+  std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["BEAM3CL"];
   defs["LINE4"]
     .AddIntVector("LINE4",4)
     .AddNamedInt("MAT")
