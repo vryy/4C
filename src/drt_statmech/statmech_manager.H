@@ -15,9 +15,9 @@ Maintainer: Kei Müller
 #include <Teuchos_RCP.hpp>
 #include <Teuchos_ParameterListAcceptorDefaultBase.hpp>
 #include <Teuchos_StandardParameterEntryValidators.hpp>
-#include "Teuchos_RCP.hpp"
 #include "Epetra_SerialDenseMatrix.h"
 #include "Epetra_SerialDenseVector.h"
+#include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
 #include "Epetra_MultiVector.h"
 #include "Epetra_Map.h"
@@ -33,7 +33,6 @@ Maintainer: Kei Müller
 #include <cstdio>
 #include <sys/stat.h>
 #include <math.h>
-
 /*!
 \brief management and auxiliary functions for statistical mechanics
 \author cyron (cyron@lnm.mw.tum.de)
@@ -104,49 +103,60 @@ public:
               Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null,
               bool                                 printscreen=true);
 
+  //! \brief starting from the input file, build the path trunk to the StatMech subdirectories
+  void BuildStatMechRootPath();
+
   // Return Gmsh and StatMech Output root path
   const std::string& StatMechRootPath() const{return outputrootpath_;}
 
   //! \brief saving all necessary class variables for restart
-  void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output, double& dt);
+  void WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output,
+                    double&                                dt);
 
   //! \brief write restart information for fully overlapping Epetra_Multivector with name "name"
-  void WriteRestartRedundantMultivector(Teuchos::RCP<IO::DiscretizationWriter> output,const std::string name, Teuchos::RCP<Epetra_MultiVector> multivector);
+  void WriteRestartRedundantMultivector(Teuchos::RCP<IO::DiscretizationWriter> output,
+                                        const std::string                      name,
+                                        Teuchos::RCP<Epetra_MultiVector>       multivector);
 
   //! \brief read restart information for fully overlapping Epetra_Multivector with name "name"
-  void ReadRestartRedundantMultivector(IO::DiscretizationReader& reader,const std::string name, Teuchos::RCP<Epetra_MultiVector> multivector);
+  void ReadRestartRedundantMultivector(IO::DiscretizationReader&        reader,
+                                       const std::string                name,
+                                       Teuchos::RCP<Epetra_MultiVector> multivector);
 
   //! \brief reading all necessary information after a restart
-  void ReadRestart(IO::DiscretizationReader& reader, double& dt);
+  void ReadRestart(IO::DiscretizationReader& reader,
+                   double&                   dt);
 
   //! \brief saves all relevant variables *_ as *conv_ to allow for returning to the beginning of a time step
   void WriteConv();
 
   //! \brief resets all relevant variables *_ to *conv_ in order to return to the state at the beginning of the time step
-  void RestoreConv(Teuchos::RCP<LINALG::SparseOperator>& stiff, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager);
+  void RestoreConv(Teuchos::RCP<LINALG::SparseOperator>& stiff,
+                   Teuchos::RCP<CONTACT::Beam3cmanager>  beamcmanager);
 
   /*! \brief special update for statistical mechanics including setting and deleting crosslinkers in the discretization
    *  \param istep    (in)  i-th time step
    *  \param timen    (in)  target time
-   *  \param dt       (in)	current time step size
-   *  \param disrow   (in)	current displacement vector
+   *  \param dt       (in)  current time step size
+   *  \param disrow   (in)  current displacement vector
    *  \param stiff    (in)
    *  \param ndim     (in)
    */
-  void Update(const int& istep,
-              const double& timen,
-              const double& dt,
-              Epetra_Vector& disrow,
+  void Update(const int&                            istep,
+              const double&                         timen,
+              const double&                         dt,
+              Epetra_Vector&                        disrow,
               Teuchos::RCP<LINALG::SparseOperator>& stiff,
-              int& ndim,
-              Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null,
-              bool rebuildoctree=false,
-              bool printscreen=true);
+              int&                                  ndim,
+              Teuchos::RCP<CONTACT::Beam3cmanager>  beamcmanager=Teuchos::null,
+              bool                                  rebuildoctree=false,
+              bool                                  printscreen=true);
 
   /*! \brief update time step size in time integration scheme
    *  \param dt            (in) time step size
-   *  \param timeconverged (in) time of last converged timestep   */
-  void UpdateTimeAndStepSize(double& dt, double& timeconverged);
+   *  \param timeconverged (in) time of last converged timestep*/
+  void UpdateTimeAndStepSize(double& dt,
+                             double& timeconverged);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void InitOutput(const int& ndim,
@@ -154,8 +164,38 @@ public:
                   const int& istep,
                   const double& dt);
 
+  //! \brief Get current node positions directly from global displacement vector
+  void GetNodePositionsFromDisVec(Epetra_Vector&                        discol,
+                                  std::map<int,LINALG::Matrix<3,1> >&   currentpositions,
+                                  std::map<int, LINALG::Matrix<3, 1> >& currentrotations,
+                                  bool                                  positionsonly=false);
+
   //! \brief Get current binding spot positions
-  void GetNodePositions(Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions, std::map<int, LINALG::Matrix<3, 1> >& currentrotations, bool positionsonly=false);
+  void GetBindingSpotPositions(Epetra_Vector&                   dis,
+                               Teuchos::RCP<Epetra_MultiVector> bspotpositions,
+                               Teuchos::RCP<Epetra_MultiVector> bspotrotations);
+
+  //! \brief retrieve standard binding spot positions (node positions) from global displacement vector
+  void GetNodalBindingSpotPositionsFromDisVec(const Epetra_Vector&              dis,
+                                              Teuchos::RCP<Epetra_MultiVector>  bspotpositions,
+                                              Teuchos::RCP<Epetra_MultiVector>  bspotrotations);
+
+  //! \brief Retrieve interpolated binding spot positions
+  void GetInterpolatedBindingSpotPositions(const Epetra_Vector&              dis,
+                                           Teuchos::RCP<Epetra_MultiVector>  bspotpositions,
+                                           Teuchos::RCP<Epetra_MultiVector>  bspotrotations);
+
+  //! \brief Retrieve binding spot triads
+  void GetBindingSpotTriads(Teuchos::RCP<Epetra_MultiVector> bspotrotations,
+                            Teuchos::RCP<Epetra_MultiVector> bspottriads);
+
+  //! \brief Retrieve binding spot triads on the basis of column map nodes
+  void GetElementBindingSpotTriads(Teuchos::RCP<Epetra_MultiVector> bspottriads);
+
+  //! \brief get Internodal Binding Spot Triads
+  void GetInterpolatedBindingSpotTriads(const Teuchos::RCP<Epetra_MultiVector> bspotrotations,
+                                        Teuchos::RCP<Epetra_MultiVector>       bspottriads);
+
 
   //! \brief sets crosslinkers  whereever possible before the first time step
   void SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null);
@@ -164,7 +204,10 @@ public:
   void SeedRandomGenerators(const int seedparameter);
 
   //! \brief write output for Gmsh postprocessing
-  void GmshOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step, Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null);
+  void GmshOutput(const Epetra_Vector&                 disrow,
+                  const std::ostringstream&            filename,
+                  const int&                           step,
+                  Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null);
 
   /*! \brief gmsh output in case of periodic boundary conditions
      *  \param coord            (in) coordinates of element's nodes
@@ -173,19 +216,35 @@ public:
      *  \param eleid            (in) element gid
      *  \param ignoreeleid      (in) signals whether or not we have an element to visualize
      */
-  void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord, const double& color, std::stringstream& gmshfilecontent, int eleid, bool ignoreeleid=false);
+  void GmshOutputPeriodicBoundary(const LINALG::SerialDenseMatrix& coord,
+                                  const double&                    color,
+                                  std::stringstream&               gmshfilecontent,
+                                  int                              eleid,
+                                  bool                             ignoreeleid=false);
 
-  //! \brief update nodal triads
-  void GetBindingSpotTriads(Epetra_MultiVector* nodaltriadscol);
+  //! \brief Shift arbitrary positions (nodes, binding spots, crosslinkers, etc.) according to periodic BCs
+  void ShiftPositions(std::vector<double>& pos,
+                      const int&           ndim=3,
+                      const int&           nnode=2);
+
+  //! \brief Reverse effect of periodic BCs on arbitrary positions (nodes, binding spots, crosslinkers)
+  void UnshiftPositions(std::vector<double>& pos,
+                        const int&           ndim=3,
+                        const int&           nnode=2);
 
   //! \brief generate gaussian randomnumbers with mean "meanvalue" and standarddeviation "standarddeviation" for parallel use
-  void GenerateGaussianRandomNumbers(Teuchos::RCP<Epetra_MultiVector> randomnumbers,const double meanvalue, const double standarddeviation);
+  void GenerateGaussianRandomNumbers(Teuchos::RCP<Epetra_MultiVector> randomnumbers,
+                                     const double                     meanvalue,
+                                     const double                     standarddeviation);
 
   //! \brief Initializes beam3 elements in case of periodic boundary conditions
   void PeriodicBoundaryBeam3Init(DRT::Element* element);
 
   //! \brief Initializes beam3ii elements in case of periodic boundary conditions
   void PeriodicBoundaryBeam3iiInit(DRT::Element* element);
+
+  //! \brief Initializes beam3CL elements in case of periodic boundary conditions
+  void PeriodicBoundaryBeamCLInit(DRT::Element* element);
 
   //! \brief Initializes truss3 elements in case of periodic boundary conditions
   void PeriodicBoundaryTruss3Init(DRT::Element* element);
@@ -196,32 +255,40 @@ public:
    * \param timen   (in)  target time
    * \param dt      (in)  time step size
    */
-  void PeriodicBoundaryShift(Epetra_Vector& disrow, int ndim, const double &timen, const double &dt);
+  void PeriodicBoundaryShift(Epetra_Vector& disrow,
+                             int            ndim,
+                             const double&  timen,
+                             const double&  dt);
 
   //! \brief checks orientation of crosslinker relative to linked filaments
-  bool CheckOrientation(const LINALG::Matrix<3,1> direction, const Epetra_MultiVector& nodaltriadscol, const Epetra_SerialDenseMatrix& LID, Teuchos::RCP<double> phifil = Teuchos::null);
+  bool CheckOrientation(const LINALG::Matrix<3,1>       direction,
+                        const Epetra_MultiVector&       nodaltriadscol,
+                        const Epetra_SerialDenseMatrix& LID,
+                        Teuchos::RCP<double>            phifil = Teuchos::null);
 
-	//! \brief counts the number of possible crosslinking spots and does an Orientation Check
-	void OrientationCorrelation(const Epetra_Vector& disrow, const int &istep);
+  //! \brief counts the number of possible crosslinking spots and does an Orientation Check
+  void OrientationCorrelation(const Epetra_Vector& disrow,
+                              const int&           istep);
 
   //! \brief create a new crosslinker element and add it to the discretization
-  void AddNewCrosslinkerElement(const int& crossgid,
-                                int* globalnodeids,
-                                const std::vector<double>& xrefe,
-                                const std::vector<double>& rotrefe,
-                                DRT::Discretization& mydiscret,
-                                bool addinitlinks=false);
+  void AddNewCrosslinkerElement(const int&                      crossgid,
+                                Teuchos::RCP<std::vector<int> > globalnodeids,
+                                const std::vector<int>&         bspotgid,
+                                const std::vector<double>&      xrefe,
+                                const std::vector<double>&      rotrefe,
+                                DRT::Discretization&            mydiscret,
+                                bool                            addinitlinks=false);
 
   //! \brief remove crosslinker element from a chosen discretization
-  void RemoveCrosslinkerElements(DRT::Discretization& mydiscret,
-                                 Epetra_Vector& delcrosselement,
+  void RemoveCrosslinkerElements(DRT::Discretization&             mydiscret,
+                                 Epetra_Vector&                   delcrosselement,
                                  std::vector<std::vector<char> >* deletedelements);
 
   /*! \brief adjusted DBC evaluation for StatMech
    *  \param params          (in)     a parameter list
    *  \param disn            (in)     displacement vector
    *  \param dbcmapextractor (in/out) map extractor for Dirichlet DOFs (new method)*/
-  void EvaluateDirichletStatMech(Teuchos::ParameterList&                     params,
+  void EvaluateDirichletStatMech(Teuchos::ParameterList&            params,
                                  Teuchos::RCP<Epetra_Vector>        dis,
                                  Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
 
@@ -238,7 +305,12 @@ public:
   bool DBCStart(Teuchos::ParameterList& params);
 
   //! brief computes the internal energy of the network
-  void ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis, double& energy, const double& dt, const std::ostringstream& filename, bool fillzeros=true, bool writefile=true);
+  void ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis,
+                             double&                           energy,
+                             const double&                     dt,
+                             const std::ostringstream&         filename,
+                             bool                              fillzeros=true,
+                             bool                              writefile=true);
 
   //! \brief return number of initial elements
   const int& NumBasisElements() const {return basiselements_;}
@@ -256,7 +328,8 @@ public:
   void UpdateNumberOfUnconvergedSteps(bool flag = true);
 
   //! \brief pass statistical mechanics parameters to parameter list
-  void AddStatMechParamsTo(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_MultiVector> randomnumbers = Teuchos::null);
+  void AddStatMechParamsTo(Teuchos::ParameterList&          params,
+                           Teuchos::RCP<Epetra_MultiVector> randomnumbers = Teuchos::null);
 
 protected:
 
@@ -277,62 +350,76 @@ protected:
    *  \param currentrotations (in) rotations of the nodes in column map format (fully overlapping)
    *  \param beamcmanager     (in) beam contact manager
    */
-  void SearchAndSetCrosslinkers(const int&                                istep,
-                                const double&                             timen,
-                                const double&                             dt,
-                                const Epetra_Map&                         noderowmap,
-                                const Epetra_Map&                         nodecolmap,
-                                const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
-                                const std::map<int,LINALG::Matrix<3,1> >& currentrotations,
-                                Teuchos::RCP<CONTACT::Beam3cmanager>      beamcmanager,
-                                bool                                      printscreen=true);
+  void SearchAndSetCrosslinkers(const int&                                      istep,
+                                const double&                                   timen,
+                                const double&                                   dt,
+                                const Epetra_Map&                               noderowmap,
+                                const Epetra_Map&                               nodecolmap,
+                                const Teuchos::RCP<Epetra_MultiVector>          bspotpositions,
+                                const Teuchos::RCP<Epetra_MultiVector>          bspotrotations,
+                                const Epetra_Vector&                            discol,
+                                Teuchos::RCP<CONTACT::Beam3cmanager>            beamcmanager,
+                                bool                                            printscreen=true);
+
 
   /*! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
    *  \param timen            (in) target time
    *  \param dt               (in) step size
-   *  \param noderowmap       (in) Row Map
-   *  \param nodecolmap       (in) Column Map
-   *  \param currentpositions (in) positions of the nodes in column map format (fully overlapping)
+   *  \param bspotpositions   (in) positions of the nodes in column map format (fully overlapping)
+   *  \param bspotrotations   (in) rotations of the nodes in column map format (fully overlapping)
    *  \param discol           (in) node discplacement in column map format (fully overlapping)
    *  \param beamcmanager     (in) beam contact manager
    */
-  void SearchAndDeleteCrosslinkers(const double&                             timen,
-                                   const double&                             dt,
-                                   const Epetra_Map&                         noderowmap,
-                                   const Epetra_Map&                         nodecolmap,
-                                   const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
-                                   Epetra_Vector&                            discol,
-                                   Teuchos::RCP<CONTACT::Beam3cmanager>      beamcmanager,
-                                   bool                                      printscreen=true);
+  void SearchAndDeleteCrosslinkers(const double&                                   timen,
+                                   const double&                                   dt,
+                                   const Teuchos::RCP<Epetra_MultiVector>          bspotpositions,
+                                   const Teuchos::RCP<Epetra_MultiVector>          bspotrotations,
+                                   const Epetra_Vector&                            discol,
+                                   Teuchos::RCP<CONTACT::Beam3cmanager>            beamcmanager,
+                                   bool                                            printscreen=true);
+
 
   /*! \brief determines whether or not a crosslinker element can be set in case of a loom-type network (one horizontal filament/ n vertical filaments)
    *  \param LID              (in) local Ids of nodes
-   *  \param currentpositions (in) node positions in column map format (fully overlapping)
+   *  \param bspotpositions (in) node positions in column map format (fully overlapping)
    *  \param bspottriadscol   (in) nodal triads as quaternions in column map format (fully overlapping)
    */
-  bool SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID, const std::map<int, LINALG::Matrix<3, 1> >& currentpositions, Epetra_MultiVector& bspottriadscol);
+  bool SetCrosslinkerLoom(Epetra_SerialDenseMatrix&                   LID,
+                          const Teuchos::RCP<Epetra_MultiVector>      bspotpositions,
+                          const Teuchos::RCP<Epetra_MultiVector>      bspottriadscol);
 
   /*!\brief check whether element is "broken" due to periodic boundary conditions
     \param coord  (in)  set of nodal coordinates
     \param cut    (in/out)  in case of a broken element, cut holds component and information about the location of the nodes of the element*/
-  bool CheckForBrokenElement(LINALG::SerialDenseMatrix& coord, LINALG::SerialDenseMatrix& cut);
+  bool CheckForBrokenElement(LINALG::SerialDenseMatrix& coord,
+                             LINALG::SerialDenseMatrix& cut);
 
   /*!\brief return the current coordinates and DOF LIDs of all nodes of given element
      \param element (in)      an element
      \param dis     (in)      current displacement vector (row map)
      \param coord   (in/out)  current node coordinates of element
      \param lids    (in/out)  nodal DOF LIDs of the element*/
-  void GetElementNodeCoords(DRT::Element* element, Teuchos::RCP<Epetra_Vector> dis, LINALG::SerialDenseMatrix& coord, std::vector<int>* lids=NULL);
+  void GetElementNodeCoords(DRT::Element*               element,
+                            Teuchos::RCP<Epetra_Vector> dis,
+                            LINALG::SerialDenseMatrix&  coord,
+                            std::vector<int>*           lids=NULL);
   /*!\brief update locations of force sensors
      \param sensornodes   (in) vector holding the GIDs of the sensor nodes
      \param oscdir        (in) direction (DOF) of oscillation*/
-  void UpdateForceSensors(std::vector<int>& sensornodes, int oscdir);
+  void UpdateForceSensors(std::vector<int>& sensornodes,
+                          int               oscdir);
 
-  //! \brief Update positions and rotations of binding spots
-  void UpdateBindingSpots(const Epetra_Vector& discol, std::map<int,LINALG::Matrix<3,1> >& currentpositions);
+  //! \brief Interpolate the Rotations on the Internodal BindingSpots between two nodes of an Element on Filament
+  void InterpolateTriadonBindingSpot(const LINALG::Matrix<1, 2>&        Ibp,
+                                     std::vector<LINALG::Matrix<4,1> >& bQnew,
+                                     LINALG::Matrix<3, 1>&              ThetaXi,
+                                     LINALG::Matrix<4,1>&               rQxi);
 
   //! \brief adjust off-rate by considering forces in the crosslinker
-  void ForceDependentOffRate(const double& dt, const double& koff0, Epetra_Vector* punlink, Epetra_Vector& discol);
+  void ForceDependentOffRate(const double&        dt,
+                             const double&        koff0,
+                             const Epetra_Vector& discol,
+                             Epetra_Vector&       punlink);
 
   /*! \brief reduce number of currently existing crosslinker elements by numtoreduce
    *  \param (in) numtoreduce number of crosslinkers by which overall number of crosslinkers is reduced*/
@@ -347,7 +434,7 @@ protected:
    *  \param bspottriadscol       (in) nodal triads as quaternions in column map format (fully overlapping)
    *  \param neighboursLID        (in/out) vector holding the LIDs of the nodes close to crosslink molecules
    *  */
-  void DetectNeighbourNodes(const std::map<int,LINALG::Matrix<3,1> >&     currentpositions,
+  void DetectNeighbourNodes(const Epetra_MultiVector&                     bspotpositions,
                             std::vector<std::vector<std::vector<int> > >* nodeinpartition,
                             Epetra_Vector&                                numbond,
                             Epetra_MultiVector&                           crosslinkerpositions,
@@ -356,13 +443,15 @@ protected:
                             Teuchos::RCP<Epetra_MultiVector>&             neighboursLID);
 
   //! \brief rotation of a vector around a given fixed axis by angle phirot
-  void RotationAroundFixedAxis(LINALG::Matrix<3,1>& axis, LINALG::Matrix<3,1>& vector, const double& phirot);
+  void RotationAroundFixedAxis(LINALG::Matrix<3,1>& axis,
+                               LINALG::Matrix<3,1>& vector,
+                               const double&        phirot);
 
   //! \brief initializes vector with crosslinker positions
   void CrosslinkerMoleculeInit();
 
   //! \brief shifts crosslinker reprentations (spatial points) if they drift out of the boundary box in case of periodic BCs
-	void CrosslinkerPeriodicBoundaryShift(Epetra_MultiVector& crosslinkerpositions);
+  void CrosslinkerPeriodicBoundaryShift(Epetra_MultiVector& crosslinkerpositions);
 
   //! \brief generates a vector with a random permutation of the numbers between 0 and N - 1
   std::vector<int> Permutation(const int& N);
@@ -371,30 +460,43 @@ protected:
       \param discol     (in) displacement in column map format
       \param filename  (in) filename for the first output file (coordinates, element GIDs and filament numbers)
    */
-  void FilamentOrientations(const Epetra_Vector& discol, std::vector<LINALG::Matrix<3,1> >* normedvectors, const std::ostringstream& filename, bool fileoutput);
+  void FilamentOrientations(const Epetra_Vector&               discol,
+                            std::vector<LINALG::Matrix<3,1> >* normedvectors,
+                            const std::ostringstream&          filename,
+                            bool                               fileoutput);
 
   //! \brief output for density-density-correlation output
-  void DDCorrOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& istep, const double& dt);
+  void DDCorrOutput(const Epetra_Vector&      disrow,
+                    const std::ostringstream& filename,
+                    const int&                istep,
+                    const double&             dt);
 
   //! \brief obtain Density-Density-Correlation function (radial distribution function) for given crosslinkers crosslinksperbinrow
-  void DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow, Epetra_MultiVector& crosslinksperbinrotrow, LINALG::Matrix<3,1>* centershift);
+  void DDCorrFunction(Epetra_MultiVector& crosslinksperbinrow,
+                      Epetra_MultiVector& crosslinksperbinrotrow,
+                      LINALG::Matrix<3,1>* centershift);
 
   //! \brief obtain distribution for spherical coordinates (all vectors in and out)
-  void SphericalCoordsDistribution(const Epetra_Vector& disrow, Epetra_Vector& phibinsrow, Epetra_Vector& thetabinsrow, Epetra_Vector& costhetabinsrow);
+  void SphericalCoordsDistribution(const Epetra_Vector& disrow,
+                                   Epetra_Vector&       phibinsrow,
+                                   Epetra_Vector&       thetabinsrow,
+                                   Epetra_Vector&       costhetabinsrow);
 
   //! \brief Selects raster point with the smallest average distance to all crosslinker elements and makes it the new center of the boundary box
-  void DDCorrShift(LINALG::Matrix<3,1>* boxcenter, LINALG::Matrix<3,1>* centershift, std::vector<int>* crosslinkerentries);
+  void DDCorrShift(LINALG::Matrix<3,1>* boxcenter,
+                   LINALG::Matrix<3,1>* centershift,
+                   std::vector<int>*    crosslinkerentries);
 
   //! \brief obtain radial crosslinker density distribution
   void RadialDensityDistribution(Epetra_Vector& radialdistancesrow, LINALG::Matrix<3,1>& centershift);
 
   /*! \brief determine the current network structure
-   * 	\param disrow  (in) displacement in row format
-   * 	\param centershift (in) shift vector between old and new boundary box center
-   * 	\param crosslinkerentries (in) crosslinkermap_ lids of crosslinker elements
-   * 	\param istep (in) i-th time step
-   * 	\param filename (in) output file name
-   * 	\param filorientoutput (in) determine whether or not to output filament element directional vectors
+   *  \param disrow  (in) displacement in row format
+   *  \param centershift (in) shift vector between old and new boundary box center
+   *  \param crosslinkerentries (in) crosslinkermap_ lids of crosslinker elements
+   *  \param istep (in) i-th time step
+   *  \param filename (in) output file name
+   *  \param filorientoutput (in) determine whether or not to output filament element directional vectors
    */
   void DDCorrCurrentStructure(const Epetra_Vector&      disrow,
                               LINALG::Matrix<3,1>*      cog,
@@ -405,55 +507,85 @@ protected:
                               bool                      filorientoutput=false);
 
   //! \brief iterate vector in order to obtain close approximation to actual (structure) vector
-  void DDCorrIterateVector(const Epetra_Vector& discol, LINALG::Matrix<3,1>* vectorj, const int& maxiterations);
+  void DDCorrIterateVector(const Epetra_Vector& discol,
+                           LINALG::Matrix<3,1>* vectorj,
+                           const int&           maxiterations);
 
   //! \brief output distances between doubly bound crosslinkers in case of a loom setup
-  void LoomOutput(const Epetra_Vector& disrow, const std::ostringstream& filename);
+  void LoomOutput(const Epetra_Vector&      disrow,
+                  const std::ostringstream& filename);
 
   //! \brief output the coverage of crosslinker binding sites (nodes) and the distribution of bound crosslinkers
-  void CrosslinkCoverageOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, bool coverageonly=true);
+  void CrosslinkCoverageOutput(const Epetra_Vector&      disrow,
+                               const std::ostringstream& filename,
+                               bool                      coverageonly=true);
 
   //! \brief measure the force between two loom filaments and output it
-  void LoomOutputAttraction(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& step);
+  void LoomOutputAttraction(const Epetra_Vector&      disrow,
+                            const std::ostringstream& filename,
+                            const int&                step);
 
   //! \brief measure the filaments' internal elastic energy and separation between the hoop and the fixed end
-  void LoomOutputElasticEnergy(const Epetra_Vector& disrow, const double& dt, const std::ostringstream& filename);
+  void LoomOutputElasticEnergy(const Epetra_Vector&      disrow,
+                               const double&             dt,
+                               const std::ostringstream& filename);
 
   //! \brief simply returns the number of free, one-bonded, and two-bonded crosslink molecules
   void CrosslinkCount(const std::ostringstream& filename);
 
   //! \brief returns polymer length per unit volume with respect to radial distance to COG of the network
-  void ComputeLocalMeshSize(const Epetra_Vector& disrow, LINALG::Matrix<3,1>& centershift, const int &istep);
+  void ComputeLocalMeshSize(const Epetra_Vector& disrow,
+                            LINALG::Matrix<3,1>& centershift,
+                            const int&           istep);
 
   //! \brief Viscoelastic output
-  void ViscoelasticityOutput(const double& time, const Epetra_Vector& dis, const Epetra_Vector& fint, std::ostringstream& filename);
+  void ViscoelasticityOutput(const double& time,
+                             const Epetra_Vector& dis,
+                             const Epetra_Vector& fint,
+                             std::ostringstream&  filename);
 
   //! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
   bool CheckForKinkedVisual(int eleid);
 
   //! \brief gmsh output of (periodic boundary) box around "boxcenter" with edgelength "length"
-  void GmshOutputBox(double color, LINALG::Matrix<3,1>* boxcenter, std::vector<double>& dimension, const std::ostringstream *filename, bool barrier=true);
+  void GmshOutputBox(double color, LINALG::Matrix<3,1>* boxcenter,
+                     std::vector<double>&               dimension,
+                     const std::ostringstream           *filename,
+                     bool                               barrier=true);
 
   //! \brief gmsh output for crosslink molecule diffusion
-  void GmshOutputCrosslinkDiffusion(double color, const std::ostringstream *filename, const Epetra_Vector& disrow);
+  void GmshOutputCrosslinkDiffusion(double                   color,
+                                    const std::ostringstream *filename,
+                                    const Epetra_Vector&     disrow);
 
   /*! \brief prepare visualization vectors
-   * 	\param dis        (in) discplacement
+   *  \param dis        (in) discplacement
    */
   void GmshPrepareVisualization(const Epetra_Vector& dis);
 
   //! \brief GmshOutput for crosslinkers occupying two binding spots on the same filament
-  void GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord, const double& color, int eleid, std::stringstream& gmshfilecontent);
+  void GmshKinkedVisual(const LINALG::SerialDenseMatrix& coord,
+                        const double&                    color,
+                        int                              eleid,
+                        std::stringstream&               gmshfilecontent);
 
   //! \brief Gmsh wedge output for filament and crosslinkers as solid lines using prisms
-  void GmshWedge(const int& n, const Epetra_SerialDenseMatrix& coord, DRT::Element* thisele, std::stringstream& gmshfilecontent, const double color, bool ignoreeleid=false, bool drawsphere=true);
+  void GmshWedge(const int&                      n,
+                 const Epetra_SerialDenseMatrix& coord,
+                 DRT::Element*                   thisele,
+                 std::stringstream&              gmshfilecontent,
+                 const double                    color,
+                 bool                            ignoreeleid=false,
+                 bool                            drawsphere=true);
 
   /*! \brief Gmsh output of volume boundaries of detected structure type (detection in DDCorrCurrStructure())
    *  \param n               (in) number of edges for approximation of the cluster sphere or the bundle cylinder
    *  \param gmshfilecontent (in) where output is written to
    *  \param color           (in) output color
    */
-  void GmshNetworkStructVolume(const int& n, std::stringstream& gmshfilecontent, const double color);
+  void GmshNetworkStructVolume(const int&         n,
+                               std::stringstream& gmshfilecontent,
+                               const double       color);
 
   /*! \brief gmsh output for test volumes in presence of periodic boundary conditions
    *  \param coord          (in) coordinates of the end points of the given line
@@ -461,36 +593,39 @@ protected:
    *  \param gmshfilcontent (in) where output is written to
    *  \param color          (in) output color
    */
-  void GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMatrix& coord, const int numsections, std::stringstream& gmshfilecontent,const double color);
+  void GmshNetworkStructVolumePeriodic(const Epetra_SerialDenseMatrix& coord,
+                                       const int                       numsections,
+                                       std::stringstream&              gmshfilecontent,
+                                       const double                    color);
 
 
   /*! \brief Handles Crosslinker diffusion
-   *  \param dis              (in) latest displacement
-   *  \param disi             (in) latest displacement increment in row map format
+   *  \param bspotpositions   (in) latest positions of binding spots
    *  \param mean             (in) mean of the normal distribution
    *  \param standarddev      (in) standard deviation of the normal distribution
    *  \param init             (in) switch between methods
    */
-  void CrosslinkerDiffusion(const Epetra_Vector& dis,
-                            double               mean,
-                            double               standarddev,
-                            const double&        dt);
+  void CrosslinkerDiffusion(const Epetra_MultiVector& bspotpositions,
+                            double                    mean,
+                            double                    standarddev,
+                            const double&             dt);
 
   /*! \brief update positions of crosslink molecules if they constitute a crosslinker element
    *  \param currentpositions     (in) column map node positions (fully overlapping)
    *  \param LID                  (in) column map node LIDs
    *  \param crosslinkernumber    (in) position in crosslink molecule vector*/
-  void CrosslinkerIntermediateUpdate(const std::map<int,LINALG::Matrix<3,1> >& currentpositions,
+  void CrosslinkerIntermediateUpdate(const Epetra_MultiVector&                 bspotpositions,
                                      const LINALG::SerialDenseMatrix&          LID,
                                      const int&                                crosslinkernumber,
-                                     Epetra_MultiVector&                       bspottriadscol,
                                      bool                                      coupledmovement=true);
 
   /*! \brief map crosslink molecules and filament nodes to the according volume partition and detect nodes in proximity of the molecules
    *  \param currentpositions     (in)      column map node positions (fully overlapping)
    *  \param bspottriadscol      (in)      nodal triads as quaternions in column map format (fully overlapping)
    *  \param neighbourslid        (in/out)  vector holding the node lids within search proximity of crosslink molecules*/
-  void PartitioningAndSearch(const std::map<int,LINALG::Matrix<3,1> >& currentpositions, Epetra_MultiVector& bspottriadscol, Teuchos::RCP<Epetra_MultiVector>& neighbourslid);
+  void PartitioningAndSearch(const Epetra_MultiVector&         bspotpositions,
+                             Epetra_MultiVector&               bspottriadscol,
+                             Teuchos::RCP<Epetra_MultiVector>& neighbourslid);
 
   /*! \brief comunicate Vector to all participating processors
    *  \param InVec    (in) Source/Input vector
@@ -500,21 +635,24 @@ protected:
    */
   void CommunicateVector(Epetra_Vector& InVec,
                          Epetra_Vector& OutVec,
-                         bool doexport=true,
-                         bool doimport=true,
-                         bool zerofy=true);
+                         bool           doexport=true,
+                         bool           doimport=true,
+                         bool           zerofy=true,
+                         bool           exportinsert=false);
 
   /*! \brief comunicate MultiVector to all participating processors
    *  \param InVec    (in) Source/Input vector
    *  \param OutVec   (in) Target/Output vector
    *  \param doexport (in) export flag
    *  \param doimport (in) import flag
+   *  \param zerofy   (in) zero out OutVec flag
    */
   void CommunicateMultiVector(Epetra_MultiVector& InVec,
                               Epetra_MultiVector& OutVec,
-                              bool doexport=true,
-                              bool doimport=true,
-                              bool zerofy=true);
+                              bool                doexport=true,
+                              bool                doimport=true,
+                              bool                zerofy=true,
+                              bool                exportinsert=false);
 
   /* \brief set Dirichlet values according to given Dirichlet map)
    *  \param disn            (in)     displacement vector
@@ -524,14 +662,14 @@ protected:
                     Teuchos::RCP<std::set<int> >       dbcgids);
 
   /* \brief evaluate Dirichlet conditions*/
-  void DoDirichletConditionPredefined(DRT::Condition&             cond,
-                                      DRT::Discretization&        dis,
-                                      const bool                  usetime,
-                                      const double                time,
-                                      Teuchos::RCP<Epetra_Vector> systemvector,
-                                      Teuchos::RCP<Epetra_Vector> systemvectord,
-                                      Teuchos::RCP<Epetra_Vector> systemvectordd,
-                                      Teuchos::RCP<Epetra_Vector> toggle,
+  void DoDirichletConditionPredefined(DRT::Condition&              cond,
+                                      DRT::Discretization&         dis,
+                                      const bool                   usetime,
+                                      const double                 time,
+                                      Teuchos::RCP<Epetra_Vector>  systemvector,
+                                      Teuchos::RCP<Epetra_Vector>  systemvectord,
+                                      Teuchos::RCP<Epetra_Vector>  systemvectordd,
+                                      Teuchos::RCP<Epetra_Vector>  toggle,
                                       Teuchos::RCP<std::set<int> > dbcgids);
 
   /*! \brief Determine Dirichlet condition at given time and apply its values to a system vector
@@ -567,7 +705,7 @@ protected:
   /*! \brief pin down a node at its location by Dirichlet Values
    *  \param dbcgids               (in/out)  set holding dbc DOF GIDs (new method)
    *  \param dbcmapextractor       (in)      vector containing onoff values for free DOFs */
-  void DBCCreateMap(Teuchos::RCP<std::set<int> > dbcgids,
+  void DBCCreateMap(Teuchos::RCP<std::set<int> >       dbcgids,
                     Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor);
 
   //! \brief containing statistical mechanics input parameters
@@ -677,13 +815,16 @@ protected:
   Teuchos::RCP<Epetra_Map> bspotcolmap_;
 
   //! \brief a vector memorizing the bonding status of the crosslink molecules
-  Teuchos::RCP<Epetra_MultiVector>		crosslinkerbond_;
+  Teuchos::RCP<Epetra_MultiVector>    crosslinkerbond_;
 
   //! \brief a vector containing the current postion of the crosslink molecules
-  Teuchos::RCP<Epetra_MultiVector>		crosslinkerpositions_;
+  Teuchos::RCP<Epetra_MultiVector>    crosslinkerpositions_;
+
+  // \brief a vector mapping the internodal binding spots to their global node IDs
+  Teuchos::RCP<Epetra_MultiVector> bspot2nodes_;
 
   //! \brief a vector indicating the number of attached nodes to a crosslinker
-  Teuchos::RCP<Epetra_Vector>	numbond_;
+  Teuchos::RCP<Epetra_Vector> numbond_;
 
   //! \brief a vector indicating crosslinker elements that cover two binding spots on the same filament
   Teuchos::RCP<Epetra_Vector> crosslinkonsamefilament_;

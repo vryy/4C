@@ -32,7 +32,7 @@ Maintainer: Kei Müller
 
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
-#include "../drt_beamCL/beamCL.H"
+#include "../drt_beam3cl/beam3cl.H"
 #include "../drt_beam2/beam2.H"
 #include "../drt_beam2r/beam2r.H"
 #include "../drt_truss3/truss3.H"
