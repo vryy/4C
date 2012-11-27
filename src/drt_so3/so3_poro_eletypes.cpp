@@ -147,7 +147,7 @@ int DRT::ELEMENTS::So_tet4PoroType::Initialize(DRT::Discretization& dis)
     DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>* actele =
         dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4> * >(dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_poro* failed");
-    actele->So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>::InitJacobianMapping();
+    actele->So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>::InitElement();
   }
   return 0;
 }
