@@ -63,11 +63,6 @@ namespace MueLu {
     RCP<const FactoryBase>   PtentFact_; ///< tentative P Factory
     RCP<const FactoryBase>   mapFact_;   ///< generating factory of input variable
 
-    //RCP<FactoryBase>   AFact_;     ///< A factory (needed for maps)
-
-    //RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)
-
-
   }; // class ContactMapTransferFactory
 
 } // namespace MueLu

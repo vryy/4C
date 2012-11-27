@@ -57,7 +57,6 @@ namespace MueLu {
 
     // fetch map extractor from level
     RCP<const MapClass> transferMap = fineLevel.Get< RCP<const MapClass> >(mapName_,mapFact_.get());
-
     //GetOStream(Runtime1, 0) << *transferMap << std::endl;
 
     RCP<OperatorClass> Ptent = coarseLevel.Get<RCP<OperatorClass> >("P",PtentFact_.get());
@@ -87,13 +86,10 @@ namespace MueLu {
     std::sort(coarseMapGids.begin(), coarseMapGids.end());
     coarseMapGids.erase(std::unique(coarseMapGids.begin(), coarseMapGids.end()), coarseMapGids.end());
     Teuchos::ArrayView<GlobalOrdinal> coarseMapGidsView (&coarseMapGids[0],coarseMapGids.size());
-    RCP<const Map> coarseTransferMap = MapFactoryClass::Build(Ptent->getColMap()->lib(), coarseMapGidsView.size(), coarseMapGidsView, Ptent->getColMap()->getIndexBase(), Ptent->getColMap()->getComm());
-
-    //std::cout << "length of coarse transfer map = " << coarseTransferMap->getGlobalNumElements() << std::endl;
+    RCP<const Map> coarseTransferMap = MapFactoryClass::Build(Ptent->getColMap()->lib(), -1 /* coarseMapGidsView.size()*/, coarseMapGidsView, Ptent->getColMap()->getIndexBase(), Ptent->getColMap()->getComm());
 
     // store map extractor in coarse level
     coarseLevel.Set(mapName_, coarseTransferMap, mapFact_.get());
-
 
   }
 
