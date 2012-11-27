@@ -209,14 +209,14 @@ void DRT::ELEMENTS::So_hex27PoroType::SetupElementDefinition( std::map<std::stri
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex27PoroType::Initialize(DRT::Discretization& dis)
 {
+  So_hex27PoroType::Initialize(dis);
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>* actele =
+    DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27> * actele =
         dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27> * >(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex27_poro* failed");
-    actele->So_hex27::InitJacobianMapping();
-    actele->So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>::InitJacobianMapping();
+    actele->So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>::InitElement();
   }
   return 0;
 }
