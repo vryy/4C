@@ -20,6 +20,7 @@ Created on: Jan 11, 2012
 #include <MueLu_Hierarchy.hpp> // for MueLu
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_DirectSolver_fwd.hpp>
+#include <MueLu_MapTransferFactory_fwd.hpp>
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int

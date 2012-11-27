@@ -58,6 +58,7 @@
 #include <MueLu_SchurComplementFactory.hpp>
 #include <MueLu_BraessSarazinSmoother.hpp>
 #include <MueLu_CoarseMapFactory.hpp>
+#include <MueLu_MapTransferFactory.hpp>
 #include <MueLu_BlockedCoarseMapFactory.hpp>
 
 #include <MueLu_MLParameterListInterpreter.hpp>
@@ -70,7 +71,6 @@
 #include <MueLu_EpetraOperator.hpp> // Aztec interface
 
 #include "muelu/muelu_ContactTransferFactory_decl.hpp"
-#include "muelu/muelu_ContactMapTransferFactory_decl.hpp"
 #include "muelu/muelu_ContactASlaveDofFilterFactory_decl.hpp"
 #include "muelu/muelu_ContactSPAggregationFactory_decl.hpp"
 #include "muelu/MueLu_MyTrilinosSmoother_decl.hpp"
@@ -346,7 +346,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     ///////////////////////////////////////////////////////////////////////
     // transfer "SlaveDofMap" to next coarser level
     ///////////////////////////////////////////////////////////////////////
-    Teuchos::RCP<MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact3 = Teuchos::rcp(new MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", Ptent11Fact, MueLu::NoFactory::getRCP()));
+    Teuchos::RCP<MapTransferFactory> cmTransFact3 = Teuchos::rcp(new MapTransferFactory("SlaveDofMap", Ptent11Fact, MueLu::NoFactory::getRCP()));
     AcFact->AddTransferFactory(cmTransFact3);
 
     ///////////////////////////////////////////////////////////////////////

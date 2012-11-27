@@ -32,21 +32,18 @@
 #include <MueLu_SmootherPrototype_decl.hpp>
 
 #include <MueLu_CoalesceDropFactory.hpp>
-//#include <MueLu_UCAggregationFactory.hpp>
-#include <MueLu_ExperimentalAggregationFactory.hpp>
+#include <MueLu_UncoupledAggregationFactory.hpp>
 #include <MueLu_TentativePFactory.hpp>
 #include <MueLu_SaPFactory.hpp>
 #include <MueLu_PgPFactory.hpp>
 #include <MueLu_GenericRFactory.hpp>
 #include <MueLu_TransPFactory.hpp>
-#include <MueLu_RAPFactory.hpp>
 #include <MueLu_VerbosityLevel.hpp>
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_NullspaceFactory.hpp>
-//#include <MueLu_SegregationAFilterFactory.hpp>
 #include <MueLu_SegregationATransferFactory.hpp> // TODO remove me
 #include <MueLu_Aggregates.hpp>
-#include "MueLu_AggStatTransferFactory.hpp"
+#include <MueLu_MapTransferFactory.hpp>
 #include <MueLu_AggregationExportFactory.hpp>
 
 #include <MueLu_MLParameterListInterpreter.hpp>
@@ -60,7 +57,6 @@
 
 #include "muelu/muelu_ContactAFilterFactory_decl.hpp"
 #include "muelu/muelu_ContactTransferFactory_decl.hpp"
-#include "muelu/muelu_ContactMapTransferFactory_decl.hpp"
 #include "muelu/muelu_ContactASlaveDofFilterFactory_decl.hpp"
 #include "muelu/MueLu_MyTrilinosSmoother_decl.hpp"
 
@@ -141,8 +137,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     const Teuchos::RCP<Matrix> & A,
     const Teuchos::RCP<MultiVector> nsp)
 {
-
-  Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
+  //Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
 
   // read in common parameters
   int maxLevels = 10;       // multigrid prameters
@@ -186,24 +181,13 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   Teuchos::RCP<Epetra_Map> epActiveDofMap = params.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap");
   //Teuchos::RCP<Epetra_Map> epInnerDofMap  = params.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap"); // TODO check me
 
-  //std::cout << *epActiveDofMap << std::endl;
-
   // build map extractor from different maps
   // note that the ordering (Master, Slave, Inner) is important to be the same overall the whole algorithm
   Teuchos::RCP<const Map> xfullmap = A->getRowMap(); // full map (MasterDofMap + SalveDofMap + InnerDofMap)
-  Teuchos::RCP<Xpetra::EpetraMap> xMasterDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epMasterDofMap ));
+  //Teuchos::RCP<Xpetra::EpetraMap> xMasterDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epMasterDofMap ));
   Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
-  Teuchos::RCP<Xpetra::EpetraMap> xActiveDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epActiveDofMap ));
+  //Teuchos::RCP<Xpetra::EpetraMap> xActiveDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epActiveDofMap ));
   //Teuchos::RCP<Xpetra::EpetraMap> xInnerDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epInnerDofMap  )); // TODO check me
-
-
-  // print out system matrix on finest level
-  MueLu::Utils<double,int,int>::Write("test.mat", *A);
-  xSlaveDofMap->describe(*out,Teuchos::VERB_EXTREME);
-  xMasterDofMap->describe(*out,Teuchos::VERB_EXTREME);
-  xActiveDofMap->describe(*out,Teuchos::VERB_EXTREME);
-  dserror("Stop");
-
 
   ///////////////////////////////////////////////////////////
 
@@ -231,7 +215,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
 
  Finest->Set("A",A);
 
- Finest->Set("ActiveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xActiveDofMap));  // set map with active dofs
+ //Finest->Set("ActiveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xActiveDofMap));  // set map with active dofs
  //Finest->Set("MasterDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xMasterDofMap));  // set map with active dofs
  Finest->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xSlaveDofMap));  // set map with active dofs
 
@@ -270,29 +254,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   // number of node rows
   const LocalOrdinal nDofRows = xfullmap->getNodeNumElements();
 
-  // prepare aggCoarseStat
-  // TODO rebuild node-based map
-  // still problematich for reparitioning
-  Teuchos::ArrayRCP<unsigned int> aggStat;
-  if(nDofRows > 0) aggStat = Teuchos::arcp<unsigned int>(nDofRows/nDofsPerNode);
-  for(LocalOrdinal i=0; i<nDofRows; ++i) {
-    aggStat[i/nDofsPerNode] = 0;
-    GlobalOrdinal grid = xfullmap->getGlobalElement(i);
-    if(xActiveDofMap->isNodeGlobalElement(grid)) {
-      aggStat[i/nDofsPerNode] |= MueLu::NODEONEPT;
-      //std::cout << "node " << i/nDofsPerNode << " is marked as 1PT node" << std::endl;
-    }
-    else if(xSlaveDofMap->isNodeGlobalElement(grid)) {
-      aggStat[i/nDofsPerNode] |= MueLu::NODEONEPT; // MueLu::NODESMALLAGG;
-      //std::cout << "node " << i/nDofsPerNode << " is marked as SMALL AGG node" << std::endl;
-    }
-  }
-
-  /*for(LocalOrdinal i=0; i<nDofRows; ++i) {
-    std::cout << i << ": " << aggStat[i/nDofsPerNode] << std::endl;
-  }*/
-
-  Finest->Set("coarseAggStat",aggStat);
 
   ///////////////////////////////////////////////////////////////////////
   // Segregation Factory for building aggregates that do not overlap
@@ -319,12 +280,12 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   Teuchos::RCP<CoalesceDropFactory> dropFact = Teuchos::rcp(new CoalesceDropFactory());
 
   // aggregation factory
-  //Teuchos::RCP<UCAggregationFactory> UCAggFact = Teuchos::rcp(new UCAggregationFactory(dropFact));
-  Teuchos::RCP<ExperimentalAggregationFactory> UCAggFact = Teuchos::rcp(new ExperimentalAggregationFactory());
+  Teuchos::RCP<UncoupledAggregationFactory> UCAggFact = Teuchos::rcp(new UncoupledAggregationFactory(dropFact));
   UCAggFact->SetMinNodesPerAggregate(minPerAgg);
   UCAggFact->SetMaxNeighAlreadySelected(maxNbrAlreadySelected);
-  //UCAggFact->SetOrdering(MueLu::AggOptions::GRAPH);
-  UCAggFact->SetOrdering(MueLu::AggOptions::NATURAL);
+  UCAggFact->SetOrdering(MueLu::AggOptions::GRAPH);
+  //UCAggFact->SetOrdering(MueLu::AggOptions::NATURAL);
+  UCAggFact->SetOnePtMapName("SlaveDofMap", MueLu::NoFactory::getRCP());
 
   Teuchos::RCP<PFactory> PFact;
   Teuchos::RCP<TwoLevelFactoryBase> RFact;
@@ -346,8 +307,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   } else {
     // Petrov Galerkin PG-AMG smoothed aggregation (energy minimization in ML)
     PFact  = Teuchos::rcp( new PgPFactory(/*PtentFact,slaveDcAFact*/) ); // use slaveDcAFact for prolongator smoothing
-    PFact->SetFactory("P", PtentFact);
-    PFact->SetFactory("A", slaveDcAFact);
+    PFact->SetFactory("P",PtentFact);
+    PFact->SetFactory("A",slaveDcAFact);
     RFact  = Teuchos::rcp( new GenericRFactory() );
   }
 
@@ -365,33 +326,14 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   //AcFact->setVerbLevel(Teuchos::VERB_HIGH);
   AcFact->SetRepairZeroDiagonal(true); // repair zero diagonal entries in Ac, that are resulting from Ptent with nullspacedim > ndofspernode
 
-
-  //Params().sublist("MueLu (Contact2) Parameters").set("time-step",Params().get<int>("time-step"));
-  //Params().sublist("MueLu (Contact2) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
-
   // write out aggregates
-  /*int timestep = mllist_.get<int>("time-step");
-  int newtoniter = mllist_.get<int>("newton-iter");
-  std::stringstream str;
-  str << "aggs";
-  str << "t" << timestep << "_n" << newtoniter;
-  str << "_level%LEVELID_proc%PROCID.out";*/
-
-  //Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out"/*str.str()*/,UCAggFact.get(), dropFact.get(),NULL/*amalgFact*/));
+  //Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out",UCAggFact.get(), dropFact.get(),NULL/*amalgFact*/));
   //AcFact->AddTransferFactory(aggExpFact);
 
   // transfer maps to coarser grids
-  Teuchos::RCP<MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact = Teuchos::rcp(new MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("ActiveDofMap", PtentFact, MueLu::NoFactory::getRCP()));
-  AcFact->AddTransferFactory(cmTransFact);
-  /*Teuchos::RCP<MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact2 = Teuchos::rcp(new MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("MasterDofMap", PtentFact, MueLu::NoFactory::getRCP()));
-  AcFact->AddTransferFactory(cmTransFact2);*/
-  Teuchos::RCP<MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact3 = Teuchos::rcp(new MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", PtentFact, MueLu::NoFactory::getRCP()));
+  //Teuchos::RCP<MueLu::MapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact3 = Teuchos::rcp(new MueLu::MapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", PtentFact, MueLu::NoFactory::getRCP()));
+  Teuchos::RCP<MapTransferFactory> cmTransFact3 = Teuchos::rcp(new MapTransferFactory("SlaveDofMap", PtentFact, MueLu::NoFactory::getRCP()));
   AcFact->AddTransferFactory(cmTransFact3);
-
-  // transfer aggregate status to next coarser level (-> special aggregation strategy)
-  Teuchos::RCP<MueLu::AggStatTransferFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node, LocalMatOps> > aggStatFact = Teuchos::rcp(new MueLu::AggStatTransferFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node, LocalMatOps>("coarseAggStat",UCAggFact));
-  aggStatFact->SetFactory("coarseAggStat",UCAggFact);
-  AcFact->AddTransferFactory(aggStatFact);
 
   ///////////////////////////////////////////////////////////////////////
   // setup coarse level smoothers/solvers
@@ -414,12 +356,13 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     Teuchos::ParameterList pp(params);
     //pp.set("smoother: pre or post","pre");
 
+    vecManager[i] = Teuchos::rcp(new FactoryManager());
+
     // fine/intermedium level smoother
     Teuchos::RCP<SmootherFactory> SmooFactFine = GetContactSmootherFactory(pp, i, slaveDcAFact);
 
-    vecManager[i] = Teuchos::rcp(new FactoryManager());
     if(SmooFactFine != Teuchos::null)
-        vecManager[i]->SetFactory("Smoother" ,  SmooFactFine);    // Hierarchy.Setup uses TOPSmootherFactory, that only needs "Smoother"
+      vecManager[i]->SetFactory("Smoother" ,  SmooFactFine);    // Hierarchy.Setup uses TOPSmootherFactory, that only needs "Smoother"
     vecManager[i]->SetFactory("CoarseSolver", coarsestSmooFact);
     vecManager[i]->SetFactory("Aggregates", UCAggFact);
     vecManager[i]->SetFactory("Graph", dropFact);

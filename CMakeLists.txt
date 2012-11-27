@@ -1161,8 +1161,7 @@ set(OBJS_SOLVER
   src/solver/muelu/muelu_ContactAFilterFactory.cpp
   src/solver/muelu/muelu_ContactTransferFactory.cpp
   src/solver/muelu/muelu_ContactInfoFactory.cpp
-  src/solver/muelu/muelu_ContactASlaveDofFilterFactory.cpp
-  src/solver/muelu/muelu_ContactMapTransferFactory.cpp
+  src/solver/muelu/muelu_ContactASlaveDofFilterFactory.cpp 
   src/solver/muelu/muelu_ContactSPAggregationFactory.cpp
   src/solver/muelu/MueLu_MyTrilinosSmoother.cpp
 )

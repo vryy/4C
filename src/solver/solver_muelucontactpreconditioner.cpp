@@ -58,7 +58,6 @@
 #include <MueLu_EpetraOperator.hpp> // Aztec interface
 
 #include "muelu/muelu_ContactTransferFactory_decl.hpp"
-#include "muelu/muelu_ContactMapTransferFactory_decl.hpp"
 #include "muelu/muelu_ContactASlaveDofFilterFactory_decl.hpp"
 #include "muelu/MueLu_MyTrilinosSmoother_decl.hpp"
 
