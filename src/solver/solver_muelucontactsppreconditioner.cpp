@@ -53,7 +53,6 @@
 #include "MueLu_AggStatTransferFactory.hpp"
 #include <MueLu_AggregationExportFactory.hpp>
 #include <MueLu_BlockedPFactory.hpp>
-//#include <MueLu_BlockedGaussSeidelSmoother.hpp>
 #include <MueLu_DirectSolver.hpp>
 #include <MueLu_SchurComplementFactory.hpp>
 #include <MueLu_BraessSarazinSmoother.hpp>
@@ -346,7 +345,8 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     ///////////////////////////////////////////////////////////////////////
     // transfer "SlaveDofMap" to next coarser level
     ///////////////////////////////////////////////////////////////////////
-    Teuchos::RCP<MapTransferFactory> cmTransFact3 = Teuchos::rcp(new MapTransferFactory("SlaveDofMap", Ptent11Fact, MueLu::NoFactory::getRCP()));
+    Teuchos::RCP<MapTransferFactory> cmTransFact3 = Teuchos::rcp(new MapTransferFactory("SlaveDofMap", MueLu::NoFactory::getRCP()));
+    cmTransFact3->SetFactory("P", Ptent11Fact);
     AcFact->AddTransferFactory(cmTransFact3);
 
     ///////////////////////////////////////////////////////////////////////

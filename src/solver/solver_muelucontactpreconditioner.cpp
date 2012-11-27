@@ -257,14 +257,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
     Finest->Set("Nullspace",nspVector);                       // set user given null space
   }
 
-  ///////////////////////////////////////////////////////////////////////
-  // special aggregation strategy
-  //   - use 1pt aggregates for slave nodes
-  ///////////////////////////////////////////////////////////////////////
-  
-  // number of node rows
-  const LocalOrdinal nDofRows = xfullmap->getNodeNumElements();
-
 
   ///////////////////////////////////////////////////////////////////////
   // Segregation Factory for building aggregates that do not overlap
@@ -343,7 +335,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
 
   // transfer maps to coarser grids
   //Teuchos::RCP<MueLu::MapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact3 = Teuchos::rcp(new MueLu::MapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", PtentFact, MueLu::NoFactory::getRCP()));
-  Teuchos::RCP<MapTransferFactory> cmTransFact3 = Teuchos::rcp(new MapTransferFactory("SlaveDofMap", PtentFact, MueLu::NoFactory::getRCP()));
+  Teuchos::RCP<MapTransferFactory> cmTransFact3 = Teuchos::rcp(new MapTransferFactory("SlaveDofMap", MueLu::NoFactory::getRCP()));
+  cmTransFact3->SetFactory("P", PtentFact);
   AcFact->AddTransferFactory(cmTransFact3);
 
   ///////////////////////////////////////////////////////////////////////

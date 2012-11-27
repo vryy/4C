@@ -287,27 +287,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
   Finest->Keep("Aggregates",UCAggFact.get());
   Finest->Keep("A",segAFact.get());    // TODO: keep segAfact A for export of aggregates!
 
-  ///////////////////////////////////////////////////////////////////////
-  // special aggregation strategy
-  //   - use 1pt aggregates for slave nodes
-  ///////////////////////////////////////////////////////////////////////
-
-  // number of node rows
-  //const LocalOrdinal nDofRows = xfullmap->getNodeNumElements();
-
-  // prepare aggCoarseStat
-  // TODO rebuild node-based map
-  // still problematic for reparitioning
-  /*Teuchos::ArrayRCP<unsigned int> aggStat;
-  if(nDofRows > 0) aggStat = Teuchos::arcp<unsigned int>(nDofRows/nDofsPerNode);
-  for(LocalOrdinal i=0; i<nDofRows; ++i) {
-    aggStat[i/nDofsPerNode] = MueLu::NodeStats::READY;
-    GlobalOrdinal grid = xfullmap->getGlobalElement(i);
-    if(xSlaveDofMap->isNodeGlobalElement(grid)) {
-      aggStat[i/nDofsPerNode] = MueLu::NodeStats::ONEPT;
-    }
-  }
-  Finest->Set("coarseAggStat",aggStat);*/
   ////////////////////////////////////
 
   // prepare factory managers
