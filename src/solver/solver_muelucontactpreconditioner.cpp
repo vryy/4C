@@ -266,19 +266,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   // number of node rows
   const LocalOrdinal nDofRows = xfullmap->getNodeNumElements();
 
-  // prepare aggCoarseStat
-  // TODO rebuild node-based map
-  // still problematic for reparitioning
-  Teuchos::ArrayRCP<unsigned int> aggStat;
-  if(nDofRows > 0) aggStat = Teuchos::arcp<unsigned int>(nDofRows/nDofsPerNode);
-  for(LocalOrdinal i=0; i<nDofRows; ++i) {
-    aggStat[i/nDofsPerNode] = MueLu::NodeStats::READY;
-    GlobalOrdinal grid = xfullmap->getGlobalElement(i);
-    if(xSlaveDofMap->isNodeGlobalElement(grid)) {
-      aggStat[i/nDofsPerNode] = MueLu::NodeStats::ONEPT;
-    }
-  }
-  Finest->Set("coarseAggStat",aggStat);
 
   ///////////////////////////////////////////////////////////////////////
   // Segregation Factory for building aggregates that do not overlap
@@ -310,6 +297,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   UCAggFact->SetMaxNeighAlreadySelected(maxNbrAlreadySelected);
   UCAggFact->SetOrdering(MueLu::AggOptions::GRAPH);
   //UCAggFact->SetOrdering(MueLu::AggOptions::NATURAL);
+  UCAggFact->SetOnePtMapName("SlaveDofMap", MueLu::NoFactory::getRCP());
 
   Teuchos::RCP<PFactory> PFact;
   Teuchos::RCP<TwoLevelFactoryBase> RFact;
@@ -352,17 +340,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   //AcFact->AddTransferFactory(aggExpFact);
 
   // transfer maps to coarser grids
-  /*Teuchos::RCP<MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact = Teuchos::rcp(new MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("ActiveDofMap", PtentFact, MueLu::NoFactory::getRCP()));
-  AcFact->AddTransferFactory(cmTransFact);
-  Teuchos::RCP<MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact2 = Teuchos::rcp(new MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("MasterDofMap", PtentFact, MueLu::NoFactory::getRCP()));
-  AcFact->AddTransferFactory(cmTransFact2);*/
   Teuchos::RCP<MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact3 = Teuchos::rcp(new MueLu::ContactMapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", PtentFact, MueLu::NoFactory::getRCP()));
   AcFact->AddTransferFactory(cmTransFact3);
-
-  // transfer aggregate status to next coarser level (-> special aggregation strategy)
-  Teuchos::RCP<MueLu::AggStatTransferFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node, LocalMatOps> > aggStatFact = Teuchos::rcp(new MueLu::AggStatTransferFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node, LocalMatOps>("coarseAggStat",UCAggFact));
-  aggStatFact->SetFactory("coarseAggStat", UCAggFact);
-  AcFact->AddTransferFactory(aggStatFact);
 
   ///////////////////////////////////////////////////////////////////////
   // setup coarse level smoothers/solvers
