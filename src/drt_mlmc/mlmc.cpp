@@ -158,7 +158,7 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
     if (not actdis_fine_->Filled()) actdis_fine_->FillComplete();
     // Get coarse Grid problem instance
 
-    output_control_fine_ = Teuchos::rcp(new IO::OutputControl(actdis_fine_->Comm(), "structure", "Polynomial", filename_, filename_, 3, 0, 20));
+    output_control_fine_ = Teuchos::rcp(new IO::OutputControl(actdis_fine_->Comm(), "structure", "Polynomial", filename_, filename_, 3, 0, 20, 1));
     output_fine_ = Teuchos::rcp(new IO::DiscretizationWriter(actdis_fine_,output_control_fine_));
 
     // init vectors to store mean stresses and displacements
