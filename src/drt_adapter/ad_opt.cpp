@@ -18,6 +18,7 @@ Maintainer: Martin Winklmaier
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_opti/topopt_optimizer.H"
+#include "../drt_inpar/inpar_parameterlist_utils.H"
 
 
 /// constructor
@@ -58,7 +59,8 @@ ADAPTER::TopOptBaseAlgorithm::TopOptBaseAlgorithm(
           problem->OutputControlFile()->FileName() + "_opti",
           problem->NDim(),
           problem->Restart(),
-          problem->OutputControlFile()->FileSteps()
+          problem->OutputControlFile()->FileSteps(),
+          DRT::INPUT::IntegralValue<int>(problem->IOParams(),"OUTPUT_BIN")
       )
   );
   

@@ -40,7 +40,8 @@ namespace IO
                   std::string filename,
                   int ndim,
                   int restart,
-                  int filesteps);
+                  int filesteps,
+                  int create_controlfile);
 
     OutputControl(const Epetra_Comm& comm,
                   std::string problemtype,

@@ -98,7 +98,8 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
           problem->OutputControlFile()->FileName() + "_adjoint",
           problem->NDim(),
           problem->Restart(),
-          problem->OutputControlFile()->FileSteps()
+          problem->OutputControlFile()->FileSteps(),
+          DRT::INPUT::IntegralValue<int>(problem->IOParams(),"OUTPUT_BIN")
       )
   );
 

@@ -44,13 +44,15 @@ IO::OutputControl::OutputControl(const Epetra_Comm& comm,
                                  std::string outputname,
                                  int ndim,
                                  int restart,
-                                 int filesteps)
+                                 int filesteps,
+                                 int create_controlfile)
   : problemtype_(problemtype),
     inputfile_(inputfile),
     ndim_(ndim),
     filename_(outputname),
     restartname_(outputname),
-    filesteps_(filesteps)
+    filesteps_(filesteps),
+    create_controlfile_(create_controlfile)
 {
   if (restart)
   {

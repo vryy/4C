@@ -54,7 +54,9 @@ void FSI::UTILS::DebugWriter::NewTimeStep(int step, std::string name)
       s.str(),                  // an output file name is needed
       DRT::Problem::Instance()->NDim(),
       0,                        // restart is meaningless here
-      1000));                   // we never expect to get 1000 iterations
+      1000,                     // we never expect to get 1000 iterations
+      DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_BIN")
+      ));
 
   writer_ = Teuchos::rcp(new IO::DiscretizationWriter(dis_,control_));
   itnum_ = 0;
@@ -109,7 +111,9 @@ void FSI::UTILS::SimpleDebugWriter::NewLinearSystem(int step, std::string name)
       s.str(),                  // an output file name is needed
       DRT::Problem::Instance()->NDim(),
       0,                        // restart is meaningless here
-      1000));                   // we never expect to get 1000 iterations
+      1000,                     // we never expect to get 1000 iterations
+      DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->IOParams(),"OUTPUT_BIN")
+      ));
 
   writer_ = Teuchos::rcp(new IO::DiscretizationWriter(dis_,control_));
   itnum_ = 0;

@@ -138,7 +138,7 @@ Converter::Converter(PostField* field)
 
   h8dis_->FillComplete();
 
-  control_ = Teuchos::rcp(new IO::OutputControl(h8dis_->Comm(), "structure", "Polynomial", "generated", "s8convert", 3, 0, 1000));
+  control_ = Teuchos::rcp(new IO::OutputControl(h8dis_->Comm(), "structure", "Polynomial", "generated", "s8convert", 3, 0, 1000, 1));
   writer_ = Teuchos::rcp(new IO::DiscretizationWriter(h8dis_, control_));
   writer_->WriteMesh(0, 0);
 }
