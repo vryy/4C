@@ -218,7 +218,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
   Teuchos::RCP<RFactory> RFact  = Teuchos::rcp( new GenericRFactory(PFact) );*/
   Teuchos::RCP<PFactory> PFact = Teuchos::rcp(new TentativePFactory());
   PFact->SetFactory("A",segAFact); // expert option
-  Teuchos::RCP<RFactory> RFact  = Teuchos::rcp( new TransPFactory(PFact) );
+  Teuchos::RCP<TwoLevelFactoryBase> RFact  = Teuchos::rcp( new TransPFactory() );
 
   // define nullspace factory AFTER tentative PFactory (that generates the nullspace for the coarser levels)
   // use same nullspace factory for all multigrid levels
@@ -227,13 +227,13 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
   Teuchos::RCP<NullspaceFactory> nspFact = Teuchos::rcp(new NullspaceFactory("Nullspace",PFact));
 
   // RAP factory with inter-level transfer of segregation block information (map extractor)
-  Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp( new RAPFactory(/*PFact, RFact*/) );
+  Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp( new RAPFactory() );
   AcFact->SetFactory("P",PFact);
   AcFact->SetFactory("R",RFact);
 
   // write out aggregates
-  Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out",UCAggFact.get(), dropFact.get(),NULL /*amalgFact is not segAFact.get()*/));
-  AcFact->AddTransferFactory(aggExpFact);
+  //Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out",UCAggFact.get(), dropFact.get(),NULL /*amalgFact is not segAFact.get()*/));
+  //AcFact->AddTransferFactory(aggExpFact);
 
   Teuchos::RCP<MueLu::ContactTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cTransFact = Teuchos::rcp(new MueLu::ContactTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>(PFact));
   AcFact->AddTransferFactory(cTransFact);
