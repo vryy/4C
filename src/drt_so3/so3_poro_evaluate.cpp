@@ -2125,7 +2125,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::InitJacobianMapping()
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::InitElement()
 {
   //so3_ele::InitJacobianMapping();
 

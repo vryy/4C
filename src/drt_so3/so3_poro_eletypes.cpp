@@ -70,14 +70,14 @@ void DRT::ELEMENTS::So_hex8PoroType::SetupElementDefinition( std::map<std::strin
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex8PoroType::Initialize(DRT::Discretization& dis)
 {
+  So_hex8Type::Initialize(dis);
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8> * actele =
         dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8> * >(dis.lColElement(i));
     if (!actele) dserror("cast to So_hex8_poro* failed");
-    actele->So_hex8::InitJacobianMapping();
-    actele->So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>::InitJacobianMapping();
+    actele->So3_Poro<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>::InitElement();
   }
   return 0;
 }
@@ -140,13 +140,13 @@ void DRT::ELEMENTS::So_tet4PoroType::SetupElementDefinition( std::map<std::strin
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_tet4PoroType::Initialize(DRT::Discretization& dis)
 {
+  So_tet4Type::Initialize(dis);
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
     DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>* actele =
         dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4> * >(dis.lColElement(i));
     if (!actele) dserror("cast to So_tet4_poro* failed");
-    actele->So_tet4::InitJacobianMapping();
     actele->So3_Poro<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>::InitJacobianMapping();
   }
   return 0;

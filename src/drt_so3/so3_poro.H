@@ -224,7 +224,7 @@ public:
 
 
   //! init the inverse of the jacobian and its determinant in the material configuration
-  virtual void InitJacobianMapping();
+  void InitElement();
 
   //@}
 
