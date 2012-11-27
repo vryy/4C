@@ -346,6 +346,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   } else {
     // Petrov Galerkin PG-AMG smoothed aggregation (energy minimization in ML)
     PFact  = Teuchos::rcp( new PgPFactory(/*PtentFact,slaveDcAFact*/) ); // use slaveDcAFact for prolongator smoothing
+    PFact->SetFactory("P", PtentFact);
+    PFact->SetFactory("A", slaveDcAFact);
     RFact  = Teuchos::rcp( new GenericRFactory() );
   }
 
@@ -353,7 +355,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   // use same nullspace factory for all multigrid levels
   // therefor we have to create one instance of NullspaceFactory and use it
   // for all FactoryManager objects (note: here, we have one FactoryManager object per level)
-  Teuchos::RCP<NullspaceFactory> nspFact = Teuchos::rcp(new NullspaceFactory("Nullspace",PtentFact));
+  Teuchos::RCP<NullspaceFactory> nspFact = Teuchos::rcp(new NullspaceFactory("Nullspace"/*,PtentFact*/));
+  nspFact->SetFactory("Nullspace", PtentFact);
 
   // RAP factory with inter-level transfer of segregation block information (map extractor)
   Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp( new RAPFactory(/*PFact, RFact*/) );

@@ -224,7 +224,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
   // use same nullspace factory for all multigrid levels
   // therefor we have to create one instance of NullspaceFactory and use it
   // for all FactoryManager objects (note: here, we have one FactoryManager object per level)
-  Teuchos::RCP<NullspaceFactory> nspFact = Teuchos::rcp(new NullspaceFactory("Nullspace",PFact));
+  Teuchos::RCP<NullspaceFactory> nspFact = Teuchos::rcp(new NullspaceFactory("Nullspace"/*,PFact*/));
+  nspFact->SetFactory("Nullspace", PFact);
 
   // RAP factory with inter-level transfer of segregation block information (map extractor)
   Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp( new RAPFactory() );
