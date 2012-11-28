@@ -692,12 +692,12 @@ void STATMECH::StatMechManager::GetNodalBindingSpotPositionsFromDisVec(const Epe
   bool colmapformat = true;
   if(getpositions)
   {
-    if(bspotpositions->MyLength()==discret_->NodeRowMap()->NumMyElements())
+    if(bspotpositions->MyLength()==discret_->NodeRowMap()->NumMyElements() && discret_->Comm().NumProc()>1)
       colmapformat = false;
   }
   else
   {
-    if(bspotrotations->MyLength()==discret_->NodeRowMap()->NumMyElements())
+    if(bspotrotations->MyLength()==discret_->NodeRowMap()->NumMyElements() && discret_->Comm().NumProc()>1)
       colmapformat = false;
   }
 
@@ -705,9 +705,9 @@ void STATMECH::StatMechManager::GetNodalBindingSpotPositionsFromDisVec(const Epe
   Teuchos::RCP<Epetra_MultiVector> bspotpositionsrow = Teuchos::null;
   Teuchos::RCP<Epetra_MultiVector> bspotrotationsrow = Teuchos::null;
   if(bspotpositions!=Teuchos::null)
-    bspotpositionsrow = Teuchos::rcp(new Epetra_MultiVector(*bspotrowmap_,3));
+    bspotpositionsrow = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()),3),false);
   if(bspotrotations!=Teuchos::null)
-    bspotrotationsrow = Teuchos::rcp(new Epetra_MultiVector(*bspotrowmap_,3));
+    bspotrotationsrow = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()),3),false);
 
   //update nodaltriads_
   for (int i=0; i<discret_->NodeRowMap()->NumMyElements(); i++)
@@ -736,15 +736,20 @@ void STATMECH::StatMechManager::GetNodalBindingSpotPositionsFromDisVec(const Epe
     if(getrotations)
       CommunicateMultiVector(*bspotrotationsrow, *bspotrotations, false, true);
   }
-  // row map
+  //row map : Why does "bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotrotationsrow));" only work until the end of the function?
   else
   {
     if(getpositions)
-      bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotpositionsrow));
+      //bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotpositionsrow),true);
+      for(int i=0; i<bspotpositions->NumVectors(); i++)
+        for(int j=0; j<bspotpositions->MyLength(); j++)
+          (*bspotpositions)[i][j] = (*bspotpositionsrow)[i][j];
     if(getrotations)
-      bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotrotationsrow));
+      //bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotrotationsrow),true);
+      for(int i=0; i<bspotrotations->NumVectors(); i++)
+        for(int j=0; j<bspotrotations->MyLength(); j++)
+          (*bspotrotations)[i][j] = (*bspotrotationsrow)[i][j];
   }
-
   return;
 } // GetNodalBindingSpotPositionsFromDisVec()
 
@@ -786,30 +791,30 @@ void STATMECH::StatMechManager::GetInterpolatedBindingSpotPositions(const Epetra
     // only recalculate nodal positions and rotations if the element GID changed compared to the previous binding spot
     if(elegid!=prevelegid)
     {
-    filelement = discret_->gElement(elegid);
-    filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (discret_->gElement(elegid));
+      filelement = discret_->gElement(elegid);
+      filele = dynamic_cast<DRT::ELEMENTS::Beam3ii*> (discret_->gElement(elegid));
 
-    node0 = discret_->gNode(filelement->NodeIds()[0]);
-    node1 = discret_->gNode(filelement->NodeIds()[1]);
-    dofnode0 = discret_->Dof(node0);
-    dofnode1 = discret_->Dof(node1);
+      node0 = discret_->gNode(filelement->NodeIds()[0]);
+      node1 = discret_->gNode(filelement->NodeIds()[1]);
+      dofnode0 = discret_->Dof(node0);
+      dofnode1 = discret_->Dof(node1);
 
-    position[0] = node0->X()[0] + discol[discret_->DofColMap()->LID(dofnode0[0])];
-    position[1] = node0->X()[1] + discol[discret_->DofColMap()->LID(dofnode0[1])];
-    position[2] = node0->X()[2] + discol[discret_->DofColMap()->LID(dofnode0[2])];
-    position[3] = node1->X()[0] + discol[discret_->DofColMap()->LID(dofnode1[0])];
-    position[4] = node1->X()[1] + discol[discret_->DofColMap()->LID(dofnode1[1])];
-    position[5] = node1->X()[2] + discol[discret_->DofColMap()->LID(dofnode1[2])];
+      position[0] = node0->X()[0] + discol[discret_->DofColMap()->LID(dofnode0[0])];
+      position[1] = node0->X()[1] + discol[discret_->DofColMap()->LID(dofnode0[1])];
+      position[2] = node0->X()[2] + discol[discret_->DofColMap()->LID(dofnode0[2])];
+      position[3] = node1->X()[0] + discol[discret_->DofColMap()->LID(dofnode1[0])];
+      position[4] = node1->X()[1] + discol[discret_->DofColMap()->LID(dofnode1[1])];
+      position[5] = node1->X()[2] + discol[discret_->DofColMap()->LID(dofnode1[2])];
 
-    // NodeShift
-    UnshiftPositions(position);
+      // NodeShift
+      UnshiftPositions(position);
 
-    // To interpolate rotations we need to get the two nodal Triads (Quaternions) of the Element
-    for(int j=0;j<2;j++)
-      for(int k=0;k<4;k++)
-        nQ[j](k) = (filele->Quaternion()[j])(k);
+      // To interpolate rotations we need to get the two nodal Triads (Quaternions) of the Element
+      for(int j=0;j<2;j++)
+        for(int k=0;k<4;k++)
+          nQ[j](k) = (filele->Quaternion()[j])(k);
 
-    prevelegid = elegid;
+      prevelegid = elegid;
     }
 
     // Interpolation of Positions
@@ -1351,14 +1356,14 @@ void STATMECH::StatMechManager::PartitioningAndSearch(const Epetra_MultiVector& 
 
   /*nodes*/
   // loop over node positions to map their column map LIDs to partitions
-for(int i=0;i<bspotpositions.MyLength();i++)
-  for(int j=0; j<(int)bspotinpartition.size(); j++) // bspotinpartition.size==3
-  {
-    int partition = (int)std::floor(bspotpositions[j][i]/periodlength_->at(j)*(double)(searchres_->at(j)));
-    if(partition==(int)searchres_->at(j))
-      partition--;
-    bspotinpartition[j][partition].push_back(bspotcolmap_->LID(i)); //column lid
-  }
+  for(int i=0;i<bspotpositions.MyLength();i++)
+    for(int j=0; j<(int)bspotinpartition.size(); j++) // bspotinpartition.size==3
+    {
+      int partition = (int)std::floor(bspotpositions[j][i]/periodlength_->at(j)*(double)(searchres_->at(j)));
+      if(partition==(int)searchres_->at(j))
+        partition--;
+      bspotinpartition[j][partition].push_back(bspotcolmap_->LID(i)); //column lid
+    }
 
   /*crosslink molecules*/
   // Export crosslinkerpositions_ to transfermap_ format (kind of a row map format for crosslink molecules)
@@ -1366,8 +1371,8 @@ for(int i=0;i<bspotpositions.MyLength();i++)
   Epetra_Vector numbondtrans(*transfermap_, true);
   Epetra_MultiVector crosslinkpartitiontrans(*transfermap_, 3, false);
 
-  CommunicateVector(numbondtrans, *numbond_, true, false);
-  CommunicateMultiVector(crosslinkerpositionstrans, *crosslinkerpositions_, true, false);
+  CommunicateVector(numbondtrans, *numbond_, true, false, false, true);
+  CommunicateMultiVector(crosslinkerpositionstrans, *crosslinkerpositions_, true, false, false, true);
 
   for(int i=0; i<crosslinkpartitiontrans.MyLength(); i++)
   {
@@ -1389,6 +1394,7 @@ for(int i=0;i<bspotpositions.MyLength();i++)
       }
     }
   }
+
   // detection of nodes within search proximity of the crosslink molecules
   DetectNeighbourNodes(bspotpositions, &bspotinpartition, numbondtrans, crosslinkerpositionstrans, crosslinkpartitiontrans, bspottriadscol, neighbourslid);
   return;
@@ -1423,8 +1429,8 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
    * After having found a match in the next component, we exit the loop to avoid unnecessary computational cost
    */
   // distribute information of crosslinkerbond_ to processorspecific maps
-  Epetra_MultiVector crosslinkerbond(*transfermap_, 2, true);
-  CommunicateMultiVector(crosslinkerbond, *crosslinkerbond_,true,false,false,true);
+  Epetra_MultiVector crosslinkerbondtrans(*transfermap_, 2, true);
+  CommunicateMultiVector(crosslinkerbondtrans, *crosslinkerbond_,true,false,false,true);
 
   std::vector<std::vector<int> > neighbournodes(crosslinkpartitions.MyLength(), std::vector<int>());
 
@@ -1451,20 +1457,28 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
 
       // first component
       for(int ilayer=(int)crosslinkpartitions[0][part]-1; ilayer<(int)crosslinkpartitions[0][part]+2; ilayer++)
+      {
         if(ilayer>-1 && ilayer<searchres_->at(0))
+        {
           for(int i=0; i<(int)(*bspotinpartition)[0][ilayer].size(); i++)
           {
             int tmplid = (int)(*bspotinpartition)[0][ilayer][i];
             // second component
             for(int jlayer=(int)crosslinkpartitions[1][part]-1; jlayer<(int)crosslinkpartitions[1][part]+2; jlayer++)
+            {
               if(jlayer>-1 && jlayer<searchres_->at(1))
+              {
                 for(int j=0; j<(int)(*bspotinpartition)[1][jlayer].size(); j++)
+                {
                   if((*bspotinpartition)[1][jlayer][j]==tmplid)
                   {
                     //third component
                     for(int klayer=(int)crosslinkpartitions[2][part]-1; klayer<(int)crosslinkpartitions[2][part]+2; klayer++)
+                    {
                       if(klayer>-1 && klayer<searchres_->at(2))
+                      {
                         for(int k=0; k<(int)(*bspotinpartition)[2][klayer].size(); k++)
+                        {
                           if((*bspotinpartition)[2][klayer][k]==tmplid)
                           {
                             // calculate distance crosslinker-node
@@ -1519,10 +1533,10 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
                                   else //check wether first Bspot lies fullfills orientation criterium
                                   {       //id of bindingspot that was bound ealier
                                     int bspotID=0;
-                                    if((int)crosslinkerbond[0][part] < -0.9)
-                                      bspotID=(int)crosslinkerbond[1][part];
-                                    else if((int)crosslinkerbond[1][part] < -0.9)
-                                      bspotID=(int)crosslinkerbond[0][part];
+                                    if((int)crosslinkerbondtrans[0][part] < -0.9)
+                                      bspotID=(int)crosslinkerbondtrans[1][part];
+                                    else if((int)crosslinkerbondtrans[1][part] < -0.9)
+                                      bspotID=(int)crosslinkerbondtrans[0][part];
                                     else //
                                       dserror("Error in crosslinker management and/or search!");
                                       //turn difference Vectors direction
@@ -1561,9 +1575,17 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
                             // exit loop immediately
                             break;
                           }
+                        }
+                      }
+                    }
                     break;
                   }
+                }
+              }
+            }
           }
+        }
+      }
       // "-1" indicates the possibility of a crosslink molecule becoming passive, i.e. hypothetically bonding to the same filament
       if((int)numbond[part]==1)
         neighbournodes[part].push_back(-1);
@@ -1658,6 +1680,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
 
   //Volume partitioning, assignment of nodes and molecules to partitions, search for neighbours
   // map filament (column map, i.e. entire node set on each proc) node positions to volume partitions every SEARCHINTERVAL timesteps
+
   Teuchos::RCP<Epetra_MultiVector> neighbourslid;
   if(statmechparams_.get<int>("SEARCHRES",1)>0)
     PartitioningAndSearch(*bspotpositions,*bspottriadscol, neighbourslid);
