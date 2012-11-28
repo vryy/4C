@@ -37,6 +37,7 @@ Maintainer: Kei Müller
 
 //MEASURETIME activates measurement of computation time for certain parts of the code
 //#define MEASURETIME
+//#define DEBUGCOUT
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             cyron 09/08|
@@ -487,6 +488,29 @@ void STATMECH::StatMechManager::Update(const int&                               
         beamcmanager->OcTree()->OctTreeSearch(currentpositions);
       }
       SearchAndSetCrosslinkers(istep, timen, dt, bspotrowmap, bspotcolmap, bspotpositions, bspotrotations, discol, beamcmanager, printscreen);
+
+#ifdef DEBUGCOUT
+      for(int proc=0; proc<discret_->Comm().NumProc(); proc++)
+      {
+        if(proc==discret_->Comm().MyPID())
+        {
+          cout<<"\n====Proc "<<proc<<" ===="<<endl;
+          cout<<"numbond: "<<endl;
+          for(int i=0; i<numbond_->MyLength(); i++)
+            if((*numbond_)[i]>0.1)
+              cout<<"i="<<i<<": "<<(*numbond_)[i]<<endl;
+          cout<<"crosslinkerbond:"<<endl;
+          for(int i=0; i<crosslinkerbond_->MyLength(); i++)
+            if((*numbond_)[i]>0.1)
+              cout<<"i="<<i<<": "<<(*crosslinkerbond_)[0][i]<<", "<<(*crosslinkerbond_)[1][i]<<endl;
+          cout<<"crosslinkerpositions:"<<endl;
+          for(int i=0; i<crosslinkerpositions_->MyLength(); i++)
+            if((*numbond_)[i]>0.1)
+              cout<<"i="<<i<<": "<<(*crosslinkerpositions_)[0][i]<<", "<<(*crosslinkerpositions_)[1][i]<<", "<<(*crosslinkerpositions_)[2][i]<<endl;
+        }
+        discret_->Comm().Barrier();
+      }
+#endif
 
 #ifdef MEASURETIME
       t4 = Teuchos::Time::wallTime();
@@ -1450,11 +1474,6 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
                             // 1. criterion: distance between linker and binding spot within given interval
                             if(difference.Norm2()<rmax && difference.Norm2()>rmin)
                             {
-                              if(tmplid == 3404 || tmplid==3403)
-                              {
-                                cout<<"\n crosslinkerbond: "<<crosslinkerbond[0][part]<<", "<<crosslinkerbond[1][part]<<endl;
-                                cout<<"crosslinker "<<transfermap_->GID(part)<<", tmplid = "<<tmplid<<", d = "<<difference.Norm2()<<endl;
-                              }
                               // further calculations in case of helical binding spot geometry and singly bound crosslinkers
                               if(DRT::INPUT::IntegralValue<int>(statmechparams_, "HELICALBINDINGSTRUCT"))
                               {
@@ -3423,37 +3442,8 @@ void STATMECH::StatMechManager::CrosslinkerIntermediateUpdate(const Epetra_Multi
     // set molecule position to node position
     if (coupledmovement)
     {
-      // if the binding spots are oriented according to the double helical structure of f-actin
-//      if(DRT::INPUT::IntegralValue<int>(statmechparams_,"HELICALBINDINGSTRUCT"))
-//      {
-//        double ronebond = statmechparams_.get<double> ("R_LINK", 0.0) / 2.0;
-//        // get binding spot quaternion
-//        LINALG::Matrix<4,1> qbspot;
-//        LINALG::Matrix<3,3> R;
-//        for(int i=0; i<(int)qbspot.M(); i++)
-//          qbspot(i) = bspottriadscol[i][(int)LID(0,0)];
-//        LARGEROTATIONS::quaterniontotriad(qbspot,R);
-//
-//        LINALG::Matrix<3,1> tangent;
-//        LINALG::Matrix<3,1> normal;
-//        // retrieve tangential and normal vector from binding spot quaternions
-//        for (int i=0; i<(int)R.M(); i++)
-//        {
-//          tangent(i) = R(i,0);
-//          normal(i) = R(i,1);
-//        }
-//        // rotation matrix around tangential vector by given angle
-//        RotationAroundFixedAxis(tangent,normal,(*bspotorientations_)[(int)LID(0,0)]);
-//
-//        // calculation of the visualized point lying in the direction of the rotated normal
-//        for (int i=0; i<crosslinkerpositions_->NumVectors(); i++)
-//          (*crosslinkerpositions_)[i][crosslinkernumber] = (pos0->second)(i) + ronebond*normal(i);
-//      }
-//      else // simplistic binding spot model (no orientation)
-//      {
-        for (int i=0; i < crosslinkerpositions_->NumVectors(); i++)
-          (*crosslinkerpositions_)[i][crosslinkernumber] = bspotpositions[i][(int)LID(0,0)];
-//      }
+      for (int i=0; i < crosslinkerpositions_->NumVectors(); i++)
+        (*crosslinkerpositions_)[i][crosslinkernumber] = bspotpositions[i][(int)LID(0,0)];
     }
     else
     {

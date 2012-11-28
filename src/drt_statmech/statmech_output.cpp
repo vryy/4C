@@ -1517,13 +1517,14 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
     {
       switch ((int) (*numbond_)[i])
       {
+        // free linkers
         case 0:
         {
-//          double beadcolor = 5*color;
-//          //writing element by nodal coordinates as a sphere
-//          gmshfilebonds << "SP(" << scientific;
-//          gmshfilebonds<< (*visualizepositions_)[0][i]<< "," << (*visualizepositions_)[1][i] << "," << (*visualizepositions_)[2][i];
-//          gmshfilebonds << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
+          //double beadcolor = 5*color;
+          ////writing element by nodal coordinates as a sphere
+          //gmshfilebonds << "SP(" << scientific;
+          //gmshfilebonds<< (*visualizepositions_)[0][i]<< "," << (*visualizepositions_)[1][i] << "," << (*visualizepositions_)[2][i];
+          //gmshfilebonds << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
         }
         break;
         // crosslink molecule with one bond
@@ -1549,7 +1550,7 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
             // get arbitrary element (we just need it to properly visualize)
             DRT::Element* tmpelement=discret_->lRowElement(0);
             GmshOutputPeriodicBoundary(coord, 2*color, gmshfilebonds, tmpelement->Id(), true);
-            // visualization of "real" crosslink molecule positions
+            // visualization of "real" crosslink molecule positions (attention: shifted by one step since StatMechUpdate is called before the Newton scheme)
             //beadcolor = 0.0; //black
             //gmshfilebonds << "SP(" << scientific;
             //gmshfilebonds << (*crosslinkerpositions_)[0][i] << ","<< (*crosslinkerpositions_)[1][i] << ","<< (*crosslinkerpositions_)[2][i];
@@ -1605,7 +1606,7 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
               // get arbitrary element (we just need it to properly visualize)
               DRT::Element* tmpelement=discret_->lRowElement(0);
               GmshOutputPeriodicBoundary(coord, 3*color, gmshfilebonds, tmpelement->Id(), true);
-              // visualization of "real" crosslink molecule positions
+              // visualization of "real" crosslink molecule positions (attention: shifted by one step since StatMechUpdate is called before the Newton scheme)
               //beadcolor = 0.0; //black
               //gmshfilebonds << "SP(" << scientific;
               //gmshfilebonds << (*crosslinkerpositions_)[0][i] << ","<< (*crosslinkerpositions_)[1][i] << ","<< (*crosslinkerpositions_)[2][i];
