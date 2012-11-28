@@ -1847,11 +1847,15 @@ void STR::TimIntImpl::UpdateIter
   const int iter  //!< iteration counter
 )
 {
-  // we need to do an incremental update (expensive)
-  // in the very first iteration (i.e. predictor) of a Newton loop
-  // to protect the Dirichlet BCs and to achieve consistent
-  // behaviour across all predictors
-  // HINT: Sorry, this comment was added delayed and might be inaccurate.
+  // Doing UpdateIterIteratively() is not sufficient in the first Newton step
+  // since the predictor might lead to velocities and accelerations that are
+  // not consistently computed from the displacements based on the time
+  // integration scheme.
+  // Hence, in the first nonlinear iteration, we do UpdateIterIncrementally()
+  // to ensure consistent velocities and accelerations across all predictors.
+  //
+  // From the second nonlinear iteration on, both update routines lead to
+  // exactly the same results.
   if (iter <= 1)
   {
     UpdateIterIncrementally();
