@@ -166,9 +166,9 @@ CURVE1 on EXPR FUNC (0.5*sin(-3.1415927*0.5+t*3.14152927*t)+0.5) t1 0.0 t2 20.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 219 QUANTITY dispx  VALUE -6.09209920030030450  TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 219 QUANTITY dispy  VALUE 2.69086116920498819  TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 219 QUANTITY dispz  VALUE-2.42229535460407389e-02  TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 219 QUANTITY dispx  VALUE -6.09209920030030450  TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 219 QUANTITY dispy  VALUE 2.69086116920498819  TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 219 QUANTITY dispz  VALUE-2.42229535460407389e-02  TOLERANCE 1e-7
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
