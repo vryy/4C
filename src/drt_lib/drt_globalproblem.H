@@ -311,6 +311,7 @@ public:
   const Teuchos::ParameterList& OptimizationControlParams() const { return getParameterList()->sublist("TOPOLOGY OPTIMIZATION CONTROL"); }
   const Teuchos::ParameterList& SearchtreeParams() const { return getParameterList()->sublist("SEARCH TREE"); }
   const Teuchos::ParameterList& StructuralNoxParams() const { return getParameterList()->sublist("STRUCT NOX"); }
+  const Teuchos::ParameterList& CavitationParams() const { return getParameterList()->sublist("CAVITATION DYNAMIC"); }
 
   const Teuchos::ParameterList& SolverParams(int solverNr) const;
 

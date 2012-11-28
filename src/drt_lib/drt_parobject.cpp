@@ -194,6 +194,33 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const std::map<std::string,int>
 }
 
 /*----------------------------------------------------------------------*
+ |        a map <int,set<int> >    specialization              (public) |
+ |                                                        ghamm 11/2012 |
+ *----------------------------------------------------------------------*/
+void DRT::ParObject::AddtoPack(PackBuffer& data, const std::map<int, std::set<int> > & stuff)
+{
+
+  int numentries = (int) stuff.size();
+  AddtoPack(data,numentries);
+
+  // iterator
+  std::map<int,std::set<int> >::const_iterator colcurr;
+
+  int i=0;
+  for(colcurr=stuff.begin();colcurr!=stuff.end();++colcurr)
+  {
+    AddtoPack(data,colcurr->first);
+    AddtoPack(data,colcurr->second);
+    ++i;
+  }
+
+  if(i!=numentries)
+    dserror("Something wrong with number of elements");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |        a set<int> specialization                            (public) |
  |                                                           mgit 09/10 |
  *----------------------------------------------------------------------*/
@@ -385,6 +412,33 @@ void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, con
 
     //add to map
     stuff.insert(std::pair<std::string,int>(keys,values));
+
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ | a map specialization                                        (public) |
+ |                                                          ghamm 11/12 |
+ *----------------------------------------------------------------------*/
+void DRT::ParObject::ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<int,std::set<int> >& stuff)
+{
+
+  int numentries = 0;
+  ExtractfromPack(position,data,numentries);
+
+  stuff.clear();
+
+  for(int i=0;i<numentries;i++)
+  {
+    int keys;
+    std::set<int> values;
+    ExtractfromPack(position,data,keys);
+    ExtractfromPack(position,data,values);
+
+    //add to map
+    stuff.insert(std::pair<int,std::set<int> >(keys,values));
 
   }
 

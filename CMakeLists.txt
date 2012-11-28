@@ -1111,6 +1111,7 @@ set(OBJS_POST_DRT_S8CONVERT
 set(OBJS_DRT_PARTICLE
 	src/drt_particle/particle_algorithm.cpp
 	src/drt_particle/particle_dyn.cpp
+	src/drt_particle/cavitation_algorithm.cpp
 )
 set(OBJS_LINALG
   src/linalg/linalg_ana.cpp

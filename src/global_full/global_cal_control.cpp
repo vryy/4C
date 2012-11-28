@@ -139,6 +139,7 @@ void ntacal()
       redairway_tissue_dyn();
       break;
     case prb_particle:
+    case prb_cavitation:
       particle_drt();
       break;
 

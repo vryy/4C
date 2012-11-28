@@ -4702,6 +4702,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                yesnotuple,yesnovalue,&xfluid_stab);
 
   /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& cavitationdyn = list->sublist(
+      "CAVITATION DYNAMIC",
+      false,
+      "control parameters for cavitation problems\n");
+
+  DoubleParameter("TIMESTEP",0.1,"Time increment dt",&cavitationdyn);
+  IntParameter("NUMSTEP",20,"Total number of time steps",&cavitationdyn);
+  DoubleParameter("MAXTIME",1000.0,"Total simulation time",&cavitationdyn);
+  IntParameter("UPRES",1,"Increment for writing solution",&cavitationdyn);
+  IntParameter("RESTARTEVRY",1,"Increment for writing restart",&cavitationdyn);
+
+  /*----------------------------------------------------------------------*/
   // set valid parameters for solver blocks
 
   // Note: the maximum number of solver blocks is hardwired here. If you change this,

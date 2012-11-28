@@ -417,8 +417,8 @@ static inline bool currentToVolumeElementCoordinatesT(
   // It seems that some matrices (especially dx) were not cleared at the beginning!
   // we fixed this at 11.09.2012
   // if you want to use this function you can remove the dserror, but please check carefully if it works properly
-
-  dserror("This function seems to deliver wrong results! Check carefully before use or use a different function, e.g. GEO::CUT::Position");
+  // REMARK: tested this method for quite a while and seems to be fine now (28.11.2012 ghamm)
+//  dserror("This function seems to deliver wrong results! Check carefully before use or use a different function, e.g. GEO::CUT::Position");
 
 
   const int dim = 3;
@@ -462,6 +462,10 @@ static inline bool currentToVolumeElementCoordinatesT(
       break;
     }
   }
+
+  // final check whether node is within element
+  if(nodeWithinElement == true)
+    nodeWithinElement = checkPositionWithinElementParameterSpace(xsi,DISTYPE);
 
   return nodeWithinElement;
 }

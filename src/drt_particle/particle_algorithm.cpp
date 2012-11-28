@@ -37,11 +37,12 @@ Maintainer: Georg Hammerl
  | Algorithm constructor                                    ghamm 09/12 |
  *----------------------------------------------------------------------*/
 PARTICLE::Algorithm::Algorithm(
-  const Epetra_Comm& comm
-  ) : AlgorithmBase(comm,DRT::Problem::Instance()->StructuralDynamicParams()),
+  const Epetra_Comm& comm,
+  const Teuchos::ParameterList& params
+  ) : AlgorithmBase(comm,params),
   particledis_(Teuchos::null),
   particles_(Teuchos::null),
-  elecolmap_(Teuchos::null),
+  bincolmap_(Teuchos::null),
   myrank_(comm.MyPID())
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
@@ -65,45 +66,7 @@ PARTICLE::Algorithm::Algorithm(
     bin_size_[dim] = 0.0;
   }
 
-  particledis_ = DRT::Problem::Instance()->GetDis("particle");
-
-  // FillComplete() necessary for DRT::Geometry .... could be removed perhaps
-  particledis_->FillComplete(false,false,false);
-  // extract noderowmap because it will be called Reset() after adding elements
-  Teuchos::RCP<Epetra_Map> noderowmap = Teuchos::rcp(new Epetra_Map(*particledis_->NodeRowMap()));
-  CreateBins();
-
-  Teuchos::RCP<Epetra_Map> elerowmap = DistributeBinsToProcs();
-
-  //--------------------------------------------------------------------
-  // -> 1) create a set of homeless particles that are not in a bin on this proc
-  std::set<Teuchos::RCP<DRT::Node>,Less> homelessparticles;
-
-  for (int lid = 0; lid < noderowmap->NumMyElements(); ++lid)
-  {
-    DRT::Node* node = particledis_->gNode(noderowmap->GID(lid));
-    const double* currpos = node->X();
-    PlaceNodeCorrectly(Teuchos::rcp(node,false), currpos, homelessparticles);
-  }
-
-  // start round robin loop to fill particles into their correct bins
-  FillParticlesIntoBins(homelessparticles);
-
-  // ghost bins and particles according to the bins
-  SetupGhosting(elerowmap);
-
-  // some output
-  if(myrank_ == 0)
-    cout << "after ghosting" << endl;
-  DRT::UTILS::PrintParallelDistribution(*particledis_);
-
-  // create time integrator based on structural time integration
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> particles =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(), particledis_));
-  particles_ = particles->StructureFieldrcp();
-
   return;
-
 }
 
 
@@ -142,6 +105,51 @@ void PARTICLE::Algorithm::Timeloop()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::SetupSystem()
 {
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | initialization of the system                             ghamm 11/12 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::Init()
+{
+  particledis_ = DRT::Problem::Instance()->GetDis("particle");
+
+  // FillComplete() necessary for DRT::Geometry .... could be removed perhaps
+  particledis_->FillComplete(false,false,false);
+  // extract noderowmap because it will be called Reset() after adding elements
+  Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*particledis_->NodeRowMap()));
+  CreateBins();
+
+  Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcs();
+
+  //--------------------------------------------------------------------
+  // -> 1) create a set of homeless particles that are not in a bin on this proc
+  std::set<Teuchos::RCP<DRT::Node>,PARTICLE::Less> homelessparticles;
+
+  for (int lid = 0; lid < particlerowmap->NumMyElements(); ++lid)
+  {
+    DRT::Node* node = particledis_->gNode(particlerowmap->GID(lid));
+    const double* currpos = node->X();
+    PlaceNodeCorrectly(Teuchos::rcp(node,false), currpos, homelessparticles);
+  }
+
+  // start round robin loop to fill particles into their correct bins
+  FillParticlesIntoBins(homelessparticles);
+
+  // ghost bins and particles according to the bins
+  SetupGhosting(binrowmap);
+
+  // some output
+  IO::cout << "after ghosting" << IO::endl;
+  DRT::UTILS::PrintParallelDistribution(*particledis_);
+
+  // create time integrator based on structural time integration
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> particles =
+      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(), particledis_));
+  particles_ = particles->StructureFieldrcp();
+
   return;
 }
 
@@ -227,7 +235,7 @@ void PARTICLE::Algorithm::CreateBins()
   for (int dim = 0; dim < 3; dim++)
   {
     // std::floor leads to bins that are at least of size cutoff_radius
-    bin_per_dir_[dim] = (int)std::floor( (XAABB_(dim,1)-XAABB_(dim,0))/cutoff_radius_ );
+    bin_per_dir_[dim] = (int)((XAABB_(dim,1)-XAABB_(dim,0))/cutoff_radius_);
     bin_size_[dim] = (XAABB_(dim,1)-XAABB_(dim,0))/bin_per_dir_[dim];
   }
 
@@ -243,7 +251,7 @@ void PARTICLE::Algorithm::CreateBins()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcs()
 {
-  std::vector<int> roweles;
+  std::vector<int> rowbins;
 
   // preliminary distribution for testing
   // TODO: Parmetis has to be used or distribution of bins dependent on background mesh
@@ -256,7 +264,7 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcs()
       int gid = i + bin_per_proc*myrank_;
       Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEBIN","dummy", gid, myrank_);
       particledis_->AddElement(bin);
-      roweles.push_back(gid);
+      rowbins.push_back(gid);
     }
   }
   else
@@ -267,12 +275,12 @@ Teuchos::RCP<Epetra_Map> PARTICLE::Algorithm::DistributeBinsToProcs()
       int gid = i + bin_per_proc*myrank_;
       Teuchos::RCP<DRT::Element> bin = DRT::UTILS::Factory("MESHFREEBIN","dummy", gid, myrank_);
       particledis_->AddElement(bin);
-      roweles.push_back(gid);
+      rowbins.push_back(gid);
     }
   }
 
-  // return elerowmap
-  return Teuchos::rcp(new Epetra_Map(-1,(int)roweles.size(),&roweles[0],0,Comm()));
+  // return binrowmap
+  return Teuchos::rcp(new Epetra_Map(-1,(int)rowbins.size(),&rowbins[0],0,Comm()));
 }
 
 
@@ -367,7 +375,7 @@ bool PARTICLE::Algorithm::PlaceNodeCorrectly(Teuchos::RCP<DRT::Node> node, const
   int ijk[3] = {0,0,0};
   for(int dim=0; dim < 3; dim++)
   {
-    ijk[dim] = (int)std::floor( (currpos[dim]-XAABB_(dim,0)) / bin_size_[dim] );
+    ijk[dim] = (int)((currpos[dim]-XAABB_(dim,0)) / bin_size_[dim]);
   }
 
   int binId = ConvertijkToGid(&ijk[0]);
@@ -450,86 +458,92 @@ bool PARTICLE::Algorithm::PlaceNodeCorrectly(Teuchos::RCP<DRT::Node> node, const
 /*----------------------------------------------------------------------*
 | setup ghosting of bins and particles                      ghamm 09/12 |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> elerowmap)
+void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
 {
-  // gather elements of rowmap and all its neighbors (row + ghost)
-  std::set<int> elements;
-  for (int lid=0;lid<elerowmap->NumMyElements();++lid)
+  // 1st step: ghosting of bins
   {
-    int elegid = elerowmap->GID(lid);
-    int ijk[3] = {-1,-1,-1};
-    ConvertGidToijk(elegid, ijk);
-
-    // get all neighboring cells, including the element itself: one layer ghosting
-    for(int i=-1;i<2;i++)
+    // gather bins of rowmap and all its neighbors (row + ghost)
+    std::set<int> bins;
+    for (int lid=0;lid<binrowmap->NumMyElements();++lid)
     {
-      for(int j=-1;j<2;j++)
+      int gid = binrowmap->GID(lid);
+      int ijk[3] = {-1,-1,-1};
+      ConvertGidToijk(gid, ijk);
+
+      // get all neighboring cells, including the element itself: one layer ghosting
+      for(int i=-1;i<2;i++)
       {
-        for(int k=-1;k<2;k++)
+        for(int j=-1;j<2;j++)
         {
-          int ijk_neighbor[3] = {ijk[0]+i, ijk[1]+j, ijk[2]+k};
-
-          int neighborgid = ConvertijkToGid(&ijk_neighbor[0]);
-          if(neighborgid != -1)
+          for(int k=-1;k<2;k++)
           {
-            elements.insert(neighborgid);
-          }
-        } // end for int k
-      } // end for int j
-    } // end for int i
-  } // end for lid
+            int ijk_neighbor[3] = {ijk[0]+i, ijk[1]+j, ijk[2]+k};
 
-  // copy elegids to a vector and create elecolmap
-  std::vector<int> coleles(elements.begin(),elements.end());
-  elecolmap_ = Teuchos::rcp(new Epetra_Map(-1,(int)coleles.size(),&coleles[0],0,Comm()));
+            int neighborgid = ConvertijkToGid(&ijk_neighbor[0]);
+            if(neighborgid != -1)
+            {
+              bins.insert(neighborgid);
+            }
+          } // end for int k
+        } // end for int j
+      } // end for int i
+    } // end for lid
 
-  // create ghosting for bins (each knowing its particle ids)
-  particledis_->ExportColumnElements(*elecolmap_);
+    // copy bingids to a vector and create bincolmap
+    std::vector<int> bincolmap(bins.begin(),bins.end());
+    bincolmap_ = Teuchos::rcp(new Epetra_Map(-1,(int)bincolmap.size(),&bincolmap[0],0,Comm()));
 
-  // create a set of node IDs for each proc (row + ghost)
-  std::set<int> nodes;
-  for (int lid=0;lid<elecolmap_->NumMyElements();++lid)
-  {
-    DRT::Element* ele = particledis_->gElement(elecolmap_->GID(lid));
-    const int* nodeids = ele->NodeIds();
-    for(int inode=0;inode<ele->NumNode();inode++)
-      nodes.insert(nodeids[inode]);
+    // create ghosting for bins (each knowing its particle ids)
+    particledis_->ExportColumnElements(*bincolmap_);
   }
 
-  // copy nodegids to a vector and create nodecolmap
-  std::vector<int> colnodes(nodes.begin(),nodes.end());
-  Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)colnodes.size(),&colnodes[0],0,Comm()));
+  // 2st step: ghosting of particles according to bin distribution
+  {
+    // create a set of particle IDs for each proc (row + ghost)
+    std::set<int> particles;
+    for (int lid=0;lid<bincolmap_->NumMyElements();++lid)
+    {
+      DRT::Element* bin = particledis_->gElement(bincolmap_->GID(lid));
+      const int* particleids = bin->NodeIds();
+      for(int iparticle=0;iparticle<bin->NumNode();iparticle++)
+        particles.insert(particleids[iparticle]);
+    }
 
-  // create ghosting for particles
-  particledis_->ExportColumnNodes(*nodecolmap);
+    // copy particlegids to a vector and create particlecolmap
+    std::vector<int> colparticles(particles.begin(),particles.end());
+    Teuchos::RCP<Epetra_Map> particlecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)colparticles.size(),&colparticles[0],0,Comm()));
 
-  //new dofs are numbered from zero, minnodgid is ignored and it does not register in static_dofsets_
-  Teuchos::RCP<DRT::IndependentDofSet> independentdofset = Teuchos::rcp(new DRT::IndependentDofSet(true));
-  particledis_->ReplaceDofSet(independentdofset);
-  particledis_->FillComplete(true, false, true);
+    // create ghosting for particles
+    particledis_->ExportColumnNodes(*particlecolmap);
+
+    //new dofs are numbered from zero, minnodgid is ignored and it does not register in static_dofsets_
+    Teuchos::RCP<DRT::IndependentDofSet> independentdofset = Teuchos::rcp(new DRT::IndependentDofSet(true));
+    particledis_->ReplaceDofSet(independentdofset);
+    particledis_->FillComplete(true, false, true);
 
 
 #ifdef DEBUG
-  // check whether each proc has only particles that are within bins on this proc
-  for(int k=0; k<particledis_->NumMyColElements(); k++)
-  {
-    int binid = particledis_->lColElement(k)->Id();
-    DRT::Node** nodes = particledis_->lColElement(k)->Nodes();
-
-    for(int inode=0; inode<particledis_->lColElement(k)->NumNode(); inode++)
+    // check whether each proc has only particles that are within bins on this proc
+    for(int k=0; k<particledis_->NumMyColElements(); k++)
     {
-      int ijk[3] = {-1,-1,-1};
-      for(int dim=0; dim < 3; dim++)
-      {
-        ijk[dim] = (int)std::floor((nodes[inode]->X()[dim]-XAABB_(dim,0)) / bin_size_[dim]);
-      }
+      int binid = particledis_->lColElement(k)->Id();
+      DRT::Node** particles = particledis_->lColElement(k)->Nodes();
 
-      int gidofbin = ConvertijkToGid(&ijk[0]);
-      if(gidofbin != binid)
-        dserror("after ghosting: particle which should be in bin no. %i is in %i",gidofbin,binid);
+      for(int iparticle=0; iparticle<particledis_->lColElement(k)->NumNode(); iparticle++)
+      {
+        int ijk[3] = {-1,-1,-1};
+        for(int dim=0; dim < 3; dim++)
+        {
+          ijk[dim] = (int)((particles[iparticle]->X()[dim]-XAABB_(dim,0)) / bin_size_[dim]);
+        }
+
+        int gidofbin = ConvertijkToGid(&ijk[0]);
+        if(gidofbin != binid)
+          dserror("after ghosting: particle which should be in bin no. %i is in %i",gidofbin,binid);
+      }
     }
-  }
 #endif
+  }
 
   return;
 }
@@ -554,18 +568,18 @@ void PARTICLE::Algorithm::TransferParticles()
     if(currbin == NULL) dserror("dynamic cast from DRT::Element to DRT::MESHFREE::MeshfreeBin failed");
 #endif
     int binId = currbin->Id();
-    DRT::Node** nodes = currbin->Nodes();
+    DRT::Node** particles = currbin->Nodes();
     std::vector<int> tobemoved(0);
-    for(int inode=0; inode<currbin->NumNode(); inode++)
+    for(int iparticle=0; iparticle<currbin->NumNode(); iparticle++)
     {
-      DRT::Node* currnode = nodes[inode];
+      DRT::Node* currnode = particles[iparticle];
       int ijk[3] = {-1,-1,-1};
       // get the first gid of a node and convert it into a LID
       int gid = particledis_->Dof(currnode, 0);
       int lid = particles_->ExtractDispnp()->Map().LID(gid);
       for(int dim=0; dim < 3; dim++)
       {
-        ijk[dim] = (int)std::floor(((*disnp)[lid+dim]-XAABB_(dim,0)) / bin_size_[dim]);
+        ijk[dim] = (int)(((*disnp)[lid+dim]-XAABB_(dim,0)) / bin_size_[dim]);
       }
 
       int gidofbin = ConvertijkToGid(&ijk[0]);
@@ -626,27 +640,27 @@ void PARTICLE::Algorithm::TransferParticles()
 
   // new ghosting is necessary
   {
-    particledis_->ExportColumnElements(*elecolmap_);
+    particledis_->ExportColumnElements(*bincolmap_);
 
-    // create a set of node IDs for each proc (row plus ghost)
-    std::set<int> nodes;
-    for (int lid=0;lid<elecolmap_->NumMyElements();++lid)
+    // create a set of particle IDs for each proc (row plus ghost)
+    std::set<int> particles;
+    for (int lid=0;lid<bincolmap_->NumMyElements();++lid)
     {
-      DRT::Element* ele = particledis_->gElement(elecolmap_->GID(lid));
+      DRT::Element* ele = particledis_->gElement(bincolmap_->GID(lid));
       const int* nodeids = ele->NodeIds();
       for(int inode=0;inode<ele->NumNode();inode++)
       {
 //        cout << "ele with ID: " << ele->Id() << " on proc: " << myrank_ << " contains node: " << nodeids[inode] << endl;
-        nodes.insert(nodeids[inode]);
+        particles.insert(nodeids[inode]);
       }
     }
 
     // copy nodegids to a vector and create nodecolmap
-    std::vector<int> colnodes(nodes.begin(),nodes.end());
-    Teuchos::RCP<Epetra_Map> nodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)colnodes.size(),&colnodes[0],0,Comm()));
+    std::vector<int> colparticles(particles.begin(),particles.end());
+    Teuchos::RCP<Epetra_Map> particlecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)colparticles.size(),&colparticles[0],0,Comm()));
 
     // create ghosting for particles
-    particledis_->ExportColumnNodes(*nodecolmap);
+    particledis_->ExportColumnNodes(*particlecolmap);
   }
 
   // rebuild connectivity and assign degrees of freedom (note: IndependentDofSet)
@@ -696,9 +710,7 @@ void PARTICLE::Algorithm::ConvertGidToijk(int gid, int* ijk)
 void PARTICLE::Algorithm::TestResults(const Epetra_Comm& comm)
 {
   DRT::Problem::Instance()->AddFieldTest(particles_->CreateFieldTest());
-
   DRT::Problem::Instance()->TestAll(comm);
-
   return;
 }
 
@@ -757,7 +769,7 @@ void PARTICLE::Algorithm::Output()
         posXYZDomain(dim) = (*disnp)[lid+dim];
       }
 
-      double density = (*rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractDensitynp())[n];
+      double density = (*Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractDensitynp())[n];
 
       // write data to Gmsh file
       IO::GMSH::ScalarToStream(posXYZDomain, density, gmshfilecontent);
@@ -783,7 +795,7 @@ void PARTICLE::Algorithm::Output()
         posXYZDomain(dim) = (*disnp)[lid+dim];
       }
 
-      double radius = (*rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadiusnp())[n];
+      double radius = (*Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadiusnp())[n];
 
       // write data to Gmsh file
       IO::GMSH::ScalarToStream(posXYZDomain, radius, gmshfilecontent);

@@ -239,6 +239,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL", *list);
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER", *list);
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID", *list);
+  reader.ReadGidSection("--CAVITATION DYNAMIC", *list);
 
   reader.ReadSection("--STRUCT NOX", *list);
   reader.ReadSection("--STRUCT NOX/Direction", *list);
@@ -1233,6 +1234,21 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
 
     // there are no elements available for particle simulations
     // section with --DUMMY ELEMENTS in dat file must not be filled
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ParticleReader(particledis, reader)));
+
+    break;
+  }
+  case prb_cavitation:
+  {
+    // create empty discretizations
+    fluiddis = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
+    particledis = Teuchos::rcp(new DRT::Discretization("particle",reader.Comm()));
+
+    AddDis("fluid", fluiddis);
+    AddDis("particle", particledis);
+
+    // section with --DUMMY ELEMENTS in dat file must not be filled
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(fluiddis, reader, "--FLUID ELEMENTS")));
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ParticleReader(particledis, reader)));
 
     break;

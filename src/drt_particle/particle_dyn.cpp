@@ -13,6 +13,7 @@ Maintainer: Georg Hammerl
 
 #include "particle_dyn.H"
 #include "particle_algorithm.H"
+#include "cavitation_algorithm.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"
 #include "../drt_lib/drt_discret.H"
@@ -25,26 +26,74 @@ Maintainer: Georg Hammerl
 /*----------------------------------------------------------------------*/
 void particle_drt()
 {
-  const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("particle")->Comm();
+  DRT::Problem* problem = DRT::Problem::Instance();
 
-  /// algorithm is created
-  Teuchos::RCP<PARTICLE::Algorithm> particlesimulation = Teuchos::rcp(new PARTICLE::Algorithm(comm));
+  const Epetra_Comm& comm = problem->GetDis("particle")->Comm();
 
-  /// read the restart information, set vectors and variables ---
-  const int restart = DRT::Problem::Instance()->Restart();
-  if (restart)
+  // what's the current problem type?
+  PROBLEM_TYP probtype = problem->ProblemType();
+
+  switch (probtype)
   {
-    particlesimulation->ReadRestart(restart);
+    case prb_particle:
+    {
+      const Teuchos::ParameterList& params = DRT::Problem::Instance()->StructuralDynamicParams();
+      /// algorithm is created
+      Teuchos::RCP<PARTICLE::Algorithm> particlesimulation = Teuchos::rcp(new PARTICLE::Algorithm(comm,params));
+
+      /// init particle simulation
+      particlesimulation->Init();
+
+      /// read the restart information, set vectors and variables ---
+      const int restart = problem->Restart();
+      if (restart)
+      {
+        particlesimulation->ReadRestart(restart);
+      }
+
+      /// setup particle simulation
+      particlesimulation->SetupSystem();
+
+      /// solve the whole problem
+      particlesimulation->Timeloop();
+
+      /// perform the result test
+      particlesimulation->TestResults(comm);
+    }
+    break;
+    case prb_cavitation:
+    {
+      const Teuchos::ParameterList& params = DRT::Problem::Instance()->CavitationParams();
+
+      problem->GetDis("fluid")->FillComplete();
+
+      /// algorithm is created
+      Teuchos::RCP<CAVITATION::Algorithm> cavitation = Teuchos::rcp(new CAVITATION::Algorithm(comm,params));
+
+      /// init cavitation simulation
+      cavitation->Init();
+
+      /// read the restart information, set vectors and variables ---
+      const int restart = problem->Restart();
+      if (restart)
+      {
+        cavitation->ReadRestart(restart);
+      }
+
+      /// setup cavitation simulation
+      cavitation->SetupSystem();
+
+      /// solve the whole problem
+      cavitation->Timeloop();
+
+      /// perform the result test
+      cavitation->TestResults(comm);
+    }
+    break;
+    default:
+      dserror("solution of unknown problemtyp %d requested", probtype);
+    break;
   }
-
-  /// ???
-  particlesimulation->SetupSystem();
-
-  /// solve the whole problem
-  particlesimulation->Timeloop();
-
-  /// perform the result test
-  particlesimulation->TestResults(comm);
 
   Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(comm);
   Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);

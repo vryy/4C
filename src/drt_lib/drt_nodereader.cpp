@@ -47,7 +47,7 @@ void NodeReader::Read()
   const int numproc = comm_->NumProc();
   string inputfile_name = reader_.MyInputfileName();
 
-  int numnodes = reader_.ExcludedSectionLength("--NODE COORDS");
+  int numnodes = reader_.ExcludedSectionLength(sectionname_);
 
   if( (numnodes < numproc) && (numnodes != 0) )
     dserror("Bad idea: Simulation with %d procs for problem with %d nodes", numproc,numnodes);

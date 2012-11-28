@@ -57,14 +57,18 @@ namespace PARTICLE
   public:
 
     Algorithm(
-      const Epetra_Comm& lcomm  ///< local epetra communicator
+      const Epetra_Comm& lcomm,  ///< local epetra communicator
+      const Teuchos::ParameterList& params   ///< problem parameters
       );
 
     virtual ~Algorithm(){};
 
+    /// do initialization of problem
+    virtual void Init();
+
     /// read restart
     virtual void ReadRestart(
-      int restart  ///< time step from wich to restart
+      int restart  ///< time step from which to restart
       );
 
     /// setup of the system
@@ -113,7 +117,7 @@ namespace PARTICLE
 
     /// setup ghosting of bins and particles
     virtual void SetupGhosting(
-      Teuchos::RCP<Epetra_Map> elerowmap  ///< rowmap of bins
+      Teuchos::RCP<Epetra_Map> binrowmap  ///< rowmap of bins
       );
 
     /// particles are checked whether they have moved out of their current bin
@@ -132,23 +136,31 @@ namespace PARTICLE
       );
 
 
-  private:
+    //! @name particle related stuff
+    //@{
+
     Teuchos::RCP<DRT::Discretization> particledis_;     ///< particle discretization
 
     Teuchos::RCP<ADAPTER::Structure> particles_;     ///< particle discretization
 
-    Teuchos::RCP<Epetra_Map> elecolmap_;     ///< colmap of bins
-
-    int myrank_;    ///< myrank
+    Teuchos::RCP<Epetra_Map> bincolmap_;     ///< colmap of bins
 
     double cutoff_radius_;    ///< maximum influence radius of particles
 
     LINALG::Matrix<3,2> XAABB_;    ///< extendedAxisAlignedBoundingBox of all particles
 
-    double bin_size_[3];    ///< size of each bin in cartesian coordinates
+    double bin_size_[3];    ///< size of each bin in Cartesian coordinates
 
     int bin_per_dir_[3];    ///< number of bins per direction
 
+    //@}
+
+    //! @name miscellaneous stuff
+    //@{
+
+    int myrank_;    ///< myrank
+
+    //@}
 
   }; // Algorithm
 

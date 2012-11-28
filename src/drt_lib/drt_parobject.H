@@ -312,6 +312,17 @@ public:
 
   */
   static void AddtoPack(PackBuffer& data, const std::map<std::string,int> & stuff);
+
+  //                                                            ghamm 11/2012
+  /*!
+  \brief Add stuff to the end of a char vector data
+
+  This method is an overload of the above template for map<int,double>
+  \param data (in/out) : char string stuff shall be added to
+  \param stuff (in)    : std::map<int, std::set<int> > that get's added to stuff
+
+  */
+  static void AddtoPack(PackBuffer& data, const std::map<int, std::set<int> > & stuff);
   
   /*!
   \brief Add stuff to the end of a char vector data
@@ -542,6 +553,17 @@ public:
   */
   static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<std::string,int>& stuff);
 
+  /*!
+  \brief Extract stuff from a map
+
+  This method is an overload of the above template for stuff of type map<std::string,int>
+
+  \param position (in/out) : place in data where to extract stuff. Position will be incremented by this method
+  \param data (in)         : char vector where stuff is extracted from
+  \param stuff (out)       : std::map<int, std::set<int> > to extract from data
+
+  */
+  static void ExtractfromPack(std::vector<char>::size_type& position, const std::vector<char>& data, std::map<int, std::set<int> >& stuff);
   /*!
   \brief Extract stuff from a set
 
