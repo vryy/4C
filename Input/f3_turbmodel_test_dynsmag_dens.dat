@@ -92,7 +92,7 @@ AZDROP                          0.0                             // drop toleranc
 IFPACKFILL                      1.0
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
-AZTOL                           1.0E-5                          // tolerance in (un)scaled residual
+AZTOL                           1.0E-12                          // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                            // max iterations
 AZSUB                           1000                            // size of krylov space for gmres
@@ -126,14 +126,14 @@ CURVE2 on Explicit FUNC BELTRAMI c1 2.0 c2 1.0
 FUNCT1                          BELTRAMI
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 12 QUANTITY velx VALUE 1.16775698347851495e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 12 QUANTITY vely VALUE -1.43121141545724889e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 12 QUANTITY velz VALUE 8.19629108926670846e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 12 QUANTITY pressure VALUE 8.42043581904825515e+01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 365 QUANTITY velx VALUE -8.05635068160125645e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 365 QUANTITY vely VALUE -8.05635088454060622e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 365 QUANTITY velz VALUE -8.05635126032555271e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 365 QUANTITY pressure VALUE 9.99028381406026540e+01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12 QUANTITY velx VALUE 1.16775623730040093e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12 QUANTITY vely VALUE -1.43121215576109351e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12 QUANTITY velz VALUE 8.19629124482838534e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12 QUANTITY pressure VALUE 8.42043231725163679e+01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY velx VALUE -8.05635475672510593e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY vely VALUE -8.05635475672506707e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY velz VALUE -8.05635475672593526e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY pressure VALUE 9.99030590451176153e+01 TOLERANCE 1e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          0
