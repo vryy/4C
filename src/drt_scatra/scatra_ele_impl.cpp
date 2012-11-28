@@ -324,7 +324,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   is_ale_ = params.get<bool>("isale",false);
   if (is_ale_)
   {
-    const RCP<Epetra_MultiVector> dispnp = params.get< RCP<Epetra_MultiVector> >("dispnp");
+    const Teuchos::RCP<Epetra_MultiVector> dispnp = params.get< Teuchos::RCP<Epetra_MultiVector> >("dispnp");
     if (dispnp==Teuchos::null) dserror("Cannot get state vector 'dispnp'");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,edispnp_,dispnp,nsd_);
     // add nodal displacements to point coordinates
@@ -520,9 +520,9 @@ for(int k=0; k<numscal_; k++)
     if (assgd and fssgd) dserror("No combination of all-scale and fine-scale subgrid-diffusivity approach currently possible!");
 
     // get velocity at nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field");
+    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
-    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field");
+    const Teuchos::RCP<Epetra_MultiVector> convelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
 
     // get data required for subgrid-scale velocity: acceleration and pressure
@@ -532,7 +532,7 @@ for(int k=0; k<numscal_; k++)
       if (not mat_gp_ or not tau_gp_)
        dserror("Evaluation of material and stabilization parameters need to be done at the integration points if subgrid-scale velocity is included!");
 
-      const RCP<Epetra_MultiVector> accpre = params.get< RCP<Epetra_MultiVector> >("acceleration/pressure field");
+      const Teuchos::RCP<Epetra_MultiVector> accpre = params.get< Teuchos::RCP<Epetra_MultiVector> >("acceleration/pressure field");
       LINALG::Matrix<nsd_+1,nen_> eaccprenp;
       DRT::UTILS::ExtractMyNodeBasedValues(ele,eaccprenp,accpre,nsd_+1);
 
@@ -548,8 +548,8 @@ for(int k=0; k<numscal_; k++)
     }
 
     // extract local values from the global vectors
-    RCP<const Epetra_Vector> hist = discretization.GetState("hist");
-    RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (hist==Teuchos::null || phinp==Teuchos::null)
       dserror("Cannot get state vector 'hist' and/or 'phinp'");
     std::vector<double> myhist(lm.size());
@@ -575,7 +575,7 @@ for(int k=0; k<numscal_; k++)
     if ((scatratype == INPAR::SCATRA::scatratype_loma) and is_genalpha_)
     {
       // extract additional local values from global vector
-      RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
+      Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
       if (phiam==Teuchos::null) dserror("Cannot get state vector 'phiam'");
       std::vector<double> myphiam(lm.size());
       DRT::UTILS::ExtractMyValues(*phiam,myphiam,lm);
@@ -594,7 +594,7 @@ for(int k=0; k<numscal_; k++)
     if (is_genalpha_ and not is_incremental_)
     {
       // extract additional local values from global vector
-      RCP<const Epetra_Vector> phin = discretization.GetState("phin");
+      Teuchos::RCP<const Epetra_Vector> phin = discretization.GetState("phin");
       if (phin==Teuchos::null) dserror("Cannot get state vector 'phin'");
       std::vector<double> myphin(lm.size());
       DRT::UTILS::ExtractMyValues(*phin,myphin,lm);
@@ -637,7 +637,7 @@ for(int k=0; k<numscal_; k++)
           temp << k;
           string name = "flux_phi_"+temp.str();
           // try to get the pointer to the entry (and check if type is RCP<Epetra_MultiVector>)
-          RCP<Epetra_MultiVector>* f = params.getPtr< RCP<Epetra_MultiVector> >(name);
+          Teuchos::RCP<Epetra_MultiVector>* f = params.getPtr< Teuchos::RCP<Epetra_MultiVector> >(name);
           if (f!= NULL) // field has been set and is not of type Teuchos::null
           {
             DRT::UTILS::ExtractMyNodeBasedValues(ele,efluxreconstr_[k],*f,nsd_);
@@ -651,7 +651,7 @@ for(int k=0; k<numscal_; k++)
 
       // get magnetic field at nodes (if available)
       // try to get the pointer to the entry (and check if type is RCP<Epetra_MultiVector>)
-      RCP<Epetra_MultiVector>* b = params.getPtr< RCP<Epetra_MultiVector> >("magnetic field");
+      Teuchos::RCP<Epetra_MultiVector>* b = params.getPtr< Teuchos::RCP<Epetra_MultiVector> >("magnetic field");
       if (b!= NULL) // magnetic field has been set and is not of type Teuchos::null
         DRT::UTILS::ExtractMyNodeBasedValues(ele,emagnetnp_,*b,nsd_);
       else
@@ -691,7 +691,7 @@ for(int k=0; k<numscal_; k++)
       if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
       {
         // remark: for dynamic estimation, this returns (Cs*h)^2 / Pr_t
-        RCP<Epetra_Vector> ele_prt = turbulencelist.get<RCP<Epetra_Vector> >("col_ele_Prt");
+        Teuchos::RCP<Epetra_Vector> ele_prt = turbulencelist.get<RCP<Epetra_Vector> >("col_ele_Prt");
         const int id = ele->LID();
         tpn = (*ele_prt)[id];
 
@@ -705,7 +705,7 @@ for(int k=0; k<numscal_; k++)
           or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
       {
         // get fine scale scalar field
-        RCP<const Epetra_Vector> gfsphinp = discretization.GetState("fsphinp");
+        Teuchos::RCP<const Epetra_Vector> gfsphinp = discretization.GetState("fsphinp");
         if (gfsphinp==Teuchos::null) dserror("Cannot get state vector 'fsphinp'");
 
         std::vector<double> myfsphinp(lm.size());
@@ -721,7 +721,7 @@ for(int k=0; k<numscal_; k++)
         }
 
         // get fine-scale velocity at nodes
-        const RCP<Epetra_MultiVector> fsvelocity = params.get< RCP<Epetra_MultiVector> >("fine-scale velocity field");
+        const Teuchos::RCP<Epetra_MultiVector> fsvelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("fine-scale velocity field");
         DRT::UTILS::ExtractMyNodeBasedValues(ele,efsvel_,fsvelocity,nsd_);
       }
 
@@ -887,7 +887,7 @@ for(int k=0; k<numscal_; k++)
   case SCATRA::get_material_parameters:
   {
     // get the material
-    RCP<MAT::Material> material = ele->Material();
+    Teuchos::RCP<MAT::Material> material = ele->Material();
 
     if (material->MaterialType() == INPAR::MAT::m_sutherland)
     {
@@ -967,7 +967,7 @@ for(int k=0; k<numscal_; k++)
       const double dt   = params.get<double>("time-step length");
 
       // extract local values from the global vectors
-      RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp==Teuchos::null)
         dserror("Cannot get state vector 'phinp'");
       std::vector<double> myphinp(lm.size());
@@ -999,14 +999,14 @@ for(int k=0; k<numscal_; k++)
   case SCATRA::calc_flux_domain:
   {
     // get velocity values at the nodes
-    const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity field");
+    const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity field");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
-    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field");
+    const Teuchos::RCP<Epetra_MultiVector> convelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
 
     // need current values of transported scalar
     // -> extract local values from global vectors
-    RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
     std::vector<double> myphinp(lm.size());
     DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
@@ -1087,7 +1087,7 @@ for(int k=0; k<numscal_; k++)
 
       // need current scalar vector
       // -> extract local values from the global vectors
-      RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
       std::vector<double> myphinp(lm.size());
       DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
@@ -1103,7 +1103,7 @@ for(int k=0; k<numscal_; k++)
     if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
 
     // need current solution
-    RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
     // extract local values from the global vector
@@ -1137,7 +1137,7 @@ for(int k=0; k<numscal_; k++)
       // calculate conductivity of electrolyte solution
       const double frt = params.get<double>("frt");
       // extract local values from the global vector
-      RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
       std::vector<double> myphinp(lm.size());
       DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
 
@@ -1166,7 +1166,7 @@ for(int k=0; k<numscal_; k++)
   case SCATRA::calc_elch_initial_potential:
   {
     // need initial field -> extract local values from the global vector
-    RCP<const Epetra_Vector> phi0 = discretization.GetState("phi0");
+    Teuchos::RCP<const Epetra_Vector> phi0 = discretization.GetState("phi0");
     if (phi0==Teuchos::null) dserror("Cannot get state vector 'phi0'");
     std::vector<double> myphi0(lm.size());
     DRT::UTILS::ExtractMyValues(*phi0,myphi0,lm);
@@ -1204,7 +1204,7 @@ for(int k=0; k<numscal_; k++)
           ephinp_[0](i,0) = myscalar[i];
 
       // velocity field
-      const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("velocity");
+      const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("velocity");
       DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,velocity,nsd_);
 
       // get thermodynamic pressure
@@ -1219,10 +1219,10 @@ for(int k=0; k<numscal_; k++)
       double temp_hat = 0.0;
       double dens_temp_hat = 0.0;
       // get pointers for vector quantities
-      RCP<std::vector<double> > vel_hat = params.get<RCP<std::vector<double> > >("vel_hat");
-      RCP<std::vector<double> > densvel_hat = params.get<RCP<std::vector<double> > >("densvel_hat");
-      RCP<std::vector<double> > densveltemp_hat = params.get<RCP<std::vector<double> > >("densveltemp_hat");
-      RCP<std::vector<double> > densstraintemp_hat = params.get<RCP<std::vector<double> > >("densstraintemp_hat");
+      Teuchos::RCP<std::vector<double> > vel_hat = params.get<RCP<std::vector<double> > >("vel_hat");
+      Teuchos::RCP<std::vector<double> > densvel_hat = params.get<RCP<std::vector<double> > >("densvel_hat");
+      Teuchos::RCP<std::vector<double> > densveltemp_hat = params.get<RCP<std::vector<double> > >("densveltemp_hat");
+      Teuchos::RCP<std::vector<double> > densstraintemp_hat = params.get<RCP<std::vector<double> > >("densstraintemp_hat");
 
       // integrate the convolution with the box filter function for this element
       // the results are assembled onto the *_hat arrays
@@ -1267,19 +1267,19 @@ for(int k=0; k<numscal_; k++)
     if (nsd_ == 3)
     {
       // get required quantities, set in dynamic Smagorinsky class
-      RCP<Epetra_MultiVector> col_filtered_vel =
+      Teuchos::RCP<Epetra_MultiVector> col_filtered_vel =
         params.get<RCP<Epetra_MultiVector> >("col_filtered_vel");
-      RCP<Epetra_MultiVector> col_filtered_dens_vel =
+      Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel =
         params.get<RCP<Epetra_MultiVector> >("col_filtered_dens_vel");
-      RCP<Epetra_MultiVector> col_filtered_dens_vel_temp =
+      Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_vel_temp =
         params.get<RCP<Epetra_MultiVector> >("col_filtered_dens_vel_temp");
-      RCP<Epetra_MultiVector> col_filtered_dens_rateofstrain_temp =
+      Teuchos::RCP<Epetra_MultiVector> col_filtered_dens_rateofstrain_temp =
         params.get<RCP<Epetra_MultiVector> >("col_filtered_dens_rateofstrain_temp");
-      RCP<Epetra_Vector> col_filtered_temp =
+      Teuchos::RCP<Epetra_Vector> col_filtered_temp =
         params.get<RCP<Epetra_Vector> >("col_filtered_temp");
-      RCP<Epetra_Vector> col_filtered_dens =
+      Teuchos::RCP<Epetra_Vector> col_filtered_dens =
         params.get<RCP<Epetra_Vector> >("col_filtered_dens");
-      RCP<Epetra_Vector> col_filtered_dens_temp =
+      Teuchos::RCP<Epetra_Vector> col_filtered_dens_temp =
         params.get<RCP<Epetra_Vector> >("col_filtered_dens_temp");
 
       // initialize variables to calculate
@@ -1344,10 +1344,10 @@ for(int k=0; k<numscal_; k++)
   case SCATRA::calc_mean_Cai:
   {
     // get nodel velocites
-    const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field");
+    const Teuchos::RCP<Epetra_MultiVector> convelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field");
     DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
     // get phi for material parameters
-    RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+    Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null)
       dserror("Cannot get state vector 'phinp'");
     std::vector<double> myphinp(lm.size());
@@ -2083,7 +2083,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
   )
 {
 // get the material
-  RCP<MAT::Material> material = ele->Material();
+  Teuchos::RCP<MAT::Material> material = ele->Material();
 
 // get diffusivity / diffusivities
   if (material->MaterialType() == INPAR::MAT::m_matlist)
@@ -2339,7 +2339,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
         or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
     {
       //access fluid discretization
-      RCP<DRT::Discretization> fluiddis = Teuchos::null;
+      Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
       fluiddis = DRT::Problem::Instance()->GetDis("fluid");
       //get corresponding fluid element (it has the same global ID as the scatra element)
       DRT::Element* fluidele = fluiddis->gElement(ele->Id());
@@ -2347,7 +2347,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
         dserror("Fluid element %i not on local processor", ele->Id());
 
       // get fluid material
-      RCP<MAT::Material> fluidmat = fluidele->Material();
+      Teuchos::RCP<MAT::Material> fluidmat = fluidele->Material();
       if(fluidmat->MaterialType() != INPAR::MAT::m_fluid)
         dserror("Invalid fluid material for passive scalar transport in turbulent flow!");
 
@@ -4630,7 +4630,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::UpdateMaterialParams(
   )
 {
 // get material
-  RCP<MAT::Material> material = ele->Material();
+  Teuchos::RCP<MAT::Material> material = ele->Material();
 
   if (material->MaterialType() == INPAR::MAT::m_mixfrac)
   {
@@ -6480,7 +6480,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PoroScatraMod(
   )
 {
   //access structure discretization
-  RCP<DRT::Discretization> structdis = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> structdis = Teuchos::null;
   structdis = DRT::Problem::Instance()->GetDis("structure");
   //get corresponding structure element (it has the same global ID as the scatra element)
   DRT::Element* structele = structdis->gElement(eleid);
