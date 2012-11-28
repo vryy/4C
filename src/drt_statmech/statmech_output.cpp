@@ -938,13 +938,6 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
   Epetra_Vector discol(*(discret_->DofColMap()), true);
   LINALG::Export(disrow, discol);
 
-  if(!discret_->Comm().MyPID())
-  {
-    DRT::Node* node50 = discret_->lColNode(50);
-    std::vector<int> dofnode = discret_->Dof(node50);
-    cout<<scientific<<setprecision(12)<<discol[dofnode[0]]<<" "<<discol[dofnode[1]]<<" "<<discol[dofnode[2]]<<endl;
-  }
-
   // do output to file in c-style
   FILE* fp = NULL;
 
