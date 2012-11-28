@@ -269,7 +269,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
   // neas_
   ExtractfromPack(position,data,neas_);
   // data_
-  vector<char> tmp(0);
+  std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
 
@@ -279,7 +279,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,time_);
   if (pstype_==INPAR::STR::prestress_mulf)
   {
-    vector<char> tmpprestress(0);
+    std::vector<char> tmpprestress(0);
     ExtractfromPack(position,data,tmpprestress);
     if (prestress_ == Teuchos::null)
     {
@@ -295,7 +295,7 @@ void DRT::ELEMENTS::So_hex8::Unpack(const std::vector<char>& data)
   // invdesign_
   else if (pstype_==INPAR::STR::prestress_id)
   {
-    vector<char> tmpinvdesign(0);
+    std::vector<char> tmpinvdesign(0);
     ExtractfromPack(position,data,tmpinvdesign);
     if (invdesign_ == Teuchos::null)
       invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOH8,NUMGPT_SOH8));
@@ -485,7 +485,7 @@ void DRT::ELEMENTS::So_hex8::soh8_expol
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_hex8::Volumes()
 {
-  vector<RCP<Element> > volumes(1);
+  std::vector<Teuchos::RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }
@@ -524,7 +524,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_hex8::Lines()
 /*----------------------------------------------------------------------*
  |  get location of element center                              jb 08/11|
  *----------------------------------------------------------------------*/
-vector<double> DRT::ELEMENTS::So_hex8::ElementCenterRefeCoords()
+std::vector<double> DRT::ELEMENTS::So_hex8::ElementCenterRefeCoords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();
@@ -542,7 +542,7 @@ vector<double> DRT::ELEMENTS::So_hex8::ElementCenterRefeCoords()
   LINALG::Matrix<1,NUMDIM_SOH8> midpoint;
   //midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);
-  vector<double> centercoords(3);
+  std::vector<double> centercoords(3);
   centercoords[0] = midpoint(0,0);
   centercoords[1] = midpoint(0,1);
   centercoords[2] = midpoint(0,2);
@@ -729,9 +729,9 @@ bool DRT::ELEMENTS::So_hex8::VisData(const string& name, std::vector<double>& da
     }
     else
     {
-      RCP<vector<std::vector<double> > > gplis = chain->Getli();
-      RCP<vector<std::vector<double> > > gpli0s = chain->Getli0();
-      RCP<vector<LINALG::Matrix<3,3> > > gpnis = chain->Getni();
+      RCP<std::vector<std::vector<double> > > gplis = chain->Getli();
+      RCP<std::vector<std::vector<double> > > gpli0s = chain->Getli0();
+      RCP<std::vector<LINALG::Matrix<3,3> > > gpnis = chain->Getni();
 
       std::vector<double> centerli (3,0.0);
       std::vector<double> centerli_0 (3,0.0);

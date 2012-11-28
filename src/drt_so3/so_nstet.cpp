@@ -235,7 +235,7 @@ void DRT::ELEMENTS::NStet::Print(ostream& os) const
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NStet::Volumes()
 {
   dserror("volume not impl. yet");
-  vector<RCP<Element> > volumes(1);
+  std::vector<Teuchos::RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }
@@ -287,8 +287,8 @@ void DRT::ELEMENTS::NStetType::InitElementsandMaps(
 {
   const int numele = dis.NumMyColElements();
 
-  vector<int> ctmp;
-  vector<int> rtmp;
+  std::vector<int> ctmp;
+  std::vector<int> rtmp;
 
   for (int i=0; i<numele; ++i)
   {
@@ -339,7 +339,7 @@ void DRT::ELEMENTS::NStetType::InitAdjacency(
     const int nodeidL = nodeL->Id();
 
     // list of adjacent elements
-    vector<DRT::ELEMENTS::NStet*> myadjele(0);
+    std::vector<DRT::ELEMENTS::NStet*> myadjele(0);
     for (int j=0; j<nodeL->NumElement(); ++j)
     {
       const int eleid = node->second->Elements()[j]->Id();
@@ -393,8 +393,8 @@ void DRT::ELEMENTS::NStetType::InitMISnode(
 {
   std::map<int,DRT::Node*>::iterator node;
 
-  vector<int> misnodes(0); // indicator which nodes are mis
-  vector<int> deletednodes(0); // all nodes that where deleted (for communication)
+  std::vector<int> misnodes(0); // indicator which nodes are mis
+  std::vector<int> deletednodes(0); // all nodes that where deleted (for communication)
 
   for (int proc=0; proc<numproc; ++proc)
   {
@@ -497,15 +497,15 @@ void DRT::ELEMENTS::NStetType::InitMISpatchesGreedyI(
   // assign mis nodes all surrounding elements (greedy phase 1)
   for (int proc=0; proc<numproc; ++proc)
   {
-    vector<int> sendeles(0);
-    vector<int> sendelemis(0); // gid of mis node belonging to that element
+    std::vector<int> sendeles(0);
+    std::vector<int> sendelemis(0); // gid of mis node belonging to that element
     std::vector<double> sendelemisweight(0); // weight of mis node belonging to that element
     std::map<int,int>::iterator mis;
     if (proc==myrank)
     {
       for (mis=misnodesmap.begin(); mis != misnodesmap.end(); ++mis)
       {
-        vector<DRT::ELEMENTS::NStet*> eles(0);
+        std::vector<DRT::ELEMENTS::NStet*> eles(0);
         DRT::Node* misnode = noderids[mis->first];
 #ifdef PRINT_NSTET
         cout << "Proc " << myrank << " MIS node " << mis->first << " patchsize " << misnode->NumElement() << endl;
@@ -524,7 +524,7 @@ void DRT::ELEMENTS::NStetType::InitMISpatchesGreedyI(
       // make map cele -> MIS node
       for (mis=misnodesmap.begin(); mis != misnodesmap.end(); ++mis)
       {
-        vector<DRT::ELEMENTS::NStet*>& adjele = pstab_adjele[mis->first];
+        std::vector<DRT::ELEMENTS::NStet*>& adjele = pstab_adjele[mis->first];
         for (int i=0; i<(int)adjele.size(); ++i)
         {
           pstab_cid_mis[adjele[i]->Id()].push_back(mis->first);
@@ -593,16 +593,16 @@ void DRT::ELEMENTS::NStetType::InitMISpatchesGreedyII(
 {
   for (int proc=0; proc<numproc; ++proc)
   {
-    vector<int> sendeles(0);
-    vector<int> sendelemis(0); // gid of mis node belonging to that element
+    std::vector<int> sendeles(0);
+    std::vector<int> sendelemis(0); // gid of mis node belonging to that element
     std::vector<double> sendelemisweight(0);
     std::map<int,int>::iterator mis;
     if (proc==myrank)
     {
       for (mis=misnodesmap.begin(); mis != misnodesmap.end(); ++mis)
       {
-        vector<DRT::ELEMENTS::NStet*> eles(0);
-        vector<DRT::ELEMENTS::NStet*>& adjele = pstab_adjele[mis->first];
+        std::vector<DRT::ELEMENTS::NStet*> eles(0);
+        std::vector<DRT::ELEMENTS::NStet*>& adjele = pstab_adjele[mis->first];
 
         // all elements already contained in this patch have weight 1 on this
         // mis node
@@ -722,8 +722,8 @@ void DRT::ELEMENTS::NStetType::InitMISpatchesGreedyIII(
   std::map<int,int>::iterator mis;
   for (mis=misnodesmap.begin(); mis != misnodesmap.end(); ++mis)
   {
-    vector<DRT::ELEMENTS::NStet*> eles(0);
-    vector<DRT::ELEMENTS::NStet*>& adjele = pstab_adjele[mis->first];
+    std::vector<DRT::ELEMENTS::NStet*> eles(0);
+    std::vector<DRT::ELEMENTS::NStet*>& adjele = pstab_adjele[mis->first];
 
     // all elements in this patch have weight 1 on this mis node
     std::vector<double> weights;
@@ -758,14 +758,14 @@ void DRT::ELEMENTS::NStetType::InitMISpatchesGreedyIII(
 #ifdef PRINT_NSTET
     cout << "Proc " << myrank << " LEFTOVER " << *ele << " " << endl; fflush(stdout);
 #endif
-    vector<std::vector<int> > nodeonpatch(numnode);
+    std::vector<std::vector<int> > nodeonpatch(numnode);
     std::map<int,double> patchmap;
 
     // find out on which patches that I have these nodes are
     std::map<int,std::vector<DRT::ELEMENTS::NStet*> >::iterator patches;
     for (patches=pstab_adjele.begin(); patches != pstab_adjele.end(); ++patches)
     {
-      vector<DRT::ELEMENTS::NStet*>& eles = patches->second;
+      std::vector<DRT::ELEMENTS::NStet*>& eles = patches->second;
 
       // build nodal patch because it does not exist yet here
       std::map<int,DRT::Node*> nodalpatch;
@@ -802,8 +802,8 @@ void DRT::ELEMENTS::NStetType::InitMISpatchesGreedyIII(
   std::map<int,std::vector<int> >::iterator recveleon;
   for (int proc=0; proc<numproc; ++proc)
   {
-    vector<int> sendeles(0);
-    vector<int> sendnums(0);
+    std::vector<int> sendeles(0);
+    std::vector<int> sendnums(0);
 
     if (proc==myrank)
     {
@@ -858,7 +858,7 @@ void DRT::ELEMENTS::NStetType::InitMISpatchesGreedyIII(
   for (recveleon=recveleonpatches.begin(); recveleon != recveleonpatches.end(); ++recveleon)
   {
     const int eleid = recveleon->first;
-    vector<int>& ps = recveleon->second;
+    std::vector<int>& ps = recveleon->second;
     std::map<int,std::vector<int> >::iterator ele = eleonpatches.find(eleid);
     if (ele == eleonpatches.end())
       eleonpatches[eleid] = ps;
@@ -889,7 +889,7 @@ void DRT::ELEMENTS::NStetType::InitMISpatchesGreedyIII(
 
         const double weight = 1.0/num;
 
-        vector<int>& patches = ele->second;
+        std::vector<int>& patches = ele->second;
         std::map<int,double> patchweights; // key: patch id value: total weight the patch gets
         for (int i=0; i<(int)patches.size(); ++i)
           patchweights[patches[i]] = 0;
@@ -963,7 +963,7 @@ void DRT::ELEMENTS::NStetType::InitMISAdjacency(
 #endif
     // adjnode
     std::map<int,DRT::Node*> nodepatch;
-    vector<DRT::ELEMENTS::NStet*>& ele = mis->second;
+    std::vector<DRT::ELEMENTS::NStet*>& ele = mis->second;
     for (int j=0; j<(int)ele.size(); ++j)
     {
       DRT::Node** nodes = ele[j]->Nodes();
@@ -997,10 +997,10 @@ Teuchos::RCP<Epetra_Map> DRT::ELEMENTS::NStetType::InitMISStressMap(
 {
   std::map<int,std::vector<int> >::iterator fool;
   std::map<int,int> ngidmap;
-  vector<int> ngid;
+  std::vector<int> ngid;
   for (fool=pstab_cid_mis.begin(); fool != pstab_cid_mis.end(); ++fool)
   {
-    vector<int>& mis = fool->second;
+    std::vector<int>& mis = fool->second;
     for (int i=0; i<(int)mis.size(); ++i)
       ngidmap[mis[i]] = mis[i];
   }

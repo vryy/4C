@@ -91,7 +91,7 @@ public:
     \param lsurface_master (in): local index of surface w.r.t master parent element
     \param nodes (in): vector of nodes building the surface element
     */
-    InternalFacesData(int master_peid, vector<DRT::Node*> nodes, int lsurface_master)
+    InternalFacesData(int master_peid, std::vector<DRT::Node*> nodes, int lsurface_master)
     {
       master_peid_ = master_peid;
       slave_peid_ = -1;
@@ -127,7 +127,7 @@ public:
     int GetLSurfaceMaster(){return lsurface_master_;}
 
     //! get surface's nodes (unsorted, original)
-    vector<DRT::Node*> GetNodes(){return nodes_;}
+    std::vector<DRT::Node*> GetNodes(){return nodes_;}
 
   private:
 
@@ -136,7 +136,7 @@ public:
 
     int lsurface_master_;      //!< local surface number w.r.t master parent element
 
-    vector<DRT::Node*> nodes_; //!< vector of surface nodes, order w.r.t master parent element
+    std::vector<DRT::Node*> nodes_; //!< vector of surface nodes, order w.r.t master parent element
 
   };
 

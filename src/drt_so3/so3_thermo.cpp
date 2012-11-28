@@ -121,7 +121,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Unpack(
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
 
   // extract base class element data_
-  vector<char> tmp(0);
+  std::vector<char> tmp(0);
   so3_ele::ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
   // kintype_

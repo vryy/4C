@@ -45,7 +45,7 @@ Maintainer: Michael Gee
 /*----------------------------------------------------------------------*
  |  allocate an instance of a specific impl. of ParObject (public) mwgee 12/06|
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::UTILS::Factory(const vector<char>& data)
+DRT::ParObject* DRT::UTILS::Factory(const std::vector<char>& data)
 {
   return ParObjectFactory::Instance().Create( data );
 }

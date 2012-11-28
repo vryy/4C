@@ -7682,13 +7682,13 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::ExtractValuesFromGlobalVectors
   }
 
   // extract local values from the global vectors
-  vector<double> myvelnp(lm.size());
+  std::vector<double> myvelnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
 
-  vector<double> myvelaf(lm.size());
+  std::vector<double> myvelaf(lm.size());
   DRT::UTILS::ExtractMyValues(*velaf,myvelaf,lm);
 
-  vector<double> myaccam(lm.size());
+  std::vector<double> myaccam(lm.size());
   DRT::UTILS::ExtractMyValues(*accam,myaccam,lm);
 
   // split "my_velnp" into velocity part "myvelnp" and pressure part "myprenp"
@@ -7762,7 +7762,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::GetNodalBodyForce_2D(
 {
   constant_bodyforce_=false;
 
-  vector<DRT::Condition*> myneumcond;
+  std::vector<DRT::Condition*> myneumcond;
 
   // check whether all nodes have a unique SurfaceNeumann condition
   DRT::UTILS::FindElementConditions(ele, "SurfaceNeumann", myneumcond);

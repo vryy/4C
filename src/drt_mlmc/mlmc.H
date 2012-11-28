@@ -131,10 +131,10 @@ private:
   Teuchos::RCP<GenRandomField> random_field_;
 
   //! brief vector which contains all element numbers we need the output from
-  vector <int> AllMyOutputEleIds_;
+  std::vector <int> AllMyOutputEleIds_;
 
   //! brief vector stores gids of elements we want the output of specific to proc
-  vector <int> my_output_elements_;
+  std::vector <int> my_output_elements_;
 
   //! brief map for communicating the element data to proc 0
   Teuchos::RCP<const Epetra_Map> OutputMap_;
@@ -337,7 +337,7 @@ public:
       INPAR::STR::StrainType iostrain);
 
   //! \brief determine which of the output elemenst are on which proc
-  void SetupEvalDisAtEleCenters(vector <int> AllOutputEleIds);
+  void SetupEvalDisAtEleCenters(std::vector <int> AllOutputEleIds);
 
   //! \brief more or less a copy of the evaluate function of discretization class, allwos us to evaluate specifi elements only
   void Evaluate2(

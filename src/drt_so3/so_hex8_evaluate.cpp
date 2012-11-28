@@ -285,9 +285,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       {
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress",Teuchos::null);
-        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain",Teuchos::null);
-        RCP<vector<char> > plstraindata = params.get<RCP<vector<char> > >("plstrain",Teuchos::null);
+        RCP<std::vector<char> > stressdata = params.get<RCP<std::vector<char> > >("stress",Teuchos::null);
+        RCP<std::vector<char> > straindata = params.get<RCP<std::vector<char> > >("strain",Teuchos::null);
+        RCP<std::vector<char> > plstraindata = params.get<RCP<std::vector<char> > >("plstrain",Teuchos::null);
         if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
         if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
@@ -719,7 +719,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       double intenergy = 0.0;
 
       // shape functions and Gauss weights
-      const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+      const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
       const static std::vector<double> weights = soh8_weights();
 
       // get displacements of this processor
@@ -818,8 +818,8 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       double energynorm = 0.0;
 
       // shape functions, derivatives and integration weights
-      const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > vals = soh8_shapefcts();
-      const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+      const static std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > vals = soh8_shapefcts();
+      const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
       const static std::vector<double> weights = soh8_weights();
 
       // get displacements and extract values of this element
@@ -1100,9 +1100,9 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
     {
       RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
       RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-      RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress",Teuchos::null);
-      RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain",Teuchos::null);
-      RCP<vector<char> > plstraindata = params.get<RCP<vector<char> > >("plstrain",Teuchos::null);
+      RCP<std::vector<char> > stressdata = params.get<RCP<std::vector<char> > >("stress",Teuchos::null);
+      RCP<std::vector<char> > straindata = params.get<RCP<std::vector<char> > >("strain",Teuchos::null);
+      RCP<std::vector<char> > plstraindata = params.get<RCP<std::vector<char> > >("plstrain",Teuchos::null);
       if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
       if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
@@ -1251,9 +1251,9 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(Teuchos::ParameterList&   params,
   /* ============================================================================*
   ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
   ** ============================================================================*/
-  const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
-  const static vector<double> gpweights = soh8_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  const static std::vector<double> gpweights = soh8_weights();
   /* ============================================================================*/
 
   // update element geometry
@@ -1313,7 +1313,7 @@ int DRT::ELEMENTS::So_hex8::EvaluateNeumann(Teuchos::ParameterList&   params,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::InitJacobianMapping()
 {
-  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xrefe;
   for (int i=0; i<NUMNOD_SOH8; ++i)
   {
@@ -1375,9 +1375,9 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-  const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
-  const static vector<double> gpweights = soh8_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  const static std::vector<double> gpweights = soh8_weights();
 /* ============================================================================*/
 
   // check for prestressing
@@ -1969,9 +1969,9 @@ void DRT::ELEMENTS::So_hex8::soh8_nlnstiffmass_gemm(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-  const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
-  const static vector<double> gpweights = soh8_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  const static std::vector<double> gpweights = soh8_weights();
 /* ============================================================================*/
 
   // check for prestressing or EAS
@@ -2520,7 +2520,7 @@ void DRT::ELEMENTS::So_hex8::DefGradient(const std::vector<double>& disp,
                                          Epetra_SerialDenseMatrix& gpdefgrd,
                                          DRT::ELEMENTS::PreStress& prestress)
 {
-  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
 
   // update element geometry
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;  // current  coord. of element
@@ -2560,7 +2560,7 @@ void DRT::ELEMENTS::So_hex8::UpdateJacobianMapping(
                                             const std::vector<double>& disp,
                                             DRT::ELEMENTS::PreStress& prestress)
 {
-  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
 
   // get incremental disp
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xdisp;
@@ -2609,7 +2609,7 @@ void DRT::ELEMENTS::So_hex8::soh8_remodel(
 {
 // in a first step ommit everything with prestress and EAS!!
 
-  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
 
   // update element geometry
   LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8> xcurr;  // current  coord. of element

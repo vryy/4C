@@ -859,9 +859,9 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
     MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
     LINALG::Matrix<3,3> ni0 = chain->Getni()->at(0);
     std::vector<double> lamb0 = chain->Getlambdas()->at(0);
-    RCP<vector<std::vector<double> > > gplis = chain->Getli();
-    RCP<vector<std::vector<double> > > gpli0s = chain->Getli0();
-    RCP<vector<LINALG::Matrix<3,3> > > gpnis = chain->Getni();
+    RCP<std::vector<std::vector<double> > > gplis = chain->Getli();
+    RCP<std::vector<std::vector<double> > > gpli0s = chain->Getli0();
+    RCP<std::vector<LINALG::Matrix<3,3> > > gpnis = chain->Getni();
 
     std::vector<double> centerli (3,0.0);
     std::vector<double> centerli_0 (3,0.0);

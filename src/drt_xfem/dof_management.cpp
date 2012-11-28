@@ -65,7 +65,7 @@ XFEM::DofManager::DofManager(
     //         -> for a general parallel distribution 'pbcmap' and 'nodeDofMap' do not contain the same information
     //         -> simulation will crash as soon this discrepancy shows
 
-    for (std::map<int, vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
+    for (std::map<int, std::vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
     {
       const int mastergid = pbciter->first;
 

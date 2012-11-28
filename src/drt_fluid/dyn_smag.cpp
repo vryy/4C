@@ -1063,8 +1063,8 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
 
     // provide vectors for filtered quantities
     RCP<std::vector<double> > vel_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
-    RCP<vector<std::vector<double> > > reynoldsstress_hat = Teuchos::rcp(new std::vector<std::vector<double> >);
-    RCP<vector<std::vector<double> > > modeled_subgrid_stress = Teuchos::rcp(new std::vector<std::vector<double> >);
+    RCP<std::vector<std::vector<double> > > reynoldsstress_hat = Teuchos::rcp(new std::vector<std::vector<double> >);
+    RCP<std::vector<std::vector<double> > > modeled_subgrid_stress = Teuchos::rcp(new std::vector<std::vector<double> >);
     // set to dimensions
     (*reynoldsstress_hat).resize(numdim);
     (*modeled_subgrid_stress).resize(numdim);
@@ -1085,8 +1085,8 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
     RCP<std::vector<double> > densvel_hat = Teuchos::rcp(new std::vector<double> ((numdim),0.0));
     // and set them in parameter list
     filterparams.set<RCP<std::vector<double> > >("vel_hat",vel_hat);
-    filterparams.set<RCP<vector<std::vector<double> > > >("reynoldsstress_hat",reynoldsstress_hat);
-    filterparams.set<RCP<vector<std::vector<double> > > >("modeled_subgrid_stress",modeled_subgrid_stress);
+    filterparams.set<RCP<std::vector<std::vector<double> > > >("reynoldsstress_hat",reynoldsstress_hat);
+    filterparams.set<RCP<std::vector<std::vector<double> > > >("modeled_subgrid_stress",modeled_subgrid_stress);
     filterparams.set<RCP<std::vector<double> > >("densvel_hat",densvel_hat);
 
     // get element location vector, dirichlet flags and ownerships

@@ -181,7 +181,7 @@ void DRT::ELEMENTS::Ale3::Pack(DRT::PackBuffer& data) const
 
 void DRT::ELEMENTS::Ale3::Unpack(const std::vector<char>& data)
 {
-	vector<char>::size_type position = 0;
+  std::vector<char>::size_type position = 0;
   // extract type
   int type = 0;
   ExtractfromPack(position,data,type);
@@ -235,7 +235,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale3::Surfaces()
 
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale3::Volumes()
 {
-  vector<RCP<Element> > volumes(1);
+  std::vector<RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }

@@ -187,8 +187,8 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
       {
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress",Teuchos::null);
-        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain",Teuchos::null);
+        RCP<std::vector<char> > stressdata = params.get<RCP<std::vector<char> > >("stress",Teuchos::null);
+        RCP<std::vector<char> > straindata = params.get<RCP<std::vector<char> > >("strain",Teuchos::null);
         if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
         if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
@@ -393,8 +393,8 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
             double energynorm = 0.0;
 
             // shape functions, derivatives and integration weights
-            const static vector<LINALG::Matrix<NUMNOD_SOH27,1> > vals = soh27_shapefcts();
-            const static vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs = soh27_derivs();
+            const static std::vector<LINALG::Matrix<NUMNOD_SOH27,1> > vals = soh27_shapefcts();
+            const static std::vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs = soh27_derivs();
             const static std::vector<double> weights = soh27_weights();
 
             // get displacements and extract values of this element
@@ -611,9 +611,9 @@ int DRT::ELEMENTS::So_hex27::EvaluateNeumann(Teuchos::ParameterList& params,
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_27 with 27 GAUSS POINTS*
 ** ============================================================================*/
-  const static vector<LINALG::Matrix<NUMNOD_SOH27,1> > shapefcts = soh27_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs = soh27_derivs();
-  const static vector<double> gpweights = soh27_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOH27,1> > shapefcts = soh27_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs = soh27_derivs();
+  const static std::vector<double> gpweights = soh27_weights();
 /* ============================================================================*/
 
   // update element geometry
@@ -657,7 +657,7 @@ int DRT::ELEMENTS::So_hex27::EvaluateNeumann(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex27::InitJacobianMapping()
 {
-  const static vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs = soh27_derivs();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs = soh27_derivs();
   LINALG::Matrix<NUMNOD_SOH27,NUMDIM_SOH27> xrefe;
   for (int i=0; i<NUMNOD_SOH27; ++i)
   {
@@ -701,9 +701,9 @@ void DRT::ELEMENTS::So_hex27::soh27_linstiffmass(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_27 with 27 GAUSS POINTS*
 ** ============================================================================*/
-  const static vector<LINALG::Matrix<NUMNOD_SOH27,1> > shapefcts = soh27_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs = soh27_derivs();
-  const static vector<double> gpweights = soh27_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOH27,1> > shapefcts = soh27_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs = soh27_derivs();
+  const static std::vector<double> gpweights = soh27_weights();
 /* ============================================================================*/
 
   // update element geometry
@@ -979,9 +979,9 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_27 with 27 GAUSS POINTS*
 ** ============================================================================*/
-  const static vector<LINALG::Matrix<NUMNOD_SOH27,1> > shapefcts = soh27_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs = soh27_derivs();
-  const static vector<double> gpweights = soh27_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOH27,1> > shapefcts = soh27_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs = soh27_derivs();
+  const static std::vector<double> gpweights = soh27_weights();
 /* ============================================================================*/
 
   // update element geometry

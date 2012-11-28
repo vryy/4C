@@ -506,7 +506,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Lines()
   else if (NumLine()==1) // 1D boundary element and 1D parent element -> body load (calculated in evaluate)
   {
     // 1D (we return the element itself)
-    vector<RCP<Element> > surfaces(1);
+    std::vector<RCP<Element> > surfaces(1);
     surfaces[0]= Teuchos::rcp(this, false);
     return surfaces;
   }
@@ -536,7 +536,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Surfaces()
   else if (NumSurface() == 1) // 2D boundary element and 2D parent element -> body load (calculated in evaluate)
   {
     // 2D (we return the element itself)
-    vector<RCP<Element> > surfaces(1);
+    std::vector<RCP<Element> > surfaces(1);
     surfaces[0]= Teuchos::rcp(this, false);
     return surfaces;
   }
@@ -555,7 +555,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Volumes()
 {
   if (NumVolume()==1) // 3D boundary element and a 3D parent element -> body load (calculated in evaluate)
   {
-    vector<RCP<Element> > volumes(1);
+    std::vector<RCP<Element> > volumes(1);
     volumes[0]= Teuchos::rcp(this, false);
     return volumes;
   }

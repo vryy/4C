@@ -633,9 +633,9 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
       const INPAR::STR::StressType iostress,    ///< stress output option
       const INPAR::STR::StrainType iostrain)    ///< strain output option
 {
-  const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = ele->soh8_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = ele->soh8_derivs();
-  const static vector<double> gpweights = ele->soh8_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = ele->soh8_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = ele->soh8_derivs();
+  const static std::vector<double> gpweights = ele->soh8_weights();
 
   //---------------------------------------------------------------------
   // element geometry (note that this is inverse!)
@@ -929,7 +929,7 @@ void DRT::ELEMENTS::InvDesign::soh8_StoreMaterialConfiguration(
                                               DRT::ELEMENTS::So_hex8* ele,
                                               const std::vector<double>& disp)
 {
-  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = ele->soh8_derivs();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = ele->soh8_derivs();
   LINALG::Matrix<NUMNOD_SOH8,3> xrefe;  // material coord. of element
   LINALG::Matrix<NUMNOD_SOH8,3> xcurr;  // current  coord. of element
   DRT::Node** nodes = ele->Nodes();

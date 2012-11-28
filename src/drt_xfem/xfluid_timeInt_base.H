@@ -27,6 +27,7 @@ Maintainer: Martin Winklmaier
 
 #include "../drt_geometry/position_array.H"
 
+using std::vector; // intermediate
 
 namespace COMBUST
 {

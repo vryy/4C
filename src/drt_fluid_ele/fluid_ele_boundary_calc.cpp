@@ -203,7 +203,7 @@ int DRT::ELEMENTS::FluidBoundaryImpl<distype>::EvaluateNeumann(
   if (scaaf==Teuchos::null) dserror("Cannot get state vector 'scaaf'");
 
   // extract local values from global vector
-  vector<double> myscaaf(lm.size());
+  std::vector<double> myscaaf(lm.size());
   DRT::UTILS::ExtractMyValues(*scaaf,myscaaf,lm);
 
   LINALG::Matrix<bdrynen_,1> escaaf(true);
@@ -350,7 +350,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
 
   // extract local displacements from the global vectors
   RCP<const Epetra_Vector>      dispnp;
-  vector<double>                mydispnp;
+  std::vector<double>                mydispnp;
 
   if (isale)
   {
@@ -377,7 +377,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ConservativeOutflowConsistency(
   if (vel==Teuchos::null) dserror("Cannot get state vector 'u and p (trial)'");
 
   // extract local values from the global vectors
-  vector<double> myvel(lm.size());
+  std::vector<double> myvel(lm.size());
   DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
 
   for (int inode=0;inode<bdrynen_;++inode)
@@ -586,8 +586,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NeumannInflow(
     dserror("Cannot get state vector 'velaf' and/or 'scaaf'");
 
   // extract local values from global vector
-  vector<double> myvelaf(lm.size());
-  vector<double> myscaaf(lm.size());
+  std::vector<double> myvelaf(lm.size());
+  std::vector<double> myscaaf(lm.size());
   DRT::UTILS::ExtractMyValues(*velaf,myvelaf,lm);
   DRT::UTILS::ExtractMyValues(*scaaf,myscaaf,lm);
 
@@ -994,7 +994,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ElementMeanCurvature(
       DRT::Element* Element = ElementsPtr[ele];
 
       // get surfaces
-      vector< RCP< DRT::Element > > surfaces = Element->Surfaces();
+      std::vector< RCP< DRT::Element > > surfaces = Element->Surfaces();
 
       // loop over surfaces: how many free surfaces with this node on it?
       for (unsigned int surf=0; surf<surfaces.size(); ++surf)
@@ -1347,7 +1347,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::IntegratedPressureParameterCalcu
   if (velnp==Teuchos::null)
     dserror("Cannot get state vector 'velnp'");
 
-  vector<double> myvelnp(lm.size());
+  std::vector<double> myvelnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
 
   // allocate local velocity vector
@@ -1537,7 +1537,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeFlowRate(
   if (velnp==Teuchos::null)
     dserror("Cannot get state vector 'velnp'");
 
-  vector<double> myvelnp(lm.size());
+  std::vector<double> myvelnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
 
   // allocate velocity vector
@@ -1662,7 +1662,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(
   const bool isale = ele->ParentElement()->IsAle();
 
   RCP<const Epetra_Vector> dispnp;
-  vector<double> edispnp;
+  std::vector<double> edispnp;
 
   if (isale)
   {
@@ -1706,7 +1706,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::FlowRateDeriv(
     dserror("Cannot get state vector 'convectivevel'");
 
   // extract local values from the global vectors
-  vector<double> myconvelnp(lm.size());
+  std::vector<double> myconvelnp(lm.size());
   DRT::UTILS::ExtractMyValues(*convelnp,myconvelnp,lm);
 
   // allocate velocities vector
@@ -2459,15 +2459,15 @@ template <DRT::Element::DiscretizationType bndydistype,
 
   // the vectors have been allocated outside in
   // EvaluateConditionUsingParentData
-  RCP<vector<int> > plm
+  RCP<std::vector<int> > plm
     =
-    params.get<RCP<vector<int> > >("plm");
-  RCP<vector<int> > plmowner
+    params.get<RCP<std::vector<int> > >("plm");
+  RCP<std::vector<int> > plmowner
     =
-    params.get<RCP<vector<int> > >("plmowner");
-  RCP<vector<int> > plmstride
+    params.get<RCP<std::vector<int> > >("plmowner");
+  RCP<std::vector<int> > plmstride
     =
-    params.get<RCP<vector<int> > >("plmstride");
+    params.get<RCP<std::vector<int> > >("plmstride");
 
   parent->LocationVector(discretization,*plm,*plmowner,*plmstride);
 
@@ -3777,7 +3777,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::CalcTractionVelocityComponent(
   if (velnp==Teuchos::null)
     dserror("Cannot get state vector 'velnp'");
 
-  vector<double> myvelnp(lm.size());
+  std::vector<double> myvelnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
 
   // allocate velocity vector
@@ -3932,7 +3932,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::ComputeNeumannUvIntegral(
   if (velnp==Teuchos::null)
     dserror("Cannot get state vector 'velnp'");
 
-  vector<double> myvelnp(lm.size());
+  std::vector<double> myvelnp(lm.size());
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
 
   // allocate velocity vector
@@ -4039,7 +4039,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
   std::vector<double>                mydispnp;
 
   Teuchos::RCP<std::vector<int> >mycondIDs;
-  mycondIDs = Teuchos::rcp(new  vector<int>);
+  mycondIDs = Teuchos::rcp(new std::vector<int>);
   //Teuchos::RCP<std::set<int> >mycondIDs = params.get<Teuchos::RCP< std::set<int> > >("mycondIDs",Teuchos::null);
 
   if (ele->ParentElement()->IsAle())
@@ -4326,7 +4326,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
             = Teuchos::rcp_dynamic_cast<const MAT::StructPoro>(structele->Material());
   if(structmat->MaterialType() != INPAR::MAT::m_structporo)
     dserror("invalid structure material for poroelasticity");
-  vector<double>   porosity   = structmat->SurfPorosity(ele->SurfaceNumber());
+  std::vector<double>   porosity   = structmat->SurfPorosity(ele->SurfaceNumber());
   if( (int) porosity.size() != intpoints.IP().nquad)
     dserror("porosity evaluation not correct!");
 

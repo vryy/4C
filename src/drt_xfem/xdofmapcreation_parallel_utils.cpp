@@ -96,7 +96,7 @@ void XFEM::unpackDofKeys(
     const std::vector<char>&                     dataRecv,
     std::set<XFEM::DofKey >&       dofkeyset )
 {
-	vector<char>::size_type index = 0;
+  std::vector<char>::size_type index = 0;
   while (index < dataRecv.size())
   {
     std::vector<char> data;
@@ -154,7 +154,7 @@ void XFEM::syncNodalDofs(
   // send data in a circle
   for(int num = 0; num < numproc-1; num++)
   {
-    vector<int> lengthSend(1,0);
+    std::vector<int> lengthSend(1,0);
     lengthSend[0] = dataSend.size();
 
 #ifdef DEBUG
@@ -167,7 +167,7 @@ void XFEM::syncNodalDofs(
     exporter.ISend(myrank, dest, &(lengthSend[0]) , size_one, length_tag, req_length_data);
 
     // ... and receive length
-    vector<int> lengthRecv(1,0);
+    std::vector<int> lengthRecv(1,0);
     exporter.Receive(source, length_tag, lengthRecv, size_one);
     exporter.Wait(req_length_data);
 
@@ -178,7 +178,7 @@ void XFEM::syncNodalDofs(
     MPI_Request req_data;
     exporter.ISend(myrank, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
     // ... and receive date
-    vector<char> dataRecv(lengthRecv[0]);
+    std::vector<char> dataRecv(lengthRecv[0]);
     exporter.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
     exporter.Wait(req_data);
 

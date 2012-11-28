@@ -271,7 +271,7 @@ public:
    * \note Filled()=true is a prerequisite
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  RCP<vector<char> > PackMyKnots() const;
+  RCP<std::vector<char> > PackMyKnots() const;
 
   /*------------------------------------------------------------------------*/
   /*!
@@ -285,7 +285,7 @@ public:
    * \note Sets Filled()=false
    *///                                                   (public) nis Jan12
   /*------------------------------------------------------------------------*/
-  void UnPackMyKnots(RCP<vector<char> > k);
+  void UnPackMyKnots(RCP<std::vector<char> > k);
 
   /*------------------------------------------------------------------------*/
   /*!

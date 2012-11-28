@@ -301,7 +301,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Lines()
   else
   {
     // 1D (we return the element itself)
-    vector<RCP<Element> > lines(1);
+    std::vector<RCP<Element> > lines(1);
     lines[0]= Teuchos::rcp(this, false);
     return lines;
   }
@@ -326,7 +326,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Surfaces()
   else if (NumSurface() == 1)
   {
     // 2D (we return the element itself)
-    vector<RCP<Element> > surfaces(1);
+    std::vector<RCP<Element> > surfaces(1);
     surfaces[0]= Teuchos::rcp(this, false);
     return surfaces;
   }
@@ -346,7 +346,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::TopOpt::Volumes()
 {
   if (NumVolume() == 1)
   {
-    vector<RCP<Element> > volumes(1);
+    std::vector<Teuchos::RCP<Element> > volumes(1);
     volumes[0]= Teuchos::rcp(this, false);
     return volumes;
   }

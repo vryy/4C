@@ -1978,7 +1978,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
     // and therefore gets added to the surfacenodes set. This set is redundantly available and
     // mereley knows a node's position and velocities
     //-----------------------------------------------------------------------------------------------
-    Teuchos::RCP<vector<LINALG::Matrix<3,2> > > surfacenodes = Teuchos::rcp(new std::vector<LINALG::Matrix<3,2> >);
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,2> > > surfacenodes = Teuchos::rcp(new std::vector<LINALG::Matrix<3,2> >);
 
     std::set<int>::const_iterator nodeit;
     for (nodeit = allcollectednodes->begin(); nodeit != allcollectednodes->end(); ++nodeit)
@@ -2014,7 +2014,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
 
     // Now the surfacenodes must be gathered to all procs
     {
-      Teuchos::RCP<vector<LINALG::Matrix<3,2> > > mysurfacenodes = surfacenodes;
+      Teuchos::RCP<std::vector<LINALG::Matrix<3,2> > > mysurfacenodes = surfacenodes;
       surfacenodes = Teuchos::rcp(new std::vector<LINALG::Matrix<3,2> >);
 
       LINALG::Gather<LINALG::Matrix<3,2> >(*mysurfacenodes,*surfacenodes,numproc,allproc,fluiddis->Comm());

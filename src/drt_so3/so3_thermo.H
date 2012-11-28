@@ -269,13 +269,13 @@ namespace ELEMENTS
     };
 
     //! vector of inverses of the jacobian in material frame
-    vector<LINALG::Matrix<nsd_,nsd_> > invJ_;
+    std::vector<LINALG::Matrix<nsd_,nsd_> > invJ_;
     //! determinant of Jacobian in material frame
     std::vector<double> detJ_;
     //! container containing all kind of solid3 thisandthat
     DRT::Container data_;
     //! vector of coordinates of current integration point in reference coordinates
-    vector<LINALG::Matrix<nsd_,1> > xsi_;
+    std::vector<LINALG::Matrix<nsd_,1> > xsi_;
 
     DRT::UTILS::GaussIntegration intpoints_;
 
@@ -309,7 +309,7 @@ namespace ELEMENTS
       DRT::Element::LocationArray& la,  //!< location array
       std::vector<double>& disp,  //!< current displacements
       std::vector<double>& residual,  //!< current residual displ
-      vector<double>& temp, //!< current temperature
+      std::vector<double>& temp, //!< current temperature
       LINALG::Matrix<numdofperelement_,1>* force,  //!< element internal force vector
       LINALG::Matrix<numgpt_1,numstr_>* elestress,  //!< stresses at GP
       Teuchos::ParameterList& params,  //!< algorithmic parameters e.g. time
@@ -328,7 +328,7 @@ namespace ELEMENTS
       DRT::Element::LocationArray& la,  //!< location array
       std::vector<double>& disp,  //!< current displacements
       std::vector<double>& residual,  //!< current residual displ
-      vector<double>& temp, //!< current temperature
+      std::vector<double>& temp, //!< current temperature
       LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
       LINALG::Matrix<numdofperelement_,1>* force,  //!< element internal force vector
       LINALG::Matrix<numgpt_1,numstr_>* elestress,  //!< stresses at GP

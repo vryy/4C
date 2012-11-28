@@ -124,8 +124,8 @@ namespace FLD
 template<int iel>
 void f3_calc_means(DRT::ELEMENTS::Fluid* ele,
                    DRT::Discretization&  discretization,
-                   vector<double>&       solution,
-                   vector<double>&       displacement,
+                   std::vector<double>&  solution,
+                   std::vector<double>&  displacement,
                    Teuchos::ParameterList& params)
 {
   // get view of solution and subgrid-viscosity vector
@@ -291,7 +291,7 @@ void f3_calc_means(DRT::ELEMENTS::Fluid* ele,
     {
       dserror("cannot determine orientation of plane normal in local coordinate system of element");
     }
-    vector<int> inplanedirect;
+    std::vector<int> inplanedirect;
     {
       std::set <int> inplanedirectset;
       for(int i=0;i<3;++i)
@@ -530,7 +530,7 @@ void f3_calc_means(DRT::ELEMENTS::Fluid* ele,
     }
 
     // get nurbs dis' element numbers
-    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
 
     // use size of planes and mele to determine number of layers
     int numsublayers=(size-1)/nele_x_mele_x_lele[1];
@@ -543,7 +543,7 @@ void f3_calc_means(DRT::ELEMENTS::Fluid* ele,
     // get gid, location in the patch
     int gid = ele->Id();
 
-    vector<int> ele_cart_id(3);
+    std::vector<int> ele_cart_id(3);
 
     int npatch = -1;
 
@@ -775,8 +775,8 @@ void f3_calc_means(DRT::ELEMENTS::Fluid* ele,
 template<int iel>
 void f3_calc_loma_means(DRT::ELEMENTS::Fluid* ele,
                         DRT::Discretization&  discretization,
-                        vector<double>&       velocitypressure ,
-                        vector<double>&       temperature  ,
+                        std::vector<double>&  velocitypressure ,
+                        std::vector<double>&  temperature  ,
                         Teuchos::ParameterList& params,
                         const double          eosfac)
 {
@@ -929,7 +929,7 @@ void f3_calc_loma_means(DRT::ELEMENTS::Fluid* ele,
     {
       dserror("cannot determine orientation of plane normal in local coordinate system of element");
     }
-    vector<int> inplanedirect;
+    std::vector<int> inplanedirect;
     {
       std::set <int> inplanedirectset;
       for(int i=0;i<3;++i)
@@ -1173,8 +1173,8 @@ void f3_calc_loma_means(DRT::ELEMENTS::Fluid* ele,
 template<int iel>
 void f3_calc_scatra_means(DRT::ELEMENTS::Fluid* ele,
                           DRT::Discretization&  discretization,
-                          vector<double>&       velocitypressure,
-                          vector<double>&       scalar,
+                          std::vector<double>&  velocitypressure,
+                          std::vector<double>&  scalar,
                           Teuchos::ParameterList& params)
 {
   // get view of solution vector
@@ -1322,7 +1322,7 @@ void f3_calc_scatra_means(DRT::ELEMENTS::Fluid* ele,
     {
       dserror("cannot determine orientation of plane normal in local coordinate system of element");
     }
-    vector<int> inplanedirect;
+    std::vector<int> inplanedirect;
     {
       std::set <int> inplanedirectset;
       for(int i=0;i<3;++i)
@@ -1576,8 +1576,8 @@ void f3_apply_box_filter(DRT::ELEMENTS::Fluid*         ele,
                          const double                  thermpress,
                          RCP<std::vector<double> >          vel_hat,
                          RCP<std::vector<double> >          densvel_hat,
-                         RCP<vector<std::vector<double> > > reynoldsstress_hat,
-                         RCP<vector<std::vector<double> > > modeled_subgrid_stress,
+                         RCP<std::vector<std::vector<double> > > reynoldsstress_hat,
+                         RCP<std::vector<std::vector<double> > > modeled_subgrid_stress,
                          double&                       volume,
                          double&                       dens_hat,
                          double&                       dens_strainrate_hat)
@@ -2427,9 +2427,9 @@ void f3_calc_smag_const_LijMij_and_MijMij(DRT::ELEMENTS::Fluid*  ele,
 template<int NEN, int NSD, DRT::Element::DiscretizationType DISTYPE>
 void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
                     Teuchos::ParameterList&  params,
-                    RCP<MAT::Material>  mat,
-                    vector<double>&     vel,
-                    vector<double>&     fsvel)
+                    RCP<MAT::Material>       mat,
+                    std::vector<double>&     vel,
+                    std::vector<double>&     fsvel)
 {
   // get mfs parameter
   Teuchos::ParameterList * turbmodelparamsmfs = &(params.sublist("MULTIFRACTAL SUBGRID SCALES"));
@@ -2539,7 +2539,7 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
    dserror("Unknown filter type!");
   // allocate vector for parameter N
   // N may depend on the direction
-  vector<double> Nvel (3);
+  std::vector<double> Nvel (3);
   // element Reynolds number
   double Re_ele = -1.0;
   // characteristic element length
@@ -3224,11 +3224,11 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
 template<int NEN, int NSD, DRT::Element::DiscretizationType DISTYPE>
 void f3_get_mf_nwc(DRT::ELEMENTS::Fluid* ele,
                    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara,
-                   double&             Cai,
-                   double&             vol,
-                   vector<double>&     vel,
-                   vector<double>&     sca,
-                   const double&       thermpress)
+                   double&              Cai,
+                   double&              vol,
+                   std::vector<double>& vel,
+                   std::vector<double>& sca,
+                   const double&        thermpress)
 {
   // allocate a fixed size array for nodal velocities an scalars
   LINALG::Matrix<NSD,NEN> evel;

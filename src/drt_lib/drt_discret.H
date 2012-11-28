@@ -54,13 +54,11 @@ Maintainer: Michael Gee
 #include "drt_dofset.H"
 #include "drt_dserror.H"
 
-// ToDo These using statements have to go away!
-// This is an intermediate solution to still use these objects without
-// an explicit specification of the namespace std or Teuchos in front.
-
-// Note: at least we do not include a whole namespace!
+// ToDo This last using statement has to go away!
+// This is an intermediate solution to still use RCP without
+// an explicit specification of the namespace in front.
+// Note: at least we do not include the whole namespace!
 using Teuchos::RCP;
-using std::vector;
 
 
 namespace LINALG
@@ -727,7 +725,7 @@ public:
 
   \note Sets Filled()=false
   */
-  virtual void SetComm(RCP<Epetra_Comm> comm)
+  virtual void SetComm(Teuchos::RCP<Epetra_Comm> comm)
   { filled_=false; comm_ = comm; return; }
 
   /*!
@@ -743,7 +741,7 @@ public:
 
   \note Sets Filled()=false
   */
-  virtual void AddElement(RCP<DRT::Element> ele);
+  virtual void AddElement(Teuchos::RCP<DRT::Element> ele);
 
   /*!
   \brief Add a node to the discretization  (Filled()==true NOT prerequisite)
@@ -758,7 +756,7 @@ public:
 
   \note Sets Filled()=false
   */
-  virtual void AddNode(RCP<DRT::Node> node);
+  virtual void AddNode(Teuchos::RCP<DRT::Node> node);
 
   /*!
   \brief Delete an node from the discretization (Filled()==true NOT prerequisite)
@@ -776,7 +774,7 @@ public:
 
   \note Sets Filled()=false and calls Reset() upon discretization.
   */
-  virtual bool DeleteNode(RCP<DRT::Node> node);
+  virtual bool DeleteNode(Teuchos::RCP<DRT::Node> node);
 
   /*!
   \brief Delete an node with global id gid from the discretization
@@ -813,7 +811,7 @@ public:
 
   \note Sets Filled()=false and calls Reset() upon discretization.
   */
-  virtual bool DeleteElement(RCP<DRT::Element> ele);
+  virtual bool DeleteElement(Teuchos::RCP<DRT::Element> ele);
 
   /*!
   \brief Delete an element with global id gid from the discretization
@@ -911,7 +909,7 @@ public:
            NOT be overwritten but stored twice in the discretization
 
   */
-  virtual void SetCondition(const string& name,RCP<Condition> cond);
+  virtual void SetCondition(const string& name,Teuchos::RCP<Condition> cond);
 
   /*!
   \brief Get all conditions with a certain name
@@ -930,7 +928,7 @@ public:
 
   \return Returns out.size()=0 if condition with that name does not exist
   */
-  virtual void GetCondition(const string& name, vector<DRT::Condition*>& out) const;
+  virtual void GetCondition(const string& name, std::vector<DRT::Condition*>& out) const;
 
   /*!
   \brief Get a condition with a certain name
@@ -1119,7 +1117,7 @@ public:
   \param gidlist (in): list of element gids to be distributed
 
   */
-  void ProcZeroDistributeElementsToAll(Epetra_Map& target, vector<int>& gidlist);
+  void ProcZeroDistributeElementsToAll(Epetra_Map& target, std::vector<int>& gidlist);
 
   /*!
   \brief Export the nodes from proc 0 to a different parallel row layout
@@ -1710,7 +1708,7 @@ public:
 
     \note Filled()=true is a prerequisite
    */
-  RCP<vector<char> > PackMyElements() const;
+  RCP<std::vector<char> > PackMyElements() const;
 
   /*!
     \brief Pack local nodes (row map) into buffer.
@@ -1720,7 +1718,7 @@ public:
 
     \note Filled()=true is a prerequisite
    */
-  RCP<vector<char> > PackMyNodes() const;
+  RCP<std::vector<char> > PackMyNodes() const;
 
     /*!
     \brief Pack condition (this is done by one processor, since data is redundant).
@@ -1730,7 +1728,7 @@ public:
 
     \note Filled()=true is a prerequisite
    */
-  RCP<vector<char> > PackCondition(
+  RCP<std::vector<char> > PackCondition(
           const string condname     ///< name of condition as it is used in GetCondition() or SetCondition()
           ) const;
 
@@ -1744,7 +1742,7 @@ public:
 
     \note Sets Filled()=false
    */
-  void UnPackMyElements(RCP<vector<char> > e);
+  void UnPackMyElements(RCP<std::vector<char> > e);
 
   /*!
     \brief Unpack nodal buffer and create local nodes.
@@ -1756,7 +1754,7 @@ public:
 
     \note Sets Filled()=false
    */
-  void UnPackMyNodes(RCP<vector<char> > e);
+  void UnPackMyNodes(RCP<std::vector<char> > e);
 
   /*!
     \brief Unpack one condition.
@@ -1769,7 +1767,7 @@ public:
 
     \note Sets Filled()=false
    */
-  void UnPackCondition(const RCP<vector<char> > e, const string condname);
+  void UnPackCondition(const RCP<std::vector<char> > e, const string condname);
 
   //@}
 
@@ -1920,27 +1918,27 @@ protected:
 
   // internal data
   string                                name_;              // name of this discretization
-  RCP<Epetra_Comm>                      comm_;              // an Epetra_comm
+  Teuchos::RCP<Epetra_Comm>             comm_;              // an Epetra_comm
   bool                                  filled_;            // flag indicating whether getOrganized has been called
   bool                                  havedof_;           // flag indicating whether degrees of freedom where assigned
 
-  RCP<Epetra_Map>                       elerowmap_;         // unique distribution of element ownerships
-  RCP<Epetra_Map>                       elecolmap_;         // distribution of elements including ghost elements
-  std::vector<DRT::Element*>            elerowptr_;         // vector of pointers to row elements for faster access
-  std::vector<DRT::Element*>            elecolptr_;         // vector of pointers to column elements for faster access
-  std::map<int,RCP<DRT::Element> >      element_;           // map of elements
+  Teuchos::RCP<Epetra_Map>               elerowmap_;         // unique distribution of element ownerships
+  Teuchos::RCP<Epetra_Map>               elecolmap_;         // distribution of elements including ghost elements
+  std::vector<DRT::Element*>             elerowptr_;         // vector of pointers to row elements for faster access
+  std::vector<DRT::Element*>             elecolptr_;         // vector of pointers to column elements for faster access
+  std::map<int,Teuchos::RCP<DRT::Element> > element_;           // map of elements
 
-  RCP<Epetra_Map>                       noderowmap_;        // unique distribution of nodal ownerships
-  RCP<Epetra_Map>                       nodecolmap_;        // distribution of nodes including ghost nodes
-  std::vector<DRT::Node*>               noderowptr_;        // vector of pointers to row nodes for faster access
-  std::vector<DRT::Node*>               nodecolptr_;        // vector of pointers to column nodes for faster access
-  std::map<int,RCP<DRT::Node> >         node_;              // map from nodal Gid to node pointers
+  Teuchos::RCP<Epetra_Map>               noderowmap_;        // unique distribution of nodal ownerships
+  Teuchos::RCP<Epetra_Map>               nodecolmap_;        // distribution of nodes including ghost nodes
+  std::vector<DRT::Node*>                noderowptr_;        // vector of pointers to row nodes for faster access
+  std::vector<DRT::Node*>                nodecolptr_;        // vector of pointers to column nodes for faster access
+  std::map<int,Teuchos::RCP<DRT::Node> > node_;              // map from nodal Gid to node pointers
 
-  std::vector<std::map<string,RCP<const Epetra_Vector> > > state_;    // map of references to solution states
+  std::vector<std::map<string,Teuchos::RCP<const Epetra_Vector> > > state_; // map of references to solution states
 
-  std::multimap<string,RCP<Condition> > condition_;         // some conditions e.g. BCs
+  std::multimap<string,Teuchos::RCP<Condition> > condition_; // some conditions e.g. BCs
 
-  std::vector<RCP<DofSet> >             dofsets_;           // set of DofSets
+  std::vector<Teuchos::RCP<DofSet> >             dofsets_;   // set of DofSets
 }; // class Discretization
 } // namespace DRT
 

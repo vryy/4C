@@ -116,7 +116,7 @@ void POROELAST::UTILS::PoroelastCloneStrategy::SetElementData(Teuchos::RCP<
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 bool POROELAST::UTILS::PoroelastCloneStrategy::DetermineEleType(
-    DRT::Element* actele, const bool ismyele, vector<string>& eletype)
+    DRT::Element* actele, const bool ismyele, std::vector<string>& eletype)
 {
   //clone the element only if it is a poro element (we support submeshes here)
   if (CheckPoro(actele))

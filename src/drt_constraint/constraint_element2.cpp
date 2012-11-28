@@ -116,7 +116,7 @@ void DRT::ELEMENTS::ConstraintElement2::Unpack(const std::vector<char>& data)
   Element::Unpack(basedata);
 
   // data_
-  vector<char> tmp(0);
+  std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
 

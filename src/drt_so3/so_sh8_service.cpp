@@ -306,7 +306,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_gmshplotlabeledelement(const int LabelIds[NUMN
   gmshfilecontent << "View \" One Solid Element \" {" << endl;
   gmshfilecontent << IO::GMSH::elementAtInitialPositionToString(this->thickdir_, this) << endl;
   // plot vector from 1st node to 5th node which is parametric t-dir
-  vector<double> X15(3);
+  std::vector<double> X15(3);
   X15[0] = this->Nodes()[4]->X()[0] - this->Nodes()[0]->X()[0];
   X15[1] = this->Nodes()[4]->X()[1] - this->Nodes()[0]->X()[1];
   X15[2] = this->Nodes()[4]->X()[2] - this->Nodes()[0]->X()[2];
@@ -417,9 +417,9 @@ void DRT::ELEMENTS::So_sh8Type::sosh8_gmshplotdis(const DRT::Discretization& dis
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > DRT::ELEMENTS::So_sh8::sosh8_derivs_sdc()
+const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > DRT::ELEMENTS::So_sh8::sosh8_derivs_sdc()
 {
-  vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs(NUMGPT_SOH8);
+  std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs(NUMGPT_SOH8);
   // (r,s,t) gp-locations of fully integrated linear 8-node Hex
   const double r[NUMNOD_SOH8] = {-1.0, 1.0, 1.0,-1.0,-1.0, 1.0, 1.0,-1.0};
   const double s[NUMNOD_SOH8] = {-1.0,-1.0, 1.0, 1.0,-1.0,-1.0, 1.0, 1.0};

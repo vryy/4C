@@ -397,7 +397,7 @@ void DRT::ELEMENTS::Transport::Unpack(const std::vector<char>& data)
   // distype
   distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
 
-  vector<char> tmp(0);
+  std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
 
@@ -476,7 +476,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Transport::Lines()
   else
   {
     // 1D (we return the element itself)
-    vector<RCP<Element> > lines(1);
+    std::vector<Teuchos::RCP<Element> > lines(1);
     lines[0]= Teuchos::rcp(this, false);
     return lines;
   }
@@ -501,7 +501,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Transport::Surfaces()
   else if (NumSurface() == 1)
   {
     // 2D (we return the element itself)
-    vector<RCP<Element> > surfaces(1);
+    std::vector<Teuchos::RCP<Element> > surfaces(1);
     surfaces[0]= Teuchos::rcp(this, false);
     return surfaces;
   }
@@ -521,7 +521,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Transport::Volumes()
 {
   if (NumVolume() == 1)
   {
-    vector<RCP<Element> > volumes(1);
+    std::vector<Teuchos::RCP<Element> > volumes(1);
     volumes[0]= Teuchos::rcp(this, false);
     return volumes;
   }

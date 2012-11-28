@@ -771,7 +771,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
 
   // allocate vector for parameter N
   // N may depend on the direction -> currently unused
-  vector<double> Nvel (3);
+  std::vector<double> Nvel (3);
   // variable for final (corrected) Csgs_vel
   double Csgs_vel_nw = Csgs_sgvel;
 

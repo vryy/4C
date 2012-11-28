@@ -311,8 +311,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       {
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress",Teuchos::null);
-        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain",Teuchos::null);
+        RCP<std::vector<char> > stressdata = params.get<RCP<std::vector<char> > >("stress",Teuchos::null);
+        RCP<std::vector<char> > straindata = params.get<RCP<std::vector<char> > >("strain",Teuchos::null);
         if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata==Teuchos::null) dserror("Cannot get stress 'data'");
         if (straindata==Teuchos::null) dserror("Cannot get strain 'data'");

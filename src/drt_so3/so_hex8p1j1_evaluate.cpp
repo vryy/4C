@@ -325,9 +325,9 @@ void DRT::ELEMENTS::So_Hex8P1J1::ForceStiffMass(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-  const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
-  const static vector<double> gpweights = soh8_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  const static std::vector<double> gpweights = soh8_weights();
 /* ============================================================================*/
 
   // update element geometry
@@ -1043,9 +1043,9 @@ void DRT::ELEMENTS::So_Hex8P1J1::test_stiffmat(
     /* ============================================================================*
     ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
     ** ============================================================================*/
-    const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
-    const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
-    const static vector<double> gpweights = soh8_weights();
+    const static std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
+    const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+    const static std::vector<double> gpweights = soh8_weights();
     /* ============================================================================*/
 
     // update element geometry

@@ -209,8 +209,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     std::vector<int>&                  lm_faceToPatch,       ///< local map between face dofs and patchlm
     std::vector<int>&                  lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
     std::vector<int>&                  lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
-    vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
-    vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
+    std::vector<Epetra_SerialDenseMatrix>&  elemat_blocks,   ///< element matrix blocks
+    std::vector<Epetra_SerialDenseVector>&  elevec_blocks    ///< element vector blocks
   )
 {
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: evaluate" );
@@ -292,7 +292,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     dserror("Cannot get state vector 'velaf'");
 
 
-  vector<double> patch_velaf(ndofinpatch);
+  std::vector<double> patch_velaf(ndofinpatch);
 
   for (int i=0; i<ndofinpatch; ++i)
   {
@@ -304,8 +304,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
   // extract velocities n+1 for master element and slave element
 
-  vector<double> mypvelaf(master_numdof);
-  vector<double> mynvelaf(slave_numdof);
+  std::vector<double> mypvelaf(master_numdof);
+  std::vector<double> mynvelaf(slave_numdof);
 
 
   // get velaf for master element
@@ -317,8 +317,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     mynvelaf[i] = patch_velaf[lm_slaveToPatch[i]];
 
 
-  vector<double> mypvelnp(master_numdof);
-  vector<double> mynvelnp(slave_numdof);
+  std::vector<double> mypvelnp(master_numdof);
+  std::vector<double> mynvelnp(slave_numdof);
 
 
 
@@ -363,9 +363,9 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   //-----------------------------------------------------------------------
   // extract displacements for master element and slave element and face element
 
-  vector<double> myedispnp (face_numdof);
-  vector<double> mypedispnp(master_numdof);
-  vector<double> mynedispnp(slave_numdof);
+  std::vector<double> myedispnp (face_numdof);
+  std::vector<double> mypedispnp(master_numdof);
+  std::vector<double> mynedispnp(slave_numdof);
 
   if (pele->IsAle())
   {
@@ -2273,10 +2273,10 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
   // compute element length w.r.t master element
 
   // numbering of master's surfaces/lines w.r.t parent element
-  vector< std::vector<int> > m_connectivity;
+  std::vector< std::vector<int> > m_connectivity;
 
   // numbering of slave's surfaces/lines w.r.t parent element
-  vector< std::vector<int> > s_connectivity;
+  std::vector< std::vector<int> > s_connectivity;
 
   if(nsd_ == 3)
   {

@@ -804,7 +804,7 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::InitJacobianMapping(DRT::Discretization& 
     weights(inode) = cp->W();
   }
 
-  const static vector<LINALG::Matrix<3,27> > derivs
+  const static std::vector<LINALG::Matrix<3,27> > derivs
     = sonurbs27_derivs(myknots,weights);
   LINALG::Matrix<27,3>                       xrefe;
   for (int i=0; i<27; ++i)

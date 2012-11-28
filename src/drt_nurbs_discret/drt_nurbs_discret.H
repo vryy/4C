@@ -102,7 +102,7 @@ public:
   \author gammi
 
   */
-  virtual vector<int> Return_n_x_m_x_l(const int npatch)
+  virtual std::vector<int> Return_n_x_m_x_l(const int npatch)
     {
       return(knots_->Return_n_x_m_x_l(npatch));
     }
@@ -118,7 +118,7 @@ public:
   \author gammi
 
   */
-  virtual vector<int> Return_degree(const int npatch)
+  virtual std::vector<int> Return_degree(const int npatch)
     {
       return(knots_->ReturnDegree(npatch));
     }
@@ -131,7 +131,7 @@ public:
   \author gammi
 
   */
-  virtual vector<int> Return_Offsets()
+  virtual std::vector<int> Return_Offsets()
     {
       return(knots_->ReturnOffsets());
     }
@@ -147,7 +147,7 @@ public:
   \author gammi
 
   */
-  virtual vector<int> Return_nele_x_mele_x_lele(const int npatch)
+  virtual std::vector<int> Return_nele_x_mele_x_lele(const int npatch)
     {
       return(knots_->Return_nele_x_mele_x_lele(npatch));
     }

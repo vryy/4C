@@ -155,10 +155,10 @@ private:
       { return isinit_&&(remtime_!=Teuchos::null);}
 
     /// return lambdas
-    RCP<vector<std::vector<double> > > Getlambdas() const {return lambda_;}
+    RCP<std::vector<std::vector<double> > > Getlambdas() const {return lambda_;}
 
     /// return phis
-    RCP<vector<Epetra_SerialDenseMatrix> > Getphis() const {return phi_;}
+    RCP<std::vector<Epetra_SerialDenseMatrix> > Getphis() const {return phi_;}
 
     /// return gammas
     RCP<std::vector<double> > Getgammas() const {return gamma_;}
@@ -167,10 +167,10 @@ private:
     RCP<std::vector<double> > Getremtimes() const {return remtime_;}
 
     /// return a1s
-    RCP<vector<std::vector<double> > > Geta1() const {return a1_;}
+    RCP<std::vector<std::vector<double> > > Geta1() const {return a1_;}
 
     /// return a2s
-    RCP<vector<std::vector<double> > > Geta2() const {return a2_;}
+    RCP<std::vector<std::vector<double> > > Geta2() const {return a2_;}
 
     /*!
       \brief setup material at element input with potentially local fiber cosy
@@ -201,7 +201,7 @@ private:
     void EvaluateFiberVecs(const int gp, const double gamma, const Epetra_SerialDenseMatrix& locsys);
 
     /// Print vector to string
-    std::string PrintVec(const vector<double> actvec);
+    std::string PrintVec(const std::vector<double> actvec);
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
@@ -214,15 +214,15 @@ private:
     /// angle of alignment at gp
     Teuchos::RCP<std::vector<double> > gamma_;
     /// first fiber vector per gp
-    Teuchos::RCP<vector<std::vector<double> > > a1_;
+    Teuchos::RCP<std::vector<std::vector<double> > > a1_;
     /// second fiber vector per gp
-    Teuchos::RCP<vector<std::vector<double> > > a2_;
+    Teuchos::RCP<std::vector<std::vector<double> > > a2_;
     /// eigenvectors per gp
-    Teuchos::RCP<vector<Epetra_SerialDenseMatrix> > phi_;
+    Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> > phi_;
     /// eigenvalues per gp
-    Teuchos::RCP<vector<std::vector<double> > > lambda_;
+    Teuchos::RCP<std::vector<std::vector<double> > > lambda_;
     /// current stress
-    Teuchos::RCP<vector<Epetra_SerialDenseMatrix> > stresses_;
+    Teuchos::RCP<std::vector<Epetra_SerialDenseMatrix> > stresses_;
 
     /// remember time
     Teuchos::RCP<std::vector<double> > remtime_;

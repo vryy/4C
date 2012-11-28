@@ -170,7 +170,7 @@ void DRT::Exporter::ISend(const int frompid,
  |  receive anything (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::ReceiveAny(int& source, int&tag,
-                               vector<char>& recvbuff,int& length)
+    std::vector<char>& recvbuff,int& length)
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
@@ -193,7 +193,7 @@ void DRT::Exporter::ReceiveAny(int& source, int&tag,
  |  receive specific (public)                                mwgee 03/07|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::Receive(const int source,const int tag,
-                            vector<char>& recvbuff,int& length)
+    std::vector<char>& recvbuff,int& length)
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
@@ -213,7 +213,7 @@ void DRT::Exporter::Receive(const int source,const int tag,
  |  receive anything (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::ReceiveAny(int& source, int& tag,
-                               vector<int>& recvbuff,int& length)
+    std::vector<int>& recvbuff,int& length)
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
@@ -236,7 +236,7 @@ void DRT::Exporter::ReceiveAny(int& source, int& tag,
  |  receive specific (public)                                mwgee 03/07|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::Receive(const int source,const int tag,
-                            vector<int>& recvbuff,int& length)
+    std::vector<int>& recvbuff,int& length)
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
@@ -256,7 +256,7 @@ void DRT::Exporter::Receive(const int source,const int tag,
  |  receive anything (public)                                mwgee 11/06|
  *----------------------------------------------------------------------*/
 void DRT::Exporter::ReceiveAny(int& source, int&tag,
-                               vector<double>& recvbuff,int& length)
+    std::vector<double>& recvbuff,int& length)
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
   if (!comm) dserror("Comm() is not a Epetra_MpiComm\n");
@@ -279,7 +279,7 @@ void DRT::Exporter::ReceiveAny(int& source, int&tag,
 /*----------------------------------------------------------------------*
  |  reduce all (public)                                		  umay 10/07|
  *----------------------------------------------------------------------*/
-void DRT::Exporter::Allreduce(	vector<int>& sendbuff, vector<int>& recvbuff,
+void DRT::Exporter::Allreduce(std::vector<int>& sendbuff, std::vector<int>& recvbuff,
 								MPI_Op mpi_op)
 {
   const Epetra_MpiComm* comm = dynamic_cast<const Epetra_MpiComm*>(&(Comm()));
@@ -324,7 +324,7 @@ void DRT::Exporter::ConstructExporter()
   sizes[0] = SourceMap().NumMyElements();
   sizes[1] = TargetMap().NumMyElements();
   const int sendsize = sizes[0]+sizes[1];
-  vector<int> sendbuff;
+  std::vector<int> sendbuff;
   sendbuff.reserve(sendsize);
   std::copy(SourceMap().MyGlobalElements(),
             SourceMap().MyGlobalElements()+SourceMap().NumMyElements(),
@@ -340,7 +340,7 @@ void DRT::Exporter::ConstructExporter()
     recvsizes[1] = sizes[1];
     Comm().Broadcast(recvsizes,2,proc);
     const int recvsize = recvsizes[0]+recvsizes[1];
-    vector<int> recvbuff(recvsize);
+    std::vector<int> recvbuff(recvsize);
     if (proc==MyPID())
       std::copy(sendbuff.begin(),sendbuff.end(),&recvbuff[0]);
     Comm().Broadcast(&recvbuff[0],recvsize,proc);
@@ -443,7 +443,7 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
     //------------------------------------------------ do sending to tproc
     // gather all objects to be send
     DRT::PackBuffer sendblock;
-    vector<int> sendgid;
+    std::vector<int> sendgid;
     sendgid.reserve(SendPlan()[tproc].size());
 
     // count
@@ -468,7 +468,7 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
     }
 
     // send tproc no. of chars tproc must receive
-    vector<int> snmessages(2);
+    std::vector<int> snmessages(2);
     snmessages[0] = sendblock().size();
     snmessages[1] = sendgid.size();
 
@@ -484,7 +484,7 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
 
     //---------------------------------------- do the receiving from sproc
     // receive how many messages I will receive from sproc
-    vector<int> rnmessages(2);
+    std::vector<int> rnmessages(2);
     int source = sproc;
     int length = 0;
     int tag = 1;
@@ -493,18 +493,18 @@ void DRT::Exporter::GenericExport(ExporterHelper& helper)
     if (length!=2 or tag!=1) dserror("Messages got mixed up");
 
     // receive the objects
-    vector<char> recvblock(rnmessages[0]);
+    std::vector<char> recvblock(rnmessages[0]);
     tag = 2;
     ReceiveAny(source,tag,recvblock,length);
     if (tag!=2) dserror("Messages got mixed up");
 
     // receive the gids
-    vector<int> recvgid(rnmessages[1]);
+    std::vector<int> recvgid(rnmessages[1]);
     tag = 3;
     ReceiveAny(source,tag,recvgid,length);
     if (tag!=3) dserror("Messages got mixed up");
 
-    vector<char>::size_type index = 0;
+    std::vector<char>::size_type index = 0;
     int j = 0;
     while (index < recvblock.size())
     {

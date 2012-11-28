@@ -450,16 +450,16 @@ void PostProblem::read_meshes()
       IO::HDFReader reader = IO::HDFReader(input_dir_);
       reader.Open(filename,num_output_procs,comm_->NumProc(),comm_->MyPID());
 
-      RCP<vector<char> > node_data =
+      RCP<std::vector<char> > node_data =
         reader.ReadNodeData(step, comm_->NumProc(), comm_->MyPID());
       currfield.discretization()->UnPackMyNodes(node_data);
 
-      RCP<vector<char> > element_data =
+      RCP<std::vector<char> > element_data =
         reader.ReadElementData(step, comm_->NumProc(), comm_->MyPID());
       currfield.discretization()->UnPackMyElements(element_data);
 
-      RCP<vector<char> > cond_pbcsline;
-      RCP<vector<char> > cond_pbcssurf;
+      RCP<std::vector<char> > cond_pbcsline;
+      RCP<std::vector<char> > cond_pbcssurf;
 
       for (SYMBOL* condition = map_find_symbol(meshmap,"condition");
            condition!=NULL;
@@ -602,7 +602,7 @@ void PostProblem::read_meshes()
         if(nurbsdis==NULL)
           dserror("Discretization %s is not a NurbsDiscretization",currfield.discretization()->Name().c_str());
 
-        RCP<vector<char> > packed_knots;
+        RCP<std::vector<char> > packed_knots;
         if (comm_->MyPID()==0)
           packed_knots = reader.ReadKnotvector(step);
         else

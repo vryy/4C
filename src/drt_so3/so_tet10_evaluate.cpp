@@ -151,8 +151,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
       {
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress",Teuchos::null);
-        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain",Teuchos::null);
+        RCP<std::vector<char> > stressdata = params.get<RCP<std::vector<char> > >("stress",Teuchos::null);
+        RCP<std::vector<char> > straindata = params.get<RCP<std::vector<char> > >("strain",Teuchos::null);
         if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
         if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
@@ -296,8 +296,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 			double energynorm = 0.0;
 
 			// shape functions, derivatives and integration weights
-			const static vector<LINALG::Matrix<NUMNOD_SOTET10,1> > vals = so_tet10_11gp_shapefcts();
-			const static vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs = so_tet10_11gp_derivs();
+			const static std::vector<LINALG::Matrix<NUMNOD_SOTET10,1> > vals = so_tet10_11gp_shapefcts();
+			const static std::vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs = so_tet10_11gp_derivs();
 			const static std::vector<double> weights = so_tet10_11gp_weights();
 
 			// get displacements and extract values of this element
@@ -502,9 +502,9 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(Teuchos::ParameterList& params,
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
 ** ============================================================================*/
-  const static vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts = so_tet10_4gp_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs = so_tet10_4gp_derivs();
-  const static vector<double> gpweights = so_tet10_4gp_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts = so_tet10_4gp_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs = so_tet10_4gp_derivs();
+  const static std::vector<double> gpweights = so_tet10_4gp_weights();
 /* ============================================================================*/
 
   // update element geometry
@@ -549,8 +549,8 @@ int DRT::ELEMENTS::So_tet10::EvaluateNeumann(Teuchos::ParameterList& params,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet10::InitJacobianMapping()
 {
-  const static vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs4gp = so_tet10_4gp_derivs();
-  const static vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs11gp = so_tet10_11gp_derivs();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs4gp = so_tet10_4gp_derivs();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs11gp = so_tet10_11gp_derivs();
 
   LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10> xrefe;
   for (int i=0; i<NUMNOD_SOTET10; ++i)
@@ -606,9 +606,9 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 4 GAUSS POINTS*
 ** ============================================================================*/
-  const static vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts_4gp = so_tet10_4gp_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs_4gp = so_tet10_4gp_derivs();
-  const static vector<double> gpweights_4gp = so_tet10_4gp_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts_4gp = so_tet10_4gp_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs_4gp = so_tet10_4gp_derivs();
+  const static std::vector<double> gpweights_4gp = so_tet10_4gp_weights();
 /* ============================================================================*/
   double density;
 
@@ -860,9 +860,9 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
     /* ============================================================================*
     ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for TET_10 with 11 GAUSS POINTS*
     ** ============================================================================*/
-      const static vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts_11gp = so_tet10_11gp_shapefcts();
-      const static vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs_11gp = so_tet10_11gp_derivs();
-      const static vector<double> gpweights_11gp = so_tet10_11gp_weights();
+      const static std::vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts_11gp = so_tet10_11gp_shapefcts();
+      const static std::vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> > derivs_11gp = so_tet10_11gp_derivs();
+      const static std::vector<double> gpweights_11gp = so_tet10_11gp_weights();
     /* ============================================================================*/
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++

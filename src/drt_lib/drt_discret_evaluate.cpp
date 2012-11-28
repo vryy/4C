@@ -859,13 +859,13 @@ void DRT::Discretization::EvaluateConditionUsingParentData(
 	  // the parameterlist --- the element will fill
 	  // them since only the element implementation
 	  // knows its parent
-	  RCP<vector<int> > plm     =Teuchos::rcp(new std::vector<int>);
-	  RCP<vector<int> > plmowner=Teuchos::rcp(new std::vector<int>);
-	  RCP<vector<int> > plmstride=Teuchos::rcp(new std::vector<int>);
+	  RCP<std::vector<int> > plm     =Teuchos::rcp(new std::vector<int>);
+	  RCP<std::vector<int> > plmowner=Teuchos::rcp(new std::vector<int>);
+	  RCP<std::vector<int> > plmstride=Teuchos::rcp(new std::vector<int>);
 
-	  params.set<RCP<vector<int> > >("plm",plm);
-	  params.set<RCP<vector<int> > >("plmowner",plmowner);
-	  params.set<RCP<vector<int> > >("plmstride",plmstride);
+	  params.set<RCP<std::vector<int> > >("plm",plm);
+	  params.set<RCP<std::vector<int> > >("plmowner",plmowner);
+	  params.set<RCP<std::vector<int> > >("plmstride",plmstride);
 
 	  // call the element specific evaluate method
 	  int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,

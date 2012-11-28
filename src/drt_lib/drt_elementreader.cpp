@@ -114,7 +114,7 @@ void ElementReader::Partition()
   // - read global ids of elements of this discretization
 
   // vector of all global element ids
-  vector<int> eids;
+  std::vector<int> eids;
   int numele = 0;
   string inputfile_name = reader_.MyInputfileName();
 
@@ -268,7 +268,7 @@ void ElementReader::Partition()
   for (int block=0; block<nblock; ++block)
   {
     double t1 = timer.ElapsedTime();
-    vector<int> gidlist;
+    std::vector<int> gidlist;
     if (!endofsection && 0==myrank)
     {
       gidlist.reserve(bsize);
@@ -384,7 +384,7 @@ void ElementReader::Partition()
 
   // global node ids --- this will be a fully redundant vector!
   int numnodes=0;
-  vector<int> nids;
+  std::vector<int> nids;
   numnodes = (int)nodes_.size();
   comm_->Broadcast(&numnodes,1,0);
 
@@ -483,7 +483,7 @@ void ParticleReader::Partition()
   // - read global ids of particles of this discretization
 
   // vector of all global particle ids
-  vector<int> particleids;
+  std::vector<int> particleids;
   int numparticles = 0;
   string inputfile_name = reader_.MyInputfileName();
 

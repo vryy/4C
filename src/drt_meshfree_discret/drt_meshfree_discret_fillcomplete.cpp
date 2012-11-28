@@ -110,14 +110,14 @@ void DRT::MESHFREE::MeshfreeDiscretization::BuildKnotMaps()
   for (curr=knot_.begin(); curr != knot_.end(); ++curr)
     if (curr->second->Owner() == myrank)
       ++numrowknots;
-  vector<int> knotrowids(numrowknots);
+  std::vector<int> knotrowids(numrowknots);
   knotrowptr_.resize(numrowknots);
 
   int numcolknots = (int)knot_.size();
-  vector<int> knotcolids(numcolknots);
+  std::vector<int> knotcolids(numcolknots);
   knotcolptr_.resize(numcolknots);
 
-  vector<int> knotghoids(numcolknots-numrowknots);
+  std::vector<int> knotghoids(numcolknots-numrowknots);
   knotghoptr_.resize(numcolknots-numrowknots);
 
   int countrow=0;

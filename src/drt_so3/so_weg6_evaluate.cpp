@@ -176,8 +176,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
       {
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress",Teuchos::null);
-        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain",Teuchos::null);
+        RCP<std::vector<char> > stressdata = params.get<RCP<std::vector<char> > >("stress",Teuchos::null);
+        RCP<std::vector<char> > straindata = params.get<RCP<std::vector<char> > >("strain",Teuchos::null);
         if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata==Teuchos::null) dserror("Cannot get stress 'data'");
         if (straindata==Teuchos::null) dserror("Cannot get strain 'data'");
@@ -453,8 +453,8 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
       {
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress",Teuchos::null);
-        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain",Teuchos::null);
+        RCP<std::vector<char> > stressdata = params.get<RCP<std::vector<char> > >("stress",Teuchos::null);
+        RCP<std::vector<char> > straindata = params.get<RCP<std::vector<char> > >("strain",Teuchos::null);
         if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
         if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
@@ -642,9 +642,9 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for Wedge_6 with 6 GAUSS POINTS*
 ** ============================================================================*/
-  const static vector<LINALG::Matrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
-  const static vector<double> gpweights = sow6_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
+  const static std::vector<double> gpweights = sow6_weights();
 /* ============================================================================*/
 
   // update element geometry
@@ -1118,8 +1118,8 @@ void DRT::ELEMENTS::So_weg6::DefGradient(const std::vector<double>& disp,
                                          Epetra_SerialDenseMatrix& gpdefgrd,
                                          DRT::ELEMENTS::PreStress& prestress)
 {
-  const static vector<LINALG::Matrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
+  const static std::vector<LINALG::Matrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
 
   // update element geometry
   LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xdisp;  // current  coord. of element
@@ -1159,8 +1159,8 @@ void DRT::ELEMENTS::So_weg6::UpdateJacobianMapping(
                                             const std::vector<double>& disp,
                                             DRT::ELEMENTS::PreStress& prestress)
 {
-  const static vector<LINALG::Matrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
+  const static std::vector<LINALG::Matrix<NUMNOD_WEG6,1> > shapefcts = sow6_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
 
   // get incremental disp
   LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xdisp;
@@ -1208,7 +1208,7 @@ void DRT::ELEMENTS::So_weg6::sow6_remodel(
       RCP<MAT::Material>        mat)            // material
 {
 // in a first step ommit everything with prestress and EAS!!
-  const static vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
+  const static std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs = sow6_derivs();
 
   // update element geometry
   LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6> xcurr;  // current  coord. of element

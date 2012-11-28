@@ -500,8 +500,8 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         // get pointers for vector quantities
         RCP<std::vector<double> > vel_hat = params.get<RCP<std::vector<double> > >("vel_hat");
         RCP<std::vector<double> > densvel_hat = params.get<RCP<std::vector<double> > >("densvel_hat");
-        RCP<vector<std::vector<double> > > reynoldsstress_hat = params.get<RCP<vector<std::vector<double> > > >("reynoldsstress_hat");
-        RCP<vector<std::vector<double> > > modeled_subgrid_stress = params.get<RCP<vector<std::vector<double> > > >("modeled_subgrid_stress");
+        RCP<std::vector<std::vector<double> > > reynoldsstress_hat = params.get<RCP<std::vector<std::vector<double> > > >("reynoldsstress_hat");
+        RCP<std::vector<std::vector<double> > > modeled_subgrid_stress = params.get<RCP<std::vector<std::vector<double> > > >("modeled_subgrid_stress");
 
         // integrate the convolution with the box filter function for this element
         // the results are assembled onto the *_hat arrays

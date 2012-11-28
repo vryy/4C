@@ -253,7 +253,7 @@ void DRT::ELEMENTS::So_tet4::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,time_);
   if (pstype_==INPAR::STR::prestress_mulf)
   {
-    vector<char> tmpprestress(0);
+    std::vector<char> tmpprestress(0);
     ExtractfromPack(position,data,tmpprestress);
     if (prestress_ == Teuchos::null)
       prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
@@ -263,7 +263,7 @@ void DRT::ELEMENTS::So_tet4::Unpack(const std::vector<char>& data)
   // invdesign_
   if (pstype_==INPAR::STR::prestress_id)
   {
-    vector<char> tmpinvdesign(0);
+    std::vector<char> tmpinvdesign(0);
     ExtractfromPack(position,data,tmpinvdesign);
     if (invdesign_ == Teuchos::null)
       invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_SOTET4,NUMGPT_SOTET4,true));
@@ -372,7 +372,7 @@ void DRT::ELEMENTS::So_tet4::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Volumes()
 {
-  vector<RCP<Element> > volumes(1);
+  std::vector<Teuchos::RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }
@@ -394,7 +394,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Surfaces()
   return DRT::UTILS::ElementBoundaryFactory<StructuralSurface,DRT::Element>(DRT::UTILS::buildSurfaces,this);
 }
 
-vector<double> DRT::ELEMENTS::So_tet4::ElementCenterRefeCoords()
+std::vector<double> DRT::ELEMENTS::So_tet4::ElementCenterRefeCoords()
 {
   // update element geometry
   DRT::Node** nodes = Nodes();
@@ -412,7 +412,7 @@ vector<double> DRT::ELEMENTS::So_tet4::ElementCenterRefeCoords()
   LINALG::Matrix<1,NUMDIM_SOTET4> midpoint;
   //midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);
-  vector<double> centercoords(3);
+  std::vector<double> centercoords(3);
   centercoords[0] = midpoint(0,0);
   centercoords[1] = midpoint(0,1);
   centercoords[2] = midpoint(0,2);

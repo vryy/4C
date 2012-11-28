@@ -506,7 +506,7 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::BodyForce(
   const double&                time
   )
 {
-  vector<DRT::Condition*> myneumcond;
+  std::vector<DRT::Condition*> myneumcond;
 
   // check whether all nodes have a unique Neumann condition
   switch(nsd_){
@@ -1650,8 +1650,8 @@ void DRT::ELEMENTS::MeshfreeScaTraImpl<distype>::FDcheck(
   // call --- they are not intended to be modified
 
   // alloc the vectors that will store the original, non-perturbed values
-  vector<LINALG::SerialDenseVector> origephinp(numscal_);
-  vector<LINALG::SerialDenseVector> origehist(numscal_);
+  std::vector<LINALG::SerialDenseVector> origephinp(numscal_);
+  std::vector<LINALG::SerialDenseVector> origehist(numscal_);
 
   // copy original concentrations and potentials to these storage arrays
   for (int i=0;i<nen_;++i)

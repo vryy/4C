@@ -307,15 +307,15 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   // the vectors have been allocated outside in
   // EvaluateConditionUsingParentData
-  RCP<vector<int> > plm
+  RCP<std::vector<int> > plm
     =
-    params.get<RCP<vector<int> > >("plm");
-  RCP<vector<int> > plmowner
+    params.get<RCP<std::vector<int> > >("plm");
+  RCP<std::vector<int> > plmowner
     =
-    params.get<RCP<vector<int> > >("plmowner");
-  RCP<vector<int> > plmstride
+    params.get<RCP<std::vector<int> > >("plmowner");
+  RCP<std::vector<int> > plmstride
     =
-    params.get<RCP<vector<int> > >("plmstride");
+    params.get<RCP<std::vector<int> > >("plmstride");
 
   surfele->ParentElement()->LocationVector(discretization,*plm,*plmowner,*plmstride);
 
@@ -339,11 +339,11 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   if (velaf==Teuchos::null)
     dserror("Cannot get state vector 'velaf'");
 
-  vector<double> mypvelaf((*plm).size());
+  std::vector<double> mypvelaf((*plm).size());
   DRT::UTILS::ExtractMyValues(*velaf,mypvelaf,*plm);
 
   // velocities n+1
-  vector<double> mypvelnp((*plm).size());
+  std::vector<double> mypvelnp((*plm).size());
 
   if((fldpara_->TimeAlgo()==INPAR::FLUID::timeint_gen_alpha) or
       (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha))
@@ -361,8 +361,8 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   else
     DRT::UTILS::ExtractMyValues(*velaf,mypvelnp,*plm);
 
-  vector<double> myedispnp ((lm  ).size());
-  vector<double> mypedispnp((*plm).size());
+  std::vector<double> myedispnp ((lm  ).size());
+  std::vector<double> mypedispnp((*plm).size());
   if (surfele->ParentElement()->IsAle())
   {
     // mesh displacements, new time step, n+1
@@ -2225,15 +2225,15 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
 
   // the vectors have been allocated outside in
   // EvaluateConditionUsingParentData
-  RCP<vector<int> > plm
+  RCP<std::vector<int> > plm
     =
-    params.get<RCP<vector<int> > >("plm");
-  RCP<vector<int> > plmowner
+    params.get<RCP<std::vector<int> > >("plm");
+  RCP<std::vector<int> > plmowner
     =
-    params.get<RCP<vector<int> > >("plmowner");
-  RCP<vector<int> > plmstride
+    params.get<RCP<std::vector<int> > >("plmowner");
+  RCP<std::vector<int> > plmstride
     =
-    params.get<RCP<vector<int> > >("plmstride");
+    params.get<RCP<std::vector<int> > >("plmstride");
 
   lineele->ParentElement()->LocationVector(discretization,*plm,*plmowner,*plmstride);
 
@@ -2257,11 +2257,11 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   if (velaf==Teuchos::null)
     dserror("Cannot get state vector 'velaf'");
 
-  vector<double> mypvelaf((*plm).size());
+  std::vector<double> mypvelaf((*plm).size());
   DRT::UTILS::ExtractMyValues(*velaf,mypvelaf,*plm);
 
   // velocities n+1
-  vector<double> mypvelnp((*plm).size());
+  std::vector<double> mypvelnp((*plm).size());
 
   if((fldpara_->TimeAlgo()==INPAR::FLUID::timeint_gen_alpha) or
       (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha))
@@ -2279,8 +2279,8 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   else
     DRT::UTILS::ExtractMyValues(*velaf,mypvelnp,*plm);
 
-  vector<double> myedispnp ((lm  ).size());
-  vector<double> mypedispnp((*plm).size());
+  std::vector<double> myedispnp ((lm  ).size());
+  std::vector<double> mypedispnp((*plm).size());
   if (lineele->ParentElement()->IsAle())
   {
     // mesh displacements, new time step, n+1

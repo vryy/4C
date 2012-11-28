@@ -24,6 +24,8 @@ Maintainer: Martin Winklmaier
 #include "../drt_inpar/inpar_combust.H"
 
 
+using std::vector; // intermediate
+
 namespace COMBUST
 {
   class FlameFront;
@@ -45,7 +47,7 @@ public:
       const RCP<DRT::Discretization> discret,
       const RCP<XFEM::DofManager> olddofman,
       const RCP<XFEM::DofManager> newdofman,
-      vector<RCP<Epetra_Vector> > oldVectors,
+      std::vector<RCP<Epetra_Vector> > oldVectors,
       const RCP<COMBUST::FlameFront> flamefront,
       const Epetra_Map& olddofcolmap,
       const Epetra_Map& newdofrowmap,
@@ -62,8 +64,8 @@ public:
 
   //! perform the computation
   virtual void compute(
-      vector<RCP<Epetra_Vector> > newRowVectorsn,
-      vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
   )
   {
     dserror("Unused function! Use a function of the derived classes");
@@ -71,7 +73,7 @@ public:
 
   //! perform the computation
   virtual void compute(
-      vector<RCP<Epetra_Vector> > newRowVectorsn
+      std::vector<RCP<Epetra_Vector> > newRowVectorsn
   )
   {
     dserror("Unused function! Use a function of the derived classes");
@@ -99,8 +101,8 @@ protected:
 
   //! initialize data to be set in every computation
   void handleVectors(
-      vector<RCP<Epetra_Vector> > newRowVectorsn,
-      vector<RCP<Epetra_Vector> > newRowVectorsnp
+      std::vector<RCP<Epetra_Vector> > newRowVectorsn,
+      std::vector<RCP<Epetra_Vector> > newRowVectorsnp
   );
 
   //! check the intersection status of an element
@@ -634,7 +636,7 @@ protected:
 
 public:
 
-  RCP<vector<TimeIntData> > timeIntData_; // data-vector containing all data for computation with help of sub-class TimeIntData
+  RCP<std::vector<TimeIntData> > timeIntData_; // data-vector containing all data for computation with help of sub-class TimeIntData
 
   int numNodes(){return timeIntData_->size();};
 

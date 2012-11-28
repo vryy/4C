@@ -485,7 +485,7 @@ GEO::CUT::Side* XFEM::XFEM_EdgeStab::GetCutSide(DRT::Element* faceele)
 
   // get faceele's nodes
   const int numnode = faceele->NumNode();
-  vector<int> nodeids(numnode);
+  std::vector<int> nodeids(numnode);
 
   for(int inode=0;inode<numnode; inode++)
   {

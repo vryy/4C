@@ -261,7 +261,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
 
   //vector<int> lmowner;
   vector<int> lmstride;
-  RCP<vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
+  RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
   ele->LocationVector(discretization,lm,*lmowner,lmstride);
 
   //--------------------------------------------------------------------

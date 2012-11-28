@@ -53,7 +53,7 @@ Maintainer: Ulrich Kuettler
 /*----------------------------------------------------------------------*/
 // the instances
 /*----------------------------------------------------------------------*/
-vector<DRT::Problem* > DRT::Problem::instances_;
+std::vector<DRT::Problem* > DRT::Problem::instances_;
 
 
 /*----------------------------------------------------------------------*/
@@ -74,10 +74,10 @@ DRT::Problem* DRT::Problem::Instance(int num)
 void DRT::Problem::Done()
 {
   // destroy singleton objects when the problem object is still alive
-  for ( vector<Problem* >::iterator i=instances_.begin(); i!=instances_.end(); ++i )
+  for ( std::vector<Problem* >::iterator i=instances_.begin(); i!=instances_.end(); ++i )
   {
     Problem * p = *i;
-    for (vector<DRT::SingletonDestruction *>::iterator j=p->sds_.begin(); j!=p->sds_.end(); ++j)
+    for (std::vector<DRT::SingletonDestruction *>::iterator j=p->sds_.begin(); j!=p->sds_.end(); ++j)
     {
       DRT::SingletonDestruction * sd = *j;
       sd->Done();
@@ -91,7 +91,7 @@ void DRT::Problem::Done()
   // discretizations as well and everything inside those.
   //
   // There is a whole lot going on here...
-  for ( vector<Problem* >::iterator i=instances_.begin(); i!=instances_.end(); ++i )
+  for ( std::vector<Problem* >::iterator i=instances_.begin(); i!=instances_.end(); ++i )
   {
     delete *i;
     *i = 0;
@@ -725,20 +725,20 @@ void DRT::Problem::WriteInputParameters()
 void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool readmesh)
 {
 
-  RCP<DRT::Discretization> structdis       = Teuchos::null;
-  RCP<DRT::Discretization> fluiddis        = Teuchos::null;
-  RCP<DRT::Discretization> xfluiddis       = Teuchos::null;
-  RCP<DRT::Discretization> aledis          = Teuchos::null;
-  RCP<DRT::Discretization> structaledis    = Teuchos::null;
-  RCP<DRT::Discretization> boundarydis     = Teuchos::null;
-  RCP<DRT::Discretization> thermdis        = Teuchos::null;
-  RCP<DRT::Discretization> scatradis       = Teuchos::null;
-  RCP<DRT::Discretization> fluidscatradis  = Teuchos::null;
-  RCP<DRT::Discretization> structscatradis = Teuchos::null;
-  RCP<DRT::Discretization> arterydis       = Teuchos::null; //_1D_ARTERY_
-  RCP<DRT::Discretization> airwaydis       = Teuchos::null;
-  RCP<DRT::Discretization> optidis         = Teuchos::null;
-  RCP<DRT::Discretization> particledis     = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> structdis       = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> fluiddis        = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> xfluiddis       = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> aledis          = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> structaledis    = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> boundarydis     = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> thermdis        = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> scatradis       = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> fluidscatradis  = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> structscatradis = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> arterydis       = Teuchos::null; //_1D_ARTERY_
+  Teuchos::RCP<DRT::Discretization> airwaydis       = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> optidis         = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> particledis     = Teuchos::null;
 
   // decide which kind of spatial representation is required
   std::string distype = SpatialApproximation();
@@ -1341,7 +1341,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
   Teuchos::RCP<Epetra_Comm> gcomm = npgroup_->GlobalComm();
 
   DRT::Problem* macro_problem = DRT::Problem::Instance();
-  RCP<DRT::Discretization> macro_dis = macro_problem->GetDis("structure");
+  Teuchos::RCP<DRT::Discretization> macro_dis = macro_problem->GetDis("structure");
 
   std::set<int> my_multimat_IDs;
 
@@ -1349,7 +1349,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
   for (int i=0; i<macro_dis->ElementColMap()->NumMyElements(); ++i)
   {
     DRT::Element* actele = macro_dis->lColElement(i);
-    RCP<MAT::Material> actmat = actele->Material();
+    Teuchos::RCP<MAT::Material> actmat = actele->Material();
 
     if (actmat->MaterialType() == INPAR::MAT::m_struct_multiscale)
     {
@@ -1459,7 +1459,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
         // start with actual reading
         DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
 
-        RCP<DRT::Discretization> structdis_micro = Teuchos::rcp(new DRT::Discretization("structure", micro_reader.Comm()));
+        Teuchos::RCP<DRT::Discretization> structdis_micro = Teuchos::rcp(new DRT::Discretization("structure", micro_reader.Comm()));
         micro_problem->AddDis("structure", structdis_micro);
 
         micro_problem->ReadParameter(micro_reader);
@@ -1570,7 +1570,7 @@ void DRT::Problem::ReadMicrofields_NPsupport()
     // start with actual reading
     DRT::INPUT::DatFileReader micro_reader(micro_inputfile_name, subgroupcomm, 1);
 
-    RCP<DRT::Discretization> structdis_micro = Teuchos::rcp(new DRT::Discretization("structure", micro_reader.Comm()));
+    Teuchos::RCP<DRT::Discretization> structdis_micro = Teuchos::rcp(new DRT::Discretization("structure", micro_reader.Comm()));
     micro_problem->AddDis("structure", structdis_micro);
 
     micro_problem->ReadParameter(micro_reader);
@@ -1633,7 +1633,7 @@ void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reade
     // Read in other level
     DRT::INPUT::DatFileReader multilevel_reader(second_input_file, reader.Comm(), 1);
 
-    RCP<DRT::Discretization> structdis_multilevel = Teuchos::rcp(new DRT::Discretization("structure", multilevel_reader.Comm()));
+    Teuchos::RCP<DRT::Discretization> structdis_multilevel = Teuchos::rcp(new DRT::Discretization("structure", multilevel_reader.Comm()));
 
     multilevel_problem->AddDis("structure", structdis_multilevel);
     multilevel_problem->ReadParameter(multilevel_reader);

@@ -201,7 +201,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Lines()
 
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Ale2::Surfaces()
 {
-  vector<RCP<Element> > surfaces(1);
+  std::vector<RCP<Element> > surfaces(1);
   surfaces[0]= Teuchos::rcp(this, false);
   return surfaces;
 }

@@ -2410,7 +2410,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
     {
       if (!dis)
         dserror("Have to pass a discretization to allow for local coord systems");
-      vector<DRT::Condition*> locsys;
+      std::vector<DRT::Condition*> locsys;
       dis->GetCondition("Locsys",locsys);
       if (!locsys.size())
         dserror("No locsys conditions in discretization");
@@ -2457,7 +2457,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       std::vector<double> xnode;
       std::vector<double> ynode;
       std::vector<double> znode;
-      vector<DRT::Condition*> dirichlet;
+      std::vector<DRT::Condition*> dirichlet;
       
       dis->GetCondition("Dirichlet",dirichlet);
       if (!dirichlet.size())
@@ -2662,7 +2662,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
     std::vector<double> xnode;
     std::vector<double> ynode;
     std::vector<double> znode;
-    vector<DRT::Condition*> dirichlet;
+    std::vector<DRT::Condition*> dirichlet;
     // get current displacement vector from discretization
     RCP<const Epetra_Vector> disp;
 
@@ -2705,7 +2705,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
           {
             const double *coords = dis->gNode(currentid)->X();
             std::vector<double> tempcoords;
-            vector<int> dofnode = dis->Dof(dis->gNode(currentid));
+            std::vector<int> dofnode = dis->Dof(dis->gNode(currentid));
             tempcoords.assign(3,0.0);
             // determine current nodal position: reference position + displacement
             for(int k=0; k<3; k++)
@@ -2784,8 +2784,8 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
   double phicurr;
   
   //nodal polar coordinates
-  vector<double> xptemp;
-  vector<double> xplocal;
+  std::vector<double> xptemp;
+  std::vector<double> xplocal;
   // transform global to local coordinates
   xptemp.assign(3,0.0);
   xplocal.assign(3,0.0);
@@ -2867,7 +2867,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
   // phase between imaginary and real part during physiological cycle
   double theta;
   // calculation of the harmonic solutions
-  vector<double> vphyscurve;
+  std::vector<double> vphyscurve;
 
   for(int l=0;l<(noharm_);l++)
   {

@@ -138,7 +138,7 @@ void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterfac
   CONTACT::CoAbstractStrategy& cstrategy = static_cast<CONTACT::CoAbstractStrategy&>(strategy);
 
   // get vector of contact interfaces
-  vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
+  std::vector<RCP<CONTACT::CoInterface> > interface = cstrategy.ContactInterfaces();
 
   // this currently works only for one interface yet
   if (interface.size()>1)
@@ -155,7 +155,7 @@ void STRU_ALE::Algorithm::InterfaceDisp(Teuchos::RCP<Epetra_Vector>& disinterfac
 
     // define local variables
     int slavecountnodes = 0;
-    vector<int> myslavealedofs((slavenodes->NumMyElements())*dim);
+    std::vector<int> myslavealedofs((slavenodes->NumMyElements())*dim);
 
     // loop over all slave nodes of the interface
     for (int i=0;i<slavenodes->NumMyElements();++i)

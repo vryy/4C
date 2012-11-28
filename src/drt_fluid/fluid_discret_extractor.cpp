@@ -24,10 +24,10 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
   parentdiscret_(actdis)
 {
   // get condition, i.e., do we have nodes that belong to a separate section of the domain
-  vector<DRT::Condition*> sepcond;
+  std::vector<DRT::Condition*> sepcond;
   parentdiscret_->GetCondition(condition,sepcond);
 
-  vector <int> allcnd_sepcondnodeids;
+  std::vector<int> allcnd_sepcondnodeids;
 
   // yes, we have nodes belonging to a separate section
   if(sepcond.size()!=0)
@@ -64,7 +64,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       for (unsigned numcond=0;numcond<sepcond.size();++numcond)
       {
         // get nodes ids of all nodes with separtion condition
-        const vector <int>* sepcondnodeids = (*sepcond[numcond]).Nodes();
+        const std::vector <int>* sepcondnodeids = (*sepcond[numcond]).Nodes();
 
         // and store them
         allcnd_sepcondnodeids.reserve(allcnd_sepcondnodeids.size() + sepcondnodeids->size());
@@ -72,7 +72,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       }
 
       // and change format
-      for(vector<int>::iterator id = allcnd_sepcondnodeids.begin();
+      for(std::vector<int>::iterator id = allcnd_sepcondnodeids.begin();
           id!=allcnd_sepcondnodeids.end();
           ++id)
       {
@@ -209,7 +209,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     RCP<Epetra_Map> newcolnodemap;
 
     {
-      vector<int> rownodes;
+      std::vector<int> rownodes;
 
       // all row nodes with separation condition are now contained in the child discretization
       for(std::set<int>::iterator id = sepcondelenodes_row.begin();
@@ -226,7 +226,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
                                          0,
                                          childdiscret_->Comm()));
 
-      vector<int> colnodes;
+      std::vector<int> colnodes;
 
       for(std::set<int>::iterator id = sepcondelenodes_col.begin();
           id!=sepcondelenodes_col.end();
@@ -263,26 +263,26 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
       }
 
       // get all conditions types prescribed in the input file
-      vector<string> allcond;
+      std::vector<string> allcond;
       parentdiscret_->GetConditionNames(allcond);
       //loop all conditions types
       for (unsigned numcond=0;numcond<allcond.size();++numcond)
       {
         // get condition
-        vector<DRT::Condition*> actcond;
+        std::vector<DRT::Condition*> actcond;
         parentdiscret_->GetCondition(allcond[numcond],actcond);
         // loop all condition of the current type
         for (unsigned numactcond=0;numactcond<actcond.size();++numactcond)
         {
           // we use the same nodal ids --- nevertheless, we just use a subset
           // of the node ids and thus cannot copy the conditions completely.
-          vector<int> reduced_ids;
+          std::vector<int> reduced_ids;
 
           // get all nodes of parent discretization having this condition
           const std::vector<int>* candidates = (*actcond[numactcond]).Nodes();
 
-          vector<int> mytoggle(candidates->size(),0);
-          vector<int> toggle(candidates->size(),0);
+          std::vector<int> mytoggle(candidates->size(),0);
+          std::vector<int> toggle(candidates->size(),0);
 
           // loop all parent nodes with current condition
           // check if node is also contained in child discretization
@@ -442,14 +442,14 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
     {
       const int numproc = parentdiscret_->Comm().NumProc();
 
-      vector<int> my_n_nodes   (numproc,0);
-      vector<int>    n_nodes   (numproc,0);
-      vector<int> my_n_elements(numproc,0);
-      vector<int>    n_elements(numproc,0);
-      vector<int> my_n_ghostele(numproc,0);
-      vector<int>    n_ghostele(numproc,0);
-      vector<int> my_n_dof     (numproc,0);
-      vector<int>    n_dof     (numproc,0);
+      std::vector<int> my_n_nodes   (numproc,0);
+      std::vector<int>    n_nodes   (numproc,0);
+      std::vector<int> my_n_elements(numproc,0);
+      std::vector<int>    n_elements(numproc,0);
+      std::vector<int> my_n_ghostele(numproc,0);
+      std::vector<int>    n_ghostele(numproc,0);
+      std::vector<int> my_n_dof     (numproc,0);
+      std::vector<int>    n_dof     (numproc,0);
 
       int myrank=childdiscret_->Comm().MyPID();
 
@@ -496,7 +496,7 @@ FLD::FluidDiscretExtractor::FluidDiscretExtractor(
         for(int rr=0;rr<numnode;++rr)
         {
           DRT::Node*  node = childdiscret_->gNode(nodeids[rr]);
-          vector<int> nodedofset = childdiscret_->Dof(node);
+          std::vector<int> nodedofset = childdiscret_->Dof(node);
 
           for(unsigned index=0;index<nodedofset.size();++index)
           {

@@ -147,9 +147,9 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NURBS::Wall1Nurbs::Lines
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          gammi 05/09|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::NURBS::Wall1Nurbs::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::NURBS::Wall1Nurbs::Surfaces()
 {
-  vector<RCP<Element> > surfaces(1);
+  std::vector<Teuchos::RCP<Element> > surfaces(1);
   surfaces[0]= Teuchos::rcp(this, false);
   return surfaces;
 }

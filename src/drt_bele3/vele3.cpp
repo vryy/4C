@@ -212,7 +212,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Vele3::Surfaces()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Vele3::Volumes()
 {
-  vector<RCP<Element> > volumes(1);
+  std::vector<RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }

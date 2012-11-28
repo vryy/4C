@@ -289,7 +289,7 @@ void DRT::ELEMENTS::Wall1::Unpack(const std::vector<char>& data)
   // distype_
   distype_ = static_cast<DiscretizationType> ( ExtractInt(position,data) );
   //data
-  vector<char> tmp(0);
+  std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
 
@@ -323,7 +323,7 @@ void DRT::ELEMENTS::Wall1::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  get vector of lines (public)                             mgit 07/07|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Lines()
+std::vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Lines()
 {
   // do NOT store line or surface elements inside the parent element
   // after their creation.
@@ -339,9 +339,9 @@ vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Lines()
 /*----------------------------------------------------------------------*
  |  get vector of surfaces (public)                          mgit 03/07|
  *----------------------------------------------------------------------*/
-vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Surfaces()
+std::vector<Teuchos::RCP<DRT::Element> >  DRT::ELEMENTS::Wall1::Surfaces()
 {
-  vector<RCP<Element> > surfaces(1);
+  std::vector<Teuchos::RCP<Element> > surfaces(1);
   surfaces[0]= Teuchos::rcp(this, false);
   return surfaces;
 }

@@ -513,9 +513,9 @@ protected:
   //! container containing all kind of solid3 thisandthat
   DRT::Container                                                        data_;
   //! vector of inverses of the jacobian in material frame
-  vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >                      invJ_;
+  std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >                 invJ_;
   //! determinant of Jacobian in material frame
-  vector<double>                                                        detJ_;
+  std::vector<double>                                                   detJ_;
 
   /// prestressing switch & time
   INPAR::STR::PreStress                                                 pstype_;
@@ -564,7 +564,7 @@ protected:
   //! Calculate nonlinear stiffness and mass matrix (GEMM)
   virtual void soh8_nlnstiffmass_gemm(
       std::vector<int>& lm,  ///< location matrix
-      vector<double>& dispo,  ///< old displacements
+      std::vector<double>& dispo,  ///< old displacements
       std::vector<double>& disp,  ///< current displacements
       std::vector<double>& residual,  ///< current residual displ
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
@@ -686,7 +686,7 @@ protected:
     DRT::Element::LocationArray& la,  //!< location array
     std::vector<double>& disp,  //!< current displacements
     std::vector<double>& residual,  //!< current residual displ
-    vector<double>& temp, //!< current temperature
+    std::vector<double>& temp, //!< current temperature
     LINALG::Matrix<NUMDOF_SOH8,1>* force,  //!< element internal force vector
     LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  //!< stresses at GP
     LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  //!< strains at GP
@@ -740,7 +740,7 @@ protected:
 
   //! EAS technology, setup necessary data
   void soh8_eassetup(
-          vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
+          std::vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
           double& detJ0,                      // det of Jacobian at origin
           LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8>& T0invT,   // maps M(origin) local to global
           const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe);    // material element coords

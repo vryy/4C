@@ -104,17 +104,17 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
   // - planenormaldirection e.g. (1,0,0)
   // - minimum in planenormaldirection
   // - maximum in planenormaldirection
-  vector<DRT::Condition*>* surfacepbcs = pbc->ReturnSurfacePBCs();
-  vector<int>    planenormal(0);
-  vector<double> globalmins (0);
-  vector<double> globalmaxs (0);
+  std::vector<DRT::Condition*>* surfacepbcs = pbc->ReturnSurfacePBCs();
+  std::vector<int>    planenormal(0);
+  std::vector<double> globalmins (0);
+  std::vector<double> globalmaxs (0);
   for (size_t i = 0; i < surfacepbcs->size(); ++i)
   {
     const string* ismaster = (*surfacepbcs)[i]->Get<string>("Is slave periodic boundary condition");
     if (*ismaster == "Master")
     {
       const int masterid = (*surfacepbcs)[i]->GetInt("Id of periodic boundary condition");
-      vector<int> nodeids(*((*surfacepbcs)[i]->Nodes()));
+      std::vector<int> nodeids(*((*surfacepbcs)[i]->Nodes()));
       for (size_t j = 0; j < surfacepbcs->size(); ++j)
       {
         const int slaveid = (*surfacepbcs)[j]->GetInt("Id of periodic boundary condition");
@@ -201,7 +201,7 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
     const int nodeid = lnode->Id();
     // boolean indicating whether this node is a pbc node
     bool pbcnode = false;
-    for (std::map<int, vector<int>  >::const_iterator iter= (*pbcmap).begin(); iter != (*pbcmap).end(); ++iter)
+    for (std::map<int, std::vector<int>  >::const_iterator iter= (*pbcmap).begin(); iter != (*pbcmap).end(); ++iter)
     {
       if (iter->first == nodeid) // node is a pbc master node
         pbcnode = true;
@@ -447,13 +447,13 @@ void COMBUST::Reinitializer::SignedDistanceFunction(Teuchos::RCP<Epetra_Vector> 
   //         - previously reinitialized G-function values on periodic boundaries are overwritten
 
   // loop all master nodes with periodic boundary conditions
-  std::map<int, vector<int>  >::const_iterator pbciter;
+  std::map<int, std::vector<int>  >::const_iterator pbciter;
   for (pbciter = (*pbcmap).begin(); pbciter != (*pbcmap).end(); ++pbciter)
   {
     // get master node gid
     const int mastergid = pbciter->first;
     // get slave node gids
-    vector<int> slavegid;
+    std::vector<int> slavegid;
     for (size_t islave = 0; islave < pbciter->second.size(); islave++)
       slavegid.push_back(pbciter->second[islave]);
 
@@ -553,10 +553,10 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
   // - minimum in planenormaldirection
   // - maximum in planenormaldirection
   //========================================================================
-  vector<DRT::Condition*>* surfacepbcs = pbc->ReturnSurfacePBCs();
-  vector<int>    planenormal(0);
-  vector<double> globalmins (0);
-  vector<double> globalmaxs (0);
+  std::vector<DRT::Condition*>* surfacepbcs = pbc->ReturnSurfacePBCs();
+  std::vector<int>    planenormal(0);
+  std::vector<double> globalmins (0);
+  std::vector<double> globalmaxs (0);
 
   for (size_t i = 0; i < surfacepbcs->size(); ++i)
   {
@@ -564,7 +564,7 @@ void COMBUST::Reinitializer::FastSignedDistanceFunction(Teuchos::RCP<Epetra_Vect
     if (*ismaster == "Master")
     {
       const int masterid = (*surfacepbcs)[i]->GetInt("Id of periodic boundary condition");
-      vector<int> nodeids(*((*surfacepbcs)[i]->Nodes()));
+      std::vector<int> nodeids(*((*surfacepbcs)[i]->Nodes()));
       for (size_t j = 0; j < surfacepbcs->size(); ++j)
       {
         const int slaveid = (*surfacepbcs)[j]->GetInt("Id of periodic boundary condition");

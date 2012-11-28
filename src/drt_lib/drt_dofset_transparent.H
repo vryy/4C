@@ -104,11 +104,11 @@ namespace DRT
 
     /// helper for ParallelTransferDegreesOfFreedom, an MPI receive call
     void ReceiveBlock(
-      int             numproc ,
-      int             myrank  ,
-      vector<char>   & rblock,
-      DRT::Exporter  & exporter,
-      MPI_Request    & request);
+      int                   numproc ,
+      int                   myrank  ,
+      std::vector<char>   & rblock,
+      DRT::Exporter       & exporter,
+      MPI_Request         & request);
 
   protected:
 

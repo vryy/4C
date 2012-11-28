@@ -157,7 +157,7 @@ void GEO::CUT::Parallel::exportCommunicationFinished(bool & procDone)
     dataSend.StartPacking();
     DRT::ParObject::AddtoPack(dataSend,static_cast<int>(procDone));
 
-    vector<char> dataRecv;
+    std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
     // pointer to current position of group of cells in global string (counts bytes)
@@ -215,11 +215,11 @@ void GEO::CUT::Parallel::exportNodePositionData()
 
       DRT::ParObject::AddtoPack(dataSend,curr_undecidedNodePos_);
 
-      vector<char> dataRecv;
+      std::vector<char> dataRecv;
       sendData(dataSend,dest,source,dataRecv);
 
       // pointer to current position of group of cells in global string (counts bytes)
-      vector<char>::size_type posinData = 0;
+      std::vector<char>::size_type posinData = 0;
 
       // clear vector that should be filled
       curr_undecidedNodePos_.clear();
@@ -404,7 +404,7 @@ void GEO::CUT::Parallel::exportDofSetData()
       DRT::PackBuffer dataSend; // data to be sent
 
       // packing the data
-      for (vector<MeshIntersection::DofSetData>::iterator data=dofSetData_->begin(); data!=dofSetData_->end(); data++)
+      for (std::vector<MeshIntersection::DofSetData>::iterator data=dofSetData_->begin(); data!=dofSetData_->end(); data++)
       {
         DRT::ParObject::AddtoPack(dataSend,data->set_index_);
         DRT::ParObject::AddtoPack(dataSend,(int)data->inside_cell_);
@@ -416,7 +416,7 @@ void GEO::CUT::Parallel::exportDofSetData()
       dataSend.StartPacking();
 
       // packing the data
-      for (vector<MeshIntersection::DofSetData>::iterator data=dofSetData_->begin(); data!=dofSetData_->end(); data++)
+      for (std::vector<MeshIntersection::DofSetData>::iterator data=dofSetData_->begin(); data!=dofSetData_->end(); data++)
       {
         DRT::ParObject::AddtoPack(dataSend,data->set_index_);
         DRT::ParObject::AddtoPack(dataSend,(int)data->inside_cell_);
@@ -425,11 +425,11 @@ void GEO::CUT::Parallel::exportDofSetData()
         DRT::ParObject::AddtoPack(dataSend,data->node_dofsetnumber_map_);
       }
 
-      vector<char> dataRecv;
+      std::vector<char> dataRecv;
       sendData(dataSend,dest,source,dataRecv);
 
       // pointer to current position of group of cells in global string (counts bytes)
-      vector<char>::size_type posinData = 0;
+      std::vector<char>::size_type posinData = 0;
 
       // clear vector that should be filled
       dofSetData_->clear();
@@ -816,7 +816,7 @@ void GEO::CUT::Parallel::ReplaceNdsVectors (ElementHandle*                      
  *------------------------------------------------------------------------------------------------*/
 void GEO::CUT::Parallel::packPoints(
     DRT::PackBuffer&              dataSend,
-    vector<LINALG::Matrix<3,1> >& points_coords
+    std::vector<LINALG::Matrix<3,1> >& points_coords
 ) const
 {
   const int nsd = 3;
@@ -839,9 +839,9 @@ void GEO::CUT::Parallel::packPoints(
  * without an underlying discretization fitting to the node's new prozessor          schott 03/12 *
  *------------------------------------------------------------------------------------------------*/
 void GEO::CUT::Parallel::unpackPoints(
-    vector<char>::size_type&       posinData,
-    vector<char>&                  dataRecv,
-    vector<LINALG::Matrix<3,1> >&  points_coords
+    std::vector<char>::size_type&       posinData,
+    std::vector<char>&                  dataRecv,
+    std::vector<LINALG::Matrix<3,1> >&  points_coords
 ) const
 {
   const int nsd = 3; // dimension

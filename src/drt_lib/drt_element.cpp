@@ -271,7 +271,7 @@ void DRT::Element::Unpack(const std::vector<char>& data)
   // nodeid_
   ExtractfromPack(position,data,nodeid_);
   // mat_
-  vector<char> tmp;
+  std::vector<char> tmp;
   ExtractfromPack(position,data,tmp);
   if (tmp.size()>0)
   {
@@ -331,7 +331,7 @@ bool DRT::Element::BuildNodalPointers(DRT::Node** nodes)
  |  Get a condition of a certain name                          (public) |
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
-void DRT::Element::GetCondition(const string& name,vector<DRT::Condition*>& out) const
+void DRT::Element::GetCondition(const string& name,std::vector<DRT::Condition*>& out) const
 {
   const int num = condition_.count(name);
   out.resize(num);
@@ -485,9 +485,9 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
   for (int dofset=0; dofset<la.Size(); ++dofset)
   {
     std::vector<int>& lm  = la[dofset].lm_;
-    vector<int>& lmdirich = la[dofset].lmdirich_;
-    vector<int>& lmowner  = la[dofset].lmowner_;
-    vector<int>& lmstride = la[dofset].stride_;
+    std::vector<int>& lmdirich = la[dofset].lmdirich_;
+    std::vector<int>& lmowner  = la[dofset].lmowner_;
+    std::vector<int>& lmstride = la[dofset].stride_;
 
     // fill the vector with nodal dofs
     if (nodes)
@@ -497,7 +497,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
         const DRT::Node* node = nodes[i];
 
         const int owner = node->Owner();
-        vector<int> dof = dis.Dof(dofset,node);
+        std::vector<int> dof = dis.Dof(dofset,node);
         const int size = NumDofPerNode(dofset,*(node));
         if (size) lmstride.push_back(size);
         for (int j=0; j< size; ++j)
@@ -532,7 +532,7 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
 
     // fill the vector with element dofs
     const int owner = Owner();
-    vector<int> dof = dis.Dof(dofset,this);
+    std::vector<int> dof = dis.Dof(dofset,this);
     if (dof.size()) lmstride.push_back(dof.size());
     for (unsigned j=0; j<dof.size(); ++j)
     {
@@ -572,8 +572,8 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
  |                                                            gee 12/06 |
  *----------------------------------------------------------------------*/
 void DRT::Element::LocationVector(const Discretization& dis,
-                                  std::vector<int>& lm, vector<int>& lmdirich,
-                                  vector<int>& lmowner, vector<int>& lmstride) const
+                                  std::vector<int>& lm, std::vector<int>& lmdirich,
+                                  std::vector<int>& lmowner, std::vector<int>& lmstride) const
 {
   const int numnode = NumNode();
   const DRT::Node*const* nodes = Nodes();
@@ -600,7 +600,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
         flag = dirich->Get<std::vector<int> >("onoff");
       }
       const int owner = nodes[i]->Owner();
-      vector<int> dof = dis.Dof(nodes[i]);
+      std::vector<int> dof = dis.Dof(nodes[i]);
       const int size = NumDofPerNode(*(nodes[i]));
       lmstride.push_back(size);
       for (int j=0; j<size; ++j)
@@ -635,7 +635,7 @@ void DRT::Element::LocationVector(const Discretization& dis,
     flag = dirich->Get<std::vector<int> >("onoff");
   }
   const int owner = Owner();
-  vector<int> dof = dis.Dof(this);
+  std::vector<int> dof = dis.Dof(this);
   if (dof.size()) lmstride.push_back((int)dof.size());
   for (unsigned j=0; j<dof.size(); ++j)
   {
@@ -655,8 +655,8 @@ void DRT::Element::LocationVector(const Discretization& dis,
  |  Get degrees of freedom used by this element                (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Element::LocationVector(const Discretization& dis, vector<int>& lm,
-                                  vector<int>& lmowner, vector<int>& lmstride) const
+void DRT::Element::LocationVector(const Discretization& dis, std::vector<int>& lm,
+    std::vector<int>& lmowner, std::vector<int>& lmstride) const
 {
   const int numnode = NumNode();
   const DRT::Node*const* nodes = Nodes();
@@ -740,10 +740,10 @@ int DRT::Element::EvaluateNeumann(Teuchos::ParameterList& params,
 }
 #endif
 
-vector<double> DRT::Element::ElementCenterRefeCoords()
+std::vector<double> DRT::Element::ElementCenterRefeCoords()
 {
   dserror("subclass implementations missing");
-  vector <double> return_stuff(0);
+  std::vector<double> return_stuff(0);
   return_stuff[0]=1;
   return return_stuff;
 }

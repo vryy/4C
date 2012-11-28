@@ -44,7 +44,7 @@ Maintainer: Peter Gamnitzer
 
 DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
   const DRT::Discretization&       actdis,
-  const vector <int> &             masternodeids,
+  const std::vector <int> &        masternodeids,
   int                              maxnodeperleaf,
   double                           tol
   ):
@@ -52,7 +52,7 @@ DRT::UTILS::NodeMatchingOctree::NodeMatchingOctree(
   discret_(actdis)
 {
   // extract all masternodes on this proc from the list masternodeids
-  vector <int> masternodesonthisproc;
+  std::vector <int> masternodesonthisproc;
 
   for(int locn=0;locn<(int)masternodeids.size();locn++)
   {
@@ -281,7 +281,7 @@ void DRT::UTILS::NodeMatchingOctree::CreateGlobalNodeMatching(
       if(masterplanecoords_.empty()!=true)
       {
         // get its coordinates
-        vector <double> x(3);
+        std::vector <double> x(3);
 
         if (abs(rotangle) < EPS13)
         {
@@ -678,7 +678,7 @@ DRT::UTILS::NodeMatchingOctree::~NodeMatchingOctree()
 
 DRT::UTILS::OctreeElement::OctreeElement(
   const DRT::Discretization&       actdis,
-  vector <int> &                   nodeidstoadd,
+  std::vector <int> &              nodeidstoadd,
   Epetra_SerialDenseMatrix&        boundingboxtoadd,
   int                              layer,
   int                              maxnodeperleaf,
@@ -825,8 +825,8 @@ DRT::UTILS::OctreeElement::OctreeElement(
     childboundingbox2(direction,0)=wheretocut-tol;
 
     // distribute nodes to children
-    vector <int> childnodeids1;
-    vector <int> childnodeids2;
+    std::vector <int> childnodeids1;
+    std::vector <int> childnodeids2;
     for(int locn=0;locn<(int)nodeidstoadd.size();locn++)
     {
       double coordinate=discret_.gNode(nodeidstoadd[locn])->X()[direction];
@@ -886,7 +886,7 @@ DRT::UTILS::OctreeElement::OctreeElement(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
 bool DRT::UTILS::OctreeElement::IsPointInBoundingBox(
-  const vector <double> &x
+  const std::vector <double> &x
   )
 {
   bool nodeinboundingbox=true;
@@ -917,7 +917,7 @@ bool DRT::UTILS::OctreeElement::IsPointInBoundingBox(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 
 RCP<DRT::UTILS::OctreeElement> DRT::UTILS::OctreeElement::ReturnChildContainingPoint(
-  const vector <double> &x
+  const std::vector <double> &x
   )
 {
   RCP<OctreeElement> nextelement;
@@ -1004,13 +1004,13 @@ void DRT::UTILS::OctreeElement::Print(ostream& os) const
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::UTILS::OctreeElement::SearchClosestNodeInLeaf(
-  const vector <double> & x,
+  const std::vector <double> & x,
   int             & idofclosestpoint,
   double          & distofclosestpoint
   )
 {
   double          thisdist;
-  vector <double> dx(3);
+  std::vector <double> dx(3);
 
   // the first node is the guess for the closest node
   DRT::Node* actnode = discret_.gNode(this->nodeids_[0]);

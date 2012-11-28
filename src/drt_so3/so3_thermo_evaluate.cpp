@@ -522,13 +522,13 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
       std::vector<double> myres((la[0].lm_).size());
       DRT::UTILS::ExtractMyValues(*res,myres,la[0].lm_);
 
-      Teuchos::RCP<vector<char> > stressdata
-        = params.get<Teuchos::RCP<vector<char> > >("stress", Teuchos::null);
+      Teuchos::RCP<std::vector<char> > stressdata
+        = params.get<Teuchos::RCP<std::vector<char> > >("stress", Teuchos::null);
       if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
-      Teuchos::RCP<vector<char> > straindata
-        = params.get<Teuchos::RCP<vector<char> > >("strain", Teuchos::null);
-      Teuchos::RCP<vector<char> > plstraindata
-        = params.get<Teuchos::RCP<vector<char> > >("plstrain", Teuchos::null);
+      Teuchos::RCP<std::vector<char> > straindata
+        = params.get<Teuchos::RCP<std::vector<char> > >("strain", Teuchos::null);
+      Teuchos::RCP<std::vector<char> > plstraindata
+        = params.get<Teuchos::RCP<std::vector<char> > >("plstrain", Teuchos::null);
       if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
       if (plstraindata==Teuchos::null) dserror("Cannot get 'plastic strain' data");
 
@@ -766,7 +766,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
   DRT::Element::LocationArray& la,  // location array
   std::vector<double>& disp,  // current displacements
   std::vector<double>& residual,  // current residual displ
-  vector<double>& temp, // current temperature
+  std::vector<double>& temp, // current temperature
   LINALG::Matrix<numdofperelement_,1>* force,  // element internal force vector
   LINALG::Matrix<numgpt_1,numstr_>* elestress,  // stresses at GP
   Teuchos::ParameterList& params,  // algorithmic parameters e.g. time
@@ -1018,7 +1018,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
   DRT::Element::LocationArray& la,  // location array
   std::vector<double>& disp,  // current displacements
   std::vector<double>& residual,  // current residual displ
-  vector<double>& temp, // current temperature
+  std::vector<double>& temp, // current temperature
   LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
   LINALG::Matrix<numdofperelement_,1>* force,  // element internal force vector
   LINALG::Matrix<numgpt_1,numstr_>* elestress,  // stresses at GP

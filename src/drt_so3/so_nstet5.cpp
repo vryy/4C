@@ -87,7 +87,7 @@ void DRT::ELEMENTS::NStet5Type::ComputeNullSpace( DRT::Discretization & dis, std
     DRT::ELEMENTS::NStet5* nstet = dynamic_cast<DRT::ELEMENTS::NStet5*>(ele);
     if (!nstet) continue;
     const double* x = nstet->MidX();
-    vector<int> dofs = dis.Dof(0,ele);
+    std::vector<int> dofs = dis.Dof(0,ele);
 #ifdef DEBUG
     if (dofs.size() != 3) dserror("Wrong number of dofs");
 #endif
@@ -304,7 +304,7 @@ void DRT::ELEMENTS::NStet5::Print(ostream& os) const
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::NStet5::Volumes()
 {
   dserror("volume not impl. yet");
-  vector<RCP<Element> > volumes(1);
+  std::vector<Teuchos::RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }
@@ -403,7 +403,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
 
     //-----------------------------------------------------------------
     // list of adjacent elements
-    vector<DRT::ELEMENTS::NStet5*> myadjele(0);
+    std::vector<DRT::ELEMENTS::NStet5*> myadjele(0);
     for (int j=0; j<nodeL->NumElement(); ++j)
     {
       const int eleid = node->second->Elements()[j]->Id();
@@ -480,7 +480,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
           foundit = true;
           // determine subelements node i is attached to
           // its attached to definitely 3 out of 4 subelements
-          vector<int> subele;
+          std::vector<int> subele;
           for (int k=0; k<4; ++k)
           {
             const int* sublm = ele->SubLM(k); // subelement k
@@ -544,7 +544,7 @@ void DRT::ELEMENTS::NStet5Type::InitAdjacency(
         lmlm[j][k].resize(12);
         for (int l=0; l<12; ++l)
         {
-          vector<int>::iterator fool = find(lm.begin(),lm.end(),elelm[l]);
+          std::vector<int>::iterator fool = find(lm.begin(),lm.end(),elelm[l]);
           lmlm[j][k][l] = fool-lm.begin();
         }
         

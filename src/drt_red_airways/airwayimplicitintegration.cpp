@@ -200,7 +200,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
     std::vector<int> lm;
     std::vector<int> lmstride;
     //vector<int> lmowner;
-    RCP<vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
+    RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
     ele->LocationVector(*discret_,lm,*lmowner,lmstride);
 
     // loop all nodes of this element, add values to the global vectors

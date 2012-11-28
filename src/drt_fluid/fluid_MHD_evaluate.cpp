@@ -592,13 +592,13 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
           // the parameterlist --- the element will fill
           // them since only the element implementation
           // knows its parent
-          RCP<vector<int> > plm     =Teuchos::rcp(new std::vector<int>);
-          RCP<vector<int> > plmowner=Teuchos::rcp(new std::vector<int>);
-          RCP<vector<int> > plmstride=Teuchos::rcp(new std::vector<int>);
+          RCP<std::vector<int> > plm     =Teuchos::rcp(new std::vector<int>);
+          RCP<std::vector<int> > plmowner=Teuchos::rcp(new std::vector<int>);
+          RCP<std::vector<int> > plmstride=Teuchos::rcp(new std::vector<int>);
 
-          mhdbcparams.set<RCP<vector<int> > >("plm",plm);
-          mhdbcparams.set<RCP<vector<int> > >("plmowner",plmowner);
-          mhdbcparams.set<RCP<vector<int> > >("plmstride",plmstride);
+          mhdbcparams.set<RCP<std::vector<int> > >("plm",plm);
+          mhdbcparams.set<RCP<std::vector<int> > >("plmowner",plmowner);
+          mhdbcparams.set<RCP<std::vector<int> > >("plmstride",plmstride);
 
           // call the element specific evaluate method
           int err = curr->second->Evaluate(mhdbcparams,*bnd_discret_,lm,elematrix1,dummymat,

@@ -110,7 +110,7 @@ void DRT::UTILS::ComputeStructure3DNullSpace( DRT::Discretization & dis, std::ve
     {
       DRT::Node* actnode = dis.lRowNode(i);
       const double* x = actnode->X();
-      vector<int> dofs = dis.Dof(0,actnode);  // use current dofset
+      std::vector<int> dofs = dis.Dof(0,actnode);  // use current dofset
       for (unsigned j=0; j<dofs.size(); ++j)
       {
         const int dof = dofs[j];
@@ -195,7 +195,7 @@ void DRT::UTILS::ComputeStructure2DNullSpace( DRT::Discretization & dis, std::ve
     {
       DRT::Node* actnode = dis.lRowNode(i);
       const double* x = actnode->X();
-      vector<int> dofs = dis.Dof(0,actnode);
+      std::vector<int> dofs = dis.Dof(0,actnode);
       for (unsigned j=0; j<dofs.size(); ++j)
       {
         const int dof = dofs[j];
@@ -304,7 +304,7 @@ void DRT::UTILS::ComputeBeam2DNullSpace( DRT::Discretization & dis, std::vector<
       const double* x = actnode->X();
 
       //getting number of degrees of freedom of current node
-      vector<int> dofs = dis.Dof(actnode);
+      std::vector<int> dofs = dis.Dof(actnode);
 
       //looping through all degrees of freedom of a node
       for (unsigned j=0; j<dofs.size(); ++j)
@@ -386,7 +386,7 @@ void DRT::UTILS::ComputeBeam3DNullSpace( DRT::Discretization & dis, std::vector<
       const double* x = actnode->X();
 
       //getting number of degrees of freedom of current node
-      vector<int> dofs = dis.Dof(actnode);
+      std::vector<int> dofs = dis.Dof(actnode);
 
       //looping through all degrees of freedom of a node
       for (unsigned j=0; j<dofs.size(); ++j)
@@ -483,7 +483,7 @@ void DRT::UTILS::ComputeXFluidDNullSpace( DRT::Discretization & dis, std::vector
     for (int i=0; i<dis.NumMyRowNodes(); ++i)
     {
       DRT::Node* actnode = dis.lRowNode(i);
-      vector<int> dofs = dis.Dof(actnode);
+      std::vector<int> dofs = dis.Dof(actnode);
       for (unsigned j=0; j<dofs.size(); ++j)
       {
         const int dof = dofs[j];
@@ -564,7 +564,7 @@ void DRT::UTILS::ComputeFluidDNullSpace( DRT::Discretization & dis, std::vector<
     for (int i=0; i<dis.NumMyRowNodes(); ++i)
     {
       DRT::Node* actnode = dis.lRowNode(i);
-      vector<int> dofs = dis.Dof(0,actnode);
+      std::vector<int> dofs = dis.Dof(0,actnode);
       const unsigned int ndof = dofs.size();
       if (numdf>6) dserror("Cannot define more than 6 modes");
       for (unsigned j=0; j<ndof; ++j)

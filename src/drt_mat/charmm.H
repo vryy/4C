@@ -358,18 +358,18 @@ private:
 	/// \b FCD_Type: type of the fc direction (string) (principal/vector/none)
 	inline string FCDType() { return (*params_->fcd_type_); }
 	/// \b FCD: direction of fc direction if fcd_type_ is vector (unit vector)
-	inline vector<double> FCD() { return (*params_->fcd_); }
+	inline std::vector<double> FCD() { return (*params_->fcd_); }
 	/// \b FCD_Space: directional space of fc (unit vector)
-	inline vector<double> FCDS() { return (*params_->fcds_); }
+	inline std::vector<double> FCDS() { return (*params_->fcds_); }
 
 	/// second characteristic (sc) length [AKMA]
 	inline double SCL() const { return params_->scl_; }
 	/// \b SCD_Type: type of the sc direction (string) (principal/vector/none)
 	inline string SCDType() { return (*params_->scd_type_); }
 	/// \b SCD: direction of sc direction if scd_type_ is vector (unit vector)
-	inline vector<double> SCD() { return (*params_->scd_); }
+	inline std::vector<double> SCD() { return (*params_->scd_); }
 	/// \b SCD_Space: directional space of sc (unit vector)
-	inline vector<double> SCDS() { return (*params_->scds_); }
+	inline std::vector<double> SCDS() { return (*params_->scds_); }
 
 	/// \b FCD_Acceleration: boolean (1/0) if F'' in fcd is computed and as force given to MD
 	inline bool FCDAcc() const {

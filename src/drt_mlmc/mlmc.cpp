@@ -1008,7 +1008,7 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
   // Variables for Random field
   double stoch_mat_par;
   // element center
-  vector<double> ele_c_location;
+  std::vector<double> ele_c_location;
 
   // flag have init stochmat??
   int stochmat_flag=0;
@@ -1536,7 +1536,7 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
 }
 
 
-void STR::MLMC::SetupEvalDisAtEleCenters(vector <int> AllOutputEleIds)
+void STR::MLMC::SetupEvalDisAtEleCenters(std::vector <int> AllOutputEleIds)
 {
   //const int myrank = actdis_coarse_->Comm().MyPID();
   for (unsigned int i=0; i<AllOutputEleIds.size(); i++)
@@ -1574,20 +1574,20 @@ void STR::MLMC::SetupEvalDisAtEleCenters(vector <int> AllOutputEleIds)
 void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPAR::STR::StressType iostress,INPAR::STR::StrainType iostrain )
 {
   IO::cout << "Proc "<< actdis_coarse_->Comm().MyPID() << " NumOutputele " << my_output_elements_.size() << IO::endl;
-  vector < Teuchos::RCP< vector <double > > > my_output_elements_c_disp;
-  vector < Teuchos::RCP< vector <double > > > my_output_elements_c_stresses;
-  vector < Teuchos::RCP< vector <double > > > my_output_elements_c_strains;
-  vector < Teuchos::RCP<vector <double > > > my_output_elements_mat_params;
+  std::vector < Teuchos::RCP< std::vector<double > > > my_output_elements_c_disp;
+  std::vector < Teuchos::RCP< std::vector<double > > > my_output_elements_c_stresses;
+  std::vector < Teuchos::RCP< std::vector<double > > > my_output_elements_c_strains;
+  std::vector < Teuchos::RCP< std::vector <double > > > my_output_elements_mat_params;
 
   for(unsigned int i = 0; i<my_output_elements_.size(); i++)
   {
-    RCP <vector<double> > my_c_disp = Teuchos::rcp(new std::vector<double> (3, 0.0));
+    RCP <std::vector<double> > my_c_disp = Teuchos::rcp(new std::vector<double> (3, 0.0));
     int myNumNodes= actdis_coarse_->gElement(my_output_elements_[i])->NumNode();
     const int* myNodeIds = actdis_coarse_->gElement(my_output_elements_[i])->NodeIds();
     for (int k=0; k< myNumNodes ; k++)
     {
       const DRT::Node* node = actdis_coarse_->gNode(myNodeIds[k]);
-      vector <int> myDofsPerNode = actdis_coarse_->Dof(node);
+      std::vector <int> myDofsPerNode = actdis_coarse_->Dof(node);
       for (unsigned int l=0; l<myDofsPerNode.size(); l++)
       {
         (*my_c_disp)[l]+=1./myNumNodes*(*disp)[disp->Map().LID(myDofsPerNode[l])];
@@ -1595,7 +1595,7 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
     }
     my_output_elements_c_disp.push_back(my_c_disp);
 
-    RCP <vector<double> > mat_params = Teuchos::rcp(new std::vector<double>);
+    RCP <std::vector<double> > mat_params = Teuchos::rcp(new std::vector<double>);
     // get the mat parameters
     if(actdis_coarse_->gElement(my_output_elements_[i])->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
     {
@@ -1672,8 +1672,8 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
   // hence loop over the elements
   for(unsigned int i = 0; i<my_output_elements_.size(); i++)
   {
-    RCP <vector<double> > element_c_stresses = Teuchos::rcp(new std::vector<double>);
-    RCP <vector<double> > element_c_strains = Teuchos::rcp(new std::vector<double>);
+    RCP <std::vector<double> > element_c_stresses = Teuchos::rcp(new std::vector<double>);
+    RCP <std::vector<double> > element_c_strains = Teuchos::rcp(new std::vector<double>);
     for(int k = 0;k<6 ; k++)
     {
       element_c_stresses->push_back((*elestress)[k][(elestress->Map().LID(my_output_elements_[i]))]);
@@ -1707,10 +1707,10 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
     for ( myit=my_output_element_map.begin() ; myit != my_output_element_map.end(); myit++ )
     {
       // get back all the data
-     const std::vector<double> * stresses = myit->second()->Get< vector <double> >("stresses");
-     const std::vector<double> * strains = myit->second()->Get< vector <double> >("strains");
-     const std::vector<double> * mat_params = myit->second()->Get< vector <double> >("mat_params");
-     const std::vector<double> * disp = myit->second()->Get< vector <double> >("disp");
+     const std::vector<double> * stresses = myit->second()->Get< std::vector <double> >("stresses");
+     const std::vector<double> * strains = myit->second()->Get< std::vector <double> >("strains");
+     const std::vector<double> * mat_params = myit->second()->Get< std::vector <double> >("mat_params");
+     const std::vector<double> * disp = myit->second()->Get< std::vector <double> >("disp");
      // IO::cout << "my_output_element_map first " << myit->first << *(myit->second)  << IO::endl;
 
 

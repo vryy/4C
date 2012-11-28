@@ -205,7 +205,7 @@ void DRT::ELEMENTS::So_tet10::Unpack(const std::vector<char>& data)
   // kintype_
   kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
   // data_
-  vector<char> tmp(0);
+  std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
 
@@ -362,7 +362,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_expol
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Volumes()
 {
-  vector<RCP<Element> > volumes(1);
+  std::vector<Teuchos::RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }

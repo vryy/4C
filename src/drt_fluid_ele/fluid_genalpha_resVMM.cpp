@@ -11553,7 +11553,7 @@ int DRT::ELEMENTS::FluidGenalphaResVMM<distype>::CalcResAvgs(
 
     int patchid=0;
     int gid    =ele->Id();
-    vector<int> ele_cart_id(3);
+    std::vector<int> ele_cart_id(3);
 
     (nurbsdis->GetKnotVector())->ConvertEleGidToKnotIds(gid,patchid,ele_cart_id);
 
@@ -11936,7 +11936,7 @@ void DRT::ELEMENTS::FluidGenalphaResVMM<distype>::GetNodalBodyForce(
 {
   constant_bodyforce_=false;
 
-  vector<DRT::Condition*> myneumcond;
+  std::vector<DRT::Condition*> myneumcond;
 
   // check whether all nodes have a unique VolumeNeumann condition
   DRT::UTILS::FindElementConditions(ele, "VolumeNeumann", myneumcond);

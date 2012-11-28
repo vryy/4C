@@ -67,7 +67,7 @@ namespace UTILS
           already unpacked in the instance. The calling method is responsible for
           freeing this instance!
   */
-  DRT::ParObject* Factory(const vector<char>& data);
+  DRT::ParObject* Factory(const std::vector<char>& data);
 
   /*!
   \brief Create an instance of a finite element depending on the type of element

@@ -214,7 +214,7 @@ void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
   gaussrule_ = DRT::UTILS::GaussRule1D(gausrule_integer); //explicit conversion from integer to enum
   // kinematic type
   kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
-  vector<char> tmp(0);
+  std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
 
@@ -228,7 +228,7 @@ void DRT::ELEMENTS::Truss3::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Truss3::Lines()
 {
-  vector<RCP<Element> > lines(1);
+  std::vector<Teuchos::RCP<Element> > lines(1);
   lines[0]= Teuchos::rcp(this, false);
   return lines;
 }
@@ -336,7 +336,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Truss3::MyGaussRule(int nnode, Integratio
   return gaussrule;
 }
 
-void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const vector<double>& xrefe, const bool secondinit)
+void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const std::vector<double>& xrefe, const bool secondinit)
 {
   /*this method initializes geometric variables of the element; the initilization can usually be applied to elements only once;
    *therefore after the first initilization the flag isinit is set to true and from then on this method does not take any action
@@ -371,7 +371,7 @@ void DRT::ELEMENTS::Truss3::SetUpReferenceGeometry(const vector<double>& xrefe, 
 int DRT::ELEMENTS::Truss3Type::Initialize(DRT::Discretization& dis)
 {
   //reference node positions
-  vector<double> xrefe;
+  std::vector<double> xrefe;
 
   //resize xrefe for the number of coordinates we need to store
   xrefe.resize(3*2);

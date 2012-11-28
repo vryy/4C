@@ -238,7 +238,7 @@ protected:
   bool nodes_rearranged_;
 
   //! vector in thickness direction for compatibility with sosh8
-  vector<double>                                   thickvec_;
+  std::vector<double>                            thickvec_;
 
   //! Compute stiffness and mass matrix
   void sosh8_nlnstiffmass(
@@ -258,9 +258,9 @@ protected:
   void sosh8_anssetup(
             const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe, ///< material element coords
             const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xcurr, ///< current element coords
-            vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> >** deriv_sp,   ///< derivs eval. at all sampling points
-            vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_sps,     ///< jac at all sampling points
-            vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_cur_sps, ///< current jac at all sampling points
+            std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> >** deriv_sp,   ///< derivs eval. at all sampling points
+            std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_sps,     ///< jac at all sampling points
+            std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_cur_sps, ///< current jac at all sampling points
             LINALG::Matrix<num_ans*num_sp,NUMDOF_SOH8>& B_ans_loc); ///< modified B
 
   //! Evaluate transformation matrix T (parameter->material) at gp

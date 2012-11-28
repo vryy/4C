@@ -2503,7 +2503,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalMatAndRHS_REINIT_Penalty(
   const size_t numnode = ele->NumNode();
 
   std::vector<Teuchos::RCP<DRT::Element> > linesVec = ele->Lines();
-  typedef vector<Teuchos::RCP<DRT::Element> >::iterator lines_iterator;
+  typedef std::vector<Teuchos::RCP<DRT::Element> >::iterator lines_iterator;
 
   for(lines_iterator line = linesVec.begin(); line != linesVec.end(); line++)
   {

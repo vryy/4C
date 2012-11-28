@@ -222,7 +222,7 @@ void DRT::ELEMENTS::Beam3eb::Unpack(const std::vector<char>& data)
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Beam3eb::Lines()
 {
-  vector<RCP<Element> > lines(1);
+  std::vector<RCP<Element> > lines(1);
   lines[0]= Teuchos::rcp(this, false);
   return lines;
 }
@@ -236,7 +236,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Beam3eb::Lines()
  | element nodes are already known (public)                   meier 05/12|
  *----------------------------------------------------------------------*/
 
-void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const vector<double>& xrefe, const bool secondinit)
+void DRT::ELEMENTS::Beam3eb::SetUpReferenceGeometry(const std::vector<double>& xrefe, const bool secondinit)
 {
   /*this method initializes geometric variables of the element; the initilization can usually be applied to elements only once;
    *therefore after the first initilization the flag isinit is set to true and from then on this method does not take any action

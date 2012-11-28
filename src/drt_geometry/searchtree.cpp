@@ -197,8 +197,8 @@ int GEO::SearchTree::queryXFEMFSIPointType(
  | fix intersection for contact with xfem FSI              u.may   02/09|
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::moveContactNodes(
-    const std::vector<std::vector<int> >&                   triangleList,
-    vector< GEO::InterfacePoint >&                pointList,
+    const std::vector<std::vector<int> >&         triangleList,
+    std::vector< GEO::InterfacePoint >&           pointList,
     const std::map<int,LINALG::Matrix<3,2> >&     triangleXAABBs,
     const LINALG::Matrix<3,1>&                    querypoint,
     const int                                     querypointId,
@@ -1862,8 +1862,8 @@ int GEO::SearchTree::TreeNode::queryXFEMFSIPointType(
  | fix intersection for contact with xfem FSI              u.may   02/09|
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::TreeNode::moveContactNodes(
-    const std::vector<std::vector<int> >&                   triangleList,
-    vector< GEO::InterfacePoint >&                pointList,
+    const std::vector<std::vector<int> >&         triangleList,
+    std::vector< GEO::InterfacePoint >&           pointList,
     const std::map<int,LINALG::Matrix<3,2> >&     triangleXAABBs,
     const LINALG::Matrix<3,1>&                    querypoint,
     const int                                     querypointId,

@@ -180,9 +180,9 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
       {
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress",Teuchos::null);
-        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain",Teuchos::null);
-        RCP<vector<char> > plstraindata = params.get<RCP<vector<char> > >("plstrain",Teuchos::null);
+        RCP<std::vector<char> > stressdata = params.get<RCP<std::vector<char> > >("stress",Teuchos::null);
+        RCP<std::vector<char> > straindata = params.get<RCP<std::vector<char> > >("strain",Teuchos::null);
+        RCP<std::vector<char> > plstraindata = params.get<RCP<std::vector<char> > >("plstrain",Teuchos::null);
         if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata==Teuchos::null) dserror("Cannot get stress 'data'");
         if (straindata==Teuchos::null) dserror("Cannot get strain 'data'");
@@ -515,9 +515,9 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-  const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
-  const static vector<double> gpweights = soh8_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  const static std::vector<double> gpweights = soh8_weights();
 /* ============================================================================*/
 
   // update element geometry

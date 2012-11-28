@@ -741,8 +741,8 @@ void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
     std::vector<double> elecenter = MAT::MatPointCoords(actele,mydisp);
     RCP<MAT::Material> mat = actele->Material();
     MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
-    RCP<vector<std::vector<double> > > a1s = remo->Geta1();
-    RCP<vector<std::vector<double> > > a2s = remo->Geta2();
+    RCP<std::vector<std::vector<double> > > a1s = remo->Geta1();
+    RCP<std::vector<std::vector<double> > > a2s = remo->Geta2();
 
     // material plot at gauss points
     int ngp = remo->Geta1()->size();

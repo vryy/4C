@@ -1363,7 +1363,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
            LINALG::Matrix<nsd_,nen_> &          eprescpgaf,
            LINALG::Matrix<nen_,1>&              escabofoaf)
 {
-  vector<DRT::Condition*> myneumcond;
+  std::vector<DRT::Condition*> myneumcond;
 
   // check whether all nodes have a unique Neumann condition
   if (nsd_==3)
@@ -1444,7 +1444,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
   // at low Mach number
   if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
   {
-    vector<DRT::Condition*> myscatraneumcond;
+    std::vector<DRT::Condition*> myscatraneumcond;
 
     // check whether all nodes have a unique Neumann condition
     if (nsd_==3)

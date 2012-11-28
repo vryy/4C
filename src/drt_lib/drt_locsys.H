@@ -90,7 +90,7 @@ public:
    * \brief Get local system conditions
    *
    */
-  inline vector<DRT::Condition*> Conditions() const { return locsysconds_;};
+  inline std::vector<DRT::Condition*> Conditions() const { return locsysconds_;};
 
   /*!
    * \brief Get a specific local system condition
@@ -119,7 +119,7 @@ public:
    * \brief Get types of local system conditions
    *
    */
-  inline vector<DRT::Condition::ConditionType> TypeLocsys() const { return typelocsys_;};
+  inline std::vector<DRT::Condition::ConditionType> TypeLocsys() const { return typelocsys_;};
 
   /*!
    * \brief Get type of a specific local system condition

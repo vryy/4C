@@ -222,9 +222,9 @@ protected:
 
   //! Calculate nonlinear stiffness and mass matrix
   virtual void soh8fbar_nlnstiffmass(
-		vector<int>&              lm,             ///< location matrix
-		vector<double>&           disp,           ///< current displacements
-		vector<double>&           residual,       ///< current residual displ
+    std::vector<int>&              lm,             ///< location matrix
+    std::vector<double>&           disp,           ///< current displacements
+    std::vector<double>&           residual,       ///< current residual displ
 		LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
 		LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
 		LINALG::Matrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector

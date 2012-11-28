@@ -1220,9 +1220,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::NeumannInflow(
  | calculate integral of convective flux across boundary      gjb 11/11 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-vector<double> DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcConvectiveFlux(
+std::vector<double> DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcConvectiveFlux(
     const DRT::Element*                 ele,
-    const std::vector<double>&           ephinp,
+    const std::vector<double>&          ephinp,
     const LINALG::Matrix<nsd_+1,nen_>&  evelnp,
     Epetra_SerialDenseVector&           erhs
 )
@@ -1233,7 +1233,7 @@ vector<double> DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::CalcConvectiveFlux(
   // define vector for scalar values at nodes
   LINALG::Matrix<nen_,1> phinod(true);
 
-  vector<double> integralflux(numscal_);
+  std::vector<double> integralflux(numscal_);
 
   // loop over all scalars
   for(int k=0;k<numscal_;++k)
@@ -1475,7 +1475,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
   }
 
   // concentration of active species at integration point
-  vector<double> conint(numscal_,0.0);
+  std::vector<double> conint(numscal_,0.0);
   // el. potential at integration point
   double potint(0.0);
   // a 'working variable'
@@ -2194,7 +2194,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
   // concentration values of reactive species at element nodes
-  vector<LINALG::Matrix<nen_,1> > conreact(numscal_);
+  std::vector<LINALG::Matrix<nen_,1> > conreact(numscal_);
 
   // el. potential values at element nodes
   LINALG::Matrix<nen_,1> pot(true);
@@ -2223,7 +2223,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
   }
 
   // concentration of active species at integration point
-  vector<double> conint(numscal_,0.0);
+  std::vector<double> conint(numscal_,0.0);
   // el. potential at integration point
   double potint;
   // history term of el. potential at integration point
@@ -3001,9 +3001,9 @@ template <DRT::Element::DiscretizationType bdistype,
 
   // parent element lm vector (vectors plm and plmowner allocated outside in
   // EvaluateConditionUsingParentData)
-  Teuchos::RCP<vector<int> > plm      = params.get<Teuchos::RCP<vector<int> > >("plm");
-  Teuchos::RCP<vector<int> > plmowner = params.get<Teuchos::RCP<vector<int> > >("plmowner");
-  Teuchos::RCP<vector<int> > plmstride = params.get<Teuchos::RCP<vector<int> > >("plmstride");
+  Teuchos::RCP<std::vector<int> > plm      = params.get<Teuchos::RCP<std::vector<int> > >("plm");
+  Teuchos::RCP<std::vector<int> > plmowner = params.get<Teuchos::RCP<std::vector<int> > >("plmowner");
+  Teuchos::RCP<std::vector<int> > plmstride = params.get<Teuchos::RCP<std::vector<int> > >("plmstride");
   pele->LocationVector(discretization,*plm,*plmowner,*plmstride);
 
   // get velocity values at parent element nodes
@@ -3016,12 +3016,12 @@ template <DRT::Element::DiscretizationType bdistype,
   if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
   // extract local values from global vectors for parent element
-  vector<double> myphinp(plm->size());
+  std::vector<double> myphinp(plm->size());
   DRT::UTILS::ExtractMyValues(*phinp,myphinp,*plm);
 
   // matrix and vector definition
   LINALG::Matrix<pnsd,pnen>       evelnp;
-  vector<LINALG::Matrix<pnen,1> > ephinp(numscal_);
+  std::vector<LINALG::Matrix<pnen,1> > ephinp(numscal_);
 
   // insert into element arrays
   for (int i=0;i<pnen;++i)
@@ -3697,9 +3697,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::TaylorGalerkinBoundaryOutflow(
 
   // parent element lm vector (vectors plm and plmowner allocated outside in
   // EvaluateConditionUsingParentData)
-  Teuchos::RCP<vector<int> > plm      = params.get<RCP<vector<int> > >("plm");
-  Teuchos::RCP<vector<int> > plmowner = params.get<RCP<vector<int> > >("plmowner");
-  Teuchos::RCP<vector<int> > plmstride = params.get<RCP<vector<int> > >("plmstride");
+  Teuchos::RCP<std::vector<int> > plm      = params.get<RCP<std::vector<int> > >("plm");
+  Teuchos::RCP<std::vector<int> > plmowner = params.get<RCP<std::vector<int> > >("plmowner");
+  Teuchos::RCP<std::vector<int> > plmstride = params.get<RCP<std::vector<int> > >("plmstride");
   pele->LocationVector(discretization,*plm,*plmowner,*plmstride);
 
   // get velocity values at parent element nodes
@@ -3715,16 +3715,16 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::TaylorGalerkinBoundaryOutflow(
 
 
   // extract local values from global vectors for parent element
-  vector<double> myphinp(plm->size());
+  std::vector<double> myphinp(plm->size());
   DRT::UTILS::ExtractMyValues(*phinp,myphinp,*plm);
 
-  vector<double> myphin(plm->size());
+  std::vector<double> myphin(plm->size());
   DRT::UTILS::ExtractMyValues(*phin,myphin,*plm);
 
   //	  // matrix and vector definition
   LINALG::Matrix<pnsd,pnen>       evelnp;
-  vector<LINALG::Matrix<pnen,1> > ephinp(numscal_);
-  vector<LINALG::Matrix<pnen,1> > ephin(numscal_);
+  std::vector<LINALG::Matrix<pnen,1> > ephinp(numscal_);
+  std::vector<LINALG::Matrix<pnen,1> > ephin(numscal_);
 
   // insert into element arrays
   for (int i=0;i<pnen;++i)
@@ -4123,9 +4123,9 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBou
 
   // parent element lm vector (vectors plm and plmowner allocated outside in
   // EvaluateConditionUsingParentData)
-  RCP<vector<int> > plm      = params.get<RCP<vector<int> > >("plm");
-  RCP<vector<int> > plmowner = params.get<RCP<vector<int> > >("plmowner");
-  RCP<vector<int> > plmstride = params.get<RCP<vector<int> > >("plmstride");
+  RCP<std::vector<int> > plm      = params.get<RCP<std::vector<int> > >("plm");
+  RCP<std::vector<int> > plmowner = params.get<RCP<std::vector<int> > >("plmowner");
+  RCP<std::vector<int> > plmstride = params.get<RCP<std::vector<int> > >("plmstride");
   pele->LocationVector(discretization,*plm,*plmowner,*plmstride);
 
   // get scalar values at parent element nodes
@@ -4135,16 +4135,16 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBou
   if (phinp==Teuchos::null) dserror("Cannot get state vector 'phin'");
 
   // extract local values from global vectors for parent element
-  vector<double> myphinp(plm->size());
+  std::vector<double> myphinp(plm->size());
   DRT::UTILS::ExtractMyValues(*phinp,myphinp,*plm);
 
-  vector<double> myphin(plm->size());
+  std::vector<double> myphin(plm->size());
   DRT::UTILS::ExtractMyValues(*phin,myphin,*plm);
 
   //	  // matrix and vector definition
   //	  LINALG::Matrix<pnsd,pnen>       evelnp;
-  vector<LINALG::Matrix<pnen,1> > ephinp(numscal_);
-  vector<LINALG::Matrix<pnen,1> > ephin(numscal_);
+  std::vector<LINALG::Matrix<pnen,1> > ephinp(numscal_);
+  std::vector<LINALG::Matrix<pnen,1> > ephin(numscal_);
 
   // insert into element arrays
   for (int i=0;i<pnen;++i)

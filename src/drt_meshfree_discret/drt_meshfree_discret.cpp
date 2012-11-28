@@ -177,13 +177,13 @@ bool DRT::MESHFREE::MeshfreeDiscretization::DeleteKnot(const int gid)
 /*--------------------------------------------------------------------------*
  |  Pack local knots (row map) into buffer               (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-RCP<vector<char> > DRT::MESHFREE::MeshfreeDiscretization::PackMyKnots() const
+RCP<std::vector<char> > DRT::MESHFREE::MeshfreeDiscretization::PackMyKnots() const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
 
   DRT::PackBuffer buffer;
 
-  for (vector<DRT::MESHFREE::MeshfreeNode*>::const_iterator i=knotrowptr_.begin();
+  for (std::vector<DRT::MESHFREE::MeshfreeNode*>::const_iterator i=knotrowptr_.begin();
        i!=knotrowptr_.end();
        ++i)
   {
@@ -193,7 +193,7 @@ RCP<vector<char> > DRT::MESHFREE::MeshfreeDiscretization::PackMyKnots() const
 
   buffer.StartPacking();
 
-  for (vector<DRT::MESHFREE::MeshfreeNode*>::const_iterator i=knotrowptr_.begin();
+  for (std::vector<DRT::MESHFREE::MeshfreeNode*>::const_iterator i=knotrowptr_.begin();
        i!=knotrowptr_.end();
        ++i)
   {
@@ -201,7 +201,7 @@ RCP<vector<char> > DRT::MESHFREE::MeshfreeDiscretization::PackMyKnots() const
     k->Pack(buffer);
   }
 
-  RCP<vector<char> > block = Teuchos::rcp(new std::vector<char>);
+  RCP<std::vector<char> > block = Teuchos::rcp(new std::vector<char>);
   std::swap( *block, buffer() );
   return block;
 }
@@ -209,9 +209,9 @@ RCP<vector<char> > DRT::MESHFREE::MeshfreeDiscretization::PackMyKnots() const
 /*--------------------------------------------------------------------------*
  |  Unpack knot buffer and create local knots            (public) nis Jan12 |
  *--------------------------------------------------------------------------*/
-void DRT::MESHFREE::MeshfreeDiscretization::UnPackMyKnots(RCP<vector<char> > k)
+void DRT::MESHFREE::MeshfreeDiscretization::UnPackMyKnots(RCP<std::vector<char> > k)
 {
-  vector<char>::size_type index = 0;
+  std::vector<char>::size_type index = 0;
   while (index < k->size())
   {
     std::vector<char> data;
@@ -548,7 +548,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(ostream& os) const
         os << *(curr->second);
         if (Filled())
         {
-          vector<int> dof = Dof(0,&*(curr->second));
+          std::vector<int> dof = Dof(0,&*(curr->second));
           if (dof.size())
           {
             os << " Dofs ";
@@ -574,7 +574,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(ostream& os) const
         os << *(curr->second);
         if (Filled())
         {
-          vector<int> dof = Dof(0,&*(curr->second));
+          std::vector<int> dof = Dof(0,&*(curr->second));
           if (dof.size())
           {
             os << " Dofs ";
@@ -600,7 +600,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(ostream& os) const
         os << *(curr->second);
         if (Filled())
         {
-          vector<int> dof = Dof(0,&*(curr->second));
+          std::vector<int> dof = Dof(0,&*(curr->second));
           if (dof.size())
           {
             os << " Dofs ";

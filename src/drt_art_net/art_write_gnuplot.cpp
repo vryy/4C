@@ -296,7 +296,7 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;
     std::vector<int> lmstride;
-    RCP<vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
+    RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
     const int* ele_nodes = ele[0][0].NodeIds();
 
     if(ele_nodes[0] == (*nodes)[i])

@@ -601,7 +601,7 @@ void COMBUST::BlendMaterial(
     const double        dynviscminus   // minus viscosity
 )
 {
-  vector<DRT::Condition*> cond;
+  std::vector<DRT::Condition*> cond;
   DRT::UTILS::FindElementConditions(ele, "BlendMaterial", cond);
 
   if (cond.size()>=1)

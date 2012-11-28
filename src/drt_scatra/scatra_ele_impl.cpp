@@ -926,7 +926,7 @@ for(int k=0; k<numscal_; k++)
   }
   case SCATRA::time_update_material:
   {
-    vector<Teuchos::RCP<MAT::Myocard> > updatemat;
+    std::vector<Teuchos::RCP<MAT::Myocard> > updatemat;
     updatemat.reserve(numscal_);
 
     // access the general material
@@ -2004,7 +2004,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForce(
   const double           time
   )
 {
-  vector<DRT::Condition*> myneumcond;
+  std::vector<DRT::Condition*> myneumcond;
 
   // check whether all nodes have a unique Neumann condition
   switch(nsd_)
@@ -4385,9 +4385,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
   // call --- they are not intended to be modified
 
   // alloc the vectors that will store the original, non-perturbed values
-  vector<LINALG::Matrix<nen_,1> > origephinp(numscal_);
+  std::vector<LINALG::Matrix<nen_,1> > origephinp(numscal_);
   LINALG::Matrix<nen_,1>          origepotnp(true);
-  vector<LINALG::Matrix<nen_,1> > origehist(numscal_);
+  std::vector<LINALG::Matrix<nen_,1> > origehist(numscal_);
 
   // copy original concentrations and potentials to these storage arrays
   for (int i=0;i<nen_;++i)
@@ -5405,7 +5405,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
   //--------------------------------------------------------------------
   // get nodal values of fluid body force
   //--------------------------------------------------------------------
-  vector<DRT::Condition*> myfluidneumcond;
+  std::vector<DRT::Condition*> myfluidneumcond;
 
   // check whether all nodes have a unique Fluid Neumann condition
   switch(nsd_)

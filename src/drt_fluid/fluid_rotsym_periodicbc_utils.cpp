@@ -63,7 +63,7 @@ bool FLD::IsSlaveNodeOfRotSymPBC(
 )
 {
   // get periodic surface/line boundary conditions
-  vector<DRT::Condition*> pbc;
+  std::vector<DRT::Condition*> pbc;
   node->GetCondition("SurfacePeriodic", pbc);
   if (pbc.empty())
     node->GetCondition("LinePeriodic", pbc);

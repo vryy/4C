@@ -101,7 +101,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Evaluate(Teuchos::ParameterList&    
   int row = 0;
   int col = 0;
   Element::LocationArray la(1);
-  vector<int> lm;
+  std::vector<int> lm;
   int rdim;
   int cdim;
   if (dofsets_.size()!=1){
@@ -177,8 +177,8 @@ void DRT::MESHFREE::MeshfreeDiscretization::Evaluate(Teuchos::ParameterList&    
 
     if (assemblemat1)
     {
-      vector<int> lrlm;
-      vector<int> lclm;
+      std::vector<int> lrlm;
+      std::vector<int> lclm;
 
       const Epetra_Map& dofrowmap = systemmatrix1->OperatorRangeMap();
       lrlm.resize(rdim);

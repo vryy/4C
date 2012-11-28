@@ -177,7 +177,7 @@ public:
 
     K_pt_ = 0.0;
 
-    const static vector<double> gpweights = soh8_weights();
+    const static std::vector<double> gpweights = soh8_weights();
 
     for (int gp=0; gp<NUMGPT_SOH8; ++gp)
     {

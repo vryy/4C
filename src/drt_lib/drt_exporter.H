@@ -352,8 +352,8 @@ public:
   \param recvbuff (output): buffer containing received data
   \param length (output): length of message upon receive
   */
-  void ReceiveAny(int& source, int& tag, vector<char>& recvbuff, int& length);
-  void Receive(const int source,const int tag, vector<char>& recvbuff,int& length);
+  void ReceiveAny(int& source, int& tag, std::vector<char>& recvbuff, int& length);
+  void Receive(const int source,const int tag, std::vector<char>& recvbuff,int& length);
 
   /*!
   \brief Receive anything joker (blocking)
@@ -379,8 +379,8 @@ public:
   \param recvbuff (output): buffer containing received data
   \param length (output): length of message upon receive
   */
-  void ReceiveAny(int& source, int& tag, vector<int>& recvbuff, int& length);
-  void Receive(const int source,const int tag, vector<int>& recvbuff, int& length);
+  void ReceiveAny(int& source, int& tag, std::vector<int>& recvbuff, int& length);
+  void Receive(const int source,const int tag, std::vector<int>& recvbuff, int& length);
 
   /*!
   \brief Receive anything joker (blocking)
@@ -431,7 +431,7 @@ public:
   \param recvbuff (output): buffer containing received data
   \param mpi_op   (input): MPI operation
   */
-  void Allreduce(vector<int>& sendbuff, vector<int>& recvbuff, MPI_Op mpi_op);
+  void Allreduce(std::vector<int>& sendbuff, std::vector<int>& recvbuff, MPI_Op mpi_op);
 
 
 
@@ -459,7 +459,7 @@ private:
   /*!
   \brief Get sendplan_
   */
-  inline vector<std::set<int> > & SendPlan() { return sendplan_; }
+  inline std::vector<std::set<int> > & SendPlan() { return sendplan_; }
 
 #if 0
   /*!
@@ -525,7 +525,7 @@ private:
       at position index in recvblock. index must be incremented by the objects
       size.
      */
-    virtual void UnpackObject(int gid, vector<char>::size_type& index, const vector<char>& recvblock) = 0;
+    virtual void UnpackObject(int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock) = 0;
 
     /// after communication remove all objects that are not in the target map
     virtual void PostExportCleanup(Exporter* exporter) = 0;
@@ -565,7 +565,7 @@ private:
       return false;
     }
 
-    virtual void UnpackObject(int gid, vector<char>::size_type& index, const vector<char>& recvblock)
+    virtual void UnpackObject(int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock)
     {
       std::vector<char> data;
       ParObject::ExtractfromPack(index,recvblock,data);
@@ -626,7 +626,7 @@ private:
       return false;
     }
 
-    virtual void UnpackObject(int gid, vector<char>::size_type& index, const vector<char>& recvblock)
+    virtual void UnpackObject(int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock)
     {
       RCP<T> obj = Teuchos::rcp(new T);
       ParObject::ExtractfromPack(index,recvblock,*obj);
@@ -677,7 +677,7 @@ private:
       return false;
     }
 
-    virtual void UnpackObject(int gid, vector<char>::size_type& index, const vector<char>& recvblock)
+    virtual void UnpackObject(int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock)
     {
       memcpy(&objects_[gid],&recvblock[index],sizeof(T));
       index += sizeof(T);
@@ -724,7 +724,7 @@ private:
       return false;
     }
 
-    virtual void UnpackObject(int gid, vector<char>::size_type& index, const vector<char>& recvblock)
+    virtual void UnpackObject(int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock)
     {
       ParObject::ExtractfromPack(index,recvblock,objects_[gid]);
     }
@@ -769,7 +769,7 @@ private:
       return false;
     }
 
-    virtual void UnpackObject(int gid, vector<char>::size_type& index, const vector<char>& recvblock)
+    virtual void UnpackObject(int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock)
     {
       ParObject::ExtractfromPack(index,recvblock,objects_[gid]);
     }
@@ -815,7 +815,7 @@ private:
       return false;
     }
 
-    virtual void UnpackObject(int gid, vector<char>::size_type& index, const vector<char>& recvblock)
+    virtual void UnpackObject(int gid, std::vector<char>::size_type& index, const std::vector<char>& recvblock)
     {
       ParObject::ExtractfromPack(index,recvblock,objects_[gid]);
     }

@@ -141,9 +141,9 @@ int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
                               Epetra_SerialDenseVector&      elevec)
 {
   // the vectors have been allocated outside in EvaluateConditionUsingParentData()
-  RCP<vector<int> > plm = params.get<RCP<vector<int> > >("plm");
-  RCP<vector<int> > plmowner = params.get<RCP<vector<int> > >("plmowner");
-  RCP<vector<int> > plmstride = params.get<RCP<vector<int> > >("plmstride");
+  RCP<std::vector<int> > plm = params.get<RCP<std::vector<int> > >("plm");
+  RCP<std::vector<int> > plmowner = params.get<RCP<std::vector<int> > >("plmowner");
+  RCP<std::vector<int> > plmstride = params.get<RCP<std::vector<int> > >("plmstride");
   ele->LocationVector(discretization,*plm,*plmowner,*plmstride);
 
   // reshape element vector

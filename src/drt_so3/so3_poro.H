@@ -280,13 +280,13 @@ protected:
   };
 
   //! vector of inverses of the jacobian in material frame
-  vector<LINALG::Matrix<numdim_,numdim_> >                      invJ_;
+  std::vector<LINALG::Matrix<numdim_,numdim_> >                      invJ_;
   //! determinant of Jacobian in material frame
-  vector<double>                                                        detJ_;
+  std::vector<double>                                                detJ_;
   //! container containing all kind of solid3 thisandthat
-  DRT::Container                                                        data_;
+  DRT::Container                                                     data_;
   //! vector of coordinates of current integration point in reference coordinates
-  vector<LINALG::Matrix<numdim_,1> > xsi_;
+  std::vector<LINALG::Matrix<numdim_,1> > xsi_;
 
   //! Calculate nonlinear stiffness and internal force for poroelasticity problems
   virtual void nlnstiff_poroelast(

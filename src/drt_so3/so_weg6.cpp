@@ -249,7 +249,7 @@ void DRT::ELEMENTS::So_weg6::Unpack(const std::vector<char>& data)
   // kintype_
   kintype_ = static_cast<KinematicType>( ExtractInt(position,data) );
   // data_
-  vector<char> tmp(0);
+  std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
 
@@ -259,7 +259,7 @@ void DRT::ELEMENTS::So_weg6::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,time_);
   if (pstype_==INPAR::STR::prestress_mulf)
   {
-    vector<char> tmpprestress(0);
+    std::vector<char> tmpprestress(0);
     ExtractfromPack(position,data,tmpprestress);
     if (prestress_ == Teuchos::null)
       prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_WEG6,NUMGPT_WEG6));
@@ -269,7 +269,7 @@ void DRT::ELEMENTS::So_weg6::Unpack(const std::vector<char>& data)
   // invdesign_
   if (pstype_==INPAR::STR::prestress_id)
   {
-    vector<char> tmpinvdesign(0);
+    std::vector<char> tmpinvdesign(0);
     ExtractfromPack(position,data,tmpinvdesign);
     if (invdesign_ == Teuchos::null)
       invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(NUMNOD_WEG6,NUMGPT_WEG6));
@@ -376,7 +376,7 @@ void DRT::ELEMENTS::So_weg6::soweg6_expol
     }
   }
 }
-vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
+std::vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
 {
 
   // update element geometry
@@ -395,7 +395,7 @@ vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
   LINALG::Matrix<1,NUMDIM_WEG6> midpoint;
   //midpoint.Multiply('T','N',1.0,funct,xrefe,0.0);
   midpoint.MultiplyTN(funct, xrefe);
-  vector<double> centercoords(3);
+  std::vector<double> centercoords(3);
   centercoords[0] = midpoint(0,0);
   centercoords[1] = midpoint(0,1);
   centercoords[2] = midpoint(0,2);
@@ -885,7 +885,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, std::vector<double>& da
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_weg6::Volumes()
 {
-  vector<RCP<Element> > volumes(1);
+  std::vector<Teuchos::RCP<Element> > volumes(1);
   volumes[0]= Teuchos::rcp(this, false);
   return volumes;
 }

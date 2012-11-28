@@ -74,8 +74,8 @@ newton_tol_(1.0e-10)
  * out of order!                                                                 winklmaier 10/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::compute(
-    vector<RCP<Epetra_Vector> > newRowVectorsn,
-    vector<RCP<Epetra_Vector> > newRowVectorsnp
+    std::vector<RCP<Epetra_Vector> > newRowVectorsn,
+    std::vector<RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
   dserror("Unused function! Use a function of the derived classes");
@@ -109,7 +109,7 @@ void XFEM::XFLUID_TIMEINT_BASE::type(
  * algorithms data structure                                                     winklmaier 10/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::handleVectors(
-    vector<RCP<Epetra_Vector> >& newRowVectorsn
+    std::vector<RCP<Epetra_Vector> >& newRowVectorsn
 )
 {
 //  if (newRowVectorsn.size()!=newRowVectorsnp.size())
@@ -424,8 +424,8 @@ bool XFEM::XFLUID_TIMEINT_BASE::Neighbors(
   const int* nodeids1 = ele1->NodeIds();
   const int* nodeids2 = ele2->NodeIds();
 
-  vector<int> nodeids1_vec;
-  vector<int> nodeids2_vec;
+  std::vector<int> nodeids1_vec;
+  std::vector<int> nodeids2_vec;
 
   for(int i=0; i< numnode1; i++)
     nodeids1_vec.push_back(nodeids1[i]);
@@ -618,7 +618,7 @@ void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::addPBCelements(
     const DRT::Node* node,
-    vector<const DRT::Element*>&  eles
+    std::vector<const DRT::Element*>&  eles
 ) const
 {
   dserror("what to do in addPBCelements?");
@@ -658,7 +658,7 @@ void XFEM::XFLUID_TIMEINT_BASE::findPBCNode(
   pbcnodefound = false; // boolean indicating whether this node is a pbc node
   int coupnodegid = -1;
   // loop all nodes with periodic boundary conditions (master nodes)
-  for (std::map<int, vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
+  for (std::map<int, std::vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
   {
     if (pbciter->first == nodegid) // node is a pbc master node
     {
@@ -696,7 +696,7 @@ void XFEM::XFLUID_TIMEINT_BASE::resetState(
     TimeIntData::state newState
 ) const
 {
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     if (data->state_ == oldState)
@@ -715,7 +715,7 @@ void XFEM::XFLUID_TIMEINT_BASE::clearState(
     TimeIntData::state state         /// state of time int to clear
 ) const
 {
-  vector<TimeIntData>::iterator data;
+  std::vector<TimeIntData>::iterator data;
   while(true) // while loop over data to be cleared
   {
     for (data=timeIntData_->begin();
@@ -744,10 +744,10 @@ void XFEM::XFLUID_TIMEINT_BASE::sendData(
     DRT::PackBuffer& dataSend,
     int& dest,
     int& source,
-    vector<char>& dataRecv
+    std::vector<char>& dataRecv
 ) const
 {
-  vector<int> lengthSend(1,0);
+  std::vector<int> lengthSend(1,0);
   lengthSend[0] = dataSend().size();
   int size_one = 1;
 
@@ -763,7 +763,7 @@ void XFEM::XFLUID_TIMEINT_BASE::sendData(
   int length_tag = 0;
   exporter.ISend(myrank_, dest, &(lengthSend[0]) , size_one, length_tag, req_length_data);
   // ... and receive length
-  vector<int> lengthRecv(1,0);
+  std::vector<int> lengthRecv(1,0);
   exporter.Receive(source, length_tag, lengthRecv, size_one);
   exporter.Wait(req_length_data);
 
@@ -806,8 +806,8 @@ void XFEM::XFLUID_TIMEINT_BASE::packNode(
  * without an underlying discretization fitting to the node's new prozessor      winklmaier 10/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::unpackNode(
-    vector<char>::size_type& posinData,
-    vector<char>& dataRecv,
+    std::vector<char>::size_type& posinData,
+    std::vector<char>& dataRecv,
     DRT::Node& node
 ) const
 {

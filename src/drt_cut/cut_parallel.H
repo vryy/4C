@@ -109,16 +109,16 @@ public:
    */
   void packPoints(
       DRT::PackBuffer& dataSend,
-      vector<LINALG::Matrix<3,1> >& points_coords
+      std::vector<LINALG::Matrix<3,1> >& points_coords
   ) const;
 
   /*!
   \brief Unpack the point coordinates
    */
   void unpackPoints(
-      vector<char>::size_type& posinData,               //!< position in data
-      vector<char>& dataRecv,                           //!< received data
-      vector<LINALG::Matrix<3,1> > & points_coords      //!< point coordinates
+      std::vector<char>::size_type& posinData,               //!< position in data
+      std::vector<char>& dataRecv,                           //!< received data
+      std::vector<LINALG::Matrix<3,1> > & points_coords      //!< point coordinates
   ) const;
 
   /*!

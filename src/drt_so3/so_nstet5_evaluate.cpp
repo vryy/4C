@@ -246,8 +246,8 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
       if (discretization.Comm().MyPID()==Owner())
       {
         //------------------------------- compute element stress from stabilization
-        RCP<vector<char> > stressdata = params.get<RCP<vector<char> > >("stress",Teuchos::null);
-        RCP<vector<char> > straindata = params.get<RCP<vector<char> > >("strain",Teuchos::null);
+        RCP<std::vector<char> > stressdata = params.get<RCP<std::vector<char> > >("stress",Teuchos::null);
+        RCP<std::vector<char> > straindata = params.get<RCP<std::vector<char> > >("strain",Teuchos::null);
         if (stressdata==Teuchos::null) dserror("Cannot get stress 'data'");
         if (straindata==Teuchos::null) dserror("Cannot get strain 'data'");
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress",INPAR::STR::stress_none);

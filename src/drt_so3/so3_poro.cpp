@@ -107,7 +107,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Unpack(const std::vector<char>& d
   so3_ele::ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
   // data_
-  vector<char> tmp(0);
+  std::vector<char> tmp(0);
   so3_ele::ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
 

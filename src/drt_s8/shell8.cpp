@@ -297,7 +297,7 @@ void DRT::ELEMENTS::Shell8::Unpack(const std::vector<char>& data)
   // material_
   ExtractfromPack(position,data,material_);
   // data_
-  vector<char> tmp(0);
+  std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
   data_.Unpack(tmp);
 
@@ -348,7 +348,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Shell8::Lines()
  *----------------------------------------------------------------------*/
 std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Shell8::Surfaces()
 {
-  vector<RCP<Element> > surfaces(1);
+  std::vector<RCP<Element> > surfaces(1);
   surfaces[0]= Teuchos::rcp(this, false);
   return surfaces;
 }

@@ -683,7 +683,7 @@ void DRT::Discretization::GetConditionNames( std::vector<std::string> & names ) 
  |  Pack local elements (row map) into buffer                  (public) |
  |                                                          m.kue 02/07 |
  *----------------------------------------------------------------------*/
-RCP<vector<char> > DRT::Discretization::PackMyElements() const
+RCP<std::vector<char> > DRT::Discretization::PackMyElements() const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
 
@@ -707,7 +707,7 @@ RCP<vector<char> > DRT::Discretization::PackMyElements() const
     e->Pack(buffer);
   }
 
-  RCP<vector<char> > block = Teuchos::rcp(new std::vector<char>);
+  RCP<std::vector<char> > block = Teuchos::rcp(new std::vector<char>);
   std::swap( *block, buffer() );
   return block;
 }
@@ -717,7 +717,7 @@ RCP<vector<char> > DRT::Discretization::PackMyElements() const
  |  Pack local nodes (row map) into buffer                     (public) |
  |                                                          m.kue 02/07 |
  *----------------------------------------------------------------------*/
-RCP<vector<char> > DRT::Discretization::PackMyNodes() const
+RCP<std::vector<char> > DRT::Discretization::PackMyNodes() const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
 
@@ -741,7 +741,7 @@ RCP<vector<char> > DRT::Discretization::PackMyNodes() const
     n->Pack(buffer);
   }
 
-  RCP<vector<char> > block = Teuchos::rcp(new std::vector<char>);
+  RCP<std::vector<char> > block = Teuchos::rcp(new std::vector<char>);
   std::swap( *block, buffer() );
   return block;
 }
@@ -751,7 +751,7 @@ RCP<vector<char> > DRT::Discretization::PackMyNodes() const
  |  Pack condition into buffer                                 (public) |
  |                                                          a.ger 11/07 |
  *----------------------------------------------------------------------*/
-RCP<vector<char> > DRT::Discretization::PackCondition(const string condname) const
+RCP<std::vector<char> > DRT::Discretization::PackCondition(const string condname) const
 {
   if (!Filled()) dserror("FillComplete was not called on this discretization");
 
@@ -779,7 +779,7 @@ RCP<vector<char> > DRT::Discretization::PackCondition(const string condname) con
     c->Pack(buffer);
   }
 
-  RCP<vector<char> > block = Teuchos::rcp(new std::vector<char>);
+  RCP<std::vector<char> > block = Teuchos::rcp(new std::vector<char>);
   std::swap( *block, buffer() );
   return block;
 }
@@ -789,7 +789,7 @@ RCP<vector<char> > DRT::Discretization::PackCondition(const string condname) con
  |  Unpack element buffer and create local elements            (public) |
  |                                                          m.kue 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Discretization::UnPackMyElements(RCP<vector<char> > e)
+void DRT::Discretization::UnPackMyElements(RCP<std::vector<char> > e)
 {
   vector<char>::size_type index = 0;
   while (index < e->size())
@@ -813,7 +813,7 @@ void DRT::Discretization::UnPackMyElements(RCP<vector<char> > e)
  |  Unpack nodal buffer and create local nodes                 (public) |
  |                                                          m.kue 02/07 |
  *----------------------------------------------------------------------*/
-void DRT::Discretization::UnPackMyNodes(RCP<vector<char> > e)
+void DRT::Discretization::UnPackMyNodes(RCP<std::vector<char> > e)
 {
 	vector<char>::size_type index = 0;
   while (index < e->size())
@@ -838,7 +838,7 @@ void DRT::Discretization::UnPackMyNodes(RCP<vector<char> > e)
  |                                                          a.ger 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::Discretization::UnPackCondition(
-        const RCP<vector<char> > e,
+        const RCP<std::vector<char> > e,
         const string condname)
 {
 	vector<char>::size_type index = 0;

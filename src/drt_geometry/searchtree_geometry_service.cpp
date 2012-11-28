@@ -306,8 +306,8 @@ int GEO::getXFEMLabel(
  | and element list                                                     |
  *----------------------------------------------------------------------*/
 void GEO::moveNodeOutOfStructure(
-    const std::vector<std::vector<int> >&                   triangleList,
-    vector< GEO::InterfacePoint >&                pointList,
+    const std::vector<std::vector<int> >&         triangleList,
+    std::vector< GEO::InterfacePoint >&           pointList,
     const int                                     querypointId,
     const GEO::NearestObject&                     nearestObject,
     LINALG::Matrix<3,1>&                          minDistanceVec)

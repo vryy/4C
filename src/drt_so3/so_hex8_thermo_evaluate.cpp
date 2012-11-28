@@ -284,12 +284,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
         = discretization.GetState(0,"displacement");
       Teuchos::RCP<const Epetra_Vector> res
         = discretization.GetState(0,"residual displacement");
-      Teuchos::RCP<vector<char> > stressdata
-        = params.get<Teuchos::RCP<vector<char> > >("stress", Teuchos::null);
-      Teuchos::RCP<vector<char> > straindata
-        = params.get<Teuchos::RCP<vector<char> > >("strain", Teuchos::null);
-      Teuchos::RCP<vector<char> > plstraindata
-        = params.get<Teuchos::RCP<vector<char> > >("plstrain", Teuchos::null);
+      Teuchos::RCP<std::vector<char> > stressdata
+        = params.get<Teuchos::RCP<std::vector<char> > >("stress", Teuchos::null);
+      Teuchos::RCP<std::vector<char> > straindata
+        = params.get<Teuchos::RCP<std::vector<char> > >("strain", Teuchos::null);
+      Teuchos::RCP<std::vector<char> > plstraindata
+        = params.get<Teuchos::RCP<std::vector<char> > >("plstrain", Teuchos::null);
       if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
       if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
@@ -699,13 +699,13 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
         = discretization.GetState(0,"displacement");
       Teuchos::RCP<const Epetra_Vector> res
         = discretization.GetState(0,"residual displacement");
-      Teuchos::RCP<vector<char> > stressdata
-        = params.get<Teuchos::RCP<vector<char> > >("stress", Teuchos::null);
-      Teuchos::RCP<vector<char> > straindata
-        = params.get<Teuchos::RCP<vector<char> > >("strain", Teuchos::null);
+      Teuchos::RCP<std::vector<char> > stressdata
+        = params.get<Teuchos::RCP<std::vector<char> > >("stress", Teuchos::null);
+      Teuchos::RCP<std::vector<char> > straindata
+        = params.get<Teuchos::RCP<std::vector<char> > >("strain", Teuchos::null);
       // plastic strain data
-      Teuchos::RCP<vector<char> > plstraindata
-        = params.get<Teuchos::RCP<vector<char> > >("plstrain", Teuchos::null);
+      Teuchos::RCP<std::vector<char> > plstraindata
+        = params.get<Teuchos::RCP<std::vector<char> > >("plstrain", Teuchos::null);
       if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
       if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
       if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
@@ -947,9 +947,9 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-  const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
-  const static vector<double> gpweights = soh8_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  const static std::vector<double> gpweights = soh8_weights();
 /* ============================================================================*/
 
   // update element geometry
@@ -1255,7 +1255,7 @@ void DRT::ELEMENTS::So_hex8::soh8_finttemp(
   DRT::Element::LocationArray& la,  // location array
   std::vector<double>& disp,  // current displacements
   std::vector<double>& residual,  // current residual displ
-  vector<double>& temp, // current temperature
+  std::vector<double>& temp, // current temperature
   LINALG::Matrix<NUMDOF_SOH8,1>* force,  // element internal force vector
   LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  // stresses at GP
   LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  // strains at GP
@@ -1267,9 +1267,9 @@ void DRT::ELEMENTS::So_hex8::soh8_finttemp(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-  const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
-  const static vector<double> gpweights = soh8_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  const static std::vector<double> gpweights = soh8_weights();
 /* ============================================================================*/
 
   // update element geometry (8x3)
@@ -1466,9 +1466,9 @@ void DRT::ELEMENTS::So_hex8::soh8_stifftemp(
 /* ============================================================================*
 ** CONST SHAPE FUNCTIONS, DERIVATIVES and WEIGHTS for HEX_8 with 8 GAUSS POINTS*
 ** ============================================================================*/
-  const static vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
-  const static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
-  const static vector<double> gpweights = soh8_weights();
+  const static std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts = soh8_shapefcts();
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs = soh8_derivs();
+  const static std::vector<double> gpweights = soh8_weights();
 /* ============================================================================*/
 
   // update element geometry (8x3)
