@@ -282,7 +282,11 @@ void ELCH::Algorithm::DoTransportStep()
   }
 
   // transfer convective velocity to scalar transport field solver
-  if (FluidField().TimIntScheme()== INPAR::FLUID::timeint_gen_alpha)
+  switch(FluidField().TimIntScheme())
+  {
+  case INPAR::FLUID::timeint_gen_alpha:
+  case INPAR::FLUID::timeint_npgenalpha:
+  case INPAR::FLUID::timeint_afgenalpha:
   {
     ScaTraField().SetVelocityField(
         FluidField().Velaf(),
@@ -292,17 +296,9 @@ void ELCH::Algorithm::DoTransportStep()
         Teuchos::null,
         FluidField().Discretization());
   }
-  else if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
-  {
-    ScaTraField().SetVelocityField(
-        FluidField().Velaf(),
-        FluidField().Accam(),
-        Teuchos::null,
-        Teuchos::null,
-        Teuchos::null,
-        FluidField().Discretization());;
-  }
-  else
+  break;
+  case INPAR::FLUID::timeint_one_step_theta:
+  case INPAR::FLUID::timeint_stationary:
   {
     ScaTraField().SetVelocityField(
         FluidField().Velnp(),
@@ -312,6 +308,11 @@ void ELCH::Algorithm::DoTransportStep()
         Teuchos::null,
         FluidField().Discretization()
     );
+  }
+  break;
+  default:
+    dserror("Time integration scheme not supported");
+    break;
   }
 
   // solve coupled transport equations for ion concentrations and

@@ -120,28 +120,30 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   //       since it is not yet clear how the grid velocity should be interpolated
   //       properly -> hence, PassiveScaTraAlgorithm does not support moving
   //       meshes yet
-
-  if (FluidField().TimIntScheme()== INPAR::FLUID::timeint_gen_alpha)
+  switch(FluidField().TimIntScheme())
   {
-    ScaTraField().SetVelocityField(
-        FluidField().Velaf(),
-        FluidField().Accam(),
-        FluidField().Velaf(),
-        Teuchos::null, // no fsvel in gammis gen alpha fluid code
-        Teuchos::null,
-        FluidField().Discretization());
-  }
-  else if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
-  {
-    ScaTraField().SetVelocityField(
+  case INPAR::FLUID::timeint_gen_alpha:
+  ScaTraField().SetVelocityField(
       FluidField().Velaf(),
+      FluidField().Accam(),
+      FluidField().Velaf(),
+      Teuchos::null, // no fsvel in Peter's gen-alpha fluid code
+      Teuchos::null,
+      FluidField().Discretization());
+  break;
+  case INPAR::FLUID::timeint_npgenalpha:
+  case INPAR::FLUID::timeint_afgenalpha:
+  {
+    ScaTraField().SetVelocityField(
+        FluidField().Velaf(),
         FluidField().Accam(),
         FluidField().Velaf(),
         FluidField().FsVel(),
         Teuchos::null,
         FluidField().Discretization());;
   }
-  else
+  break;
+  case INPAR::FLUID::timeint_one_step_theta:
   {
     ScaTraField().SetVelocityField(
       FluidField().Velnp(),
@@ -151,6 +153,11 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
         Teuchos::null,
         FluidField().Discretization()
     );
+  }
+  break;
+  default:
+    dserror("Time integration scheme not supported");
+    break;
   }
 
   // solve the linear convection-diffusion equation(s)

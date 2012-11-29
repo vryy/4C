@@ -451,20 +451,33 @@ void LOMA::Algorithm::SetFluidValuesInScaTra()
 {
   // set respective field vectors for velocity/pressure, acceleration
   // and discretization based on time-integration scheme
-  if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
+  switch(FluidField().TimIntScheme())
+  {
+  case INPAR::FLUID::timeint_afgenalpha:
+  {
     ScaTraField().SetVelocityField(FluidField().Velaf(),
                                    FluidField().Accam(),
                                    Teuchos::null,
                                    FluidField().FsVel(),
                                    Teuchos::null,
                                    FluidField().Discretization());
-  else
+  }
+  break;
+  case INPAR::FLUID::timeint_one_step_theta:
+  {
     ScaTraField().SetVelocityField(FluidField().Velnp(),
                                    FluidField().Hist(),
                                    Teuchos::null,
                                    FluidField().FsVel(),
                                    Teuchos::null,
                                    FluidField().Discretization());
+  }
+  break;
+  default:
+    dserror("Time integration scheme not supported");
+    break;
+  }
+  return;
 }
 
 
@@ -474,7 +487,10 @@ void LOMA::Algorithm::SetScaTraValuesInFluid()
 {
   // set scalar and thermodynamic pressure values as well as time
   // derivatives and discretization based on time-integration scheme
-  if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
+  switch(FluidField().TimIntScheme())
+  {
+  case INPAR::FLUID::timeint_afgenalpha:
+  {
     FluidField().SetIterLomaFields(ScaTraField().Phiaf(),
                                    ScaTraField().Phiam(),
                                    ScaTraField().Phidtam(),
@@ -484,7 +500,10 @@ void LOMA::Algorithm::SetScaTraValuesInFluid()
                                    ScaTraField().ThermPressDtAf(),
                                    ScaTraField().ThermPressDtAm(),
                                    ScaTraField().Discretization());
-  else
+  }
+  break;
+  case INPAR::FLUID::timeint_one_step_theta:
+  {
     FluidField().SetIterLomaFields(ScaTraField().Phinp(),
                                    ScaTraField().Phin(),
                                    ScaTraField().Phidtnp(),
@@ -494,6 +513,13 @@ void LOMA::Algorithm::SetScaTraValuesInFluid()
                                    ScaTraField().ThermPressDtNp(),
                                    ScaTraField().ThermPressDtNp(),
                                    ScaTraField().Discretization());
+  }
+  break;
+  default:
+    dserror("Time integration scheme not supported");
+    break;
+  }
+  return;
 }
 
 
@@ -600,7 +626,7 @@ void LOMA::Algorithm::EvaluateLomaODBlockMatFluid(
     // set velocity vector
     FluidField().Discretization()->SetState(0,"velaf",FluidField().Velaf());
   }
-  else
+  else if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_one_step_theta)
   {
     // set thermodynamic pressures
     fparams.set("thermpress at n+alpha_F/n+1",ScaTraField().ThermPressNp());
@@ -610,7 +636,9 @@ void LOMA::Algorithm::EvaluateLomaODBlockMatFluid(
 
     // set velocity vector
     FluidField().Discretization()->SetState(0,"velaf",FluidField().Velnp());
- }
+   }
+  else
+    dserror("Time integration scheme not supported");
 
   // build specific assemble strategy for this off-diagonal matrix block,
   // which is assembled in fluid solver

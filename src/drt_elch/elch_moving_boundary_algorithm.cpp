@@ -231,28 +231,32 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
     cout<<"************************\n";
   }
 
-  if (FluidField().TimIntScheme()== INPAR::FLUID::timeint_gen_alpha)
+  switch(FluidField().TimIntScheme())
   {
-    dserror("ConvectiveVel() not implemented for Gen.Alpha");
-  }
-  else if (FluidField().TimIntScheme() == INPAR::FLUID::timeint_afgenalpha)
-  {
-    dserror("ConvectiveVel() not implemented for AfGen.Alpha");
-  }
-  else
+  case INPAR::FLUID::timeint_npgenalpha:
+  case INPAR::FLUID::timeint_gen_alpha:
+  case INPAR::FLUID::timeint_afgenalpha:
+    dserror("ConvectiveVel() not implemented for Gen.Alpha versions");
+    break;
+  case INPAR::FLUID::timeint_one_step_theta:
   {
     if (not pseudotransient_)
     {
-    // transfer convective velocity = fluid velocity - grid velocity
-    ScaTraField().SetVelocityField(
+      // transfer convective velocity = fluid velocity - grid velocity
+      ScaTraField().SetVelocityField(
         FluidField().ConvectiveVel(), // = velnp - grid velocity
         FluidField().Hist(),
         Teuchos::null,
         Teuchos::null,
         Teuchos::null,
         FluidField().Discretization()
-    );
+      );
     }
+  }
+  break;
+  default:
+    dserror("Time integration scheme not supported");
+    break;
   }
 
   // transfer moving mesh data
