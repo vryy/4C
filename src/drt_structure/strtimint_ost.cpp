@@ -283,6 +283,9 @@ void STR::TimIntOneStepTheta::EvaluateForceStiffResidual(bool predict)
   // F_{c;n+theta} := theta * F_{c;n+1} +  (1-theta) * F_{c;n}
   ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
 
+  // apply forces and stiffness due to beam contact
+  ApplyForceStiffBeamContact(stiff_,fres_,disn_,predict);
+
   // close stiffness matrix
   stiff_->Complete();
 
@@ -471,6 +474,9 @@ void STR::TimIntOneStepTheta::UpdateStepState()
 
   // update contact / meshtying
   UpdateStepContactMeshtying();
+
+  // update beam contact
+  UpdateStepBeamContact();
 
   // look out
   return;

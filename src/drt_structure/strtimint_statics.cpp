@@ -148,6 +148,9 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(bool predict)
   // apply forces and stiffness due to contact / meshtying
   ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
 
+  // apply forces and stiffness due to beam contact
+  ApplyForceStiffBeamContact(stiff_,fres_,disn_,predict);
+
   // close stiffness matrix
   stiff_->Complete();
   
@@ -273,6 +276,9 @@ void STR::TimIntStatics::UpdateStepState()
 
   // update contact / meshtying
   UpdateStepContactMeshtying();
+
+  // update beam contact
+  UpdateStepBeamContact();
 
   // look out
   return;
