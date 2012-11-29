@@ -239,6 +239,7 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
     dserror("ConvectiveVel() not implemented for Gen.Alpha versions");
     break;
   case INPAR::FLUID::timeint_one_step_theta:
+  case INPAR::FLUID::timeint_bdf2:
   {
     if (not pseudotransient_)
     {

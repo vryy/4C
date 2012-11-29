@@ -464,6 +464,7 @@ void LOMA::Algorithm::SetFluidValuesInScaTra()
   }
   break;
   case INPAR::FLUID::timeint_one_step_theta:
+  case INPAR::FLUID::timeint_bdf2:
   {
     ScaTraField().SetVelocityField(FluidField().Velnp(),
                                    FluidField().Hist(),

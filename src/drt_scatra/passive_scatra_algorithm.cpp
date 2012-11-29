@@ -144,6 +144,8 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   }
   break;
   case INPAR::FLUID::timeint_one_step_theta:
+  case INPAR::FLUID::timeint_bdf2:
+  case INPAR::FLUID::timeint_stationary:
   {
     ScaTraField().SetVelocityField(
       FluidField().Velnp(),
