@@ -691,6 +691,7 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
 
   default:
     dserror("analytical solution is not defined");
+    break;
   }
 }
 

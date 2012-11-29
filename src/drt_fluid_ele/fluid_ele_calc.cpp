@@ -2480,7 +2480,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
   }
   break;
 
-  default: dserror("unknown definition for tau_M\n %i  ", fldpara_->WhichTau());
+  default: dserror("unknown definition for tau_M\n %i  ", fldpara_->WhichTau()); break;
   }  // end switch (fldpara_->WhichTau())
 
 
@@ -2662,7 +2662,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
   }
   break;
 
-  default: dserror("unknown definition for tau_C\n %i  ", fldpara_->WhichTau());
+  default: dserror("unknown definition for tau_C\n %i  ", fldpara_->WhichTau()); break;
   }  // end switch (fldpara_->WhichTau())
 
   return;

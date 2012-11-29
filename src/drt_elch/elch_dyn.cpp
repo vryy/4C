@@ -192,8 +192,7 @@ void elch_dyn(int restart)
 
     break;
   } // case 2
-  default:
-    dserror("Unknown velocity field type for transport of passive scalar: %d",veltype);
+  default: dserror("Unknown velocity field type for transport of passive scalar: %d",veltype); break;
   }
 
   return;

@@ -209,6 +209,7 @@ bool FS3I::PartFS3I_1WC::ScatraConvergenceCheck(const int itnum)
   break;
   default:
     dserror("Illegal ScaTra solvertype in FS3I");
+    break;
   }
   return false;
 }

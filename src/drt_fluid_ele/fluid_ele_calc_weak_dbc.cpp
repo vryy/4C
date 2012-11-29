@@ -106,6 +106,7 @@ DRT::ELEMENTS::FluidBoundaryWeakDBCInterface* DRT::ELEMENTS::FluidBoundaryWeakDB
   }
   default:
     dserror("shape %d (%d nodes) not supported by weak DBC", f3bdry->Shape(), f3bdry->NumNode());
+    break;
   }
 
   return NULL;
@@ -511,6 +512,7 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   }
   default:
     dserror("invalid discretization type for fluid3surface weak DBC evaluation");
+    break;
   }
 
   // gaussian points on surface
@@ -2421,6 +2423,7 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   }
   default:
     dserror("invalid discretization type for fluid2line weak DBC evaluation");
+    break;
   }
 
   // gaussian points on surface

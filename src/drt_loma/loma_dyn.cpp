@@ -155,6 +155,7 @@ void loma_dyn(int restart)
   }
   default:
     dserror("Unknown velocity field type for low-Mach-number flow: %d",veltype);
+    break;
   }
 
   return;

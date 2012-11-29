@@ -917,6 +917,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     }
     default:
       dserror("Unknown type of action for Fluid");
+      break;
   } // end of switch(act)
 
   return 0;

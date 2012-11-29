@@ -96,6 +96,7 @@ DRT::ELEMENTS::FluidBoundaryImplInterface* DRT::ELEMENTS::FluidBoundaryImplInter
   }
   default:
     dserror("Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
+    break;
   }
   return NULL;
 }
@@ -2273,6 +2274,7 @@ template <DRT::Element::DiscretizationType distype>
   default:
   {
     dserror("not implemented yet\n");
+    break;
   }
 
   }
