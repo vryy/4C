@@ -421,6 +421,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
     break;
     default:
       dserror("analytical solution is not defined");
+      break;
     }
 
     // compute difference between analytical solution and numerical solution

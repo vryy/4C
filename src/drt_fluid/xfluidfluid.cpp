@@ -1269,7 +1269,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputElement( DRT::Discretization 
     press_f << "SH(";
     break;
   default:
-    dserror( "unsupported shape" );
+    dserror( "unsupported shape" ); break;
   }
 
 //  for ( int i=0; i<actele->NumNode(); ++i )
@@ -1334,7 +1334,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputElementEmb( DRT::Discretizati
     press_f << "SH(";
     break;
   default:
-    dserror( "unsupported shape" );
+    dserror( "unsupported shape" ); break;
   }
 
   for ( int i=0; i<8; ++i )
@@ -1446,7 +1446,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputVolumeCell( DRT::Discretizati
           press_f << "SQ(";
           break;
         default:
-          dserror( "splitting facets failed" );
+          dserror( "splitting facets failed" ); break;
         }
 
         for ( unsigned k=0; k<cell.size(); ++k )
@@ -1499,7 +1499,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputVolumeCell( DRT::Discretizati
             break;
           }
           default:
-            dserror( "unsupported shape" );
+            dserror( "unsupported shape" ); break;
           }
 
           if ( k > 0 )
@@ -1540,7 +1540,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputVolumeCell( DRT::Discretizati
         press_f << "SS(";
         break;
       default:
-        dserror( "unsupported shape" );
+        dserror( "unsupported shape" ); break;
       }
 
       for ( unsigned i=0; i<points.size(); ++i )
@@ -1592,7 +1592,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputVolumeCell( DRT::Discretizati
           break;
         }
         default:
-          dserror( "unsupported shape" );
+          dserror( "unsupported shape" ); break;
         }
 
         if ( i > 0 )
@@ -1662,7 +1662,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputBoundaryCell( DRT::Discretiza
         bound_f << "VT(";
         break;
       default:
-        dserror( "unsupported shape" );
+        dserror( "unsupported shape" ); break;
       }
 
       const std::vector<GEO::CUT::Point*> & points = bc->Points();
@@ -1728,7 +1728,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutputBoundaryCell( DRT::Discretiza
           break;
         }
         default:
-          dserror( "unsupported side shape %d", side->Shape() );
+          dserror( "unsupported side shape %d", side->Shape() ); break;
         }
 
         if ( i!=points.begin() )
@@ -1852,7 +1852,7 @@ FLD::XFluidFluid::XFluidFluid(
     dserror ("XFEM interface method: BoundaryTypeNeumann not available for Xfluidfluid");
     break;
   default:
-    dserror("BoundaryType unknown!!!");
+    dserror("BoundaryType unknown!!!"); break;
   }
 
   if (monolithicfluidfluidfsi_)
@@ -1869,7 +1869,7 @@ FLD::XFluidFluid::XFluidFluid(
       monotype_ = "fixedale_interpolation";
       break;
     default:
-      dserror("monolithic type unknown");
+      dserror("monolithic type unknown"); break;
     }
   }
   else
@@ -2436,7 +2436,7 @@ void FLD::XFluidFluid::TimeLoop()
                time_,maxtime_,dta_,step_,stepmax_);
         break;
       default:
-        dserror("parameter out of range: IOP\n");
+        dserror("parameter out of range: IOP\n"); break;
       } /* end of switch(timealgo) */
     }
 
