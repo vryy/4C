@@ -45,7 +45,6 @@ Trilinos_PREFIX="/lnm/lib/Q1_2012/trilinos/kaiser-openmpi-gcc-1.5.5-acml/lib/cma
     -D D_RED_AIRWAYS:BOOL=ON \
     -D D_ALE:BOOL=ON \
     -D D_FLUID3:BOOL=ON \
-    -D D_SHELL8:BOOL=ON \
     -D D_THERMO:BOOL=ON \
     -D D_ALE_BFLOW:BOOL=ON \
     -D ENABLE_STACKTR:BOOL=OFF \

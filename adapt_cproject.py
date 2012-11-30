@@ -99,6 +99,7 @@ def getSymbols(fname,build_type):
     symbollist.add("QHULL")
     symbollist.add("BINIO")
     symbollist.add("HAVE_FFTW")
+    symbollist.add("D_SHELL8")
     return symbollist
 
 def getDefineValue(build_folder):

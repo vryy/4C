@@ -25,7 +25,6 @@ export PATH=/cluster/gcc-4.2.2/bin:$PATH:$MPIDIR/bin
     -D TRAP_FE:BOOL=OFF \
     -D D_ALE:BOOL=ON \
     -D D_FLUID3:BOOL=ON \
-    -D D_SHELL8:BOOL=ON \
     -D D_SOH8:BOOL=ON \
     -D D_SOTET:BOOL=ON \
     -D D_THERMO:BOOL=ON \
