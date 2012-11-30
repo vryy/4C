@@ -280,6 +280,7 @@ public:
       break;
     case DRT::Element::line2:
     case DRT::Element::line3: dserror("1D Fluid elements are not supported"); break;
+      break;
     default:
       dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype_)).c_str());
       break;

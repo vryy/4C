@@ -1444,7 +1444,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 )
 {
   //for pre-multiplication of i0 with 1/(F z_k)
-  double faraday = 96485.3399;    // unit of F: C/mol or mC/mmol or muC / mumol
+  double faraday = INPAR::SCATRA::faraday_const;    // unit of F: C/mol or mC/mmol or muC / mumol
 
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
@@ -2168,7 +2168,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
     const double           timefac
 )
 {
-  double faraday = 96485.3399;    // unit of F: C/mol or mC/mmol or muC / mumol
+  double faraday = INPAR::SCATRA::faraday_const;    // unit of F: C/mol or mC/mmol or muC / mumol
 
   // get variables with their current values
   double currentintegral   = params.get<double>("currentintegral");

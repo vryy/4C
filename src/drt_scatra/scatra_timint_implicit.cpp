@@ -172,6 +172,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   break;
   default:
     dserror("Received illegal scatra solvertype enum.");
+    break;
   }
 
   // -------------------------------------------------------------------
@@ -534,7 +535,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     if ((numscal_ > 1) && (solvtype_!=INPAR::SCATRA::solvertype_nonlinear))
       dserror("Solver type has to be set to >>nonlinear<< for ion transport.");
 
-    frt_ = 96485.3399/(8.314472 * extraparams_->get<double>("TEMPERATURE"));
+    frt_ = INPAR::SCATRA::faraday_const/(8.314472 * extraparams_->get<double>("TEMPERATURE"));
 
     if (myrank_==0)
     {
@@ -1906,7 +1907,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
   break;
   }
   default:
-    dserror("Unknown option for initial field: %d", init);
+    dserror("Unknown option for initial field: %d", init); break;
   } // switch(init)
 
   return;
@@ -2891,6 +2892,8 @@ std::string SCATRA::ScaTraTimIntImpl::MapTimIntEnumToString
     return "";
     break;
   }
+
+  return "";
 } // ScaTraTimIntImpl::MapTimIntEnumToString
 
 /*----------------------------------------------------------------------*

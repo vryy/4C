@@ -1050,6 +1050,7 @@ inline std::string DistypeToString(const DRT::Element::DiscretizationType distyp
     default:
         cout << distype << endl;
         dserror("no string for this distype defined!");
+        break;
     };
     return s;
 }

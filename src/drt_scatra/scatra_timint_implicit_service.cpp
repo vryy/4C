@@ -671,7 +671,7 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
   }
   break;
   default:
-    dserror("Cannot calculate error. Unknown type of analytical test problem");
+    dserror("Cannot calculate error. Unknown type of analytical test problem"); break;
   }
   return;
 } // SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol

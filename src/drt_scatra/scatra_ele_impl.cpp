@@ -153,6 +153,7 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(
   }
   default:
     dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(ele->Shape()).c_str());
+    break;
   }
   return NULL;
 }
@@ -1462,6 +1463,7 @@ for(int k=0; k<numscal_; k++)
   default:
   {
     dserror("Not acting on this action. Forgot implementation?");
+    break;
   }
   } // switch(action)
 
@@ -2020,6 +2022,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::BodyForce(
     break;
   default:
     dserror("Illegal number of spatial dimensions: %d",nsd_);
+    break;
   }
 
   if (myneumcond.size()>1)
@@ -4147,7 +4150,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
     } // loop over integration points
   }
   break;
-  default: dserror("Unknown analytical solution!");
+  default: dserror("Unknown analytical solution!"); break;
   } //switch(errortype)
 
   return;
@@ -4229,7 +4232,7 @@ for (int iquad=0; iquad< intpoints.IP().nquad; ++iquad)
 
     break;
   default:
-    dserror("received illegal flag inside flux evaluation for whole domain");
+    dserror("received illegal flag inside flux evaluation for whole domain"); break;
   };
   // q at integration point
 
@@ -5305,7 +5308,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     tau_[k] = 0.0;
   }
   break;
-  default: dserror("unknown definition for stabilization parameter tau\n");
+  default: dserror("unknown definition for stabilization parameter tau\n"); break;
   } //switch (whichtau_)
 
 #if 0
@@ -5420,7 +5423,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrVelocity(
     DRT::UTILS::FindElementConditions(ele, "FluidLineNeumann", myfluidneumcond);
     break;
   default:
-    dserror("Illegal number of space dimensions: %d",nsd_);
+    dserror("Illegal number of space dimensions: %d",nsd_); break;
   }
 
   if (myfluidneumcond.size()>1)
@@ -5625,7 +5628,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
   )
 {
   const double epsilon = 1.e-4;
-  const double faraday = 96485.34;
+  const double faraday = INPAR::SCATRA::faraday_const;
 
   // get gradient of electric potential at integration point
   gradpot_.Multiply(derxy_,epotnp_);
@@ -6349,7 +6352,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
 
   // compute the conductivity (1/(\Omega m) = 1 Siemens / m)
   double sigma_all(0.0);
-  const double factor = frt*96485.34; // = F^2/RT
+  const double factor = frt*INPAR::SCATRA::faraday_const; // = F^2/RT
   for(int k=0; k < numscal_; k++)
   {
     // concentration of ionic species k at element center

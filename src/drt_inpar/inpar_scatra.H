@@ -241,6 +241,9 @@ namespace INPAR
       zero
     };
 
+    // faraday constant (general definition)
+    const double faraday_const = 96485.3399;
+
   }  // namespace SCATRA
 
 }  // namespace INPAR

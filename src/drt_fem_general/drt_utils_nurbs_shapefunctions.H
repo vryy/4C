@@ -129,6 +129,7 @@ namespace UTILS
   default:
   {
     dserror("Unknown distype for nurbs line element evaluation\n");
+    break;
   }
   }
 
@@ -413,6 +414,7 @@ namespace UTILS
   default:
   {
     dserror("Unknown distype for nurbs line element evaluation\n");
+    break;
   }
   }
 
@@ -749,6 +751,7 @@ void nurbs_get_2D_funct(
   default:
   {
     dserror("Unknown distype for nurbs element evaluation\n");
+    break;
   }
   }
 
@@ -1080,6 +1083,7 @@ void nurbs_get_2D_funct_deriv(
   default:
   {
     dserror("Unknown distype for nurbs element evaluation\n");
+    break;
   }
   }
 
@@ -1504,6 +1508,7 @@ void nurbs_get_2D_funct_deriv_deriv2(
   default:
   {
     dserror("Unknown distype for nurbs element evaluation\n");
+    break;
   }
   }
 
@@ -2097,6 +2102,7 @@ void nurbs_get_3D_funct(
   default:
   {
     dserror("Unknown distype for nurbs element evaluation\n");
+    break;
   }
   }
 
@@ -2516,6 +2522,7 @@ void nurbs_get_3D_funct_deriv(
   default:
   {
     dserror("Unknown distype for nurbs element evaluation\n");
+    break;
   }
   }
 
@@ -3137,6 +3144,7 @@ void nurbs_get_3D_funct_deriv_deriv2(
   default:
   {
     dserror("Unknown distype for nurbs element evaluation\n");
+    break;
   }
   }
 
@@ -3795,6 +3803,7 @@ void nurbs_get_funct_deriv_deriv2(
   }
   default:
     dserror("dimension of the element is not correct");
+    break;
   }
   return;
 }
@@ -3845,7 +3854,7 @@ void nurbs_get_funct_deriv(
     break;
   }
   default:
-    dserror("dimension of the element is not correct");
+    dserror("dimension of the element is not correct"); break;
   }
   return;
 }
@@ -3893,7 +3902,7 @@ void nurbs_get_funct(
     break;
   }
   default:
-    dserror("dimension of the element is not correct");
+    dserror("dimension of the element is not correct"); break;
   }
   return;
 }
