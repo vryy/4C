@@ -2562,18 +2562,21 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   const int eleid  // the element id
   )
 {
-  // coordinates of the current integration point (xsi_)
+  // coordinates of the current (Gauss) integration point (xsi_)
   const double* gpcoord = (intpoints.IP().qxg)[iquad];
   for (int idim=0;idim<nsd_;idim++)
     {xsi_(idim) = gpcoord[idim];}
 
   // shape functions (funct_) and their first derivatives (deriv_)
+  // N, N_{,xsi}
   DRT::UTILS::shape_function<distype>(xsi_,funct_);
   DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
 
-  // compute Jacobian matrix and determinant
-  // actually compute its transpose....
+  // compute Jacobian matrix and determinant (as presented in FE lecture notes)
+  // actually compute its transpose (compared to J in NiliFEM lecture notes)
+  // J = dN/dxsi . x^{-}
   /*
+   *   J-NiliFEM               J-FE
     +-            -+ T      +-            -+
     | dx   dx   dx |        | dx   dy   dz |
     | --   --   -- |        | --   --   -- |
@@ -2591,8 +2594,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 
   // derivatives at gp w.r.t material coordinates (N_XYZ in solid)
   xjm_.MultiplyNT(deriv_,xyze_);
-  // xij_ = J^(T-1)
-  // det = J^(T-1) *
+  // xij_ = J^{-T}
+  // det = J^{-T} *
   // J = (N_rst * X)^T (6.24 NiliFEM)
   const double det = xij_.Invert(xjm_);
 
@@ -2663,8 +2666,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::ExtrapolateFromGaussPointsToNodes(
   // this quick'n'dirty hack functions only for hex8
   // (number of gauss points equals number of nodes)
   if ( not ( (distype == DRT::Element::hex8)
+             or (distype == DRT::Element::tet4)
              or (distype == DRT::Element::quad4)
-             or (distype == DRT::Element::line2) ) )
+             or (distype == DRT::Element::line2) 
+           ) 
+      )
     dserror("Sorry, not implemented for element shape");
 
   // another check

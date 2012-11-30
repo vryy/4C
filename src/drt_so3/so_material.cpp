@@ -1269,6 +1269,14 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
       *density = stvk->Density();
       break;
     }
+    // added this material only for hex8
+    case INPAR::MAT::m_thermostvenant: /*------------------ st.venant-kirchhoff-material with temperature */
+    {
+      MAT::ThermoStVenantKirchhoff* thrstvk = static_cast <MAT::ThermoStVenantKirchhoff*>(mat.get());
+      thrstvk->Evaluate(*glstrain,*cmat,*stress);
+      *density = thrstvk->Density();
+      break;
+    }
     case INPAR::MAT::m_neohooke: /*----------------- NeoHookean Material */
     {
       MAT::NeoHooke* neo = static_cast <MAT::NeoHooke*>(mat.get());

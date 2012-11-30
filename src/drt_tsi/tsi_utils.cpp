@@ -88,6 +88,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
   // initialise kinematic type to geo_linear.
   // kintype is passed to the cloned thermo element
   GenKinematicType kintype = geo_linear;
+  // if oldele is a so3_base element
   DRT::ELEMENTS::So3_Base* so3_base = dynamic_cast<DRT::ELEMENTS::So3_Base*>(oldele);
   if (so3_base!=NULL)
   {
@@ -95,6 +96,7 @@ void TSI::UTILS::ThermoStructureCloneStrategy::SetElementData(
   }
   else
   {
+    // if oldele is a so_hex8 element
     DRT::ELEMENTS::So_hex8* so_hex8 = dynamic_cast<DRT::ELEMENTS::So_hex8*>(oldele);
     if (so_hex8!=NULL)
     {
