@@ -30,7 +30,7 @@ NUMTHERMDIS                     0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
-TIMEINTEGR                      BDF2
+TIMEINTEGR                      BDF2 // identical results with: Np_Gen_Alpha
 UPRES                           1
 RESTARTEVRY                     2
 MAXTIME                         0.1
@@ -47,6 +47,9 @@ START_THETA                     0.80
 INITIALFIELD                    BELTRAMI-FLOW
 CALCERROR                       beltrami_flow
 STARTFUNCNO                     8
+ALPHA_F                         1.0
+ALPHA_M                         1.5
+GAMMA                           1.0
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic
