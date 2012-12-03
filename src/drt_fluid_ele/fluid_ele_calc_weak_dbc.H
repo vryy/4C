@@ -60,13 +60,15 @@ namespace DRT
     \author gammi (gamnitzer@lnm.mw.tum.de), 11/09
 
     -----------------------------------------------------------------*/
-    class FluidBoundaryWeakDBCInterface
+    class FluidBoundaryWeakDBCInterface : DRT::SingletonDestruction
     {
     public:
       //! Empty constructor
       FluidBoundaryWeakDBCInterface() {}
+
       //! Empty destructor
       virtual ~FluidBoundaryWeakDBCInterface() {}
+
 
       /*!
         \brief Evaluate the surface elements weak Dirichlet boundary
@@ -136,6 +138,12 @@ namespace DRT
 
       /// empty destructor
       ~FluidSurfaceWeakDBC(){return;};
+
+      /// called upon destruction
+      virtual void Done();
+
+      //! Singleton access method
+      static FluidSurfaceWeakDBC<distype,pdistype> * Instance(bool create=true);
 
       /// number of nodes
       static const int iel  = DRT::UTILS::DisTypeToNumNodePerEle<distype >::numNodePerElement;
@@ -250,6 +258,12 @@ namespace DRT
 
        /// empty destructor
        ~FluidLineWeakDBC(){return;};
+
+       /// called upon destruction
+       virtual void Done();
+
+       //! Singleton access method
+       static FluidLineWeakDBC<distype,pdistype> * Instance(bool create=true);
 
        /// number of nodes
        static const int iel  = DRT::UTILS::DisTypeToNumNodePerEle<distype >::numNodePerElement;

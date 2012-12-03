@@ -39,73 +39,27 @@ DRT::ELEMENTS::FluidBoundaryWeakDBCInterface* DRT::ELEMENTS::FluidBoundaryWeakDB
   // 3D:
   case DRT::Element::quad4:
   {
-    static FluidSurfaceWeakDBC<DRT::Element::quad4,DRT::Element::hex8>* fsurfq4;
-
-    if(f3bdry->ParentElement()->Shape()==DRT::Element::hex8)
-    {
-      if (fsurfq4==NULL)
-        fsurfq4 = new FluidSurfaceWeakDBC<DRT::Element::quad4,DRT::Element::hex8>();
-    }
-    else
-    {
-      dserror("expected combination quad4/hex8 for surface/parent pair");
-    }
-    return fsurfq4;
+    return FluidSurfaceWeakDBC<DRT::Element::quad4,DRT::Element::hex8>::Instance();
   }
-  case DRT::Element::nurbs9:
+  break;
+/*  case DRT::Element::nurbs9:
   {
-    static FluidSurfaceWeakDBC<DRT::Element::nurbs9,DRT::Element::nurbs27>* fsurfn9;
-
-    if(f3bdry->ParentElement()->Shape()==DRT::Element::nurbs27)
-    {
-      if (fsurfn9==NULL)
-        fsurfn9 = new FluidSurfaceWeakDBC<DRT::Element::nurbs9,DRT::Element::nurbs27>();
-    }
-    else
-    {
-      dserror("expected combination quad4/hex8 for surface/parent pair");
-    }
-    return fsurfn9;
+    return FluidSurfaceWeakDBC<DRT::Element::nurbs9,DRT::Element::nurbs27>::Instance();
   }
+  break;*/
   // 2D:
   case DRT::Element::line2:
   {
-    static FluidLineWeakDBC<DRT::Element::line2,DRT::Element::quad4>* fline2;
-
-    if(f3bdry->ParentElement()->Shape()==DRT::Element::quad4)
-    {
-      if (fline2==NULL)
-      {
-        fline2 = new FluidLineWeakDBC<DRT::Element::line2,DRT::Element::quad4>();
-      }
-    }
-    else
-    {
-      dserror("expected combination line2/quad4 for line/parent pair");
-    }
-
-    return fline2;
+    return FluidLineWeakDBC<DRT::Element::line2,DRT::Element::quad4>::Instance();
   }
-  case DRT::Element::nurbs3:
+  break;
+/*  case DRT::Element::nurbs3:
   {
-    static FluidLineWeakDBC<DRT::Element::nurbs3,DRT::Element::nurbs9>* flinen3;
-
-    if(f3bdry->ParentElement()->Shape()==DRT::Element::nurbs9)
-    {
-      if (flinen3==NULL)
-      {
-        flinen3 = new FluidLineWeakDBC<DRT::Element::nurbs3,DRT::Element::nurbs9>();
-      }
-    }
-    else
-    {
-      dserror("expected combination nurbs3/nurbs9 for line/parent pair");
-    }
-
-    return flinen3;
+    return FluidLineWeakDBC<DRT::Element::nurbs3,DRT::Element::nurbs9>::Instance();
   }
+  break;*/
   default:
-    dserror("shape %d (%d nodes) not supported by weak DBC", f3bdry->Shape(), f3bdry->NumNode());
+    dserror("Shape %d (%d nodes) not supported by weak DBC", f3bdry->Shape(), f3bdry->NumNode());
     break;
   }
 
@@ -133,6 +87,46 @@ DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::FluidSurfaceWeakDBC()
 
   return;
 }
+
+
+//-----------------------------------------------------------------
+//                        deallocate everything
+//-----------------------------------------------------------------
+template <DRT::Element::DiscretizationType distype,
+          DRT::Element::DiscretizationType pdistype>
+void DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::Done()
+{
+  // delete this pointer! Afterwards we have to go! But since this is a
+  // cleanup call, we can do it this way.
+  Instance( false );
+}
+
+
+//-----------------------------------------------------------------
+//                        return static instance
+//-----------------------------------------------------------------
+template <DRT::Element::DiscretizationType distype,
+          DRT::Element::DiscretizationType pdistype>
+DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype> *
+DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::Instance(bool create)
+{
+  static DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype> * instance;
+  if ( create )
+  {
+    if ( instance==NULL )
+    {
+      instance = new DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>();
+    }
+  }
+  else
+  {
+    if ( instance!=NULL )
+      delete instance;
+    instance = NULL;
+  }
+  return instance;
+}
+
 
 //-----------------------------------------------------------------
 //             evaluate implementation for weak dbcs
@@ -2082,6 +2076,46 @@ DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::FluidLineWeakDBC()
 
   return;
 }
+
+
+//-----------------------------------------------------------------
+//                        deallocate everything
+//-----------------------------------------------------------------
+template <DRT::Element::DiscretizationType distype,
+          DRT::Element::DiscretizationType pdistype>
+void DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::Done()
+{
+  // delete this pointer! Afterwards we have to go! But since this is a
+  // cleanup call, we can do it this way.
+  Instance( false );
+}
+
+
+//-----------------------------------------------------------------
+//                        return static instance
+//-----------------------------------------------------------------
+template <DRT::Element::DiscretizationType distype,
+          DRT::Element::DiscretizationType pdistype>
+DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype> *
+DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::Instance(bool create)
+{
+  static DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype> * instance;
+  if ( create )
+  {
+    if ( instance==NULL )
+    {
+      instance = new DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>();
+    }
+  }
+  else
+  {
+    if ( instance!=NULL )
+      delete instance;
+    instance = NULL;
+  }
+  return instance;
+}
+
 
 //-----------------------------------------------------------------
 //             evaluate implementation for weak dbcs
