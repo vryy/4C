@@ -867,17 +867,19 @@ void STATMECH::StatMechManager::Output(const int ndim,
     {
       if ((time>=starttime && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-8)
       {
-        std::ostringstream filename;
-        filename << outputrootpath_ << "/StatMechOutput/DoubleBondDistances.dat";
-        LoomOutput(dis,filename);
-
+        std::ostringstream filename1;
         std::ostringstream filename2;
-        filename2 << outputrootpath_ << "/StatMechOutput/ForceMeasurement.dat";
-        LoomOutputAttraction(dis, filename2, istep);
+        filename1 << outputrootpath_ << "/StatMechOutput/DoubleBondDistances.dat";
+        filename2 << outputrootpath_ << "/StatMechOutput/LoomLinkerpositions.dat";
+        LoomOutput(dis,filename1,filename2);
 
         std::ostringstream filename3;
-        filename3 << outputrootpath_ << "/StatMechOutput/CrosslinkerCoverage.dat";
-        CrosslinkCoverageOutput(dis, filename3);
+        filename3 << outputrootpath_ << "/StatMechOutput/ForceMeasurement.dat";
+        LoomOutputAttraction(dis, filename3, istep);
+
+        std::ostringstream filename4;
+        filename4 << outputrootpath_ << "/StatMechOutput/CrosslinkerCoverage.dat";
+        CrosslinkCoverageOutput(dis, filename4);
       }
     }
     break;
@@ -3876,7 +3878,9 @@ void STATMECH::StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksper
  | in a loom type network                                                       |
  |                                                       (private) mueller 2/12 |
  *------------------------------------------------------------------------------*/
-void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const std::ostringstream& filename)
+void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow,
+                                           const std::ostringstream& nearestneighborfilename,
+                                           const std::ostringstream& linkerpositionsfilename)
 {
   if(!DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP"))
       dserror("For Loom related output, activate LOOMSETUP in your input file!");
@@ -3935,8 +3939,11 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
   if(discret_->Comm().MyPID()==0)
   {
     FILE* fp = NULL;
-    fp = fopen(filename.str().c_str(), "a");
+    fp = fopen(nearestneighborfilename.str().c_str(), "a");
+    FILE* fp2 = NULL;
+    fp2 = fopen(linkerpositionsfilename.str().c_str(), "a");
     std::stringstream distances;
+    std::stringstream linkerpositions;
 
     // step 1: determine the first double bond between vertical and horizontal filaments
     int firstvfil = -1;
@@ -4045,16 +4052,18 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
             maxnearneighbors = maxnumevalneighbors;
 
           // calculate nearest neighbor to 4th nearest neighbor distances , no shift ac
-          for(int i=0; i<(int)evalnodepositions.size()-1; i++)
+          for(int i=0; i<(int)evalnodepositions.size(); i++)
           {
+            std::map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodeIDs.at(i));
+            // write linker positions to stream
+            linkerpositions<<std::scientific<<std::setprecision(6)<<(pos0->second)(0)<<" "<<(pos0->second)(1)<<" "<<(pos0->second)(2)<<endl;
             // vector storing nearest neighbor positions
             for(int j=i+1; j<i+maxnearneighbors+1; j++)
             {
               // reached the end of the vector
-              if(j==(int)evalnodepositions.size())
+              if(j>=(int)evalnodepositions.size())
                 break;
 
-              std::map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodeIDs.at(i));
               std::map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find(evalnodeIDs.at(j));
 
               // spatial distance vector
@@ -4079,6 +4088,8 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
             }
             distances<<endl;
           }
+          // time step divider line
+          linkerpositions<<std::scientific<<std::setprecision(6)<<-1e9<<" "<<-1e9<<" "<<-1e9<<endl;
         }
         else // two vertical filament case
         {
@@ -4093,6 +4104,8 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
     }
     fprintf(fp, distances.str().c_str());
     fclose(fp);
+    fprintf(fp2, linkerpositions.str().c_str());
+    fclose(fp2);
   }
   return;
 }

@@ -509,7 +509,8 @@ protected:
 
   //! \brief output distances between doubly bound crosslinkers in case of a loom setup
   void LoomOutput(const Epetra_Vector&      disrow,
-                  const std::ostringstream& filename);
+                  const std::ostringstream& nearestneighborfilename,
+                  const std::ostringstream& linkerpositionsfilename);
 
   //! \brief output the coverage of crosslinker binding sites (nodes) and the distribution of bound crosslinkers
   void CrosslinkCoverageOutput(const Epetra_Vector&      disrow,
