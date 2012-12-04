@@ -107,12 +107,21 @@ namespace FS3I
 
     Teuchos::RCP<Epetra_Vector> norminflux_;
 
+
+    Teuchos::RCP<Epetra_Vector> lambda_;
+    Teuchos::RCP<Epetra_Vector> normtraction_;
+    Teuchos::RCP<Epetra_Vector> tangtraction_;
+
     std::vector<double> nvector;
 
-    // grown volume
-    double grownvolume_;
+    // coefficients used in the calculation of the displacement due to growth
+    // fluxcoef_ multiply the scalar influx at the interface,
+    // while normforcecoef_ and tangforcecoef_ multiply forces in the normal and tangential direction at the interface
+    double fluxcoef_;
+    double normforcecoef_;
+    double tangforcecoef_;
 
-    //// surface growth time parameters
+    //// growth time parameters
 
     // number of steps
     int nstep_bio;

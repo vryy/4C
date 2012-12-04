@@ -359,11 +359,9 @@ namespace ADAPTER {
     /// create result test for encapsulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
 
-    /// reset time and state vectors
-    virtual void Reset() { dserror("reset not implemented for this structure adapter"); }
+    /// reset time and state vectors (needed for biofilm simulations)
+    virtual void Reset() = 0;
 
-    virtual void ReInitDis() { dserror("ReInitDis not implemented for this structure adapter"); }
-    virtual void ReInitDisn() { dserror("ReInitDis not implemented for this structure adapter"); }
   };
 
 

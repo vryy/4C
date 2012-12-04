@@ -125,6 +125,9 @@ namespace FSI
     /// read restart data
     virtual void ReadRestart(int step);
 
+    /// return Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface
+    Teuchos::RCP<Epetra_Vector> GetLambda (){return lambda_; };
+
   protected:
 
     /// setup solver for global block system

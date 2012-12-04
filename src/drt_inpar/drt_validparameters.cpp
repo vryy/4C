@@ -3714,8 +3714,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       false,
       "control parameters for biofilm problems\n");
 
-  BoolParameter("SURFACEGROWTH","No","Scatra algorithm for surface growth",&biofilmcontrol);
-  DoubleParameter("GROWNVOLUME",0.0,"Volume for surface growth",&biofilmcontrol);
+  BoolParameter("BIOFILMGROWTH","No","Scatra algorithm for biofilm growth",&biofilmcontrol);
+  BoolParameter("AVGROWTH","No","The calculation of growth parameters is based on averaged values",&biofilmcontrol);
+  DoubleParameter("FLUXCOEF",0.0,"Coefficient for growth due to scalar flux",&biofilmcontrol);
+  DoubleParameter("NORMFORCECOEF",0.0,"Coefficient for erosion due to normal surface forces",&biofilmcontrol);
+  DoubleParameter("TANGFORCECOEF",0.0,"Coefficient for erosion due to tangential surface forces",&biofilmcontrol);
   DoubleParameter("BIOTIMESTEP",0.05,"Time step size for surface grown",&biofilmcontrol);
   IntParameter("BIONUMSTEP",0,"Maximum number of steps for surface grown",&biofilmcontrol);
 

@@ -280,13 +280,6 @@ namespace ADAPTER
 
     //@}
 
-    virtual void ReInitDis()
-    { return structure_->ReInitDis(); }
-
-    virtual void ReInitDisn()
-    { return structure_->ReInitDisn(); }
-
-
     //! @name Structure with ale specific methods
     //@{
 

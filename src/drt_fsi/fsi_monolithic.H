@@ -287,6 +287,9 @@ namespace UTILS
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) {}
 
+    /// return Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface
+    virtual Teuchos::RCP<Epetra_Vector> GetLambda () {dserror ("GetLambda not implemented in the base class"); return Teuchos::null;};
+
   protected:
 
     /// setup solver for global block system

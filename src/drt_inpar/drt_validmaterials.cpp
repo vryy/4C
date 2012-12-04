@@ -1784,9 +1784,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_biofilm));
 
     AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
-    //AddNamedReal(m,"REACOEFF","reaction coefficient",true);
-
-    AddNamedString(m,"KINETICS","Substrate consumption kinetics (SimpleMonod)","SimpleMonod");
     AddNamedReal(m,"REARATE","substrate uptake rate coefficient");
     AddNamedReal(m,"SATCOEFF","substrate saturation coefficient");
 
