@@ -449,15 +449,7 @@ void STATMECH::StatMechManager::Update(const int&                               
     Teuchos::RCP<Epetra_MultiVector> bspotpositions = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
     Teuchos::RCP<Epetra_MultiVector> bspotrotations = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,3,true));
 
-    /*the following two Teuchos::rcp pointers are auxiliary variables which are needed in order provide in the very end of the
-     * crosslinker administration a node row and column map; these maps have to be taken here before the first modification
-     * by deleting and adding elements have been carried out with the discretization since after such modifications the maps
-     * cannot be called from the discretization before calling FillComplete() again which should be done only in the very end
-     * note: this way of getting node maps is all right only if no nodes are added/ deleted, but elements only*/
-    const Epetra_Map bspotrowmap = *bspotrowmap_;
-    const Epetra_Map bspotcolmap = *bspotcolmap_;
-
-    /*note: access by ExtractMyValues requires column map vector, whereas displacements on level of time integration are
+    /* note: access by ExtractMyValues requires column map vector, whereas displacements on level of time integration are
      * handled as row map vector*/
     Epetra_Vector discol(*discret_->DofColMap(), true);
     LINALG::Export(disrow, discol);
@@ -487,7 +479,7 @@ void STATMECH::StatMechManager::Update(const int&                               
         GetNodePositionsFromDisVec(discol, currentpositions, currentrotations, true);
         beamcmanager->OcTree()->OctTreeSearch(currentpositions);
       }
-      SearchAndSetCrosslinkers(istep, timen, dt, bspotrowmap, bspotcolmap, bspotpositions, bspotrotations, discol, beamcmanager, printscreen);
+      SearchAndSetCrosslinkers(istep, timen, dt, bspotpositions, bspotrotations, discol, beamcmanager, printscreen);
 
 #ifdef DEBUGCOUT
       for(int proc=0; proc<discret_->Comm().NumProc(); proc++)
@@ -1366,7 +1358,7 @@ void STATMECH::StatMechManager::PartitioningAndSearch(const Epetra_MultiVector& 
     }
 
   /*crosslink molecules*/
-  // Export crosslinkerpositions_ to transfermap_ format (kind of a row map format for crosslink molecules)
+  // Export crosslinkerpositions_ to transfermap_ format (row map format for crosslink molecules)
   Epetra_MultiVector crosslinkerpositionstrans(*transfermap_, 3, true);
   Epetra_Vector numbondtrans(*transfermap_, true);
   Epetra_MultiVector crosslinkpartitiontrans(*transfermap_, 3, false);
@@ -1650,8 +1642,6 @@ void STATMECH::StatMechManager::RotationAroundFixedAxis(LINALG::Matrix<3,1>& axi
 void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&                                       istep,
                                                          const double&                                    timen,
                                                          const double&                                    dt,
-                                                         const Epetra_Map&                                bspotrowmap,
-                                                         const Epetra_Map&                                bspotcolmap,
                                                          const Teuchos::RCP<Epetra_MultiVector>           bspotpositions,
                                                          const Teuchos::RCP<Epetra_MultiVector>           bspotrotations,
                                                          const Epetra_Vector&                             discol,
@@ -1661,7 +1651,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
   double t0 = Teuchos::Time::wallTime();
   /*preliminaries*/
   // BINDING SPOT TRIAD UPDATE
-  Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(bspotcolmap,4,true));
+  Teuchos::RCP<Epetra_MultiVector> bspottriadscol = Teuchos::rcp(new Epetra_MultiVector(*bspotcolmap_,4,true));
   GetBindingSpotTriads(bspotrotations, bspottriadscol);
 
   //get current on-rate for crosslinkers
@@ -1724,7 +1714,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
 
           // skip this, if neighbourslid entry is '-2', meaning empty or binding spot is unavailable due to input file specs
           int bspotinterval = statmechparams_.get<int>("BSPOTINTERVAL", 1);
-          if((*neighbourslid)[index][irandom] > -1.9 && bspotcolmap.GID((int)(*neighbourslid)[index][irandom])%bspotinterval==0)
+          if((*neighbourslid)[index][irandom] > -1.9 && bspotcolmap_->GID((int)(*neighbourslid)[index][irandom])%bspotinterval==0)
           {
             // current neighbour LID
             int bpostLID = (int)(*neighbourslid)[index][irandom];
@@ -1774,7 +1764,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                     // update of crosslink molecule positions
                     LINALG::SerialDenseMatrix LID(1,1,true);
                     LID(0,0) = bpostLID;
-                    (*crosslinkerbond_)[free][irandom] = bspotcolmap.GID(bpostLID);
+                    (*crosslinkerbond_)[free][irandom] = bspotcolmap_->GID(bpostLID);
                     // update status of binding spot by putting in the crosslinker id
                     ((*bspotstatus_)[bpostLID]) = irandom;
                     // increment the number of bonds of this crosslinker
@@ -1790,7 +1780,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                 {
                   //Col map LIDs of nodes to be crosslinked
                    Epetra_SerialDenseMatrix LID(2,1);
-                   LID(0,0) = bspotcolmap.LID((int)(*crosslinkerbond_)[occupied][irandom]);
+                   LID(0,0) = bspotcolmap_->LID((int)(*crosslinkerbond_)[occupied][irandom]);
                   // distinguish between a real bpostLID and the entry '-1', which indicates a passive crosslink molecule
                   if(bpostLID>=0)
                     LID(1,0) = bpostLID;
@@ -1812,7 +1802,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                   // do not do anything if a crosslinker is about to occupy two binding spots on the same filament and K_ON_SELF is zero
                   if(DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
                   {
-                    if((*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap.GID((int)LID(0,0))])] == (*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((int)LID(1,0))])] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
+                    if((*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((int)LID(0,0))])] == (*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((int)LID(1,0))])] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
                       break;
                   }
                   else
@@ -1844,8 +1834,8 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                     Epetra_SerialDenseMatrix nodecoords(3,2);
                     for(int k=0; k<nodecoords.M(); k++)
                     {
-                      nodecoords(k,0) = (*bspotpositions)[k][bspotcolmap.GID((int)LID(0,0))];
-                      nodecoords(k,1) = (*bspotpositions)[k][bspotcolmap.GID((int)LID(1,0))];
+                      nodecoords(k,0) = (*bspotpositions)[k][bspotcolmap_->GID((int)LID(0,0))];
+                      nodecoords(k,1) = (*bspotpositions)[k][bspotcolmap_->GID((int)LID(1,0))];
                     }
                     for(int k=0; k<(int)LID.M(); k++)
                     {
@@ -1867,7 +1857,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                     // actually existing two bonds
                     if(bpostLID>=0)
                     {
-                       (*crosslinkerbond_)[free][irandom] = bspotcolmap.GID(bpostLID);
+                       (*crosslinkerbond_)[free][irandom] = bspotcolmap_->GID(bpostLID);
                        ((*bspotstatus_)[bpostLID]) = irandom;
                       // set flag at irandom-th crosslink molecule that an element is to be added
                       addcrosselement[irandom] = 1.0;
@@ -1877,7 +1867,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                       // consider crosslinkers covering two binding spots of one filament
                       if(DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
                       {
-                        if((*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap.GID((int)LID(0,0))])] == (*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap.GID((int)LID(1,0))])] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
+                        if((*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((int)LID(0,0))])] == (*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((int)LID(1,0))])] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
                           (*crosslinkonsamefilament_)[irandom] = 1.0;
                       }
                       else
@@ -1967,6 +1957,9 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
          * the first node of the crosslinker element is always assumed to be the one with the greater GID; the owner
          * of the first node is assumed to be the owner of the crosslinker element*/
 
+        // copied binding spot map (in order to handle the addition of elements based upon an invariant map just in case)
+        Epetra_Map bspotcolmap(*bspotcolmap_);
+
         // obtain binding spot GID
         std::vector<int> bspotgid(2);
         // determine smaller and larger of the GIDs
@@ -2032,24 +2025,6 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
           //set nodal rotations (not true ones, only those given in the displacement vector)
           if (DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
           {
-//          //get pointer at a nodes
-//            const DRT::Node* node0 = discret_->gNode(globalnodeids->at(0));
-//            const DRT::Node* node1 = discret_->gNode(globalnodeids->at(1));
-//            const DRT::Node* node2 = discret_->gNode(globalnodeids->at(2));
-//            const DRT::Node* node3 = discret_->gNode(globalnodeids->at(3));
-//
-//            //get GIDs of this node's degrees of freedom
-//            std::vector<int> dofnode0 = discret_->Dof(node0);
-//            std::vector<int> dofnode1 = discret_->Dof(node1);
-//            std::vector<int> dofnode2 = discret_->Dof(node2);
-//            std::vector<int> dofnode3 = discret_->Dof(node3);
-//
-//            // In case of the 4-noded beam CL Element we need all 12 Rotational DOFs in order to properly set up reference geometry
-//            rotrefe[k] = discol[discret_->DofColMap()->LID(dofnode0[k+3])];
-//            rotrefe[k+3] = discol[discret_->DofColMap()->LID(dofnode1[k+3])];
-//            rotrefe[k+6] = discol[discret_->DofColMap()->LID(dofnode2[k+3])];
-//            rotrefe[k+9] = discol[discret_->DofColMap()->LID(dofnode3[k+3])];
-
             rotrefe[k]   = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[0])];
             rotrefe[k+3] = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[1])];
             rotrefe[k+6] = (*nodalrotations)[k][bspotcolmap.LID((*globalnodeids)[2])];
@@ -3822,14 +3797,11 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
 
         // add as many binding spots to the i-th filament as possible
         int bspot = 0;
-        //CHECK TOLERANCE 0.0000001 not beautiful at all! Alternative?
+        //more elegant way for tolerance?
         while((double)bspot*riseperbspot < lfil+0.0000001)
         {
           // put binding spot id into the vector in order to create a fully overlapping binding spot map afterwards
           bspotgids.push_back((int)bspotgids.size());
-          //cout<< " BSPOTGIDS "<< (int)bspotgids << endl;
-
-
           // calculate the orientation of the binding spot as well as the respective curve parameter
           /* determine element current element GID:
            * As set up by the Inputfile-Generator, the filament element GID can be retrieved by knowing the filament number and the lesser node number.
@@ -3889,7 +3861,6 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
       bspotstatus_->PutScalar(-1.0);
       bspotxi_ = rcp(new Epetra_Vector(*bspotcolmap_,true));
       bspot2element_ = rcp(new Epetra_Vector(*bspotrowmap_, true));
-      //CHECK
       bspot2nodes_=rcp(new Epetra_MultiVector(*bspotcolmap_,2,true));
 
       Epetra_Vector bspotxirow(*bspotrowmap_);
@@ -4041,11 +4012,29 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
   searchforneighbours_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, false));
   searchforneighbours_->PutScalar(1.0);
 
+  // calculate  number of total binding spot depending on BSPOTINTERVAL
+  numbspots_ = 0;
+  int bspotinterval = statmechparams_.get<int>("BSPOTINTERVAL",1);
+  if(bspotinterval>1)
+  {
+    for(int i=0; i<bspotstatus_->MyLength(); i++)
+      if(i%bspotinterval==0)
+        numbspots_++;
+  }
+  else if(bspotinterval==1)
+    numbspots_ = bspotstatus_->MyLength();
+  else
+    dserror("Check your input file parameter BSPOTINTERVAL! It's <=0 !");
+
+#ifdef DEBUGCOUT
+  cout<<"Proc "<<discret_->Comm().MyPID()<<": total number of binding spots = "<<numbspots_<<endl;
+#endif
+
   return;
 }//StatMechManager::CrosslinkerMoleculeInit
 
 /*----------------------------------------------------------------------*
-| Set crosslinkers whereever possible before the first time step        |
+| Set crosslinkers wherever possible before the first time step        |
 |                                                (private) mueller 11/11|
 *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager)

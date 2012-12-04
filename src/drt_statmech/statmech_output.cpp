@@ -4044,37 +4044,39 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow, const st
           if(maxnearneighbors>maxnumevalneighbors)
             maxnearneighbors = maxnumevalneighbors;
 
-          // calculate nearest neighbor to 3rd nearest neighbor distances
-          for(int i=0; i<(int)evalnodepositions.size(); i++)
+          // calculate nearest neighbor to 4th nearest neighbor distances , no shift ac
+          for(int i=0; i<(int)evalnodepositions.size()-1; i++)
           {
             // vector storing nearest neighbor positions
             for(int j=i+1; j<i+maxnearneighbors+1; j++)
             {
-              int jindex = j;
-              bool periodicshift = false;
-              // we close the periodic loop by thinking of the first node to be the first neighbor of the last node...
-              if(j>=(int)evalnodepositions.size())
-              {
-                periodicshift = true;
-                jindex -= (int)evalnodepositions.size();
-              }
+              // reached the end of the vector
+              if(j==(int)evalnodepositions.size())
+                break;
 
-              map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodeIDs.at(i));
-              map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find(evalnodeIDs.at(jindex));
+              std::map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodeIDs.at(i));
+              std::map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find(evalnodeIDs.at(j));
+
+              // spatial distance vector
               LINALG::Matrix<3,1> diff = (pos1->second);
               diff -= (pos0->second);
-              // evaluate global x-distance
-              double xdist = fabs(diff(0));
-              // distance of node pairs separated by periodic boundaries
-              if(periodicshift)
-                dist2nodes = periodlength-xdist;
-              else // std
-                dist2nodes = xdist;
-              distances<<std::scientific<<std::setprecision(15)<<dist2nodes<<" ";
+
+              // arc length
+              if(evalnodeIDs.at(j)<=evalnodeIDs.at(i))
+                dserror("Node IDs are not sorted in an ascending manner!");
+
+              double arclength = 0.0;
+              for(int k=evalnodeIDs.at(i) ; k<evalnodeIDs.at(j); k++)
+              {
+                std::map< int,LINALG::Matrix<3,1> >::const_iterator posk = currentpositions.find(k);
+                std::map< int,LINALG::Matrix<3,1> >::const_iterator poskp = currentpositions.find(k+1);
+                LINALG::Matrix<3,1> diffk = (poskp->second);
+                diffk -= (posk->second);
+                arclength += diffk.Norm2();
+              }
+
+              distances<<std::scientific<<std::setprecision(6)<<fabs(diff(0))<<"\t"<<diff.Norm2()<<"\t"<<arclength<<"\t";
             }
-            if(maxnearneighbors<maxnumevalneighbors)
-              for(int j=0; j<maxnumevalneighbors-maxnearneighbors; j++)
-                distances<<-99<<" ";
             distances<<endl;
           }
         }
@@ -4242,27 +4244,55 @@ void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector& dis
  *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, bool coverageonly)
 {
-  /* Consider the horizontal filament of a loom setup. Go along this filament and count the
-   * number of occupied binding spots. Also, store the spatial distribution of occupied spots
-   * for analysis of cluster size, etc.*/
-  Epetra_Vector discol(*discret_->DofColMap(),true);
-  LINALG::Export(disrow,discol);
-  std::map<int, LINALG::Matrix<3, 1> > currentpositions;
-  std::map<int, LINALG::Matrix<3, 1> > currentrotations;
-  GetNodePositionsFromDisVec(discol, currentpositions, currentrotations, true);
-
-  // write output
-  if(!discret_->Comm().MyPID())
+  if(coverageonly)
   {
-    // file pointer
-    FILE* fp = NULL;
-    fp = fopen(filename.str().c_str(), "a");
-    std::stringstream coverage;
+    Epetra_Vector bspotstatustrans(*bspotrowmap_);
+    CommunicateVector(bspotstatustrans, *bspotstatus_,true,false,false,true);
 
-    // vector storing the crosslinker coverage and distribution
-    Epetra_Vector crosscoverage(*bspotcolmap_, true);
-    if(!coverageonly)
+    // check for occupied binding spots
+    int partialsum = 0;
+    for(int i=0; i<bspotstatustrans.MyLength(); i++)
     {
+      if((*filamentnumber_)[bspotcolmap_->LID(bspotrowmap_->GID(i))]==0 && bspotstatustrans[i]>-0.1)
+        partialsum++;
+      else if((int)(*filamentnumber_)[bspotcolmap_->LID(bspotrowmap_->GID(i))]>0)
+        break;
+    }
+    // sum up processor-specific values and communicate
+    int sum = 0;
+    discret_->Comm().SumAll(&partialsum,&sum,1);
+
+    if(!discret_->Comm().MyPID())
+    {
+      // file pointer
+      FILE* fp = NULL;
+      fp = fopen(filename.str().c_str(), "a");
+      std::stringstream coverage;
+
+      coverage << sum << " "<< std::setprecision(5) <<(double)(sum)/(double)(numbspots_) <<endl;
+      // print to file and close
+      fprintf(fp, coverage.str().c_str());
+      fclose(fp);
+    }
+  }
+  else
+  {
+    /* Consider the horizontal filament of a loom setup. Go along this filament and count the
+     * number of occupied binding spots. Also, store the spatial distribution of occupied spots
+     * for analysis of cluster size, etc.*/
+    Epetra_Vector discol(*discret_->DofColMap(),true);
+    LINALG::Export(disrow,discol);
+    std::map<int, LINALG::Matrix<3, 1> > currentpositions;
+    std::map<int, LINALG::Matrix<3, 1> > currentrotations;
+    GetNodePositionsFromDisVec(discol, currentpositions, currentrotations, true);
+
+    if(!discret_->Comm().MyPID())
+    {
+      // file pointer
+      FILE* fp = NULL;
+      fp = fopen(filename.str().c_str(), "a");
+      std::stringstream coverage;
+
       for(int i=0; i<bspotstatus_->MyLength(); i++)
       {
         // consider only filament 0 (horizontal filament)
@@ -4272,25 +4302,10 @@ void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& dis
         else if((int)(*filamentnumber_)[i]>0)
           break;
       }
+      // print to file and close
+      fprintf(fp, coverage.str().c_str());
+      fclose(fp);
     }
-    else
-    {
-      double bspotinterval = (double)(statmechparams_.get<int>("BSPOTINTERVAL",1));
-
-      int sum = 0;
-      for(int i=0; i<bspotstatus_->MyLength(); i++)
-      {
-        // no distinction between singly bound and doubly bound linkers here
-        if((*filamentnumber_)[i]==0 && (*bspotstatus_)[i]>-0.1)
-          sum++;
-        else if((int)(*filamentnumber_)[i]>0)
-          break;
-      }
-      coverage << sum << " "<< std::setprecision(5) <<(double)(sum)/(double)(bspotstatus_->MyLength())*bspotinterval <<endl;
-    }
-    // print to file and close
-    fprintf(fp, coverage.str().c_str());
-    fclose(fp);
   }
   return;
 }

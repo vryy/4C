@@ -344,8 +344,6 @@ protected:
    *  \param istep            (in) time step
    *  \param timen            (in) target time
    *  \param dt               (in) step size
-   *  \param noderowmap       (in) Row Map
-   *  \param nodecolmap       (in) Column Map
    *  \param currentpositions (in) positions of the nodes in column map format (fully overlapping)
    *  \param currentrotations (in) rotations of the nodes in column map format (fully overlapping)
    *  \param beamcmanager     (in) beam contact manager
@@ -353,8 +351,6 @@ protected:
   void SearchAndSetCrosslinkers(const int&                                      istep,
                                 const double&                                   timen,
                                 const double&                                   dt,
-                                const Epetra_Map&                               noderowmap,
-                                const Epetra_Map&                               nodecolmap,
                                 const Teuchos::RCP<Epetra_MultiVector>          bspotpositions,
                                 const Teuchos::RCP<Epetra_MultiVector>          bspotrotations,
                                 const Epetra_Vector&                            discol,
@@ -755,6 +751,9 @@ protected:
 
   //! \brief number of elements which are part of the discretization already before starting adding crosslinkers
   int basiselements_;
+
+  //! \brief number of binding spots which may differ from the number of nodes depending on several parameters
+  int numbspots_;
 
   //! \brief number of file into which output is written (only important for single filament dynamics)
   int outputfilenumber_;
