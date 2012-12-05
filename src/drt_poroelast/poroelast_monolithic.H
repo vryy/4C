@@ -142,8 +142,8 @@ namespace POROELAST
 
       //@}
 
-      //!finite difference check of stiffness matrix
-      void PoroFDCheck();
+      //finite difference check of stiffness matrix
+      //void PoroFDCheck();
 
       /// Evaluate no penetration condition
       void EvaluateCondition(Teuchos::RCP<LINALG::SparseOperator> Sysmat,

@@ -803,23 +803,30 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     LINALG::Matrix<1,my::nsd_> gradJ;
     structmat->GetGradJAtGP(gradJ,*(iquad));
 
-    LINALG::Matrix<my::nsd_,1>             mat_grad_porosity;
-    //-----get material porosity gradient from structure material
-    structmat->GetGradPorosityAtGP(mat_grad_porosity,*(iquad));
-    // calculate spatial porosity gradient
-    LINALG::Matrix<my::nsd_,1>             grad_porosity;
-    grad_porosity.MultiplyTN(defgrd_inv,mat_grad_porosity);
-
-    gradporosity_gp[*(iquad)] = grad_porosity;    // trial urrecha.
     gradJ_gp[*(iquad)] = gradJ;
     J_gp[*(iquad)] = J;
 
     //--linearization of porosity gradient w.r.t. pressure at gausspoint
     //d(grad(phi))/dp = dphi/(dJdp)* dJ/dx + d^2phi/(dp)^2 * dp/dx + dphi/dp* N,x
-    LINALG::Matrix<my::nsd_,my::nen_>             dgradphi_dp;
-    dgradphi_dp.MultiplyTT(dphi_dJdp,gradJ,my::funct_ );
-    dgradphi_dp.MultiplyNT(dphi_dpp, my::gradp_,my::funct_,1.0);
-    dgradphi_dp.Update(dphi_dp, my::derxy_,1.0);
+    LINALG::Matrix<my::nsd_,my::nen_>             dgradphi_dp(true);
+
+    // calculate spatial porosity gradient
+    LINALG::Matrix<my::nsd_,1>             grad_porosity(true);
+
+    if( (my::fldpara_->PoroContiPartInt() == false) or visceff_)
+    {
+      LINALG::Matrix<my::nsd_,1>             mat_grad_porosity;
+      //-----get material porosity gradient from structure material
+      structmat->GetGradPorosityAtGP(mat_grad_porosity,*(iquad));
+
+      grad_porosity.MultiplyTN(defgrd_inv,mat_grad_porosity);
+
+      gradporosity_gp[*(iquad)] = grad_porosity;    // trial urrecha.
+
+      dgradphi_dp.MultiplyTT(dphi_dJdp,gradJ,my::funct_ );
+      dgradphi_dp.MultiplyNT(dphi_dpp, my::gradp_,my::funct_,1.0);
+      dgradphi_dp.Update(dphi_dp, my::derxy_,1.0);
+    }
 
     dporodt_gp[*iquad]= dphi_dJ*J*gridvdiv  +  dphi_dp*press_dot;    // trial urrecha.
 
@@ -1285,18 +1292,19 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     if (my::fldpara_->CStab() == INPAR::FLUID::continuity_stab_yes)
     {
       dserror("continuity stabilization not implemented for poroelasticity");
+      /*
       LINALG::Matrix<my::nsd_,my::nsd_> contstab(true);
       const double conti_stab_fac = timefacfacpre*my::tau_(2);
       const double conti_stab_rhs = rhsfac*my::tau_(2)*my::conres_old_;
 
-      /* continuity stabilisation on left hand side */
-      /*
+      * continuity stabilisation on left hand side *
+      *
                  /                        \
                 |                          |
            tauC | nabla o Du  , nabla o v  |
                 |                          |
                  \                        /
-      */
+
 
       for (int ui=0; ui<my::nen_; ++ui)
       {
@@ -1332,8 +1340,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
       }
 
       // pressure terms on left-hand side
-      /* poroelasticity term */
-      /*
+      * poroelasticity term *
+      *
            /                            \
           |                   n+1        |
           | d(grad(phi))/dp* u    Dp, q  |
@@ -1345,7 +1353,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
        +  | d(phi)/dp * div u    Dp, q  |
           |                  (i)        |
            \                            /
-      */
+
       for (int ui=0; ui<my::nen_; ++ui)
       {
         const int fui = my::nsd_*ui;
@@ -1377,6 +1385,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
             velforce(idim,vi)-= contstab(idim,jdim)*my::derxy_(jdim,vi);
         }
       }
+      */
     }
 
 /************************************************************************/
@@ -1430,7 +1439,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
 
 /************************************************************************/
     // 4) standard Galerkin continuity term + poroelasticity terms
-     //bool partialintegration = false;
 
      if( my::fldpara_->PoroContiPartInt() == false )
      {
@@ -2087,38 +2095,49 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
               dFinvdus_dFdx(p, gid) += -defgrd_inv(i,j) * my::derxy_(k,n) * F_x(k*my::nsd_+i,p);
         }
 
-    //----d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
-    LINALG::Matrix<1,my::nsd_> temp2;
-    temp2.MultiplyTN( defgrd_IT_vec, F_x);
-
-    LINALG::Matrix<my::nsd_,my::nen_*my::nsd_> dgradJ_dus;
-    dgradJ_dus.MultiplyTN(temp2,dJ_dus);
-
-    dgradJ_dus.Update(J,dFinvdus_dFdx,1.0);
-
-    dgradJ_dus.Update(J,Finv_N_X_x,1.0);
-
     //--------------------- linearization of porosity w.r.t. structure displacements
     LINALG::Matrix<1,my::nsd_*my::nen_> dphi_dus;
     dphi_dus.Update( dphi_dJ , dJ_dus );
 
-    //--------------------- current porosity gradient
-    //LINALG::Matrix<my::nsd_,1> grad_porosity;
-    //for (int idim=0; idim<my::nsd_; ++idim)
-    //  grad_porosity(idim)=dphi_dp*my::gradp_(idim)+dphi_dJ*gradJ(idim);
-
-    LINALG::Matrix<my::nsd_,1>             mat_grad_porosity;
-    //-----get material porosity gradient from structure material
-    structmat->GetGradPorosityAtGP(mat_grad_porosity,*(iquad));
-    // calculate spatial porosity gradient
-    LINALG::Matrix<my::nsd_,1>             grad_porosity;
-    grad_porosity.MultiplyTN(defgrd_inv,mat_grad_porosity);
 
     //------------------ d( grad(\phi) ) / du_s = d\phi/(dJ du_s) * dJ/dx+ d\phi/dJ * dJ/(dx*du_s) + d\phi/(dp*du_s) * dp/dx
-    LINALG::Matrix<my::nsd_,my::nen_*my::nsd_> dgradphi_dus;
-    dgradphi_dus.MultiplyTN(dphi_dJJ, gradJ ,dJ_dus);
-    dgradphi_dus.Update(dphi_dJ, dgradJ_dus, 1.0);
-    dgradphi_dus.Multiply(dphi_dJdp, my::gradp_, dJ_dus, 1.0);
+    LINALG::Matrix<my::nsd_,my::nen_*my::nsd_> dgradphi_dus(true);
+
+    // spatial porosity gradient
+    LINALG::Matrix<my::nsd_,1>             grad_porosity(true);
+
+    if( (my::fldpara_->PoroContiPartInt() == false) or visceff_)
+    {
+      //----d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
+      LINALG::Matrix<1,my::nsd_> temp2;
+      temp2.MultiplyTN( defgrd_IT_vec, F_x);
+
+      //----d(gradJ)/dus =  dJ/dus * F^-T . : dF/dx + J * dF^-T/dus : dF/dx + J * F^-T : N_X_x
+      LINALG::Matrix<my::nsd_,my::nen_*my::nsd_> dgradJ_dus;
+
+      dgradJ_dus.MultiplyTN(temp2,dJ_dus);
+
+      dgradJ_dus.Update(J,dFinvdus_dFdx,1.0);
+
+      dgradJ_dus.Update(J,Finv_N_X_x,1.0);
+
+      //--------------------- current porosity gradient
+      //LINALG::Matrix<my::nsd_,1> grad_porosity;
+      //for (int idim=0; idim<my::nsd_; ++idim)
+      //  grad_porosity(idim)=dphi_dp*my::gradp_(idim)+dphi_dJ*gradJ(idim);
+
+      LINALG::Matrix<my::nsd_,1>             mat_grad_porosity;
+      //-----get material porosity gradient from structure material
+      structmat->GetGradPorosityAtGP(mat_grad_porosity,*(iquad));
+
+      grad_porosity.MultiplyTN(defgrd_inv,mat_grad_porosity);
+
+      //------------------ d( grad(\phi) ) / du_s = d\phi/(dJ du_s) * dJ/dx+ d\phi/dJ * dJ/(dx*du_s) + d\phi/(dp*du_s) * dp/dx
+      LINALG::Matrix<my::nsd_,my::nen_*my::nsd_> dgradphi_dus;
+      dgradphi_dus.MultiplyTN(dphi_dJJ, gradJ ,dJ_dus);
+      dgradphi_dus.Update(dphi_dJ, dgradJ_dus, 1.0);
+      dgradphi_dus.Multiply(dphi_dJdp, my::gradp_, dJ_dus, 1.0);
+    }
 
     //----------------------------------------------------------------------
     // potential evaluation of material parameters and/or stabilization

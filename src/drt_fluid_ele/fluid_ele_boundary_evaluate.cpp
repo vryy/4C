@@ -298,7 +298,8 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         lm,
         elemat1,
         elemat2,
-        elevec1);
+        elevec1,
+        elevec2);
     break;
   }
   case FLD::poro_boundary:

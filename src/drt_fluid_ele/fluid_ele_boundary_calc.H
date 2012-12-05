@@ -199,7 +199,8 @@ public:
       std::vector<int>&               lm,
       Epetra_SerialDenseMatrix&       elemat1,
       Epetra_SerialDenseMatrix&       elemat2,
-      Epetra_SerialDenseVector&       elevec1
+      Epetra_SerialDenseVector&       elevec1,
+      Epetra_SerialDenseVector&       elevec2
   ) = 0;
 
   virtual void PoroBoundary(
@@ -567,7 +568,8 @@ public:
       std::vector<int>&          lm,
       Epetra_SerialDenseMatrix&  elemat1,
       Epetra_SerialDenseMatrix&  elemat2,
-      Epetra_SerialDenseVector&  elevec1);
+      Epetra_SerialDenseVector&  elevec1,
+      Epetra_SerialDenseVector&  elevec2);
 
   /*!
   \brief apply boundary integral for porous media problems

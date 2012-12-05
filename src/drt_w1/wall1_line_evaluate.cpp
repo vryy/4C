@@ -537,20 +537,16 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
     // update element geometry
     Epetra_SerialDenseMatrix xrefe(numdim,nenparent); // material coord. of element
     Epetra_SerialDenseMatrix xcurr(numdim,nenparent); // current  coord. of element
-    //Epetra_SerialDenseMatrix xdisp(nenparent,numdim);
 
     const DRT::Node*const* nodes = parentele->Nodes();
-    //DRT::Node** nodes = Nodes();
     for (int i=0; i<nenparent; ++i)
     {
       const double* x = nodes[i]->X();
       xrefe(0,i) = x[0];
       xrefe(1,i) = x[1];
-      xrefe(2,i) = x[2];
 
       xcurr(0,i) = xrefe(0,i) + mydisp[i*noddof+0];
       xcurr(1,i) = xrefe(1,i) + mydisp[i*noddof+1];
-      xcurr(2,i) = xrefe(2,i) + mydisp[i*noddof+2];
     }
 
     //number of degrees of freedom per node of fluid

@@ -21,6 +21,7 @@
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../drt_lib/drt_assemblestrategy.H"
 
 /*======================================================================*/
 /* constructor */
@@ -62,129 +63,64 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
 
   Teuchos::ParameterList params;
 
-  // set action for elements
-  params.set<int>("action",FLD::no_penetration);
-  if(coupltype==0)
-    params.set("coupling","fluid fluid");
-  else if(coupltype==1)
-  {
-    params.set("coupling","fluid structure");
-    StructVelConstraintMatrix->Zero();
-  }
-  else
-    dserror("unknown coupling type for no penetration BC");
-
   params.set("timescale",TimeScaling());
 
   condIDs->clear();
 
-  /*
-  params.set<Teuchos::RCP< std::set<int> > >("mycondIDs",condIDs);
-
-  // build specific assemble strategy for the fluid-mechanical system matrix
-  // from the point of view of FluidField:
-  // fluiddofset = 0, structdofset = 1
-  DRT::AssembleStrategy couplstrategy(
-      0,              // fluiddofset for row
-      1,              // structdofset for column
-      StructVelConstraintMatrix,           // fluid-mechanical matrix
-      Teuchos::null,  // no other matrix or vectors
-      Teuchos::null ,
-      Teuchos::null,
-      Teuchos::null
-  );
-  DRT::AssembleStrategy fluidstrategy(
-      0,              // fluiddofset for row
-      0,              // fluiddofset for column
-      ConstraintMatrix,           // fluid-mechanical matrix
-      Teuchos::null,  // no other matrix or vectors
-      Teuchos::null ,
-      Teuchos::null,
-      Teuchos::null
-  );
-
-  // evaluate the fluid-mechancial system matrix on the fluid element
-  Discretization()->EvaluateCondition( params, couplstrategy,"NoPenetration" );
-  Discretization()->EvaluateCondition( params, fluidstrategy,"NoPenetration" );
-  Discretization()->ClearState();
-  */
-
-  //---------------------------------------------------------------------
-  // loop through conditions and evaluate them
-  //---------------------------------------------------------------------
-  for (unsigned int i = 0; i < nopencond_.size(); ++i)
+  // set action for elements
+  params.set<int>("action",FLD::no_penetration);
+  if(coupltype==0)
   {
-    DRT::Condition& cond = *(nopencond_[i]);
+    params.set("coupling","fluid fluid");
 
-    // elements might need condition
-    params.set<RCP<DRT::Condition> >("condition", Teuchos::rcp(&cond,false));
+    Teuchos::RCP<Epetra_Vector> condset = Teuchos::rcp(new Epetra_Vector(ConstraintMatrix->RowMap(),true) );
 
-    // define element matrices and vectors
-    Epetra_SerialDenseMatrix elematrix1;
-    Epetra_SerialDenseMatrix elematrix2;
-    Epetra_SerialDenseVector elevector1;
-    Epetra_SerialDenseVector elevector2;
-    Epetra_SerialDenseVector elevector3;
+    DRT::AssembleStrategy fluidstrategy(
+        0,              // fluiddofset for row
+        0,              // fluiddofset for column
+        ConstraintMatrix,           // fluid-mechanical matrix
+        Teuchos::null,
+        condset,
+        Teuchos::null,
+        Teuchos::null
+    );
 
-    map<int,RCP<DRT::Element> >& geom = cond.Geometry();
-    // no check for empty geometry here since in parallel computations
-    // there might be processors which do not own a portion of the elements belonging
-    // to the condition geometry
-    map<int,RCP<DRT::Element> >::iterator curr;
+    Discretization()->EvaluateCondition( params, fluidstrategy,"NoPenetration" );
 
-    for (curr=geom.begin(); curr!=geom.end(); ++curr)
+    //write global IDs of dofs on which the no penetration condition is applied (can vary in time)
+    const int length = condset->MyLength();
+    const Epetra_BlockMap& map = condset->Map();
+    for(int i=0; i<length ; i++)
     {
-      DRT::Element::LocationArray la(2);
-      DRT::ELEMENTS::FluidBoundary* fluid = dynamic_cast<DRT::ELEMENTS::FluidBoundary*>(curr->second.get());
-      fluid->LocationVector(*Discretization(),la,false);
-
-      // get dimension of element matrices and vectors
-      // Reshape element matrices and vectors and init to zero
-      const int eledim = (int)la[0].lm_.size();
-      const int eledim2 = (int)la[1].lm_.size();
-      elevector1.Size(eledim);
-
-      int eid = curr->second->Id();
-
-      if(coupltype==0)//fluid fluid
-      {
-        elematrix1.Shape(eledim,eledim);
-        //---------------------------------------------------------------------
-        // call the element specific evaluate method
-        int err = curr->second->Evaluate(params,*Discretization(),la[0].lm_,elematrix1,elematrix2,
-                                         elevector1,elevector2,elevector3);
-        if (err) dserror("error while evaluating elements");
-
-        //---------------------------------------------------------------------
-        // assembly
-        ConstraintMatrix->Assemble(eid,la[0].stride_,elematrix1,la[0].lm_,la[0].lmowner_);
-
-        Teuchos::RCP<std::vector<int> > mycondIDs=params.get<Teuchos::RCP<std::vector<int> > >("mycondIDs",Teuchos::null);
-        int condID=-1;
-        if(mycondIDs != Teuchos::null)
-          for(unsigned int i=0;i<mycondIDs->size();i++)
-          {
-            condID=(*mycondIDs)[i];
-            if ( Discretization()->Comm().MyPID() == la[0].lmowner_[ i ] and condID!= -1)
-              condIDs->insert(condID);
-          }
-      }
-      else //fluid structure
-      {
-        elematrix1.Shape(eledim,eledim2);
-        elematrix2.Shape(eledim,eledim2);
-        //---------------------------------------------------------------------
-        // call the element specific evaluate method
-        int err = curr->second->Evaluate(params,*Discretization(),la[0].lm_,elematrix1,elematrix2,
-                                         elevector1,elevector2,elevector3);
-        if (err) dserror("error while evaluating elements");
-
-        ConstraintMatrix->Assemble( eid, la[1].stride_, elematrix1, la[0].lm_, la[0].lmowner_, la[1].lm_ );
-        StructVelConstraintMatrix->Assemble( eid, la[1].stride_, elematrix2, la[0].lm_, la[0].lmowner_, la[1].lm_ );
-        LINALG::Assemble(*Cond_RHS,elevector1,la[0].lm_,la[0].lmowner_);
-      }
+      if((*condset)[i] != 0.0)
+        condIDs->insert(map.GID(i));
     }
   }
+  else if(coupltype==1)
+  {
+    params.set("coupling","fluid structure");
+    StructVelConstraintMatrix->Zero();
+
+    // build specific assemble strategy for the fluid-mechanical system matrix
+    // from the point of view of FluidField:
+    // fluiddofset = 0, structdofset = 1
+    DRT::AssembleStrategy couplstrategy(
+        0,              // fluiddofset for row
+        1,              // structdofset for column
+        ConstraintMatrix,
+        StructVelConstraintMatrix,           // fluid-mechanical matrix
+        Cond_RHS,
+        Teuchos::null,
+        Teuchos::null
+    );
+
+    // evaluate the fluid-mechancial system matrix on the fluid element
+    Discretization()->EvaluateCondition( params, couplstrategy,"NoPenetration" );
+  }
+  else
+    dserror("unknown coupling type for no penetration BC");
+
+  Discretization()->ClearState();
 
   return;
 }

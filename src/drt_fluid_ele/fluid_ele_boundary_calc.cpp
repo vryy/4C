@@ -4023,7 +4023,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
                                                  std::vector<int>&                lm,
                                                  Epetra_SerialDenseMatrix&        elemat1,
                                                  Epetra_SerialDenseMatrix&        elemat2,
-                                                 Epetra_SerialDenseVector&        elevec1)
+                                                 Epetra_SerialDenseVector&        elevec1,
+                                                 Epetra_SerialDenseVector&        elevec2)
 {
   // This function is only implemented for 3D
   if(bdrynsd_!=2 and bdrynsd_!=1)
@@ -4101,12 +4102,14 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
         {
           for (int idof2=0;idof2<numdofpernode_;idof2++)
               elemat1(inode*numdofpernode_+idof,inode*numdofpernode_+idof2) += nodenormal(idof2);
-          elevec1(inode*numdofpernode_+idof) = 0.0;
-          mycondIDs->push_back(lm[inode*numdofpernode_+idof]);
+          //elevec1(inode*numdofpernode_+idof) = 0.0;
+          elevec1(inode*numdofpernode_+idof) = 1.0;
+          //mycondIDs->push_back(lm[inode*numdofpernode_+idof]);
           isset=true;
         }
         else //no condition set on dof
-          mycondIDs->push_back(-1);
+          //mycondIDs->push_back(-1);
+          elevec1(inode*numdofpernode_+idof) = 0.0;
       }
     }
   }
@@ -4179,7 +4182,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
           normalderiv(0,nsd_*node)   += 0.;
           normalderiv(0,nsd_*node+1) += deriv_(0,node) * funct_(node) * fac;
 
-          normalderiv(1,nsd_*node)   += deriv_(1,node) * funct_(node) * fac;
+          normalderiv(1,nsd_*node)   += -deriv_(0,node) * funct_(node) * fac;
           normalderiv(1,nsd_*node+1) += 0.;
         }
       else
@@ -4226,7 +4229,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
     dserror("unknown coupling type for no penetration boundary condition");
 
   //save the vector containing the constraint dofs in the parameter list
-  params.set<Teuchos::RCP<std::vector<int> > >("mycondIDs", mycondIDs);
+ // params.set<Teuchos::RCP<std::vector<int> > >("mycondIDs", mycondIDs);
   return;
 }
 
@@ -4379,7 +4382,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
         normalderiv(0,nsd_*node)   += 0.;
         normalderiv(0,nsd_*node+1) += deriv_(0,node) * funct_(node) * fac;
 
-        normalderiv(1,nsd_*node)   += deriv_(1,node) * funct_(node) * fac;
+        normalderiv(1,nsd_*node)   += -deriv_(0,node) * funct_(node) * fac;
         normalderiv(1,nsd_*node+1) += 0.;
       }
 

@@ -49,6 +49,8 @@ namespace ADAPTER
  *----------------------------------------------------------------------*/
 namespace POROELAST
 {
+  class NoPenetrationConditionHandle;
+
   /// base class for porous media algorithm
   class PoroBase: public ADAPTER::AlgorithmBase
   {
@@ -127,8 +129,6 @@ namespace POROELAST
 
       //@}
 
-      //! build map containing dofs with no penetration condition (fluid)
-      void BuidNoPenetrationMap();
 
       //! return coupling object
       ADAPTER::Coupling& FluidStructureCoupling() { return *coupfs_; }
@@ -136,20 +136,11 @@ namespace POROELAST
       //! Extractor used for constraint structure
       Teuchos::RCP< LINALG::MapExtractor > consplitter_;
 
-      //! map of gids of fluid  DOFs and respective structure DOFs
-      Teuchos::RCP<std::map<int, int> > nopenetrationmap_;
-
-      //! Extractor used for no penetration condition
-      Teuchos::RCP< LINALG::MapExtractor > nopenetration_;
-
       //! Extractor used for poro structure interaction
       Teuchos::RCP< LINALG::MapExtractor > psiextractor_;
 
-      //! vector containing no penetration - conditions
-      std::vector<DRT::Condition*> nopencond_;
-
-      //! vector containing global IDs of dofs with no penetration condition
-      Teuchos::RCP<std::set<int> >condIDs_;
+      //! helper class for no penetration condition
+      Teuchos::RCP<NoPenetrationConditionHandle> noPenHandle_;
 
     private:
       //! check for submeshes and build of subnode and subelement map if necessary
@@ -178,6 +169,59 @@ namespace POROELAST
       //@}
 
   }; // PoroBase
+
+  //! helper class for no penetration condition
+  class NoPenetrationConditionHandle
+  {
+  public:
+
+    //! create using a Epetra_Comm
+    explicit NoPenetrationConditionHandle( std::vector<DRT::Condition*> nopencond):
+    condIDs_(Teuchos::null),
+    nopencond_(nopencond),
+    nopenetration_(Teuchos::null),
+    hascond_(false)
+    {
+      if(nopencond_.size())
+      {
+        hascond_ = true;
+        condIDs_ = Teuchos::rcp(new std::set<int>());
+      }
+    };
+
+    ~NoPenetrationConditionHandle(){};
+
+    //! build map containing dofs with no penetration condition (fluid)
+    void BuidNoPenetrationMap(const Epetra_Comm& comm, Teuchos::RCP<const Epetra_Map> dofRowMap);
+
+    //! apply rhs terms of no penetration condition to global rhs vector
+    void ApplyCondRHS(Teuchos::RCP<Epetra_Vector> iterinc,
+                      Teuchos::RCP<Epetra_Vector> rhs,
+                      Teuchos::RCP<Epetra_Vector> cond_rhs);
+
+    //! return no penetration map extractor
+    Teuchos::RCP< const LINALG::MapExtractor > Extractor(){return nopenetration_;};
+
+    //! return vector containing global IDs of dofs with no penetration condition
+    Teuchos::RCP<std::set<int> > CondIDs(){return condIDs_;};
+
+    //! check if a no penetration condition exists
+    bool HasCond(){return hascond_;};
+
+  private:
+
+    //! vector containing global IDs of dofs with no penetration condition
+    Teuchos::RCP<std::set<int> > condIDs_;
+
+    //! vector containing no penetration - conditions
+    std::vector<DRT::Condition*> nopencond_;
+
+    //! Extractor used for no penetration condition
+    Teuchos::RCP< LINALG::MapExtractor > nopenetration_;
+
+    //! flag indicating if a no penetration condition exists
+    bool hascond_;
+  };
 }
 
 #endif /* PORO_BASE_H_ */

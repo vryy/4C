@@ -56,8 +56,6 @@
 POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
                                           const Teuchos::ParameterList& timeparams) :
       AlgorithmBase(comm, timeparams),
-      nopencond_(0),
-      condIDs_(Teuchos::null),
       subnodemap_(Teuchos::null),
       subelemap_(Teuchos::null)
 {
@@ -162,7 +160,10 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
   consplitter_ = Teuchos::rcp(new LINALG::MapExtractor(*StructureField()->DofRowMap(),
       StructureField()->DofRowMap(0)));
 
-  FluidField().Discretization()->GetCondition("NoPenetration", nopencond_);
+  std::vector<DRT::Condition*> nopencond;
+  FluidField().Discretization()->GetCondition("NoPenetration", nopencond);
+
+  noPenHandle_ = Teuchos::rcp(new POROELAST::NoPenetrationConditionHandle(nopencond));
 
   //do some checks
   {
@@ -280,23 +281,6 @@ Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::FluidToStructureField(
     return coupfs_->SlaveToMaster(psiextractor_->ExtractCondVector(iv));
   else
     return coupfs_->SlaveToMaster(iv);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void POROELAST::PoroBase::BuidNoPenetrationMap()
-{
-  std::vector<int> condIDs;
-  std::set<int>::iterator it;
-  for(it=condIDs_->begin();it!=condIDs_->end();it++)
-  {
-    condIDs.push_back(*it);
-  }
-  Teuchos::RCP<Epetra_Map> nopendofmap = Teuchos::rcp(new Epetra_Map(-1, condIDs.size(), &condIDs[0], 0, FluidField().Discretization()->Comm()));
-
-  nopenetration_ = Teuchos::rcp(new LINALG::MapExtractor(*FluidField().DofRowMap(), nopendofmap));
-
-  return;
 }
 
 /*----------------------------------------------------------------------*/
@@ -436,4 +420,35 @@ void POROELAST::PoroBase::CalculateSurfPoro(const string& condstring)
     StructureField()->Discretization()->EvaluateCondition(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condstring);
     StructureField()->Discretization()->ClearState();
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void POROELAST::NoPenetrationConditionHandle::BuidNoPenetrationMap(const Epetra_Comm& comm, Teuchos::RCP<const Epetra_Map> dofRowMap)
+{
+  std::vector<int> condIDs;
+  std::set<int>::iterator it;
+  for(it=condIDs_->begin();it!=condIDs_->end();it++)
+  {
+    condIDs.push_back(*it);
+  }
+  Teuchos::RCP<Epetra_Map> nopendofmap = Teuchos::rcp(new Epetra_Map(-1, condIDs.size(), &condIDs[0], 0, comm));
+
+  nopenetration_ = Teuchos::rcp(new LINALG::MapExtractor(*dofRowMap, nopendofmap));
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void POROELAST::NoPenetrationConditionHandle::ApplyCondRHS( Teuchos::RCP<Epetra_Vector> iterinc,
+                                                            Teuchos::RCP<Epetra_Vector> rhs,
+                                                            Teuchos::RCP<Epetra_Vector> cond_rhs)
+{
+  if(hascond_)
+  {
+    const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = nopenetration_->Map(1);
+    LINALG::ApplyDirichlettoSystem(iterinc,rhs,cond_rhs,*nopenetrationmap);
+  }
+  return;
 }

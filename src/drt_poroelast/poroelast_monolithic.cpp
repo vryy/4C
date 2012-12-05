@@ -376,7 +376,7 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   if(k_ff==Teuchos::null)
     dserror("fuid system matrix null pointer!");
 
-  if(nopencond_.size())
+  if(noPenHandle_->HasCond())
   {
     //Evaluate poroelasticity specific conditions
     EvaluateCondition(k_ff, Teuchos::null);
@@ -433,11 +433,7 @@ void POROELAST::Monolithic::SetupRHS(bool firstcall)
   SetupVector(*rhs_, StructureField()->RHS(), FluidField().RHS());
 
   // add rhs terms due to no penetration condition
-  if(nopencond_.size())
-  {
-    const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = nopenetration_->Map(1);
-    LINALG::ApplyDirichlettoSystem(iterinc_,rhs_,cond_rhs_,*nopenetrationmap);
-  }
+  noPenHandle_->ApplyCondRHS(iterinc_,rhs_,cond_rhs_);
 } // SetupRHS()
 
 
@@ -456,8 +452,6 @@ void POROELAST::Monolithic::LinearSolve()
     solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
   }
 
-  //PoroFDCheck();
-  //dserror("checked and ok");
 #ifdef POROELASTBLOCKMATRIXMERGE
   // merge blockmatrix to SparseMatrix and solve
   Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
@@ -1068,11 +1062,11 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
   }
 
   //apply normal flux condition on coupling part
-  if(nopencond_.size())
+  if(noPenHandle_->HasCond())
   {
     k_fs->Complete(StructureField()->SystemMatrix()->RangeMap(), FluidField().SystemMatrix()->RangeMap());
 
-    const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = nopenetration_->Map(1);
+    const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = noPenHandle_->Extractor()->Map(1);
     k_fs->ApplyDirichlet(*nopenetrationmap, false);
 
     cond_rhs_ = Teuchos::rcp(new Epetra_Vector(*DofRowMap(), true));
@@ -1101,6 +1095,7 @@ Teuchos::RCP<Epetra_Map> POROELAST::Monolithic::CombinedDBCMap()
 /*----------------------------------------------------------------------*
  |  check tangent stiffness matrix vie finite differences               |
  *----------------------------------------------------------------------*/
+/*
 void POROELAST::Monolithic::PoroFDCheck()
 {
   cout << "\n******************finite difference check***************" << endl;
@@ -1317,6 +1312,7 @@ void POROELAST::Monolithic::PoroFDCheck()
 
   return;
 }
+*/
 
 /*----------------------------------------------------------------------*
  |   evaluate poroelasticity specific constraint            vuong 03/12 |
@@ -1340,20 +1336,20 @@ void POROELAST::Monolithic::EvaluateCondition(Teuchos::RCP<LINALG::SparseOperato
                         StructureField()->Discretization()->DofRowMap()->NumGlobalElements(),
                         true, true));
 
-  condIDs_ = Teuchos::rcp(new std::set<int>());
-  condIDs_->clear();
+  Teuchos::RCP<std::set<int> > condIDs = noPenHandle_->CondIDs();
+  condIDs->clear();
 
   //evaluate condition on elements and assemble matrixes
   FluidField().EvaluateNoPenetrationCond( Cond_RHS,
                                         ConstraintMatrix,
                                         StructVelConstraintMatrix,
-                                        condIDs_,
+                                        condIDs,
                                         coupltype);
 
   if(coupltype==0)//fluid fluid part
   {
     ConstraintMatrix->Complete();
-    BuidNoPenetrationMap();
+    noPenHandle_->BuidNoPenetrationMap(FluidField().Discretization()->Comm(),FluidField().DofRowMap());
   }
   else //fluid structure part
   {
@@ -1365,7 +1361,7 @@ void POROELAST::Monolithic::EvaluateCondition(Teuchos::RCP<LINALG::SparseOperato
     ConstraintMatrix->Complete(StructureField()->SystemMatrix()->RangeMap(), FluidField().SystemMatrix()->RangeMap());
   }
 
-  const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = nopenetration_->Map(1);
+  const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = noPenHandle_->Extractor()->Map(1);
   Sysmat->ApplyDirichlet(*nopenetrationmap, false);
   Sysmat->UnComplete();
   Sysmat->Add(*ConstraintMatrix, false, 1.0, 1.0);
