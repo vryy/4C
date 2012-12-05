@@ -172,7 +172,7 @@ namespace FSI
     Teuchos::RCP<Epetra_Vector> lambda_;
 
     //! interface force \f$f_{\Gamma,i+1}^{S,n+1}\f$ onto the structure at current NOX iteration \f$i+1\f$
-    Teuchos::RCP<const Epetra_Vector> fgcur_;
+    //Teuchos::RCP<const Epetra_Vector> fgcur_;
 
     //! interface force \f$f_{\Gamma,i}^{S,n+1}\f$ onto the structure at previous NOX iteration \f$i\f$
     //Teuchos::RCP<const Epetra_Vector> fgpre_;

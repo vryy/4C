@@ -470,7 +470,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
   solipre_ = Teuchos::null;
   ddginc_ = LINALG::CreateVector(*StructureField()->Interface()->FSICondMap(),true);
   solgpre_ = Teuchos::null;
-  fgcur_ = LINALG::CreateVector(*StructureField()->Interface()->FSICondMap(),true);
+  //fgcur_ = LINALG::CreateVector(*StructureField()->Interface()->FSICondMap(),true);
   // sgicur_ = Teuchos::null;
   // sggcur_ = Teuchos::null;
 
@@ -478,7 +478,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
   // store interface force onto the structure to know it in the next time step as previous force
   // in order to recover the Lagrange multiplier
   // fgpre_ = fgcur_;
-  fgcur_ = StructureField()->Interface()->ExtractFSICondVector(StructureField()->RHS());
+  //fgcur_ = StructureField()->Interface()->ExtractFSICondVector(StructureField()->RHS());
 
 }
 
@@ -1250,21 +1250,110 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::BuildCovergenceNorms()
    // to enable consistent time integration among the fields
    const double stiparam = StructureField()->TimIntParam();
 
-   // compute the product S_{\Gamma I} \Delta d_I
-   Teuchos::RCP<Epetra_Vector> sgiddi = LINALG::CreateVector(*StructureField()->Interface()->OtherMap(),true); // store the prodcut 'S_{\GammaI} \Delta d_I^{n+1}' in here
-   (sgicur_->EpetraMatrix())->Multiply(false, *ddiinc_, *sgiddi);
+  // some often re-used vectors
+  Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::null;     // stores intermediate result of terms (3)-(8)
+  Teuchos::RCP<Epetra_Vector> auxvec = Teuchos::null;     // just for convenience
+  Teuchos::RCP<Epetra_Vector> auxauxvec = Teuchos::null;  // just for convenience
 
-   // compute the product S_{\Gamma\Gamma} \Delta d_\Gamma
-   Teuchos::RCP<Epetra_Vector> sggddg = LINALG::CreateVector(*StructureField()->Interface()->OtherMap(),true); // store the prodcut '\Delta t / 2 * S_{\Gamma\Gamma} \Delta u_\Gamma^{n+1}' in here
-   (sggcur_->EpetraMatrix())->Multiply(false, *ddginc_, *sggddg);
+  /* Recovery of Lagrange multiplier lambda^{n+1} is done by the following
+   * condensation expression:
+   *
+   * lambda^{n+1} =
+   *
+   * (1)  - stiparam / (1.-stiparam) * lambda^{n}
+   *
+   * (2)  + 1. / (1.-stiparam) * tmpvec
+   *
+   * with tmpvec =
+   *
+   * (3)    r_{\Gamma}^{S,n+1}
+   *
+   * (4)  + S_{\Gamma I} * \Delta d_{I}^{S,n+1}
+   *
+   * (5)  + tau * S_{\Gamma\Gamma} * \Delta u_{\Gamma}^{F,n+1}
+   *
+   * (6)  + dt * S_{\Gamma\Gamma} * u_{\Gamma}^n]
+   *
+   * Remark on term (6):
+   * Term (6) has to be considered only in the first Newton iteration.
+   * Hence, it will usually not be computed since in general we need more
+   * than one nonlinear iteration until convergence.
+   *
+   * Remarks on all terms:
+   * +  Division by (1.0 - stiparam) will be done in the end
+   *    since this is common to all terms
+   * +  tau: time scaling factor for interface time integration (tau = 1/FluidField().TimeScaling())
+   * +  neglecting terms (4)-(6) should not alter the results significantly
+   *    since at the end of the time step the solution increments tend to zero.
+   *
+   *                                                 Matthias Mayr (10/2012)
+   */
 
-   // Update the Lagrange multiplier:
-   /* \lambda^{n+1} =  - a/b*\lambda^n - f_\Gamma^S
-    *                  - S_{\Gamma I} \Delta d_I - S_{\Gamma\Gamma} \Delta d_\Gamma
-    */
-   lambda_->Update(1.0, *fgcur_, -stiparam);
-   lambda_->Update(-1.0, *sgiddi, -1.0, *sggddg, 1.0);
-   lambda_->Scale(1/(1.0-stiparam)); // entire Lagrange multiplier it divided by (1.-stiparam)
+  // ---------Addressing term (1)
+  lambda_->Update(-stiparam,*lambda_,0.0);
+  // ---------End of term (1)
+
+  // ---------Addressing term (3)
+  Teuchos::RCP<Epetra_Vector> structureresidual = StructureField()->Interface()->ExtractFSICondVector(StructureField()->RHS());
+  structureresidual->Scale(-1.0); // invert sign to obtain residual, not rhs
+  tmpvec = Teuchos::rcp(new Epetra_Vector(*structureresidual));
+  // ---------End of term (3)
+
+  /* You might want to comment out terms (4) to (6) since they tend to
+   * introduce oscillations in the Lagrange multiplier field for certain
+   * material properties of the structure.
+   *                                                    Matthias Mayr 11/2012
+  // ---------Addressing term (4)
+  auxvec = Teuchos::rcp(new Epetra_Vector(sgicur_->RangeMap(),true));
+  sgicur_->Apply(*ddiinc_,*auxvec);
+  tmpvec->Update(1.0,*auxvec,1.0);
+  // ---------End of term (4)
+
+  // ---------Addressing term (5)
+  auxvec = Teuchos::rcp(new Epetra_Vector(sggcur_->RangeMap(),true));
+  sggcur_->Apply(*ddginc_,*auxvec);
+  tmpvec->Update(1.0/timescale,*auxvec,1.0);
+  // ---------End of term (5)
+
+  //---------Addressing term (6)
+  if (firstcall_)
+  {
+    auxvec = Teuchos::rcp(new Epetra_Vector(sggprev_->RangeMap(),true));
+    sggprev_->Apply(*FluidToStruct(FluidField().ExtractInterfaceVeln()),*auxvec);
+    tmpvec->Update(Dt(),*auxvec,1.0);
+  }
+  // ---------End of term (6)
+  *
+  */
+
+  // ---------Addressing term (2)
+  lambda_->Update(1.0,*tmpvec,1.0);
+  // ---------End of term (2)
+
+  // finally, divide by -(1.-stiparam) which is common to all terms
+  lambda_->Scale(1./(1.0-stiparam));
+
+  // Finally, the Lagrange multiplier 'lambda_' is recovered here.
+  // It represents nodal forces acting onto the structure.
+
+
+//------ old version changed on 5/12/12  --------------
+//   // compute the product S_{\Gamma I} \Delta d_I
+//   Teuchos::RCP<Epetra_Vector> sgiddi = LINALG::CreateVector(*StructureField()->Interface()->OtherMap(),true); // store the prodcut 'S_{\GammaI} \Delta d_I^{n+1}' in here
+//   (sgicur_->EpetraMatrix())->Multiply(false, *ddiinc_, *sgiddi);
+
+//    // compute the product S_{\Gamma\Gamma} \Delta d_\Gamma
+//    Teuchos::RCP<Epetra_Vector> sggddg = LINALG::CreateVector(*StructureField()->Interface()->OtherMap(),true); // store the prodcut '\Delta t / 2 * S_{\Gamma\Gamma} \Delta u_\Gamma^{n+1}' in here
+//    (sggcur_->EpetraMatrix())->Multiply(false, *ddginc_, *sggddg);
+
+//    // Update the Lagrange multiplier:
+//    /* \lambda^{n+1} =  - a/b*\lambda^n - f_\Gamma^S
+//     *                  - S_{\Gamma I} \Delta d_I - S_{\Gamma\Gamma} \Delta d_\Gamma
+//     */
+//    lambda_->Update(1.0, *fgcur_, -stiparam);
+//    //lambda_->Update(-1.0, *sgiddi, -1.0, *sggddg, 1.0);
+//    lambda_->Scale(1/(1.0-stiparam)); //entire Lagrange multiplier it divided by (1.-stiparam)
+//
 
    return;
 }
