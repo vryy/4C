@@ -3066,7 +3066,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   /*--------------------------------------------------------------------*/
   // no penetration for darcy flow in porous media
 
-  Teuchos::RCP<ConditionDefinition> nopenetration =
+  Teuchos::RCP<ConditionDefinition> nopenetration_surf =
     Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE NORMAL NO PENETRATION CONDITION",
                                          "NoPenetration",
                                          "No Penetration",
@@ -3074,12 +3074,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Surface));
 
-  condlist.push_back(nopenetration);
+  condlist.push_back(nopenetration_surf);
+
+  /*--------------------------------------------------------------------*/
+  // no penetration for darcy flow in porous media
+
+  Teuchos::RCP<ConditionDefinition> nopenetration_line =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE NORMAL NO PENETRATION CONDITION",
+                                         "NoPenetration",
+                                         "No Penetration",
+                                         DRT::Condition::NoPenetration,
+                                         true,
+                                         DRT::Condition::Line));
+
+  condlist.push_back(nopenetration_line);
 
   /*--------------------------------------------------------------------*/
   // condition for evaluation of coupling terms in porous media
 
-  Teuchos::RCP<ConditionDefinition> porocoupling =
+  Teuchos::RCP<ConditionDefinition> porocoupling_vol =
     Teuchos::rcp(new ConditionDefinition("DESIGN VOLUME POROCOUPLING CONDITION",
                                          "PoroCoupling",
                                          "Poro Coupling",
@@ -3087,12 +3100,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Volume));
 
-  condlist.push_back(porocoupling);
+  condlist.push_back(porocoupling_vol);
+
+  /*--------------------------------------------------------------------*/
+  // condition for evaluation of coupling terms in porous media
+
+  Teuchos::RCP<ConditionDefinition> porocoupling_surf =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE POROCOUPLING CONDITION",
+                                         "PoroCoupling",
+                                         "Poro Coupling",
+                                         DRT::Condition::PoroCoupling,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  condlist.push_back(porocoupling_surf);
 
   /*--------------------------------------------------------------------*/
   // condition for evaluation of boundary terms in porous media problems
 
-  Teuchos::RCP<ConditionDefinition> poropartint =
+  Teuchos::RCP<ConditionDefinition> poropartint_surf =
     Teuchos::rcp(new ConditionDefinition("DESIGN SUFACE PORO PARTIAL INTEGRATION",
                                          "PoroPartInt",
                                          "Poro Partial Integration",
@@ -3100,7 +3126,20 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          true,
                                          DRT::Condition::Surface));
 
-  condlist.push_back(poropartint);
+  condlist.push_back(poropartint_surf);
+
+  /*--------------------------------------------------------------------*/
+  // condition for evaluation of boundary terms in porous media problems
+
+  Teuchos::RCP<ConditionDefinition> poropartint_line =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE PORO PARTIAL INTEGRATION",
+                                         "PoroPartInt",
+                                         "Poro Partial Integration",
+                                         DRT::Condition::PoroPartInt,
+                                         true,
+                                         DRT::Condition::Line));
+
+  condlist.push_back(poropartint_line);
 
   /*--------------------------------------------------------------------*/
   return vc;

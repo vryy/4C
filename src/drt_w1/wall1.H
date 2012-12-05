@@ -906,6 +906,15 @@ public:
   /// separately.
   virtual int NumDofPerNode(const DRT::Node& node) const { return 2; }
 
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  {
+    if(nds == 0)
+      return NumDofPerNode(node);
+    else
+    //ask the parent element for the number of dofs of the other dofset
+      return parent_->NumDofPerNode(nds,node);
+  };
+
   /// Get number of degrees of freedom per element
   /// (implements pure virtual DRT::Element)
   ///
@@ -960,8 +969,24 @@ public:
     Epetra_SerialDenseVector& elevector3
   );
 
+  //! Evaluate method on mutliple dofsets for wall element
+  virtual int Evaluate(Teuchos::ParameterList& params,
+                       DRT::Discretization&      discretization,
+                       LocationArray&            la,
+                       Epetra_SerialDenseMatrix& elematrix1,
+                       Epetra_SerialDenseMatrix& elematrix2,
+                       Epetra_SerialDenseVector& elevector1,
+                       Epetra_SerialDenseVector& elevector2,
+                       Epetra_SerialDenseVector& elevector3);
+
   //@}
 
+  //! Return a pointer to the parent element of this boundary element
+  virtual const DRT::Element* ParentElement() const
+  {return parent_;}
+
+  //! Return local surface number
+  const int LLineNumber() const {return lline_;}
 
 private:
 
@@ -972,14 +997,15 @@ private:
     calc_struct_areaconstrstiff,
     calc_struct_centerdisp,
     calc_struct_constrarea,
-    calc_potential_stiff
+    calc_potential_stiff,
+    calc_struct_area_poro
   };
 
   /// don't want = operator
   Wall1Line& operator = (const Wall1Line& old);
 
   /// The parent element of this line
-  DRT::ELEMENTS::Wall1* parent_;
+  DRT::Element* parent_;
   /// The local line number of this line w.r.t to the parent_ element
   int lline_;
 

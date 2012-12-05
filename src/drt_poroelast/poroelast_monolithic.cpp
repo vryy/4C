@@ -69,48 +69,6 @@ POROELAST::Monolithic::Monolithic(const Epetra_Comm& comm,
 
   strmethodname_ = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP");
 
-  //  solver
-#ifdef POROELASTBLOCKMATRIXMERGE
-  // create a linear solver
-  // get UMFPACK...
-  // get dynamic section of poroelasticity
-  const Teuchos::ParameterList& poroelastdyn = DRT::Problem::Instance()->PoroelastDynamicParams();
-  // get the solver number used for linear poroelasticity solver
-  const int linsolvernumber = poroelastdyn.get<int>("LINEAR_SOLVER");
-  // check if the poroelasticity solver has a valid solver number
-  if (linsolvernumber == (-1))
-    dserror("no linear solver defined for poroelasticity. Please set LINEAR_SOLVER in POROELASTICITY DYNAMIC to a valid number!");
-  const Teuchos::ParameterList& solverparams =
-    DRT::Problem::Instance()->SolverParams(linsolvernumber);
-  const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
-    solverparams, "SOLVER");
-  if (solvertype != INPAR::SOLVER::umfpack)
-    dserror("umfpack solver expected");
-
-  solver_ = Teuchos::rcp(new LINALG::Solver( solverparams,
-                                    Comm(),
-                                    DRT::Problem::Instance()->ErrorFile()->Handle())
-               );
-
-#else
-  //dserror("implicit solver not implemented");
-  // create a linear solver
-  CreateLinearSolver();
-#endif
-
-  // Get the parameters for the Newton iteration
-  itermax_ = poroelastdyn.get<int> ("ITEMAX");
-  itermin_ = poroelastdyn.get<int> ("ITEMIN");
-  normtypeinc_ = DRT::INPUT::IntegralValue<INPAR::POROELAST::ConvNorm>(
-      poroelastdyn, "NORM_INC");
-  normtypefres_ = DRT::INPUT::IntegralValue<INPAR::POROELAST::ConvNorm>(
-      poroelastdyn, "NORM_RESF");
-  combincfres_ = DRT::INPUT::IntegralValue<INPAR::POROELAST::BinaryOp>(
-      poroelastdyn, "NORMCOMBI_RESFINC");
-
-  tolinc_ = poroelastdyn.get<double> ("INCTOL");
-  tolfres_ = poroelastdyn.get<double> ("RESTOL");
-
 }
 
 
@@ -343,9 +301,12 @@ void POROELAST::Monolithic::SetupSystem()
   SetDofRowMaps(vecSpaces);
 
   // initialize Poroelasticity-systemmatrix_
-  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<
-      LINALG::DefaultBlockMatrixStrategy>(Extractor(), Extractor(), 81, false,
-      true));
+  systemmatrix_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
+                                      Extractor(),
+                                      Extractor(),
+                                      81,
+                                      false,
+                                      true));
 
   k_sf_ = Teuchos::rcp(new LINALG::SparseMatrix(
                       *(StructureField()->DofRowMap()), 81, true, true));
@@ -385,17 +346,8 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   // matrix W
   Teuchos::RCP<LINALG::SparseMatrix> k_ss = StructureField()->SystemMatrix();
 
-  // build block matrix
-  // The maps of the block matrix have to match the maps of the blocks we
-  // insert here.
-
-  // uncomplete because the fluid interface can have more connections than the
-  // structural one. (Tet elements in fluid can cause this.) We should do
-  // this just once...
-  k_ss->UnComplete();
-
-  // assign structure part to the TSI matrix
-  mat.Assign(0, 0, View, *k_ss);
+  if(k_ss==Teuchos::null)
+    dserror("structure system matrix null pointer!");
 
   /*----------------------------------------------------------------------*/
   // structural part k_sf (3nxn)
@@ -409,10 +361,7 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
 
   // Uncomplete mechanical-fluid matrix to be able to deal with slightly
   // defective interface meshes.
-  k_sf->UnComplete();
 
-  // assign coupling part to the Poroelasticity matrix
-  mat.Assign(0, 1, View, *(k_sf));
 
   /*----------------------------------------------------------------------*/
   // pure fluid part k_ff ( (3n+1)x(3n+1) )
@@ -424,18 +373,17 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   // matrix W
   Teuchos::RCP<LINALG::SparseMatrix> k_ff = FluidField().SystemMatrix();
 
+  if(k_ff==Teuchos::null)
+    dserror("fuid system matrix null pointer!");
+
   if(nopencond_.size())
   {
     //Evaluate poroelasticity specific conditions
     EvaluateCondition(k_ff, Teuchos::null);
   }
 
-  // Uncomplete fluid matrix to be able to deal with slightly defective
-  // interface meshes.
-  k_ff->UnComplete();
-
-  // assign fluid part to the poroelasticity matrix
-  mat.Assign(1, 1, View, *(k_ff));
+  if(k_ff==Teuchos::null)
+    dserror("fuid system matrix null pointer!");
 
   /*----------------------------------------------------------------------*/
   // fluid part k_fs ( (3n+1)x3n )
@@ -447,16 +395,27 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   // call the element and calculate the matrix block
   ApplyFluidCouplMatrix(k_fs);
 
-  // Uncomplete fluid matrix to be able to deal with slightly defective
-  // interface meshes.
+  // uncomplete because the fluid interface can have more connections than the
+  // structural one. (Tet elements in fluid can cause this.) We should do
+  // this just once...
+  k_ss->UnComplete();
+  k_sf->UnComplete();
   k_fs->UnComplete();
+  k_ff->UnComplete();
 
+  // assign structure part to the Poroelasticity matrix
+  mat.Assign(0, 0, View, *k_ss);
+  // assign coupling part to the Poroelasticity matrix
+  mat.Assign(0, 1, View, *(k_sf));
+  // assign fluid part to the poroelasticity matrix
+  mat.Assign(1, 1, View, *(k_ff));
   // assign coupling part to the Poroelasticity matrix
   mat.Assign(1, 0, View, *(k_fs));
 
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
   mat.Complete();
+
 
 } // SetupSystemMatrix
 
@@ -472,6 +431,13 @@ void POROELAST::Monolithic::SetupRHS(bool firstcall)
 
   // fill the Poroelasticity rhs vector rhs_ with the single field rhss
   SetupVector(*rhs_, StructureField()->RHS(), FluidField().RHS());
+
+  // add rhs terms due to no penetration condition
+  if(nopencond_.size())
+  {
+    const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = nopenetration_->Map(1);
+    LINALG::ApplyDirichlettoSystem(iterinc_,rhs_,cond_rhs_,*nopenetrationmap);
+  }
 } // SetupRHS()
 
 
@@ -490,6 +456,8 @@ void POROELAST::Monolithic::LinearSolve()
     solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
   }
 
+  //PoroFDCheck();
+  //dserror("checked and ok");
 #ifdef POROELASTBLOCKMATRIXMERGE
   // merge blockmatrix to SparseMatrix and solve
   Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
@@ -505,12 +473,6 @@ void POROELAST::Monolithic::LinearSolve()
       *CombinedDBCMap()
       );
   //  if ( Comm().MyPID()==0 ) { cout << " DBC applied to system" << endl; }
-
-  if(nopencond_.size())
-  {
-    const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = nopenetration_->Map(1);
-    LINALG::ApplyDirichlettoSystem(iterinc_,rhs_,cond_rhs_,*nopenetrationmap);
-  }
 
   // standard solver call
   solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
@@ -532,12 +494,6 @@ void POROELAST::Monolithic::LinearSolve()
     zeros_,
     *CombinedDBCMap()
     );
-
-  if(nopencond_.size())
-  {
-    const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = nopenetration_.Map(1);
-    LINALG::ApplyDirichlettoSystem(iterinc_,rhs_,cond_rhs_,*nopenetrationmap);
-  }
 
   solver_->Solve(
              systemmatrix_->EpetraOperator(),
@@ -671,7 +627,7 @@ void POROELAST::Monolithic::InitialGuess(Teuchos::RCP<Epetra_Vector> ig)
 {
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::Monolithic::InitialGuess");
 
-  // InitalGuess() is called of the single fields and results are put in TSI
+  // InitalGuess() is called of the single fields and results are put in
   // increment vector ig
   SetupVector(*ig,
       // returns residual displacements \f$\Delta D_{n+1}^{<k>}\f$ - disi_
@@ -1061,7 +1017,6 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
     break;
   }
   }
-
   FluidField().Discretization()->ClearState();
 
   // set general vector values needed by elements
@@ -1100,7 +1055,7 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
   FluidField().Discretization()->EvaluateCondition( fparams, fluidstrategy,"PoroCoupling" );
 
   //evaluate coupling terms from partial integration of continuity equation
-  vector<DRT::Condition*> poroPartInt;
+  std::vector<DRT::Condition*> poroPartInt;
   FluidField().Discretization()->GetCondition("PoroPartInt",poroPartInt);
   if(poroPartInt.size())
   {
@@ -1112,12 +1067,11 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
     FluidField().Discretization()->EvaluateCondition( params, fluidstrategy,"PoroPartInt" );
   }
 
-  FluidField().Discretization()->ClearState();
-
   //apply normal flux condition on coupling part
   if(nopencond_.size())
   {
     k_fs->Complete(StructureField()->SystemMatrix()->RangeMap(), FluidField().SystemMatrix()->RangeMap());
+
     const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = nopenetration_->Map(1);
     k_fs->ApplyDirichlet(*nopenetrationmap, false);
 
@@ -1126,6 +1080,8 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
 
     EvaluateCondition(k_fs,cond_rhs_,1);
   }
+
+  FluidField().Discretization()->ClearState();
 }    // ApplyFluidCouplMatrix()
 
 /*----------------------------------------------------------------------*
@@ -1145,13 +1101,12 @@ Teuchos::RCP<Epetra_Map> POROELAST::Monolithic::CombinedDBCMap()
 /*----------------------------------------------------------------------*
  |  check tangent stiffness matrix vie finite differences               |
  *----------------------------------------------------------------------*/
-/*
 void POROELAST::Monolithic::PoroFDCheck()
 {
   cout << "\n******************finite difference check***************" << endl;
 
-  int dof_struct = (StructureField()->Discretization()->NumGlobalNodes()) * 3;
-  int dof_fluid = (FluidField().Discretization()->NumGlobalNodes()) * 4;
+  int dof_struct = (StructureField()->Discretization()->NumGlobalNodes()) * 2;
+  int dof_fluid = (FluidField().Discretization()->NumGlobalNodes()) * 3;
 
   cout << "structure field has " << dof_struct << " DOFs" << endl;
   cout << "fluid field has " << dof_fluid << " DOFs" << endl;
@@ -1214,11 +1169,7 @@ void POROELAST::Monolithic::PoroFDCheck()
 
     Evaluate(iterinc);
     SetupRHS();
-    if(nopencond_.size())
-    {
-      const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = nopenetration_.Map(1);
-      LINALG::ApplyDirichlettoSystem(iterinc_,rhs_,cond_rhs_,*nopenetrationmap);
-    }
+
     rhs_copy->Update(1.0, *rhs_, 0.0);
 
     iterinc_->PutScalar(0.0); // Useful? depends on solver and more
@@ -1361,10 +1312,11 @@ void POROELAST::Monolithic::PoroFDCheck()
     cout << "******************finite difference check done***************\n\n"
         << endl;
   }
+  else
+    dserror("PoroFDCheck failed");
 
   return;
 }
-*/
 
 /*----------------------------------------------------------------------*
  |   evaluate poroelasticity specific constraint            vuong 03/12 |
@@ -1524,4 +1476,54 @@ void POROELAST::Monolithic::BuildCovergenceNorms()
   interincfpres->Norm2(&normincfluidpres_);
 
   return;
+}
+
+/*----------------------------------------------------------------------*
+ | setup solver for monolithic system                    vuong 01/12     |
+ *----------------------------------------------------------------------*/
+bool POROELAST::Monolithic::SetupSolver()
+{
+  //  solver
+#ifdef POROELASTBLOCKMATRIXMERGE
+  // create a linear solver
+  // get UMFPACK...
+  // get dynamic section of poroelasticity
+  const Teuchos::ParameterList& poroelastdyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+  // get the solver number used for linear poroelasticity solver
+  const int linsolvernumber = poroelastdyn.get<int>("LINEAR_SOLVER");
+  // check if the poroelasticity solver has a valid solver number
+  if (linsolvernumber == (-1))
+    dserror("no linear solver defined for poroelasticity. Please set LINEAR_SOLVER in POROELASTICITY DYNAMIC to a valid number!");
+  const Teuchos::ParameterList& solverparams =
+    DRT::Problem::Instance()->SolverParams(linsolvernumber);
+  const int solvertype = DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(
+    solverparams, "SOLVER");
+  if (solvertype != INPAR::SOLVER::umfpack)
+    dserror("umfpack solver expected");
+
+  solver_ = Teuchos::rcp(new LINALG::Solver( solverparams,
+                                    Comm(),
+                                    DRT::Problem::Instance()->ErrorFile()->Handle())
+               );
+
+#else
+  //dserror("implicit solver not implemented");
+  // create a linear solver
+  CreateLinearSolver();
+#endif
+
+  // Get the parameters for the Newton iteration
+  itermax_ = poroelastdyn.get<int> ("ITEMAX");
+  itermin_ = poroelastdyn.get<int> ("ITEMIN");
+  normtypeinc_ = DRT::INPUT::IntegralValue<INPAR::POROELAST::ConvNorm>(
+      poroelastdyn, "NORM_INC");
+  normtypefres_ = DRT::INPUT::IntegralValue<INPAR::POROELAST::ConvNorm>(
+      poroelastdyn, "NORM_RESF");
+  combincfres_ = DRT::INPUT::IntegralValue<INPAR::POROELAST::BinaryOp>(
+      poroelastdyn, "NORMCOMBI_RESFINC");
+
+  tolinc_ = poroelastdyn.get<double> ("INCTOL");
+  tolfres_ = poroelastdyn.get<double> ("RESTOL");
+
+  return true;
 }

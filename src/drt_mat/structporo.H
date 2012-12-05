@@ -253,7 +253,7 @@ namespace MAT
         return porosity_->at(gp);
       }
 
-      void   SetDPoroDtAtGP(std::vector<double> dporodt_gp);
+      void SetDPoroDtAtGP(std::vector<double> dporodt_gp);
 
       /// Return derivative of porosity wrt time evaluated at some gauss point.           %urrecha 04/12
       double GetDPoroDtAtGP(int gp) const
@@ -261,23 +261,21 @@ namespace MAT
         return dporodt_->at(gp);
       }
 
+      /// Set porosity gradient evaluated at gauss points
       void   SetGradPorosityAtGP(std::vector< LINALG::Matrix<3,1> > gradporosity_gp);
-
       void   SetGradPorosityAtGP(std::vector< LINALG::Matrix<2,1> > gradporosity_gp);
 
+      /// Set gradient of jacobian evaluated at gauss points
       void   SetGradJAtGP(std::vector< LINALG::Matrix<1,3> > gradporosity_gp);
-
-      void   SetGradJAtGP(std::vector< LINALG::Matrix<1,2> > gradporosity_gp){dserror("no implemented");};
+      void   SetGradJAtGP(std::vector< LINALG::Matrix<1,2> > gradporosity_gp);
 
       /// Return porosity gradient evaluated at some gauss point.  %urrecha 04/12
       void GetGradPorosityAtGP(LINALG::Matrix<3,1>& gradporosity, int gp) const;
       void GetGradPorosityAtGP(LINALG::Matrix<2,1>& gradporosity, int gp) const;
 
-      /// Return porosity gradient evaluated at some gauss point.  %urrecha 04/12
-      LINALG::Matrix<1,3> GetGradJAtGP(int gp) const
-      {
-        return gradJ_->at(gp);
-      }
+      /// Return gradient of jacobian evaluated at some gauss point.  %urrecha 04/12
+      void GetGradJAtGP(LINALG::Matrix<1,3>& gradJ, int gp) const;
+      void GetGradJAtGP(LINALG::Matrix<1,2>& gradJ, int gp) const;
 
 
     private:
@@ -300,7 +298,11 @@ namespace MAT
       /// porosity gradient at gauss points
       Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > gradporosity_;
 
+      /// gradient of jacobian at gauss points
       Teuchos::RCP<std::vector<LINALG::Matrix<1,3> > > gradJ_;
+
+      /// flag indicating initialization of attributes
+      bool isinitialized_;
 
   };
 

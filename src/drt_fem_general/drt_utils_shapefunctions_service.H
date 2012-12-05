@@ -47,6 +47,8 @@ bool secondDerivativesZero()
   bool hoele = true;
   switch (DISTYPE)
   {
+  case DRT::Element::quad4:
+  case DRT::Element::quad9:
   case DRT::Element::hex8:
   case DRT::Element::hex20:
   case DRT::Element::hex27:

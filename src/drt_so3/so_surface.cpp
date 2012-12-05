@@ -147,5 +147,9 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::StructuralSurface::Lines
      <DRT::ELEMENTS::StructuralLine,DRT::ELEMENTS::StructuralSurface>(DRT::UTILS::buildLines,this);
 }
 
-
-
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::StructuralSurface::NumLine() const
+{
+  return DRT::UTILS::getNumberOfElementLines(Shape());
+}

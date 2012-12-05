@@ -25,7 +25,7 @@
 #include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------*
- |                                                                      |
+ | forward declarations                                                 |
  *----------------------------------------------------------------------*/
 namespace DRT
 {
@@ -45,9 +45,11 @@ namespace ADAPTER
   class FSIStructureWrapper;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
 namespace POROELAST
 {
-  /// poro algorithm base
+  /// base class for porous media algorithm
   class PoroBase: public ADAPTER::AlgorithmBase
   {
     public:
@@ -64,7 +66,7 @@ namespace POROELAST
       //! outer level time loop
       virtual void TimeLoop();
 
-      /// initialise system
+      /// initialize system
       virtual void SetupSystem() = 0;
 
       //! perform result tests
@@ -78,6 +80,9 @@ namespace POROELAST
 
       //! solve time step (depending on algorithm)
       virtual void Solve() = 0;
+
+      /// setup solver (for monolithic only)
+      virtual bool SetupSolver(){return false;};
 
       //! @name Time loop building blocks
 
@@ -95,17 +100,8 @@ namespace POROELAST
 
       //@}
 
-      /// HACK
+      //! Evaluate porosity at surface
       void CalculateSurfPoro(const string& condstring);
-
-      //! export node-based multivector to column map and add it to a parameter
-      //list --> copy from scatra!!! move this to drt_lib eventually
-      void AddMultiVectorToParameterList(
-         Teuchos::ParameterList&          p,    //!< parameter list
-         const std::string                name, //!< naming string for added vector
-         Teuchos::RCP<Epetra_MultiVector> vec,   //!< Epetra_MultiVector to be added
-         Teuchos::RCP<DRT::Discretization> discret //!< discretization
-        );
 
     protected:
 
@@ -146,7 +142,7 @@ namespace POROELAST
       //! Extractor used for no penetration condition
       Teuchos::RCP< LINALG::MapExtractor > nopenetration_;
 
-      //! Extractor used for no penetration condition
+      //! Extractor used for poro structure interaction
       Teuchos::RCP< LINALG::MapExtractor > psiextractor_;
 
       //! vector containing no penetration - conditions
@@ -155,40 +151,33 @@ namespace POROELAST
       //! vector containing global IDs of dofs with no penetration condition
       Teuchos::RCP<std::set<int> >condIDs_;
 
-      //Teuchos::RCP<Epetra_Vector> fluidveln_; //!< global fluid velocities and pressures
-
-     // Teuchos::RCP<Epetra_Vector> veln_; //!< global structure velocities
-      //!< \f${V}_{n+1}\f$
-      //!< at \f$t_{n+1}\f$
-      //Teuchos::RCP<Epetra_Vector> dispn_; //!< global structure displacements
-      //!< \f${d}_{n+1}\f$
-      //!< at \f$t_{n+1}\f$
-
     private:
       //! check for submeshes and build of subnode and subelement map if necessary
       bool BuildSubMaps();
 
-      //! coupling of fluid and structure (whole field)
-      Teuchos::RCP<ADAPTER::Coupling> coupfs_;
-
+      //!map containing global IDs of nodes belonging to submesh
       Teuchos::RCP<Epetra_Map> subnodemap_;
 
+      //!map containing global IDs of elements belonging to submesh
       Teuchos::RCP<Epetra_Map> subelemap_;
-
-      //! @name Underlying fields
-
-      //! underlying structure of the FSI problem
-      Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    structure_;
-
-      //! underlying fluid of the FSI problem
-      Teuchos::RCP< ::ADAPTER::FluidPoro>        fluid_;
-
-      //@}
 
       //!flag indicating not fully overlapping fluid and structure discretization
       bool submeshes_;
 
-  }; // MonolithicBase
+      //! coupling of fluid and structure (whole field)
+      Teuchos::RCP<ADAPTER::Coupling> coupfs_;
+
+      //! @name Underlying fields
+
+      //! underlying structure of the poro problem
+      Teuchos::RCP< ::ADAPTER::FSIStructureWrapper>    structure_;
+
+      //! underlying fluid of the poro problem
+      Teuchos::RCP< ::ADAPTER::FluidPoro>        fluid_;
+
+      //@}
+
+  }; // PoroBase
 }
 
 #endif /* PORO_BASE_H_ */

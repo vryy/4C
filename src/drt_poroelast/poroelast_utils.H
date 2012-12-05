@@ -69,7 +69,7 @@ namespace POROELAST
     }; // class PoroelastCloneStrategy
 
     /// setup poro discretization,i.e. clone the structural discretization
-    void SetupPoro(const Epetra_Comm& comm);
+    void SetupPoro();
 
     /// setup poro discretization,i.e. clone the structural discretization
     Teuchos::RCP<POROELAST::PoroBase> CreatePoroAlgorithm(

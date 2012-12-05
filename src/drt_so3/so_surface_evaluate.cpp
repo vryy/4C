@@ -21,6 +21,7 @@ Maintainer: Michael Gee
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_boundary_integration.H"
 #include "../drt_surfstress/drt_surfstress_manager.H"
 #include "../drt_potential/drt_potential_manager.H"
 #include "Sacado.hpp"
@@ -1390,10 +1391,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_area_poro")        act = StructuralSurface::calc_struct_area_poro;
   else
-  {
-    cout << action << endl;
     dserror("Unknown type of action for StructuralSurface");
-  }
 
   // what the element has to do
   switch(act)
@@ -1455,20 +1453,21 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
       (mypres)(inode,0) = myvelpres[numdim+(inode*numdofpernode)];
     }
 
+    Epetra_SerialDenseMatrix pqxg(intpoints.nquad,3);
+
+    DRT::UTILS::SurfaceGPToParentGP(pqxg     ,
+                                    intpoints,
+                                    parentele->Shape() ,
+                                    Shape()  ,
+                                    LSurfNumber());
+
     for (int gp=0; gp<ngp; ++gp)
     {
-      double e0 = 0.;
-      double e1 = 0.;
-      double e2 = 0.;
-
-      DRT::UTILS::getLocalCoordinatesOfParentElement(e0,e1,e2,
-                                         intpoints.qxg[gp][0],intpoints.qxg[gp][1],LSurfNumber(),parentele->Shape());
-
       // get shape functions and derivatives in the plane of the element
       LINALG::SerialDenseVector  funct(nenparent);
       LINALG::SerialDenseMatrix  deriv(3,nenparent);
-      DRT::UTILS::shape_function_3D(funct,e0,e1,e2,parentele->Shape());
-      DRT::UTILS::shape_function_3D_deriv1(deriv,e0,e1,e2,parentele->Shape());
+      DRT::UTILS::shape_function_3D(funct,pqxg(gp,0),pqxg(gp,1),pqxg(gp,2),parentele->Shape());
+      DRT::UTILS::shape_function_3D_deriv1(deriv,pqxg(gp,0),pqxg(gp,1),pqxg(gp,2),parentele->Shape());
 
       LINALG::SerialDenseVector  funct2D(numnode);
       DRT::UTILS::shape_function_2D(funct2D,intpoints.qxg[gp][0],intpoints.qxg[gp][1],Shape());

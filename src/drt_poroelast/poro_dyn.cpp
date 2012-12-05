@@ -36,7 +36,7 @@ void poroelast_drt()
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
   // setup of the discretizations, including clone strategy
-  POROELAST::UTILS::SetupPoro(comm);
+  POROELAST::UTILS::SetupPoro();
 
   // access the problem-specific parameter list
   const Teuchos::ParameterList& poroelastdyn =

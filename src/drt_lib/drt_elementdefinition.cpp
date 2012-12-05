@@ -54,6 +54,7 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"SOLID3");
   PrintElementLines(stream,"SOLIDH20");
   PrintElementLines(stream,"SOLIDH27");
+  PrintElementLines(stream,"SOLIDH27PORO");
   PrintElementLines(stream,"SONURBS27");
   PrintElementLines(stream,"SOLIDH8");
   PrintElementLines(stream,"SOLIDH8P1J1");
@@ -75,6 +76,8 @@ void DRT::INPUT::ElementDefinition::PrintElementDatHeaderToStream(std::ostream& 
   PrintElementLines(stream,"TRUSS2");
   PrintElementLines(stream,"TRUSS3");
   PrintElementLines(stream,"WALL");
+  PrintElementLines(stream,"WALLQ4PORO");
+  PrintElementLines(stream,"WALLQ9PORO");
 
 
   PrintSectionHeader(stream,"FLUID ELEMENTS");

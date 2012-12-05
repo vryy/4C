@@ -32,6 +32,7 @@
 
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_so3/so3_poro.H"
+#include "../drt_w1/wall1_poro.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -122,7 +123,7 @@ bool POROELAST::UTILS::PoroelastCloneStrategy::DetermineEleType(
   if (CheckPoro(actele))
   {
     // we only support fluid elements here
-    eletype.push_back("FLUID3");
+    eletype.push_back("FLUID");
     return true;
   }
 
@@ -154,13 +155,25 @@ bool POROELAST::UTILS::PoroelastCloneStrategy::CheckPoro(
   if (poroelehex27!=NULL)
     return true;
 
+  //check for Wall Q4
+  DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>* poroelewallq4 =
+      dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad4>*>(actele);
+  if (poroelewallq4!=NULL)
+    return true;
+
+  //check for Wall Q9
+  DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>* poroelewallq9 =
+      dynamic_cast<DRT::ELEMENTS::Wall1_Poro<DRT::Element::quad9>*>(actele);
+  if (poroelewallq9!=NULL)
+    return true;
+
   return false;
 }
 
 /*----------------------------------------------------------------------*
  | setup Poro discretization                                            |
  *----------------------------------------------------------------------*/
-void POROELAST::UTILS::SetupPoro(const Epetra_Comm& comm)
+void POROELAST::UTILS::SetupPoro()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -182,11 +195,8 @@ void POROELAST::UTILS::SetupPoro(const Epetra_Comm& comm)
     dserror("Structure discretization is empty!");
 
   // create fluid elements if the fluid discretization is empty
-  // create fluid elements if the fluid discretization is empty
   if (fluiddis->NumGlobalNodes()==0)
-  {
     DRT::UTILS::CloneDiscretization<POROELAST::UTILS::PoroelastCloneStrategy>(structdis,fluiddis);
-  }
   else
     dserror("Structure AND Fluid discretization present. This is not supported.");
 }
@@ -205,9 +215,12 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
   const Teuchos::ParameterList& sdynparams =
       problem->StructuralDynamicParams();
 
-  std::string damping = sdynparams.get<std::string>("DAMPING");
-  if(damping != "Material")
-    dserror("Material damping has to be used for porous media! Set DAMPING to Material in the STRUCTURAL DYNAMIC section.");
+  //do some checks
+  {
+    std::string damping = sdynparams.get<std::string>("DAMPING");
+    if(damping != "Material")
+      dserror("Material damping has to be used for porous media! Set DAMPING to 'Material' in the STRUCTURAL DYNAMIC section.");
+  }
 
   const Teuchos::ParameterList& poroelastdyn  = problem->PoroelastDynamicParams();
 
@@ -240,14 +253,17 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
     }
     case INPAR::POROELAST::Partitioned:
     {
-      // create an POROELAST::Monolithic instance
+      // create an POROELAST::Partitioned instance
       poroalgo = Teuchos::rcp(new POROELAST::Partitioned(comm, timeparams));
       break;
-    } // monolithic case
+    } // partitioned case
     default:
       dserror("Unknown solutiontype for poroelasticity: %d",coupling);
       break;
   } // end switch
+
+  //setup solver (if needed)
+  poroalgo->SetupSolver();
 
   return poroalgo;
 }

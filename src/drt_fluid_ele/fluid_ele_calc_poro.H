@@ -210,6 +210,21 @@ private:
       const double & timefac, const double &                            timefacfac
       );
 
+  //! linearisation in the case of mesh motion 2-D for Poroelasticity
+  void LinMeshMotion_2D_OD(
+      LINALG::Matrix<(my::nsd_ + 1) * my::nen_, (my::nsd_) * my::nen_>& emesh,
+      const LINALG::Matrix<my::nsd_, my::nen_>&                         evelaf,
+      const LINALG::Matrix<my::nsd_, my::nen_>&                         egridv,
+      const double &                                                    press,
+      const double &                                                    press_dot,
+      const double &                                                    porosity,
+      const double &                                                    dphi_dp,
+      const double &                                                    dphi_dJ,
+      const double &                                                    J,
+      LINALG::Matrix<1, my::nsd_>&                                      gradJ,
+      const double & timefac, const double &                            timefacfac
+      );
+
   //! Compute element matrix entries: PSPG
   void PSPG(
       LINALG::Matrix<my::nen_, my::nen_*my::nsd_> &  estif_q_u,      ///< block (weighting function q x u)
@@ -221,6 +236,13 @@ private:
       const double &                                 timefacfacpre,
       const double &                                 rhsfac       ///< right-hand-side factor for residuals
       );
+
+  void CalcAuxiliaryDerivatives(const LINALG::Matrix<my::nsd_, my::nen_>& edispnp,
+                                const LINALG::Matrix<my::nsd_,my::nsd_>& defgrd,
+                                const LINALG::Matrix<my::nsd_,my::nsd_>& defgrd_inv,
+                                LINALG::Matrix<my::nsd_*my::nsd_,my::nen_>& N_X_x,
+                                LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>& F_x,
+                                LINALG::Matrix<my::nsd_,my::nsd_*my::nen_>& Finv_N_X_x);
 
   double visceff_;
 

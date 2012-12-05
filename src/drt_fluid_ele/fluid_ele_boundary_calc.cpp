@@ -4026,8 +4026,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
                                                  Epetra_SerialDenseVector&        elevec1)
 {
   // This function is only implemented for 3D
-  if(bdrynsd_!=2)
-    dserror("NoPenetration is only implemented for 3D!");
+  if(bdrynsd_!=2 and bdrynsd_!=1)
+    dserror("NoPenetration is only implemented for 3D and 2D!");
+
   // get integration rule
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
@@ -4042,7 +4043,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
 
   Teuchos::RCP<std::vector<int> >mycondIDs;
   mycondIDs = Teuchos::rcp(new std::vector<int>);
-  //Teuchos::RCP<std::set<int> >mycondIDs = params.get<Teuchos::RCP< std::set<int> > >("mycondIDs",Teuchos::null);
 
   if (ele->ParentElement()->IsAle())
   {
@@ -4052,16 +4052,12 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
       mydispnp.resize(lm.size());
       DRT::UTILS::ExtractMyValues(*dispnp,mydispnp,lm);
     }
-    dsassert(mydispnp.size()!=0,"no displacement values for boudary element");
+    dsassert(mydispnp.size()!=0,"no displacement values for boundary element");
 
     // Add the deformation of the ALE mesh to the nodes coordinates
     for (int inode=0;inode<bdrynen_;++inode)
-    {
       for (int idim=0; idim<nsd_; ++idim)
-      {
         xyze_(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
-      }
-    }
   }
 
   //calculate normal
@@ -4078,9 +4074,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
     for (int inode=0; inode<bdrynen_; ++inode)
     {
       for(int idim=0; idim<nsd_; ++idim)
-      {
         normal(inode*numdofpernode_+idim) += unitnormal_(idim) * funct_(inode) * fac_;
-      }
       // pressure dof is set to zero
       normal(inode*numdofpernode_+(nsd_)) = 0.0;
     }
@@ -4106,9 +4100,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
         if(isset==false and abs(nodenormal(idof)) > 0.5)
         {
           for (int idof2=0;idof2<numdofpernode_;idof2++)
-          {
               elemat1(inode*numdofpernode_+idof,inode*numdofpernode_+idof2) += nodenormal(idof2);
-          }
           elevec1(inode*numdofpernode_+idof) = 0.0;
           mycondIDs->push_back(lm[inode*numdofpernode_+idof]);
           isset=true;
@@ -4120,7 +4112,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
   }
   else if (coupling == "fluid structure")
   {
-   // double timescale = params.get<double>("timescale",-1.0);
 
     // extract local values from the global vectors
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
@@ -4142,16 +4133,14 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
 
     // split velocity and pressure, insert into element arrays
     for (int inode=0;inode<bdrynen_;inode++)
-    {
       for (int idim=0; idim< nsd_; idim++)
       {
         evelnp(idim,inode) = myvelnp[idim+(inode*numdofpernode_)];
         egridvel(idim,inode) = mygridvel[idim+(inode*numdofpernode_)];
       }
-    }
 
     //  derivatives of surface normals wrt mesh displacements
-    LINALG::Matrix<3,bdrynen_*3> normalderiv(true);
+    LINALG::Matrix<nsd_,bdrynen_*nsd_> normalderiv(true);
 
     for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
     {
@@ -4169,26 +4158,38 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
       // Therefore it cancels out!!
       const double fac = intpoints.IP().qwgt[gpid];
 
-      for (int node=0;node<bdrynen_;++node)
-      {
-        normalderiv(0,3*node)   += 0.;
-        normalderiv(0,3*node+1) += (deriv_(0,node)*dxyzdrs(1,2)-deriv_(1,node)*dxyzdrs(0,2)) * funct_(node) * fac;
-        normalderiv(0,3*node+2) += (deriv_(1,node)*dxyzdrs(0,1)-deriv_(0,node)*dxyzdrs(1,1)) * funct_(node) * fac;
+      if(nsd_==3)
+        for (int node=0;node<bdrynen_;++node)
+        {
+          normalderiv(0,nsd_*node)   += 0.;
+          normalderiv(0,nsd_*node+1) += (deriv_(0,node)*dxyzdrs(1,2)-deriv_(1,node)*dxyzdrs(0,2)) * funct_(node) * fac;
+          normalderiv(0,nsd_*node+2) += (deriv_(1,node)*dxyzdrs(0,1)-deriv_(0,node)*dxyzdrs(1,1)) * funct_(node) * fac;
 
-        normalderiv(1,3*node)   += (deriv_(1,node)*dxyzdrs(0,2)-deriv_(0,node)*dxyzdrs(1,2)) * funct_(node) * fac;
-        normalderiv(1,3*node+1) += 0.;
-        normalderiv(1,3*node+2) += (deriv_(0,node)*dxyzdrs(1,0)-deriv_(1,node)*dxyzdrs(0,0)) * funct_(node) * fac;
+          normalderiv(1,nsd_*node)   += (deriv_(1,node)*dxyzdrs(0,2)-deriv_(0,node)*dxyzdrs(1,2)) * funct_(node) * fac;
+          normalderiv(1,nsd_*node+1) += 0.;
+          normalderiv(1,nsd_*node+2) += (deriv_(0,node)*dxyzdrs(1,0)-deriv_(1,node)*dxyzdrs(0,0)) * funct_(node) * fac;
 
-        normalderiv(2,3*node)   += (deriv_(0,node)*dxyzdrs(1,1)-deriv_(1,node)*dxyzdrs(0,1)) * funct_(node) * fac;
-        normalderiv(2,3*node+1) += (deriv_(1,node)*dxyzdrs(0,0)-deriv_(0,node)*dxyzdrs(1,0)) * funct_(node) * fac;
-        normalderiv(2,3*node+2) += 0.;
-      }
+          normalderiv(2,nsd_*node)   += (deriv_(0,node)*dxyzdrs(1,1)-deriv_(1,node)*dxyzdrs(0,1)) * funct_(node) * fac;
+          normalderiv(2,nsd_*node+1) += (deriv_(1,node)*dxyzdrs(0,0)-deriv_(0,node)*dxyzdrs(1,0)) * funct_(node) * fac;
+          normalderiv(2,nsd_*node+2) += 0.;
+        }
+      else if(nsd_==2)
+        for (int node=0;node<bdrynen_;++node)
+        {
+          normalderiv(0,nsd_*node)   += 0.;
+          normalderiv(0,nsd_*node+1) += deriv_(0,node) * funct_(node) * fac;
+
+          normalderiv(1,nsd_*node)   += deriv_(1,node) * funct_(node) * fac;
+          normalderiv(1,nsd_*node+1) += 0.;
+        }
+      else
+        dserror("NoPenetration is only implemented for 1D!");
     }//loop over gp
 
     //allocate auxiliary variable (= normalderiv^T * velocity)
-    LINALG::Matrix<1,3*bdrynen_> temp(true);
+    LINALG::Matrix<1,nsd_*bdrynen_> temp(true);
     //allocate convective velocity at node
-    LINALG::Matrix<1,3> convvel(true);
+    LINALG::Matrix<1,nsd_> convvel(true);
 
     //elemat1.Shape(bdrynen_*numdofpernode_,bdrynen_*nsd_);
     //fill element matrix
@@ -4242,8 +4243,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
 {
 
   // This function is only implemented for 3D
-  if(bdrynsd_!=2)
-    dserror("PoroBoundary is only implemented for 3D!");
+  if(bdrynsd_!=2 and bdrynsd_!=1)
+    dserror("PoroBoundary is only implemented for 3D and 2D!");
 
   LINALG::Matrix<bdrynen_,1> elevec1_linalg(elevec1.A(),true);
   const bool offdiag(not elevec1_linalg.IsInitialized());
@@ -4272,12 +4273,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
 
     // Add the deformation of the ALE mesh to the nodes coordinates
     for (int inode=0;inode<bdrynen_;++inode)
-    {
       for (int idim=0; idim<nsd_; ++idim)
-      {
         xyze_(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
-      }
-    }
   }
 
   // extract local values from the global vectors
@@ -4301,14 +4298,12 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
 
   // split velocity and pressure, insert into element arrays
   for (int inode=0;inode<bdrynen_;inode++)
-  {
     for (int idim=0; idim< nsd_; idim++)
     {
       evelnp(idim,inode)   = myvelnp[idim+(inode*numdofpernode_)];
       edispnp(idim,inode)  = mydispnp[idim+(inode*numdofpernode_)];
       egridvel(idim,inode) = mygridvel[idim+(inode*numdofpernode_)];
     }
-  }
 
   const double timescale = params.get<double>("timescale",0.0);
 
@@ -4357,42 +4352,49 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
     const double fac = intpoints.IP().qwgt[gpid];
 
     //  derivatives of surface normals wrt mesh displacements
-    LINALG::Matrix<3,bdrynen_*3> normalderiv(true);
+    LINALG::Matrix<nsd_,bdrynen_*nsd_> normalderiv(true);
 
     // dxyzdrs vector -> normal which is not normalized
     LINALG::Matrix<bdrynsd_,nsd_> dxyzdrs(0.0);
     dxyzdrs.MultiplyNT(deriv_,xyze_);
 
-    for (int node=0;node<bdrynen_;++node)
-    {
-      normalderiv(0,3*node)   += 0.;
-      normalderiv(0,3*node+1) += (deriv_(0,node)*dxyzdrs(1,2)-deriv_(1,node)*dxyzdrs(0,2));
-      normalderiv(0,3*node+2) += (deriv_(1,node)*dxyzdrs(0,1)-deriv_(0,node)*dxyzdrs(1,1));
+    if(nsd_==3)
+      for (int node=0;node<bdrynen_;++node)
+      {
+        normalderiv(0,nsd_*node)   += 0.;
+        normalderiv(0,nsd_*node+1) += (deriv_(0,node)*dxyzdrs(1,2)-deriv_(1,node)*dxyzdrs(0,2)) * funct_(node) * fac;
+        normalderiv(0,nsd_*node+2) += (deriv_(1,node)*dxyzdrs(0,1)-deriv_(0,node)*dxyzdrs(1,1)) * funct_(node) * fac;
 
-      normalderiv(1,3*node)   += (deriv_(1,node)*dxyzdrs(0,2)-deriv_(0,node)*dxyzdrs(1,2));
-      normalderiv(1,3*node+1) += 0.;
-      normalderiv(1,3*node+2) += (deriv_(0,node)*dxyzdrs(1,0)-deriv_(1,node)*dxyzdrs(0,0));
+        normalderiv(1,nsd_*node)   += (deriv_(1,node)*dxyzdrs(0,2)-deriv_(0,node)*dxyzdrs(1,2)) * funct_(node) * fac;
+        normalderiv(1,nsd_*node+1) += 0.;
+        normalderiv(1,nsd_*node+2) += (deriv_(0,node)*dxyzdrs(1,0)-deriv_(1,node)*dxyzdrs(0,0)) * funct_(node) * fac;
 
-      normalderiv(2,3*node)   += (deriv_(0,node)*dxyzdrs(1,1)-deriv_(1,node)*dxyzdrs(0,1));
-      normalderiv(2,3*node+1) += (deriv_(1,node)*dxyzdrs(0,0)-deriv_(0,node)*dxyzdrs(1,0));
-      normalderiv(2,3*node+2) += 0.;
-    }
+        normalderiv(2,nsd_*node)   += (deriv_(0,node)*dxyzdrs(1,1)-deriv_(1,node)*dxyzdrs(0,1)) * funct_(node) * fac;
+        normalderiv(2,nsd_*node+1) += (deriv_(1,node)*dxyzdrs(0,0)-deriv_(0,node)*dxyzdrs(1,0)) * funct_(node) * fac;
+        normalderiv(2,nsd_*node+2) += 0.;
+      }
+    else //if(nsd_==2)
+      for (int node=0;node<bdrynen_;++node)
+      {
+        normalderiv(0,nsd_*node)   += 0.;
+        normalderiv(0,nsd_*node+1) += deriv_(0,node) * funct_(node) * fac;
+
+        normalderiv(1,nsd_*node)   += deriv_(1,node) * funct_(node) * fac;
+        normalderiv(1,nsd_*node+1) += 0.;
+      }
 
     //fill element matrix
     for (int inode=0;inode<bdrynen_;inode++)
     {
       double normal_convel = 0.0;
-      LINALG::Matrix<1,3> convel;
+      LINALG::Matrix<1,nsd_> convel;
       for (int idof=0;idof<nsd_;idof++)
       {
-        normal_convel += unitnormal_(idof) *(velint_(idof)
-            - gridvelint(idof)
-            ) ;
-        convel(idof) = velint_(idof) - gridvelint(idof)
-            ;
+        normal_convel += unitnormal_(idof) *(velint_(idof) - gridvelint(idof) ) ;
+        convel(idof)   = velint_(idof) - gridvelint(idof);
       }
 
-      LINALG::Matrix<1,bdrynen_*3> tmp;
+      LINALG::Matrix<1,bdrynen_*nsd_> tmp;
       tmp.Multiply(convel,normalderiv);
 
       if(not offdiag)

@@ -29,10 +29,17 @@
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Poro<so3_ele,distype>::So3_Poro(int id, int owner):
 so3_ele(id,owner),
+data_(),
 intpoints_(distype)
 {
   numgpt_ = intpoints_.NumPoints();
   ishigherorder_ = DRT::UTILS::secondDerivativesZero<distype>();
+
+  invJ_.resize(numgpt_, LINALG::Matrix<numdim_,numdim_>(true));
+  detJ_.resize(numgpt_, 0.0);
+  xsi_.resize(numgpt_, LINALG::Matrix<numdim_,1>(true));
+
+  init_=false;
   return;
 }
 
@@ -44,8 +51,13 @@ intpoints_(distype)
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Poro<so3_ele,distype>::So3_Poro(const DRT::ELEMENTS::So3_Poro<so3_ele,distype>& old):
 so3_ele(old),
+data_(old.data_),
+invJ_(old.invJ_),
+detJ_(old.detJ_),
+xsi_(old.xsi_),
 intpoints_(distype),
-ishigherorder_(old.ishigherorder_)
+ishigherorder_(old.ishigherorder_),
+init_(old.init_)
 {
   numgpt_ = intpoints_.NumPoints();
   return;
@@ -83,10 +95,16 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Pack(DRT::PackBuffer& data) const
   so3_ele::AddtoPack(data,detJ_);
 
   // invJ_
-  const int size = (int)invJ_.size();
+  int size = (int)invJ_.size();
   so3_ele::AddtoPack(data,size);
   for (int i=0; i<size; ++i)
     so3_ele::AddtoPack(data,invJ_[i]);
+
+  // xsi_
+  size = (int)xsi_.size();
+  so3_ele::AddtoPack(data,size);
+  for (int i=0; i<size; ++i)
+    so3_ele::AddtoPack(data,xsi_[i]);
 
   // add base class Element
   so3_ele::Pack(data);
@@ -106,6 +124,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Unpack(const std::vector<char>& d
   int type = 0;
   so3_ele::ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
   // data_
   std::vector<char> tmp(0);
   so3_ele::ExtractfromPack(position,data,tmp);
@@ -113,6 +132,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Unpack(const std::vector<char>& d
 
   // detJ_
   so3_ele::ExtractfromPack(position,data,detJ_);
+
   // invJ_
   int size = 0;
   so3_ele::ExtractfromPack(position,data,size);
@@ -120,10 +140,19 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Unpack(const std::vector<char>& d
   for (int i=0; i<size; ++i)
     so3_ele::ExtractfromPack(position,data,invJ_[i]);
 
+  // xsi_
+  size = 0;
+  so3_ele::ExtractfromPack(position,data,size);
+  xsi_.resize(size, LINALG::Matrix<numdim_,1>(true));
+  for (int i=0; i<size; ++i)
+    so3_ele::ExtractfromPack(position,data,xsi_[i]);
+
   // extract base class Element
   std::vector<char> basedata(0);
   so3_ele::ExtractfromPack(position,data,basedata);
   so3_ele::Unpack(basedata);
+
+  init_=true;
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -149,7 +178,7 @@ bool DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ReadElement(const std::string& el
 {
   so3_ele::ReadElement(eletype,eledistype,linedef );
 
-  RCP<MAT::Material> mat = so3_ele::Material();
+  Teuchos::RCP<MAT::Material> mat = so3_ele::Material();
 
   if(mat->MaterialType() == INPAR::MAT::m_structporo)
   {
@@ -164,6 +193,39 @@ bool DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ReadElement(const std::string& el
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::VisNames(std::map<string,int>& names)
+{
+  so3_ele::VisNames(names);
+
+  if (Material()->MaterialType() == INPAR::MAT::m_structporo)
+  {
+    string porosity = "porosity";
+    names[porosity] = 1; // scalar
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+bool DRT::ELEMENTS::So3_Poro<so3_ele,distype>::VisData(const string& name, std::vector<double>& data)
+{
+  so3_ele::VisData(name, data);
+
+  if (Material()->MaterialType() == INPAR::MAT::m_structporo)
+  {
+    MAT::StructPoro* structporo = static_cast <MAT::StructPoro*>(Material().get());
+      if (name=="porosity")
+      {
+        if ((int)data.size()!=1) dserror("size mismatch");
+          data[0] = structporo->PorosityAv();
+      }
+  }
+  return true;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
 inline DRT::Node** DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Nodes()
 {
   return so3_ele::Nodes();
@@ -172,7 +234,7 @@ inline DRT::Node** DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Nodes()
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-inline RCP<MAT::Material>  DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Material() const
+inline Teuchos::RCP<MAT::Material>  DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Material() const
 {
   return so3_ele::Material();
 }

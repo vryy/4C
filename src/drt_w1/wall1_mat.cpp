@@ -33,6 +33,7 @@ Maintainer: Markus Gitterle
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/neohooke.H"
 #include "../drt_mat/elasthyper.H"
+#include "../drt_mat/structporo.H"
 
 /*----------------------------------------------------------------------*/
 // namespaces
@@ -51,6 +52,15 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
   Teuchos::RCP<const MAT::Material> material  ///< the material data
 )
 {
+
+  if(material->MaterialType() == INPAR::MAT::m_structporo)
+  {
+    const MAT::StructPoro* actmat = static_cast<const MAT::StructPoro*>(material.get());
+    //setup is done in so3_poro
+    //actmat->Setup(NUMGPT_SOH8);
+    material = actmat->GetMaterial();
+  }
+
   /*--------------------------- call material law -> get tangent modulus--*/
   switch(material->MaterialType())
   {
@@ -559,6 +569,15 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3d(
   )
 {
   Teuchos::RCP<MAT::Material> mat = Material();
+
+  if(mat->MaterialType() == INPAR::MAT::m_structporo)
+  {
+    const MAT::StructPoro* actmat = static_cast<const MAT::StructPoro*>(mat.get());
+    //setup is done in so3_poro
+    //actmat->Setup(NUMGPT_SOH8);
+    mat = actmat->GetMaterial();
+  }
+
   switch (mat->MaterialType())
   {
     case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
@@ -592,6 +611,14 @@ double DRT::ELEMENTS::Wall1::Density(
   Teuchos::RCP<const MAT::Material> material
 )
 {
+  if(material->MaterialType() == INPAR::MAT::m_structporo)
+  {
+    const MAT::StructPoro* actmat = static_cast<const MAT::StructPoro*>(material.get());
+    //setup is done in so3_poro
+    //actmat->Setup(NUMGPT_SOH8);
+    material = actmat->GetMaterial();
+  }
+
   // switch material type
   switch (material->MaterialType())
   {

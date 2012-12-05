@@ -83,29 +83,24 @@ namespace POROELAST
       /// setup composed system matrix from field solvers
       virtual void SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat) ;
 
+      //! @name Access methods
+
       //! composed system matrix
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const
       {
         return systemmatrix_;
       }
 
+      //! full monolithic dof row map
+      Teuchos::RCP<const Epetra_Map> DofRowMap() const {return blockrowdofmap_.FullMap();}
+
+      //@}
+
       //! solve linear system
       void LinearSolve();
 
       //! create linear solver (setup of parameter lists, etc...)
       void CreateLinearSolver();
-
-      //! @name Apply current field state to system
-
-      //! Evaluate mechanical-fluid system matrix
-      void ApplyStrCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_sf //!< mechanical-fluid stiffness matrix
-          );
-
-      //! Evaluate fluid-mechanical system matrix
-      void ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_fs //!< fluid-mechanical tangent matrix
-            );
-
-      //@}
 
       //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc
       virtual void Evaluate(Teuchos::RCP<const Epetra_Vector> stepinc //!< increment between time step n and n+1
@@ -148,7 +143,7 @@ namespace POROELAST
       //@}
 
       //!finite difference check of stiffness matrix
-      //void PoroFDCheck();
+      void PoroFDCheck();
 
       /// Evaluate no penetration condition
       void EvaluateCondition(Teuchos::RCP<LINALG::SparseOperator> Sysmat,
@@ -159,15 +154,26 @@ namespace POROELAST
       /// (i.e. condensed forces onto the structure) needed for rhs in next time step
       virtual void RecoverLagrangeMultiplier(){return;};
 
+      //Setup solver for monolithic system
+      virtual bool SetupSolver();
+
     protected:
 
-      //! @name Access methods
+      //! @name Apply current field state to system
+
+      //! Evaluate mechanical-fluid system matrix
+      void ApplyStrCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_sf //!< mechanical-fluid stiffness matrix
+          );
+
+      //! Evaluate fluid-mechanical system matrix
+      void ApplyFluidCouplMatrix(Teuchos::RCP<LINALG::SparseOperator> k_fs //!< fluid-mechanical tangent matrix
+            );
+
+      //@}
 
       //! velocity calculation given the displacements (like in FSI)
       Teuchos::RCP<Epetra_Vector> CalcVelocity(
           Teuchos::RCP<const Epetra_Vector> dispnp);
-
-      //@}
 
       //! setup newton solver
       void SetupNewton();
@@ -191,9 +197,6 @@ namespace POROELAST
               bool firstcall=false);
 
       //! @name Access methods for subclasses
-
-      //! full monolithic dof row map
-      Teuchos::RCP<const Epetra_Map> DofRowMap() const {return blockrowdofmap_.FullMap();}
 
       //! set full monolithic dof row map
       /*!

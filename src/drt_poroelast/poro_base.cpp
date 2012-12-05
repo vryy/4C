@@ -83,14 +83,22 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
   = DRT::Problem::Instance()->FluidDynamicParams();
 
   // check time integration algo -> currently only one-step-theta scheme supported
-  INPAR::STR::DynamicType structtimealgo
-  = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP");
-  INPAR::FLUID::TimeIntegrationScheme fluidtimealgo
-  = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
+  {
+    INPAR::STR::DynamicType structtimealgo
+    = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP");
+    INPAR::FLUID::TimeIntegrationScheme fluidtimealgo
+    = DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(fdyn,"TIMEINTEGR");
 
-  if ( structtimealgo != INPAR::STR::dyna_onesteptheta or
-      fluidtimealgo != INPAR::FLUID::timeint_one_step_theta )
-  dserror("porous media problem is limited in functionality (only one-step-theta scheme possible)");
+    if ( structtimealgo != INPAR::STR::dyna_onesteptheta or
+        fluidtimealgo != INPAR::FLUID::timeint_one_step_theta )
+      dserror("porous media problem is limited in functionality (only one-step-theta scheme possible)");
+
+    double theta_struct = sdyn.sublist("ONESTEPTHETA").get<double>("THETA");
+    double theta_fluid  = fdyn.get<double>("THETA");
+
+    if(theta_struct != theta_fluid)
+      dserror("porous media problem is limited in functionality. Only one-step-theta scheme with equal theta for both fields possible");
+  }
 
   //check for submeshes and build of subnode and subelement map if necessary
   submeshes_ = BuildSubMaps();
@@ -367,6 +375,8 @@ bool POROELAST::PoroBase::BuildSubMaps()
       const int structlid = structnodemap->LID(fluidgid);
       if(structlid != -1)
         subnodegids.insert(fluidgid);
+      else
+        dserror("Node with gobal id gid=%d not existent on other discretization",fluidgid);
     }
 
     subnodemap_ = LINALG::CreateMap(subnodegids, Comm());
@@ -382,6 +392,8 @@ bool POROELAST::PoroBase::BuildSubMaps()
       const int structlid = structelemap->LID(fluidgid);
       if(structlid != -1)
         subelegids.insert(fluidgid);
+      else
+        dserror("Node with gobal id gid=%d not existent on other discretization",fluidgid);
     }
 
     subelemap_ = LINALG::CreateMap(subelegids, Comm());
@@ -396,83 +408,32 @@ bool POROELAST::PoroBase::BuildSubMaps()
  *----------------------------------------------------------------------*/
 void POROELAST::PoroBase::CalculateSurfPoro(const string& condstring)
 {
-  //-------------------------------
-  // create the parameters for the discretization
-  Teuchos::ParameterList p;
-  // action for elements
-  p.set("action", "calc_struct_area_poro");
-  // other parameters that might be needed by the elements
-  p.set("total time", Time());
-  p.set("delta time", Dt());
+  //check if the condition exists
+  std::vector<DRT::Condition*> surfporo;
+  FluidField().Discretization()->GetCondition(condstring, surfporo);
 
-  const int numdim = DRT::Problem::Instance()->NDim();
-
-  Teuchos::RCP<DRT::Discretization> structdis = StructureField()->Discretization();
-  Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
-
-  // set vector values needed by elements
-  structdis->ClearState();
-  // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
-  structdis->SetState(0,"displacement", StructureField()->Dispnp());
-
-  structdis->SetState(1,"fluidvel",FluidField().Velnp());
-
-  // velocities (always three velocity components per node)
-  // (get noderowmap of discretization for creating this multivector)
-  const Epetra_Map* noderowmap = structdis->NodeRowMap();
-  Teuchos::RCP<Epetra_MultiVector> convel = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,numdim+1,true));
-  // loop all nodes on the processor
-  for(int lnodeid=0;lnodeid<structdis->NumMyRowNodes();lnodeid++)
+  if(surfporo.size())
   {
-    // get the processor local node
-    DRT::Node* lnode = structdis->lRowNode(lnodeid);
+    //-------------------------------
+    // create the parameters for the discretization
+    Teuchos::ParameterList p;
+    // action for elements
+    p.set("action", "calc_struct_area_poro");
+    // other parameters that might be needed by the elements
+    p.set("total time", Time());
+    p.set("delta time", Dt());
 
-    vector<int> nodedofs = fluiddis->Dof(0,lnode);
-    for(int index=0;index<numdim+1;++index)
-    {
-      // get global and local ID
-      const int gid = nodedofs[index];
-      // const int lid = dofrowmap->LID(gid);
-      const int lid = FluidField().Velnp()->Map().LID(gid);
-      if (lid < 0) dserror("Local ID not found in map for given global ID!");
+    Teuchos::RCP<DRT::Discretization> structdis = StructureField()->Discretization();
+    Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
 
-      double convelocity = (*(FluidField().Velnp()))[lid];
+    // set vector values needed by elements
+    structdis->ClearState();
+    // extended SetState(0,...) in case of multiple dofsets
+    structdis->SetState(0,"displacement", StructureField()->Dispnp());
 
-      // insert velocity value into node-based vector
-      int err = convel->ReplaceMyValue(lnodeid,index,convelocity);
-      if (err != 0) dserror("Error while inserting value into vector convel_!");
-    }
+    structdis->SetState(1,"fluidvel",FluidField().Velnp());
+
+    StructureField()->Discretization()->EvaluateCondition(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condstring);
+    StructureField()->Discretization()->ClearState();
   }
-
- AddMultiVectorToParameterList(p,"convective velocity field",convel,fluiddis);
-
-  StructureField()->Discretization()->EvaluateCondition(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condstring);
-  StructureField()->Discretization()->ClearState();
-}
-
-/*----------------------------------------------------------------------*
- | export multivector to column map & add it to parameter list  vuong 11/12|
- *----------------------------------------------------------------------*/
-void POROELAST::PoroBase::AddMultiVectorToParameterList
-(Teuchos::ParameterList& p,
- const std::string name,
- Teuchos::RCP<Epetra_MultiVector> vec,
- Teuchos::RCP<DRT::Discretization> discret
-)
-{
-  if (vec != Teuchos::null)
-  {
-    //provide data in node-based multi-vector for usage on element level
-    // -> export to column map is necessary for parallel evaluation
-    //SetState cannot be used since this multi-vector is nodebased and not dofbased!
-    const Epetra_Map* nodecolmap = discret->NodeColMap();
-    int numcol = vec->NumVectors();
-    RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
-    LINALG::Export(*vec,*tmp);
-    p.set(name,tmp);
-  }
-  else
-    p.set(name,Teuchos::null);
-
-  return;
 }

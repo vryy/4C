@@ -53,7 +53,8 @@ MAT::StructPoro::StructPoro() :
   porosity_(Teuchos::null),
   surfporosity_(Teuchos::null),
   dporodt_(Teuchos::null),
-  gradporosity_(Teuchos::null)
+  gradporosity_(Teuchos::null),
+  isinitialized_(false)
 {
 }
 
@@ -64,7 +65,8 @@ MAT::StructPoro::StructPoro(MAT::PAR::StructPoro* params) :
   porosity_(Teuchos::null),
   surfporosity_(Teuchos::null),
   dporodt_(Teuchos::null),
-  gradporosity_(Teuchos::null)
+  gradporosity_(Teuchos::null),
+  isinitialized_(false)
 {
   mat_ = MAT::Material::Factory(params_->matid_);
 }
@@ -73,6 +75,9 @@ MAT::StructPoro::StructPoro(MAT::PAR::StructPoro* params) :
 /*----------------------------------------------------------------------*/
 void MAT::StructPoro::Pack(DRT::PackBuffer& data) const
 {
+  if(not isinitialized_)
+    dserror("poro material not initialized. Not a poro element?");
+
   DRT::PackBuffer::SizeMarker sm(data);
   sm.Insert();
 
@@ -238,6 +243,7 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
       dserror("Mismatch in size of data %d <-> %d",data.size(),position);
     }
   }
+  isinitialized_=true;
 }
 
 /*----------------------------------------------------------------------*/
@@ -305,7 +311,8 @@ void MAT::StructPoro::ComputePorosity( double press,
   dphi_dJJ = 0.0;
   dphi_dpp = 0.0;
   phi = 0.1;
-*/
+  */
+
   /*
   double phi = initporosity + (1.0-initporosity) * (1.0-initporosity) / bulkmodulus * press
                 + (1.0-initporosity) * (J-1.0);
@@ -379,6 +386,8 @@ double MAT::StructPoro::PorosityAv() const
 /*----------------------------------------------------------------------*/
 void MAT::StructPoro::PorosityGradientAv(LINALG::Matrix<3,1>& porosityav) const
 {
+  porosityav.Clear();
+
   std::vector<LINALG::Matrix<3,1> >::const_iterator m;
   for (m = gradporosity_->begin(); m != gradporosity_->end(); ++m)
   {
@@ -395,7 +404,14 @@ void MAT::StructPoro::PorosityGradientAv(LINALG::Matrix<3,1>& porosityav) const
 /*----------------------------------------------------------------------*/
 void MAT::StructPoro::PorosityGradientAv(LINALG::Matrix<2,1>& porosityav) const
 {
-  dserror("not implemented!");
+  porosityav.Clear();
+
+  const int size = gradporosity_->size();
+  for(int i=0; i<size;i++)
+  {
+    porosityav(0) += (*gradporosity_)[i](0);
+    porosityav(1) += (*gradporosity_)[i](1);
+  }
   return;
 }
 
@@ -464,20 +480,54 @@ void MAT::StructPoro::SetGradPorosityAtGP(std::vector<  LINALG::Matrix<3,1> > gr
 /*----------------------------------------------------------------------*/
 void MAT::StructPoro::SetGradPorosityAtGP(std::vector<  LINALG::Matrix<2,1> > gradporosity_gp)
 {
- dserror("not implemented");
+  for(unsigned int i=0; i<gradporosity_gp.size();i++)
+  {
+    ((*gradporosity_)[i])(0) = (gradporosity_gp[i])(0);
+    ((*gradporosity_)[i])(1) = (gradporosity_gp[i])(1);
+  }
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::StructPoro::SetGradJAtGP(std::vector<  LINALG::Matrix<1,3> > gradporosity_gp)
+void MAT::StructPoro::SetGradJAtGP(std::vector<  LINALG::Matrix<1,3> > gradJ_gp)
 {
-  std::vector<LINALG::Matrix<1,3> >::iterator m = gradporosity_gp.begin();
-  for (int i = 0; m != gradporosity_gp.end(); ++m, ++i)
+  std::vector<LINALG::Matrix<1,3> >::iterator m = gradJ_gp.begin();
+  for (int i = 0; m != gradJ_gp.end(); ++m, ++i)
   {
-    LINALG::Matrix<1,3> gradporo  = *m;
-    gradJ_->at(i) = gradporo;
+    LINALG::Matrix<1,3> gradJ  = *m;
+    (*gradJ_)[i] = gradJ;
   }
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::StructPoro::SetGradJAtGP(std::vector<  LINALG::Matrix<1,2> > gradJ_gp)
+{
+  for(unsigned int i=0; i<gradJ_gp.size();i++)
+  {
+    ((*gradJ_)[i])(0) = (gradJ_gp[i])(0);
+    ((*gradJ_)[i])(1) = (gradJ_gp[i])(1);
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::StructPoro::GetGradJAtGP(LINALG::Matrix<1,3>& gradJ, int gp) const
+{
+  gradJ = (*gradJ_)[gp];
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::StructPoro::GetGradJAtGP(LINALG::Matrix<1,2>& gradJ, int gp) const
+{
+  gradJ(0) = ((*gradJ_)[gp])(0);
+  gradJ(1) = ((*gradJ_)[gp])(1);
+
   return;
 }
 
@@ -493,7 +543,9 @@ void MAT::StructPoro::GetGradPorosityAtGP(LINALG::Matrix<3,1>& gradporosity, int
 /*----------------------------------------------------------------------*/
 void MAT::StructPoro::GetGradPorosityAtGP(LINALG::Matrix<2,1>& gradporosity, int gp) const
 {
-  dserror("not implemented");
+  gradporosity(0) = ((*gradporosity_)[gp])(0);
+  gradporosity(1) = ((*gradporosity_)[gp])(1);
+
   return;
 }
 
@@ -502,7 +554,6 @@ void MAT::StructPoro::GetGradPorosityAtGP(LINALG::Matrix<2,1>& gradporosity, int
 void MAT::StructPoro::Setup(const int numgp)
 {
   porosity_ = Teuchos::rcp(new std::vector< double > (numgp,params_->initporosity_));
-  //surfporosity_ = Teuchos::rcp(new std::vector< double > (numgp,-1.0));
   surfporosity_ = Teuchos::rcp(new std::map<int, std::vector< double > >);
   gradporosity_ = Teuchos::rcp(new std::vector< LINALG::Matrix<3,1> > (numgp));
   dporodt_ = Teuchos::rcp(new std::vector<double> (numgp));
@@ -515,5 +566,6 @@ void MAT::StructPoro::Setup(const int numgp)
     gradporosity_->at(j) = emptyvec;
     gradJ_->at(j) = emptyvecT;
   }
+  isinitialized_=true;
 }
 

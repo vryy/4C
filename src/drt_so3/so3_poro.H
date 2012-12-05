@@ -75,16 +75,26 @@ public:
   static const int numnod_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
   //! number of space dimensions
-  static const int numdim_ = 3;
+  static const int numdim_ = DRT::UTILS::DisTypeToDim<distype>::dim;
 
   //! number of dofs per node
-  static const int noddof_ = 3;
+  static const int noddof_ = numdim_;
 
   //! total dofs per element
   static const int numdof_ = noddof_ * numnod_;
 
-  //! number of dofs per node
-  static const int numstr_ = 6;
+  //! number of strains per node
+  static const int numstr_ = (int) (0.5*numdim_*(numdim_+1));
+
+  //! number of components necessary to store second derivatives
+  /*!
+   1 component  for nsd=1:  (N,xx)
+
+   3 components for nsd=2:  (N,xx ; N,yy ; N,xy)
+
+   6 components for nsd=3:  (N,xx ; N,yy ; N,zz ; N,xy ; N,xz ; N,yz)
+  */
+  static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;
 
   //!total gauss points per element
   int numgpt_;
@@ -139,6 +149,8 @@ public:
   */
   virtual void Unpack(const std::vector<char>& data);
 
+  //! @name Access methods
+
   /*!
   \brief Get number of degrees of freedom of a certain node in case of multiple
          dofsets (implements pure virtual DRT::Element)
@@ -159,10 +171,6 @@ public:
     return 3;
   };
 
-  //@}
-
-  //! @name Access methods
-
   /*!
   \brief Print this element
   */
@@ -182,10 +190,6 @@ public:
     }
     return So_hex8PoroType::Instance();
   };
-
-  bool ReadElement(const std::string& eletype,
-                   const std::string& eledistype,
-                   DRT::INPUT::LineDefinition* linedef) ;
 
   //@}
 
@@ -225,6 +229,59 @@ public:
 
   //! init the inverse of the jacobian and its determinant in the material configuration
   void InitElement();
+
+  //@}
+
+  //! @name Input and Creation
+
+  /*!
+  \brief Read input for this element
+  */
+  /*!
+  \brief Query names of element data to be visualized using BINIO
+
+  The element fills the provided map with key names of
+  visualization data the element wants to visualize AT THE CENTER
+  of the element geometry. The values is supposed to be dimension of the
+  data to be visualized. It can either be 1 (scalar), 3 (vector), 6 (sym. tensor)
+  or 9 (nonsym. tensor)
+
+  Example:
+  \code
+    // Name of data is 'Owner', dimension is 1 (scalar value)
+    names.insert(std::pair<string,int>("Owner",1));
+    // Name of data is 'StressesXYZ', dimension is 6 (sym. tensor value)
+    names.insert(std::pair<string,int>("StressesXYZ",6));
+  \endcode
+
+  \param names (out): On return, the derived class has filled names with
+                      key names of data it wants to visualize and with int dimensions
+                      of that data.
+  */
+  virtual void VisNames(std::map<string,int>& names);
+
+  /*!
+  \brief Query data to be visualized using BINIO of a given name
+
+  The method is supposed to call this base method to visualize the owner of
+  the element.
+  If the derived method recognizes a supported data name, it shall fill it
+  with corresponding data.
+  If it does NOT recognizes the name, it shall do nothing.
+
+  \warning The method must not change size of data
+
+  \param name (in):   Name of data that is currently processed for visualization
+  \param data (out):  data to be filled by element if element recognizes the name
+  */
+  virtual bool VisData(const string& name, std::vector<double>& data);
+
+  /*!
+  \brief Read input for this element
+  */
+  bool ReadElement(const std::string& eletype,
+                   const std::string& eledistype,
+                   DRT::INPUT::LineDefinition* linedef) ;
 
   //@}
 
@@ -279,12 +336,12 @@ protected:
     calc_struct_multidofsetcoupling,//!< structure-fluid coupling: internal force, stiffness for poroelasticity (structural part)
   };
 
+  //! container containing all kind of solid3 thisandthat
+  DRT::Container                                                        data_;
   //! vector of inverses of the jacobian in material frame
   std::vector<LINALG::Matrix<numdim_,numdim_> >                      invJ_;
   //! determinant of Jacobian in material frame
-  std::vector<double>                                                detJ_;
-  //! container containing all kind of solid3 thisandthat
-  DRT::Container                                                     data_;
+  std::vector<double>                                                        detJ_;
   //! vector of coordinates of current integration point in reference coordinates
   std::vector<LINALG::Matrix<numdim_,1> > xsi_;
 
@@ -323,11 +380,13 @@ protected:
   //!flag indicating higher order element
   bool ishigherorder_;
 
+  bool init_;
+
 private:
 
   DRT::Node** Nodes();
 
-  RCP<MAT::Material> Material() const;
+  Teuchos::RCP<MAT::Material> Material() const;
 
   int Id() const;
 }; // class So3_Poro

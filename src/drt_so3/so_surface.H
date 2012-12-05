@@ -15,7 +15,6 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_fem_general/drt_utils_integration.H"
-#include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_lib/drt_node.H"
 
 
@@ -166,7 +165,7 @@ public:
 
   virtual std::vector<Teuchos::RCP<DRT::Element> > Lines();
 
-  virtual int NumLine() const {return DRT::UTILS::getNumberOfElementLines(Shape());}
+  virtual int NumLine() const;
 
   /*!
   \brief Evaluate a Neumann boundary condition
