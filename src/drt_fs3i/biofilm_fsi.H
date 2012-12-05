@@ -77,6 +77,18 @@ namespace FS3I
 
     void GrowthOutput();
 
+    /// gives fluid displacement due to growth
+    Teuchos::RCP<Epetra_Vector> GetFluidGrowthDisp() { return fluid_growth_disp;}
+
+    /// gives structure displacement due to growth
+    Teuchos::RCP<Epetra_Vector> GetStructGrowthDisp() { return struct_growth_disp;}
+
+    /// gives scatra fluid displacement due to growth
+    Teuchos::RCP<Epetra_Vector> GetScatraFluidGrowthDisp() { return scatra_fluid_growth_disp;}
+
+    /// gives scatra structure displacement due to growth
+    Teuchos::RCP<Epetra_Vector> GetScatraStructGrowthDisp() { return scatra_struct_growth_disp;}
+
   private:
 
     /// communication (mainly for screen output)
@@ -180,6 +192,12 @@ namespace FS3I
 
     /// fluid displacement due to growth
     Teuchos::RCP<Epetra_Vector> fluid_growth_disp;
+
+    /// scatra structure displacement due to growth
+    Teuchos::RCP<Epetra_Vector> scatra_struct_growth_disp;
+
+    /// scatra fluid displacement due to growth
+    Teuchos::RCP<Epetra_Vector> scatra_fluid_growth_disp;
 
   };
 

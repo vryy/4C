@@ -183,6 +183,8 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
 
   struct_growth_disp= AleToStructField(ale_->ExtractDispnp());
   fluid_growth_disp= AleToFluidField(fsi_->AleField().ExtractDispnp());
+  scatra_struct_growth_disp= AleToStructField(ale_->ExtractDispnp());
+  scatra_fluid_growth_disp= AleToFluidField(fsi_->AleField().ExtractDispnp());
 
   idispn_->PutScalar(0.0);
   idispnp_->PutScalar(0.0);
@@ -194,6 +196,8 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
 
   struct_growth_disp->PutScalar(0.0);
   fluid_growth_disp->PutScalar(0.0);
+  scatra_struct_growth_disp->PutScalar(0.0);
+  scatra_fluid_growth_disp->PutScalar(0.0);
 
   norminflux_ = Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
   normtraction_= Teuchos::rcp(new Epetra_Vector(*(fsi_->StructureField()->Discretization()->NodeRowMap())));
@@ -269,13 +273,13 @@ void FS3I::BiofilmFSI::Timeloop()
       time_ = time_bio + time_fsi;
 
       fsi_->StructureField()->Reset();
-      fsi_->FluidField().Reset(true, true, step_bio);
+      fsi_->FluidField().Reset(false, false, step_bio);
       fsi_->AleField().Reset();
 
       fsi_->AleField().BuildSystemMatrix(false);
 
-      //fsi_->StructureField()->DiscWriter()->WriteMesh(step_bio, time_bio);
-      //fsi_->FluidField().DiscWriter()->WriteMesh(step_bio, time_bio);
+//      fsi_->StructureField()->DiscWriter()->WriteMesh(step_bio, time_bio);
+//      fsi_->FluidField().DiscWriter()->WriteMesh(step_bio, time_bio);
 
       GrowthOutput();
     }
@@ -342,6 +346,9 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     DoFSIStep();
     SetFSISolution();
     DoScatraStep();
+
+//    struscatra->ScaTraField().DiscWriter()->WriteVector("growth_displ", scatra_fluid_growth_disp);
+//    scatra->ScaTraField().DiscWriter()->WriteVector("growth_displ", scatra_fluid_growth_disp);
 
     // recovery of forces at the interface node based on lagrange multipliers values
     Teuchos::RCP<Epetra_Vector> lambda_ = fsi_->GetLambda();
@@ -643,6 +650,9 @@ void FS3I::BiofilmFSI::FluidAleSolve(
   //change nodes reference position also for scatra fluid field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[0];
   RCP<DRT::Discretization> scatradis = scatra->ScaTraField().Discretization();
+
+  scatra_fluid_growth_disp->Update(1,*fluiddisp,1.0);
+
   ScatraChangeConfig(scatradis, fluiddis, fluiddisp);
 
   fsi_->AleField().SetupDBCMapEx(0);
@@ -679,6 +689,9 @@ void FS3I::BiofilmFSI::StructAleSolve(
   //change nodes reference position also for scatra structure field
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> struscatra = scatravec_[1];
   RCP<DRT::Discretization> struscatradis = struscatra->ScaTraField().Discretization();
+
+  scatra_struct_growth_disp->Update(1,*structdisp,1.0);
+
   ScatraChangeConfig(struscatradis, structdis, structdisp);
 
   ale_->SetupDBCMapEx(0);
