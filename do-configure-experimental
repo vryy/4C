@@ -5,15 +5,30 @@
 BACI_HOME=`dirname $0`
 EXTRA_ARGS=$@
 
+#default options
+BUILD_TYPE="RELEASE"
+TRILINOS_BUILD_TYPE="release"
+USE_ACML=0
+
 # activate debug version: ./do-configure --debug 
 # or choose do-configure-debug which does the same
-if [ "x$1" == "x--debug" ]; then
-  BUILD_TYPE="DEBUG"
-  TRILINOS_BUILD_TYPE="dbg"
-else
-  BUILD_TYPE="RELEASE"
-  TRILINOS_BUILD_TYPE="release"
-fi
+
+# read in options
+for p in $*;
+do
+  echo "[$p]";
+  case "x$p" in
+    "x--debug") 
+      BUILD_TYPE="DEBUG"
+      TRILINOS_BUILD_TYPE="dbg"
+      ;;
+    "x--useACML")
+      USE_ACML=1
+      ;;
+  esac
+done;
+
+
 
 ##############################################################
 # detect operating system
@@ -63,12 +78,41 @@ if [ "$OS_VERSION" == "FC16" ]; then
 	INCLUDE_INSTALL_DIR="/lnm/lib/Q3_2012/fc16/openmpi-gcc/include"
 	LIB_INSTALL_DIR="/lnm/lib/Q3_2012/fc16/openmpi-gcc/lib"
 	Trilinos_PREFIX="/lnm/lib/Q3_2012/trilinos/fc16_openmpi_$TRILINOS_BUILD_TYPE/"
-	# libM replacement
-	AMDLIBMDIR_PATH="/lnm/lib/Q3_2012/amdlibm-3-0-2"
-	# AMD core math library BLAS/LAPACK replacement
-	ACMLDIR_PATH="/lnm/lib/Q3_2012/acml-5-2-0/gfortran64"
-	BLAS_LIBS="/lnm/lib/Q3_2012/acml-5-2-0/gfortran64/lib/libacml.a"
-	LAPACK_LIBS="/lnm/lib/Q3_2012/acml-5-2-0/gfortran64/lib/libacml.a"
+	if [ $USE_ACML == 1 ]; then
+	  # libM replacement
+	  AMDLIBMDIR_PATH="/lnm/lib/Q3_2012/amdlibm-3-0-2"
+	  # AMD core math library BLAS/LAPACK replacement
+	  ACMLDIR_PATH="/lnm/lib/Q3_2012/acml-5-2-0/gfortran64"
+	  BLAS_LIBS="/lnm/lib/Q3_2012/acml-5-2-0/gfortran64/lib/libacml.a"
+	  LAPACK_LIBS="/lnm/lib/Q3_2012/acml-5-2-0/gfortran64/lib/libacml.a"
+	  BLA_VENDORSTRING="ACML.5.2.0"
+	  echo "!!!!!!!!!!!!!!!!!!!!  WARNING  !!!!!!!!!!!!!!!!!!!!!!!!"
+	  echo "!! ATTENTION for all XFEM users:                     !!"
+	  echo "!! It seems that there's a bug in the ACML GEMM      !!" 
+	  echo "!! routine. Please use the slow standard BLAS        !!"
+	  echo "!! implementation or try another HPC BLAS library,   !!"
+	  echo "!! to be sure to produce valid results               !!"
+	  echo "!!!!!!!!!!!!!!!!!!!!  WARNING  !!!!!!!!!!!!!!!!!!!!!!!!"
+	else
+	  AMDLIBMDIR_PATH=""
+	  ACMLDIR_PATH=""
+	  BLAS_LIBS=""
+	  LAPACK_LIBS=""
+	  BLA_VENDORSTRING=""
+	  echo "!!!!!!!!!!!!!!!!!!!!  WARNING  !!!!!!!!!!!!!!!!!!!!!!!!"
+	  echo "!! Not using high performance BLAS routines may      !!"
+	  echo "!! significantly detoriate performance. It's highly  !!"
+	  echo "!! recommended to configure BACI using               !!"
+	  echo "!!     do-configure --useACML                        !!"
+	  echo "!! to enable the high performance ACML library!      !!"
+	  echo "!!                                                   !!" 
+	  echo "!! ATTENTION for all XFEM users:                     !!"
+	  echo "!! It seems that there's a bug in the ACML GEMM      !!" 
+	  echo "!! routine. Please use the slow standard BLAS        !!"
+	  echo "!! implementation or try another HPC BLAS library,   !!"
+	  echo "!! to be sure to produce valid results               !!"
+	  echo "!!!!!!!!!!!!!!!!!!!!  WARNING  !!!!!!!!!!!!!!!!!!!!!!!!"
+	fi
 else
 	# no Q3/2012 Trilinos available for FC8 and FC12.
 	# use Q2/2012 instead
@@ -81,6 +125,7 @@ else
 	ACMLDIR_PATH=""
 	BLAS_LIBS=""
 	LAPACK_LIBS=""
+	BLA_VENDORSTRING=""
 
 	echo "!!!!!!!!!!!!!!!!!!!!  WARNING  !!!!!!!!!!!!!!!!!!!!"
 	echo "!!       You are using an outdated system.       !!"
@@ -118,7 +163,7 @@ $CMAKE_COMMAND \
     -D CMAKE_VERBOSE_MAKEFILE:BOOL=OFF \
     -D HAVENOT_SUPERLU:BOOL=OFF \
     -D HAVE_TEKO:BOOL=OFF \
-    -D HAVE_MueLu:BOOL=ON \
+    -D HAVE_MueLu:BOOL=ON\
     -D TRILINOS_DEV:BOOL=ON \
     -D D_ARTNET:BOOL=ON \
     -D D_RED_AIRWAYS:BOOL=ON \
@@ -139,7 +184,7 @@ $CMAKE_COMMAND \
     -D QHULL_INCLUDE_DIR:FILEPATH=$INCLUDE_INSTALL_DIR \
     -D MPI_DIR:FILEPATH=$MPIDIR \
     -D CUBIT_DIR:FILEPATH=$CUBIT_PATH \
-    -D BLA_VENDOR:STRING="ACML.5.2.0" \
+    -D BLA_VENDOR:STRING=$BLA_VENDORSTRING \
     -D BLAS_LIBRARIES:FILEPATH=$BLAS_LIBS \
     -D LAPACK_LIBRARIES:FILEPATH=$LAPACK_LIBS \
     -D ACMLDIR:STRING=$ACMLDIR_PATH \
