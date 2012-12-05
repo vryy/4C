@@ -1,0 +1,545 @@
+//
+// Maintainer: Anh-Tu Vuong
+// vuong@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15264
+//
+//
+//
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+created by pre_exodus 
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    4
+//NODES       25
+DIM           2
+-----------------------------------------------------DISCRETISATION
+NUMAIRWAYSDIS                   0
+NUMALEDIS                       0
+NUMARTNETDIS                    0
+NUMFLUIDDIS                     0
+NUMSTRUCDIS                     1
+NUMTHERMDIS                     0
+---------------------------------------------------------------FLUID DYNAMIC
+ADAPTCONV                       yes
+ADAPTCONV_BETTER                0.1
+ALPHA_F                         1
+ALPHA_M                         1
+CALCERROR                       no
+CONVCHECK                       L_2_norm
+CONVFORM                        convective
+CONVTOL                         1e-06
+GAMMA                           1
+GRIDVEL                         1
+INITIALFIELD                    zero_field
+INITSTATITEMAX                  5
+ITEMAX                          10
+LIFTDRAG                        No
+MAXTIME                         1000
+MESHTYING                       no
+NEUMANNINFLOW                   no
+NONLINITER                      fixed_point_like
+NUMSTASTEPS                     0
+NUMSTEP                         1
+PHYSICAL_TYPE                   Poro
+PREDICTOR                       default
+RESTARTEVRY                     20
+SIMPLER                         no
+STARTFUNCNO                     -1
+STARTINGALGO                    One_Step_Theta
+START_THETA                     1
+STEADYSTEP                      -1
+STEADYTOL                       1e-06
+THETA                           0.66
+TIMEINTEGR                      One_Step_Theta
+TIMESTEP                        0.01
+UPRES                           1
+LINEAR_SOLVER                   3
+-------------------------------------------------FLUID DYNAMIC/STABILIZATION
+CROSS-STRESS                    no_cross
+CSTAB                           no_cstab
+DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
+EVALUATION_MAT                  integration_point
+EVALUATION_TAU                  integration_point
+PSPG                            yes_pspg
+REYNOLDS-STRESS                 no_reynolds
+RSTAB                           rstab_gls
+STABTYPE                        residual_based
+SUPG                            no_supg
+TDS                             quasistatic
+TRANSIENT                       no_transient
+VSTAB                           no_vstab
+--------------------------------------------------------------------SOLVER 3
+AMGBS_BS_DAMPING 1.3 1.3 1.3
+AMGBS_BS_PCCOARSE               Umfpack
+AMGBS_BS_PCDAMPING 1.0 1.0 1.0
+AMGBS_BS_PCFINE                 Umfpack
+AMGBS_BS_PCMEDIUM               Umfpack
+AMGBS_BS_PCSWEEPS 2 2 2
+AMGBS_PSMOOTHER_PRE             PA-AMG
+AMGBS_PSMOOTHER_VEL             PA-AMG
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+AZPOLY                          3
+AZPREC                          ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+IFPACKCOMBINE                   Add
+IFPACKFILL                      1
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES 1 1 1 1 1
+SOLVER                          UMFPACK
+--------------------------------------------------------------------------IO
+ALE_DISP                        Yes
+FILESTEPS                       1000
+FLUID_SOL                       Yes
+FLUID_STRESS                    No
+FLUID_VIS                       No
+FLUID_WALL_SHEAR_STRESS         No
+OUTPUT_BIN                      Yes
+OUTPUT_GID                      No
+OUTPUT_OUT                      No
+STRUCT_DISP                     Yes
+STRUCT_SE                       No
+STRUCT_SM_DISP                  No
+STRUCT_STRAIN                   No
+STRUCT_STRESS                   No
+STRUCT_SURFACTANT               No
+THERM_HEATFLUX                  None
+THERM_TEMPERATURE               No
+THERM_TEMPGRAD                  None
+------------------------------------------------------POROELASTICITY DYNAMIC
+COUPALGO                        poro_monolithic //poro_monolithic poro_monolithicstructuresplit poro_monolithicfluidsplit
+INCTOL                          1e-06
+ITEMAX                          20
+ITEMIN                          1
+MAXTIME                         8
+NORMCOMBI_RESFINC               Or
+NORM_INC                        Abs
+NORM_RESF                       Abs
+NUMSTEP                         400
+RESTARTEVRY                     100
+RESTOL                          1e-08
+TIMESTEP                        0.01
+UPRES                           1
+LINEAR_SOLVER                   1
+SECONDORDER                     no
+CONTIPARTINT                    no
+--------------------------------------------------------------------SOLVER 1
+AMGBS_BS_DAMPING 1.3 1.3 1.3
+AMGBS_BS_PCCOARSE               Umfpack
+AMGBS_BS_PCDAMPING 1.0 1.0 1.0
+AMGBS_BS_PCFINE                 Umfpack
+AMGBS_BS_PCMEDIUM               Umfpack
+AMGBS_BS_PCSWEEPS 2 2 2
+AMGBS_PSMOOTHER_PRE             PA-AMG
+AMGBS_PSMOOTHER_VEL             PA-AMG
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+AZPOLY                          3
+AZPREC                          ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+IFPACKCOMBINE                   Add
+IFPACKFILL                      1
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES 1 1 1 1 1
+SOLVER                          UMFPACK
+-----------------------------------------------------------------PROBLEM TYP
+NUMFIELD                        1
+PROBLEMTYP                      Poroelastic_scalar_transport
+RESTART                         0
+SHAPEFCT                        Polynomial
+-------------------------------------------SCALAR TRANSPORT DYNAMIC
+LINEAR_SOLVER                   4
+SOLVERTYPE                      linear_incremental
+TIMEINTEGR                      One_Step_Theta
+UPRES                           1
+RESTARTEVRY                     10
+NUMSTEP                         1000
+MAXTIME 4.0 //hill reaches point of departure (x0=2/15)
+TIMESTEP                        0.01                           
+THETA                           0.66
+VELOCITYFIELD                   Navier_Stokes
+VELFUNCNO                       -1
+INITIALFIELD                    field_by_function
+SCATRATYPE                      Poroscatra
+INITFUNCNO                      1
+FSSUGRDIFF                      No
+WRITEFLUX                       No
+MATID                           5
+-----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+ASSUGRDIFF                      no
+CONSISTENCY                     no
+DEFINITION_ASSGD                artificial_linear
+DEFINITION_TAU                  Franca_Valentin
+EVALUATION_MAT                  element_center
+EVALUATION_TAU                  element_center
+STABTYPE                        no_stabilization
+SUGRVEL                         no
+--------------------------------------------------------------------SOLVER 2
+AMGBS_BS_DAMPING 1.3 1.3 1.3
+AMGBS_BS_PCCOARSE               Umfpack
+AMGBS_BS_PCDAMPING 1.0 1.0 1.0
+AMGBS_BS_PCFINE                 Umfpack
+AMGBS_BS_PCMEDIUM               Umfpack
+AMGBS_BS_PCSWEEPS 2 2 2
+AMGBS_PSMOOTHER_PRE             PA-AMG
+AMGBS_PSMOOTHER_VEL             PA-AMG
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+AZPOLY                          3
+AZPREC                          ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+IFPACKCOMBINE                   Add
+IFPACKFILL                      1
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES 1 1 1 1 1
+SOLVER                          UMFPACK
+--------------------------------------------------------------------SOLVER 4
+NAME                            Sca_Tra_Solver
+SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+AZOUTPUT                        0                               // output every so often, 0 no output
+AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
+AZPREC                          ILU                             // none ML MLFLUID MLFLUID2 MLAPI ILU ILUT ICC LU Jacobi SymmGaussSeidel GaussSeidel DownwindGaussSeidel Least_Squares Neumann
+AZREUSE                         0                               // how often to recompute some preconditioners
+AZDROP                          0.0                             // drop tolerance for ILUT
+IFPACKFILL                      1.0                             // fill-in for ILUT
+IFPACKGFILL                     0                               // graph fill for ILU
+AZTOL                           1.0E-9                          // tolerance in (un)scaled residual
+AZITER                          1000                            // max iterations
+AZSUB                           40                              // size of krylov space for gmres
+AZOMEGA                         1.0                             // damping factor for Jacobi/GaussSeidel type preconditioners
+AZGRAPH                         1                               // unused
+AZPOLY                          1                               // polynomial order for Neumann
+IFPACKOVERLAP                   0                               // amount of ASM overlap for ILU, ILU, ICC, LU
+AZSCAL                          none                            // none sym infnorm scaling of the system
+AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
+DWINDTAU                        2.5                             // (for DownwindGaussSeidel and DGS, choose between 1.5 - 4.0) Considers only values in matrix that are tau times larger than the average in the frobenius norm
+ML_PRINT                        0                               // ML print-out level (0-10)
+ML_MAXCOARSESIZE                5000                            // ML stop coarsening when coarse ndof smaller then this
+ML_MAXLEVEL                     5                               // ML max number of levels
+ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
+ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
+ML_PROLONG_SMO                  0.0                             // damping factor for prolongator smoother (usually 1.33 or 0.0)
+ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
+ML_SMOOTHERFINE                 SGS                             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  ILU                             // SGS GS DGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERCOARSE               KLU                             // SGS GS DGS Jacobi Chebychev MLS KLU Superlu
+ML_SMOTIMES 2 0 0 0 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     0.67                            // damping fine grid
+ML_DAMPMED                      1.0                             // damping med grids
+ML_DAMPCOARSE                   1.0                             // damping coarse grid
+----------------------------------------------------------STRUCTURAL DYNAMIC
+ADAPTCONV                       No
+ADAPTCONV_BETTER                0.1
+ADAPTERDRIVE                    No
+CONTROLNODE -1 -1 -1
+CONTROLTYPE                     load
+DAMPING                         Material
+DIVERCONT                       No
+DYNAMICTYP                      OneStepTheta
+EIGEN                           0
+ITERNORM                        L2
+ITWANT                          0
+K_DAMP                          0.5
+LOADLIN                         no
+MAXDT                           0
+MAXITER                         50
+MAXTIME                         8
+MINITER                         0
+M_DAMP                          0.5
+NLNSOL fullnewton //fullnewton newtonlinuzawa
+NORMCOMBI_DISPPRES              And
+NORMCOMBI_RESFDISP              And
+NORMCOMBI_RESFINCO              And
+NORM_DISP                       Abs
+NORM_INCO                       Abs
+NORM_PRES                       Abs
+NORM_RESF                       Abs
+NUMSTEP                         100
+PREDICT                         ConstDis
+RESEVRYERGY                     0
+RESTARTEVRY                     1
+RESULTDT                        0
+RESULTSEVRY                     1
+STC_LAYER                       1
+STC_SCALING                     no
+TIMEADAPT                       0
+TIMESTEP                        0.01
+TOLCONSTR                       1e-08
+TOLDISP                         1e-10
+TOLINCO                         1e-08
+TOLPRE                          1e-08
+TOLRES                          1e-08
+UZAWAALGO                       direct
+UZAWAMAXITER                    50
+UZAWAPARAM                      1
+UZAWATOL                        1e-08
+LINEAR_SOLVER                   1
+---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
+THETA                           0.66
+----------------------------------------------------------POROSCATRA CONTROL
+UPRES                           1
+RESTARTEVRY                     10
+NUMSTEP                         100
+MAXTIME                         8.0
+TIMESTEP                        0.01
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD fluid TAR_MAT 3
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.4 BULKMODULUS 2.0e8 PENALTYPARAMETER 0.001
+MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 0.5
+MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3
+MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy
+MAT 5 MAT_scatra DIFFUSIVITY 1.0
+------------------------------------------------------------CURVE1
+CURVE1 on EXPR FUNC -1.0*0.5*(1-cos(t*pi/2.0)) t1 0.0 t2 8.0 
+------------------------------------------------------------CURVE2
+CURVE2 on EXPR FUNC  4.0*0.5*(1-cos(t*pi/2.0))+1.0    t1 0.0 t2 2.0 
+CURVE2 on EXPR FUNC  5.0                              t1 2.0 t2 8.0 
+------------------------------------------------------------CURVE3
+CURVE3 on EXPR FUNC  -1.0*0.5*(1-cos(t*pi/2.0))        t1 0.0 t2 2.0 // Tmax=4
+CURVE3 on EXPR FUNC  -1.0                              t1 2.0 t2 8.0 // Tmax=4
+------------------------------------------------------------CURVE4
+------------------------------------------------------------FUNCT1
+FUNCT1 EXPR 0 0.0 0 FUNCTION 1.0
+------------------------------------------------------------FUNCT2
+------------------------------------------------------------FUNCT3
+------------------------------------------------------------FUNCT4
+-------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra NODE 12 QUANTITY phi VALUE 1.30892926211659733e+00 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 21 QUANTITY phi VALUE 1.22997136408149976e+00 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 5 QUANTITY phi VALUE 1.22997716626800191e+00 TOLERANCE 1e-8
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 4
+NDLINE  4
+NDSURF  1
+NDVOL   0
+-------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT     0
+// Point x+y+
+//E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
+// Point x-y+
+//E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Point x-y-
+//E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Point x+y+
+//E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE  1
+// Line_x+
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Line_x-
+//E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Line_y+
+//E 3 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Line_y-
+//E 4 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+------------------------------DESIGN LINE NORMAL NO PENETRATION CONDITION
+DLINE                           0
+// Line_x+
+//E 1 - 
+// Line_x-
+//E 2 - 
+// Line_y+
+//E 3 - 
+// Line_y-
+//E 4 - 
+-------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF   1
+// Surface
+E 1 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+-------------------------------------DESIGN POINT PORO DIRICH CONDITIONS
+DPOINT     2
+// Point x+y+
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 3 none none none none none FUNCT 0 0 0 0 0 0
+// Point x-y+
+//E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Point x-y-
+//E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Point x+y+
+E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 3 none none none none none FUNCT 0 0 0 0 0 0
+-------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
+DLINE   3
+// Line_x+
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 3 none none none none none FUNCT 0 0 0 0 0 0
+// Line_x-
+//E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Line_y+
+E 3 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Line_y-
+E 4 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+-------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
+DSURF   0
+// Surface
+//E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+------------------------------DESIGN SURFACE POROCOUPLING CONDITION
+DSURF   1
+// Surface
+E 1 -  
+---------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
+DLINE 1
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 2 none none none none none FUNCT 0 0 0 0 0 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    1 DNODE 1
+NODE    10 DNODE 2
+NODE    22 DNODE 3
+NODE    17 DNODE 4
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE    1 DLINE 1
+NODE    4 DLINE 1
+NODE    8 DLINE 1
+NODE    17 DLINE 1
+NODE    20 DLINE 1
+NODE    10 DLINE 2
+NODE    11 DLINE 2
+NODE    13 DLINE 2
+NODE    22 DLINE 2
+NODE    23 DLINE 2
+NODE    1 DLINE 3
+NODE    2 DLINE 3
+NODE    5 DLINE 3
+NODE    10 DLINE 3
+NODE    12 DLINE 3
+NODE    16 DLINE 4
+NODE    17 DLINE 4
+NODE    19 DLINE 4
+NODE    22 DLINE 4
+NODE    24 DLINE 4
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE    1 DSURFACE  1
+NODE    2 DSURFACE  1
+NODE    3 DSURFACE  1
+NODE    4 DSURFACE  1
+NODE    5 DSURFACE  1
+NODE    6 DSURFACE  1
+NODE    7 DSURFACE  1
+NODE    8 DSURFACE  1
+NODE    9 DSURFACE  1
+NODE    10 DSURFACE  1
+NODE    11 DSURFACE  1
+NODE    12 DSURFACE  1
+NODE    13 DSURFACE  1
+NODE    14 DSURFACE  1
+NODE    15 DSURFACE  1
+NODE    16 DSURFACE  1
+NODE    17 DSURFACE  1
+NODE    18 DSURFACE  1
+NODE    19 DSURFACE  1
+NODE    20 DSURFACE  1
+NODE    21 DSURFACE  1
+NODE    22 DSURFACE  1
+NODE    23 DSURFACE  1
+NODE    24 DSURFACE  1
+NODE    25 DSURFACE  1
+-------------------------------------------------------NODE COORDS
+NODE 1  	COORD	5.0000000000000000e+00	5.0000000000000000e+00	0.0000000000000000e+00	
+NODE 2  	COORD	0.0000000000000000e+00	5.0000000000000000e+00	0.0000000000000000e+00	
+NODE 3  	COORD	0.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 4  	COORD	5.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 5  	COORD	2.5000000000000000e+00	5.0000000000000000e+00	0.0000000000000000e+00	
+NODE 6  	COORD	0.0000000000000000e+00	2.5000000000000000e+00	0.0000000000000000e+00	
+NODE 7  	COORD	2.5000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 8  	COORD	5.0000000000000000e+00	2.5000000000000000e+00	0.0000000000000000e+00	
+NODE 9  	COORD	2.5000000000000000e+00	2.5000000000000000e+00	0.0000000000000000e+00	
+NODE 10  	COORD	-5.0000000000000000e+00	5.0000000000000000e+00	0.0000000000000000e+00	
+NODE 11  	COORD	-5.0000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 12  	COORD	-2.5000000000000000e+00	5.0000000000000000e+00	0.0000000000000000e+00	
+NODE 13  	COORD	-5.0000000000000000e+00	2.5000000000000000e+00	0.0000000000000000e+00	
+NODE 14  	COORD	-2.5000000000000000e+00	0.0000000000000000e+00	0.0000000000000000e+00	
+NODE 15  	COORD	-2.5000000000000000e+00	2.5000000000000000e+00	0.0000000000000000e+00	
+NODE 16  	COORD	0.0000000000000000e+00	-5.0000000000000000e+00	0.0000000000000000e+00	
+NODE 17  	COORD	5.0000000000000000e+00	-5.0000000000000000e+00	0.0000000000000000e+00	
+NODE 18  	COORD	0.0000000000000000e+00	-2.5000000000000000e+00	0.0000000000000000e+00	
+NODE 19  	COORD	2.5000000000000000e+00	-5.0000000000000000e+00	0.0000000000000000e+00	
+NODE 20  	COORD	5.0000000000000000e+00	-2.5000000000000000e+00	0.0000000000000000e+00	
+NODE 21  	COORD	2.5000000000000000e+00	-2.5000000000000000e+00	0.0000000000000000e+00	
+NODE 22  	COORD	-5.0000000000000000e+00	-5.0000000000000000e+00	0.0000000000000000e+00	
+NODE 23  	COORD	-5.0000000000000000e+00	-2.5000000000000000e+00	0.0000000000000000e+00	
+NODE 24  	COORD	-2.5000000000000000e+00	-5.0000000000000000e+00	0.0000000000000000e+00	
+NODE 25  	COORD	-2.5000000000000000e+00	-2.5000000000000000e+00	0.0000000000000000e+00	
+------------------------------------------------STRUCTURE ELEMENTS
+   1 WALLQ9PORO QUAD9  1 2 3 4 5 6 7 8 9    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
+   2 WALLQ9PORO QUAD9  2 10 11 3 12 13 14 6 15    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
+   3 WALLQ9PORO QUAD9  4 3 16 17 7 18 19 20 21    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
+   4 WALLQ9PORO QUAD9  3 11 22 16 14 23 24 18 25    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 3 3
+----------------------------------------------------FLUID ELEMENTS
+------------------------------------------------------ALE ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+---------------------------------------------------THERMO ELEMENTS
+---------------------------------------------------------------END
+// END
