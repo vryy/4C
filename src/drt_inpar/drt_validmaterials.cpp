@@ -189,6 +189,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AddNamedReal(m,"MAIN_DIFFUSIVITY","conductivity in fiber direction");
     AddNamedReal(m,"OFF_DIFFUSIVITY","conductivity perpendicular to fiber direction");
+    AddNamedReal(m,"PERTUBATION_DERIV","pertubation for calculation of reaction coefficient derivative");
     AddNamedReal(m,"U_O","base level potential");
     AddNamedReal(m,"U_U","maximum exited potential");
     AddNamedReal(m,"THETA_V","excitation threshold");

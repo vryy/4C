@@ -54,6 +54,9 @@ namespace MAT
 	    const double maindirdiffusivity;
 	    const double offdirdiffusivity;
 
+            /// Pertubation for calculation of derivative
+	    const double dt_deriv;
+
 	    /// Model parameter
 	    const double u_o; //
 	    const double u_u;

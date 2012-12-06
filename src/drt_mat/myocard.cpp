@@ -31,6 +31,7 @@ MAT::PAR::Myocard::Myocard( Teuchos::RCP<MAT::PAR::Material> matdata )
 : Parameter(matdata),
   maindirdiffusivity(matdata->GetDouble("MAIN_DIFFUSIVITY")),
   offdirdiffusivity(matdata->GetDouble("OFF_DIFFUSIVITY")),
+  dt_deriv(matdata->GetDouble("PERTUBATION_DERIV")),
   u_o(matdata->GetDouble("U_O")), //
   u_u(matdata->GetDouble("U_U")),
   Theta_v(matdata->GetDouble("THETA_V")),
@@ -292,43 +293,12 @@ double MAT::Myocard::ComputeReactionCoeff(const double phi, const double dt) con
  *----------------------------------------------------------------------*/
 double MAT::Myocard::ComputeReactionCoeffDeriv(const double phi, const double dt) const
 {
-    // Phenomenological model [5]-[8]
-/*
-    /// Model parameter
-    const double u_o = params_->u_o;
-    const double u_u = params_->u_u;
-    const double Theta_v = params_->Theta_v;
-    const double Theta_w = params_->Theta_w;
-    const double Theta_vm = params_->Theta_vm;
-    const double Theta_o = params_->Theta_o;
-    const double Tau_v1m = params_->Tau_v1m;
-    const double Tau_v2m = params_->Tau_v2m;
-    const double Tau_vp = params_->Tau_vp;
-    const double Tau_w1m = params_->Tau_w1m;
-    const double Tau_w2m = params_->Tau_w2m;
-    const double k_wm = params_->k_wm;
-    const double u_wm = params_->u_wm;
-    const double Tau_wp = params_->Tau_wp;
-    const double Tau_fi = params_->Tau_fi;
-    const double Tau_o1 = params_->Tau_o1;
-    const double Tau_o2 = params_->Tau_o2;
-    const double Tau_so1 = params_->Tau_so1;
-    const double Tau_so2 = params_->Tau_so2;
-    const double k_so = params_->k_so;
-    const double u_so = params_->u_so;
-    const double Tau_s1 = params_->Tau_s1;
-    const double Tau_s2 = params_->Tau_s2;
-    const double k_s = params_->k_s;
-    const double u_s = params_->u_s;
-    const double Tau_si = params_->Tau_si;
-    const double Tau_winf = params_->Tau_winf;
-    const double w_infs = params_->w_infs;
+    const double ReaCoeff_t1 = ComputeReactionCoeff(phi, dt);
+    const double ReaCoeff_t2 = ComputeReactionCoeff((phi+params_->dt_deriv), dt);
 
-    const double p = 1000;
-    const double jac = (p*(pow(tanh(p*(Theta_w - phi)), 2.0) - 1.0))/(2.0*(Tau_so1 - (Tau_so1 - Tau_so2)*(tanh(k_so*(phi - u_so))/2.0 + 1.0/2.0))) - (tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)/(Tau_o1 + (Tau_o1 - Tau_o2)*(tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)) - (p*(pow(tanh(p*(Theta_w - phi)), 2.0) - 1.0)*(phi - u_o))/(2.0*(Tau_o1 + (Tau_o1 - Tau_o2)*(tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0))) - ((Theta_v - phi)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)*(v0_/dt + ((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)*(tanh(p*(Theta_vm - phi))/2.0 + 1.0/2.0))/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0))))/(Tau_fi*((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)) - (tanh(p*(Theta_v - phi))/2.0 - 1.0/2.0)/Tau_vp + 1.0/dt)) + ((tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)*(phi - u_u)*(v0_/dt + ((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)*(tanh(p*(Theta_vm - phi))/2.0 + 1.0/2.0))/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0))))/(Tau_fi*((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)) - (tanh(p*(Theta_v - phi))/2.0 - 1.0/2.0)/Tau_vp + 1.0/dt)) - (k_so*(Tau_so1 - Tau_so2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)*(pow(tanh(k_so*(phi - u_so)), 2.0) - 1.0))/(2.0*pow((Tau_so1 - (Tau_so1 - Tau_so2)*(tanh(k_so*(phi - u_so))/2.0 + 1.0/2.0)), 2.0)) - ((Theta_v - phi)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)*(phi - u_u)*((p*(tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)*(pow(tanh(p*(Theta_vm - phi)), 2.0) - 1.0))/(2.0*(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0))) + (p*(tanh(p*(Theta_vm - phi))/2.0 + 1.0/2.0)*(pow(tanh(p*(Theta_v - phi)), 2.0) - 1.0))/(2.0*(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0))) - (p*(Tau_v1m - Tau_v2m)*(tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)*(tanh(p*(Theta_vm - phi))/2.0 + 1.0/2.0)*(pow(tanh(p*(Theta_vm - phi)), 2.0) - 1.0))/(2.0*pow((Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)), 2.0))))/(Tau_fi*((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)) - (tanh(p*(Theta_v - phi))/2.0 - 1.0/2.0)/Tau_vp + 1.0/dt)) + (p*(Tau_o1 - Tau_o2)*(tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)*(pow(tanh(p*(Theta_o - phi)), 2.0) - 1.0)*(phi - u_o))/(2.0*pow((Tau_o1 + (Tau_o1 - Tau_o2)*(tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)), 2.0)) + (((tanh(k_s*(phi - u_s))/2.0 + 1.0/2.0)/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + s0_/dt)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)*(((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)*((tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)/Tau_winf + 1.0/Tau_winf + (p*(pow(tanh(p*(Theta_o - phi)), 2.0) - 1.0)*(w_infs + phi/Tau_winf - 1.0))/2.0))/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)) + (p*(pow(tanh(p*(Theta_w - phi)), 2.0) - 1.0)*((tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)*(w_infs + phi/Tau_winf - 1.0) + phi/Tau_winf - 1.0))/(2.0*(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0))) - (k_wm*(Tau_w1m - Tau_w2m)*(tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)*(pow(tanh(k_wm*(phi - u_wm)), 2.0) - 1.0)*((tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)*(w_infs + phi/Tau_winf - 1.0) + phi/Tau_winf - 1.0))/(2.0*pow((Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)), 2.0))))/(Tau_si*(1.0/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + 1.0/dt)*((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)) - (tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)/Tau_wp + 1.0/dt)) + ((w0_/dt - ((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)*((tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)*(w_infs + phi/Tau_winf - 1.0) + phi/Tau_winf - 1.0))/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)))*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)*((k_s*(pow(tanh(k_s*(phi - u_s)), 2.0) - 1.0))/(2.0*(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0))) + (p*(Tau_s1 - Tau_s2)*(pow(tanh(p*(Theta_w - phi)), 2.0) - 1.0)*(tanh(k_s*(phi - u_s))/2.0 + 1.0/2.0))/(2.0*pow((Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)), 2.0))))/(Tau_si*(1.0/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + 1.0/dt)*((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)) - (tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)/Tau_wp + 1.0/dt)) - (p*((tanh(k_s*(phi - u_s))/2.0 + 1.0/2.0)/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + s0_/dt)*(w0_/dt - ((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)*((tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)*(w_infs + phi/Tau_winf - 1.0) + phi/Tau_winf - 1.0))/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)))*(pow(tanh(p*(Theta_w - phi)), 2.0) - 1.0))/(2.0*Tau_si*(1.0/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + 1.0/dt)*((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)) - (tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)/Tau_wp + 1.0/dt)) - (p*(Theta_v - phi)*(pow(tanh(p*(Theta_vm - phi)), 2.0) - 1.0)*(phi - u_u)*(v0_/dt + ((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)*(tanh(p*(Theta_vm - phi))/2.0 + 1.0/2.0))/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0))))/(2.0*Tau_fi*((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)) - (tanh(p*(Theta_v - phi))/2.0 - 1.0/2.0)/Tau_vp + 1.0/dt)) - ((Theta_v - phi)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)*(phi - u_u)*(v0_/dt + ((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)*(tanh(p*(Theta_vm - phi))/2.0 + 1.0/2.0))/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)))*((p*(pow(tanh(p*(Theta_v - phi)), 2.0) - 1.0))/(2.0*Tau_vp) - (p*(pow(tanh(p*(Theta_v - phi)), 2.0) - 1.0))/(2.0*(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0))) + (p*(Tau_v1m - Tau_v2m)*(tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)*(pow(tanh(p*(Theta_vm - phi)), 2.0) - 1.0))/(2.0*pow((Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)), 2.0))))/(Tau_fi*pow(((tanh(p*(Theta_v - phi))/2.0 + 1.0/2.0)/(Tau_v1m + (Tau_v1m - Tau_v2m)*(tanh(p*(Theta_vm - phi))/2.0 - 1.0/2.0)) - (tanh(p*(Theta_v - phi))/2.0 - 1.0/2.0)/Tau_vp + 1.0/dt), 2.0)) - (((tanh(k_s*(phi - u_s))/2.0 + 1.0/2.0)/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + s0_/dt)*(w0_/dt - ((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)*((tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)*(w_infs + phi/Tau_winf - 1.0) + phi/Tau_winf - 1.0))/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)))*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)*((p*(pow(tanh(p*(Theta_w - phi)), 2.0) - 1.0))/(2.0*Tau_wp) - (p*(pow(tanh(p*(Theta_w - phi)), 2.0) - 1.0))/(2.0*(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0))) + (k_wm*(Tau_w1m - Tau_w2m)*(tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)*(pow(tanh(k_wm*(phi - u_wm)), 2.0) - 1.0))/(2.0*pow((Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)), 2.0))))/(Tau_si*(1.0/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + 1.0/dt)*pow(((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)) - (tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)/Tau_wp + 1.0/dt), 2.0)) - (p*((tanh(k_s*(phi - u_s))/2.0 + 1.0/2.0)/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + s0_/dt)*(Tau_s1 - Tau_s2)*(w0_/dt - ((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)*((tanh(p*(Theta_o - phi))/2.0 - 1.0/2.0)*(w_infs + phi/Tau_winf - 1.0) + phi/Tau_winf - 1.0))/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)))*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)*(pow(tanh(p*(Theta_w - phi)), 2.0) - 1.0))/(2.0*Tau_si*pow((Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)), 2.0)*pow((1.0/(Tau_s1 + (Tau_s1 - Tau_s2)*(tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)) + 1.0/dt), 2.0)*((tanh(p*(Theta_w - phi))/2.0 + 1.0/2.0)/(Tau_w1m - (Tau_w1m - Tau_w2m)*(tanh(k_wm*(phi - u_wm))/2.0 + 1.0/2.0)) - (tanh(p*(Theta_w - phi))/2.0 - 1.0/2.0)/Tau_wp + 1.0/dt));
+    const double ReaCoeffDeriv = (ReaCoeff_t2 - ReaCoeff_t1)/(params_->dt_deriv);
 
-*/
-    return 0;
+    return ReaCoeffDeriv;
 }
 
 /*----------------------------------------------------------------------*
