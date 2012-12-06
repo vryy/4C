@@ -2504,8 +2504,8 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
 
   if (myrank_ == 0)
   {
-    IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+\n"
-             << "|- step/max -|- tol      [norm] -|-- con-res ---|-- pot-res ---|-- con-inc ---|-- pot-inc ---|" << IO::endl;
+    IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+\n"
+             << "|- step/max -|- tol      [norm] -|-- con-res ---|-- pot-res ---|-- con-inc ---|-- pot-inc ---|-- con-res-inf ---|" << IO::endl;
   }
 
   // ---------------------------------------------- nonlinear iteration
@@ -2692,6 +2692,8 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
   double conresnorm(0.0);
   double potresnorm(0.0);
 
+  double conresnorminf(0.0);
+
   if (IsElch(scatratype_))
   {
     Teuchos::RCP<Epetra_Vector> onlycon = splitter_->ExtractOtherVector(residual_);
@@ -2717,6 +2719,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
     residual_ ->Norm2(&conresnorm);
     increment_->Norm2(&incconnorm_L2);
     phinp_    ->Norm2(&connorm_L2);
+    residual_ ->NormInf(&conresnorminf);
   }
 
   // care for the case that nothing really happens in the concentration
@@ -2744,7 +2747,8 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       IO::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax << "   | "
                << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
                << std::setw(10) << std::setprecision(3) << std::scientific << conresnorm << "   | "
-               << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   |      --      |      --      | (      --     ,te="
+               << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   |      --      |      --      | "
+               << std::setw(10) << std::setprecision(3) << std::scientific << conresnorminf << "       | (      --     ,te="
                << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << IO::endl;
     }
     // abort iteration, when there's nothing more to do
@@ -2753,7 +2757,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       // print 'finish line'
       if (myrank_ == 0)
       {
-        IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+" << IO::endl;
+        IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << IO::endl;
       }
       return true;
     }
@@ -2771,7 +2775,8 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
                << std::setw(10) << std::setprecision(3) << std::scientific << conresnorm << "   | "
                << std::setw(10) << std::setprecision(3) << std::scientific << potresnorm << "   | "
                << std::setw(10) << std::setprecision(3) << std::scientific << incconnorm_L2/connorm_L2 << "   | "
-               << std::setw(10) << std::setprecision(3) << std::scientific << incpotnorm_L2/potnorm_L2 << "   | (ts="
+               << std::setw(10) << std::setprecision(3) << std::scientific << incpotnorm_L2/potnorm_L2 << "   | "
+               << std::setw(10) << std::setprecision(3) << std::scientific << conresnorminf << "       | (ts="
                << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve_ << ",te="
                << std::setw(10) << std::setprecision(3) << std::scientific << dtele_ << ")" << IO::endl;
     }
@@ -2785,7 +2790,7 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
       if (myrank_ == 0)
       {
         // print 'finish line'
-        IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+" << IO::endl;
+        IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+------------------+" << IO::endl;
         // write info to error file
         if (errfile_!=NULL)
         {
@@ -2905,8 +2910,8 @@ void SCATRA::ScaTraTimIntImpl::OutputState()
   output_->WriteVector("phinp", phinp_);
 
   // convective velocity (not written in case of coupled simulations)
-  if (cdvel_ != INPAR::SCATRA::velocity_Navier_Stokes)
-    output_->WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
+//  if (cdvel_ != INPAR::SCATRA::velocity_Navier_Stokes)
+//    output_->WriteVector("convec_velocity", convel_,IO::DiscretizationWriter::nodevector);
 
   // displacement field
   if (isale_) output_->WriteVector("dispnp", dispnp_);
