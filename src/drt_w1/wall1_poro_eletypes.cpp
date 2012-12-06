@@ -78,6 +78,7 @@ void DRT::ELEMENTS::WallQuad4PoroType::SetupElementDefinition( std::map<std::str
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::WallQuad4PoroType::Initialize(DRT::Discretization& dis)
 {
+  DRT::ELEMENTS::Wall1Type::Initialize(dis);
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;
@@ -146,6 +147,7 @@ void DRT::ELEMENTS::WallQuad9PoroType::SetupElementDefinition( std::map<std::str
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::WallQuad9PoroType::Initialize(DRT::Discretization& dis)
 {
+  DRT::ELEMENTS::Wall1Type::Initialize(dis);
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;

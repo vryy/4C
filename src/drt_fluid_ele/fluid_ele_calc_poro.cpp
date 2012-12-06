@@ -609,24 +609,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     my::tau_(2) = c_p*DSQR(hk)*my::reacoeff_;
   }
 
-  std::vector<double> dporodt_gp(intpoints.NumPoints(),0.0); // urrecha
-  std::vector<double> rhscon(intpoints.NumPoints(),0.0);
-  std::vector<double> J_gp(intpoints.NumPoints(),0.0);
-
-  std::vector<LINALG::Matrix<my::nsd_,1> > gradporosity_gp (intpoints.NumPoints());
-  for(int i = 0 ; i < intpoints.NumPoints() ; i++)
-  {
-    for(int j=0; j<my::nsd_; j++)
-      gradporosity_gp.at(i)(j) = 0.0;
-  }
-
-  std::vector<LINALG::Matrix<1,my::nsd_> > gradJ_gp (intpoints.NumPoints());
-  for(int i = 0 ; i < intpoints.NumPoints() ; i++)
-  {
-    for(int j=0; j<my::nsd_; j++)
-      gradJ_gp.at(i)(j) = 0.0;
-  }
-
   //------------------------------------------------------------------------
   //  start loop over integration points
   //------------------------------------------------------------------------
@@ -803,9 +785,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     LINALG::Matrix<1,my::nsd_> gradJ;
     structmat->GetGradJAtGP(gradJ,*(iquad));
 
-    gradJ_gp[*(iquad)] = gradJ;
-    J_gp[*(iquad)] = J;
-
     //--linearization of porosity gradient w.r.t. pressure at gausspoint
     //d(grad(phi))/dp = dphi/(dJdp)* dJ/dx + d^2phi/(dp)^2 * dp/dx + dphi/dp* N,x
     LINALG::Matrix<my::nsd_,my::nen_>             dgradphi_dp(true);
@@ -813,22 +792,20 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     // calculate spatial porosity gradient
     LINALG::Matrix<my::nsd_,1>             grad_porosity(true);
 
-    if( (my::fldpara_->PoroContiPartInt() == false) or visceff_)
     {
       LINALG::Matrix<my::nsd_,1>             mat_grad_porosity;
       //-----get material porosity gradient from structure material
       structmat->GetGradPorosityAtGP(mat_grad_porosity,*(iquad));
 
       grad_porosity.MultiplyTN(defgrd_inv,mat_grad_porosity);
+    }
 
-      gradporosity_gp[*(iquad)] = grad_porosity;    // trial urrecha.
-
+    if( (my::fldpara_->PoroContiPartInt() == false) or visceff_)
+    {
       dgradphi_dp.MultiplyTT(dphi_dJdp,gradJ,my::funct_ );
       dgradphi_dp.MultiplyNT(dphi_dpp, my::gradp_,my::funct_,1.0);
       dgradphi_dp.Update(dphi_dp, my::derxy_,1.0);
     }
-
-    dporodt_gp[*iquad]= dphi_dJ*J*gridvdiv  +  dphi_dp*press_dot;    // trial urrecha.
 
     //----------------------------------------------------------------------
     // potential evaluation of material parameters and/or stabilization
@@ -1043,8 +1020,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     // compute residual of continuity equation
     my::conres_old_ = (dphi_dp  * press_dot+ dphi_dJ  * J  * gridvdiv
           + porosity*my::vdiv_+grad_porosity_relvelint)/my::fldpara_->Theta()-my::rhscon_;
-
-    rhscon[*iquad] = dporodt_gp[*iquad] + grad_porosity_relvelint + porosity * my::vdiv_ ;
 
     // compute first version of velocity-based momentum residual containing
     // inertia and reaction term

@@ -4042,9 +4042,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
   Teuchos::RCP<const Epetra_Vector>      dispnp;
   std::vector<double>                mydispnp;
 
-  Teuchos::RCP<std::vector<int> >mycondIDs;
-  mycondIDs = Teuchos::rcp(new std::vector<int>);
-
   if (ele->ParentElement()->IsAle())
   {
     dispnp = discretization.GetState("dispnp");
@@ -4102,13 +4099,10 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
         {
           for (int idof2=0;idof2<numdofpernode_;idof2++)
               elemat1(inode*numdofpernode_+idof,inode*numdofpernode_+idof2) += nodenormal(idof2);
-          //elevec1(inode*numdofpernode_+idof) = 0.0;
           elevec1(inode*numdofpernode_+idof) = 1.0;
-          //mycondIDs->push_back(lm[inode*numdofpernode_+idof]);
           isset=true;
         }
         else //no condition set on dof
-          //mycondIDs->push_back(-1);
           elevec1(inode*numdofpernode_+idof) = 0.0;
       }
     }
@@ -4228,8 +4222,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
   else
     dserror("unknown coupling type for no penetration boundary condition");
 
-  //save the vector containing the constraint dofs in the parameter list
- // params.set<Teuchos::RCP<std::vector<int> > >("mycondIDs", mycondIDs);
   return;
 }
 

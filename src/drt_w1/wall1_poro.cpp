@@ -39,9 +39,7 @@ intpoints_(distype)
   detJ_.resize(numgpt_, 0.0);
   xsi_.resize(numgpt_, LINALG::Matrix<numdim_,1>(true));
 
-  invJ_.clear();
-  detJ_.clear();
-  xsi_.clear();
+  init_=false;
 
   return;
 }
@@ -59,7 +57,8 @@ detJ_(old.detJ_),
 data_(old.data_),
 xsi_(old.xsi_),
 intpoints_(old.intpoints_),
-ishigherorder_(old.ishigherorder_)
+ishigherorder_(old.ishigherorder_),
+init_(old.init_)
 {
   return;
 }
@@ -118,6 +117,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
   int type = 0;
   ExtractfromPack(position,data,type);
   if (type != UniqueParObjectId()) dserror("wrong instance type data");
+
   // data_
   std::vector<char> tmp(0);
   ExtractfromPack(position,data,tmp);
@@ -125,6 +125,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
 
   // detJ_
   ExtractfromPack(position,data,detJ_);
+
   // invJ_
   int size = 0;
   ExtractfromPack(position,data,size);
@@ -147,6 +148,9 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
+
+  init_=true;
+
   return;
 }
 

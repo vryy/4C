@@ -59,6 +59,9 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::Evaluate(Teuchos::ParameterList& params,
                                     Epetra_SerialDenseVector& elevec2_epetra,
                                     Epetra_SerialDenseVector& elevec3_epetra)
 {
+  if(not init_)
+    dserror("internal element data not initialized!");
+
   // start with "none"
   typename Wall1_Poro<distype>::ActionType act = Wall1_Poro<distype>::none;
 
@@ -1786,6 +1789,8 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::InitJacobianMapping()
   detJ_.resize(numgpt_);
   xsi_.resize(numgpt_);
 
+  cout<<"numgpt_: "<<numgpt_<<endl;
+
   for (int gp=0; gp<numgpt_; ++gp)
   {
     const double* gpcoord = intpoints_.Point(gp);
@@ -1801,6 +1806,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::InitJacobianMapping()
     if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0",detJ_[gp]);
   }
 
+  init_=true;
   return;
 }
 

@@ -367,6 +367,8 @@ namespace ELEMENTS
     //!flag indicating higher order element
     bool ishigherorder_;
 
+    bool init_;
+
   }; // class So3_Poro
 
 }
