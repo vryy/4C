@@ -70,15 +70,8 @@ void DRT::ELEMENTS::So_hex8ScatraType::SetupElementDefinition( std::map<std::str
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex8ScatraType::Initialize(DRT::Discretization& dis)
 {
-  for (int i=0; i<dis.NumMyColElements(); ++i)
-  {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8>* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_hex8, DRT::Element::hex8> * >(dis.lColElement(i));
-    if (!actele) dserror("cast to So_hex8_scatra* failed");
-    actele->So_hex8::InitJacobianMapping();
-    //actele->So3_Scatra<DRT::Element::hex8>::InitJacobianMapping();
-  }
+
+  So_hex8Type::Initialize(dis);
   return 0;
 }
 
@@ -140,15 +133,7 @@ void DRT::ELEMENTS::So_tet4ScatraType::SetupElementDefinition( std::map<std::str
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_tet4ScatraType::Initialize(DRT::Discretization& dis)
 {
-  for (int i=0; i<dis.NumMyColElements(); ++i)
-  {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4>* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4, DRT::Element::tet4> * >(dis.lColElement(i));
-    if (!actele) dserror("cast to So_tet4_scatra* failed");
-    actele->So_tet4::InitJacobianMapping();
-   // actele->So3_Scatra<DRT::Element::tet4>::InitJacobianMapping();
-  }
+  So_tet4Type::Initialize(dis);
   return 0;
 }
 
@@ -213,15 +198,79 @@ void DRT::ELEMENTS::So_weg6ScatraType::SetupElementDefinition( std::map<std::str
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_weg6ScatraType::Initialize(DRT::Discretization& dis)
 {
-  for (int i=0; i<dis.NumMyColElements(); ++i)
-  {
-    if (dis.lColElement(i)->ElementType() != *this) continue;
-    DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6>* actele =
-        dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_weg6, DRT::Element::wedge6> * >(dis.lColElement(i));
-    if (!actele) dserror("cast to So_weg6_scatra* failed");
-    actele->So_weg6::InitJacobianMapping();
-   // actele->So3_Scatra<DRT::Element::wedge6>::InitJacobianMapping();
-  }
+
+  So_weg6Type::Initialize(dis);
   return 0;
 }
+
+
+/*----------------------------------------------------------------------*
+ |  NSTET 5 Element                                       |
+ *----------------------------------------------------------------------*/
+
+/*
+DRT::ELEMENTS::NStet5ScatraType DRT::ELEMENTS::NStet5ScatraType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::NStet5ScatraType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::NStet5, DRT::Element::tet4>* object =
+          new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::NStet5, DRT::Element::tet4>(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5ScatraType::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="NSTET5SCATRA" )
+  {
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::NStet5, DRT::Element::tet4>
+                                                                    (id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5ScatraType::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::NStet5, DRT::Element::tet4>
+                                                                        (id,owner));
+  return ele;
+}
+
+void DRT::ELEMENTS::NStet5ScatraType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >  definitions_nstet5;
+  NStet5Type::SetupElementDefinition(definitions_nstet5);
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs_nstet5 =
+      definitions_nstet5["NSTET5"];
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs =
+      definitions["NSTET5SCATRA"];
+
+  defs["TET4"]=defs_nstet5["TET4"];
+
+
+}
+
+*/
+
+/*----------------------------------------------------------------------*
+ |  init the element (public)                                           |
+ *----------------------------------------------------------------------*/
+/*
+
+int DRT::ELEMENTS::NStet5ScatraType::Initialize(DRT::Discretization& dis)
+{
+  NStet5Type::Initialize(dis);
+  return 0;
+}
+
+*/
+
 

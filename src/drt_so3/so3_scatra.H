@@ -42,7 +42,9 @@ class So3_Scatra : public so3_ele
   //! @name Friends
   friend class So_tet4ScatraType;
   friend class So_hex8ScatraType;
+  friend class So_hex8fbarScatraType;
   friend class So_weg6ScatraType;
+  // friend class NStet5ScatraType;
 
 public:
 
@@ -117,7 +119,13 @@ public:
     switch(distype)
     {
     case DRT::Element::tet4:
-      return So_tet4ScatraType::Instance().UniqueParObjectId();
+    {
+      const DRT::ELEMENTS::So_tet4* ele = dynamic_cast<const DRT::ELEMENTS::So_tet4*>(this);
+      if(ele != NULL)
+       return So_tet4ScatraType::Instance().UniqueParObjectId();
+      // else
+       // return NStet5ScatraType::Instance().UniqueParObjectId();
+    }
     case DRT::Element::hex8:
       return So_hex8ScatraType::Instance().UniqueParObjectId();
     case DRT::Element::wedge6:
@@ -180,7 +188,13 @@ public:
     switch(distype)
     {
     case DRT::Element::tet4:
-      return So_tet4ScatraType::Instance();
+    {
+      const DRT::ELEMENTS::So_tet4* ele = dynamic_cast<const DRT::ELEMENTS::So_tet4*>(this);
+      if(ele != NULL)
+       return So_tet4ScatraType::Instance();
+      // else
+      //  return NStet5ScatraType::Instance();
+    }
     case DRT::Element::hex8:
       return So_hex8ScatraType::Instance();
     case DRT::Element::wedge6:
