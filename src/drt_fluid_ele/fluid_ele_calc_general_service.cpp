@@ -541,8 +541,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<nsd_,nen_> evelnp(true);
+  LINALG::Matrix<nen_,1>    eprenp(true);
   if (fldpara_->IsGenalphaNP())
-    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelnp, NULL,"velnp");
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelnp, &eprenp,"velnp");
 
   LINALG::Matrix<nen_,1> escaaf(true);
   ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, NULL, &escaaf,"scaaf");
@@ -858,8 +859,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     }
 
     // get pressure gradient at integration point
-    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    gradp_.Multiply(derxy_,epreaf);
+    // (value at n+alpha_F for generalized-alpha scheme,
+    //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
+    if(fldpara_->IsGenalphaNP())
+      gradp_.Multiply(derxy_,eprenp);
+    else
+      gradp_.Multiply(derxy_,epreaf);
 
     // get bodyforce at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -1727,6 +1732,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::FDcheck(
 {
   // magnitude of dof perturbation
   const double epsilon=1e-14;
+
+  if(fldpara_->IsGenalphaNP())
+    dserror("FD check not available for NP genalpha!!");
 
   // make a copy of all input parameters potentially modified by Sysmat
   // call --- they are not intended to be modified

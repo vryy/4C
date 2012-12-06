@@ -180,9 +180,10 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
 
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<my::nsd_, my::nen_> evelnp(true);
+  LINALG::Matrix<my::nen_, 1> eprenp(true);
   if (my::fldpara_->IsGenalphaNP())
     my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp,
-        NULL, "velnp");
+        &eprenp, "velnp");
 
   LINALG::Matrix<my::nsd_, my::nen_> emhist(true);
   my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &emhist,
@@ -229,7 +230,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
 
   // call inner evaluate (does not know about DRT element or discretization object)
   int result = Evaluate(ele->Id(), params, ebofoaf, elemat1, elemat2,
-      elevec1, evelaf, epreaf, evelnp, emhist, epren, epressn_timederiv, epressnp_timederiv,
+      elevec1, evelaf, epreaf, evelnp, eprenp, emhist, epren, epressn_timederiv, epressnp_timederiv,
       eaccam, edispnp, edispn, egridv, mat, ele->IsAle(), intpoints);
 
   return result;
@@ -294,9 +295,10 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
 
   // np_genalpha: additional vector for velocity at time n+1
   LINALG::Matrix<my::nsd_, my::nen_> evelnp(true);
+  LINALG::Matrix<my::nen_, 1> eprenp(true);
   if (my::fldpara_->IsGenalphaNP())
     this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &evelnp,
-        NULL, "velnp");
+        &eprenp, "velnp");
 
   LINALG::Matrix<my::nsd_, my::nen_> emhist(true);
   this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &emhist,
@@ -347,6 +349,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
       evelaf,
       epreaf,
       evelnp,
+      eprenp,
       emhist,
       epren,
       epressnp_timederiv,
@@ -376,6 +379,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   const LINALG::Matrix<my::nsd_,my::nen_> &                       evelaf,
   const LINALG::Matrix<my::nen_,1>    &                           epreaf,
   const LINALG::Matrix<my::nsd_,my::nen_> &                       evelnp,
+  const LINALG::Matrix<my::nen_,1>    &                           eprenp,
   const LINALG::Matrix<my::nsd_,my::nen_> &                       emhist,
   const LINALG::Matrix<my::nen_,1>    &                           epren,
   const LINALG::Matrix<my::nen_,1>    &                           epressn_timederiv,
@@ -409,6 +413,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
        evelaf,
        evelnp,
        epreaf,
+       eprenp,
        eaccam,
        emhist,
        epren,
@@ -443,6 +448,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
     const LINALG::Matrix<my::nsd_,my::nen_> &                         evelaf,
     const LINALG::Matrix<my::nen_, 1> &                               epreaf,
     const LINALG::Matrix<my::nsd_, my::nen_> &                        evelnp,
+    const LINALG::Matrix<my::nen_, 1> &                               eprenp,
     const LINALG::Matrix<my::nsd_, my::nen_> &                        emhist,
     const LINALG::Matrix<my::nen_, 1> &                               epren,
     const LINALG::Matrix<my::nen_, 1> &                               epressnp_timederiv,
@@ -474,6 +480,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
         evelaf,
         evelnp,
         epreaf,
+        eprenp,
         eaccam,
         emhist,
         epren,
@@ -501,6 +508,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
   const LINALG::Matrix<my::nsd_,my::nen_>&                      evelaf,
   const LINALG::Matrix<my::nsd_,my::nen_>&                      evelnp,
   const LINALG::Matrix<my::nen_,1>&                             epreaf,
+  const LINALG::Matrix<my::nen_,1>&                             eprenp,
   const LINALG::Matrix<my::nsd_,my::nen_>&                      eaccam,
   const LINALG::Matrix<my::nsd_,my::nen_>&                      emhist,
   const LINALG::Matrix<my::nen_,1>    &                         epren,
@@ -654,8 +662,13 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     my::convvelint_.Multiply(-1.0, egridv, my::funct_, 0.0);
 
     // get pressure at integration point
-    // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    double press = my::funct_.Dot(epreaf);
+    // (value at n+alpha_F for generalized-alpha scheme,
+    //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
+    double press(true);
+    if(my::fldpara_->IsGenalphaNP())
+      press = my::funct_.Dot(eprenp);
+    else
+      press = my::funct_.Dot(epreaf);
 
     // get pressure time derivative at integration point
     // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -666,8 +679,12 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     //double pressn_dot = my::funct_.Dot(epressn_timederiv);
 
     // get pressure gradient at integration point
-    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    my::gradp_.Multiply(my::derxy_,epreaf);
+    // (value at n+alpha_F for generalized-alpha scheme,
+    //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
+    if(my::fldpara_->IsGenalphaNP())
+      my::gradp_.Multiply(my::derxy_,eprenp);
+    else
+      my::gradp_.Multiply(my::derxy_,epreaf);
 
     // get bodyforce at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -1807,6 +1824,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
     const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,
     const LINALG::Matrix<my::nen_, 1>&                              epreaf,
+    const LINALG::Matrix<my::nen_, 1>&                              eprenp,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       eaccam,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       emhist,
     const LINALG::Matrix<my::nen_, 1> &                             epren,
@@ -1911,16 +1929,25 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
     my::convvelint_.Multiply(-1.0, egridv, my::funct_, 0.0);
 
     // get pressure at integration point
-    // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    double press = my::funct_.Dot(epreaf);
+    // (value at n+alpha_F for generalized-alpha scheme,
+    //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
+    double press(true);
+    if(my::fldpara_->IsGenalphaNP())
+      press = my::funct_.Dot(eprenp);
+    else
+      press = my::funct_.Dot(epreaf);
 
     // get pressure time my::derivative at integration point
     // (value at n+1 )
     double press_dot = my::funct_.Dot(epressnp_timederiv);
 
     // get pressure gradient at integration point
-    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    my::gradp_.Multiply(my::derxy_,epreaf);
+    // (value at n+alpha_F for generalized-alpha scheme,
+    //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
+    if(my::fldpara_->IsGenalphaNP())
+      my::gradp_.Multiply(my::derxy_,eprenp);
+    else
+      my::gradp_.Multiply(my::derxy_,epreaf);
 
     // get bodyforce at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)

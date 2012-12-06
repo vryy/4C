@@ -320,6 +320,7 @@ namespace ELEMENTS
                          LINALG::Matrix<(nsd_+1)*nen_,            1> & elevec1,
                          const LINALG::Matrix<nsd_,nen_> &             evelaf,
                          const LINALG::Matrix<nen_,1>    &             epreaf,
+                         const LINALG::Matrix<nen_,1>    &             eprenp,
                          const LINALG::Matrix<nsd_,nen_> &             evelnp,
                          const LINALG::Matrix<nen_,1>    &             escaaf,
                          const LINALG::Matrix<nsd_,nen_> &             emhist,
@@ -358,6 +359,7 @@ namespace ELEMENTS
       \param fsevelaf         (i) fine-scale nodal velocities at n+alpha_F/n+1
       \param fsescaaf         (i) fine-scale nodal scalar at n+alpha_F/n+1
       \param epreaf           (i) nodal pressure at n+alpha_F/n+1
+      \param eprenp           (i) nodal pressure at n+1
       \param eaccam           (i) nodal accelerations at n+alpha_M
       \param escaaf           (i) nodal scalar at n+alpha_F/n+1
       \param escaam           (i) nodal scalar at n+alpha_M/n
@@ -389,6 +391,7 @@ namespace ELEMENTS
                         const LINALG::Matrix<nsd_,nen_>&              evel_hat,
                         const LINALG::Matrix<nsd_*nsd_,nen_>&         ereynoldsstress_hat,
                         const LINALG::Matrix<nen_,1>&                 epreaf,
+                        const LINALG::Matrix<nen_,1>&                 eprenp,
                         const LINALG::Matrix<nsd_,nen_>&              eaccam,
                         const LINALG::Matrix<nen_,1>&                 escaaf,
                         const LINALG::Matrix<nen_,1>&                 escaam,

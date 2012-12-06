@@ -178,7 +178,16 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
 
   // set flags for formuation of the convective velocity term (conservative or convective)
   std::string convformstr = params.get<std::string>("form of convective term");
-  if (convformstr =="conservative") is_conservative_ = true;
+  if (convformstr =="conservative")
+  {
+    is_conservative_ = true;
+    if(myrank==0)
+    {
+      std::cout << std::endl << "Warning: \n"
+        "a) Using PSPG stabilization yields a conservative formulation (Hughes, Wells 2005)"
+        "b) Instablities may occur for complex flow situations" << std::endl;
+    }
+  }
 
   // set flag for physical type of fluid flow
   physicaltype_ = DRT::INPUT::get<INPAR::FLUID::PhysicalType>(params, "Physical Type");
@@ -189,6 +198,9 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
 
   if (is_genalpha_np_ and physicaltype_ == INPAR::FLUID::loma)
     dserror("the combination Np_Gen_Alpha and loma is not supported");
+
+  if (not is_genalpha_ and physicaltype_ == INPAR::FLUID::loma)
+    dserror("the combination OST and loma is said to be supported but does not work!!");
 
   if (is_genalpha_np_ and is_conservative_)
     dserror("the combination Np_Gen_Alpha and conservative flow is not supported");

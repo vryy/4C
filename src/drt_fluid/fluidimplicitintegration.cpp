@@ -2690,27 +2690,6 @@ void FLD::FluidImplicitTimeInt::GenAlphaIntermediateValues()
   // not implicit treatment as for the genalpha according to Whiting
   velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
 
-  if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
-  {
-    // set intermediate values for velocity
-    //
-    //       n+alphaF              n+1                   n
-    //      u         = alpha_F * u     + (1-alpha_F) * u
-    //       (i)                   (i)
-    //
-    // and pressure
-    //
-    //       n+1
-    //      p
-    //       (i)
-    //
-    // note that its af-genalpha with mid-point treatment of the pressure,
-    // not implicit treatment as for the genalpha according to Whiting
-    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(velnp_);
-
-    LINALG::Export(*onlypre, *velaf_);
-  }
-
 } // FluidImplicitTimeInt::GenAlphaIntermediateValues
 
 
