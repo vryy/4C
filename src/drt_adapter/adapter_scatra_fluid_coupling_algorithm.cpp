@@ -83,8 +83,7 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
     cout << "Fluid and Scatra time integration do not match!" << endl;
     break;
   }
-  default:
-    dserror("Fluid and Scatra time integration schemes do not match");
+  default: dserror("Fluid and Scatra time integration schemes do not match"); break;
   }
 
   // if applicable, provide scatra data to the turbulence statistics
