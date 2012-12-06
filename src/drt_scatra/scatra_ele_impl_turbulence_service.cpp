@@ -565,7 +565,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
           specific_term = scatrares_[k];
         }
         break;
-        default: dserror("unknown type of all-scale subgrid diffusivity\n");
+        default: dserror("unknown type of all-scale subgrid diffusivity\n"); break;
         } //switch (whichassgd)
 
         // computation of subgrid diffusivity
@@ -828,6 +828,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
       }
       default:
         dserror("Unknown velocity!");
+        break;
     }
     if (Re_ele < 0.0)
       dserror("Something went wrong!");
@@ -1199,6 +1200,7 @@ double DRT::ELEMENTS::ScaTraImpl<distype>::CalcRefLength(
   }
   default:
     dserror("Unknown length");
+    break;
   } // switch reflength
   if (hk == 1.0e+10)
    dserror("Something went wrong!");
