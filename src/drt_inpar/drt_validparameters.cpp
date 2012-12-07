@@ -1198,6 +1198,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                   INPAR::STR::stat_inv_none,
                                   INPAR::STR::stat_inverse),
                                 &statinvp);
+   setNumericStringParameter("MONITORFILE","none.monitor",
+                             "filename of file containing measured displacements",
+                             &statinvp);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& iap = list->sublist("INVERSE ANALYSIS",false,"");

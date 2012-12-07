@@ -59,6 +59,14 @@ private:
   /// context for output and restart
   Teuchos::RCP<IO::DiscretizationWriter> output_;
 
+  //! \brief Quick and dirty hack to compute an error based on a monitor file, copied from gen_inv_analysis
+  double CalcErrorMonitorFile();
+
+  //! \brief Solve nonlinear forward problem without using adapters
+  Epetra_SerialDenseVector SolveForwardProblemOldStyle(bool outputtofile,int nmp_,std::vector<double>  timesteps_, int ndofs_,int nnodes_,std::vector<std::vector<int> > dofs_,std::vector<int>   nodes_);
+
+  //! \brief Get displacement at dofs specified in monitor file
+  Epetra_SerialDenseVector GetCalculatedCurve(Epetra_Vector& disp, int ndofs_, int nnodes_,std::vector<std::vector<int> > dofs_,std::vector<int>   nodes_ );
 
 
 
