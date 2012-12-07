@@ -68,7 +68,8 @@ private:
   //! \brief Get displacement at dofs specified in monitor file
   Epetra_SerialDenseVector GetCalculatedCurve(Epetra_Vector& disp, int ndofs_, int nnodes_,std::vector<std::vector<int> > dofs_,std::vector<int>   nodes_ );
 
-
+  //! \brief vector to store displacements of discretization
+  Teuchos::RCP<const Epetra_Vector> displacement_;
 
 public:
 

@@ -38,6 +38,10 @@ Maintainer: Jonas Biehler
 
 #include "../drt_structure/stru_resulttest.H"
 
+// needed to deal with materials
+#include "../drt_mat/material.H"
+#include "../drt_mat/aaaneohooke_stopro.H"
+#include "../drt_mat/matpar_bundle.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -48,8 +52,9 @@ STR::StatInvAnalysis::StatInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
     output_(output)
 {
   // input parameters inverse analysis
-  const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
-
+  //const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
+  // Store displacement
+  displacement_ = Teuchos::rcp(new Epetra_Vector(*discret_->DofRowMap(),true));
 }
 
 
@@ -57,16 +62,69 @@ STR::StatInvAnalysis::StatInvAnalysis(Teuchos::RCP<DRT::Discretization> dis,
 /* analyse */
 void STR::StatInvAnalysis::Sample()
 {
-  IO::cout << "Hello World " << IO::endl;
-  double error = CalcErrorMonitorFile();
-  IO::cout << "And The error is " << error << " !" << IO::endl;
+
+  SetParameters();
+  SolveForwardProblem();
+  //double error = CalcErrorMonitorFile();
+  //IO::cout << "And The error is " << error << " !" << IO::endl;
+  IO::cout << "And the displacement is  " << *displacement_ << IO::endl;
+
   return;
 }
 
 
 void STR::StatInvAnalysis::SolveForwardProblem()
 {
-   return;
+
+  // get input lists
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
+  // major switch to different time integrators
+  switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
+  {
+    case INPAR::STR::dyna_statics:
+    case INPAR::STR::dyna_genalpha:
+    case INPAR::STR::dyna_onesteptheta:
+    case INPAR::STR::dyna_gemm:
+    case INPAR::STR::dyna_expleuler:
+    case INPAR::STR::dyna_centrdiff:
+    case INPAR::STR::dyna_ab2:
+    case INPAR::STR::dyna_euma:
+    case INPAR::STR::dyna_euimsto:
+    {
+      // instead of calling dyn_nlnstructural_drt(); here build the adapter here so that we have acces to the results
+      // What follows is basicaly a copy of whats usually in dyn_nlnstructural_drt();
+      // access the structural discretization
+      Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+      // create an adapterbase and adapter
+      ADAPTER::StructureBaseAlgorithm adapterbase(DRT::Problem::Instance()->StructuralDynamicParams(), structdis);
+      ADAPTER::Structure& structadaptor = const_cast<ADAPTER::Structure&>(adapterbase.StructureField());
+
+      // do restart
+      const int restart = DRT::Problem::Instance()->Restart();
+      if (restart)
+      {
+        structadaptor.ReadRestart(restart);
+      }
+      structadaptor.Integrate();
+
+      DRT::Problem::Instance()->AddFieldTest(structadaptor.CreateFieldTest());
+      DRT::Problem::Instance()->TestAll(structadaptor.DofRowMap()->Comm());
+
+      // get displacement of discretization at the end
+      displacement_= structadaptor.Dispn();
+      Teuchos::RCP<const Teuchos::Comm<int> > TeuchosComm = COMM_UTILS::toTeuchosComm<int>(structadaptor.DofRowMap()->Comm());
+      Teuchos::TimeMonitor::summarize(TeuchosComm.ptr(), std::cout, false, true, false);
+
+      // time to go home...
+    }
+      break;
+    default:
+      dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
+      break;
+  }
+
+  return;
 }
 
 
@@ -78,11 +136,72 @@ void STR::StatInvAnalysis::CreateNewSample()
 
 
 //--------------------------------------------------------------------------------------
+// Setup Material Parameters in each element based on parametrization
 void STR::StatInvAnalysis::SetParameters()
 {
-  return;
-}
+  // Variables for Random field
+  double mat_par;
+  // element center
+  std::vector<double> ele_c_location;
 
+  // flag have init stochmat??
+  int stochmat_flag=0;
+
+  // Get parameters from stochastic matlaw
+  const int myrank = discret_->Comm().MyPID();
+
+  // loop all materials in problem
+  const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+  if (myrank == 0)
+    IO::cout << "No. material laws considered: " << (int)mats.size() << IO::endl;
+  map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+  for (curr=mats.begin(); curr != mats.end(); curr++)
+  {
+    const RCP<MAT::PAR::Material> actmat = curr->second;
+    switch(actmat->Type())
+    {
+       case INPAR::MAT::m_aaaneohooke_stopro:
+       {
+         stochmat_flag=1;
+         MAT::PAR::AAAneohooke_stopro* params = dynamic_cast<MAT::PAR::AAAneohooke_stopro*>(actmat->Parameter());
+         if (!params) dserror("Cannot cast material parameters");
+       }
+       break;
+      default:
+      {
+       IO::cout << "MAT CURR " << actmat->Type() << "not stochastic" << IO::endl;
+       break;
+      }
+
+    }
+  } // EOF loop over mats
+  if (!stochmat_flag)// ignore unknown materials ?
+  {
+    dserror("No stochastic material supplied");
+  }
+
+
+  // loop over all elements
+  for (int i=0; i< (discret_->NumMyColElements()); i++)
+  {
+    if(discret_->lColElement(i)->Material()->MaterialType()==INPAR::MAT::m_aaaneohooke_stopro)
+    {
+      // get material
+      MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(discret_->lColElement(i)->Material().get());
+      // get location of element
+      std::vector<double> ele_center;
+      ele_center = discret_->lColElement(i)->ElementCenterRefeCoords();
+
+      // Eval Parametrization at Elementlocation
+      //TODO implement class that parametrizes spatial field of parameters
+     // mat_par = parametrization_->EvalAtLocation(ele_center);
+      // HACK set beta to 3.7 for now until we have a parametrizatin class
+      mat_par= 3.7E6;
+      aaa_stopro->Init(mat_par,"beta");
+    }
+  } // EOF loop elements
+
+}
 double STR::StatInvAnalysis::CalcErrorMonitorFile()
 {
   // input parameters inverse analysis
