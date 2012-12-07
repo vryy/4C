@@ -132,6 +132,7 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
       return;
   default:
       dserror("Unknown element type, validation failed!");
+      break;
   }
   const DRT::UTILS::IntegrationPoints3D  intpoints(integrationrule_1point);
   const int iel = eb->GetEleNodes(0).size();
@@ -208,6 +209,7 @@ int EXODUS::ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::Dis
       return 0;
   default:
       dserror("Unknown element type, validation failed!");
+      break;
   }
   const DRT::UTILS::IntegrationPoints3D  intpoints(integrationrule);
   const int iel = eb->GetEleNodes(0).size();
@@ -419,6 +421,7 @@ std::vector<int> EXODUS::RewindEle(std::vector<int> old_nodeids, const DRT::Elem
     break;
   }
   default: dserror("no rewinding scheme for this type of element");
+  break;
   }
   return new_nodeids;
 }
