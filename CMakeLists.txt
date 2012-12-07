@@ -1013,6 +1013,10 @@ set(OBJS_INV_ANALYSIS
   src/drt_inv_analysis/inv_analysis.cpp
   src/drt_structure/str_invanalysis.cpp
 )  
+set(OBJS_STATINV_ANALYSIS
+  src/drt_inv_analysis/stat_inv_analysis.cpp
+  src/drt_structure/str_statinvanalysis.cpp
+)  
 set(OBJS_MLMC
   src/drt_mlmc/mlmc.cpp
   src/drt_structure/str_mlmc.cpp 
@@ -1567,6 +1571,7 @@ add_library(alg_combust ${OBJS_DRT_COMBUST})
 add_library(alg_contact ${OBJS_DRT_CONTACT})
 add_library(alg_fluid ${OBJS_DRT_FLUID})
 add_library(alg_invanalysis ${OBJS_INV_ANALYSIS})
+add_library(alg_statinvanalysis ${OBJS_STATINV_ANALYSIS})
 add_library(alg_mlmc ${OBJS_MLMC})
 add_library(alg_redairways ${OBJS_DRT_RED_AIRWAYS})
 add_library(alg_scatra ${OBJS_DRT_SCATRA})
@@ -1586,6 +1591,7 @@ set(SINGLEFIELD_LIBRARIES
   alg_structure
   alg_statmech
   alg_invanalysis
+  alg_statinvanalysis
   alg_mlmc
   alg_thermo
   alg_contact

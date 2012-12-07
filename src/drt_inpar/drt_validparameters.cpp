@@ -40,6 +40,7 @@ Maintainer: Ulrich Kuettler
 #include "../drt_inpar/inpar_turbulence.H"
 #include "../drt_inpar/inpar_elch.H"
 #include "../drt_inpar/inpar_invanalysis.H"
+#include "../drt_inpar/inpar_statinvanalysis.H"
 #include "../drt_inpar/inpar_searchtree.H"
 #include "../drt_inpar/inpar_xfem.H"
 #include "../drt_inpar/inpar_mlmc.H"
@@ -1183,6 +1184,20 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("ALPHA_M",0.5,"Generalised-alpha factor in [0,1)",&gemm);
   DoubleParameter("ALPHA_F",0.5,"Generalised-alpha factor in [0,1)",&gemm);
   DoubleParameter("XI",0.0,"generalisation factor in [0,1)",&gemm);
+
+  /*----------------------------------------------------------------------*/
+   Teuchos::ParameterList& statinvp = list->sublist("STAT INVERSE ANALYSIS",false,"");
+
+   // Statistical Inverse Analysis
+   setStringToIntegralParameter<int>("STAT_INV_ANALYSIS","none",
+                                "types of statistical inverse analysis and on/off switch",
+                                tuple<std::string>(
+                                  "none",
+                                  "yes"),
+                                tuple<int>(
+                                  INPAR::STR::stat_inv_none,
+                                  INPAR::STR::stat_inverse),
+                                &statinvp);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& iap = list->sublist("INVERSE ANALYSIS",false,"");

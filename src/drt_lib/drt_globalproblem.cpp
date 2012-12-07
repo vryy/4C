@@ -195,6 +195,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/ONESTEPTHETA", *list);
   reader.ReadGidSection("--STRUCTURAL DYNAMIC/GEMM", *list);
   reader.ReadGidSection("--INVERSE ANALYSIS", *list);
+  reader.ReadGidSection("--STAT INVERSE ANALYSIS", *list);
   reader.ReadGidSection("--MULTI LEVEL MONTE CARLO", *list);
   reader.ReadGidSection("--MORTAR COUPLING", *list);
   reader.ReadGidSection("--CONTACT DYNAMIC", *list);
