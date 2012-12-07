@@ -212,7 +212,10 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::TimeLoop()
                time_,maxtime_,dt_,step_,stepmax_);
         break;
       default:
+      {
         dserror("parameter out of range: IOP\n");
+        break;
+      }
       } /* end of switch(timealgo) */
     }
 
@@ -337,24 +340,16 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::PrepareTimeStep()
 
     if (DRT::Problem::Instance()->NDim()==2) // 2D -> 1D (line) neumann surface
     {
-      discret_->EvaluateConditionUsingParentData(
+      discret_->EvaluateCondition(
           nbcparams            ,
-          Teuchos::null        ,
-          Teuchos::null        ,
           neumann_loads_       ,
-          Teuchos::null        ,
-          Teuchos::null        ,
           "LineNeumann");
     }
     else if (DRT::Problem::Instance()->NDim()==3) // 3D -> 2D (surface) neumann surface
     {
-      discret_->EvaluateConditionUsingParentData(
+      discret_->EvaluateCondition(
           nbcparams            ,
-          Teuchos::null        ,
-          Teuchos::null        ,
           neumann_loads_       ,
-          Teuchos::null        ,
-          Teuchos::null        ,
           "SurfaceNeumann");
     }
     else
@@ -841,7 +836,10 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetInitialAdjointField(
     break;
   }
   default:
+  {
     dserror("Type of initial field not available up to now!");
+    break;
+  }
   }
 
   return;
@@ -947,7 +945,10 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::EvaluateDirichlet()
       case INPAR::TOPOPT::adjointtest_primal:
         break;
       default:
+      {
         dserror("no dirichlet condition implemented for special test case");
+        break;
+      }
       }
 
       vector<int> gdofs = discret_->Dof(node);

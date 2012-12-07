@@ -63,7 +63,10 @@ DRT::ELEMENTS::FluidAdjoint3BoundaryImplInterface* DRT::ELEMENTS::FluidAdjoint3B
     return FluidAdjoint3BoundaryImpl<DRT::Element::line3>::Instance();
   }
   default:
+  {
     dserror("Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
+    break;
+  }
   }
   return NULL;
 }
@@ -134,18 +137,12 @@ DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::FluidAdjoint3BoundaryImpl()
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
-                              DRT::ELEMENTS::FluidBoundary* ele,
+                              DRT::ELEMENTS::FluidBoundary*  ele,
                               Teuchos::ParameterList&        params,
                               DRT::Discretization&           discretization,
-                              const std::vector<int>&             lm,
+                              const std::vector<int>&        lm,
                               Epetra_SerialDenseVector&      elevec)
 {
-  // the vectors have been allocated outside in EvaluateConditionUsingParentData()
-  RCP<std::vector<int> > plm = params.get<RCP<std::vector<int> > >("plm");
-  RCP<std::vector<int> > plmowner = params.get<RCP<std::vector<int> > >("plmowner");
-  RCP<std::vector<int> > plmstride = params.get<RCP<std::vector<int> > >("plmstride");
-  ele->LocationVector(discretization,*plm,*plmowner,*plmstride);
-
   // reshape element vector
   elevec.Shape(numdofpernode_*nen_,1);
   // initialize to zero
@@ -196,7 +193,7 @@ int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
   {
     if (params.get<INPAR::TOPOPT::AdjointTestCases>("special test case") == INPAR::TOPOPT::adjointtest_no)
     {
-      // TODO currently no boundary terms
+      ; // boundary terms are currently independent of velocity -> no entry here
     }
     else // special cases
     {
@@ -283,7 +280,10 @@ int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
       case INPAR::TOPOPT::adjointtest_primal:
         break;
       default:
+      {
         dserror("no dirichlet condition implemented for special test case");
+        break;
+      }
       }
 
 
