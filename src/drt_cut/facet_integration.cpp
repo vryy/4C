@@ -769,9 +769,9 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
 #endif
 
 #if 0 // triangulate facet
-      std::cout<<"!!! WARNING !!! Facets are triangulated instead of getting splitted ---> more Gauss points\n";
+      //std::cout<<"!!! WARNING !!! Facets are triangulated instead of getting splitted ---> more Gauss points\n";
       std::vector<std::vector<GEO::CUT::Point*> > split;
-      TriangulateFacet tf( face1_, mesh, corners );
+      TriangulateFacet tf( corners );
 
       std::vector<int> ptconc;
       tf.EarClipping( ptconc, true );
@@ -852,7 +852,7 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCel
   std::vector<std::vector<GEO::CUT::Point*> > split1;
   if( alreadyDone=="split" )
   {
-    TriangulateFacet tf( face1_, corners );
+    TriangulateFacet tf( corners );
     std::vector<int> ptconc;
 
     tf.EarClipping( ptconc, true );
@@ -860,7 +860,7 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCel
   }
   else
   {
-    TriangulateFacet tf( face1_, corners );
+    TriangulateFacet tf( corners );
     tf.SplitFacet();
     split1 = tf.GetSplitCells();
   }

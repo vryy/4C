@@ -20,9 +20,8 @@ public:
   /*!
   \brief Constructor
    */
-  TriangulateFacet( Facet* face, std::vector<Point*> ptlist )
-    :facet1_(face),
-     ptlist_(ptlist)
+  TriangulateFacet( std::vector<Point*> ptlist )
+    :ptlist_(ptlist)
     {
     }
 
@@ -71,7 +70,6 @@ private:
    */
   bool HasTwoContinuousConcavePts( std::vector<int> ptConcavity );
 
-  Facet* facet1_;
   std::vector<Point*> ptlist_;
   std::vector<std::vector<Point*> > split_;
 };
