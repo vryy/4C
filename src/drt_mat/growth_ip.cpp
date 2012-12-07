@@ -367,6 +367,7 @@ void MAT::Growth::Evaluate
         // update of theta
         omega = omega/2.0;
         thetatemp = theta + omega*residual/thetaquer;
+        //cout << gp << ": Theta " << thetatemp << " residual " << residualtemp << " stress " << mandel << endl;
 
         // update elastic variables
         Cdach = C;
@@ -397,6 +398,9 @@ void MAT::Growth::Evaluate
       }
 
     } // end of local Newton iteration
+    //cout.precision(13);
+    //if ((time-1.2) > 1.0E-8) cout << gp << " strain " << *glstrain << endl;
+    //if ((time-2.1E-4) > 1.0E-8) cout << gp << ": theta " << theta << " thetaold " << thetaold << endl;
     if (localistep == maxstep && abs(residual) > abstol) dserror("local Newton iteration did not converge %e %f %f %e", residual, thetaold, theta, mandel);
 
     double temp = 0.0;
@@ -427,6 +431,8 @@ void MAT::Growth::Evaluate
     // store theta
     theta_->at(gp) = theta;
     mandel_->at(gp) = mandel;
+    //cout.precision(10);
+    //cout << gp << ": theta " << theta << " thetaold " << thetaold << " residual " << residual << endl;
 
   } else if (time > endtime + eps) {  // turn off growth or calculate stresses for output
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatelastic(true);
@@ -532,10 +538,10 @@ void MAT::Growth::EvaluateGrowthLaw
   // ktheta and dktheta should be zero!
   if (traceM > hommandel) {
     *ktheta=kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus);
-    *dktheta=kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus-1.0)/(1.0-thetaplus);
+    *dktheta=mthetaplus*kthetaplus*pow((thetaplus-theta)/(thetaplus-1.0),mthetaplus-1.0)/(1.0-thetaplus);
   } else if (traceM < hommandel) {
     *ktheta=kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus);
-    *dktheta=kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus-1.0)/(1.0-thetaminus);
+    *dktheta=mthetaminus*kthetaminus*pow((theta-thetaminus)/(1.0-thetaminus),mthetaminus-1.0)/(1.0-thetaminus);
   }
 
 }
