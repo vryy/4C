@@ -1789,8 +1789,6 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::InitJacobianMapping()
   detJ_.resize(numgpt_);
   xsi_.resize(numgpt_);
 
-  cout<<"numgpt_: "<<numgpt_<<endl;
-
   for (int gp=0; gp<numgpt_; ++gp)
   {
     const double* gpcoord = intpoints_.Point(gp);
