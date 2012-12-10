@@ -56,14 +56,16 @@ namespace GEO
          */
         void ListFacets( std::vector<plain_facet_set::const_iterator>& facetIterator,
                          std::vector<double>& RefPlaneEqn,
-                         plain_facet_set::const_iterator& IteratorRefFacet );
+                         plain_facet_set::const_iterator& IteratorRefFacet,
+                         bool & IsRefFacet );
 
         /*!
         \brief Geometry of volumecell, reference facet and main gauss points for gmsh output.
          */
         void DivengenceCellsGMSH( plain_facet_set::const_iterator& IteratorRefFacet,
                                   std::vector<plain_facet_set::const_iterator>& facetIterator,
-                                  const DRT::UTILS::GaussIntegration & gpv );
+                                  const DRT::UTILS::GaussIntegration & gpv,
+                                  bool & IsRefFacet );
 
         /*!
         \brief Integration of specific predefined functions using the Gaussian rule generated from DirectDivergence
