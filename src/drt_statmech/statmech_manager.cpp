@@ -35,7 +35,7 @@ Maintainer: Kei Müller
 #include "../drt_truss3/truss3.H"
 #include "../drt_torsion3/torsion3.H"
 
-//MEASURETIME activates measurement of computation time for certain parts of the code
+// defines flags for debugging and optimization purposes
 //#define MEASURETIME
 //#define DEBUGCOUT
 
@@ -392,24 +392,35 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
   }
 
   // sanity checks for time points and time step sizes
+  Teuchos::ParameterList sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
+  double iodt = sdynparams.get<double>("TIMESTEP", 1.0e9);
+  double maxtime = sdynparams.get<double>("MAXTIME",-1.0);
+
+
   for(int i=0; i<(int)actiontime_->size()-1; i++)
     if(actiontime_->at(i)>actiontime_->at(i+1))
       dserror("ACTIONTIME values must be monotonously increasing!");
   if((int)actiontime_->size()!=(int)timestepsizes_->size())
     dserror("ACTIONTIME and ACTIONDT have to be equal in number in the input file!");
   if((int)actiontime_->size()<2)
-    dserror("ACTIONTIME has to have at least 2 values");
+  {
+    if(timestepsizes_->at(0)>0.0) // unwanted stuff
+      dserror("Give at least two values for ACTIONTIME AND ACTIONDT");
+    else if(timestepsizes_->at(0)==0.0) //non-sensical stuff
+      dserror("Given ACTIONDT is 0.0!");
+    else // handled as default case from drt_validparameters.cpp and the rest of the non-sensical stuff
+    {
+      timestepsizes_->at(0) = iodt;
+      timestepsizes_->push_back(iodt);
+      actiontime_->at(0) = maxtime;
+      actiontime_->push_back(maxtime);
+    }
+  }
 
   // increase the vector position if time values are equal
   for(int i=0; i<(int)actiontime_->size()-1; i++)
     if(fabs(actiontime_->at(i)-actiontime_->at(i+1))<timestepsizes_->at(i)/1e3)
       timeintervalstep_++;
-
-  // checks initial time step size from structural dynamics section in input file against current actiontime_ and timestepsizes_
-  Teuchos::ParameterList sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
-  double iodt = sdynparams.get<double>("TIMESTEP", 1.0e9);
-  if(actiontime_->at(timeintervalstep_)<1e-10 && timestepsizes_->at(timeintervalstep_)!=iodt)
-    dserror("ACTIONDT: %f , TIMESTEP: %f . Missmatch! At t=0.0, ACTIONDT and TIMESTEP have to be the same.", timestepsizes_->at(timeintervalstep_), iodt);
 
 //  if(!discret_->Comm().MyPID())
 //  {
@@ -542,7 +553,8 @@ void STATMECH::StatMechManager::Update(const int&                               
 #ifdef MEASURETIME
     if(!discret_->Comm().MyPID())
     {
-      cout<<"\nStatMechManager::Update"<<endl;
+      cout<<"\n=================Time  Measurement================"<<endl;
+      cout<<"StatMechManager::Update"<<endl;
       cout<<"Binding Spot Positions : "<<scientific<<t2-t1<<" s"<<endl;
       cout<<"Crosslinker Diffusion  : "<<scientific<<t3-t2<<" s"<<endl;
       cout<<"Set Crosslinkers       : "<<scientific<<t4-t3<<" s"<<endl;
@@ -1341,22 +1353,71 @@ void STATMECH::StatMechManager::PartitioningAndSearch(const Epetra_MultiVector& 
                                                       Epetra_MultiVector& bspottriadscol,
                                                       Teuchos::RCP<Epetra_MultiVector>& neighbourslid)
 {
+  std::vector<double> limit(6,0.0);
+  if(periodlength_->at(0)==0.0)
+  {
+    // initialize
+    for(int i=0; i<(int)limit.size(); i++)
+    {
+      if(i%2==0)
+        limit[i] = 1e9;
+      else
+        limit[i] = -1e9;
+    }
+    // extreme values
+    // binding spots
+    for(int i=0; i<(int)bspotpositions.NumVectors(); i++)
+    {
+      for(int j=0; j<(int)bspotpositions.MyLength(); j++)
+      {
+        // max
+        if(limit[2*i+1]<bspotpositions[i][j])
+          limit[2*i+1] = bspotpositions[i][j];
+        // min
+        if(limit[2*i]>bspotpositions[i][j])
+          limit[2*i] = bspotpositions[i][j];
+      }
+    }
+    // linker positions
+    for(int i=0; i<(int)crosslinkerpositions_->NumVectors(); i++)
+    {
+      for(int j=0; j<(int)crosslinkerpositions_->MyLength(); j++)
+      {
+        // max
+        if(limit[2*i+1]<(*crosslinkerpositions_)[i][j])
+          limit[2*i+1] = (*crosslinkerpositions_)[i][j];
+        // min
+        if(limit[2*i]>(*crosslinkerpositions_)[i][j])
+          limit[2*i] = (*crosslinkerpositions_)[i][j];
+      }
+    }
+  }
+  else
+  {
+    for(int i=0; i<(int)limit.size(); i++)
+      if(i%2==0)
+        limit[i] = 0.0;
+      else
+        limit[i] = (*periodlength_)[(i-1)/2];
+  }
+
   //filament binding spots and crosslink molecules are indexed according to their positions within the boundary box volume
   std::vector<std::vector<std::vector<int> > > bspotinpartition;
   for(int i=0; i<(int)searchres_->size(); i++)
-    bspotinpartition.push_back(std::vector<std::vector<int> >(searchres_->at(i), std::vector<int>()));
+    bspotinpartition.push_back(std::vector<std::vector<int> >((*searchres_)[i], std::vector<int>()));
 
   /*nodes*/
   // loop over node positions to map their column map LIDs to partitions
-  for(int i=0;i<bspotpositions.MyLength();i++)
-    for(int j=0; j<(int)bspotinpartition.size(); j++) // bspotinpartition.size==3
+  for(int i=0; i<(int)bspotinpartition.size(); i++) // note: bspotinpartition.size==3
+  {
+    for(int j=0;j<bspotpositions.MyLength();j++)
     {
-      int partition = (int)std::floor(bspotpositions[j][i]/periodlength_->at(j)*(double)(searchres_->at(j)));
-      if(partition==(int)searchres_->at(j))
+      int partition = (int)std::floor((bspotpositions[i][j]-limit[2*i])/(limit[2*i+1]-limit[2*i])*(double)(*searchres_)[i]);
+      if(partition==(int)(*searchres_)[i])
         partition--;
-      bspotinpartition[j][partition].push_back(bspotcolmap_->LID(i)); //column lid
+      bspotinpartition[i][partition].push_back(bspotcolmap_->LID(j)); //column lid
     }
-
+  }
   /*crosslink molecules*/
   // Export crosslinkerpositions_ to transfermap_ format (row map format for crosslink molecules)
   Epetra_MultiVector crosslinkerpositionstrans(*transfermap_, 3, true);
@@ -1366,23 +1427,22 @@ void STATMECH::StatMechManager::PartitioningAndSearch(const Epetra_MultiVector& 
   CommunicateVector(numbondtrans, *numbond_, true, false, false, true);
   CommunicateMultiVector(crosslinkerpositionstrans, *crosslinkerpositions_, true, false, false, true);
 
-  for(int i=0; i<crosslinkpartitiontrans.MyLength(); i++)
+  for(int i=0; i<crosslinkpartitiontrans.NumVectors(); i++)
   {
-    // mark entries with double-bonded crosslink molecules
-    if(numbondtrans[i]>1.9)
+    for(int j=0; j<crosslinkpartitiontrans.MyLength(); j++)
     {
-      for(int j=0; j<crosslinkpartitiontrans.NumVectors(); j++)
-        crosslinkpartitiontrans[j][i] = -1.0;
-      continue;
-    }
-    else
-    {
-      for(int j=0; j<crosslinkpartitiontrans.NumVectors(); j++)
+      // mark entries with double-bonded crosslink molecules
+      if(numbondtrans[j]>1.9)
       {
-        int partition = (int)std::floor(crosslinkerpositionstrans[j][i]/periodlength_->at(j)*(double)(searchres_->at(j)));
-        if(partition==searchres_->at(j))
+        crosslinkpartitiontrans[i][j] = -1.0;
+        continue;
+      }
+      else
+      {
+        int partition = (int)std::floor((crosslinkerpositionstrans[i][j]-limit[2*i])/(limit[2*i+1]-limit[2*i])*(double)(*searchres_)[i]);
+        if(partition==(*searchres_)[i])
           partition--;
-        crosslinkpartitiontrans[j][i] = partition;
+        crosslinkpartitiontrans[i][j] = partition;
       }
     }
   }
@@ -1450,7 +1510,7 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
       // first component
       for(int ilayer=(int)crosslinkpartitions[0][part]-1; ilayer<(int)crosslinkpartitions[0][part]+2; ilayer++)
       {
-        if(ilayer>-1 && ilayer<searchres_->at(0))
+        if(ilayer>-1 && ilayer<(*searchres_)[0])
         {
           for(int i=0; i<(int)(*bspotinpartition)[0][ilayer].size(); i++)
           {
@@ -1458,7 +1518,7 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
             // second component
             for(int jlayer=(int)crosslinkpartitions[1][part]-1; jlayer<(int)crosslinkpartitions[1][part]+2; jlayer++)
             {
-              if(jlayer>-1 && jlayer<searchres_->at(1))
+              if(jlayer>-1 && jlayer<(*searchres_)[1])
               {
                 for(int j=0; j<(int)(*bspotinpartition)[1][jlayer].size(); j++)
                 {
@@ -1467,7 +1527,7 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
                     //third component
                     for(int klayer=(int)crosslinkpartitions[2][part]-1; klayer<(int)crosslinkpartitions[2][part]+2; klayer++)
                     {
-                      if(klayer>-1 && klayer<searchres_->at(2))
+                      if(klayer>-1 && klayer<(*searchres_)[2])
                       {
                         for(int k=0; k<(int)(*bspotinpartition)[2][klayer].size(); k++)
                         {
@@ -2085,10 +2145,12 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
   double t4 = Teuchos::Time::wallTime();
   if(!discret_->Comm().MyPID())
   {
-    cout<<"\n - Partitioning + Search  : "<<scientific<<t1-t0<<" s"<<endl;
+    cout<<"\n\n=================================================="<<endl;
+    cout<<" - Partitioning + Search  : "<<scientific<<t1-t0<<" s"<<endl;
     cout<<" - Linker administration  : "<<scientific<<t2-t1<<" s"<<endl;
     cout<<" - Vector communication   : "<<scientific<<t3-t2<<" s"<<endl;
     cout<<" - Addition of elements   : "<<scientific<<t4-t3<<" s"<<endl;
+    cout<<"=================================================="<<endl;
   }
 #endif
 
@@ -3215,7 +3277,7 @@ void STATMECH::StatMechManager::UpdateNumberOfUnconvergedSteps(bool flag)
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::AddStatMechParamsTo(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_MultiVector> randomnumbers)
 {
-  params.set("ETA",statmechparams_.get<double>("ETA",0.0));
+  //params.set("ETA",statmechparams_.get<double>("ETA",0.0));
   params.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechparams_,"THERMALBATH"));
   params.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechparams_,"FRICTION_MODEL"));
   params.set<INPAR::STATMECH::DBCType>("DBCTYPE", DRT::INPUT::IntegralValue<INPAR::STATMECH::DBCType>(statmechparams_,"DBCTYPE"));
@@ -3422,6 +3484,21 @@ void STATMECH::StatMechManager::CrosslinkerDiffusion(const Epetra_MultiVector& b
   // Update by Broadcast: make this information redundant on all procs
   CommunicateMultiVector(crosslinkerpositionstrans, *crosslinkerpositions_, false, true);
 
+#ifdef DEBUGCOUT
+  if(!discret_->Comm().MyPID())
+  {
+    if(crosslinkerpositions_->MyLength()>1)
+      dserror("Check only for a single crosslink molecule!");
+    std::ostringstream filename;
+    filename << outputrootpath_ << "/crosslinkermotion.dat";
+    FILE *fp = fopen(filename.str().c_str(), "a");
+
+    std::stringstream linkerposition;
+    linkerposition<<(*crosslinkerpositions_)[0][0]<<" "<<(*crosslinkerpositions_)[1][0]<<" "<<(*crosslinkerpositions_)[2][0]<<endl;
+    fprintf(fp, linkerposition.str().c_str());
+    fclose(fp);
+  }
+#endif
   return;
 }// StatMechManager::CrosslinkerDiffusion
 
@@ -4385,7 +4462,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
     }
 
     // reduce number of contact pairs to zero again to avoid unnecessary computations
-    if(beamcmanager!=Teuchos::null)
+    if(beamcmanager!=Teuchos::null && !(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->ContactDynamicParams(), "BEAMS_NEWGAP")))
       beamcmanager->ResetPairs();
 
     //Gmsh output
