@@ -52,7 +52,7 @@ void caldyn_drt()
 {
   // get input lists
   const Teuchos::ParameterList& iap = DRT::Problem::Instance()->InverseAnalysisParams();
-    const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
+  const Teuchos::ParameterList& statinvp = DRT::Problem::Instance()->StatInverseAnalysisParams();
   //get list for multi level monte carlo
   const Teuchos::ParameterList& mlmcp = DRT::Problem::Instance()->MultiLevelMonteCarloParams();
 
@@ -63,14 +63,11 @@ void caldyn_drt()
     STR::invanalysis();
   }
   // do we want to do statistical inverse analysis?
-   if (DRT::INPUT::IntegralValue<INPAR::STR::StatInvAnalysisType>(statinvp,"STAT_INV_ANALYSIS")
-       != INPAR::STR::stat_inv_none)
-   {
-     STR::statinvanalysis();
-   }
-
-
-  //
+  else if (DRT::INPUT::IntegralValue<INPAR::STR::StatInvAnalysisType>(statinvp,"STAT_INV_ANALYSIS")
+     != INPAR::STR::stat_inv_none)
+  {
+    STR::statinvanalysis();
+  }
   //do we want multi level monte carlo
   else if (Teuchos::getIntegralValue<int>(mlmcp,"MLMC")!= false)
   {
