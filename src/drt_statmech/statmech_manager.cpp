@@ -3277,7 +3277,7 @@ void STATMECH::StatMechManager::UpdateNumberOfUnconvergedSteps(bool flag)
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::AddStatMechParamsTo(Teuchos::ParameterList& params, Teuchos::RCP<Epetra_MultiVector> randomnumbers)
 {
-  //params.set("ETA",statmechparams_.get<double>("ETA",0.0));
+  params.set("ETA",statmechparams_.get<double>("ETA",0.0));
   params.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechparams_,"THERMALBATH"));
   params.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechparams_,"FRICTION_MODEL"));
   params.set<INPAR::STATMECH::DBCType>("DBCTYPE", DRT::INPUT::IntegralValue<INPAR::STATMECH::DBCType>(statmechparams_,"DBCTYPE"));
