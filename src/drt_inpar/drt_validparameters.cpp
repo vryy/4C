@@ -1695,9 +1695,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //time after which writing of statistical output is started
   DoubleParameter("STARTTIMEOUT",0.0,"Time after which writing of statistical output is started",&statmech);
   // Time values at which certain actions are carried out
-  setNumericStringParameter("ACTIONTIME","0.0 0.0 10000.0","Points in time (corresponding to ACTIONDT values), where certain actions are carried out. Order: [t_equilib; t_ktswitch; ...; t_act]",&statmech);
+  setNumericStringParameter("ACTIONTIME","-1.0","Points in time (corresponding to ACTIONDT values), where certain actions are carried out. Order: [t_equilib; t_ktswitch; ...; t_act]",&statmech);
   // time step sizes corresponding to ACTIONTIME
-  setNumericStringParameter("ACTIONDT","0.01 0.01 0.01","Time step sizes corresponding to ACTIONTIME values.",&statmech);
+  setNumericStringParameter("ACTIONDT","-1.0","Time step sizes corresponding to ACTIONTIME values.",&statmech);
   //Reading whether dynamics remodelling of cross linker distribution takes place
   setStringToIntegralParameter<int>("DYN_CROSSLINKERS","No","If chosen cross linker proteins are added and removed in each time step",
                                yesnotuple,yesnovalue,&statmech);
