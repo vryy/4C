@@ -31,6 +31,13 @@ namespace INPAR
     elch_mov_bndry_fully_transient,
   };
 
+  /// type of scalar transport problem
+  enum EquPot
+  {
+    equpot_enc,
+    equpot_divi
+  };
+
   }  // namespace ELCH
 
 }  // namespace INPAR

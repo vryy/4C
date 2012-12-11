@@ -391,6 +391,10 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/holzapfelcardiovascular.cpp
   src/drt_mat/humphreycardiovascular.cpp
   src/drt_mat/ion.cpp
+  src/drt_mat/diffcond.cpp
+  src/drt_mat/elchmat.cpp
+  src/drt_mat/elchphase.cpp
+  src/drt_mat/newman.cpp
   src/drt_mat/itskov.cpp
   src/drt_mat/logneohooke.cpp
   src/drt_mat/material.cpp
@@ -851,6 +855,7 @@ set(OBJS_DRT_SCATRA_LIB
   src/drt_scatra/scatra_ele_impl.cpp
   src/drt_scatra/scatra_ele_impl_reinit.cpp
   src/drt_scatra/scatra_ele_impl_turbulence_service.cpp
+  src/drt_scatra/scatra_ele_impl_diffcond_service.cpp
   src/drt_scatra/scatra_ele_impl_utils.cpp
   src/drt_scatra/scatra_element.cpp
   src/drt_scatra/scatra_element_boundary_evaluate.cpp

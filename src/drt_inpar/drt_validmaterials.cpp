@@ -374,6 +374,39 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+  // material parameters for ion species in electrolyte solution (ehrl 07/12)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_diffcond",
+                                            "material parameters for ion species in electrolyte solution",
+                                            INPAR::MAT::m_diffcond));
+
+    AddNamedReal(m,"DIFFUSIVITY","kinematic diffusivity");
+    AddNamedReal(m,"VALENCE","valence (= charge number)");
+    AddNamedReal(m,"TRANSFERENCE","transference number");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // material parameters for ion species in electrolyte solution (ehrl 07/12)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_newman",
+                                            "material parameters for ion species in electrolyte solution",
+                                            INPAR::MAT::m_newman));
+
+    AddNamedReal(m,"VALENCE","valence (= charge number)");
+    AddNamedInt(m,"CURVE_DIFF","curve number for kinematic diffusivity");
+    AddNamedInt(m,"CURVE_TRANS","curve number for transference number");
+    AddNamedReal(m,"A","constant for diffusion potential in current equation");
+    AddNamedReal(m,"B","constant for diffusion potential in current equation");
+    AddNamedReal(m,"C","constant for diffusion potential in current equation");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // material collection (gjb 07/08)
   {
     Teuchos::RCP<MaterialDefinition> m
@@ -385,6 +418,38 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     //AddNamedInt(m,"LOCAL","individual materials allocated per element or only at global scope");
     AddNamedInt(m,"NUMMAT","number of materials in list");
     AddNamedIntVector(m,"MATIDS","the list material IDs","NUMMAT");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // material collection (ehrl 11/12)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_elchmat",
+                                            "specific list/collection of species and phases for elch applications",
+                                            INPAR::MAT::m_elchmat));
+
+    AddNamedBool(m,"CURRENT","current flow as a solution variable");
+    AddNamedInt(m,"NUMSPEC","number of ionic species in electrolyte");
+    AddNamedIntVector(m,"SPECIDS","the list material IDs","NUMSPEC");
+    AddNamedInt(m,"NUMPHASE","number of phases in electrolyte");
+    AddNamedIntVector(m,"PHASEIDS","the list phasel IDs","NUMPHASE");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
+  // material collection (ehrl 11/12)
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_elchphase",
+                                            "material parameters for ion species in electrolyte solution",
+                                            INPAR::MAT::m_elchphase));
+
+    AddNamedReal(m,"EPSILON","porousity of the phase");
+    AddNamedReal(m,"CONDUCTIVITY","conductivity");
+    AddNamedInt(m,"NR","conductivity depending on concentration: number of curve",0,true);
 
     AppendMaterialDefinition(matlist,m);
   }

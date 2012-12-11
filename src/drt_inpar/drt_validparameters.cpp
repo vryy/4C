@@ -3724,6 +3724,41 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("MAGNETICFIELD_FUNCNO",-1,"function number defining an externally imposed magnetic field",&elchcontrol);
 
   /*----------------------------------------------------------------------*/
+  // attention: this list is a sublist of elchcontrol
+
+    Teuchos::ParameterList& elchdiffcondcontrol = elchcontrol.sublist(
+        "DIFFCOND",
+        false,
+        "control parameters for electrochemical diffusion conduction problems\n");
+
+    BoolParameter("DIFFCOND_FORMULATION","No",
+          "Activation of diffusion-conduction formulation",&elchdiffcondcontrol);
+
+    BoolParameter("CHEMICALDIFF_COUPLING_TRANSP","Yes",
+        "Include coupling terms of chemical diffusion for tranport equation",&elchdiffcondcontrol);
+    BoolParameter("CHEMICALDIFF_COUPLING_CURR","Yes",
+        "Include coupling terms of chemical diffusion for current equation",&elchdiffcondcontrol);
+    BoolParameter("DIFFBASED","Yes",
+        "Coupling terms of chemical diffusion for current equation are based on t and kappa",&elchdiffcondcontrol);
+
+    BoolParameter("CURRENT_SOLUTION_VAR","No","Current as a solution variable",&elchdiffcondcontrol);
+    BoolParameter("CONSTPARAMS","Yes","Constant physical parameters",&elchdiffcondcontrol);
+
+    setStringToIntegralParameter<int>("EQUPOT",
+                                 "ENC",
+                                 "ENC condition",
+                                  tuple<std::string>(
+                                    "ENC",
+                                    "divi"),
+                                  tuple<std::string>(
+                                    "ENC",
+                                    "divi"),
+                                   tuple<int>(
+                                     INPAR::ELCH::equpot_enc,
+                                     INPAR::ELCH::equpot_divi),
+                                    &elchdiffcondcontrol);
+
+  /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& biofilmcontrol = list->sublist(
       "BIOFILM CONTROL",
       false,

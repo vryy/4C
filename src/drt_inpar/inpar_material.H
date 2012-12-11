@@ -90,8 +90,12 @@ namespace INPAR
       m_vp_robinson,   ///< Robinson's visco-plastic material
       m_struct_multiscale, ///<  structural microscale approach
       m_matlist,       ///< collection of single materials (used for scalar transport problems)
+      m_elchmat,
+      m_elchphase,
       m_biocell,       ///< biological cell model
       m_ion,            ///< properties of an ion species in an electrolyte solution
+      m_diffcond,            ///< properties of an ion species in an electrolyte solution
+      m_newman,            ///< properties of an ion species in an electrolyte solution
       m_charmm,         ///< CHARMm API
       m_logneohooke,   ///< logarithmic Neo-Hooke material
       m_protein,        ///< CHARMm API to compute proteins

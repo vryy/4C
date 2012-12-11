@@ -236,6 +236,7 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--XFLUID DYNAMIC/STABILIZATION", *list);
   reader.ReadGidSection("--LOMA CONTROL", *list);
   reader.ReadGidSection("--ELCH CONTROL", *list);
+  reader.ReadGidSection("--ELCH CONTROL/DIFFCOND", *list);
   reader.ReadGidSection("--BIOFILM CONTROL", *list);
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL", *list);
   reader.ReadGidSection("--TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER", *list);
