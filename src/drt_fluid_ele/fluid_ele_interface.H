@@ -132,6 +132,19 @@ namespace ELEMENTS
                           std::vector<int>&         lm,
                           Epetra_SerialDenseVector& elevec1) = 0;
 
+
+    /*! \brief Calculate a divergence of velocity at the element center
+     *
+     *   \author: ehrl
+     *   \date:   12/2012
+     */
+    virtual int ComputeDivU(
+        DRT::ELEMENTS::Fluid*           ele,              //< current fluid element
+        DRT::Discretization&            discretization,   //< fluid discretization
+        std::vector<int>&                    lm,               //< location vector for DOF management
+        Epetra_SerialDenseVector&       elevec1           //< reference to element vector to be filled
+        )=0;
+
     /// error computation
     virtual int ComputeError(DRT::ELEMENTS::Fluid*        ele,
                              Teuchos::ParameterList&       params,

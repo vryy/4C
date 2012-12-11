@@ -318,6 +318,12 @@ public:
   void EvaluateErrorComparedToAnalyticalSol();
 
   /*!
+  \brief evaluate divergence of velocity field
+
+  */
+  void EvaluateDivU();
+
+  /*!
   \brief calculate stresses
 
   */

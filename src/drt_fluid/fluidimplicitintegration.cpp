@@ -53,6 +53,7 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/sutherland.H"
+#include "../drt_mat/newtonianfluid.H"
 
 
 #include "../drt_art_net/art_net_dyn_drt.H"
@@ -801,6 +802,12 @@ void FLD::FluidImplicitTimeInt::TimeLoop()
     // evaluate error for test flows with analytical solutions
     // -------------------------------------------------------------------
     EvaluateErrorComparedToAnalyticalSol();
+
+    // -------------------------------------------------------------------
+    // evaluate divergence u
+    // -------------------------------------------------------------------
+    EvaluateDivU();
+
 
     // -------------------------------------------------------------------
     //                       update time step sizes
@@ -4558,7 +4565,7 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
 
     double         p;
     std::vector<double> u  (numdim_);
-//    std::vector<double> acc(numdim_);
+    std::vector<double> acc(numdim_);
     std::vector<double> xyz(numdim_);
 
     // check whether present flow is indeed three-dimensional
@@ -4601,11 +4608,40 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
           + 2.0 * sin(a*xyz[2] + d*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) * exp(a*(xyz[0]+xyz[1]))
           );
 
-//      double visc_ = 1e-004;
-//
-//      acc[0] = u[0]*(-1.0*d*d*visc_);
-//      acc[1] = u[1]*(-1.0*d*d*visc_);
-//      acc[2] = u[2]*(-1.0*d*d*visc_);
+      // viscosity is necessary to compute initial accelerations
+      double visc=0.0;
+
+      // access of material parametes at time integration level
+      // disadvantages of this method:
+      // additional "unused" materials in the material list
+      // -> you do not know which material is really used
+
+      // routine to access element material parameters at time integration level
+      if(physicaltype_ == INPAR::FLUID::incompressible)
+      {
+        // make sure that only one material is defined in the dat-file
+        if ((DRT::Problem::Instance()->Materials()->Num())>1)
+          dserror("There is more than one material in the input file!!");
+
+        // make sure that a fluid material is defined in the dat-file
+        int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+        if (id==-1)
+              dserror("Could not find fluid material");
+        else
+        {
+          const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+          const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+          // viscosity is constant for all times and all positions
+          visc = actmat->viscosity_;
+        }
+      }
+      else
+        dserror("The analytical solution of the Beltrami flow requires an incompressible flow field");
+
+      // Beltrami is always 3D
+      acc[0] = u[0]*(-1.0*d*d*visc);
+      acc[1] = u[1]*(-1.0*d*d*visc);
+      acc[2] = u[2]*(-1.0*d*d*visc);
 
       // set initial velocity components
       for(int nveldof=0;nveldof<numdim_;nveldof++)
@@ -4616,13 +4652,11 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
         err += veln_ ->ReplaceMyValues(1,&(u[nveldof]),&lid);
         err += velnm_->ReplaceMyValues(1,&(u[nveldof]),&lid);
 
-
-//        // set additionally the values for the time derivative to start with an exact acceleration in case of OST (theta!=1.0)
-//        // set initial acceleration components
-//
-//        err += accnp_->ReplaceMyValues(1,&(acc[nveldof]),&lid);
-//        err += accn_ ->ReplaceMyValues(1,&(acc[nveldof]),&lid);
-//        err += accam_->ReplaceMyValues(1,&(acc[nveldof]),&lid);
+        // set additionally the values for the time derivative to start with an exact acceleration in case of OST (theta!=1.0)
+        // set initial acceleration components
+        err += accnp_->ReplaceMyValues(1,&(acc[nveldof]),&lid);
+        err += accn_ ->ReplaceMyValues(1,&(acc[nveldof]),&lid);
+        err += accam_->ReplaceMyValues(1,&(acc[nveldof]),&lid);
       }
 
       // set initial pressure
@@ -4930,9 +4964,14 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
     eleparams.set<int>("action",FLD::calc_fluid_error);
     eleparams.set<int>("calculate error",calcerr);
 
-    // set vector values needed by elements
-    discret_->ClearState();
-    discret_->SetState("u and p at time n+1 (converged)",velnp_);
+    // set scheme-specific element parameters and vector values
+    if (is_genalpha_)
+    {
+      discret_->SetState("velaf",velaf_);
+      if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
+        discret_->SetState("velnp",velnp_);
+    }
+    else discret_->SetState("velaf",velnp_);
 
     // get (squared) error values
     // 0: vel_mag
@@ -4987,6 +5026,8 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
       //if (numdim_==3)
       //  velerrz = sqrt((*errors)[6]);
 
+      // print last error in a seperate file
+      /*
       // append error of the last time step to the error file
       if ((step_==stepmax_) or (time_==maxtime_))// write results to file
       {
@@ -5002,6 +5043,7 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
         f.flush();
         f.close();
       }
+      */
 
       std::ostringstream temp;
       const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
@@ -5033,6 +5075,87 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
   }
   return;
 } // end EvaluateErrorComparedToAnalyticalSol
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | evaluate divergence u                                      ehrl 12/12|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+
+void FLD::FluidImplicitTimeInt::EvaluateDivU()
+{
+  // Evaluate div u only at the last step
+  //if ((step_==stepmax_) or (time_==maxtime_))// write results to file
+  if (params_->get<bool>("COMPUTE_DIVU"))
+  {
+    // create the parameters for the discretization
+    ParameterList eleparams;
+
+    // action for elements
+    eleparams.set<int>("action",FLD::calc_div_u);
+
+    // set vector values needed by elements
+    // div u is always evaluated at time n+af (generalized alpha time integration schemes) and
+    // at time  n+1 (one-step-theta)
+    // set scheme-specific element parameters and vector values
+    if (timealgo_==INPAR::FLUID::timeint_afgenalpha)
+    {
+      discret_->SetState("velaf",velaf_);
+     // In the case of np genalpha the state vector at time n+1 is not necessary
+    }
+    // continuity equation in np-genalpha is also evaluated at time n+1
+    else discret_->SetState("velaf",velnp_);
+
+    const Epetra_Map* elementrowmap = discret_->ElementRowMap();
+    RCP<Epetra_MultiVector> divu = Teuchos::rcp(new Epetra_MultiVector(*elementrowmap,1,true));
+
+    // optional: elementwise defined div u may be written to standard output file (not implemented yet)
+    discret_->EvaluateScalars(eleparams, divu);
+
+    discret_->ClearState();
+
+    double maxdivu = 0.0;
+    double sumdivu = 0.0;
+    divu->Norm1(&sumdivu);
+    divu->NormInf(&maxdivu);
+
+    if(myrank_==0)
+    {
+      cout << "---------------------------------------------------" << endl;
+      cout << "| divergence-free condition:                      |" << endl;
+      cout << "| Norm(inf) = " << maxdivu <<  " | Norm(1) = " << sumdivu << "  |" << endl ;
+      cout << "---------------------------------------------------" << endl << endl;
+
+
+      ostringstream temp;
+      const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      const std::string fname = simulation+".divu";
+
+      std::ofstream f;
+      f.open(fname.c_str());
+      if(step_==1)
+      {
+        f << "#| " << simulation << "\n";
+        f << "#| Step | Time | max. div u | div u (Norm(1)) |\n";
+        f << step_ << " " << time_ << " " << maxdivu << " " << sumdivu << " " << "\n";
+        f.flush();
+        f.close();
+      }
+      else
+      {
+        f << step_ << " " << time_ << " " << maxdivu << " " << sumdivu << " " << "\n";
+        f.flush();
+        f.close();
+      }
+    }
+  }
+
+  return;
+} // end EvaluateDivU
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -5143,6 +5266,11 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
     //                        compute flow rates
     // -------------------------------------------------------------------
     ComputeFlowRates();
+
+    // -------------------------------------------------------------------
+    // evaluate divergence u
+    // -------------------------------------------------------------------
+    EvaluateDivU();
 
     // -------------------------------------------------------------------
     //                         output of solution

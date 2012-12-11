@@ -2433,6 +2433,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("DISPLAY_STAB","Yes","show stabilization setting on screen",&fdyn);
   BoolParameter("GMSH_OUTPUT","No","write output to gmsh files",&fdyn);
+  BoolParameter("COMPUTE_DIVU","No","Compute divergence of velocity field at the element center",&fdyn);
   IntParameter("UPRES",1,"Increment for writing solution",&fdyn);
   IntParameter("RESTARTEVRY",20,"Increment for writing restart",&fdyn);
   IntParameter("NUMSTEP",1,"Total number of Timesteps",&fdyn);

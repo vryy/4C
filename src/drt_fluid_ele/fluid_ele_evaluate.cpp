@@ -248,11 +248,15 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
           mat);
     }
     break;
+    case FLD::calc_div_u:
+    {
+      // compute divergence of velocity field at the element
+      return DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->ComputeDivU(this, discretization, lm, elevec1);
+    }
+    break;
     case FLD::calc_fluid_error:
     {
-      // integrate shape function for this element
-      // (results assembled into element vector)
-      // return DRT::ELEMENTS::FluidImplInterface::Impl(Shape(),"test")->ComputeError(this, params, mat, discretization, lm, elevec1);
+      // compute error for a known analytical solution
       return  DRT::ELEMENTS::FluidFactory::ProvideImpl(Shape(), "std")->ComputeError(this, params, mat, discretization, lm, elevec1);
     }
     break;

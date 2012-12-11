@@ -28,6 +28,7 @@ enum Action {
     calc_loma_mono_odblock,
     calc_fluid_genalpha_sysmat_and_residual,
     calc_fluid_genalpha_update_for_subscales,
+    calc_div_u,
     calc_fluid_error,
     calc_mean_Cai,
     set_mean_Cai,

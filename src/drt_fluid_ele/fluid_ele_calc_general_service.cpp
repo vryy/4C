@@ -139,6 +139,92 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDivOp(
 }
 
 /*----------------------------------------------------------------------*
+ * Action type: Compute Div u                                 ehrl 12/12|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeDivU(
+    DRT::ELEMENTS::Fluid*           ele,
+    DRT::Discretization&            discretization,
+    std::vector<int>&               lm,
+    Epetra_SerialDenseVector&       elevec1)
+{
+  double area = 0.0;
+  double divu = 0.0;
+
+  //----------------------------------------------------------------------------
+  //   Extract velocity/pressure from global vectors
+  //----------------------------------------------------------------------------
+
+  // fill the local element vector/matrix with the global values
+  // af_genalpha: velocity/pressure at time n+alpha_F
+  // np_genalpha: velocity at time n+alpha_F, pressure at time n+1, velocity for continuity equ. at time n+1
+  // ost:         velocity/pressure at time n+1
+  LINALG::Matrix<nsd_,nen_> evelaf(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelaf, NULL,"velaf");
+
+  //----------------------------------------------------------------------------
+  //                         ELEMENT GEOMETRY
+  //----------------------------------------------------------------------------
+
+  // get node coordinates
+  GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+
+  //----------------------------------------------------------------
+  // Now do the nurbs specific stuff (for isogeometric elements)
+  //----------------------------------------------------------------
+  if(isNurbs_)
+  {
+    // access knots and weights for this element
+    bool zero_size = DRT::NURBS::GetMyNurbsKnotsAndWeights(discretization,ele,myknots_,weights_);
+
+    // if we have a zero sized element due to a interpolated point -> exit here
+    if(zero_size)
+      return(0);
+  } // Nurbs specific stuff
+
+  if (ele->IsAle())
+  {
+    LINALG::Matrix<nsd_,nen_>       edispnp(true);
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
+
+    // get new node positions for isale
+     xyze_ += edispnp;
+  }
+
+  {
+    // evaluate shape functions and derivatives at element center
+    EvalShapeFuncAndDerivsAtEleCenter(ele->Id());
+
+//------------------------------------------------------------------
+//                       INTEGRATION LOOP
+//------------------------------------------------------------------
+
+  // loop over Gauss points if div u needs to be evaluated at the Gauss points
+  /*
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
+  {
+    // evaluate shape functions and derivatives at integration point
+    EvalShapeFuncAndDerivsAtIntPoint(iquad,ele->Id());
+  */
+
+    // get velocity at integration point
+    // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+    vderxy_.MultiplyNT(evelaf,derxy_);
+
+    vdiv_= 0.0;
+    for (int idim = 0; idim <nsd_; ++idim)
+    {
+      vdiv_ += vderxy_(idim, idim);
+    }
+
+    divu += vdiv_*fac_;
+    area += fac_;
+  }
+  elevec1[0] = divu/area;
+  return 0;
+}
+
+/*----------------------------------------------------------------------*
  * Action type: Compute Error                              shahmiri 01/12
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
@@ -188,9 +274,18 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
   //----------------------------------------------------------------------------
 
   // fill the local element vector/matrix with the global values
+  // af_genalpha: velocity/pressure at time n+alpha_F
+  // np_genalpha: velocity at time n+alpha_F, pressure at time n+1
+  // ost:         velocity/pressure at time n+1
   LINALG::Matrix<nsd_,nen_> evelaf(true);
-  LINALG::Matrix<nen_,1> epreaf(true);
-  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelaf, &epreaf,"u and p at time n+1 (converged)");
+  LINALG::Matrix<nen_,1>    epreaf(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelaf, &epreaf,"velaf");
+
+  // np_genalpha: additional vector for velocity at time n+1
+  LINALG::Matrix<nsd_,nen_> evelnp(true);
+  LINALG::Matrix<nen_,1>    eprenp(true);
+  if (fldpara_->IsGenalphaNP())
+    ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelnp, &eprenp,"velnp");
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -235,8 +330,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
     velint_.Multiply(evelaf,funct_);
 
     // get pressure at integration point
-    // (value at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
-    double preint = funct_.Dot(epreaf);
+    // (value at n+alpha_F for generalized-alpha scheme,
+    //  value at n+alpha_F for generalized-alpha-NP schemen, n+1 otherwise)
+    double preint(true);
+    if(fldpara_->IsGenalphaNP())
+      preint= funct_.Dot(eprenp);
+    else
+      preint = funct_.Dot(epreaf);
 
     // get coordinates at integration point
     LINALG::Matrix<nsd_,1> xyzint(true);
