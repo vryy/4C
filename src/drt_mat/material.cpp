@@ -56,8 +56,12 @@ Maintainer: Lena Wiechert
 #include "yoghurt.H"
 #include "permeablefluid.H"
 #include "matlist.H"
+#include "elchmat.H"
+#include "elchphase.H"
 #include "biocell.H"
 #include "ion.H"
+#include "diffcond.H"
+#include "newman.H"
 #include "compogden.H"
 #include "charmm.H"
 #include "itskov.H"
@@ -358,6 +362,20 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::MatList* params = static_cast<MAT::PAR::MatList*>(curmat->Parameter());
     return params->CreateMaterial();
   }
+  case INPAR::MAT::m_elchmat:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ElchMat(curmat));
+    MAT::PAR::ElchMat* params = static_cast<MAT::PAR::ElchMat*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_elchphase:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ElchPhase(curmat));
+    MAT::PAR::ElchPhase* params = static_cast<MAT::PAR::ElchPhase*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
   case INPAR::MAT::m_biocell:
   {
     if (curmat->Parameter() == NULL)
@@ -384,6 +402,20 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::Ion(curmat));
     MAT::PAR::Ion* params = static_cast<MAT::PAR::Ion*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_diffcond:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::DiffCond(curmat));
+    MAT::PAR::DiffCond* params = static_cast<MAT::PAR::DiffCond*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_newman:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::Newman(curmat));
+    MAT::PAR::Newman* params = static_cast<MAT::PAR::Newman*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_yeoh:
@@ -448,7 +480,7 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
   case INPAR::MAT::mes_coupanisoexpo:
   case INPAR::MAT::mes_coupanisoexpotwocoup:
   case INPAR::MAT::mes_coupanisoneohooke:
-  case INPAR::MAT::mes_coupanisoneohooke_varprop:    
+  case INPAR::MAT::mes_coupanisoneohooke_varprop:
   case INPAR::MAT::mes_isoanisoexpo:
   case INPAR::MAT::mes_coupvarga:
   case INPAR::MAT::mes_isovarga:
