@@ -2548,8 +2548,17 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const 
   LINALG::Matrix<3,1> boxcenter;
   LINALG::Matrix<3,1> centershift;
   std::vector<int> crosslinkerentries;
+
+#ifdef MEASURETIME
+  double t0 = Teuchos::Time::wallTime();
+#endif
+
   // determine the new center point of the periodic volume
   DDCorrShift(&boxcenter, &centershift, &crosslinkerentries);
+
+#ifdef MEASURETIME
+  double t1 = Teuchos::Time::wallTime();
+#endif
 
   if(!discret_->Comm().MyPID())
     cout<<crosslinkerentries.size()<<" crosslinker elements found...\n"<<endl;
@@ -2560,11 +2569,19 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const 
   // store center of gravity for later use in GmshOutput()
   cog_ = cog;
 
+#ifdef MEASURETIME
+  double t2 = Teuchos::Time::wallTime();
+#endif
+
   // Compute internal energy
   std::vector<double> internalenergy;
   internalenergy.clear();
   const RCP<Epetra_Vector> disp = Teuchos::rcp(new Epetra_Vector(disrow));
   ComputeInternalEnergy(disp, internalenergy,dt, filename);
+
+#ifdef MEASURETIME
+  double t3 = Teuchos::Time::wallTime();
+#endif
 
   //calculcate the distance of crosslinker elements to all crosslinker elements (crosslinkermap)
   // testwise, base centershift upon calculated cog_ (rise in adequacy?)
@@ -2574,15 +2591,33 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const 
 
   // write the numbers of free, one-bonded, and two-bonded crosslink molecules
   CrosslinkCount(filename);
+
+#ifdef MEASURETIME
+  double t4 = Teuchos::Time::wallTime();
+#endif
+
   // write the numbers of free, one-bonded, and two-bonded crosslink molecules
   OrientationCorrelation(disrow, istep);
+
+#ifdef MEASURETIME
+  double t5 = Teuchos::Time::wallTime();
+#endif
+
   // Compute the the network mesh size in dependency to the radial distance to a given COG
   ComputeLocalMeshSize(disrow, newcentershift, istep);
+
+#ifdef MEASURETIME
+  double t6 = Teuchos::Time::wallTime();
+#endif
 
   // MultiVector because result vector will be of length 3*ddcorrrowmap_->MyLength()
   Epetra_MultiVector crosslinksperbinrow(*ddcorrrowmap_,9 , true);
   Epetra_MultiVector crosslinksperbinrotrow(*ddcorrrowmap_,3 , true);
   DDCorrFunction(crosslinksperbinrow, crosslinksperbinrotrow, &newcentershift);
+
+#ifdef MEASURETIME
+  double t7 = Teuchos::Time::wallTime();
+#endif
 
   // calculation of filament element orientation in spherical coordinates, sorted into histogram
   Epetra_Vector phibinsrow(*ddcorrrowmap_, true);
@@ -2590,8 +2625,16 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const 
   Epetra_Vector costhetabinsrow(*ddcorrrowmap_, true);
   SphericalCoordsDistribution(disrow, phibinsrow, thetabinsrow, costhetabinsrow);
 
+#ifdef MEASURETIME
+  double t8 = Teuchos::Time::wallTime();
+#endif
+
   Epetra_Vector radialdistancesrow(*ddcorrrowmap_, true);
   RadialDensityDistribution(radialdistancesrow, centershift);
+
+#ifdef MEASURETIME
+  double t9 = Teuchos::Time::wallTime();
+#endif
 
   // Import
   Epetra_MultiVector crosslinksperbincol(*ddcorrcolmap_,crosslinksperbinrow.NumVectors() , true);
@@ -2629,7 +2672,6 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const 
       radialdistbins[i] += (int)radialdistancescol[pid*numbins+i];
     }
 
-
   // write data to file
   if(discret_->Comm().MyPID()==0)
   {
@@ -2652,7 +2694,25 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const 
     fclose(fp);
   }
   if(!discret_->Comm().MyPID())
+  {
+#ifdef MEASURETIME
+    cout<<"\n=================Time  Measurement================"<<endl;
+    cout<<"StatMechOutput::DDCorrOutput"<<endl;
+    cout<<"DDCorrShift                 :\t"<<std::setprecision(4)<<t1-t0<<"\ts"<<endl;
+    cout<<"DDCorrCurrentStructure      :\t"<<std::setprecision(4)<<t2-t1<<"\ts"<<endl;
+    cout<<"ComputeInternalEnergy       :\t"<<std::setprecision(4)<<t3-t2<<"\ts"<<endl;
+    cout<<"CrosslinkCount              :\t"<<std::setprecision(4)<<t4-t3<<"\ts"<<endl;
+    cout<<"OrientationCorrelation      :\t"<<std::setprecision(4)<<t5-t4<<"\ts"<<endl;
+    cout<<"ComputeLocalMeshSize        :\t"<<std::setprecision(4)<<t6-t5<<"\ts"<<endl;
+    cout<<"DDCorrFunction              :\t"<<std::setprecision(4)<<t7-t6<<"\ts"<<endl;
+    cout<<"SphericalCoordsDistribution :\t"<<std::setprecision(4)<<t8-t7<<"\ts"<<endl;
+    cout<<"RadialDensityDistribution   :\t"<<std::setprecision(4)<<t9-t8<<"\ts"<<endl;
+    cout<<"Communication               :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t9<<"\ts"<<endl;
+    cout<<"=================================================="<<endl;
+    cout<<"total time                  :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t0<<"\ts"<<endl;
+#endif
     cout<<"================================================================================="<<endl;
+  }
 }//STATMECH::StatMechManager::DDCorrOutput()
 
 /*------------------------------------------------------------------------------*

@@ -555,12 +555,12 @@ void STATMECH::StatMechManager::Update(const int&                               
     {
       cout<<"\n=================Time  Measurement================"<<endl;
       cout<<"StatMechManager::Update"<<endl;
-      cout<<"Binding Spot Positions : "<<scientific<<t2-t1<<" s"<<endl;
-      cout<<"Crosslinker Diffusion  : "<<scientific<<t3-t2<<" s"<<endl;
-      cout<<"Set Crosslinkers       : "<<scientific<<t4-t3<<" s"<<endl;
-      cout<<"Delete Crosslinkers    : "<<scientific<<t5-t4<<" s"<<endl;
+      cout<<"Binding Spot Positions :\t"<<std::setprecision(4)<<t2-t1<<"\ts"<<endl;
+      cout<<"Crosslinker Diffusion  :\t"<<std::setprecision(4)<<t3-t2<<"\ts"<<endl;
+      cout<<"Set Crosslinkers       :\t"<<std::setprecision(4)<<t4-t3<<"\ts"<<endl;
+      cout<<"Delete Crosslinkers    :\t"<<std::setprecision(4)<<t5-t4<<"\ts"<<endl;
       cout<<"=================================================="<<endl;
-      cout<<"Update total time      : "<<Teuchos::Time::wallTime()-t0<<" s"<<endl;
+      cout<<"Update total time      :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t0<<"\ts"<<endl;
     }
 #endif // #ifdef MEASURETIME
   }//if(DRT::INPUT::IntegralValue<int>(statmechparams_,"DYN_CROSSLINKERS"))
@@ -2142,15 +2142,16 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
     }
   }
 #ifdef MEASURETIME
-  double t4 = Teuchos::Time::wallTime();
   if(!discret_->Comm().MyPID())
   {
-    cout<<"\n\n=================================================="<<endl;
-    cout<<" - Partitioning + Search  : "<<scientific<<t1-t0<<" s"<<endl;
-    cout<<" - Linker administration  : "<<scientific<<t2-t1<<" s"<<endl;
-    cout<<" - Vector communication   : "<<scientific<<t3-t2<<" s"<<endl;
-    cout<<" - Addition of elements   : "<<scientific<<t4-t3<<" s"<<endl;
+    cout<<"\n=================Time  Measurement================"<<endl;
+    cout<<"StatMechManager::SearchAndSetCrosslinkers"<<endl;
+    cout<<"Partitioning + Search  :\t"<<std::setprecision(4)<<t1-t0<<"\ts"<<endl;
+    cout<<"Linker administration  :\t"<<std::setprecision(4)<<t2-t1<<"\ts"<<endl;
+    cout<<"Vector communication   :\t"<<std::setprecision(4)<<t3-t2<<"\ts"<<endl;
+    cout<<"Addition of elements   :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t3<<"\ts"<<endl;
     cout<<"=================================================="<<endl;
+    cout<<"total time             :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t0<<"\ts"<<endl;
   }
 #endif
 

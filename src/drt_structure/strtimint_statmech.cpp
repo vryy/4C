@@ -311,14 +311,17 @@ void STR::TimIntStatMech::Integrate()
     StatMechOutput();
 
 #ifdef MEASURETIME
-    const double t5 = Teuchos::Time::wallTime();
     if(!discret_->Comm().MyPID())
     {
-      cout<<scientific<<"StatMechPrepareStep: "<<t1-t0<<" s"<<endl;
-      cout<<scientific<<"Newton             : "<<t2-t1<<" s"<<endl;
-      cout<<scientific<<"PeriodicShift      : "<<t3-t2<<" s"<<endl;
-      cout<<scientific<<"UpdateAndOutput    : "<<t4-t3<<" s"<<endl;
-      cout<<scientific<<"StatMechOutput     : "<<t5-t4<<" s"<<endl;
+      cout<<"\n=================Time  Measurement================"<<endl;
+      cout<<"TimIntStatMech::Integrate"<<endl;
+      cout<<"StatMechPrepareStep :\t"<<std::setprecision(4)<<t1-t0<<"\ts"<<endl;
+      cout<<"Newton              :\t"<<std::setprecision(4)<<t2-t1<<"\ts"<<endl;
+      cout<<"PeriodicShift       :\t"<<std::setprecision(4)<<t3-t2<<"\ts"<<endl;
+      cout<<"UpdateAndOutput     :\t"<<std::setprecision(4)<<t4-t3<<"\ts"<<endl;
+      cout<<"StatMechOutput      :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t4<<"\ts"<<endl;
+      cout<<"=================================================="<<endl;
+      cout<<"total time         :\t"<<std::setprecision(4)<<Teuchos::Time::wallTime()-t0<<"\ts"<<endl;
     }
 #endif
   }
