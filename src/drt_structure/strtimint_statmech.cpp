@@ -217,7 +217,7 @@ void STR::TimIntStatMech::SuppressOutput()
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::InitializeBeamContact()
 {
-  if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
+  if(HaveBeamContact())
   {
     //check wheter appropriate parameters are set in the parameter list "CONTACT & MESHTYING"
     const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->ContactDynamicParams();
@@ -267,7 +267,7 @@ void STR::TimIntStatMech::Integrate()
       StatMechUpdate();
 
       // Solve system of equations according to parameters and methods chosen by input file
-      if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
+      if(HaveBeamContact())
         BeamContactNonlinearSolve();
       else // standard procedure without beam contact
       {
@@ -336,13 +336,9 @@ void STR::TimIntStatMech::UpdateAndOutput()
   // material history is overwritten
   PrepareOutput();
 
-  // update displacements, velocities, accelerations
+  // update displacements, velocities, accelerations (UpdateStepBeamContact() happens within)
   // after this call we will have disn_==dis_, etc
   UpdateStepState();
-
-  // update beam contact
-  if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
-    UpdateStepBeamContact();
 
 //  if(!discret_->Comm().MyPID())
 //    cout<<"\n\npre UpdateTimeAndStepSize: time = "<<(*time_)[0]<<", timen_ = "<<timen_<<", dt = "<<(*dt_)[0]<<endl;
@@ -508,7 +504,7 @@ void STR::TimIntStatMech::EvaluateForceStiffResidual(bool predict)
   BuildResidual();
 
   // evaluate beam contact
-  if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
+  if(HaveBeamContact())
     ApplyForceStiffBeamContact(stiff_, fres_, disn_, predict);
 
   // blank residual at DOFs on Dirichlet BC already here (compare with strtimint_impl: there, this is first called on freact_, then again on fres_ which seems unnecessary)
@@ -677,7 +673,7 @@ void STR::TimIntStatMech::FullNewton()
 //  bool print_unconv = true;
 //
 //  // create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
-//  if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
+//  if(HaveBeamContact())
 //    InitializeNewtonUzawa();
 //
 //  while (!Converged(convcheck, disinorm, fresmnorm, toldisp, tolres) and numiter<=maxiter)
@@ -779,7 +775,7 @@ void STR::TimIntStatMech::FullNewton()
 //    //**********************************************************************
 //    //**********************************************************************
 //    // evaluate beam contact
-//    if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
+//    if(HaveBeamContact())
 //    {
 //      beamcman_->Evaluate(*SystemMatrix(),*fresm_,*disn_);
 //
@@ -932,7 +928,7 @@ void STR::TimIntStatMech::InitializeNewtonUzawa()
     //**********************************************************************
     //**********************************************************************
     // evaluate beam contact
-    if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
+    if(HaveBeamContact())
       beamcman_->Evaluate(*SystemMatrix(),*fres_,*disn_);
     //**********************************************************************
     //**********************************************************************
@@ -1191,7 +1187,7 @@ void STR::TimIntStatMech::PTC()
   const double tbegin = Teuchos::Time::wallTime();
 
   //--------------------create out-of-balance force for 2nd, 3rd, ... Uzawa iteration
-  if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
+  if(HaveBeamContact())
     InitializeNewtonUzawa();
 
   //=================================================== equilibrium loop
@@ -1280,18 +1276,17 @@ void STR::TimIntStatMech::PTC()
     //------------------------------------ PTC update of artificial time
     // compute inf norm of residual
     PTCStatMechUpdate(ctransptc,crotptc,nc,resinit,alphaptc);
-
 #ifdef GMSHPTCSTEPS
     // GmshOutput
     std::ostringstream filename;
-    if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"GMSHOUTPUT") && DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
+    if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"GMSHOUTPUT") && HaveBeamContact())
     {
-      filename << "./GmshOutput/network"<< time_ <<"_u"<<std::setw(2) << std::setfill('0')<<beamcman_->GetUzawaIter()<<"_n"<<std::setw(2) << std::setfill('0')<<numiter<<".pos";
+      filename << statmechman_->StatMechRootPath() <<"/GmshOutput/network"<< time_ <<"_u"<<std::setw(2) << std::setfill('0')<<beamcman_->GetUzawaIter()<<"_n"<<std::setw(2) << std::setfill('0')<<numiter<<".pos";
       statmechman_->GmshOutput(*disn_,filename,istep,beamcman_);
     }
     else
     {
-      filename << "./GmshOutput/network"<< time_ <<"_n"<<std::setw(2) << std::setfill('0')<<numiter<<".pos";
+      filename << statmechman_->StatMechRootPath()<< "/GmshOutput/network"<< time_ <<"_n"<<std::setw(2) << std::setfill('0')<<numiter<<".pos";
       statmechman_->GmshOutput(*disn_,filename,istep);
     }
 #endif
@@ -1314,7 +1309,7 @@ void STR::TimIntStatMech::PTC()
   PTCConvergenceStatus(iter_, itermax_, fresnormdivergent);
 
   INPAR::CONTACT::SolvingStrategy soltype = INPAR::CONTACT::solution_penalty;
-  if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
+  if(HaveBeamContact())
     soltype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(beamcman_->InputParameters(),"STRATEGY");
   if(printscreen_ && !isconverged_ &&  !myrank_ && soltype != INPAR::CONTACT::solution_auglag)
     std::cout<<"\n\niteration unconverged - new trial with new random numbers!\n\n";
@@ -1532,7 +1527,7 @@ void STR::TimIntStatMech::ConvergenceStatusUpdate(bool converged, bool increases
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::BeamContactPrepareStep()
 {
-  if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT") && DRT::INPUT::IntegralValue<int>(beamcman_->InputParameters(),"BEAMS_NEWGAP"))
+  if(HaveBeamContact() && DRT::INPUT::IntegralValue<int>(beamcman_->InputParameters(),"BEAMS_NEWGAP"))
   {
     // set normal vector of last time "normal_" to old normal vector "normal_old_" (maybe this go inside the do loop?)
       beamcman_->ShiftAllNormal();
@@ -1689,7 +1684,7 @@ void STR::TimIntStatMech::StatMechPrepareStep()
     }
 
     //save relevant class variables at the beginning of this time step
-    statmechman_->WriteConv();
+    statmechman_->WriteConv(beamcman_);
 
     //seed random generators of statmechman_ to generate the same random numbers even if the simulation was interrupted by a restart
     statmechman_->SeedRandomGenerators(step_);
@@ -1716,7 +1711,7 @@ void STR::TimIntStatMech::StatMechUpdate()
     isconverged_ = true;
 
     const double t_admin = Teuchos::Time::wallTime();
-    if(DRT::INPUT::IntegralValue<int>(statmechparams,"BEAMCONTACT"))
+    if(HaveBeamContact())
       statmechman_->Update(step_, timen_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_,beamcman_,buildoctree_, printscreen_);
     else
       statmechman_->Update(step_, timen_, (*dt_)[0], *((*dis_)(0)), stiff_,ndim_, Teuchos::null,false,printscreen_);
@@ -1759,7 +1754,7 @@ void STR::TimIntStatMech::StatMechOutput()
   // note: "step_ - 1" in order to make the modulo operations within Output() work properly.
   if(HaveStatMech())
   {
-    if(DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"BEAMCONTACT"))
+    if(HaveBeamContact())
       statmechman_->Output(ndim_,(*time_)[0],step_,(*dt_)[0],*((*dis_)(0)),*fint_,beamcman_, printscreen_);
     else
       statmechman_->Output(ndim_,(*time_)[0],step_,(*dt_)[0],*((*dis_)(0)),*fint_, Teuchos::null, printscreen_);

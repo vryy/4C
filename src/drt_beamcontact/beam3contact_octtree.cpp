@@ -566,7 +566,7 @@ void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int&
    * multiple shifts, one has to reiterate the dof-wise shifts, determine the position of the nodes after each shift
    * and calculate the coordinates of the found segments.
    */
-  double bboxdiameter = (*diameter_)[elecolid];;
+  double bboxdiameter = (*diameter_)[elecolid];
   if(bboxlimits!=Teuchos::null)
     bboxdiameter = (*diameter_)[searchdis_.ElementColMap()->NumMyElements()-1];
 

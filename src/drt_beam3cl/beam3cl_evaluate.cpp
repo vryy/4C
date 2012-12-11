@@ -611,150 +611,156 @@ void DRT::ELEMENTS::BeamCL::b3_energy(Teuchos::ParameterList&   params,
                                       std::vector<double>&      disp,
                                       Epetra_SerialDenseVector* intenergy)
 {
-  /* WE only want Elastic Energy of Filaments right now -> that is why this code block is uncommented
   const int nnode=4;
   //initialize energies (only one kind of energy computed here
   (*intenergy)(0) = 0.0;
 
-  //first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
-  //no periodic boundary conditions are to be applied the following code line may be ignored or deleted
-  NodeShift<nnode,3>(params,disp);
+  bool calcenergy = false;
+  if(params.isParameter("energyoftype")==false) calcenergy = true;
+  else if(params.get<string>("energyoftype")=="beam3cl") calcenergy =true;
 
-  // In order to calculate the elatic energy we need the fiktive nodal displacement vector fdisp
-
-  //Compute current nodal triads of the four real nodes
-  //rotational displacement at a certain node between this and last iteration step
-  LINALG::Matrix<3,1>  deltatheta;
-  //rotational displacement at a certain node between this and last iteration step in quaternion form
-  LINALG::Matrix<4,1>  deltaQ;
-   for (int node=0; node<nnode; node++)
-   {
-     //rotation increment relative to configuration in last iteration step is difference between current rotation
-      //entry in displacement vector minus rotation entry in displacement vector in last iteration step
-     for(int i=0; i<3; i++)
-       rdispthetanew_[node](i) = disp[6*node+3+i];
-
-     deltatheta  = rdispthetanew_[node];
-     deltatheta -= rdispthetaold_[node];
-
-     //compute quaternion from rotation angle relative to last configuration
-     angletoquaternion(deltatheta,deltaQ);
-
-     //multiply relative rotation with rotation in last configuration to get rotation in new configuration
-     quaternionproduct(rQold_[node],deltaQ,rQnew_[node]);
-
-     //renormalize quaternion to keep its absolute value one even in case of long simulations and intricate calculations
-     rQnew_[node].Scale(1/rQnew_[node].Norm2());
-   }
-
-   // calculate interpolated displacements and velocities of the two fictive nodes
-
-   // vector containing fictive nodal displacements
-   std::vector<double> fdisp(12);
-   for(int i=0;i<12;i++)
-    fdisp[i]=0;
-   // std::vector containing Interpolated rotation angles at fiktive nodes
-   std::vector<LINALG::Matrix<3,1> > rThetaXi(2);
-   // std::vector containing Interpolated triads at fiktive nodes
-   std::vector<LINALG::Matrix<3,3> > rLambdar(2);
-   //angle of relative rotation between node I and J according to (3.10), Jelenic 1999
-   std::vector<LINALG::Matrix<3,1> > rphiIJ(2);
-   //rotation angles between nodal triads and refenrece triad according to (3.8), Jelenic 1999
-   std::vector<std::vector<LINALG::Matrix<3,1> > > rPsili(2);
-   rPsili[0].resize(2);
-   rPsili[1].resize(2);
-   //interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11), Jelenic 1999
-   std::vector<LINALG::Matrix<3,1> > rPsil(2);
-   // Interpolation of Translational displacements at fictive nodes
-   // Evaluate Shape Funktions at Binding positions
-   std::vector<LINALG::Matrix<1,2> > Ibp(2);
-   std::vector<std::vector<LINALG::Matrix<3,3> > > Itildebp(2);
-   const DiscretizationType distype = this->Shape();
-     for(int filament=0; filament<2; filament++)
-     DRT::UTILS::shape_function_1D(Ibp[filament],mybindingposition_[filament],distype);
-
-     //calculate interpolated fictive nodal displacaments
-     for(int j=0;j<2;j++)
-       for(int k=0;k<2;k++)
-        for(int i=0;i<3;i++)
-         fdisp[i+6*j]+= Ibp[j](k)*disp[i+6*k+12*j];
-
-    // Interpolation of Rotational displacements at fictive nodes
-
-    InterpolateFiktiveNodalTriads(Ibp,rLambdar,rphiIJ,rPsili,rPsil);
-
-
-  //vector whose numgp-th element is a 1xfnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
-  std::vector<LINALG::Matrix<1,fnnode> > I(fnnode-1);
-
-  //vector whose numgp-th element is a 1xfnnode-matrix with the derivatives of all Lagrange polynomial basis functions evaluated at fnnode-1 Gauss points for elasticity
-  std::vector<LINALG::Matrix<1,fnnode> > Iprime(fnnode-1);
-
-  //vector whose numgp-th element is a std::vector with fnnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^fnnode at fnnode-1 Gauss points for elasticity according to according to (3.18), Jelenic 1999
-  std::vector<std::vector<LINALG::Matrix<3,3> > > Itilde(fnnode-1);
-
-  //vector whose numgp-th element is a std::vector with fnnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^fnnode at fnnode-1 Gauss points for elasticity according to according to (3.19), Jelenic 1999
-  std::vector<std::vector<LINALG::Matrix<3,3> > > Itildeprime(fnnode-1);
-
-  //vector with rotation matrices at fnnode-1 Gauss points for elasticity
-  std::vector<LINALG::Matrix<3,3> > Lambda(fnnode-1);
-
-  //vector whose numgp-th element is a 1xfnnode-matrix with all Lagrange polynomial basis functions evaluated at the fnnode Gauss points for mass matrix
-  std::vector<LINALG::Matrix<1,fnnode> > Imass(fnnode);
-
-  //vector whose numgp-th element is a std::vector with fnnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^fnnode at the fnnode Gauss points for mass matrix according to according to (3.18), Jelenic 1999
-  std::vector<std::vector<LINALG::Matrix<3,3> > > Itildemass(fnnode);
-
-  //r'(x) from (2.1), Jelenic 1999
-  LINALG::Matrix<3,1>  rprime;
-  //3D vector related to spin matrix \hat{\kappa} from (2.1), Jelenic 1999
-  LINALG::Matrix<3,1>  kappa;
-  //3D vector of convected axial and shear strains from (2.1), Jelenic 1999
-  LINALG::Matrix<3,1>  gamma;
-
-  //convected stresses N and M and constitutive matrices C_N and C_M according to section 2.4, Jelenic 1999
-  LINALG::Matrix<3,1> stressN;
-  LINALG::Matrix<3,1> stressM;
-  LINALG::Matrix<3,3> CN;
-  LINALG::Matrix<3,3> CM;
-
-  //spatial stresses n and m according to (3.10), Romero 2004 and spatial constitutive matrices c_n and c_m according to page 148, Jelenic 1999
-  LINALG::Matrix<3,1> stressn;
-  LINALG::Matrix<3,1> stressm;
-  LINALG::Matrix<3,3> cn;
-  LINALG::Matrix<3,3> cm;
-
-  //integration points for elasticity (underintegration) and mass matrix (exact integration)
-  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(fnnode,gaussunderintegration));
-  DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(fnnode,gaussexactintegration));
-
-  //evaluate at all Gauss points basis functions of all nodes, their derivatives and the triad of the beam frame
-  evaluatebasisfunctionsandtriads<fnnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
-
-  //Loop through all GP and calculate their contribution to the force vector and stiffnessmatrix
-  for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+  if(calcenergy)
   {
-    //weight of GP in parameter space
-    const double wgt = gausspoints.qwgt[numgp];
+    //first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
+    //no periodic boundary conditions are to be applied the following code line may be ignored or deleted
+    if(params.isParameter("PERIODLENGTH"))
+      NodeShift<nnode,3>(params,disp);
 
-    //compute derivative of line of centroids with respect to curve parameter in reference configuration, i.e. r' from Jelenic 1999, eq. (2.12)
-    curvederivative<fnnode,3>(fdisp,Iprime[numgp],rprime,jacobi_[numgp]);
+    // In order to calculate the elatic energy we need the fiktive nodal displacement vector fdisp
 
-    //compute convected strains gamma and kappa according to Jelenic 1999, eq. (2.12)
-    computestrain(rprime,Lambda[numgp],gamma,kappa);
+    //Compute current nodal triads of the four real nodes
+    //rotational displacement at a certain node between this and last iteration step
+    LINALG::Matrix<3,1>  deltatheta;
+    //rotational displacement at a certain node between this and last iteration step in quaternion form
+    LINALG::Matrix<4,1>  deltaQ;
+     for (int node=0; node<nnode; node++)
+     {
+       //rotation increment relative to configuration in last iteration step is difference between current rotation
+        //entry in displacement vector minus rotation entry in displacement vector in last iteration step
+       for(int i=0; i<3; i++)
+         rdispthetanew_[node](i) = disp[6*node+3+i];
 
-    //compute convected stress vector from strain vector according to Jelenic 1999, page 147, section 2.4
-    strainstress(gamma,kappa,stressN,CN,stressM,CM);
+       deltatheta  = rdispthetanew_[node];
+       deltatheta -= rdispthetaold_[node];
 
-    //adding elastic energy at this Gauss point
-    for(int i=0; i<3; i++)
+       //compute quaternion from rotation angle relative to last configuration
+       LARGEROTATIONS::angletoquaternion(deltatheta,deltaQ);
+
+       //multiply relative rotation with rotation in last configuration to get rotation in new configuration
+       LARGEROTATIONS::quaternionproduct(rQold_[node],deltaQ,rQnew_[node]);
+
+       //renormalize quaternion to keep its absolute value one even in case of long simulations and intricate calculations
+       rQnew_[node].Scale(1/rQnew_[node].Norm2());
+     }
+
+     // calculate interpolated displacements and velocities of the two fictive nodes
+
+     // vector containing fictive nodal displacements
+     std::vector<double> fdisp(12);
+     for(int i=0;i<12;i++)
+      fdisp[i]=0;
+     // std::vector containing Interpolated rotation angles at fiktive nodes
+     std::vector<LINALG::Matrix<3,1> > rThetaXi(2);
+     // std::vector containing Interpolated triads at fiktive nodes
+     std::vector<LINALG::Matrix<3,3> > rLambdar(2);
+     //angle of relative rotation between node I and J according to (3.10), Jelenic 1999
+     std::vector<LINALG::Matrix<3,1> > rphiIJ(2);
+     //rotation angles between nodal triads and refenrece triad according to (3.8), Jelenic 1999
+     std::vector<std::vector<LINALG::Matrix<3,1> > > rPsili(2);
+     rPsili[0].resize(2);
+     rPsili[1].resize(2);
+     //interpolated local relative rotation \Psi^l at a certain Gauss point according to (3.11), Jelenic 1999
+     std::vector<LINALG::Matrix<3,1> > rPsil(2);
+     // Interpolation of Translational displacements at fictive nodes
+     // Evaluate Shape Funktions at Binding positions
+     std::vector<LINALG::Matrix<1,2> > Ibp(2);
+     std::vector<std::vector<LINALG::Matrix<3,3> > > Itildebp(2);
+     const DiscretizationType distype = this->Shape();
+       for(int filament=0; filament<2; filament++)
+       DRT::UTILS::shape_function_1D(Ibp[filament],mybindingposition_[filament],distype);
+
+       //calculate interpolated fictive nodal displacaments
+       for(int j=0;j<2;j++)
+         for(int k=0;k<2;k++)
+          for(int i=0;i<3;i++)
+           fdisp[i+6*j]+= Ibp[j](k)*disp[i+6*k+12*j];
+
+      // Interpolation of Rotational displacements at fictive nodes
+
+      InterpolateFictiveNodalTriads(Ibp,rLambdar,rphiIJ,rPsili,rPsil);
+
+
+    //vector whose numgp-th element is a 1xfnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
+    std::vector<LINALG::Matrix<1,fnnode> > I(fnnode-1);
+
+    //vector whose numgp-th element is a 1xfnnode-matrix with the derivatives of all Lagrange polynomial basis functions evaluated at fnnode-1 Gauss points for elasticity
+    std::vector<LINALG::Matrix<1,fnnode> > Iprime(fnnode-1);
+
+    //vector whose numgp-th element is a std::vector with fnnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^fnnode at fnnode-1 Gauss points for elasticity according to according to (3.18), Jelenic 1999
+    std::vector<std::vector<LINALG::Matrix<3,3> > > Itilde(fnnode-1);
+
+    //vector whose numgp-th element is a std::vector with fnnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^fnnode at fnnode-1 Gauss points for elasticity according to according to (3.19), Jelenic 1999
+    std::vector<std::vector<LINALG::Matrix<3,3> > > Itildeprime(fnnode-1);
+
+    //vector with rotation matrices at fnnode-1 Gauss points for elasticity
+    std::vector<LINALG::Matrix<3,3> > Lambda(fnnode-1);
+
+    //vector whose numgp-th element is a 1xfnnode-matrix with all Lagrange polynomial basis functions evaluated at the fnnode Gauss points for mass matrix
+    std::vector<LINALG::Matrix<1,fnnode> > Imass(fnnode);
+
+    //vector whose numgp-th element is a std::vector with fnnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^fnnode at the fnnode Gauss points for mass matrix according to according to (3.18), Jelenic 1999
+    std::vector<std::vector<LINALG::Matrix<3,3> > > Itildemass(fnnode);
+
+    //r'(x) from (2.1), Jelenic 1999
+    LINALG::Matrix<3,1>  rprime;
+    //3D vector related to spin matrix \hat{\kappa} from (2.1), Jelenic 1999
+    LINALG::Matrix<3,1>  kappa;
+    //3D vector of convected axial and shear strains from (2.1), Jelenic 1999
+    LINALG::Matrix<3,1>  gamma;
+
+    //convected stresses N and M and constitutive matrices C_N and C_M according to section 2.4, Jelenic 1999
+    LINALG::Matrix<3,1> stressN;
+    LINALG::Matrix<3,1> stressM;
+    LINALG::Matrix<3,3> CN;
+    LINALG::Matrix<3,3> CM;
+
+    //spatial stresses n and m according to (3.10), Romero 2004 and spatial constitutive matrices c_n and c_m according to page 148, Jelenic 1999
+    LINALG::Matrix<3,1> stressn;
+    LINALG::Matrix<3,1> stressm;
+    LINALG::Matrix<3,3> cn;
+    LINALG::Matrix<3,3> cm;
+
+    //integration points for elasticity (underintegration) and mass matrix (exact integration)
+    DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(fnnode,gaussunderintegration));
+    DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(fnnode,gaussexactintegration));
+
+    //evaluate at all Gauss points basis functions of all nodes, their derivatives and the triad of the beam frame
+    evaluatebasisfunctionsandtriads<fnnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
+
+    //Loop through all GP and calculate their contribution to the force vector and stiffnessmatrix
+    for(int numgp=0; numgp < gausspoints.nquad; numgp++)
     {
-      (*intenergy)(0) += 0.5*gamma(i)*stressN(i)*wgt*jacobi_[numgp];
-      (*intenergy)(0) += 0.5*kappa(i)*stressM(i)*wgt*jacobi_[numgp];
-    }
+      //weight of GP in parameter space
+      const double wgt = gausspoints.qwgt[numgp];
 
+      //compute derivative of line of centroids with respect to curve parameter in reference configuration, i.e. r' from Jelenic 1999, eq. (2.12)
+      curvederivative<fnnode,3>(fdisp,Iprime[numgp],rprime,jacobi_[numgp]);
+
+      //compute convected strains gamma and kappa according to Jelenic 1999, eq. (2.12)
+      computestrain(rprime,Lambda[numgp],gamma,kappa);
+
+      //compute convected stress vector from strain vector according to Jelenic 1999, page 147, section 2.4
+      strainstress(gamma,kappa,stressN,CN,stressM,CM);
+
+      //adding elastic energy at this Gauss point
+      for(int i=0; i<3; i++)
+      {
+        (*intenergy)(0) += 0.5*gamma(i)*stressN(i)*wgt*jacobi_[numgp];
+        (*intenergy)(0) += 0.5*kappa(i)*stressM(i)*wgt*jacobi_[numgp];
+      }
+
+    }
   }
-*/
   return;
 
 } // DRT::ELEMENTS::BeamCL::b3_energy
@@ -865,7 +871,7 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
         fvel[i+6*j]+= Ibp[j](k)*vel[i+6*k+12*j];
 
    // Interpolation of Rotational displacements at fictive nodes and Quaternions Qnew_ at fictive nodes
-   InterpolateFiktiveNodalTriads(Ibp,rLambdar,rphiIJ,rPsili,rPsil);
+   InterpolateFictiveNodalTriads(Ibp,rLambdar,rphiIJ,rPsili,rPsil);
    //computation of the two reference triads of Filament A and Filament B
    // Calculate Itildebp at Binding Positions
    for(int filament=0; filament<2; filament++)

@@ -84,7 +84,6 @@ BEAMS_SMOOTHING                 None
 -------------------------------------------------------STATISTICAL MECHANICS
 THERMALBATH                     uniform
 GMSHOUTPUT                      No
-BEAMCONTACT                     Yes
 FRICTION_MODEL                  anisotropicconsistent
 ETA                             1e-3
 KT                              0.0

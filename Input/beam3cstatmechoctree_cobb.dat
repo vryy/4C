@@ -91,7 +91,6 @@ THERMALBATH                     uniform
 DBCTYPE                         std
 GMSHOUTPUT                      No
 SPECIAL_OUTPUT none //octree
-BEAMCONTACT                     Yes
 FRICTION_MODEL                  anisotropicconsistent
 ETA                             1e-3
 KT                              0.0

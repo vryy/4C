@@ -1813,8 +1813,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //Reading whether fixed seed for random numbers should be applied
   setStringToIntegralParameter<int>("FIXEDSEED","No","If chosen fixed seed for random numbers in each time step is applied",
                                yesnotuple,yesnovalue,&statmech);
-  //Reading whether beam contact is switched on or not
-  setStringToIntegralParameter<int>("BEAMCONTACT","No","If chosen beam contact is calculated",yesnotuple,yesnovalue,&statmech);
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& tdyn = list->sublist("THERMAL DYNAMIC",false,"");
 

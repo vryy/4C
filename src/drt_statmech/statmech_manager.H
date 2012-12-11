@@ -128,7 +128,7 @@ public:
                    double&                   dt);
 
   //! \brief saves all relevant variables *_ as *conv_ to allow for returning to the beginning of a time step
-  void WriteConv();
+  void WriteConv(Teuchos::RCP<CONTACT::Beam3cmanager>);
 
   //! \brief resets all relevant variables *_ to *conv_ in order to return to the state at the beginning of the time step
   void RestoreConv(Teuchos::RCP<LINALG::SparseOperator>& stiff,
@@ -306,7 +306,7 @@ public:
 
   //! brief computes the internal energy of the network
   void ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis,
-                             double&                           energy,
+                             std::vector<double>               energy,
                              const double&                     dt,
                              const std::ostringstream&         filename,
                              bool                              fillzeros=true,
@@ -418,8 +418,10 @@ protected:
                              Epetra_Vector&       punlink);
 
   /*! \brief reduce number of currently existing crosslinker elements by numtoreduce
-   *  \param (in) numtoreduce number of crosslinkers by which overall number of crosslinkers is reduced*/
-  void ReduceNumOfCrosslinkersBy(const int numtoreduce);
+   *  \param (in) numtoreduce number of crosslinkers by which overall number of crosslinkers is reduced
+   *  \param (in) beamcmanager Beam Contact Manager pointer */
+  void ReduceNumOfCrosslinkersBy(const int                            numtoreduce,
+                                 Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager);
 
   /*! \brief Search neighbour filament nodes to a crosslink molecule (when crosslinker diffusion is simulated)
    *  \param currentpositions     (in) column map node positions (fully overlapping)

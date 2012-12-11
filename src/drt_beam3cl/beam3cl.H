@@ -897,7 +897,7 @@ private:
   }//DRT::ELEMENTS::BeamCL::UpdateRealNodalTriads
 
   // Interpolate Triads of interpolated Nodes
-  void InterpolateFiktiveNodalTriads(std::vector<LINALG::Matrix<1,2> >& Ibp,
+  void InterpolateFictiveNodalTriads(std::vector<LINALG::Matrix<1,2> >& Ibp,
                                      std::vector<LINALG::Matrix<3,3> >& rLambdar,
                                      std::vector<LINALG::Matrix<3,1> >& rphiIJ,
                                      std::vector<std::vector<LINALG::Matrix<3,1> > >& rPsili,

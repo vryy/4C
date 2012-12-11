@@ -64,6 +64,7 @@ TOLCONSTR                       1.0E-03
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 MAXITER                         25
+RESEVRYERGY                     1
 //-------------------------------------------------STRUCTURAL  DYNAMIC/GENALPHA
 //GENAVG                        ImrLike
 //ALPHA_F                       0
@@ -83,7 +84,6 @@ BEAMS_SMOOTHING                 None
 THERMALBATH                     uniform
 DBCTYPE                         std
 GMSHOUTPUT                      No
-BEAMCONTACT                     Yes
 FRICTION_MODEL                  anisotropicconsistent
 ETA                             1e-3
 KT                              0.0

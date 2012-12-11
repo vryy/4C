@@ -816,102 +816,105 @@ void DRT::ELEMENTS::Beam3::b3_energy( Teuchos::ParameterList& params,
 {
   //initialize energies (only one kind of energy computed here
   (*intenergy)(0) = 0.0;
+  bool calcenergy = false;
+  if(params.isParameter("energyoftype")==false) calcenergy = true;
+  else if(params.get<string>("energyoftype")=="beam3") calcenergy =true;
 
-  //constitutive laws from Crisfield, Vol. 2, equation (17.76)
-  LINALG::Matrix<3,1> Cm;
-  LINALG::Matrix<3,1> Cb;
-
-  //normal/shear strain and bending strain(curvature)
-  LINALG::Matrix<3,1> epsilonn;
-  LINALG::Matrix<3,1> epsilonm;
-
-  //derivative of x with respect to xi
-  LINALG::Matrix<3,1> dxdxi_gp;
-
-  //triad at GP, Crisfiel Vol. 2, equation (17.73)
-  LINALG::Matrix<3,3> Tnew;
-
-  //first of all we get the material law
-  Teuchos::RCP<const MAT::Material> currmat = Material();
-  double ym = 0;
-  double sm = 0;
-
-  //assignment of material parameters; only St.Venant material is accepted for this beam
-  switch(currmat->MaterialType())
+  if(calcenergy)
   {
-    case INPAR::MAT::m_stvenant:// only linear elastic material supported
+    //constitutive laws from Crisfield, Vol. 2, equation (17.76)
+    LINALG::Matrix<3,1> Cm;
+    LINALG::Matrix<3,1> Cb;
+
+    //normal/shear strain and bending strain(curvature)
+    LINALG::Matrix<3,1> epsilonn;
+    LINALG::Matrix<3,1> epsilonm;
+
+    //derivative of x with respect to xi
+    LINALG::Matrix<3,1> dxdxi_gp;
+
+    //triad at GP, Crisfiel Vol. 2, equation (17.73)
+    LINALG::Matrix<3,3> Tnew;
+
+    //first of all we get the material law
+    Teuchos::RCP<const MAT::Material> currmat = Material();
+    double ym = 0;
+    double sm = 0;
+
+    //assignment of material parameters; only St.Venant material is accepted for this beam
+    switch(currmat->MaterialType())
     {
-      const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
-      ym = actmat->Youngs();
-      sm = ym / (2*(1 + actmat->PoissonRatio()));
-    }
-    break;
-    default:
-    dserror("unknown or improper type of material law");
-  }
-
-  /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
-   *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
-  NodeShift<nnode,3>(params,disp);
-
-  //Get integrationpoints for underintegration
-  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
-
-  //Get DiscretizationType
-  const DRT::Element::DiscretizationType distype = Shape();
-
-  //Matrices for h and h,xi
-  LINALG::Matrix<1,nnode> deriv;
-
-  //Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
-  for(int numgp=0; numgp < gausspoints.nquad; numgp++)
-  {
-    //Get location and weight of GP in parameter space
-    const double xi = gausspoints.qxg[numgp][0];
-    const double wgt = gausspoints.qwgt[numgp];
-
-    //Get h,xi
-    DRT::UTILS::shape_function_1D_deriv1(deriv,xi,distype);
-
-    //set up current dxdxi, theta, and thetaprime at the GP
-    dxdxi_gp.Clear();
-    for (int dof=0; dof<3; ++dof)//j
-      for (int node=0; node<nnode; ++node)
-         dxdxi_gp(dof) += (Nodes()[node]->X()[dof]+disp[6*node+dof])*deriv(node);
-
-
-    //compute current triad at numgp-th Gauss point
-    LARGEROTATIONS::quaterniontotriad(Qnew_[numgp],Tnew);
-
-    //setting constitutive parameters , Crisfield, Vol. 2, equation (17.76)
-    Cm(0) = ym*crosssec_;
-    Cm(1) = sm*crosssecshear_;
-    Cm(2) = sm*crosssecshear_;
-    Cb(0) = sm*Irr_;
-    Cb(1) = ym*Iyy_;
-    Cb(2) = ym*Izz_;
-
-    //computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.97)
-    epsilonn.Clear();
-    epsilonn.MultiplyTN(Tnew,dxdxi_gp);
-    epsilonn.Scale(1/jacobi_[numgp]);
-    epsilonn(0) -=  1.0;
-
-    epsilonm.Clear();
-    epsilonm = curvnew_[numgp];
-
-    //adding elastic energy from epsilonn at this Gauss point
-    for(int i=0; i<3; i++)
-    {
-      (*intenergy)(0) += 0.5*epsilonn(i)*epsilonn(i)*Cm(i)*wgt*jacobi_[numgp];
-      (*intenergy)(0) += 0.5*epsilonm(i)*epsilonm(i)*Cb(i)*wgt*jacobi_[numgp];
+      case INPAR::MAT::m_stvenant:// only linear elastic material supported
+      {
+        const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(currmat.get());
+        ym = actmat->Youngs();
+        sm = ym / (2*(1 + actmat->PoissonRatio()));
+      }
+      break;
+      default:
+      dserror("unknown or improper type of material law");
     }
 
+    /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
+     *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
+    if(params.isParameter("PERIODLENGTH"))
+      NodeShift<nnode,3>(params,disp);
+
+    //Get integrationpoints for underintegration
+    DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
+
+    //Get DiscretizationType
+    const DRT::Element::DiscretizationType distype = Shape();
+
+    //Matrices for h and h,xi
+    LINALG::Matrix<1,nnode> deriv;
+
+    //Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
+    for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+    {
+      //Get location and weight of GP in parameter space
+      const double xi = gausspoints.qxg[numgp][0];
+      const double wgt = gausspoints.qwgt[numgp];
+
+      //Get h,xi
+      DRT::UTILS::shape_function_1D_deriv1(deriv,xi,distype);
+
+      //set up current dxdxi, theta, and thetaprime at the GP
+      dxdxi_gp.Clear();
+      for (int dof=0; dof<3; ++dof)//j
+        for (int node=0; node<nnode; ++node)
+           dxdxi_gp(dof) += (Nodes()[node]->X()[dof]+disp[6*node+dof])*deriv(node);
+
+
+      //compute current triad at numgp-th Gauss point
+      LARGEROTATIONS::quaterniontotriad(Qnew_[numgp],Tnew);
+
+      //setting constitutive parameters , Crisfield, Vol. 2, equation (17.76)
+      Cm(0) = ym*crosssec_;
+      Cm(1) = sm*crosssecshear_;
+      Cm(2) = sm*crosssecshear_;
+      Cb(0) = sm*Irr_;
+      Cb(1) = ym*Iyy_;
+      Cb(2) = ym*Izz_;
+
+      //computing current axial and shear strain epsilon, Crisfield, Vol. 2, equation (17.97)
+      epsilonn.Clear();
+      epsilonn.MultiplyTN(Tnew,dxdxi_gp);
+      epsilonn.Scale(1/jacobi_[numgp]);
+      epsilonn(0) -=  1.0;
+
+      epsilonm.Clear();
+      epsilonm = curvnew_[numgp];
+
+      //adding elastic energy from epsilonn at this Gauss point
+      for(int i=0; i<3; i++)
+      {
+        (*intenergy)(0) += 0.5*epsilonn(i)*epsilonn(i)*Cm(i)*wgt*jacobi_[numgp];
+        (*intenergy)(0) += 0.5*epsilonm(i)*epsilonm(i)*Cb(i)*wgt*jacobi_[numgp];
+      }
+
+    }
   }
-
-  // hack in order to just get the contribution of beam3II elements (filaments) -> set contribution to 0
-  //(*intenergy)(0) = 0.0;
-
   return;
 
 } // DRT::ELEMENTS::Beam3::b3_energy

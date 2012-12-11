@@ -75,7 +75,6 @@ BEAMS_BOXESINOCT    7
 //==== GENERAL STATMECH SIMULATION FLAGS ====
 THERMALBATH         uniform
 FRICTION_MODEL      anisotropicconsistent // isotropicconsistent isotropiclumped
-BEAMCONTACT         No                    // (de)activate beam contact
 DBCTYPE             std                   // none shearfixed sheartrans pinnodes,  choose DBC type
 DYN_CROSSLINKERS    Yes                   // (de)activate crosslinking
 HELICALBINDINGSTRUCT Yes                  // (de)activate helical binding spot structure

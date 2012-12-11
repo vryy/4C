@@ -602,83 +602,90 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
   //initialize energies (only one kind of energy computed here
   (*intenergy)(0) = 0.0;
 
-  //const double t_tot = Teuchos::Time::wallTime();
+  bool calcenergy = false;
+  if(params.isParameter("energyoftype")==false) calcenergy = true;
+  else if(params.get<string>("energyoftype")=="beam3ii") calcenergy =true;
 
-  //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
-  vector<LINALG::Matrix<1,nnode> > I(nnode-1);
-
-  //vector whose numgp-th element is a 1xnnode-matrix with the derivatives of all Lagrange polynomial basis functions evaluated at nnode-1 Gauss points for elasticity
-  vector<LINALG::Matrix<1,nnode> > Iprime(nnode-1);
-
-  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at nnode-1 Gauss points for elasticity according to according to (3.18), Jelenic 1999
-  vector<std::vector<LINALG::Matrix<3,3> > > Itilde(nnode-1);
-
-  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at nnode-1 Gauss points for elasticity according to according to (3.19), Jelenic 1999
-  vector<std::vector<LINALG::Matrix<3,3> > > Itildeprime(nnode-1);
-
-  //vector with rotation matrices at nnode-1 Gauss points for elasticity
-  vector<LINALG::Matrix<3,3> > Lambda(nnode-1);
-
-  //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the nnode Gauss points for mass matrix
-  vector<LINALG::Matrix<1,nnode> > Imass(nnode);
-
-  //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the nnode Gauss points for mass matrix according to according to (3.18), Jelenic 1999
-  vector<std::vector<LINALG::Matrix<3,3> > > Itildemass(nnode);
-
-  //r'(x) from (2.1), Jelenic 1999
-  LINALG::Matrix<3,1>  rprime;
-  //3D vector related to spin matrix \hat{\kappa} from (2.1), Jelenic 1999
-  LINALG::Matrix<3,1>  kappa;
-  //3D vector of convected axial and shear strains from (2.1), Jelenic 1999
-  LINALG::Matrix<3,1>  gamma;
-
-  //convected stresses N and M and constitutive matrices C_N and C_M according to section 2.4, Jelenic 1999
-  LINALG::Matrix<3,1> stressN;
-  LINALG::Matrix<3,1> stressM;
-  LINALG::Matrix<3,3> CN;
-  LINALG::Matrix<3,3> CM;
-
-  //spatial stresses n and m according to (3.10), Romero 2004 and spatial constitutive matrices c_n and c_m according to page 148, Jelenic 1999
-  LINALG::Matrix<3,1> stressn;
-  LINALG::Matrix<3,1> stressm;
-  LINALG::Matrix<3,3> cn;
-  LINALG::Matrix<3,3> cm;
-
-  /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
-   *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
-  NodeShift<nnode,3>(params,disp);
-
-  //integration points for elasticity (underintegration) and mass matrix (exact integration)
-  DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
-  DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
-
-  //evaluate at all Gauss points basis functions of all nodes, their derivatives and the triad of the beam frame
-  evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
-
-  //Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
-  for(int numgp=0; numgp < gausspoints.nquad; numgp++)
+  if(calcenergy)
   {
-    //weight of GP in parameter space
-    const double wgt = gausspoints.qwgt[numgp];
+    //const double t_tot = Teuchos::Time::wallTime();
 
-    //compute derivative of line of centroids with respect to curve parameter in reference configuration, i.e. r' from Jelenic 1999, eq. (2.12)
-    curvederivative<nnode,3>(disp,Iprime[numgp],rprime,jacobi_[numgp]);
+    //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
+    vector<LINALG::Matrix<1,nnode> > I(nnode-1);
 
-    //compute convected strains gamma and kappa according to Jelenic 1999, eq. (2.12)
-    computestrain(rprime,Lambda[numgp],gamma,kappa);
+    //vector whose numgp-th element is a 1xnnode-matrix with the derivatives of all Lagrange polynomial basis functions evaluated at nnode-1 Gauss points for elasticity
+    vector<LINALG::Matrix<1,nnode> > Iprime(nnode-1);
 
-    //compute convected stress vector from strain vector according to Jelenic 1999, page 147, section 2.4
-    strainstress(gamma,kappa,stressN,CN,stressM,CM);
+    //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at nnode-1 Gauss points for elasticity according to according to (3.18), Jelenic 1999
+    vector<std::vector<LINALG::Matrix<3,3> > > Itilde(nnode-1);
 
-    //adding elastic energy at this Gauss point
-    for(int i=0; i<3; i++)
+    //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at nnode-1 Gauss points for elasticity according to according to (3.19), Jelenic 1999
+    vector<std::vector<LINALG::Matrix<3,3> > > Itildeprime(nnode-1);
+
+    //vector with rotation matrices at nnode-1 Gauss points for elasticity
+    vector<LINALG::Matrix<3,3> > Lambda(nnode-1);
+
+    //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the nnode Gauss points for mass matrix
+    vector<LINALG::Matrix<1,nnode> > Imass(nnode);
+
+    //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the nnode Gauss points for mass matrix according to according to (3.18), Jelenic 1999
+    vector<std::vector<LINALG::Matrix<3,3> > > Itildemass(nnode);
+
+    //r'(x) from (2.1), Jelenic 1999
+    LINALG::Matrix<3,1>  rprime;
+    //3D vector related to spin matrix \hat{\kappa} from (2.1), Jelenic 1999
+    LINALG::Matrix<3,1>  kappa;
+    //3D vector of convected axial and shear strains from (2.1), Jelenic 1999
+    LINALG::Matrix<3,1>  gamma;
+
+    //convected stresses N and M and constitutive matrices C_N and C_M according to section 2.4, Jelenic 1999
+    LINALG::Matrix<3,1> stressN;
+    LINALG::Matrix<3,1> stressM;
+    LINALG::Matrix<3,3> CN;
+    LINALG::Matrix<3,3> CM;
+
+    //spatial stresses n and m according to (3.10), Romero 2004 and spatial constitutive matrices c_n and c_m according to page 148, Jelenic 1999
+    LINALG::Matrix<3,1> stressn;
+    LINALG::Matrix<3,1> stressm;
+    LINALG::Matrix<3,3> cn;
+    LINALG::Matrix<3,3> cm;
+
+    /*first displacement vector is modified for proper element evaluation in case of periodic boundary conditions; in case that
+     *no periodic boundary conditions are to be applied the following code line may be ignored or deleted*/
+    if(params.isParameter("PERIODLENGTH"))
+      NodeShift<nnode,3>(params,disp);
+
+    //integration points for elasticity (underintegration) and mass matrix (exact integration)
+    DRT::UTILS::IntegrationPoints1D gausspoints(MyGaussRule(nnode,gaussunderintegration));
+    DRT::UTILS::IntegrationPoints1D gausspointsmass(MyGaussRule(nnode,gaussexactintegration));
+
+    //evaluate at all Gauss points basis functions of all nodes, their derivatives and the triad of the beam frame
+    evaluatebasisfunctionsandtriads<nnode>(gausspoints,I,Iprime,Itilde,Itildeprime,Lambda,gausspointsmass,Imass,Itildemass);
+
+    //Loop through all GP and calculate their contribution to the forcevector and stiffnessmatrix
+    for(int numgp=0; numgp < gausspoints.nquad; numgp++)
     {
-      (*intenergy)(0) += 0.5*gamma(i)*stressN(i)*wgt*jacobi_[numgp];
-      (*intenergy)(0) += 0.5*kappa(i)*stressM(i)*wgt*jacobi_[numgp];
+      //weight of GP in parameter space
+      const double wgt = gausspoints.qwgt[numgp];
+
+      //compute derivative of line of centroids with respect to curve parameter in reference configuration, i.e. r' from Jelenic 1999, eq. (2.12)
+      curvederivative<nnode,3>(disp,Iprime[numgp],rprime,jacobi_[numgp]);
+
+      //compute convected strains gamma and kappa according to Jelenic 1999, eq. (2.12)
+      computestrain(rprime,Lambda[numgp],gamma,kappa);
+
+      //compute convected stress vector from strain vector according to Jelenic 1999, page 147, section 2.4
+      strainstress(gamma,kappa,stressN,CN,stressM,CM);
+
+      //adding elastic energy at this Gauss point
+      for(int i=0; i<3; i++)
+      {
+        (*intenergy)(0) += 0.5*gamma(i)*stressN(i)*wgt*jacobi_[numgp];
+        (*intenergy)(0) += 0.5*kappa(i)*stressM(i)*wgt*jacobi_[numgp];
+      }
+
     }
-
   }
-
   return;
 
 } // DRT::ELEMENTS::Beam3ii::b3_energy

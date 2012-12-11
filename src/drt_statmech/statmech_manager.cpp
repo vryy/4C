@@ -535,7 +535,7 @@ void STATMECH::StatMechManager::Update(const int&                               
 
     // // Set a certain number of double-bonded crosslinkers free
     if(fabs(timen-dt-actiontime_->back())<(dt/1e3) && statmechparams_.get<int>("REDUCECROSSLINKSBY",0)>0)
-      ReduceNumOfCrosslinkersBy(statmechparams_.get<int>("REDUCECROSSLINKSBY",0));
+      ReduceNumOfCrosslinkersBy(statmechparams_.get<int>("REDUCECROSSLINKSBY",0), beamcmanager);
 
     // force dependent unlinking: store displacement vector of current time step for next one
     if(DRT::INPUT::IntegralValue<int>(statmechparams_, "FORCEDEPUNLINKING"))
@@ -1889,7 +1889,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                   /* In case of beam contact, evaluate whether a crosslinker would intersect with any exisiting elements
                    * if it were to be set between the two nodes considered*/
                   bool intersection = false;
-                  if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
+                  if(beamcmanager!=Teuchos::null)
                   {
                     Epetra_SerialDenseMatrix nodecoords(3,2);
                     for(int k=0; k<nodecoords.M(); k++)
@@ -2112,7 +2112,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
           AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,*discret_);
 
         // add all new elements to contact discretization on all Procs
-        if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
+        if(beamcmanager!=Teuchos::null)
           AddNewCrosslinkerElement(newcrosslinkerGID, globalnodeids,bspotgid, xrefe,rotrefe,beamcmanager->ContactDiscret());
 
         // call of FillComplete() necessary after each added crosslinker because different linkers may share the same nodes (only BeamCL)
@@ -2121,7 +2121,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
 //          discret_->CheckFilledGlobally();
 //          discret_->FillComplete(true, false, false);
 //
-//          if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
+//          if(beamcmanager!=Teuchos::null)
 //          {
 //            beamcmanager->ContactDiscret().CheckFilledGlobally();
 //            beamcmanager->ContactDiscret().FillComplete(true, false, false);
@@ -2135,7 +2135,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
     discret_->FillComplete(true, false, false);
 
     // synchronization for contact discretization
-    if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
+    if(beamcmanager!=Teuchos::null)
     {
       beamcmanager->ContactDiscret().CheckFilledGlobally();
       beamcmanager->ContactDiscret().FillComplete(true, false, false);
@@ -2163,13 +2163,13 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
  | create a new crosslinker element and add it to your discretization of|
  | choice (public)                                       mueller (11/11)|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int& crossgid,
+void STATMECH::StatMechManager::AddNewCrosslinkerElement(const int&                      crossgid,
                                                          Teuchos::RCP<std::vector<int> > globalnodeids,
-                                                         const std::vector<int>& bspotgid,
-                                                         const std::vector<double>& xrefe,
-                                                         const std::vector<double>& rotrefe,
-                                                         DRT::Discretization& mydiscret,
-                                                         bool addinitlinks)
+                                                         const std::vector<int>&         bspotgid,
+                                                         const std::vector<double>&      xrefe,
+                                                         const std::vector<double>&      rotrefe,
+                                                         DRT::Discretization&            mydiscret,
+                                                         bool                            addinitlinks)
 {
   int numnodes;
   numnodes = 2;
@@ -2510,7 +2510,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double&       
   // DELETION OF ELEMENTS
   RemoveCrosslinkerElements(*discret_,delcrosselement,&deletedelements_);
   // contact elements
-  if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
+  if(beamcmanager!=Teuchos::null)
     RemoveCrosslinkerElements(beamcmanager->ContactDiscret(),delcrosselement,&deletedcelements_);
 
   if(!discret_->Comm().MyPID() && printscreen)
@@ -2638,7 +2638,8 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&        dt,
  | (private) Reduce currently existing crosslinkers by a certain        |
  | percentage.                                              mueller 1/11|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
+void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int                            numtoreduce,
+                                                          Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
   if(!discret_->Comm().MyPID())
   {
@@ -2853,7 +2854,7 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int numtoreduce)
     cout<<"===========================================================\n"<<endl;
   }
   // ReduceNumberOfCrosslinkersBy() is called at the beginning of the time step. Hence, we can just call WriteConv() again to update the converged state
-  WriteConv();
+  WriteConv(beamcmanager);
 
   return;
 }//ReduceNumberOfCrosslinkersBy()
@@ -3018,7 +3019,7 @@ void STATMECH::StatMechManager::ReadRestartRedundantMultivector(IO::Discretizati
  | (public) saves all relevant variables *_ as *conv_ to allow  for      |
  | returning to the beginning of a time step                 cyron 11/10 |
  *-----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::WriteConv()
+void STATMECH::StatMechManager::WriteConv(Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
   //save relevant class variables at the very end of the time step
   crosslinkerbondconv_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkerbond_));
@@ -3032,7 +3033,7 @@ void STATMECH::StatMechManager::WriteConv()
   //set addedelements_, deletedelements_ empty vectors
   addedelements_.clear();
   deletedelements_.clear();
-  if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
+  if(beamcmanager!=Teuchos::null)
   {
     addedcelements_.clear();
     deletedcelements_.clear();
@@ -3149,7 +3150,7 @@ void STATMECH::StatMechManager::RestoreConv(Teuchos::RCP<LINALG::SparseOperator>
   stiff->Reset();
 
   // same procedure for contact discretization
-  if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
+  if(beamcmanager!=Teuchos::null)
   {
     for(int i=0; i<(int)deletedcelements_.size(); i++)
     {
@@ -3325,7 +3326,12 @@ std::vector<int> STATMECH::StatMechManager::Permutation(const int& N)
 /*----------------------------------------------------------------------*
  | Computes current internal energy of discret_ (public)     cyron 12/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis, double& energy,const double& dt, const std::ostringstream& filename, bool fillzeros, bool writefile)
+void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis,
+                                                      std::vector<double>               energy,
+                                                      const double&                     dt,
+                                                      const std::ostringstream&         filename,
+                                                      bool                              fillzeros,
+                                                      bool                              writefile)
 {
   ParameterList p;
   p.set("action", "calc_struct_energy");
@@ -3344,18 +3350,30 @@ void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_
   discret_->SetState("displacement", dis);
   Teuchos::RCP<Epetra_SerialDenseVector> energies = Teuchos::rcp(new Epetra_SerialDenseVector(1));
   energies->Scale(0.0);
+  //filaments
+  p.set("energyoftype", "beam3ii");
   discret_->EvaluateScalars(p, energies);
+  energy.push_back((*energies)(0));
+  //crosslinkers
+  energies->Scale(0.0);
+  p.remove("energyoftype", true);
+  if(DRT::INPUT::IntegralValue<int>(statmechparams_,"INTERNODALBSPOTS"))
+    p.set("energyoftype", "beam3cl");
+  else
+    p.set("energyoftype", "beam3");
+  discret_->EvaluateScalars(p, energies);
+  energy.push_back((*energies)(0));
   discret_->ClearState();
-  energy = (*energies)(0);
 
   if(!discret_->Comm().MyPID() && writefile)
   {
     FILE* fp = NULL;
     fp = fopen(filename.str().c_str(), "a");
     std::stringstream writetofile;
-    writetofile<<energy;
+    for(int i=0; i<(int)energy.size(); i++)
+      writetofile<<energy[i]<<"    ";
     if(fillzeros)
-      for(int i=0; i<16; i++)
+      for(int i=0; i<17-(int)energy.size(); i++)
         writetofile<<"    "<<0;
     writetofile<<endl;
     fprintf(fp, writetofile.str().c_str());
@@ -4434,7 +4452,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
         if(hasrownode)
           AddNewCrosslinkerElement(newcrosslinkerGID,globalnodeids,bspotgid, xrefe,rotrefe,*discret_);
 
-        if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
+        if(beamcmanager!=Teuchos::null)
           AddNewCrosslinkerElement(newcrosslinkerGID,globalnodeids,bspotgid, xrefe,rotrefe,beamcmanager->ContactDiscret());
 
         if(i<addcrosselement.MyLength()-1 && DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
@@ -4442,7 +4460,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
           discret_->CheckFilledGlobally();
           discret_->FillComplete(true, false, false);
 
-          if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
+          if(beamcmanager!=Teuchos::null)
           {
             beamcmanager->ContactDiscret().CheckFilledGlobally();
             beamcmanager->ContactDiscret().FillComplete(true, false, false);
@@ -4455,7 +4473,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
     discret_->CheckFilledGlobally();
     discret_->FillComplete(true, false, false);
 
-    if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
+    if(beamcmanager!=Teuchos::null)
     {
       beamcmanager->ContactDiscret().CheckFilledGlobally();
       beamcmanager->ContactDiscret().FillComplete(true, false, false);

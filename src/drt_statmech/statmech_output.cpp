@@ -457,14 +457,14 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim,
 /*----------------------------------------------------------------------*
  | write special output for statistical mechanics (public)    cyron 09/08|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::Output(const int ndim,
-                                       const double& time,
-                                       const int& istep,
-                                       const double& dt,
-                                       const Epetra_Vector& dis,
-                                       const Epetra_Vector& fint,
+void STATMECH::StatMechManager::Output(const int                            ndim,
+                                       const double&                        time,
+                                       const int&                           istep,
+                                       const double&                        dt,
+                                       const Epetra_Vector&                 dis,
+                                       const Epetra_Vector&                 fint,
                                        Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager,
-                                       bool printscreen)
+                                       bool                                 printscreen)
 {
   /*in general simulations in statistical mechanics run over so many time steps that the amount of data stored in the error file
    * may exceed the capacity even of a server hard disk; thus, we rewind the error file in each time step so that the amount of data
@@ -915,7 +915,7 @@ void STATMECH::StatMechManager::Output(const int ndim,
       dserror("Gmsh output implemented for a maximum of 999999 steps");
 
     //calling method for writing Gmsh output
-    if(DRT::INPUT::IntegralValue<int>(statmechparams_,"BEAMCONTACT"))
+    if(beamcmanager!=Teuchos::null)
       GmshOutput(dis,filename,istep,beamcmanager);
     else
       GmshOutput(dis,filename,istep);
@@ -1081,7 +1081,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
           color = 0.5;
 
         // highlight contacting elements
-        if(DRT::INPUT::IntegralValue<int>(statmechparams_, "BEAMCONTACT") && beamcmanager!=Teuchos::null)
+        if(beamcmanager!=Teuchos::null)
           for(int j=0; j<(int)(beamcmanager->Pairs()).size(); j++)
             if(beamcmanager->Pairs()[j]->GetContactFlag() && (element->Id()==(beamcmanager->Pairs())[j]->Element1()->Id() || element->Id()==(beamcmanager->Pairs())[j]->Element2()->Id()))
               color = 1.0; //0.375;
@@ -2561,7 +2561,8 @@ void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const 
   cog_ = cog;
 
   // Compute internal energy
-  double internalenergy;
+  std::vector<double> internalenergy;
+  internalenergy.clear();
   const RCP<Epetra_Vector> disp = Teuchos::rcp(new Epetra_Vector(disrow));
   ComputeInternalEnergy(disp, internalenergy,dt, filename);
 
@@ -3489,7 +3490,7 @@ void STATMECH::StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disr
     fp = fopen(filename.str().c_str(), "w");
     std::stringstream structuretype;
     structuretype<<structurenumber<<"    "<<characlength[minimum];
-    for(int j=0; j<16; j++)
+    for(int j=0; j<15; j++)
       structuretype<<"    "<<0.0;
     structuretype<<endl;
     fprintf(fp, structuretype.str().c_str());
@@ -4221,7 +4222,8 @@ void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector& dis
   LINALG::Export(disrow, discol);
 
   // Compute internal energy
-  double internalenergy;
+  std::vector<double> internalenergy;
+  internalenergy.clear();
   const RCP<Epetra_Vector> disp = Teuchos::rcp(new Epetra_Vector(disrow));
   ComputeInternalEnergy(disp, internalenergy,dt, filename, false, false);
 
@@ -4240,7 +4242,7 @@ void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector& dis
         fp = fopen(filename.str().c_str(), "a");
         std::stringstream elasticenergy;
 
-        elasticenergy << std::scientific << std::setprecision(15) << xring << " " << internalenergy <<endl;
+        elasticenergy << std::scientific << std::setprecision(15) << xring << " " << internalenergy[0] <<endl;
         fprintf(fp, elasticenergy.str().c_str());
         fclose(fp);
         break;
