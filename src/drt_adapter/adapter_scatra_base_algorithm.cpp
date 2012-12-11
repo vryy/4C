@@ -266,6 +266,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
      }
      default:
        dserror("Unknown time-integration scheme for scalar transport problem");
+       break;
      }// switch(timintscheme)
    }
    else{
@@ -291,6 +292,7 @@ ADAPTER::ScaTraBaseAlgorithm::ScaTraBaseAlgorithm(
      }
      default:
        dserror("Unknown time-integration scheme for reinitialization problem");
+       break;
      }// switch(timintscheme_reinitialization)
 
    } // switch(reinitswitch)
