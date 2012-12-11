@@ -799,6 +799,10 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
     // parameters for stabilization (here required for material evaluation location)
     eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
+    // parameters for Elch/DiffCond formulation
+    if(IsElch(scatratype_))
+      eleparams.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
+
     //provide displacement field in case of ALE
     eleparams.set("isale",isale_);
     if (isale_)
@@ -1113,6 +1117,10 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
   eleparams.set("calc_status",true); // just want to have a status ouput!
   eleparams.set("frt",frt_);
 
+  // parameters for Elch/DiffCond formulation
+  if(IsElch(scatratype_))
+    eleparams.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
+
   //provide displacement field in case of ALE
   eleparams.set("isale",isale_);
   if (isale_)
@@ -1231,6 +1239,93 @@ void SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo(
 
   return;
 } // SCATRA::ScaTraTimIntImpl::OutputSingleElectrodeInfo
+
+/*-------------------------------------------------------------------------*
+ | parameters valid for the diffusion-conduction formulation    ehrl 12/12 |
+ *-------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::ValidParameterDiffCond()
+{
+  if(myrank_==0)
+  {
+    // Parameters defined in "ELCH CONTROL"
+    Teuchos::ParameterList& elchparams = extraparams_->sublist("ELCH CONTROL");
+
+    if(DRT::INPUT::IntegralValue<INPAR::ELCH::ElchMovingBoundary>(elchparams,"MOVINGBOUNDARY")!=INPAR::ELCH::elch_mov_bndry_no)
+      dserror("Moving boundaries are not supported in the ELCH diffusion-conduction framework!!");
+
+    if(DRT::INPUT::IntegralValue<int>(elchparams,"NATURAL_CONVECTION"))
+      dserror("Natural convection is not supported in the ELCH diffusion-conduction framework!!");
+
+    if(DRT::INPUT::IntegralValue<int>(elchparams,"GALVANOSTATIC"))
+      dserror("Galvanostatic simulations are not supported in the ELCH diffusion-conduction framework!!");
+
+    if((elchparams.get<int>("MAGNETICFIELD_FUNCNO"))>0)
+      dserror("Simulations including a magnetic field are not supported in the ELCH diffusion-conduction framework!!");
+
+    // Parameters defined in "SCALAR TRANSPORT DYNAMIC"
+    Teuchos::ParameterList& scatraparams = *params_;
+
+    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(scatraparams,"SOLVERTYPE"))!= INPAR::SCATRA::solvertype_nonlinear)
+      dserror("The only solvertype supported by the ELCH diffusion-conduction framework is the non-linar solver!!");
+
+    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatraparams,"TIMEINTEGR"))!= INPAR::SCATRA::timeint_one_step_theta)
+      dserror("The only time-integration scheme supported by the ELCH diffusion-conduction framework "
+          "is the one-step-theta time integration scheme!!");
+
+    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatraparams,"VELOCITYFIELD"))!= INPAR::SCATRA::velocity_zero)
+      dserror("Convective ion transport is neglected so far!!");
+
+    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::CalcError>(scatraparams,"CALCERROR"))!= INPAR::SCATRA::calcerror_no)
+      dserror("Think about analytical solutions and error estimations!!");
+
+    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(scatraparams,"WRITEFLUX"))!= INPAR::SCATRA::flux_no)
+      dserror("This feature is needed -> Think about!!");
+
+    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams,"CONVFORM"))!= INPAR::SCATRA::convform_convective)
+      dserror("Only the convective formulation is supported so far!!");
+
+    if((DRT::INPUT::IntegralValue<int>(scatraparams,"NEUMANNINFLOW"))== true)
+      dserror("Neuman inflow BC's are not supported by the ELCH diffusion-conduction framework!!");
+
+    if((DRT::INPUT::IntegralValue<int>(scatraparams,"CONV_HEAT_TRANS"))== true)
+      dserror("Convective heat transfer BC's are not supported by the ELCH diffusion-conduction framework!!");
+
+    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(scatraparams,"FSSUGRDIFF"))!= INPAR::SCATRA::fssugrdiff_no)
+      dserror("Subgrid diffusivity is not supported by the ELCH diffusion-conduction framework!!");
+
+    if((DRT::INPUT::IntegralValue<int>(scatraparams,"BLOCKPRECOND"))== true)
+          dserror("Block preconditioner is not supported so far!!");
+
+    if((DRT::INPUT::IntegralValue<INPAR::FLUID::MeshTying>(scatraparams,"MESHTYING"))!= INPAR::FLUID::no_meshtying)
+      dserror("Subgrid diffusivity is not supported by the ELCH diffusion-conduction framework!!");
+
+    // Parameters defined in "SCALAR TRANSPORT DYNAMIC"
+    Teuchos::ParameterList& scatrastabparams = params_->sublist("STABILIZATION");
+
+    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::StabType>(scatrastabparams,"STABTYPE"))!= INPAR::SCATRA::stabtype_no_stabilization)
+      dserror("No stabilization is necessary for solving the ELCH diffusion-conduction framework!!");
+
+    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(scatrastabparams,"DEFINITION_TAU"))!= INPAR::SCATRA::tau_zero)
+      dserror("No stabilization is necessary for solving the ELCH diffusion-conduction framework!!");
+
+    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalTau>(scatrastabparams,"EVALUATION_TAU"))!= INPAR::SCATRA::evaltau_integration_point)
+      dserror("Evaluation of stabilization parameter only at Gauss points!!");
+
+    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(scatrastabparams,"EVALUATION_MAT"))!= INPAR::SCATRA::evalmat_integration_point)
+      dserror("Evaluation of material only at Gauss points!!");
+
+    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::Consistency>(scatrastabparams,"CONSISTENCY"))!= INPAR::SCATRA::consistency_no)
+          dserror("Consistence formulation is not in the ELCH diffusion-conduction framework!!");
+
+    if((DRT::INPUT::IntegralValue<int>(scatrastabparams,"SUGRVEL"))== true)
+          dserror("Subgrid velocity is not incoperated in the ELCH diffusion-conduction framework!!");
+
+    if((DRT::INPUT::IntegralValue<int>(scatrastabparams,"ASSUGRDIFF"))== true)
+          dserror("Subgrid diffusivity is not incoperated in the ELCH diffusion-conduction framework!!");
+  }
+
+  return;
+}
 
 
 /*==========================================================================*/
@@ -2041,6 +2136,10 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPotentialField()
         // parameters for stabilization
         eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
 
+        // parameters for Elch/DiffCond formulation
+        if(IsElch(scatratype_))
+          eleparams.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
+
         //provide displacement field in case of ALE
         eleparams.set("isale",isale_);
         if (isale_)
@@ -2374,6 +2473,11 @@ void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
   condparams.set<int>("scatratype",scatratype_);
   condparams.set("frt",frt_); // factor F/RT
   condparams.set("isale",isale_);
+
+  // parameters for Elch/DiffCond formulation
+  if(IsElch(scatratype_))
+    condparams.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
+
   if (isale_)   //provide displacement field in case of ALE
     AddMultiVectorToParameterList(condparams,"dispnp",dispnp_);
 

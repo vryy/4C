@@ -50,6 +50,13 @@ Maintainer: Georg Bauer
 #include "../drt_mat/yoghurt.H"
 #include "../drt_mat/matlist.H"
 
+#include "../drt_mat/elchmat.H"
+#include "../drt_mat/diffcond.H"
+#include "../drt_mat/newman.H"
+
+//#define DEBUG_BATTERY
+
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::ScaTraBoundaryImplInterface* DRT::ELEMENTS::ScaTraBoundaryImplInterface::Impl(
@@ -60,8 +67,24 @@ DRT::ELEMENTS::ScaTraBoundaryImplInterface* DRT::ELEMENTS::ScaTraBoundaryImplInt
   // the discretization and does not change during the computations
   const int numdofpernode = ele->NumDofPerNode(*(ele->Nodes()[0]));
   int numscal = numdofpernode;
+
   if (SCATRA::IsElchProblem(scatratype))
+  {
     numscal -= 1;
+
+    // get the material of the first element
+    // we assume here, that the material is equal for all elements in this discretization
+    // get the parent element including its material
+    const DRT::ELEMENTS::TransportBoundary* transele = static_cast<const DRT::ELEMENTS::TransportBoundary*>(ele);
+    Teuchos::RCP<MAT::Material> material = transele->ParentElement()->Material();
+    if (material->MaterialType() == INPAR::MAT::m_elchmat)
+    {
+      const MAT::ElchMat* actmat = dynamic_cast<const MAT::ElchMat*>(material.get());
+
+      if (actmat->Current())
+        numscal -= DRT::UTILS::getDimension(transele->ParentElement()->Shape());
+    }
+  }
 
   switch (ele->Shape())
   {
@@ -182,7 +205,8 @@ DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl
     normal_(true),
     velint_(true),
     metrictensor_(true),
-    thermpress_(0.0)
+    thermpress_(0.0),
+    equpot_(INPAR::ELCH::equpot_enc)
     {
         return;
     }
@@ -207,7 +231,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
   // get the parent element including its material
   DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
-  RCP<MAT::Material> mat = parentele->Material();
+  Teuchos::RCP<MAT::Material> mat = parentele->Material();
 
   // the type of scalar transport problem has to be provided for all actions!
   const INPAR::SCATRA::ScaTraType scatratype = DRT::INPUT::get<INPAR::SCATRA::ScaTraType>(params, "scatratype");
@@ -277,6 +301,12 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
   }
   case SCATRA::bd_calc_elch_electrode_kinetics:
   {
+    if (mat->MaterialType() == INPAR::MAT::m_elchmat)
+    {
+      Teuchos::ParameterList& diffcondparams_ = params.sublist("DIFFCOND");
+      equpot_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams_,"EQUPOT");
+    }
+
     // get actual values of transported scalars
     RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
@@ -300,8 +330,8 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
 
     const std::vector<int>*   stoich = cond->GetMutable<std::vector<int> >("stoich");
     if((unsigned int)numscal_ != (*stoich).size())
-      dserror("Electrode kinetics: number of stoichiometry coefficients does not match"
-              " the number of ionic species ");
+      dserror("Electrode kinetics: number of stoichiometry coefficients %u does not match"
+              " the number of ionic species %d", (*stoich).size(), numscal_);
 
     // the classical implementations of kinetic electrode models does not support
     // more than one reagent or product!! There are alternative formulations
@@ -1006,7 +1036,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
   {
     // access the parent element's material
     DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
-    RCP<MAT::Material> material = parentele->Material();
+    Teuchos::RCP<MAT::Material> material = parentele->Material();
 
     for (int k = 0; k < numscal_; k++)
     {
@@ -1460,6 +1490,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     {
       for(int kk=0; kk<numscal_; kk++)
         conreact[kk](inode) = ephinp[inode*numdofpernode_+kk];
+
       pot(inode) = ephinp[inode*numdofpernode_+numscal_];
     }
   }
@@ -1520,6 +1551,27 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
         }
         else
           dserror("single material type is not 'ion'");
+      }
+      else if (material->MaterialType() == INPAR::MAT::m_elchmat)
+      {
+        const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(material.get());
+
+        const int specid = actmat->SpecID(k);
+        Teuchos::RCP<const MAT::Material> singlemat = actmat->SpecById(specid);
+        if (singlemat->MaterialType() == INPAR::MAT::m_diffcond)
+        {
+          const MAT::DiffCond* actsinglemat = static_cast<const MAT::DiffCond*>(singlemat.get());
+          valence_k = actsinglemat->Valence();
+          if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
+        }
+        else if  (singlemat->MaterialType() == INPAR::MAT::m_newman)
+        {
+          const MAT::Newman* actsinglemat = static_cast<const MAT::Newman*>(singlemat.get());
+          valence_k = actsinglemat->Valence();
+          if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
+        }
+        else
+          dserror("");
       }
       else
         dserror("material type is not a 'matlist' material");
@@ -1620,15 +1672,26 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
           for (int vi=0; vi<nen_; ++vi)
           {
             fac_fns_i0_funct_vi = fac*fns*i0*funct_(vi);
+            double fac_i0_funct_vi = fac*i0*funct_(vi);
             // ------matrix: d(R_k)/d(x) = (theta*dt*(-1)*(w_k,j_k)
             for (int ui=0; ui<nen_; ++ui)
             {
               emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += -fac_fns_i0_funct_vi*concterm*funct_(ui)*expterm;
               emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) += -fac_fns_i0_funct_vi*pow_conint_gamma_k*(((-alphaa)*frt*exp(alphaa*frt*eta))+((-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
+
+              if(equpot_==INPAR::ELCH::equpot_divi)
+              {
+                emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+k) += -fac_i0_funct_vi*concterm*funct_(ui)*expterm;
+                emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+numscal_) += -fac_i0_funct_vi*pow_conint_gamma_k*(((-alphaa)*frt*exp(alphaa*frt*eta))+((-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
+              }
             }
             // -----right-hand-side: -R_k = -(theta*dt*(-1)*(w_k,j_k)
             erhs[vi*numdofpernode_+k] -= -fac_fns_i0_funct_vi*pow_conint_gamma_k*expterm;
+
+            if(equpot_==INPAR::ELCH::equpot_divi)
+              erhs[vi*numdofpernode_+numscal_] -= -fac_i0_funct_vi*pow_conint_gamma_k*expterm;
           }
+
         } // end if(kinetics=="Butler-Volmer")
         else if (kinetics==INPAR::SCATRA::butler_volmer_yang1997)
         {
@@ -2122,8 +2185,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
   if (iselch)
   {
     if ((scatratype==INPAR::SCATRA::scatratype_elch_enc_pde) or
-        (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
-        )
+        (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim))
     {
       // we have to add boundary contributions to the potential equation as well!
       // and do not forget the corresponding matrix contributions ;-)

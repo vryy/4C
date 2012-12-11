@@ -21,6 +21,7 @@ Maintainer: Georg Bauer
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_inpar/inpar_scatra.H"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_elch.H"
 #include "../drt_inpar/inpar_turbulence.H"
 #include <Epetra_IntSerialDenseVector.h>
 #include "../drt_lib/drt_singletondestruction.H"
@@ -187,38 +188,66 @@ private:
   );
 
   //! calculate the Laplacian for all shape functions(strong form)
-  inline void GetLaplacianStrongForm(
+  void GetLaplacianStrongForm(
     LINALG::Matrix<nen_,1>&                diff,  //!< ?
     const LINALG::Matrix<numderiv2_,nen_>& deriv2 //!< ?
   );
 
   //! calculate the Laplacian (weak form)
-  inline void GetLaplacianWeakForm(
+  void GetLaplacianWeakForm(
     double&                          val,   //!< ?
     const LINALG::Matrix<nsd_,nen_>& derxy, //!< ?
-    const LINALG::Matrix<nsd_,nsd_>& diffus3_, //!< ?
+    const LINALG::Matrix<nsd_,nsd_>& diffus3, //!< ?
     const int                        vi,    //!< ?
     const int                        ui     //!< ?
-  );
+  )
+  {
+    val = 0.0;
+    for (int j = 0; j<nsd_; j++)
+    {
+    for (int i = 0; i<nsd_; i++)
+        {
+        val += derxy(j, vi)*diffus3(j,i)*derxy(i, ui);
+        }
+    }
+    return;
+  };
 
   //! calculate the Laplacian (weak form)
-  inline void GetLaplacianWeakForm(
+  // TODO (ehrl): inline removed due to implementation in scatra_ele_impl_diffcond_service.cpp
+  void GetLaplacianWeakForm(
     double&                          val,   //!< ?
     const LINALG::Matrix<nsd_,nen_>& derxy, //!< ?
     const int                        vi,    //!< ?
     const int                        ui     //!< ?
-  );
+  )
+  {
+    val = 0.0;
+    for (int j = 0; j<nsd_; j++)
+    {
+      val += derxy(j, vi)*derxy(j, ui);
+    }
+    return;
+  };
 
   //! calculate the Laplacian (weak form)
-  inline void GetLaplacianWeakFormRHS(
+  void GetLaplacianWeakFormRHS(
     double& val,                              //!< ?
     const LINALG::Matrix<nsd_,nen_>& derxy,   //!< shape function derivative in xyz
     const LINALG::Matrix<nsd_,1>&    gradphi, //!< ?
     const int vi                              //!< ?
-  );
+  )
+  {
+    val = 0.0;
+    for (int j = 0; j<nsd_; j++)
+    {
+      val += derxy(j,vi)*gradphi(j);
+    }
+    return;
+  };
 
   //! calculate divergence of vector field (e.g., velocity)
-  inline void GetDivergence(
+  void GetDivergence(
     double&                          vdiv,
     const LINALG::Matrix<nsd_,nen_>& evel,
     const LINALG::Matrix<nsd_,nen_>& derxy
@@ -552,6 +581,34 @@ private:
     const double                          tpn             //! turbulent Prandlt number
     );
 
+  /*========================================================================*/
+  //! @name DiffCond -> implemented in scatra_ele_imlp_diffcond_service.cpp
+  /*========================================================================*/
+
+  //! Set Diffusion Conduction specific parameter
+  void DiffCondParams(DRT::Element*    ele,
+      Teuchos::ParameterList&   params);   //!< element
+
+  //! get the material parameters
+  void GetMaterialParamsDiffCond(
+      Teuchos::RCP<MAT::Material> material
+  );
+
+  //! calculate element matrix and rhs vector (Electrochemistry problems)
+  void CalMatElchBat(
+    Epetra_SerialDenseMatrix&    emat,   //!< element matrix to calculate
+    Epetra_SerialDenseVector&    erhs,   //!< element rhs to calculate
+    const double                 frt,    //!< factor F/RT needed for ELCH calculations
+    const double                 timefac,//!< time discretization factor
+    const double                 alphaF, //!< factor for gen. alpha time integration
+    const double                 fac,    //!< integration factor
+    const enum INPAR::SCATRA::ScaTraType  scatratype //!< type of scalar transport problem
+  );
+
+  void PrintEleMatToExcel(
+      Epetra_SerialDenseMatrix&             emat,
+      Epetra_SerialDenseVector&             erhs
+      );
 
   /*========================================================================*/
   //! @name dofs and nodes
@@ -820,6 +877,57 @@ private:
   /*========================================================================*/
   //! @name Miscellaneous - to be done!!!
   /*========================================================================*/
+
+  /*========================================================================*/
+  //! @name Battery specific stuff!
+  /*========================================================================*/
+
+  bool diffcond_;
+  bool cursolvar_;
+  bool chemdiffcoupltransp_;
+  bool chemdiffcouplcurr_;
+  bool constparams_;
+  bool newman_;
+  bool diffbased_;
+
+  //! divergence current density
+  std::vector<LINALG::Matrix<nsd_,1> > gradphicoupling_;
+  double curdiv_;
+  //! transference numbers
+  std::vector<double> trans_;
+  double transelim_;
+  std::vector<std::vector<double> > transderiv_;
+
+  //! conductivity
+  std::vector<double> cond_;
+  std::vector<double> condderiv_;
+  std::vector<double> diffusderiv_;
+  std::vector<double> diffuselimderiv_;
+  double diffuselim_;
+  std::vector<double> eps_;
+
+  /// dilute solution theory (diffusion potential in current equation):
+  ///    a          b
+  ///   |--|  |----------|
+  ///   z_1 + (z_2 - z_1) t_1
+  /// ------------------------ (RT/F kappa 1/c_k grad c_k)
+  ///      z_1 z_2
+  ///     |________|
+  ///         c
+
+  double a_;
+  double b_;
+  double c_;
+
+  //! nodal current density values at t_(n+1) or t_(n+alpha_F)
+  LINALG::Matrix<nsd_,nen_> ecurnp_;
+  //! velocity vector in gausspoint
+  LINALG::Matrix<nsd_,1> curint_;
+
+  enum INPAR::ELCH::EquPot equpot_;
+  double frt_;
+
+
 
 
 

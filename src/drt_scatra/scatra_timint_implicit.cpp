@@ -221,6 +221,22 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     {
       // number of concentrations transported is numdof-1
       numscal_ -= 1;
+
+      Teuchos::ParameterList& diffcondparams = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
+
+      // currrent is a solution variable
+      if(DRT::INPUT::IntegralValue<int>(diffcondparams,"CURRENT_SOLUTION_VAR"))
+      {
+        // shape of local row element(0) -> number of space dimensions
+        //int dim = DRT::Problem::Instance()->NDim();
+        int dim = DRT::UTILS::getDimension(discret_->lRowElement(0)->Shape());
+        // number of concentrations transported is numdof-1-nsd
+        numscal_ -= dim;
+      }
+
+      if(DRT::INPUT::IntegralValue<int>(diffcondparams,"DIFFCOND_FORMULATION"))
+        ValidParameterDiffCond();
+
     }
     // set up the concentration-el.potential splitter
     splitter_ = Teuchos::rcp(new LINALG::MapExtractor);
@@ -2317,6 +2333,10 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
 
   // parameters for stabilization
   eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+
+  // parameters for Elch/DiffCond formulation
+  if(IsElch(scatratype_))
+    eleparams.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
 
   // set vector values needed by elements
   discret_->ClearState();

@@ -48,6 +48,7 @@
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/structporo.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/elchmat.H"
 
 // activate debug screen output
 //#define PRINT_ELCH_DEBUG
@@ -68,7 +69,20 @@ DRT::ELEMENTS::ScaTraImplInterface* DRT::ELEMENTS::ScaTraImplInterface::Impl(
   const int numdofpernode = ele->NumDofPerNode(*(ele->Nodes()[0]));
   int numscal = numdofpernode;
   if (SCATRA::IsElchProblem(scatratype))
+  {
     numscal -= 1;
+
+    // get the material of the first element
+    // we assume here, that the material is equal for all elements in this discretization
+    Teuchos::RCP<MAT::Material> material = ele->Material();
+    if (material->MaterialType() == INPAR::MAT::m_elchmat)
+    {
+      const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(material.get());
+
+      if (actmat->Current())
+        numscal -= DRT::UTILS::getDimension(ele->Shape());
+    }
+  }
 
   switch (ele->Shape())
   {
@@ -203,7 +217,7 @@ template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const int numscal)
   : numdofpernode_(numdofpernode),
     numscal_(numscal),
-    is_elch_((numdofpernode_ - numscal_) == 1),  // bool set implicitely
+    is_elch_((numdofpernode_ - numscal_) >= 1),  // bool set implicitely
     is_ale_(false),           // bool set
     is_reactive_(false),      // bool set
     diffreastafac_(0.0),       // set double (SUPG)
@@ -296,7 +310,32 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     tauderpot_(numscal_),      // size of vector
     efluxreconstr_(numscal_),  // size of vector
     weights_(true),      // initialized to zero
-    myknots_(nsd_)       // size of vector
+    myknots_(nsd_),       // size of vector
+    diffcond_(false),
+    cursolvar_(false),
+    chemdiffcoupltransp_(true),
+    chemdiffcouplcurr_(true),
+    constparams_(true),
+    newman_(false),
+    diffbased_(true),
+    gradphicoupling_(numscal_),
+    curdiv_(0.0),
+    trans_(numscal_,0.0),
+    transelim_(0.0),
+    transderiv_(numscal_,std::vector<double>(numscal_,0.0 )),
+    cond_(1,0.0),
+    condderiv_(numscal_,0.0),
+    diffusderiv_(numscal_,0.0),
+    diffuselimderiv_(numscal_,0.0),
+    diffuselim_(0.0),
+    eps_(1,1.0),
+    a_(0.0),
+    b_(0.0),
+    c_(0.0),
+    ecurnp_(true),
+    curint_(true),
+    equpot_(INPAR::ELCH::equpot_enc),
+    frt_(0.0)
 {
   return;
 }
@@ -350,7 +389,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     dserror("Set parameter SCATRATYPE in your input file!");
 
   // set diffusion tensor to identity
-for(int k=0; k<numscal_; k++)
+  for(int k=0; k<numscal_; k++)
   {
     for(int i=0; i<nsd_; i++){ for(int j=0; j<nsd_; j++){ diffus3_[k](i,j)=0; }}
     for(int i=0; i<nsd_; i++){ diffus3_[k](i,i) = 1; }
@@ -614,6 +653,10 @@ for(int k=0; k<numscal_; k++)
     double frt(0.0);
     if (is_elch_)
     {
+      // set specific parameter used in diffusion conduction formulation
+      // this method need to be located inside ELCH
+      DiffCondParams(ele, params);
+
       // safety check - only stabilization of SUPG-type available
       if ((stabinp !=INPAR::SCATRA::stabtype_no_stabilization) and (stabinp !=INPAR::SCATRA::stabtype_SUPG))
         dserror("Only SUPG-type stabilization available for ELCH.");
@@ -657,6 +700,34 @@ for(int k=0; k<numscal_; k++)
         DRT::UTILS::ExtractMyNodeBasedValues(ele,emagnetnp_,*b,nsd_);
       else
         emagnetnp_.Clear();
+
+      if(diffcond_ == true)
+      {
+        // safety check - no stabilization for diffusion-conduction formulation
+        if(stabinp !=INPAR::SCATRA::stabtype_no_stabilization)
+          dserror("No stabilization available for the diffusion-conduction formulation.");
+
+        if(whichtau_ != INPAR::SCATRA::tau_zero)
+          dserror("No stabilization available for the diffusion-conduction formulation.");
+
+        if((tau_gp_==false) or (mat_gp_==false))
+          dserror("Evaluation of material (and stabilization parameter) available only at Gausspoints.");
+      }
+
+      if (cursolvar_ == true)
+      {
+        // get values for current at element nodes
+        for (int i=0;i<nen_;++i)
+        {
+          for(int idim=0; idim<nsd_; ++idim)
+          {
+            //current is located after potential
+            ecurnp_(idim,i) = myphinp[i*numdofpernode_+(numscal_+1)+idim];
+          }
+        }
+      }
+      else
+        ecurnp_.Clear();
     }
     else
     {
@@ -810,7 +881,7 @@ for(int k=0; k<numscal_; k++)
 
 #if 0
     // for debugging of matrix entries
-    if((ele->Id()==2) and (time < 1.05 and time > 1.0))
+    if((ele->Id()==2) and (time < 1.3 and time > 1.1))
     {
       FDcheck(
         ele,
@@ -1525,6 +1596,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   //----------------------------------------------------------------------
   // get material parameters (evaluation at element center)
   //----------------------------------------------------------------------
+
+  // material parameter at the element center are also necessary
+  // even if the stabilization parameter is evaluated at the element center
   if (not mat_gp_ or not tau_gp_) GetMaterialParams(ele,scatratype,dt);
 
   //----------------------------------------------------------------------
@@ -1632,8 +1706,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   // integrations points and weights
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
-
-  //TODO
   // integration loop
   if (is_elch_) // electrochemistry problem
   {
@@ -1643,6 +1715,18 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
     {
       const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+      // get concentration of transported scalar k at integration point
+      // evaluation of all concentrations is necessary at this point since
+      // -> homogeneous reactions of scalar k may depend on all concentrations
+      // -> concentration depending material parameters for the diffusion-confection formulation
+      // -> avoiding of possible errors (concentration was always defined as a vector where only on
+      //    entry was filled)
+      for (int k = 0;k<numscal_;++k)
+      {
+        //cout <<"ephinp_ "<< k<< ":  " <<ephinp_[k] << endl;
+        conint_[k] = funct_.Dot(ephinp_[k]);
+      }
 
       //----------------------------------------------------------------------
       // get material parameters (evaluation at integration point)
@@ -1685,7 +1769,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 #endif
         }
 
-        for (int k = 0;k<numscal_;++k) // loop of each transported scalar
+        // loop of each transported scalar
+        for (int k = 0;k<numscal_;++k)
         {
           // calculation of all-scale subgrid diffusivity (artificial or due to
           // constant-coefficient Smagorinsky model) at integration point
@@ -1740,10 +1825,17 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         dserror("ELCH problems are always in incremental formulation");
 
       // compute matrix and rhs for electrochemistry problem
-      CalMatElch(emat,erhs,frt,timefac,alphaF,fac,scatratype);
+      if (diffcond_==false)
+        CalMatElch(emat,erhs,frt,timefac,alphaF,fac,scatratype);
+      // compute matrix and rhs for diffusion-conduction formulation
+      else
+      {
+        CalMatElchBat(emat,erhs,frt,timefac,alphaF,fac,scatratype);
+        //if((ele->Id()==2) and (time < 0.5 and time > 0.4))
+        //  PrintEleMatToExcel(emat,erhs);
+      }
     }
-
-  }
+  } // end if (is_elch_)
   else // 'standard' scalar transport
   {
     for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
@@ -2301,7 +2393,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
       // check whether there is negative (physical) diffusivity
       if (diffus_[k] < -EPS15) dserror("negative (physical) diffusivity");
     }
-  }
+  } // end if(material->MaterialType() == INPAR::MAT::m_matlist)
   else if (material->MaterialType() == INPAR::MAT::m_scatra)
   {
     const Teuchos::RCP<const MAT::ScatraMat>& actmat
@@ -2752,38 +2844,39 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
     }
   }
   else if (material->MaterialType() == INPAR::MAT::m_myocard)
-      {
-        const Teuchos::RCP<const MAT::Myocard>& actmat
-          = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(material);
+  {
+    const Teuchos::RCP<const MAT::Myocard>& actmat
+      = Teuchos::rcp_dynamic_cast<const MAT::Myocard>(material);
 
-        dsassert(numdofpernode_==1,"more than 1 dof per node for Myocard material");
+    dsassert(numdofpernode_==1,"more than 1 dof per node for Myocard material");
 
-        // set specific heat capacity at constant pressure to 1.0
-        shc_ = 1.0;
+    // set specific heat capacity at constant pressure to 1.0
+    shc_ = 1.0;
 
-        // set diffusivity to one
-        diffus_[0] = 1.0;
+    // set diffusivity to one
+    diffus_[0] = 1.0;
 
-        //get diffusion tensor
-       actmat->ComputeDiffusivity(diffus3_[0]);
+    //get diffusion tensor
+   actmat->ComputeDiffusivity(diffus3_[0]);
 
-        // set constant density
-        densnp_[0] = 1.0;
-        densam_[0] = 1.0;
-        densn_[0] = 1.0;
-        densgradfac_[0] = 0.0;
+    // set constant density
+    densnp_[0] = 1.0;
+    densam_[0] = 1.0;
+    densn_[0] = 1.0;
+    densgradfac_[0] = 0.0;
 
-        // set reaction and anisotropic flag to true
-        is_reactive_ = true;
-        is_anisotropic_ = true;
+    // set reaction and anisotropic flag to true
+    is_reactive_ = true;
+    is_anisotropic_ = true;
 
-        // get reaction coeff. and set temperature rhs for reactive equation system to zero
-        const double csnp = funct_.Dot(ephinp_[0]);
-        reacoeffderiv_[0] = actmat->ComputeReactionCoeffDeriv(csnp, dt);
-        reacterm_[0] = actmat->ComputeReactionCoeff(csnp, dt);
-        reatemprhs_[0] = 0.0;
-
-      }
+    // get reaction coeff. and set temperature rhs for reactive equation system to zero
+    const double csnp = funct_.Dot(ephinp_[0]);
+    reacoeffderiv_[0] = actmat->ComputeReactionCoeffDeriv(csnp, dt);
+    reacterm_[0] = actmat->ComputeReactionCoeff(csnp, dt);
+    reatemprhs_[0] = 0.0;
+  }
+  else if (material->MaterialType() == INPAR::MAT::m_elchmat)
+    GetMaterialParamsDiffCond(material);
   else dserror("Material type is not supported");
 
 // check whether there is negative (physical) diffusivity
@@ -3570,7 +3663,7 @@ double DRT::ELEMENTS::ScaTraImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
  |                                                  (private) gjb 04/10 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianStrongForm(
+void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianStrongForm(
   LINALG::Matrix<nen_,1>& diff,
   const LINALG::Matrix<numderiv2_,nen_>& deriv2
   )
@@ -3585,31 +3678,14 @@ inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianStrongForm(
     }
   }
   return;
-}; // ScaTraImpl<distype>::GetLaplacianStrongForm
+} // ScaTraImpl<distype>::GetLaplacianStrongForm
 
-/*----------------------------------------------------------------------*
- |  calculate the Laplacian (weak form)             (private) gjb 04/10 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianWeakForm(
-  double& val,
-  const LINALG::Matrix<nsd_,nen_>& derxy,
-  const int vi,
-  const int ui)
-{
-  val = 0.0;
-  for (int j = 0; j<nsd_; j++)
-  {
-    val += derxy(j, vi)*derxy(j, ui);
-  }
-  return;
-}; // ScaTraImpl<distype>::GetLaplacianWeakForm
-
+#if 0
 /*----------------------------------------------------------------------*
  |  calculate the Laplacian (weak form)             (private) ljag 11/12 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianWeakForm(
+void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianWeakForm(
   double& val,
   const LINALG::Matrix<nsd_,nen_>& derxy,
   const LINALG::Matrix<nsd_,nsd_>& diffus3,
@@ -3625,14 +3701,36 @@ inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianWeakForm(
       }
   }
   return;
-}; // ScaTraImpl<distype>::GetLaplacianWeakForm
+} // ScaTraImpl<distype>::GetLaplacianWeakForm
+#endif
+
+#if 0
+/*----------------------------------------------------------------------*
+ |  calculate the Laplacian (weak form)             (private) gjb 04/10 |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianWeakForm(
+  double& val,
+  const LINALG::Matrix<nsd_,nen_>& derxy,
+  const int vi,
+  const int ui)
+{
+  val = 0.0;
+  for (int j = 0; j<nsd_; j++)
+  {
+    val += derxy(j, vi)*derxy(j, ui);
+  }
+  return;
+} // ScaTraImpl<distype>::GetLaplacianWeakForm
+#endif
 
 
+#if 0
 /*----------------------------------------------------------------------*
  |  calculate rhs of Laplacian (weak form)          (private) gjb 04/10 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianWeakFormRHS(
+void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianWeakFormRHS(
     double& val,
     const LINALG::Matrix<nsd_,nen_>& derxy,
     const LINALG::Matrix<nsd_,1>&   gradphi,
@@ -3644,14 +3742,14 @@ inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetLaplacianWeakFormRHS(
     val += derxy(j,vi)*gradphi(j);
   }
   return;
-}; // ScaTraImpl<distype>::GetLaplacianWeakFormRHS
-
+} // ScaTraImpl<distype>::GetLaplacianWeakFormRHS
+#endif
 
 /*----------------------------------------------------------------------*
  |  calculate divergence of vector field (e.g., velocity)  (private) gjb 04/10 |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
-inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetDivergence(
+void DRT::ELEMENTS::ScaTraImpl<distype>::GetDivergence(
   double&                          vdiv,
   const LINALG::Matrix<nsd_,nen_>& evel,
   const LINALG::Matrix<nsd_,nen_>& derxy)
@@ -3666,7 +3764,7 @@ inline void DRT::ELEMENTS::ScaTraImpl<distype>::GetDivergence(
     vdiv += vderxy(j,j);
   }
   return;
-};
+}
 
 
 /*----------------------------------------------------------------------------*
@@ -3896,23 +3994,42 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
       // schemes since ML needs to have off-diagonal entries for the aggregation!
 
       // loop starts at k=numscal_ !!
-        for (int vi=0; vi<nen_; ++vi)
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        const double v = fac*funct_(vi); // no density required here
+        const int fvi = vi*numdofpernode_+numscal_;
+
+        for (int ui=0; ui<nen_; ++ui)
         {
-          const double v = fac*funct_(vi); // no density required here
-          const int fvi = vi*numdofpernode_+numscal_;
+          const int fui = ui*numdofpernode_+numscal_;
 
-          for (int ui=0; ui<nen_; ++ui)
+          emat(fvi,fui) += v*funct_(ui);
+        }
+      }
+
+      if(cursolvar_==true)
+      {
+        for(int idim=0;idim<nsd_;++idim)
+        {
+          // loop starts at k=numscal_ !!
+          for (int vi=0; vi<nen_; ++vi)
           {
-            const int fui = ui*numdofpernode_+numscal_;
+            const double v = fac*funct_(vi); // no density required here
+            const int fvi = vi*numdofpernode_+numscal_+1+idim;
 
-            emat(fvi,fui) += v*funct_(ui);
+            for (int ui=0; ui<nen_; ++ui)
+            {
+              const int fui = ui*numdofpernode_+numscal_+1+idim;
+
+              emat(fvi,fui) += v*funct_(ui);
+            }
           }
         }
-
+      }
     } // if is_elch
 
   } // integration loop
-  
+
   // correct scaling of rhs (after subtraction!!!!)
   double timefac2 = params.get<double>("time factor");
   erhs.Scale(1.0/timefac2);
@@ -4389,6 +4506,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
 
   // alloc the vectors that will store the original, non-perturbed values
   std::vector<LINALG::Matrix<nen_,1> > origephinp(numscal_);
+  LINALG::Matrix<nsd_,nen_>       origecurnp(true);
   LINALG::Matrix<nen_,1>          origepotnp(true);
   std::vector<LINALG::Matrix<nen_,1> > origehist(numscal_);
 
@@ -4400,6 +4518,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
       origephinp[k](i,0) = ephinp_[k](i,0);
       origehist[k](i,0)  = ehist_[k](i,0);
     }
+    if(cursolvar_ == true)
+    {
+      for(int idim=0; idim<nsd_; ++idim)
+        origecurnp(idim,i) = ecurnp_(idim,i);
+    }
+
     origepotnp(i) = epotnp_(i);
   } // for i
 
@@ -4440,11 +4564,18 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
           ephinp_[k](i,0) = origephinp[k](i,0);
           ehist_[k](i,0)  = origehist[k](i,0);
         }
+        if(cursolvar_ == true)
+        {
+          for(int idim=0; idim<nsd_; ++idim)
+            ecurnp_(idim,i) = origecurnp(idim,i);
+        }
+
         epotnp_(i) = origepotnp(i);
       } // for i
 
       // now perturb the respective elemental quantities
-      if((is_elch_) and (rr==(numdofpernode_-1)))
+      // perturbation of the potential
+      if((is_elch_) and (rr==(numscal_)))
       {
         printf("potential dof (%d). eps=%g\n",nn,epsilon);
 
@@ -4457,6 +4588,38 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
         else
         {
           epotnp_(nn)+=epsilon;
+        }
+      }
+      //TODO: current only for 2D
+      // perturbation of the current
+      else if(cursolvar_==true and (rr==(numscal_+1)+0))
+      {
+        printf("current x dof (%d). eps=%g\n",nn,epsilon);
+
+        if (is_genalpha_)
+        {
+          // we want to disturb phi(n+1) with epsilon
+          // => we have to disturb phi(n+alphaF) with alphaF*epsilon
+          ecurnp_(0,nn)+=(alphaF*epsilon);
+        }
+        else
+        {
+          ecurnp_(0,nn)+=epsilon;
+        }
+      }
+      else if(cursolvar_==true and (rr==(numscal_+1)+1))
+      {
+        printf("current y dof (%d). eps=%g\n",nn,epsilon);
+
+        if (is_genalpha_)
+        {
+          // we want to disturb phi(n+1) with epsilon
+          // => we have to disturb phi(n+alphaF) with alphaF*epsilon
+          ecurnp_(1,nn)+=(alphaF*epsilon);
+        }
+        else
+        {
+          ecurnp_(1,nn)+=epsilon;
         }
       }
       else
@@ -4566,6 +4729,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
       ephinp_[k](i,0) = origephinp[k](i,0);
       ehist_[k](i,0)  = origehist[k](i,0);
     }
+
+    if(cursolvar_== true)
+    {
+      for(int idim=0; idim<nsd_; ++idim)
+        ecurnp_(idim,i) = origecurnp(idim,i);
+    }
+
     epotnp_(i) = origepotnp(i);
   } // for i
 
@@ -5627,6 +5797,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
   const enum INPAR::SCATRA::ScaTraType  scatratype
   )
 {
+  //dielectical constant
+  //TODO(ehrl): good practice?
   const double epsilon = 1.e-4;
   const double faraday = INPAR::SCATRA::faraday_const;
 
@@ -5656,7 +5828,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
   for (int k = 0; k < numscal_;++k) // loop over all transported scalars
   {
     // get value of transported scalar k at integration point
-    conint_[k] = funct_.Dot(ephinp_[k]);
 
     // compute gradient of scalar k at integration point
     gradphi_.Multiply(derxy_,ephinp_[k]);
@@ -6328,9 +6499,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 } // ScaTraImpl::CalMatElch
 
 
-
-
-
 /*----------------------------------------------------------------------*
   |  Calculate conductivity (ELCH) (private)                   gjb 07/09 |
   *----------------------------------------------------------------------*/
@@ -6342,6 +6510,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
   Epetra_SerialDenseVector& sigma
   )
 {
+  // get concentration of transported scalar k at integration point
+  for (int k = 0;k<numscal_;++k)
+  {
+    //cout <<"ephinp_ "<< k<< ":  " <<ephinp_[k] << endl;
+    conint_[k] = funct_.Dot(ephinp_[k]);
+  }
+
   GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
 
   // use one-point Gauss rule to do calculations at the element center
@@ -6353,6 +6528,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
   // compute the conductivity (1/(\Omega m) = 1 Siemens / m)
   double sigma_all(0.0);
   const double factor = frt*INPAR::SCATRA::faraday_const; // = F^2/RT
+
   for(int k=0; k < numscal_; k++)
   {
     // concentration of ionic species k at element center
@@ -6387,6 +6563,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
   Epetra_SerialDenseVector&   erhs
   )
 {
+  // get concentration of transported scalar k at integration point
+  for (int k = 0;k<numscal_;++k)
+  {
+    //cout <<"ephinp_ "<< k<< ":  " <<ephinp_[k] << endl;
+    conint_[k] = funct_.Dot(ephinp_[k]);
+  }
+
   // access material parameters
   GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
 

@@ -247,9 +247,11 @@ public:
         break;
       case DRT::Element::line2:
       case DRT::Element::line3:
-        dserror("1D Fluid elements are not supported"); break;
+        dserror("1D Fluid elements are not supported");
+        break;
       default:
-        dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype_)).c_str()); break;
+        dserror("discretization type %s not yet implemented", (DRT::DistypeToString(distype_)).c_str());
+        break;
       }
     }
     if(nds > 1)
@@ -589,7 +591,7 @@ public:
   {return parent_->NumDofPerNode(nds,node);}
 
   //! Return a pointer to the parent element of this boundary element
-  virtual DRT::ELEMENTS::Transport* ParentElement()
+  virtual DRT::ELEMENTS::Transport* ParentElement() const
   {return parent_;}
 
   //! Return a boundary element id of this boundary element

@@ -20,6 +20,7 @@ Maintainer: Georg Bauer
 #include "scatra_ele_impl_utils.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 #include "../drt_inpar/inpar_scatra.H"
+#include "../drt_inpar/inpar_elch.H"
 
 
 namespace DRT
@@ -399,6 +400,7 @@ public:
     //! thermodynamic pressure (LOMA specific)
     double thermpress_;
 
+    enum INPAR::ELCH::EquPot equpot_;
   };
 
 }

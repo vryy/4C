@@ -738,6 +738,12 @@ protected:
   void RecomputeMeanCsgsB();
 
   /*========================================================================*/
+  //! @name elch: diffusion-conduction formulation related
+  /*========================================================================*/
+
+  void ValidParameterDiffCond();
+
+  /*========================================================================*/
   //! @name functions used for reinitialization of level sets
   /*========================================================================*/
 
