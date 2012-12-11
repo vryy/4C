@@ -306,7 +306,7 @@ public:
 
   //! brief computes the internal energy of the network
   void ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis,
-                             std::vector<double>               energy,
+                             std::vector<double>&              energy,
                              const double&                     dt,
                              const std::ostringstream&         filename,
                              bool                              fillzeros=true,

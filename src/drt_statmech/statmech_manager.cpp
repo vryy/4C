@@ -3328,7 +3328,7 @@ std::vector<int> STATMECH::StatMechManager::Permutation(const int& N)
  | Computes current internal energy of discret_ (public)     cyron 12/10|
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis,
-                                                      std::vector<double>               energy,
+                                                      std::vector<double>&              energy,
                                                       const double&                     dt,
                                                       const std::ostringstream&         filename,
                                                       bool                              fillzeros,
