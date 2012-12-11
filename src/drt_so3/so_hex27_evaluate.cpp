@@ -29,6 +29,10 @@ Maintainer: Thomas Kloeppel
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
 
+// inverse design object
+#include "inversedesign.H"
+#include "prestress.H"
+
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
  *----------------------------------------------------------------------*/
@@ -64,6 +68,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_fsiload")                         act = So_hex27::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")                    act = So_hex27::calc_struct_update_istep;
   else if (action=="calc_struct_update_imrlike")                  act = So_hex27::calc_struct_update_imrlike;
+  else if (action=="calc_struct_prestress_update")                act = So_hex27::prestress_update;
   else if (action=="calc_struct_reset_istep")                     act = So_hex27::calc_struct_reset_istep;
   else if (action=="calc_struct_errornorms")                      act = So_hex27::calc_struct_errornorms;
   else if (action=="postprocess_stress")                          act = So_hex27::postprocess_stress;
@@ -228,6 +233,35 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
           std::copy(data().begin(),data().end(),std::back_inserter(*straindata));
         }
       }
+    }
+    break;
+
+    case prestress_update:
+    {
+      time_ = params.get<double>("total time");
+      RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+      if (disp==Teuchos::null) dserror("Cannot get displacement state");
+      std::vector<double> mydisp(lm.size());
+      DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+
+      // build incremental def gradient for every gauss point
+      LINALG::SerialDenseMatrix gpdefgrd(NUMGPT_SOH27,9);
+      DefGradient(mydisp,gpdefgrd,*prestress_);
+
+      // update deformation gradient and put back to storage
+      LINALG::Matrix<3,3> deltaF;
+      LINALG::Matrix<3,3> Fhist;
+      LINALG::Matrix<3,3> Fnew;
+      for (int gp=0; gp<NUMGPT_SOH27; ++gp)
+      {
+        prestress_->StoragetoMatrix(gp,deltaF,gpdefgrd);
+        prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
+        Fnew.Multiply(deltaF,Fhist);
+        prestress_->MatrixtoStorage(gp,Fnew,prestress_->FHistory());
+      }
+
+      // push-forward invJ for every gaussian point
+      UpdateJacobianMapping(mydisp,*prestress_);
     }
     break;
 
@@ -677,7 +711,15 @@ void DRT::ELEMENTS::So_hex27::InitJacobianMapping()
     else if (detJ_[gp] < 0.0)
       dserror("NEGATIVE JACOBIAN DETERMINANT");
 
+    if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
+      if (!(prestress_->IsInit()))
+        prestress_->MatrixtoStorage(gp,invJ_[gp],prestress_->JHistory());
+
   }
+
+  if (pstype_==INPAR::STR::prestress_mulf && pstime_ >= time_)
+    prestress_->IsInit() = true;
+
   return;
 }
 
@@ -987,6 +1029,7 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(
   // update element geometry
   LINALG::Matrix<NUMNOD_SOH27,NUMDIM_SOH27> xrefe;  // material coord. of element
   LINALG::Matrix<NUMNOD_SOH27,NUMDIM_SOH27> xcurr;  // current  coord. of element
+  LINALG::Matrix<NUMNOD_SOH27,NUMDIM_SOH27> xdisp;
   DRT::Node** nodes = Nodes();
   for (int i=0; i<NUMNOD_SOH27; ++i)
   {
@@ -998,6 +1041,13 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(
     xcurr(i,0) = xrefe(i,0) + disp[i*NODDOF_SOH27+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*NODDOF_SOH27+1];
     xcurr(i,2) = xrefe(i,2) + disp[i*NODDOF_SOH27+2];
+
+    if (pstype_==INPAR::STR::prestress_mulf)
+    {
+      xdisp(i,0) = disp[i*NODDOF_SOH27+0];
+      xdisp(i,1) = disp[i*NODDOF_SOH27+1];
+      xdisp(i,2) = disp[i*NODDOF_SOH27+2];
+    }
 
   }
 
@@ -1021,8 +1071,34 @@ void DRT::ELEMENTS::So_hex27::soh27_nlnstiffmass(
     N_XYZ.Multiply(invJ_[gp],derivs[gp]);
     double detJ = detJ_[gp];
 
-    // (material) deformation gradient F = d xcurr / d xrefe = xcurr^T * N_XYZ^T
-    defgrd.MultiplyTT(xcurr,N_XYZ);
+    if (pstype_==INPAR::STR::prestress_mulf)
+    {
+      // get Jacobian mapping wrt to the stored configuration
+      LINALG::Matrix<3,3> invJdef;
+      prestress_->StoragetoMatrix(gp,invJdef,prestress_->JHistory());
+      // get derivatives wrt to last spatial configuration
+      LINALG::Matrix<3,27> N_xyz;
+      N_xyz.Multiply(invJdef,derivs[gp]);
+
+      // build multiplicative incremental defgrd
+      defgrd.MultiplyTT(xdisp,N_xyz);
+      defgrd(0,0) += 1.0;
+      defgrd(1,1) += 1.0;
+      defgrd(2,2) += 1.0;
+
+      // get stored old incremental F
+      LINALG::Matrix<3,3> Fhist;
+      prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
+
+      // build total defgrd = delta F * F_old
+      LINALG::Matrix<3,3> Fnew;
+      Fnew.Multiply(defgrd,Fhist);
+      defgrd = Fnew;
+    }
+    else
+    {
+      defgrd.MultiplyTT(xcurr,N_XYZ);
+    }
 
     // Right Cauchy-Green tensor = F^T * F
     LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27> cauchygreen;
@@ -1404,5 +1480,88 @@ int DRT::ELEMENTS::So_hex27Type::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
+/*----------------------------------------------------------------------*
+ |  compute def gradient at every gaussian point (protected)            |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex27::DefGradient(const std::vector<double>& disp,
+                                         Epetra_SerialDenseMatrix& gpdefgrd,
+                                         DRT::ELEMENTS::PreStress& prestress)
+{
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs = soh27_derivs();
 
+  // update element geometry
+  LINALG::Matrix<NUMNOD_SOH27,NUMDIM_SOH27> xdisp;  // current  coord. of element
+  for (int i=0; i<NUMNOD_SOH27; ++i)
+  {
+    xdisp(i,0) = disp[i*NODDOF_SOH27+0];
+    xdisp(i,1) = disp[i*NODDOF_SOH27+1];
+    xdisp(i,2) = disp[i*NODDOF_SOH27+2];
+  }
+
+  for (int gp=0; gp<NUMGPT_SOH27; ++gp)
+  {
+    // get Jacobian mapping wrt to the stored deformed configuration
+    LINALG::Matrix<3,3> invJdef;
+    prestress.StoragetoMatrix(gp,invJdef,prestress.JHistory());
+
+    // by N_XYZ = J^-1 * N_rst
+    LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> N_xyz;
+    N_xyz.Multiply(invJdef,derivs[gp]);
+
+    // build defgrd (independent of xrefe!)
+    LINALG::Matrix<3,3> defgrd;
+    defgrd.MultiplyTT(xdisp,N_xyz);
+    defgrd(0,0) += 1.0;
+    defgrd(1,1) += 1.0;
+    defgrd(2,2) += 1.0;
+
+    prestress.MatrixtoStorage(gp,defgrd,gpdefgrd);
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  compute Jac.mapping wrt deformed configuration (protected)          |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::So_hex27::UpdateJacobianMapping(
+                                            const std::vector<double>& disp,
+                                            DRT::ELEMENTS::PreStress& prestress)
+{
+  const static std::vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs = soh27_derivs();
+
+  // get incremental disp
+  LINALG::Matrix<NUMNOD_SOH27,NUMDIM_SOH27> xdisp;
+  for (int i=0; i<NUMNOD_SOH27; ++i)
+  {
+    xdisp(i,0) = disp[i*NODDOF_SOH27+0];
+    xdisp(i,1) = disp[i*NODDOF_SOH27+1];
+    xdisp(i,2) = disp[i*NODDOF_SOH27+2];
+  }
+
+  LINALG::Matrix<3,3> invJhist;
+  LINALG::Matrix<3,3> invJ;
+  LINALG::Matrix<3,3> defgrd;
+  LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> N_xyz;
+  LINALG::Matrix<3,3> invJnew;
+  for (int gp=0; gp<NUMGPT_SOH27; ++gp)
+  {
+    // get the invJ old state
+    prestress.StoragetoMatrix(gp,invJhist,prestress.JHistory());
+    // get derivatives wrt to invJhist
+    N_xyz.Multiply(invJhist,derivs[gp]);
+    // build defgrd \partial x_new / \parial x_old , where x_old != X
+    defgrd.MultiplyTT(xdisp,N_xyz);
+    defgrd(0,0) += 1.0;
+    defgrd(1,1) += 1.0;
+    defgrd(2,2) += 1.0;
+    // make inverse of this defgrd
+    defgrd.Invert();
+    // push-forward of Jinv
+    invJnew.MultiplyTN(defgrd,invJhist);
+    // store new reference configuration
+    prestress.MatrixtoStorage(gp,invJnew,prestress.JHistory());
+  } // for (int gp=0; gp<NUMGPT_SOH27; ++gp)
+
+  return;
+}
 

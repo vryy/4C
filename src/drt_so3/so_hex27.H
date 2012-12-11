@@ -37,6 +37,7 @@ namespace ELEMENTS
 {
 // forward declarations
 class InvDesign;
+class PreStress;
 
 class So_hex27Type : public DRT::ElementType
 {
@@ -378,7 +379,22 @@ protected:
   std::vector<double>                                                   detJ_;
 
 
+  /// prestressing switch & time
+  INPAR::STR::PreStress                                                 pstype_;
+  double                                                                pstime_;
+  double                                                                time_;
+  /// Prestressing object
+  Teuchos::RCP<DRT::ELEMENTS::PreStress>                                prestress_;
+  /// compute Jacobian mapping wrt to deformed configuration
+  void UpdateJacobianMapping(const std::vector<double>& disp,
+                             DRT::ELEMENTS::PreStress& prestress);
+  /// compute defgrd in all gp for given disp
+  void DefGradient(const std::vector<double>& disp,
+                   Epetra_SerialDenseMatrix& gpdefgrd,
+                   DRT::ELEMENTS::PreStress& prestress);
+
   friend class DRT::ELEMENTS::InvDesign;
+  Teuchos::RCP<DRT::ELEMENTS::InvDesign>                                invdesign_;
 
 
   // internal calculation methods

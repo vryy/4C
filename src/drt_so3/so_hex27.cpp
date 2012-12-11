@@ -26,6 +26,11 @@ Maintainer: Thomas Kloeppel
 #include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_globalproblem.H"
+
+// inverse design object
+#include "inversedesign.H"
+#include "prestress.H"
 
 DRT::ELEMENTS::So_hex27Type DRT::ELEMENTS::So_hex27Type::instance_;
 
@@ -96,11 +101,25 @@ void DRT::ELEMENTS::So_hex27Type::SetupElementDefinition( std::map<std::string,s
  *----------------------------------------------------------------------*/
 DRT::ELEMENTS::So_hex27::So_hex27(int id, int owner) :
 DRT::Element(id,owner),
-data_()
+data_(),
+pstype_(INPAR::STR::prestress_none),
+pstime_(0.0),
+time_(0.0)
 {
   kintype_ = soh27_nonlinear;
   invJ_.resize(NUMGPT_SOH27, LINALG::Matrix<NUMDIM_SOH27,NUMDIM_SOH27>(true));
   detJ_.resize(NUMGPT_SOH27, 0.0);
+
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params!=Teuchos::null)
+  {
+    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+    pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
+    pstime_ = sdyn.get<double>("PRESTRESSTIME");
+  }
+  if (pstype_==INPAR::STR::prestress_mulf)
+    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH27,NUMGPT_SOH27));
+
   return;
 }
 
@@ -112,7 +131,10 @@ DRT::ELEMENTS::So_hex27::So_hex27(const DRT::ELEMENTS::So_hex27& old) :
 DRT::Element(old),
 kintype_(old.kintype_),
 data_(old.data_),
-detJ_(old.detJ_)
+detJ_(old.detJ_),
+pstype_(old.pstype_),
+pstime_(old.pstime_),
+time_(old.time_)
 {
   invJ_.resize(old.invJ_.size());
   for (int i=0; i<(int)invJ_.size(); ++i)
@@ -120,6 +142,9 @@ detJ_(old.detJ_)
     // can this size be anything but NUMDIM_SOH27 x NUMDIM_SOH27?
     invJ_[i] = old.invJ_[i];
   }
+
+  if (pstype_==INPAR::STR::prestress_mulf)
+    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
 
   return;
 }
@@ -168,6 +193,15 @@ void DRT::ELEMENTS::So_hex27::Pack(DRT::PackBuffer& data) const
   for (int i=0; i<size; ++i)
     AddtoPack(data,invJ_[i]);
 
+  // prestress_
+  AddtoPack(data,pstype_);
+  AddtoPack(data,pstime_);
+  AddtoPack(data,time_);
+  if (pstype_==INPAR::STR::prestress_mulf)
+  {
+    DRT::ParObject::AddtoPack(data,*prestress_);
+  }
+
   return;
 }
 
@@ -202,6 +236,18 @@ void DRT::ELEMENTS::So_hex27::Unpack(const std::vector<char>& data)
   for (int i=0; i<size; ++i)
     ExtractfromPack(position,data,invJ_[i]);
 
+  // prestress_
+  pstype_ = static_cast<INPAR::STR::PreStress>( ExtractInt(position,data) );
+  ExtractfromPack(position,data,pstime_);
+  ExtractfromPack(position,data,time_);
+  if (pstype_==INPAR::STR::prestress_mulf)
+  {
+    std::vector<char> tmpprestress(0);
+    ExtractfromPack(position,data,tmpprestress);
+    if (prestress_ == Teuchos::null)
+      prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(NUMNOD_SOH27,NUMGPT_SOH27));
+    prestress_->Unpack(tmpprestress);
+  }
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);

@@ -39,6 +39,9 @@ class Discretization;
 
 namespace ELEMENTS
 {
+// forward declarations
+class InvDesign;
+class PreStress;
 
 class So_tet10Type : public DRT::ElementType
 {
@@ -340,6 +343,7 @@ protected:
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                               //!< during iteration to last converged state
     calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
+    prestress_update,
     postprocess_stress
   };
 
@@ -365,6 +369,26 @@ protected:
   //! determinant of Jacobian in material frame
   std::vector<double>                                                 detJ_mass_;
 
+  //! vector of partial derivatives in material frame
+  //vector<LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> > nxyz_;
+  LINALG::Matrix<NUMNOD_SOTET10,NUMDIM_SOTET10>                       nxyz_;
+
+  /// prestressing switch & time
+  INPAR::STR::PreStress                                               pstype_;
+  double                                                              pstime_;
+  double                                                              time_;
+  /// Prestressing object
+  Teuchos::RCP<DRT::ELEMENTS::PreStress>                              prestress_;
+  /// compute Jacobian mapping wrt to deformed configuration
+  void UpdateJacobianMapping(const std::vector<double>& disp,
+                             DRT::ELEMENTS::PreStress& prestress);
+  /// compute defgrd in all gp for given disp
+  void DefGradient(const std::vector<double>& disp,
+                   Epetra_SerialDenseMatrix& gpdefgrd,
+                   DRT::ELEMENTS::PreStress& prestress);
+
+  friend class DRT::ELEMENTS::InvDesign;
+  Teuchos::RCP<DRT::ELEMENTS::InvDesign>                              invdesign_;
 
 
   // internal calculation methods
