@@ -2261,13 +2261,11 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Nonlinear iteration scheme",
                                tuple<std::string>(
                                  "fixed_point_like",
-                                 "Newton",
-                                 "minimal"
+                                 "Newton"
                                  ),
                                tuple<int>(
                                      INPAR::FLUID::fixed_point_like,
-                                     INPAR::FLUID::Newton,
-                                     INPAR::FLUID::minimal),
+                                     INPAR::FLUID::Newton),
                                &fdyn);
 
   setStringToIntegralParameter<int>("PREDICTOR","default",
