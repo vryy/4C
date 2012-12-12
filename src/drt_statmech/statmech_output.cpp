@@ -4046,10 +4046,10 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow,
               nodeIDs.push_back(bspotcolmap_->GID(i));
               int currlink = (int)(*bspotstatus_)[i];
               for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
-                if((int)(*crosslinkerbond_)[j][currlink]!=nodeIDs.at(0))
+                if((int)(*crosslinkerbond_)[j][currlink]!=nodeIDs[0])
                 {
                   nodeIDs.push_back((int)(*crosslinkerbond_)[j][currlink]);
-                  firstvfil = (int)(*filamentnumber_)[discret_->NodeColMap()->LID(nodeIDs.at(1))];
+                  firstvfil = (int)(*filamentnumber_)[discret_->NodeColMap()->LID(nodeIDs[1])];
                   break;
                 }
             }
@@ -4068,24 +4068,29 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow,
       // "-1" because evalnodeIDs only stores one node per VERTICAL filament.
       if(!nodeIDs.empty())
       {
-        int vnodeoffset = nodeIDs.at(1) - evalnodeIDs.at(firstvfil-1);
+        int vnodeoffset = nodeIDs[1] - evalnodeIDs[firstvfil-1];
         for(int i=0; i<(int)evalnodeIDs.size(); i++)
           evalnodeIDs.at(i) += vnodeoffset;
       }
 
       // sort nodes from smallest to largest x-coordinate
+
+      // in case of the evaluation with respect to the arclength, we need the ascending node numbers
+      if(loomtype == loom_singlefil)
+        nodeIDs = evalnodeIDs;
+
       if((int)evalnodeIDs.size()>1)
       {
         for(int i=0; i<(int)evalnodeIDs.size()-1; i++)
         {
-          map< int,LINALG::Matrix<3,1> >::const_iterator posi = currentpositions.find(evalnodeIDs.at(i));
+          map< int,LINALG::Matrix<3,1> >::const_iterator posi = currentpositions.find(evalnodeIDs[i]);
           for(int j=i+1; j<(int)evalnodeIDs.size(); j++)
           {
-            map< int,LINALG::Matrix<3,1> >::const_iterator posj = currentpositions.find(evalnodeIDs.at(j));
+            map< int,LINALG::Matrix<3,1> >::const_iterator posj = currentpositions.find(evalnodeIDs[j]);
             if((posj->second)(0)<(posi->second)(0))
             {
-              int tmp = evalnodeIDs.at(i);
-              evalnodeIDs.at(i) = evalnodeIDs.at(j);
+              int tmp = evalnodeIDs[i];
+              evalnodeIDs.at(i) = evalnodeIDs[j];
               evalnodeIDs.at(j) = tmp;
             }
           }
@@ -4095,7 +4100,7 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow,
         evalnodepositions.clear();
         for(int i=0; i<(int)evalnodeIDs.size(); i++)
         {
-          map< int,LINALG::Matrix<3,1> >::const_iterator pos = currentpositions.find(evalnodeIDs.at(i));
+          map< int,LINALG::Matrix<3,1> >::const_iterator pos = currentpositions.find(evalnodeIDs[i]);
           evalnodepositions.push_back(pos->second);
         }
 
@@ -4115,7 +4120,7 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow,
           // calculate nearest neighbor to 4th nearest neighbor distances , no shift ac
           for(int i=0; i<(int)evalnodepositions.size(); i++)
           {
-            std::map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodeIDs.at(i));
+            std::map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodeIDs[i]);
             // write linker positions to stream
             linkerpositions<<std::scientific<<std::setprecision(6)<<(pos0->second)(0)<<" "<<(pos0->second)(1)<<" "<<(pos0->second)(2)<<endl;
             // vector storing nearest neighbor positions
@@ -4132,11 +4137,11 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow,
               diff -= (pos0->second);
 
               // arc length
-              if(evalnodeIDs.at(j)<=evalnodeIDs.at(i))
+              if(nodeIDs[j]<=nodeIDs[i])
                 dserror("Node IDs are not sorted in an ascending manner!");
 
               double arclength = 0.0;
-              for(int k=evalnodeIDs.at(i) ; k<evalnodeIDs.at(j); k++)
+              for(int k=nodeIDs[i] ; k<nodeIDs[j]; k++)
               {
                 std::map< int,LINALG::Matrix<3,1> >::const_iterator posk = currentpositions.find(k);
                 std::map< int,LINALG::Matrix<3,1> >::const_iterator poskp = currentpositions.find(k+1);
