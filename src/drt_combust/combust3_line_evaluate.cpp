@@ -58,3 +58,25 @@ int DRT::ELEMENTS::Combust3Line::EvaluateNeumann(
   return 0;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Combust3Line::LocationVector(
+    const Discretization&   dis,
+    LocationArray&          la,
+    bool                    doDirichlet,
+    const std::string&      condstring,
+    Teuchos::ParameterList& params
+    ) const
+{
+  DRT::ELEMENTS::Combust3Line::ActionType act = Combust3Line::none;
+  string action = params.get<string>("action","none");
+  if (action == "none") dserror("No action supplied");
+
+  switch(act)
+  {
+  default:
+    DRT::Element::LocationVector(dis,la,doDirichlet);
+    break;
+  }
+  return;
+}

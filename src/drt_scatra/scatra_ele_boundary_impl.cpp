@@ -3061,12 +3061,11 @@ template <DRT::Element::DiscretizationType bdistype,
   // number of parent element nodes
   static const int pnen = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
 
-  // parent element lm vector (vectors plm and plmowner allocated outside in
-  // EvaluateConditionUsingParentData)
-  Teuchos::RCP<std::vector<int> > plm      = params.get<Teuchos::RCP<std::vector<int> > >("plm");
-  Teuchos::RCP<std::vector<int> > plmowner = params.get<Teuchos::RCP<std::vector<int> > >("plmowner");
-  Teuchos::RCP<std::vector<int> > plmstride = params.get<Teuchos::RCP<std::vector<int> > >("plmstride");
-  pele->LocationVector(discretization,*plm,*plmowner,*plmstride);
+  // parent element lm vector
+  std::vector<int>  plm ;
+  std::vector<int>  plmowner;
+  std::vector<int>  plmstride;
+  pele->LocationVector(discretization,plm,plmowner,plmstride);
 
   // get velocity values at parent element nodes
   const Teuchos::RCP<Epetra_MultiVector> velocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
@@ -3078,8 +3077,8 @@ template <DRT::Element::DiscretizationType bdistype,
   if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
 
   // extract local values from global vectors for parent element
-  std::vector<double> myphinp(plm->size());
-  DRT::UTILS::ExtractMyValues(*phinp,myphinp,*plm);
+  std::vector<double> myphinp(plm.size());
+  DRT::UTILS::ExtractMyValues(*phinp,myphinp,plm);
 
   // matrix and vector definition
   LINALG::Matrix<pnsd,pnen>       evelnp;
@@ -3757,12 +3756,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::TaylorGalerkinBoundaryOutflow(
   // number of parent element nodes
   static const int pnen = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
 
-  // parent element lm vector (vectors plm and plmowner allocated outside in
-  // EvaluateConditionUsingParentData)
-  Teuchos::RCP<std::vector<int> > plm      = params.get<RCP<std::vector<int> > >("plm");
-  Teuchos::RCP<std::vector<int> > plmowner = params.get<RCP<std::vector<int> > >("plmowner");
-  Teuchos::RCP<std::vector<int> > plmstride = params.get<RCP<std::vector<int> > >("plmstride");
-  pele->LocationVector(discretization,*plm,*plmowner,*plmstride);
+  // parent element lm vector
+  std::vector<int>  plm;
+  std::vector<int>  plmowner;
+  std::vector<int>  plmstride;
+  pele->LocationVector(discretization,plm,plmowner,plmstride);
 
   // get velocity values at parent element nodes
   const RCP<Epetra_MultiVector> velocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field",Teuchos::null);
@@ -3777,11 +3775,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::TaylorGalerkinBoundaryOutflow(
 
 
   // extract local values from global vectors for parent element
-  std::vector<double> myphinp(plm->size());
-  DRT::UTILS::ExtractMyValues(*phinp,myphinp,*plm);
+  std::vector<double> myphinp(plm.size());
+  DRT::UTILS::ExtractMyValues(*phinp,myphinp,plm);
 
-  std::vector<double> myphin(plm->size());
-  DRT::UTILS::ExtractMyValues(*phin,myphin,*plm);
+  std::vector<double> myphin(plm.size());
+  DRT::UTILS::ExtractMyValues(*phin,myphin,plm);
 
   //	  // matrix and vector definition
   LINALG::Matrix<pnsd,pnen>       evelnp;
@@ -4183,12 +4181,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBou
   // number of parent element nodes
   static const int pnen = DRT::UTILS::DisTypeToNumNodePerEle<pdistype>::numNodePerElement;
 
-  // parent element lm vector (vectors plm and plmowner allocated outside in
-  // EvaluateConditionUsingParentData)
-  RCP<std::vector<int> > plm      = params.get<RCP<std::vector<int> > >("plm");
-  RCP<std::vector<int> > plmowner = params.get<RCP<std::vector<int> > >("plmowner");
-  RCP<std::vector<int> > plmstride = params.get<RCP<std::vector<int> > >("plmstride");
-  pele->LocationVector(discretization,*plm,*plmowner,*plmstride);
+  // parent element lm vector
+  std::vector<int>  plm ;
+  std::vector<int>  plmowner;
+  std::vector<int>  plmstride;
+  pele->LocationVector(discretization,plm,plmowner,plmstride);
 
   // get scalar values at parent element nodes
   RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
@@ -4197,11 +4194,11 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ReinitCharacteristicGalerkinBou
   if (phinp==Teuchos::null) dserror("Cannot get state vector 'phin'");
 
   // extract local values from global vectors for parent element
-  std::vector<double> myphinp(plm->size());
-  DRT::UTILS::ExtractMyValues(*phinp,myphinp,*plm);
+  std::vector<double> myphinp(plm.size());
+  DRT::UTILS::ExtractMyValues(*phinp,myphinp,plm);
 
-  std::vector<double> myphin(plm->size());
-  DRT::UTILS::ExtractMyValues(*phin,myphin,*plm);
+  std::vector<double> myphin(plm.size());
+  DRT::UTILS::ExtractMyValues(*phin,myphin,plm);
 
   //	  // matrix and vector definition
   //	  LINALG::Matrix<pnsd,pnen>       evelnp;

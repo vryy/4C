@@ -1479,7 +1479,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     }
 
     // evaluate all line weak Dirichlet boundary conditions
-    discret_->EvaluateConditionUsingParentData
+    discret_->EvaluateCondition
       (weakdbcparams      ,
        sysmat_            ,
        Teuchos::null      ,
@@ -1489,7 +1489,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
        "LineWeakDirichlet");
 
     // evaluate all surface weak Dirichlet boundary conditions
-    discret_->EvaluateConditionUsingParentData
+    discret_->EvaluateCondition
       (weakdbcparams      ,
        sysmat_            ,
        Teuchos::null      ,
@@ -1529,7 +1529,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     discret_->SetState("velaf"    ,velaf_);
     discret_->SetState("velnp",velnp_);
 
-    discret_->EvaluateConditionUsingParentData
+    discret_->EvaluateCondition
       (mhdbcparams          ,
        sysmat_              ,
        Teuchos::null        ,
@@ -1545,7 +1545,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
 
     if(doold)
     {
-      discret_->EvaluateConditionUsingParentData
+      discret_->EvaluateCondition
         (mhdbcparams          ,
          sysmat_              ,
          Teuchos::null        ,

@@ -760,7 +760,12 @@ void DRT::Discretization::EvaluateCondition
         for (curr=geom.begin(); curr!=geom.end(); ++curr)
         {
           // get element location vector and ownerships
-          curr->second->LocationVector(*this,la,false);
+          // the LocationVector method will return the the location vector
+          // of the dofs this condition is meant to assemble into.
+          // These dofs do not need to be the same as the dofs of the element
+          // (this is the standard case, though). Special boundary conditions,
+          // like weak dirichlet conditions, assemble into the dofs of the parent element.
+          curr->second->LocationVector(*this,la,false,condstring,params);
 
           // get dimension of element matrices and vectors
           // Reshape element matrices and vectors and init to zero
@@ -788,107 +793,6 @@ void DRT::Discretization::EvaluateCondition
   } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
   return;
 } // end of DRT::Discretization::EvaluateCondition
-
-
-/*----------------------------------------------------------------------*
- |  evaluate a condition on a surface using parent data        (public) |
- |                                                          gammi 07/08 |
- *----------------------------------------------------------------------*/
-void DRT::Discretization::EvaluateConditionUsingParentData(
-  Teuchos::ParameterList&                       params       ,
-  RCP<LINALG::SparseOperator>          systemmatrix1,
-  RCP<LINALG::SparseOperator>          systemmatrix2,
-  RCP<Epetra_Vector>                   systemvector1,
-  RCP<Epetra_Vector>                   systemvector2,
-  RCP<Epetra_Vector>                   systemvector3,
-  const string&                        condstring   ,
-  const int                            condid       )
-{
-  if (!Filled()) dserror("FillComplete() was not called");
-  if (!HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
-
-  multimap<string,RCP<Condition> >::iterator fool;
-
-  const bool assemblemat1 = systemmatrix1!=Teuchos::null;
-  const bool assemblemat2 = systemmatrix2!=Teuchos::null;
-  const bool assemblevec1 = systemvector1!=Teuchos::null;
-  const bool assemblevec2 = systemvector2!=Teuchos::null;
-  const bool assemblevec3 = systemvector3!=Teuchos::null;
-
-  //----------------------------------------------------------------------
-  // loop through conditions and evaluate them if they match the criterion
-  //----------------------------------------------------------------------
-  for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-  {
-    if (fool->first == condstring)
-    {
-      DRT::Condition& cond = *(fool->second);
-      if (condid == -1 || condid ==cond.GetInt("ConditionID"))
-      {
-	map<int,RCP<DRT::Element> >& geom = cond.Geometry();
-	// no check for empty geometry here since in parallel computations
-	// can exist processors which do not own a portion of the elements belonging
-	// to the condition geometry
-
-	map<int,RCP<DRT::Element> >::iterator curr;
-
-	// stuff the whole condition into the parameterlist
-	// --- we want to be able to access boundary values
-	// on the element level
-	params.set<RCP<DRT::Condition> >("condition", fool->second);
-
-	// define element matrices and vectors
-	Epetra_SerialDenseMatrix elematrix1;
-	Epetra_SerialDenseMatrix elematrix2;
-	Epetra_SerialDenseVector elevector1;
-	Epetra_SerialDenseVector elevector2;
-	Epetra_SerialDenseVector elevector3;
-
-	// element matrices and vectors will be reshaped
-	// during the element call!
-
-	for (curr=geom.begin(); curr!=geom.end(); ++curr)
-	{
-	  // get element location vector and ownerships
-	  std::vector<int> lm;
-	  std::vector<int> lmowner;
-	  std::vector<int> lmstride;
-	  curr->second->LocationVector(*this,lm,lmowner,lmstride);
-
-	  // place vectors for parent lm and lmowner in
-	  // the parameterlist --- the element will fill
-	  // them since only the element implementation
-	  // knows its parent
-	  RCP<std::vector<int> > plm     =Teuchos::rcp(new std::vector<int>);
-	  RCP<std::vector<int> > plmowner=Teuchos::rcp(new std::vector<int>);
-	  RCP<std::vector<int> > plmstride=Teuchos::rcp(new std::vector<int>);
-
-	  params.set<RCP<std::vector<int> > >("plm",plm);
-	  params.set<RCP<std::vector<int> > >("plmowner",plmowner);
-	  params.set<RCP<std::vector<int> > >("plmstride",plmstride);
-
-	  // call the element specific evaluate method
-	  int err = curr->second->Evaluate(params,*this,lm,elematrix1,elematrix2,
-					   elevector1,elevector2,elevector3);
-	  if (err) dserror("error while evaluating elements");
-
-	  // assembly to all parent dofs even if we just integrated
-	  // over a boundary element
-	  int eid = curr->second->Id();
-
-	  if (assemblemat1) systemmatrix1->Assemble(eid,*plmstride,elematrix1,*plm,*plmowner);
-	  if (assemblemat2) systemmatrix2->Assemble(eid,*plmstride,elematrix2,*plm,*plmowner);
-	  if (assemblevec1) LINALG::Assemble(*systemvector1,elevector1,*plm,*plmowner);
-	  if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,*plm,*plmowner);
-	  if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,*plm,*plmowner);
-	} // end loop geometry elements of this conditions
-      } // the condition number is as desired or we wanted to evaluate
-        // all numbers
-    } // end we have a condition of type condstring
-  } //for (fool=condition_.begin(); fool!=condition_.end(); ++fool)
-  return;
-} // end of DRT::Discretization::EvaluateConditionUsingParentData
-
 
 /*----------------------------------------------------------------------*
  |  evaluate/assemble scalars across elements (public)       bborn 08/08|

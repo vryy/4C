@@ -353,4 +353,37 @@ int DRT::ELEMENTS::FluidBoundary::EvaluateNeumann(
       elemat1);
 }
 
+/*----------------------------------------------------------------------*
+ |  Get degrees of freedom used by this element                (public) |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::FluidBoundary::LocationVector(
+    const Discretization&    dis,
+    LocationArray&           la,
+    bool                     doDirichlet,
+    const std::string&       condstring,
+    Teuchos::ParameterList&  params
+    ) const
+{
+  // get the action required
+  const FLD::BoundaryAction act = DRT::INPUT::get<FLD::BoundaryAction>(params,"action");
 
+  switch(act)
+  {
+  case FLD::enforce_weak_dbc:
+  case FLD::poro_boundary:
+  case FLD::mixed_hybrid_dbc:
+    // special cases: the boundary element assembles also into
+    // the inner dofs of its parent element
+    // note: using these actions, the element will get the parent location vector
+    //       as input in the respective evaluate routines
+    parent_->LocationVector(dis,la,doDirichlet);
+    break;
+  case FLD::ba_none:
+    dserror("No action supplied");
+    break;
+  default:
+    DRT::Element::LocationVector(dis,la,doDirichlet);
+    break;
+  }
+  return;
+}

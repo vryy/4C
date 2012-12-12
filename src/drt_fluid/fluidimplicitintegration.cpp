@@ -1313,7 +1313,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           }
 
           // evaluate all line weak Dirichlet boundary conditions
-          discret_->EvaluateConditionUsingParentData
+          discret_->EvaluateCondition
             (weakdbcparams      ,
              sysmat_            ,
              Teuchos::null      ,
@@ -1323,7 +1323,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
              "LineWeakDirichlet");
 
           // evaluate all surface weak Dirichlet boundary conditions
-          discret_->EvaluateConditionUsingParentData
+          discret_->EvaluateCondition
             (weakdbcparams      ,
              sysmat_            ,
              Teuchos::null      ,
@@ -1364,7 +1364,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           else discret_->SetState("velaf",velnp_);
 
           // evaluate all mixed hybrid Dirichlet boundary conditions
-          discret_->EvaluateConditionUsingParentData
+          discret_->EvaluateCondition
             (mhdbcparams          ,
              sysmat_              ,
              Teuchos::null        ,
@@ -1373,7 +1373,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
              Teuchos::null        ,
              "LineMixHybDirichlet");
 
-          discret_->EvaluateConditionUsingParentData
+          discret_->EvaluateCondition
             (mhdbcparams          ,
              sysmat_              ,
              Teuchos::null        ,

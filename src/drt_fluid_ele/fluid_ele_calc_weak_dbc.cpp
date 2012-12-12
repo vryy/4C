@@ -137,7 +137,7 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   FluidBoundary*             surfele       ,
   Teuchos::ParameterList&    params        ,
   DRT::Discretization&       discretization,
-  std::vector<int>&          lm            ,
+  std::vector<int>&          plm           ,
   Epetra_SerialDenseMatrix&  elemat_epetra ,
   Epetra_SerialDenseVector&  elevec_epetra )
 {
@@ -298,21 +298,12 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   const double timefacrhs   = fldpara_->TimeFacRhs();
 
   //--------------------------------------------------
-  // get parent elements location vector and ownerships
+  // get elements location vector and ownerships
+  std::vector<int>  lm ;
+  std::vector<int>  lmowner;
+  std::vector<int>  lmstride;
 
-  // the vectors have been allocated outside in
-  // EvaluateConditionUsingParentData
-  RCP<std::vector<int> > plm
-    =
-    params.get<RCP<std::vector<int> > >("plm");
-  RCP<std::vector<int> > plmowner
-    =
-    params.get<RCP<std::vector<int> > >("plmowner");
-  RCP<std::vector<int> > plmstride
-    =
-    params.get<RCP<std::vector<int> > >("plmstride");
-
-  surfele->ParentElement()->LocationVector(discretization,*plm,*plmowner,*plmstride);
+  surfele->DRT::Element::LocationVector(discretization,lm,lmowner,lmstride);
 
   // --------------------------------------------------
   // Reshape element matrices and vectors and init to zero, construct views
@@ -334,11 +325,11 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   if (velaf==Teuchos::null)
     dserror("Cannot get state vector 'velaf'");
 
-  std::vector<double> mypvelaf((*plm).size());
-  DRT::UTILS::ExtractMyValues(*velaf,mypvelaf,*plm);
+  std::vector<double> mypvelaf(plm.size());
+  DRT::UTILS::ExtractMyValues(*velaf,mypvelaf,plm);
 
   // velocities n+1
-  std::vector<double> mypvelnp((*plm).size());
+  std::vector<double> mypvelnp(plm.size());
 
   if((fldpara_->TimeAlgo()==INPAR::FLUID::timeint_gen_alpha) or
       (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha))
@@ -350,14 +341,14 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     if (velnp==Teuchos::null)
       dserror("Cannot get state vector 'velnp'");
 
-    DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,*plm);
+    DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,plm);
   }
   // mypvelnp = mypvelaf
   else
-    DRT::UTILS::ExtractMyValues(*velaf,mypvelnp,*plm);
+    DRT::UTILS::ExtractMyValues(*velaf,mypvelnp,plm);
 
   std::vector<double> myedispnp ((lm  ).size());
-  std::vector<double> mypedispnp((*plm).size());
+  std::vector<double> mypedispnp((plm).size());
   if (surfele->ParentElement()->IsAle())
   {
     // mesh displacements, new time step, n+1
@@ -370,7 +361,7 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     }
 
     DRT::UTILS::ExtractMyValues(*dispnp,myedispnp ,lm  );
-    DRT::UTILS::ExtractMyValues(*dispnp,mypedispnp,*plm);
+    DRT::UTILS::ExtractMyValues(*dispnp,mypedispnp,plm);
   }
 
   //--------------------------------------------------
@@ -521,8 +512,10 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // outward normal
 
   Epetra_SerialDenseMatrix pqxg(intpoints.nquad,3);
+  Epetra_SerialDenseMatrix derivtrafo(3,3);
 
   SurfaceGPToParentGP(pqxg     ,
+                      derivtrafo,
                       intpoints,
                       pdistype ,
                       distype  ,
@@ -2127,7 +2120,7 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   FluidBoundary*                lineele       ,
   Teuchos::ParameterList&    params        ,
   DRT::Discretization&       discretization,
-  std::vector<int>&          lm            ,
+  std::vector<int>&          plm           ,
   Epetra_SerialDenseMatrix&  elemat_epetra ,
   Epetra_SerialDenseVector&  elevec_epetra )
 {
@@ -2257,21 +2250,12 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   const double timefacrhs   = fldpara_->TimeFacRhs();
 
   //--------------------------------------------------
-  // get parent elements location vector and ownerships
+  // get elements location vector and ownerships
+  std::vector<int>  lm ;
+  std::vector<int>  lmowner;
+  std::vector<int>  lmstride;
 
-  // the vectors have been allocated outside in
-  // EvaluateConditionUsingParentData
-  RCP<std::vector<int> > plm
-    =
-    params.get<RCP<std::vector<int> > >("plm");
-  RCP<std::vector<int> > plmowner
-    =
-    params.get<RCP<std::vector<int> > >("plmowner");
-  RCP<std::vector<int> > plmstride
-    =
-    params.get<RCP<std::vector<int> > >("plmstride");
-
-  lineele->ParentElement()->LocationVector(discretization,*plm,*plmowner,*plmstride);
+  lineele->DRT::Element::LocationVector(discretization,lm,lmowner,lmstride);
 
   // --------------------------------------------------
   // Reshape element matrices and vectors and init to zero, construct views
@@ -2293,11 +2277,11 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   if (velaf==Teuchos::null)
     dserror("Cannot get state vector 'velaf'");
 
-  std::vector<double> mypvelaf((*plm).size());
-  DRT::UTILS::ExtractMyValues(*velaf,mypvelaf,*plm);
+  std::vector<double> mypvelaf((plm).size());
+  DRT::UTILS::ExtractMyValues(*velaf,mypvelaf,plm);
 
   // velocities n+1
-  std::vector<double> mypvelnp((*plm).size());
+  std::vector<double> mypvelnp((plm).size());
 
   if((fldpara_->TimeAlgo()==INPAR::FLUID::timeint_gen_alpha) or
       (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha))
@@ -2309,14 +2293,14 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     if (velnp==Teuchos::null)
       dserror("Cannot get state vector 'velnp'");
 
-    DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,*plm);
+    DRT::UTILS::ExtractMyValues(*velnp,mypvelnp,plm);
   }
   // mypvelnp = mypvelaf
   else
-    DRT::UTILS::ExtractMyValues(*velaf,mypvelnp,*plm);
+    DRT::UTILS::ExtractMyValues(*velaf,mypvelnp,plm);
 
   std::vector<double> myedispnp ((lm  ).size());
-  std::vector<double> mypedispnp((*plm).size());
+  std::vector<double> mypedispnp((plm).size());
   if (lineele->ParentElement()->IsAle())
   {
     // mesh displacements, new time step, n+1
@@ -2329,7 +2313,7 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
     }
 
     DRT::UTILS::ExtractMyValues(*dispnp,myedispnp ,lm  );
-    DRT::UTILS::ExtractMyValues(*dispnp,mypedispnp,*plm);
+    DRT::UTILS::ExtractMyValues(*dispnp,mypedispnp,plm);
   }
 
   //--------------------------------------------------
@@ -2472,8 +2456,10 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // outward normal
 
   Epetra_SerialDenseMatrix pqxg(intpoints.nquad,2);
+  Epetra_SerialDenseMatrix derivtrafo(2,2);
 
   DRT::UTILS::LineGPToParentGP(pqxg     ,
+                               derivtrafo,
                                intpoints,
                                pdistype ,
                                distype  ,

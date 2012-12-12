@@ -396,6 +396,10 @@ protected:
                            std::vector<double> mydisp,
                            bool refconfig);
 
+  //! Submethod to compute surface porosity
+  void CalculateSurfacePorosity(Teuchos::ParameterList& params,
+                                DRT::Discretization&      discretization,
+                                LocationArray&            la);
 }; // class StructuralSurface : public DRT::Element
 
 

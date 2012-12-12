@@ -758,6 +758,43 @@ public:
 
   //@}
 
+  /*!
+  \brief Return the location vector of this element
+
+  The method computes degrees of freedom this element adresses.
+  Degree of freedom ordering is as follows:<br>
+  First all degrees of freedom of adjacent nodes are numbered in
+  local nodal order, then the element internal degrees of freedom are
+  given if present.<br>
+  If a derived element has to use a different ordering scheme,
+  it is welcome to overload this method as the assembly routines actually
+  don't care as long as matrices and vectors evaluated by the element
+  match the ordering, which is implicitly assumed.<br>
+  Length of the output vector matches number of degrees of freedom
+  exactly.<br>
+  This version is intended to fill the LocationArray with the dofs
+  the element will assemble into. In the standard case these dofs are
+  the dofs of the element itself. For some special conditions (e.g.
+  the weak dirichlet boundary condtion) a surface element will assemble
+  into the dofs of a volume element.<br>
+
+  \note The degrees of freedom returned are not neccessarily only nodal dofs.
+        Depending on the element implementation, output might also include
+        element dofs.
+
+  \param dis (in)      : the discretization this element belongs to
+  \param la (out)      : location data for all dofsets of the discretization
+  \param doDirichlet (in): whether to get the Dirichlet flags
+  \param condstring (in): Name of condition to be evaluated
+  \param condstring (in):  List of parameters for use at element level
+  */
+  virtual void LocationVector(const Discretization&   dis,
+                              LocationArray&          la,
+                              bool                    doDirichlet,
+                              const std::string&      condstring,
+                              Teuchos::ParameterList& params
+                              ) const;
+
 private:
 
 

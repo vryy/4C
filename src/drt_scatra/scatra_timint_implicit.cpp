@@ -2380,7 +2380,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
     AddSpecificTimeIntegrationParameters(mhdbcparams);
 
     // evaluate all mixed hybrid Dirichlet boundary conditions
-    discret_->EvaluateConditionUsingParentData
+    discret_->EvaluateCondition
       (mhdbcparams          ,
        sysmat_              ,
        Teuchos::null        ,
@@ -2389,7 +2389,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS()
        Teuchos::null        ,
        "LineWeakDirichlet");
 
-    discret_->EvaluateConditionUsingParentData
+    discret_->EvaluateCondition
       (mhdbcparams          ,
        sysmat_              ,
        Teuchos::null        ,

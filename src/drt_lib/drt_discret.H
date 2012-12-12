@@ -190,6 +190,7 @@ public:
   */
   virtual inline bool HaveDofs() const {return havedof_;}
 
+  inline int NumDofSets() const {return dofsets_.size();}
   /// @name Dof query methods for single dof set discretizations
 
   /*!
@@ -930,6 +931,8 @@ public:
   */
   virtual void GetCondition(const string& name, std::vector<DRT::Condition*>& out) const;
 
+  virtual void GetCondition(const string& name, std::vector<Teuchos::RCP<Condition> >& out) const;
+
   /*!
   \brief Get a condition with a certain name
 
@@ -1575,47 +1578,6 @@ public:
     RCP<Epetra_Vector>    systemvector3,
     const string& condstring,
     const int condid=-1
-  );
-
-  /*!
-  \brief Evaluate a specific surface conditon which requires data
-  from the whole element but is essentially a surface condition.
-  (for example a weak Dirichlet condition)
-
-  Several things are communicated from/to the element over the
-  parameter list:
-
-  o The condition       (in)
-  o parent lm           (out)
-  o parent lmowner      (out)
-
-  the element resizes systemmatrices and systemvectors according to
-  the parents requirements.
-
-  \param params        (in) : List of parameters for use at element level
-  \param systemmatrix1 (out): Sparse matrix that may be changed by
-                              assembly of boundary element contributions.
-  \param systemmatrix2 (out): Sparse matrix that may be changed by
-                              assembly of boundary element contributions.
-  \param systemvector1 (out): Vector to assemble BCs to.
-                              The vector is NOT initialized to zero by this method.
-  \param systemvector2 (out): Vector to assemble BCs to.
-                              The vector is NOT initialized to zero by this method.
-  \param systemvector3 (out): Vector to assemble BCs to.
-                              The vector is NOT initialized to zero by this method.
-  \param condstring    (in) : Name of condition to be evaluated
-  \param condid (in):        Condition ID
-  */
-  void EvaluateConditionUsingParentData
-  (
-    Teuchos::ParameterList&     params,
-    RCP<LINALG::SparseOperator> systemmatrix1,
-    RCP<LINALG::SparseOperator> systemmatrix2,
-    RCP<Epetra_Vector>          systemvector1,
-    RCP<Epetra_Vector>          systemvector2,
-    RCP<Epetra_Vector>          systemvector3,
-    const string&               condstring,
-    const int                   condid=-1
   );
 
   /*!

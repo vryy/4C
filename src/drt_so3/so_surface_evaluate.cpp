@@ -1398,115 +1398,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
   {
   case calc_struct_area_poro:
   {
-    // get the parent element
-    DRT::Element* parentele = ParentElement();
-    const int nenparent = parentele->NumNode();
-    // get element location vector and ownerships
-    std::vector<int> lmpar;
-    std::vector<int> lmowner;
-    std::vector<int> lmstride;
-    parentele->LocationVector(discretization,lmpar,lmowner,lmstride);
-
-    const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
-    const int ngp = intpoints.nquad;
-    Teuchos::RCP<Epetra_SerialDenseVector> poro = rcp(new Epetra_SerialDenseVector(ngp));
-    const int numdim = 3;
-    const int numnode = NumNode();
-    const int noddof = NumDofPerNode(*(Nodes()[0]));
-
-    // element geometry update
-    Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-    if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
-    std::vector<double> mydisp(lmpar.size());
-    DRT::UTILS::ExtractMyValues(*disp,mydisp,lmpar);
-
-    // update element geometry
-    Epetra_SerialDenseMatrix xrefe(numdim,nenparent); // material coord. of element
-    Epetra_SerialDenseMatrix xcurr(numdim,nenparent); // current  coord. of element
-    //Epetra_SerialDenseMatrix xdisp(nenparent,numdim);
-
-    DRT::Node** nodes = parentele->Nodes();
-    //DRT::Node** nodes = Nodes();
-    for (int i=0; i<nenparent; ++i)
-    {
-      const double* x = nodes[i]->X();
-      xrefe(0,i) = x[0];
-      xrefe(1,i) = x[1];
-      xrefe(2,i) = x[2];
-
-      xcurr(0,i) = xrefe(0,i) + mydisp[i*noddof+0];
-      xcurr(1,i) = xrefe(1,i) + mydisp[i*noddof+1];
-      xcurr(2,i) = xrefe(2,i) + mydisp[i*noddof+2];
-    }
-
-    const int numdofpernode = 4;
-
-    Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState(1,"fluidvel");
-    if (velnp==Teuchos::null) dserror("Cannot get state vector 'fluidvel'");
-    // extract local values of the global vectors
-    std::vector<double> myvelpres(la[1].lm_.size());
-    DRT::UTILS::ExtractMyValues(*velnp,myvelpres,la[1].lm_);
-
-    Epetra_SerialDenseVector mypres(numnode);
-    for (int inode=0; inode<numnode; ++inode) // number of nodes
-    {
-      (mypres)(inode,0) = myvelpres[numdim+(inode*numdofpernode)];
-    }
-
-    Epetra_SerialDenseMatrix pqxg(intpoints.nquad,3);
-
-    DRT::UTILS::SurfaceGPToParentGP(pqxg     ,
-                                    intpoints,
-                                    parentele->Shape() ,
-                                    Shape()  ,
-                                    LSurfNumber());
-
-    for (int gp=0; gp<ngp; ++gp)
-    {
-      // get shape functions and derivatives in the plane of the element
-      LINALG::SerialDenseVector  funct(nenparent);
-      LINALG::SerialDenseMatrix  deriv(3,nenparent);
-      DRT::UTILS::shape_function_3D(funct,pqxg(gp,0),pqxg(gp,1),pqxg(gp,2),parentele->Shape());
-      DRT::UTILS::shape_function_3D_deriv1(deriv,pqxg(gp,0),pqxg(gp,1),pqxg(gp,2),parentele->Shape());
-
-      LINALG::SerialDenseVector  funct2D(numnode);
-      DRT::UTILS::shape_function_2D(funct2D,intpoints.qxg[gp][0],intpoints.qxg[gp][1],Shape());
-
-      // pressure at integration point
-      double press = funct2D.Dot(mypres);
-
-      double dphi_dp=0.0;
-      double dphi_dJ=0.0;
-      double dphi_dJdp=0.0;
-      double dphi_dJJ=0.0;
-      double dphi_dpp=0.0;
-      double porosity=0.0;
-
-      // get Jacobian matrix and determinant w.r.t. spatial configuration
-      //! transposed jacobian "dx/ds"
-      LINALG::SerialDenseMatrix xjm(numdim,numdim);
-      xjm.Multiply('N','T',1.0,deriv,xcurr,0.0);
-      LINALG::SerialDenseMatrix Jmat(numdim,numdim);
-      Jmat.Multiply('N','T',1.0,deriv,xrefe,0.0);
-
-      double det = 0.0;
-      double detJ = 0.0;
-
-      if (numdim == 3)
-      {
-        det = xjm(0,0)*(xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2)) + xjm(0,1)*(- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2)) + xjm(0,2)*(xjm(1,0)*xjm(2,1) - xjm(2,0)*xjm(1,1));
-        detJ = Jmat(0,0)*(Jmat(1,1)*Jmat(2,2) - Jmat(2,1)*Jmat(1,2)) + Jmat(0,1)*(- Jmat(1,0)*Jmat(2,2) + Jmat(2,0)*Jmat(1,2)) + Jmat(0,2)*(Jmat(1,0)*Jmat(2,1) - Jmat(2,0)*Jmat(1,1));
-      }
-      else dserror("not implemented");
-
-      const double J = det/detJ;
-
-      //get structure material
-      MAT::StructPoro* structmat = static_cast<MAT::StructPoro*>((parentele->Material()).get());
-      if(structmat->MaterialType() != INPAR::MAT::m_structporo)
-        dserror("invalid structure material for poroelasticity");
-      structmat->ComputeSurfPorosity(press, J,LSurfNumber(),gp,porosity,dphi_dp,dphi_dJ,dphi_dJdp,dphi_dJJ,dphi_dpp);
-    }
+    CalculateSurfacePorosity(params,discretization,la);
   }
   break;
   default:
@@ -1866,5 +1758,124 @@ void DRT::ELEMENTS::StructuralSurface::BuildNormalsAtNodes(Epetra_SerialDenseVec
     {
       nodenormals(numdim*i+j) = normal[j];
     }
+  }
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
+    Teuchos::ParameterList& params,
+    DRT::Discretization&      discretization,
+    LocationArray&            la)
+{
+  // get the parent element
+  DRT::Element* parentele = ParentElement();
+  const int nenparent = parentele->NumNode();
+  // get element location vector and ownerships
+  std::vector<int> lmpar;
+  std::vector<int> lmowner;
+  std::vector<int> lmstride;
+  parentele->LocationVector(discretization,lmpar,lmowner,lmstride);
+
+  const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+  const int ngp = intpoints.nquad;
+  Teuchos::RCP<Epetra_SerialDenseVector> poro = rcp(new Epetra_SerialDenseVector(ngp));
+  const int numdim = 3;
+  const int numnode = NumNode();
+  const int noddof = NumDofPerNode(*(Nodes()[0]));
+
+  // element geometry update
+  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+  if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
+  std::vector<double> mydisp(lmpar.size());
+  DRT::UTILS::ExtractMyValues(*disp,mydisp,lmpar);
+
+  // update element geometry
+  Epetra_SerialDenseMatrix xrefe(numdim,nenparent); // material coord. of element
+  Epetra_SerialDenseMatrix xcurr(numdim,nenparent); // current  coord. of element
+
+  DRT::Node** nodes = parentele->Nodes();
+  for (int i=0; i<nenparent; ++i)
+  {
+    const double* x = nodes[i]->X();
+    xrefe(0,i) = x[0];
+    xrefe(1,i) = x[1];
+    xrefe(2,i) = x[2];
+
+    xcurr(0,i) = xrefe(0,i) + mydisp[i*noddof+0];
+    xcurr(1,i) = xrefe(1,i) + mydisp[i*noddof+1];
+    xcurr(2,i) = xrefe(2,i) + mydisp[i*noddof+2];
+  }
+
+  const int numdofpernode = 4;
+
+  Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState(1,"fluidvel");
+  if (velnp==Teuchos::null) dserror("Cannot get state vector 'fluidvel'");
+  // extract local values of the global vectors
+  std::vector<double> myvelpres(la[1].lm_.size());
+  DRT::UTILS::ExtractMyValues(*velnp,myvelpres,la[1].lm_);
+
+  Epetra_SerialDenseVector mypres(numnode);
+  for (int inode=0; inode<numnode; ++inode) // number of nodes
+  {
+    (mypres)(inode,0) = myvelpres[numdim+(inode*numdofpernode)];
+  }
+
+  // get coordinates of gauss points w.r.t. local parent coordinate system
+  Epetra_SerialDenseMatrix pqxg(intpoints.nquad,3);
+  Epetra_SerialDenseMatrix derivtrafo(3,3);
+
+  DRT::UTILS::SurfaceGPToParentGP(pqxg     ,
+                                  derivtrafo,
+                                  intpoints,
+                                  parentele->Shape() ,
+                                  Shape()  ,
+                                  LSurfNumber());
+
+  for (int gp=0; gp<ngp; ++gp)
+  {
+    // get shape functions and derivatives in the plane of the element
+   // LINALG::SerialDenseVector  funct(nenparent);
+    LINALG::SerialDenseMatrix  deriv(3,nenparent);
+   // DRT::UTILS::shape_function_3D(funct,pqxg(gp,0),pqxg(gp,1),pqxg(gp,2),parentele->Shape());
+    DRT::UTILS::shape_function_3D_deriv1(deriv,pqxg(gp,0),pqxg(gp,1),pqxg(gp,2),parentele->Shape());
+
+    LINALG::SerialDenseVector  funct2D(numnode);
+    DRT::UTILS::shape_function_2D(funct2D,intpoints.qxg[gp][0],intpoints.qxg[gp][1],Shape());
+
+    // pressure at integration point
+    double press = funct2D.Dot(mypres);
+
+    double dphi_dp=0.0;
+    double dphi_dJ=0.0;
+    double dphi_dJdp=0.0;
+    double dphi_dJJ=0.0;
+    double dphi_dpp=0.0;
+    double porosity=0.0;
+
+    // get Jacobian matrix and determinant w.r.t. spatial configuration
+    //! transposed jacobian "dx/ds"
+    LINALG::SerialDenseMatrix xjm(numdim,numdim);
+    xjm.Multiply('N','T',1.0,deriv,xcurr,0.0);
+    LINALG::SerialDenseMatrix Jmat(numdim,numdim);
+    Jmat.Multiply('N','T',1.0,deriv,xrefe,0.0);
+
+    double det = 0.0;
+    double detJ = 0.0;
+
+    if (numdim == 3)
+    {
+      det = xjm(0,0)*(xjm(1,1)*xjm(2,2) - xjm(2,1)*xjm(1,2)) + xjm(0,1)*(- xjm(1,0)*xjm(2,2) + xjm(2,0)*xjm(1,2)) + xjm(0,2)*(xjm(1,0)*xjm(2,1) - xjm(2,0)*xjm(1,1));
+      detJ = Jmat(0,0)*(Jmat(1,1)*Jmat(2,2) - Jmat(2,1)*Jmat(1,2)) + Jmat(0,1)*(- Jmat(1,0)*Jmat(2,2) + Jmat(2,0)*Jmat(1,2)) + Jmat(0,2)*(Jmat(1,0)*Jmat(2,1) - Jmat(2,0)*Jmat(1,1));
+    }
+    else dserror("not implemented");
+
+    const double J = det/detJ;
+
+    //get structure material
+    MAT::StructPoro* structmat = static_cast<MAT::StructPoro*>((parentele->Material()).get());
+    if(structmat->MaterialType() != INPAR::MAT::m_structporo)
+      dserror("invalid structure material for poroelasticity");
+    structmat->ComputeSurfPorosity(press, J,LSurfNumber(),gp,porosity,dphi_dp,dphi_dJ,dphi_dJdp,dphi_dJJ,dphi_dpp);
   }
 }

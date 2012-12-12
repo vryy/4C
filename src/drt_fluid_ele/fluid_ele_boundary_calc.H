@@ -588,13 +588,13 @@ public:
                               this matrix.
 
   */
-void PoroBoundary(
-    DRT::ELEMENTS::FluidBoundary*  ele,
-    Teuchos::ParameterList&    params,
-    DRT::Discretization&       discretization,
-    std::vector<int>&          lm,
-    Epetra_SerialDenseMatrix&  elemat1,
-    Epetra_SerialDenseVector&  elevec1);
+  void PoroBoundary(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&    params,
+      DRT::Discretization&       discretization,
+      std::vector<int>&          lm,
+      Epetra_SerialDenseMatrix&  elemat1,
+      Epetra_SerialDenseVector&  elevec1);
 
 private:
 
@@ -623,6 +623,32 @@ private:
       std::vector<int>&               lm,
       Epetra_SerialDenseMatrix&       elemat,
       Epetra_SerialDenseVector&       elevec);
+
+  /*!
+  \brief apply boundary integral for porous media problems
+
+  \param params (in)        : ParameterList for communication between control routine
+  \param discretization (in): A reference to the underlying discretization
+  \param lm (in)            : location vector of this element
+  \param elemat1 (out)      : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+  \param elemat2 (out)      : matrix to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+  \param elevec1 (out)      : vector to be filled by element. If NULL on input,
+                              the controling method does not epxect the element to fill
+                              this matrix.
+
+  */
+  template <DRT::Element::DiscretizationType pdistype>
+  void PoroBoundary(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&    params,
+      DRT::Discretization&       discretization,
+      std::vector<int>&          lm,
+      Epetra_SerialDenseMatrix&  elemat1,
+      Epetra_SerialDenseVector&  elevec1);
 
     /*!
     \brief apply no penetration boundary condition

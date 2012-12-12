@@ -717,18 +717,8 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
         // general parameters for two-phase flow and premixed combustion problems
         const INPAR::COMBUST::CombustionType combusttype   = DRT::INPUT::get<INPAR::COMBUST::CombustionType>(params, "combusttype");
 
-        //---------------------------------------------------
-        // get parent elements location vector and ownerships
-        //---------------------------------------------------
-
-        // the vectors have been allocated outside in EvaluateConditionUsingParentData()
-        RCP<std::vector<int> > plm = params.get<RCP<std::vector<int> > >("plm");
-        RCP<std::vector<int> > plmowner = params.get<RCP<std::vector<int> > >("plmowner");
-        RCP<std::vector<int> > plmstride = params.get<RCP<std::vector<int> > >("plmstride");
-
-        parent_->LocationVector(discretization,*plm,*plmowner,*plmstride);
         // reshape element matrices and vectors and
-        const int eledim = (int)(*plm).size();
+        const int eledim = (int)(lm).size();
         elemat1.Shape(eledim,eledim);
         elevec1.Size (eledim);
         // initialize to zero
@@ -743,7 +733,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
 
         // extract local (element level) vectors from global state vectors
         DRT::ELEMENTS::Combust3::MyStateSurface mystate(
-            discretization, (*plm), true, false, false, parent_, phinp);
+            discretization, (lm), true, false, false, parent_, phinp);
 
         const XFEM::AssemblyType assembly_type = XFEM::ComputeAssemblyType(
             *eleDofManager, parent_->NumNode(), parent_->NodeIds());
@@ -1252,5 +1242,38 @@ void DRT::ELEMENTS::Combust3Surface::IntegrateSurfaceFlow(
     }
   }
 
+  return;
+}
+
+/*----------------------------------------------------------------------*
+  |  Get degrees of freedom used by this element                (public) |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Combust3Surface::LocationVector(
+    const Discretization&   dis,
+    LocationArray&          la,
+    bool                    doDirichlet,
+    const std::string&      condstring,
+    Teuchos::ParameterList& params
+    ) const
+{
+  DRT::ELEMENTS::Combust3Surface::ActionType act = Combust3Surface::none;
+  string action = params.get<string>("action","none");
+  if (action == "none") dserror("No action supplied");
+  else if (action == "calc_Neumann_inflow")
+      act = Combust3Surface::calc_Neumann_inflow;
+
+  switch(act)
+  {
+  case calc_Neumann_inflow:
+    // special cases: the boundary element assembles also into
+    // the inner dofs of its parent element
+    // note: using these actions, the element will get the parent location vector
+    //       as input in the respective evaluate routines
+    parent_->LocationVector(dis,la,doDirichlet);
+    break;
+  default:
+    DRT::Element::LocationVector(dis,la,doDirichlet);
+    break;
+  }
   return;
 }

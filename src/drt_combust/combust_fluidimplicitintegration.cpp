@@ -1539,7 +1539,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
             discret_->SetState("velnm",state_.velnm_);
 
             std::string condstring("FluidNeumannInflow");
-            discret_->EvaluateConditionUsingParentData(condparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condstring);
+            discret_->EvaluateCondition(condparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condstring);
             discret_->ClearState();
           }
 

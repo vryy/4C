@@ -117,7 +117,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS_Boundary()
     AddSpecificTimeIntegrationParameters(TaylorGalerkinBoundaryParams);
 
 
-    discret_->EvaluateConditionUsingParentData(TaylorGalerkinBoundaryParams,
+    discret_->EvaluateCondition(TaylorGalerkinBoundaryParams,
                                                sysmat_,
                                                Teuchos::null,
                                                residual_,
@@ -153,7 +153,7 @@ void SCATRA::ScaTraTimIntImpl::AssembleMatAndRHS_Boundary()
       discret_->SetState("phin",phin_);
 
 
-      discret_->EvaluateConditionUsingParentData(reinitCharacteristicParams,
+      discret_->EvaluateCondition(reinitCharacteristicParams,
                                                  sysmat_,
                                                  Teuchos::null,
                                                  residual_,

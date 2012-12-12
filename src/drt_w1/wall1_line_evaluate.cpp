@@ -565,8 +565,10 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
     }
 
     Epetra_SerialDenseMatrix pqxg(intpoints.nquad,2);
+    Epetra_SerialDenseMatrix derivtrafo(intpoints.nquad,2);
 
     DRT::UTILS::LineGPToParentGP(pqxg     ,
+                                 derivtrafo,
                                  intpoints,
                                  parentele->Shape() ,
                                  distype  ,

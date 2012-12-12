@@ -566,6 +566,25 @@ void DRT::Element::LocationVector(const Discretization& dis, LocationArray& la, 
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  Get degrees of freedom used by this element                (public) |
+ *----------------------------------------------------------------------*/
+void DRT::Element::LocationVector(const Discretization& dis,
+                                  LocationArray&        la,
+                                  bool                  doDirichlet,
+                                  const std::string&    condstring,
+                                  Teuchos::ParameterList& params
+                                  ) const
+{
+  /* This method is intended to fill the LocationArray with the dofs
+   * the element will assemble into. In the standard case implemented here
+   * these dofs are the dofs of the element itself. For some special conditions (e.g.
+   * the weak dirichlet boundary condtion) a surface element will assemble
+   * into the dofs of a volume element. These elements need to overwrite this
+   * method.
+  */
+  LocationVector(dis, la, doDirichlet);
+}
 
 /*----------------------------------------------------------------------*
  |  Get degrees of freedom used by this element                (public) |

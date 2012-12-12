@@ -23,7 +23,7 @@ Maintainer: Georg Bauer
 
 #include "drt_utils_local_connectivity_matrices.H"
 #include "../linalg/linalg_fixedsizematrix.H"
-
+#include "drt_utils_integration.H"
 
 namespace DRT
 {
@@ -40,20 +40,23 @@ namespace UTILS
        in weak dirichlet boundary conditions).
 
 
-\param pqxg      (o) transformed integration points of surface
-                     elements in parent elements reference
-                     coordinates
-\param intpoints (i) integration points of surface element in its
-                     reference coordinates
-\param pdistype  (i) discretisation type of parent element
-\param distype   (i) discretisation type of surface element
-\param surfaceid (i) local id of surface element
+\param pqxg       (o) transformed integration points of surface
+                      elements in parent elements reference
+                      coordinates
+\param derivtrafo (o) transformation matrix between parent and boundary local coordinates
+                      for derivatives w.r.t. local coordinates
+\param intpoints  (i) integration points of surface element in its
+                      reference coordinates
+\param pdistype   (i) discretisation type of parent element
+\param distype    (i) discretisation type of boundary element
+\param lineid     (i) local id of boundary element
 
 \author gammi (gamnitzer@lnm.mw.tum.de), 05/09
 
   -----------------------------------------------------------------*/
 void SurfaceGPToParentGP(
   Epetra_SerialDenseMatrix              & pqxg     ,
+  Epetra_SerialDenseMatrix              & derivtrafo,
   const DRT::UTILS::IntegrationPoints2D & intpoints,
   const DRT::Element::DiscretizationType  pdistype ,
   const DRT::Element::DiscretizationType  distype  ,
@@ -67,25 +70,75 @@ void SurfaceGPToParentGP(
        in weak dirichlet boundary conditions).
 
 
-\param pqxg      (o) transformed integration points of surface
-                     elements in parent elements reference
-                     coordinates
-\param intpoints (i) integration points of surface element in its
-                     reference coordinates
-\param pdistype  (i) discretisation type of parent element
-\param distype   (i) discretisation type of surface element
-\param lineid    (i) local id of surface element
+\param pqxg       (o) transformed integration points of surface
+                      elements in parent elements reference
+                      coordinates
+\param derivtrafo (o) transformation matrix between parent and boundary local coordinates
+                      for derivatives w.r.t. local coordinates
+\param intpoints  (i) integration points of surface element in its
+                      reference coordinates
+\param pdistype   (i) discretisation type of parent element
+\param distype    (i) discretisation type of boundary element
+\param lineid     (i) local id of boundary element
 
 \author gammi (gamnitzer@lnm.mw.tum.de), 05/09
 
   -----------------------------------------------------------------*/
 void LineGPToParentGP(
   Epetra_SerialDenseMatrix              & pqxg     ,
+  Epetra_SerialDenseMatrix              & derivtrafo,
   const DRT::UTILS::IntegrationPoints1D & intpoints,
   const DRT::Element::DiscretizationType  pdistype ,
   const DRT::Element::DiscretizationType  distype  ,
   const int                               lineid   );
 
+/*-----------------------------------------------------------------
+
+\brief Template version of transformation of Gausspoints on boundary element to space of
+       parent element
+
+\param pqxg       (o) transformed integration points of surface
+                      elements in parent elements reference
+                      coordinates
+\param derivtrafo (o) transformation matrix between parent and boundary local coordinates
+                      for derivatives w.r.t. local coordinates
+\param intpoints  (i) integration points of surface element in its
+                      reference coordinates
+\param pdistype   (i) discretisation type of parent element
+\param distype    (i) discretisation type of boundary element
+\param lineid     (i) local id of boundary element
+
+  ----------------------------------------------------------------------------------*/
+template<const int NSD>
+void BoundaryGPToParentGP(
+  Epetra_SerialDenseMatrix                                                    & pqxg     ,
+  Epetra_SerialDenseMatrix                                                    & derivtrafo,
+  const DRT::UTILS::IntPointsAndWeights<NSD-1> &                                intpoints,
+  const DRT::Element::DiscretizationType                                        pdistype ,
+  const DRT::Element::DiscretizationType                                        distype  ,
+  const int                                                                     surfaceid);
+
+//! specialization for 3D
+template<>
+void BoundaryGPToParentGP<3>(
+Epetra_SerialDenseMatrix                                                    & pqxg     ,
+Epetra_SerialDenseMatrix                                                    & derivtrafo,
+const DRT::UTILS::IntPointsAndWeights<2> &                                    intpoints,
+const DRT::Element::DiscretizationType                                        pdistype ,
+const DRT::Element::DiscretizationType                                        distype  ,
+const int                                                                     surfaceid);
+
+//! specialization for 2D
+template<>
+void BoundaryGPToParentGP<2>(
+Epetra_SerialDenseMatrix                                                    & pqxg     ,
+Epetra_SerialDenseMatrix                                                    & derivtrafo,
+const DRT::UTILS::IntPointsAndWeights<1> &                                    intpoints,
+const DRT::Element::DiscretizationType                                        pdistype ,
+const DRT::Element::DiscretizationType                                        distype  ,
+const int                                                                     surfaceid);
+
+/*----------------------------------------------------------------------------------------*/
 
 //! compute kovariant metric tensor for surface element
 void ComputeMetricTensorForSurface(

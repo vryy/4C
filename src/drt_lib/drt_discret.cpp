@@ -648,6 +648,25 @@ void DRT::Discretization::GetCondition(const string& name,vector<DRT::Condition*
   if (count != num) dserror("Mismatch in number of conditions found");
   return;
 }
+/*----------------------------------------------------------------------*
+ |  Get a condition of a certain name                          (public) |
+ |                                                            gee 01/07 |
+ *----------------------------------------------------------------------*/
+void DRT::Discretization::GetCondition(const string& name,vector<Teuchos::RCP<Condition> >& out) const
+{
+  const int num = condition_.count(name);
+  out.resize(num);
+  multimap<string,RCP<Condition> >::const_iterator startit =
+                                         condition_.lower_bound(name);
+  multimap<string,RCP<Condition> >::const_iterator endit =
+                                         condition_.upper_bound(name);
+  int count=0;
+  multimap<string,RCP<Condition> >::const_iterator curr;
+  for (curr=startit; curr!=endit; ++curr)
+    out[count++] = curr->second;
+  if (count != num) dserror("Mismatch in number of conditions found");
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  Get a condition of a certain name                          (public) |
