@@ -161,6 +161,7 @@ wtype_(plane_none),
 stresstype_(w1_none),
 iseas_(false),
 eastype_(eas_vague),
+kintype_(w1_totlag),
 structale_(false),
 distype_(dis_none)
 {
@@ -182,6 +183,7 @@ wtype_(old.wtype_),
 stresstype_(old.stresstype_),
 iseas_(old.iseas_),
 eastype_(old.eas_vague),
+kintype_(old.kintype_),
 structale_ (old.structale_),
 distype_ (old.distype_)
 // tsi_couptyp_(old.tsi_couptyp_)

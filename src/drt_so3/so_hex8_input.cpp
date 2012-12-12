@@ -44,7 +44,7 @@ bool DRT::ELEMENTS::So_hex8::ReadElement(const std::string& eletype,
 
   SetMaterial(material);
 
-  RCP<MAT::Material> mat = Material();
+  Teuchos::RCP<MAT::Material> mat = Material();
 
   if(mat->MaterialType() == INPAR::MAT::m_structporo)
   {

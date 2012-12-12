@@ -402,35 +402,18 @@ void MAT::StructPoro::PorosityGradientAv(LINALG::Matrix<3,1>& porosityav) const
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::StructPoro::PorosityGradientAv(LINALG::Matrix<2,1>& porosityav) const
+void MAT::StructPoro::PorosityGradientAv(LINALG::Matrix<2,1>& porositygradientav) const
 {
-  porosityav.Clear();
+  porositygradientav.Clear();
 
   const int size = gradporosity_->size();
   for(int i=0; i<size;i++)
   {
-    porosityav(0) += (*gradporosity_)[i](0);
-    porosityav(1) += (*gradporosity_)[i](1);
+    porositygradientav(0) += (*gradporosity_)[i](0);
+    porositygradientav(1) += (*gradporosity_)[i](1);
   }
-  return;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-LINALG::Matrix<1,3> MAT::StructPoro::JGradientAv() const
-{
-  LINALG::Matrix<1,3> porositygradientav(true);
-
-  std::vector<LINALG::Matrix<1,3> >::const_iterator m;
-  for (m = gradJ_->begin(); m != gradJ_->end(); ++m)
-  {
-    porositygradientav.Update(1.0, *m ,1.0) ;
-  }
-  double size = gradJ_->size();
-  //porositygradientav.Scale(1/(gradporosity_->size()));
   porositygradientav.Scale(1.0/size);
-
-  return porositygradientav;
+  return;
 }
 
 /*----------------------------------------------------------------------*/

@@ -14,6 +14,7 @@ Maintainer: Markus Gitterle
 #include "wall1.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_mat/elasthyper.H"
+#include "../drt_mat/structporo.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -27,8 +28,18 @@ bool DRT::ELEMENTS::Wall1::ReadElement(const std::string& eletype,
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
-  if (Material()->MaterialType() == INPAR::MAT::m_elasthyper){
-    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
+  Teuchos::RCP<MAT::Material> mat = Material();
+
+  if(mat->MaterialType() == INPAR::MAT::m_structporo)
+  {
+    MAT::StructPoro* actmat = static_cast<MAT::StructPoro*>(mat.get());
+    //setup is done in so3_poro
+    //actmat->Setup(NUMGPT_SOH8);
+    mat = actmat->GetMaterial();
+  }
+
+  if (mat->MaterialType() == INPAR::MAT::m_elasthyper){
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(mat.get());
     elahy->Setup(linedef);
   }
 

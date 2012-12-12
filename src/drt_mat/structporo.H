@@ -176,12 +176,9 @@ namespace MAT
       /// return porosity average
       double PorosityAv() const;
 
-
       /// return porosity gradient average
       void PorosityGradientAv( LINALG::Matrix<3,1>& porosityav) const;
       void PorosityGradientAv( LINALG::Matrix<2,1>& porosityav) const;
-
-      LINALG::Matrix<1,3> JGradientAv() const;
 
       /// return porosity time derivative average
       double DPorosityDtAv() const;

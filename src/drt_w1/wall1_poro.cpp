@@ -51,15 +51,16 @@ intpoints_(distype)
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::Wall1_Poro<distype>::Wall1_Poro(const DRT::ELEMENTS::Wall1_Poro<distype>& old) :
 DRT::ELEMENTS::Wall1(old),
-numgpt_(old.numgpt_),
 invJ_(old.invJ_),
 detJ_(old.detJ_),
 data_(old.data_),
 xsi_(old.xsi_),
-intpoints_(old.intpoints_),
+intpoints_(distype),
 ishigherorder_(old.ishigherorder_),
 init_(old.init_)
 {
+  numgpt_ = intpoints_.NumPoints();
+
   return;
 }
 
