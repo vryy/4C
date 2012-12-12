@@ -64,6 +64,9 @@ isconverged_(false)
   // print dbc type for this simulation to screen
   StatMechPrintDBCType();
 
+  if(!discret_->Comm().MyPID())
+    cout<<"StatMech output path: "<<statmechman_->StatMechRootPath()<<"/StatMechOutput/"<<endl;
+
   // retrieve number of random numbers per element and store them in randomnumbersperelement_
   RandomNumbersPerElement();
 

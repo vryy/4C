@@ -3949,6 +3949,7 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
       for(int i=0; i<(int)bspotonproc.size(); i++)
         if(bspotonproc[i]==1)
           bspotrowgids.push_back(i);  // note: since column map is fully overlapping: i=col. LID = GID
+
       bspotrowmap_ = rcp(new Epetra_Map((int)bspotgids.size(), (int)bspotrowgids.size(), &bspotrowgids[0], 0, discret_->Comm()));
 
       // vectors
