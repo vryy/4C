@@ -4307,7 +4307,10 @@ void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector& dis
         fp = fopen(filename.str().c_str(), "a");
         std::stringstream elasticenergy;
 
-        elasticenergy << std::scientific << std::setprecision(15) << xring << " " << internalenergy[0] <<endl;
+        elasticenergy << std::scientific << std::setprecision(15) << xring << " ";
+        for(int j=0; j<(int)internalenergy.size(); j++)
+          elasticenergy << std::scientific << std::setprecision(15)<< internalenergy[j] <<" ";
+        elasticenergy<<endl;
         fprintf(fp, elasticenergy.str().c_str());
         fclose(fp);
         break;
