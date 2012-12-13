@@ -1416,16 +1416,17 @@ Allright, here's what you need to do:\\
   \item commit the changes: \\
   \texttt{git commit -a}
   \item generate a new branch \\
-  \texttt{git branch student\_name}
+  \texttt{git branch <student\_name>}
   \item change to new branch: \\
- \texttt{git checkout student\_name}
+ \texttt{git checkout <student\_name>}
 \end{enumerate}
 
 \paragraph{In students home directory}
 
 \begin{enumerate}
   \item clone the repository Baci\_stud: \\
-  \texttt{git clone $ ~$ -$\,$-bare -b student\_name myname@mycomputer.lnm.mw.tum.de:/myDirectory/Baci\_stud Baci\_bare}
+  \texttt{git clone -$\,$-bare -b <student\_name> $\backslash$ \\
+    \phantom{aaaa} ssh://<myname>@<mycomputer>.lnm.mw.tum.de/$\sim$/<myDirectory>/Baci\_stud Baci\_bare}
   \item delete master branch (if there is one): \\
   \texttt{git branch $\rightarrow $ } list all branches in the current clone \\
   \texttt{git branch -d master} \\
@@ -1436,17 +1437,31 @@ Allright, here's what you need to do:\\
 \begin{enumerate}
   \item generate some folder structure:
 \begin{itemize}
-  \item \texttt{mkdir student\_name}
-  \item \texttt{cd student\_name}
-  \item \texttt{mkdir workspace}
-  \item \texttt{cd workspace}
+  \item \texttt{mkdir -p /scratch/<student\_name>/workspace}
+  \item \texttt{cd /scratch/<student\_name>}
+  \item Note: do not change into the workspace
 \end{itemize}
   \item clone baci\_bare to this folder (it will be your future workspace): \\
-  \texttt{git clone -b student\_name $\sim$/Baci\_bare baci}
+  \texttt{git clone -b <student\_name> $\sim$/Baci\_bare baci}
+  \item start eclipse, select the proper workspace (/scratch/<student\_name>/workspace) and create and empty C++ project
+  \item Import /scratch/<student\_name>/baci into the new project, which will create a copy in the workspace
+  \item delete the original baci:\\
+  \texttt{rm -rf /scratch/<student\_name>/baci}
   \item {After the student made some changes to the code he can commit their work to the \/Baci\_bare in their
 home directory. This way they can access their code from another machine next time and the code is backed up by the lrz }	
 \end{enumerate}
 
+\paragraph{Workflow from a students point of view}
+\begin{enumerate}
+  \item Student makes changes in his/her baci
+  \item In case the student creates new file, git commit -a is not enough. The new files have to be added first via\\
+  \texttt{git add src/newfile1 src/newfile2}
+  \item Student commits the changes to his local git repository in /scratch/<student\_name>/workspace/baci\\
+  \texttt{git commit -a -m "commit message"}
+  \item Transfer changes to baci\_bare in students home so that the supervisor can harvest the changes:\\
+  \texttt{git push}
+  \item After further changes go back to step 2.
+\end{enumerate}
 
 
 \paragraph{Update baci version of the student}
