@@ -145,9 +145,12 @@ void PARTICLE::Algorithm::Init()
   IO::cout << "after ghosting" << IO::endl;
   DRT::UTILS::PrintParallelDistribution(*particledis_);
 
+  // access structural dynamic params list which will be possibly modified while creating the time integrator
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
   // create time integrator based on structural time integration
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> particles =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(), particledis_));
+      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(), const_cast<Teuchos::ParameterList&>(sdyn), particledis_));
   particles_ = particles->StructureFieldrcp();
 
   return;

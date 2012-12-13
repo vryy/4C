@@ -288,8 +288,8 @@ void STR::MLMC::Integrate()
         // access the structural discretization
         Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
         // create an adapterbase and adapter
-        ADAPTER::StructureBaseAlgorithm adapterbase(DRT::Problem::Instance()->StructuralDynamicParams(), structdis);
-        ADAPTER::Structure& structadaptor = const_cast<ADAPTER::Structure&>(adapterbase.StructureField());
+        ADAPTER::StructureBaseAlgorithm adapterbase(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+        ADAPTER::Structure& structadaptor = adapterbase.StructureField();
     
         // do restart
         const int restart = DRT::Problem::Instance()->Restart();
@@ -407,8 +407,8 @@ void STR::MLMC::IntegrateNoReset()
         // create an adapterbase and adapter
         // access the structural discretization
         Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
-        ADAPTER::StructureBaseAlgorithm adapterbase(DRT::Problem::Instance()->StructuralDynamicParams(), structdis);
-        ADAPTER::Structure& structadaptor = const_cast<ADAPTER::Structure&>(adapterbase.StructureField());
+        ADAPTER::StructureBaseAlgorithm adapterbase(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
+        ADAPTER::Structure& structadaptor = adapterbase.StructureField();
 
         // do restart
         const int restart = DRT::Problem::Instance()->Restart();

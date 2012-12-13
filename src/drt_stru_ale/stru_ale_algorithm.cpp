@@ -41,7 +41,7 @@ Maintainer: Markus Gitterle
  *----------------------------------------------------------------------*/
 STRU_ALE::Algorithm::Algorithm(const Epetra_Comm& comm)
  : AlgorithmBase(comm,DRT::Problem::Instance()->StructuralDynamicParams()),
-   StructureBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(), DRT::Problem::Instance()->GetDis("structure")),
+   StructureBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(), const_cast<Teuchos::ParameterList&>(DRT::Problem::Instance()->StructuralDynamicParams()), DRT::Problem::Instance()->GetDis("structure")),
    AleBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams())
 {
   // contact/meshtying manager

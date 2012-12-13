@@ -36,7 +36,9 @@ ADAPTER::StructureBio::StructureBio(
 {
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structurebase = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(prbdyn, structdis));
+  // access structural dynamic params list which will be possibly modified while creating the time integrator
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structurebase = Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(prbdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
   structure_ = Teuchos::rcp_dynamic_cast<FSIStructureWrapper>(structurebase->StructureFieldrcp());
 
   if(structure_ == Teuchos::null)

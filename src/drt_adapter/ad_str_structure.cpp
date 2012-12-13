@@ -54,10 +54,11 @@ ADAPTER::Structure::~Structure()
 /*----------------------------------------------------------------------*/
 ADAPTER::StructureBaseAlgorithm::StructureBaseAlgorithm(
   const Teuchos::ParameterList& prbdyn,
+  Teuchos::ParameterList& sdyn,
   Teuchos::RCP<DRT::Discretization> actdis
 )
 {
-  SetupStructure(prbdyn, actdis);
+  SetupStructure(prbdyn, sdyn, actdis);
 }
 
 
@@ -71,11 +72,10 @@ ADAPTER::StructureBaseAlgorithm::~StructureBaseAlgorithm()
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithm::SetupStructure(
   const Teuchos::ParameterList& prbdyn,
+  Teuchos::ParameterList& sdyn,
   Teuchos::RCP<DRT::Discretization> actdis
 )
 {
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
   // major switch to different time integrators
   switch (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP"))
   {
@@ -90,7 +90,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(
   case INPAR::STR::dyna_euma :
   case INPAR::STR::dyna_euimsto :
   case INPAR::STR::dyna_statmech :
-    SetupTimInt(prbdyn, actdis);  // <-- here is the show
+    SetupTimInt(prbdyn, sdyn, actdis);  // <-- here is the show
     break;
   default :
     dserror("unknown time integration scheme '%s'", sdyn.get<std::string>("DYNAMICTYP").c_str());
@@ -103,6 +103,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupStructure(
 /*----------------------------------------------------------------------*/
 void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   const Teuchos::ParameterList& prbdyn,
+  Teuchos::ParameterList& sdyn,
   Teuchos::RCP<DRT::Discretization> actdis
 )
 {
@@ -133,16 +134,14 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   //  = DRT::Problem::Instance()->ProblemTypeParams();
   Teuchos::RCP<Teuchos::ParameterList> ioflags
     = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->IOParams()));
-  Teuchos::RCP<Teuchos::ParameterList> sdyn
-    = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->StructuralDynamicParams()));
   Teuchos::RCP<Teuchos::ParameterList> tap
-    = Teuchos::rcp(new Teuchos::ParameterList(sdyn->sublist("TIMEADAPTIVITY")));
+    = Teuchos::rcp(new Teuchos::ParameterList(sdyn.sublist("TIMEADAPTIVITY")));
   Teuchos::RCP<Teuchos::ParameterList> snox
     = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->StructuralNoxParams()));
 
   // show default parameters
   if ((actdis->Comm()).MyPID()==0)
-    DRT::INPUT::PrintDefaultParameters(IO::cout, *sdyn);
+    DRT::INPUT::PrintDefaultParameters(IO::cout, sdyn);
 
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams
@@ -155,20 +154,20 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   xparams->set<int>("REDUCED_OUTPUT",Teuchos::getIntegralValue<int>((*mlmcp),"REDUCED_OUTPUT"));
 
   // overrule certain parameters
-  sdyn->set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
-  sdyn->set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
-  sdyn->set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
+  sdyn.set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));
+  sdyn.set<int>("NUMSTEP", prbdyn.get<int>("NUMSTEP"));
+  sdyn.set<int>("RESTARTEVRY", prbdyn.get<int>("RESTARTEVRY"));
   if(probtype == prb_struct_ale || probtype == prb_structure || probtype == prb_redairways_tissue || probtype == prb_particle)
   {
-    sdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
+    sdyn.set<int>("RESULTSEVRY", prbdyn.get<int>("RESULTSEVRY"));
   }
   else
   {
-    sdyn->set<int>("RESULTSEVRY", prbdyn.get<int>("UPRES"));
+    sdyn.set<int>("RESULTSEVRY", prbdyn.get<int>("UPRES"));
   }
 
   // create a solver
-  Teuchos::RCP<LINALG::Solver> solver = CreateLinearSolver(actdis);
+  Teuchos::RCP<LINALG::Solver> solver = CreateLinearSolver(actdis, sdyn);
 
   // create contact/meshtying solver only if contact/meshtying problem.
   Teuchos::RCP<LINALG::Solver> contactsolver = Teuchos::null;
@@ -181,7 +180,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     case INPAR::CONTACT::app_mortarcontact:
     case INPAR::CONTACT::app_mortarmeshtying:
     case INPAR::CONTACT::app_beamcontact:
-      contactsolver = CreateContactMeshtyingSolver(actdis);
+      contactsolver = CreateContactMeshtyingSolver(actdis, sdyn);
       break;
     default:
       dserror("Cannot cope with choice of contact or meshtying type");
@@ -189,13 +188,13 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   }
 
   // create contact/meshtying solver only if contact/meshtying problem.
-  //Teuchos::RCP<LINALG::Solver> contactsolver = CreateContactMeshtyingSolver(actdis);
+  //Teuchos::RCP<LINALG::Solver> contactsolver = CreateContactMeshtyingSolver(actdis, sdyn);
 
   if ((solver->Params().isSublist("Aztec Parameters") || solver->Params().isSublist("Belos Parameters"))
       &&
       solver->Params().isSublist("ML Parameters") // TODO what about MueLu?
       &&
-      DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(*sdyn,"STC_SCALING")!=INPAR::STR::stc_none)
+      DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdyn,"STC_SCALING")!=INPAR::STR::stc_none)
     {
       Teuchos::ParameterList& mllist = solver->Params().sublist("ML Parameters");
       Teuchos::RCP<std::vector<double> > ns = mllist.get<Teuchos::RCP<std::vector<double> > >("nullspace");
@@ -230,14 +229,14 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
       // action for elements
       const std::string action = "calc_stc_matrix_inverse";
       p.set("action", action);
-      p.set<int>("stc_scaling",DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(*sdyn,"STC_SCALING"));
+      p.set<int>("stc_scaling",DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdyn,"STC_SCALING"));
       p.set("stc_layer",1);
 
       actdis-> Evaluate(p, stcinv, Teuchos::null,  Teuchos::null, Teuchos::null, Teuchos::null);
 
       stcinv->Complete();
 
-      for (int lay = 2; lay <= sdyn->get<int>("STC_LAYER"); ++lay)
+      for (int lay = 2; lay <= sdyn.get<int>("STC_LAYER"); ++lay)
       {
         Teuchos::ParameterList pe;
 
@@ -274,8 +273,6 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   // Checks in case of multi-scale simulations
 
   {
-    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
     // make sure we IMR-like generalised-alpha requested for multi-scale
     // simulations
     Teuchos::RCP<MAT::PAR::Bundle> materials = DRT::Problem::Instance()->Materials();
@@ -296,10 +293,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   }
 
   // create marching time integrator
-  Teuchos::RCP<STR::TimInt> tmpstr = STR::TimIntCreate(*ioflags, *sdyn, *xparams, actdis, solver, contactsolver, output);
+  Teuchos::RCP<STR::TimInt> tmpstr = STR::TimIntCreate(*ioflags, sdyn, *xparams, actdis, solver, contactsolver, output);
 
   // create auxiliar time integrator, can be seen as a wrapper for tmpstr
-  Teuchos::RCP<STR::TimAda> sta = STR::TimAdaCreate(*ioflags, *sdyn, *xparams, *tap, tmpstr);
+  Teuchos::RCP<STR::TimAda> sta = STR::TimAdaCreate(*ioflags, sdyn, *xparams, *tap, tmpstr);
 
   if (sta!=Teuchos::null)
   {
@@ -386,12 +383,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinearSolver(Teuchos::RCP<DRT::Discretization>& actdis)
+Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinearSolver(Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
 {
   Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
 
-  // get parameter list of structural dynamics
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   // get the solver number used for structural problems
   const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
   // check if the structural solver has a valid solver number
@@ -408,7 +403,7 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateLinearSolver
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMeshtyingSolver(Teuchos::RCP<DRT::Discretization>& actdis)
+Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMeshtyingSolver(Teuchos::RCP<DRT::Discretization>& actdis, const Teuchos::ParameterList& sdyn)
 {
   Teuchos::RCP<LINALG::Solver> solver = Teuchos::null;
 
@@ -449,8 +444,6 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::StructureBaseAlgorithm::CreateContactMesht
       INPAR::CONTACT::SystemType      systype = DRT::INPUT::IntegralValue<INPAR::CONTACT::SystemType>(mcparams,"SYSTEM");
       if (soltype==INPAR::CONTACT::solution_lagmult && systype!=INPAR::CONTACT::system_condensed)
       {
-        // get parameter list of structural dynamics
-        const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
         // get the solver number used for structural problems
         const int linsolvernumber = sdyn.get<int>("LINEAR_SOLVER");
         // check if the structural solver has a valid solver number

@@ -42,8 +42,11 @@ SSI::SSI_Base::SSI_Base(const Epetra_Comm& comm,
   //3.- Create the two uncoupled subproblems.
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+  // access structural dynamic params list which will be possibly modified while creating the time integrator
+  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> structure =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, structdis));
+      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(timeparams, const_cast<Teuchos::ParameterList&>(sdyn), structdis));
   structure_ = Teuchos::rcp_dynamic_cast<ADAPTER::Structure>(structure->StructureFieldrcp());
   scatra_ = Teuchos::rcp(new ADAPTER::ScaTraBaseAlgorithm(timeparams,true,"scatra", problem->SolverParams(linsolvernumber)));
 
