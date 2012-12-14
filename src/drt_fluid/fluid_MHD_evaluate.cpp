@@ -544,11 +544,13 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
 
     LINALG::Export(*velaf_,*tmp);
     bnd_discret_->SetState("u and p (trial)",tmp);
+    bnd_discret_->SetState("velaf",tmp); // was missing. gjb 12/12
 
     {
       RCP<Epetra_Vector> tmp = LINALG::CreateVector(*bnd_discret_->DofColMap(),true);
       LINALG::Export(*velnp_,*tmp);
       bnd_discret_->SetState("u and p (trial,n+1)",tmp);
+      bnd_discret_->SetState("velnp",tmp); // was missing. gjb 12/12
     }
 
     // small sysmat and residual
