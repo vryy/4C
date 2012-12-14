@@ -1421,7 +1421,7 @@ Allright, here's what you need to do:\\
  \texttt{git checkout <student\_name>}
 \end{enumerate}
 
-\paragraph{In students home directory}
+\paragraph{In student's home directory}
 
 \begin{enumerate}
   \item clone the repository Baci\_stud: \\
@@ -1443,22 +1443,22 @@ Allright, here's what you need to do:\\
 \end{itemize}
   \item clone baci\_bare to this folder (it will be your future workspace): \\
   \texttt{git clone -b <student\_name> $\sim$/Baci\_bare baci}
-  \item start eclipse, select the proper workspace (/scratch/<student\_name>/workspace) and create and empty C++ project
-  \item Import /scratch/<student\_name>/baci into the new project, which will create a copy in the workspace
+  \item start eclipse, select the proper workspace (\texttt{/scratch/<student\_name>/workspace}) and create an empty C++ project
+  \item Import \texttt{/scratch/<student\_name>/baci} into the new project, which will create a copy in the workspace
   \item delete the original baci:\\
   \texttt{rm -rf /scratch/<student\_name>/baci}
-  \item {After the student made some changes to the code he can commit their work to the \/Baci\_bare in their
+  \item {After the student made some changes to the code he/she can commit his/her work to the \/Baci\_bare in his/her
 home directory. This way they can access their code from another machine next time and the code is backed up by the lrz }	
 \end{enumerate}
 
-\paragraph{Workflow from a students point of view}
+\paragraph{Workflow from a student's point of view}
 \begin{enumerate}
   \item Student makes changes in his/her baci
-  \item In case the student creates new file, git commit -a is not enough. The new files have to be added first via\\
+  \item In case the student creates new files, git commit -a is not enough. The new files have to be added first:\\
   \texttt{git add src/newfile1 src/newfile2}
-  \item Student commits the changes to his local git repository in /scratch/<student\_name>/workspace/baci\\
+  \item Student commits the changes to his/her local git repository in \texttt{/scratch/<student\_name>/workspace/baci}\\
   \texttt{git commit -a -m "commit message"}
-  \item Transfer changes to baci\_bare in students home so that the supervisor can harvest the changes:\\
+  \item Transfer changes to baci\_bare in student's home so that the supervisor can harvest the changes:\\
   \texttt{git push}
   \item After further changes go back to step 2.
 \end{enumerate}
