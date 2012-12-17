@@ -12,6 +12,7 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 *----------------------------------------------------------------------*/
 
 #include "fluid_ele.H"
+#include "fluid_ele_tds.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_utils_nullspace.H"
@@ -345,13 +346,7 @@ DRT::Element(id,owner),
 is_ale_(false)
 {
     distype_= dis_none;
-
-#if 0
-    saccn_ .Shape(0,0);
-    svelnp_.Shape(0,0);
-    sveln_ .Shape(0,0);
-#endif
-
+    tds_=Teuchos::null;
     return;
 }
 
@@ -362,11 +357,6 @@ DRT::ELEMENTS::Fluid::Fluid(const DRT::ELEMENTS::Fluid& old) :
 DRT::Element(old             ),
 distype_    (old.distype_    ),
 is_ale_     (old.is_ale_     )
-#if 0
-saccn_      (old.saccn_      ),
-svelnp_     (old.svelnp_     ),
-sveln_      (old.sveln_      )
-#endif
 {
     return;
 }
@@ -400,17 +390,18 @@ void DRT::ELEMENTS::Fluid::Pack(DRT::PackBuffer& data) const
   // Discretisation type
   AddtoPack(data,distype_);
 
-#if 0
-  // history variables
-  AddtoPack(data,saccn_.M());
-  AddtoPack(data,saccn_.N());
-
-  int size = saccn_.M()*saccn_.N()*sizeof(double);
-
-  AddtoPack(data,saccn_ .A(),size);
-  AddtoPack(data,svelnp_.A(),size);
-  AddtoPack(data,sveln_ .A(),size);
-#endif
+  // time-dependent subgrid scales
+  bool is_tds(false);
+  if (tds_!= Teuchos::null)
+  {
+    is_tds = true;
+    AddtoPack(data,is_tds);
+    tds_->Pack(data);
+  }
+  else
+  {
+    AddtoPack(data,is_tds);
+  }
 
   return;
 }
@@ -436,28 +427,19 @@ void DRT::ELEMENTS::Fluid::Unpack(const std::vector<char>& data)
   // distype
   distype_ = static_cast<DiscretizationType>( ExtractInt(position,data) );
 
-#if 0
-  // history variables (subgrid-scale velocities, accelerations and pressure)
+  // time-dependent subgrid scales
+  bool is_tds = ExtractInt(position,data);
+  if (is_tds)
   {
-    int firstdim;
-    int secondim;
-
-    ExtractfromPack(position,data,firstdim);
-    ExtractfromPack(position,data,secondim);
-
-
-    saccn_ .Shape(firstdim,secondim);
-    svelnp_.Shape(firstdim,secondim);
-    sveln_ .Shape(firstdim,secondim);
-
-
-    int size = firstdim*secondim*sizeof(double);
-
-    ExtractfromPack(position,data,&(saccn_ .A()[0]),size);
-    ExtractfromPack(position,data,&(svelnp_.A()[0]),size);
-    ExtractfromPack(position,data,&(sveln_ .A()[0]),size);
+    tds_=Teuchos::rcp(new FLD::TDSEleData());
+    std::vector<char> pbtest;
+    ExtractfromPack(position,data,pbtest);
+    if (pbtest.size() == 0)
+      dserror("Seems no TDS data available");
+    tds_->Unpack(pbtest);
   }
-#endif
+  else
+    tds_=Teuchos::null;
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
@@ -626,104 +608,15 @@ int DRT::ELEMENTS::Fluid::NumDofPerNode(const unsigned nds, const DRT::Node& nod
 }
 
 
-# if 0
-
 /*----------------------------------------------------------------------*
- |  activate time dependend subgrid scales (public)      gamnitzer 05/10|
+ |  activate time dependent subgrid scales (public)      gamnitzer 05/10|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Fluid::ActivateTDS(int nquad,int nsd, double** saccn, double** sveln, double** svelnp)
-   {
-     if(saccn_.M() != nsd
-        ||
-        saccn_.N() != nquad)
-     {
-       saccn_ .Shape(nsd,nquad);
-       memset(saccn_.A() ,0,nsd*nquad*sizeof(double));
-
-       sveln_ .Shape(nsd,nquad);
-       memset(sveln_.A() ,0,nsd*nquad*sizeof(double));
-
-       svelnp_.Shape(nsd,nquad);
-       memset(svelnp_.A(),0,nsd*nquad*sizeof(double));
-     }
-     if ( saccn !=NULL ) *saccn = saccn_.A();
-     if ( sveln !=NULL ) *sveln = sveln_.A();
-     if ( svelnp!=NULL ) *svelnp = svelnp_.A();
-   }
-
-
-/*----------------------------------------------------------------------*
- |  activate time dependend subgrid scales (public)      gamnitzer 05/10|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid::UpdateSvelnpInOneDirection(
-    const double  fac1,
-    const double  fac2,
-    const double  fac3,
-    const double  resM ,
-    const double  alphaF,
-    const int     dim,
-    const int     iquad,
-    double&       svelaf
-    )
 {
 
-    /*
-        ~n+1           ~n           ~ n            n+1
-        u    =  fac1 * u  + fac2 * acc  -fac3 * res
-         (i)
+  if (tds_ == Teuchos::null)
+    tds_ = Teuchos::rcp(new FLD::TDSEleData());
 
-    */
+  tds_->ActivateTDS(nquad, nsd, saccn, sveln, svelnp);
 
-  svelnp_(dim,iquad)=
-    fac1*sveln_(dim,iquad)
-    +
-    fac2*saccn_(dim,iquad)
-    -
-    fac3*resM;
-
-  /* compute the intermediate value of subscale velocity
-
-              ~n+af            ~n+1                   ~n
-              u     = alphaF * u     + (1.0-alphaF) * u
-               (i)              (i)
-
-  */
-  svelaf=
-    alphaF      *svelnp_(dim,iquad)
-    +
-    (1.0-alphaF)*sveln_ (dim,iquad);
-
-  return;
 }
-
-/*----------------------------------------------------------------------*
- |  activate time dependend subgrid scales (public)      gamnitzer 05/10|
- *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Fluid::UpdateSvelnpInOneDirection(
-    const double  fac1,
-    const double  fac2,
-    const double  fac3,
-    const double  resM,
-    const double  alphaF,
-    const int     dim,
-    const int     iquad,
-    double&       svelnp,
-    double&       svelaf
-    )
-    {
-      UpdateSvelnpInOneDirection(fac1,
-                                 fac2,
-                                 fac3,
-                                 resM,
-                                 alphaF,
-                                 dim ,
-                                 iquad,
-                                 svelaf);
-
-      svelnp=svelnp_(dim,iquad);
-
-      return;
-    }
-
-#endif
-

@@ -28,17 +28,12 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
-//=================================================================
-//
-// This file still contains some deactivated time-dependent subgrid-
-// scales stuff. As soon as the time-dependent subgrid-scales are
-// fixed, these members and methods should be removed from the element!
-// Ursula
-//
-//=================================================================
-
 
 // forward declarations
+namespace FLD
+{
+  class TDSEleData;
+}
 namespace DRT
 {
 
@@ -388,7 +383,6 @@ public:
                               Epetra_SerialDenseVector& elevec1,
                               Epetra_SerialDenseMatrix* elemat1 = NULL);
 
-#if 0
   //@}
 
   //! @name Time-dependent subgrid scales
@@ -402,34 +396,11 @@ public:
                    double** svelnp=NULL);
 
   /*!
-  \brief Nonlinear update for current subgrid-scale velocities according to the current
-         residual (reduced version for afgenalpha and one-step-theta)
+  \brief Access to element-specific subgrid-scale arrays
   */
-  void UpdateSvelnpInOneDirection(const double  fac1,
-                                  const double  fac2,
-                                  const double  fac3,
-                                  const double  resM,
-                                  const double  alphaF,
-                                  const int     dim,
-                                  const int     iquad,
-                                  double&       svelaf);
-
-  /*!
-  \brief Nonlinear update for current subgrid-scale velocities according to the current
-         residual (svelnp as additional return value)
-  */
-  void UpdateSvelnpInOneDirection(const double  fac1,
-                                  const double  fac2,
-                                  const double  fac3,
-                                  const double  resM,
-                                  const double  alphaF,
-                                  const int     dim,
-                                  const int     iquad,
-                                  double&       svelnp,
-                                  double&       svelaf);
+  Teuchos::RCP<FLD::TDSEleData>& TDS(){return tds_;}
 
   //@}
-#endif
 
 
   //! @name Other
@@ -441,23 +412,11 @@ public:
 
   virtual void SetIsAle(bool is_ale)
   {
-	  is_ale_ = is_ale;
+    is_ale_ = is_ale;
 
     return;
   };
 
-
-#if 0
-  /*!
-  \brief Returns the subgrid velocity at time n (sveln_)
-  */
-  Epetra_SerialDenseMatrix Sveln() const {return sveln_; }
-
-  /*!
-  \brief Returns the subgrid velocity at time n+1 (svelnp_)
-  */
-  Epetra_SerialDenseMatrix Svelnp() const {return svelnp_; }
-#endif
 
 private:
 
@@ -467,14 +426,8 @@ private:
   //! flag for euler/ale net algorithm
   bool is_ale_;
 
-#if 0
-  //! matrices of subgrid-scale acceleration values at integration points of this element
-  Epetra_SerialDenseMatrix saccn_;
-  //! matrices of subgrid-scale velocity values, current iteration value, at integration points of this element
-  Epetra_SerialDenseMatrix svelnp_;
-  //! matrices of subgrid-scale velocity values, last timestep, at integration points of this element
-  Epetra_SerialDenseMatrix sveln_;
-#endif
+  //! time-dependent subgrid-scales (only allocated if needed)
+  Teuchos::RCP<FLD::TDSEleData> tds_;
 
   // internal calculation methods
 

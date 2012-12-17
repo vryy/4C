@@ -20,6 +20,7 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 #include "fluid_genalpha_resVMM.H"
 #include "fluid_ele_interface.H"
 #include "fluid_ele_parameter.H"
+#include "fluid_ele_tds.H"
 
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
@@ -679,48 +680,10 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
     break;
     case FLD::calc_fluid_genalpha_update_for_subscales:
     {
-      // the old subgrid-scale acceleration for the next timestep is calculated
-      // on the fly, not stored on the element
-      /*
-                       ~n+1   ~n
-               ~ n+1     u    - u     ~ n   / 1.0-gamma \
-              acc    =   --------- - acc * |  ---------  |
-                         gamma*dt           \   gamma   /
-
-               ~ n       ~ n+1   / 1.0-gamma \
-              acc    =    acc * |  ---------  |
-       */
-
-//      const double dt     = params.get<double>("dt");
-//      const double gamma  = params.get<double>("gamma");
-//
-//      // variable in space dimensions
-//      for(int rr=0;rr<nsd;++rr)
-//      {
-//        for(int mm=0;mm<svelnp_.N();++mm)
-//        {
-//          saccn_(rr,mm) =
-//              (svelnp_(rr,mm)-sveln_(rr,mm))/(gamma*dt)
-//              -
-//              saccn_(rr,mm)*(1.0-gamma)/gamma;
-//        }
-//      }
-//
-//      // most recent subgrid-scale velocity becomes the old subscale velocity
-//      // for the next timestep
-//      //
-//      //  ~n   ~n+1
-//      //  u <- u
-//      //
-//      // variable in space dimensions
-//      for(int rr=0;rr<nsd;++rr)
-//      {
-//        for(int mm=0;mm<svelnp_.N();++mm)
-//        {
-//          sveln_(rr,mm)=svelnp_(rr,mm);
-//        }
-//      }
-
+      // time update for time-dependent subgrid-scales
+      const double dt     = params.get<double>("dt");
+      const double gamma  = params.get<double>("gamma");
+      this->TDS()->Update(dt,gamma);
     }
     break;
     case FLD::calc_dissipation:

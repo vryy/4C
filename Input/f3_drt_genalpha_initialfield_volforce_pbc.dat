@@ -53,8 +53,8 @@ ADAPTCONV_BETTER                1.0
 SIMPLER                         no
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        residual_based
-//TDS                           time_dependent
-//TRANSIENT                     no_transient
+TDS                             time_dependent
+TRANSIENT                       no_transient
 SUPG                            yes_supg
 PSPG                            yes_pspg
 VSTAB                           vstab_usfem

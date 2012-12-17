@@ -38,17 +38,20 @@ ITEMAX                          10
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
 INITIALFIELD                    zero_field
+PREDICTOR                       steady_state_predictor
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
-//TDS                           time_dependent
-//TRANSIENT                     yes_transient
+TDS                             time_dependent
+TRANSIENT                       yes_transient 
 SUPG                            yes_supg
 PSPG                            yes_pspg
 VSTAB                           no_vstab
 CSTAB                           cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
+EVALUATION_TAU                  element_center
+EVALUATION_MAT                  element_center
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
@@ -423,15 +426,18 @@ CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 10.0 c2 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
 // Results with Np_Gen_Alpha (different values due to small differences in stabilization parameters;
 // see respective comment in fluid_ele_calc.cpp)
-FLUID DIS fluid NODE 79 QUANTITY velx VALUE -4.53599182926655697e-03 TOLERANCE 1e-9
-FLUID DIS fluid NODE 79 QUANTITY vely VALUE -1.26726411635246297e-03 TOLERANCE 1e-9
-FLUID DIS fluid NODE 79 QUANTITY pressure VALUE 6.53050619960520383e-04 TOLERANCE 1e-9
+//FLUID DIS fluid NODE 79 QUANTITY velx VALUE -4.53599182926655697e-03 TOLERANCE 1e-9
+//FLUID DIS fluid NODE 79 QUANTITY vely VALUE -1.26726411635246297e-03 TOLERANCE 1e-9
+//FLUID DIS fluid NODE 79 QUANTITY pressure VALUE 6.53050619960520383e-04 TOLERANCE 1e-9
 // Results with Gen_Alpha, no time-dependent subgridscales:
 //FLUID DIS fluid NODE 79 QUANTITY velx VALUE -4.49086298178564235e-03 TOLERANCE 1e-9
 //FLUID DIS fluid NODE 79 QUANTITY vely VALUE -1.04225231106231742e-03 TOLERANCE 1e-9
 //FLUID DIS fluid NODE 79 QUANTITY pressure VALUE 7.33470763599883583e-04 TOLERANCE 1e-9
 // Results with Gen_Alpha and time-dependent subgrid-scales:
-//FLUID DIS fluid NODE 79 QUANTITY velx VALUE -4.311414400e-03 TOLERANCE 1e-9
-//FLUID DIS fluid NODE 79 QUANTITY vely VALUE -6.008328664e-04 TOLERANCE 1e-9
-//FLUID DIS fluid NODE 79 QUANTITY pressure VALUE 8.452675158e-04 TOLERANCE 1e-9
+FLUID DIS fluid NODE 79 QUANTITY velx VALUE -4.311414400e-03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 79 QUANTITY vely VALUE -6.008328664e-04 TOLERANCE 1e-9
+FLUID DIS fluid NODE 79 QUANTITY pressure VALUE 8.452675158e-04 TOLERANCE 1e-9
+FLUID DIS fluid NODE 112 QUANTITY velx VALUE 4.37849308925953792e-03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 112 QUANTITY vely VALUE 3.30144812320609399e-03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 112 QUANTITY pressure VALUE -2.61195178413311689e-03 TOLERANCE 1e-9
 -------------------------------------------------------------------------END

@@ -1258,6 +1258,7 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_factory.cpp
   src/drt_fluid_ele/fluid_ele_input.cpp
   src/drt_fluid_ele/fluid_ele_parameter.cpp
+  src/drt_fluid_ele/fluid_ele_tds.cpp
   src/drt_fluid_ele/fluid_genalpha_resVMM.cpp
   src/drt_fluid/time_integration_element.cpp
   src/drt_opti/topopt_fluidAdjoint3_boundary.cpp

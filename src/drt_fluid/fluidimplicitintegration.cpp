@@ -3739,6 +3739,14 @@ void FLD::FluidImplicitTimeInt::Output()
       if(physicaltype_ == INPAR::FLUID::poro)
         output_->WriteVector("gridv", gridv_);
 
+      // write mesh in each restart step --- the elements are required since
+      // they contain history variables (the time dependent subscales)
+      // But never do this for step 0 (visualization of initial field) since
+      // it would lead to writing the mesh twice for step 0
+      // (FluidBaseAlgorithm already wrote the mesh) -> HDF5 writer will claim!
+      if ((step_!=0) and ((params_->sublist("STABILIZATION").get<string>("TDS")) != "quasistatic"))
+        output_->WriteMesh(step_,time_);
+
       // also write impedance bc information if required
       // Note: this method acts only if there is an impedance BC
       impedancebc_->WriteRestart(*output_);
@@ -3768,6 +3776,14 @@ void FLD::FluidImplicitTimeInt::Output()
 
     if(physicaltype_ == INPAR::FLUID::poro)
       output_->WriteVector("gridv", gridv_);
+
+    // write mesh in each restart step --- the elements are required since
+    // they contain history variables (the time dependent subscales)
+    // But never do this for step 0 (visualization of initial field) since
+    // it would lead to writing the mesh twice for step 0
+    // (FluidBaseAlgorithm already wrote the mesh) -> HDF5 writer will claim!
+    if ((step_!=0) and ((params_->sublist("STABILIZATION").get<string>("TDS")) != "quasistatic"))
+      output_->WriteMesh(step_,time_);
 
     //only perform stress calculation when output is needed
     if (writestresses_)
@@ -3980,6 +3996,12 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
     if(physicaltype_ == INPAR::FLUID::poro)
       reader.ReadVector(gridv_,"gridv");
   }
+
+  // read the previously written elements including the history data
+  // only avalaible+required for time-dependent subgrid scales!
+  if ((params_->sublist("STABILIZATION").get<string>("TDS")) != "quasistatic")
+    reader.ReadMesh(step_);
+
   // also read impedance bc information if required
   // Note: this method acts only if there is an impedance BC
   impedancebc_->ReadRestart(reader);

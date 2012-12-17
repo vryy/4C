@@ -17,10 +17,13 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 
 #include "fluid_ele_interface.H"
 
+// forward declarations
 namespace FLD
 {
   template <DRT::Element::DiscretizationType distype>
   class RotationallySymmetricPeriodicBC;
+
+  class TDSEleData;
 }
 
 
@@ -502,7 +505,7 @@ namespace ELEMENTS
 
     //! Provide linearization of Garlerkin momentum residual with respect to the velocities in the case if subscales
     void LinGalMomResU_subscales(
-        LINALG::Matrix<nen_*nsd_,nen_>    estif_p_v,      ///< block (weighting function v x pressure)
+        LINALG::Matrix<nen_*nsd_,nen_> &  estif_p_v,      ///< block (weighting function v x pressure)
         LINALG::Matrix<nsd_*nsd_,nen_> &  lin_resM_Du,    ///< linearisation of the Garlerkin momentum residual
         LINALG::Matrix<nsd_,1> &          resM_Du,        ///< residual of the fluid momentum equation
         const double &                    timefacfac,     ///< (time factor) x (integration factor)
@@ -586,7 +589,8 @@ namespace ELEMENTS
         const double &                     fac3,           ///< factor for residual in current subgrid velocities
         const double &                     timefacfac,     ///< = timefac x fac
         const double &                     timefacfacpre,
-        const double &                     rhsfac       ///< right-hand-side factor for residuals
+        const double &                     rhsfac,         ///< right-hand-side factor for residuals
+        const int                          iquad           ///< index of current integration point
         );
 
     //! Compute element matrix entries: SUPG
@@ -1091,6 +1095,10 @@ namespace ELEMENTS
     double q_sq_;
     //! multifractal subgrid-scale part of scalar at integration point
     double mfssgscaint_;
+    //! norm of velocity at integration point at time t^{n+1}
+    double vel_normnp_;
+    //! time-dependent subgrid-scales (pointer to element-specific data)
+    Teuchos::RCP<FLD::TDSEleData> tds_;
 
   };
 }

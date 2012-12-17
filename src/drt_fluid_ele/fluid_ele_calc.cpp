@@ -17,6 +17,7 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 #include "fluid_ele_parameter.H"
 #include "fluid_ele.H"
 #include "fluid_ele_utils.H"
+#include "fluid_ele_tds.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
@@ -129,7 +130,8 @@ DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc():
     sgvisc_(0.0),
     fssgvisc_(0.0),
     q_sq_(0.0),
-    mfssgscaint_(0.0)
+    mfssgscaint_(0.0),
+    tds_(Teuchos::null)
 {
   rotsymmpbc_= Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype>());
 
@@ -204,8 +206,11 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
   double * saccn = NULL;
   double * sveln = NULL;
   double * svelnp = NULL;
-//  if (fldpara_->Tds()==INPAR::FLUID::subscales_time_dependent)
-//    ele->ActivateTDS( intpoints.NumPoints(), nsd_, &saccn, &sveln, &svelnp );
+  if (fldpara_->Tds()==INPAR::FLUID::subscales_time_dependent)
+  {
+    ele->ActivateTDS( intpoints.NumPoints(), nsd_, &saccn, &sveln, &svelnp );
+    tds_ = ele->TDS(); // store reference to the required tds element data
+  }
 
   // ---------------------------------------------------------------------
   // get all general state vectors: velocity/pressure, scalar,
@@ -657,6 +662,18 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     velint_.Multiply(evelaf,funct_);
     convvelint_.Update(velint_);
     if (isale) convvelint_.Multiply(-1.0,egridv,funct_,1.0);
+
+    if (fldpara_->Tds()==INPAR::FLUID::subscales_time_dependent)
+    {
+      // get velocity derivatives at integration point
+      // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
+      vderxy_.MultiplyNT(evelaf,derxy_); //required for time-dependent subscales
+
+      // compute velnp at integration point (required for time-dependent subscales)
+      LINALG::Matrix<nsd_,1> velintnp(true);
+      velintnp.Multiply(evelnp,funct_);
+      vel_normnp_ = velintnp.Norm2();
+    }
 
     // calculate stabilization parameters at element center
     CalcStabParameter(vol);
@@ -1121,7 +1138,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
            fac3,
            timefacfac,
            timefacfacpre,
-           rhsfac);
+           rhsfac,
+           *iquad);
     }
 
     // 10) SUPG term as well as first part of Reynolds-stress term on
@@ -2146,6 +2164,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
   // get element-type constant for tau
   const double mk = DRT::ELEMENTS::MK<distype>();
 
+
+  if (fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic) // quasistatic case
+  {
   // computation depending on which parameter definition is used
   switch (fldpara_->WhichTau())
   {
@@ -2287,6 +2308,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
     // due to time factor and reaction coefficient (reaction coefficient
     // ensured to remain zero in GetMaterialParams for non-reactive material)
     const double sigma_tot = 1.0/fldpara_->TimeFac() + reacoeff_;
+    // NOTE: Gen_Alpha (implementation by Peter Gamnitzer) used a different time factor!
 
     // calculate characteristic element length
     CalcCharEleLength(vol,vel_norm,strle,hk);
@@ -2679,6 +2701,289 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcStabParameter(const double vol)
   default: dserror("unknown definition for tau_C\n %i  ", fldpara_->WhichTau()); break;
   }  // end switch (fldpara_->WhichTau())
 
+  } // end of quasistatic case
+
+  //-----------------------------------------------------------
+  //-----------------------------------------------------------
+
+  else // INPAR::FLUID::subscales_time_dependent
+  {
+    // norms of velocity in gausspoint, time n+af and time n+1
+    const double vel_normaf = convvelint_.Norm2();
+    const double vel_normnp = vel_normnp_;
+
+    // get velocity (n+alpha_F,i) derivatives at integration point
+    //
+    //       n+af      +-----  dN (x)
+    //   dvel    (x)    \        k         n+af
+    //   ----------- =   +     ------ * vel
+    //       dx         /        dx        k
+    //         j       +-----      j
+    //                 node k
+    //
+    // j : direction of derivative x/y/z
+    //
+    LINALG::Matrix<nsd_,nsd_> vderxyaf_(true);
+    vderxyaf_.Update(vderxy_);
+
+    // Now we are ready. Let's go on!
+
+
+    //-------------------------------------------------------
+    //          TAUS FOR TIME DEPENDENT SUBSCALES
+    //-------------------------------------------------------
+
+    switch(fldpara_->WhichTau())
+    {
+    case INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen:
+    {
+      /* INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
+
+         tau_M: Bazilevs et al. + ideas from Codina
+                                                         1.0
+                 +-                                 -+ - ---
+                 |                                   |   2.0
+             td  |  n+af      n+af         2         |
+          tau  = | u     * G u     + C * nu  * G : G |
+             M   |         -          I        -   - |
+                 |         -                   -   - |
+                 +-                                 -+
+
+         tau_C: Bazilevs et al., derived from the fine scale complement Shur
+                                 operator of the pressure equation
+
+
+                       td         1.0
+                    tau  = -----------------
+                       C       td   /     \
+                            tau  * | g * g |
+                               M    \-   -/
+      */
+
+      /*          +-           -+   +-           -+   +-           -+
+                  |             |   |             |   |             |
+                  |  dr    dr   |   |  ds    ds   |   |  dt    dt   |
+            G   = |  --- * ---  | + |  --- * ---  | + |  --- * ---  |
+             ij   |  dx    dx   |   |  dx    dx   |   |  dx    dx   |
+                  |    i     j  |   |    i     j  |   |    i     j  |
+                  +-           -+   +-           -+   +-           -+
+      */
+      LINALG::Matrix<nsd_,nsd_> G;
+
+      for (int nn=0;nn<nsd_;++nn)
+      {
+        for (int rr=0;rr<nsd_;++rr)
+        {
+          G(nn,rr) = xji_(nn,0)*xji_(rr,0);
+          for (int mm=1;mm<nsd_;++mm)
+          {
+            G(nn,rr) += xji_(nn,mm)*xji_(rr,mm);
+          }
+        }
+      }
+
+      /*          +----
+                   \
+          G : G =   +   G   * G
+          -   -    /     ij    ij
+          -   -   +----
+                   i,j
+      */
+      double normG = 0;
+      for (int nn=0;nn<nsd_;++nn)
+      {
+        for (int rr=0;rr<nsd_;++rr)
+        {
+          normG+=G(nn,rr)*G(nn,rr);
+        }
+      }
+
+      /*                    +----
+           n+af      n+af    \     n+af         n+af
+          u     * G u     =   +   u    * G   * u
+                  -          /     i     -ij    j
+                  -         +----        -
+                             i,j
+      */
+      double Gnormu = 0;
+      for (int nn=0;nn<nsd_;++nn)
+      {
+        for (int rr=0;rr<nsd_;++rr)
+        {
+          Gnormu+=convvelint_(nn)*G(nn,rr)*convvelint_(rr);
+        }
+      }
+
+      // definition of constant
+      // (Akkerman et al. (2008) used 36.0 for quadratics, but Stefan
+      //  brought 144.0 from Austin...)
+      const double CI = 12.0/mk;
+
+      /*                                                 1.0
+                 +-                                 -+ - ---
+                 |                                   |   2.0
+                 |  n+af      n+af         2         |
+          tau  = | u     * G u     + C * nu  * G : G |
+             M   |         -          I        -   - |
+                 |         -                   -   - |
+                 +-                                 -+
+      */
+      tau_(0) = 1.0/sqrt(Gnormu+CI*visceff_*visceff_*normG);
+      tau_(1) = tau_(0);
+
+      /*         +-     -+   +-     -+   +-     -+
+                 |       |   |       |   |       |
+                 |  dr   |   |  ds   |   |  dt   |
+            g  = |  ---  | + |  ---  | + |  ---  |
+             i   |  dx   |   |  dx   |   |  dx   |
+                 |    i  |   |    i  |   |    i  |
+                 +-     -+   +-     -+   +-     -+
+      */
+      LINALG::Matrix<nsd_,1> g;
+
+      for (int rr=0;rr<nsd_;++rr)
+      {
+        g(rr) = xji_(rr,0);
+        for (int mm=1;mm<nsd_;++mm)
+        {
+          g(rr) += xji_(rr,mm);
+        }
+      }
+
+      /*         +----
+                  \
+         g * g =   +   g * g
+         -   -    /     i   i
+                 +----
+                   i
+      */
+      double normgsq = 0.0;
+
+      for (int rr=0;rr<nsd_;++rr)
+      {
+        normgsq+=g(rr)*g(rr);
+      }
+
+      /*
+                                1.0
+                  tau  = -----------------
+                     C            /      \
+                          tau  * | g * g |
+                             M    \-   -/
+      */
+      tau_(2) = 1./(tau_(0)*normgsq);
+
+    }
+    break;
+    case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall:
+    case INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt:
+    {
+      // INSTATIONARY FLOW PROBLEM, GENERALISED ALPHA
+      //
+      // tau_M: modification of
+      //
+      //    Franca, L.P. and Valentin, F.: On an Improved Unusual Stabilized
+      //    Finite Element Method for the Advective-Reactive-Diffusive
+      //    Equation. Computer Methods in Applied Mechanics and Enginnering,
+      //    Vol. 190, pp. 1785-1800, 2000.
+      //    http://www.lncc.br/~valentin/publication.htm                   */
+      //
+      // tau_Mp: modification of Barrenechea, G.R. and Valentin, F.
+      //
+      //    Barrenechea, G.R. and Valentin, F.: An unusual stabilized finite
+      //    element method for a generalized Stokes problem. Numerische
+      //    Mathematik, Vol. 92, pp. 652-677, 2002.
+      //    http://www.lncc.br/~valentin/publication.htm
+      //
+      //
+      // tau_C: kept Wall definition
+      //
+      // for the modifications see Codina, Principe, Guasch, Badia
+      //    "Time dependent subscales in the stabilized finite  element
+      //     approximation of incompressible flow problems"
+      //
+      //
+      // see also: Codina, R. and Soto, O.: Approximation of the incompressible
+      //    Navier-Stokes equations using orthogonal subscale stabilisation
+      //    and pressure segregation on anisotropic finite element meshes.
+      //    Computer methods in Applied Mechanics and Engineering,
+      //    Vol 193, pp. 1403-1419, 2004.
+
+      // calculate characteristic element length
+      CalcCharEleLength(vol,vel_norm,strle,hk);
+
+      //---------------------------------------------- compute tau_Mu = tau_Mp
+      /* convective : viscous forces (element reynolds number)*/
+      const double re_convectaf = (vel_normaf * hk / visceff_ ) * (mk/2.0);
+      const double xi_convectaf = std::max(re_convectaf,1.0);
+
+      /*
+               xi_convect ^
+                          |      /
+                          |     /
+                          |    /
+                        1 +---+
+                          |
+                          |
+                          |
+                          +--------------> re_convect
+                              1
+      */
+
+      /* the 4.0 instead of the Franca's definition 2.0 results from the viscous
+       * term in the Navier-Stokes-equations, which is scaled by 2.0*nu         */
+
+      tau_(0) = DSQR(hk) / (4.0 * visceff_ / mk + ( 4.0 * visceff_/mk) * xi_convectaf);
+
+      tau_(1) = tau_(0);
+
+      /*------------------------------------------------------ compute tau_C ---*/
+
+      //-- stability parameter definition according to Wall Diss. 99
+      /*
+               xi_convect ^
+                          |
+                        1 |   +-----------
+                          |  /
+                          | /
+                          |/
+                          +--------------> Re_convect
+                              1
+      */
+      const double re_convectnp = (vel_normnp * hk / visceff_ ) * (mk/2.0);
+
+      const double xi_tau_c = std::min(re_convectnp,1.0);
+
+      tau_(2) = vel_normnp * hk * 0.5 * xi_tau_c;
+
+    }
+    break;
+    case INPAR::FLUID::tau_codina:
+    {
+      // Parameter from Codina, Badia (Constants are chosen according to
+      // the values in the standard definition above)
+
+      const double CI  = 4.0/mk;
+      const double CII = 2.0/mk;
+
+      // in contrast to the original definition, we neglect the influence of
+      // the subscale velocity on velnormaf
+      tau_(0)=1.0/(CI*visceff_/(hk*hk)+CII*vel_normaf/hk);
+
+      tau_(1)=tau_(0);
+
+      tau_(2)=(hk*hk)/(CI*tau_(0));
+    }
+    break;
+    default:
+    {
+      dserror("Unknown definition of stabilization parameter for time-dependent formulation\n");
+    }
+    break;
+    } // Switch TauType
+
+  } // end Fluid::subscales_time_dependent
+
   return;
 }
 
@@ -2993,17 +3298,19 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ComputeSubgridScaleVelocity(
 
     */
 
+    LINALG::Matrix<1,nsd_> sgvelintaf(true);
     for (int rr=0;rr<nsd_;++rr)
     {
-//       ele->UpdateSvelnpInOneDirection(
-//         fac1           ,
-//         fac2           ,
-//         fac3           ,
-//         momres_old_(rr),
-//         fldpara_->AlphaF(),
-//         rr             ,
-//         iquad          ,
-//         sgvelint_(rr)  );
+      tds_->UpdateSvelnpInOneDirection(
+         fac1           ,
+         fac2           ,
+         fac3           ,
+         momres_old_(rr),
+         fldpara_->AlphaF(),
+         rr             ,
+         iquad          ,
+         sgvelint_(rr)  , // sgvelint_ is set to sgvelintnp, but is then overwritten below anyway!
+         sgvelintaf(rr));
 
       int pos = rr + nsd_*iquad;
 
@@ -3160,7 +3467,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinGalMomResU(
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::LinGalMomResU_subscales(
-            LINALG::Matrix<nen_*nsd_,nen_>      estif_p_v,
+            LINALG::Matrix<nen_*nsd_,nen_> &    estif_p_v,
             LINALG::Matrix<nsd_*nsd_,nen_> &    lin_resM_Du,
             LINALG::Matrix<nsd_,1> &            resM_Du,
             const double &                      timefacfac,
@@ -3234,7 +3541,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinGalMomResU_subscales(
   */
   for (int ui=0; ui<nen_; ++ui)
   {
-    const double v=(1.0-C_saccGAL)*timefacfac;
+    const double v=(1.0-C_saccGAL)*fac_*fldpara_->TimeFacPre();
     for (int vi=0; vi<nen_; ++vi)
     {
       const int fvi = nsd_*vi;
@@ -3275,9 +3582,57 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::LinGalMomResU_subscales(
                                                 |
                                                /
   */
+
+  /*
+  For time-dependent subgrid scales closure, we take the implementation
+  by Peter Gamnitzer, reading as documented below. Note that certain terms cancel out,
+  such as those containing acc_(i)^n+am and the convective term!
+  */
+
+  //---------------------------------------------------------------
+  //
+  //      GALERKIN PART AND SUBSCALE ACCELERATION STABILISATION
+  //
+  //---------------------------------------------------------------
+  /*  factor: +1
+
+         /             \     /                     \
+        |   ~ n+am      |   |     n+am    n+af      |
+        |  acc     , v  | + |  acc     - f     , v  |
+        |     (i)       |   |     (i)               |
+         \             /     \                   /
+
+
+       using
+                                                  /
+                  ~ n+am        1.0      ~n+af   |    n+am
+                 acc     = - --------- * u     - | acc     +
+                    (i)           n+af    (i)    |    (i)
+                             tau_M                \
+
+                              / n+af        \   n+af            n+1
+                           + | c     o nabla | u     + nabla o p    -
+                              \ (i)         /   (i)             (i)
+
+                                                      / n+af \
+                           - 2 * nu * grad o epsilon | u      | -
+                                                      \ (i)  /
+                                   \
+                              n+af  |
+                           - f      |
+                                    |
+                                   /
+
+  */
+
+
   for(int idim = 0; idim <nsd_; ++idim)
   {
-    resM_Du(idim)=fac_*(-densaf_*sgvelint_(idim)/tau_(1)-momres_old_(idim));
+    if(fldpara_->Tds()==INPAR::FLUID::subscales_time_dependent)
+      // see implementation by Peter Gamnitzer
+      resM_Du(idim)+=(timefacfac/fldpara_->AlphaF())*(-densaf_*sgvelint_(idim)/tau_(0) - gradp_(idim)+2*visceff_*visc_old_(idim)); //-momres_old_(idim));
+    else
+      resM_Du(idim)+=fac_*(-densaf_*sgvelint_(idim)/tau_(1)-momres_old_(idim));
   }
 
   return;
@@ -3372,13 +3727,28 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::InertiaConvectionReactionGalPart(
   {
     for (int idim = 0; idim <nsd_; ++idim)
     {
-      if (fldpara_->IsGenalpha()) resM_Du(idim)+=rhsfac*densam_*accint_(idim);
+      if (fldpara_->IsGenalpha())
+      {
+        if(fldpara_->Tds()      ==INPAR::FLUID::subscales_time_dependent &&
+           fldpara_->Transient()==INPAR::FLUID::inertia_stab_keep)
+        {
+          ;// do nothing here! Whole term already set in LinGalMomResU_subscales()
+        }
+        else
+          resM_Du(idim)+=rhsfac*densam_*accint_(idim);
+      }
       else                            resM_Du(idim)+=fac_*densaf_*velint_(idim);
     }
   }  // end if (not stationary)
 
   for (int idim = 0; idim <nsd_; ++idim)
   {
+    if(fldpara_->Tds()      ==INPAR::FLUID::subscales_time_dependent &&
+       fldpara_->Transient()==INPAR::FLUID::inertia_stab_keep)
+    {
+      ;// do nothing here! Whole term already set in LinGalMomResU_subscales()
+    }
+    else
     resM_Du(idim)+=rhsfac*densaf_*conv_old_(idim);
   }  // end for(idim)
 
@@ -3799,7 +4169,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PSPG(
     const double &                            fac3,
     const double &                            timefacfac,
     const double &                            timefacfacpre,
-    const double &                            rhsfac)
+    const double &                            rhsfac,
+    const int                                 iquad)
 {
   // conservative, stabilization terms are neglected (Hughes)
 
@@ -3812,15 +4183,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PSPG(
               \                 /
   */
 
-    double scal_grad_q=0.0;
+    double scal_grad_q = 0.0;
 
     if(fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
     {
       scal_grad_q=tau_(1);
     }
-    else
+    else // time-dependent subgrid-scales
     {
-      scal_grad_q=fldpara_->AlphaF()*fac3;
+      scal_grad_q=fac3;
     }
 
     /* pressure stabilisation: inertia if not stationary*/
@@ -3930,7 +4301,16 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PSPG(
 
     for (int idim = 0; idim <nsd_; ++idim)
     {
-      const double temp = rhsfac*sgvelint_(idim);
+      double sgvel = 0.0;
+      if(fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
+      {
+        sgvel = sgvelint_(idim);
+      }
+      else // time-dependent subgrid-scales, Np_Genal_Alpha!
+      {
+        sgvel = (tds_->Svelnp())(idim,iquad);
+      }
+      const double temp = rhsfac*sgvel;
 
       for (int vi=0; vi<nen_; ++vi)
       {
@@ -3966,8 +4346,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
 
      double supgfac;
      if(fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
-          supgfac=densaf_*tau_(0);
-     else supgfac=densaf_*fldpara_->AlphaF()*fac3;
+       supgfac=densaf_*tau_(0);
+     else
+       supgfac=densaf_*fldpara_->AlphaF()*fac3;
 
      LINALG::Matrix<nen_,1> supg_test;
      for (int vi=0; vi<nen_; ++vi)
@@ -4143,8 +4524,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
        {
          for(int jdim=0;jdim<nsd_;++jdim)
          {
-           //temp(jdim)=(fldpara_->TimeFac())*rhsresfac*supgfac*momres_old_(jdim);
-           //temp(jdim)=rhsresfac*supgfac*momres_old_(jdim);
            temp(jdim)=timefacfac*supgfac*momres_old_(jdim);
          }
        }
@@ -4188,7 +4567,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
      {
        for(int jdim=0;jdim<nsd_;++jdim)
        {
-         temp(jdim)=-1.0/supgfac*fac_*densaf_*sgvelint_(jdim);
+         temp(jdim)=-rhsfac*densaf_*sgvelint_(jdim)/(fac3*fldpara_->AlphaF());
        }
      }
 
@@ -4236,7 +4615,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
         preforce(vi) -= temp_supg*sgconv_c_(vi);
       }
     }
-  }
+  } // loma
 
   return;
 }
@@ -4256,7 +4635,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ReacStab(
    if (fldpara_->Tds()==INPAR::FLUID::subscales_quasistatic)
      reac_tau = fldpara_->ViscReaStabFac()*reacoeff_*tau_(1);
    else
+   {
+     dserror("Is this factor correct? Check for bugs!");
      reac_tau = fldpara_->ViscReaStabFac()*reacoeff_*fldpara_->AlphaF()*fac3;
+   }
 
 
    /* reactive stabilisation, inertia part if not stationary */
