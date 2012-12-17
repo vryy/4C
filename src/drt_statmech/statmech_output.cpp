@@ -4104,14 +4104,10 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow,
           evalnodepositions.push_back(pos->second);
         }
 
-        double periodlength = periodlength_->at(0);
-        // distance between two adjacent nodes
-        double dist2nodes = 0.0;
-
         // pre-evaluation of maximal number of nonequal nearest neighbors (max 3)
         int maxnumevalneighbors = 4;
 
-        if((int)evalnodepositions.size()>2)
+        if((int)evalnodepositions.size()>1)
         {
           int maxnearneighbors = (int)(ceil((double(evalnodepositions.size())/2.0)))-1;
           if(maxnearneighbors>maxnumevalneighbors)
@@ -4124,11 +4120,16 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow,
             // write linker positions to stream
             linkerpositions<<std::scientific<<std::setprecision(6)<<(pos0->second)(0)<<" "<<(pos0->second)(1)<<" "<<(pos0->second)(2)<<endl;
             // vector storing nearest neighbor positions
+
+            // number of emtpy blocks (of 3 values) in a line of the output file
+            int emptyblocks = maxnumevalneighbors;
             for(int j=i+1; j<i+maxnearneighbors+1; j++)
             {
               // reached the end of the vector
               if(j>=(int)evalnodepositions.size())
                 break;
+
+              emptyblocks--;
 
               std::map< int,LINALG::Matrix<3,1> >::const_iterator pos1 = currentpositions.find(evalnodeIDs.at(j));
 
@@ -4149,22 +4150,18 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow,
                 diffk -= (posk->second);
                 arclength += diffk.Norm2();
               }
-
               distances<<std::scientific<<std::setprecision(6)<<fabs(diff(0))<<"\t"<<diff.Norm2()<<"\t"<<arclength<<"\t";
+            }
+            if(emptyblocks>0)
+            {
+              // determine dummy entries for this line
+              for(int i=0; i<emptyblocks; i++)
+                distances<<std::scientific<<std::setprecision(6)<<-1e9<<"\t"<<-1e9<<"\t"<<-1e9<<"\t";
             }
             distances<<endl;
           }
           // time step divider line
           linkerpositions<<std::scientific<<std::setprecision(6)<<-1e9<<" "<<-1e9<<" "<<-1e9<<endl;
-        }
-        else // two vertical filament case
-        {
-          LINALG::Matrix<3,1> diff = evalnodepositions[1];
-          diff -= evalnodepositions[0];
-          dist2nodes = fabs(diff(0));
-          if(dist2nodes>periodlength-dist2nodes)
-            dist2nodes = periodlength-dist2nodes;
-          distances<<dist2nodes<<endl;
         }
       }
     }
