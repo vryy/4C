@@ -455,6 +455,10 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor() = 0;
 
+    /// needed for xfluidfluid monolithic approach to set the old displacement
+    /// of the Ale mesh before realxing it.
+    virtual void ApplyEmbFixedMeshDisplacement(Teuchos::RCP<const Epetra_Vector> disp) = 0;
+
     virtual Teuchos::RCP<const Epetra_Vector> Stepinc() = 0;
 
     //@}

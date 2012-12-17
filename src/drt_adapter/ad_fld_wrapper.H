@@ -33,6 +33,8 @@ namespace ADAPTER
       static Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor> ret = Teuchos::null;
       return ret;
     };
+    virtual void ApplyEmbFixedMeshDisplacement(Teuchos::RCP<const Epetra_Vector> disp)
+    { dserror("not implemented"); }
     virtual Teuchos::RCP<const Epetra_Vector> Stepinc() {return fluid_->Stepinc();}
     /// Return dirichlet boundray condition (used for fluidfluid)
     virtual const Teuchos::RCP<const Epetra_Map>& FluidDirichMaps()

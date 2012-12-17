@@ -149,6 +149,13 @@ Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& ADAPTER::FluidFluidFSI::
   return xfluidfluid_->XFluidFluidMapExtractor();
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ADAPTER::FluidFluidFSI::ApplyEmbFixedMeshDisplacement(Teuchos::RCP<const Epetra_Vector> disp)
+{
+  // xfluidfluid_->ApplyEmbFixedMeshDisplacement(disp);
+  meshmap_->InsertCondVector(disp,xfluidfluid_->ViewOfDispoldstate());
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

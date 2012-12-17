@@ -87,6 +87,8 @@ namespace ADAPTER {
 
     virtual Teuchos::RCP<FLD::UTILS::FluidXFluidMapExtractor>const& XFluidFluidMapExtractor();
 
+    virtual void ApplyEmbFixedMeshDisplacement(Teuchos::RCP<const Epetra_Vector> disp);
+
     virtual Teuchos::RCP<Epetra_Vector> RelaxationSolve(Teuchos::RCP<Epetra_Vector> ivel);
 
     virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);

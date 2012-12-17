@@ -1176,8 +1176,9 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     }
   }
 
+/*
   // comment out to have sepperate views of embedded and background fluid
-/*  gmshfilecontent_vel << "};\n";
+  gmshfilecontent_vel << "};\n";
   gmshfilecontent_press << "};\n";
 
   if(countiter > -1) // for residual output
@@ -1190,7 +1191,8 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
     gmshfilecontent_vel   << "View \"" << "SOL " << "embedded " << "_" << step << "\" {\n";
     gmshfilecontent_press << "View \"" << "SOL " << "embedded " << "_" << step << "\" {\n";
   }
-  */
+*/
+
 
   const int numalerowele = alefluiddis.NumMyRowElements();
   for (int i=0; i<numalerowele; ++i)
@@ -1875,6 +1877,15 @@ FLD::XFluidFluid::XFluidFluid(
   else
     monotype_ = "no monolithicfsi";
 
+  // check if fluidfluidcoupling is set for the right type. fluidfluidcoupling
+  // is just related to fixedale monolithic approach
+  std::vector<int> condnodes;
+  DRT::UTILS::FindConditionedNodes(*embdis,"FluidFluidCoupling",condnodes);
+  if (((monotype_ == "fixedale_partitioned") or (monotype_ == "fixedale_interpolation")) and (condnodes.size()==0))
+    dserror("FluidFluidCoupling condition is missing!");
+  else if (((monotype_ == "fully_newton") or (monotype_ == "no monolithicfsi")) and (condnodes.size()!=0))
+    dserror("FluidFluidCoupling condition is not related here!");
+
   // check xfluid input params
   CheckXFluidFluidParams(params_xfem,params_xf_gen,params_xf_stab);
 
@@ -1914,7 +1925,6 @@ FLD::XFluidFluid::XFluidFluid(
   std::vector<std::string> conditions_to_copy;
   conditions_to_copy.push_back("XFEMCoupling");
   boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(embdis, "XFEMCoupling", "boundary", element_name, conditions_to_copy);
-
 
 
   // delete the elements with the same coordinates if they are any
@@ -2664,6 +2674,9 @@ void FLD::XFluidFluid::PrepareNonlinearSolve()
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::PrepareMonolithicFixedAle()
 {
+  if (bgdis_->Comm().MyPID() == 0)
+    cout << "Update monolithic fluid solution.. " << endl;
+
   // for BDF2, theta is set by the time-step sizes, 2/3 for const. dtp_
   if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
 
@@ -3034,7 +3047,6 @@ void FLD::XFluidFluid::LinearSolve()
 
 }
 
-
 // -------------------------------------------------------------------
 // evaluate method for monolithic fluid-fluid-fsi
 // -------------------------------------------------------------------
@@ -3171,11 +3183,8 @@ void FLD::XFluidFluid::Evaluate(
 //     state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_inter", gmsh_count_, step_, state_->velnp_, alevelnp_,
 //                           aledispnp_);
 //   else
-//     state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_fixedfsi", -1, step_, state_->velnp_, alevelnp_,
-//                        aledispnp_);
-
-  // save the old state of the ale displacement
-  aledispnpoldstate_->Update(1.0,*aledispnp_,0.0);
+//      state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_fixedfsi", -1, step_, state_->velnp_, alevelnp_,
+//                         aledispnp_);
 
 }//FLD::XFluidFluid::Evaluate
 
@@ -3324,7 +3333,6 @@ void FLD::XFluidFluid::TimeUpdate()
   {
     PrepareMonolithicFixedAle();
   }
-
 
   Teuchos::ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
 
@@ -3742,7 +3750,7 @@ void FLD::XFluidFluid::Output()
   // output of solution
   if(gmsh_sol_out_)
   {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("element_node_id", 0, 0, 0, bgdis_->Comm().MyPID());
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("element_node_id", step_, 0, 0, bgdis_->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());
     {
       // draw bg elements with associated gid

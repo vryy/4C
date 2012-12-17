@@ -23,6 +23,8 @@
 #include "../drt_io/io.H"
 #include "../drt_constraint/constraint_manager.H"
 
+#include "../drt_inpar/inpar_ale.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplitNoNOX(const Epetra_Comm& comm,
@@ -31,7 +33,7 @@ FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplit
 {
 
   // Throw an error if there are DBCs on structural interface DOFs.
- std::vector<Teuchos::RCP<const Epetra_Map> > intersectionmaps;
+  std::vector<Teuchos::RCP<const Epetra_Map> > intersectionmaps;
   intersectionmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
   intersectionmaps.push_back(StructureField()->Interface()->FSICondMap());
   Teuchos::RCP<Epetra_Map> intersectionmap = LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
@@ -84,6 +86,12 @@ FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplit
   currentstep_ = 0;
   relaxing_ale_ = (bool)DRT::INPUT::IntegralValue<int>(xfluiddyn.sublist("GENERAL"),"RELAXING_ALE");
   relaxing_ale_every_ = xfluiddyn.sublist("GENERAL").get<int>("RELAXING_ALE_EVERY");
+
+  const Teuchos::ParameterList& adyn     = DRT::Problem::Instance()->AleDynamicParams();
+  int aletype = DRT::INPUT::IntegralValue<int>(adyn,"ALE_TYPE");
+
+  if ((aletype!=INPAR::ALE::incr_lin) and (monolithic_approach_!=INPAR::XFEM::XFFSI_Full_Newton))
+    dserror("Relaxing Ale Aprooach is just posiible with Ale-incr-lin!");
 
   // Recovering of Lagrange multiplier happens on structure field
   lambda_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap()));
@@ -936,23 +944,32 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Update()
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::Update");
 
+  //  cout <<"currentstep_" <<  currentstep_ <<" " << currentstep_%relaxing_ale_every_<< endl;
+
+  bool aleupdate = false;
+  if (relaxing_ale_ == true)
+    if (currentstep_%relaxing_ale_every_==0) aleupdate = true;
+
+
+  if (monolithic_approach_!= INPAR::XFEM::XFFSI_Full_Newton)
+  {
+    FluidField().ApplyEmbFixedMeshDisplacement(AleToFluid(AleField().ExtractDispnp()));
+  }
+
   // recover Lagrange multiplier \lambda_\Gamma at the interface at the end of each time step
   // (i.e. condensed forces onto the structure) needed for rhs in next time step
   RecoverLagrangeMultiplier();
 
   currentstep_ ++;
 
-//  cout <<"currentstep_" <<  currentstep_ <<" " << currentstep_%relaxing_ale_every_<< endl;
-  bool aleupdate = false;
-  if (relaxing_ale_ == true)
-    if (currentstep_%relaxing_ale_every_==0) aleupdate = true;
-
-
   if (monolithic_approach_!= INPAR::XFEM::XFFSI_Full_Newton and aleupdate)
   {
+    if (Comm().MyPID() == 0)
+      cout << "Relaxing Ale.." << endl;
     AleField().SolveAleXFluidFluidFSI();
     FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDispnp()));
   }
+
 
   StructureField()->Update();
   FluidField().    Update();

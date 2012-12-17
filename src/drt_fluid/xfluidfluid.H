@@ -358,6 +358,7 @@ namespace FLD
 
     Teuchos::RCP<const Epetra_Vector> Dispnp() {return aledispnp_; }
     Teuchos::RCP<      Epetra_Vector> ViewOfDispnp() {return aledispnp_; }
+    Teuchos::RCP<      Epetra_Vector> ViewOfDispoldstate() {return aledispnpoldstate_; }
     Teuchos::RCP<const Epetra_Vector> Dispn() { return aledispn_; }
 
     Teuchos::RCP<const Epetra_Map> DofRowMap() { return state_->fluidfluiddofrowmap_; }
