@@ -101,7 +101,8 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   // set the new dofset after cut
   int maxNumMyReservedDofs = xfluid.discret_->NumGlobalNodes()*(xfluid.maxnumdofsets_)*4;
   dofset_ = wizard_->DofSet(maxNumMyReservedDofs);
-  if (xfluid.step_ < 1)
+  const int restart = DRT::Problem::Instance()->Restart();
+  if ((xfluid.step_ < 1) or restart)
     xfluid.minnumdofsets_ = xfluid.discret_->DofRowMap()->MinAllGID();
 
   dofset_->MinGID(xfluid.minnumdofsets_); // set the minimal GID of xfem dis

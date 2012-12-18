@@ -89,8 +89,10 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
 
   int maxNumMyReservedDofs = xfluid.bgdis_->NumGlobalNodes()*(xfluid.maxnumdofsets_)*4;
   dofset_ = wizard_->DofSet(maxNumMyReservedDofs);
-  if (xfluid.step_ < 1)
+  const int restart = DRT::Problem::Instance()->Restart();
+  if ((xfluid.step_ < 1) or restart){
     xfluid.minnumdofsets_ = xfluid.bgdis_->DofRowMap()->MinAllGID();
+  }
 
   dofset_->MinGID(xfluid.minnumdofsets_); // set the minimal GID of xfem dis
   xfluid_.bgdis_->ReplaceDofSet( dofset_, true);
@@ -2193,7 +2195,6 @@ FLD::XFluidFluid::XFluidFluid(
   SetElementGeneralFluidParameter();
   SetElementTurbulenceParameter();
 
-
   //--------------------------------------------------
   // XFluidFluid State
   //-----------------------------------------------
@@ -2648,6 +2649,7 @@ void FLD::XFluidFluid::PrepareTimeStep()
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::PrepareNonlinearSolve()
 {
+
   // do the cut for this timestep
   if (alefluid_)
     CutAndSaveBgFluidStatus();
@@ -3184,7 +3186,7 @@ void FLD::XFluidFluid::Evaluate(
 //                           aledispnp_);
 //   else
 //      state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_fixedfsi", -1, step_, state_->velnp_, alevelnp_,
-//                         aledispnp_);
+//                         aledispn_);
 
 }//FLD::XFluidFluid::Evaluate
 
