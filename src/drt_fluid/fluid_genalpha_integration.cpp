@@ -1528,7 +1528,7 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
     // set the required state vectors
     discret_->SetState("velaf"    ,velaf_);
     discret_->SetState("velnp",velnp_);
-
+/*
     discret_->EvaluateCondition
       (mhdbcparams          ,
        sysmat_              ,
@@ -1537,11 +1537,11 @@ void FLD::FluidGenAlphaIntegration::GenAlphaAssembleResidualAndMatrix()
        Teuchos::null        ,
        Teuchos::null        ,
        "LineMixHybDirichlet");
-
+*/
     // clear state
-    discret_->ClearState();
+//    discret_->ClearState();
 
-    bool doold=false;
+    bool doold=true; //false;
 
     if(doold)
     {
@@ -2169,7 +2169,7 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
     Teuchos::ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");;
 
     // get toggle vector for Dirchlet boundary conditions
-    const Epetra_Vector& dbct = *Dirichlet();
+    const Teuchos::RCP<const Epetra_Vector> dbct = Dirichlet();
 
     // get nullspace parameters
     double* nullspace = mlparams.get("null space: vectors",(double*)NULL);
@@ -2182,7 +2182,7 @@ void FLD::FluidGenAlphaIntegration::AVM3Preparation()
       const int length = SystemMatrix()->OperatorRangeMap().NumMyElements();
       for (int i=0; i<nsdim; ++i)
         for (int j=0; j<length; ++j)
-          if (dbct[j]!=0.0) nullspace[i*length+j] = 0.0;
+          if ((*dbct)[j]!=0.0) nullspace[i*length+j] = 0.0;
     }
 
     // get plain aggregation Ptent

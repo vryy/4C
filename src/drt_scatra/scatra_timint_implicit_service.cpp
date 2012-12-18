@@ -2639,7 +2639,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
     }
 
     // get toggle vector for Dirchlet boundary conditions
-    const Epetra_Vector& dbct = *DirichletToggle();
+    const Teuchos::RCP<const Epetra_Vector> dbct = DirichletToggle();
 
     // get nullspace parameters
     double* nullspace = mlparams.get("null space: vectors",(double*)NULL);
@@ -2652,7 +2652,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
       const int length = sysmat_sd_->OperatorRangeMap().NumMyElements();
       for (int i=0; i<nsdim; ++i)
         for (int j=0; j<length; ++j)
-          if (dbct[j]!=0.0) nullspace[i*length+j] = 0.0;
+          if ((*dbct)[j]!=0.0) nullspace[i*length+j] = 0.0;
     }
 
     // get plain aggregation Ptent

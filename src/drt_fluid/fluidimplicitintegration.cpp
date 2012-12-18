@@ -4250,7 +4250,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
     }
 
     // get toggle vector for Dirchlet boundary conditions
-    const Epetra_Vector& dbct = *Dirichlet();
+    const Teuchos::RCP<const Epetra_Vector> dbct = Dirichlet();
 
     // get nullspace parameters
     double* nullspace = mlparams.get("null space: vectors",(double*)NULL);
@@ -4263,7 +4263,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
       const int length = SystemMatrix()->OperatorRangeMap().NumMyElements();
       for (int i=0; i<nsdim; ++i)
         for (int j=0; j<length; ++j)
-          if (dbct[j]!=0.0) nullspace[i*length+j] = 0.0;
+          if ((*dbct)[j]!=0.0) nullspace[i*length+j] = 0.0;
     }
 
     // get plain aggregation Ptent
