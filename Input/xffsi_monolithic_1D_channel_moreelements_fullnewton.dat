@@ -228,9 +228,7 @@ DSURF                           1
 //                              xfem
 E 2 - 1
 ---------------------------------DESIGN FLUID FLUID COUPLING SURF CONDITIONS
-DSURF                           1
-//                              fluidfluid
-E 3 - 1
+DSURF                           0
 ------------------------------------------DESIGN MOVING FLUID VOL CONDITIONS
 DVOL                            1
 // embedded volume
