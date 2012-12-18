@@ -1408,13 +1408,14 @@ Allright, here's what you need to do:\\
 \paragraph{In your home directory}
 
 \begin{enumerate}
-  \item check out a new svn version of BACI (in a new folder: e.g. Baci\_stud)
+  \item check out a new svn version of BACI (in a new folder: e.g. Baci\_stud)\\
+  \texttt{svn checkout svn://<user>@jacobi/baci/trunk/ccarat Baci\_stud}
   \item initialize a new git repository in the folder Baci\_stud/  \\
   \texttt{git init}
   \item add all files in the folder Baci\_stud to the repository: \\
   \texttt{git add .}
   \item commit the changes: \\
-  \texttt{git commit -a}
+  \texttt{git commit -a -m "commit message"}
   \item generate a new branch \\
   \texttt{git branch <student\_name>}
   \item change to new branch: \\
@@ -1465,50 +1466,100 @@ home directory. This way they can access their code from another machine next ti
 
 
 \paragraph{Update baci version of the student}
-In order to update the student's code you have to update the svn and the git instances of BACI on your machine by:
+\subparagraph{In student's home directory (scratch/student\_name/workspace/baci)}
   \begin{enumerate}
-    \item update BACI in Baci\_stud:\\
-    \texttt{svn update}
-    \item commit the new version of BACI to the repository (branch master; only the active branch is updated) \\
-    Where are you? Which branch is active?: \texttt{git branch}\\
-    Switch between branches: \texttt{git checkout master} \\
-    Check actual status: \texttt{git status} \\
-    add and commit files and modifications into your repository: \texttt{git add .} and \texttt{git commit -a}
-    \item this command is necessary to get the latest version of the student's Baci\_bare, which is merged before with the working copy from the student's scratch) \\ 
-    \texttt{git checkout baci\_stud} \\
-    \texttt{git pull student@red??.stud:$\sim$/Baci\_bare */refs/heads/*:ref/remotes/origin/*} (in folder Baci\_stud on branch student\_name)\\
-    $\rightarrow$ possible conflicts need to be resolved (see 'Merge baci version of the student with baci version (svn)' \ref{resolveConflict})
-    \item merge branch master (actual BACI version from the svn repository) into the branch student\_name (actual version of your student):\\
-    check if you are on branch baci\_stud \\
-    \texttt{git merge master} \\
-    $\rightarrow$ possible conflicts need to be resolved (see 'Merge baci version of the student with baci version (svn)' \ref{resolveConflict})
-    \item \texttt{git push student@red??.stud:$\sim$/Baci\_bare } (in folder Baci\_stud)
-    push down the latest revision of Baci (now merged with the students changes) down into his home directory.	
+   \item check status of working copy:\\
+   \texttt{git status}
+   \item if there are any changes:\\
+   \texttt{git add <new file> <new folder>} (or add everything with \texttt{git add .})\\
+   \texttt{git commit -a -m "message"}
   \end{enumerate}
+\subparagraph{In your home directory (Baci\_stud)\\}
+  First, we pull the students version to your home directory:
+  \begin{enumerate}
+   \item switch to student branch:\\
+   \texttt{git checkout <student\_name>}
+   \item get the BACI version of your student:\\
+   \texttt{git pull ssh://<student\_name>@redxx.stud/$\sim$/Baci\_bare/}\\\\
+   In order to update the student's code you have to update the svn and the git instances of BACI on your machine:\\
+    \item make sure, that you are on branch master:\\
+    \texttt{git checkout master}
+    \item update BACI in Baci\_stud:\\
+    \texttt{svn update --force}
+    \item check status of master:\\
+    \texttt{git status}
+    \item if there are any untracked files or folders, add and commit them:\\
+    \texttt{git add <file> <folder>}\\
+    \texttt{git commit -a -m "commit message"}\\\\
+    The master branch has now been updated to the latest version of BACI. Next, merge the student and the master branch:\\
+    \item switch to branch student:\\
+    \texttt{git checkout <student\_name>}
+    \item merge with master:\\
+    \texttt{git merge master}\\
+    \item resolve conflicts:\\
+    There will probably be some confilcts. They will be listed under "both modified", when looking at the current status:\\
+    \texttt{git status}\\
+    Resolve the conflicts with, e.g., kdiff3:\\
+    \texttt{git mergetool -t kdiff3} (maybe you must install kdiff3)\\
+    After resolving, add and commit the modified files and folders:\\
+    \texttt{git add <file>}\\
+    \texttt{git commit -a -m "commit message"}\\\\
+    Now, the merged version needs to be pushed back to your student's home:\\
+    \item make sure, you are on branch student:\\
+    \texttt{git checkout <student\_name>}
+    \item push the new version to your student's home:\\
+    \texttt{git push ssh://<student\_name>@redxx.stud/$\sim$/Baci\_bare/}
+    \end{enumerate}
+\subparagraph{In student's home directory (scratch/student\_name/workspace/baci)\\}
+    The last step is to update the local version of your student
+    \begin{enumerate}
+    \item just to check:\\
+    \texttt{git status}\\
+    There should be no conflicts/untracked files...
+    \item update the local version of BACI:\\
+    \texttt{git pull}\\
+    \end{enumerate}
+    
+%    \item commit the new version of BACI to the repository (branch master; only the active branch is updated) \\
+%    Where are you? Which branch is active?: \texttt{git branch}\\
+%    Switch between branches: \texttt{git checkout master} \\
+%    Check actual status: \texttt{git status} \\
+%   add and commit files and modifications into your repository: \texttt{git add .} and \texttt{git commit -a}
+%    \item this command is necessary to get the latest version of the student's Baci\_bare, which is merged before with the working copy from the student's scratch) \\ 
+%    \texttt{git checkout baci\_stud} \\
+%    \texttt{git pull student@red??.stud:$\sim$/Baci\_bare */refs/heads/*:ref/remotes/origin/*} (in folder Baci\_stud on branch student\_name)\\
+%    $\rightarrow$ possible conflicts need to be resolved (see 'Merge baci version of the student with baci version (svn)' \ref{resolveConflict})
+%    \item merge branch master (actual BACI version from the svn repository) into the branch student\_name (actual version of your student):\\
+%    check if you are on branch baci\_stud \\
+%    \texttt{git merge master} \\
+%    $\rightarrow$ possible conflicts need to be resolved (see 'Merge baci version of the student with baci version (svn)' \ref{resolveConflict})
+%    \item \texttt{git push student@red??.stud:$\sim$/Baci\_bare } (in folder Baci\_stud)
+%     push down the latest revision of Baci (now merged with the students changes) down into his home directory.	
+%  \end{enumerate}
 
-\paragraph{Merge baci version of the student with baci version (svn)}
+%\paragraph{Merge baci version of the student with baci version (svn)}
 
-I am not completely sure about these steps. I will test it with my next student.
+%I am not completely sure about these steps. I will test it with my next student.
 
-\begin{enumerate}
- \item Merge Baci\_bare with the working copy from the student's scratch
- \item Merge Baci\_bare with Baci\_stud \\
- $ \rightarrow $ \texttt{git fetch student@red??.stud:$\sim$/Baci\_bare */refs/heads/*:ref/remotes/origin/*} (in folder Baci\_stud) \\
- $ \rightarrow $ \texttt{git merge ref/remotes/origin/*:*/refs/heads/*} ?????
- \item no conficts $ \rightarrow $ be happy
- \item conflicts: \label{resolveConflict}
- \begin{itemize}
-  \item resolve conflicts with, e.g., kdiff3 \\
-  $ \rightarrow $ \texttt{git mergetool -t kdiff3} (maybe you must install kdiff3)
-  \item add and commit the files with resolved conflicts \\
-  $ \rightarrow $ \texttt{git add 'files with conflicts'} \\
-  $ \rightarrow $ \texttt{git commit -a}
-  \item congratulation, you merged two versions
- \end{itemize}
- \item update BACI on branch master
- \item merge branch master into branch baci\_stud
- \item commit the actual version into the svn repository
-\end{enumerate}
+%\begin{enumerate}
+% \item Merge Baci\_bare with the working copy from the student's scratch
+% \item Merge Baci\_bare with Baci\_stud \\
+% $ \rightarrow $ \texttt{git fetch student@red??.stud:$\sim$/Baci\_bare */refs/heads/*:ref/remotes/origin/*} (in folder Baci\_stud) \\
+% $ \rightarrow $ \texttt{git merge ref/remotes/origin/*:*/refs/heads/*} ?????
+% \item no conficts $ \rightarrow $ be happy
+% \item conflicts: \label{resolveConflict}
+% \begin{itemize}
+%  \item resolve conflicts with, e.g., kdiff3 \\
+%  $ \rightarrow $ \texttt{git mergetool -t kdiff3} (maybe you must install kdiff3)
+%  \item add and commit the files with resolved conflicts \\
+%  $ \rightarrow $ \texttt{git add 'files with conflicts'} \\
+%  $ \rightarrow $ \texttt{git commit -a}
+%  \item congratulation, you merged two versions
+% \end{itemize}
+% \item update BACI on branch master
+% \item merge branch master into branch baci\_stud
+% \item commit the actual version into the svn repository
+%\end{enumerate}
 
 \paragraph{Usefull commands}
 
@@ -1523,7 +1574,8 @@ I am not completely sure about these steps. I will test it with my next student.
   compare current branch to branch\_name in kompare
   \item Before you can update your version in your home directory, you need to commit your modifications on the branch student\_name (scratch). Commands are executed in /scratch/student\_name/workspace/Baci:
   \begin{itemize}
-    \item \texttt{git commit -a }, \item \texttt{git commit 'file'}\\
+    \item \texttt{git commit -a }, 
+    \item \texttt{git commit 'file'}\\
     After commiting the modifications the command 'git diff' does not show anymore any differences in the files. Now, the git version in the branch student\_name on scratch matches the version on your computer 
     \item \texttt{git add .}, \texttt{git add 'file' }\\
     all files or a particular file is added to the version control
