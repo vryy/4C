@@ -682,7 +682,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("NEWTON_MAX",100,"Maximum number of Newton steps.",&meshfree);
   DoubleParameter("T_RANGE_TOL",1,"Threshhold at which basis solution function prior is considered nmuerically zero.",&meshfree);
   DoubleParameter("CUTOFF_RADIUS",1e30,"Cutoff radius for influence of meshfree points on each other.",&meshfree);
-  setNumericStringParameter("BOUNDINGBOX","-1e12 -1e12 -1e12 1e12 1e121e12",
+  setNumericStringParameter("BOUNDINGBOX","-1.e12 -1.e12 -1.e12 1.e12 1.e12 1.e12",
                             "Bounding box for binning strategy in particle simulations.",
                             &meshfree);
   setStringToIntegralParameter<int>("T_PRIOR","Gauss","Defines the prior type of the basis solution function.",
