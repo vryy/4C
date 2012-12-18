@@ -396,12 +396,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     case INPAR::MAT::m_constraintmixture: /*------- growth and remodeling */
     {
       MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
-      double dt = params.get<double>("delta time",-1.0);
-      double t = params.get<double>("total time",-1.0);
-      string action = params.get<string>("action","none");
-      bool output = false;
-      if (action == "calc_struct_stress") output = true;
-      comix->Evaluate(glstrain,gp,cmat,stress,dt,t,output);
+      comix->Evaluate(glstrain,gp,cmat,stress,params);
       *density = comix->Density();
       break;
     }
@@ -698,12 +693,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
     case INPAR::MAT::m_constraintmixture: /*------- growth and remodeling */
     {
       MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
-      double dt = params.get<double>("delta time",-1.0);
-      double t = params.get<double>("total time",-1.0);
-      string action = params.get<string>("action","none");
-      bool output = false;
-      if (action == "calc_struct_stress") output = true;
-      comix->Evaluate(glstrain,gp,cmat,stress,dt,t,output);
+      comix->Evaluate(glstrain,gp,cmat,stress,params);
       *density = comix->Density();
       break;
     }
@@ -1252,14 +1242,14 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
   // interface go to the material law here
   // the old interface does not exist anymore
   RCP<MAT::Material> mat = Material();
-  
-  
+
+
   if(mat->MaterialType() == INPAR::MAT::m_structporo)
   {
 	  const MAT::StructPoro* actmat = static_cast<const MAT::StructPoro*>(mat.get());
 	  mat = actmat->GetMaterial();
   }
-  
+
   switch (mat->MaterialType())
   {
     case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
@@ -1375,12 +1365,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
     case INPAR::MAT::m_constraintmixture: /*------- growth and remodeling */
     {
       MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
-      double dt = params.get<double>("delta time",-1.0);
-      double t = params.get<double>("total time",-1.0);
-      string action = params.get<string>("action","none");
-      bool output = false;
-      if (action == "calc_struct_stress") output = true;
-      comix->Evaluate(glstrain,gp,cmat,stress,dt,t,output);
+      comix->Evaluate(glstrain,gp,cmat,stress,params);
       *density = comix->Density();
       break;
     }

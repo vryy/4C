@@ -394,7 +394,7 @@ void MAT::ConstraintMixture::Update()
   history_->back().GetTime(&deptime, &depdt);
 
   // just do update in case of growth
-  if (deptime > params_->starttime_ + 1.0e-12)
+  if (deptime > params_->starttime_ + 1.0e-11)
   {
     // delete just the steps that surely won't be needed, especially with a smaller timestep later
     // thus reference time is deposition time of last collagen fibers
@@ -470,11 +470,16 @@ void MAT::ConstraintMixture::Evaluate
   const int gp,
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,
   LINALG::Matrix<NUM_STRESS_3D,1>* stress,
-  double dt,
-  double time,
-  bool output
+  Teuchos::ParameterList& params
 )
 {
+  // get variables from params
+  double dt = params.get<double>("delta time",-1.0);
+  double time = params.get<double>("total time",-1.0);
+  string action = params.get<string>("action","none");
+  bool output = false;
+  if (action == "calc_struct_stress") output = true;
+
   // differentiate between explicit and implicit description
   int firstiter = 0;
   if (*params_->integration_ == "Explicit")
@@ -491,7 +496,7 @@ void MAT::ConstraintMixture::Evaluate
       history_->at(numpast-2).GetTime(&temptime, &tempdt);
       // for restart the function ApplyForceInternal calls the material with the old time
       // (i.e. time = temptime) thus make sure not to store it
-      if (time > temptime + 1.0e-12)
+      if (time > temptime + 1.0e-11)
       {
         history_->back().SetTime(time, dt);
         // if you change your time step size the basal mass production rate changes
@@ -575,7 +580,7 @@ void MAT::ConstraintMixture::Evaluate
 
     // store them
     // time <= starttime needs further considerations
-    double eps = 1.0e-12;
+    double eps = 1.0e-11;
     if (time > params_->starttime_ + eps)
     {
       history_->back().SetStretches(gp, actstretch);
@@ -819,7 +824,7 @@ void MAT::ConstraintMixture::EvaluateFiberFamily
   double prestretchcollagen = localprestretch_->at(gp)(idfiber);
   double density = params_->density_;
   int sizehistory = history_->size();
-  double eps = 1.0e-12;
+  double eps = 1.0e-11;
   if (idfiber != 3)
     visrefmassdens_->at(gp)(idfiber) = 0.0;
 
@@ -870,7 +875,7 @@ void MAT::ConstraintMixture::EvaluateFiberFamily
     Saniso.Scale(facS);
     (*stress) += Saniso;
 
-    if (*params_->initstretch_ == "Homeo" || (idpast == sizehistory - 1 && time > params_->starttime_ + 1.0e-12))
+    if (*params_->initstretch_ == "Homeo" || (idpast == sizehistory - 1 && time > params_->starttime_ + 1.0e-11))
     {
       // special derivative for last implicit step or initstretch homeo
       LINALG::Matrix<NUM_STRESS_3D,1>  A;
@@ -1350,7 +1355,7 @@ void MAT::ConstraintMixture::Degradation(double t, double* degr)
 {
   if (params_->degoption_ == "Lin")  // heaviside step function
   {
-    if (t <= params_->lifetime_ + 1.0e-12) {
+    if (t <= params_->lifetime_ + 1.0e-11) {
       *degr = 1.0;
     } else {
       *degr = 0.0;
@@ -1362,9 +1367,9 @@ void MAT::ConstraintMixture::Degradation(double t, double* degr)
   }
   else if (params_->degoption_ == "Cos")  // transition zone with cos shape
   {
-    if (t < 0.2 * params_->lifetime_ - 1.0e-12) {
+    if (t < 0.2 * params_->lifetime_ - 1.0e-11) {
       *degr = 1.0;
-    } else if (t < params_->lifetime_ - 1.0e-12) {
+    } else if (t < params_->lifetime_ - 1.0e-11) {
       *degr = 0.5*(cos(PI*(t-0.2*params_->lifetime_)/(0.8*params_->lifetime_))+1.0);
     } else {
       *degr = 0.0;

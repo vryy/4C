@@ -289,9 +289,7 @@ namespace MAT
       const int gp,  ///< current Gauss point
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
       LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
-      double dt,  ///< delta time
-      double time,  ///< time
-      bool output  ///< calculate stress for output
+      Teuchos::ParameterList& params   ///< parameter list
     );
 
     /// Return density
