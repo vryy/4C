@@ -709,9 +709,9 @@ void STATMECH::StatMechManager::GetNodalBindingSpotPositionsFromDisVec(const Epe
   Teuchos::RCP<Epetra_MultiVector> bspotpositionsrow = Teuchos::null;
   Teuchos::RCP<Epetra_MultiVector> bspotrotationsrow = Teuchos::null;
   if(bspotpositions!=Teuchos::null)
-    bspotpositionsrow = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()),3),false);
+    bspotpositionsrow = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()),3));
   if(bspotrotations!=Teuchos::null)
-    bspotrotationsrow = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()),3),false);
+    bspotrotationsrow = Teuchos::rcp(new Epetra_MultiVector(*(discret_->NodeRowMap()),3));
 
   //update nodaltriads_
   for (int i=0; i<discret_->NodeRowMap()->NumMyElements(); i++)
