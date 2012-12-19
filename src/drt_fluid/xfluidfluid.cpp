@@ -3842,9 +3842,6 @@ void FLD::XFluidFluid::Output()
       // get row node via local id
       const DRT::Node* xfemnode = bgdis_->lRowNode(i);
 
-      // get global id of this node
-      //const int gid = xfemnode->Id();
-
       // the dofset_out_ contains the original dofs for each row node
       const std::vector<int> gdofs_original(dofset_out_->Dof(xfemnode));
 
@@ -3916,8 +3913,65 @@ void FLD::XFluidFluid::Output()
           (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = (*state_->velnp_)[xdofrowmap->LID(gdofs_current[idof])];
         }
       }
-      else cout << "decide which dofs are used for output" << endl;
-    }
+      // choose the std-dofset for the nodes which has std-dofs. If a node
+      // doesn't have a std-dofset the first ghost-set is taken.
+      else if(gdofs_current.size() % gdofs_original.size() == 0) //multiple dofsets
+      {
+        // if there are multiple dofsets we write output for the standard dofset
+        GEO::CUT::Node* node = state_->wizard_->GetNode(xfemnode->Id());
+
+        GEO::CUT::Point* p = node->point();
+
+        const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> > & dofcellsets = node->DofCellSets();
+
+        int nds = 0;
+        bool is_std_set = false;
+
+        // find the standard dofset
+        for(std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >::const_iterator cellsets= dofcellsets.begin();
+            cellsets!=dofcellsets.end();
+            cellsets++)
+        {
+          // at least one vc has to contain the node
+          for(std::set<GEO::CUT::plain_volumecell_set>::const_iterator sets=cellsets->begin(); sets!=cellsets->end(); sets++)
+          {
+            const GEO::CUT::plain_volumecell_set& set = *sets;
+
+            for(GEO::CUT::plain_volumecell_set::const_iterator vcs=set.begin(); vcs!=set.end(); vcs++)
+            {
+              if((*vcs)->Contains(p))
+              {
+                // return if at least one vc contains this point
+                is_std_set=true;
+                break;
+              }
+            }
+            // break the outer loop if at least one vc contains this point
+            if(is_std_set == true) break;
+          }
+          if(is_std_set == true) break;
+          nds++;
+        }
+
+        size_t numdof = gdofs_original.size();
+        size_t offset = 0;  // no offset in case of no std-dofset means take the first dofset for output
+
+        if(is_std_set)
+        {
+          offset = numdof*nds;   // offset to start the loop over dofs at the right nds position
+        }
+
+        // copy all values
+        for (std::size_t idof = 0; idof < numdof; ++idof)
+        {
+          (*outvec_fluid_)[dofrowmap->LID(gdofs_original[idof])] = (*state_->velnp_)[xdofrowmap->LID(gdofs_current[offset+idof])];
+        }
+
+        // if there are just ghost values, then we write output for the set with largest physical fluid volume
+      }
+      else dserror("unknown number of dofs for output");
+
+    };
 
 
     // velocity/pressure vector

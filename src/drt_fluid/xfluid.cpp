@@ -4281,9 +4281,6 @@ void FLD::XFluid::Output()
                // at least one vc has to contain the node
                for(std::set<GEO::CUT::plain_volumecell_set>::const_iterator sets=cellsets->begin(); sets!=cellsets->end(); sets++)
                {
-                 // break the outer loop if at least one vc contains this point
-                 if(is_std_set == true) break;
-
                  const GEO::CUT::plain_volumecell_set& set = *sets;
 
                  for(GEO::CUT::plain_volumecell_set::const_iterator vcs=set.begin(); vcs!=set.end(); vcs++)
@@ -4295,10 +4292,12 @@ void FLD::XFluid::Output()
                      break;
                    }
                  }
+                 // break the outer loop if at least one vc contains this point
+                 if(is_std_set == true) break;
                }
+               if(is_std_set == true) break;
                nds++;
              }
-
 
              size_t numdof = gdofs_original.size();
              size_t offset = 0; // no offset in case of no std-dofset means take the first dofset for output
