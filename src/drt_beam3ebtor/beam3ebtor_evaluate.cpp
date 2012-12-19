@@ -466,7 +466,7 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
     break;
   }
 
-  //TODO: The integration rule should be set via input parameter and not hard coded as here
+  //
   //Get integrationpoints for exact integration
   DRT::UTILS::IntegrationPoints1D gausspoints = DRT::UTILS::IntegrationPoints1D(DRT::UTILS::intrule_line_6point);
 
@@ -931,10 +931,10 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckStiffMatrix(vector<double>& disp,
   }
 
   //matrix for current nodal positions and nodal tangents
-  vector<FAD> disp_totlag(nnode*dofpn);
+  vector<FAD> disp_totlag(nnode*dofpn,0.0);
 
   //matrix for current nodal twist angle
-  vector<FAD> twist_totlag(nnode*1);
+  vector<FAD> twist_totlag(nnode*1,0.0);
 
   //abbreviated matrices for clearness
   LINALG::TMatrix<FAD,dofpn*nnode,dofpn*nnode> NTilde;
@@ -1020,10 +1020,6 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckStiffMatrix(vector<double>& disp,
 
   //Get DiscretizationType of beam element
   const DRT::Element::DiscretizationType distype = Shape();
-
-  //clear disp_totlag vector before assembly
-  disp_totlag.clear();
-  twist_totlag.clear();
 
   //update displacement vector with disp = [ r1 t1 alpha1 r2 t2 alpha2]
   for (int node = 0 ; node < nnode ; node++)
@@ -1450,7 +1446,7 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckNeumann(Teuchos::ParameterList& params,
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
   //matrix for current positions and tangents
-  vector<FAD> disp_totlag((dofpn+1)*nnode);
+  vector<FAD> disp_totlag((dofpn+1)*nnode,0.0);
 
   for (int i=0; i<(dofpn+1)*nnode; i++)
   {

@@ -1,4 +1,4 @@
-/*!----------------------------------------------------------------------
+          /*!----------------------------------------------------------------------
 \file beam3ebtor.H
 
 \brief three dimensional nonlinear rod based on a C1 curve
@@ -306,7 +306,8 @@ private:
     calc_struct_update_istep,
     calc_struct_update_imrlike,
     calc_struct_reset_istep,
-    calc_struct_ptcstiff //calculate artificial stiffness due to PTC solution strategy
+    calc_struct_ptcstiff, //calculate artificial stiffness due to PTC solution strategy
+    calc_struct_energy
   };
 
 
