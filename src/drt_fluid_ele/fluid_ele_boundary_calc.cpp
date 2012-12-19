@@ -2331,10 +2331,10 @@ template <DRT::Element::DiscretizationType bndydistype,
   // number of internal stress dofs is equivalent to number of second derivatives
   static const int numstressdof_= DRT::UTILS::DisTypeToNumDeriv2<pdistype>::numderiv2;
 
-  if(fldpara_->TimeAlgo()== INPAR::FLUID::timeint_afgenalpha or
-       fldpara_->TimeAlgo()== INPAR::FLUID::timeint_npgenalpha or
-       fldpara_->TimeAlgo()== INPAR::FLUID::timeint_one_step_theta)
-       dserror("The use of mixed hybrid boundary conditions and ost/aggenalpha/npgenalpha is buggy??\n One need to check!!");
+  if(fldpara_->TimeAlgo()== INPAR::FLUID::timeint_afgenalpha //or
+//     fldpara_->TimeAlgo()== INPAR::FLUID::timeint_one_step_theta
+     )
+       dserror("The use of mixed hybrid boundary conditions and ost/aggenalpha is buggy??\n One need to check!!");
 
   // --------------------------------------------------
   // Reshape element matrices and vectors and init to zero, construct views
@@ -3046,8 +3046,10 @@ template <DRT::Element::DiscretizationType bndydistype,
       }
 
       // compute averaged norm of traction by division by area element
+      if (area< EPS13)
+        dserror("Area too small, zero or even negative!");
       normtraction/=area;
-    }
+    } // if (nsd==3)
   }
 
   /*<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>
@@ -3235,6 +3237,7 @@ template <DRT::Element::DiscretizationType bndydistype,
           nGn+=unitnormal(rr)*G(rr,nn)*unitnormal(nn);
         }
       }
+      if (nGn < EPS14) dserror("nGn is zero or negative!");
       const double h =2.0/sqrt(nGn);
 
       // interpolate to gausspoint
@@ -3398,6 +3401,15 @@ template <DRT::Element::DiscretizationType bndydistype,
 
             // do Newton step
             utau-=inc;
+            if (abs(utau) < 1.0E-14)
+            {
+              // If |u_tau| approaches zero, subtract only 99,99% of inc from utau.
+              // This heuristics prevents a zero utau, which is problematic
+              // within SpaldingResidual(), where a division takes place.
+              // Seems to be required only for the first time step of a simulation.
+              // gjb 12/12
+              utau += 0.001*inc;
+            }
 
             // get residual of Spaldings equation (law of the wall)
             res=SpaldingResidual(y    ,
@@ -3418,11 +3430,12 @@ template <DRT::Element::DiscretizationType bndydistype,
           {
             const double dres_duplus=JacobianSpaldingResidual_uplus(y,visc_,utau,normu);
 
+            if (abs(dres_duplus)<EPS12) dserror("prevent division by zero");
             const double visc_dudy=-utau*utau/dres_duplus;
 
-	    if(fabs(normtraction)>0.001*visc_/y)
-	    {
-	      // based on viscous stresses
+            if(fabs(normtraction)>0.001*visc_/y)
+            {
+              // based on viscous stresses
               if(*utau_computation=="viscous_tangent")
               {
                 tau_tangential*=visc_dudy/normtraction;
@@ -3432,22 +3445,23 @@ template <DRT::Element::DiscretizationType bndydistype,
                 // a la Michler
                 tau_tangential*=utau*utau/normtraction;
               }
+#if 0
+              if(parent->Id()==myid)
+              {
+                printf("u_tau Spalding %12.5e "          ,utau);
+                printf("sqrt(normtraction) %12.5e "      ,sqrt(normtraction));
+                printf("(visc_dudy/normtraction %12.5e) ",visc_dudy/normtraction);
+                printf("sqrt(visc_dudy) %12.5e \n"       ,sqrt(visc_dudy));
 
-	      if(parent->Id()==myid)
-	      {
-		printf("u_tau Spalding %12.5e "          ,utau);
-		printf("sqrt(normtraction) %12.5e "      ,sqrt(normtraction));
-		printf("(visc_dudy/normtraction %12.5e) ",visc_dudy/normtraction);
-		printf("sqrt(visc_dudy) %12.5e \n"       ,sqrt(visc_dudy));
-
-		printf("visc_dudy      %12.5e "   ,visc_dudy);
-		printf("normtraction   %12.5e ",normtraction);
-		printf("tau_tangential %12.5e "           ,tau_tangential);
-		printf("y %12.5e "            ,y);
-		printf("y+  %12.5e\n"         ,y*utau/visc_);
-	      }
-	    }
-	  }
+                printf("visc_dudy      %12.5e ",visc_dudy);
+                printf("normtraction   %12.5e ",normtraction);
+                printf("tau_tangential %12.5e ",tau_tangential);
+                printf("y %12.5e "             ,y);
+                printf("y+  %12.5e\n"          ,y*utau/visc_);
+              }
+#endif
+	          }
+          } // if(spalding)
         }
       }
 

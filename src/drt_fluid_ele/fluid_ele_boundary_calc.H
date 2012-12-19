@@ -693,6 +693,7 @@ private:
     )
     {
       // get dimensionless velocity
+      if (abs(utau)<1.0E-14) dserror("utau is zero!");
       const double up = normu/utau;
 
       const double chi=0.4;
@@ -700,6 +701,7 @@ private:
 
       //      +
       // get y , a dimensionless boundary layer thickness
+      if (visc<1.0E-14) dserror("visc is zero or negative!");
       const double yp = y*utau/visc;
 
       /*
