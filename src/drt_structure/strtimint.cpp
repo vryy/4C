@@ -107,6 +107,7 @@ STR::TimInt::TimInt
   writestate_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_DISP")),
   writeresultsevery_(sdynparams.get<int>("RESULTSEVRY")),
   writestress_(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_STRESS")),
+  writecouplstress_(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_COUPLING_STRESS")),
   writestrain_(DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_STRAIN")),
   writeplstrain_(DRT::INPUT::IntegralValue<INPAR::STR::StrainType>(ioparams,"STRUCT_PLASTIC_STRAIN")),
   writeenergyevery_(sdynparams.get<int>("RESEVRYERGY")),
@@ -1067,6 +1068,7 @@ void STR::TimInt::OutputStep()
   // output stress & strain
   if ( writeresultsevery_
        and ( (writestress_ != INPAR::STR::stress_none)
+             or (writecouplstress_ != INPAR::STR::stress_none)
              or (writestrain_ != INPAR::STR::strain_none)
              or (writeplstrain_ != INPAR::STR::strain_none) )
        and (step_%writeresultsevery_ == 0) )
@@ -1220,6 +1222,7 @@ void STR::TimInt::DetermineStressStrain()
 {
   if ( writeresultsevery_
        and ( (writestress_ != INPAR::STR::stress_none)
+             or (writecouplstress_ != INPAR::STR::stress_none)
              or (writestrain_ != INPAR::STR::strain_none)
              or (writeplstrain_ != INPAR::STR::strain_none) )
        and (stepn_%writeresultsevery_ == 0) )
@@ -1236,6 +1239,12 @@ void STR::TimInt::DetermineStressStrain()
     stressdata_ = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stressdata_);
     p.set<int>("iostress", writestress_);
+
+    // write stress data that arise from the coupling with another field, e.g.
+    // in TSI: couplstress corresponds to thermal stresses
+    couplstressdata_ = Teuchos::rcp(new std::vector<char>());
+    p.set("couplstress", couplstressdata_);
+    p.set<int>("iocouplstress", writecouplstress_);
 
     straindata_ = Teuchos::rcp(new std::vector<char>());
     p.set("strain", straindata_);
@@ -1344,6 +1353,28 @@ void STR::TimInt::OutputStressStrain
                          *(discret_->ElementRowMap()));
     // we don't need this anymore
     stressdata_ = Teuchos::null;
+  }
+
+  // write coupling stress
+  if (writecouplstress_ != INPAR::STR::stress_none)
+  {
+    std::string couplstresstext = "";
+    if (writecouplstress_ == INPAR::STR::stress_cauchy)
+    {
+      couplstresstext = "gauss_cauchy_coupling_stresses_xyz";
+    }
+    else if (writecouplstress_ == INPAR::STR::stress_2pk)
+    {
+      couplstresstext = "gauss_2PK_coupling_stresses_xyz";
+    }
+    else
+    {
+      dserror("requested stress type not supported");
+    }
+    output_->WriteVector(couplstresstext, *couplstressdata_,
+                         *(discret_->ElementRowMap()));
+    // we don't need this anymore
+    couplstressdata_ = Teuchos::null;
   }
 
   // write strain

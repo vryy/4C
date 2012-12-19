@@ -886,6 +886,7 @@ namespace STR
     bool writestate_;  //!< write state on/off
     int writeresultsevery_;  //!< write state/stress/strain every given step
     INPAR::STR::StressType writestress_;  //!< stress output type
+    INPAR::STR::StressType writecouplstress_;  //!< output type of coupling stress
     INPAR::STR::StrainType writestrain_;  //!< strain output type
     INPAR::STR::StrainType writeplstrain_;  //!< plastic strain output type
     int writeenergyevery_;  //!< write system energy every given step
@@ -893,6 +894,7 @@ namespace STR
     std::ofstream* energyfile_;  //!< outputfile for energy
 
     Teuchos::RCP<std::vector<char> > stressdata_; //!< container for element GP stresses
+    Teuchos::RCP<std::vector<char> > couplstressdata_; //!< container for element GP coupling stresses
     Teuchos::RCP<std::vector<char> > straindata_; //!< container for element GP strains
     Teuchos::RCP<std::vector<char> > plstraindata_; //!< container for element GP plastic strains
     double kinergy_; //!< kinetic energy
