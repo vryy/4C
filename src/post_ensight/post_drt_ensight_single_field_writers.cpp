@@ -97,6 +97,10 @@ void StructureEnsightWriter::WriteAllResults(PostField* field)
     // Cauchy _or_ 2nd Piola-Kirchhoff stresses are written during simulation!
     PostStress("gauss_cauchy_stresses_xyz", stresstype_);
     PostStress("gauss_2PK_stresses_xyz", stresstype_);
+    // in case of coupled problem (e.g. TSI) write the stresses arising due to
+    // coupling to another field
+    PostStress("gauss_cauchy_coupling_stresses_xyz", stresstype_);
+    PostStress("gauss_2PK_coupling_stresses_xyz", stresstype_);
   }
   if (straintype_!="none")
   {

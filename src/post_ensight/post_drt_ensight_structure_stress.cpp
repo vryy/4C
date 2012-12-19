@@ -113,6 +113,16 @@ void StructureEnsightWriter::WriteNodalStress(const string groupname,
     name="nodal_cauchy_stresses_xyz";
     out="Cauchy stresses";
   }
+  else if (groupname=="gauss_2PK_coupling_stresses_xyz")
+  {
+    name="nodal_2PK_coupling_stresses_xyz";
+    out="2nd Piola-Kirchhoff coupling stresses";
+  }
+  else if (groupname=="gauss_cauchy_coupling_stresses_xyz")
+  {
+    name="nodal_cauchy_coupling_stresses_xyz";
+    out="Cauchy coupling stresses";
+  }
   else if (groupname=="gauss_GL_strains_xyz")
   {
     name="nodal_GL_strains_xyz";
@@ -290,6 +300,16 @@ void StructureEnsightWriter::WriteElementCenterStress(const string groupname,
   {
     name="element_cauchy_stresses_xyz";
     out="Cauchy stresses";
+  }
+  else if (groupname=="gauss_2PK_coupling_stresses_xyz")
+  {
+    name="element_2PK_coupling_stresses_xyz";
+    out="2nd Piola-Kirchhoff coupling stresses";
+  }
+  else if (groupname=="gauss_cauchy_coupling_stresses_xyz")
+  {
+    name="element_cauchy_coupling_stresses_xyz";
+    out="Cauchy coupling stresses";
   }
   else if (groupname=="gauss_GL_strains_xyz")
   {
@@ -517,6 +537,26 @@ void StructureEnsightWriter::WriteNodalEigenStress(const string groupname,
     name[4]="nodal_cauchy_stresses_eigenvec2";
     name[5]="nodal_cauchy_stresses_eigenvec3";
     out="principal Cauchy stresses";
+  }
+  if (groupname=="gauss_2PK_coupling_stresses_xyz")
+  {
+    name[0]="nodal_2PK_coupling_stresses_eigenval1";
+    name[1]="nodal_2PK_coupling_stresses_eigenval2";
+    name[2]="nodal_2PK_coupling_stresses_eigenval3";
+    name[3]="nodal_2PK_coupling_stresses_eigenvec1";
+    name[4]="nodal_2PK_coupling_stresses_eigenvec2";
+    name[5]="nodal_2PK_coupling_stresses_eigenvec3";
+    out="principal 2nd Piola-Kirchhoff coupling stresses";
+  }
+  else if (groupname=="gauss_cauchy_coupling_stresses_xyz")
+  {
+    name[0]="nodal_cauchy_coupling_stresses_eigenval1";
+    name[1]="nodal_cauchy_coupling_stresses_eigenval2";
+    name[2]="nodal_cauchy_coupling_stresses_eigenval3";
+    name[3]="nodal_cauchy_coupling_stresses_eigenvec1";
+    name[4]="nodal_cauchy_coupling_stresses_eigenvec2";
+    name[5]="nodal_cauchy_coupling_stresses_eigenvec3";
+    out="principal Cauchy coupling stresses";
   }
   else if (groupname=="gauss_GL_strains_xyz")
   {
@@ -869,6 +909,26 @@ void StructureEnsightWriter::WriteElementCenterEigenStress(const string groupnam
     name[4]="element_cauchy_stresses_eigenvec2";
     name[5]="element_cauchy_stresses_eigenvec3";
     out="principal Cauchy stresses";
+  }
+  else if (groupname=="gauss_2PK_coupling_stresses_xyz")
+  {
+    name[0]="element_2PK_coupling_stresses_eigenval1";
+    name[1]="element_2PK_coupling_stresses_eigenval2";
+    name[2]="element_2PK_coupling_stresses_eigenval3";
+    name[3]="element_2PK_coupling_stresses_eigenvec1";
+    name[4]="element_2PK_coupling_stresses_eigenvec2";
+    name[5]="element_2PK_coupling_stresses_eigenvec3";
+    out="principal 2nd Piola-Kirchhoff coupling stresses";
+  }
+  else if (groupname=="gauss_cauchy_coupling_stresses_xyz")
+  {
+    name[0]="element_cauchy_coupling_stresses_eigenval1";
+    name[1]="element_cauchy_coupling_stresses_eigenval2";
+    name[2]="element_cauchy_coupling_stresses_eigenval3";
+    name[3]="element_cauchy_coupling_stresses_eigenvec1";
+    name[4]="element_cauchy_coupling_stresses_eigenvec2";
+    name[5]="element_cauchy_coupling_stresses_eigenvec3";
+    out="principal Cauchy coupling stresses";
   }
   else if (groupname=="gauss_GL_strains_xyz")
   {
