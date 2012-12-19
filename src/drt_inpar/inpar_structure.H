@@ -343,7 +343,8 @@ namespace INPAR
     //@{
 
     /// Type of structural stress output
-    /// (this enum represents the input file parameter STRUCT_STRESS)
+    /// (this enum represents the input file parameter STRUCT_STRESS and
+    /// STRUCT_COUPLING_STRESS)
     enum StressType
     {
       stress_none,    ///< no stress output
@@ -352,7 +353,8 @@ namespace INPAR
     };
 
     /// Type of structural strain output
-    /// (this enum represents the input file parameter STRUCT_STRAIN)
+    /// (this enum represents the input file parameter STRUCT_STRAIN and
+    /// STRUCT_PLASTIC_STRAIN)
     enum StrainType
     {
       strain_none,    ///< no strain output

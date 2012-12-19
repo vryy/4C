@@ -737,19 +737,31 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                   "Cauchy","cauchy",
                                                   "2PK", "2pk"),
                                tuple<int>(INPAR::STR::stress_none,INPAR::STR::stress_none,INPAR::STR::stress_none,
-                                                             INPAR::STR::stress_2pk,INPAR::STR::stress_2pk,INPAR::STR::stress_2pk,
-                                                             INPAR::STR::stress_cauchy,INPAR::STR::stress_cauchy,
-                                                             INPAR::STR::stress_2pk,INPAR::STR::stress_2pk),
+                                          INPAR::STR::stress_2pk,INPAR::STR::stress_2pk,INPAR::STR::stress_2pk,
+                                          INPAR::STR::stress_cauchy,INPAR::STR::stress_cauchy,
+                                          INPAR::STR::stress_2pk,INPAR::STR::stress_2pk),
                                &io);
+  // in case of a coupled problem (e.g. TSI) the additional stresses are
+  // (TSI: thermal stresses) are printed here
+  setStringToIntegralParameter<int>("STRUCT_COUPLING_STRESS","No","",
+                                 tuple<std::string>("No","no","NO",
+                                                    "Yes","yes","YES",
+                                                    "Cauchy","cauchy",
+                                                    "2PK", "2pk"),
+                                 tuple<int>(INPAR::STR::stress_none,INPAR::STR::stress_none,INPAR::STR::stress_none,
+                                            INPAR::STR::stress_2pk,INPAR::STR::stress_2pk,INPAR::STR::stress_2pk,
+                                            INPAR::STR::stress_cauchy,INPAR::STR::stress_cauchy,
+                                            INPAR::STR::stress_2pk,INPAR::STR::stress_2pk),
+                                 &io);
   setStringToIntegralParameter<int>("STRUCT_STRAIN","No","",
                                tuple<std::string>("No","no","NO",
                                                   "Yes","yes","YES",
                                                   "EA","ea",
                                                   "GL", "gl"),
                                tuple<int>(INPAR::STR::strain_none,INPAR::STR::strain_none,INPAR::STR::strain_none,
-                                                             INPAR::STR::strain_gl,INPAR::STR::strain_gl,INPAR::STR::strain_gl,
-                                                             INPAR::STR::strain_ea,INPAR::STR::strain_ea,
-                                                             INPAR::STR::strain_gl,INPAR::STR::strain_gl),
+                                          INPAR::STR::strain_gl,INPAR::STR::strain_gl,INPAR::STR::strain_gl,
+                                          INPAR::STR::strain_ea,INPAR::STR::strain_ea,
+                                          INPAR::STR::strain_gl,INPAR::STR::strain_gl),
                                &io);
   setStringToIntegralParameter<int>("STRUCT_PLASTIC_STRAIN","No","",
                                tuple<std::string>("No","no","NO",
@@ -757,9 +769,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                                   "EA","ea",
                                                   "GL", "gl"),
                                tuple<int>(INPAR::STR::strain_none,INPAR::STR::strain_none,INPAR::STR::strain_none,
-                                                             INPAR::STR::strain_gl,INPAR::STR::strain_gl,INPAR::STR::strain_gl,
-                                                             INPAR::STR::strain_ea,INPAR::STR::strain_ea,
-                                                             INPAR::STR::strain_gl,INPAR::STR::strain_gl),
+                                          INPAR::STR::strain_gl,INPAR::STR::strain_gl,INPAR::STR::strain_gl,
+                                          INPAR::STR::strain_ea,INPAR::STR::strain_ea,
+                                          INPAR::STR::strain_gl,INPAR::STR::strain_gl),
                                &io);
   setStringToIntegralParameter<int>("STRUCT_SURFACTANT","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("STRUCT_SM_DISP","No","",yesnotuple,yesnovalue,&io);
