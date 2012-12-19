@@ -40,6 +40,7 @@ STRUCT_DISP                     Yes
 STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
+STRUCT_COUPLING_STRESS          No
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  Initial                         // None, Current
 THERM_TEMPERATURE               Yes
