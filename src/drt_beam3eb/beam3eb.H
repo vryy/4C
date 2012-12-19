@@ -234,6 +234,20 @@ public:
   */
   virtual void Print(ostream& os) const;
 
+  /*!
+  \brief get reference triad i.e. Tref_
+  */
+  std::vector<LINALG::Matrix<3,1> > Tref() const;
+
+  /*!
+  \brief get jacobi factor jacobi_
+  */
+  double jacobi() const;
+
+  /*!
+  \brief get moment of intertia of area Iyy_
+  */
+  double Iyy();
 
   //@}
 

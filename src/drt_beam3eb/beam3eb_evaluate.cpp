@@ -1045,7 +1045,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(vector<double>& disp,
     const int nnode = 2;
 
     //matrix for current positions and tangents
-    vector<FAD> disp_totlag(nnode*dofpn);
+    vector<FAD> disp_totlag(nnode*dofpn,0.0);
 
     //abbreviated matrices for clearness
     LINALG::TMatrix<FAD,dofpn*nnode,dofpn*nnode> NTilde;
@@ -1114,9 +1114,6 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(vector<double>& disp,
 
     //Get DiscretizationType of beam element
     const DRT::Element::DiscretizationType distype = Shape();
-
-    //clear disp_totlag vector before assembly
-    disp_totlag.clear();
 
     //update displacement vector /d in thesis Meier d = [ r1 t1 r2 t2]
     for (int node = 0 ; node < nnode ; node++)
@@ -1350,7 +1347,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(vector<double>& disp,
     const int nnode = 2;
 
     //matrix for current positions and tangents
-    vector<FAD> disp_totlag(nnode*dofpn);
+    vector<FAD> disp_totlag(nnode*dofpn,0.0);
 
     //abbreviated matrices for clearness
     LINALG::TMatrix<FAD,dofpn*nnode,dofpn*nnode> NTilde;
@@ -1419,9 +1416,6 @@ void DRT::ELEMENTS::Beam3eb::FADCheckStiffMatrix(vector<double>& disp,
 
     //Get DiscretizationType of beam element
     const DRT::Element::DiscretizationType distype = Shape();
-
-    //clear disp_totlag vector before assembly
-    disp_totlag.clear();
 
     //update displacement vector /d in thesis Meier d = [ r1 t1 r2 t2]
     for (int node = 0 ; node < nnode ; node++)
@@ -1690,7 +1684,7 @@ void DRT::ELEMENTS::Beam3eb::FADCheckNeumann(Teuchos::ParameterList& params,
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
   //matrix for current positions and tangents
-  vector<FAD> disp_totlag((dofpn)*nnode);
+  vector<FAD> disp_totlag((dofpn)*nnode,0.0);
 
   for (int i=0; i<(dofpn)*nnode; i++)
   {

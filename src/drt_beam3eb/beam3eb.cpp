@@ -412,3 +412,18 @@ int DRT::ELEMENTS::Beam3ebType::Initialize(DRT::Discretization& dis)
 	  } //for (int num=0; num<dis_.NumMyColElements(); ++num)
 	  return 0;
 }
+
+std::vector<LINALG::Matrix<3,1> > DRT::ELEMENTS::Beam3eb::Tref() const
+{
+  return Tref_;
+}
+
+double DRT::ELEMENTS::Beam3eb::jacobi() const
+{
+  return jacobi_;
+}
+
+double DRT::ELEMENTS::Beam3eb::Iyy()
+{
+  return Iyy_;
+}
