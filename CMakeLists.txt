@@ -1705,7 +1705,6 @@ set(FILTER_LIBRARIES
   ${SUPPORT_LIBRARIES}
   drt_mat
   drt_lib_utils
-  libsolver
   linalg
   filter_common
   drt_comm
