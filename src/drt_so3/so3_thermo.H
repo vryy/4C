@@ -110,8 +110,9 @@ namespace ELEMENTS
     static const int numstr_ = 6;
     //! number of Gauss points per element (value is added in so3_thermo.cpp)
     int numgpt_;
-    // TODO 2012-10-30 general framework is required
-    static const int numgpt_1 = THR::DisTypeToSTRNumGaussPoints<distype>::nquad;
+    //! static const is required for fixedsizematrices
+    //! TODO maybe more beauty is possible
+    static const int numgpt_post = THR::DisTypeToSTRNumGaussPoints<distype>::nquad;
 
     //! @name Acess methods
 
@@ -125,7 +126,6 @@ namespace ELEMENTS
     //!
     //! every class implementing ParObject needs a unique id defined at the top of
     //! this file.
-//    virtual int UniqueParObjectId() const = 0 ;
     virtual int UniqueParObjectId() const
     {
       switch(distype)
@@ -311,7 +311,7 @@ namespace ELEMENTS
       std::vector<double>& residual,  //!< current residual displ
       std::vector<double>& temp, //!< current temperature
       LINALG::Matrix<numdofperelement_,1>* force,  //!< element internal force vector
-      LINALG::Matrix<numgpt_1,numstr_>* elestress,  //!< stresses at GP
+      LINALG::Matrix<numgpt_post,numstr_>* elestress,  //!< stresses at GP
       Teuchos::ParameterList& params,  //!< algorithmic parameters e.g. time
       const INPAR::STR::StressType iostress  //!< stress output option
       );
@@ -331,7 +331,7 @@ namespace ELEMENTS
       std::vector<double>& temp, //!< current temperature
       LINALG::Matrix<numdofperelement_,numdofperelement_>* stiffmatrix, // element stiffness matrix
       LINALG::Matrix<numdofperelement_,1>* force,  //!< element internal force vector
-      LINALG::Matrix<numgpt_1,numstr_>* elestress,  //!< stresses at GP
+      LINALG::Matrix<numgpt_post,numstr_>* elestress,  //!< stresses at GP
       Teuchos::ParameterList& params,  //!< algorithmic parameters e.g. time
       const INPAR::STR::StressType iostress  //!< stress output option
       );
