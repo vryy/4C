@@ -45,6 +45,7 @@ STRUCT_DISP                     Yes  // Yes,No,yes,no,YES,NO
 STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   GL  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
 STRUCT_STRESS                   2PK  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
+STRUCT_COUPLING_STRESS          2PK  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  Current  // None,No,NO,no,Current,Initial
 THERM_TEMPERATURE               Yes  // Yes,No,yes,no,YES,NO

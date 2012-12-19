@@ -51,6 +51,7 @@ STRUCT_DISP                     Yes
 STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   GL
 STRUCT_STRESS                   Cauchy
+STRUCT_COUPLING_STRESS          Cauchy
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  Current
 THERM_TEMPERATURE               Yes
