@@ -26,10 +26,10 @@ flows.
   ---------------------------------------------------------------------*/
 FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   RCP<DRT::Discretization> actdis             ,
-  bool                             alefluid           ,
+  bool                     alefluid           ,
   RCP<Epetra_Vector>       dispnp             ,
-  Teuchos::ParameterList&                   params             ,
-  bool                             subgrid_dissipation
+  Teuchos::ParameterList&  params             ,
+  bool                     subgrid_dissipation
   )
   :
   discret_            (actdis             ),
@@ -3538,6 +3538,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
   //----------------------------------------------------------------------
   // the sums are divided by the number of samples to get the time average
   int aux = numele_*numsamp_;
+  if (aux < 1) dserror("Prevent division by zero.");
 
   for(unsigned i=0; i<planecoordinates_->size(); ++i)
   {
@@ -3595,13 +3596,13 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
     }
   }
   // there are two Dirichlet boundaries
-  area*=2;
+  area*=2.0;
 
   //----------------------------------------------------------------------
   // we expect nonzero forces (tractions) only in flow direction
 
   // ltau is used to compute y+
-  double ltau = 0;
+  double ltau = 0.0;
   if      (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
   {
     if(abs(sumforceu_)< 1.0e-12)
@@ -3623,6 +3624,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
   {
     dserror("Cannot determine flow direction by traction (seems to be not unique)");
   }
+  if (abs(ltau)<1.0E-14) dserror("ltau is zero!");
 
   //----------------------------------------------------------------------
   // output to log-file
