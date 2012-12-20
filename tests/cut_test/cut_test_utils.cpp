@@ -306,8 +306,9 @@ void cutmesh( GEO::CUT::Mesh & mesh )
   //mesh.RemoveEmptyVolumeCells();
 
   //mesh.DumpGmshVolumeCells( "volumecells" );
-  mesh.DumpGmshIntegrationCells( "integrationcells.pos" );
+
 #ifdef DEBUGCUTLIBRARY
+  mesh.DumpGmshIntegrationCells( "integrationcells.pos" );
   mesh.TestElementVolume( false );
 #endif
 
