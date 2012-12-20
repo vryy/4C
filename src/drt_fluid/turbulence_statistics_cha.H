@@ -73,7 +73,6 @@ Maintainer: Ursula Rasthofer
 #include "../linalg/linalg_utils.H"
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_inpar/inpar_scatra.H"
-#include "../drt_scatra/scatra_ele_action.H"
 
 
 namespace FLD
@@ -119,7 +118,10 @@ public:
   to caculate mean values of multifractal subgrid-scales modeling
   parameters
   */
-  void StoreScatraDiscret(RCP<DRT::Discretization> scatradis);
+  void StoreScatraDiscretAndParams(RCP<DRT::Discretization> scatradis,
+                                   RCP<Teuchos::ParameterList> scatraparams,
+                                   RCP<Teuchos::ParameterList> scatraextraparams,
+                                   RCP<Teuchos::ParameterList> scatratimeparams);
 
 
   /*!
@@ -242,7 +244,9 @@ public:
                          const double                         thermpressaf,
                          const double                         thermpressam,
                          const double                         thermpressdtaf,
-                         const double                         thermpressdtam);
+                         const double                         thermpressdtam,
+                         map<string,RCP<Epetra_Vector> >      scatrastatevecs,
+                         map<string,RCP<Epetra_MultiVector> > scatrafieldvecs);
 
   //@}
 
@@ -329,6 +333,13 @@ protected:
 
 private:
 
+  /*!
+  \brief export multivector to column map and add it to parameter list (additional scatra statistics)
+  */
+  void AddMultiVectorToParameterList(Teuchos::ParameterList& p,
+                                     const std::string name,
+                                     Teuchos::RCP<Epetra_MultiVector> vec);
+
   //! direction normal to homogenous plane
   int                              dim_;
 
@@ -341,7 +352,7 @@ private:
   //! number of records written
   int                              countrecord_;
 
-  /// flag for physical type of fluid flow (standard: incompressible)
+  //! flag for physical type of fluid flow (standard: incompressible)
   INPAR::FLUID::PhysicalType       physicaltype_;
 
   //! The discretization (required for nodes, dofs etc;)
@@ -359,6 +370,15 @@ private:
   //! contains plane normal direction etc --- this is the original
   //! fluid dynamic parameterlist
   Teuchos::ParameterList&                   params_;
+  //! contains plane normal direction etc --- this is the original
+  //! scatra dynamic parameterlist
+  Teuchos::RCP<Teuchos::ParameterList> scatraparams_;
+  //! additional parameter list in scatra that contains
+  //! required parameters form other sublists such as turbulence models, etc.
+  Teuchos::RCP<Teuchos::ParameterList> scatraextraparams_;
+  //! additional parameterlist in scatra containing the parameters of the
+  //! resepctive time-integration scheme
+  Teuchos::RCP<Teuchos::ParameterList> scatratimeparams_;
 
   //! toggle evaluation of dynamic Smagorinsky/Smagorinsky with
   //! wall damping quantities
@@ -380,8 +400,13 @@ private:
 
   //! parameterlist for the element call when averages of residuals
   //! are calculated --- used for communication between element
-  //! and averaging methods
+  //! and averaging methods --- for fluid field
   Teuchos::ParameterList   eleparams_;
+
+  //! parameterlist for the element call when averages of residuals
+  //! are calculated --- used for communication between element
+  //! and averaging methods --- for scalar field
+  Teuchos::ParameterList                    scatraeleparams_;
 
   //! pointer to mean vel/pres and scalar field
   RCP<Epetra_Vector>       meanvelnp_;
@@ -679,6 +704,39 @@ private:
   RCP<std::vector<double> >     sum_crossstress_;
   //! sum over all in plane averaged reynolds stress
   RCP<std::vector<double> >     sum_reystress_;
+
+  //!--------------------------------------------------
+  //!  averaged resudiuals and subscale quantities of scalar field
+  //!--------------------------------------------------
+
+  //! sum over all in plane stabilization parameters
+  RefCountPtr<vector<double> >     sumtauS_;
+
+  //! sum over all in plane residuals of the convection-diffusion equation
+  RefCountPtr<vector<double> >     sumresS_;
+  //! sum over all in plane squared residuals of the convection-diffusion equation
+  RefCountPtr<vector<double> >     sumresS_sq_;
+
+  //! sum over all in plane averaged dissipation rates from supg stabilisation
+  RefCountPtr<vector<double> >     sum_scatra_eps_supg_;
+  //! sum over all in plane averaged dissipation rates from cross term
+  RefCountPtr<vector<double> >     sum_scatra_eps_cross_;
+  //! sum over all in plane averaged dissipation rates from reynolds term
+  RefCountPtr<vector<double> >     sum_scatra_eps_rey_;
+  //! sum over all in plane averaged dissipation rates from eddy viscosity model (Smagorinsky)
+  RefCountPtr<vector<double> >     sum_scatra_eps_eddyvisc_;
+  //! sum over all in plane averaged dissipation rates from eddy viscosity model (AVM3)
+  RefCountPtr<vector<double> >     sum_scatra_eps_avm3_;
+  //! sum over all in plane averaged dissipation rates from scale similarity model
+  RefCountPtr<vector<double> >     sum_scatra_eps_mfs_;
+  //! sum over all in plane averaged dissipation rates from scale similarity model (forwardscatter)
+  RefCountPtr<vector<double> >     sum_scatra_eps_mfscross_;
+  //! sum over all in plane averaged dissipation rates from scale similarity model (backscatter)
+  RefCountPtr<vector<double> >     sum_scatra_eps_mfsrey_;
+  //! sum over all in plane averaged dissipation rates from Galerkin viscous term
+  RefCountPtr<vector<double> >     sum_scatra_eps_visc_;
+  //! sum over all in plane averaged dissipation rates from Galerkin convective term
+  RefCountPtr<vector<double> >     sum_scatra_eps_conv_;
 
 };
 

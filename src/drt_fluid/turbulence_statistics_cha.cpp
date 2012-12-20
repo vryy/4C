@@ -7,10 +7,12 @@ flows.
 *----------------------------------------------------------------------*/
 
 #include "turbulence_statistics_cha.H"
-#include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_fluid_ele/fluid_ele_action.H"
 
+#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../drt_scatra/scatra_ele_action.H"
+
+#include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/sutherland.H"
 #include "../drt_mat/scatra_mat.H"
@@ -33,6 +35,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   )
   :
   discret_            (actdis             ),
+  scatradiscret_      (Teuchos::null      ),
   alefluid_           (alefluid           ),
   dispnp_             (dispnp             ),
   params_             (params             ),
@@ -1149,8 +1152,74 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     sum_crossstress_->resize(6*(nodeplanes_->size()-1),0.0);
     sum_reystress_  =  Teuchos::rcp(new std::vector<double> );
     sum_reystress_  ->resize(6*(nodeplanes_->size()-1),0.0);
-  }
 
+    // add quantities for scatra here
+    Teuchos::RCP<std::vector<double> > local_scatra_incrvol           = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+
+    Teuchos::RCP<std::vector<double> > local_scatra_incrtauS          = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    Teuchos::RCP<std::vector<double> > local_scatra_incrresS          = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    Teuchos::RCP<std::vector<double> > local_scatra_incrresS_sq       = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+
+    Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_supg     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_cross    = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_rey      = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_eddyvisc = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_visc     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_conv     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_mfs      = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_mfscross = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_mfsrey   = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_avm3     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+
+
+    // pass pointers to local sum vectors to the element
+    scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("planecoords_"     ,nodeplanes_           );
+    scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incrvol"          ,local_scatra_incrvol         );
+    scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incrtauS"         ,local_scatra_incrtauS        );
+    scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incrresS"         ,local_scatra_incrresS        );
+    scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incrresS_sq"      ,local_scatra_incrresS_sq     );
+
+    scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_supg"    ,local_scatra_incr_eps_supg    );
+    scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_cross"   ,local_scatra_incr_eps_cross   );
+    scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_rey"     ,local_scatra_incr_eps_rey     );
+    scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_eddyvisc",local_scatra_incr_eps_eddyvisc);
+    scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_visc"    ,local_scatra_incr_eps_visc    );
+    scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_conv"    ,local_scatra_incr_eps_conv    );
+    scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_mfs"     ,local_scatra_incr_eps_mfs     );
+    scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_mfscross",local_scatra_incr_eps_mfscross);
+    scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_mfsrey"  ,local_scatra_incr_eps_mfsrey  );
+    scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_avm3"    ,local_scatra_incr_eps_avm3    );
+
+
+    // means for comparison of of residual and dissipation
+    sumresS_       =  Teuchos::rcp(new std::vector<double> );
+    sumresS_->resize(nodeplanes_->size()-1,0.0);
+    sumresS_sq_    =  Teuchos::rcp(new std::vector<double> );
+    sumresS_sq_->resize(nodeplanes_->size()-1,0.0);
+    sumtauS_       =  Teuchos::rcp(new std::vector<double> );
+    sumtauS_->resize(nodeplanes_->size()-1,0.0);
+
+    sum_scatra_eps_supg_=  Teuchos::rcp(new std::vector<double> );
+    sum_scatra_eps_supg_->resize(nodeplanes_->size()-1,0.0);
+    sum_scatra_eps_cross_=  Teuchos::rcp(new std::vector<double> );
+    sum_scatra_eps_cross_->resize(nodeplanes_->size()-1,0.0);
+    sum_scatra_eps_rey_=  Teuchos::rcp(new std::vector<double> );
+    sum_scatra_eps_rey_->resize(nodeplanes_->size()-1,0.0);
+    sum_scatra_eps_eddyvisc_=  Teuchos::rcp(new std::vector<double> );
+    sum_scatra_eps_eddyvisc_->resize(nodeplanes_->size()-1,0.0);
+    sum_scatra_eps_visc_=  Teuchos::rcp(new std::vector<double> );
+    sum_scatra_eps_visc_->resize(nodeplanes_->size()-1,0.0);
+    sum_scatra_eps_conv_=  Teuchos::rcp(new std::vector<double> );
+    sum_scatra_eps_conv_->resize(nodeplanes_->size()-1,0.0);
+    sum_scatra_eps_mfs_=  Teuchos::rcp(new std::vector<double> );
+    sum_scatra_eps_mfs_->resize(nodeplanes_->size()-1,0.0);
+    sum_scatra_eps_mfscross_=  Teuchos::rcp(new std::vector<double> );
+    sum_scatra_eps_mfscross_->resize(nodeplanes_->size()-1,0.0);
+    sum_scatra_eps_mfsrey_=  Teuchos::rcp(new std::vector<double> );
+    sum_scatra_eps_mfsrey_->resize(nodeplanes_->size()-1,0.0);
+    sum_scatra_eps_avm3_=  Teuchos::rcp(new std::vector<double> );
+    sum_scatra_eps_avm3_->resize(nodeplanes_->size()-1,0.0);
+  }
 
 
   //----------------------------------------------------------------------
@@ -1161,6 +1230,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   Teuchos::RCP<std::ofstream> log_SSM;
   Teuchos::RCP<std::ofstream> log_MF;
   Teuchos::RCP<std::ofstream> log_res;
+  Teuchos::RCP<std::ofstream> log_res_scatra;
 
   if (discret_->Comm().MyPID()==0)
   {
@@ -1231,6 +1301,15 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       (*log_res) << "# Statistics for turbulent incompressible channel flow (residuals and subscale quantities)\n";
       (*log_res) << "# All values are first averaged over the integration points in an element \n";
       (*log_res) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
+
+      std::string s_res_scatra = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      s_res_scatra.append(".res_scatra_statistics");
+
+      log_res_scatra = Teuchos::rcp(new std::ofstream(s_res_scatra.c_str(),ios::out));
+      (*log_res_scatra) << "# Statistics for turbulent incompressible channel flow with scalar transport (residuals and subscale quantities)\n";
+      (*log_res_scatra) << "# All values are first averaged over the integration points in an element \n";
+      (*log_res_scatra) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
+      (*log_res_scatra) << "#                           THIS IS THE SCATRA FILE                          \n\n";
     }
   }
 
@@ -3044,7 +3123,9 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
   const double                         thermpressaf,
   const double                         thermpressam,
   const double                         thermpressdtaf,
-  const double                         thermpressdtam)
+  const double                         thermpressdtam,
+  map<string,RCP<Epetra_Vector> >      scatrastatevecs,
+  map<string,RCP<Epetra_MultiVector> > scatrafieldvecs)
 {
 
   if(subgrid_dissipation_)
@@ -3085,9 +3166,49 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
     discret_->ClearState();
 
+   // do we also have a scalar field
+   if (scatradiscret_ != Teuchos::null)
+   {
+     // add dissipation and residuals of scalar field
 
+     // set scatra type and action for elements
+     scatraeleparams_.set<int>("scatratype",scatraparams_->get<int>("scatratype"));
+     scatraeleparams_.set<int>("action",SCATRA::calc_dissipation);
+     // set parameters required for evaluation of residuals, etc.
+     scatraeleparams_.set<double>("time-step length",scatraparams_->get<double>("TIMESTEP"));
+     scatraeleparams_.set<int>("fs subgrid diffusivity",DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*scatraparams_,"FSSUGRDIFF"));
+     scatraeleparams_.sublist("TURBULENCE MODEL") = scatraextraparams_->sublist("TURBULENCE MODEL");
+     scatraeleparams_.sublist("SUBGRID VISCOSITY") = scatraextraparams_->sublist("SUBGRID VISCOSITY");
+     scatraeleparams_.sublist("MULTIFRACTAL SUBGRID SCALES") = scatraextraparams_->sublist("MULTIFRACTAL SUBGRID SCALES");
+     scatraeleparams_.set<bool>("update material",(&(scatraextraparams_->sublist("LOMA")))->get<bool>("update material",false));
+     scatraeleparams_.sublist("STABILIZATION") = scatraparams_->sublist("STABILIZATION");
+     scatraeleparams_.sublist("TIME INTEGRATION") = *scatratimeparams_;
+     // remark: this is the thermodynamic pressure taken form the fluid field
+     //         since the scatra field is solved after the fluid field, the thermodynamic pressure
+     //         may slightly change
+     //         however, the error is expected to be small
+     scatraeleparams_.set<double>("time derivative of thermodynamic pressure",thermpressdtaf);
+     // add convective velocity field
+     for(map<string,RCP<Epetra_MultiVector> >::iterator field =scatrafieldvecs.begin();
+                                                        field!=scatrafieldvecs.end()  ;
+                                                        ++field                 )
+     {
+       AddMultiVectorToParameterList(scatraeleparams_,field->first,field->second);
+     }
 
+     // set state vectors for element call
+     for(map<string,RCP<Epetra_Vector> >::iterator state =scatrastatevecs.begin();
+                                                   state!=scatrastatevecs.end()  ;
+                                                   ++state                 )
+     {
+       scatradiscret_->SetState(state->first,state->second);
+     }
 
+     // call loop over elements to compute means
+     scatradiscret_->Evaluate(scatraeleparams_,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+     scatradiscret_->ClearState();
+   }
 
     // ------------------------------------------------
     // get results from element call via parameter list
@@ -3515,7 +3636,187 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
     eleparams_.set<RCP<std::vector<double> > >("incrcrossstress"  ,local_incrcrossstress  );
     eleparams_.set<RCP<std::vector<double> > >("incrreystress"    ,local_incrreystress    );
-  }
+
+    if (scatradiscret_ != Teuchos::null)
+    {
+      // ------------------------------------------------
+      // get results from element call via parameter list
+      Teuchos::RCP<std::vector<double> > local_scatra_vol               =scatraeleparams_.get<Teuchos::RCP<std::vector<double> > >("incrvol"         );
+
+      Teuchos::RCP<std::vector<double> > local_scatra_incrtauS          =scatraeleparams_.get<Teuchos::RCP<std::vector<double> > >("incrtauS"        );
+      Teuchos::RCP<std::vector<double> > local_scatra_incrresS          =scatraeleparams_.get<Teuchos::RCP<std::vector<double> > >("incrresS"        );
+      Teuchos::RCP<std::vector<double> > local_scatra_incrresS_sq       =scatraeleparams_.get<Teuchos::RCP<std::vector<double> > >("incrresS_sq"     );
+
+      Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_visc     = scatraeleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_visc"    );
+      Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_conv     = scatraeleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_conv"    );
+      Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_eddyvisc = scatraeleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_eddyvisc");
+      Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_avm3     = scatraeleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_avm3"    );
+      Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_mfs      = scatraeleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_mfs"     );
+      Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_mfscross = scatraeleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_mfscross");
+      Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_mfsrey   = scatraeleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_mfsrey"  );
+      Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_supg     = scatraeleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_supg"    );
+      Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_cross    = scatraeleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_cross"   );
+      Teuchos::RCP<std::vector<double> > local_scatra_incr_eps_rey      = scatraeleparams_.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_rey"     );
+
+      int phisize    = local_scatra_incrresS       ->size();
+
+      //--------------------------------------------------
+      // vectors to sum over all procs
+
+      // volume of element layers
+      Teuchos::RCP<std::vector<double> > global_scatra_vol;
+      global_scatra_vol           =  Teuchos::rcp(new std::vector<double> (phisize,0.0));
+
+      // (in plane) averaged values of tauM/tauC
+      Teuchos::RCP<std::vector<double> > global_scatra_incrtauS;
+      global_scatra_incrtauS=  Teuchos::rcp(new std::vector<double> (phisize,0.0));
+
+      // (in plane) averaged values of resS (^2)
+      Teuchos::RCP<std::vector<double> > global_scatra_incrresS;
+      global_scatra_incrresS=  Teuchos::rcp(new std::vector<double> (phisize,0.0));
+
+      Teuchos::RCP<std::vector<double> > global_scatra_incrresS_sq;
+      global_scatra_incrresS_sq=  Teuchos::rcp(new std::vector<double> (phisize,0.0));
+
+      // (in plane) averaged values of dissipation by supg term
+      Teuchos::RCP<std::vector<double> > global_scatra_incr_eps_supg;
+      global_scatra_incr_eps_supg  = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      // (in plane) averaged values of dissipation by cross term
+      Teuchos::RCP<std::vector<double> > global_scatra_incr_eps_cross;
+      global_scatra_incr_eps_cross  = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      // (in plane) averaged values of dissipation by reynolds term
+      Teuchos::RCP<std::vector<double> > global_scatra_incr_eps_rey;
+      global_scatra_incr_eps_rey  = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      // (in plane) averaged values of dissipation by eddy viscosity
+      Teuchos::RCP<std::vector<double> > global_scatra_incr_eps_eddyvisc;
+      global_scatra_incr_eps_eddyvisc  = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      Teuchos::RCP<std::vector<double> > global_scatra_incr_eps_avm3;
+      global_scatra_incr_eps_avm3  = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      // (in plane) averaged values of dissipation by scale similarity model
+      Teuchos::RCP<std::vector<double> > global_scatra_incr_eps_mfs;
+      global_scatra_incr_eps_mfs  = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      Teuchos::RCP<std::vector<double> > global_scatra_incr_eps_mfscross;
+      global_scatra_incr_eps_mfscross  = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      Teuchos::RCP<std::vector<double> > global_scatra_incr_eps_mfsrey;
+      global_scatra_incr_eps_mfsrey  = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      // (in plane) averaged values of dissipation by viscous forces
+      Teuchos::RCP<std::vector<double> > global_scatra_incr_eps_visc;
+      global_scatra_incr_eps_visc  = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      // (in plane) averaged values of dissipation/production by convection
+      Teuchos::RCP<std::vector<double> > global_scatra_incr_eps_conv;
+      global_scatra_incr_eps_conv  = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+
+      //--------------------------------------------------
+      // global sums
+
+      // compute global sum, volume
+      discret_->Comm().SumAll(&((*local_scatra_vol )[0]),
+                              &((*global_scatra_vol)[0]),
+                              phisize);
+
+      // compute global sums, stabilisation parameters
+      discret_->Comm().SumAll(&((*local_scatra_incrtauS )[0]),
+                              &((*global_scatra_incrtauS)[0]),
+                              phisize);
+
+      // compute global sums, incompressibility residuals
+      discret_->Comm().SumAll(&((*local_scatra_incrresS      )[0]),
+                              &((*global_scatra_incrresS     )[0]),
+                              phisize);
+      discret_->Comm().SumAll(&((*local_scatra_incrresS_sq   )[0]),
+                              &((*global_scatra_incrresS_sq  )[0]),
+                              phisize);
+
+      // compute global sums, disspiation rates
+
+      discret_->Comm().SumAll(&((*local_scatra_incr_eps_supg  )[0]),
+                              &((*global_scatra_incr_eps_supg )[0]),
+                              phisize);
+      discret_->Comm().SumAll(&((*local_scatra_incr_eps_cross  )[0]),
+                              &((*global_scatra_incr_eps_cross )[0]),
+                              phisize);
+      discret_->Comm().SumAll(&((*local_scatra_incr_eps_rey  )[0]),
+                              &((*global_scatra_incr_eps_rey )[0]),
+                              phisize);
+      discret_->Comm().SumAll(&((*local_scatra_incr_eps_eddyvisc  )[0]),
+                              &((*global_scatra_incr_eps_eddyvisc )[0]),
+                              phisize);
+      discret_->Comm().SumAll(&((*local_scatra_incr_eps_visc  )[0]),
+                              &((*global_scatra_incr_eps_visc )[0]),
+                              phisize);
+      discret_->Comm().SumAll(&((*local_scatra_incr_eps_conv  )[0]),
+                              &((*global_scatra_incr_eps_conv )[0]),
+                              phisize);
+      discret_->Comm().SumAll(&((*local_scatra_incr_eps_avm3  )[0]),
+                              &((*global_scatra_incr_eps_avm3 )[0]),
+                              phisize);
+      discret_->Comm().SumAll(&((*local_scatra_incr_eps_mfs  )[0]),
+                              &((*global_scatra_incr_eps_mfs )[0]),
+                              phisize);
+      discret_->Comm().SumAll(&((*local_scatra_incr_eps_mfscross  )[0]),
+                              &((*global_scatra_incr_eps_mfscross )[0]),
+                              phisize);
+      discret_->Comm().SumAll(&((*local_scatra_incr_eps_mfsrey  )[0]),
+                              &((*global_scatra_incr_eps_mfsrey )[0]),
+                              phisize);
+
+      for (int rr=0;rr<presize;++rr)
+      {
+        (*sumtauS_         )[rr]+=(*global_scatra_incrtauS         )[rr];
+
+        (*sumresS_         )[rr]+=(*global_scatra_incrresS         )[rr];
+        (*sumresS_sq_      )[rr]+=(*global_scatra_incrresS_sq      )[rr];
+
+        (*sum_scatra_eps_supg_    )[rr]+=(*global_scatra_incr_eps_supg    )[rr];
+        (*sum_scatra_eps_cross_   )[rr]+=(*global_scatra_incr_eps_cross   )[rr];
+        (*sum_scatra_eps_rey_     )[rr]+=(*global_scatra_incr_eps_rey     )[rr];
+        (*sum_scatra_eps_eddyvisc_)[rr]+=(*global_scatra_incr_eps_eddyvisc)[rr];
+        (*sum_scatra_eps_visc_    )[rr]+=(*global_scatra_incr_eps_visc    )[rr];
+        (*sum_scatra_eps_conv_    )[rr]+=(*global_scatra_incr_eps_conv    )[rr];
+        (*sum_scatra_eps_avm3_    )[rr]+=(*global_scatra_incr_eps_avm3    )[rr];
+        (*sum_scatra_eps_mfs_     )[rr]+=(*global_scatra_incr_eps_mfs     )[rr];
+        (*sum_scatra_eps_mfscross_)[rr]+=(*global_scatra_incr_eps_mfscross)[rr];
+        (*sum_scatra_eps_mfsrey_  )[rr]+=(*global_scatra_incr_eps_mfsrey  )[rr];
+      }
+
+
+      // reset working arrays
+      local_scatra_vol               = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+      local_scatra_incrtauS          = Teuchos::rcp(new std::vector<double> (presize,0.0));
+      local_scatra_incrresS          = Teuchos::rcp(new std::vector<double> (presize,0.0));
+      local_scatra_incrresS_sq       = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+      local_scatra_incr_eps_supg     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+      local_scatra_incr_eps_cross    = Teuchos::rcp(new std::vector<double> (presize,0.0));
+      local_scatra_incr_eps_rey      = Teuchos::rcp(new std::vector<double> (presize,0.0));
+      local_scatra_incr_eps_eddyvisc = Teuchos::rcp(new std::vector<double> (presize,0.0));
+      local_scatra_incr_eps_visc     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+      local_scatra_incr_eps_conv     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+      local_scatra_incr_eps_avm3     = Teuchos::rcp(new std::vector<double> (presize,0.0));
+      local_scatra_incr_eps_mfs      = Teuchos::rcp(new std::vector<double> (presize,0.0));
+      local_scatra_incr_eps_mfscross = Teuchos::rcp(new std::vector<double> (presize,0.0));
+      local_scatra_incr_eps_mfsrey   = Teuchos::rcp(new std::vector<double> (presize,0.0));
+
+      scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incrvol"          ,local_scatra_vol              );
+
+      scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incrtauS"         ,local_scatra_incrtauS         );
+
+      scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incrresS"         ,local_scatra_incrresS         );
+      scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incrresS_sq"      ,local_scatra_incrresS_sq      );
+
+      scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_supg"    ,local_scatra_incr_eps_supg    );
+      scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_cross"   ,local_scatra_incr_eps_cross   );
+      scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_rey"     ,local_scatra_incr_eps_rey     );
+      scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_eddyvisc",local_scatra_incr_eps_eddyvisc);
+      scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_visc"    ,local_scatra_incr_eps_visc    );
+      scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_conv"    ,local_scatra_incr_eps_conv    );
+      scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_avm3"    ,local_scatra_incr_eps_avm3    );
+      scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_mfs"     ,local_scatra_incr_eps_mfs     );
+      scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_mfscross",local_scatra_incr_eps_mfscross);
+      scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_mfsrey"   ,local_scatra_incr_eps_mfsrey );
+    }// end if scatra
+  }// end if dissipation
 
   return;
 } // FLD::TurbulenceStatisticsCha::EvaluateResiduals
@@ -4436,6 +4737,10 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
 
       log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::out));
 
+      (*log_res) << "# Statistics for turbulent incompressible channel flow (residuals and subscale quantities)\n";
+      (*log_res) << "# All values are first averaged over the integration points in an element \n";
+      (*log_res) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
+
       (*log_res) << "\n\n\n";
       (*log_res) << "# Statistics record " << countrecord_;
       (*log_res) << " (Steps " << step-numsamp_+1 << "--" << step <<")   ";
@@ -4578,6 +4883,70 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
         (*log_res)  << &endl;
       }
       log_res->flush();
+
+
+      Teuchos::RCP<std::ofstream> log_res_scatra;
+
+      // output of residuals and subscale quantities
+      std::string s_res_scatra = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      s_res_scatra.append(".res_scatra_statistics");
+
+      log_res_scatra = Teuchos::rcp(new std::ofstream(s_res_scatra.c_str(),ios::out));
+
+      (*log_res_scatra) << "# Statistics for turbulent incompressible channel flow with scalar transport (residuals and subscale quantities)\n";
+      (*log_res_scatra) << "# All values are first averaged over the integration points in an element \n";
+      (*log_res_scatra) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
+      (*log_res_scatra) << "#                           THIS IS THE SCATRA FILE                          \n\n";
+
+      (*log_res_scatra) << "\n\n\n";
+      (*log_res_scatra) << "# Statistics record " << countrecord_;
+      (*log_res_scatra) << " (Steps " << step-numsamp_+1 << "--" << step <<")   ";
+      (*log_res_scatra) << " (dt " << params_.get<double>("time step size") <<")\n";
+
+      (*log_res_scatra) << "#       y    ";
+
+      (*log_res_scatra) << "      resS   ";
+      (*log_res_scatra) << "    resS_sq  ";
+      (*log_res_scatra) << "    tauS     ";
+
+      (*log_res_scatra) << "  eps_supg   ";
+      (*log_res_scatra) << "  eps_cross  ";
+      (*log_res_scatra) << "   eps_rey   ";
+      (*log_res_scatra) << " eps_eddyvisc";
+      (*log_res_scatra) << "   eps_visc  ";
+      (*log_res_scatra) << "   eps_conv  ";
+      (*log_res_scatra) << "   eps_avm3  ";
+      (*log_res_scatra) << "   eps_mfs   ";
+      (*log_res_scatra) << " eps_mfscross";
+      (*log_res_scatra) << " eps_mfsrey  ";
+
+      (*log_res_scatra) << "\n";
+
+      (*log_res_scatra) << scientific;
+      for (unsigned rr=0;rr<nodeplanes_->size()-1;++rr)
+      {
+        (*log_res_scatra)  << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sumresS_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sumresS_sq_      )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sumtauS_         )[rr]/(numele_*numsamp_) << "  ";
+
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_avm3_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_mfs_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_mfscross_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_mfsrey_  )[rr]/(numele_*numsamp_) << "  ";
+
+        (*log_res_scatra)  << &endl;
+      }
+      log_res_scatra->flush();
+
+
     } // end subgrid_dissipation_
 
     // ------------------------------------------------------------------
@@ -4754,6 +5123,228 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       (*log) << "\n";
     }
     log->flush();
+
+    if(subgrid_dissipation_)
+    {
+      Teuchos::RCP<std::ofstream> log_res;
+
+      // output of residuals and subscale quantities
+      std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      s_res.append(".res_statistics");
+
+      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
+
+      (*log_res) << "# Statistics for turbulent incompressible channel flow (residuals and subscale quantities)\n";
+      (*log_res) << "# All values are first averaged over the integration points in an element \n";
+      (*log_res) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
+
+      (*log_res) << "\n\n\n";
+      (*log_res) << "# Statistics record " << countrecord_;
+      (*log_res) << " (Steps " << step-numsamp_+1 << "--" << step <<")   ";
+      (*log_res) << " (dt " << params_.get<double>("time step size") <<")\n";
+
+      (*log_res) << "#       y    ";
+      (*log_res) << "    res_x   ";
+      (*log_res) << "      res_y  ";
+      (*log_res) << "      res_z  ";
+      (*log_res) << "     svel_x  ";
+      (*log_res) << "     svel_y  ";
+      (*log_res) << "     svel_z  ";
+
+      (*log_res) << "   res_sq_x  ";
+      (*log_res) << "   res_sq_y  ";
+      (*log_res) << "   res_sq_z  ";
+      (*log_res) << "   svel_sq_x ";
+      (*log_res) << "   svel_sq_y ";
+      (*log_res) << "   svel_sq_z ";
+
+      (*log_res) << " tauinvsvel_x";
+      (*log_res) << " tauinvsvel_y";
+      (*log_res) << " tauinvsvel_z";
+
+      (*log_res) << "    ||res||  ";
+      (*log_res) << "   ||svel||  ";
+
+      (*log_res) << "      resC   ";
+      (*log_res) << "    spresnp  ";
+
+      (*log_res) << "    resC_sq  ";
+      (*log_res) << "  spresnp_sq ";
+
+      (*log_res) << "    tauM     ";
+      (*log_res) << "    tauC     ";
+
+      (*log_res) << "  eps_pspg   ";
+      (*log_res) << "  eps_supg   ";
+      (*log_res) << "  eps_cross  ";
+      (*log_res) << "   eps_rey   ";
+      (*log_res) << "  eps_cstab  ";
+      (*log_res) << " eps_eddyvisc";
+      (*log_res) << "   eps_visc  ";
+      (*log_res) << "   eps_conv  ";
+      (*log_res) << "   eps_avm3  ";
+      (*log_res) << "   eps_mfs   ";
+      (*log_res) << " eps_mfscross";
+      (*log_res) << " eps_mfsrey  ";
+
+      (*log_res) << "     hk      ";
+      (*log_res) << "   strle     ";
+      (*log_res) << "   gradle    ";
+      (*log_res) << " h_bazilevs  ";
+      (*log_res) << "     Dy      ";
+      (*log_res) << " tau_cross_11";
+      (*log_res) << " tau_cross_22";
+      (*log_res) << " tau_cross_33";
+      (*log_res) << " tau_cross_12";
+      (*log_res) << " tau_cross_23";
+      (*log_res) << " tau_cross_31";
+      (*log_res) << " tau_rey_11  ";
+      (*log_res) << " tau_rey_22  ";
+      (*log_res) << " tau_rey_33  ";
+      (*log_res) << " tau_rey_12  ";
+      (*log_res) << " tau_rey_23  ";
+      (*log_res) << " tau_rey_31  ";
+      (*log_res) << "\n";
+
+      (*log_res) << scientific;
+      for (unsigned rr=0;rr<nodeplanes_->size()-1;++rr)
+      {
+        (*log_res)  << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr+2]/(numele_*numsamp_) << "  ";
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr+2]/(numele_*numsamp_) << "  ";
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr+2]/(numele_*numsamp_) << "  ";
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr+2]/(numele_*numsamp_) << "  ";
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sumabsres_       )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumabssvelaf_    )[rr]/(numele_*numsamp_) << "  ";
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sumresC_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_     )[rr]/(numele_*numsamp_) << "  ";
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sumresC_sq_      )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_sq_  )[rr]/(numele_*numsamp_) << "  ";
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sumtauM_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumtauC_         )[rr]/(numele_*numsamp_) << "  ";
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_pspg_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_cstab_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_avm3_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_mfs_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_mfscross_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_mfsrey_  )[rr]/(numele_*numsamp_) << "  ";
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sumhk_           )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumstrle_        )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumgradle_       )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sumhbazilevs_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*nodeplanes_)[rr+1]-(*nodeplanes_)[rr]     << "  " ;
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+3]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+4]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+5]/(numele_*numsamp_) << "  ";
+
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+3]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+4]/(numele_*numsamp_) << "  ";
+        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
+
+
+        (*log_res)  << &endl;
+      }
+      log_res->flush();
+
+
+      Teuchos::RCP<std::ofstream> log_res_scatra;
+
+      // output of residuals and subscale quantities
+      std::string s_res_scatra = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      s_res_scatra.append(".res_scatra_statistics");
+
+      log_res_scatra = Teuchos::rcp(new std::ofstream(s_res_scatra.c_str(),ios::out));
+
+      (*log_res_scatra) << "# Statistics for turbulent incompressible channel flow with scalar transport (residuals and subscale quantities)\n";
+      (*log_res_scatra) << "# All values are first averaged over the integration points in an element \n";
+      (*log_res_scatra) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
+      (*log_res_scatra) << "#                           THIS IS THE SCATRA FILE                          \n\n";
+
+      (*log_res_scatra) << "\n\n\n";
+      (*log_res_scatra) << "# Statistics record " << countrecord_;
+      (*log_res_scatra) << " (Steps " << step-numsamp_+1 << "--" << step <<")   ";
+      (*log_res_scatra) << " (dt " << params_.get<double>("time step size") <<")\n";
+
+      (*log_res_scatra) << "#       y    ";
+
+      (*log_res_scatra) << "      resS   ";
+      (*log_res_scatra) << "    resS_sq  ";
+      (*log_res_scatra) << "    tauS     ";
+
+      (*log_res_scatra) << "  eps_supg   ";
+      (*log_res_scatra) << "  eps_cross  ";
+      (*log_res_scatra) << "   eps_rey   ";
+      (*log_res_scatra) << " eps_eddyvisc";
+      (*log_res_scatra) << "   eps_visc  ";
+      (*log_res_scatra) << "   eps_conv  ";
+      (*log_res_scatra) << "   eps_avm3  ";
+      (*log_res_scatra) << "   eps_mfs   ";
+      (*log_res_scatra) << " eps_mfscross";
+      (*log_res_scatra) << " eps_mfsrey  ";
+
+      (*log_res_scatra) << "\n";
+
+      (*log_res_scatra) << scientific;
+      for (unsigned rr=0;rr<nodeplanes_->size()-1;++rr)
+      {
+        (*log_res_scatra)  << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sumresS_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sumresS_sq_      )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sumtauS_         )[rr]/(numele_*numsamp_) << "  ";
+
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_avm3_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_mfs_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_mfscross_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_mfsrey_  )[rr]/(numele_*numsamp_) << "  ";
+
+        (*log_res_scatra)  << &endl;
+      }
+      log_res_scatra->flush();
+
+
+    } // end subgrid_dissipation_
 
     // ------------------------------------------------------------------
     // additional output for multifractal subgrid-scale modeling
@@ -5030,30 +5621,87 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
       (*sumresC_sq_      )[rr]=0.0;
       (*sumspressnp_sq_  )[rr]=0.0;
     }
+    for (unsigned rr=0;rr<sumresC_->size();++rr)
+    {
+      (*sumtauS_         )[rr]=0.0;
+
+      (*sum_scatra_eps_supg_    )[rr]=0.0;
+      (*sum_scatra_eps_cross_   )[rr]=0.0;
+      (*sum_scatra_eps_rey_     )[rr]=0.0;
+      (*sum_scatra_eps_eddyvisc_)[rr]=0.0;
+      (*sum_scatra_eps_visc_    )[rr]=0.0;
+      (*sum_scatra_eps_conv_    )[rr]=0.0;
+      (*sum_scatra_eps_mfs_     )[rr]=0.0;
+      (*sum_scatra_eps_mfscross_)[rr]=0.0;
+      (*sum_scatra_eps_mfsrey_  )[rr]=0.0;
+      (*sum_scatra_eps_avm3_    )[rr]=0.0;
+
+      (*sumresS_         )[rr]=0.0;
+      (*sumresS_sq_      )[rr]=0.0;
+    }
   } // end subgrid_dissipation_
 
   return;
 }// TurbulenceStatisticsCha::ClearStatistics
 
 
-void FLD::TurbulenceStatisticsCha::StoreScatraDiscret(RCP<DRT::Discretization> scatradis)
+void FLD::TurbulenceStatisticsCha::StoreScatraDiscretAndParams(
+          RCP<DRT::Discretization> scatradis,
+          RCP<Teuchos::ParameterList> scatraparams,
+          RCP<Teuchos::ParameterList> scatraextraparams,
+          RCP<Teuchos::ParameterList> scatratimeparams)
 {
   scatradiscret_ = scatradis;
+  scatraparams_ = scatraparams;
+  scatraextraparams_ = scatraextraparams;
+  scatratimeparams_ = scatratimeparams;
 
-  // get diffusivity from material definition --- for computation
-  // of additional mfs-statistics
-   int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra);
-   if (id==-1)
-     dserror("Could not find scatra material");
-   else
-   {
-     const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
-     const MAT::PAR::ScatraMat* actmat = static_cast<const MAT::PAR::ScatraMat*>(mat);
+  if(discret_->Comm().MyPID()==0)
+  {
+    std::cout<<"Additional information:"<<std::endl;
+    std::cout<<"-> added ScaTra discretization to channel-flow-statistics manager\n"<<std::endl;
+  }
 
-     double diffus = actmat->diffusivity_;
-     // calculate Schmidt number
-     // visc is the kinematic viscosity here
-     scnum_ = diffus / (visc_ * dens_);
-   }
+  if (physicaltype_ == INPAR::FLUID::incompressible) // not required for loma
+  {
+    // get diffusivity from material definition --- for computation
+    // of additional mfs-statistics
+     int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_scatra);
+     if (id==-1)
+       dserror("Could not find scatra material");
+     else
+     {
+       const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+       const MAT::PAR::ScatraMat* actmat = static_cast<const MAT::PAR::ScatraMat*>(mat);
+
+       double diffus = actmat->diffusivity_;
+       // calculate Schmidt number
+       // visc is the kinematic viscosity here
+       scnum_ = visc_ / (diffus * dens_);
+     }
+  }
   return;
-};
+}
+
+
+void FLD::TurbulenceStatisticsCha::AddMultiVectorToParameterList(
+          Teuchos::ParameterList& p,
+          const std::string name,
+          Teuchos::RCP<Epetra_MultiVector> vec)
+{
+  if (vec != Teuchos::null)
+  {
+    //provide data in node-based multi-vector for usage on element level
+    // -> export to column map is necessary for parallel evaluation
+    //SetState cannot be used since this multi-vector is nodebased and not dofbased!
+    const Epetra_Map* nodecolmap = discret_->NodeColMap();
+    int numcol = vec->NumVectors();
+    Teuchos::RCP<Epetra_MultiVector> tmp = Teuchos::rcp(new Epetra_MultiVector(*nodecolmap,numcol));
+    LINALG::Export(*vec,*tmp);
+    p.set(name,tmp);
+  }
+  else
+    p.set(name,Teuchos::null);
+
+  return;
+}

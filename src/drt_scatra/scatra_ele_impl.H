@@ -141,6 +141,7 @@ private:
     const enum INPAR::FLUID::RefLength    reflength, //!< reference length
     const double                          c_nu,      //!< scaling for Re
     const bool                            nwl,       //!< flag to activate near-wall limit
+    const bool                            nwl_scatra,//!< flag to activate near-wall limit for scalar field
     const double                          Csgs_sgphi,//!< parameter of multifractal subgrid-scales (phi)
     const double                          c_diff,    //!< scaling for Re*Pr
     const bool                            BD_gp,     //!< evaluation of model coefficient at gp
@@ -562,6 +563,7 @@ private:
     const enum INPAR::FLUID::RefLength    reflength, //!< reference length
     const double                          c_nu,      //!< scaling for Re
     const bool                            nwl,       //!< flag to activate near-wall limit
+    const bool                            nwl_scatra,//!< flag to activate near-wall limit for scalar field
     const double                          Csgs_sgphi,//!< parameter of multifractal subgrid-scales (phi)
     const double                          c_diff,    //!< scaling for Re*Pr
     const double                          vol,       //!< volume of element
@@ -578,7 +580,17 @@ private:
     const bool                            isowned,        //!< owner of element
     Teuchos::ParameterList&               turbulencelist, //!< turbulence parameter list
     const int                             nlayer,         //!< element layer
-    const double                          tpn             //! turbulent Prandlt number
+    const double                          tpn             //!< turbulent Prandlt number
+    );
+
+
+  //! calculate dissipation introduced by stabilization and turbulence models
+  virtual void CalcDissipation(
+    Teuchos::ParameterList&               params,          //!< parameter list
+    DRT::Element*                         ele,             //!< pointer to element
+    const enum INPAR::SCATRA::ScaTraType  scatratype,      //!< scatra type
+    DRT::Discretization&                  discretization,  //!< scatra discretization
+    std::vector<int>&                     lm               //!< location matrix
     );
 
   /*========================================================================*/
@@ -668,6 +680,8 @@ private:
   enum INPAR::SCATRA::TauType whichtau_;
   //! turbulence model
   enum INPAR::FLUID::TurbModelAction turbmodel_;
+  //! conservative formulation of multifractal subgrid-scale modeling
+  bool mfs_conservative_;
 
   /*========================================================================*/
   //! @name scalar degrees of freedom and related
@@ -877,6 +891,8 @@ private:
   /*========================================================================*/
   //! @name Miscellaneous - to be done!!!
   /*========================================================================*/
+
+  double eid_;
 
   /*========================================================================*/
   //! @name Battery specific stuff!

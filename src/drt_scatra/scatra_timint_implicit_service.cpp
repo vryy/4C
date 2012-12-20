@@ -248,6 +248,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
         eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES");
       eleparams.set("frt",frt_);
+      if (scatratype_ == INPAR::SCATRA::scatratype_loma)
+        eleparams.set<bool>("update material",(&(extraparams_->sublist("LOMA")))->get<bool>("update material",false));
 
       // provide velocity field and potentially acceleration/pressure field
       // (export to column map necessary for parallel evaluation)
@@ -2750,13 +2752,13 @@ const Teuchos::RCP<const Epetra_Vector> SCATRA::ScaTraTimIntImpl::DirichletToggl
 /*========================================================================*/
 
 /*----------------------------------------------------------------------*
- | provide access to the dynamic Smagorinsky filter     rasthofer 98/12 |
+ | provide access to the dynamic Smagorinsky filter     rasthofer 08/12 |
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::AccessDynSmagFilter(
   Teuchos::RCP<FLD::DynSmagFilter> dynSmag
 )
 {
-  DynSmag_ = dynSmag;
+  DynSmag_ = Teuchos::rcp(dynSmag.get(), false);
 
   // access to the dynamic Smagorinsky class is provided
   // by the fluid scatra coupling algorithm

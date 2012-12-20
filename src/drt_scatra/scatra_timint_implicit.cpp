@@ -122,6 +122,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   gstatincrement_(0.0),
   frt_      (0.0),
   numinflowsteps_(extraparams->sublist("TURBULENT INFLOW").get<int>("NUMINFLOWSTEP")),
+  DynSmag_(Teuchos::null),
   turbinflow_(DRT::INPUT::IntegralValue<int>(extraparams->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
   reinitswitch_(extraparams->get<bool>("REINITSWITCH",false)),
   w_(Teuchos::null),

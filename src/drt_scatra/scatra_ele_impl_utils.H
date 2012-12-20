@@ -188,7 +188,7 @@ namespace SCATRA
   );
 
   //! identify elements of inflow section
-  bool InflowElement(DRT::Element* ele);
+  bool InflowElement(const DRT::Element* ele);
 
 } // namespace SCATRA
 

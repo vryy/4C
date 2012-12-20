@@ -234,6 +234,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     update_mat_(false),        // bool set
     // whichtau_ not initialized
     turbmodel_(INPAR::FLUID::no_model), // enum initialized
+    mfs_conservative_(false), // set false
     phi_(numscal_,0.0),   // size of vector + initialized to zero
     sgphi_(numscal_,0.0),   // size of vector + initialized to zero
     mfssgphi_(numscal_,0.0),// size of vector + initialized to zero
@@ -739,7 +740,6 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     double Cs(0.0);
     double tpn(1.0);
     // parameters for multifractal subgrid-scale modeling
-    // get subgrid-diffusivity vector if turbulence model is used
     double Csgs_sgvel = 0.0;
     double alpha = 0.0;
     bool calc_N = true;
@@ -748,13 +748,19 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     INPAR::FLUID::RefLength reflength = INPAR::FLUID::cube_edge;
     double c_nu = 1.0;
     bool nwl = false;
+    bool nwl_scatra = false;
     bool beta = 0.0;
     bool BD_gp = false;
     double Csgs_sgphi = 0.0;
     double c_diff = 1.0;
+    // parameter for averaging (dynamic Smagorinsky)
     int nlayer=0;
     if (turbmodel_!=INPAR::FLUID::no_model or (is_incremental_ and fssgd))
     {
+      // do some checks first
+      if (numscal_!=1 or numdofpernode_!=1)
+        dserror("For the time being, turbulence approaches only support one scalar field!");
+
       // get Smagorinsky constant and turbulent Prandtl number
       Cs  = sgvisclist.get<double>("C_SMAGORINSKY");
       tpn = sgvisclist.get<double>("C_TURBPRANDTL");
@@ -832,6 +838,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         // necessary parameters for subgrid-scale scalar estimation
         Csgs_sgphi = mfslist.get<double>("CSGS_PHI");
         c_diff = mfslist.get<double>("C_DIFF");
+        if (DRT::INPUT::IntegralValue<int>(mfslist,"ADAPT_CSGS_PHI") and nwl)
+        {
+          double meanCai = mfslist.get<double>("meanCai");
+          Csgs_sgphi *= meanCai;
+        }
+        nwl_scatra = DRT::INPUT::IntegralValue<int>(mfslist,"NEAR_WALL_LIMIT_CSGS_PHI");
         // general parameters
         beta = mfslist.get<double>("BETA");
         if (beta!=0.0) dserror("Lhs terms for mfs not included! Fixed-point iteration only!");
@@ -841,11 +853,12 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         BD_gp = true;
         else
           dserror("Unknown evaluation point!");
-        if (DRT::INPUT::IntegralValue<int>(mfslist,"ADAPT_CSGS_PHI") and nwl)
-        {
-          double meanCai = mfslist.get<double>("meanCai");
-          Csgs_sgphi *= meanCai;
-        }
+        if (mfslist.get<string>("CONVFORM") == "convective")
+        mfs_conservative_ = false;
+        else if (mfslist.get<string>("CONVFORM") == "conservative")
+        mfs_conservative_ = true;
+        else
+          dserror("Unknown form of convective term!");
       }
     }
 
@@ -873,6 +886,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       reflength,
       c_nu,
       nwl,
+      nwl_scatra,
       Csgs_sgphi,
       c_diff,
       BD_gp,
@@ -905,9 +919,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 #endif
 
     // ---------------------------------------------------------------------
-    // output values of Prt, diffeff and Cs_delta_sq_Prt
+    // output values of Prt, diffeff and Cs_delta_sq_Prt (channel flow only)
     // ---------------------------------------------------------------------
-    StoreModelParametersForOutput(ele->Owner() == discretization.Comm().MyPID(),turbulencelist,nlayer,tpn);
+    if (DRT::INPUT::IntegralValue<int>(sgvisclist,"C_SMAGORINSKY_AVERAGED"))
+      StoreModelParametersForOutput(ele->Owner() == discretization.Comm().MyPID(),turbulencelist,nlayer,tpn);
 
     break;
   }
@@ -1531,6 +1546,16 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
 
     break;
   }
+  // calculate dissipation introduced by stabilization and turbulence models
+  case SCATRA::calc_dissipation:
+  {
+    CalcDissipation(params,
+                    ele,
+                    scatratype,
+                    discretization,
+                    lm);
+    break;
+  }
   default:
   {
     dserror("Not acting on this action. Forgot implementation?");
@@ -1570,13 +1595,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   const enum INPAR::FLUID::RefLength    reflength, ///< reference length
   const double                          c_nu, ///< scaling for Re
   const bool                            nwl, ///< flag to activate near-wall limit
+  const bool                            nwl_scatra, ///< flag to activate near-wall limit for scalar field
   const double                          Csgs_sgphi, ///< parameter of multifractal subgrid-scales
   const double                          c_diff, ///< scaling for Re*Pr
   const bool                            BD_gp, ///< evaluation of model coefficient at gp
+//  const bool                            mfs_conservative, ///< conservative formulation of multifractal subgrid-scale modeling
   const double                          frt, ///< factor F/RT needed for ELCH calculations
   const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
   )
 {
+  eid_ = ele->Id();
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes
   // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
@@ -1692,7 +1720,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       // calculate model coefficients
       for (int k = 0;k<numscal_;++k) // loop of each transported scalar
       {
-        CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,Csgs_sgvel,alpha,calc_N,N_vel,refvel,reflength,c_nu,nwl,Csgs_sgphi,c_diff,vol,k);
+        CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,Csgs_sgvel,alpha,calc_N,N_vel,refvel,reflength,c_nu,nwl,nwl_scatra,Csgs_sgphi,c_diff,vol,k);
       }
       // and clear them
       convelint_.Clear();
@@ -1879,6 +1907,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
 
           rea_phi_[k] = densnp_[k]*reacterm_[k]; //reacoeff_[k]*phi;
         }
+        else rea_phi_[k] = 0.0;
 
         // velocity divergence required for conservative form
         if (is_conservative_) GetDivergence(vdiv_,evelnp_,derxy_);
@@ -1897,6 +1926,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         {
           fsvelint_.Clear();
         }
+
+        // compute gradient of fine-scale part of scalar value
+        if (fssgd)
+          fsgradphi_.Multiply(derxy_,fsphinp_[k]);
+        else
+          fsgradphi_.Clear();
 
         // get history data (or acceleration)
         hist_[k] = funct_.Dot(ehist_[k]);
@@ -1925,8 +1960,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           if (fssgd)
           {
             CalcFineScaleSubgrDiff(ele,subgrdiff,whichfssgd,Cs,tpn,vol,k);
-            // compute gradient of fine-scale part of scalar value
-            fsgradphi_.Multiply(derxy_,fsphinp_[k]);
           }
 
           // calculation of subgrid-scale velocity at integration point if required
@@ -1958,33 +1991,35 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           {
             // make sure to get material parameters at element center
             // hence, determine them if not yet available
-            if (not mat_gp_) GetMaterialParams(ele,scatratype,dt);
+            if (not mat_gp_)
+            {
+              // GetMaterialParams(ele,scatratype,dt); would overwrite materials
+              // at the element center, hence BD_gp should always be combined with
+              // mat_gp_
+              dserror("evaluation of B and D at gauss-point should always be combined with evaluation material at gauss-point!");
+	    }
             // calculate model coefficients
-            CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,Csgs_sgvel,alpha,calc_N,N_vel,refvel,reflength,c_nu,nwl,Csgs_sgphi,c_diff,vol,k);
+            CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,Csgs_sgvel,alpha,calc_N,N_vel,refvel,reflength,c_nu,nwl,nwl_scatra,Csgs_sgphi,c_diff,vol,k);
           }
 
           // calculate fine-scale velocity, its derivative and divergence for multifractal subgrid-scale modeling
           for (int idim=0; idim<nsd_; idim++)
             mfsgvelint_(idim,0) = fsvelint_(idim,0) * B_mfs(idim,0);
-
-// required for conservative formulation in the context of passive scalar transport
-// has to be tested
-//#if 0
-//          //if (conservative_)
-//          {
-//            // get divergence of subgrid-scale velocity
-//            LINALG::Matrix<nsd_,nsd_> mfsvderxy;
-//            mfsvderxy.MultiplyNT(efsvel_,derxy_);
-//            mfsvdiv_ = 0.0;
-//            for (int idim = 0; idim<nsd_; ++idim)
-//              mfsvdiv_ += mfsvderxy(idim,idim) * B_mfs(idim,0);
-//          }
-//          else
-//            mfsvdiv_ = 0.0;
-//#endif
+          // required for conservative formulation in the context of passive scalar transport
+          if (mfs_conservative_)
+          {
+            // get divergence of subgrid-scale velocity
+            LINALG::Matrix<nsd_,nsd_> mfsvderxy;
+            mfsvderxy.MultiplyNT(efsvel_,derxy_);
+            mfsvdiv_ = 0.0;
+            for (int idim = 0; idim<nsd_; idim++)
+              mfsvdiv_ += mfsvderxy(idim,idim) * B_mfs(idim,0);
+          }
+          else
+            mfsvdiv_ = 0.0;
 
           // calculate fine-scale scalar and its derivative for multifractal subgrid-scale modeling
-          mfssgphi_[k] = D_mfs * funct_.Dot(ephinp_[k]);
+          mfssgphi_[k] = D_mfs * funct_.Dot(fsphinp_[k]);
           fsgradphi_.Multiply(derxy_,fsphinp_[k]);
           for (int idim=0; idim<nsd_; idim++)
             mfsggradphi_(idim,0) = fsgradphi_(idim,0) * D_mfs;
@@ -3483,23 +3518,20 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
     if (nsd_<3) dserror("Turbulence is 3D!");
     // fixed-point iteration only (i.e. beta=0.0 assumed), cf
     // turbulence part in Evaluate()
-   {
+    {
      double cross = convelint_.Dot(mfsggradphi_) + mfsgvelint_.Dot(gradphi_);
      double reynolds = mfsgvelint_.Dot(mfsggradphi_);
 
-     // conservative formulation in the context of passive scalar transport
-     // has to be tested
+     // conservative formulation
      double conserv = 0.0;
-//#if 0
-//     //if (conservative_)
-//     {
-//       double convdiv = 0.0;
-//       GetDivergence(convdiv,econvelnp_,derxy_);
-//       const double phi = funct_.Dot(ephinp_[dofindex]);
-//
-//       conserv = mfssgphi_[k] * convdiv + phi * mfsvdiv_ + mfssgphi_[dofindex] * mfsvdiv_;
-//     }
-//#endif
+     if (mfs_conservative_ or is_conservative_)
+     {
+       double convdiv = 0.0;
+       GetDivergence(convdiv,econvelnp_,derxy_);
+       const double phi = funct_.Dot(ephinp_[k]);
+
+       conserv = mfssgphi_[k] * convdiv + phi * mfsvdiv_ + mfssgphi_[k] * mfsvdiv_;
+     }
 
      vrhs = rhsfac*densnp_[k]*(cross+reynolds+conserv);
 

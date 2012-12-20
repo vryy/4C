@@ -96,6 +96,10 @@ public:
   /// routine to return time derivative of thermo. press. at time step n+alpha_M for low-Mach-number flow
   double ThermPressDtAm(){return 0.0;}
 
+  /// routine to return time integration specific parameters
+  Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList()
+  {dserror("Not yet implemented!"); return Teuchos::null;}
+
 
 protected:
 

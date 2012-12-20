@@ -17,6 +17,7 @@ Maintainer: Ursula Rasthofer
 #include "turbulence_statistic_manager.H"
 #include "../drt_fluid/fluidimplicitintegration.H"
 #include "../drt_combust/combust_fluidimplicitintegration.H"
+#include "../drt_scatra/scatra_timint_implicit.H"
 #include "../drt_fluid/fluid_utils.H" // for LiftDrag
 #include "../drt_lib/drt_dofset_independent_pbc.H"
 #include "../drt_io/io_pstream.H"
@@ -856,7 +857,7 @@ namespace FLD
         if(statistics_ccy_==Teuchos::null)
           dserror("need statistics_ccy_ to do a time sample for a flow in a rotating circular cylinder");
 
-        statistics_ccy_->DoTimeSample(myvelnp_,myscaaf_,myfullphinp_);
+        statistics_ccy_->DoTimeSample(myvelnp_,myscaaf_,myphinp_);
         break;
       }
       default:
@@ -894,6 +895,8 @@ namespace FLD
           // set vector values needed by elements
           map<string,RCP<Epetra_Vector> > statevecs;
           map<string,RCP<Epetra_MultiVector> > statetenss;
+          map<string,RCP<Epetra_Vector> > scatrastatevecs;
+          map<string,RCP<Epetra_MultiVector> > scatrafieldvecs;
 
           statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("hist",myhist_));
           statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("accam",myaccam_));
@@ -904,6 +907,8 @@ namespace FLD
           {
             statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("dispnp", mydispnp_   ));
             statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("gridv" , mygridvelaf_));
+            if (scatradis_!=Teuchos::null)
+              dserror("Not supported!");
           }
 
           if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha
@@ -912,9 +917,25 @@ namespace FLD
             statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("velaf",myvelaf_));
             if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
               statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("velnp",myvelnp_));
+
+            // additional scatra vectors
+            scatrastatevecs.insert(pair<string,RCP<Epetra_Vector> >("phinp",myphiaf_));
+            scatrastatevecs.insert(pair<string,RCP<Epetra_Vector> >("phiam",myphiam_));
+            scatrastatevecs.insert(pair<string,RCP<Epetra_Vector> >("hist",myphidtam_));
           }
           else
+          {
             statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("velaf",myvelnp_));
+            statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("velaf",myvelnp_));
+
+            // additional scatra vectors
+            scatrastatevecs.insert(pair<string,RCP<Epetra_Vector> >("phinp",myphinp_));
+            scatrastatevecs.insert(pair<string,RCP<Epetra_Vector> >("hist",myscatrahist_));
+          }
+
+          // further scatra fields
+          scatrafieldvecs.insert(pair<string,RCP<Epetra_MultiVector> >("convective velocity field",myscatraconvel_));
+          scatrafieldvecs.insert(pair<string,RCP<Epetra_MultiVector> >("acceleration/pressure field",myscatraaccpre_));
 
           if (params_->sublist("TURBULENCE MODEL").get<string>("FSSUGRVISC")!= "No"
               or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
@@ -922,9 +943,23 @@ namespace FLD
             statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("fsvelaf",myfsvelaf_));
             if (myfsvelaf_==Teuchos::null)
               dserror ("Have not got fsvel!");
-            statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("fsscaaf",myfsscaaf_));
-            if (myfsscaaf_==Teuchos::null)
-                          dserror ("Have not got fssca!");
+
+            if (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") == INPAR::FLUID::loma and
+                turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+            {
+              statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("fsscaaf",myfsscaaf_));
+              if (myfsscaaf_==Teuchos::null)
+                dserror ("Have not got fssca!");
+            }
+
+            // additional scatra vectors
+            if (withscatra_)
+            {
+              scatrastatevecs.insert(std::pair<string,RCP<Epetra_Vector> >("fsphinp",myfsphi_));
+              if (myfsphi_==Teuchos::null)
+                dserror ("Have not got fsphi!");
+              scatrafieldvecs.insert(std::pair<string,RCP<Epetra_MultiVector> >("fine-scale velocity field",myscatrafsvel_));
+            }
           }
           if (turbmodel_ == INPAR::FLUID::scale_similarity_basic)
           {
@@ -932,7 +967,9 @@ namespace FLD
             statetenss.insert(std::pair<string,RCP<Epetra_MultiVector> >("filtered reystr",myfilteredreystr_));
           }
 
-          statistics_channel_->EvaluateResiduals(statevecs,statetenss,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+          statistics_channel_->EvaluateResiduals(statevecs,statetenss,
+                                                 thermpressaf,thermpressam,thermpressdtaf,thermpressdtam,
+                                                 scatrastatevecs,scatrafieldvecs);
 
           break;
         }
@@ -955,20 +992,28 @@ namespace FLD
         cout << "\n";
       }
 
-      if(turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+      if(turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales and inflow_==false)
       {
         switch(flow_)
         {
           case channel_flow_of_height_2:
           {
             // add parameters of multifractal subgrid-scales model
-            statistics_channel_->AddModelParamsMultifractal(myvelaf_,myfsvelaf_,false);
+            if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha
+                or DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
+              statistics_channel_->AddModelParamsMultifractal(myvelaf_,myfsvelaf_,false);
+            else
+              statistics_channel_->AddModelParamsMultifractal(myvelnp_,myfsvelaf_,false);
             break;
           }
           case scatra_channel_flow_of_height_2:
           {
             // add parameters of multifractal subgrid-scales model
-            statistics_channel_->AddModelParamsMultifractal(myvelaf_,myfsvelaf_,true);
+            if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha
+                or DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
+              statistics_channel_->AddModelParamsMultifractal(myvelaf_,myfsvelaf_,true);
+            else
+              statistics_channel_->AddModelParamsMultifractal(myvelnp_,myfsvelaf_,false);
             break;
           }
           default:
@@ -981,7 +1026,7 @@ namespace FLD
       // add vector(s) to general mean value computation
       // scatra vectors may be Teuchos::null
       if (statistics_general_mean_!=Teuchos::null)
-        statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_,myscaaf_,myfullphinp_);
+        statistics_general_mean_->AddToCurrentTimeAverage(dt_,myvelnp_,myscaaf_,myphinp_);
 
     } // end step in sampling period
 
@@ -1054,7 +1099,7 @@ namespace FLD
       // add vector(s) to general mean value computation
       // scatra vectors may be Teuchos::null
       if (statistics_general_mean_!=Teuchos::null)
-        statistics_general_mean_->AddToCurrentTimeAverage(dt_,velnp,myscaaf_,myfullphinp_);
+        statistics_general_mean_->AddToCurrentTimeAverage(dt_,velnp,myscaaf_,myphinp_);
 
       if(discret_->Comm().MyPID()==0)
       {
@@ -1350,36 +1395,65 @@ namespace FLD
 
   /*----------------------------------------------------------------------
 
-  Add results from scalar transport fields to statistics
+  Provide access to scalar transport field
 
   ----------------------------------------------------------------------*/
-  void TurbulenceStatisticManager::AddScaTraResults(
-      RCP<DRT::Discretization> scatradis,
-      RCP<Epetra_Vector> phinp
+  void TurbulenceStatisticManager::AddScaTraField(
+      SCATRA::ScaTraTimIntImpl& scatra_timeint
   )
   {
     if(discret_->Comm().MyPID()==0)
     {
-      IO::cout << "\n++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n"
-               << "TurbulenceStatisticManager: added access to ScaTra results\n"
-               << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << IO::endl;
+        IO::cout<<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<IO::endl;
+        IO::cout<<"TurbulenceStatisticManager: provided access to ScaTra time integration"<<IO::endl;
+        IO::cout<<"++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"<<IO::endl;
     }
 
     // store the relevant pointers to provide access
-    scatradis_   = scatradis;
-    myfullphinp_ = phinp;
+    scatradis_ = scatra_timeint.Discretization();
+    scatraparams_ = scatra_timeint.ScatraParameterList();
+    // set potentially modified scatratype which is not correctly set
+    // in the ScatraParameterList() is it has been modified in the
+    // constructor of the scatra time integration
+    scatraparams_->set<int>("scatratype",scatra_timeint.ScaTraType());
+    // and sublists from extraparams
+    scatraextraparams_ = scatra_timeint.ScatraExtraParameterList();
+    // remark: this is not a good idea, since the sublists are copied and modifications
+    //         during simulation are never seen in the statistics manager; moreover
+    //         this would add the following sublists also to the parameter list in the
+    //         scatra time integration
+    //scatraparams_->sublist("TURBULENCE MODEL") = scatra_timeint.ScatraExtraParameterList()->sublist("TURBULENCE MODEL");
+    //scatraparams_->sublist("SUBGRID VISCOSITY") = scatra_timeint.ScatraExtraParameterList()->sublist("SUBGRID VISCOSITY");
+    //scatraparams_->sublist("MULTIFRACTAL SUBGRID SCALES") = scatra_timeint.ScatraExtraParameterList()->sublist("MULTIFRACTAL SUBGRID SCALES");
+    //scatraparams_->sublist("LOMA") = scatra_timeint.ScatraExtraParameterList()->sublist("LOMA");
+    scatratimeparams_ = scatra_timeint.ScatraTimeParameterList();
+    // required vectors
+    // remark: Although some of these field are already set for the fluid,
+    //         we set set them here once more. They are required for integration
+    //         on the element level of the scatra field and have to be set in the
+    //         specific form using MultiVectors (cf. scatra time integration). If
+    //         these vectors are not taken form the scatra time integration we
+    //         would have to transfer them to the scatra dofs here!
+    myphinp_ = scatra_timeint.Phinp();
+    myphiaf_ = scatra_timeint.Phiaf();
+    myphiam_ = scatra_timeint.Phiam();
+    myscatraconvel_ = scatra_timeint.ConVel();
+    myscatraaccpre_ = scatra_timeint.ConAccPre();
+    myscatrafsvel_ = scatra_timeint.ConFsVel();
+    myscatrahist_ = scatra_timeint.Hist();
+    myphidtam_ = scatra_timeint.Phidtam();
+    myfsphi_ = scatra_timeint.FsPhi();
 
     if (statistics_general_mean_!=Teuchos::null)
-      statistics_general_mean_->AddScaTraResults(scatradis, phinp);
+      statistics_general_mean_->AddScaTraResults(scatradis_, myphinp_);
 
     if (statistics_ccy_!=Teuchos::null)
-      statistics_ccy_->AddScaTraResults(scatradis, phinp);
+      statistics_ccy_->AddScaTraResults(scatradis_, myphinp_);
 
-    if(flow_==scatra_channel_flow_of_height_2)
+    if(flow_==scatra_channel_flow_of_height_2
+       or flow_==loma_channel_flow_of_height_2)
     {
-      // store scatra discretization (multifractal subgrid scales only)
-      if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
-        statistics_channel_->StoreScatraDiscret(scatradis_);
+      statistics_channel_->StoreScatraDiscretAndParams(scatradis_,scatraparams_,scatraextraparams_,scatratimeparams_);
     }
 
     withscatra_ = true;

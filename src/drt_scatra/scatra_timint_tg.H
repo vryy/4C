@@ -108,7 +108,9 @@ public:
     /// redistribute the scatra discretization and vectors according to nodegraph
     void Redistribute(const Teuchos::RCP<Epetra_CrsGraph> nodegraph);
 
-
+    /// routine to return time integration specific parameters
+    Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList()
+    {dserror("Not yet implemented!"); return Teuchos::null;}
 
 protected:
 

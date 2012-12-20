@@ -23,9 +23,6 @@ Maintainer: Ursula Rasthofer
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/sutherland.H"
 
-// include define flags for turbulence models under development
-#include "../drt_fluid/fluid_turbulence_defines.H"
-
 
 /*-----------------------------------------------------------------------------*
  | calculate filtered quantities for dynamic Smagorinsky model  rasthofer 08/12|
@@ -453,8 +450,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
   const double h = std::pow(vol,(1.0/dim));
 
   // artficial all-scale subgrid diffusivity
-  if (assgd )
+  if (assgd)
   {
+    dserror("Check CalcSubgrDiff() for assgd before using it. Read remark");
+    // remark: this option seems to use some variables (conv_phi_ and scatrares_)
+    //         which have not yet been set properly when this function is called
+
     // classical linear artificial all-scale subgrid diffusivity
     if (whichassgd == INPAR::SCATRA::assgd_artificial)
     {
@@ -757,6 +758,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
     const enum INPAR::FLUID::RefLength          reflength, ///< reference length
     const double                                c_nu, ///< scaling for Re
     const bool                                  nwl, ///< flag to activate near-wall limit
+    const bool                                  nwl_scatra, ///< flag to activate near-wall limit for scalar field
     const double                                Csgs_sgphi, ///< parameter of multifractal subgrid-scales (phi)
     const double                                c_diff, ///< scaling for Re*Pr
     const double                                vol, ///< volume of element
@@ -801,7 +803,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   else //no, so we calculate N from Re
   {
     // calculate characteristic element length
-    double hk = CalcRefLength(reflength,vol);
+    hk = CalcRefLength(reflength,vol);
 
     // warning: k=0, this first scalar is taken!
     // multifractal subgrid-scale model is for passive and active
@@ -822,7 +824,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
       case INPAR::FLUID::strainrate:
       {
         strainnorm = GetStrainRate(econvelnp_);
-        strainnorm /= sqrt(2.0);
+        strainnorm /= sqrt(2.0); //cf. Burton & Dahm 2008
         Re_ele = strainnorm * hk * hk * densnp_[0] / visc_;
         break;
       }
@@ -860,10 +862,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   }
 
   // calculate near-wall correction
+  double Cai_phi = 0.0;
   if (nwl)
   {
     // not yet calculated, estimate norm of strain rate
-    if (not calc_N or refvel != INPAR::FLUID::strainrate)
+    if ((not calc_N) or (refvel != INPAR::FLUID::strainrate))
     {
       strainnorm = GetStrainRate(econvelnp_);
       strainnorm /= sqrt(2.0); //cf. Burton & Dahm 2008
@@ -885,25 +888,28 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
     //  *(1 - (Re)   )
     //
     Csgs_vel_nw *= (1-pow(Re_ele_str,-3.0/16.0));
+
+    // store Cai for application to scalar field
+    Cai_phi = (1-pow(Re_ele_str,-3.0/16.0));
   }
 
   // STEP 2: calculate B
 
-  //                                  1
-  //          |       1              |2
-  //  kappa = | -------------------- |
-  //          |  1 - alpha ^ (-4/3)  |
+  //       1                           1
+  //       2   |       1              |2
+  //  kappa  = | -------------------- |
+  //           |  1 - alpha ^ (-4/3)  |
   //
   double kappa = 1.0/(1.0-pow(alpha,-4.0/3.0));
 
-  //                                                       1
-  //                                  |                   |2
-  //  B = Csgs * kappa * 2 ^ (-2*N/3) * | 2 ^ (4*N/3) - 1 |
-  //                                  |                   |
+  //                  1                                     1
+  //                  2                  |                 |2
+  //  B = Csgs * kappa  * 2 ^ (-2*N/3) * | 2 ^ (4*N/3) - 1 |
+  //                                     |                 |
   //
   for (int dim=0; dim<nsd_; dim++)
   {
-    B_mfs(dim,0) = Csgs_vel_nw *sqrt(kappa) * pow(2.0,-2.0*Nvel[dim]/3.0) * sqrt((pow(2.0,4.0*Nvel[dim]/3.0)-1));
+    B_mfs(dim,0) = Csgs_vel_nw * sqrt(kappa) * pow(2.0,-2.0*Nvel[dim]/3.0) * sqrt((pow(2.0,4.0*Nvel[dim]/3.0)-1));
 //    if (eid_ == 100)
 //     std::cout << "B  " << std::setprecision (10) << B_mfs(dim,0) << std::endl;
   }
@@ -913,14 +919,19 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   //----------------------------------------------------------------
 
   // STEP 1: determine N
-  //         currently constant C_sgs for D assumed
 
-  // calculate prandtl number or schmidt number (passive scalar)
+  // calculate Prandtl number or Schmidt number (passive scalar)
   const double Pr = visc_/diffus_[k];
+
+  // since there are differences in the physical behavior between low and high
+  // Prandtl/Schmidt number regime, we define a limit 
+  // to distinguish between the low and high Prandtl/Schmidt number regime
+  // note: there is no clear definition of the ranges
+  const double Pr_limit = 2.0;
 
   // allocate vector for parameter N
   double Nphi = 0.0;
-  // ratio of dissipation scale to element length
+  // ratio of diffusive scale to element length
   double scale_ratio_phi = 0.0;
 
   if (calc_N)
@@ -933,7 +944,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
     // Pr <= 1: p=3/4
     // Pr >> 1: p=1/2
     double p = 3.0/4.0;
-    if (Pr>1.0) p =1.0/2.0;
+    if (Pr>Pr_limit) p =1.0/2.0;
 
     scale_ratio_phi = c_diff * pow(Re_ele,3.0/4.0) * pow(Pr,p);
     // scale_ratio < 1.0 leads to N < 0
@@ -966,21 +977,37 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   //          k^(-5/3) scaling -> gamma = 4/3
   // Remark: case 2.(i) not implemented, yet
 
-#ifndef TESTING
+  // caution: compared to the mfs-loma paper, gamma denotes gamma+1 here
   double gamma = 0.0;
-  if (Pr < 2.0) // Pr <= 1, i.e., case 1 and 3
+  // special option for case 2 (i)
+  bool two_ranges = false;
+  if (Pr < Pr_limit){ // Pr <= 1, i.e., case 1 and 3
     gamma = 4.0/3.0;
-  else if (Pr > 2.0 and Nvel[0]<1.0) // Pr >> 1, i.e., case 2 (ii)
-    gamma = 2.0;
-  else if (Pr > 2.0 and (Nvel[0]>=1.0 and Nvel[0]<Nphi))
-  {
-    gamma = 2.0;
-//    std::cout << "Pr:" << Pr << std::endl;
-//    std::cout << "Nvel:" << Nvel[0] << "  Nphi  " << Nphi << std::endl;
-//    dserror("Inertial-convective and viscous-convective range?");
   }
-  else
-    dserror("Could not determine gamma!");
+  else // Pr >> 1
+  {
+    if (Nvel[0]<1.0){ // Pr >> 1 and fluid fully resolved, i.e., case 2 (ii)
+      gamma = 2.0;
+    }
+    else // Pr >> 1 and fluid not fully resolved, i.e., case 2 (i)
+    {
+      if (Nvel[0] > Nphi)
+      {
+        std::cout << "Nvel   " << Nvel[0] << std::endl;
+        std::cout << "Nphi   " << Nphi << std::endl;
+        dserror("Nvel < Nphi expected!");
+      }
+      // here different options are possible
+      // 1) we assume k^(-5/3) for the complete range
+      gamma = 4.0/3.0;
+#if 0
+      // 2) we assume k^(-1) for the complete range
+      gamma = 2.0;
+      // 3) we take both ranges into account
+      two_ranges = true;
+#endif
+    }
+  }
 
   //
   //   Phi    |       1                |
@@ -994,68 +1021,34 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   //  D = Csgs * kappa * 2 ^ (-gamma*N/2) * | 2 ^ (gamma*N) - 1 |
   //                                        |                   |
   //
-  D_mfs = Csgs_sgphi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1));
-//    if (eid_ == 100)
-//     std::cout << "D  " << std::setprecision(10) << D_mfs << std::endl;
-#endif
-
-  // second implementation for tests on cluster
-# ifdef TESTING
-  double fac = 1.0;
-# if 1
-  // calculate near-wall correction
-  if (nwl)
+  if (not two_ranges) // usual case
+    D_mfs = Csgs_sgphi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1));
+  else
   {
-    // not yet calculated, estimate norm of strain rate
-    if (calc_N or refvel != INPAR::FLUID::strainrate)
-    {
-      strainnorm = GetStrainRate(econvelnp_);
-      strainnorm /= sqrt(2.0);
-    }
-
-    // get Re from strain rate
-    double Re_ele_str = strainnorm * hk * hk * densnp_[0] / visc_;
-    if (Re_ele_str < 0.0)
-      dserror("Something went wrong!");
-    // ensure positive values
-    if (Re_ele_str < 1.0)
-       Re_ele_str = 1.0;
-
-    // calculate corrected Csgs
-    //           -3/16
-    //  *(1 - (Re)   )
-    //
-    fac = (1-pow(Re_ele_str,-3.0/16.0)); //*pow(Pr,-1.0/8.0));
+    double gamma1 = 4.0/3.0;
+    double gamma2 = 2.0;
+    kappa_phi = 1.0/(1.0-pow(alpha,-gamma1));
+    D_mfs = Csgs_sgphi * sqrt(kappa_phi) * pow(2.0,-gamma2*Nphi/2.0) * sqrt((pow(2.0,gamma1*Nvel[0])-1)+4.0/3.0*(M_PI/hk)*(pow(2.0,gamma2*Nphi)-pow(2.0,gamma2*Nvel[0])));
   }
-#endif
 
-// Pr <= 1
-# if 1
-  double gamma = 0.0;
-  gamma = 4.0/3.0;
-  double kappa_phi = 1.0/(1.0-pow(alpha,-gamma));
-  D_mfs = Csgs_sgphi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1)) * fac;
-#endif
+  // apply near-wall limit if required
+  if (nwl_scatra and nwl)
+  {
+    D_mfs *= Cai_phi;
+  }
 
-// Pr >> 1: cutoff viscous-convective
-# if 0
-  double gamma = 0.0;
-  gamma = 2.0;
-  double kappa_phi = 1.0/(1.0-pow(alpha,-gamma));
-  D_mfs = Csgs_sgphi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1)) * fac;
-#endif
-
-// Pr >> 1: cutoff inertial-convective
-#if 0
-  double gamma1 = 0.0;
-  gamma1 = 4.0/3.0;
-  double gamma2 = 0.0;
-  gamma2 = 2.0;
-  double kappa_phi = 1.0/(1.0-pow(alpha,-gamma1));
-  D_mfs = Csgs_sgphi * sqrt(kappa_phi) * pow(2.0,-gamma2*Nphi/2.0) * sqrt((pow(2.0,gamma1*Nvel[dim])-1)+4.0/3.0*(PI/hk)*(pow(2.0,gamma2*Nphi)-pow(2.0,gamma2*Nvel[dim]))) * fac;
-#endif
-
-#endif
+//  if (eid_ == 100){
+////    std::cout << "sqrt(kappa_phi)  " << setprecision(10) << sqrt(kappa_phi) << std::endl;
+////    std::cout << "pow(2.0,-gamma*Nphi/2.0)  " << setprecision(10) << pow(2.0,-gamma*Nphi/2.0) << std::endl;
+////    std::cout << "sqrt((pow(2.0,gamma*Nphi)-1))  " << setprecision(10) << sqrt((pow(2.0,gamma*Nphi)-1)) << std::endl;
+//    std::cout << "D  " << setprecision(10) << D_mfs << std::endl;
+//    std::cout << "B  " << setprecision(10) << B_mfs(0,0) << "  " << B_mfs(1,0) << "  " << B_mfs(2,0) << "  " << std::endl;
+//    if (nwl_scatra and nwl)
+//     std::cout << "CsgsD  " << setprecision(10) << Csgs_sgphi*Cai_phi << std::endl;
+//    else
+//     std::cout << "CsgsD  " << setprecision(10) << Csgs_sgphi << std::endl;
+//    std::cout << "CsgsB  " << setprecision(10) << Csgs_vel_nw << "  " << Csgs_sgvel << " " << Cai_phi << std::endl;
+//  }
 
   return;
 }
@@ -1253,6 +1246,802 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::StoreModelParametersForOutput(
       }
     }
   }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | additional output for turbulent channel flow         rasthofer 11/12 |
+ | dissipation introduced by stabilization and turbulence models        |
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::ScaTraImpl<distype>::CalcDissipation(
+     Teuchos::ParameterList&               params,
+     DRT::Element*                         ele,
+     const enum INPAR::SCATRA::ScaTraType  scatratype,
+     DRT::Discretization&                  discretization,
+     std::vector<int>&                     lm)
+{
+  // do some checks first
+  if (numscal_!=1 or numdofpernode_!=1)
+    dserror("CalcDissipation only for one scalar field!");
+
+  //----------------------------------------------------------------------
+  // preliminary set-up of parameters
+  // ---------------------------------------------------------------------
+
+  // set thermodynamic pressure and its time derivative as well as
+  // flag for turbulence model if required
+  turbmodel_ = INPAR::FLUID::no_model;
+  Teuchos::ParameterList& turbulencelist = params.sublist("TURBULENCE MODEL");
+  Teuchos::ParameterList& sgvisclist = params.sublist("SUBGRID VISCOSITY");
+  Teuchos::ParameterList& mfslist = params.sublist("MULTIFRACTAL SUBGRID SCALES");
+
+  if (scatratype == INPAR::SCATRA::scatratype_loma)
+  {
+    thermpressdt_ = params.get<double>("time derivative of thermodynamic pressure");
+
+    // update material with subgrid-scale scalar
+    update_mat_ = params.get<bool>("update material");
+  }
+
+  if (scatratype == INPAR::SCATRA::scatratype_loma or
+      scatratype == INPAR::SCATRA::scatratype_turbpassivesca)
+  {
+    // set flag for turbulence model
+    if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "Smagorinsky")
+      turbmodel_ = INPAR::FLUID::smagorinsky;
+    if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "Dynamic_Smagorinsky")
+      turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
+    if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
+      turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
+    // as the scalar field is constant in the turbulent inflow section
+    // we do not need any turbulence model
+    if (params.get<bool>("turbulent inflow",false))
+    {
+      if (SCATRA::InflowElement(ele))
+        turbmodel_ = INPAR::FLUID::no_model;
+    }
+  }
+
+  // set time integration
+  Teuchos::ParameterList& timeintlist = params.sublist("TIME INTEGRATION");
+  is_incremental_ = true; // be careful
+  is_stationary_  = timeintlist.get<bool>("using stationary formulation"); //turbulence is instationary!
+  is_genalpha_    = timeintlist.get<bool>("using generalized-alpha time integration");
+  // get current time and time-step length
+  const double time = timeintlist.get<double>("total time");
+  const double dt   = params.get<double>("time-step length");
+  // get time factor and alpha_F if required
+  // one-step-Theta:    timefac = theta*dt
+  // BDF2:              timefac = 2/3 * dt
+  // generalized-alpha: timefac = alphaF * (gamma*/alpha_M) * dt
+  double timefac = 1.0;
+  double alphaF  = 1.0;
+  if (not is_stationary_)
+  {
+    timefac = timeintlist.get<double>("time factor");
+    if (is_genalpha_)
+    {
+      alphaF = timeintlist.get<double>("alpha_F");
+      timefac *= alphaF;
+    }
+    if (timefac < 0.0) dserror("time factor is negative.");
+  }
+  else dserror("Turbulence is instationary!");
+
+  // set parameters for stabilization
+  Teuchos::ParameterList& stablist = params.sublist("STABILIZATION");
+  // get definition for stabilization parameter tau
+  whichtau_ = DRT::INPUT::IntegralValue<INPAR::SCATRA::TauType>(stablist,"DEFINITION_TAU");
+  // do one check
+  if (whichtau_ == INPAR::SCATRA::tau_exact_1d)
+    dserror("exact stabilization parameter only available for stationary case");
+  // get type of stabilization
+  const INPAR::SCATRA::StabType stabtype = DRT::INPUT::IntegralValue<INPAR::SCATRA::StabType>(stablist,"STABTYPE");
+
+  // set flags for subgrid-scale velocity and all-scale subgrid-diffusivity term
+  // (default: "false" for both flags)
+  const bool sgvel(DRT::INPUT::IntegralValue<int>(stablist,"SUGRVEL"));
+  sgvel_ = sgvel;
+  // select type of all-scale subgrid diffusivity if included
+  // this is just to have a dummy value here
+  const INPAR::SCATRA::AssgdType whichassgd
+    = DRT::INPUT::IntegralValue<INPAR::SCATRA::AssgdType>(stablist,"DEFINITION_ASSGD");
+  const bool assgd(DRT::INPUT::IntegralValue<int>(stablist,"ASSUGRDIFF"));
+  if (assgd) dserror("All-scale subgrid-diffusivity approach not supported!");
+
+  // set flags for potential evaluation of tau and material law at int. point
+  const INPAR::SCATRA::EvalTau tauloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalTau>(stablist,"EVALUATION_TAU");
+  tau_gp_ = (tauloc == INPAR::SCATRA::evaltau_integration_point); // set true/false
+  const INPAR::SCATRA::EvalMat matloc = DRT::INPUT::IntegralValue<INPAR::SCATRA::EvalMat>(stablist,"EVALUATION_MAT");
+  mat_gp_ = (matloc == INPAR::SCATRA::evalmat_integration_point); // set true/false
+
+  // set flag for fine-scale subgrid diffusivity and perform some checks
+  bool fssgd = false; //default
+  const INPAR::SCATRA::FSSUGRDIFF whichfssgd = DRT::INPUT::get<INPAR::SCATRA::FSSUGRDIFF>(params, "fs subgrid diffusivity");
+  if (whichfssgd == INPAR::SCATRA::fssugrdiff_artificial)
+  {
+    fssgd = true;
+    // checks are removed since they have already been done in the usual element call for mat and rhs
+    // check for solver type
+    //if (is_incremental_) dserror("Artificial fine-scale subgrid-diffusivity approach only in combination with non-incremental solver so far!");
+  }
+  else if (whichfssgd == INPAR::SCATRA::fssugrdiff_smagorinsky_all or whichfssgd == INPAR::SCATRA::fssugrdiff_smagorinsky_small)
+  {
+    fssgd = true;
+    // checks are removed since they have already been done in the usual element call for mat and rhs
+    // check for solver type
+    //if (not is_incremental_) dserror("Fine-scale subgrid-diffusivity approach using all/small-scale Smagorinsky model only in combination with incremental solver so far!");
+  }
+  // check for combination of all-scale and fine-scale subgrid diffusivity
+  if (assgd and fssgd) dserror("No combination of all-scale and fine-scale subgrid-diffusivity approach currently possible!");
+
+  is_reactive_ = false;
+
+  // parameters for subgrid-diffusivity models
+  double Cs(0.0);
+  double tpn(1.0);
+  // parameters for multifractal subgrid-scale modeling
+  double Csgs_sgvel = 0.0;
+  double alpha = 0.0;
+  bool calc_N = true;
+  double N_vel = 1.0;
+  INPAR::FLUID::RefVelocity refvel = INPAR::FLUID::strainrate;
+  INPAR::FLUID::RefLength reflength = INPAR::FLUID::cube_edge;
+  double c_nu = 1.0;
+  bool nwl = false;
+  bool nwl_scatra = false;
+  bool beta = 0.0;
+  bool BD_gp = false;
+  double Csgs_sgphi = 0.0;
+  double c_diff = 1.0;
+  // parameter for averaging (dynamic Smagorinsky)
+  if (turbmodel_!=INPAR::FLUID::no_model or fssgd)
+  {
+    // get Smagorinsky constant and turbulent Prandtl number
+    Cs  = sgvisclist.get<double>("C_SMAGORINSKY");
+    tpn = sgvisclist.get<double>("C_TURBPRANDTL");
+    if (tpn <= 1.0E-16) dserror("Turbulent Prandtl number should be larger than zero!");
+
+    if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+    {
+      // remark: for dynamic estimation, this returns (Cs*h)^2 / Pr_t
+      Teuchos::RCP<Epetra_Vector> ele_prt = turbulencelist.get<Teuchos::RCP<Epetra_Vector> >("col_ele_Prt");
+      const int id = ele->LID();
+      tpn = (*ele_prt)[id];
+
+      // when no averaging was done, we just keep the calculated (clipped) value
+      int dummy=0;
+      if (DRT::INPUT::IntegralValue<int>(sgvisclist,"C_SMAGORINSKY_AVERAGED"))
+        GetMeanPrtOfHomogenousDirection(params.sublist("TURBULENCE MODEL"),tpn,dummy);
+    }
+
+    // get model parameters
+    if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+    {
+      // necessary parameters for subgrid-scale velocity estimation
+      Csgs_sgvel = mfslist.get<double>("CSGS");
+      if (mfslist.get<std::string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
+       alpha = 3.0;
+      else dserror("Scale-Separtion method not supported!");
+      calc_N = DRT::INPUT::IntegralValue<int>(mfslist,"CALC_N");
+      N_vel = mfslist.get<double>("N");
+      if (mfslist.get<std::string>("REF_VELOCITY") == "strainrate")
+       refvel = INPAR::FLUID::strainrate;
+      else if (mfslist.get<std::string>("REF_VELOCITY") == "resolved")
+       refvel = INPAR::FLUID::resolved;
+      else if (mfslist.get<std::string>("REF_VELOCITY") == "fine_scale")
+       refvel = INPAR::FLUID::fine_scale;
+      else
+       dserror("Unknown velocity!");
+      if (mfslist.get<std::string>("REF_LENGTH") == "cube_edge")
+       reflength = INPAR::FLUID::cube_edge;
+      else if (mfslist.get<std::string>("REF_LENGTH") == "sphere_diameter")
+       reflength = INPAR::FLUID::sphere_diameter;
+      else if (mfslist.get<std::string>("REF_LENGTH") == "streamlength")
+       reflength = INPAR::FLUID::streamlength;
+      else if (mfslist.get<std::string>("REF_LENGTH") == "gradient_based")
+       reflength = INPAR::FLUID::gradient_based;
+      else if (mfslist.get<std::string>("REF_LENGTH") == "metric_tensor")
+       reflength = INPAR::FLUID::metric_tensor;
+      else
+       dserror("Unknown length!");
+      c_nu = mfslist.get<double>("C_NU");
+      nwl = DRT::INPUT::IntegralValue<int>(mfslist,"NEAR_WALL_LIMIT");
+      // necessary parameters for subgrid-scale scalar estimation
+      Csgs_sgphi = mfslist.get<double>("CSGS_PHI");
+      c_diff = mfslist.get<double>("C_DIFF");
+      if (DRT::INPUT::IntegralValue<int>(mfslist,"ADAPT_CSGS_PHI") and nwl)
+      {
+        double meanCai = mfslist.get<double>("meanCai");
+        Csgs_sgphi *= meanCai;
+      }
+      nwl_scatra = DRT::INPUT::IntegralValue<int>(mfslist,"NEAR_WALL_LIMIT_CSGS_PHI");
+      // general parameters
+      beta = mfslist.get<double>("BETA");
+      if (beta!=0.0) dserror("Lhs terms for mfs not included! Fixed-point iteration only!");
+      if (mfslist.get<std::string>("EVALUATION_B") == "element_center")
+      BD_gp = false;
+      else if (mfslist.get<std::string>("EVALUATION_B") == "integration_point")
+      BD_gp = true;
+      else
+        dserror("Unknown evaluation point!");
+      if (mfslist.get<std::string>("CONVFORM") == "convective")
+      mfs_conservative_ = false;
+      else if (mfslist.get<std::string>("CONVFORM") == "conservative")
+      mfs_conservative_ = true;
+      else
+        dserror("Unknown form of convective term!");
+    }
+  }
+
+
+  //----------------------------------------------------------------------
+  // get all nodal values
+  // ---------------------------------------------------------------------
+
+  // get velocity at nodes
+  const RCP<Epetra_MultiVector> convelocity = params.get< RCP<Epetra_MultiVector> >("convective velocity field");
+  // set econvelnp_ equal to evelnp_ since ale is not supported
+  DRT::UTILS::ExtractMyNodeBasedValues(ele,econvelnp_,convelocity,nsd_);
+  DRT::UTILS::ExtractMyNodeBasedValues(ele,evelnp_,convelocity,nsd_);
+
+  // get data required for subgrid-scale velocity: acceleration and pressure
+  if (sgvel_)
+  {
+    // check for matching flags
+    if (not mat_gp_ or not tau_gp_)
+     dserror("Evaluation of material and stabilization parameters need to be done at the integration points if subgrid-scale velocity is included!");
+
+    const RCP<Epetra_MultiVector> accpre = params.get< RCP<Epetra_MultiVector> >("acceleration/pressure field");
+    LINALG::Matrix<nsd_+1,nen_> eaccprenp;
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,eaccprenp,accpre,nsd_+1);
+
+    // split acceleration and pressure values
+    for (int i=0;i<nen_;++i)
+    {
+      for (int j=0;j<nsd_;++j)
+      {
+        eaccnp_(j,i) = eaccprenp(j,i);
+      }
+      eprenp_(i) = eaccprenp(nsd_,i);
+    }
+  }
+
+  // extract local values from the global vectors
+  Teuchos::RCP<const Epetra_Vector> hist = discretization.GetState("hist");
+  Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+  if (hist==Teuchos::null || phinp==Teuchos::null)
+    dserror("Cannot get state vector 'hist' and/or 'phinp'");
+  std::vector<double> myhist(lm.size());
+  std::vector<double> myphinp(lm.size());
+  DRT::UTILS::ExtractMyValues(*hist,myhist,lm);
+  DRT::UTILS::ExtractMyValues(*phinp,myphinp,lm);
+
+  // fill all element arrays
+  for (int i=0;i<nen_;++i)
+  {
+    for (int k = 0; k< numscal_; ++k)
+    {
+      // split for each transported scalar, insert into element arrays
+      ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
+      ephin_[k](i,0) = 0.0; //reset to zero; used in GetMaterialParams if not incremental
+                            //-> used to calculate densn which is not required here
+    }
+    for (int k = 0; k< numscal_; ++k)
+    {
+      // the history vectors contains information of time step t_n
+      ehist_[k](i,0) = myhist[k+(i*numdofpernode_)];
+    }
+  } // for i
+
+  if ((scatratype == INPAR::SCATRA::scatratype_loma) and is_genalpha_)
+  {
+    // extract additional local values from global vector
+      Teuchos::RCP<const Epetra_Vector> phiam = discretization.GetState("phiam");
+    if (phiam==Teuchos::null) dserror("Cannot get state vector 'phiam'");
+    std::vector<double> myphiam(lm.size());
+    DRT::UTILS::ExtractMyValues(*phiam,myphiam,lm);
+
+    // fill element array
+    for (int i=0;i<nen_;++i)
+    {
+      for (int k = 0; k< numscal_; ++k)
+      {
+        // split for each transported scalar, insert into element arrays
+        ephiam_[k](i,0) = myphiam[k+(i*numdofpernode_)];
+      }
+    } // for i
+  }
+
+  // get fine-scale values
+  if (whichfssgd == INPAR::SCATRA::fssugrdiff_smagorinsky_small
+      or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+  {
+    // get fine scale scalar field
+    Teuchos::RCP<const Epetra_Vector> gfsphinp = discretization.GetState("fsphinp");
+    if (gfsphinp==Teuchos::null) dserror("Cannot get state vector 'fsphinp'");
+
+    std::vector<double> myfsphinp(lm.size());
+    DRT::UTILS::ExtractMyValues(*gfsphinp,myfsphinp,lm);
+
+    for (int i=0;i<nen_;++i)
+    {
+      for (int k = 0; k< numscal_; ++k)
+      {
+        // split for each transported scalar, insert into element arrays
+        fsphinp_[k](i,0) = myfsphinp[k+(i*numdofpernode_)];
+      }
+    }
+
+    // get fine-scale velocity at nodes
+    const Teuchos::RCP<Epetra_MultiVector> fsvelocity = params.get< Teuchos::RCP<Epetra_MultiVector> >("fine-scale velocity field");
+    DRT::UTILS::ExtractMyNodeBasedValues(ele,efsvel_,fsvelocity,nsd_);
+  }
+
+
+  //----------------------------------------------------------------------
+  // prepare mean values
+  // ---------------------------------------------------------------------
+
+  // the coordinates of the element layers in the channel
+  // planecoords are named nodeplanes in turbulence_statistics_channel!
+  Teuchos::RCP<std::vector<double> > planecoords  = params.get<Teuchos::RCP<std::vector<double> > >("planecoords_",Teuchos::null);
+  if(planecoords==Teuchos::null)
+    dserror("planecoords is null, but need channel_flow_of_height_2\n");
+
+  //this will be the y-coordinate of a point in the element interior
+  double center = 0.0;
+  // get node coordinates of element
+  for(int inode=0;inode<nen_;inode++)
+    center+=xyze_(1,inode);
+
+  center/=nen_;
+
+  // working arrays for the quantities we want to compute
+  double vol             = 0.0;
+
+  double averaged_tauS   = 0.0;
+
+  double mean_resS       = 0.0;
+  double mean_resS_sq    = 0.0;
+
+  double eps_visc        = 0.0;
+  double eps_conv        = 0.0;
+  double eps_smag        = 0.0;
+  double eps_avm3        = 0.0;
+  double eps_mfs         = 0.0;
+  double eps_mfscross    = 0.0;
+  double eps_mfsrey      = 0.0;
+  double eps_supg        = 0.0;
+  double eps_cross       = 0.0;
+  double eps_rey         = 0.0;
+
+  //----------------------------------------------------------------------
+  // calculation of element volume both for tau at ele. cent. and int. pt.
+  //----------------------------------------------------------------------
+  // use one-point Gauss rule to do calculations at the element center
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
+
+  // volume of the element (2D: element surface area; 1D: element length)
+  // (Integration of f(x) = 1 gives exactly the volume/surface/length of element)
+  vol = EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
+
+  //----------------------------------------------------------------------
+  // get material parameters (evaluation at element center)
+  //----------------------------------------------------------------------
+  // remark: last parameter is dt required for MAT::m_myocard, which is not supported for
+  //         turbulence modeling -> dt=-1.0 (since negative time should hopefully provoke
+  //         a dserror() or a segmentation fault
+  if (not mat_gp_ or not tau_gp_) GetMaterialParams(ele,scatratype,-1.0);
+
+  //----------------------------------------------------------------------
+  // calculation of subgrid diffusivity and stabilization parameter(s)
+  // at element center
+  //----------------------------------------------------------------------
+  if (not tau_gp_)
+  {
+    // get velocity at element center
+    velint_.Multiply(evelnp_,funct_);
+    convelint_.Multiply(econvelnp_,funct_);
+
+    // calculation of all-scale subgrid diffusivity (artificial or due to
+    // constant-coefficient Smagorinsky model) at element center
+    if (assgd or turbmodel_ == INPAR::FLUID::smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+      CalcSubgrDiff(dt,timefac,whichassgd,assgd,Cs,tpn,vol,0);
+
+    // calculation of fine-scale artificial subgrid diffusivity at element center
+    if (fssgd)
+    {
+      // we have to set a vector, which is however only required for one
+      // special case (computation of fine-scale subgrid diffusivity for non-incremental
+      // solver -> only artificial subgrid diffusivity) not considered here
+      Epetra_SerialDenseVector  elevec1_epetra_subgrdiff_dummy;
+      CalcFineScaleSubgrDiff(ele,elevec1_epetra_subgrdiff_dummy,whichfssgd,Cs,tpn,vol,0);
+    }
+
+    // calculation of stabilization parameter at element center
+    CalTau(ele,diffus_[0],dt,timefac,vol,0,0.0,false);
+  }
+
+  //----------------------------------------------------------------------
+  // prepare multifractal subgrid-scale modeling
+  // calculation of model coefficients B (velocity) and D (scalar)
+  // at element center
+  //----------------------------------------------------------------------
+  // coefficient B of fine-scale velocity
+  LINALG::Matrix<nsd_,1> B_mfs(true);
+  // coefficient D of fine-scale scalar
+  double D_mfs = 0.0;
+  if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+  {
+    if (not BD_gp)
+    {
+      // make sure to get material parameters at element center
+      // hence, determine them if not yet available
+      if (mat_gp_) GetMaterialParams(ele,scatratype,dt);
+      // provide necessary velocities and gradients at element center
+      convelint_.Multiply(econvelnp_,funct_);
+      fsvelint_.Multiply(efsvel_,funct_);
+      // calculate model coefficients
+      CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,Csgs_sgvel,alpha,calc_N,N_vel,refvel,reflength,c_nu,nwl,nwl_scatra,Csgs_sgphi,c_diff,vol,0);
+      // and clear them
+      convelint_.Clear();
+      fsvelint_.Clear();
+    }
+  }
+
+  // get body force
+  BodyForce(ele,time);
+
+  //----------------------------------------------------------------------
+  //                       INTEGRATION LOOP
+  //----------------------------------------------------------------------
+  // integrations points and weights
+  DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+  for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+  {
+    //---------------------------------------------------------------
+    // evaluate shape functions and derivatives at integration point
+    //---------------------------------------------------------------
+    const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+    //----------------------------------------------------------------------
+    // get material parameters (evaluation at integration point)
+    //----------------------------------------------------------------------
+    if (mat_gp_) GetMaterialParams(ele,scatratype,-1.0);
+
+    // scalar at integration point
+    phi_[0]=funct_.Dot(ephinp_[0]);
+    // gradient of current scalar value
+    gradphi_.Multiply(derxy_,ephinp_[0]);
+
+    // get velocity at integration point
+    velint_.Multiply(evelnp_,funct_);
+    convelint_.Multiply(econvelnp_,funct_);
+
+    // convective term using current scalar value
+    conv_phi_[0] = convelint_.Dot(gradphi_);
+
+    // diffusive term using current scalar value for higher-order elements
+    if (use2ndderiv_)
+    {
+      // diffusive part:  diffus * ( N,xx  +  N,yy +  N,zz )
+      //GetLaplacianStrongForm(diff_, derxy2_);
+      diff_.Clear();
+      // compute N,xx  +  N,yy +  N,zz for each shape function at integration point
+      for (int i=0; i<nen_; ++i)
+      {
+        for (int j = 0; j<nsd_; ++j)
+        {
+          diff_(i) += derxy2_(j,i);
+        }
+      }
+      diff_.Scale(diffus_[0]);
+      diff_phi_[0] = diff_.Dot(ephinp_[0]);
+    }
+
+    // reactive term using current scalar value
+    if (is_reactive_) //is_reactive_ set in GetMaterial!
+    {
+      std::cout << "Warning: Reaction!" << std::endl;
+      rea_phi_[0] = densnp_[0]*reacterm_[0]; //reacterm_ set in GetMaterial!
+    }
+    else rea_phi_[0] = 0.0;
+
+    // get fine-scale velocity and its derivatives at integration point
+    if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+      fsvelint_.Multiply(efsvel_,funct_);
+    else
+      fsvelint_.Clear();
+
+    // compute gradient of fine-scale part of scalar value
+    if (fssgd)
+      fsgradphi_.Multiply(derxy_,fsphinp_[0]);
+    else
+      fsgradphi_.Clear();
+
+    // get history data (or acceleration)
+    hist_[0] = funct_.Dot(ehist_[0]);
+
+    // compute rhs containing bodyforce (divided by specific heat capacity) and,
+    // for temperature equation, the time derivative of thermodynamic pressure,
+    // if not constant, and for temperature equation of a reactive
+    // equation system, the reaction-rate term
+    rhs_[0] = bodyforce_[0].Dot(funct_)/shc_;
+    rhs_[0] += thermpressdt_/shc_;
+    if (reatemprhs_[0]!=0.0) std::cout << "Warning: Reaction!" << std::endl;
+    rhs_[0] += densnp_[0]*reatemprhs_[0]; //reatemprhs_ set in GetMatarialParams!
+
+    //--------------------------------------------------------------------
+    // calculation of (fine-scale) subgrid diffusivity, subgrid-scale
+    // velocity and stabilization parameter(s) at integration point
+    //--------------------------------------------------------------------
+    // ensure that subgrid-scale velocity and subgrid-scale convective part
+    // are zero if not computed below
+    sgvelint_.Clear();
+    if (tau_gp_)
+    {
+      // calculation of all-scale subgrid diffusivity (artificial or due to
+      // constant-coefficient Smagorinsky model) at integration point
+      if (assgd or turbmodel_ == INPAR::FLUID::smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+        CalcSubgrDiff(dt,timefac,whichassgd,assgd,Cs,tpn,vol,0);
+
+      // calculation of fine-scale artificial subgrid diffusivity
+      // at integration point
+      if (fssgd)
+      {
+        // we have to set a vector, which is however only required for one
+        // special case (computation of fine-scale subgrid diffusivity for non-incremental
+        // solver -> only artificial subgrid diffusivity) not considered here
+        Epetra_SerialDenseVector  elevec1_epetra_subgrdiff_dummy;
+        CalcFineScaleSubgrDiff(ele,elevec1_epetra_subgrdiff_dummy,whichfssgd,Cs,tpn,vol,0);
+      }
+
+      // calculation of subgrid-scale velocity at integration point if required
+      // this has to be done here (before CalTau() for scatra is called), otherwise
+      // the stabilization parameter for scatra would be overwritten
+      if (sgvel_)
+      {
+        // calculation of stabilization parameter related to fluid momentum
+        // equation at integration point
+        CalTau(ele,visc_,dt,timefac,vol,0,0.0,false);
+
+        if (scatratype != INPAR::SCATRA::scatratype_levelset)
+          CalcSubgrVelocity(ele,time,dt,timefac,0,scatratype);
+        else dserror("CalcSubgrVelocityLevelSet not available anymore");
+      }
+
+      // calculation of stabilization parameter at integration point
+      CalTau(ele,diffus_[0],dt,timefac,vol,0,0.0,false);
+    }
+
+    // prepare multifractal subgrid-scale modeling
+    // calculation of model coefficients B (velocity) and D (scalar)
+    // at element gauss point
+    if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+    {
+      if (BD_gp)
+      {
+        // make sure to get material parameters at element center
+        // hence, determine them if not yet available
+        if (not mat_gp_)
+        {
+          // GetMaterialParams(ele,scatratype,dt); would overwrite materials
+          // at the element center, hence BD_gp should always be combined with
+          // mat_gp_
+          dserror("evaluation of B and D at gauss-point should always be combined with evaluation of material at gauss-point!");
+        }
+        // calculate model coefficients
+        CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,Csgs_sgvel,alpha,calc_N,N_vel,refvel,reflength,c_nu,nwl,nwl_scatra,Csgs_sgphi,c_diff,vol,0);
+      }
+
+      // calculate fine-scale velocity for multifractal subgrid-scale modeling
+      for (int idim=0; idim<nsd_; idim++)
+        mfsgvelint_(idim,0) = fsvelint_(idim,0) * B_mfs(idim,0);
+
+      // calculate fine-scale scalar for multifractal subgrid-scale modeling
+      mfssgphi_[0] = D_mfs * funct_.Dot(fsphinp_[0]);
+    }
+    else
+    {
+      mfsgvelint_.Clear();
+      mfssgphi_[0] = 0.0;
+    }
+
+    // get residual of convection-diffusion equation and residual-based subgrid-scale scalar
+    CalcResidualAndSubgrScalar(dt,timefac,0);
+
+    // update material parameters based on inclusion of subgrid-scale
+    // part of scalar (active only for mixture fraction,
+    // Sutherland law and progress variable, for the time being)
+    if (update_mat_)
+    {
+      if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+        UpdateMaterialParams(ele,mfssgphi_[0],0);
+      else
+        UpdateMaterialParams(ele,sgphi_[0],0);
+    }
+    // this yields updated material parameters (dens, visc, diffus)
+    // scatrares_ and sgphi_ are not updated, since they are used
+    // for the contributions of the stabilizations, for which we
+    // do not use updated material parameters
+
+//    if (ele->Id()==100)
+//    {
+//      std::cout << "densnp_[0] " << densnp_[0] << std::endl;
+//      std::cout << "sgphi_[0] " << sgphi_[0] << std::endl;
+//      std::cout << "convelint_ " << convelint_ << std::endl;
+//      std::cout << "gradphi_ " << gradphi_ << std::endl;
+//      std::cout << "phi_[0] " << phi_[0] << std::endl;
+//      std::cout << "sgphi_[0] " << sgphi_[0] << std::endl;
+//      std::cout << "sgvelint_ " << sgvelint_ << std::endl;
+//      std::cout << "mfssgphi_[0] " << mfssgphi_[0] << std::endl;
+//      std::cout << "mfsgvelint_ " << mfsgvelint_ << std::endl;
+//      std::cout << "sgdiff_[0] " << sgdiff_[0] << std::endl;
+//      std::cout << "fsgradphi_ " << fsgradphi_ << std::endl;
+//      std::cout << "diffus_[0] " << diffus_[0] << std::endl;
+//    }
+
+    //---------------------------------------------------------------
+    // element average dissipation and production rates
+    //---------------------------------------------------------------
+
+    //---------------------------------------------------------------
+    // residual-based subgrid-scale modeling terms
+    //---------------------------------------------------------------
+
+    // dissipation by supg-stabilization
+    if (stabtype == INPAR::SCATRA::stabtype_SUPG)
+    {
+      eps_supg -= densnp_[0] * sgphi_[0] * convelint_.Dot(gradphi_) * fac; //sgphi_ is negative
+
+    }
+    else if (stabtype == INPAR::SCATRA::stabtype_no_stabilization)
+    {
+       // nothing to do
+    }
+    else
+      dserror("Stabtype not yet supported!");
+
+    // dissipation by cross-stress-stabilization
+    // dissipation by reynolds-stress-stabilization
+    if (sgvel_)
+    {
+      eps_cross -= densnp_[0] * phi_[0] * sgvelint_.Dot(gradphi_) * fac;
+      eps_rey -= densnp_[0] * sgphi_[0] * sgvelint_.Dot(gradphi_) * fac;
+    }
+
+    //---------------------------------------------------------------
+    // multifractal subgrid-scale modeling terms
+    //---------------------------------------------------------------
+
+    // dissipation multifractal subgrid-scales
+    if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+    {
+      eps_mfs -= densnp_[0] * (mfssgphi_[0] * convelint_.Dot(gradphi_)
+                              + phi_[0] * mfsgvelint_.Dot(gradphi_)
+                              + mfssgphi_[0] * mfsgvelint_.Dot(gradphi_)) * fac;
+      eps_mfscross -= densnp_[0] * (mfssgphi_[0] * convelint_.Dot(gradphi_)
+                                   + phi_[0] * mfsgvelint_.Dot(gradphi_)) * fac;
+      eps_mfsrey -= densnp_[0] * mfssgphi_[0] * mfsgvelint_.Dot(gradphi_) * fac;
+    }
+
+    //---------------------------------------------------------------
+    // small-scale subgrid-viscosity subgrid-scale modeling terms
+    //---------------------------------------------------------------
+
+    // dissipation AVM3
+    if (fssgd)
+    {
+      eps_avm3 += sgdiff_[0] * fsgradphi_.Dot(fsgradphi_) * fac;
+    }
+
+    //---------------------------------------------------------------
+    // Smagorinsky model
+    //---------------------------------------------------------------
+
+    // dissipation (Smagorinsky)
+    if (assgd or turbmodel_ == INPAR::FLUID::smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+    {
+      eps_smag += sgdiff_[0] * gradphi_.Dot(gradphi_) * fac;
+    }
+
+    //---------------------------------------------------------------
+    // standard Galerkin terms
+    //---------------------------------------------------------------
+
+    // convective (Galerkin)
+    eps_conv -= densnp_[0] * phi_[0] * convelint_.Dot(gradphi_) * fac;
+
+    // dissipation (Galerkin)
+    eps_visc += diffus_[0] * gradphi_.Dot(gradphi_) * fac;
+
+    //---------------------------------------------------------------
+    // element averages of tau_S and residual
+    //---------------------------------------------------------------
+    averaged_tauS += tau_[0] * fac;
+    mean_resS    += scatrares_[0] * fac;
+    mean_resS_sq += scatrares_[0] * scatrares_[0] * fac;
+
+  } // end loop integration points
+
+  mean_resS       /= vol;
+  mean_resS_sq    /= vol;
+
+  averaged_tauS   /= vol;
+
+  eps_visc /= vol;
+  eps_conv /= vol;
+  eps_smag /= vol;
+  eps_avm3 /= vol;
+  eps_mfs /= vol;
+  eps_mfscross /= vol;
+  eps_mfsrey /= vol;
+  eps_supg /= vol;
+  eps_cross /= vol;
+  eps_rey /= vol;
+
+
+  Teuchos::RCP<std::vector<double> > incrvol           = params.get<Teuchos::RCP<std::vector<double> > >("incrvol"          );
+
+  Teuchos::RCP<std::vector<double> > incr_eps_visc      = params.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_visc"    );
+  Teuchos::RCP<std::vector<double> > incr_eps_conv      = params.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_conv"    );
+  Teuchos::RCP<std::vector<double> > incr_eps_smag      = params.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_eddyvisc");
+  Teuchos::RCP<std::vector<double> > incr_eps_avm3      = params.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_avm3"    );
+  Teuchos::RCP<std::vector<double> > incr_eps_mfs       = params.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_mfs"     );
+  Teuchos::RCP<std::vector<double> > incr_eps_mfscross  = params.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_mfscross");
+  Teuchos::RCP<std::vector<double> > incr_eps_mfsrey    = params.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_mfsrey"  );
+  Teuchos::RCP<std::vector<double> > incr_eps_supg      = params.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_supg"    );
+  Teuchos::RCP<std::vector<double> > incr_eps_cross     = params.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_cross"   );
+  Teuchos::RCP<std::vector<double> > incr_eps_rey       = params.get<Teuchos::RCP<std::vector<double> > >("incr_scatra_eps_rey"     );
+
+  Teuchos::RCP<std::vector<double> > incrresS          = params.get<Teuchos::RCP<std::vector<double> > >("incrresS"         );
+  Teuchos::RCP<std::vector<double> > incrresS_sq       = params.get<Teuchos::RCP<std::vector<double> > >("incrresS_sq"      );
+
+  Teuchos::RCP<std::vector<double> > incrtauS          = params.get<Teuchos::RCP<std::vector<double> > >("incrtauS"         );
+
+  bool found = false;
+
+  int nlayer = 0;
+  for (nlayer=0;nlayer<(int)(*planecoords).size()-1;)
+  {
+    if(center<(*planecoords)[nlayer+1])
+    {
+      found = true;
+      break;
+    }
+    nlayer++;
+  }
+  if (found ==false)
+  {
+    dserror("could not determine element layer");
+  }
+
+  // collect layer volume
+  (*incrvol      )[nlayer] += vol;
+
+  // averages of stabilization parameters
+  (*incrtauS     )[nlayer] += averaged_tauS;
+
+  // averages residual
+  (*incrresS         )[nlayer] += mean_resS      ;
+  (*incrresS_sq      )[nlayer] += mean_resS_sq   ;
+
+  // averages dissipation
+  (*incr_eps_visc    )[nlayer] += eps_visc       ;
+  (*incr_eps_conv    )[nlayer] += eps_conv       ;
+  (*incr_eps_smag    )[nlayer] += eps_smag       ;
+  (*incr_eps_avm3    )[nlayer] += eps_avm3       ;
+  (*incr_eps_mfs     )[nlayer] += eps_mfs        ;
+  (*incr_eps_mfscross)[nlayer] += eps_mfscross   ;
+  (*incr_eps_mfsrey  )[nlayer] += eps_mfsrey     ;
+  (*incr_eps_supg    )[nlayer] += eps_supg       ;
+  (*incr_eps_cross   )[nlayer] += eps_cross      ;
+  (*incr_eps_rey     )[nlayer] += eps_rey        ;
 
   return;
 }

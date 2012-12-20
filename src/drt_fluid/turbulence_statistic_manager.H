@@ -24,6 +24,7 @@ Maintainer: Ursula Rasthofer
 #include "Teuchos_RCP.hpp"
 #include "Teuchos_ParameterList.hpp"
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_scatra.H"
 
 
 //forward declarations
@@ -45,10 +46,15 @@ namespace COMBUST
   class TurbulenceStatisticsBcf;
 }
 
+namespace SCATRA
+{
+  class ScaTraTimIntImpl;
+}
+
 namespace FLD
 {
 // forward declarations
-class FluidGenAlphaIntegration;
+//class FluidGenAlphaIntegration;
 class FluidImplicitTimeInt;
 class CombustFluidImplicitTimeInt;
 class TurbulenceStatisticsCha;
@@ -165,12 +171,11 @@ public:
   void RestartScaTra(IO::DiscretizationReader& scatrareader,int step);
 
   /*!
-  \brief Add results from scalar transport fields to statistics
+  \brief Provide access to scalar transport field
 
   */
-  void AddScaTraResults(
-      Teuchos::RCP<DRT::Discretization> scatradis,
-      Teuchos::RCP<Epetra_Vector> myphinp);
+  void AddScaTraField(
+      SCATRA::ScaTraTimIntImpl& scatra_timeint);
 
   /*!
   \brief   Write (dump) the scatra-specific mean fields to the result file
@@ -186,6 +191,8 @@ public:
   */
   const Teuchos::RCP<TurbulenceStatisticsGeneralMean> GetTurbulenceStatisticsGeneralMean() const
     { return statistics_general_mean_; }
+
+  bool WithScaTra(){return withscatra_;}
 
 private:
   /*!
@@ -214,6 +221,14 @@ private:
   //! parameterlist of the discretization including time params,
   //! stabilization params and turbulence sublist
   Teuchos::RCP<Teuchos::ParameterList> params_;
+  //! parameterlist of the scatra discretization including time params,
+  //! stabilization params and turbulence sublist
+  Teuchos::RCP<Teuchos::ParameterList> scatraparams_;
+  //! since model parameters (Prt, Csgs, etc.) are recomputed during
+  //! simulation and change their values, we need a pointer to this
+  //! list and cannot use a copy stored in scatraparams_
+  Teuchos::RCP<Teuchos::ParameterList> scatraextraparams_;
+  Teuchos::RCP<Teuchos::ParameterList> scatratimeparams_;
 
   //! parameterlist specially designed for the evaluation of
   //! gausspoint statistics
@@ -235,8 +250,6 @@ private:
 
   Teuchos::RCP<Epetra_Vector>           myscaaf_    ;
   Teuchos::RCP<Epetra_Vector>           myscaam_    ;
-  //! scatra result vector (defined on the scatra dofrowmap!)
-  Teuchos::RCP<Epetra_Vector>           myfullphinp_;
 
   Teuchos::RCP<Epetra_Vector>           mydispnp_   ;
   Teuchos::RCP<Epetra_Vector>           mydispn_    ;
@@ -249,6 +262,18 @@ private:
   Teuchos::RCP<Epetra_MultiVector>      myfilteredreystr_;
   Teuchos::RCP<Epetra_Vector>           myfsvelaf_    ;
   Teuchos::RCP<Epetra_Vector>           myfsscaaf_;
+
+  //! scatra result vector (defined on the scatra dofrowmap!)
+  Teuchos::RCP<Epetra_Vector>                   myphinp_;
+  Teuchos::RCP<Epetra_Vector>                   myphiaf_;
+  Teuchos::RCP<Epetra_Vector>                   myphiam_;
+  Teuchos::RCP<Epetra_Vector>                   myfsphi_;
+  Teuchos::RCP<Epetra_Vector>                   myscatrahist_;
+  Teuchos::RCP<Epetra_Vector>                   myphidtam_;
+  //! all my (solution) vectors needed for element evaluation
+  Teuchos::RCP<Epetra_MultiVector>     myscatraconvel_;
+  Teuchos::RCP<Epetra_MultiVector>     myscatraaccpre_;
+  Teuchos::RCP<Epetra_MultiVector>     myscatrafsvel_;
 
 
   //! specifies the special flow

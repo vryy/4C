@@ -87,7 +87,7 @@ double CalResDiffCoeff(
  |find elements of inflow section                                rasthofer 01/12 |
  |for turbulent low Mach number flows with turbulent inflow condition            |
  *-------------------------------------------------------------------------------*/
-bool InflowElement(DRT::Element* ele)
+bool InflowElement(const DRT::Element* ele)
 {
   bool inflow_ele = false;
 

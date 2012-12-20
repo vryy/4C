@@ -227,6 +227,12 @@ public:
   //! return scalar field convective velocity at time step n+1
   Teuchos::RCP<Epetra_MultiVector> ConVel() { return convel_; }
 
+  //! return scalar field acceleration/history of convective velocity field at time step n+1
+  Teuchos::RCP<Epetra_MultiVector> ConAccPre() { return accpre_; }
+
+  //! return scalar field fine-scale convective velocity at time step n+1
+  Teuchos::RCP<Epetra_MultiVector> ConFsVel() { return fsvel_; }
+
   //! return flux vector
   Teuchos::RCP<Epetra_MultiVector> Flux() { return flux_; };
 
@@ -241,6 +247,11 @@ public:
 
   //! return discretization
   Teuchos::RCP<DRT::Discretization> Discretization() { return discret_; }
+
+  //! return the parameter lists
+  Teuchos::RCP<Teuchos::ParameterList> ScatraParameterList() { return params_;}
+  Teuchos::RCP<Teuchos::ParameterList> ScatraExtraParameterList() { return extraparams_;}
+  virtual Teuchos::RCP<Teuchos::ParameterList> ScatraTimeParameterList() = 0;
 
   //! Access output object: CD-Rom and DVD only - no BlueRay support!!! ;)
   IO::DiscretizationWriter& DiscWriter() { return *output_; }
@@ -320,6 +331,9 @@ public:
 
   //! return time derivative of scalar field phi at time step n+1
   Teuchos::RCP<Epetra_Vector> Phidtnp() { return phidtnp_; }
+
+  //! return scalar field history
+  Teuchos::RCP<Epetra_Vector> Hist() { return hist_; }
 
   //! return scalar field phi at time step n+alpha_F
   virtual Teuchos::RCP<Epetra_Vector> Phiaf() = 0;
