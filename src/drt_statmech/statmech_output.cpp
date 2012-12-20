@@ -1522,11 +1522,11 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
         // free linkers
         case 0:
         {
-          //double beadcolor = 5*color;
-          ////writing element by nodal coordinates as a sphere
-          //gmshfilebonds << "SP(" << scientific;
-          //gmshfilebonds<< (*visualizepositions_)[0][i]<< "," << (*visualizepositions_)[1][i] << "," << (*visualizepositions_)[2][i];
-          //gmshfilebonds << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
+//          double beadcolor = 5*color;
+//          //writing element by nodal coordinates as a sphere
+//          gmshfilebonds << "SP(" << scientific;
+//          gmshfilebonds<< (*visualizepositions_)[0][i]<< "," << (*visualizepositions_)[1][i] << "," << (*visualizepositions_)[2][i];
+//          gmshfilebonds << ")" << "{" << scientific << beadcolor << "," << beadcolor << "};" << endl;
         }
         break;
         // crosslink molecule with one bond
@@ -1897,18 +1897,11 @@ void STATMECH::StatMechManager::GmshPrepareVisualization(const Epetra_Vector& di
       }
     }
     if (periodlength_->at(0) > 0.0)
-      CrosslinkerPeriodicBoundaryShift(*visualizepositions_);
-  }
-  else
-  {
-    visualizepositions_->PutScalar(0.0);
+      CrosslinkerPeriodicBoundaryShift(visualizepositions_);
   }
   // synchronize results
-  Epetra_Export crosslinkexporter(*crosslinkermap_, *transfermap_);
-  Epetra_Import crosslinkimporter(*crosslinkermap_, *transfermap_);
-  Epetra_MultiVector visualizepositionstrans(*transfermap_, 3, true);
-  visualizepositionstrans.Export(*visualizepositions_, crosslinkexporter, Add);
-  visualizepositions_->Import(visualizepositionstrans, crosslinkimporter, Insert);
+  Teuchos::RCP<Epetra_MultiVector> visualizepositionstrans = Teuchos::rcp(new Epetra_MultiVector(*transfermap_, 3, true));
+  CommunicateMultiVector(visualizepositionstrans, visualizepositions_);
   // debug couts
   //cout<<*visualizepositions_<<endl;
 }//GmshPrepareVisualization
@@ -4326,14 +4319,14 @@ void STATMECH::StatMechManager::CrosslinkCoverageOutput(const Epetra_Vector& dis
 {
   if(coverageonly)
   {
-    Epetra_Vector bspotstatustrans(*bspotrowmap_);
-    CommunicateVector(bspotstatustrans, *bspotstatus_,true,false,false,true);
+    RCP<Epetra_Vector> bspotstatustrans = Teuchos::rcp(new Epetra_Vector(*bspotrowmap_));
+    CommunicateVector(bspotstatustrans, bspotstatus_,true,false,false,true);
 
     // check for occupied binding spots
     int partialsum = 0;
-    for(int i=0; i<bspotstatustrans.MyLength(); i++)
+    for(int i=0; i<bspotstatustrans->MyLength(); i++)
     {
-      if((*filamentnumber_)[bspotcolmap_->LID(bspotrowmap_->GID(i))]==0 && bspotstatustrans[i]>-0.1)
+      if((*filamentnumber_)[bspotcolmap_->LID(bspotrowmap_->GID(i))]==0 && (*bspotstatustrans)[i]>-0.1)
         partialsum++;
       else if((int)(*filamentnumber_)[bspotcolmap_->LID(bspotrowmap_->GID(i))]>0)
         break;
@@ -4486,11 +4479,11 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
 
     int bindingspots = 0;
     int combicount = 0;
-    Epetra_Vector anglesrow(*ddcorrrowmap_, true);
+    Teuchos::RCP<Epetra_Vector> anglesrow = Teuchos::rcp(new Epetra_Vector(*ddcorrrowmap_, true));
     // including correlation on the same filament
-    Epetra_MultiVector orderparameterbinsincrow(*ddcorrrowmap_,2, true);
+    Teuchos::RCP<Epetra_MultiVector> orderparameterbinsincrow = Teuchos::rcp(new Epetra_MultiVector(*ddcorrrowmap_,2, true));
     // excluding correlation on identical filament
-    Epetra_MultiVector orderparameterbinsexcrow(*ddcorrrowmap_,2, true);
+    Teuchos::RCP<Epetra_MultiVector> orderparameterbinsexcrow = Teuchos::rcp(new Epetra_MultiVector(*ddcorrrowmap_,2, true));
     // loop over crosslinkermap_ (column map, same for all procs: maps all crosslink molecules)
     for(int mypid=0; mypid<discret_->Comm().NumProc(); mypid++)
     {
@@ -4537,13 +4530,13 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
                 bool orientation = CheckOrientation(direction,*bspottriadscol,LID,phifil);
 
                 // increment count for that bin
-                orderparameterbinsincrow[0][currdistbin] += 1.0;
+                (*orderparameterbinsincrow)[0][currdistbin] += 1.0;
                 // order parameter
-                orderparameterbinsincrow[1][currdistbin] += (3.0*cos((*phifil))*cos((*phifil))-1)/2.0;
+                (*orderparameterbinsincrow)[1][currdistbin] += (3.0*cos((*phifil))*cos((*phifil))-1)/2.0;
                 if((*filamentnumber_)[i]!=(*filamentnumber_)[j])
                 {
-                  orderparameterbinsexcrow[0][currdistbin] += 1.0;
-                  orderparameterbinsexcrow[1][currdistbin] += (3.0*cos((*phifil))*cos((*phifil))-1)/2.0;
+                  (*orderparameterbinsexcrow)[0][currdistbin] += 1.0;
+                  (*orderparameterbinsexcrow)[1][currdistbin] += (3.0*cos((*phifil))*cos((*phifil))-1)/2.0;
                 }
                 // proximity check
                 if(distance.Norm2()>rmin && distance.Norm2()<rmax)
@@ -4557,7 +4550,7 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
                   // in case the distance is exactly periodlength*sqrt(3)
                   if(curranglebin==numbins)
                     curranglebin--;
-                  anglesrow[curranglebin] += 1.0;
+                  (*anglesrow)[curranglebin] += 1.0;
                 }
               }
               else
@@ -4581,9 +4574,9 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
     int bspotsglob = 0;
     discret_->Comm().SumAll(&bindingspots,&bspotsglob,1);
 
-    Epetra_Vector anglescol(*ddcorrcolmap_, true);
-    Epetra_MultiVector orderparameterbinsinccol(*ddcorrcolmap_,2, true);
-    Epetra_MultiVector orderparameterbinsexccol(*ddcorrcolmap_,2, true);
+    Teuchos::RCP<Epetra_Vector> anglescol = Teuchos::rcp(new Epetra_Vector(*ddcorrcolmap_, true));
+    Teuchos::RCP<Epetra_MultiVector> orderparameterbinsinccol = Teuchos::rcp(new Epetra_MultiVector(*ddcorrcolmap_,2, true));
+    Teuchos::RCP<Epetra_MultiVector> orderparameterbinsexccol = Teuchos::rcp(new Epetra_MultiVector(*ddcorrcolmap_,2, true));
     CommunicateVector(anglesrow,anglescol, false, true,false);
     CommunicateMultiVector(orderparameterbinsincrow, orderparameterbinsinccol,false,true,false);
     CommunicateMultiVector(orderparameterbinsexcrow, orderparameterbinsexccol,false,true,false);
@@ -4595,11 +4588,11 @@ void STATMECH::StatMechManager::OrientationCorrelation(const Epetra_Vector& disr
     for(int i=0; i<numbins; i++)
       for(int pid=0; pid<discret_->Comm().NumProc(); pid++)
       {
-        angles[i] += (int)anglescol[pid*numbins+i];
-        orderparameterinc[i][0] += orderparameterbinsinccol[0][pid*numbins+i];
-        orderparameterinc[i][1] += orderparameterbinsinccol[1][pid*numbins+i];
-        orderparameterexc[i][0] += orderparameterbinsexccol[0][pid*numbins+i];
-        orderparameterexc[i][1] += orderparameterbinsexccol[1][pid*numbins+i];
+        angles[i] += (int)(*anglescol)[pid*numbins+i];
+        orderparameterinc[i][0] += (*orderparameterbinsinccol)[0][pid*numbins+i];
+        orderparameterinc[i][1] += (*orderparameterbinsinccol)[1][pid*numbins+i];
+        orderparameterexc[i][0] += (*orderparameterbinsexccol)[0][pid*numbins+i];
+        orderparameterexc[i][1] += (*orderparameterbinsexccol)[1][pid*numbins+i];
       }
 
     // average values

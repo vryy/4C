@@ -412,10 +412,10 @@ protected:
                                      LINALG::Matrix<4,1>&               rQxi);
 
   //! \brief adjust off-rate by considering forces in the crosslinker
-  void ForceDependentOffRate(const double&        dt,
-                             const double&        koff0,
-                             const Epetra_Vector& discol,
-                             Epetra_Vector&       punlink);
+  void ForceDependentOffRate(const double&               dt,
+                             const double&               koff0,
+                             const Epetra_Vector&        discol,
+                             Teuchos::RCP<Epetra_Vector> punlink);
 
   /*! \brief reduce number of currently existing crosslinker elements by numtoreduce
    *  \param (in) numtoreduce number of crosslinkers by which overall number of crosslinkers is reduced
@@ -432,13 +432,13 @@ protected:
    *  \param bspottriadscol       (in) nodal triads as quaternions in column map format (fully overlapping)
    *  \param neighboursLID        (in/out) vector holding the LIDs of the nodes close to crosslink molecules
    *  */
-  void DetectNeighbourNodes(const Epetra_MultiVector&                     bspotpositions,
-                            std::vector<std::vector<std::vector<int> > >* nodeinpartition,
-                            Epetra_Vector&                                numbond,
-                            Epetra_MultiVector&                           crosslinkerpositions,
-                            Epetra_MultiVector&                           crosslinkpartitions,
-                            Epetra_MultiVector&                           bspottriadscol,
-                            Teuchos::RCP<Epetra_MultiVector>&             neighboursLID);
+  void DetectNeighbourNodes(const Epetra_MultiVector&                           bspotpositions,
+                            const std::vector<std::vector<std::vector<int> > >& nodeinpartition,
+                            const Epetra_Vector&                                numbond,
+                            const Epetra_MultiVector&                           crosslinkerpositions,
+                            const Epetra_MultiVector&                           crosslinkpartitions,
+                            const Epetra_MultiVector&                           bspottriadscol,
+                            Teuchos::RCP<Epetra_MultiVector>&                   neighboursLID);
 
   //! \brief rotation of a vector around a given fixed axis by angle phirot
   void RotationAroundFixedAxis(LINALG::Matrix<3,1>& axis,
@@ -449,7 +449,7 @@ protected:
   void CrosslinkerMoleculeInit();
 
   //! \brief shifts crosslinker reprentations (spatial points) if they drift out of the boundary box in case of periodic BCs
-  void CrosslinkerPeriodicBoundaryShift(Epetra_MultiVector& crosslinkerpositions);
+  void CrosslinkerPeriodicBoundaryShift(Teuchos::RCP<Epetra_MultiVector> crosslinkerpositions);
 
   //! \brief generates a vector with a random permutation of the numbers between 0 and N - 1
   std::vector<int> Permutation(const int& N);
@@ -632,12 +632,12 @@ protected:
    *  \param doexport (in) export flag
    *  \param doimport (in) import flag
    */
-  void CommunicateVector(Epetra_Vector& InVec,
-                         Epetra_Vector& OutVec,
-                         bool           doexport=true,
-                         bool           doimport=true,
-                         bool           zerofy=true,
-                         bool           exportinsert=false);
+  void CommunicateVector(Teuchos::RCP<Epetra_Vector> InVec,
+                         Teuchos::RCP<Epetra_Vector> OutVec,
+                         bool                        doexport=true,
+                         bool                        doimport=true,
+                         bool                        zerofy=true,
+                         bool                        exportinsert=false);
 
   /*! \brief comunicate MultiVector to all participating processors
    *  \param InVec    (in) Source/Input vector
@@ -646,12 +646,12 @@ protected:
    *  \param doimport (in) import flag
    *  \param zerofy   (in) zero out OutVec flag
    */
-  void CommunicateMultiVector(Epetra_MultiVector& InVec,
-                              Epetra_MultiVector& OutVec,
-                              bool                doexport=true,
-                              bool                doimport=true,
-                              bool                zerofy=true,
-                              bool                exportinsert=false);
+  void CommunicateMultiVector(Teuchos::RCP<Epetra_MultiVector> InVec,
+                              Teuchos::RCP<Epetra_MultiVector> OutVec,
+                              bool                             doexport=true,
+                              bool                             doimport=true,
+                              bool                             zerofy=true,
+                              bool                             exportinsert=false);
 
   /* \brief set Dirichlet values according to given Dirichlet map)
    *  \param disn            (in)     displacement vector
