@@ -44,9 +44,6 @@ Maintainer: Ulrich Kuettler
 #include "ad_fld_poro.H"
 #include "ad_fld_xfluid_fsi.H"
 
-// TODO remove
-#include "../drt_fluid/fluid_genalpha_integration.H"
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -639,25 +636,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     }
     break;
     } // end switch (probtype)
-  }
-  else if (timeint == INPAR::FLUID::timeint_gen_alpha)
-  {
-    fluidtimeparams->set<int>("time int algo",INPAR::FLUID::timeint_gen_alpha);
-
-    // -------------------------------------------------------------------
-    // no additional parameters in list for generalized-alpha scheme
-    // -------------------------------------------------------------------
-    // create all vectors and variables associated with the time
-    // integration (call the constructor);
-    // the only parameter from the list required here is the number of
-    // velocity degrees of freedom
-    //------------------------------------------------------------------
-    RCP<Fluid> tmpfluid;
-    tmpfluid = Teuchos::rcp(new FLD::FluidGenAlphaIntegration(actdis, solver, fluidtimeparams, output, isale , pbcmapmastertoslave));
-//    if (probtype == prb_fsi_lung)
-//      fluid_ = Teuchos::rcp(new FluidLung(Teuchos::rcp(new FluidWrapper(tmpfluid))));
-//    else
-    fluid_ = tmpfluid;
   }
   else
   {

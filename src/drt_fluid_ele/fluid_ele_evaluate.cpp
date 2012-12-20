@@ -17,7 +17,6 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 #include "fluid_ele_action.H"
 #include "fluid_ele_evaluate_utils.H"
 #include "fluid_ele_utils.H"
-#include "fluid_genalpha_resVMM.H"
 #include "fluid_ele_interface.H"
 #include "fluid_ele_parameter.H"
 #include "fluid_ele_tds.H"
@@ -231,24 +230,6 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
           elevec2,
           elevec3,
           true);
-    }
-    break;
-    //--------------------------------------------------
-    // previous generalized-alpha (n+1) implementation
-    //--------------------------------------------------
-    case FLD::calc_fluid_genalpha_sysmat_and_residual:
-    {
-      return DRT::ELEMENTS::FluidGenalphaResVMMInterface::Impl(this)->Evaluate(
-          this,
-          params,
-          discretization,
-          lm,
-          elemat1,
-          elemat2,
-          elevec1,
-          elevec2,
-          elevec3,
-          mat);
     }
     break;
     case FLD::calc_div_u:

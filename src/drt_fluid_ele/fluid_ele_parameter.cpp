@@ -160,12 +160,6 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
     is_stationary_ = false;
     is_genalpha_np_ = true;
   }
-  else if (timealgo_==INPAR::FLUID::timeint_gen_alpha)
-  {
-    is_genalpha_ = true;
-    is_stationary_ = false;
-    is_genalpha_np_ = false;
-  }
   else
   {
     is_genalpha_ = false;
@@ -244,7 +238,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
   cross_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
   reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
 
-  if ((not is_genalpha_np_) and (timealgo_!=INPAR::FLUID::timeint_gen_alpha) and
+  if ((not is_genalpha_np_) and
       (tds_ == INPAR::FLUID::subscales_time_dependent or transient_ != INPAR::FLUID::inertia_stab_drop))
     dserror("time dependent subscales does not work for OST/AfGenAlpha/BDF2/Stationary. \nOne need to look for bugs");
 
@@ -398,13 +392,6 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTimeParameter( Teuchos::Paramet
       // if not generalized-alpha: timefacrhs_=theta * dt_ = timefac_
       timefacpre_ = gamma_/alphaM_*dt_;
       timefacrhs_ = gamma_/alphaM_*dt_;
-    }
-    else if (timealgo_ == INPAR::FLUID::timeint_gen_alpha)
-    {
-      // used for weak boundary conditions and mixid hybrid
-      timefac_ = alphaF_*gamma_*dt_;
-      timefacpre_ = gamma_*dt_;
-      timefacrhs_ = 1.0;
     }
     else if(timealgo_ == INPAR::FLUID::timeint_afgenalpha)
     {

@@ -20,6 +20,7 @@ Maintainer: Peter Gamnitzer
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../drt_lib/drt_utils_parmetis.H"
+#include "../drt_lib/drt_element.H"
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -531,7 +532,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 
 
 void FLD::FluidMHDEvaluate::BoundaryElementLoop(
-  Teuchos::ParameterList&                       mhdbcparams,
+  Teuchos::ParameterList&              mhdbcparams,
   Teuchos::RCP<Epetra_Vector>          velaf_     ,
   Teuchos::RCP<Epetra_Vector>          velnp_     ,
   Teuchos::RCP<Epetra_Vector>          residual_  ,
@@ -560,7 +561,8 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
     RCP<Epetra_Vector> bndres = LINALG::CreateVector(*bnd_discret_->DofRowMap(),true); 
 
     vector<DRT::Condition*> bndMHDcnd;
-    bnd_discret_->GetCondition("SurfaceMixHybDirichlet",bndMHDcnd);
+    const std::string condstring = "SurfaceMixHybDirichlet";
+    bnd_discret_->GetCondition(condstring,bndMHDcnd);
 
     // evaluate all mixed hybrid Dirichlet boundary conditions
     {
@@ -585,25 +587,17 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
         for (map<int,RCP<DRT::Element> >::iterator curr=geom.begin(); curr!=geom.end(); ++curr)
         {
           // get element location vector and ownerships
-          std::vector<int> lm;
-          std::vector<int> lmowner;
-          std::vector<int> lmstride;
-          curr->second->LocationVector(*bnd_discret_,lm,lmowner,lmstride);
+          // the LocationVector method will return the the location vector
+          // of the dofs this condition is meant to assemble into.
+          // These dofs do not need to be the same as the dofs of the element
+          // (this is the standard case, though). Special boundary conditions,
+          // like weak dirichlet conditions, assemble into the dofs of the parent element.
+          DRT::Element::LocationArray la(1);
 
-          // place vectors for parent lm and lmowner in
-          // the parameterlist --- the element will fill
-          // them since only the element implementation
-          // knows its parent
-          RCP<std::vector<int> > plm     =Teuchos::rcp(new std::vector<int>);
-          RCP<std::vector<int> > plmowner=Teuchos::rcp(new std::vector<int>);
-          RCP<std::vector<int> > plmstride=Teuchos::rcp(new std::vector<int>);
-
-          mhdbcparams.set<RCP<std::vector<int> > >("plm",plm);
-          mhdbcparams.set<RCP<std::vector<int> > >("plmowner",plmowner);
-          mhdbcparams.set<RCP<std::vector<int> > >("plmstride",plmstride);
+          curr->second->LocationVector(*bnd_discret_,la,false,condstring,mhdbcparams);
 
           // call the element specific evaluate method
-          int err = curr->second->Evaluate(mhdbcparams,*bnd_discret_,lm,elematrix1,dummymat,
+          int err = curr->second->Evaluate(mhdbcparams,*bnd_discret_,la[0].lm_,elematrix1,dummymat,
                                            elevector1,dummyvec,dummyvec);
           if (err) dserror("error while evaluating elements");
 
@@ -611,8 +605,8 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
           // over a boundary element
           int eid = curr->second->Id();
 
-          bndmat_->FEAssemble(eid,elematrix1,*plm,*plmowner,*plm);
-          LINALG::Assemble(*bndres,elevector1,*plm,*plmowner);
+          bndmat_->FEAssemble(eid,elematrix1,la[0].lm_,la[0].lmowner_,la[0].lm_);
+          LINALG::Assemble(*bndres,elevector1,la[0].lm_,la[0].lmowner_);
         } // end loop geometry elements of this conditions
       }
     }

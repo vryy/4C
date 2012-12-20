@@ -2246,14 +2246,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       tuple<std::string>(
           "Stationary",
           "Np_Gen_Alpha",
-          "Gen_Alpha",
           "Af_Gen_Alpha",
           "One_Step_Theta",
           "BDF2"),
       tuple<int>(
           INPAR::FLUID::timeint_stationary,
-          INPAR::FLUID::timeint_npgenalpha,        // fluid3's implementation (solving for velocity increment)
-          INPAR::FLUID::timeint_gen_alpha,         // Peter's implementation (solving for acceleration increment)
+          INPAR::FLUID::timeint_npgenalpha,
           INPAR::FLUID::timeint_afgenalpha,
           INPAR::FLUID::timeint_one_step_theta,
           INPAR::FLUID::timeint_bdf2),

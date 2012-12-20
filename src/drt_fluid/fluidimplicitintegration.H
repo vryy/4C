@@ -95,6 +95,7 @@ class DynSmagFilter;
 class LESScaleSeparation;
 class Meshtying;
 class TransferTurbulentInflowCondition;
+class FluidMHDEvaluate;
 namespace UTILS
 {
   class MapExtractor;
@@ -846,6 +847,13 @@ protected:
   RCP<FLD::DynSmagFilter> DynSmag_;
   RCP<LESScaleSeparation> ScaleSepGMO_;
 
+  //@}
+
+  //! @name Mixed-hybrid Dirichlet condition
+  //        --------------------------------
+  //
+  //! object for a redistributed evaluation of the mixed-hybrid Dirichlet condition
+  RCP<FLD::FluidMHDEvaluate> MHD_evaluator_;
   //@}
 
   //! Extractor used for convergence check

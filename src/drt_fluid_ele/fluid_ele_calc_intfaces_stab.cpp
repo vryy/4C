@@ -322,8 +322,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
 
 
-  if((fldpara_->TimeAlgo()==INPAR::FLUID::timeint_gen_alpha) or
-      (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha))
+  if(fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha)
   {
     // velocities (intermediate time step, n+1)
     RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");

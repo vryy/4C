@@ -907,7 +907,6 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/dyn_smag.cpp
   src/drt_fluid/fluid_coupling_red_models.cpp
   src/drt_fluid/fluid_dyn_nln_drt.cpp
-  src/drt_fluid/fluid_genalpha_integration.cpp
   src/drt_fluid/fluid_meshtying.cpp
   src/drt_fluid/fluid_discret_extractor.cpp
   src/drt_fluid/fluid_utils.cpp
@@ -1259,7 +1258,6 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_input.cpp
   src/drt_fluid_ele/fluid_ele_parameter.cpp
   src/drt_fluid_ele/fluid_ele_tds.cpp
-  src/drt_fluid_ele/fluid_genalpha_resVMM.cpp
   src/drt_fluid/time_integration_element.cpp
   src/drt_opti/topopt_fluidAdjoint3_boundary.cpp
   src/drt_opti/topopt_fluidAdjoint3_impl.cpp

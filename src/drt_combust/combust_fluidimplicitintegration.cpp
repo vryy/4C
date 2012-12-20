@@ -5466,7 +5466,6 @@ double FLD::CombustFluidImplicitTimeInt::TimIntParam() const
   switch (TimIntScheme())
   {
   case INPAR::FLUID::timeint_afgenalpha:
-  case INPAR::FLUID::timeint_gen_alpha:
   case INPAR::FLUID::timeint_npgenalpha:
     retval = alphaF_;
   break;

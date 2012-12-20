@@ -46,11 +46,12 @@ public:
     */
     FluidResultTest(FluidImplicitTimeInt& fluid);
 
+#if 1
     /*!
     \brief not documented yet
     */
     FluidResultTest(FluidGenAlphaIntegration& fluid);
-
+#endif
     /// our version of nodal value tests
     /*!
     Possible position flags are "velx", "vely", "velz" and

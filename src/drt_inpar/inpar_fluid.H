@@ -115,18 +115,6 @@ namespace INPAR
       tau_not_defined
     };
 
-    enum TauType_genalpha
-    {
-    smoothed_franca_barrenechea_valentin_wall,
-    franca_barrenechea_valentin_wall         ,
-    franca_barrenechea_valentin_codina       ,
-    fbvw_gradient_based_hk                   ,
-    codina                                   ,
-    taylor_hughes_zarins_whiting_jansen      ,
-    fbvw_wo_dt                               ,
-    tautype_not_defined
-  };
-
     /// tau type for edge-oriented / continuous interior penalty stabilization
     enum TauType_EOS_CIP
     {
@@ -142,8 +130,7 @@ namespace INPAR
     {
       timeint_stationary,
       timeint_one_step_theta,
-      timeint_npgenalpha, // fluid3's implementation (solving for velocity increment)
-      timeint_gen_alpha,  // Peter's implementation (solving for acceleration increment)
+      timeint_npgenalpha,
       timeint_afgenalpha,
       timeint_bdf2,
     };

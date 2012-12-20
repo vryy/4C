@@ -210,8 +210,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
         structtimealgo != INPAR::STR::dyna_genalpha)
       dserror("Partitioned FS3I computations should feature consistent time-integration schemes for the subproblems; in this case, a (alpha_f-based) generalized-alpha scheme is intended to be used for the fluid subproblem, and different schemes are intended to be used for the structure and/or scalar transport subproblems!");
   }
-  else if (fluidtimealgo  == INPAR::FLUID::timeint_npgenalpha or
-           fluidtimealgo  == INPAR::FLUID::timeint_gen_alpha)
+  else if (fluidtimealgo  == INPAR::FLUID::timeint_npgenalpha)
   {
       dserror("Partitioned FS3I computations do not support n+1-based generalized-alpha time-integration schemes for the fluid subproblem!");
   }

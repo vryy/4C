@@ -284,7 +284,6 @@ void ELCH::Algorithm::DoTransportStep()
   // transfer convective velocity to scalar transport field solver
   switch(FluidField().TimIntScheme())
   {
-  case INPAR::FLUID::timeint_gen_alpha:
   case INPAR::FLUID::timeint_npgenalpha:
   case INPAR::FLUID::timeint_afgenalpha:
   {

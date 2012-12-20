@@ -122,15 +122,6 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
   //       meshes yet
   switch(FluidField().TimIntScheme())
   {
-  case INPAR::FLUID::timeint_gen_alpha:
-  ScaTraField().SetVelocityField(
-      FluidField().Velaf(),
-      FluidField().Accam(),
-      FluidField().Velaf(),
-      Teuchos::null, // no fsvel in Peter's gen-alpha fluid code
-      Teuchos::null,
-      FluidField().Discretization());
-  break;
   case INPAR::FLUID::timeint_npgenalpha:
   case INPAR::FLUID::timeint_afgenalpha:
   {

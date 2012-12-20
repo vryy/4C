@@ -35,6 +35,7 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 #include "fluid_utils_mapextractor.H"
 #include "fluid_windkessel_optimization.H"
 #include "fluid_meshtying.H"
+#include "fluid_MHD_evaluate.H"
 #include "drt_transfer_turb_inflow.H"
 #include "fluid_utils_infnormscaling.H"
 #include "../linalg/linalg_ana.H"
@@ -611,6 +612,18 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   {
     // set gas constant to 1.0 for incompressible flow
     gasconstant_ = 1.0;
+  }
+
+  // object for a redistributed evaluation of the mixed-hybrid Dirichlet condition
+  MHD_evaluator_=Teuchos::null;
+
+  vector<DRT::Condition*> MHDcndSurf;
+  discret_->GetCondition("SurfaceMixHybDirichlet",MHDcndSurf);
+  if(MHDcndSurf.size()!=0) // redistributed evaluation currently only for surface conditions!
+  {
+    bool mhd_redis_eval = false; // get this info from the input file
+    if(mhd_redis_eval)
+      MHD_evaluator_=Teuchos::rcp(new FLD::FluidMHDEvaluate(discret_));
   }
 
   // initialize pseudo-porosity vector for topology optimization as null
@@ -1373,14 +1386,28 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
              Teuchos::null        ,
              "LineMixHybDirichlet");
 
-          discret_->EvaluateCondition
+          if(MHD_evaluator_!= Teuchos::null)
+          {
+            dserror("Redistributed MHD evaluation needs to be verified");
+            MHD_evaluator_->BoundaryElementLoop(
+                mhdbcparams   ,
+                velaf_        ,
+                velnp_        ,
+                residual_     ,
+                SystemMatrix());
+          }
+          else
+          { // the classical way without parallel redistribution
+            // of boundary elements
+            discret_->EvaluateCondition
             (mhdbcparams          ,
-             sysmat_              ,
-             Teuchos::null        ,
-             residual_            ,
-             Teuchos::null        ,
-             Teuchos::null        ,
-             "SurfaceMixHybDirichlet");
+                sysmat_              ,
+                Teuchos::null        ,
+                residual_            ,
+                Teuchos::null        ,
+                Teuchos::null        ,
+                "SurfaceMixHybDirichlet");
+          }
 
           // clear state
           discret_->ClearState();
@@ -6342,7 +6369,6 @@ double FLD::FluidImplicitTimeInt::TimIntParam() const
   switch (TimIntScheme())
   {
   case INPAR::FLUID::timeint_afgenalpha:
-  case INPAR::FLUID::timeint_gen_alpha:
   case INPAR::FLUID::timeint_npgenalpha:
     // this is the interpolation weight for quantities from last time step
     retval = 1.0 - alphaF_;

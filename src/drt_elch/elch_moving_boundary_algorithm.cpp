@@ -234,7 +234,6 @@ void ELCH::MovingBoundaryAlgorithm::SolveScaTra()
   switch(FluidField().TimIntScheme())
   {
   case INPAR::FLUID::timeint_npgenalpha:
-  case INPAR::FLUID::timeint_gen_alpha:
   case INPAR::FLUID::timeint_afgenalpha:
     dserror("ConvectiveVel() not implemented for Gen.Alpha versions");
     break;

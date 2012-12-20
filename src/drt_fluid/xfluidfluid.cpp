@@ -4159,7 +4159,6 @@ double FLD::XFluidFluid::TimIntParam() const
   switch (TimIntScheme())
   {
   case INPAR::FLUID::timeint_afgenalpha:
-  case INPAR::FLUID::timeint_gen_alpha:
   case INPAR::FLUID::timeint_npgenalpha:
     // this is the interpolation weight for quantities from last time step
     retval = 1.0 - alphaF_;

@@ -331,8 +331,7 @@ int DRT::ELEMENTS::FluidSurfaceWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // velocities n+1
   std::vector<double> mypvelnp(plm.size());
 
-  if((fldpara_->TimeAlgo()==INPAR::FLUID::timeint_gen_alpha) or
-      (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha))
+  if(fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha)
   {
     // velocities (intermediate time step, n+1)
     RCP<const Epetra_Vector> velnp
@@ -2283,8 +2282,7 @@ int DRT::ELEMENTS::FluidLineWeakDBC<distype,pdistype>::EvaluateWeakDBC(
   // velocities n+1
   std::vector<double> mypvelnp((plm).size());
 
-  if((fldpara_->TimeAlgo()==INPAR::FLUID::timeint_gen_alpha) or
-      (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha))
+  if(fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha)
   {
     // velocities (intermediate time step, n+1)
     RCP<const Epetra_Vector> velnp
