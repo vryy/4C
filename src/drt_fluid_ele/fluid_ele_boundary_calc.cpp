@@ -26,7 +26,6 @@ Maintainer: Andreas Ehrl
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
 
-//#include "../linalg/linalg_utils.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/standardtypes_cpp.H"
@@ -2331,10 +2330,8 @@ template <DRT::Element::DiscretizationType bndydistype,
   // number of internal stress dofs is equivalent to number of second derivatives
   static const int numstressdof_= DRT::UTILS::DisTypeToNumDeriv2<pdistype>::numderiv2;
 
-  if(fldpara_->TimeAlgo()== INPAR::FLUID::timeint_afgenalpha //or
-//     fldpara_->TimeAlgo()== INPAR::FLUID::timeint_one_step_theta
-     )
-       dserror("The use of mixed hybrid boundary conditions and ost/aggenalpha is buggy??\n One need to check!!");
+  if(fldpara_->TimeAlgo()== INPAR::FLUID::timeint_afgenalpha)
+       dserror("The use of mixed hybrid boundary conditions and Afgenalpha has not been verified so far!");
 
   // --------------------------------------------------
   // Reshape element matrices and vectors and init to zero, construct views
@@ -2464,8 +2461,7 @@ template <DRT::Element::DiscretizationType bndydistype,
   if (vel==Teuchos::null) dserror("Cannot get state vector 'velaf'");
 
   // extract local node values for pressure and velocities from global vectors
-  if((fldpara_->TimeAlgo()==INPAR::FLUID::timeint_gen_alpha) or
-      (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha))
+  if(fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha)
   {
     Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
     if (velnp==Teuchos::null) dserror("Cannot get state vector 'velnp'");
@@ -3385,7 +3381,7 @@ template <DRT::Element::DiscretizationType bndydistype,
 
           int count = 0;
 
-          while(res*res>1e-12)
+          while((res*res)>1.0e-12)
           {
             const double SpaldingJ=JacobianSpaldingResidual_utau(y    ,
                                                                  visc_,
@@ -3417,10 +3413,11 @@ template <DRT::Element::DiscretizationType bndydistype,
                                  utau ,
                                  normu);
 
-            if(count>500)
+            if(count>1000)
             {
-              printf("WARNING: no convergence in 500 steps in Newton iteration\n");
+              printf("WARNING: no convergence in 1000 steps in Newton iteration\n");
               printf("         in solution of Spaldings equation (res %12.5e), utau= %12.5e)\n",res,utau);
+              dserror("Newton iteration diverged.");
             }
 
             ++count;
