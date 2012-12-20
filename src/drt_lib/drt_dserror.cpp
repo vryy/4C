@@ -43,6 +43,7 @@ Maintainer: Michael Gee
 #include "drt_dserror.H"
 
 #include <stdexcept>
+#include <string.h>
 
 #include <mpi.h>
 #include <execinfo.h>
