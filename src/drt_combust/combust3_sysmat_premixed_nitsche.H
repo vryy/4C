@@ -1666,8 +1666,10 @@ void Nitsche_SysmatBoundaryCell(
     const bool                                 connected_interface, ///<
     const INPAR::COMBUST::VelocityJumpType     veljumptype,
     const INPAR::COMBUST::FluxJumpType         fluxjumptype,
-    const bool                                 smoothed_boundary_integration
-
+    const bool                                 smoothed_boundary_integration,
+    const bool                                 nitsche_convflux,
+    const bool                                 nitsche_convstab,
+    const bool                                 nitsche_convpenalty
 )
 {
   const size_t nsd =3;
@@ -2505,7 +2507,9 @@ void Nitsche_SysmatBoundaryCell(
     //assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, alphatimefacfac*normal(2)*ju_n);
 #endif
 
-#ifdef COMBUST_NITSCHE_CONVSTAB
+//#ifdef COMBUST_NITSCHE_CONVSTAB
+if(nitsche_convstab)
+{
     //--------------------     |                                  |
     // normal penalty term   + |  1/(2h)*|u*n| || v ||, || Du ||  |
     //--------------------     |                                  |
@@ -2529,10 +2533,12 @@ void Nitsche_SysmatBoundaryCell(
     assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, convstabtimefacfac*ju(0));
     assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, convstabtimefacfac*ju(1));
     assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, convstabtimefacfac*ju(2));
-#endif
+}
+//#endif
 
-
-#ifdef COMBUST_NITSCHE_CONVPENALTY
+//#ifdef COMBUST_NITSCHE_CONVPENALTY
+if(nitsche_convpenalty)
+{
     const double pentimefacfac   = fac_pen*timefacfac;
     //--------------------     |                             |
     // normal penalty term   + |  1/h || v ||*n, || Du ||*n  |
@@ -2679,10 +2685,13 @@ void Nitsche_SysmatBoundaryCell(
     assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, tang2_smooth(2)*pentimefacfac*tang2_smooth(0)*ju(0));
     assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, tang2_smooth(2)*pentimefacfac*tang2_smooth(1)*ju(1));
     assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, tang2_smooth(2)*pentimefacfac*tang2_smooth(2)*ju(2));
-#endif
+}
+//#endif
 
-#ifdef COMBUST_NITSCHE_CONVFLUX
-    //---------------------------------    |                                  |
+//#ifdef COMBUST_NITSCHE_CONVFLUX
+if(nitsche_convflux)
+{
+	//---------------------------------    |                                  |
     // convective flux inflow term plus  + |  v^{+} (u^{+}*n)_{in}, || Du ||  |
     //---------------------------------    |                                  |
 
@@ -2779,8 +2788,9 @@ void Nitsche_SysmatBoundaryCell(
 //    assembler.template Vector<XFEM::PHYSICS::Velx>(shp_jump.d0, halftimefacfac*velproj_minus*ju(0));
 //    assembler.template Vector<XFEM::PHYSICS::Vely>(shp_jump.d0, halftimefacfac*velproj_minus*ju(1));
 //    assembler.template Vector<XFEM::PHYSICS::Velz>(shp_jump.d0, halftimefacfac*velproj_minus*ju(2));
-#endif
-  } // loop Gaussian points
+}
+//#endif
+} // loop Gaussian points
 
   return;
 }
@@ -2821,8 +2831,11 @@ void SysmatBoundaryNitsche(
     const bool                                 connected_interface,
     const INPAR::COMBUST::VelocityJumpType     veljumptype,
     const INPAR::COMBUST::FluxJumpType         fluxjumptype,
-    const bool                                 smoothed_boundary_integration
-)
+    const bool                                 smoothed_boundary_integration,
+    const bool                                 nitsche_convflux,
+    const bool                                 nitsche_convstab,
+    const bool                                 nitsche_convpenalty
+    )
 {
   if (timealgo == INPAR::FLUID::timeint_afgenalpha)
     dserror("SysmatBoundaryNitsche: Genalpha does not function properly in this method.");
@@ -2978,7 +2991,7 @@ void SysmatBoundaryNitsche(
           kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
           alphau, fac_pen, wallfac,
           numparamvelx, numparampres, surftensapprox, variablesurftens, surftenscoeff, connected_interface, veljumptype, fluxjumptype,
-          smoothed_boundary_integration
+          smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty
       );
       break;
     case DRT::Element::quad4:
@@ -2995,7 +3008,7 @@ void SysmatBoundaryNitsche(
           kappa_plus, kappa_minus, dynvisc_plus, dynvisc_minus,
           alphau, fac_pen, wallfac,
           numparamvelx, numparampres, surftensapprox, variablesurftens, surftenscoeff, connected_interface, veljumptype, fluxjumptype,
-          smoothed_boundary_integration
+          smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty
       );
       break;
     default:

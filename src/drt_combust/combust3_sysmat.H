@@ -95,7 +95,10 @@ namespace COMBUST
       const bool                              connected_interface,
       const INPAR::COMBUST::VelocityJumpType  veljumptype,
       const INPAR::COMBUST::FluxJumpType      fluxjumptype,
-      const bool                              smoothed_boundary_integration
+      const bool                              smoothed_boundary_integration,
+      const bool                              nitsche_convflux,
+      const bool                              nitsche_convstab,
+      const bool                              nitsche_convpenalty
   );
 
   /// get material parameters for both domains

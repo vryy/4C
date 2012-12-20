@@ -288,6 +288,8 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       const INPAR::COMBUST::VelocityJumpType veljumptype = DRT::INPUT::get<INPAR::COMBUST::VelocityJumpType>(params, "veljumptype");
       const INPAR::COMBUST::FluxJumpType fluxjumptype    = DRT::INPUT::get<INPAR::COMBUST::FluxJumpType>(params, "fluxjumptype");
       const INPAR::COMBUST::SmoothGradPhi smoothgradphi  = DRT::INPUT::get<INPAR::COMBUST::SmoothGradPhi>(params, "smoothgradphi");
+
+
       const double nitschevel = params.get<double>("nitschevel");
       const double nitschepres = params.get<double>("nitschepres");
 
@@ -301,6 +303,12 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       const bool connected_interface = params.get<bool>("connected_interface");
       const bool smoothed_boundary_integration = params.get<bool>("smoothed_bound_integration");
       const double variablesurftens = params.get<double>("variablesurftens");
+
+      // parameters for nitsche boundary terms
+      const bool nitsche_convflux = params.get<bool>("nitsche_convflux");
+      const bool nitsche_convstab = params.get<bool>("nitsche_convstab");
+      const bool nitsche_convpenalty = params.get<bool>("nitsche_convpenalty");
+
 
       // stabilization terms
       bool pstab = true;
@@ -442,7 +450,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens,
-          connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration);
+          connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
 #endif
     }
     break;

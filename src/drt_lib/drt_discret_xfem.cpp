@@ -116,6 +116,7 @@ static void DoDirichletConditionCombust(DRT::Condition&             cond,
                                  );
 
 
+#if 0
 /*----------------------------------------------------------------------*
  | set Dirichlet conditions for XFEM problems               henke 07/09 |
  | remark: read documentation at top of this file!                      |
@@ -254,6 +255,9 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
         }
         const int gid = dofs[j];
         std::vector<double> value(deg+1,(*val)[truncj]);
+
+        std::cout << "DOFS:   8  " << std::endl;
+        std::cout << "j " << j << std::endl;
 
         // factor given by time curve
         std::vector<double> curvefac(deg+1, 1.0);
@@ -800,6 +804,204 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
     else if (numdf==0) //relevant for xfsi and fxf-Coupling (void enrichment)
     {
 
+    }
+    else
+    {
+      dserror("So viele dofs gibts doch gar nicht an einem Knoten!");
+    }
+  }  // loop over nodes
+  return;
+}
+#endif
+
+/*----------------------------------------------------------------------*
+ | set Dirichlet conditions for XFEM problems               henke 07/09 |
+ | remark: read documentation at top of this file!                      |
+ *----------------------------------------------------------------------*/
+void DoDirichletConditionCombust(DRT::Condition&             cond,
+                          DRT::DiscretizationXFEM&    dis,
+                          const bool                  usetime,
+                          const double                time,
+                          Teuchos::RCP<Epetra_Vector> systemvector,
+                          Teuchos::RCP<Epetra_Vector> systemvectord,
+                          Teuchos::RCP<Epetra_Vector> systemvectordd,
+                          Teuchos::RCP<Epetra_Vector> toggle,
+                          Teuchos::RCP<std::set<int> > dbcgids)
+{
+  const vector<int>* nodeids = cond.Nodes();
+  if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
+  const int nnode = (*nodeids).size();
+  const vector<int>*    curve  = cond.Get<vector<int> >("curve");
+  const vector<int>*    funct  = cond.Get<vector<int> >("funct");
+  const vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
+  const vector<double>* val    = cond.Get<vector<double> >("val");
+
+  //-------------------------------------------------------------------//
+  // for COMBUST the following Dirichlet conditions are used
+  // in the following way:
+  // - the first 4 (tags 1-4 in the input file) values are the
+  //   Dirichlet-Conditions for the standard dofs
+  // - the second 4 (tags 5-8 in the input file) values are the
+  //   Dirichlet-Conditions for the XFEM-dofs
+  //   default: XFEM dofs are set to zero!
+  //-------------------------------------------------------------------//
+
+
+  // determine highest degree of time derivative
+  // and first existent system vector to apply DBC to
+  unsigned deg = 0;  // highest degree of requested time derivative
+  Teuchos::RCP<Epetra_Vector> systemvectoraux = Teuchos::null;  // auxiliar system vector
+  if (systemvector != Teuchos::null)
+  {
+    deg = 0;
+    systemvectoraux = systemvector;
+  }
+  if (systemvectord != Teuchos::null)
+  {
+    deg = 1;
+    if (systemvectoraux == Teuchos::null)
+      systemvectoraux = systemvectord;
+  }
+  if (systemvectordd != Teuchos::null)
+  {
+    deg = 2;
+    if (systemvectoraux == Teuchos::null)
+      systemvectoraux = systemvectordd;
+  }
+  dsassert(systemvectoraux!=Teuchos::null, "At least one vector must be unequal to null");
+
+  //----------------------------------------------------------------------------//
+  // loop nodes to identify and evaluate load curves and spatial distributions
+  // of Dirichlet boundary conditions
+  for (int i=0; i<nnode; ++i)
+  {
+    // do only nodes in my row map (otherwise directly go to the next node/next iteration of loop)
+    if (!dis.NodeRowMap()->MyGID((*nodeids)[i])) continue;
+    // get the node, his dofs and the number of dofs
+    DRT::Node* actnode = dis.gNode((*nodeids)[i]);
+    if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
+    vector<int> dofs = dis.Dof(actnode);
+    const unsigned numdf = dofs.size();
+
+    //------------------------------------------------------------------------------------//
+    // numdof=8: XFEM - fully enriched node (pressure and velocity field are enriched)    //
+    // numdof=7: XFEM - partially enriched node (velocity field is enriched)              //
+    // numdof=5: XFEM - partially enriched node (pressure field is enriched)              //
+    // numdof=4: FEM  - only std-enrichments for both fields
+    //----------------------------------------------------------------------------------//
+    if(numdf==8 or numdf==7 or numdf==5 or numdf ==4)
+    {
+      for (unsigned j=0; j<numdf; ++j) // loop over all dofs (Std + Enr)
+      {
+
+        //-----------------------------------------------------------//
+        // define the correct index for the values in
+        // the input file
+        //----------------------------------------------------------//
+        int inputIndex=0; // index for correct input file position
+        int truncj = j/2; // this is a hack to truncate a double (0..0..1..1..2..2..3..3)!
+        int xfemSwitch=0; // "switch" to make inputIndex calculation easier!
+        // swith numdof
+        switch(numdf)
+        {
+          case 8:
+          case 7:
+          {
+            xfemSwitch=(j%2)*4; // define if std/xfem (0..4..0..4..0..4..0..4)!
+            inputIndex=truncj+xfemSwitch;
+            break;
+          }
+          case 5:
+          {
+            if(j==4) xfemSwitch=3;
+            inputIndex=j+xfemSwitch;
+            break;
+          }
+          case 4:
+          {
+            inputIndex=j;
+            break;
+          }
+          default:
+          {
+            dserror("Here went something wrong!");
+            break;
+          }
+        }
+
+        //-----------------------------------------------------------//
+        // check if Dirichlet-onoff-flag is activated
+        //-----------------------------------------------------------//
+        if ((*onoff)[inputIndex]==0) // if Dirichlet value is turned off in input file (0)
+        {
+           const int lid = (*systemvectoraux).Map().LID(dofs[j]);
+           if (lid<0) dserror("Global id %d not on this proc in system vector",dofs[j]);
+           if (toggle!=Teuchos::null)
+              (*toggle)[lid] = 0.0;
+           // get rid of entry in DBC map - if it exists
+           if (dbcgids != Teuchos::null)
+              (*dbcgids).erase(dofs[j]);
+           continue; // for loop over dofs is advanced by 1 (++j)
+         }
+
+         const int gid = dofs[j];
+         vector<double> value(deg+1,(*val)[inputIndex]);
+
+         //-----------------------------------------------------------//
+         // factor given by time curve
+         //-----------------------------------------------------------//
+         std::vector<double> curvefac(deg+1, 1.0);
+         int curvenum = -1;
+         if (curve) curvenum = (*curve)[inputIndex];
+         if (curvenum>=0 && usetime)
+             curvefac = DRT::Problem::Instance()->Curve(curvenum).FctDer(time,deg);
+         else
+            for (unsigned i=1; i<(deg+1); ++i) curvefac[i] = 0.0;
+
+        //-----------------------------------------------------------//
+        // factor given by spatial function
+        //-----------------------------------------------------------//
+        double functfac = 1.0;
+        int funct_num = -1;
+
+        if (funct) funct_num = (*funct)[inputIndex];
+        {
+           if (funct_num>0)
+           {
+             // this is a hack to truncate a double!
+             functfac = DRT::Problem::Instance()->Funct(funct_num-1).Evaluate(inputIndex,
+                                                                              actnode->X(),
+                                                                              time,
+                                                                              &dis);
+            }
+         }
+
+         //-----------------------------------------------------------//
+         // apply factors to Dirichlet value
+         //-----------------------------------------------------------//
+         for (unsigned i=0; i<deg+1; ++i)
+         {
+            value[i] *= functfac * curvefac[i];
+         }
+
+         //-----------------------------------------------------------//
+         // assign value
+         //-----------------------------------------------------------//
+         const int lid = (*systemvectoraux).Map().LID(gid);
+         if (lid<0) dserror("Global id %d not on this proc in system vector",gid);
+         if (systemvector != Teuchos::null)
+              (*systemvector)[lid] = value[0];
+         if (systemvectord != Teuchos::null)
+              (*systemvectord)[lid] = value[1];
+         if (systemvectordd != Teuchos::null)
+              (*systemvectordd)[lid] = value[2];
+         // set toggle vector
+         if (toggle != Teuchos::null)
+              (*toggle)[lid] = 1.0;
+         // amend vector of DOF-IDs which are Dirichlet BCs
+         if (dbcgids != Teuchos::null)
+              (*dbcgids).insert(gid);
+      }  // loop over nodal DOFs
     }
     else
     {

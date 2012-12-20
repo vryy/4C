@@ -1442,6 +1442,16 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         eleparams.set("alphaF",alphaF_);
         eleparams.set("alphaM",alphaM_);
 
+
+        // additional terms for Nitsche's method (see Diss Florian)
+        const bool   nitscheconvflux    = DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"NITSCHE_CONVFLUX");
+        const bool   nitscheconvstab    = DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"NITSCHE_CONVSTAB");
+        const bool   nitscheconvpenalty    = DRT::INPUT::IntegralValue<int>(params_->sublist("COMBUSTION FLUID"),"NITSCHE_CONVPENALTY");
+        eleparams.set("nitsche_convflux",nitscheconvflux);
+        eleparams.set("nitsche_convstab",nitscheconvstab);
+        eleparams.set("nitsche_convpenalty",nitscheconvpenalty);
+
+
 #ifdef SUGRVEL_OUTPUT
         //eleparams.set("step",step_);
 #endif

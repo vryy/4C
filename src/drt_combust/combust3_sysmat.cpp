@@ -725,7 +725,10 @@ void Sysmat(
     const bool                              connected_interface,
     const INPAR::COMBUST::VelocityJumpType  veljumptype,
     const INPAR::COMBUST::FluxJumpType      fluxjumptype,
-    const bool                              smoothed_boundary_integration
+    const bool                              smoothed_boundary_integration,
+    const bool                              nitsche_convflux,
+    const bool                              nitsche_convstab,
+    const bool                              nitsche_convpenalty
 )
 {
   // initialize element stiffness matrix and force vector
@@ -866,7 +869,7 @@ void Sysmat(
           ele, ih, dofman, evelaf, epreaf, ephi, egradphi, ecurv, material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
           flamespeed, marksteinlength, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, variablesurftens, connected_interface, veljumptype,
-          fluxjumptype, smoothed_boundary_integration);
+          fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
 #else
       COMBUST::SysmatBoundaryNitscheNormal<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelaf, epreaf, ephi, egradphi, material, timealgo, dt, theta, assembler,
@@ -969,7 +972,7 @@ void Sysmat(
           material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, assembler,
           flamespeed, marksteinlength, nitschevel, nitschepres, ele_meas_plus, ele_meas_minus,
           surftensapprox, variablesurftens, connected_interface, INPAR::COMBUST::vel_jump_none,
-          INPAR::COMBUST::flux_jump_surface_tension, smoothed_boundary_integration);
+          INPAR::COMBUST::flux_jump_surface_tension, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
     }
   }
   break;
@@ -1015,7 +1018,11 @@ void COMBUST::callSysmat(
     const bool                             connected_interface,
     const INPAR::COMBUST::VelocityJumpType veljumptype,
     const INPAR::COMBUST::FluxJumpType     fluxjumptype,
-    const bool                             smoothed_boundary_integration)
+    const bool                             smoothed_boundary_integration,
+    const bool                             nitsche_convflux,
+    const bool                             nitsche_convstab,
+    const bool                             nitsche_convpenalty
+)
 {
   if (assembly_type == XFEM::standard_assembly)
   {
@@ -1026,14 +1033,14 @@ void COMBUST::callSysmat(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens,
-          connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
+          connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
     break;
     case DRT::Element::hex20:
       COMBUST::Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox, variablesurftens,
-          connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
+          connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
     break;
 //    case DRT::Element::hex27:
 //      COMBUST::Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
@@ -1066,14 +1073,14 @@ void COMBUST::callSysmat(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens,
-          connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
+          connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
     break;
     case DRT::Element::hex20:
       COMBUST::Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
           material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox, variablesurftens,
-            connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration);
+            connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
     break;
 //    case DRT::Element::hex27:
 //      COMBUST::Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
