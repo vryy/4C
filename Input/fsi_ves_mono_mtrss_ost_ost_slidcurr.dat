@@ -1,9 +1,3 @@
-//
-// Maintainer: Thomas Kloeppel
-// kloeppel@lnm.mw.tum.de
-// http://www.lnm.mw.tum.de
-// 089 - 289-15257
-//
 -----------------------------------------------------------------------TITLE
 Monolithic Mortar FSI: 3D vessel (curr)
 FSI:                            iter_mortar_monolithicstructuresplit
@@ -111,14 +105,14 @@ COUPALGO                        iter_mortar_monolithicstructuresplit
 COUPMETHOD                      mtr
 COUPVARIABLE                    Displacement
 LINEARBLOCKSOLVER               FSIAMG
-ALEPCITER                       1
-ALEPCOMEGA                      1.0
-FLUIDPCITER                     1
-FLUIDPCOMEGA                    1.0
-STRUCTPCITER                    1
-STRUCTPCOMEGA                   1.0
-PCITER                          1
-PCOMEGA                         1.0
+ALEPCITER                       1 1 1
+ALEPCOMEGA                      1.0 1.0 1.0
+FLUIDPCITER                     1 1 1
+FLUIDPCOMEGA                    1.0 1.0 1.0
+STRUCTPCITER                    1 1 1
+STRUCTPCOMEGA                   1.0 1.0 1.0
+PCITER                          5 5 5
+PCOMEGA                         0.9 0.9 0.9
 SYMMETRICPRECOND                no
 PRECONDREUSE                    0
 INFNORMSCALING                  yes
@@ -161,7 +155,7 @@ IFPACKCOMBINE                   Zero
 AZSCAL                          infnorm                         // none sym infnorm scaling of the system
 ML_PRINT                        0                               // ML print-out level (0-10)
 ML_MAXCOARSESIZE                1                               // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     1                               // ML max number of levels
+ML_MAXLEVEL                     3                               // ML max number of levels
 ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
 ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
 ML_PROLONG_SMO                  1.33                            // damping factor for prolongator smoother (usually 0.0 or 1.33)
@@ -195,7 +189,7 @@ IFPACKCOMBINE                   Add
 AZSCAL                          none                            // none sym infnorm scaling of the system
 ML_PRINT                        0                               // ML print-out level (0-10)
 ML_MAXCOARSESIZE                1                               // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     1                               // ML max number of levels
+ML_MAXLEVEL                     3                               // ML max number of levels
 ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
 ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
 ML_PROLONG_SMO                  1.33                            // damping factor for prolongator smoother (usually 0.0 or 1.33)
@@ -229,7 +223,7 @@ IFPACKCOMBINE                   Zero
 AZSCAL                          none                            // none sym infnorm scaling of the system
 ML_PRINT                        0                               // ML print-out level (0-10)
 ML_MAXCOARSESIZE                1000                            // ML stop coarsening when coarse ndof smaller then this
-ML_MAXLEVEL                     1                               // ML max number of levels
+ML_MAXLEVEL                     3                               // ML max number of levels
 ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
 ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
 ML_PROLONG_SMO                  1.33                            // damping factor for prolongator smoother (usually 1.33 or 0.0)
@@ -5877,5 +5871,4 @@ FLUID DIS fluid NODE 960 QUANTITY velx VALUE -3.24770447577223299e-05 TOLERANCE 
 STRUCTURE DIS structure NODE 2271 QUANTITY dispx VALUE 1.23013830530258590e-05 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 2031 QUANTITY dispx VALUE -1.23020401730507721e-05 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
-//                              END
 //                              END
