@@ -87,12 +87,10 @@ ADAPTER::ScaTraFluidCouplingAlgorithm::ScaTraFluidCouplingAlgorithm(
   }
 
   // if applicable, provide scatra data to the turbulence statistics
-  if (FluidField().TurbulenceStatisticManager() != Teuchos::null)
+  if (FluidField().TurbulenceStatisticManager() != Teuchos::null and ScaTraField().MethodName()!= INPAR::SCATRA::timeint_stationary)
   {
-    // Now, the statistics manager has pointers
-    // to ScaTra discretization and result vectors and can access relevant data
-    FluidField().TurbulenceStatisticManager()
-          ->AddScaTraResults(ScaTraField().Discretization(),ScaTraField().Phinp());
+    // Now, the statistics manager has access to the scatra time integration
+    FluidField().TurbulenceStatisticManager()->AddScaTraField(ScaTraField());
   }
 
   // if available, allow scatra field to access dynamic Smagorinsky filter
