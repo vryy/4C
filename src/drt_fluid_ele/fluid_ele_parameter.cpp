@@ -44,8 +44,6 @@ Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> DRT::ELEMENTS::FluidEleParameter:
 //----------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
   :
-  Cs_(0.0),
-  l_tau_(0.0),
   set_general_fluid_parameter_(false),
   is_genalpha_(false),
   is_genalpha_np_(false),
@@ -82,7 +80,12 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
   timefacrhs_(1.0),
   timefacpre_(1.0),
   turb_mod_action_(INPAR::FLUID::no_model),
+  Cs_(0.0),
   Cs_averaged_(false),
+  Ci_(0.0),
+  include_Ci_(false),
+  van_Driest_damping_(1.0),
+  l_tau_(0.0),
   Cl_(0.0),
   Csgs_(0.0),
   Csgs_phi_(0.0),
@@ -94,6 +97,7 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
   c_nu_(1.0),
   c_diff_(1.0),
   near_wall_limit_(false),
+  near_wall_limit_scatra_(false),
   B_gp_(false),
   beta_(0.0),
   mfs_is_conservative_(false),
@@ -205,9 +209,10 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
   if (is_genalpha_np_ and is_conservative_)
     dserror("the combination Np_Gen_Alpha and conservative flow is not supported");
 
-  if (not is_stationary_ and is_conservative_)
+  if (not is_stationary_ and is_conservative_ and physicaltype_ != INPAR::FLUID::incompressible)
   {
-    std::cout << std::endl << "Warning: missing time derivative terms in conservative formulation (for variable density flows)!!" << std::endl;
+    if (myrank == 0)
+     std::cout << std::endl << "Warning: missing time derivative terms in conservative formulation for variable density flows!" << std::endl;
   }
   // set further parameters which are specific for a physical type
   if (physicaltype_ == INPAR::FLUID::topopt)
@@ -485,6 +490,8 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::P
       // the classic Smagorinsky model only requires one constant parameter
       turb_mod_action_ = INPAR::FLUID::smagorinsky;
       Cs_              = turbmodelparamssgvisc.get<double>("C_SMAGORINSKY");
+      include_Ci_ = DRT::INPUT::IntegralValue<int>(turbmodelparamssgvisc,"C_INCLUDE_CI");
+      Ci_              = turbmodelparamssgvisc.get<double>("C_YOSHIZAWA");
     }
     // --------------------------------------------------
     // Smagorinsky model with van Driest damping
@@ -517,6 +524,8 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::P
       // it is stored in Cs_ after its calculation in CalcSubgrVisc
       Cs_ = 0.0;
       Cs_averaged_ = DRT::INPUT::IntegralValue<int>(turbmodelparamssgvisc,"C_SMAGORINSKY_AVERAGED");
+      Ci_ = turbmodelparamssgvisc.get<double>("C_YOSHIZAWA");
+      include_Ci_ = DRT::INPUT::IntegralValue<int>(turbmodelparamssgvisc,"C_INCLUDE_CI");
     }
     else if (physical_turbulence_model == "Scale_Similarity")
     {
@@ -575,6 +584,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementTurbulenceParameter( Teuchos::P
       c_diff_ = turbmodelparamsmfs.get<double>("C_DIFF"); //loma only
 
       near_wall_limit_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs,"NEAR_WALL_LIMIT");
+      near_wall_limit_scatra_ = DRT::INPUT::IntegralValue<int>(turbmodelparamsmfs,"NEAR_WALL_LIMIT_CSGS_PHI");
 
       if (turbmodelparamsmfs.get<std::string>("EVALUATION_B") == "element_center")
       B_gp_ = false;

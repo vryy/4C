@@ -2374,10 +2374,12 @@ void f3_calc_smag_const_LijMij_and_MijMij(DRT::ELEMENTS::Fluid*  ele,
     {
 //      L_ij(rr,mm) = restress_hat(rr,mm) - velint_hat(rr)*velint_hat(mm);
       L_ij(rr,mm) = restress_hat(rr,mm) - densvelint_hat(rr)*densvelint_hat(mm)/densint_hat;
-      if (fldpara->PhysicalType() == INPAR::FLUID::loma and rr==mm)
-          L_ij(rr,mm) -= 1.0/3.0 * ((restress_hat(0,0) - densvelint_hat(0)*densvelint_hat(0)/densint_hat)
-                                   +(restress_hat(1,1) - densvelint_hat(1)*densvelint_hat(1)/densint_hat)
-                                   +(restress_hat(2,2) - densvelint_hat(2)*densvelint_hat(2)/densint_hat));
+      // this part can be neglected, since contraction with deviatoric tensor M cancels it out
+      // see, e.g., phd thesis peter gamnitzer (der gammi!)
+//      if (rr==mm)
+//          L_ij(rr,mm) -= 1.0/3.0 * ((restress_hat(0,0) - densvelint_hat(0)*densvelint_hat(0)/densint_hat)
+//                                   +(restress_hat(1,1) - densvelint_hat(1)*densvelint_hat(1)/densint_hat)
+//                                   +(restress_hat(2,2) - densvelint_hat(2)*densvelint_hat(2)/densint_hat));
     }
   }
 
@@ -2426,8 +2428,9 @@ void f3_calc_smag_const_LijMij_and_MijMij(DRT::ELEMENTS::Fluid*  ele,
 */
 template<int NEN, int NSD, DRT::Element::DiscretizationType DISTYPE>
 void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
-                    Teuchos::ParameterList&  params,
-                    RCP<MAT::Material>       mat,
+                    Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara,
+                    Teuchos::ParameterList&      params,
+                    Teuchos::RCP<MAT::Material>  mat,
                     std::vector<double>&     vel,
                     std::vector<double>&     fsvel)
 {
@@ -2905,7 +2908,6 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
   // allocate array for coefficient B
   // B may depend on the direction (if N depends on it)
   LINALG::Matrix<NSD,1> B(true);
-  {
     //                                  1
     //          |       1              |2
     //  kappa = | -------------------- |
@@ -2921,6 +2923,7 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
 
 
     // calculate near-wall correction
+    double Cai_phi = 0.0;
     if ((DRT::INPUT::IntegralValue<int>(*turbmodelparamsmfs,"NEAR_WALL_LIMIT")) == true)
     {
       // get Re from strain rate
@@ -2936,13 +2939,15 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
       //  *(1 - (Re)   )
       //
       Csgs *= (1-pow(Re_ele_str,-3.0/16.0));
+
+      // store Cai for application to scalar field
+      Cai_phi = (1-pow(Re_ele_str,-3.0/16.0));
     }
 
     for (int dim=0; dim<NSD; dim++)
     {
       B(dim,0) = Csgs * sqrt(kappa) * pow(2.0,-2.0*Nvel[0]/3.0) * sqrt((pow(2.0,4.0*Nvel[0]/3.0)-1));
     }
-  }
 
 #ifdef CONST_B
   for (int dim=0; dim<NSD; dim++)
@@ -2958,7 +2963,8 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
   // allocate array for coefficient D
   // D may depend on the direction (if N depends on it)
   double D = 0.0;
-  double Csgs_phi = turbmodelparamsmfs->get<double>("CSGS_PHI");
+  double Csgs_phi = fldpara->CsgsPhi(); // turbmodelparamsmfs->get<double>("CSGS_PHI");
+
   if (withscatra)
   {
     // get Schmidt number
@@ -2979,7 +2985,6 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
       if (scnum>1.0) p =1.0/2.0;
 
       scale_ratio_phi = turbmodelparamsmfs->get<double>("C_DIFF") * pow(Re_ele,3.0/4.0) * pow(scnum,p);
-      //scale_ratio_phi = turbmodelparamsmfs->get<double>("C_DIFF") * pow(Re_ele,3.0/4.0) * pow(scnum,p);
       // scale_ratio < 1.0 leads to N < 0
       // therefore, we clip again
       if (scale_ratio_phi < 1.0)
@@ -3008,16 +3013,33 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
     //          k^(-5/3) scaling -> gamma = 4/3
     // Remark: case 2.(i) not implemented, yet
 
-#ifndef TESTING
     double gamma = 0.0;
-    if (scnum < 2.0) // Sc <= 1, i.e., case 1 and 3
+    // define limit to distinguish between low and high Schmidt number
+    const double Sc_limit = 2.0;
+    // special option for case 2 (i)
+    bool two_ranges = false;
+    if (scnum < Sc_limit) // Sc <= 1, i.e., case 1 and 3
       gamma = 4.0/3.0;
-    else if (scnum > 2.0 and Nvel[0]<1.0) // Pr >> 1, i.e., case 2 (ii)
-      gamma = 2.0;
-    else if (scnum > 2.0 and (Nvel[0]>=1.0 and Nvel[0]<Nphi))
-      dserror("Inertial-convective and viscous-convective range?");
-    else
-      dserror("Could not determine gamma!");
+    else // Pr >> 1
+    {
+      if (fldpara->PhysicalType()==INPAR::FLUID::loma) dserror("Loma with Pr>>1?");
+      if (Nvel[0]<1.0) // Sc >> 1 and fluid fully resolved, i.e., case 2 (ii)
+        gamma = 2.0;
+      else // Sc >> 1 and fluid not fully resolved, i.e., case 2 (i)
+      {
+        if (Nvel[0]>Nphi)
+         dserror("Nvel < Nphi expected!");
+        // here different options are possible
+        // 1) we assume k^(-5/3) for the complete range
+        gamma = 4.0/3.0;
+  #if 0
+        // 2) we assume k^(-1) for the complete range
+        gamma = 2.0;
+        // 3) we take both ranges into account
+        two_ranges = true;
+  #endif
+      }
+    }
 
     //
     //   Phi    |       1                |
@@ -3032,60 +3054,23 @@ void f3_get_mf_params(DRT::ELEMENTS::Fluid*  ele,
     //  D = Csgs * kappa * 2 ^ (-gamma*N/2) * | 2 ^ (gamma*N) - 1 |
     //                                        |                   |
     //
-    D = Csgs_phi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1));
-#endif
-
-    // second implementation for testing on cluster
-#ifdef TESTING
-  double fac = 1.0;
-# if 1
-    if ((DRT::INPUT::IntegralValue<int>(*turbmodelparamsmfs,"NEAR_WALL_LIMIT")) == true)
+    if (not two_ranges) // usual case
+      D = Csgs_phi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1));
+    else
     {
-      // get Re from strain rate
-      double Re_ele_str = strainnorm * hk * hk * dens / dynvisc;
-      if (Re_ele_str < 0.0)
-        dserror("Something went wrong!");
-      // ensure positive values
-      if (Re_ele_str < 1.0)
-        Re_ele_str = 1.0;
-
-      // calculate corrected Csgs
-      //           -3/16
-      //  *(1 - (Re)   )
-      //
-      double Pr = params.get<double>("scnum");
-      fac = (1-pow(Re_ele_str,-3.0/16.0)); //*pow(Pr,-1.0/8.0));
+      double gamma1 = 4.0/3.0;
+      double gamma2 = 2.0;
+      kappa_phi = 1.0/(1.0-pow(alpha,-gamma1));
+      D = Csgs_phi * sqrt(kappa_phi) * pow(2.0,-gamma2*Nphi/2.0) * sqrt((pow(2.0,gamma1*Nvel[0])-1)+4.0/3.0*(M_PI/hk)*(pow(2.0,gamma2*Nphi)-pow(2.0,gamma2*Nvel[0])));
     }
-#endif
 
-
-  // Pr <= 1
-  # if 1
-    double gamma = 0.0;
-    gamma = 4.0/3.0;
-    double kappa_phi = 1.0/(1.0-pow(alpha,-gamma));
-    D = Csgs_phi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1))*fac;
-  #endif
-
-  // Pr >> 1: cutoff viscous-convective
-  # if 0
-    double gamma = 0.0;
-    gamma = 2.0;
-    double kappa_phi = 1.0/(1.0-pow(alpha,-gamma));
-    D(dim,0) = Csgs_phi *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1))*fac;
-  #endif
-
-  // Pr >> 1: cutoff inertial-convective
-  #if 0
-    double gamma1 = 0.0;
-    gamma1 = 4.0/3.0;
-    double gamma2 = 0.0;
-    gamma2 = 2.0;
-    double kappa_phi = 1.0/(1.0-pow(alpha,-gamma1));
-      D = Csgs_phi * sqrt(kappa_phi) * pow(2.0,-gamma2*Nphi/2.0) * sqrt((pow(2.0,gamma1*Nvel[dim])-1)+4.0/3.0*(PI/hk)*(pow(2.0,gamma2*Nphi)-pow(2.0,gamma2*Nvel[dim])))*fac;
-  #endif
-#endif
-
+    // apply near-wall limit if required
+    if (((DRT::INPUT::IntegralValue<int>(*turbmodelparamsmfs,"NEAR_WALL_LIMIT_CSGS_PHI")) == true)
+         and ((DRT::INPUT::IntegralValue<int>(*turbmodelparamsmfs,"NEAR_WALL_LIMIT")) == true))
+    {
+      D *= Cai_phi;
+      Csgs_phi *= Cai_phi;
+    }
 
   }
 
@@ -3345,7 +3330,15 @@ void f3_get_mf_nwc(DRT::ELEMENTS::Fluid* ele,
         dens = actmat->ComputeDensity(temp,thermpress);
         visc = actmat->ComputeViscosity(temp);
       }
-      else dserror("Sutherland material expected!");
+      else if (material->MaterialType() == INPAR::MAT::m_fluid)
+      {
+        const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(material.get());
+
+        // get density and viscosity
+        dens = actmat->Density();
+        visc = actmat->Viscosity();
+      }
+      else dserror("Newtonian fluid or Sutherland material expected!");
 
       // calculate characteristic element length
       double hk = 1.0e+10;

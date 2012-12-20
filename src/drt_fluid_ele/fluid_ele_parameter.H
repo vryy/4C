@@ -146,13 +146,13 @@ public:
   /// subgrid viscosity models
   //! flag to define turbulence model
   INPAR::FLUID::TurbModelAction TurbModAction(){return turb_mod_action_;};
-  //! smagorinsky constant (not private since it is also set in the element routine -> not very nice)
-  double Cs_;
-  //double Cs_;
+  double Cs(){return Cs_;};
   bool CsAveraged(){return Cs_averaged_;};
-  //! channel length to normalize the normal wall distance
-  //! (not private since it is also set in the element routine -> not very nice)
-  double l_tau_;
+  double Ci(){return Ci_;};
+  void SetvanDriestdamping(double damping){van_Driest_damping_=damping; return;};
+  double VanDriestdamping(){return van_Driest_damping_;};
+  bool IncludeCi(){return include_Ci_;};
+  double ltau(){return l_tau_;};
   //! scale similarity constant
   double Cl(){return Cl_;};
   /// multifractal subgrid-scales
@@ -166,6 +166,7 @@ public:
   double CNu(){return c_nu_;};
   double CDiff(){return c_diff_;};
   bool NearWallLimit(){return near_wall_limit_;};
+  bool NearWallLimitScatra(){return near_wall_limit_scatra_;};
   bool BGp(){return B_gp_;};
   double Beta(){return beta_;};
   double MfsIsConservative(){return mfs_is_conservative_;};
@@ -276,7 +277,16 @@ private:
   /// subgrid viscosity models
   //! flag to define turbulence model
   INPAR::FLUID::TurbModelAction turb_mod_action_;
+  //! smagorinsky constant
+  double Cs_;
   bool Cs_averaged_;
+  //! loma: constant for isotropic part of subgrid-stress tensor (according to Yoshizawa 1986)
+  double Ci_;
+  bool include_Ci_;
+  //! van Driest damping for channel flow
+  double van_Driest_damping_;
+  //! channel length to normalize the normal wall distance
+  double l_tau_;
   //! scale similarity constant
   double Cl_;
   /// multifractal subgrid-scales
@@ -290,6 +300,7 @@ private:
   double c_nu_;
   double c_diff_;
   bool near_wall_limit_;
+  bool near_wall_limit_scatra_;
   bool B_gp_;
   double beta_;
   bool mfs_is_conservative_;

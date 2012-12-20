@@ -22,6 +22,7 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 
 #include "../drt_geometry/position_array.H"
 
+#include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_elementtype.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_utils.H"
@@ -53,6 +54,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::IntegrateShapeFunction(
 
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+  // set element id
+  eid_ = ele->Id();
 
   //----------------------------------------------------------------
   // Now do the nurbs specific stuff (for isogeometric elements)
@@ -83,7 +86,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::IntegrateShapeFunction(
   for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(iquad,ele->Id());
+    EvalShapeFuncAndDerivsAtIntPoint(iquad);
 
     for (int ui=0; ui<nen_; ++ui) // loop rows  (test functions)
     {
@@ -110,6 +113,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDivOp(
 {
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+  // set element id
+  eid_ = ele->Id();
 
   if (ele->IsAle()) // Do ALE specific updates if necessary
   {
@@ -124,7 +129,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDivOp(
   for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(iquad,ele->Id());
+    EvalShapeFuncAndDerivsAtIntPoint(iquad);
 
     for (int nodes = 0; nodes < nen_; nodes++) // loop over nodes
     {
@@ -169,6 +174,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeDivU(
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
+  // set element id
+  eid_ = ele->Id();
+
   //----------------------------------------------------------------
   // Now do the nurbs specific stuff (for isogeometric elements)
   //----------------------------------------------------------------
@@ -193,7 +201,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeDivU(
 
   {
     // evaluate shape functions and derivatives at element center
-    EvalShapeFuncAndDerivsAtEleCenter(ele->Id());
+    EvalShapeFuncAndDerivsAtEleCenter();
 
 //------------------------------------------------------------------
 //                       INTEGRATION LOOP
@@ -293,6 +301,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
 
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_, LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
+  // set element id
+  eid_ = ele->Id();
 
   //----------------------------------------------------------------
   // Now do the nurbs specific stuff (for isogeometric elements)
@@ -323,7 +333,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
   for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(iquad,ele->Id());
+    EvalShapeFuncAndDerivsAtIntPoint(iquad);
 
     // get velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -688,6 +698,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
+  // set element id
+  eid_ = ele->Id();
+
   // for scale similarity model:
   // get filtered veolcities and reynoldsstresses
   LINALG::Matrix<nsd_,nen_> evel_hat(true);
@@ -839,7 +852,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   // ---------------------------------------------------------------------
 
   // evaluate shape functions and derivatives at element center
-  EvalShapeFuncAndDerivsAtEleCenter(ele->Id());
+  EvalShapeFuncAndDerivsAtEleCenter();
 
   // set element area or volume
   vol = fac_;
@@ -857,12 +870,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     visceff_ = visc_;
     if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
     {
-      CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,Ci_delta_sq,fldpara_->l_tau_);
+      CalcSubgrVisc(evelaf,vol,Cs_delta_sq,Ci_delta_sq);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       visceff_ += sgvisc_;
     }
     else if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
-      CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,fldpara_->Cs_);
+      CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol);
   }
 
   // potential evaluation of multifractal subgrid-scales at element center
@@ -917,7 +930,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     //---------------------------------------------------------------
     // evaluate shape functions and derivatives at integration point
     //---------------------------------------------------------------
-    EvalShapeFuncAndDerivsAtIntPoint(iquad,ele->Id());
+    EvalShapeFuncAndDerivsAtIntPoint(iquad);
 
     // get velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -1034,12 +1047,12 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
       visceff_ = visc_;
       if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
       {
-        CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,Ci_delta_sq,fldpara_->l_tau_);
+        CalcSubgrVisc(evelaf,vol,Cs_delta_sq,Ci_delta_sq);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         visceff_ += sgvisc_;
       }
       else if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
-        CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,fldpara_->Cs_);
+        CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol);
     }
 
     // potential evaluation of coefficient of multifractal subgrid-scales at integration point
@@ -1081,6 +1094,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
       // compute additional Galerkin terms on right-hand side of continuity equation
       // -> different for generalized-alpha and other time-integration schemes
       ComputeGalRHSContEq(eveln,escaaf,escaam,escadtam,ele->IsAle());
+      if (not fldpara_->IsGenalpha()) dserror("Does ComputeGalRHSContEq() for ost really the right thing?");
+      // remark: I think the term theta*u^n+1*nabla T^n+1 is missing.
+      //         Moreover, the resulting conres_old_ should be multiplied by theta (see monres_old_).
 
       // add to residual of continuity equation
       conres_old_ -= rhscon_;
@@ -1116,17 +1132,17 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     }
     else
     {
-      rhsmom_.Update((densn_/fldpara_->Dt()/fldpara_->Theta()),histmom_,densaf_,bodyforce_);
+      rhsmom_.Update((densn_/fldpara_->Dt()),histmom_,densaf_*fldpara_->Theta(),bodyforce_);
       // and pressure gradient prescribed as body force
       // caution: not density weighted
-      rhsmom_.Update(1.0,prescribedpgrad_,1.0);
+      rhsmom_.Update(fldpara_->Theta(),prescribedpgrad_,1.0);
       // compute instationary momentum residual:
       // momres_old = u_(n+1)/dt + theta ( ... ) - histmom_/dt - theta*bodyforce_
       for (int rr=0;rr<nsd_;++rr)
       {
-        momres_old_(rr) = ((densaf_*velint_(rr)/fldpara_->Dt()
+        momres_old_(rr) = (densaf_*velint_(rr)/fldpara_->Dt()
                          +fldpara_->Theta()*(densaf_*conv_old_(rr)+gradp_(rr)
-                         -2*visceff_*visc_old_(rr)))/fldpara_->Theta())-rhsmom_(rr);
+                         -2*visceff_*visc_old_(rr)))-rhsmom_(rr);
       }
     }
 
@@ -1242,6 +1258,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 //          eps_avm3 += 0.5*fssgvisc_*fac_*fstwo_epsilon(rr,mm)*two_epsilon(rr,mm);
           eps_avm3 += 0.5*fssgvisc_*fac_*fstwo_epsilon(rr,mm)*fstwo_epsilon(rr,mm);
         }
+      }
+      if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
+      {
+        dserror("Read warning before usage!");
+        // Warning: Here, we should use the deviatoric part of the strain-rate tensor.
+        //          However, I think this is not done in the element Sysmat-routine.
+        //          Hence, I skipped it here.
       }
     }
 
@@ -1805,7 +1828,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
 */
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::FDcheck(
-  int                                                 eid,
   const LINALG::Matrix<nsd_,nen_>&                    evelaf,
   const LINALG::Matrix<nsd_,nen_>&                    eveln,
   const LINALG::Matrix<nsd_,nen_>&                    fsevelaf,
@@ -1858,7 +1880,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::FDcheck(
 
   // echo to screen
   printf("+-------------------------------------------+\n");
-  printf("| FINITE DIFFERENCE CHECK FOR ELEMENT %5d |\n",eid);
+  printf("| FINITE DIFFERENCE CHECK FOR ELEMENT %5d |\n",eid_);
   printf("+-------------------------------------------+\n");
   printf("\n");
   // loop columns of matrix by looping nodes and then dof per nodes
@@ -1994,6 +2016,28 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::FDcheck(
       }
     }
   }
+
+  return;
+}
+
+
+/*-------------------------------------------------------------------------------*
+ |find elements of inflow section                                rasthofer 10/12 |
+ *-------------------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalc<distype>::InflowElement(DRT::Element* ele)
+{
+   is_inflow_ele_ = false;
+
+  std::vector<DRT::Condition*> myinflowcond;
+
+  // check whether all nodes have a unique inflow condition
+  DRT::UTILS::FindElementConditions(ele, "TurbulentInflowSection", myinflowcond);
+  if (myinflowcond.size()>1)
+    dserror("More than one inflow condition on one node!");
+
+  if (myinflowcond.size()==1)
+    is_inflow_ele_ = true;
 
   return;
 }

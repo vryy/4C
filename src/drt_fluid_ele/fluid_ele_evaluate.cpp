@@ -45,6 +45,8 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 #include "../drt_opti/topopt_fluidAdjoint3_interface.H"
 #include "../drt_opti/topopt_fluidAdjoint3_impl_parameter.H"
 
+#include "../drt_lib/drt_condition_utils.H"
+
 
 /*
   Depending on the type of action and the element type (tet, hex etc.),
@@ -722,6 +724,9 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
         std::vector<double> myfsvel(lm.size());
         DRT::UTILS::ExtractMyValues(*fsvelnp,myfsvel,lm);
 
+        // pointer to class FluidEleParameter (access to the general parameter)
+        Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara = DRT::ELEMENTS::FluidEleParameter::Instance();
+
         const DiscretizationType distype = this->Shape();
         switch (distype)
         {
@@ -730,7 +735,7 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
           // don't store values of ghosted elements
           if (this->Owner() == discretization.Comm().MyPID())
           {
-            FLD::f3_get_mf_params<8,3,DRT::Element::hex8>(this,params,mat,myvel,myfsvel);
+            FLD::f3_get_mf_params<8,3,DRT::Element::hex8>(this,fldpara,params,mat,myvel,myfsvel);
           }
           break;
         }
@@ -777,17 +782,34 @@ int DRT::ELEMENTS::Fluid::Evaluate(Teuchos::ParameterList&            params,
 
         double Cai = 0.0;
         double vol = 0.0;
-        switch (distype)
+
+        bool is_inflow_ele = false;
+
+       std::vector<DRT::Condition*> myinflowcond;
+
+       // check whether all nodes have a unique inflow condition
+       DRT::UTILS::FindElementConditions(this, "TurbulentInflowSection", myinflowcond);
+       if (myinflowcond.size()>1)
+         dserror("More than one inflow condition on one node!");
+
+       if (myinflowcond.size()==1)
+         is_inflow_ele = true;
+
+       // exclude elemenets of inflow section
+        if (not is_inflow_ele)
         {
-        case DRT::Element::hex8:
-        {
-          FLD::f3_get_mf_nwc<8,3,DRT::Element::hex8>(this,fldpara,Cai,vol,myvel,mysca,thermpress);
-          break;
-        }
-        default:
-        {
-          dserror("Unknown element type\n");
-        }
+          switch (distype)
+          {
+            case DRT::Element::hex8:
+            {
+              FLD::f3_get_mf_nwc<8,3,DRT::Element::hex8>(this,fldpara,Cai,vol,myvel,mysca,thermpress);
+              break;
+            }
+            default:
+            {
+              dserror("Unknown element type\n");
+            }
+          }
         }
         
         // hand down the Cai and volume contribution to the time integration algorithm

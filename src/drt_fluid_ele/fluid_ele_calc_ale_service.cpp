@@ -55,10 +55,6 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 #include "../linalg/linalg_utils.H"
 //#include "Sacado.hpp"
 
-#include "../drt_inpar/inpar_turbulence.H"
-// include define flags for turbulence models under development
-#include "../drt_fluid/fluid_turbulence_defines.H"
-
 
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::LinMeshMotion_2D(

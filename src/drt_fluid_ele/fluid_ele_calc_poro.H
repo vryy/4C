@@ -87,8 +87,7 @@ private:
       Specific evaluate function without any knowledge about DRT objects. This
       way the element evaluation is independent of the specific mesh storage.
      */
-    int Evaluate( int                                                             eid,
-                  Teuchos::ParameterList&                                         params,
+    int Evaluate( Teuchos::ParameterList&                                         params,
                   const LINALG::Matrix<my::nsd_,my::nen_> &                       ebofoaf,
                   LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_> &   elemat1,
                   LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_> &   elemat2,
@@ -116,7 +115,6 @@ private:
       way the element evaluation is independent of the specific mesh storage.
      */
     int EvaluateOD(
-        int                                                               eid,
         Teuchos::ParameterList&                                           params,
         const LINALG::Matrix<my::nsd_, my::nen_> &                        ebofoaf,
         LINALG::Matrix<(my::nsd_ + 1) * my::nen_, my::nsd_ * my::nen_> &  elemat1,
@@ -139,7 +137,6 @@ private:
     /*!
     \brief calculate element matrix and rhs for porous flow
 
-    \param eid              (i) element id
     \param ebofoaf          (i) body force at n+alpha_F/n+1
     \param evelaf           (i) nodal velocities at n+alpha_F/n+1
     \param evelnp           (i) nodal velocities at n+1 (np_genalpha)
@@ -158,7 +155,6 @@ private:
 
     */
   void Sysmat(
-      int                                                           eid,
       const LINALG::Matrix<my::nsd_,my::nen_>&                      ebofoaf,
       const LINALG::Matrix<my::nsd_,my::nen_>&                      evelaf,
       const LINALG::Matrix<my::nsd_,my::nen_>&                      evelnp,
@@ -180,7 +176,6 @@ private:
       const DRT::UTILS::GaussIntegration &                          intpoints);
 
   void SysmatOD(
-      int                                                             eid,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       ebofoaf,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,

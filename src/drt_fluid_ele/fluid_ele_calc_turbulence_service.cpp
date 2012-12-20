@@ -212,7 +212,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
         Cs_delta_sq=0.0;
 
       // Ci_delta_sq is set by the averaged quantities
-      if (fldpara_->PhysicalType()==INPAR::FLUID::loma)
+      if (fldpara_->PhysicalType()==INPAR::FLUID::loma and fldpara_->IncludeCi()==true)
       {
         if ((*averaged_CI_denominator)[nlayer] > 1E-16)
           Ci_delta_sq = 0.5 * (*averaged_CI_numerator)[nlayer]/(*averaged_CI_denominator)[nlayer] ;
@@ -230,7 +230,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
     {
       // when no averaging was done, we just keep the calculated (clipped) value
       Cs_delta_sq = CsDeltaSq;
-      if (fldpara_->PhysicalType()==INPAR::FLUID::loma)
+      if (fldpara_->PhysicalType()==INPAR::FLUID::loma and fldpara_->IncludeCi()==true)
         Ci_delta_sq = CiDeltaSq;
     }
   }
@@ -246,10 +246,8 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::CalcSubgrVisc(
   const LINALG::Matrix<nsd_,nen_>&        evelaf,
   const double                            vol,
-  double&                                 Cs,
   double&                                 Cs_delta_sq,
-  double&                                 Ci_delta_sq,
-  double&                                 l_tau
+  double&                                 Ci_delta_sq
   )
 {
   // cast dimension to a double varibale -> pow()
@@ -284,17 +282,29 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcSubgrVisc(
     // subgrid viscosity
     sgvisc_ = densaf_ * Cs_delta_sq * rateofstrain;
 
-    // for evaluation of statistics: remember the 'real' Cs
-    Cs = sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0));
-
     // calculate isotropic part of subgrid-stress tensor (loma only)
     if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
     {
-        q_sq_ = densaf_ * Ci_delta_sq * rateofstrain * rateofstrain; //remark: missing factor 2 is added in function ContStab()
+      if (fldpara_->IncludeCi() and is_inflow_ele_ == false)
+      {
+        if (fldpara_->Ci()<0.0)
+          q_sq_ = densaf_ * Ci_delta_sq * rateofstrain * rateofstrain; //remark: missing factor 2 is added in function ContStab()
+        else
+        {
+          // get characteristic element length for Smagorinsky model for 2D and 3D
+          // 3D: delta = V^1/3
+          // 2D: delta = A^1/2
+          const double delta = pow(vol,(1.0/dim));
+          q_sq_ = densaf_ * fldpara_->Ci() * delta * delta * rateofstrain * rateofstrain;
+        }
+      }
+      else
+        q_sq_ = 0.0;
     }
   }
   else
   {
+    double van_Driest_damping = 1.0;
     if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky_with_van_Driest_damping)
     {
       // since the Smagorinsky constant is only valid if hk is in the inertial
@@ -323,12 +333,13 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcSubgrVisc(
       LINALG::Matrix<nsd_,1> centernodecoord;
       centernodecoord.Multiply(xyze_,funct_);
 
-      if (centernodecoord(1,0)>0) y_plus=(1.0-centernodecoord(1,0))/l_tau;
-      else                        y_plus=(1.0+centernodecoord(1,0))/l_tau;
+      if (centernodecoord(1,0)>0) y_plus=(1.0-centernodecoord(1,0))/fldpara_->ltau();
+      else                        y_plus=(1.0+centernodecoord(1,0))/fldpara_->ltau();
 
-      //   lmix *= (1.0-exp(-y_plus/A_plus));
+      // lmix *= (1.0-exp(-y_plus/A_plus));
       // multiply with van Driest damping function
-      Cs *= (1.0-exp(-y_plus/A_plus));
+      van_Driest_damping = (1.0-exp(-y_plus/A_plus));
+      fldpara_->SetvanDriestdamping(van_Driest_damping);
     }
 
     // get characteristic element length for Smagorinsky model for 2D and 3D
@@ -336,13 +347,33 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcSubgrVisc(
     // 2D: hk = A^1/2
     const double hk = std::pow(vol,(1.0/dim));
 
-    // mixing length set proportional to grid witdh: lmix = Cs * hk
-    double lmix = Cs * hk;
+    // mixing length set proportional to grid width: lmix = Cs * hk
+    double lmix = fldpara_->Cs() * van_Driest_damping * hk;
 
     Cs_delta_sq = lmix * lmix;
 
     // subgrid viscosity
     sgvisc_ = densaf_ * Cs_delta_sq * rateofstrain;
+
+    // calculate isotropic part of subgrid-stress tensor (loma only)
+    if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
+    {
+      if (fldpara_->IncludeCi() and is_inflow_ele_ == false)
+      {
+        if (fldpara_->Ci()<0.0)
+          dserror("Ci expected!");
+        else
+        {
+          // get characteristic element length for Smagorinsky model for 2D and 3D
+          // 3D: delta = V^1/3
+          // 2D: delta = A^1/2
+          const double delta = pow(vol,(1.0/dim));
+          q_sq_ = densaf_ * fldpara_->Ci() * delta * delta * rateofstrain * rateofstrain;
+        }
+      }
+      else
+        q_sq_ = 0.0;
+    }
   }
 
   return;
@@ -356,8 +387,7 @@ template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::CalcFineScaleSubgrVisc(
   const LINALG::Matrix<nsd_,nen_>&        evelaf,
   const LINALG::Matrix<nsd_,nen_>&        fsevelaf,
-  const double                            vol,
-  double&                                 Cs
+  const double                            vol
   )
 {
   // cast dimension to a double varibale -> pow()
@@ -387,7 +417,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcFineScaleSubgrVisc(
     double rateofstrain = -1.0e30;
     rateofstrain = GetStrainRate(evelaf);
 
-    fssgvisc_ = densaf_ * Cs * Cs * hk * hk * rateofstrain;
+    fssgvisc_ = densaf_ * fldpara_->Cs() * fldpara_->Cs() * hk * hk * rateofstrain;
   }
   else if (fldpara_->Fssgv() == INPAR::FLUID::smagorinsky_small)
   {
@@ -408,7 +438,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcFineScaleSubgrVisc(
     double fsrateofstrain = -1.0e30;
     fsrateofstrain = GetStrainRate(fsevelaf);
 
-    fssgvisc_ = densaf_ * Cs * Cs * hk * hk * fsrateofstrain;
+    fssgvisc_ = densaf_ * fldpara_->Cs() * fldpara_->Cs() * hk * hk * fsrateofstrain;
   }
 
   return;
@@ -697,9 +727,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
       }
       case INPAR::FLUID::strainrate:
       {
-        //strainnorm = GetNormStrain(evelaf,derxy_,vderxy_);
         strainnorm = GetStrainRate(evelaf);
-        strainnorm /= sqrt(2.0);
+        strainnorm /= sqrt(2.0); //cf. Burton & Dahm 2005
         Re_ele = strainnorm * hk * hk * densaf_ / visc_;
         break;
       }
@@ -746,10 +775,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
 #endif
 
     // calculate near-wall correction
+    double Cai_phi = 0.0;
     if (fldpara_->NearWallLimit())
     {
       // if not yet calculated, estimate norm of strain rate
-      if (not fldpara_->CalcN() or fldpara_->RefVel() != INPAR::FLUID::strainrate)
+      if ((not fldpara_->CalcN()) or (fldpara_->RefVel() != INPAR::FLUID::strainrate))
       {
         //strainnorm = GetNormStrain(evelaf,derxy_,vderxy_);
         strainnorm = GetStrainRate(evelaf);
@@ -771,6 +801,9 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
       //  *(1 - (Re)   )
       //
       Csgs *= (1-pow(Re_ele_str,-3.0/16.0));
+
+      // store Cai for application to scalar field
+      Cai_phi = (1-pow(Re_ele_str,-3.0/16.0));
     }
 
     // call function to compute coefficient B
@@ -786,8 +819,14 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
 
       // calculate prandtl number
       double Pr = visc_/diffus_;
+      
+      // since there are differences in the physical behavior between low and high
+      // Prandtl/Schmidt number regime, we define a limit 
+      // to distinguish between the low and high Prandtl/Schmidt number regime
+      // note: there is no clear definition of the ranges
+      const double Pr_limit = 2.0;
 
-      // allocate vector for parameter N
+      // allocate double for parameter N
       double Nphi = 0.0;
       // ratio of dissipation scale to element length
       double scale_ratio_phi = 0.0;
@@ -802,7 +841,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
         // Pr <= 1: p=3/4
         // Pr >> 1: p=1/2
         double p = 3.0/4.0;
-        if (Pr>1.0) p =1.0/2.0;
+        if (Pr>Pr_limit) p =1.0/2.0;
 
         scale_ratio_phi = fldpara_->CDiff() * pow(Re_ele,3.0/4.0) * pow(Pr,p);
         // scale_ratio < 1.0 leads to N < 0
@@ -821,7 +860,15 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::PrepareMultifractalSubgrScales(
        dserror("Multifractal subgrid-scales for loma with calculation of N, only!");
 
       // call function to compute coefficient D
-      CalcMultiFracSubgridScaCoef(Csgs_phi,alpha,Pr,Nvel,Nphi,D_mfs);
+      if (not fldpara_->NearWallLimitScatra())
+        CalcMultiFracSubgridScaCoef(Csgs_phi,alpha,Pr,Pr_limit,Nvel,Nphi,D_mfs);
+      else
+      {
+        if (not fldpara_->NearWallLimit())
+          dserror("Near-wall limit expected!");
+
+        CalcMultiFracSubgridScaCoef(Csgs_phi*Cai_phi,alpha,Pr,Pr_limit,Nvel,Nphi,D_mfs);
+      }
     }
 }
 
@@ -845,10 +892,10 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcMultiFracSubgridVelCoef(
   //
   double kappa = 1.0/(1.0-pow(alpha,-4.0/3.0));
 
-  //                                                       1
-  //                                  |                   |2
+  //                  1                                    1
+  //                  2                 |                 |2
   //  B = Csgs * kappa * 2 ^ (-2*N/3) * | 2 ^ (4*N/3) - 1 |
-  //                                  |                   |
+  //                                    |                 |
   //
   for (int dim=0; dim<nsd_; dim++)
   {
@@ -861,6 +908,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcMultiFracSubgridVelCoef(
     B_mfs(dim,0) = B_CONST;
   }
 #endif
+
+//  if (eid_ == 100){
+//    std::cout << "B  " << setprecision(10) << B_mfs(0,0) << "  " << B_mfs(1,0) << "  " << B_mfs(2,0) << "  " << std::endl;
+//    std::cout << "CsgsB  " << setprecision(10) << Csgs << std::endl;
+//  }
 
   return;
 }
@@ -875,7 +927,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcMultiFracSubgridScaCoef(
   const double            Csgs,
   const double            alpha,
   const double            Pr,
-  const std::vector<double> Nvel,
+  const double            Pr_limit,
+  const std::vector<double>    Nvel,
   double                  Nphi,
   double &                D_mfs
   )
@@ -893,15 +946,32 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcMultiFracSubgridScaCoef(
   //          k^(-5/3) scaling -> gamma = 4/3
   // Remark: case 2.(i) not implemented, yet
 
+  // caution: compared to the mfs-loma paper, gamma denotes gamma+1 here
   double gamma = 0.0;
-  if (Pr < 2.0) // Pr <= 1, i.e., case 1 and 3
+  // special option for case 2 (i)
+  bool two_ranges = false;
+  if (Pr < Pr_limit) // Pr <= 1, i.e., case 1 and 3
     gamma = 4.0/3.0;
-  else if (Pr > 2.0 and Nvel[0]<1.0) // Pr >> 1, i.e., case 2 (ii)
-    gamma = 2.0;
-  else if (Pr > 2.0 and (Nvel[0]>=1.0 and Nvel[0]<Nphi))
-    dserror("Inertial-convective and viscous-convective range?");
-  else
-    dserror("Could not determine D!");
+  else // Pr >> 1
+  {
+    dserror("Loma with Pr>>1?");
+    if (Nvel[0]<1.0) // Pr >> 1 and fluid fully resolved, i.e., case 2 (ii)
+      gamma = 2.0;
+    else // Pr >> 1 and fluid not fully resolved, i.e., case 2 (i)
+    {
+      if (Nvel[0]>Nphi)
+       dserror("Nvel < Nphi expected!");
+      // here different options are possible
+      // 1) we assume k^(-5/3) for the complete range
+      gamma = 4.0/3.0;
+#if 0
+      // 2) we assume k^(-1) for the complete range
+      gamma = 2.0;
+      // 3) we take both ranges into account
+      two_ranges = true;
+#endif
+    }
+  }
 
   //
   //   Phi    |       1                |
@@ -915,7 +985,21 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcMultiFracSubgridScaCoef(
   //  D = Csgs * kappa * 2 ^ (-gamma*N/2) * | 2 ^ (gamma*N) - 1 |
   //                                        |                   |
   //
-  D_mfs = Csgs *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1));
+  if (not two_ranges) // usual case
+    D_mfs = Csgs *sqrt(kappa_phi) * pow(2.0,-gamma*Nphi/2.0) * sqrt((pow(2.0,gamma*Nphi)-1));
+  else
+  {
+    dserror("Special option for passive scalars only!");
+//    double gamma1 = 4.0/3.0;
+//    double gamma2 = 2.0;
+//    kappa_phi = 1.0/(1.0-pow(alpha,-gamma1));
+//    D_mfs = Csgs * sqrt(kappa_phi) * pow(2.0,-gamma2*Nphi/2.0) * sqrt((pow(2.0,gamma1*Nvel[0])-1)+4.0/3.0*(M_PI/hk)*(pow(2.0,gamma2*Nphi)-pow(2.0,gamma2*Nvel[0])));
+  }
+
+//  if (eid_ == 100){
+//    std::cout << "D  " << setprecision(10) << D_mfs << std::endl;
+//    std::cout << "CsgsD  " << setprecision(10) << Csgs << std::endl;
+//  }
 
   return;
 }
@@ -986,7 +1070,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::FineScaleSubGridViscosityTerm(
 //----------------------------------------------------------------------
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::ScaleSimSubGridStressTermPrefiltering(
-//    const int &                             eid,
     LINALG::Matrix<nsd_,nen_> &             velforce,
     const double &                          rhsfac,
     const double &                          Cl)
@@ -1057,7 +1140,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ScaleSimSubGridStressTermPrefiltering
 //----------------------------------------------------------------------
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::ScaleSimSubGridStressTermCross(
-//    const int &                             eid,
     LINALG::Matrix<nsd_,nen_> &             velforce,
     const double &                          rhsfac,
     const double &                          Cl)
@@ -1108,7 +1190,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ScaleSimSubGridStressTermCross(
 //----------------------------------------------------------------------
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::ScaleSimSubGridStressTermReynolds(
-//    const int &                             eid,
     LINALG::Matrix<nsd_,nen_> &             velforce,
     const double &                          rhsfac,
     const double &                          Cl)
@@ -1176,7 +1257,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesCross(
       /*
                /                                      \
               |                                        |
-              | ( du o nabla u - u o nabla du ) ,  v   |
+              | ( du o nabla u + u o nabla du ) ,  v   |
               |                                        |
                \                                      /
       */
@@ -1207,11 +1288,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesCross(
       /*
                /                                         \
               |                                           |
-              | ( du (nabla o u) - u (nabla o du ) ,  v   |
+              | ( du (nabla o u) + u (nabla o du ) ,  v   |
               |                                           |
                \                                         /
       */
-      if (fldpara_->MfsIsConservative())
+      if (fldpara_->MfsIsConservative() or fldpara_->IsConservative())
       {
         velforce(0,vi) -= rhsfac * densaf_ * funct_(vi,0)
                         * (mffsvelint_(0,0) * vdiv_
@@ -1226,7 +1307,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesCross(
     }
   }
   else
-    dserror("Scale similarity model for 3D-problems only!");
+    dserror("Multifractal subgrid-scale modeling model for 3D-problems only!");
 
   //--------------------------------------------------------------------
   // lhs contribution
@@ -1272,7 +1353,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesCross(
           }
 
           // additional terms conservative part
-          if (fldpara_->MfsIsConservative())
+          if (fldpara_->MfsIsConservative() or fldpara_->IsConservative())
           {
             /*
                    /                                     \
@@ -1352,7 +1433,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesReynolds(
               |                         |
                \                       /
       */
-      if (fldpara_->MfsIsConservative())
+      if (fldpara_->MfsIsConservative() or fldpara_->IsConservative())
       {
         velforce(0,vi) -= rhsfac * densaf_ * funct_(vi,0)
                         * (mffsvelint_(0,0) * mffsvdiv_);
@@ -1364,7 +1445,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::MultfracSubGridScalesReynolds(
     }
   }
   else
-    dserror("Scale similarity model for 3D-problems only!");
+    dserror("Multifractal subgrid-scale modeling for 3D-problems only!");
 
   //--------------------------------------------------------------------
   // lhs contribution
@@ -1445,7 +1526,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::StoreModelParametersForOutput(
    const double Cs_delta_sq,
    const double Ci_delta_sq,
    const int    nlayer,
-   const int    eid,
    const bool   isowned,
    Teuchos::ParameterList&  turbmodelparams)
 {
@@ -1461,16 +1541,24 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::StoreModelParametersForOutput(
             turbmodelparams.get<string>("CANONICAL_FLOW","no") == "loma_channel_flow_of_height_2" or
             turbmodelparams.get<string>("CANONICAL_FLOW","no") == "scatra_channel_flow_of_height_2")
         {
-          // Cs was changed in Sysmat (Cs->sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0)))
+          // recompute delta = pow((vol),(1.0/3.0))
+          // evaluate shape functions and derivatives at element center
+          EvalShapeFuncAndDerivsAtEleCenter();
+          // set element volume
+          const double vol = fac_;
+
           // to compare it with the standard Smagorinsky Cs
-          (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_Cs_sum")))         [nlayer]+=fldpara_->Cs_;
+          if (fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
+            (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_Cs_sum")))         [nlayer]+=sqrt(Cs_delta_sq)/pow((vol),(1.0/3.0));
+          else if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky_with_van_Driest_damping)
+            (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_Cs_sum")))         [nlayer]+=fldpara_->Cs() * fldpara_->VanDriestdamping();
+          else dserror("Dynamic Smagorinsky or Smagorisnsky with van Driest damping expected!");
           (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
           (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff_;
+
           if (turbmodelparams.get<string>("CANONICAL_FLOW","no") == "loma_channel_flow_of_height_2")
           {
-            // recompute delta = std::pow((vol),(1.0/3.0))
-            EvalShapeFuncAndDerivsAtEleCenter(eid);
-            (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_Ci_sum")))         [nlayer]+=sqrt(Ci_delta_sq)/pow((fac_),(1.0/3.0));
+            (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_Ci_sum")))         [nlayer]+=sqrt(Ci_delta_sq)/pow((vol),(1.0/3.0));
             (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_Ci_delta_sq_sum")))[nlayer]+=Ci_delta_sq;
           }
         }

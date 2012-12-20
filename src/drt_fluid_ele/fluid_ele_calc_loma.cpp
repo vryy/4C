@@ -208,9 +208,10 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
     CiDeltaSq = (*ele_CiDeltaSq)[id];
   }
 
+  // set element id
+  my::eid_ = ele->Id();
   // call inner evaluate (does not know about DRT element or discretization object)
   int result = EvaluateOD(
-    ele->Id(),
     params,
     ebofoaf,
     eprescpgaf,
@@ -241,7 +242,6 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
-  int                                  eid,
   Teuchos::ParameterList&              params,
   const LINALG::Matrix<my::nsd_,my::nen_> &    ebofoaf,
   const LINALG::Matrix<my::nsd_,my::nen_> &    eprescpgaf,
@@ -303,7 +303,7 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix
   // ---------------------------------------------------------------------
-  SysmatOD(eid,
+  SysmatOD(
                         ebofoaf,
                         eprescpgaf,
                         evelaf,
@@ -338,7 +338,6 @@ int DRT::ELEMENTS::FluidEleCalcLoma<distype>::EvaluateOD(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
-  int                                  eid,
   const LINALG::Matrix<my::nsd_,my::nen_>&     ebofoaf,
   const LINALG::Matrix<my::nsd_,my::nen_>&     eprescpgaf,
   const LINALG::Matrix<my::nsd_,my::nen_>&     evelaf,
@@ -373,7 +372,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
   if (isale) my::xyze_ += edispnp;
 
   // evaluate shape functions and derivatives at element center
-  my::EvalShapeFuncAndDerivsAtEleCenter(eid);
+  my::EvalShapeFuncAndDerivsAtEleCenter();
 
   // set element area or volume
   const double vol = my::fac_;
@@ -392,7 +391,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
         my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
     {
-      my::CalcSubgrVisc(evelaf,vol,my::fldpara_->Cs_,Cs_delta_sq,Ci_delta_sq,my::fldpara_->l_tau_);
+      my::CalcSubgrVisc(evelaf,vol,Cs_delta_sq,Ci_delta_sq);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       my::visceff_ += my::sgvisc_;
     }
@@ -417,7 +416,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
 
     // get convective velocity at integration point
     // (including grid velocity in ALE case,
@@ -442,7 +441,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
       if (my::fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or
           my::fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
       {
-        my::CalcSubgrVisc(evelaf,vol,my::fldpara_->Cs_,Cs_delta_sq,Ci_delta_sq,my::fldpara_->l_tau_);
+        my::CalcSubgrVisc(evelaf,vol,Cs_delta_sq,Ci_delta_sq);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         my::visceff_ += my::sgvisc_;
       }

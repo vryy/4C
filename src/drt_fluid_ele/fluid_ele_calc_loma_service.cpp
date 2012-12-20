@@ -463,7 +463,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::RecomputeGalAndComputeCrossRHSContEq(
   }
 
   if (fldpara_->MultiFracLomaConti())
+  {
     rhscon_ += scaconvfacaf_*mffsvelint_.Dot(grad_scaaf_); // first cross-stress term
+    rhscon_ += scaconvfacaf_*velint_.Dot(grad_fsscaaf_); // second cross-stress term
+    rhscon_ += scaconvfacaf_*mffsvelint_.Dot(grad_fsscaaf_); // Reynolds-stress term
+//    rhscon_ -= mffsvdiv_; // multifractal divergence
+  }
 
   // further terms different for general.-alpha and other time-int. schemes
   if (fldpara_->IsGenalpha())

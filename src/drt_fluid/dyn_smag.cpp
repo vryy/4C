@@ -44,6 +44,7 @@ FLD::DynSmagFilter::DynSmagFilter(
   apply_box_filter_ = false;
   homdir_              = false;
   special_flow_homdir_ = "not_specified";
+  calc_Ci_ = false;
 
   // -------------------------------------------------------------------
   // initialise the turbulence model
@@ -100,6 +101,40 @@ FLD::DynSmagFilter::DynSmagFilter(
         {
           std::cout << "------->  No averaging of Smagorinsky constant ..." << std::endl;
           std::cout << "------->  Point-wise clipping!" << std::endl;
+        }
+      }
+
+      // check whether we would like to include a model for the isotropic part
+      if (physicaltype_==INPAR::FLUID::loma)
+      {
+        if (DRT::INPUT::IntegralValue<int>(params_.sublist("SUBGRID VISCOSITY"),"C_INCLUDE_CI")==true)
+        {
+          if (discret_->Comm().MyPID()==0)
+            std::cout << "------->  Ci is included for loma problem" << std::endl;
+          if (params_.sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA") < 0.0)
+          {
+            if (discret_->Comm().MyPID()==0)
+              std::cout << "------->  Ci is determined dynamically" << std::endl;
+
+            calc_Ci_ = true;
+          }
+          else
+          {
+            if (discret_->Comm().MyPID()==0)
+              std::cout << "------->  Ci is set to " << params_.sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA") << std::endl;
+
+            calc_Ci_ = false;
+          }
+        }
+        else
+        {
+          if (discret_->Comm().MyPID()==0)
+            std::cout << "------->  Ci is not included for loma problem" << std::endl;
+
+          calc_Ci_ = false;
+
+          if (params_.sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA") > 0.0)
+            dserror("Set C_YOSHIZAWA < 0.0 in combination with C_SMAGORINSKY_AVERAGED==true and C_INCLUDE_CI==false!");
         }
       }
     }
@@ -658,9 +693,9 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
 
 
 /*----------------------------------------------------------------------*
- | compute Cs from filtered quantities. If possible, use in plane       |
+ | compute Prt from filtered quantities. If possible, use in plane      |
  | averaging                                                  (private) |
- |                                                      rasthofer 20/11 |
+ |                                                      rasthofer 09/12 |
  *----------------------------------------------------------------------*/
 void FLD::DynSmagFilter::DynSmagComputePrt(
   Teuchos::ParameterList&  extraparams,
@@ -941,7 +976,7 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
       // perform some checks first
       if (count_for_average[rr]==0 and
            ((*averaged_LkMk)[rr]!=0.0 or (*averaged_MkMk)[rr]!=0.0))
-          dserror("Expected 'averaged_LkMk' or 'averaged_MkMk' equal zero!");
+          dserror("Expected 'averaged_LkMk' and 'averaged_MkMk' equal zero!");
 
       // calculate averaged quantities
       // we have to exclude zero here, since, for backward-facing steps, the step is contained and
@@ -1023,16 +1058,10 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
   // free mem and reallocate to zero out vecs
   filtered_vel_                   = Teuchos::null;
   filtered_reynoldsstress_        = Teuchos::null;
-  if (apply_dynamic_smagorinsky_)
-  {
-    filtered_modeled_subgrid_stress_ = Teuchos::null;
-    if (physicaltype_ == INPAR::FLUID::loma)
-    {
-      filtered_dens_vel_ = Teuchos::null;
-      filtered_dens_ = Teuchos::null;
-      filtered_dens_strainrate_ = Teuchos::null;
-    }
-  }
+  filtered_modeled_subgrid_stress_ = Teuchos::null;
+  filtered_dens_vel_ = Teuchos::null;
+  filtered_dens_ = Teuchos::null;
+  filtered_dens_strainrate_ = Teuchos::null;
   if (apply_box_filter_)
     fs_vel_ = Teuchos::null;
 
@@ -1408,11 +1437,13 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
 
             if (apply_dynamic_smagorinsky_)
             {
-              if (is_no_slip_node == numdim and physicaltype_ != INPAR::FLUID::loma)
+              if (is_no_slip_node == numdim)
               {
                 // set value to zero (original Peter style)
                 double val = 0.0;
                 err += ((*filtered_modeled_subgrid_stress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
+                if (physicaltype_ == INPAR::FLUID::loma)
+                  err += filtered_dens_strainrate_->ReplaceMyValues(1,&val,&lnodeid);
               }
               else
               {
@@ -1435,14 +1466,12 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
             double thisvol = (*patchvol)[lnodeid];
             double val = (*filtered_dens_)[lnodeid]/thisvol;
             err += filtered_dens_->ReplaceMyValues(1,&val,&lnodeid);
-            val = (*filtered_dens_strainrate_)[lnodeid]/thisvol;
-            err += filtered_dens_strainrate_->ReplaceMyValues(1,&val,&lnodeid);
         }
 
         double volval = 1.0;
         err += patchvol->ReplaceMyValues(1,&volval,&lnodeid);
         if (err!=0) dserror("dof not on proc");
-      }
+      }// is dirichlet node
     } // end loop all nodes
   }
 
@@ -1835,6 +1864,9 @@ void FLD::DynSmagFilter::ApplyBoxFilterScatra(
   // ---------------------------------------------------------------
   // replace values at dirichlet nodes
 
+  // as far as there are not any troubles observed,
+  // special modifications of the filtering procedure
+  // at Dirichlet boundaries are not considered
 #if 0
   {
     // get a rowmap for the dofs

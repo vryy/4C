@@ -52,10 +52,12 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 template <DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc():
     rotsymmpbc_(NULL),
+    eid_(-1.0),
     is_higher_order_ele_(false),
     weights_(true),
     myknots_(nsd_),
     intpoints_( distype ),
+    is_inflow_ele_(false),
     xyze_(true),
     funct_(true),
     deriv_(true),
@@ -131,6 +133,7 @@ DRT::ELEMENTS::FluidEleCalc<distype>::FluidEleCalc():
     fssgvisc_(0.0),
     q_sq_(0.0),
     mfssgscaint_(0.0),
+    grad_fsscaaf_(true),
     tds_(Teuchos::null)
 {
   rotsymmpbc_= Teuchos::rcp(new FLD::RotationallySymmetricPeriodicBC<distype>());
@@ -345,7 +348,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
   } // Nurbs specific stuff
 
   //----------------------------------------------------------------
-  // prepare some dynamic Smagorinsky related stuff
+  // prepare dynamic Smagorinsky model, if included
   //----------------------------------------------------------------
   double CsDeltaSq = 0.0;
   double CiDeltaSq = 0.0;
@@ -357,10 +360,13 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
     CsDeltaSq = (*ele_CsDeltaSq)[id];
     CiDeltaSq = (*ele_CiDeltaSq)[id];
   }
+  // identify elements of inflow section
+  InflowElement(ele);
 
+  // set element id
+  eid_ = ele->Id();
   // call inner evaluate (does not know about DRT element or discretization object)
   int result = Evaluate(
-    ele->Id(),
     params,
     ebofoaf,
     eprescpgaf,
@@ -407,7 +413,6 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(DRT::ELEMENTS::Fluid*    ele,
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
-  int                                           eid,
   Teuchos::ParameterList&                       params,
   const LINALG::Matrix<nsd_,nen_> &             ebofoaf,
   const LINALG::Matrix<nsd_,nen_> &             eprescpgaf,
@@ -487,8 +492,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
-  Sysmat(eid,
-         ebofoaf,
+  Sysmat(ebofoaf,
          eprescpgaf,
          evelaf,
          eveln,
@@ -527,7 +531,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
   // ---------------------------------------------------------------------
   // output values of Cs, visceff and Cs_delta_sq
   // ---------------------------------------------------------------------
-  StoreModelParametersForOutput(Cs_delta_sq,Ci_delta_sq, nlayer,eid,isowned,turbmodelparams);
+  StoreModelParametersForOutput(Cs_delta_sq,Ci_delta_sq, nlayer,isowned,turbmodelparams);
 
   return 0;
 }
@@ -538,9 +542,8 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::Evaluate(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
-  int                                           eid,
   const LINALG::Matrix<nsd_,nen_>&              ebofoaf,
-  const LINALG::Matrix<nsd_,nen_>&             eprescpgaf,
+  const LINALG::Matrix<nsd_,nen_>&              eprescpgaf,
   const LINALG::Matrix<nsd_,nen_>&              evelaf,
   const LINALG::Matrix<nsd_,nen_>&              eveln,
   const LINALG::Matrix<nsd_,nen_>&              evelnp,
@@ -597,7 +600,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
   if (isale) xyze_ += edispnp;
 
   // evaluate shape functions and derivatives at element center
-  EvalShapeFuncAndDerivsAtEleCenter(eid);
+  EvalShapeFuncAndDerivsAtEleCenter();
 
   // set element area or volume
   const double vol = fac_;
@@ -616,12 +619,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
     if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
     {
-      CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,Ci_delta_sq,fldpara_->l_tau_);
+      CalcSubgrVisc(evelaf,vol,Cs_delta_sq,Ci_delta_sq);
       // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
       visceff_ += sgvisc_;
     }
     else if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
-      CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,fldpara_->Cs_);
+      CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol);
   }
 
   // potential evaluation of multifractal subgrid-scales at element center
@@ -691,7 +694,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+    EvalShapeFuncAndDerivsAtIntPoint(iquad);
 
     //----------------------------------------------------------------------
     //  evaluation of various values at integration point:
@@ -855,12 +858,12 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
       visceff_ = visc_;
       if (fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky or fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky)
       {
-        CalcSubgrVisc(evelaf,vol,fldpara_->Cs_,Cs_delta_sq,Ci_delta_sq,fldpara_->l_tau_);
+        CalcSubgrVisc(evelaf,vol,Cs_delta_sq,Ci_delta_sq);
         // effective viscosity = physical viscosity + (all-scale) subgrid viscosity
         visceff_ += sgvisc_;
       }
       else if (fldpara_->Fssgv() != INPAR::FLUID::no_fssgv)
-        CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol,fldpara_->Cs_);
+        CalcFineScaleSubgrVisc(evelaf,fsevelaf,vol);
     }
 
     // get reaction coefficient due to porosity for topology optimization
@@ -873,14 +876,18 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     if (fldpara_->TauGp())
       CalcStabParameter(vol);
 
-    // potential evaluation of coefficient of multifractal subgrid-scales at integarion point
+    // potential evaluation of coefficient of multifractal subgrid-scales at integration point
     if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
     {
       if (fldpara_->BGp())
       {
         // make sure to get material parameters at gauss point
         if (not fldpara_->MatGp())
-          GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+        {
+          // GetMaterialParams(material,evelaf,escaaf,escaam,escabofoaf,thermpressaf,thermpressam,thermpressdtaf,thermpressdtam);
+          // would overwrite materials at the element center, hence BGp() should always be combined with MatGp()
+          dserror("evaluation of B and D at gauss-point should always be combined with evaluation material at gauss-point!");
+        }
 
         // calculate parameters of multifractal subgrid-scales
         PrepareMultifractalSubgrScales(B_mfs, D_mfs, evelaf, fsevelaf, vol);
@@ -903,13 +910,18 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
       {
         mfssgscaint_ = D_mfs * funct_.Dot(fsescaaf);
         mfssgconv_c_.MultiplyTN(derxy_,mffsvelint_);
+        grad_fsscaaf_.Multiply(derxy_,fsescaaf);
+        for (int dim=0; dim<nsd_; dim++)
+            grad_fsscaaf_(dim,0) *= D_mfs;
       }
       else
       {
         mfssgscaint_ = 0.0;
         mfssgconv_c_.Clear();
+        grad_fsscaaf_.Clear();
       }
 
+      if (isale) dserror("Multifractal subgrid-scales with ale not supported");
     }
     else
     {
@@ -1528,7 +1540,6 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::BodyForce(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::EvalShapeFuncAndDerivsAtEleCenter(
-  const int  eleid
 )
 {
   // use one-point Gauss rule
@@ -1598,7 +1609,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::EvalShapeFuncAndDerivsAtEleCenter(
 
   // check for degenerated elements
   if (det_ < 1E-16)
-    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det_);
+    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eid_, det_);
 
   // compute integration factor
   fac_ = wquad*det_;
@@ -1624,8 +1635,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::EvalShapeFuncAndDerivsAtEleCenter(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalc<distype>::EvalShapeFuncAndDerivsAtIntPoint(
-    DRT::UTILS::GaussIntegration::iterator & iquad,  // actual integration point
-    const int                              eleid     // element ID
+    DRT::UTILS::GaussIntegration::iterator & iquad  // actual integration point
 )
 {
   // coordinates of the current integration point
@@ -1691,7 +1701,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   det_ = xji_.Invert(xjm_);
 
   if (det_ < 1E-16)
-    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det_);
+    dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eid_, det_);
 
   // compute integration factor
   fac_ = iquad.Weight()*det_;
@@ -3868,7 +3878,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ContStab(
   if (fldpara_->PhysicalType() == INPAR::FLUID::loma)
   {
     conti_stab_and_vol_visc_fac-=(2.0/3.0)*visceff_*timefacfac;
-    conti_stab_and_vol_visc_rhs+=(2.0/3.0)*rhsfac*(visceff_*vdiv_+q_sq_);
+    conti_stab_and_vol_visc_rhs+=(2.0/3.0)*rhsfac*visceff_*vdiv_;
+    // additional term q_sq_ for dynamics Smagorisnky only
+    if (fldpara_->TurbModAction()==INPAR::FLUID::dynamic_smagorinsky
+        or fldpara_->TurbModAction()==INPAR::FLUID::smagorinsky)
+      conti_stab_and_vol_visc_rhs+=(2.0/3.0)*rhsfac*q_sq_;
   }
 
   /* continuity stabilisation on left hand side */
@@ -4594,19 +4608,19 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
       }
     }
 
-    if (fldpara_->MultiFracLomaConti())
-    {
-      const double temp_mfs = rhsfac*scaconvfacaf_*mfssgscaint_;
-
-      for (int vi=0; vi<nen_; ++vi)
-      {
-        if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
-        {
-          preforce(vi) -= temp_mfs*conv_c_(vi); // second cross-stress term
-          preforce(vi) -= temp_mfs*mfssgconv_c_(vi); // Reynolds-stress term
-        }
-      }
-    }
+//    if (fldpara_->MultiFracLomaConti())
+//    {
+//      const double temp_mfs = rhsfac*scaconvfacaf_*mfssgscaint_;
+//
+//      for (int vi=0; vi<nen_; ++vi)
+//      {
+//        if (fldpara_->TurbModAction() == INPAR::FLUID::multifractal_subgrid_scales)
+//        {
+//          preforce(vi) -= temp_mfs*conv_c_(vi); // second cross-stress term
+//          preforce(vi) -= temp_mfs*mfssgconv_c_(vi); // Reynolds-stress term
+//        }
+//      }
+//    }
 
     if (fldpara_->ContiReynolds() != INPAR::FLUID::reynolds_stress_stab_none)
     {

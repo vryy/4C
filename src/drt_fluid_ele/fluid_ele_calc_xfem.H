@@ -298,7 +298,6 @@ private:
         const std::vector<DRT::UTILS::GaussIntegration> &                      intpoints,         ///< background element integration points
         std::string &                                                          VCellGaussPts,     ///< volumecell gaussian points method
         const GEO::CUT::plain_volumecell_set&                                  cells,             ///< volumecells in the present set
-        int                                                                    eid,               ///< element ID
         LINALG::Matrix<my::nsd_,my::nen_>&                                     evelaf,            ///< element velocity
         LINALG::Matrix<my::nen_,1>&                                            epreaf,            ///< element pressure
         LINALG::Matrix<my::nen_,my::nen_>&                                     bK_ss,             ///< block K_ss matrix

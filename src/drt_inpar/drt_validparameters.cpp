@@ -2476,72 +2476,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &fdyn);
 
- /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& andyn = list->sublist("ARTERIAL DYNAMIC",false,"");
-
-  setStringToIntegralParameter<int>("DYNAMICTYP","ExpTaylorGalerkin",
-                               "Explicit Taylor Galerkin Scheme",
-                               tuple<std::string>(
-                                 "ExpTaylorGalerkin"
-                                 ),
-                               tuple<int>(
-                                typ_tay_gal
-                                ),
-                               &andyn);
-
-  DoubleParameter("TIMESTEP",0.01,"Time increment dt",&andyn);
-  IntParameter("NUMSTEP",0,"Number of Time Steps",&andyn);
-  IntParameter("RESTARTEVRY",1,"Increment for writing restart",&andyn);
-  IntParameter("UPRES",1,"Increment for writing solution",&andyn);
-
-  // number of linear solver used for arterial dynamics
-  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for arterial dynamics",&andyn);
-
- /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& redtisdyn = list->sublist("COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC",false,"");
-  DoubleParameter("CONVTOL",1E-6,"Coupled red_airway and tissue iteration convergence",&redtisdyn);
-  IntParameter("MAXITER",5,"Maximum coupling iterations",&redtisdyn);
-  DoubleParameter("TIMESTEP",0.01,"Time increment dt",&redtisdyn);
-  IntParameter("NUMSTEP",1,"Number of Time Steps",&redtisdyn);
-  DoubleParameter("MAXTIME",4.0,"",&redtisdyn);
-
- /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& redawdyn = list->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC",false,"");
-
-  setStringToIntegralParameter<int>("DYNAMICTYP","CrankNicolson",
-                               "CrankNicolson Scheme",
-                               tuple<std::string>(
-                                 "CrankNicolson"
-                                 ),
-                               tuple<int>(
-                                typ_crank_nicolson
-                                ),
-                               &redawdyn);
-
-
-  setStringToIntegralParameter<int>("SOLVERTYPE","Linear",
-                               "Solver type",
-                               tuple<std::string>(
-                                 "Linear",
-                                 "Nonlinear"
-                                 ),
-                               tuple<int>(
-                                 linear,
-                                 nonlinear
-                                ),
-                               &redawdyn);
-
-  DoubleParameter("TIMESTEP",0.01,"Time increment dt",&redawdyn);
-  IntParameter("NUMSTEP",0,"Number of Time Steps",&redawdyn);
-  IntParameter("RESTARTEVRY",1,"Increment for writing restart",&redawdyn);
-  IntParameter("UPRES",1,"Increment for writing solution",&redawdyn);
-
-  IntParameter("MAXITERATIONS",1,"maximum iteration steps",&redawdyn);
-  DoubleParameter("TOLERANCE",1.0E-6,"tolerance",&redawdyn);
-
-  // number of linear solver used for reduced dimensional airways dynamic
-  IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for reduced dim arterial dynamics",&redawdyn);
-
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("STABILIZATION",false,"");
 
@@ -3000,7 +2934,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& fdyn_turbsgv = fdyn.sublist("SUBGRID VISCOSITY",false,"");
 
   DoubleParameter("C_SMAGORINSKY",0.0,"Constant for the Smagorinsky model. Something between 0.1 to 0.24",&fdyn_turbsgv);
+  DoubleParameter("C_YOSHIZAWA",-1.0,"Constant for the compressible Smagorinsky model: isotropic part of subgrid-stress tensor. About 0.09 or 0.0066. Ci will not be squared!",&fdyn_turbsgv);
   BoolParameter("C_SMAGORINSKY_AVERAGED","No","Flag to (de)activate averaged Smagorinksy constant",&fdyn_turbsgv);
+  BoolParameter("C_INCLUDE_CI","No","Flag to (de)inclusion of Yoshizawa model",&fdyn_turbsgv);
+  //remark: following Moin et al. 1991, the extension of the dynamic Smagorinsky model to compressibel flow
+  //        also contains a model for the isotropic part of the subgrid-stress tensor according to Yoshizawa 1989
+  //        although used in literature for turbulent variable-density flow at low Mach number, this additional term
+  //        seems to destabilize the simulation when the flow is only weakly compressible
+  //        therefore C_INCLUDE_CI allows to exclude this term
+  //        if C_SMAGORINSKY_AVERAGED == true
+  //           if C_INCLUDE_CI==true and C_YOSHIZAWA>=0.0 then the given value C_YOSHIZAWA is used
+  //           if C_INCLUDE_CI==true and C_YOSHIZAWA<0.0 then C_YOSHIZAWA is determined dynamically
+  //        else all values are taken from input
 
   DoubleParameter(
     "CHANNEL_L_TAU",
@@ -3129,6 +3074,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   BoolParameter("ADAPT_CSGS_PHI","No","Flag to (de)activate adaption of CsgsD to CsgsB.",&fdyn_turbmfs);
 
+  BoolParameter("NEAR_WALL_LIMIT_CSGS_PHI","No","Flag to (de)activate near-wall limit for scalar field.",&fdyn_turbmfs);
+
   DoubleParameter(
     "C_DIFF",
     1.0,
@@ -3216,6 +3163,72 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    IntParameter("INFLOW_SAMPLING_START",10000000,"Time step after when sampling shall be started",&fdyn_turbinf);
    IntParameter("INFLOW_SAMPLING_STOP",1,"Time step when sampling shall be stopped",&fdyn_turbinf);
    IntParameter("INFLOW_DUMPING_PERIOD",1,"Period of time steps after which statistical data shall be dumped",&fdyn_turbinf);
+
+   /*----------------------------------------------------------------------*/
+    Teuchos::ParameterList& andyn = list->sublist("ARTERIAL DYNAMIC",false,"");
+
+    setStringToIntegralParameter<int>("DYNAMICTYP","ExpTaylorGalerkin",
+                                 "Explicit Taylor Galerkin Scheme",
+                                 tuple<std::string>(
+                                   "ExpTaylorGalerkin"
+                                   ),
+                                 tuple<int>(
+                                  typ_tay_gal
+                                  ),
+                                 &andyn);
+
+    DoubleParameter("TIMESTEP",0.01,"Time increment dt",&andyn);
+    IntParameter("NUMSTEP",0,"Number of Time Steps",&andyn);
+    IntParameter("RESTARTEVRY",1,"Increment for writing restart",&andyn);
+    IntParameter("UPRES",1,"Increment for writing solution",&andyn);
+
+    // number of linear solver used for arterial dynamics
+    IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for arterial dynamics",&andyn);
+
+    /*----------------------------------------------------------------------*/
+     Teuchos::ParameterList& redtisdyn = list->sublist("COUPLED REDUCED-D AIRWAYS AND TISSUE DYNAMIC",false,"");
+     DoubleParameter("CONVTOL",1E-6,"Coupled red_airway and tissue iteration convergence",&redtisdyn);
+     IntParameter("MAXITER",5,"Maximum coupling iterations",&redtisdyn);
+     DoubleParameter("TIMESTEP",0.01,"Time increment dt",&redtisdyn);
+     IntParameter("NUMSTEP",1,"Number of Time Steps",&redtisdyn);
+     DoubleParameter("MAXTIME",4.0,"",&redtisdyn);
+
+    /*----------------------------------------------------------------------*/
+     Teuchos::ParameterList& redawdyn = list->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC",false,"");
+
+     setStringToIntegralParameter<int>("DYNAMICTYP","CrankNicolson",
+                                  "CrankNicolson Scheme",
+                                  tuple<std::string>(
+                                    "CrankNicolson"
+                                    ),
+                                  tuple<int>(
+                                   typ_crank_nicolson
+                                   ),
+                                  &redawdyn);
+
+
+     setStringToIntegralParameter<int>("SOLVERTYPE","Linear",
+                                  "Solver type",
+                                  tuple<std::string>(
+                                    "Linear",
+                                    "Nonlinear"
+                                    ),
+                                  tuple<int>(
+                                    linear,
+                                    nonlinear
+                                   ),
+                                  &redawdyn);
+
+     DoubleParameter("TIMESTEP",0.01,"Time increment dt",&redawdyn);
+     IntParameter("NUMSTEP",0,"Number of Time Steps",&redawdyn);
+     IntParameter("RESTARTEVRY",1,"Increment for writing restart",&redawdyn);
+     IntParameter("UPRES",1,"Increment for writing solution",&redawdyn);
+
+     IntParameter("MAXITERATIONS",1,"maximum iteration steps",&redawdyn);
+     DoubleParameter("TOLERANCE",1.0E-6,"tolerance",&redawdyn);
+
+     // number of linear solver used for reduced dimensional airways dynamic
+     IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for reduced dim arterial dynamics",&redawdyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& adyn = list->sublist("ALE DYNAMIC",false,"");
@@ -4126,9 +4139,15 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("MARKSTEIN_LENGTH",0.0,"The Markstein length takes flame curvature into account",&combustcontrolfluid);
   DoubleParameter("NITSCHE_VELOCITY",100.0,"Nitsche parameter to stabilize/penalize the velocity jump",&combustcontrolfluid);
   DoubleParameter("NITSCHE_PRESSURE",0.0,"Nitsche parameter to stabilize/penalize the pressure jump",&combustcontrolfluid);
-  setStringToIntegralParameter<int>("CONNECTED_INTERFACE","No","Turn refinement strategy for level set function on/off",
+  setStringToIntegralParameter<int>("NITSCHE_CONVFLUX","Yes","(De)activate Nitsche convective flux term",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
-  setStringToIntegralParameter<int>("SMOOTHED_BOUNDARY_INTEGRATION","No","Turn on/off type of boundary integration",
+  setStringToIntegralParameter<int>("NITSCHE_CONVSTAB","Yes","(De)activate Nitsche convective stabilization term",
+                                     yesnotuple,yesnovalue,&combustcontrolfluid);
+  setStringToIntegralParameter<int>("NITSCHE_CONVPENALTY","No","(De)activate Nitsche convective penalty term",
+                                     yesnotuple,yesnovalue,&combustcontrolfluid);
+  setStringToIntegralParameter<int>("CONNECTED_INTERFACE","No","laplace-beltrami surface-tension evaluation only: consider boundary integrals if interface is not closed",
+                                     yesnotuple,yesnovalue,&combustcontrolfluid);
+  setStringToIntegralParameter<int>("SMOOTHED_BOUNDARY_INTEGRATION","No","Turn on/off usage of smoothed normal vectors at interface",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);
   setStringToIntegralParameter<int>("INITSTATSOL","No","Compute stationary solution as initial solution",
                                      yesnotuple,yesnovalue,&combustcontrolfluid);

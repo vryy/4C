@@ -1069,7 +1069,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
   // adaption of CsgsD to resolution dependent CsgsB
   // when near-wall limit is used
   // -------------------------------------------------------------------
-  if (physicaltype_ == INPAR::FLUID::loma and turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
+  if ((physicaltype_ == INPAR::FLUID::loma or statisticsmanager_->WithScaTra()) and turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
     RecomputeMeanCsgsB();
 
   dtsolve_  = 0.0;
@@ -2047,7 +2047,7 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
   // adaption of CsgsD to resolution dependent CsgsB
   // when near-wall limit is used
   // -------------------------------------------------------------------
-  if (physicaltype_ == INPAR::FLUID::loma and turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
+  if ((physicaltype_ == INPAR::FLUID::loma or statisticsmanager_->WithScaTra()) and turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
     RecomputeMeanCsgsB();
 
   // -------------------------------------------------------------------
@@ -6449,6 +6449,21 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
         cout << "                             " ;
         cout << "with Smagorinsky constant Cs= ";
         cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_SMAGORINSKY") << "\n";
+        if (physicaltype_==INPAR::FLUID::loma)
+        {
+          if (DRT::INPUT::IntegralValue<int>(params_->sublist("SUBGRID VISCOSITY"),"C_INCLUDE_CI"))
+          {
+            if (params_->sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA")>0.0)
+            {
+              cout << "with Yoshizawa constant Ci= ";
+              cout << params_->sublist("SUBGRID VISCOSITY").get<double>("C_YOSHIZAWA") << "\n";
+            }
+            else
+              dserror("Ci expected!");
+          }
+          else
+            cout << "Yoshizawa constant Ci not included";
+        }
         cout << &endl;
       }
       else if(turbmodel_ == INPAR::FLUID::smagorinsky_with_van_Driest_damping)
@@ -6519,7 +6534,7 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
 //-------------------------------------------------------------------------
 void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
 {
-    if (DRT::INPUT::IntegralValue<int>(params_->sublist("MULTIFRACTAL SUBGRID SCALES"),"ADAPT_CSGS_PHI"))
+  if (DRT::INPUT::IntegralValue<int>(params_->sublist("MULTIFRACTAL SUBGRID SCALES"),"ADAPT_CSGS_PHI"))
   {
     // mean Cai
     double meanCai = 0.0;

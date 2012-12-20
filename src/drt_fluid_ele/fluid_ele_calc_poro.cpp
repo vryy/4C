@@ -227,9 +227,11 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype, my::nsd_, LINALG::Matrix<my::nsd_, my::nen_> >(
       ele, my::xyze_);
+  // set element id
+  my::eid_ = ele->Id();
 
   // call inner evaluate (does not know about DRT element or discretization object)
-  int result = Evaluate(ele->Id(), params, ebofoaf, elemat1, elemat2,
+  int result = Evaluate( params, ebofoaf, elemat1, elemat2,
       elevec1, evelaf, epreaf, evelnp, eprenp, emhist, epren, epressn_timederiv, epressnp_timederiv,
       eaccam, edispnp, edispn, egridv, mat, ele->IsAle(), intpoints);
 
@@ -340,9 +342,10 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
   GEO::fillInitialPositionArray<distype, my::nsd_, LINALG::Matrix<my::nsd_, my::nen_> >(
       ele, my::xyze_);
 
+  // set element id
+  my::eid_ = ele->Id();
   // call inner evaluate (does not know about DRT element or discretization object)
-  int result = EvaluateOD(ele->Id(),
-      params,
+  int result = EvaluateOD(params,
       ebofoaf,
       elemat1,
       elevec1,
@@ -370,7 +373,6 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
-  int                                                             eid,
   Teuchos::ParameterList&                                         params,
   const LINALG::Matrix<my::nsd_,my::nen_> &                       ebofoaf,
   LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_> &   elemat1,
@@ -408,8 +410,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
-  Sysmat(eid,
-       ebofoaf,
+  Sysmat(ebofoaf,
        evelaf,
        evelnp,
        epreaf,
@@ -440,7 +441,6 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
-    int eid,
     Teuchos::ParameterList&                                           params,
     const LINALG::Matrix<my::nsd_, my::nen_> &                        ebofoaf,
     LINALG::Matrix<(my::nsd_ + 1) * my::nen_, my::nsd_ * my::nen_> &  elemat1,
@@ -475,8 +475,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
     // ---------------------------------------------------------------------
     // call routine for calculating element matrix and right hand side
     // ---------------------------------------------------------------------
-    SysmatOD(eid,
-        ebofoaf,
+    SysmatOD(ebofoaf,
         evelaf,
         evelnp,
         epreaf,
@@ -503,7 +502,6 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
-  int                                                           eid,
   const LINALG::Matrix<my::nsd_,my::nen_>&                      ebofoaf,
   const LINALG::Matrix<my::nsd_,my::nen_>&                      evelaf,
   const LINALG::Matrix<my::nsd_,my::nen_>&                      evelnp,
@@ -554,7 +552,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
   // and/or stabilization parameters at element center
   //------------------------------------------------------------------------
   // evaluate shape functions and derivatives at element center
-  my::EvalShapeFuncAndDerivsAtEleCenter(eid);
+  my::EvalShapeFuncAndDerivsAtEleCenter();
 
   // set element area or volume
   const double vol = my::fac_;
@@ -563,9 +561,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
   RCP<DRT::Discretization> structdis = Teuchos::null;
   structdis = DRT::Problem::Instance()->GetDis("structure");
   //get corresponding structure element (it has the same global ID as the fluid element)
-  DRT::Element* structele = structdis->gElement(eid);
+  DRT::Element* structele = structdis->gElement(my::eid_);
   if(structele == NULL)
-    dserror("Fluid element %i not on local processor", eid);
+    dserror("Fluid element %i not on local processor", my::eid_);
   //get fluid material
   MAT::StructPoro* structmat = static_cast<MAT::StructPoro*>((structele->Material()).get());
   if(structmat->MaterialType() != INPAR::MAT::m_structporo)
@@ -623,7 +621,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
 
     if(my::is_higher_order_ele_)
     {
@@ -1819,7 +1817,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
-    int                                                             eid,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       ebofoaf,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,
@@ -1862,7 +1859,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
   // and/or stabilization parameters at element center
   //------------------------------------------------------------------------
   // evaluate shape functions and derivatives at element center
-  my::EvalShapeFuncAndDerivsAtEleCenter(eid);
+  my::EvalShapeFuncAndDerivsAtEleCenter();
 
   //------------------------------------------------------------------------
   //  start loop over integration points
@@ -1873,7 +1870,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
   {
 
     // evaluate shape functions and derivatives at integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
 
     //------------------------get determinant of Jacobian dX / ds
     // transposed jacobian "dX/ds"
@@ -2041,9 +2038,9 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
     RCP<DRT::Discretization> structdis = Teuchos::null;
     structdis = DRT::Problem::Instance()->GetDis("structure");
     //get corresponding structure element (it has the same global ID as the fluid element)
-    DRT::Element* structele = structdis->gElement(eid);
+    DRT::Element* structele = structdis->gElement(my::eid_);
     if(structele == NULL)
-      dserror("Structure element %i not on local processor", eid);
+      dserror("Structure element %i not on local processor", my::eid_);
     //get structure material
     const MAT::StructPoro* structmat = static_cast<const MAT::StructPoro*>((structele->Material()).get());
 

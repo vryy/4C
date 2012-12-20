@@ -215,6 +215,9 @@ int FluidEleCalcXFEM<distype>::ComputeError(
 
   const double t = my::fldpara_->Time();
 
+  //set element id
+  my::eid_ = ele->Id();
+
 
   //----------------------------------------------------------------------------
   //   Extract velocity/pressure from global vectors
@@ -262,7 +265,7 @@ int FluidEleCalcXFEM<distype>::ComputeError(
   for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(iquad,ele->Id());
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
 
     // get velocity at integration point
     // (values at n+alpha_F for generalized-alpha scheme, n+1 otherwise)
@@ -1519,7 +1522,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
   LINALG::Matrix<my::nen_,1> epreaf(true);
   my::ExtractValuesFromGlobalVector(dis, lm, *my::rotsymmpbc_, &evelaf, &epreaf, "velaf");
 
-  int eid = ele->Id();
+  my::eid_ = ele->Id();
 
   //--------------------------------------------
 
@@ -1553,7 +1556,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
 
   INPAR::XFEM::MSH_L2_Proj msh_l2_proj =  params.get<INPAR::XFEM::MSH_L2_Proj>("msh_l2_proj");
 
-  MSH_Build_K_Matrices(msh_l2_proj, intpoints, VCellGaussPts, cells, eid, evelaf, epreaf, bK_ss, invbK_ss, K_su,rhs);
+  MSH_Build_K_Matrices(msh_l2_proj, intpoints, VCellGaussPts, cells, evelaf, epreaf, bK_ss, invbK_ss, K_su,rhs);
 
 
   //----------------------------------------------------------------------------
@@ -2132,7 +2135,6 @@ void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
     const std::vector<DRT::UTILS::GaussIntegration> &                      intpoints,     ///< background element integration points
     std::string &                                                          VCellGaussPts, ///< volumecell gaussian points method
     const GEO::CUT::plain_volumecell_set&                                  cells,         ///< volumecells in the present set
-    int                                                                    eid,           ///< element ID
     LINALG::Matrix<my::nsd_,my::nen_>&                                     evelaf,        ///< element velocity
     LINALG::Matrix<my::nen_,1>&                                            epreaf,        ///< element pressure
     LINALG::Matrix<my::nen_,my::nen_>&                                     bK_ss,         ///< block K_ss matrix
@@ -2150,7 +2152,7 @@ void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
     for ( DRT::UTILS::GaussIntegration::iterator iquad=my::intpoints_.begin(); iquad!=my::intpoints_.end(); ++iquad )
     {
       // evaluate shape functions and derivatives at integration point
-      my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+      my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
       MSH_EvaluateMatrices(evelaf,epreaf,bK_ss,invbK_ss,K_su,rhs);
     }
   }
@@ -2164,7 +2166,7 @@ void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
         for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
         {
           // evaluate shape functions and derivatives at integration point
-          my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+          my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
           MSH_EvaluateMatrices(evelaf,epreaf,bK_ss,invbK_ss,K_su,rhs);
         }
       }
@@ -2194,11 +2196,11 @@ void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
           //----------------------------------------------------------------------
           for ( DRT::UTILS::GaussIntegration::iterator quadint=gint.begin(); quadint!=gint.end(); ++quadint )
           {
-            my::EvalShapeFuncAndDerivsAtIntPoint( quadint, eid );
+            my::EvalShapeFuncAndDerivsAtIntPoint( quadint );
             MSH_EvaluateMatrices( evelaf, epreaf, bK_ss, invbK_ssTemp, K_suTemp, rhsTemp );
           }
 
-          my::EvalShapeFuncAndDerivsAtIntPoint( iquad, eid );
+          my::EvalShapeFuncAndDerivsAtIntPoint( iquad );
           bK_ss.MultiplyNT( my::funct_, my::funct_ );
 
           invbK_ss.Update( iquad.Weight(), invbK_ssTemp, 1.0 );
@@ -3861,7 +3863,7 @@ void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
 {
   LINALG::Matrix<(my::nsd_+1)*my::nen_,1> elevec1(elevec1_epetra,true);
   LINALG::Matrix<my::nsd_+1,my::nen_>    tmpvel;
-  int eid = ele->Id();
+  my::eid_ = ele->Id();
 
   // get node coordinates and number of elements per node
   GEO::fillInitialPositionArray<distype,my::nsd_,LINALG::Matrix<my::nsd_,my::nen_> >(ele,my::xyze_);
@@ -3872,7 +3874,7 @@ void FluidEleCalcXFEM<distype>::CalculateContinuityXFEM(
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
-    my::EvalShapeFuncAndDerivsAtIntPoint(iquad,eid);
+    my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
 
      // Summe über alle Knoten
      for(int ui=0; ui<my::nen_; ++ui)

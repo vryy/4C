@@ -231,8 +231,7 @@ namespace ELEMENTS
     /*!
       \brief finite difference check for debugging
     */
-    virtual void FDcheck(int                                                 eid,
-                         const LINALG::Matrix<nsd_,nen_>&                    evelaf,
+    virtual void FDcheck(const LINALG::Matrix<nsd_,nen_>&                    evelaf,
                          const LINALG::Matrix<nsd_,nen_>&                    eveln,
                          const LINALG::Matrix<nsd_,nen_>&                    fsevelaf,
                          const LINALG::Matrix<nen_,1>&                       epreaf,
@@ -326,8 +325,7 @@ namespace ELEMENTS
       Specific evaluate function without any knowledge about DRT objects. This
       way the element evaluation is independent of the specific mesh storage.
      */
-    virtual int Evaluate(int                                           eid,
-                         Teuchos::ParameterList&                       params,
+    virtual int Evaluate(Teuchos::ParameterList&                       params,
                          const LINALG::Matrix<nsd_,nen_> &             ebofoaf,
                          const LINALG::Matrix<nsd_,nen_> &             eprescpgaf,
                          LINALG::Matrix<(nsd_+1)*nen_,(nsd_+1)*nen_> & elemat1,
@@ -365,7 +363,6 @@ namespace ELEMENTS
     /*!
       \brief calculate element matrix and rhs
 
-      \param eid              (i) element id
       \param ebofoaf          (i) body force at n+alpha_F/n+1
       \param eprescpgaf       (i) prescribed pressure gradient at n+alpha_F/n+1 (required for turbulent channel flow)
       \param evelaf           (i) nodal velocities at n+alpha_F/n+1
@@ -395,8 +392,7 @@ namespace ELEMENTS
       \param intpoints        (i) Gaussian integration points
 
       */
-    virtual void Sysmat(int                                           eid,
-                        const LINALG::Matrix<nsd_,nen_> &             ebofoaf,
+    virtual void Sysmat(const LINALG::Matrix<nsd_,nen_> &             ebofoaf,
                         const LINALG::Matrix<nsd_,nen_> &             eprescpgaf,
                         const LINALG::Matrix<nsd_,nen_>&              evelaf,
                         const LINALG::Matrix<nsd_,nen_>&              eveln,
@@ -451,12 +447,10 @@ namespace ELEMENTS
                    );
 
     //! evaluate shape functions and their derivatives at element center
-    void EvalShapeFuncAndDerivsAtEleCenter(const int  eleid  ///< element ID
-                                           );
+    void EvalShapeFuncAndDerivsAtEleCenter();
 
     //! brief evaluate shape functions and their derivatives at integration point
-    void EvalShapeFuncAndDerivsAtIntPoint(DRT::UTILS::GaussIntegration::iterator & iquad,    ///< actual integration point
-                                          const int                                eleid     ///< element ID
+    void EvalShapeFuncAndDerivsAtIntPoint(DRT::UTILS::GaussIntegration::iterator & iquad    ///< actual integration point
                                           );
 
 
@@ -683,17 +677,14 @@ namespace ELEMENTS
      //! calculate (all-scale) subgrid viscosity
      void CalcSubgrVisc(const LINALG::Matrix<nsd_,nen_>&  evelaf,        ///< velocity at time n+alpha_f / n+1
                         const double                      vol,           ///< volume
-                        double&                           Cs,            ///< parameter CS in constant Smagorinsky
                         double&                           Cs_delta_sq,   ///< parameter CS in dynamic Smagorinsky
-                        double&                           Ci_delta_sq,   ///< parameter CS in dynamic Smagorinsky for loma
-                        double&                           l_tau          ///< channel length to normalize the normal wall distance
+                        double&                           Ci_delta_sq    ///< parameter CS in dynamic Smagorinsky for loma
                         );
 
      //! calculate fine-scale subgrid viscosity
      void CalcFineScaleSubgrVisc(const LINALG::Matrix<nsd_,nen_>&  evelaf,    ///< velocity at time n+alpha_f / n+1
                                  const LINALG::Matrix<nsd_,nen_>&  fsevelaf,  ///< fine scale velocity at time n+alpha_f / n+1
-                                 const double                      vol,       ///< volume
-                                 double&                           Cs         ///< parameter CS in constant Smagorinsky
+                                 const double                      vol        ///< volume
                                  );
 
      //! get coefficient for multifractal subgrid scales (velocity)
@@ -709,6 +700,7 @@ namespace ELEMENTS
        const double          Csgs, ///< model coefficient
        const double          alpha,///< model coefficient
        const double          Pr,   ///< Prandtl number
+       const double          Pr_limit,///< Prandtl number to distinguish between low and high Prandtl number regime
        const std::vector<double>  Nvel, ///< number of casacade steps (velocity)
        double                Nphi, ///< number of casacade steps (scalar)
        double&               D_mfs ///< final coefficient
@@ -880,7 +872,6 @@ namespace ELEMENTS
     void StoreModelParametersForOutput(const double Cs_delta_sq,
                                        const double Ci_delta_sq,
                                        const int    nlayer,
-                                       const int    eid,
                                        const bool   isowned,
                                        Teuchos::ParameterList&  turbmodelparams);
 
@@ -893,6 +884,9 @@ namespace ELEMENTS
                                        LINALG::Matrix<nsd_,nen_> *                      matrixtofill,   ///< vector field
                                        LINALG::Matrix<nen_,1> *                         vectortofill,   ///< scalar field
                                        const std::string                                state);          ///< state of the global vector
+
+    //! identify elements of inflow section
+    void InflowElement(DRT::Element* ele);
 
     //FLD::RotationallySymmetricPeriodicBC<distype> & rotsymmpbc, ///<
 //    {
@@ -927,6 +921,8 @@ namespace ELEMENTS
 
     //! for the handling of rotationally symmetric periodic boundary conditions
     Teuchos::RCP<FLD::RotationallySymmetricPeriodicBC<distype> > rotsymmpbc_;
+    //! element id
+    int eid_;
     //! Flag to (de)activate higher order elements
     //! elements with only mixed second order derivatives are not counted as higher order elements
     //! (see definition of higher order elements in fluid3_ele_impl_utils.cpp)
@@ -941,6 +937,9 @@ namespace ELEMENTS
     std::vector<Epetra_SerialDenseVector> myknots_;
     //!Gaussian integration points
     DRT::UTILS::GaussIntegration intpoints_;
+    //! identify elements of inflow section
+    //! required for turbulence modeling
+    bool is_inflow_ele_;
 
     //! node coordinates
     LINALG::Matrix<nsd_,nen_> xyze_;
@@ -1095,6 +1094,9 @@ namespace ELEMENTS
     double q_sq_;
     //! multifractal subgrid-scale part of scalar at integration point
     double mfssgscaint_;
+    //! gradient of multifractal subgrid-scale scalar (for loma)
+    LINALG::Matrix<nsd_,1> grad_fsscaaf_;
+
     //! norm of velocity at integration point at time t^{n+1}
     double vel_normnp_;
     //! time-dependent subgrid-scales (pointer to element-specific data)

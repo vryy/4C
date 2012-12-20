@@ -365,6 +365,7 @@ private:
   string                       special_flow_homdir_;
   bool                         apply_dynamic_smagorinsky_;
   bool                         apply_box_filter_;
+  bool                         calc_Ci_;
   //@}
 
   //! @name special scatra variables

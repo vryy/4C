@@ -76,8 +76,7 @@ class FluidEleCalcLoma : public FluidEleCalc<distype>
       Specific evaluate function without any knowledge about DRT objects. This
       way the element evaluation is independent of the specific mesh storage.
      */
-    int EvaluateOD(int                                  eid,
-                                Teuchos::ParameterList&              params,
+    int EvaluateOD(Teuchos::ParameterList&              params,
                                 const LINALG::Matrix<my::nsd_,my::nen_> &    ebofoaf,
                                 const LINALG::Matrix<my::nsd_,my::nen_> &    eprescpgaf,
                                 LINALG::Matrix<(my::nsd_+1)*my::nen_,my::nen_> & elemat1,
@@ -101,7 +100,6 @@ class FluidEleCalcLoma : public FluidEleCalc<distype>
     /*!
       \brief calculate element matrix for off-diagonal matrix block for monolithic low-Mach-number solver
 
-      \param eid              (i) element id
       \param ebofoaf          (i) body force at n+alpha_F/n+1
       \param eprescpgaf       (i) prescribed pressure gradient at n+alpha_F/n+1 (required for turbulent channel flow)
       \param evelaf           (i) nodal velocities at n+alpha_F/n+1
@@ -123,8 +121,7 @@ class FluidEleCalcLoma : public FluidEleCalc<distype>
       \param intpoints        (i) Gaussian integration points
 
       */
-    void SysmatOD(int                                  eid,
-                               const LINALG::Matrix<my::nsd_,my::nen_> &    ebofoaf,
+    void SysmatOD(const LINALG::Matrix<my::nsd_,my::nen_> &    ebofoaf,
                                const LINALG::Matrix<my::nsd_,my::nen_> &    eprescpgaf,
                                const LINALG::Matrix<my::nsd_,my::nen_>&     evelaf,
                                const LINALG::Matrix<my::nsd_,my::nen_>&     eveln,
