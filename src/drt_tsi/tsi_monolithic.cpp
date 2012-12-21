@@ -804,6 +804,7 @@ void TSI::Monolithic::SetupSystemMatrix()
   // call the element and calculate the matrix block
 #if !defined(MonTSIwithoutSTR) && !defined(COUPLEINITTEMPERATURE)
   ApplyThrCouplMatrix(k_ts);
+  ApplyThrCouplMatrix_ConvBC(k_ts);
 #endif
 
   // modify towards contact
@@ -1343,6 +1344,102 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   // evaluate the thermal-mechancial system matrix on the thermal element
   ThermoField()->Discretization()->Evaluate(tparams,thermostrategy);
   ThermoField()->Discretization()->ClearState();
+
+}  // ApplyThrCouplMatrix()
+
+
+/*----------------------------------------------------------------------*
+ | evaluate thermal-mechanical system matrix at state        dano 12/12 |
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::ApplyThrCouplMatrix_ConvBC(
+  Teuchos::RCP<LINALG::SparseMatrix> k_ts  //!< off-diagonal tangent matrix term
+  )
+{
+#ifndef TFSI
+  if ( Comm().MyPID()==0 )
+    std::cout << " TSI::Monolithic::ApplyThrCouplMatrix_ConvBC()" <<  std::endl;
+#endif
+
+  std::vector<DRT::Condition*> cond;
+  std::string condstring("ThermoConvections");
+  ThermoField()->Discretization()->GetCondition(condstring,cond);
+  if (cond.size()>0)
+  {
+    // create the parameters for the discretization
+    Teuchos::ParameterList tparams;
+    // action for elements
+    const std::string action = "calc_thermo_fextconvection_coupltang";
+    tparams.set("action", action);
+    // other parameters that might be needed by the elements
+    tparams.set("delta time", Dt());
+    tparams.set("total time", Time());
+    // create specific time integrator
+    const Teuchos::ParameterList& tdyn
+      = DRT::Problem::Instance()->ThermalDynamicParams();
+    tparams.set<int>(
+      "time integrator",
+      DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn,"DYNAMICTYP")
+      );
+    tparams.set<int>("structural time integrator",strmethodname_);
+    switch (DRT::INPUT::IntegralValue<INPAR::THR::DynamicType>(tdyn, "DYNAMICTYP"))
+    {
+      // static analysis
+      case INPAR::THR::dyna_statics :
+      {
+        break;
+      }
+      // dynamic analysis
+      case INPAR::THR::dyna_onesteptheta :
+      {
+        // K_Td = theta . k_Td^e
+        double theta_ = tdyn.sublist("ONESTEPTHETA").get<double>("THETA");
+        tparams.set("theta",theta_);
+        // put the structural theta value to the thermal parameter list
+        double str_theta_ = sdyn_.sublist("ONESTEPTHETA").get<double>("THETA");
+        tparams.set("str_THETA", str_theta_);
+        break;
+      }
+      case INPAR::THR::dyna_genalpha :
+      {
+        // put the structural theta value to the thermal parameter list
+        double str_beta_ = sdyn_.sublist("GENALPHA").get<double>("BETA");
+        double str_gamma_ = sdyn_.sublist("GENALPHA").get<double>("GAMMA");
+        tparams.set("str_BETA", str_beta_);
+        tparams.set("str_GAMMA", str_gamma_);
+
+        dserror("Genalpha not yet implemented");
+        break;
+      }
+      case INPAR::THR::dyna_undefined :
+      default :
+      {
+        dserror("Don't know what to do...");
+        break;
+      }
+    }
+
+    ThermoField()->Discretization()->ClearState();
+    // set the variables that are needed by the elements
+    ThermoField()->Discretization()->SetState(0,"temperature",ThermoField()->Tempnp());
+    ThermoField()->Discretization()->SetState(1,"displacement",StructureField()->Dispnp());
+
+    // build specific assemble strategy for the thermal-mechanical system matrix
+    // from the point of view of ThermoField:
+    // thermdofset = 0, structdofset = 1
+    DRT::AssembleStrategy thermostrategy(
+                            0,  // thermdofset for row
+                            1,  // structdofset for column
+                            k_ts,  // thermal-mechancial matrix
+                            Teuchos::null,  // no other matrix or vectors
+                            Teuchos::null,
+                            Teuchos::null,
+                            Teuchos::null
+                            );
+    // evaluate the thermal-mechancial system matrix on the thermal element
+    ThermoField()->Discretization()->EvaluateCondition(tparams,thermostrategy,condstring);
+    ThermoField()->Discretization()->ClearState();
+
+  }  // constring
 
 }  // ApplyThrCouplMatrix()
 

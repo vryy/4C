@@ -174,6 +174,11 @@ namespace TSI
       Teuchos::RCP<LINALG::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
       );
 
+    //! Evaluate thermal-mechanical system matrix for geonln + heat convection BC
+    void ApplyThrCouplMatrix_ConvBC(
+      Teuchos::RCP<LINALG::SparseMatrix> k_ts  //!< thermal-mechanical tangent matrix
+      );
+
     //@}
 
     //! evaluate all fields at x^n+1 with x^n+1 = x_n + stepinc

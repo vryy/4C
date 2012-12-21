@@ -2,7 +2,7 @@
 /*!
 \file thermo_ele_boundary_impl.H
 
-\brief Internal implementation of thermo boundary elements
+\brief internal implementation of thermo boundary elements
 
 <pre>
 Maintainer: Caroline Danowski
@@ -162,39 +162,84 @@ namespace ELEMENTS
 
     //! evaluate shape functions and derivatives at int. point
     void EvalShapeFuncAndIntFac(
-      const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  ///< integration points
-      const int& iquad, ///< id of current Gauss point
-      const int& eleid ///< the element id
+      const DRT::UTILS::IntPointsAndWeights<nsd_>& intpoints,  //!< integration points
+      const int& iquad, //!< id of current Gauss point
+      const int& eleid //!< the element id
       );
 
     //! integral of shape functions over boundary surface
     void IntegrateShapeFunctions(
-      const DRT::Element* ele,    ///< the actual boundary element
-      Teuchos::ParameterList& params, ///< the parameter list
-      Epetra_SerialDenseVector& elevec1,///< result vector (to be assembled)
-      const bool addarea ///< flag for area calculation
+      const DRT::Element* ele,    //!< the actual boundary element
+      Teuchos::ParameterList& params, //!< the parameter list
+      Epetra_SerialDenseVector& elevec1,//!< result vector (to be assembled)
+      const bool addarea //!< flag for area calculation
       );
 
     //! Compute a constant normal vector for a boundary element
     void GetConstNormal(
-      LINALG::Matrix<nsd_+1,1>& normal, ///< the constant normal vector
-      const LINALG::Matrix<nsd_+1,nen_>& xyze    ///< element node coordinates
+      LINALG::Matrix<nsd_+1,1>& normal, //!< the constant normal vector
+      const LINALG::Matrix<nsd_+1,nen_>& xyze    //!< element node coordinates
       );
 
-    //! evaluate an electrode kinetics boundary condition
+    // evaluate a Neumann boundary condition
+    // this method evaluates normal and detA at gaussian point
+    // deriv (in)  : derivatives of shape functions
+    void SurfaceIntegration(
+      double& detA,  //!< area at GP
+      LINALG::Matrix<nsd_+1,1>& normal,  //!< (o) normal at gaussian point, length is detA!
+      const LINALG::Matrix<nen_,nsd_+1>& xcurr  //!< (i)current coordinates of nodes
+                                                //!< nodal coords in either material or spatial frame
+      );
+
+    /*!
+    \brief Submethod to compute interfacial area and its first and second
+           derivatives w.r.t. the displacements (this is needed for surface energy problems)
+    */
+    void ComputeAreaDeriv
+    (
+      const LINALG::Matrix<nen_,nsd_>& x, ///< spatial configuration
+      const int numnode, ///< number of nodes
+      const int ndof,  ///< number of degrees of freedom
+      double& A,  ///< area
+      Teuchos::RCP<Epetra_SerialDenseVector> Adiff, ///< first derivative
+      Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2 ///< second derivative
+    );
+
+    //! evaluate a heat convection boundary condition
     //!
     //! This is a non-linear heat load type, due to its dependence on the
     //! current heat state (follower load-like).
     //! Using the current temperature solution requires the linearisation.
-    void EvaluateThermoConvection(
-      const DRT::Element* ele,  ///< the actual boundary element
-      LINALG::Matrix<nen_,nen_>* etang,  // view only!
-                                         ///< tangent of the thermal problem
+    void CalculateConvectionFintCond(
+      const DRT::Element* ele,  //!< the actual boundary element
+      LINALG::Matrix<nen_,nen_>* econd,  // view only!
+                                         //!< tangent of the thermal problem
       LINALG::Matrix<nen_,1>* efext,  // view only!
-                                     ///< heat flux to be applied
-      const double coeff,  ///< heat transfer coefficient
-      const double surtemp,  ///< surrounding temperature
-      const std::string tempstate  ///< desired temperature state
+                                     //!< heat flux to be applied
+      const double coeff,  //!< heat transfer coefficient
+      const double surtemp,  //!< surrounding temperature
+      const std::string tempstate  //!< desired temperature state
+      );
+
+    //! evaluate a geometrically nonlinear heat convection boundary condition
+    //!
+    //! This is a non-linear heat load type, due to its dependence on the
+    //! current heat AND the current deformation state (follower load-like).
+    //!
+    //! Using the current temperature solution T_{n+1} requires the linearisation.
+    //! In addition: using the current displacements u_{n+1} requires linearisation
+    void CalculateNlnConvectionFintCond(
+      DRT::Element* ele,  //!< the actual boundary element
+      std::vector<double>& disp,  //!< current displacements d_{n+1}
+      LINALG::Matrix<nen_,nen_>* econd,  // view only!
+                                         //!< tangent of the thermal problem k_TT
+      LINALG::Matrix<nen_,(nsd_+1)*nen_>* etangcoupl,  // view only!
+                                                   //!< coupling tangent k_Td
+      LINALG::Matrix<nen_,1>* efext,  // view only!
+                                     //!< heat flux to be applied
+      const double coeff,  //!< heat transfer coefficient
+      const double surtemp,  //!< surrounding temperature
+      const std::string tempstate  //!< desired temperature state
       );
 
     //! actual values of temperatures

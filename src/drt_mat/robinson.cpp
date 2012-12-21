@@ -1351,7 +1351,7 @@ void MAT::Robinson::CalcBEBackStressFlow(
 
 /*----------------------------------------------------------------------*
  | return temperature-dependent material parameter           dano 02/12 |
- | at current temperature --> polynomial type                              |
+ | at current temperature --> polynomial type                           |
  *----------------------------------------------------------------------*/
 double MAT::Robinson::GetMatParameterAtTempnp(
   const std::vector<double>* paramvector,  // (i) given parameter is a vector

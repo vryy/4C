@@ -1609,7 +1609,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
-  // now get current element displacements
+  // now get current element displacements and velocities
   LINALG::Matrix<nen_*nsd_,1> edisp;
   LINALG::Matrix<nen_*nsd_,1> evel;
   for (int i=0; i<nen_*nsd_; i++)
@@ -2030,7 +2030,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplCond(
   // get node coordinates
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,nen_> >(ele,xyze_);
 
-  // now get current element displacements
+  // now get current element displacements and velocities
   LINALG::Matrix<nen_*nsd_,1> edisp;
   LINALG::Matrix<nen_*nsd_,1> evel;
   for (int i=0; i<nen_*nsd_; i++)
