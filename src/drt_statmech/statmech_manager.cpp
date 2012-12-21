@@ -3480,6 +3480,10 @@ void STATMECH::StatMechManager::CrosslinkerDiffusion(const Epetra_MultiVector& b
    * Depending on the number of occupied binding spots of the molecule, its motion
    * is calculated differently.
    */
+#ifdef DEBUGCOUT
+  Teuchos::RCP<Epetra_MultiVector> crosslinkerdeltatrans = Teuchos::rcp(new Epetra_MultiVector(*transfermap_, 3, true));
+#endif
+
   Teuchos::RCP<Epetra_MultiVector> crosslinkerpositionstrans = Teuchos::rcp(new Epetra_MultiVector(*transfermap_, 3, true));
   CommunicateMultiVector(crosslinkerpositionstrans, crosslinkerpositions_, true, false,true);
 
@@ -3492,7 +3496,12 @@ void STATMECH::StatMechManager::CrosslinkerDiffusion(const Epetra_MultiVector& b
       // bonding case 1:  no bonds, diffusion
       case 0:
         for (int j=0; j<crosslinkerpositionstrans->NumVectors(); j++)
+        {
           (*crosslinkerpositionstrans)[j][i] += standarddev*(*normalgen_)() + mean;
+#ifdef DEBUGCOUT
+          (*crosslinkerdeltatrans)[j][i] = standarddev*(*normalgen_)() + mean;
+#endif
+        }
       break;
       // bonding case 2: crosslink molecule attached to one filament
       case 1:
@@ -3521,20 +3530,35 @@ void STATMECH::StatMechManager::CrosslinkerDiffusion(const Epetra_MultiVector& b
   if (periodlength_->at(0) > 0.0)
     CrosslinkerPeriodicBoundaryShift(crosslinkerpositionstrans);
 
-  for(int i=0; i<crosslinkerpositionstrans->NumVectors(); i++)
-    for(int j=0; j<crosslinkerpositionstrans->MyLength(); j++)
-      if((*crosslinkerpositionstrans)[i][j]>periodlength_->at(i) ||(*crosslinkerpositionstrans)[i][j]<0.0)
-      {
-        cout<<"Proc "<<discret_->Comm().MyPID()<<": "<<(*crosslinkerpositionstrans)[0][j]<<" "<<(*crosslinkerpositionstrans)[1][j]<<" "<<(*crosslinkerpositionstrans)[2][j]<<endl;
-        dserror("BOOOOOOOOOOOOOOOOOOOOOOOOOOM!");
-      }
-
   // Update by Broadcast: make this information redundant on all procs
   CommunicateMultiVector(crosslinkerpositionstrans, crosslinkerpositions_, false, true);
 
 #ifdef DEBUGCOUT
+  Teuchos::RCP<Epetra_MultiVector> crosslinkerdelta = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_, 3, true));
+  CommunicateMultiVector(crosslinkerdeltatrans, crosslinkerdelta, false,true);
+
+  for(int i=0; i<crosslinkerpositionstrans->NumVectors(); i++)
+    for(int j=0; j<crosslinkerpositionstrans->MyLength(); j++)
+      if((*crosslinkerpositionstrans)[i][j]>periodlength_->at(i) ||(*crosslinkerpositionstrans)[i][j]<0.0)
+        dserror("Crosslinker %i outside of the periodic box: %d, %d, %d ", j, (*crosslinkerpositionstrans)[0][j], (*crosslinkerpositionstrans)[1][j], (*crosslinkerpositionstrans)[2][j]);
+
   if(!discret_->Comm().MyPID())
   {
+    // check increments of the stochastic process
+    std::stringstream crossposfile;
+    crossposfile<<"./crosspos.txt";
+    FILE* fpcross = NULL;
+    fpcross = fopen(crossposfile.str().c_str(), "w");
+
+    std::stringstream crosspos;
+    for(int i=0; i<crosslinkerdelta->NumVectors(); i++)
+      for(int j=0; j<crosslinkerdelta->MyLength(); j++)
+        crosspos<<(*crosslinkerdelta)[i][j]<<" "<<(*crosslinkerdelta)[i][j]<<" "<<(*crosslinkerdelta)[i][j]<<endl;
+    // move temporary stringstream to file and close it
+    fprintf(fpcross, crosspos.str().c_str());
+    fclose(fpcross);
+
+    // check paths of the stochastic process
     if(crosslinkerpositions_->MyLength()>1)
       dserror("Check only for a single crosslink molecule!");
     std::ostringstream filename;
@@ -3810,7 +3834,8 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
             pos[l+3]= tmpnode->X()[l];
 
           if(j==1)
-          { for(int l=0;l<3;l++)
+          {
+            for(int l=0;l<3;l++)
              pos[l]= node0->X()[l];
           }
           //shift position in case of breakage due to Periodic Boundary
@@ -3978,6 +4003,8 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
       for(int i=0; i<(int)bspotonproc.size(); i++)
         if(bspotonproc[i]==1)
           bspotrowgids.push_back(i);  // note: since column map is fully overlapping: i=col. LID = GID
+
+      cout<<"bspotgids.size() = "<<bspotgids.size()<<", bspotrowgids.size() = "<<bspotrowgids.size()<<", bspotrowgids[0] = "<<bspotrowgids[0]<<endl;
 
       bspotrowmap_ = rcp(new Epetra_Map((int)bspotgids.size(), (int)bspotrowgids.size(), &bspotrowgids[0], 0, discret_->Comm()));
 
