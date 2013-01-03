@@ -64,12 +64,13 @@ TSI::Monolithic::Monolithic(
   solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams,"ADAPTCONV")==1),
   solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
   printiter_(true),  // ADD INPUT PARAMETER
-  printerrfile_(true and errfile_),  // ADD INPUT PARAMETER FOR 'true'
+  printerrfile_(false),  // ADD INPUT PARAMETER FOR 'true'
   errfile_(NULL),
   zeros_(Teuchos::null),
   strmethodname_(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP")),
   blockrowdofmap_(Teuchos::null),
   systemmatrix_(Teuchos::null),
+  iter_(0),
   sdyn_(sdynparams),
   veln_(Teuchos::null)
 {
@@ -106,11 +107,9 @@ TSI::Monolithic::Monolithic(
       )
     dserror("same time integration scheme for STR and THR required for monolithic.");
 
-  // add extra parameters (a kind of work-around)
-  Teuchos::RCP<Teuchos::ParameterList> xparams
-    = Teuchos::rcp(new Teuchos::ParameterList());
-  xparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
-  errfile_ = xparams->get<FILE*>("err file");
+  errfile_ = DRT::Problem::Instance()->ErrorFile()->Handle();
+  if (errfile_)
+    printerrfile_ = true;
 
   blockrowdofmap_ = Teuchos::rcp(new LINALG::MultiMapExtractor);
 
