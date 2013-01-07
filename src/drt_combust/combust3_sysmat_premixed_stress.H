@@ -18,6 +18,7 @@ Maintainer: Florian Henke
 
 #include "combust3_interpolation.H"
 #include "combust_defines.H"
+#include "combust3_stabilization.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_geometry/position_array.H"
@@ -423,8 +424,8 @@ void SysmatDomainStress(
 //cout << "sigmaele_unknowns_present " << sigmaele_unknowns_present << endl;
 
   // stabilization parameter
-  const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
-  const double mk = FLD::UTILS::MK<DISTYPE>();
+  const double hk = COMBUST::UTILS::HK<DISTYPE>(evelnp,xyze);
+  const double mk = COMBUST::UTILS::MK<DISTYPE>();
 
   // get domain integration cells for this element
   const GEO::DomainIntCells&  domainIntCells(ih->ElementDomainIntCells(ele->Id()));
@@ -799,7 +800,7 @@ void SysmatDomainStress(
       double tau_stab_C  = 0.0;
       // remark: stabilization parameters 'tau_stab_Mu' and 'tau_stab_Mp' are both computed based on
       //         'hk' instead of using the streamlength for 'tau_stab_Mu'
-      FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
+      COMBUST::UTILS::computeStabilizationParams(gpvelnp, xji,
           instationary, dynvisc, densaf, vel_norm, hk, hk, mk, timefac, dt,
           tautype, tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 

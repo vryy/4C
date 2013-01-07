@@ -25,7 +25,6 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
 
 #include "../linalg/linalg_utils.H"
 
-#include "fluid_ele_calc_stabilization.H"
 #include "fluid_ele.H"
 #include "fluid_ele_parameter.H"
 #include "fluid_ele_calc_xfem.H"
@@ -729,6 +728,10 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 
   // get node coordinates
   GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
+  // evaluate shape functions and derivatives at element center
+  my::EvalShapeFuncAndDerivsAtEleCenter();
+  // set element area or volume
+  const double vol = my::fac_;
 
   // get element-wise velocity/pressure field
   LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
@@ -779,8 +782,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
   double h_k = 0.0;
 
   // take a volume based element length
-  LINALG::Matrix<1,1> dummy(true);
-  h_k = FLD::UTILS::HK<distype>(dummy, my::xyze_);
+  h_k = HK(vol);
 
 
   // evaluate shape function derivatives
@@ -1105,6 +1107,10 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfacefluidfluidcoupling(
 
   // get node coordinates
   GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
+  // evaluate shape functions and derivatives at element center
+  my::EvalShapeFuncAndDerivsAtEleCenter();
+  // set element area or volume
+  const double vol = my::fac_;
 
   // get element-wise velocity/pressure field
   LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
@@ -1158,8 +1164,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfacefluidfluidcoupling(
   double h_k = 0.0;
 
   // take a volume based element length
-  LINALG::Matrix<1,1> dummy(true);
-  h_k = FLD::UTILS::HK<distype>(dummy, my::xyze_);
+  h_k = HK(vol);
 
   // evaluate shape function derivatives
   bool eval_deriv = true;
@@ -1485,6 +1490,12 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
     const GEO::CUT::plain_volumecell_set&                               cells              ///< Volumecells in the present set
   )
 {
+  // get node coordinates
+  GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
+  // evaluate shape functions and derivatives at element center
+  my::EvalShapeFuncAndDerivsAtEleCenter();
+  // set element area or volume
+  const double vol = my::fac_;
 
   const Teuchos::RCP<Epetra_Vector> iforcecol = params.get<Teuchos::RCP<Epetra_Vector> >("iforcenp", Teuchos::null);
   bool assemble_iforce = false;
@@ -1502,8 +1513,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
   INPAR::XFEM::ViscStab_hk visc_stab_hk = params.get<INPAR::XFEM::ViscStab_hk>("visc_stab_hk");
   if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_equivalent)
   {
-    LINALG::Matrix<1,1> dummy(true);
-    h_k = FLD::UTILS::HK<distype>(dummy, my::xyze_);
+    h_k = HK(vol);
   }
   else dserror("unknown type of characteristic element length");
 
@@ -2451,6 +2461,10 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
   // get node coordinates
   GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
+  // evaluate shape functions and derivatives at element center
+  my::EvalShapeFuncAndDerivsAtEleCenter();
+  // set element area or volume
+  const double vol = my::fac_;
 
   // get element-wise velocity/pressure field
   LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
@@ -2502,8 +2516,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
   if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_equivalent)
   {
-    LINALG::Matrix<1,1> dummy(true);
-    h_k = FLD::UTILS::HK<distype>(dummy, my::xyze_);
+    h_k = HK(vol);
   }
   else if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_div_by_surf)
   {
@@ -2953,12 +2966,15 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
 
   // get node coordinates
   GEO::fillInitialPositionArray< distype, my::nsd_, LINALG::Matrix<my::nsd_,my::nen_> >( ele, my::xyze_ );
+  // evaluate shape functions and derivatives at element center
+  my::EvalShapeFuncAndDerivsAtEleCenter();
+  // set element area or volume
+  const double vol = my::fac_;
 
   // get element-wise velocity/pressure field
   LINALG::Matrix<my::nsd_,my::nen_> evelaf(true);
   LINALG::Matrix<my::nen_,1> epreaf(true);
   my::ExtractValuesFromGlobalVector(dis, lm, *my::rotsymmpbc_, &evelaf, &epreaf, "velaf");
-
 
   //----------------------------------------------------------------------------
   //      surface integral --- build Cuiui, Cuui, Cuiu and Cuu matrix and rhs
@@ -3012,8 +3028,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   {
     if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_equivalent)
     {
-      LINALG::Matrix<1,1> dummy(true);
-      h_k = FLD::UTILS::HK<distype>(dummy, my::xyze_);
+      h_k = HK(vol);
     }
     else if(visc_stab_hk == INPAR::XFEM::ViscStab_hk_vol_div_by_surf)
     {

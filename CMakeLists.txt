@@ -882,6 +882,7 @@ set(OBJS_DRT_COMBUST3_LIB
   src/drt_combust/combust3_input.cpp
   src/drt_combust/combust3_line.cpp
   src/drt_combust/combust3_line_evaluate.cpp
+  src/drt_combust/combust3_stabilization.cpp
   src/drt_combust/combust3_surface.cpp
   src/drt_combust/combust3_surface_evaluate.cpp
   src/drt_combust/combust3_sysmat.cpp
@@ -1246,7 +1247,6 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_intfaces_calc.cpp
   src/drt_fluid_ele/fluid_ele_calc_loma_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_poro.cpp
-  src/drt_fluid_ele/fluid_ele_calc_stabilization.cpp
   src/drt_fluid_ele/fluid_ele_calc_std.cpp
   src/drt_fluid_ele/fluid_ele_calc_turbulence_service.cpp
   src/drt_fluid_ele/fluid_ele_calc_weak_dbc.cpp

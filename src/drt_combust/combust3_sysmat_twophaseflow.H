@@ -23,11 +23,11 @@ Maintainer: Ursula Rasthofer
 #include "combust3_local_assembler.H"
 #include "combust3_utils.H"
 #include "combust3_interpolation.H"
+#include "combust3_stabilization.H"
 #include "two_phase_defines.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_fluid/time_integration_element.H"
-#include "../drt_fluid_ele/fluid_ele_calc_stabilization.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 #include "../drt_xfem/enrichment.H"
@@ -119,8 +119,8 @@ void SysmatTwoPhaseFlow(
   //    std::cout << "pressure dofs " << numparampres << std::endl;
 
   // stabilization parameter
-  const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
-  const double mk = FLD::UTILS::MK<DISTYPE>();
+  const double hk = COMBUST::UTILS::HK<DISTYPE>(evelnp,xyze);
+  const double mk = COMBUST::UTILS::MK<DISTYPE>();
 
   // information about domain integration cells
   const GEO::DomainIntCells&  domainIntCells(ih->ElementDomainIntCells(ele->Id()));
@@ -561,7 +561,7 @@ void SysmatTwoPhaseFlow(
       double tau_stab_C  = 0.0;
       // remark: stabilization parameters 'tau_stab_Mu' and 'tau_stab_Mp' are both computes based on
       //         'hk' instead of using the streamlength for 'tau_stab_Mu'
-      FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
+      COMBUST::UTILS::computeStabilizationParams(gpvelnp, xji,
           instationary, dynvisc, densaf, vel_norm, hk, hk, mk, timefac, dt, tautype,
           tau_stab_M, tau_stab_Mp, tau_stab_C); //tautype_franca_barrenechea_valentin_wall
 

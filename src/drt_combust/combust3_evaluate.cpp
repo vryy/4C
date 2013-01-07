@@ -19,6 +19,7 @@ Maintainer: Florian Henke
 #include "combust_flamefront.H"
 
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_serialdensevector.H"
 #include "../drt_lib/drt_timecurve.H"
 #include "../drt_lib/drt_utils.H"
 #include "../drt_xfem/dof_management.H"
@@ -27,7 +28,7 @@ Maintainer: Florian Henke
 #include "../drt_inpar/inpar_fluid.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matlist.H"
-#include "../drt_fluid_ele/fluid_ele_calc_stabilization.H"
+#include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 
 

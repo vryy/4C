@@ -17,8 +17,6 @@ Maintainer: Shadan Shahmiri /Benedikt Schott
 
 #include <fstream>
 
-#include "fluid_ele_calc_stabilization.H"
-
 #include "../drt_lib/drt_utils.H"
 
 #include "../drt_cut/cut_boundarycell.H"
@@ -2697,8 +2695,58 @@ void EmbImpl<distype, emb_distype>::emb_vel(
 template<DRT::Element::DiscretizationType distype, DRT::Element::DiscretizationType emb_distype>
 void EmbImpl<distype, emb_distype>::element_length( double & hk_emb )
 {
-  LINALG::Matrix<1,1> dummy(true);
-  hk_emb = FLD::UTILS::HK<emb_distype>(dummy, emb_xyze_);
+  //const double vol = VolumeViaNumIntegration<DISTYPE>(emb_xyze_);
+  
+  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<emb_distype>::numNodePerElement;
+
+  // use one point integration rule to calculate hk at element center
+  DRT::UTILS::GaussRule3D integrationrule_stabili = DRT::UTILS::intrule3D_undefined;
+
+  switch (emb_distype)
+  {
+    case DRT::Element::hex8:
+    case DRT::Element::hex20:
+    case DRT::Element::hex27:
+        integrationrule_stabili = DRT::UTILS::intrule_hex_1point;
+      break;
+    case DRT::Element::tet4:
+    case DRT::Element::tet10:
+        integrationrule_stabili = DRT::UTILS::intrule_tet_1point;
+      break;
+    case DRT::Element::wedge6:
+    case DRT::Element::wedge15:
+        integrationrule_stabili = DRT::UTILS::intrule_wedge_1point;
+      break;
+    case DRT::Element::pyramid5:
+        integrationrule_stabili = DRT::UTILS::intrule_pyramid_1point;
+      break;
+    default:
+      dserror("invalid discretization type for fluid3");
+      integrationrule_stabili = DRT::UTILS::intrule3D_undefined;
+  }
+
+  // integration points
+  const DRT::UTILS::IntegrationPoints3D intpoints(integrationrule_stabili);
+
+  // shape functions and derivs at element center
+  LINALG::Matrix<3,1> e;
+  e(0) = intpoints.qxg[0][0];
+  e(1) = intpoints.qxg[0][1];
+  e(2) = intpoints.qxg[0][2];
+  const double wquad = intpoints.qwgt[0];
+
+  LINALG::Matrix<3,numnode> deriv;
+  DRT::UTILS::shape_function_3D_deriv1(deriv, e(0), e(1), e(2), emb_distype);
+
+  // get Jacobian matrix and determinant
+  // xjm_ = deriv_(i,k)*xyze(j,k);
+  LINALG::Matrix<3,3> xjm;
+  xjm.MultiplyNT(deriv,emb_xyze_);
+
+  const double vol = wquad * xjm.Determinant();
+
+  // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
+  hk_emb = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
 
   return;
 }// element_length

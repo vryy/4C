@@ -14,9 +14,9 @@ Maintainer: Florian Henke
 /*----------------------------------------------------------------------*/
 
 
-#include "fluid_ele_calc_stabilization.H"
+#include "combust3_stabilization.H"
 
-void FLD::UTILS::computeStabilizationParams(
+void COMBUST::UTILS::computeStabilizationParams(
     const LINALG::Matrix<3,1>& gpvelnp,  /// velocity at Gaussian point
     const LINALG::Matrix<3,3>& xji,      /// inverse of transposed Jacobian matrix
     const bool   instationary,

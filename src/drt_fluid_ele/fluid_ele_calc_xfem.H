@@ -324,6 +324,14 @@ private:
 //        std::map<int, std::vector<Epetra_SerialDenseMatrix> > Cuiui_coupling
 //    );
 
+    inline double HK(double vol)
+    {
+      // get element length for tau_Mp/tau_C: volume-equival. diameter/sqrt(3)
+      const double hk = std::pow((6.*vol/M_PI),(1.0/3.0))/sqrt(3.0);
+
+      return hk;
+    }
+
 
 };
 

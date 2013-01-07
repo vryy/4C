@@ -13,8 +13,8 @@
  */
 /*----------------------------------------------------------------------*/
 
-#ifndef FLUID_ELE_CALC_STABILIZATION_H
-#define FLUID_ELE_CALC_STABILIZATION_H
+#ifndef COMBUST3_STABILIZATION_H
+#define COMBUST3_STABILIZATION_H
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
@@ -26,7 +26,7 @@
 #include "../drt_xfem/enrichment_utils.H"
 
 
-namespace FLD
+namespace COMBUST
 {
 namespace UTILS
 {
@@ -250,6 +250,6 @@ namespace UTILS
       );
 
 } // namespace UTILS
-} // namespace FLD
+} // namespace COMBUST
 
 #endif

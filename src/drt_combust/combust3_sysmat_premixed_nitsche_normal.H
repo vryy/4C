@@ -23,7 +23,7 @@ Maintainer: Florian Henke
 #include "combust3_sysmat_standard.H"
 #include "combust3_sysmat_surfacetension.H"
 #include "combust_defines.H"
-#include "../drt_fluid_ele/fluid_ele_calc_stabilization.H"
+#include "combust3_stabilization.H"
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/element_normals.H"
 
@@ -100,8 +100,8 @@ void SysmatDomainNitscheNormal(
   const size_t numparamveln = XFEM::NumParam<0,ASSTYPE>::get(dofman, XFEM::PHYSICS::Veln);
 
   // stabilization parameter
-  const double hk = FLD::UTILS::HK<DISTYPE>(evelnp,xyze);
-  const double mk = FLD::UTILS::MK<DISTYPE>();
+  const double hk = COMBUST::UTILS::HK<DISTYPE>(evelnp,xyze);
+  const double mk = COMBUST::UTILS::MK<DISTYPE>();
 
   // get domain integration cells for this element
   const GEO::DomainIntCells&  domainIntCells(ih->ElementDomainIntCells(ele->Id()));
@@ -582,7 +582,7 @@ void SysmatDomainNitscheNormal(
       double tau_stab_C  = 0.0;
       // remark: stabilization parameters 'tau_stab_Mu' and 'tau_stab_Mp' are both computed based on
       //         'hk' instead of using the streamlength for 'tau_stab_Mu'
-      FLD::UTILS::computeStabilizationParams(gpvelnp, xji,
+      COMBUST::UTILS::computeStabilizationParams(gpvelnp, xji,
           instationary, dynvisc, densaf, vel_norm, hk, hk, mk, timefac, dt,
           tautype, tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 

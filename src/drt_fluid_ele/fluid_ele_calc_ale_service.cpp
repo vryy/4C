@@ -21,7 +21,6 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
 #include "../drt_lib/drt_elementtype.H"
 
 #include "fluid_ele.H"
-#include "fluid_ele_calc_stabilization.H"
 #include "fluid_ele_utils.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
