@@ -3703,10 +3703,12 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
             }
           }
 
-          lfil += sqrt(pow(pos[3]-pos[0],2)+pow(pos[4]-pos[1],2)+pow(pos[5]-pos[2],2));
+          lfil += sqrt((pos[3]-pos[0])*(pos[3]-pos[0])+
+                       (pos[4]-pos[1])*(pos[4]-pos[1])+
+                       (pos[5]-pos[2])*(pos[5]-pos[2]));
 
           for(int l=0;l<3;l++)
-           pos[l] = pos[l+3];
+            pos[l] = pos[l+3];
         }
         // element length (assuming equal node spacing)
         double elelength = lfil/(double)(filaments[i]->Nodes()->size()-1);
@@ -3840,11 +3842,12 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
           }
           //shift position in case of breakage due to Periodic Boundary
           for(int k=0;k<3;k++)
-          { if( fabs( pos[k+3] + periodlength_->at(k) - pos[k] ) < fabs( pos[k+3] - pos[k] ) )
+          { 
+          	if( fabs( pos[k+3] + periodlength_->at(k) - pos[k] ) < fabs( pos[k+3] - pos[k] ) )
             {
               pos[k+3] += periodlength_->at(k);
             }
-           if( fabs( pos[k+3] - periodlength_->at(k) - pos[k] ) < fabs( pos[k+3] - pos[k] ) )
+           	if( fabs( pos[k+3] - periodlength_->at(k) - pos[k] ) < fabs( pos[k+3] - pos[k] ) )
             {
               pos[k+3] -= periodlength_->at(k);
             }
@@ -3927,20 +3930,23 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
           }
           //shift position in case of breakage due to Periodic Boundary
           for(int k=0;k<3;k++)
-          { if( fabs( pos[k+3] + periodlength_->at(k) - pos[k] ) < fabs( pos[k+3] - pos[k] ) )
+          { 
+          	if( fabs( pos[k+3] + periodlength_->at(k) - pos[k] ) < fabs( pos[k+3] - pos[k] ) )
             {
               pos[k+3] += periodlength_->at(k);
             }
-           if( fabs( pos[k+3] - periodlength_->at(k) - pos[k] ) < fabs( pos[k+3] - pos[k] ) )
+           	if( fabs( pos[k+3] - periodlength_->at(k) - pos[k] ) < fabs( pos[k+3] - pos[k] ) )
             {
               pos[k+3] -= periodlength_->at(k);
             }
           }
 
-          lfil += sqrt(pow(pos[3]-pos[0],2)+pow(pos[4]-pos[1],2)+pow(pos[5]-pos[2],2));
+          lfil += sqrt((pos[3]-pos[0])*(pos[3]-pos[0])+
+                       (pos[4]-pos[1])*(pos[4]-pos[1])+
+                      (pos[5]-pos[2])*(pos[5]-pos[2]));
 
           for(int l=0;l<3;l++)
-           pos[l] = pos[l+3];
+          	pos[l] = pos[l+3];
         }
         // element length (assuming equal node spacing)
         double elelength = lfil/(double)(filaments[i]->Nodes()->size()-1);
@@ -3948,7 +3954,8 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
         // add as many binding spots to the i-th filament as possible
         int bspot = 0;
         //more elegant way for tolerance?
-        while((double)bspot*riseperbspot < lfil+0.0000001)
+        double ltol = 1e-7;
+        while((double)bspot*riseperbspot < lfil+ltol)
         {
           // put binding spot id into the vector in order to create a fully overlapping binding spot map afterwards
           bspotgids.push_back((int)bspotgids.size());
@@ -4003,8 +4010,6 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
       for(int i=0; i<(int)bspotonproc.size(); i++)
         if(bspotonproc[i]==1)
           bspotrowgids.push_back(i);  // note: since column map is fully overlapping: i=col. LID = GID
-
-      cout<<"bspotgids.size() = "<<bspotgids.size()<<", bspotrowgids.size() = "<<bspotrowgids.size()<<", bspotrowgids[0] = "<<bspotrowgids[0]<<endl;
 
       bspotrowmap_ = rcp(new Epetra_Map((int)bspotgids.size(), (int)bspotrowgids.size(), &bspotrowgids[0], 0, discret_->Comm()));
 

@@ -4053,47 +4053,46 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow,
       }
     }
 
-    // do the following stuff only if we have actual crosslinker elements along the horizontal filament
+    // evaluate distances between binding spots / vertical filaments
     if(!nodeIDs.empty() || loomtype == loom_singlefil)
     {
-      // get the nodes at which we want to measure neighbour distances
-      // note: we assume nodeIDs.at(1)>=evalnodeIDs.at(firstvfil-1).
-      // "-1" because evalnodeIDs only stores one node per VERTICAL filament.
-      if(!nodeIDs.empty())
-      {
-        int vnodeoffset = nodeIDs[1] - evalnodeIDs[firstvfil-1];
-        for(int i=0; i<(int)evalnodeIDs.size(); i++)
-          evalnodeIDs.at(i) += vnodeoffset;
-      }
-
-      // sort nodes from smallest to largest x-coordinate
-
-      // in case of the evaluation with respect to the arclength, we need the ascending node numbers
-      if(loomtype == loom_singlefil)
-        nodeIDs = evalnodeIDs;
-
+      // starting at at least two occupied binding spots
       if((int)evalnodeIDs.size()>1)
       {
-        for(int i=0; i<(int)evalnodeIDs.size()-1; i++)
+        // single filament simulations, i.e. no real crosslinker elements -> nodeIDs are IDs on horizontal filament
+        if(loomtype == loom_singlefil)
         {
-          map< int,LINALG::Matrix<3,1> >::const_iterator posi = currentpositions.find(evalnodeIDs[i]);
-          for(int j=i+1; j<(int)evalnodeIDs.size(); j++)
+          nodeIDs = evalnodeIDs;
+        }
+        else // standard case with real crosslinker elements
+        {
+          int vnodeoffset = nodeIDs[1] - evalnodeIDs[firstvfil-1];
+          for(int i=0; i<(int)evalnodeIDs.size(); i++)
+            evalnodeIDs.at(i) += vnodeoffset;
+
+          // sort nodes by ascending x-coordinate
+          for(int i=0; i<(int)evalnodeIDs.size()-1; i++)
           {
-            map< int,LINALG::Matrix<3,1> >::const_iterator posj = currentpositions.find(evalnodeIDs[j]);
-            if((posj->second)(0)<(posi->second)(0))
+            std::map< int,LINALG::Matrix<3,1> >::const_iterator posi = currentpositions.find(evalnodeIDs[i]);
+            for(int j=i+1; j<(int)evalnodeIDs.size(); j++)
             {
-              int tmp = evalnodeIDs[i];
-              evalnodeIDs.at(i) = evalnodeIDs[j];
-              evalnodeIDs.at(j) = tmp;
+              std::map< int,LINALG::Matrix<3,1> >::const_iterator posj = currentpositions.find(evalnodeIDs[j]);
+              if((posj->second)(0)<(posi->second)(0))
+              {
+                int tmp = evalnodeIDs[i];
+                evalnodeIDs.at(i) = evalnodeIDs[j];
+                evalnodeIDs.at(j) = tmp;
+              }
             }
           }
         }
+
         // gather positions in one vector
         std::vector<LINALG::Matrix<3,1> > evalnodepositions;
         evalnodepositions.clear();
         for(int i=0; i<(int)evalnodeIDs.size(); i++)
         {
-          map< int,LINALG::Matrix<3,1> >::const_iterator pos = currentpositions.find(evalnodeIDs[i]);
+          std::map< int,LINALG::Matrix<3,1> >::const_iterator pos = currentpositions.find(evalnodeIDs[i]);
           evalnodepositions.push_back(pos->second);
         }
 
@@ -4107,14 +4106,51 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow,
             maxnearneighbors = maxnumevalneighbors;
 
           // calculate nearest neighbor to 4th nearest neighbor distances , no shift ac
+          double globalarclength = 0.0;
           for(int i=0; i<(int)evalnodepositions.size(); i++)
           {
             std::map< int,LINALG::Matrix<3,1> >::const_iterator pos0 = currentpositions.find(evalnodeIDs[i]);
             // write linker positions to stream
-            linkerpositions<<std::scientific<<std::setprecision(6)<<(pos0->second)(0)<<" "<<(pos0->second)(1)<<" "<<(pos0->second)(2)<<endl;
-            // vector storing nearest neighbor positions
+            if(loomtype == loom_singlefil)
+            {
+              if(i==0) // first binding spot
+              {
+                for(int k=0; k<evalnodeIDs[i]; k++)
+                {
+                  std::map< int,LINALG::Matrix<3,1> >::const_iterator posk = currentpositions.find(k);
+                  std::map< int,LINALG::Matrix<3,1> >::const_iterator poskp = currentpositions.find(k+1);
+                  LINALG::Matrix<3,1> diffk = (poskp->second);
+                  diffk -= (posk->second);
+                  globalarclength += diffk.Norm2();
+                }
+              }
+              else // subsequent binding spots
+              {
+                for(int k=evalnodeIDs[i-1]; k<evalnodeIDs[i]; k++)
+                {
+                  std::map< int,LINALG::Matrix<3,1> >::const_iterator posk = currentpositions.find(k);
+                  std::map< int,LINALG::Matrix<3,1> >::const_iterator poskp = currentpositions.find(k+1);
+                  LINALG::Matrix<3,1> diffk = (poskp->second);
+                  diffk -= (posk->second);
+                  globalarclength += diffk.Norm2();
+                }
+              }
+            }
+            else
+            {
+              globalarclength = 0.0;
+              for(int k=0; k<evalnodeIDs[i]; k++)
+              {
+                std::map< int,LINALG::Matrix<3,1> >::const_iterator posk = currentpositions.find(k);
+                std::map< int,LINALG::Matrix<3,1> >::const_iterator poskp = currentpositions.find(k+1);
+                LINALG::Matrix<3,1> diffk = (poskp->second);
+                diffk -= (posk->second);
+                globalarclength += diffk.Norm2();
+              }
+            }
+            linkerpositions<<std::scientific<<std::setprecision(6)<<(pos0->second)(0)<<"\t"<<(pos0->second)(1)<<"\t"<<(pos0->second)(2)<<"\t"<<globalarclength<<endl;
 
-            // number of emtpy blocks (of 3 values) in a line of the output file
+            // number of emtpy blocks in a line of the output file
             int emptyblocks = maxnumevalneighbors;
             for(int j=i+1; j<i+maxnearneighbors+1; j++)
             {
@@ -4134,27 +4170,36 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow,
               if(nodeIDs[j]<=nodeIDs[i])
                 dserror("Node IDs are not sorted in an ascending manner!");
 
-              double arclength = 0.0;
-              for(int k=nodeIDs[i] ; k<nodeIDs[j]; k++)
+              double diffarclength = 0.0;
+              if(loomtype == loom_singlefil)
               {
-                std::map< int,LINALG::Matrix<3,1> >::const_iterator posk = currentpositions.find(k);
-                std::map< int,LINALG::Matrix<3,1> >::const_iterator poskp = currentpositions.find(k+1);
-                LINALG::Matrix<3,1> diffk = (poskp->second);
-                diffk -= (posk->second);
-                arclength += diffk.Norm2();
+                for(int k=nodeIDs[i] ; k<nodeIDs[j]; k++)
+                {
+                  std::map< int,LINALG::Matrix<3,1> >::const_iterator posk = currentpositions.find(k);
+                  std::map< int,LINALG::Matrix<3,1> >::const_iterator poskp = currentpositions.find(k+1);
+                  LINALG::Matrix<3,1> diffk = (poskp->second);
+                  diffk -= (posk->second);
+                  diffarclength += diffk.Norm2();
+                }
+                distances<<std::scientific<<std::setprecision(6)<<diffarclength<<"\t";
               }
-              distances<<std::scientific<<std::setprecision(6)<<fabs(diff(0))<<"\t"<<diff.Norm2()<<"\t"<<arclength<<"\t";
+              else
+                distances<<std::scientific<<std::setprecision(6)<<diff(0)<<"\t"<<diff.Norm2()<<"\t";
             }
             if(emptyblocks>0)
             {
               // determine dummy entries for this line
-              for(int i=0; i<emptyblocks; i++)
-                distances<<std::scientific<<std::setprecision(6)<<-1e9<<"\t"<<-1e9<<"\t"<<-1e9<<"\t";
+              if(loomtype==loom_singlefil)
+                for(int i=0; i<emptyblocks; i++)
+                  distances<<std::scientific<<std::setprecision(6)<<-1e9<<"\t";
+              else
+                for(int i=0; i<emptyblocks; i++)
+                  distances<<std::scientific<<std::setprecision(6)<<-1e9<<"\t"<<-1e9<<"\t";
             }
             distances<<endl;
           }
           // time step divider line
-          linkerpositions<<std::scientific<<std::setprecision(6)<<-1e9<<" "<<-1e9<<" "<<-1e9<<endl;
+          linkerpositions<<std::scientific<<std::setprecision(6)<<-1e9<<"\t"<<-1e9<<"\t"<<-1e9<<"\t"<<-1e-9<<endl;
         }
       }
     }
