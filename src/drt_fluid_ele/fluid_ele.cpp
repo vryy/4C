@@ -358,7 +358,10 @@ DRT::Element(old             ),
 distype_    (old.distype_    ),
 is_ale_     (old.is_ale_     )
 {
-    return;
+  tds_ = Teuchos::null;
+  if (old.tds_ != Teuchos::null)
+    dserror("Clone() method for deep copying tds_ not yet implemented!");
+  return;
 }
 
 /*----------------------------------------------------------------------*

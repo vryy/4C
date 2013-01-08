@@ -238,9 +238,12 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
   cross_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
   reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
 
-  if ((not is_genalpha_np_) and
-      (tds_ == INPAR::FLUID::subscales_time_dependent or transient_ != INPAR::FLUID::inertia_stab_drop))
-    dserror("time dependent subscales does not work for OST/AfGenAlpha/BDF2/Stationary. \nOne need to look for bugs");
+  // safety checks for time-dependent subgrid scales
+  if ((tds_ == INPAR::FLUID::subscales_time_dependent) or (transient_ != INPAR::FLUID::inertia_stab_drop))
+  {
+    if (not is_genalpha_np_)
+      dserror("time dependent subscales does not work for OST/AfGenAlpha/BDF2/Stationary. \nOne need to look for bugs");
+  }
 
 //-------------------------------
 // get tau definition
