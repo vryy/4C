@@ -112,6 +112,7 @@ echo $Trilinos_DIR
 ############################################################
 
 $CMAKE_COMMAND \
+    --no-warn-unused-cli \
     -D CMAKE_BUILD_TYPE:STRING=$BUILD_TYPE \
     -D CMAKE_CXX_COMPILER:FILEPATH="$MPIDIR/bin/mpic++" \
     -D CMAKE_C_COMPILER:FILEPATH="$MPIDIR/bin/mpicc" \
@@ -130,7 +131,7 @@ $CMAKE_COMMAND \
     -D HAVE_MueLu:BOOL=$BUILD_MueLu \
     -D HAVE_EXPERIMENTAL_MueLu:BOOL=$BUILD_MueLuExperimental \
     -D HAVE_Stratimikos:BOOL=OFF \
-    -D TRILINOS_DEV:BOOL=ON \
+    -D TRILINOS_DEV:BOOL=$TRILINOSDEV \
     -D D_ARTNET:BOOL=ON \
     -D D_RED_AIRWAYS:BOOL=ON \
     -D TRAP_FE:BOOL=OFF \
