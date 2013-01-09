@@ -214,11 +214,6 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::SetupRHS");
 
-  // get time integration parameters of structure an fluid time integrators
-  // to enable consistent time integration among the fields
-  const double stiparam = StructureField()->TimIntParam();
-  const double ftiparam = FluidField().TimIntParam();
-
   SetupVector(f,
               StructureField()->RHS(),
               FluidField().RHS(),
@@ -231,11 +226,6 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
 
   if (firstcall)
   {
-    // some scaling factors for fluid
-    const double timescale = FluidField().TimeScaling();
-    const double scale     = FluidField().ResidualScaling();
-    const double dt        = FluidField().Dt();
-
      // get structure matrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> blocks = StructureField()->BlockSystemMatrix();
     if (blocks==Teuchos::null)
@@ -253,6 +243,16 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
     LINALG::SparseMatrix& sig = blocks->Matrix(0,1);  // S_{I\Gamma}
     LINALG::SparseMatrix& sgg = blocks->Matrix(1,1);  // S_{\Gamma\Gamma}
     LINALG::SparseMatrix& aig = blocka->Matrix(0,1);  // A_{I\Gamma}
+
+    // get time integration parameters of structure an fluid time integrators
+    // to enable consistent time integration among the fields
+    const double stiparam = StructureField()->TimIntParam();
+    const double ftiparam = FluidField().TimIntParam();
+
+    // some scaling factors for fluid
+    const double timescale = FluidField().TimeScaling();
+    const double scale     = FluidField().ResidualScaling();
+    const double dt        = FluidField().Dt();
 
     // some often re-used vectors
     Teuchos::RCP<Epetra_Vector> rhs = Teuchos::null;
@@ -821,7 +821,10 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupVector(Epetra_Vector &f,
 
     // add contribution of Lagrange multiplier from previous time step
     if (lambda_ != Teuchos::null)
-      modfv->Update(-ftiparam+stiparam*(1.0-ftiparam)/(1.0-stiparam), *StructToFluid(lambda_), 1.0);
+    {
+      Teuchos::RCP<Epetra_Vector> lambdaglobal = FluidField().Interface()->InsertFSICondVector(StructToFluid(lambda_));
+      modfv->Update((-ftiparam+stiparam*(1.0-ftiparam)/(1.0-stiparam))/fluidscale, *lambdaglobal, 1.0);
+    }
 
     // we need a temporary vector with the whole fluid dofs where we
     // can insert veln which has the embedded dofrowmap into it
@@ -998,7 +1001,8 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Output()
 
     const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
-    if(uprestart != 0 && FluidField().Step() % uprestart == 0)
+    const int upres = fsidyn.get<int>("UPRES");
+    if((uprestart != 0 && FluidField().Step() % uprestart == 0) || FluidField().Step() % upres == 0)
       StructureField()->DiscWriter()->WriteVector("fsilambda", lambdafull);
   }
 
@@ -1300,7 +1304,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::BuildCovergenceNorms()
    * +  Division by (1.0 - stiparam) will be done in the end
    *    since this is common to all terms
    * +  tau: time scaling factor for interface time integration (tau = 1/FluidField().TimeScaling())
-   * +  neglecting terms (4)-(6) should not alter the results significantly
+   * +  neglecting terms (4)-(5) should not alter the results significantly
    *    since at the end of the time step the solution increments tend to zero.
    *
    *                                                 Matthias Mayr (10/2012)
