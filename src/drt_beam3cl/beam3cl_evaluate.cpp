@@ -1027,48 +1027,53 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
    * any ordinary problem of structural mechanics it may be ignored*/
    CalcBrownian<fnnode,3,6,4>(params,fvel,fdisp,fstiffmatrix,fforce,Imass,Itildemass);
 
-  //Transform 12x12 stiffness matrix for fiktive nodal beam back to 24x24 stiffness matrix of 4-noded beam
-   //upper left block & lower left block
-  //auxiliary variables for storing intermediate matrices in computation of entries of stiffness matrix
-  LINALG::Matrix<3,3> auxmatrix1;
-  LINALG::Matrix<3,3> auxmatrix2;
-  //upper left block & lower left block
-   for(int nodei = 0; nodei < fnnode; nodei++)
-    for(int nodej = 0; nodej < fnnode; nodej++)
+   if(stiffmatrix != NULL)
+   {
+     //Transform 12x12 stiffness matrix for fiktive nodal beam back to 24x24 stiffness matrix of 4-noded beam
+      //upper left block & lower left block
+     //auxiliary variables for storing intermediate matrices in computation of entries of stiffness matrix
+     LINALG::Matrix<3,3> auxmatrix1;
+     LINALG::Matrix<3,3> auxmatrix2;
+     //upper left block & lower left block
+      for(int nodei = 0; nodei < fnnode; nodei++)
+       for(int nodej = 0; nodej < fnnode; nodej++)
+         for(int Ri=0; Ri<2; Ri++)
+          for(int Rj=0; Rj<2; Rj++)
+           for(int i=0; i<3; i++)
+            for(int j=0; j<3; j++)
+              for(int l=0;l<2;l++)
+              (*stiffmatrix)(12*nodei+6*Ri+3*l+i,12*nodej+6*Rj+j) += Ibp[nodei](Ri)*Ibp[nodej](Rj)*fstiffmatrix(6*nodei+3*l+i,6*nodej+j);
+
+      //upper right & lower right block
+       for(int nodei = 0; nodei < 2; nodei++)
+        for(int nodej = 0; nodej < 2;nodej++)
+         for(int l=0;l<2;l++)
+         {
+           for(int i=0;i<3;i++)
+             for(int j=0;j<3;j++)
+             {
+               auxmatrix1(i,j)=fstiffmatrix(6*nodei+3*l+i,6*nodej+3+j);
+             }
+           for(int Ri=0;Ri<2;Ri++)
+             for(int Rj=0;Rj<2;Rj++)
+             {
+               auxmatrix2.Multiply(auxmatrix1,Itildebp[nodej][Rj]);
+               auxmatrix2.Scale(Ibp[nodei](Ri));
+               for(int m=0;m<3;m++)
+                 for(int n=0;n<3;n++)
+                   (*stiffmatrix)(12*nodei+6*Ri+3*l+m,12*nodej+6*Rj+3+n) += auxmatrix2(m,n);
+             }
+         }
+   }
+
+   if(force != NULL)
+   {
+     //Tranform 12x1 force vektor for fiktive nodal beam to 24x1 force vector of the 4-noded beam
+     for (int node=0; node<fnnode; ++node)
       for(int Ri=0; Ri<2; Ri++)
-       for(int Rj=0; Rj<2; Rj++)
-        for(int i=0; i<3; i++)
-         for(int j=0; j<3; j++)
-           for(int l=0;l<2;l++)
-           (*stiffmatrix)(12*nodei+6*Ri+3*l+i,12*nodej+6*Rj+j) += Ibp[nodei](Ri)*Ibp[nodej](Rj)*fstiffmatrix(6*nodei+3*l+i,6*nodej+j);
-
-   //upper right & lower right block
-    for(int nodei = 0; nodei < 2; nodei++)
-     for(int nodej = 0; nodej < 2;nodej++)
-      for(int l=0;l<2;l++)
-      {
-        for(int i=0;i<3;i++)
-          for(int j=0;j<3;j++)
-          {
-            auxmatrix1(i,j)=fstiffmatrix(6*nodei+3*l+i,6*nodej+3+j);
-          }
-        for(int Ri=0;Ri<2;Ri++)
-          for(int Rj=0;Rj<2;Rj++)
-          {
-            auxmatrix2.Multiply(auxmatrix1,Itildebp[nodej][Rj]);
-            auxmatrix2.Scale(Ibp[nodei](Ri));
-            for(int m=0;m<3;m++)
-              for(int n=0;n<3;n++)
-                (*stiffmatrix)(12*nodei+6*Ri+3*l+m,12*nodej+6*Rj+3+n) += auxmatrix2(m,n);
-          }
-      }
-
-    //Tranform 12x1 force vektor for fiktive nodal beam to 24x1 force vector of the 4-noded beam
-    for (int node=0; node<fnnode; ++node)
-     for(int Ri=0; Ri<2; Ri++)
-      for(int i=0;i<6;i++)
-        (*force)(12*node+6*Ri+i)+=Ibp[node](Ri)*fforce(6*node+i);
-
+       for(int i=0;i<6;i++)
+         (*force)(12*node+6*Ri+i)+=Ibp[node](Ri)*fforce(6*node+i);
+   }
     return;
 
 } // DRT::ELEMENTS::BeamCL::b3_nlnstiffmass

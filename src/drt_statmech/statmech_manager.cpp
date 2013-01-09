@@ -53,6 +53,11 @@ basisnodes_(discret->NumGlobalNodes()),
 basiselements_(discret->NumGlobalElements()),
 outputfilenumber_(-1),
 discret_(discret),
+sumsquareincpar_(0.0),
+sumsquareincort_(0.0),
+sumrotmiddle_(0.0),
+sumsquareincmid_(0.0),
+sumsquareincrot_(0.0),
 useinitdbcset_(false)
 {
   Teuchos::ParameterList parameters = DRT::Problem::Instance()->StructuralDynamicParams();
@@ -1080,9 +1085,9 @@ void STATMECH::StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow,
 
         /*if node currently has coordinate value greater than periodlength,
          *it is shifted by -periodlength sufficiently often to lie again in the domain*/
-        if (xcurr > periodlength_->at(j))
+        if (xcurr > (*periodlength_)[j])
         {
-          disrow[discret_->DofRowMap()->LID(dofnode[j])] -= periodlength_->at(j)*floor(xcurr/periodlength_->at(j));
+          disrow[discret_->DofRowMap()->LID(dofnode[j])] -= (*periodlength_)[j]*floor(xcurr/(*periodlength_)[j]);
 
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may fixed by DBC. To avoid problems when nodes exit the domain through the upper z-surface and reenter through the lower
@@ -1094,7 +1099,7 @@ void STATMECH::StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow,
          *to lie again in the domain*/
         if (xcurr < 0.0)
         {
-          disrow[discret_->DofRowMap()->LID(dofnode[j])] -= periodlength_->at(j)*floor(xcurr/periodlength_->at(j));
+          disrow[discret_->DofRowMap()->LID(dofnode[j])] -= (*periodlength_)[j]*floor(xcurr/(*periodlength_)[j]);
 
           /*the upper domain surface orthogonal to the z-direction may be subject to shear Dirichlet boundary condition; the lower surface
            *may be fixed by DBC. To avoid problems when nodes exit the domain through the lower z-surface and reenter through the upper
