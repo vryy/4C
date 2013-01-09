@@ -68,6 +68,12 @@ namespace INPUT {
                        std::string const& docString,
                        Teuchos::ParameterList* paramList);
 
+  /// special implementation for a parameter being an arbitrary string
+  void StringParameter(std::string const &paramName,
+                       std::string const &value,
+                       std::string const &docString,
+                       Teuchos::ParameterList *paramList);
+
   /// construct list with all parameters and documentation
   Teuchos::RCP<const Teuchos::ParameterList> ValidParameters();
 

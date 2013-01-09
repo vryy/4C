@@ -341,6 +341,28 @@ void DRT::INPUT::DoubleParameter(std::string const &paramName,
                               paramList,validator);
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void DRT::INPUT::StringParameter(std::string const &paramName,
+                                 std::string const &value,
+                                 std::string const &docString,
+                                 Teuchos::ParameterList *paramList)
+{
+
+  // The method Teuchos::setNumericStringParameter() cannot be used for arbitrary
+  // string parameters, since the validate() method of the underlying
+  // AnyNumberParameterEntryValidator always tries to convert a given string to DOUBLE(s)!
+  // This may cause error messages in valgrind.
+  // Thus, for arbitrary strings, such as needed for specifying a file or solver name, for instance,
+  // this method which uses a StringValidator has to be used!
+
+  Teuchos::RCP<Teuchos::StringValidator> validator
+    = Teuchos::rcp(new Teuchos::StringValidator());
+
+  paramList->set(paramName, value, docString, validator);
+}
+
 #if 0
 namespace DRT
 {
@@ -712,9 +734,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("REMODEL","No","Turn remodeling on/off",&ps);
 
   IntParameter("MAXHULUMEN",0,"max HU value within the blood lumen",&ps);
-  setNumericStringParameter("CENTERLINEFILE","name.txt",
-                            "filename of file containing centerline points",
-                            &ps);
+  StringParameter("CENTERLINEFILE","name.txt",
+                  "filename of file containing centerline points",
+                  &ps);
 
   setStringToIntegralParameter<int>("CALCSTRENGTH","No","Calculate strength on/off",yesnotuple,yesnovalue,&ps);
   DoubleParameter("AAA_SUBRENDIA",22.01,"subrenal diameter of the AAA",&ps);
@@ -1210,9 +1232,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                   INPAR::STR::stat_inv_none,
                                   INPAR::STR::stat_inverse),
                                 &statinvp);
-   setNumericStringParameter("MONITORFILE","none.monitor",
-                             "filename of file containing measured displacements",
-                             &statinvp);
+   StringParameter("MONITORFILE","none.monitor",
+                   "filename of file containing measured displacements",
+                   &statinvp);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& iap = list->sublist("INVERSE ANALYSIS",false,"");
@@ -1262,9 +1284,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  &iap);
 
 
-  setNumericStringParameter("MONITORFILE","none.monitor",
-                            "filename of file containing measured displacements",
-                            &iap);
+  StringParameter("MONITORFILE","none.monitor",
+                  "filename of file containing measured displacements",
+                  &iap);
 
   setNumericStringParameter("INV_LIST","-1",
                             "IDs of materials that have to be fitted",
@@ -1295,12 +1317,12 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("START_RUN",0,"Run to start calculating the difference to lower level", &mlmcp);
   //IntParameter("END_RUN",0,"Run to stop calculating the difference to lower level", &mlmcp);
   // NUMLEVEL additional inputfiles are read name must be standard_inputfilename+_level_i.dat
-  setNumericStringParameter("DISCRETIZATION_FOR_PROLONGATION","filename.dat",
-                            "filename of.dat file which contains discretization to which the results are prolongated",
-                            &mlmcp);
-  setNumericStringParameter("OUTPUT_FILE_OF_LOWER_LEVEL","level0",
-                            "filename of controlfiles of next lower level",
-                            &mlmcp);
+  StringParameter("DISCRETIZATION_FOR_PROLONGATION","filename.dat",
+                  "filename of.dat file which contains discretization to which the results are prolongated",
+                   &mlmcp);
+  StringParameter("OUTPUT_FILE_OF_LOWER_LEVEL","level0",
+                   "filename of controlfiles of next lower level",
+                   &mlmcp);
   setStringToIntegralParameter<int>("PROLONGATERES","No",
                                     "Prolongate Displacements to finest Discretization",
                                     yesnotuple,yesnovalue,&mlmcp);
@@ -4518,9 +4540,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                             "Number of Richardson iterations on whole MFSI block preconditioner",
                             &fsidyn);
 
-  setNumericStringParameter("BLOCKSMOOTHER","BGS BGS BGS",
-                            "Type of block smoother, can be BGS or Schur",
-                            &fsidyn);
+  StringParameter("BLOCKSMOOTHER","BGS BGS BGS",
+                  "Type of block smoother, can be BGS or Schur",
+                  &fsidyn);
 
   setNumericStringParameter("SCHUROMEGA","0.001 0.01 0.1",
                             "Damping factor for Schur complement construction",
@@ -5135,14 +5157,14 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   IntParameter("VERBOSITY",0,"verbosity level (0=no output,... 10=extreme), for Belos only",&list);
 
   // the only one stratimikos specific parameter
-  setNumericStringParameter("STRATIMIKOS_XMLFILE","",
-                              "xml file for stratimikos parameters",
-                              &list);
+  StringParameter("STRATIMIKOS_XMLFILE","",
+                  "xml file for stratimikos parameters",
+                  &list);
 
   // user-given name of solver block (just for beauty)
-  setNumericStringParameter("NAME","No_name",
-                              "User specified name for solver block",
-                              &list);
+  StringParameter("NAME","No_name",
+                  "User specified name for solver block",
+                  &list);
 
   // damping parameter for SIMPLE
   DoubleParameter("SIMPLE_DAMPING",1.,"damping parameter for SIMPLE preconditioner",&list);
