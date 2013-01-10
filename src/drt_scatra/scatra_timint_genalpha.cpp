@@ -35,7 +35,11 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
 : ScaTraTimIntImpl(actdis,solver,params,extraparams,output),
   alphaM_(params_->get<double>("ALPHA_M")),
   alphaF_(params_->get<double>("ALPHA_F")),
-  gamma_ (params_->get<double>("GAMMA"))
+  gamma_ (params_->get<double>("GAMMA")),
+  thermpressaf_(0.0),
+  thermpressam_(0.0),
+  thermpressdtaf_(0.0),
+ thermpressdtam_(0.0)
 {
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
