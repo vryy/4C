@@ -2417,7 +2417,7 @@ void COMBUST::Algorithm::Redistribute()
 
     // Calculate the evaluation time ratio by which a further redistribution is determined.
     // For this the minimum ratio since the last redistribution is used
-    if (maxprocevaltime / minprocevaltime < evaltimeratio_)
+    if (minprocevaltime > 0.0 and maxprocevaltime / minprocevaltime < evaltimeratio_) // the order is important, as it avoids division by zero
       evaltimeratio_ = maxprocevaltime / minprocevaltime;
 
     if (minprocevaltime <= 0.0)
