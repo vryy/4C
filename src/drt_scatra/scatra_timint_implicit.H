@@ -939,16 +939,6 @@ protected:
   //! type of velocity field ? rename!!!
   const INPAR::SCATRA::VelocityField cdvel_;
 
-  //! LOMA-specific parameter: thermodynamic pressure at n
-  double thermpressn_;
-  //! LOMA-specific parameter: thermodynamic pressure at n+1
-  double thermpressnp_;
-
-  //! LOMA-specific parameter: time deriv. of thermodynamic pressure at n
-  double thermpressdtn_;
-  //! LOMA-specific parameter: time deriv. of thermodynamic pressure at n+1
-  double thermpressdtnp_;
-
   /*========================================================================*/
   //! @name coefficients and related
   /*========================================================================*/
@@ -1062,6 +1052,16 @@ protected:
 
   //! LOMA-specific parameter: initial mass in domain
   double initialmass_;
+
+  //! LOMA-specific parameter: thermodynamic pressure at n
+  double thermpressn_;
+  //! LOMA-specific parameter: thermodynamic pressure at n+1
+  double thermpressnp_;
+
+  //! LOMA-specific parameter: time deriv. of thermodynamic pressure at n
+  double thermpressdtn_;
+  //! LOMA-specific parameter: time deriv. of thermodynamic pressure at n+1
+  double thermpressdtnp_;
 
   //! number of inflow generation time steps (turbulent loma specific)
   int numinflowsteps_;

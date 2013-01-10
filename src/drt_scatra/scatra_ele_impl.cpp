@@ -2006,7 +2006,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           for (int idim=0; idim<nsd_; idim++)
             mfsgvelint_(idim,0) = fsvelint_(idim,0) * B_mfs(idim,0);
           // required for conservative formulation in the context of passive scalar transport
-          if (mfs_conservative_)
+          if (mfs_conservative_ or is_conservative_)
           {
             // get divergence of subgrid-scale velocity
             LINALG::Matrix<nsd_,nsd_> mfsvderxy;
@@ -3512,7 +3512,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
 // advanced turbulence models
 //---------------------------------------------------------------
 // multifractal subgrid-scale modeling
-// convective form only
   if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
   {
     if (nsd_<3) dserror("Turbulence is 3D!");

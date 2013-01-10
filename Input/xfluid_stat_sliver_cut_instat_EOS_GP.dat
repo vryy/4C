@@ -56,7 +56,7 @@ NUMSTEP                         80
 NUMSTASTEPS                     0
 MAXTIME                         1000.0
 TIMESTEP                        0.01//0.1
-THETA 0.55 //0.5 //0.67
+THETA                           1.0 //0.55 //0.5 //0.67
 START_THETA                     1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00

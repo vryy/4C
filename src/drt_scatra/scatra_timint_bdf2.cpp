@@ -33,7 +33,8 @@ SCATRA::TimIntBDF2::TimIntBDF2(
     Teuchos::RCP<Teuchos::ParameterList>   extraparams,
     Teuchos::RCP<IO::DiscretizationWriter> output)
 : ScaTraTimIntImpl(actdis,solver,params,extraparams,output),
-  theta_(0.0)
+  theta_(0.0),
+  thermpressnm_(0.0)
 {
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -524,8 +525,6 @@ void SCATRA::TimIntBDF2::OutputRestart()
     output_->WriteDouble("thermpressdtn",thermpressdtn_);
     // as well as initial mass
     output_->WriteDouble("initialmass",initialmass_);
-    // as well as initial mass
-    output_->WriteDouble("initialmass",initialmass_);
   }
 
   return;
@@ -606,6 +605,8 @@ void SCATRA::TimIntBDF2::ReadRestart(int step)
     thermpressdtnp_ = reader.ReadDouble("thermpressdtnp");
     // time derivative of thermodynamic pressure at time n
     thermpressdtn_ = reader.ReadDouble("thermpressdtn");
+    // as well as initial mass
+    initialmass_ = reader.ReadDouble("initialmass");
   }
 
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or

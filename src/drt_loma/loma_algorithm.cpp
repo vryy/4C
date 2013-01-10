@@ -795,8 +795,8 @@ void LOMA::Algorithm::ReadInflowRestart(int restart)
   FluidField().ReadRestart(restart);
   // as ReadRestart is only called for the FluidField
   // time and step have not been set in the superior class and the ScaTraField
-  SetTimeStep(FluidField().Dt(),FluidField().Step());
-  ScaTraField().SetTimeStep(FluidField().Dt(),FluidField().Step());
+  SetTimeStep(FluidField().Time(),FluidField().Step());
+  ScaTraField().SetTimeStep(FluidField().Time(),FluidField().Step());
   return;
 }
 

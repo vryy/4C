@@ -204,14 +204,10 @@ void SCATRA::PassiveScaTraAlgorithm::ReadInflowRestart(int restart)
 {
   // in case a inflow generation in the inflow section has been performed,
   // there are not any scatra results available and the initial field is used
-  // caution: if AVM3Preparation is called ,e.g., for multifractal subgrid-scale
-  //          modeling the physical parameters (dens, visc, diff) are required
-  //          to obtain non-zero values which otherwise cause troubles when dividing by them
-  //          we have to set the temperature field here
   FluidField().ReadRestart(restart);
   // as ReadRestart is only called for the FluidField
   // time and step have not been set in the superior class and the ScaTraField
-  SetTimeStep(FluidField().Dt(),FluidField().Step());
-  ScaTraField().SetTimeStep(FluidField().Dt(),FluidField().Step());
+  SetTimeStep(FluidField().Time(),FluidField().Step());
+  ScaTraField().SetTimeStep(FluidField().Time(),FluidField().Step());
   return;
 }

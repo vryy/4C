@@ -72,6 +72,11 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 
+#if 0
+// temporary: until standard discretization can deal with edged-based stabilization
+#include "../drt_lib/drt_discret_xfem.H"
+#endif
+
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -93,6 +98,9 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   extrapolationpredictor_(params_->get("do explicit predictor",true)),
   writestresses_(params_->get<int>("write stresses", 0)),
   write_wall_shear_stresses_(params_->get<int>("write wall shear stresses", 0)),
+  dtele_(0.0),
+  dtfilter_(0.0),
+  dtsolve_(0.0),
   surfacesplitter_(NULL),
   inrelaxation_(false),
   msht_(INPAR::FLUID::no_meshtying)
@@ -1272,6 +1280,42 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
         discret_->ClearState();
 
+#if 0
+        // add edged-based stabilization, if selected
+        if(params_->sublist("STABILIZATION").get<string>("STABTYPE")=="edge_based")
+        {
+          if (timealgo_!=INPAR::FLUID::timeint_one_step_theta and timealgo_!=INPAR::FLUID::timeint_stationary)
+            dserror("Other time integration schemes than OST currently not supported for edge-based stabilization!");
+//           // set the only required state vectors
+//           if (is_genalpha_)
+//           {
+//             discret_->SetState("velaf",velaf_);
+//             if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
+//               discret_->SetState("velnp",velnp_);
+//           }
+//           else discret_->SetState("velaf",velnp_);
+           if (timealgo_==INPAR::FLUID::timeint_one_step_theta and theta_!=1.0)
+             dserror("Set theta=1, since only this setting seems to be correctly supported currently!");
+           discret_->SetState("velaf",velnp_);
+
+           if (alefluid_)
+           {
+             dserror("Edge-based stabilization not yet supported for ale problemes!");
+           }
+
+           // this cast is only for the time being
+           // as soon as the definition of internal faces is included
+           // in the standard discretization, these lines can be removed
+           // and CreateInternalFacesExtension() can be called once
+           // in the constructor of the fluid time integration
+           Teuchos::RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
+           xdiscret->CreateInternalFacesExtension();
+
+           xdiscret->EvaluateEdgeBased(sysmat_,residual_);
+
+           discret_->ClearState();
+        }
+#endif
 
         //---------------------------surface tension update
         if (alefluid_ and surfacesplitter_->FSCondRelevant())
@@ -1413,37 +1457,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           discret_->ClearState();
 
         }
-
-
-        // evaluate edge-based stabilization
-//        {
-//          ParameterList eleparams;
-//
-//          // set the only required state vectors
-//          if (is_genalpha_)
-//          {
-//            discret_->SetState("velaf",velaf_);
-//            if (timealgo_==INPAR::FLUID::timeint_npgenalpha)
-//              discret_->SetState("velnp",velnp_);
-//          }
-//          else discret_->SetState("velaf",velnp_);
-//
-//          if (alefluid_)
-//          {
-//            discret_->SetState("dispnp"    , dispnp_   );
-//            discret_->SetState("gridvelaf" , gridv_);
-//          }
-//
-//
-//          string fluid_stab_type_ = params_->sublist("STABILIZATION").get<string>("STABTYPE");
-//
-//          if( fluid_stab_type_ == "edge_based") EdgeBasedStabilization(eleparams, *discret_, itnum);
-//
-//          discret_->ClearState();
-//
-//        }
-
-
 
         //----------------------------------------------------------------------
         // account for potential Neumann inflow terms
@@ -2805,7 +2818,7 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
     printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
       itnum,itmax,ittol,vresnorm_,presnorm_,incvelnorm_L2_/velnorm_L2_,
       incprenorm_L2_/prenorm_L2_);
-    printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
+    printf(" (te=%10.3E",dtele_);
     if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
       printf(",tf=%10.3E",dtfilter_);
     printf(")\n");
@@ -2860,274 +2873,6 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
   return false;
 
 } // FluidImplicitTimeInt::ConvergenceCheck
-
-//
-//
-//void FLD::FluidImplicitTimeInt::EdgeBasedStabilization(Teuchos::ParameterList & eleparams,
-//    DRT::Discretization & discret,
-//    int& itnum )
-//{
-////  int itemax = params_->get<int>("max nonlin iter steps");
-//
-//    // call standard loop over elements
-//    //discret.Evaluate(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
-//
-//    DRT::AssembleStrategy strategy(0, 0, sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null);
-//
-////     ParObjectFactory::Instance().PreEvaluate(*this,params,
-////                                              strategy.Systemmatrix1(),
-////                                              strategy.Systemmatrix2(),
-////                                              strategy.Systemvector1(),
-////                                              strategy.Systemvector2(),
-////                                              strategy.Systemvector3());
-//
-//    DRT::Element::LocationArray la( 1 );
-//
-//    // loop over column elements
-//    const int numcolele = discret.NumMyColElements();
-//    for (int i=0; i<numcolele; ++i)
-//    {
-//      DRT::Element* actele = discret.lColElement(i);
-//      Teuchos::RCP<MAT::Material> mat = actele->Material();
-//
-//      DRT::ELEMENTS::Fluid * ele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actele );
-//      if ( ele==NULL )
-//      {
-//        dserror( "expect fluid element" );
-//      }
-//      //====================================================================================================
-//
-//      // call edge stabilization
-//      // REMARK: the current implementation of internal edges integration belongs to the elements
-//      // at the moment each side is integrated twice
-//
-//      stabilizeStandardElement(strategy, ele, discret);
-//
-//    }
-//
-//
-//  return;
-//}
-//
-//
-//
-//void FLD::FluidImplicitTimeInt::stabilizeStandardElement( DRT::AssembleStrategy&   strategy,
-//                                                             DRT::ELEMENTS::Fluid *  actele,
-//                                                             DRT::Discretization &    discret)
-//{
-//#ifdef D_FLUID3
-//
-//  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EdgeBasedStabilization" );
-//
-//  // all surfaces of Fluid elements are FluidBoundaryElements
-//  // better: create FluidInternalSurfaces elements
-//  std::vector<Teuchos::RCP<DRT::Element> > surfaces = actele->Surfaces();
-//
-//  // loop over surfaces
-//  for (unsigned int surf=0; surf<surfaces.size(); ++surf)
-//  {
-////    cout << "surface number " << surf << endl;
-//    RCP< DRT::Element > surface = surfaces[surf];
-//
-//    bool neighbor_found = false;
-//    int  neighbor_id = -1;
-//
-//
-//    findNeighborElement(actele, surface, neighbor_found, neighbor_id);
-//
-//
-//    // if there exists a neighbor
-//    if(neighbor_id > -1)
-//    {
-//
-////      // get the neighboring element
-////      DRT::Element* neighbor = discret.gElement(neighbor_id);
-//
-//      bool edge_based_stab = false;
-//      bool ghost_penalty   = false;
-//
-//        // two uncut elements / standard fluid case
-//        edge_based_stab = true;
-//        ghost_penalty   = false;
-//
-//        // the current element must be the parent element
-//
-//        // get the parent element
-//        int ele1_id = actele->Id();
-//        int ele2_id = neighbor_id;
-//
-//        std::vector<int> nds_1;
-//        std::vector<int> nds_2;
-//
-//        nds_1.clear();
-//        for(int i=0; i< discret.gElement(ele1_id)->NumNode(); i++)
-//        {
-//          nds_1.push_back(0);
-//        }
-//
-//        nds_2.clear();
-//        for(int i=0; i< discret.gElement(neighbor_id)->NumNode(); i++)
-//        {
-//          nds_2.push_back(0);
-//        }
-//
-//
-//        DRT::Element* ele1 = discret.gElement(ele1_id);
-//        DRT::Element* ele2 = discret.gElement(ele2_id);
-//
-//
-//        // call evaluate routine
-//        callEdgeStabandGhostPenalty( edge_based_stab,
-//                                     ghost_penalty,
-//                                     surface,
-//                                     ele1,
-//                                     ele2,
-//                                     nds_1,
-//                                     nds_2,
-//                                     discret,
-//                                     strategy );
-//
-//
-//    } // if(neighbor)
-//
-//  } // surfaces
-//
-//#endif
-//}
-//
-//
-//
-//void FLD::FluidImplicitTimeInt::findNeighborElement(DRT::ELEMENTS::Fluid * actele,
-//                                                   RCP<DRT::Element> surface,
-//                                                   bool & neighbor_found,
-//                                                   int & neighbor_id)
-//{
-//  // find for each surface its unique neighbor if there is a neighbor
-//  DRT::Node** NodesPtr = surface->Nodes();
-////        const int* nodeids = surface->NodeIds();
-//  int numsurfnodes = surface->NumNode();
-//
-//  for (int surfnode = 0; surfnode < surface->NumNode(); ++surfnode)
-//  {
-//    DRT::Node* node = NodesPtr[surfnode];
-//
-//    // get adjacent element to this surface node
-//    DRT::Element** adjeles = node->Elements();
-//    int numadjele = node->NumElement();
-//
-//    // search for the right neighbor element
-//    for(int adjele = 0; adjele < numadjele; adjele++)
-//    {
-//      DRT::Element* actadjele = adjeles[adjele];
-//
-//      DRT::ELEMENTS::Fluid * adjele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actadjele );
-//
-//
-//      // decide if adjele is the right neighbor
-//      if(adjele->Id() == actele->Id());// cout << "found the element itself" << endl ;// element found itself
-//      else
-//      {
-//        // do adjele and ele share a common surface ?
-//        std::vector<Teuchos::RCP<DRT::Element> > adjele_surfaces = adjele->Surfaces();
-//
-//        // loop over surfaces of adjacent element
-//        for (unsigned int adj_surf=0; adj_surf<adjele_surfaces.size(); ++adj_surf)
-//        {
-//          RCP< DRT::Element > adj_surface = adjele_surfaces[adj_surf];
-//          int numadjsurfnodes = adj_surface->NumNode();
-//          DRT::Node** AdjNodesPtr = adj_surface->Nodes();
-//
-//          if(numsurfnodes != numadjsurfnodes)
-//          {
-//            neighbor_found = false;
-//          }
-//          else
-//          {
-//
-//            // if adj_surface and surface share the same nodes, then adjele is the neighbor element
-//            int matching_node = 0;
-//            for(int i=0; i< numsurfnodes; ++i)
-//            {
-//              for(int j=0; j< numadjsurfnodes; ++j)
-//              {
-//                if(NodesPtr[i]->Id() == AdjNodesPtr[j]->Id()) matching_node++;
-//              }
-//            }
-//            if(matching_node == (int)numsurfnodes)
-//            {
-//              neighbor_found =  true;
-//              neighbor_id    =  adjele->Id();
-//            }
-//          }
-//
-//        }
-//
-//
-//      }
-//
-//    }
-//  }
-//
-//}
-//
-//
-//
-//
-//
-//void FLD::FluidImplicitTimeInt::callEdgeStabandGhostPenalty( bool & edge_based_stab,
-//                                                            bool & ghost_penalty,
-//                                                            RCP<DRT::Element>       surface,
-//                                                            DRT::Element* ele_1,
-//                                                            DRT::Element* ele_2,
-//                                                            std::vector<int> & nds_1,
-//                                                            std::vector<int> & nds_2,
-//                                                            DRT::Discretization &   discret,
-//                                                            DRT::AssembleStrategy&  strategy)
-//{
-//#ifdef D_FLUID3
-//  //======================================================================================
-//  // call the internal faces stabilization routine for the current side/surface
-//
-//
-////  cout << "callEdgeStab for ele_1: " << ele_1->Id() << " ele_2 " << ele_2->Id() << "\t ghost_pen " << ghost_penalty << "\tedgeb " << edge_based_stab << endl;
-//
-//  // call edge-based stabilization and ghost penalty
-//  ParameterList edgebasedparams;
-//
-//  // set action for elements
-//  edgebasedparams.set("action","edge_based_stabilization");
-//  edgebasedparams.set("edge_based_stab", edge_based_stab);
-//  edgebasedparams.set("ghost_penalty",   ghost_penalty);
-//
-//
-//  DRT::ELEMENTS::FluidBoundary * side_ele = dynamic_cast<DRT::ELEMENTS::FluidBoundary *>( &*surface );
-//
-//  DRT::ELEMENTS::Fluid * fele_1 = dynamic_cast<DRT::ELEMENTS::Fluid *>( ele_1 );
-//  DRT::ELEMENTS::Fluid * fele_2 = dynamic_cast<DRT::ELEMENTS::Fluid *>( ele_2 );
-//
-//  // call the egde-based routine
-//  DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(&*surface)->EvaluateInternalFacesUsingNeighborData( &*side_ele,
-//                                                                                                       fele_1,
-//                                                                                                       fele_2,
-//                                                                                                       nds_1,
-//                                                                                                       nds_2,
-//                                                                                                       edgebasedparams,
-//                                                                                                       discret,
-//                                                                                                       strategy.Systemmatrix1(),
-//                                                                                                       strategy.Systemmatrix2(),
-//                                                                                                       strategy.Systemvector1(),
-//                                                                                                       strategy.Systemvector2(),
-//                                                                                                       strategy.Systemvector3() );
-//
-//#endif
-//
-//  return;
-//}
-//
-//
-//
-
-
 
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

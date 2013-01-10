@@ -230,17 +230,25 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     dserror("do not call EvaluateEdgeBasedStabilization if no stab is required!");
   }
 
-  //    const double timefac      = fldpara_->TimeFac();     // timefac_ = theta_*dt_;
-  //    const double timefacpre   = fldpara_->TimeFacPre();  // special factor for pressure terms in genalpha time integration
-  //    const double timefacrhs   = fldpara_->TimeFacRhs();  // factor for rhs (for OST: also theta_*dt_), modified just for genalpha time integration
-
-  // modified time factors
+  if (fldpara_->TimeAlgo()!=INPAR::FLUID::timeint_one_step_theta and fldpara_->TimeAlgo()!=INPAR::FLUID::timeint_stationary)
+      dserror("Other time integration schemes than OST and Stationary currently not supported for edge-based stabilization!");
+  if (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_one_step_theta and fldpara_->Theta()!=1.0)
+      dserror("Read remark!");
+  // Remark:
+  // in the following Paper a fully implicit integration of the stabilization terms is proposed
+  // this corresponds to theta=1 for the stabilization terms, while theta!=1 may be used for all other term
+  // if you known what you are doing, you may turn off the dserror
 
   // for the streamline and divergence stabilization a full matrix pattern is applied
   // fully implicit integration of j_stream(u_h,v_h)
   // Literature: E.Burman, M.A.Fernandez 2009
   // "Finite element methods with symmetric stabilization for the transient convection-diffusion-reaction equation"
 
+  //    const double timefac      = fldpara_->TimeFac();     // timefac_ = theta_*dt_;
+  //    const double timefacpre   = fldpara_->TimeFacPre();  // special factor for pressure terms in genalpha time integration
+  //    const double timefacrhs   = fldpara_->TimeFacRhs();  // factor for rhs (for OST: also theta_*dt_), modified just for genalpha time integration
+
+  // modified time factors
   double timefac    = 0.0;
   double timefacpre = 0.0;
 
