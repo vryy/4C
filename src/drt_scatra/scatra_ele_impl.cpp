@@ -3930,6 +3930,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
   {
     const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
 
+    // get concentration at integration point for all scalars
+    for (int k = 0;k<numscal_;++k)
+      conint_[k] = funct_.Dot(ephinp_[k]);
+
     //----------------------------------------------------------------------
     // get material parameters (evaluation at integration point)
     //----------------------------------------------------------------------
@@ -3952,9 +3956,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcInitialTimeDerivative(
       if (tau_gp_) CalTau(ele,diffus_[k],dt,timefac,vol,k,0.0,false);
 
       const double fac_tau = fac*tau_[k];
-
-      // get value of current scalar
-      conint_[k] = funct_.Dot(ephinp_[k]);
 
       // gradient of current scalar value
       // gradphi_.Multiply(derxy_,ephinp_[k]);
@@ -6541,20 +6542,17 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
   Epetra_SerialDenseVector& sigma
   )
 {
-  // get concentration of transported scalar k at integration point
-  for (int k = 0;k<numscal_;++k)
-  {
-    //cout <<"ephinp_ "<< k<< ":  " <<ephinp_[k] << endl;
-    conint_[k] = funct_.Dot(ephinp_[k]);
-  }
-
-  GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
-
   // use one-point Gauss rule to do calculations at the element center
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints_tau(SCATRA::DisTypeToStabGaussRule<distype>::rule);
 
   // evaluate shape functions (and not needed derivatives) at element center
   EvalShapeFuncAndDerivsAtIntPoint(intpoints_tau,0,ele->Id());
+
+  // get concentration of transported scalar k at integration point
+  for (int k = 0;k<numscal_;++k)
+    conint_[k] = funct_.Dot(ephinp_[k]);
+
+  GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
 
   // compute the conductivity (1/(\Omega m) = 1 Siemens / m)
   double sigma_all(0.0);
@@ -6562,16 +6560,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
 
   for(int k=0; k < numscal_; k++)
   {
-    // concentration of ionic species k at element center
-    double conint = funct_.Dot(ephinp_[k]);
-    double sigma_k = factor*valence_[k]*diffusvalence_[k]*conint;
+    double sigma_k = factor*valence_[k]*diffusvalence_[k]*conint_[k];
     sigma[k] += sigma_k; // insert value for this ionic species
     sigma_all += sigma_k;
 
     // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
     if(scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
     {
-      sigma_all += factor*diffusvalence_[numscal_]*valence_[k]*(-conint);
+      sigma_all += factor*diffusvalence_[numscal_]*valence_[k]*(-conint_[k]);
     }
   }
   // conductivity based on ALL ionic species (even eliminated ones!)
@@ -6594,16 +6590,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
   Epetra_SerialDenseVector&   erhs
   )
 {
-  // get concentration of transported scalar k at integration point
-  for (int k = 0;k<numscal_;++k)
-  {
-    //cout <<"ephinp_ "<< k<< ":  " <<ephinp_[k] << endl;
-    conint_[k] = funct_.Dot(ephinp_[k]);
-  }
-
-  // access material parameters
-  GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
-
   // integration points and weights
   const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
 
@@ -6611,12 +6597,18 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateElectricPotentialField(
   for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
   {
     const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+    // get concentration of transported scalar k at integration point
+    for (int k = 0;k<numscal_;++k)
+      conint_[k] = funct_.Dot(ephinp_[k]);
+
+    // access material parameters
+    GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
+
     double sigmaint(0.0);
     for (int k=0; k<numscal_; ++k)
     {
-      // concentration of ionic species k at element center
-      double conintk = funct_.Dot(ephinp_[k]);
-      double sigma_k = frt*valence_[k]*diffusvalence_[k]*conintk;
+      double sigma_k = frt*valence_[k]*diffusvalence_[k]*conint_[k];
       sigmaint += sigma_k;
 
       // diffusive terms on rhs
