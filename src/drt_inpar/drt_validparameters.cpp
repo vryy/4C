@@ -5157,7 +5157,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   IntParameter("VERBOSITY",0,"verbosity level (0=no output,... 10=extreme), for Belos only",&list);
 
   // the only one stratimikos specific parameter
-  StringParameter("STRATIMIKOS_XMLFILE","",
+  StringParameter("STRATIMIKOS_XMLFILE","none",
                   "xml file for stratimikos parameters",
                   &list);
 

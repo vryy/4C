@@ -1215,7 +1215,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
   case INPAR::SOLVER::stratimikos_belos:  //===================================== Stratimikos
   {
     outparams.set("solver","stratimikos");
-    outparams.set("xml file",inparams.get<string>("STRATIMIKOS_XMLFILE"));
+    std::string xmlfile = inparams.get<string>("STRATIMIKOS_XMLFILE");
+    if (xmlfile != "none")
+      outparams.set("xml file",xmlfile);
     Teuchos::ParameterList& stratimikoslist = outparams.sublist("Stratimikos Parameters");
     stratimikoslist = LINALG::Solver::TranslateToStratimikos(inparams);
   }

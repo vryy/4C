@@ -753,6 +753,10 @@ void DatFileReader::AddEntry(std::string key, std::string value, Teuchos::Parame
   if (list.isParameter(key))
     dserror("Duplicate parameter %s in sublist %s",key.c_str(),list.name().c_str());
 
+  // safety check: Is the parameter without any specified value?
+  if (value.empty())
+    dserror("Missing value for parameter %s. Fix your input file!", key.c_str());
+
   { // try to find an int
     std::stringstream ssi;
     int iv;
