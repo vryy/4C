@@ -910,7 +910,7 @@ SIMPLE_DAMPING                  1
 SOLVER                          UMFPACK
 //
 // xml file for stratimikos parameters
-STRATIMIKOS_XMLFILE             
+STRATIMIKOS_XMLFILE             none
 //
 // verbosity level (0=no output,... 10=extreme), for Belos only
 VERBOSITY                       0
@@ -1142,7 +1142,7 @@ SIMPLE_DAMPING                  1
 SOLVER                         Aztec_MSR
 //
 // xml file for stratimikos parameters
-STRATIMIKOS_XMLFILE             
+STRATIMIKOS_XMLFILE             none
 //
 // verbosity level (0=no output,... 10=extreme), for Belos only
 VERBOSITY                       0
@@ -1374,7 +1374,7 @@ SIMPLE_DAMPING                  1
 SOLVER                          UMFPACK
 //
 // xml file for stratimikos parameters
-STRATIMIKOS_XMLFILE             
+STRATIMIKOS_XMLFILE             none
 //
 // verbosity level (0=no output,... 10=extreme), for Belos only
 VERBOSITY                       0
