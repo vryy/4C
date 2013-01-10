@@ -131,13 +131,13 @@ private:
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new NewtonianFluid( *this ) ); }
 
     /// return viscosity
-    double Viscosity() const { return params_->viscosity_; } //matdata_->m.fluid->viscosity; }
+    double Viscosity() const { return params_->viscosity_; }
 
     /// return density
-    virtual double Density() const { return params_->density_; } //matdata_->m.fluid->density; }
+    virtual double Density() const { return params_->density_; }
 
     /// return surface tension coefficient
-    double Gamma() const { return params_->gamma_; } //matdata_->m.fluid->gamma; }
+    double Gamma() const { return params_->gamma_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
