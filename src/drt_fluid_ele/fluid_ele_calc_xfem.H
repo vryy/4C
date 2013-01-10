@@ -153,7 +153,8 @@ public:
         Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
         Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
         std::string&                                                        VCellGaussPts,     ///< Method of volumecell gauss point generation
-        const GEO::CUT::plain_volumecell_set&                               vcSet              ///< Volumecells present in the considered set
+        const GEO::CUT::plain_volumecell_set&                               vcSet,              ///< Volumecells present in the considered set
+        bool                                                                fluidfluidcoupling ///< Is this xfluidfluid problem?
     );
 
     /// add Nitsche (NIT) interface condition to element matrix and rhs
@@ -169,7 +170,8 @@ public:
         Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
         Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
         Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
-        const GEO::CUT::plain_volumecell_set&                               vcSet							 ///< volumecell sets in this element
+        const GEO::CUT::plain_volumecell_set&                               vcSet,						 ///< volumecell sets in this element
+        bool                                                                fluidfluidcoupling ///< Is this xfluidfluid problem?
     );
 
     /// add two-sided Nitsche (NIT2) interface condition to element matrix and rhs

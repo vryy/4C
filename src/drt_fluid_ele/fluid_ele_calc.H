@@ -268,7 +268,8 @@ namespace ELEMENTS
                                        Epetra_SerialDenseVector&                                         elevec1_epetra,
                                        Epetra_SerialDenseMatrix&                                         Cuiui,
                                        std::string&                                                      VCellGaussPts,
-                                       const GEO::CUT::plain_volumecell_set &                            cells
+                                       const GEO::CUT::plain_volumecell_set &                            cells,
+                                       bool                                                              fluidfluidcoupling
       ) {dserror("Implemented in derived xfem class!"); return;}
 
     virtual void ElementXfemInterfaceNIT(    DRT::ELEMENTS::Fluid *                                            ele,
@@ -282,7 +283,8 @@ namespace ELEMENTS
                                              Epetra_SerialDenseMatrix&                                         elemat1_epetra,
                                              Epetra_SerialDenseVector&                                         elevec1_epetra,
                                              Epetra_SerialDenseMatrix&                                         Cuiui,
-                                             const GEO::CUT::plain_volumecell_set&                             vcSet
+                                             const GEO::CUT::plain_volumecell_set&                             vcSet,
+                                             bool                                                              fluidfluidcoupling
       ) {dserror("Implemented in derived xfem class!"); return;}
 
     virtual void ElementXfemInterfaceNIT2(

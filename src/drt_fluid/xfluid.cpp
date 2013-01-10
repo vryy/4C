@@ -421,7 +421,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                        strategy.Elevector1(),
                                                        Cuiui,
                                                        xfluid_.VolumeCellGaussPointBy_,
-                                                       cells);
+                                                       cells,
+                                                       false);
 
                   if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNitsche)
                       impl->ElementXfemInterfaceNIT(   ele,
@@ -435,7 +436,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                        strategy.Elematrix1(),
                                                        strategy.Elevector1(),
                                                        Cuiui,
-                                                       cells);
+                                                       cells,
+                                                       false);
 
               }
 
@@ -551,7 +553,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                 strategy.Elevector1(),
                                                 Cuiui,
                                                 xfluid_.VolumeCellGaussPointBy_,
-                                                cells);
+                                                cells,
+                                                false);
 
 
               if(xfluid_.BoundIntType() == INPAR::XFEM::BoundaryTypeNitsche)
@@ -566,7 +569,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
                                                  strategy.Elematrix1(),
                                                  strategy.Elevector1(),
                                                  Cuiui,
-                                                 cells);
+                                                 cells,
+                                                 false);
 
 
 

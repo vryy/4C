@@ -497,7 +497,8 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                               strategy.Elevector1(),
                                               Cuiui,
                                               xfluid_.VolumeCellGaussPointBy_,
-                                              cells);
+                                              cells,
+                                              true);
           else if (xfluid_.action_ == "coupling nitsche xfluid sided")
             impl->ElementXfemInterfaceNIT(    ele,
                                               discret,
@@ -510,7 +511,8 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                               strategy.Elematrix1(),
                                               strategy.Elevector1(),
                                               Cuiui,
-                                              cells);
+                                              cells,
+                                              true);
           else if (xfluid_.action_ == "coupling nitsche embedded sided" or xfluid_.action_ == "coupling nitsche two sided")
             impl->ElementXfemInterfaceNIT2(   ele,
                                               discret,
@@ -723,7 +725,8 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
                                               strategy.Elevector1(),
                                               Cuiui,
                                               xfluid_.VolumeCellGaussPointBy_,
-                                              cells);
+                                              cells,
+                                              true);
 
             for ( std::map<int, std::vector<Epetra_SerialDenseMatrix> >::const_iterator sc=side_coupling.begin();
                   sc!=side_coupling.end(); ++sc )

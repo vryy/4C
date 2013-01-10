@@ -213,7 +213,8 @@ namespace ELEMENTS
         Epetra_SerialDenseVector&                                         elevec1_epetra,
         Epetra_SerialDenseMatrix&                                         Cuiui,
         std::string&                                                      VCellGaussPts,
-        const GEO::CUT::plain_volumecell_set &                            cells) = 0;
+        const GEO::CUT::plain_volumecell_set &                            cells,
+        bool                                                              fluidfluidcoupling) = 0;
 
     /// add interface condition at cut to element matrix and rhs (Nitsche coupling)
     virtual void ElementXfemInterfaceNIT(
@@ -228,7 +229,8 @@ namespace ELEMENTS
         Epetra_SerialDenseMatrix&                                         elemat1_epetra,
         Epetra_SerialDenseVector&                                         elevec1_epetra,
         Epetra_SerialDenseMatrix&                                         Cuiui,
-        const GEO::CUT::plain_volumecell_set &                            cells) = 0;
+        const GEO::CUT::plain_volumecell_set &                            cells,
+        bool                                                              fluidfluidcoupling) = 0;
 
     /// add interface condition at cut to element matrix and rhs (two-sided Nitsche coupling)
     virtual void ElementXfemInterfaceNIT2(

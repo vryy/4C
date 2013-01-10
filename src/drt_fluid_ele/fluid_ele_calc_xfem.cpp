@@ -1487,7 +1487,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
     Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
     Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
     std::string&                                                        VCellGaussPts,     ///< Method of volumecell gauss point generation
-    const GEO::CUT::plain_volumecell_set&                               cells              ///< Volumecells in the present set
+    const GEO::CUT::plain_volumecell_set&                               cells,             ///< Volumecells in the present set
+    bool                                                                fluidfluidcoupling ///< Is this xfluidfluid problem?
   )
 {
   // get node coordinates
@@ -1578,8 +1579,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
   LINALG::Matrix<3,1> normal;
   LINALG::Matrix<3,1> x_side;
 
-  bool fluidfluidcoupling = false;
-
   // side coupling implementation between background element and each cut side (map<sid, side_impl)
   std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > > side_impl;
   Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > si;
@@ -1652,16 +1651,12 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
       std::copy( x, x+3, &side_xyze( 0, i ) );
     }
 
-    std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c = side_coupling.find( sid );
-
-    std::vector<Epetra_SerialDenseMatrix> & side_matrices = c->second;
-
-    if ( side_matrices.size()==3 )
-      fluidfluidcoupling = true;
-
     // create side impl
     if(fluidfluidcoupling)
     {
+      std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c = side_coupling.find( sid );
+      std::vector<Epetra_SerialDenseMatrix> & side_matrices = c->second;
+
       // coupling matrices between background element and one! side
       Epetra_SerialDenseMatrix & C_uiu  = side_matrices[0];
       Epetra_SerialDenseMatrix & C_uui  = side_matrices[1];
@@ -2408,7 +2403,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     Epetra_SerialDenseMatrix&                                           elemat1_epetra,    ///< element matrix
     Epetra_SerialDenseVector&                                           elevec1_epetra,    ///< element vector
     Epetra_SerialDenseMatrix&                                           Cuiui,             ///< ui-ui coupling matrix
-    const GEO::CUT::plain_volumecell_set&                               vcSet							 ///< volumecell sets in this element
+    const GEO::CUT::plain_volumecell_set&                               vcSet,						 ///< volumecell sets in this element
+    bool                                                                fluidfluidcoupling ///< Is this xfluidfluid problem?
   )
 {
 
@@ -2480,8 +2476,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
   LINALG::Matrix<3,1> normal;
   LINALG::Matrix<3,1> x_side;
-
-  bool fluidfluidcoupling = false;
 
   // side coupling implementation between background element and each cut side (map<sid, side_impl)
   std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > > side_impl;
@@ -2601,16 +2595,14 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
       std::copy( x, x+3, &side_xyze( 0, i ) );
     }
 
-    std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c = side_coupling.find( sid );
-
-    std::vector<Epetra_SerialDenseMatrix> & side_matrices = c->second;
-
-    if ( side_matrices.size()==3 )
-      fluidfluidcoupling = true;
 
     // create side impl
     if(fluidfluidcoupling)
     {
+
+      std::map<int,std::vector<Epetra_SerialDenseMatrix> >::iterator c = side_coupling.find( sid );
+      std::vector<Epetra_SerialDenseMatrix> & side_matrices = c->second;
+
       // coupling matrices between background element and one! side
       Epetra_SerialDenseMatrix & C_uiu  = side_matrices[0];
       Epetra_SerialDenseMatrix & C_uui  = side_matrices[1];
