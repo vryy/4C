@@ -120,6 +120,13 @@ namespace STR
 * \author rausch
 */
 
+/// Set material parameters (to be called also from supporting procs in case
+/// of nested parallel multi-scale inverse analysis)
+void SetMaterialParameters(int prob,
+    Epetra_SerialDenseVector& p_cur,
+    std::set<int>& mymatset);
+
+
 class GenInvAnalysis {
 
 private:
@@ -192,8 +199,7 @@ private:
 
   int reset_out_count_;
 
-  std::set<int> matset_;
-  std::vector<std::set<int> > eh_matset_;
+  std::vector<std::set<int> > matset_;
 
   // observed nodes, dofs, timesteps
   int                  nnodes_;        // number of nodes observed
