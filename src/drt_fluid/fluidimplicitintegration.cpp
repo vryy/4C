@@ -72,6 +72,8 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"
 
+#include <cmath>
+
 #if 0
 // temporary: until standard discretization can deal with edged-based stabilization
 #include "../drt_lib/drt_discret_xfem.H"
@@ -889,27 +891,34 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   //                      +-                                      -+
   //
   // -------------------------------------------------------------------
-  //
-  // We cannot have a predictor in case of monolithic FSI here. There needs to
-  // be a way to turn this off.
-
+  // We cannot have a predictor in certain cases of monolithic FSI here.
+  // Hence, the flag 'extrapolationpredictor_' is turned off in
+  // ADAPTER::FluidBaseAlgorithm::SetupFluid()' for these cases.
   if(extrapolationpredictor_)
   {
+    // no predictor in first time step
     if (step_>1)
     {
-      TIMEINT_THETA_BDF2::ExplicitPredictor(
-        predictor_,
-        veln_,
-        velnm_,
-        accn_,
-        velpressplitter_,
-        timealgo_,
-        theta_,
-        dta_,
-        dtp_,
-        velnp_,
-        discret_->Comm()
-        );
+      if (predictor_ != "TangVel")
+      {
+        TIMEINT_THETA_BDF2::ExplicitPredictor(
+          predictor_,
+          veln_,
+          velnm_,
+          accn_,
+          velpressplitter_,
+          timealgo_,
+          theta_,
+          dta_,
+          dtp_,
+          velnp_,
+          discret_->Comm()
+          );
+      }
+      else
+      {
+        PredictTangVelConsistAcc();
+      }
     }
   }
 
@@ -2800,12 +2809,12 @@ bool FLD::FluidImplicitTimeInt::ConvergenceCheck(int          itnum,
       std::isnan(prenorm_L2_))
     dserror("At least one of the calculated vector norms is NaN.");
 
-  if (abs(std::isinf(vresnorm_)) or
-      abs(std::isinf(incvelnorm_L2_)) or
-      abs(std::isinf(velnorm_L2_)) or
-      abs(std::isinf(presnorm_)) or
-      abs(std::isinf(incprenorm_L2_)) or
-      abs(std::isinf(prenorm_L2_)))
+  if (std::abs(std::isinf(vresnorm_)) or
+      std::abs(std::isinf(incvelnorm_L2_)) or
+      std::abs(std::isinf(velnorm_L2_)) or
+      std::abs(std::isinf(presnorm_)) or
+      std::abs(std::isinf(incprenorm_L2_)) or
+      std::abs(std::isinf(prenorm_L2_)))
     dserror("At least one of the calculated vector norms is INF.");
 
   // care for the case that nothing really happens in velocity
@@ -6542,6 +6551,95 @@ void FLD::FluidImplicitTimeInt::Reset(
 
     output_->WriteMesh(0,0.0);
   }
+
+  return;
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ |
+ *------------------------------------------------------------------------------------------------*/
+void FLD::FluidImplicitTimeInt::PredictTangVelConsistAcc()
+{
+  // message to screen
+  if(discret_->Comm().MyPID()==0)
+  {
+    std::cout << "fluid: doing TangVel predictor" << std::endl;
+  }
+
+  // total time required for evaluation of Dirichlet conditions
+  ParameterList eleparams;
+  eleparams.set("total time",time_);
+
+  // initialize
+  velnp_->Update(1.0, *veln_, 0.0);
+  accnp_->Update(1.0, *accn_, 0.0);
+  incvel_->PutScalar(0.0);
+
+  // for solution increments on Dirichlet boundary
+  Teuchos::RCP<Epetra_Vector> dbcinc
+    = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+
+  // copy last converged solution
+  dbcinc->Update(1.0, *veln_, 0.0);
+
+  // get Dirichlet values at t_{n+1}
+  // set vector values needed by elements
+  discret_->ClearState();
+  discret_->SetState("velnp",velnp_);
+
+  // predicted Dirichlet values
+  // velnp_ then also holds prescribed new dirichlet values
+  discret_->EvaluateDirichlet(eleparams,velnp_,Teuchos::null,Teuchos::null,Teuchos::null);
+
+  // subtract the displacements of the last converged step
+  // DBC-DOFs hold increments of current step
+  // free-DOFs hold zeros
+  dbcinc->Update(-1.0, *veln_, 1.0);
+
+  // compute residual forces residual_ and stiffness sysmat_
+  // at velnp_, etc which are unchanged
+  // (hand in boolean flag indicating that this a predictor)
+  Evaluate(Teuchos::null);
+
+  // add linear reaction forces to residual
+  // linear reactions
+  Teuchos::RCP<Epetra_Vector> freact
+    = LINALG::CreateVector(*(discret_->DofRowMap()), true);
+  sysmat_->Multiply(false, *dbcinc, *freact);
+
+  // add linear reaction forces due to prescribed Dirichlet BCs
+  residual_->Update(1.0, *freact, 1.0);
+
+  // extract reaction forces
+  freact->Update(1.0, *residual_, 0.0);
+  dbcmaps_->InsertOtherVector(dbcmaps_->ExtractOtherVector(zeros_), freact);
+
+  // blank residual at DOFs on Dirichlet BC
+  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
+
+  // apply Dirichlet BCs to system of equations
+  incvel_->PutScalar(0.0);
+  sysmat_->Complete();
+  LINALG::ApplyDirichlettoSystem(sysmat_, incvel_, residual_,
+                                 Teuchos::null, zeros_, *(dbcmaps_->CondMap()));
+
+  // solve for incvel_
+  solver_->Solve(sysmat_->EpetraOperator(), incvel_, residual_, true, true);
+
+  // set Dirichlet increments in solution increments
+  incvel_->Update(1.0, *dbcinc, 1.0);
+
+  // update end-point velocities and pressure
+  UpdateIterIncrementally(incvel_);
+
+  // keep pressure values from previous time step
+  velpressplitter_.InsertCondVector(velpressplitter_.ExtractCondVector(veln_),velnp_);
+
+  // Note: accelerations on Dirichlet DOFs are not set.
+
+  // reset to zero
+  incvel_->PutScalar(0.0);
 
   return;
 }

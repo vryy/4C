@@ -638,6 +638,11 @@ protected:
   */
   void GenAlphaIntermediateValues();
 
+  //! Predict velocities which satisfy exactly the Dirichlet BCs
+  //! and the linearised system at the previously converged state.
+  //!
+  //! This is an implicit predictor, i.e. it calls the solver once.
+  void PredictTangVelConsistAcc();
 
   //! @name general algorithm parameters
   //! project nullspace (useful for completely Dirichlet bounded problems)
@@ -856,7 +861,10 @@ protected:
   RCP<FLD::FluidMHDEvaluate> MHD_evaluator_;
   //@}
 
-  //! Extractor used for convergence check
+  //! Extractor to split velnp_ into velocities and pressure DOFs
+  //!
+  //! velocities  = OtherVector
+  //! pressure    = CondVector
   LINALG::MapExtractor      velpressplitter_;
 
   /// ALE dof map

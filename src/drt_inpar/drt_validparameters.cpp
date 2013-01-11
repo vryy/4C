@@ -2307,9 +2307,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       "zero_acceleration_predictor",
                                       "constant_acceleration_predictor",
                                       "constant_increment_predictor",
-                                      "explicit_second_order_midpoint"
+                                      "explicit_second_order_midpoint",
+                                      "TangVel"
                                       ),
-                                    tuple<int>(1,2,3,4,5,6,7),
+                                    tuple<int>(1,2,3,4,5,6,7,8),
                                     &fdyn);
 
   setStringToIntegralParameter<int>("CONVCHECK","L_2_norm",
