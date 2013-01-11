@@ -74,7 +74,10 @@ void FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
       break;
 
     default:
+    {
       dserror("Time integration scheme unknown!");
+      break;
+    }
   }
   return;
 }
@@ -108,55 +111,58 @@ void FLD::TIMEINT_THETA_BDF2::ExplicitPredictor(
 
     switch (timealgo)
     {
-    case INPAR::FLUID::timeint_stationary: /* Stationary algorithm */
-      message="do nothing";
-      // do nothing
-      break;
-    case INPAR::FLUID::timeint_afgenalpha: /* Generalized-alpha time integration */
-    case INPAR::FLUID::timeint_npgenalpha:
-    {
-      message="do nothing";
-      // do nothing for the time being, that is, steady-state predictor
-      break;
-    }
-    case INPAR::FLUID::timeint_one_step_theta: /* One step Theta time integration */
-    case INPAR::FLUID::timeint_bdf2:    /* 2nd order backward differencing BDF2 */
-    {
-      message="midpoint-like";
+      case INPAR::FLUID::timeint_stationary: /* Stationary algorithm */
+        message="do nothing";
+        // do nothing
+        break;
+      case INPAR::FLUID::timeint_afgenalpha: /* Generalized-alpha time integration */
+      case INPAR::FLUID::timeint_npgenalpha:
+      {
+        message="do nothing";
+        // do nothing for the time being, that is, steady-state predictor
+        break;
+      }
+      case INPAR::FLUID::timeint_one_step_theta: /* One step Theta time integration */
+      case INPAR::FLUID::timeint_bdf2:    /* 2nd order backward differencing BDF2 */
+      {
+        message="midpoint-like";
 
-      // the conventional explicit second order predictor (assuming constant dt)
-      // also known as leapfrog integration
-      /*
-      //                        /          n    n-1 \
-      //       n+1    n        |      n   u  - u     |
-      //      u    = u  + dt * | 2*acc  - ---------  |
-      //       (0)             |             dt      |
-      //                        \                   /
-      // respectively
-      //
-      //       n+1    n-1               n
-      //      u    = u    + 2 * dt * acc
-      //       (0)
-      //
-      //  and
-      //
-      //       n+1    n
-      //      p    = p
-      //       (0)
-      */
-      velnp->Update(1.0,*veln,0.0);
+        // the conventional explicit second order predictor (assuming constant dt)
+        // also known as leapfrog integration
+        /*
+        //                        /          n    n-1 \
+        //       n+1    n        |      n   u  - u     |
+        //      u    = u  + dt * | 2*acc  - ---------  |
+        //       (0)             |             dt      |
+        //                        \                   /
+        // respectively
+        //
+        //       n+1    n-1               n
+        //      u    = u    + 2 * dt * acc
+        //       (0)
+        //
+        //  and
+        //
+        //       n+1    n
+        //      p    = p
+        //       (0)
+        */
+        velnp->Update(1.0,*veln,0.0);
 
-      // split between acceleration and pressure
-      Teuchos::RCP<Epetra_Vector> unm = velpressplitter.ExtractOtherVector(velnm);
-      Teuchos::RCP<Epetra_Vector> an  = velpressplitter.ExtractOtherVector(accn );
+        // split between acceleration and pressure
+        Teuchos::RCP<Epetra_Vector> unm = velpressplitter.ExtractOtherVector(velnm);
+        Teuchos::RCP<Epetra_Vector> an  = velpressplitter.ExtractOtherVector(accn );
 
-      unm->Update(2.0*dta,*an,1.0);
+        unm->Update(2.0*dta,*an,1.0);
 
-      velpressplitter.InsertOtherVector(unm,velnp);
-      break;
-    }
-    default:
-      dserror("Time integration scheme unknown!");
+        velpressplitter.InsertOtherVector(unm,velnp);
+        break;
+      }
+      default:
+      {
+        dserror("Time integration scheme unknown!");
+        break;
+      }
     }
 
     if(comm.MyPID()==0)
@@ -364,7 +370,10 @@ void FLD::TIMEINT_THETA_BDF2::CalculateAcceleration(
         break;
       }
       default:
+      {
         dserror("Time integration scheme unknown!");
+        break;
+      }
     }
 
   return;
