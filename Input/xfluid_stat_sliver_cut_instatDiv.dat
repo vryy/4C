@@ -78,10 +78,10 @@ CSTAB cstab_qs //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT_SCREEN           Yes
+GMSH_DEBUG_OUT_SCREEN           No
 GMSH_DEBUG_OUT                  No
-GMSH_SOL_OUT                    Yes
-GMSH_DISCRET_OUT                Yes
+GMSH_SOL_OUT                    No
+GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          DirectDivergence
 BOUNDARY_GAUSS_POINTS_BY        Tessellation

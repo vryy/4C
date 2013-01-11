@@ -1,9 +1,6 @@
 //
 // Maintainer: Benedikt Schott
 //
-//
-// necessary defines: D_FLUID3 D_SOLID3 CCADISCRET BINIO QHULL
-//
 // flow around two obstacles, SUPG/PSPG/DIVGRAD stabilization on the whole element for cut elements
 // should be stable for Sigma and Nitsche with ~1/h and ~|Gamma|/|Omega|
 // only quadratic convergence for Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt

@@ -210,6 +210,8 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
         }
       }
 
+      // all facets (whose facet-mesh are just tri3s here) which are on cut surface obtain the coordinates
+      // to create boundary integration cells then
       std::map<Facet*, std::vector<Point*> > sides_xyz;
 
       for ( plain_facet_set::const_iterator i=facets.begin();
@@ -221,10 +223,10 @@ void GEO::CUT::TetMesh::CreateElementTets( Mesh & mesh,
         {
           FacetMesh & fm = facet_mesh_[f];
           const PlainEntitySet<3> & tris = fm.SurfaceTris();
-          std::vector<Point*> & side_coords = sides_xyz[f];
+          std::vector<Point*> & side_coords = sides_xyz[f]; // create entry for facet and get a reference to the facets side coordinates
           std::vector<std::vector<int> > sides;
           FindProperSides( tris, sides, &cell_members );
-          CollectCoordinates( sides, side_coords );
+          CollectCoordinates( sides, side_coords ); // fill the side coordinates, if all the side's coordinates are on cut surface
         }
       }
 
@@ -687,6 +689,7 @@ void GEO::CUT::TetMesh::FindProperSides( const PlainEntitySet<3> & tris,
   }
 }
 
+/// collects the coordinates for the tri3 sides of the facet if all its points are on cut surface
 void GEO::CUT::TetMesh::CollectCoordinates( const std::vector<std::vector<int> > & sides,
                                             std::vector<Point*> & side_coords )
 {

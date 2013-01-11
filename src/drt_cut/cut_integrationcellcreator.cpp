@@ -24,7 +24,7 @@ bool GEO::CUT::IntegrationCellCreator::CreateCells( Mesh & mesh, Element * eleme
 
     if ( not found )
     {
-      return false;
+      return false; // return false in case that not for all volumecells simple-shaped integration cells could be created
     }
   }
   creator.Execute( mesh );
@@ -75,7 +75,7 @@ void GEO::CUT::IntegrationCellCreator::Execute( Mesh & mesh )
 
 bool GEO::CUT::IntegrationCellCreator::CreateTet4Cell( Mesh & mesh, VolumeCell * cell, const plain_facet_set & facets )
 {
-  if ( facets.size()==4 )
+  if ( facets.size()==4 ) // check if the volumecell has 4 facets and each facet is tri3
   {
     for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
     {

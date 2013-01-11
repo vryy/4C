@@ -473,22 +473,22 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool lev
   }
 #endif
 
-  if ( cells_.size()==1 )
+  if ( cells_.size()==1 ) // in case there is only one volumecell, check if a simple shaped integration cell is possible
   {
     VolumeCell * vc = *cells_.begin();
     if ( IntegrationCellCreator::CreateCell( mesh, Shape(), vc ) )
     {
       CalculateVolumeOfCellsTessellation();
-      return;
+      return; // return if this was possible
     }
   }
 
-  if ( mesh.CreateOptions().SimpleShapes() )
+  if ( mesh.CreateOptions().SimpleShapes() ) // try to create only simple-shaped integration cells for all! volumecells
   {
     if ( IntegrationCellCreator::CreateCells( mesh, this, cells_ ) )
     {
       CalculateVolumeOfCellsTessellation();
-      return;
+      return; // return if this was possible
     }
   }
 
@@ -538,6 +538,8 @@ void GEO::CUT::Element::CreateIntegrationCells( Mesh & mesh, int count, bool lev
     throw std::runtime_error( "debug output done" );
   }
 #endif
+
+  // standard subtetrahedralization starts here, there also the boundary cells will be created
 
   TetMesh tetmesh( points, facets_, false );
   tetmesh.CreateElementTets( mesh, this, cells_, cut_faces_, count, levelset );

@@ -353,8 +353,7 @@ void GEO::CUT::Facet::CreateTriangulation( Mesh & mesh, const std::vector<Point*
     //std::copy( line.begin(), line.end(), std::ostream_iterator<Point*>( std::cout, "; " ) );
     //std::cout << "\n";
   }
-#endif
-#if 1 //new simpler triangulation implementation (Sudhakar 04/12)
+#else  //new simpler triangulation implementation (Sudhakar 04/12)
   std::vector<Point*> pts( points );
 
   //Find the middle point
@@ -856,13 +855,13 @@ void GEO::CUT::Facet::NewQuad4Cell( Mesh & mesh, VolumeCell * volume, const std:
     bcells.insert( bc );
   }
   else
-  {
+  { // split into two tri3 cells
     std::vector<Point*> tri3_points = points;
-    tri3_points.pop_back();
+    tri3_points.pop_back(); // erase the last (fourth) point to obtain points (1,2,3)
     BoundaryCell * bc = mesh.NewTri3Cell( volume, this, tri3_points );
     bcells.insert( bc );
-    tri3_points.erase( tri3_points.begin()+1 );
-    tri3_points.push_back( points.back() );
+    tri3_points.erase( tri3_points.begin()+1 ); // erase the second point (1,3)
+    tri3_points.push_back( points.back() ); // add the last point again (1,3,4)
     bc = mesh.NewTri3Cell( volume, this, tri3_points );
     bcells.insert( bc );
   }

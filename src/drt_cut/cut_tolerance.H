@@ -13,7 +13,7 @@
 #define MINIMALTOL  1e-10
 #define TOLERANCE   1e-12
 #define LINSOLVETOL 1e-13
-#define VOLUMETOL   1e-14
+#define VOLUMETOL   1e-14  // the tolerance when created integration cells are discarded, the boundary cell however will be created
 
 // special tolerances for some special cut situations
 

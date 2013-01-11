@@ -251,7 +251,7 @@ void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner, std::string V
   if(VCellgausstype=="Tessellation")
   {
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::Tessellation" );
-    m.CreateIntegrationCells( 0, false );
+    m.CreateIntegrationCells( 0, false ); // boundary cells will be created within TetMesh.CreateElementTets
     //m.RemoveEmptyVolumeCells();
 
 #ifdef DEBUGCUTLIBRARY
@@ -264,13 +264,11 @@ void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner, std::string V
     m.TestElementVolume( true );
 #endif
   }
-
   else if(VCellgausstype=="MomentFitting")
   {
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::MomentFitting" );
     m.MomentFitGaussWeights(include_inner, BCellgausstype);
   }
-
   else if(VCellgausstype=="DirectDivergence")
   {
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut::DirectDivergence" );
