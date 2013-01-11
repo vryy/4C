@@ -383,6 +383,48 @@ namespace UTILS {
 
 
   /// special implementation for 2d(3D) stationary kim-moin flow (rhs) for pure stokes equation
+  class KimMoinRHS : public Function
+  {
+  public:
+
+
+    KimMoinRHS(int mat_id, bool is_stationary, bool is_stokes);
+
+    /*!
+
+    \brief evaluate function at given position in space
+
+    \param index (i) index defines the function-component which will
+                     be evaluated
+    \param x     (i) The point in space in which the function will be
+                     evaluated
+
+    */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+    \brief Return the number of components of this spatial function
+    (This is a vector-valued function)
+
+    \return number of components (u,v,w)
+
+    */
+    virtual int NumberComponents()
+      {
+        return(3);
+      };
+
+  private:
+    double viscosity_;
+    bool is_stationary_;
+    bool is_stokes_;
+
+  };
+
+
+
+  /// special implementation for 2d(3D) stationary kim-moin flow (rhs) for pure stokes equation
   class KimMoinStatStokesRHS : public Function
   {
   public:
@@ -877,16 +919,43 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
     .AddNamedInt("MAT")
     ;
 
+  DRT::INPUT::LineDefinition kimmoinup;
+  kimmoinup
+    .AddNamedInt("FUNCT")
+    .AddTag("KIMMOIN-UP")
+    .AddNamedInt("MAT")
+    .AddNamedInt("ISSTAT")
+    ;
+
+  DRT::INPUT::LineDefinition kimmoingradu;
+  kimmoingradu
+    .AddNamedInt("FUNCT")
+    .AddTag("KIMMOIN-GRADU")
+    .AddNamedInt("MAT")
+    .AddNamedInt("ISSTAT")
+    ;
+
+  DRT::INPUT::LineDefinition kimmoinrhs;
+  kimmoinrhs
+    .AddNamedInt("FUNCT")
+    .AddTag("KIMMOIN-RHS")
+    .AddNamedInt("MAT")
+    .AddNamedInt("ISSTAT")
+    .AddNamedInt("ISSTOKES")
+    ;
+
   DRT::INPUT::LineDefinition kimmoinstatstokesup;
   kimmoinstatstokesup
     .AddNamedInt("FUNCT")
     .AddTag("KIMMOIN-STAT-STOKES-UP")
+    .AddNamedInt("MAT")
     ;
 
   DRT::INPUT::LineDefinition kimmoinstatstokesgradu;
   kimmoinstatstokesgradu
     .AddNamedInt("FUNCT")
     .AddTag("KIMMOIN-STAT-STOKES-GRADU")
+    .AddNamedInt("MAT")
     ;
 
   DRT::INPUT::LineDefinition kimmoinstatstokesrhs;
@@ -1035,6 +1104,9 @@ Teuchos::RCP<DRT::INPUT::Lines> DRT::UTILS::FunctionManager::ValidFunctionLines(
   lines->Add(beltramistatstokesgradu);
   lines->Add(beltramistatstokesrhs);
   lines->Add(beltramistatnavierstokesrhs);
+  lines->Add(kimmoinup);
+  lines->Add(kimmoingradu);
+  lines->Add(kimmoinrhs);
   lines->Add(kimmoinstatstokesup);
   lines->Add(kimmoinstatstokesgradu);
   lines->Add(kimmoinstatstokesrhs);
@@ -1223,17 +1295,68 @@ void DRT::UTILS::FunctionManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         function->ExtractInt("MAT",mat_id);
         if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in BELTRAMI-STAT-NAVIER-STOKES-RHS");
 
-        functions_.push_back(Teuchos::rcp(new KimMoinStatNavierStokesRHS(mat_id)));
+        functions_.push_back(Teuchos::rcp(new BeltramiStatNavierStokesRHS(mat_id)));
+      }
+      else if (function->HaveNamed("KIMMOIN-UP"))
+      {
+        // read material
+        int mat_id = -1;
+        int is_stationary = 0;
+
+        function->ExtractInt("MAT",mat_id);
+        function->ExtractInt("ISSTAT",is_stationary);
+
+        if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-UP");
+
+        functions_.push_back(Teuchos::rcp(new KimMoinUP(mat_id, (bool)is_stationary)));
+      }
+      else if (function->HaveNamed("KIMMOIN-GRADU"))
+      {
+        // read material
+        int mat_id = -1;
+        int is_stationary = 0;
+
+        function->ExtractInt("MAT",mat_id);
+        function->ExtractInt("ISSTAT",is_stationary);
+
+        if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-GRADU");
+
+        functions_.push_back(Teuchos::rcp(new KimMoinGradU(mat_id, (bool)is_stationary)));
+      }
+      else if (function->HaveNamed("KIMMOIN-RHS"))
+      {
+        // read material
+        int mat_id = -1;
+        int is_stationary = 0;
+        int is_stokes     = 0;
+
+        function->ExtractInt("MAT",mat_id);
+        function->ExtractInt("ISSTAT",is_stationary);
+        function->ExtractInt("ISSTOKES",is_stokes);
+
+        if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-GRADU");
+
+        functions_.push_back(Teuchos::rcp(new KimMoinRHS(mat_id, (bool)is_stationary, (bool)is_stokes)));
       }
       else if (function->HaveNamed("KIMMOIN-STAT-STOKES-UP") or
                function->HaveNamed("KIMMOIN-STAT-NAVIER-STOKES-UP"))
       {
-        functions_.push_back(Teuchos::rcp(new KimMoinStatStokesUP()));
+        // read material
+        int mat_id = -1;
+        function->ExtractInt("MAT",mat_id);
+        if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-STAT-STOKES-UP");
+
+        functions_.push_back(Teuchos::rcp(new KimMoinStatStokesUP(mat_id)));
       }
       else if (function->HaveNamed("KIMMOIN-STAT-STOKES-GRADU") or
                function->HaveNamed("KIMMOIN-STAT-NAVIER-STOKES-GRADU"))
       {
-        functions_.push_back(Teuchos::rcp(new KimMoinStatStokesGradU()));
+        // read material
+        int mat_id = -1;
+        function->ExtractInt("MAT",mat_id);
+        if(mat_id<=0) dserror("Please give a (reasonable) 'MAT'/material in KIMMOIN-STAT-STOKES-UP");
+
+        functions_.push_back(Teuchos::rcp(new KimMoinStatStokesGradU(mat_id)));
       }
       else if (function->HaveNamed("KIMMOIN-STAT-STOKES-RHS"))
       {
@@ -1601,6 +1724,7 @@ double DRT::UTILS::BeltramiStatStokesUP::Evaluate(int index, const double* xp, d
     return  c*( 1.0/K3 + 1.0/K2 + 1.0/K1 );
   default:
     dserror("wrong index %d", index);
+    break;
   }
 
   return 1.0;
@@ -1646,6 +1770,7 @@ double DRT::UTILS::BeltramiStatStokesGradU::Evaluate(int index, const double* xp
     return a*b*(K2-K3);
   default:
     dserror("wrong index %d", index);
+    break;
   }
 
   return 1.0;
@@ -1699,6 +1824,7 @@ double DRT::UTILS::BeltramiStatStokesRHS::Evaluate(int index, const double* xp, 
     return c*( -b/K3 - a/K2 + (a+b)/K1 - 2.*viscosity_*(b*K2-a*K3) );
   default:
     dserror("wrong index %d", index);
+    break;
   }
 
   return 1.0;
@@ -1761,11 +1887,322 @@ double DRT::UTILS::BeltramiStatNavierStokesRHS::Evaluate(int index, const double
     return c*( -b/K3 - a/K2 + (a+b)/K1 - 2.*viscosity_*(b*K2-a*K3) ) + conv_z;
   default:
     dserror("wrong index %d", index);
+    break;
   }
 
   return 1.0;
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::UTILS::KimMoinUP::KimMoinUP(int mat_id, bool is_stationary) :
+Function(),
+viscosity_(-999.0e99),
+is_stationary_(is_stationary)
+{
+
+  // get material parameters for fluid
+  Teuchos::RCP<MAT::PAR::Material > mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid)
+    dserror("Material %d is not a fluid",mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::NewtonianFluid* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+  if (!fparams)
+    dserror("Material does not cast to Newtonian fluid");
+
+  // get kinematic viscosity
+  viscosity_ = fparams->viscosity_ / fparams->density_;
+
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::UTILS::KimMoinUP::KimMoinUP( Teuchos::RCP<MAT::Material> & mat, bool is_stationary) :
+Function(),
+viscosity_(-999.0e99),
+is_stationary_(is_stationary)
+{
+
+  if (mat->MaterialType() != INPAR::MAT::m_fluid)
+    dserror("Material is not a fluid");
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::NewtonianFluid* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+  if (!fparams)
+    dserror("Material does not cast to Newtonian fluid");
+
+  // get kinematic viscosity
+  viscosity_ = fparams->viscosity_ / fparams->density_;
+
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::KimMoinUP::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+
+  double x = xp[0];
+  double y = xp[1];
+  //double z = xp[2];
+
+  double a = 2.0;
+
+  double a_pi_x = a*PI*x;
+  double a_pi_y = a*PI*y;
+
+  // time factors
+  double gu = 1.0;
+  double gp = 1.0;
+
+  if(!is_stationary_)
+  {
+    gu = exp(-2.0*a*a*PI*PI*t*viscosity_);
+    gp = exp(-4.0*a*a*PI*PI*t*viscosity_);
+  }
+
+
+  switch (index)
+  {
+  case 0:
+    return -cos(a_pi_x)*sin(a_pi_y) * gu;
+  case 1:
+    return sin(a_pi_x)*cos(a_pi_y) * gu;
+  case 2:
+    return 0.0;
+  case 3:
+    return  -1./4. * ( cos(2.0*a_pi_x) + cos(2.0*a_pi_y) ) * gp;
+  default:
+    dserror("wrong index %d", index);
+    break;
+  }
+
+  return 1.0;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::UTILS::KimMoinGradU::KimMoinGradU(int mat_id, bool is_stationary ) :
+Function(),
+viscosity_(-999.0e99),
+is_stationary_(is_stationary)
+{
+
+  // get material parameters for fluid
+  Teuchos::RCP<MAT::PAR::Material > mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid)
+    dserror("Material %d is not a fluid",mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::NewtonianFluid* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+  if (!fparams)
+    dserror("Material does not cast to Newtonian fluid");
+
+  // get kinematic viscosity
+  viscosity_ = fparams->viscosity_ / fparams->density_;
+
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::UTILS::KimMoinGradU::KimMoinGradU(Teuchos::RCP<MAT::Material> & mat, bool is_stationary ) :
+Function(),
+viscosity_(-999.0e99),
+is_stationary_(is_stationary)
+{
+
+  if (mat->MaterialType() != INPAR::MAT::m_fluid)
+    dserror("Material is not a fluid");
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::NewtonianFluid* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+  if (!fparams)
+    dserror("Material does not cast to Newtonian fluid");
+
+  // get kinematic viscosity
+  viscosity_ = fparams->viscosity_ / fparams->density_;
+
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::KimMoinGradU::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  //double visc = 1.0;
+
+  double x = xp[0];
+  double y = xp[1];
+  //double z = xp[2];
+
+  double a = 2.0;
+
+  double a_pi_x = a*PI*x;
+  double a_pi_y = a*PI*y;
+
+  // time factors
+  double gu = 1.0;
+
+  if(!is_stationary_)
+  {
+    gu = exp(-2.0*a*a*PI*PI*t*viscosity_);
+  }
+
+
+  switch (index)
+  {
+  case 0: // u,x
+    return  sin(a_pi_x)*sin(a_pi_y)*a*PI * gu;
+  case 1: // u,y
+    return -cos(a_pi_x)*cos(a_pi_y)*a*PI * gu;
+  case 2: // u,z
+    return 0.0;
+  case 3: // v,x
+    return  cos(a_pi_x)*cos(a_pi_y)*a*PI * gu;
+  case 4: // v,y
+    return -sin(a_pi_x)*sin(a_pi_y)*a*PI * gu;
+  case 5: // v,z
+    return 0.0;
+  case 6: // w,x
+    return 0.0;
+  case 7: // w,y
+    return 0.0;
+  case 8: // w,z
+    return 0.0;
+  default:
+    dserror("wrong index %d", index);
+    break;
+  }
+
+  return 1.0;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::UTILS::KimMoinRHS::KimMoinRHS(int mat_id, bool is_stationary, bool is_stokes) :
+Function(),
+viscosity_(-999.0e99),
+is_stationary_(is_stationary),
+is_stokes_(is_stokes)
+{
+
+  // get material parameters for fluid
+  Teuchos::RCP<MAT::PAR::Material > mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid)
+    dserror("Material %d is not a fluid",mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::NewtonianFluid* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+  if (!fparams)
+    dserror("Material does not cast to Newtonian fluid");
+
+  // get kinematic viscosity
+  viscosity_ = fparams->viscosity_ / fparams->density_;
+
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+double DRT::UTILS::KimMoinRHS::Evaluate(int index, const double* xp, double t, DRT::Discretization* dis)
+{
+  double x = xp[0];
+  double y = xp[1];
+  //double z = xp[2];
+
+  double a = 2.0;
+
+  // time factors
+  double gu = 1.0;
+  double gp = 1.0;
+
+  if(!is_stationary_)
+  {
+    gu = exp(-2.0*a*a*PI*PI*t*viscosity_);
+    gp = exp(-4.0*a*a*PI*PI*t*viscosity_);
+  }
+
+
+  double a_pi_x = a*PI*x;
+  double a_pi_y = a*PI*y;
+
+  double conv_x = 0.0;
+  double conv_y = 0.0;
+  //double conv_z = 0.0;
+
+  if(!is_stokes_)
+  {
+    conv_x = -a*PI*sin(a_pi_x)*cos(a_pi_x);
+    conv_y = -a*PI*sin(a_pi_y)*cos(a_pi_y);
+  }
+
+  double visc_x = 0.0;
+  double visc_y = 0.0;
+
+  if(is_stationary_)
+  {
+    visc_x = viscosity_*2.*a*a*PI*PI* (-cos(a_pi_x)*sin(a_pi_y));
+    visc_y = viscosity_*2.*a*a*PI*PI* ( sin(a_pi_x)*cos(a_pi_y));
+  }
+
+  switch (index)
+  {
+  case 0:
+    return 0.5*a*PI*sin(2.*a_pi_x)*gp + visc_x + conv_x*gu*gu;
+  case 1:
+    return 0.5*a*PI*sin(2.*a_pi_y)*gp + visc_y + conv_y*gu*gu;
+  case 2:
+    return 0.0;
+  default:
+    dserror("wrong index %d", index);
+    break;
+  }
+
+  return 1.0;
+}
+
+
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::UTILS::KimMoinStatStokesUP::KimMoinStatStokesUP(int mat_id) :
+Function(),
+viscosity_(-999.0e99)
+{
+
+  // get material parameters for fluid
+  Teuchos::RCP<MAT::PAR::Material > mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid)
+    dserror("Material %d is not a fluid",mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::NewtonianFluid* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+  if (!fparams)
+    dserror("Material does not cast to Newtonian fluid");
+
+  // get kinematic viscosity
+  viscosity_ = fparams->viscosity_ / fparams->density_;
+
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::UTILS::KimMoinStatStokesUP::KimMoinStatStokesUP( Teuchos::RCP<MAT::Material> & mat ) :
+Function(),
+viscosity_(-999.0e99)
+{
+
+  if (mat->MaterialType() != INPAR::MAT::m_fluid)
+    dserror("Material is not a fluid");
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::NewtonianFluid* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+  if (!fparams)
+    dserror("Material does not cast to Newtonian fluid");
+
+  // get kinematic viscosity
+  viscosity_ = fparams->viscosity_ / fparams->density_;
+
+}
 
 
 /*----------------------------------------------------------------------*/
@@ -1780,7 +2217,13 @@ double DRT::UTILS::KimMoinStatStokesUP::Evaluate(int index, const double* xp, do
   double y = xp[1];
   //double z = xp[2];
 
+  //  double gu = 1.0;
+  //  double gP = 1.0;
+
   double a = 2.0;
+
+  double gu = exp(-2.0*a*a*PI*PI*t*viscosity_);
+  double gp = exp(-4.0*a*a*PI*PI*t*viscosity_);
 
   double a_pi_x = a*PI*x;
   double a_pi_y = a*PI*y;
@@ -1789,21 +2232,63 @@ double DRT::UTILS::KimMoinStatStokesUP::Evaluate(int index, const double* xp, do
   switch (index)
   {
   case 0:
-    return -cos(a_pi_x)*sin(a_pi_y);
+    return -cos(a_pi_x)*sin(a_pi_y) * gu;
     //return 20.0*x*y*y*y;
   case 1:
-    return sin(a_pi_x)*cos(a_pi_y);
+    return sin(a_pi_x)*cos(a_pi_y) * gu;
     //return 5.0*x*x*x*x-5.0*y*y*y*y;
   case 2:
     return 0.0;
   case 3:
-    return  -1./4. * ( cos(2.0*a_pi_x) + cos(2.0*a_pi_y) );
+    return  -1./4. * ( cos(2.0*a_pi_x) + cos(2.0*a_pi_y) ) * gp;
     //return 2.0*(60.0*x*x*y-20.0*y*y*y);
   default:
     dserror("wrong index %d", index);
+    break;
   }
 
   return 1.0;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::UTILS::KimMoinStatStokesGradU::KimMoinStatStokesGradU(int mat_id) :
+Function(),
+viscosity_(-999.0e99)
+{
+
+  // get material parameters for fluid
+  Teuchos::RCP<MAT::PAR::Material > mat = DRT::Problem::Instance()->Materials()->ById(mat_id);
+  if (mat->Type() != INPAR::MAT::m_fluid)
+    dserror("Material %d is not a fluid",mat_id);
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::NewtonianFluid* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+  if (!fparams)
+    dserror("Material does not cast to Newtonian fluid");
+
+  // get kinematic viscosity
+  viscosity_ = fparams->viscosity_ / fparams->density_;
+
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+DRT::UTILS::KimMoinStatStokesGradU::KimMoinStatStokesGradU(Teuchos::RCP<MAT::Material> & mat) :
+Function(),
+viscosity_(-999.0e99)
+{
+
+  if (mat->MaterialType() != INPAR::MAT::m_fluid)
+    dserror("Material is not a fluid");
+  MAT::PAR::Parameter* params = mat->Parameter();
+  MAT::PAR::NewtonianFluid* fparams = dynamic_cast<MAT::PAR::NewtonianFluid*>(params);
+  if (!fparams)
+    dserror("Material does not cast to Newtonian fluid");
+
+  // get kinematic viscosity
+  viscosity_ = fparams->viscosity_ / fparams->density_;
+
 }
 
 /*----------------------------------------------------------------------*/
@@ -1821,19 +2306,22 @@ double DRT::UTILS::KimMoinStatStokesGradU::Evaluate(int index, const double* xp,
   double a_pi_x = a*PI*x;
   double a_pi_y = a*PI*y;
 
+  //  double gu = 1.0;
+  double gu = exp(-2.0*a*a*PI*PI*t*viscosity_);
+
 
   switch (index)
   {
   case 0: // u,x
-    return  sin(a_pi_x)*sin(a_pi_y)*a*PI;
+    return  sin(a_pi_x)*sin(a_pi_y)*a*PI * gu;
   case 1: // u,y
-    return -cos(a_pi_x)*cos(a_pi_y)*a*PI;
+    return -cos(a_pi_x)*cos(a_pi_y)*a*PI * gu;
   case 2: // u,z
     return 0.0;
   case 3: // v,x
-    return  cos(a_pi_x)*cos(a_pi_y)*a*PI;
+    return  cos(a_pi_x)*cos(a_pi_y)*a*PI * gu;
   case 4: // v,y
-    return -sin(a_pi_x)*sin(a_pi_y)*a*PI;
+    return -sin(a_pi_x)*sin(a_pi_y)*a*PI * gu;
   case 5: // v,z
     return 0.0;
   case 6: // w,x
@@ -1844,6 +2332,7 @@ double DRT::UTILS::KimMoinStatStokesGradU::Evaluate(int index, const double* xp,
     return 0.0;
   default:
     dserror("wrong index %d", index);
+    break;
   }
 
   return 1.0;
@@ -1890,15 +2379,16 @@ double DRT::UTILS::KimMoinStatStokesRHS::Evaluate(int index, const double* xp, d
   switch (index)
   {
   case 0:
-    return 0.5*a*PI*sin(2.*a_pi_x) + viscosity_*2.*a*a*PI*PI* (-cos(a_pi_x)*sin(a_pi_y));
+    return 0.5*a*PI*sin(2.*a_pi_x); // + viscosity_*2.*a*a*PI*PI* (-cos(a_pi_x)*sin(a_pi_y));
     //return 0.0;
   case 1:
-    return 0.5*a*PI*sin(2.*a_pi_y) + viscosity_*2.*a*a*PI*PI* (sin(a_pi_x)*cos(a_pi_y));
+    return 0.5*a*PI*sin(2.*a_pi_y); // + viscosity_*2.*a*a*PI*PI* (sin(a_pi_x)*cos(a_pi_y));
     //return 0.0;
   case 2:
     return 0.0;
   default:
     dserror("wrong index %d", index);
+    break;
   }
 
   return 1.0;
@@ -1935,6 +2425,13 @@ double DRT::UTILS::KimMoinStatNavierStokesRHS::Evaluate(int index, const double*
 
   double a = 2.0;
 
+  //  double gu = 1.0;
+  //  double gp = 1.0;
+  double gu = exp(-2.0*a*a*PI*PI*t*viscosity_);
+  double gp = exp(-4.0*a*a*PI*PI*t*viscosity_);
+
+
+
   double a_pi_x = a*PI*x;
   double a_pi_y = a*PI*y;
 
@@ -1946,13 +2443,14 @@ double DRT::UTILS::KimMoinStatNavierStokesRHS::Evaluate(int index, const double*
   switch (index)
   {
   case 0:
-    return 0.5*a*PI*sin(2.*a_pi_x) + viscosity_*2.*a*a*PI*PI* (-cos(a_pi_x)*sin(a_pi_y)) + conv_x;
+    return 0.5*a*PI*sin(2.*a_pi_x)*gp + viscosity_*2.*a*a*PI*PI* (-cos(a_pi_x)*sin(a_pi_y)) + conv_x*gu*gu;
   case 1:
-    return 0.5*a*PI*sin(2.*a_pi_y) + viscosity_*2.*a*a*PI*PI* (sin(a_pi_x)*cos(a_pi_y)) + conv_y;
+    return 0.5*a*PI*sin(2.*a_pi_y)*gp + viscosity_*2.*a*a*PI*PI* (sin(a_pi_x)*cos(a_pi_y)) + conv_y*gu*gu;
   case 2:
     return 0.0;
   default:
     dserror("wrong index %d", index);
+    break;
   }
 
   return 1.0;

@@ -59,15 +59,22 @@ LINALG::KrylovProjector::KrylovProjector(
 
         if(norm>1e-12)
         {
-          std::cout << "#####################################################" << std::endl;
-          std::cout << "Krylov projection failed!                            " << std::endl;
-          std::cout << "This might be caused by:                             " << std::endl;
-          std::cout << " - you don't have pure Dirichlet boundary conditions " << std::endl;
-          std::cout << "   or pbcs -> check your inputfile                   " << std::endl;
-          std::cout << " - you don't integrate the pressure exactly and the  " << std::endl;
-          std::cout << "   given kernel is not a kernel of your system -> to " << std::endl;
-          std::cout << "   check this, use more gauss points (often problem  " << std::endl;
-          std::cout << "   with nurbs)                                       " << std::endl;
+          std::cout << "########################################################" << std::endl;
+          std::cout << "Krylov projection failed!                               " << std::endl;
+          std::cout << "This might be caused by:                                " << std::endl;
+          std::cout << " - you don't have pure Dirichlet boundary conditions    " << std::endl;
+          std::cout << "   or pbcs -> check your inputfile                      " << std::endl;
+          std::cout << " - you don't integrate the pressure exactly and the     " << std::endl;
+          std::cout << "   given kernel is not a kernel of your system -> to    " << std::endl;
+          std::cout << "   check this, use more gauss points (often problem     " << std::endl;
+          std::cout << "   with nurbs)                                          " << std::endl;
+          std::cout << "   in the XFEM: there can be a inconsistency between    " << std::endl;
+          std::cout << "   the volume integration and surface integration       " << std::endl;
+          std::cout << "   on cut elements: change the integration rule to      " << std::endl;
+          std::cout << "   DirectDivergence, change the cut tolerance for       " << std::endl;
+          std::cout << "   discarding volumes or check your transformations, or " << std::endl;
+          std::cout << "   check inconsistencies between tri3, quad4 surfaces   " << std::endl;
+          std::cout << "   and integrationcells, tet4, hex8                     " << std::endl;
           std::cout << " - there is indeed a problem with the Krylov projection " << std::endl;
           std::cout << "#####################################################" << std::endl;
           dserror("krylov projection failed, Ac returned %12.5e for kernel basis vector %d",norm,mm);

@@ -85,12 +85,29 @@ namespace ELEMENTS
 
     static const int numdofpernode_ = nsd_+1;
 
+    virtual int IntegrateShapeFunction(
+        DRT::ELEMENTS::Fluid*     ele,
+        DRT::Discretization&      discretization,
+        const std::vector<int>&   lm            ,
+        Epetra_SerialDenseVector& elevec1);
+
 
     virtual int IntegrateShapeFunction(
         DRT::ELEMENTS::Fluid*     ele,
         DRT::Discretization&      discretization,
-        std::vector<int>&         lm            ,
-        Epetra_SerialDenseVector& elevec1       );
+        const std::vector<int>&   lm,
+        Epetra_SerialDenseVector& elevec1,
+        const DRT::UTILS::GaussIntegration & intpoints);
+
+
+    virtual int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid*                             ele,
+                                           DRT::Discretization&                              discretization,
+                                           const std::vector<int>&                           lm            ,
+                                           Epetra_SerialDenseVector&                         elevec1,
+                                           const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+                                           std::string&                                      VCellGaussPts,
+                                           const GEO::CUT::plain_volumecell_set &            cells)
+    {dserror("Implemented in derived xfem class!"); return 1;};
 
     /*! \brief Calculate a integrated divergence operator in vector form
      *

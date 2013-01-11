@@ -36,17 +36,30 @@ Maintainer: Volker Gravemeier & Andreas Ehrl
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 int DRT::ELEMENTS::FluidEleCalc<distype>::IntegrateShapeFunction(
-    DRT::ELEMENTS::Fluid*    ele,
+    DRT::ELEMENTS::Fluid*     ele,
     DRT::Discretization&      discretization,
-    std::vector<int>&         lm            ,
-    Epetra_SerialDenseVector& elevec1       )
+    const std::vector<int>&   lm,
+    Epetra_SerialDenseVector& elevec1)
+{
+  // integrations points and weights
+  return IntegrateShapeFunction( ele, discretization, lm, elevec1, intpoints_);
+}
+
+
+/*----------------------------------------------------------------------*
+ * Action type: Integrate shape function
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalc<distype>::IntegrateShapeFunction(
+    DRT::ELEMENTS::Fluid*     ele,
+    DRT::Discretization&      discretization,
+    const std::vector<int>&   lm            ,
+    Epetra_SerialDenseVector& elevec1,
+    const DRT::UTILS::GaussIntegration & intpoints)
 {
   // --------------------------------------------------
   // construct views
   LINALG::Matrix<numdofpernode_*nen_,    1> vector(elevec1.A(),true);
-
-  // get Gaussrule
-  //const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   //----------------------------------------------------------------------------
   //                         ELEMENT GEOMETRY
@@ -83,7 +96,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::IntegrateShapeFunction(
 //                       INTEGRATION LOOP
 //------------------------------------------------------------------
 
-  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
     // evaluate shape functions and derivatives at integration point
     EvalShapeFuncAndDerivsAtIntPoint(iquad);

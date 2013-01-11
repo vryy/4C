@@ -76,7 +76,7 @@ public:
     /// called upon destruction
     virtual void Done();
 
-    /// Evaluate the XFEM cut element
+    /// evaluate the XFEM cut element
     virtual int EvaluateXFEM(DRT::ELEMENTS::Fluid*                             ele,
                              DRT::Discretization &                             discretization,
                              const std::vector<int> &                          lm,
@@ -91,6 +91,16 @@ public:
                              std::string&                                      VCellGaussPts,
                              const GEO::CUT::plain_volumecell_set &            cells,
                              bool                                              offdiag = false);
+
+    /// evaluate the shape functions in the XFEM
+    virtual int IntegrateShapeFunctionXFEM(
+                             DRT::ELEMENTS::Fluid*                             ele,
+                             DRT::Discretization &                             discretization,
+                             const std::vector<int> &                          lm,
+                             Epetra_SerialDenseVector&                         elevec1_epetra,
+                             const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+                             std::string&                                      VCellGaussPts,
+                             const GEO::CUT::plain_volumecell_set &            cells);
 
     /// error computation
     virtual int ComputeError(DRT::ELEMENTS::Fluid*         ele,
@@ -215,7 +225,8 @@ private:
         LINALG::Matrix<my::nsd_,my::nsd_> &     grad_u,      ///< exact velocity gradient
         double &                                p,           ///< exact pressure
         LINALG::Matrix<my::nsd_,1> &            xyzint,      ///< xyz position of gaussian point
-        const double &                          t            ///< time
+        const double &                          t,           ///< time
+        Teuchos::RCP<MAT::Material> &           mat = Teuchos::null
         );
 
     //! build the patch coupling matrix Cuiui containing Cuiui for all cutting sides

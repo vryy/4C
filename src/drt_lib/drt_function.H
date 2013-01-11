@@ -56,12 +56,16 @@ Maintainer: Ulrich Kuettler
 #include "drt_parser.H"
 //#include "drt_inputreader.H"
 
+namespace MAT {
+class Material;
+}
 
 namespace DRT {
 
   class Discretization;
   class Condition;
   class Problem;
+
 
 namespace INPUT {
 
@@ -209,34 +213,132 @@ namespace UTILS {
 
   };
 
+
   /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (velocity, pressure)
-  class KimMoinStatStokesUP : public Function
+  class KimMoinUP : public Function
   {
   public:
+
+    KimMoinUP(int mat_id, bool is_stationary);
+
+    KimMoinUP( Teuchos::RCP<MAT::Material> & mat, bool is_stationary );
+
+
     /*!
 
-    \brief evaluate function at given position in space
+      \brief evaluate function at given position in space
 
-    \param index (i) index defines the function-component which will
-                     be evaluated
-    \param x     (i) The point in space in which the function will be
-                     evaluated
+      \param index (i) index defines the function-component which will
+                       be evaluated
+      \param x     (i) The point in space in which the function will be
+                       evaluated
 
-    */
+     */
     double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
 
     /*!
 
-    \brief Return the number of components of this spatial function
-    (This is a vector-valued function)
+      \brief Return the number of components of this spatial function
+      (This is a vector-valued function)
 
-    \return number of components (u,v,w,p)
+      \return number of components (u,v,w,p)
 
-    */
+     */
     virtual int NumberComponents()
-      {
-        return(4);
-      };
+    {
+      return(4);
+    };
+
+  private:
+    double viscosity_;
+    bool is_stationary_;
+  };
+
+
+
+  /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (gradient of velocity)
+  class KimMoinGradU : public Function
+  {
+  public:
+
+    KimMoinGradU(int mat_id, bool is_stationary );
+
+    KimMoinGradU( Teuchos::RCP<MAT::Material> & mat, bool is_stationary );
+
+
+    /*!
+
+      \brief evaluate function at given position in space
+
+      \param index (i) index defines the function-component which will
+                       be evaluated
+      \param x     (i) The point in space in which the function will be
+                       evaluated
+
+     */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+      \brief Return the number of components of this spatial function
+      (This is a vector-valued function)
+
+      \return number of components (u,x , u,y , u,z , v,x , v,y , v,z , w,x , w,y , w,z )
+
+     */
+    virtual int NumberComponents()
+    {
+      return(9);
+    };
+
+  private:
+    double viscosity_;
+    bool is_stationary_;
+  };
+
+
+
+
+
+
+  /// special implementation for 2d (implemented for 3D) stationary kim-moin flow (velocity, pressure)
+  class KimMoinStatStokesUP : public Function
+  {
+  public:
+
+    KimMoinStatStokesUP(int mat_id);
+
+    KimMoinStatStokesUP( Teuchos::RCP<MAT::Material> & mat );
+
+
+
+    /*!
+
+      \brief evaluate function at given position in space
+
+      \param index (i) index defines the function-component which will
+                       be evaluated
+      \param x     (i) The point in space in which the function will be
+                       evaluated
+
+     */
+    double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
+
+    /*!
+
+      \brief Return the number of components of this spatial function
+      (This is a vector-valued function)
+
+      \return number of components (u,v,w,p)
+
+     */
+    virtual int NumberComponents()
+    {
+      return(4);
+    };
+
+  private:
+    double viscosity_;
 
   };
 
@@ -244,30 +346,38 @@ namespace UTILS {
   class KimMoinStatStokesGradU : public Function
   {
   public:
+
+    KimMoinStatStokesGradU(int mat_id);
+
+    KimMoinStatStokesGradU( Teuchos::RCP<MAT::Material> & mat );
+
     /*!
 
-    \brief evaluate function at given position in space
+      \brief evaluate function at given position in space
 
-    \param index (i) index defines the function-component which will
-                     be evaluated
-    \param x     (i) The point in space in which the function will be
-                     evaluated
+      \param index (i) index defines the function-component which will
+                       be evaluated
+      \param x     (i) The point in space in which the function will be
+                       evaluated
 
-    */
+     */
     double Evaluate(int index, const double* x, double t, DRT::Discretization* dis);
 
     /*!
 
-    \brief Return the number of components of this spatial function
-    (This is a vector-valued function)
+      \brief Return the number of components of this spatial function
+      (This is a vector-valued function)
 
-    \return number of components (u,x , u,y , u,z , v,x , v,y , v,z , w,x , w,y , w,z )
+      \return number of components (u,x , u,y , u,z , v,x , v,y , v,z , w,x , w,y , w,z )
 
-    */
+     */
     virtual int NumberComponents()
-      {
-        return(9);
-      };
+    {
+      return(9);
+    };
+
+  private:
+    double viscosity_;
 
   };
 

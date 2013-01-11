@@ -160,7 +160,9 @@ namespace INPAR
       beltrami_stat_stokes,
       beltrami_stat_navier_stokes,
       kimmoin_stat_stokes,
-      kimmoin_stat_navier_stokes
+      kimmoin_stat_navier_stokes,
+      kimmoin_instat_stokes,
+      kimmoin_instat_navier_stokes
     };
 
     /// initial field

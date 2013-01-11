@@ -62,7 +62,7 @@ Maintainer:  Benedikt Schott
 #include "../drt_fluid_ele/fluid_ele_factory.H"
 
 #include "../drt_fluid/fluid_utils_infnormscaling.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H" // should go away
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_inpar/inpar_xfem.H"
@@ -137,6 +137,37 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   //TODO: for edgebased approaches the number of connections between rows and cols should be increased
   sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,300,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
+
+  // sysmat might be singular (if we have a purely Dirichlet constrained
+  // problem, the pressure mode is defined only up to a constant)
+  // in this case, we need a basis vector for the nullspace/kernel
+  vector<DRT::Condition*> KSPcond;
+  xfluid_.discret_->GetCondition("KrylovSpaceProjection",KSPcond);
+
+  kspsplitter_ = Teuchos::rcp(new FLD::UTILS::KSPMapExtractor);
+
+  int numcond = KSPcond.size();
+  int numfluid = 0;
+  for(int icond = 0; icond < numcond; icond++)
+  {
+    const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
+    if (*name == "fluid") numfluid++;
+  }
+  if (numfluid == 1)
+  {
+    xfluid.project_ = true;
+    xfluid.w_       = LINALG::CreateVector(*dofrowmap,true);
+    xfluid.c_       = LINALG::CreateVector(*dofrowmap,true);
+    kspsplitter_->Setup(*(xfluid_.discret_));
+  }
+  else if (numfluid == 0)
+  {
+    xfluid.project_ = false;
+    xfluid.w_       = Teuchos::null;
+    xfluid.c_       = Teuchos::null;
+  }
+  else
+    dserror("Received more than one KrylovSpaceCondition for fluid field");
 
   // Vectors passed to the element
   // -----------------------------
@@ -719,6 +750,237 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
     sysmat_->Complete();
 
   }
+
+}
+
+/*----------------------------------------------------------------------*
+ | integrate shape functions over domain                   schott 12/12 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluid::XFluidState::IntegrateShapeFunction( Teuchos::ParameterList & eleparams,
+                                                       DRT::Discretization & discret )
+{
+
+
+  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::IntegrateShapeFunction" );
+
+  // create an column vector for assembly over row elements that has to be communicated at the end
+  RCP<Epetra_Vector> w_col = LINALG::CreateVector(*discret.DofColMap(),true);
+
+
+  //----------------------------------------------------------------------
+
+  // call standard loop over elements
+
+  DRT::AssembleStrategy strategy(0, 0, Teuchos::null,Teuchos::null,w_col,Teuchos::null,Teuchos::null);
+
+  DRT::Element::LocationArray la( 1 );
+
+
+  //------------------------------------------------------------
+  // loop over row elements
+  const int numrowele = discret.NumMyRowElements();
+
+  // REMARK: in this XFEM framework the whole evaluate routine uses only row elements
+  // and assembles into EpetraFECrs matrix
+  // this is baci-unusual but more efficient in all XFEM applications
+  for (int i=0; i<numrowele; ++i)
+  {
+    DRT::Element* actele = discret.lRowElement(i);
+    Teuchos::RCP<MAT::Material> mat = actele->Material();
+
+    DRT::ELEMENTS::Fluid * ele = dynamic_cast<DRT::ELEMENTS::Fluid *>( actele );
+    if ( ele==NULL )
+    {
+      dserror( "expect fluid element" );
+    }
+
+    DRT::ELEMENTS::FluidEleInterface * impl = DRT::ELEMENTS::FluidFactory::ProvideImplXFEM( actele->Shape(), "xfem");
+
+    GEO::CUT::ElementHandle * e = wizard_->GetElement( actele );
+    if ( e!=NULL )
+    {
+
+#ifdef DOFSETS_NEW
+      std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
+      std::vector< std::vector<int> > nds_sets;
+      std::vector<std::vector< DRT::UTILS::GaussIntegration > > intpoints_sets;
+
+      e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, xfluid_.VolumeCellGaussPointBy_ );
+
+      if(cell_sets.size() != intpoints_sets.size()) dserror("number of cell_sets and intpoints_sets not equal!");
+      if(cell_sets.size() != nds_sets.size()) dserror("number of cell_sets and nds_sets not equal!");
+
+      int set_counter = 0;
+
+      for( std::vector< GEO::CUT::plain_volumecell_set>::iterator s=cell_sets.begin();
+          s!=cell_sets.end();
+          s++)
+      {
+        GEO::CUT::plain_volumecell_set & cells = *s;
+        const std::vector<int> & nds = nds_sets[set_counter];
+
+        // we have to assemble all volume cells of this set
+        // for linear elements, there should be only one volumecell for each set
+        // for quadratic elements, there are some volumecells with respect to subelements, that have to be assembled at once
+
+
+        // get element location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
+        actele->LocationVector(discret,nds,la,false);
+
+        // get dimension of element matrices and vectors
+        // Reshape element matrices and vectors and init to zero (rdim, cdim)
+        strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
+
+        {
+          //------------------------------------------------------------
+          // Evaluate domain integrals
+          TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 1) cut domain" );
+
+          // call the element evaluate method
+          int err = impl->IntegrateShapeFunctionXFEM(
+              ele, discret, la[0].lm_, strategy.Elevector1(),
+              intpoints_sets[set_counter],
+              xfluid_.VolumeCellGaussPointBy_,
+              cells
+          );
+
+          if (err)
+            dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
+        }
+
+
+        //------------------------------------------------------------
+        // Assemble vector
+
+        // introduce an vector containing the rows for that values have to be communicated
+        // REMARK: when assembling row elements also non-row rows have to be communicated
+        std::vector<int> myowner;
+        for(size_t index=0; index<la[0].lmowner_.size(); index++)
+        {
+          myowner.push_back(strategy.Systemvector1()->Comm().MyPID());
+        }
+
+        // REMARK:: call Assemble without lmowner
+        // to assemble the residual_col vector on only row elements also column nodes have to be assembled
+        // do not exclude non-row nodes (modify the real owner to myowner)
+        // after assembly the col vector it has to be exported to the row residual_ vector
+        // using the 'Add' flag to get the right value for shared nodes
+        LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
+
+        set_counter += 1;
+
+      } // end of loop over cellsets // end of assembly for each set of cells
+#else
+
+      GEO::CUT::plain_volumecell_set cells;
+      std::vector<DRT::UTILS::GaussIntegration> intpoints;
+      std::vector<std::vector<double> > refEqns;
+
+      e->VolumeCellGaussPoints( cells, intpoints, refEqns, xfluid_.VolumeCellGaussPointBy_);
+
+      int count = 0;
+      for ( GEO::CUT::plain_volumecell_set::iterator i=cells.begin(); i!=cells.end(); ++i )
+      {
+        GEO::CUT::VolumeCell * vc = *i;
+        if ( vc->Position()==GEO::CUT::Point::outside )
+        {
+          const std::vector<int> & nds = vc->NodalDofSet();
+
+          // one set of dofs
+          std::vector<int>  ndstest;
+          for (int t=0;t<8; ++t)
+            ndstest.push_back(0);
+
+          // get element location vector, dirichlet flags and ownerships
+          actele->LocationVector(discret,ndstest,la,false);
+
+          // get dimension of element matrices and vectors
+          // Reshape element matrices and vectors and init to zero
+          strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
+
+          {
+            TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate cut domain" );
+
+            // call the element evaluate method
+            int err = impl->IntegrateShapeFunctionXFEM( ele, discret, la[0].lm_, strategy.Elevector1(),
+                intpoints_sets[set_counter],
+                xfluid_.VolumeCellGaussPointBy_,
+                cells
+            );
+
+            if (err)
+              dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
+          }
+
+          int eid = actele->Id();
+
+          // introduce an vector containing the rows for that values have to be communicated
+          // REMARK: when assembling row elements also non-row rows have to be communicated
+          std::vector<int> myowner;
+          for(size_t index=0; index<la[0].lmowner_.size(); index++)
+          {
+            myowner.push_back(strategy.Systemvector1()->Comm().MyPID());
+          }
+
+
+          // REMARK:: call Assemble without lmowner
+          // to assemble the residual_col vector on only row elements also column nodes have to be assembled
+          // do not exclude non-row nodes (modify the real owner to myowner)
+          // after assembly the col vector it has to be exported to the row residual_ vector
+          // using the 'Add' flag to get the right value for shared nodes
+          LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
+
+        }
+        count += 1;
+      }
+#endif
+    } // end of if(e!=NULL) // assembly for cut elements
+    else
+    {
+      TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 3) standard domain" );
+
+      // get element location vector, dirichlet flags and ownerships
+      actele->LocationVector(discret,la,false);
+
+      // get dimension of element matrices and vectors
+      // Reshape element matrices and vectors and init to zero
+      strategy.ClearElementStorage( la[0].Size(), la[0].Size() );
+
+      // call the element evaluate method
+      int err = impl->IntegrateShapeFunction( ele, discret, la[0].lm_, strategy.Elevector1() );
+
+      if (err) dserror("Proc %d: Element %d returned err=%d",discret.Comm().MyPID(),actele->Id(),err);
+
+      // introduce an vector containing the rows for that values have to be communicated
+      // REMARK: when assembling row elements also non-row rows have to be communicated
+      std::vector<int> myowner;
+      for(size_t index=0; index<la[0].lmowner_.size(); index++)
+      {
+        myowner.push_back(strategy.Systemvector1()->Comm().MyPID());
+      }
+
+      // REMARK:: call Assemble without lmowner
+      // to assemble the residual_col vector on only row elements also column nodes have to be assembled
+      // do not exclude non-row nodes (modify the real owner to myowner)
+      // after assembly the col vector it has to be exported to the row w_ vector
+      // using the 'Add' flag to get the right value for shared nodes
+      LINALG::Assemble(*strategy.Systemvector1(),strategy.Elevector1(),la[0].lm_,myowner);
+
+    }
+
+
+  }
+
+  discret.ClearState();
+
+
+  //-------------------------------------------------------------------------------
+  // need to export residual_col to systemvector1 (residual_)
+  Epetra_Vector w_tmp(xfluid_.w_->Map(),false);
+  Epetra_Export exporter(strategy.Systemvector1()->Map(),w_tmp.Map());
+  int err2 = w_tmp.Export(*strategy.Systemvector1(),exporter,Add);
+  if (err2) dserror("Export using exporter returned err=%d",err2);
+  xfluid_.w_->Update(1.0,w_tmp,1.0);
 
 }
 
@@ -1997,10 +2259,6 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
                 intpoints_sets[set_counter][cellcount]
             );
 
-            // sum up (on each processor)
-            cpu_dom_norms += ele_dom_norms;
-
-
             //------------------------------------------------------------
             // Evaluate interface integral errors
             // do cut interface condition
@@ -2087,16 +2345,12 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
                 intpoints[count]
             );
 
-            // sum up (on each processor)
-            cpu_dom_norms += ele_dom_norms;
           }
           count += 1;
         }
 
 #endif
 
-        // sum up (on each processor)
-        cpu_interf_norms += ele_interf_norms;
       }
       // standard (no xfem) element
       else
@@ -2112,12 +2366,14 @@ void FLD::XFluid::EvaluateErrorComparedToAnalyticalSol()
             *discret_,
             la[0].lm_,
             ele_dom_norms);
-
-        // sum up (on each processor)
-        cpu_dom_norms += ele_dom_norms;
-
-        // no interface norms on non-xfem elements
       }
+
+      // sum up (on each processor)
+      cpu_interf_norms += ele_interf_norms;
+
+      // sum up (on each processor)
+      cpu_dom_norms += ele_dom_norms;
+
     }//end loop over fluid elements
 
     //--------------------------------------------------------
@@ -2435,10 +2691,10 @@ void FLD::XFluid::PrintStabilizationParams()
     if(stabparams->get<string>("CROSS-STRESS") != "no_cross")       dserror("check CROSS-STRESS for XFEM");
     if(stabparams->get<string>("REYNOLDS-STRESS") != "no_reynolds") dserror("check REYNOLDS-STRESS for XFEM");
 
-    if(stabparams->get<string>("STABTYPE") == "edge_based" && (    stabparams->get<string>("PSPG") == "yes_pspg"
-                                                                or stabparams->get<string>("SUPG") == "yes_supg"
-                                                                or stabparams->get<string>("CSTAB") == "cstab_qs" )  )
-      dserror("do not combine edge-based stabilization with residual-based stabilization like SUPG/PSPG/CSTAB");
+//    if(stabparams->get<string>("STABTYPE") == "edge_based" && (    stabparams->get<string>("PSPG") == "yes_pspg"
+//                                                                or stabparams->get<string>("SUPG") == "yes_supg"
+//                                                                or stabparams->get<string>("CSTAB") == "cstab_qs" )  )
+//      dserror("do not combine edge-based stabilization with residual-based stabilization like SUPG/PSPG/CSTAB");
 
 
     Teuchos::ParameterList *  interfstabparams=&(params_->sublist("XFLUID DYNAMIC/STABILIZATION"));
@@ -2546,7 +2802,7 @@ void FLD::XFluid::TimeLoop()
     // -----------------------------------------------------------------
     //        prepare nonlinear solve (used for NonlinearSolve()
     // -----------------------------------------------------------------
-    PrepareNonlinearSolve();
+    PrepareSolve();
 
 
     // -----------------------------------------------------------------
@@ -2717,6 +2973,10 @@ void FLD::XFluid::PrepareSolve()
     SetInterfaceDisplacement();
     ComputeInterfaceVelocities();
   }
+  else if( xfluid_mov_bound == INPAR::XFEM::XFluidStationaryBoundary)
+  {
+    ComputeInterfaceVelocities();
+  }
 
   PrepareNonlinearSolve();
 }
@@ -2842,6 +3102,8 @@ void FLD::XFluid::NonlinearSolve()
 
     if(gmsh_debug_out_) state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual", step_, itnum, state_->residual_ );
 
+
+    KrylovSpaceProjection();
 
     // debug output (after Dirichlet conditions)
 //    if(gmsh_debug_out_) state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_residual", step_, itnum, state_->residual_ );
@@ -3022,7 +3284,7 @@ void FLD::XFluid::NonlinearSolve()
      if (fluid_infnormscaling_!= Teuchos::null)
        fluid_infnormscaling_->ScaleSystem(state_->sysmat_, *(state_->residual_));
 
-      solver_->Solve(state_->sysmat_->EpetraOperator(),state_->incvel_,state_->residual_,true,itnum==1);
+      solver_->Solve(state_->sysmat_->EpetraOperator(),state_->incvel_,state_->residual_,true,itnum==1,  w_, c_, project_);
 
       // unscale solution
       if (fluid_infnormscaling_!= Teuchos::null)
@@ -3061,6 +3323,148 @@ void FLD::XFluid::NonlinearSolve()
 void FLD::XFluid::LinearSolve()
 {
   dserror("LinearSolve not implemented for Xfluid");
+}
+
+
+void FLD::XFluid::KrylovSpaceProjection()
+{
+  /*
+   * Krylov space projection in the XFEM
+   * - generally, the Krylov space projection is possible, if there are no perturbations introduced by
+   *   inaccurate integration
+   * - the kernel vector c (0,0,0,1; 0,0,0,1; ....), however filled in this way for all dofsets in case of multiple dofsets
+   * - if the projection fails, then there is is maybe an inconsistency between the volume and surface integration
+   *   on cut elements (either you choose a smaller VOLUME-tolerance in cut_tolerance or choose DirectDivergence instead
+   *   of the Tesselation subtetrahedralization, then the surface will be triangulated independent of the integration cells
+   * - otherwise there could be further geometric! inconsistencies in the transformation in case of warped volume elements
+   */
+
+
+  // Krylov projection for solver already required in convergence check
+  if (project_)
+  {
+    DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
+
+    // in this case, we want to project out some zero pressure modes
+    const string* definition = KSPcond->Get<string>("weight vector definition");
+
+    if(*definition == "pointvalues")
+    {
+
+      dserror("pointvalues for KrylovSpaceProjection not supported, choose integration");
+
+      // zero w and c
+      w_->PutScalar(0.0);
+      c_->PutScalar(0.0);
+
+      // get pressure
+      const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+
+      for(int rr=0;rr<numdim_;++rr)
+      {
+        if(abs((*mode)[rr])>1e-14)
+        {
+          dserror("expecting only an undetermined pressure");
+        }
+      }
+
+      int predof = numdim_;
+
+      Teuchos::RCP<Epetra_Vector> presmode = state_->velpressplitter_->ExtractCondVector(*w_);
+
+      presmode->PutScalar((*mode)[predof]);
+
+      /* export to vector to normalize against
+      //
+      // Note that in the case of definition pointvalue based,
+      // the average pressure will vanish in a pointwise sense
+      //
+      //    +---+
+      //     \
+      //      +   p_i  = 0
+      //     /
+      //    +---+
+      */
+      Teuchos::RCP<Epetra_Vector> tmpw = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+      LINALG::Export(*presmode,*tmpw);
+      Teuchos::RCP<Epetra_Vector> tmpkspw = state_->kspsplitter_->ExtractKSPCondVector(*tmpw);
+      LINALG::Export(*tmpkspw,*w_);
+
+      // export to vector of ones
+      presmode->PutScalar(1.0);
+      Teuchos::RCP<Epetra_Vector> tmpc = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+      LINALG::Export(*presmode,*tmpc);
+      Teuchos::RCP<Epetra_Vector> tmpkspc = state_->kspsplitter_->ExtractKSPCondVector(*tmpc);
+      LINALG::Export(*tmpkspc,*c_);
+    }
+    else if(*definition == "integration")
+    {
+      // zero w and c
+      w_->PutScalar(0.0);
+      c_->PutScalar(0.0);
+
+      Teuchos::ParameterList mode_params;
+
+      // set action for elements
+      mode_params.set<int>("action",FLD::integrate_shape);
+
+      if (alefluid_)
+      {
+        discret_->SetState("dispnp",state_->dispnp_);
+      }
+
+      /* evaluate KrylovSpaceProjection condition in order to get
+      // integrated nodal basis functions w_
+      // Note that in the case of definition integration based,
+      // the average pressure will vanish in an integral sense
+      // REMARK: within an incremental newton formulation, the incremental pressure satisfies the condition,
+      //         if an initial field is set, then the initial pressure mean is retained
+      //
+      //                    /              /                      /
+      //   /    \          |              |  /          \        |  /    \
+      //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
+      //   \    /          |              |  \          /        |  \    /
+      //                   /              /                      /
+      */
+
+      state_->IntegrateShapeFunction(mode_params, *discret_);
+
+      // get pressure
+      const vector<double>* mode = KSPcond->Get<vector<double> >("mode");
+
+      for(int rr=0;rr<numdim_;++rr)
+      {
+        if(abs((*mode)[rr])>1e-14)
+        {
+          dserror("expecting only an undetermined pressure");
+        }
+      }
+
+      Teuchos::RCP<Epetra_Vector> presmode = state_->velpressplitter_->ExtractCondVector(*w_);
+
+      // export to vector of ones
+      presmode->PutScalar(1.0);
+      Teuchos::RCP<Epetra_Vector> tmpc = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+      LINALG::Export(*presmode,*tmpc);
+      Teuchos::RCP<Epetra_Vector> tmpkspc = state_->kspsplitter_->ExtractKSPCondVector(*tmpc);
+      LINALG::Export(*tmpkspc,*c_);
+
+    }
+    else
+    {
+      dserror("unknown definition of weight vector w for restriction of Krylov space");
+    }
+
+    double cTw;
+    c_->Dot(*w_,&cTw);
+
+    double cTres;
+
+    c_->Dot(*(state_->residual_),&cTres);
+
+    state_->residual_->Update(-cTres/cTw,*w_,1.0);
+
+  }
 }
 
 
@@ -4483,7 +4887,8 @@ void FLD::XFluid::SetInitialFlowField(
   if (initfield == INPAR::FLUID::initfield_field_by_function/* or
       initfield == INPAR::FLUID::initfield_disturbed_field_from_function*/)
   {
-    cout << "SetInitialFlowField with function number " << startfuncno << endl;
+    if(myrank_ == 0) cout << "SetInitialFlowField with function number " << startfuncno << endl;
+
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<discret_->NumMyRowNodes();lnodeid++)
     {
@@ -4618,7 +5023,7 @@ void FLD::XFluid::SetInitialInterfaceField()
 
   if(interface_vel_init_func_no_ != -1)
   {
-    cout << "Set initial interface velocity field with function number " << interface_vel_init_func_no_ << endl;
+    if(myrank_ == 0) cout << "Set initial interface velocity field with function number " << interface_vel_init_func_no_ << endl;
 
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)

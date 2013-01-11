@@ -2429,7 +2429,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "beltrami_stat_stokes",
                                  "beltrami_stat_navier_stokes",
                                  "kimmoin_stat_stokes",
-                                 "kimmoin_stat_navier_stokes"),
+                                 "kimmoin_stat_navier_stokes",
+                                 "kimmoin_instat_stokes",
+                                 "kimmoin_instat_navier_stokes"),
                                tuple<int>(
                                    INPAR::FLUID::no_error_calculation,
                                    INPAR::FLUID::beltrami_flow,
@@ -2441,7 +2443,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::FLUID::beltrami_stat_stokes,
                                    INPAR::FLUID::beltrami_stat_navier_stokes,
                                    INPAR::FLUID::kimmoin_stat_stokes,
-                                   INPAR::FLUID::kimmoin_stat_navier_stokes),
+                                   INPAR::FLUID::kimmoin_stat_navier_stokes,
+                                   INPAR::FLUID::kimmoin_instat_stokes,
+                                   INPAR::FLUID::kimmoin_instat_navier_stokes),
                                &fdyn);
 
   setStringToIntegralParameter<int>("SIMPLER","no",

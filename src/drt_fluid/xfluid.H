@@ -61,11 +61,13 @@ namespace XFEM
   class XFluidTimeInt;
 }
 
+
 namespace FLD
 {
   namespace UTILS
   {
     class FluidInfNormScaling;
+    class KSPMapExtractor;
   }
 
   class XFluid;
@@ -123,6 +125,12 @@ namespace FLD
                      DRT::Discretization & cutdiscret,   ///< cutter surface discretization
                      int itnum                           ///< iteration number
                      );
+
+      /// integrate the shape function and assemble into a vector for KrylovSpaceProjection
+      void IntegrateShapeFunction(
+          Teuchos::ParameterList & eleparams, ///< element parameters
+          DRT::Discretization & discret      ///< background fluid discretization
+          );
 
       /// GmshOutput for background mesh and cut mesh
       void GmshOutput( DRT::Discretization & discret,       ///< background fluid discretization
@@ -202,6 +210,9 @@ namespace FLD
 
       /// row dof map extractor
       const UTILS::MapExtractor* surfacesplitter_;
+
+      /// Krylov space projection map extractor
+      Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
 
       //! @name dof-row maps for output
       Teuchos::RCP<const Epetra_Map> outputfluiddofrowmap_;
@@ -333,6 +344,9 @@ namespace FLD
 
     /// solve linearised fluid
     void LinearSolve();
+
+    /// perform the KrylovSpaceProjection
+    void KrylovSpaceProjection();
 
     /// update interface fields
     void UpdateInterfaceFields();
@@ -638,6 +652,12 @@ namespace FLD
     //--------------------------------------------------------------------
 
     //! @name general algorithm parameters
+    //! project nullspace (useful for completely Dirichlet bounded problems)
+    bool                          project_;
+    //! integrated basis vector (pressure component)
+    Teuchos::RCP<Epetra_Vector>   w_;
+    //! basis vector for nullspace (vector of ones in the pressure component)
+    Teuchos::RCP<Epetra_Vector>   c_;
     //! do we move the fluid mesh and calculate the fluid on this moving mesh?
     bool                          alefluid_;
     //! do we have a turblence model?

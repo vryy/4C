@@ -116,10 +116,24 @@ namespace ELEMENTS
       This class does not provide a definition for this function; it
       must be defined in FluidEleCalc.
      */
-    virtual int IntegrateShapeFunction(DRT::ELEMENTS::Fluid*    ele,
+    virtual int IntegrateShapeFunction(DRT::ELEMENTS::Fluid*     ele,
                                        DRT::Discretization&      discretization,
-                                       std::vector<int>&         lm,
+                                       const std::vector<int>&   lm            ,
                                        Epetra_SerialDenseVector& elevec1) = 0;
+
+    virtual int IntegrateShapeFunction(DRT::ELEMENTS::Fluid*     ele,
+                                       DRT::Discretization&      discretization,
+                                       const std::vector<int>&   lm            ,
+                                       Epetra_SerialDenseVector& elevec1,
+                                       const DRT::UTILS::GaussIntegration & intpoints) = 0;
+
+    virtual int IntegrateShapeFunctionXFEM(DRT::ELEMENTS::Fluid*     ele,
+                                           DRT::Discretization&      discretization,
+                                           const std::vector<int>&   lm            ,
+                                           Epetra_SerialDenseVector& elevec1,
+                                           const std::vector<DRT::UTILS::GaussIntegration> & intpoints,
+                                           std::string&                                      VCellGaussPts,
+                                           const GEO::CUT::plain_volumecell_set &            cells) = 0;
 
 
     /*! \brief Calculate a integrated divergence operator in vector form
