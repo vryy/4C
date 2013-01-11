@@ -167,20 +167,33 @@ void GEO::CUT::Tri3BoundaryCell::Normal( const LINALG::Matrix<2,1> & xsi, LINALG
   normal( 1 ) = A( 0, 2 )*A( 1, 0 ) - A( 0, 0 )*A( 1, 2 );
   normal( 2 ) = A( 0, 0 )*A( 1, 1 ) - A( 0, 1 )*A( 1, 0 );
 
-//   double norm = normal.Norm2();
-//   normal.Scale( 1./norm );
+  double norm = normal.Norm2();
+  normal.Scale( 1./norm );
 #else
   LINALG::Matrix<3,1> x1( &xyz_( 0, 0 ) );
   LINALG::Matrix<3,1> x2( &xyz_( 0, 1 ) );
   LINALG::Matrix<3,1> x3( &xyz_( 0, 2 ) );
 
-  x2.Update( -1., x1, 1. );
-  x1.Update( -1., x3, 1. );
+  LINALG::Matrix<3,1> r1( true);
+  LINALG::Matrix<3,1> r2( true );
+
+  r1.Update( 1., x1, -1., x3, 0.);
+  r2.Update( 1., x2, -1., x1, 0.);
+
+//  r1.Update( +1., x3, -1., x2, 0.);
+//  r2.Update( +1., x1, -1., x3, 0.);
+
+//  r1.Update( +1., x2, -1., x1, 0.);
+//  r2.Update( +1., x3, -1., x2, 0.);
+
+
+  r2.Scale(1.0/r2.Norm2());
+  r1.Scale(1.0/r1.Norm2());
 
   // cross product to get the normal at the point
-  normal( 0 ) = x1( 1 )*x2( 2 ) - x1( 2 )*x2( 1 );
-  normal( 1 ) = x1( 2 )*x2( 0 ) - x1( 0 )*x2( 2 );
-  normal( 2 ) = x1( 0 )*x2( 1 ) - x1( 1 )*x2( 0 );
+  normal( 0 ) = r1( 1 )*r2( 2 ) - r1( 2 )*r2( 1 );
+  normal( 1 ) = r1( 2 )*r2( 0 ) - r1( 0 )*r2( 2 );
+  normal( 2 ) = r1( 0 )*r2( 1 ) - r1( 1 )*r2( 0 );
 
   double norm = normal.Norm2();
   normal.Scale( 1./norm );
@@ -205,8 +218,8 @@ void GEO::CUT::Quad4BoundaryCell::Normal( const LINALG::Matrix<2,1> & xsi, LINAL
   normal( 1 ) = A( 0, 2 )*A( 1, 0 ) - A( 0, 0 )*A( 1, 2 );
   normal( 2 ) = A( 0, 0 )*A( 1, 1 ) - A( 0, 1 )*A( 1, 0 );
 
-//   double norm = normal.Norm2();
-//   normal.Scale( 1./norm );
+  double norm = normal.Norm2();
+  normal.Scale( 1./norm );
 }
 
 void GEO::CUT::ArbitraryBoundaryCell::Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal ) const
