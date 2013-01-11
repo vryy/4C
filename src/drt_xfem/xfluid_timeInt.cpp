@@ -796,8 +796,8 @@ bool XFEM::XFluidTimeInt::Is_Std_CellSet(
     const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp >&  cell_set  /// set of volumecells
     )
 {
-  // assume non-standard set
-  bool is_std_set = false;
+//  // assume non-standard set
+//  bool is_std_set = false;
 
   GEO::CUT::Point* p = node->point();
 
@@ -812,8 +812,8 @@ bool XFEM::XFluidTimeInt::Is_Std_CellSet(
   // at least one vc has to contain the node
   for(std::set<GEO::CUT::plain_volumecell_set>::const_iterator sets=cell_set.begin(); sets!=cell_set.end(); sets++)
   {
-    // break the outer loop if at least one vc contains this point
-    if(is_std_set == true) break;
+//    // break the outer loop if at least one vc contains this point
+//    if(is_std_set == true) break;
 
     const GEO::CUT::plain_volumecell_set& set = *sets;
 
@@ -822,13 +822,13 @@ bool XFEM::XFluidTimeInt::Is_Std_CellSet(
       if((*vcs)->Contains(p))
       {
         // return if at least one vc contains this point
-        is_std_set=true;
+//        is_std_set=true;
         return true;
       }
     }
   }
 
-  return is_std_set;
+  return false; // is_std_set;
 }
 
 // -------------------------------------------------------------------
