@@ -599,7 +599,17 @@ namespace GEO
 
           // norm normal direction
           double cnorm = cross.Norm2();
-          double fact1 = 1./cnorm;
+          double fact1 = 1.0;
+
+          if(fabs(cnorm) < 1e-14)
+          {
+            fact1=1.0;
+          }
+          else
+          {
+            fact1 = 1./cnorm;
+          }
+
           //double fact2 = -0.5/( cnorm*sqrt( cnorm ) );
           cross.Scale( fact1 );
 
