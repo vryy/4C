@@ -22,8 +22,10 @@ Maintainer: Benedikt Schott
 /*----------------------------------------------------------------------*
  | constructor                                              schott 03/12|
  *----------------------------------------------------------------------*/
-COMBUST::ReinitializationPDE::ReinitializationPDE()
+COMBUST::ReinitializationPDE::ReinitializationPDE(const Epetra_Comm& comm)
 {
+  myrank_ = comm.MyPID();
+
   Teuchos::ParameterList combustdyn = DRT::Problem::Instance()->CombustionDynamicParams();
 
   // make a copy (inside an Teuchos::rcp) containing also all sublists

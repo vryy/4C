@@ -196,7 +196,7 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   }
   if(reinitaction_  == INPAR::COMBUST::reinitaction_sussman )
   {
-    reinit_pde_ = Teuchos::rcp(new COMBUST::ReinitializationPDE());
+    reinit_pde_ = Teuchos::rcp(new COMBUST::ReinitializationPDE(comm));
   }
 
   //---------------------------------------------------

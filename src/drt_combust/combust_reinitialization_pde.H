@@ -18,6 +18,7 @@ Maintainer: Benedikt Schott
 
 
 class Epetra_Vector;
+class Epetra_Comm;
 
 namespace ADAPTER
 {
@@ -50,7 +51,7 @@ class ReinitializationPDE
 public:
 
   //! constructor
-  ReinitializationPDE();
+  ReinitializationPDE(const Epetra_Comm& comm);
 
   //! destructor
   virtual ~ReinitializationPDE();
