@@ -19,12 +19,11 @@ Maintainer: Michael Gee
 #include "../drt_inpar/inpar_structure.H"
 
 //#define PUSO_NSTET5              ///< run the Puso&Solberg style 5-node tet
-#define ALPHA_NSTET5       0.2    ///< stabilization parameter for vol-dev split stabilization & Puso-tet
+#define ALPHA_NSTET5       0.1    ///< stabilization parameter for vol-dev split stabilization & Puso-tet
 
 
 
 // forward declarations
-
 namespace LINALG
 {
 class SerialDenseVector;
@@ -485,8 +484,8 @@ protected:
 
 
 
-  static LINALG::Matrix<3,3> BuildF(const LINALG::Matrix<4,3>& xdisp,
-                                    const LINALG::Matrix<4,3>& nxyz)
+  inline static LINALG::Matrix<3,3> BuildF(const LINALG::Matrix<4,3>& xdisp,
+                                           const LINALG::Matrix<4,3>& nxyz)
   {
     LINALG::Matrix<3,3> F(false);
     F.MultiplyTN(xdisp,nxyz);

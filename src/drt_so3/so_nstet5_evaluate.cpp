@@ -72,12 +72,13 @@ void DRT::ELEMENTS::NStet5::InitElement()
   const double gploc = 0.25;
   LINALG::Matrix<4,1> funct;
   ShapeFunction(funct,gploc,gploc,gploc,gploc);
-  LINALG::Matrix<4,4> deriv;
+  LINALG::Matrix<4,4> deriv(true);
   ShapeFunctionDerivatives(deriv);
   LINALG::Matrix<3,4> tmp;
-  LINALG::Matrix<4,3> Iaug(true); // initialize to zero
+  LINALG::Matrix<4,3> Iaug; // initialize to zero
   LINALG::Matrix<4,3> partials;
   LINALG::FixedSizeSerialDenseSolver<4,4,3> solver;
+  // loop i subelements
   for (int i=0; i<4; ++i)
   {
     // master tet has node numbering [0 1 2 3]
@@ -494,7 +495,6 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
     // 6x15 n_stresses * number degrees of freedom per element
     LINALG::Matrix<6,12> bop;
     const LINALG::Matrix<4,3>& nxyz = SubNxyz(sub);
-
     for (int i=0; i<4; i++)
     {
       bop(0,3*i+0) = F(0,0)*nxyz(i,0);
@@ -521,25 +521,10 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
     //------------------------------------------------- call material law
     LINALG::Matrix<6,6> cmat(true);
     LINALG::Matrix<6,1> stress(true);
-    LINALG::Matrix<6,1> glstrainbar(false);
     double density = -999.99;
 #ifndef PUSO_NSTET5
     {
-      // do deviatoric F, C, E
-      const double J = F.Determinant();
-      LINALG::Matrix<3,3> Cbar(cauchygreen);
-      Cbar.Scale(pow(J,-2./3.));
-      glstrainbar(0) = 0.5 * (Cbar(0,0) - 1.0);
-      glstrainbar(1) = 0.5 * (Cbar(1,1) - 1.0);
-      glstrainbar(2) = 0.5 * (Cbar(2,2) - 1.0);
-      glstrainbar(3) = Cbar(0,1);
-      glstrainbar(4) = Cbar(1,2);
-      glstrainbar(5) = Cbar(2,0);
-      LINALG::Matrix<3,3> Fbar(false);
-      Fbar.SetCopy(F.A());
-      Fbar.Scale(pow(J,-1./3.));
-
-      SelectMaterial(stress,cmat,density,glstrainbar,Fbar,0);
+      SelectMaterial(stress,cmat,density,glstrain,F,0);
 
       // define stuff we need to do the split
       LINALG::Matrix<6,6> cmatdev;
@@ -564,6 +549,20 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
 
     //---------------------------------------------- output of stress and strain
     {
+      LINALG::Matrix<6,1> glstrainbar(false);
+      if (iostrain != INPAR::STR::strain_none)
+      {
+        // do deviatoric F, C, E 
+        const double J = F.Determinant();
+        LINALG::Matrix<3,3> Cbar(cauchygreen);
+        Cbar.Scale(pow(J,-2./3.));
+        glstrainbar(0) = 0.5 * (Cbar(0,0) - 1.0);
+        glstrainbar(1) = 0.5 * (Cbar(1,1) - 1.0);
+        glstrainbar(2) = 0.5 * (Cbar(2,2) - 1.0);
+        glstrainbar(3) = Cbar(0,1);
+        glstrainbar(4) = Cbar(1,2);
+        glstrainbar(5) = Cbar(2,0);
+      }
       //-----------------------------------------------------------------strain
       switch (iostrain)
       {
@@ -674,9 +673,10 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
     // update internal force vector
     if (force)
     {
-      LINALG::Matrix<12,1> subforce; subforce = 0.0;
+      LINALG::Matrix<12,1> subforce; subforce(false);
       // integrate internal force vector f = f + (B^T . sigma) * V
-      subforce.MultiplyTN(SubV(sub),bop,stress,1.0);
+      subforce.MultiplyTN(SubV(sub),bop,stress,0.0);
+      
       for (int i=0; i<4; ++i) // loop 4 nodes of subelement
       {
         (*force)(SubLM(sub)[i]*3+0) += subforce(i*3+0);
@@ -689,12 +689,13 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
     if (stiffmatrix)
     {
       const double V = SubV(sub);
-      LINALG::Matrix<12,12> substiffmatrix; substiffmatrix = 0.0;
+      LINALG::Matrix<12,12> substiffmatrix(false);
       // integrate elastic stiffness matrix
       // keu = keu + (B^T . C . B) * V
       LINALG::Matrix<6,12> cb;
       cb.Multiply(cmat,bop);
-      substiffmatrix.MultiplyTN(V,bop,cb,1.0);
+      substiffmatrix.MultiplyTN(V,bop,cb,0.0);
+
       // integrate `geometric' stiffness matrix and add to keu
       double sBL[3];
       for (int i=0; i<4; ++i)
@@ -706,12 +707,13 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
         {
           double BsB = 0.0;
           for (int dim=0; dim<3; ++dim)
-            BsB += SubNxyz(sub)(j,dim) * sBL[dim];
+            BsB += nxyz(j,dim) * sBL[dim];
           substiffmatrix(3*i+0,3*j+0) += BsB;
           substiffmatrix(3*i+1,3*j+1) += BsB;
           substiffmatrix(3*i+2,3*j+2) += BsB;
         }
       }
+
       for (int i=0; i<4; ++i)
         for (int j=0; j<4; ++j)
         {

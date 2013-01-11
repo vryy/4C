@@ -180,6 +180,7 @@ material_(old.material_),
 V_(old.V_)
 //nxyz_(old.nxyz_)
 {
+  for (int i=0; i<16; ++i) sublm_[i] = old.sublm_[i];
   return;
 }
 

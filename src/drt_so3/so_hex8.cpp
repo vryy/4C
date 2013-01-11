@@ -380,7 +380,6 @@ void DRT::ELEMENTS::So_hex8::soh8_expol
   static LINALG::Matrix<NUMNOD_SOH8,NUMGPT_SOH8> expol;
   static bool isfilled;
 
-
   if (isfilled==false)
   {
     double sq3=sqrt(3.0);
