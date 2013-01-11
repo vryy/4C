@@ -349,7 +349,7 @@ IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization>
   output_(output),
   binio_(output->BinIO())
 {
-  Check();
+
 }
 
 
@@ -371,7 +371,7 @@ IO::DiscretizationWriter::DiscretizationWriter(Teuchos::RCP<DRT::Discretization>
   output_(DRT::Problem::Instance()->OutputControlFile()),
   binio_(DRT::Problem::Instance()->OutputControlFile()->BinIO())
 {
-  Check();
+
 }
 
 
@@ -416,28 +416,6 @@ IO::DiscretizationWriter::~DiscretizationWriter()
       dserror("Failed to close HDF file %s", resultfilename_.c_str());
     }
   }
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::Check()
-{
-  // The discretization name will appear in the control file and the post
-  // filters expect certain names (for certain types of fields). Thus we
-  // restrict the names that can be given to a discretization.
-  //
-  // If you want to create a dummy discretization choose the name 'none'.
-  /*
-  const char* names[] = FIELDNAMES;
-  for (int i=0; names[i]!=NULL; ++i)
-    if (dis_->Name()==names[i])
-      return;
-  dserror("illegal discretization name '%s'",dis_->Name().c_str());
-  */
-
-  // We do not restrict the discretization names anymore. The postfilters
-  // do not care about the actual field names.          gjb 04/12
 }
 
 

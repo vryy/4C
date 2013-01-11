@@ -129,34 +129,8 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   dsassert((ndim_ == 1) || (ndim_ == 2) || (ndim_ == 3), "illegal dimension");
 
   const char* type = map_read_string(&control_table_, "problem_type");
-
-  // better use:   PROBLEM_TYP StringToProblemType(std::string name)
-
-  std::map<std::string,PROBLEM_TYP> map = DRT::StringToProblemTypeMap();
-  string name(type);
-  std::map<std::string,PROBLEM_TYP>::const_iterator i = map.find(name);
-  if (i!=map.end())
-    problemtype_ = i->second;
-  else
-  { // backward compatibility (PROBLEMNAMES has to go away soon!)
-    cout<<"\nCould not determine problem type from string '"<<name
-        <<"'!\n ...I am now trying the outdated names ensuring backward compatibility."
-        <<endl<<endl;
-    int i;
-    const char* problem_names[] = PROBLEMNAMES;
-    for (i=0; problem_names[i] != NULL; ++i)
-    {
-      if (strcmp(type, problem_names[i])==0)
-      {
-        problemtype_ = static_cast<PROBLEM_TYP>(i);
-        break;
-      }
-    }
-    if (problem_names[i] == NULL)
-    {
-      dserror("unknown problem type '%s'", type);
-    }
-  } // backward compatibility
+  const std::string probtype(type);
+  problemtype_ = DRT::StringToProblemType(probtype);
 
   spatial_approx_ = map_read_string(&control_table_, "spatial_approximation");
 

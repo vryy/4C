@@ -293,9 +293,6 @@ private:
   //! open new result file
   virtual void CreateResultFile(const int step);
 
-  /// test writer preconditions
-  void Check();
-
   //! my discretization
   Teuchos::RCP<DRT::Discretization> dis_;
 
