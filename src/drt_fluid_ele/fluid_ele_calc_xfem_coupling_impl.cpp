@@ -222,8 +222,10 @@ void SideImpl<distype, side_distype, numdof>::ProjectOnSide(
     dserror("define start side xi-coordinates for unsupported cell type");
   }
 
-  const double absTolIncr = 1.0e-9;   // rel tolerance for the local coordinates increment
-  const double relTolRes  = 1.0e-9;   // rel tolerance for the whole residual
+
+  // we only use absolute tolerances, since we compute local coordinates
+  const double absTolIncr = 1.0e-9;   // abs tolerance for the local coordinates increment
+  const double absTolRes  = 1.0e-9;   // abs tolerance for the whole residual
   const double absTOLdist = 1.0e-9;   // abs tolerance for distance
 
   int iter=0;
@@ -315,18 +317,12 @@ void SideImpl<distype, side_distype, numdof>::ProjectOnSide(
     // update solution
     sol.Update(1.0, incr, 1.0);
 
-    if ( (incr.Norm2()/sol.Norm2() < absTolIncr) && (residuum.Norm2()/sol.Norm2() < relTolRes) )
-    {
-      converged = true;
-    }
-
-    // check ° relative criterion for local coordinates (between [-1,1]^2)
+    // check ° absolute criterion for local coordinates (between [-1,1]^2)
     //       ° absolute criterion for distance (-> 0)
-    //       ° relative criterion for whole residuum
-    if(    //sqrt(incr(0)*incr(0)+incr(1)*incr(1))/sqrt(sol(0)*sol(0)+sol(1)*sol(1)) <  relTolIncr
-        sqrt(incr(0)*incr(0)+incr(1)*incr(1)) <  absTolIncr
+    //       ° absolute criterion for whole residuum
+    if( sqrt(incr(0)*incr(0)+incr(1)*incr(1)) <  absTolIncr
         && incr(2) < absTOLdist
-        && residuum.Norm2()/sol.Norm2() < relTolRes)
+        && residuum.Norm2() < absTolRes)
     {
       converged = true;
     }
@@ -347,8 +343,8 @@ void SideImpl<distype, side_distype, numdof>::ProjectOnSide(
         << " \tabsTOL: " << absTOLdist
         << endl;
     cout << "relative criterion whole residuum "
-        << residuum.Norm2()/sol.Norm2()
-        << " \trelTOL: " << relTolRes
+        << residuum.Norm2()
+        << " \tabsTOL: " << absTolRes
         << endl;
 
 
