@@ -204,6 +204,11 @@ void ADAPTER::FluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
   // get interface velocity at t(n)
   const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
 
+#ifdef DEBUG
+  // check, whether maps are the same
+  if (! fcx->Map().PointSameAs(veln->Map()))   { dserror("Maps do not match, but they have to."); }
+#endif
+
   /*
    * Delta u(n+1,i+1) = fac * Delta d(n+1,i+1) - dt * u(n)
    *
@@ -219,18 +224,20 @@ void ADAPTER::FluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::DisplacementToVelocity(
     Teuchos::RCP<Epetra_Vector> fcx,
-    Teuchos::RCP<Epetra_Vector> ddgpre,
-    Teuchos::RCP<Epetra_Vector> dugpre
+    Teuchos::RCP<Epetra_Vector> ddgpred,
+    Teuchos::RCP<Epetra_Vector> dugpred
 )
 {
+  // get interface velocity at t(n)
+  const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
+
 #ifdef DEBUG
   // check, whether maps are the same
+  if (! fcx->Map().PointSameAs(veln->Map()))   { dserror("Maps do not match, but they have to."); }
   if (! fcx->Map().PointSameAs(ddgpre->Map())) { dserror("Maps do not match, but they have to."); }
   if (! fcx->Map().PointSameAs(dugpre->Map())) { dserror("Maps do not match, but they have to."); }
 #endif
 
-  // get interface velocity at t(n)
-  const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
 
   /*
    * Delta u(n+1,i+1) = fac * [ Delta d(n+1,i+1) - dt * u_fluid(n) + Delta d_(predicted) ]
@@ -243,8 +250,8 @@ void ADAPTER::FluidFSI::DisplacementToVelocity(
    */
   const double ts = TimeScaling();
   const double dt = fluidimpl_->Dt();
-  fcx->Update(-dt*ts,*veln,ts,*ddgpre,ts);
-  fcx->Update(-1.0,*dugpre,1.0);
+  fcx->Update(-dt*ts,*veln,ts,*ddgpred,ts);
+  fcx->Update(-1.0,*dugpred,1.0);
 }
 
 
@@ -255,46 +262,53 @@ void ADAPTER::FluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
   // get interface velocity at t(n)
   const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
 
+#ifdef DEBUG
+  // check, whether maps are the same
+  if (! fcx->Map().PointSameAs(veln->Map()))   { dserror("Maps do not match, but they have to."); }
+#endif
+
   /*
-   * Delta d(n+1,i+1) = fac * [Delta u(n+1,i+1) + 2 * u(n)]
+   * Delta d(n+1,i+1) = tau * Delta u(n+1,i+1) + dt * u(n)]
    *
    *             / = dt / 2   if interface time integration is second order
-   * with fac = |
+   * with tau = |
    *             \ = dt       if interface time integration is first order
    */
-  const double timescale = 1./TimeScaling();
-  fcx->Update(fluidimpl_->Dt(),*veln,timescale);
+  const double tau = 1./TimeScaling();
+  fcx->Update(Dt(), *veln, tau);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::VelocityToDisplacement(
     Teuchos::RCP<Epetra_Vector> fcx,
-    Teuchos::RCP<Epetra_Vector> ddgpre,
-    Teuchos::RCP<Epetra_Vector> dugpre
+    Teuchos::RCP<Epetra_Vector> ddgpred,
+    Teuchos::RCP<Epetra_Vector> dugpred
 )
 {
-#ifdef DEBUG
-  // check, whether maps are the same
-  if (! fcx->Map().PointSameAs(ddgpre->Map())) { dserror("Maps do not match, but they have to."); }
-  if (! fcx->Map().PointSameAs(dugpre->Map())) { dserror("Maps do not match, but they have to."); }
-#endif
-
   // get interface velocity at t(n)
   const Teuchos::RCP<Epetra_Vector> veln = Interface()->ExtractFSICondVector(Veln());
 
+#ifdef DEBUG
+  // check, whether maps are the same
+  if (! fcx->Map().PointSameAs(veln->Map()))    { dserror("Maps do not match, but they have to."); }
+  if (! fcx->Map().PointSameAs(ddgpred->Map())) { dserror("Maps do not match, but they have to."); }
+  if (! fcx->Map().PointSameAs(dugpred->Map())) { dserror("Maps do not match, but they have to."); }
+#endif
+
+
   /*
-   * Delta d(n+1,i+1) = fac * [ Delta u(n+1,i+1) + Delta u(predicted)]
+   * Delta d(n+1,i+1) = tau * [ Delta u(n+1,i+1) + Delta u(predicted)]
    *
    *                  + dt * u(n) - Delta d_structure(predicted)
    *
    *             / = dt / 2   if interface time integration is second order
-   * with fac = |
+   * with tau = |
    *             \ = dt       if interface time integration is first order
    */
-  const double ts = 1.0/TimeScaling();
-  fcx->Update(fluidimpl_->Dt(), *veln, ts, *dugpre, ts);
-  fcx->Update(-1.0, *ddgpre, 1.0);
+  const double tau = 1./TimeScaling();
+  fcx->Update(Dt(), *veln, tau, *dugpred, tau);
+  fcx->Update(-1.0, *ddgpred, 1.0);
 }
 
 
@@ -354,8 +368,9 @@ Teuchos::RCP<LINALG::Solver> ADAPTER::FluidFSI::LinearSolver()
  *----------------------------------------------------------------------*/
 void ADAPTER::FluidFSI::ProjVelToDivZero()
 {
-  // This projection affects also the inner DOFs. Unfortunately, the matrix does not look nice.
-  // Hence, the inversion of B^T*B is quite costly and we are not sure yet whether it is worth the effort.
+  // This projection affects also the inner DOFs. Unfortunately, the matrix
+  // does not look nice. Hence, the inversion of B^T*B is quite costly and
+  // we are not sure yet whether it is worth the effort.
 
   //   get maps with Dirichlet DOFs and fsi interface DOFs
   std::vector<Teuchos::RCP<const Epetra_Map> > dbcfsimaps;
@@ -377,6 +392,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   domainmaps.push_back(elemap);
   Teuchos::RCP<Epetra_Map> domainmap = LINALG::MultiMapExtractor::MergeMaps(domainmaps);
 
+  // build the corresponding map extractor
   Teuchos::RCP<LINALG::MapExtractor> domainmapex = Teuchos::rcp(new LINALG::MapExtractor(*domainmap, dbcfsimap));
 
   const int numofrowentries = 82;
@@ -404,10 +420,10 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
     std::vector<int> lmstride;
     actele->LocationVector(*fluid_->Discretization(),lm,lmowner,lmstride);
 
-
     // get dimension of element matrices and vectors
-    // Reshape element matrices and vectors and initialize to zero
     const int eledim = (int)lm.size();
+
+    // Reshape element matrices and vectors and initialize to zero
     elevector1.Size(eledim);
 
     // set action in order to calculate the integrated divergence operator via an Evaluate()-call
@@ -471,7 +487,7 @@ void ADAPTER::FluidFSI::ProjVelToDivZero()
   solver->Solve(BTB->EpetraOperator(),x,BTvR,true,true);
 
   Teuchos::RCP<Epetra_Vector> vmod = Teuchos::rcp(new Epetra_Vector(fluidimpl_->ViewOfVelnp()->Map(),true));
-  B->Multiply(false,*x,*vmod);
+  B->Apply(*x,*vmod);
   fluidimpl_->ViewOfVelnp()->Update(-1.0, *vmod, 1.0);
 }
 

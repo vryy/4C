@@ -103,28 +103,36 @@ namespace ADAPTER {
 
     virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
 
-    /// Conversion of displacement to velocity at the interface without predictors or inhomogeneous DBCs
+    //! Conversion of displacement to velocity at the interface without predictors or inhomogeneous DBCs
+    //!
+    //! All input vectors have to live on the fluid field map.
     virtual void DisplacementToVelocity(
-        Teuchos::RCP<Epetra_Vector> fcx     ///< fluid displacement step increment
+        Teuchos::RCP<Epetra_Vector> fcx     ///< interface displacement step increment
     );
 
-    /// Conversion of displacement to velocity at the interface considering predictors or inhomogeneous DBCs
+    //! Conversion of displacement to velocity at the interface considering predictors or inhomogeneous DBCs
+    //!
+    //! All input vectors have to live on the fluid field map.
     virtual void DisplacementToVelocity(
-        Teuchos::RCP<Epetra_Vector> fcx,    ///< fluid displacement step increment
-        Teuchos::RCP<Epetra_Vector> ddgpre, ///< displacement increment due to structural predictor
-        Teuchos::RCP<Epetra_Vector> dugpre  ///< velocity increment due to fluid predictor
+        Teuchos::RCP<Epetra_Vector> fcx,      ///< interface displacement step increment
+        Teuchos::RCP<Epetra_Vector> ddgpred,  ///< interface displacement increment due to structural predictor
+        Teuchos::RCP<Epetra_Vector> dugpred   ///< interface velocity increment due to fluid predictor
     );
 
-    /// Conversion of velocity to displacement at the interface without predictors or inhomogeneous DBCs
+    //! Conversion of velocity to displacement at the interface without predictors or inhomogeneous DBCs
+    //!
+    //! All input vectors have to live on the fluid field map.
     virtual void VelocityToDisplacement(
-        Teuchos::RCP<Epetra_Vector> fcx     ///< fluid velocity step increment at interface
+        Teuchos::RCP<Epetra_Vector> fcx     ///< interface velocity step increment at interface
     );
 
-    /// Conversion of velocity to displacement at the interface considering predictors or inhomogeneous DBCs
+    //! Conversion of velocity to displacement at the interface considering predictors or inhomogeneous DBCs
+    //!
+    //! All input vectors have to live on the fluid field map.
     virtual void VelocityToDisplacement(
-        Teuchos::RCP<Epetra_Vector> fcx,    ///< fluid velocity step increment at interface
-        Teuchos::RCP<Epetra_Vector> ddgpre, ///< displacement increment due to structural predictor
-        Teuchos::RCP<Epetra_Vector> dugpre  ///< velocity increment due to fluid predictor
+        Teuchos::RCP<Epetra_Vector> fcx,      ///< interface velocity step increment at interface
+        Teuchos::RCP<Epetra_Vector> ddgpred,  ///< interface displacement increment due to structural predictor
+        Teuchos::RCP<Epetra_Vector> dugpred   ///< interface velocity increment due to fluid predictor
     );
 
     virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
@@ -137,20 +145,18 @@ namespace ADAPTER {
 
     virtual void RemoveDirichCond(const Teuchos::RCP<const Epetra_Map> maptoremove);
 
-    /* \brief Project the velocity field into a divergence free subspace
-     *
-     * Project the velocity field into a divergence free subspace
-     * while interface and Dirichlet DOFS are not affected.
-     * The projection is done by the following operation:
-     *
-     * \$f v_{divfree} = \left(I - B(B^TB)^{-1}B^T)\right) v + B(B^TB)^{-1} R\$f
-     *
-     * The vector \$f R \$f ensures that interface and Dirichlet DOFs are not modified.
-     *
-     * \autor: mayr.mt
-     * \date:  06/2012
-     *
-     */
+    //! Project the velocity field into a divergence free subspace
+    //!
+    //! Project the velocity field into a divergence free subspace
+    //! while interface and Dirichlet DOFS are not affected.
+    //! The projection is done by the following operation:
+    //!
+    //! \$f v_{divfree} = \left(I - B(B^TB)^{-1}B^T)\right) v + B(B^TB)^{-1} R\$f
+    //!
+    //! The vector \$f R \$f ensures that interface and Dirichlet DOFs are not modified.
+    //!
+    //! \autor: mayr.mt
+    //! \date:  06/2012
     void ProjVelToDivZero();
 
     /// reset state vectors
