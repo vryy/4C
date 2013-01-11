@@ -51,6 +51,7 @@ Maintainer: Michael Gee
 #include "../drt_matelast/elast_volsussmanbathe.H"
 #include "../drt_structure/strtimint_create.H"
 #include "../drt_structure/strtimint.H"
+#include "../drt_stru_multi/microstatic.H"
 #include "../linalg/linalg_utils.H"
 #include "Epetra_SerialDenseMatrix.h"
 #include "inv_analysis.H"
@@ -365,6 +366,13 @@ void STR::GenInvAnalysis::Integrate()
 
   // print results to file
   if (!myrank) PrintFile();
+
+  // stop supporting processors in multi scale simulations
+  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
+  if(subcomm != Teuchos::null)
+  {
+    STRUMULTI::stop_np_multiscale();
+  }
 
   return;
 }
@@ -1314,25 +1322,28 @@ void STR::GenInvAnalysis::ReadInParameters()
 //--------------------------------------------------------------------------------------
 void STR::GenInvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
 {
-//   discret_->Comm().Broadcast(&p_cur[0],np_,0);
-
-//   Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
-//   if(subcomm != Teuchos::null)
-//   {
-//     // tell supporting procs that material parameters have to be set
-//     int task[2] = {6, np_};
-//     subcomm->Broadcast(task, 2, 0);
-//     // broadcast p_cur to the micro scale
-//     subcomm->Broadcast(&p_cur[0], np_, 0);
-
-//     if(DRT::Problem::Instance(0)->GetNPGroup()->SubComm()->NumProc() > 1 and ( matset_[0].size()!=0 or eh_matset_[0].size()!=0))
-//       dserror("No fitting of macro material in case of nested parallelism for multi scale inverse analysis.");
-//   }
+  // check whether there is a micro scale
+  Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
+  if(subcomm != Teuchos::null)
+  {
+    // tell supporting procs that material parameters have to be set
+    int task[2] = {7, np_};
+    subcomm->Broadcast(task, 2, 0);
+    // broadcast p_cur to the micro scale
+    subcomm->Broadcast(&p_cur[0], np_, 0);
+  }
 
   // write new material parameter
   for (unsigned prob=0; prob<DRT::Problem::NumInstances(); ++prob)
   {
     std::set<int> mymatset = matset_[prob];
+
+    // in case of micro scale: broadcast mymatset once per problem instance
+    if(subcomm != Teuchos::null)
+    {
+      LINALG::GatherAll<int>(mymatset, *subcomm);
+    }
+
     // material parameters are set for the current problem instance
     STR::SetMaterialParameters(prob, p_cur, mymatset);
   }

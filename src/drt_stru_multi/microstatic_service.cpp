@@ -12,9 +12,6 @@ Maintainer: Lena Yoshihara
 *----------------------------------------------------------------------*/
 
 
-
-#include <Epetra_SerialComm.h>
-
 #include "microstatic.H"
 #include "../drt_structure/stru_aux.H"
 #include "../linalg/linalg_utils.H"

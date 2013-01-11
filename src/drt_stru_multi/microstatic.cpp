@@ -1172,6 +1172,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
         break;
       }
       case INPAR::SOLVER::aztec_msr:
+      case INPAR::SOLVER::superlu:
       {
         // solve for 9 rhs iteratively
         for(int i=0; i<rhs_->NumVectors(); i++)
@@ -1217,20 +1218,23 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
     std::vector<double> sum(81, 0.0);
     discret_->Comm().SumAll(&val[0], &sum[0], 81);
 
-    // write as a 9x9 matrix
-    for(int i=0; i<9; i++)
-      for(int j=0; j<9; j++)
-        (*(cmatpf(j)))[i] = sum[i*9+j];
+    if(discret_->Comm().MyPID() == 0)
+    {
+      // write as a 9x9 matrix
+      for(int i=0; i<9; i++)
+        for(int j=0; j<9; j++)
+          (*(cmatpf(j)))[i] = sum[i*9+j];
 
-    // scale with inverse of RVE volume
-    cmatpf.Scale(1.0/V0_);
+      // scale with inverse of RVE volume
+      cmatpf.Scale(1.0/V0_);
 
-    // We now have to transform the calculated constitutive tensor
-    // relating first Piola-Kirchhoff stresses to the deformation
-    // gradient into a constitutive tensor relating second
-    // Piola-Kirchhoff stresses to Green-Lagrange strains.
+      // We now have to transform the calculated constitutive tensor
+      // relating first Piola-Kirchhoff stresses to the deformation
+      // gradient into a constitutive tensor relating second
+      // Piola-Kirchhoff stresses to Green-Lagrange strains.
 
-    ConvertMat(cmatpf, F_inv, *stress, *cmat);
+      ConvertMat(cmatpf, F_inv, *stress, *cmat);
+    }
 
     // after having constructed the stiffness matrix, this need not be
     // done in case of modified Newton as nonlinear solver of the

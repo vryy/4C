@@ -104,9 +104,13 @@ void STR::invanalysis()
     case INPAR::STR::inv_generalized:
     {
       int ngroup = DRT::Problem::Instance()->GetNPGroup()->NumGroups();
+      // check whether there is a micro scale which is equivalent to have a subcomm
+      Teuchos::RCP<Epetra_Comm> subcomm = DRT::Problem::Instance(0)->GetNPGroup()->SubComm();
+      if(subcomm!=Teuchos::null and ngroup>2)
+        dserror("Nested parallelism with more than two groups not yet available for inverse multiscale problems");
       STR::GenInvAnalysis ia(actdis,solver,output);
-      if (ngroup==1) ia.Integrate();
-      else           ia.NPIntegrate();
+      if (ngroup==1 or (subcomm!=Teuchos::null and ngroup==2)) ia.Integrate();
+      else                                                     ia.NPIntegrate();
     }
     break;
     default:
