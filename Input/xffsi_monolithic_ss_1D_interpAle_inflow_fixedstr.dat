@@ -7,7 +7,10 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-created by pre_exodus
+monolithic_structure_split: 1D  example
+The structure is fixed at the end.
+The velocity fuction is t*t
+->linear pressure field 
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      6
 //NODES                         32
@@ -15,7 +18,7 @@ DIM                             3
 -----------------------------------------------------------------PROBLEM TYP
 PROBLEMTYP                      Fluid_Fluid_FSI
 NUMFIELD                        3
-RESTART                         0
+RESTART                       0 
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
 NUMFLUIDDIS                     1
@@ -45,13 +48,13 @@ ALPHA_F                         1.00
 ALPHA_M                         1.00
 CONVCHECK                       L_2_norm
 CONVTOL                         1e-07
-INITIALFIELD zero_field //field_by_function
+INITIALFIELD                    zero_field //field_by_function
 ITEMAX                          5
 LIFTDRAG                        No
 MAXTIME                         50
 NONLINITER                      Newton
 NUMSTEP                         10000
-RESTARTEVRY                     20
+RESTARTEVRY                     2
 SIMPLER                         no
 STARTFUNCNO                     2
 STARTINGALGO                    One_Step_Theta
@@ -97,7 +100,7 @@ LINEAR_SOLVER                   1
 -----------------------------------------------------------------FSI DYNAMIC
 LINEARBLOCKSOLVER               PreconditionedKrylov            // FSIAMG PreconditionedKrylov
 MAXTIME                         1000.0
-TIMESTEP                        0.4
+TIMESTEP                        0.1
 NUMSTEP                         6
 RESTARTEVRY                     1
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit
@@ -115,7 +118,7 @@ SHAPEDERIVATIVES                No
 PRECONDREUSE                    0
 SECONDORDER                     No
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK//Aztec_MSR              // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          Superlu//UMFPACK//Aztec_MSR              // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT                        0                               // output every so often, 0 no output
 AZSOLVE                         GMRES                           // CG GMRES CGS BiCGSTAB LU TFQMR
 AZPREC                          MLFLUID2                        // none ML MLFLUID MLFLUID2 ILU ILUT ICC LU Jacobi SymmGaussSeidel Least_Squares Neumann
@@ -156,36 +159,11 @@ CONV_STAB_SCALING               none
 MONOLITHIC_XFFSI_APPROACH       xffsi_fixedALE_interpolation
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
-MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 50 NUE 0.4 DENS 2.0 THEXPANS 0.0
+MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 200 NUE 0.4 DENS 2.0 THEXPANS 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD xfluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC sin((t*pi)/2) t1 0.0 t2 20
-----------------------------------------------------------------------CURVE2
-CURVE2 on EXPR FUNC 0 t1 0.0 t2 0.4
-CURVE2 on EXPR FUNC 0.1*(cos(2.0*pi*t/3.0)) t1 0.5 t2 30 // x-oscilation
-----------------------------------------------------------------------CURVE3
-CURVE3 on EXPR FUNC 0 t1 0.0 t2 0.01
-CURVE3 on EXPR FUNC 0.15*(sin(2.0*pi*t/3.0)) t1 0.02 t2 30// y-oscillation
-----------------------------------------------------------------------CURVE4
-CURVE4 on EXPR FUNC 0 t1 0.0 t2 0.01
-CURVE4 on EXPR FUNC t*0.08 t1 0.02 t2 30 //x-bewegung ale
-----------------------------------------------------------------------CURVE5
-CURVE5 on EXPR FUNC 0 t1 0.0 t2 0.01
-CURVE5 on EXPR FUNC t*0.08 t1 0.02 t2 30 //x-bewegung str
-----------------------------------------------------------------------CURVE6
-CURVE6 on EXPR FUNC 0 t1 0.0 t2 0.01 //y-bewegung str
-CURVE6 on EXPR FUNC 0.15*(sin(2.0*pi*t/3.0))+0.03*(sin(2.0*pi*t/0.1)) t1 0.02 t2 30 //y-bewegung str
-----------------------------------------------------------------------FUNCT1
-FUNCT1 EXPR 0 0 0 FUNCTION (-1/0.25)*(1/0.65)*(-0.25-x)*(0.65-x)
-----------------------------------------------------------------------FUNCT2
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-y)*(y)
-FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0
-FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
-----------------------------------------------------------------------FUNCT3
-FUNCT3 EXPR 0 0.0 0 FUNCTION (1/0.4)*(1/0.4)*(0.8-2*y)
-----------------------------------------------------------------------FUNCT4
+CURVE1 on EXPR FUNC t*t t1 0.0 t2 20
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          0
@@ -224,13 +202,14 @@ DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          1
 // bgFluid inflow
-E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.1 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           1
 // str dirichlet
 E 4 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+//E 4 - 3 1 1 1  0.1 0.0 0.0  none none none 0 0 0 
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            2
 // bgfluid volume
@@ -573,21 +552,24 @@ NODE 32 COORD 1.9500000000000002e+00 2.9999999999999999e-01 2.9999999999999999e-
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 8 QUANTITY velx VALUE 9.99999999999567485e-02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 8 QUANTITY pressure VALUE 3.62681588770937680e+01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 9 QUANTITY velx VALUE 9.99999999999511974e-02 TOLERANCE 1e-6
-FLUID DIS fluid NODE 9 QUANTITY pressure VALUE 3.62681588770937680e+01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 15 QUANTITY velx VALUE 1.00000020013e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 15 QUANTITY pressure VALUE 3.62681588770937680e+01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 18 QUANTITY velx VALUE 1.00000020013450680e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 18 QUANTITY pressure VALUE 3.62681588770937680e+01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 17 QUANTITY velx VALUE 1.00000020013450680e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 17 QUANTITY pressure VALUE 3.62681588770937680e+01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 21 QUANTITY velx VALUE 1.00000020013457383e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 21 QUANTITY pressure VALUE 3.62681588770937680e+01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 26 QUANTITY velx VALUE 1.00000020013388258e-01 TOLERANCE 1e-6
-FLUID DIS xfluid NODE 26 QUANTITY pressure VALUE 3.62681588770937680e+01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 26 QUANTITY dispx VALUE 2.39999999999788216e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 28 QUANTITY dispx VALUE 2.39999999999946534e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 8 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 8 QUANTITY pressure VALUE 5.33648158734485207e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 9 QUANTITY velx VALUE 3.60000000000009146e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 9 QUANTITY pressure VALUE 5.33648158734485207e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 10 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 10 QUANTITY pressure VALUE 5.33648158734485634e+01  TOLERANCE 1e-6
+FLUID DIS xfluid NODE 18 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 18 QUANTITY pressure VALUE 5.34297158734477904e+01  TOLERANCE 1e-6
+FLUID DIS xfluid NODE 17 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 17 QUANTITY pressure VALUE 5.34297158734478046e+01  TOLERANCE 1e-6
+FLUID DIS xfluid NODE 21 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 21 QUANTITY pressure VALUE 5.27697158734485754e+01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 26 QUANTITY velx VALUE 3.59999999999990272e-01 TOLERANCE 1e-6
+FLUID DIS xfluid NODE 26 QUANTITY pressure VALUE 5.21097158734485575e+01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 26 QUANTITY dispx VALUE 9.10000000000045078e-02  TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 28 QUANTITY dispx VALUE 9.10000000000044662e-02 TOLERANCE 1e-6
+FSI NODE 25 QUANTITY lambdax VALUE 4.68987442861036996e+00 TOLERANCE 1e-8
+FSI NODE 25 QUANTITY lambday VALUE 3.61891918376176625e+00 TOLERANCE 1e-8
+FSI NODE 25 QUANTITY lambdaz VALUE -3.61891918376176491e+00 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END
