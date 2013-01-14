@@ -300,6 +300,13 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     // tentative prolongation operator (PA-AMG)
     PFact = PtentFact;
     RFact = Teuchos::rcp( new TransPFactory() );
+  } else if (agg_damping > 0.0) {
+    // Petrov Galerkin PG-AMG smoothed aggregation (energy minimization in ML)
+    PFact  = Teuchos::rcp( new SaPFactory() );
+    PFact->SetFactory("P",PtentFact);
+    PFact->SetParameter("Damping factor", Teuchos::ParameterEntry(agg_damping));
+    //PFact->SetFactory("A",slaveDcAFact);
+    RFact  = Teuchos::rcp( new TransPFactory() );
   } else {
     // Petrov Galerkin PG-AMG smoothed aggregation (energy minimization in ML)
     PFact  = Teuchos::rcp( new PgPFactory() );
