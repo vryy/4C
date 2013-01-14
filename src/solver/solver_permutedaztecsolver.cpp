@@ -85,6 +85,7 @@ void LINALG::SOLVER::PermutedAztecSolver::Setup( Teuchos::RCP<Epetra_Operator> m
   Teuchos::RCP<Xpetra::CrsMatrix<Scalar,LO,GO,Node> > xCrsA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
   Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
   Teuchos::RCP<Matrix> xOp = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
+  xOp->SetFixedBlockSize(Params().sublist("NodalBlockInformation").get<int>("nv")); // set nBlockSize
 
   if(data_==Teuchos::null) data_ = Teuchos::rcp(new Level());
   data_->setDefaultVerbLevel(Teuchos::VERB_NONE);
@@ -137,12 +138,13 @@ void LINALG::SOLVER::PermutedAztecSolver::Setup( Teuchos::RCP<Epetra_Operator> m
   // retransform nullspace vectors
   // TODO: make this working for ML, too
   if(Params().isSublist("MueLu Parameters")) {
+   
     Teuchos::RCP<Matrix> xPermQtMatrix = data_->Get<Teuchos::RCP<Matrix> >("permQT", PermFact_.get());
     int numdf = Params().sublist("MueLu Parameters").get<int>("PDE equations",-1);
     int dimns = Params().sublist("MueLu Parameters").get<int>("null space: dimension",-1);
     if(dimns == -1 || numdf == -1) dserror("Error: PDE equations or null space dimension wrong.");
     Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = xOp->getRowMap();
-
+    
     Teuchos::RCP<MultiVector> nspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
     Teuchos::RCP<std::vector<double> > nsdata = Params().sublist("MueLu Parameters").get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
 
