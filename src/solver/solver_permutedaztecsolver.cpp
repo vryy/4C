@@ -83,8 +83,6 @@ void LINALG::SOLVER::PermutedAztecSolver::Setup( Teuchos::RCP<Epetra_Operator> m
   // see whether operator is a Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>( matrix );
 
-  std::cout << "zeros in original matrix (Epetra): " << CountZerosOnDiagonalEpetra(A) << std::endl;
-
   // build
   // permP, permQT and A = permQ^T A permP
   // all variables and information is stored in data_
@@ -92,7 +90,13 @@ void LINALG::SOLVER::PermutedAztecSolver::Setup( Teuchos::RCP<Epetra_Operator> m
 
   // TODO decide whether to permute linear system or not using the information of
   //      the permuted system matrix A
-  test();
+
+  // find problematic rows/columns which are not optimal after permutation
+  Teuchos::RCP<Map> nonDiagMap = FindNonDiagonalDominantRows(0.5); // introduce solver parameter for this??
+
+  Teuchos::ParameterList & precondParams = getPrecondParamterList();
+  Teuchos::ParameterList & linSystemProps = precondParams.sublist("Linear System properties");
+  linSystemProps.set<Teuchos::RCP<Map> >("non diagonal-dominant row map",nonDiagMap);
 
   if(bPermuteLinearSystem_) {
     // set
@@ -101,7 +105,9 @@ void LINALG::SOLVER::PermutedAztecSolver::Setup( Teuchos::RCP<Epetra_Operator> m
     PermuteLinearSystem(A,b);
 
     // calculate (permQT)^T * b_f where b_f is the fine level null space (multi)vector
-    PermuteNullSpace(A);
+    //PermuteNullSpace(A);  // TODO think about this
+    // do not permute null space to preserve pattern of null space for transfer operators
+    // important e.g. for one pt aggregates?
   } else {
     b_ = b;
     A_ = A;
@@ -155,8 +161,7 @@ void LINALG::SOLVER::PermutedAztecSolver::BuildPermutationOperator(const Teuchos
     data_->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xSlaveDofMap));  // set map with active dofs
 
     // define permutation factory for permuting the full matrix A
-    //PermFact_ = Teuchos::rcp(new PermutationFactory("SlaveDofMap", MueLu::NoFactory::getRCP()));
-    PermFact_ = Teuchos::rcp(new PermutationFactory("", Teuchos::null));
+    PermFact_ = Teuchos::rcp(new PermutationFactory("SlaveDofMap", MueLu::NoFactory::getRCP()));
   }
   else
     // permute full matrix
@@ -291,10 +296,72 @@ void LINALG::SOLVER::PermutedAztecSolver::PermuteNullSpace(const Teuchos::RCP<Ep
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::PermutedAztecSolver::test()
+Teuchos::RCP<Map> LINALG::SOLVER::PermutedAztecSolver::FindNonDiagonalDominantRows(double diagDominanceRatio)
 {
-  // extract permutation operators from data_
-  Teuchos::RCP<Matrix> xPermA = data_->Get<Teuchos::RCP<Matrix> >("A", PermFact_.get());
+  Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+
+  // extract permuted but unscaled matrix
+  Teuchos::RCP<Matrix> xPermA = data_->Get<Teuchos::RCP<Matrix> >("permA", PermFact_.get());
+
+  const Teuchos::RCP< const Teuchos::Comm< int > > comm = xPermA->getRowMap()->getComm();
+
+  Teuchos::RCP<Vector> diagAVec = VectorFactory::Build(xPermA->getRowMap(),true);
+  xPermA->getLocalDiagCopy(*diagAVec);
+  Teuchos::ArrayRCP< const Scalar > diagAVecData = diagAVec->getData(0);
+  std::vector<GlobalOrdinal> NonDiagonalDominantGIDs;  // vector with nondiagonaldominant row GIDs on cur proc
+
+  // loop over all local rows in matrix A and keep diagonal entries if corresponding
+  // matrix rows are not contained in permRowMap
+  for (size_t row = 0; row < xPermA->getRowMap()->getNodeNumElements(); row++) {
+    GlobalOrdinal grow = xPermA->getRowMap()->getGlobalElement(row);
+
+    // extract local row information from matrix
+    Teuchos::ArrayView<const LocalOrdinal> indices;
+    Teuchos::ArrayView<const Scalar> vals;
+    xPermA->getLocalRowView(row, indices, vals);
+
+    // find column entry with max absolute value
+    Scalar maxVal = 0.0;
+    for (size_t j = 0; j < Teuchos::as<size_t>(indices.size()); j++) {
+      if(std::abs(vals[j]) > maxVal) {
+        maxVal = std::abs(vals[j]);
+      }
+    }
+
+    // check the ratio nof the diagonal entry and the entry with
+    // maximal absolute value in the current row
+    // if the row is diagonal dominant the ratio is 1.0
+    // if the row is not diagonal dominant, the ratio is < 1.0
+    // if the row has a zero on the diagonal the ratio is zero
+    // if the row is a zero row (-> singular matrix) we divide zero by zero
+    if(std::abs(diagAVecData[row])/maxVal < diagDominanceRatio) { // optimal would be 1.0 -> row is diagonal dominant
+      NonDiagonalDominantGIDs.push_back(grow);
+    }
+  }
+
+  const Teuchos::ArrayView<const LocalOrdinal> NonDiagonalDominantGIDs_view(&NonDiagonalDominantGIDs[0],NonDiagonalDominantGIDs.size());
+
+  Teuchos::RCP<Map> NonDiagonalDominantGIDsMap = MapFactory::Build(
+      xPermA->getRowMap()->lib(),
+      Teuchos::OrdinalTraits<int>::invalid(),
+      NonDiagonalDominantGIDs_view,
+      0, comm);
+
+  int verbosity = Params().sublist("Aztec Parameters").get<int>("verbosity");
+  if(verbosity>0)
+    *fos << "PermutedAztecSolver: found " << NonDiagonalDominantGIDsMap->getGlobalNumElements() << " non-digaonal dominant entries." << std::endl;
+
+  return NonDiagonalDominantGIDsMap;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+Teuchos::RCP<Map> LINALG::SOLVER::PermutedAztecSolver::FindZeroDiagonalEntries()
+{
+  Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
+
+  // extract permuted but unscaled matrix
+  Teuchos::RCP<Matrix> xPermA = data_->Get<Teuchos::RCP<Matrix> >("permA", PermFact_.get());
 
   const Teuchos::RCP< const Teuchos::Comm< int > > comm = xPermA->getRowMap()->getComm();
 
@@ -304,70 +371,26 @@ void LINALG::SOLVER::PermutedAztecSolver::test()
   LocalOrdinal lNumZeros = 0;
   std::vector<GlobalOrdinal> zeroGids;
   for(size_t i = 0; i<diagAVec->getMap()->getNodeNumElements(); ++i) {
-    if(diagAVecData[i] == 0.0) {
+
+    if(std::abs(diagAVecData[i]) < 1e-5) { // pick out all rows with very small diagonal entries
       lNumZeros++;
       zeroGids.push_back(diagAVec->getMap()->getGlobalElement(i));
-
-      // check corresponding row for nonzero entries
-      //size_t nnz = xPermA->getNumEntriesInLocalRow(i);
-
-      // extract local row information from matrix
-      Teuchos::ArrayView<const LocalOrdinal> indices;
-      Teuchos::ArrayView<const Scalar> vals;
-      xPermA->getLocalRowView(i, indices, vals);
-
-      // find column entry with max absolute value
-      GlobalOrdinal gMaxValIdx = 0;
-      Scalar norm1 = 0.0;
-      Scalar maxVal = 0.0;
-      for (size_t j = 0; j < Teuchos::as<size_t>(indices.size()); j++) {
-       norm1 += std::abs(vals[j]);
-       if(std::abs(vals[j]) > maxVal) {
-         maxVal = std::abs(vals[j]);
-         gMaxValIdx = xPermA->getColMap()->getGlobalElement(indices[j]);
-       }
-      }
-
-      std::cout << "row: " << xPermA->getRowMap()->getGlobalElement(i) << " gMaxValIdx: " << gMaxValIdx << " maxVal: " << maxVal << std::endl;
-    }
-    else if(diagAVecData[i] != 1.0) {
-      // check corresponding row for nonzero entries
-       //size_t nnz = xPermA->getNumEntriesInLocalRow(i);
-
-       // extract local row information from matrix
-       Teuchos::ArrayView<const LocalOrdinal> indices;
-       Teuchos::ArrayView<const Scalar> vals;
-       xPermA->getLocalRowView(i, indices, vals);
-
-       // find column entry with max absolute value
-       GlobalOrdinal gMaxValIdx = 0;
-       Scalar norm1 = 0.0;
-       Scalar maxVal = 0.0;
-       for (size_t j = 0; j < Teuchos::as<size_t>(indices.size()); j++) {
-        norm1 += std::abs(vals[j]);
-        if(std::abs(vals[j]) > maxVal) {
-          maxVal = std::abs(vals[j]);
-          gMaxValIdx = xPermA->getColMap()->getGlobalElement(indices[j]);
-        }
-       }
-
-       std::cout << "row: " << xPermA->getRowMap()->getGlobalElement(i) << " diagonalEntry: " << diagAVecData[i] << " gMaxValIdx: " << gMaxValIdx << " maxVal: " << maxVal << std::endl;
-
     }
   }
 
   const Teuchos::ArrayView<const LocalOrdinal> zeroGids_view(&zeroGids[0],zeroGids.size());
 
-
-  Teuchos::RCP<Map> singleNodeAggMap = MapFactory::Build(
+  Teuchos::RCP<Map> zeroDiagonalMap = MapFactory::Build(
       xPermA->getRowMap()->lib(),
       Teuchos::OrdinalTraits<int>::invalid(),
       zeroGids_view,
       0, comm);
 
-  std::cout << *singleNodeAggMap << std::endl;
+  int verbosity = Params().sublist("Aztec Parameters").get<int>("verbosity");
+  if(verbosity>0)
+    *fos << "PermutedAztecSolver: found " << zeroDiagonalMap->getGlobalNumElements() << " (near) zero diagonal entries." << std::endl;
 
-  //MueLu::Utils<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Write("xPermA.mat", *xPermA);
+  return zeroDiagonalMap;
 }
 
 //----------------------------------------------------------------------------------
@@ -573,6 +596,19 @@ void LINALG::SOLVER::PermutedAztecSolver::ReTransformSolution() {
   Teuchos::RCP<Epetra_MultiVector> xtemp = Teuchos::rcp(new Epetra_MultiVector(*x_));
   xtemp->Update(1.0,*x_,0.0);
   epPermQTMatrix->Multiply(false, *xtemp, *x_);
+}
+
+Teuchos::ParameterList & LINALG::SOLVER::PermutedAztecSolver::getPrecondParamterList()
+{
+  if ( Params().isSublist("IFPACK Parameters") )  return Params().sublist("IFPACK Parameters");
+  else if ( Params().isSublist("ML Parameters") ) return Params().sublist("ML Parameters");
+  else if ( Params().isSublist("MueLu Parameters") ) return Params().sublist("MueLu Parameters");
+  else if ( Params().isSublist("MueLu (Contact) Parameters") ) return Params().sublist("MueLu (Contact) Parameters");
+  else if ( Params().isSublist("MueLu (Contact2) Parameters") )return Params().sublist("MueLu (Contact2) Parameters");
+  else if ( Params().isSublist("MueLu (Contact3) Parameters") )return Params().sublist("MueLu (Contact3) Parameters");
+  else if ( Params().isSublist("MueLu (PenaltyContact) Parameters") )return Params().sublist("MueLu (PenaltyContact) Parameters");
+  else if ( Params().isSublist("AMGBS Parameters") )return Params().sublist("AMGBS Parameters");
+  else return Params();
 }
 
 Teuchos::RCP<const Epetra_CrsMatrix> LINALG::SOLVER::PermutedAztecSolver::GetOperator(const std::string name, const Teuchos::RCP<FactoryBase> & fact)

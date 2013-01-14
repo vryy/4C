@@ -74,7 +74,10 @@ namespace LINALG
           int CountZerosOnDiagonalEpetra(const Teuchos::RCP<Epetra_CrsMatrix>& A);
           int CountZerosOnDiagonal(const Teuchos::RCP<const Matrix>& xOp);
 
-          void test();
+          Teuchos::RCP<Map> FindZeroDiagonalEntries();
+
+          Teuchos::ParameterList & getPrecondParamterList();
+          Teuchos::RCP<Map> FindNonDiagonalDominantRows(double diagDominanceRatio = 1.0);
       private:
           bool bPermuteLinearSystem_;
 
