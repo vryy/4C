@@ -4199,7 +4199,7 @@ void STATMECH::StatMechManager::LoomOutput(const Epetra_Vector& disrow,
             distances<<endl;
           }
           // time step divider line
-          linkerpositions<<std::scientific<<std::setprecision(6)<<-1e9<<"\t"<<-1e9<<"\t"<<-1e9<<"\t"<<evalnodepositions.size()<<endl;
+          linkerpositions<<std::scientific<<std::setprecision(6)<<-1e9<<"\t"<<-1e9<<"\t"<<-1e9<<"\t"<<-1e9<<endl;
         }
       }
     }

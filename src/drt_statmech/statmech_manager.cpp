@@ -1776,187 +1776,215 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
         {
           // random index
           int index = neighbourorder[j];
-
           // skip this, if neighbourslid entry is '-2', meaning empty or binding spot is unavailable due to input file specs
-          int bspotinterval = statmechparams_.get<int>("BSPOTINTERVAL", 1);
-          if((*neighbourslid)[index][irandom] > -1.9 && bspotcolmap_->GID((int)(*neighbourslid)[index][irandom])%bspotinterval==0)
+          if((*neighbourslid)[index][irandom] > -1.9)
           {
-            // current neighbour LID
-            int bpostLID = (int)(*neighbourslid)[index][irandom];
-
-            //skip the rest of this iteration of the i-loop in case the binding spot is occupied
-            if(bpostLID>-1)
-              if((*bspotstatus_)[bpostLID]>-0.1)
-                continue;
-
-            // flag indicating loop break after first new bond has been established between i-th crosslink molecule and j-th neighbour node
-            bool bondestablished = false;
-            // necessary condition to be fulfilled in order to set a crosslinker
-            double probability = 0.0;
-            // switch between probability for regular inter-filament binding and self-binding crosslinker
-            if(bpostLID>=0)
-              probability = plink;
-            else
-              probability = pself;
-
-            if( (*uniformgen_)() < probability )
+            // check the space between already set linkers and the about to be set linker
+            bool setlink = true;
+            int bspotinterval = statmechparams_.get<int>("BSPOTINTERVAL", 1);
+            if(bspotinterval>1 && (*neighbourslid)[index][irandom]>-0.9)
             {
-              int free = 0;
-              int occupied = 0;
-              bool set = false;
+              int bspotlid = (*neighbourslid)[index][irandom];
+              //getting a vector consisting of pointers to all filament number conditions set
+              std::vector<DRT::Condition*> filaments(0);
+              discret_->GetCondition("FilamentNumber",filaments);
+              int filnum = (*filamentnumber_)[bspotlid];
+              int startlid = bspotlid - int(ceil(double(bspotinterval/2)));
+              int endlid = bspotlid + int(ceil(double(bspotinterval/2)));
+              if(bspotcolmap_->GID(startlid)<(*filaments[filnum]->Nodes())[0])
+                startlid = bspotcolmap_->LID((*filaments[filnum]->Nodes())[0]);
+              if(bspotcolmap_->GID(endlid)>(*filaments[filnum]->Nodes())[(int)filaments[filnum]->Nodes()->size()-1])
+                endlid = bspotcolmap_->LID((*filaments[filnum]->Nodes())[(int)filaments[filnum]->Nodes()->size()-1]);
 
-              // check both entries of crosslinkerbond_
-              for(int k=0; k<crosslinkerbond_->NumVectors(); k++)
-                if((*crosslinkerbond_)[k][irandom]<-0.9 && !set)
-                {
-                  // store free bond position
-                  free = k;
-                  set = true;
-                }
-                else
-                  occupied = k;
-
-              switch((int)(*numbond_)[irandom])
+              for(int k=startlid; k<endlid+1; k++)
               {
-                // free crosslink molecule creating a bond
-                case 0:
+                if((*bspotstatus_)[k]>-1)
                 {
-                  // crosslinkers only allowed on the horizontal filament when looking at a loom setup
-                  if(DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP") && (*filamentnumber_)[bpostLID]!=0)
-                    break;
-                  else // standard case
-                  {
-                    // update of crosslink molecule positions
-                    LINALG::SerialDenseMatrix LID(1,1,true);
-                    LID(0,0) = bpostLID;
-                    (*crosslinkerbond_)[free][irandom] = bspotcolmap_->GID(bpostLID);
-                    // update status of binding spot by putting in the crosslinker id
-                    ((*bspotstatus_)[bpostLID]) = irandom;
-                    // increment the number of bonds of this crosslinker
-                    ((*numbond_)[irandom]) = 1.0;
-                    CrosslinkerIntermediateUpdate(*bspotpositions, LID, irandom);
-                    bondestablished = true;
-                  }
+                  setlink = false;
+                  break;
                 }
-                break;
-                // one bond already exists -> establish a second bond/passive crosslink molecule
-                // Potentially, add an element (later)
-                case 1:
-                {
-                  //Col map LIDs of nodes to be crosslinked
-                   Epetra_SerialDenseMatrix LID(2,1);
-                   LID(0,0) = bspotcolmap_->LID((int)(*crosslinkerbond_)[occupied][irandom]);
-                  // distinguish between a real bpostLID and the entry '-1', which indicates a passive crosslink molecule
-                  if(bpostLID>=0)
-                    LID(1,0) = bpostLID;
-                  else // choose the neighbor node on the same filament as bpostLID as second entry and take basisnodes_ into account
-                  {
-                    int currfilament = (int)(*filamentnumber_)[(int)LID(0,0)];
-                    if((int)LID(0,0)<basisnodes_-1)
-                    {
-                      if((int)(*filamentnumber_)[(int)LID(0,0)+1]==currfilament)
-                        LID(1,0) = LID(0,0) + 1.0;
-                      else
-                        LID(1,0) = LID(0,0) - 1.0;
-                    }
-                    if((int)LID(0,0)==basisnodes_-1)
-                      if((int)(*filamentnumber_)[(int)LID(0,0)-1]==currfilament)
-                        LID(1,0) = LID(0,0) - 1.0;
-                  }
+              }
+            }
 
-                  // do not do anything if a crosslinker is about to occupy two binding spots on the same filament and K_ON_SELF is zero
-                  if(DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
+            if(setlink)
+            {
+              // current neighbour LID
+              int bspotLID = (int)(*neighbourslid)[index][irandom];
+
+              //skip the rest of this iteration of the i-loop in case the binding spot is occupied
+              if(bspotLID>-1)
+                if((*bspotstatus_)[bspotLID]>-0.1)
+                  continue;
+
+              // flag indicating loop break after first new bond has been established between i-th crosslink molecule and j-th neighbour node
+              bool bondestablished = false;
+              // necessary condition to be fulfilled in order to set a crosslinker
+              double probability = 0.0;
+              // switch between probability for regular inter-filament binding and self-binding crosslinker
+              if(bspotLID>=0)
+                probability = plink;
+              else
+                probability = pself;
+
+              if( (*uniformgen_)() < probability )
+              {
+                int free = 0;
+                int occupied = 0;
+                bool set = false;
+
+                // check both entries of crosslinkerbond_
+                for(int k=0; k<crosslinkerbond_->NumVectors(); k++)
+                  if((*crosslinkerbond_)[k][irandom]<-0.9 && !set)
                   {
-                    if((*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((int)LID(0,0))])] == (*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((int)LID(1,0))])] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
-                      break;
+                    // store free bond position
+                    free = k;
+                    set = true;
                   }
                   else
+                    occupied = k;
+
+                switch((int)(*numbond_)[irandom])
+                {
+                  // free crosslink molecule creating a bond
+                  case 0:
                   {
-                    if((*filamentnumber_)[(int)LID(0,0)]==(*filamentnumber_)[(int)LID(1,0)] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
+                    // crosslinkers only allowed on the horizontal filament when looking at a loom setup
+                    if(DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP") && (*filamentnumber_)[bspotLID]!=0)
                       break;
-                  }
-
-                  // do not do anything in case of a Loom set up if conditions hereafter are not met
-                  //CHECK make this more elegant later
-                  if(DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP"))
-                  {
-                    if(!SetCrosslinkerLoom(LID, bspotpositions, bspottriadscol))
-                      break;
-                  }
-
-                  //unit direction vector between currently considered two nodes
-                  LINALG::Matrix<3,1> direction;
-                  for(int j=0;j<3;j++)
-                    direction(j) = (*bspotpositions)[j][(int)LID(0,0)]-(*bspotpositions)[j][(int)LID(1,0)];
-
-                  direction.Scale(1.0/direction.Norm2());
-
-                  /* In case of beam contact, evaluate whether a crosslinker would intersect with any exisiting elements
-                   * if it were to be set between the two nodes considered*/
-                  bool intersection = false;
-                  if(beamcmanager!=Teuchos::null)
-                  {
-                    Epetra_SerialDenseMatrix nodecoords(3,2);
-                    for(int k=0; k<nodecoords.M(); k++)
+                    else // standard case
                     {
-                      nodecoords(k,0) = (*bspotpositions)[k][bspotcolmap_->GID((int)LID(0,0))];
-                      nodecoords(k,1) = (*bspotpositions)[k][bspotcolmap_->GID((int)LID(1,0))];
+                      // update of crosslink molecule positions
+                      LINALG::SerialDenseMatrix LID(1,1,true);
+                      LID(0,0) = bspotLID;
+                      (*crosslinkerbond_)[free][irandom] = bspotcolmap_->GID(bspotLID);
+                      // update status of binding spot by putting in the crosslinker id
+                      ((*bspotstatus_)[bspotLID]) = irandom;
+                      // increment the number of bonds of this crosslinker
+                      ((*numbond_)[irandom]) = 1.0;
+                      CrosslinkerIntermediateUpdate(*bspotpositions, LID, irandom);
+                      bondestablished = true;
                     }
-                    for(int k=0; k<(int)LID.M(); k++)
+                  }
+                  break;
+                  // one bond already exists -> establish a second bond/passive crosslink molecule
+                  // Potentially, add an element (later)
+                  case 1:
+                  {
+                    //Col map LIDs of nodes to be crosslinked
+                     Epetra_SerialDenseMatrix LID(2,1);
+                     LID(0,0) = bspotcolmap_->LID((int)(*crosslinkerbond_)[occupied][irandom]);
+                    // distinguish between a real bspotLID and the entry '-1', which indicates a passive crosslink molecule
+                    if(bspotLID>=0)
+                      LID(1,0) = bspotLID;
+                    else // choose the neighbor node on the same filament as bspotLID as second entry and take basisnodes_ into account
                     {
-                      intersection = beamcmanager->OcTree()->IntersectBBoxesWith(nodecoords, LID);
-                      if(intersection)
+                      int currfilament = (int)(*filamentnumber_)[(int)LID(0,0)];
+                      if((int)LID(0,0)<basisnodes_-1)
+                      {
+                        if((int)(*filamentnumber_)[(int)LID(0,0)+1]==currfilament)
+                          LID(1,0) = LID(0,0) + 1.0;
+                        else
+                          LID(1,0) = LID(0,0) - 1.0;
+                      }
+                      if((int)LID(0,0)==basisnodes_-1)
+                        if((int)(*filamentnumber_)[(int)LID(0,0)-1]==currfilament)
+                          LID(1,0) = LID(0,0) - 1.0;
+                    }
+
+                    // do not do anything if a crosslinker is about to occupy two binding spots on the same filament and K_ON_SELF is zero
+                    if(DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
+                    {
+                      if((*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((int)LID(0,0))])] == (*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((int)LID(1,0))])] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
                         break;
                     }
-                  }
-
-                  /*Orientation Check: only if the two nodes in question pass a check for their
-                   * orientation, a marker, indicating an element to be added, will be set
-                   * In addition to that, if beam contact is enabled, a linker is only set if
-                   * it does not intersect with other existing elements*/
-                  if(CheckOrientation(direction,*bspottriadscol,LID) && !intersection)
-                  {
-                    numsetelements++;
-
-                    ((*numbond_)[irandom]) = 2.0;
-                    // actually existing two bonds
-                    if(bpostLID>=0)
+                    else
                     {
-                       (*crosslinkerbond_)[free][irandom] = bspotcolmap_->GID(bpostLID);
-                       ((*bspotstatus_)[bpostLID]) = irandom;
-                      // set flag at irandom-th crosslink molecule that an element is to be added
-                      (*addcrosselement)[irandom] = 1.0;
-                      // update molecule positions
-                      CrosslinkerIntermediateUpdate(*bspotpositions, LID, irandom);
+                      if((*filamentnumber_)[(int)LID(0,0)]==(*filamentnumber_)[(int)LID(1,0)] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
+                        break;
+                    }
 
-                      // consider crosslinkers covering two binding spots of one filament
-                      if(DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
+                    // do not do anything in case of a Loom set up if conditions hereafter are not met
+                    //CHECK make this more elegant later
+                    if(DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP"))
+                    {
+                      if(!SetCrosslinkerLoom(LID, bspotpositions, bspottriadscol))
+                        break;
+                    }
+
+                    //unit direction vector between currently considered two nodes
+                    LINALG::Matrix<3,1> direction;
+                    for(int j=0;j<3;j++)
+                      direction(j) = (*bspotpositions)[j][(int)LID(0,0)]-(*bspotpositions)[j][(int)LID(1,0)];
+
+                    direction.Scale(1.0/direction.Norm2());
+
+                    /* In case of beam contact, evaluate whether a crosslinker would intersect with any exisiting elements
+                     * if it were to be set between the two nodes considered*/
+                    bool intersection = false;
+                    if(beamcmanager!=Teuchos::null)
+                    {
+                      Epetra_SerialDenseMatrix nodecoords(3,2);
+                      for(int k=0; k<nodecoords.M(); k++)
                       {
-                        if((*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((int)LID(0,0))])] == (*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((int)LID(1,0))])] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
-                          (*crosslinkonsamefilament_)[irandom] = 1.0;
+                        nodecoords(k,0) = (*bspotpositions)[k][bspotcolmap_->GID((int)LID(0,0))];
+                        nodecoords(k,1) = (*bspotpositions)[k][bspotcolmap_->GID((int)LID(1,0))];
                       }
-                      else
+                      for(int k=0; k<(int)LID.M(); k++)
                       {
-                        if((*filamentnumber_)[(int)LID(0,0)]==(*filamentnumber_)[(int)LID(1,0)] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
-                          (*crosslinkonsamefilament_)[irandom] = 1.0;
+                        intersection = beamcmanager->OcTree()->IntersectBBoxesWith(nodecoords, LID);
+                        if(intersection)
+                          break;
                       }
                     }
-                    else // passive crosslink molecule
+
+                    /*Orientation Check: only if the two nodes in question pass a check for their
+                     * orientation, a marker, indicating an element to be added, will be set
+                     * In addition to that, if beam contact is enabled, a linker is only set if
+                     * it does not intersect with other existing elements*/
+                    if(CheckOrientation(direction,*bspottriadscol,LID) && !intersection)
                     {
-                      (*searchforneighbours_)[irandom] = 0.0;
-                      LINALG::SerialDenseMatrix oneLID(1,1,true);
-                      oneLID(0,0) = LID(0,0);
-                      CrosslinkerIntermediateUpdate(*bspotpositions, oneLID, irandom);
+                      numsetelements++;
+
+                      ((*numbond_)[irandom]) = 2.0;
+                      // actually existing two bonds
+                      if(bspotLID>=0)
+                      {
+                         (*crosslinkerbond_)[free][irandom] = bspotcolmap_->GID(bspotLID);
+                         ((*bspotstatus_)[bspotLID]) = irandom;
+                        // set flag at irandom-th crosslink molecule that an element is to be added
+                        (*addcrosselement)[irandom] = 1.0;
+                        // update molecule positions
+                        CrosslinkerIntermediateUpdate(*bspotpositions, LID, irandom);
+
+                        // consider crosslinkers covering two binding spots of one filament
+                        if(DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
+                        {
+                          if((*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((int)LID(0,0))])] == (*filamentnumber_)[discret_->NodeColMap()->LID((int)(*bspot2nodes_)[0][bspotcolmap_->GID((int)LID(1,0))])] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
+                            (*crosslinkonsamefilament_)[irandom] = 1.0;
+                        }
+                        else
+                        {
+                          if((*filamentnumber_)[(int)LID(0,0)]==(*filamentnumber_)[(int)LID(1,0)] && statmechparams_.get<double>("K_ON_SELF",0.0)==0.0)
+                            (*crosslinkonsamefilament_)[irandom] = 1.0;
+                        }
+                      }
+                      else // passive crosslink molecule
+                      {
+                        (*searchforneighbours_)[irandom] = 0.0;
+                        LINALG::SerialDenseMatrix oneLID(1,1,true);
+                        oneLID(0,0) = LID(0,0);
+                        CrosslinkerIntermediateUpdate(*bspotpositions, oneLID, irandom);
+                      }
+                      bondestablished = true;
                     }
-                    bondestablished = true;
                   }
-                }
-                break;
-              }// switch((int)(*numbond_)[irandom])
-              // for now, break j-loop after a new bond was established, i.e crosslinker elements cannot be established starting from zero bonds
-              if(bondestablished)
-                break;
-            }//if( (*uniformgen_)() < probability )
+                  break;
+                }// switch((int)(*numbond_)[irandom])
+                // for now, break j-loop after a new bond was established, i.e crosslinker elements cannot be established starting from zero bonds
+                if(bondestablished)
+                  break;
+              }//if( (*uniformgen_)() < probability )
+            }//
           }// if(neighbourslid...)
         }// for(int j=0; j<(int)neighboursLID.size(); j++)
       }//if((*numbond_)[irandom]<1.9)
@@ -2424,13 +2452,13 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double&       
               if ((*uniformgen_)() < (*punlink)[irandom])
               {
                 // obtain LID and reset crosslinkerbond_ at this position
-                int bpostLID = bspotcolmap_->LID((int) (*crosslinkerbond_)[j][irandom]);
-                ((*bspotstatus_)[bpostLID]) = -1.0;
+                int bspotLID = bspotcolmap_->LID((int) (*crosslinkerbond_)[j][irandom]);
+                ((*bspotstatus_)[bspotLID]) = -1.0;
                 (*numbond_)[irandom] = 0.0;
                 (*crosslinkerbond_)[j][irandom] = -1.0;
 
                 LINALG::SerialDenseMatrix LID(1, 1, true);
-                LID(0, 0) = bpostLID;
+                LID(0, 0) = bspotLID;
                 CrosslinkerIntermediateUpdate(*bspotpositions, LID, irandom, false);
               }
         }
@@ -2453,14 +2481,14 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double&       
                 // random pick of one of the crosslinkerbond entries
                 int jrandom = jorder[j];
                 // get the nodal LIDs
-                int bpostLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[jrandom][irandom]);
+                int bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[jrandom][irandom]);
 
                 // in case of a loom setup, we want the vertical filaments to be free of linkers. Hence, we choose the node on the vertical filament to let go of the linker
                 // note: jrandom is either 0 or 1. Hence, "!".
-                if(DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP") && (*filamentnumber_)[bpostLID]==0)
+                if(DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP") && (*filamentnumber_)[bspotLID]==0)
                 {
                   jrandom = (!jrandom);
-                  bpostLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[jrandom][irandom]);
+                  bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[jrandom][irandom]);
                 }
 
                 // enter the crosslinker element ID into the deletion list
@@ -2468,7 +2496,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double&       
 
                 // vector updates
                 (*crosslink2element_)[irandom] = -1.0;
-                (*bspotstatus_)[bpostLID] = -1.0;
+                (*bspotstatus_)[bspotLID] = -1.0;
                 (*crosslinkerbond_)[jrandom][irandom] = -1.0;
                 // if the linker to be removed occupies to binding spots on the same filament
                 if((*crosslinkonsamefilament_)[irandom] > 0.9)
@@ -2697,8 +2725,8 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
               if ((*crosslinkerbond_)[j][irandom]>-0.9)
               {
                 // obtain LID and reset crosslinkerbond_ at this position
-                int bpostLID = bspotcolmap_->LID((int) (*crosslinkerbond_)[j][irandom]);
-                (*bspotstatus_)[bpostLID] = -1.0;
+                int bspotLID = bspotcolmap_->LID((int) (*crosslinkerbond_)[j][irandom]);
+                (*bspotstatus_)[bspotLID] = -1.0;
                 (*delcrossmolecules)[irandom] = 1.0;
               }
           }
@@ -2724,8 +2752,8 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
                 if ((*crosslinkerbond_)[j][irandom]>-0.9)
                 {
                   // obtain LID and reset crosslinkerbond_ at this position
-                  int bpostLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[j][irandom]);
-                  ((*bspotstatus_)[bpostLID]) = -1.0;
+                  int bspotLID = bspotcolmap_->LID((int)(*crosslinkerbond_)[j][irandom]);
+                  ((*bspotstatus_)[bspotLID]) = -1.0;
                   (*delcrossmolecules)[irandom] = 1.0;
                 }
             }
