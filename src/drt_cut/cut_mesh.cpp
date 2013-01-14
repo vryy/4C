@@ -2089,10 +2089,14 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name, bool include_inner )
 
 
 /*-------------------------------------------------------------------------------------*
- * ?
+ * Write all integration cells and boundarycells intro GMSH output file
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::Mesh::DumpGmshIntegrationCells( std::string name )
 {
+#ifndef DEBUGCUTLIBRARY
+  return;
+#endif
+
   std::ofstream file( name.c_str() );
   file << "View \"IntegrationCells\" {\n";
   for ( std::list<Teuchos::RCP<IntegrationCell> >::iterator i=integrationcells_.begin();

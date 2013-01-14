@@ -49,6 +49,19 @@ namespace GEO
                           const std::vector<double> &RefPlaneEqn,
                           const std::vector<DRT::UTILS::GaussIntegration> intGRule );
 
+        /*!
+        \brief Integration of specific predefined functions using the Gaussian rule generated from DirectDivergence
+        */
+        void IntegrateSpecificFuntions( const DRT::UTILS::GaussIntegration & gpv,
+                                        const std::vector<double> &RefPlaneEqn,
+                                        const std::vector<DRT::UTILS::GaussIntegration> intGRule );
+
+        /*!
+        \brief Geometry of volumecell, reference facet, main and internal gauss points for gmsh output.
+         */
+        void DivengenceCellsGMSH( const DRT::UTILS::GaussIntegration & gpv,
+                                  const std::vector<DRT::UTILS::GaussIntegration> intGRule  );
+
       private:
 
         /*!
@@ -59,26 +72,25 @@ namespace GEO
                          plain_facet_set::const_iterator& IteratorRefFacet,
                          bool & IsRefFacet );
 
-        /*!
-        \brief Geometry of volumecell, reference facet and main gauss points for gmsh output.
-         */
-        void DivengenceCellsGMSH( plain_facet_set::const_iterator& IteratorRefFacet,
-                                  std::vector<plain_facet_set::const_iterator>& facetIterator,
-                                  const DRT::UTILS::GaussIntegration & gpv,
-                                  bool & IsRefFacet );
-
-        /*!
-        \brief Integration of specific predefined functions using the Gaussian rule generated from DirectDivergence
-        */
-        void IntegrateSpecificFuntions( const DRT::UTILS::GaussIntegration & gpv,
-                                        const std::vector<double> &RefPlaneEqn  );
 
 
-
+        //! volumecell over which we construct integration scheme
         VolumeCell* volcell_;
+
+        //! background element that contains this volumecell
         Element* elem1_;
+
+        //! position of this volumecell
         const GEO::CUT::Point::PointPosition position_;
+
+        //! mesh that contains the background element
         Mesh& mesh_;
+
+        //! reference facet identified for this volumecell
+        Facet *refFacet_;
+
+        //! true if the reference plane is on a facet of volumecell
+        bool isRef_;
     };
   }
 }

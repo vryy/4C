@@ -242,8 +242,8 @@ std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& pt
     double res = x3(ind1,0)*xtemp(ind2,0)-x3(ind2,0)*xtemp(ind1,0)+
                  xtemp(ind1,0)*x1(ind2,0)-xtemp(ind2,0)*x1(ind1,0);
 
-    /*if( fabs(res)<1e-8 ) //this means small angled lines are just eliminated
-      continue;*/
+    if( fabs(res)<LINSOLVETOL ) //this means small angled lines are just eliminated
+      continue;
 
     if(res<0.0)
     {
@@ -266,6 +266,71 @@ std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& pt
   if( isClockwise )
     return leftind;
   return rightind;
+}
+
+/*-----------------------------------------------------------------------------------------------------*
+            Find the equation of plane of the polygon defined by these facets
+            KERNEL::DeleteInlinePts() must be called before using this function
+                                                                                          Sudhakar 01/13
+*------------------------------------------------------------------------------------------------------*/
+std::vector<double> GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<Point*>& ptlist )
+{
+  std::vector<double> eqn_plane(4);
+  if( ptlist.size() == 3 )
+  {
+    Point*p1 = ptlist[0];
+    Point*p2 = ptlist[1];
+    Point*p3 = ptlist[2];
+
+    //eqn_plane = EqnPlane( ptlist[0], ptlist[1], ptlist[2] );
+    eqn_plane = EqnPlane( p1, p2, p3 );
+    return eqn_plane;
+  }
+
+  std::vector<int> concavePts;
+  std::string geoType;
+  concavePts = KERNEL::CheckConvexity(  ptlist, geoType, false ); // find concave points of the polygon
+
+  unsigned mm=0;
+  unsigned npts = ptlist.size();
+  std::vector<Point*> pts(3);
+
+  for( unsigned i=0;i<npts;i++ )
+  {
+    // the concave points should not be used for to get equation of plane
+    // if it is used the normal direction will be wrong
+    if( geoType != "convex" )
+    {
+      std::vector<int>::iterator it = std::find( concavePts.begin(), concavePts.end(), i );
+      if( it!= concavePts.end() )
+        continue;
+    }
+
+    pts[mm] = ptlist[i];
+    mm++;
+
+    if( mm==3 )
+    {
+      // though inline points are deleted, skipping an intermediate point for concave facet
+      // can still result in inline points
+      if( geoType != "convex")
+      {
+        if( KERNEL::IsOnLine( pts[0],pts[1],pts[2] ) )
+        {
+          mm--;
+          continue;
+        }
+      }
+
+      eqn_plane = KERNEL::EqnPlane( pts[0], pts[1], pts[2] );
+      return eqn_plane;
+    }
+    else if( i==npts-1 )
+    {
+      dserror( "All points of a facet are on a line" );
+    }
+  }
+  return eqn_plane;
 }
 
 /*-----------------------------------------------------------------------------------------------------*

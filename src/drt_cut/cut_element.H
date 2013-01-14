@@ -233,6 +233,11 @@ public:
     return VarReturn;
   }
 
+  /*!
+  \brief Integrate pre-defined functions over each volumecell created from this element when using Tessellation
+   */
+  void integrateSpecificFunctionsTessellation();
+
 protected:
 
   //const std::vector<Side*> & Sides() { return sides_; }

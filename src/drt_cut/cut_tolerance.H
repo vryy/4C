@@ -29,4 +29,12 @@
 
 #define BOXOVERLAP  1e-7
 
+// if cross product constructed from any 3 points are less than this,
+// then these points are on the same line
+#define TOL_POINTS_ON_LINE 1e-10
+
+// In equation of plane ax+by+cz=d for a facet, this tolerance is used to check
+// whether any of the four coefficients are zero
+#define TOL_EQN_PLANE 1e-10
+
 #endif

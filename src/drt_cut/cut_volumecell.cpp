@@ -659,6 +659,78 @@ void GEO::CUT::VolumeCell::DumpGmshGaussPoints(const std::vector<std::vector<dou
   file.close();
 }
 
+void GEO::CUT::VolumeCell::integrateSpecificFunctionsTessellation()
+{
+
+  Teuchos::RCP<DRT::UTILS::GaussPointsComposite> gpc =
+                  Teuchos::rcp( new DRT::UTILS::GaussPointsComposite( 0 ) );
+
+  const plain_integrationcell_set & cells = IntegrationCells();
+  for ( plain_integrationcell_set::const_iterator i=cells.begin(); i!=cells.end(); ++i )
+  {
+    GEO::CUT::IntegrationCell * ic = *i;
+    switch ( ic->Shape() )
+    {
+    case DRT::Element::hex8:
+    {
+      Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::hex8>( ic );
+      gpc->Append( gp );
+      break;
+    }
+    case DRT::Element::tet4:
+    {
+      Teuchos::RCP<DRT::UTILS::GaussPoints> gp = CreateProjected<DRT::Element::tet4>( ic );
+      gpc->Append( gp );
+      break;
+    }
+    default:
+      dserror("Include this element here");
+    }
+  }
+
+  DRT::UTILS::GaussIntegration gpv( gpc );
+
+  double intVal = 0.0;
+  for ( DRT::UTILS::GaussIntegration::iterator iquad=gpv.begin(); iquad!=gpv.end(); ++iquad )
+  {
+    double weight = iquad.Weight();
+
+    const LINALG::Matrix<3,1> eta( iquad.Point() );
+    double xx = eta(0,0);
+    double yy = eta(1,0);
+    double zz = eta(2,0);
+
+    intVal += (pow(xx,6)+xx*pow(yy,4)*zz+xx*xx*yy*yy*zz*zz+pow(zz,6))*weight;
+  }
+  std::cout<<setprecision(20)<<"TESSELLATION Integration = "<<intVal<<"\n";
+
+}
+
+template <DRT::Element::DiscretizationType distype>
+Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::VolumeCell::CreateProjected( GEO::CUT::IntegrationCell * ic )
+{
+  const unsigned nen = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
+
+  LINALG::Matrix<3, nen> xie;
+
+  const std::vector<GEO::CUT::Point*> & cpoints = ic->Points();
+  if ( cpoints.size() != nen )
+    throw std::runtime_error( "non-matching number of points" );
+
+  for ( unsigned i=0; i<nen; ++i )
+  {
+    GEO::CUT::Point * p = cpoints[i];
+    LINALG::Matrix<3,1> xg,xi;
+    p->Coordinates(xg.A());
+    element_->LocalCoordinates(xg,xi);
+    std::copy( xi.A(), xi.A()+3, &xie( 0, i ) );
+  }
+
+  Teuchos::RCP<DRT::UTILS::GaussPoints> gp =
+    DRT::UTILS::GaussIntegration::CreateProjected<distype>( xie, ic->CubatureDegree( element_->Shape() ) );
+  return gp;
+}
+
 /*------------------------------------------------------------------------------------------------------*
     convert the Gaussian points and weights into appropriate Gauss rule as per BACI implementation
 *-------------------------------------------------------------------------------------------------------*/
@@ -689,147 +761,133 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
                                                   int BaseNos,
                                                   std::string BCellgausstype )
 {
-//  std::cout<<"generating bcells for"<<this->ParentElement()->Id()<<"\n";
 	const plain_facet_set & facete = Facets();
 	for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
 	{
 		Facet *fac = *i;
-		const Side* parside = fac->ParentSide();  //to check the normal direction for this cell
+
+		if( fac->OnCutSide() == false )             //we need boundary cells only for the cut facets
+      continue;
+
+		//--------------------------------------------------------------------
+		// Normal vector from parent side is used to identify whether normals
+		// from facet is in appropriate direction or not
+		//--------------------------------------------------------------------
+		const Side* parside = fac->ParentSide();
 		const std::vector<Node*> &par_nodes = parside->Nodes();
 		std::vector<Point*> parpts(3);
-		int ptscount=0;
-		for(std::vector<Node*>::const_iterator j=par_nodes.begin();
-				j!=par_nodes.end();j++)
-		{
-			Node *parnode = *j;
-			parpts[ptscount] = parnode->point();
-			ptscount++;
-			if(ptscount==3)
-				break;
-		}
-		double parOri[3],sideOri[3];
-		OrientationFacet(parpts,parOri);
 
-		if(fac->OnCutSide())
-		{
-			std::vector<Point*> corners = fac->CornerPoints();
+		parpts[0] = par_nodes[0]->point();
+    parpts[1] = par_nodes[1]->point();
+    parpts[2] = par_nodes[2]->point();
 
-			//if no of corners are 3 or 4, just add them as boundary integrationcells directly
-			if(corners.size()==3)
-			{
-				OrientationFacet(corners,sideOri);
+    std::vector<double> eqnpar(4),eqnfac(4);
+    // equation of plane denotes normal direction
+    eqnpar = KERNEL::EqnPlane( parpts[0], parpts[1], parpts[2] );
 
-				//the corner points of the boundary cell must be ordered in anti-clockwise manner.
-				//because normal is computed in xfem calculations
-				bool rever = ToReverse(posi,parOri,sideOri);
-				if(rever)
-					std::reverse(corners.begin(),corners.end());
-				NewTri3Cell( mesh, fac, corners );
-//				return;
-			}
-			else if(corners.size()==4)
-			{
-				OrientationFacet(corners,sideOri);
-				bool rever = ToReverse(posi,parOri,sideOri);
-				if(rever)
-					std::reverse(corners.begin(),corners.end());
-				NewQuad4Cell(mesh,fac,corners);
-//				return;
-			}
-			else
-			{
-			  if(BCellgausstype=="Tessellation")//generate boundarycell gausspoints by triangulation
-			  {
+    std::vector<Point*> corners = fac->CornerPoints();
+    eqnfac = KERNEL::EqnPlanePolygon( corners );
+    bool rever = ToReverse( posi, eqnpar, eqnfac );
+
+    if(rever)                                       // normal from facet is in wrong direction
+      std::reverse(corners.begin(),corners.end());  // change ordering to correct this
+
+    //if no of corners are 3 or 4, just add them as boundary integrationcells directly
+    if(corners.size()==3)
+    {
+
+      NewTri3Cell( mesh, fac, corners );
+    }
+    else if(corners.size()==4)
+    {
+      NewQuad4Cell(mesh,fac,corners);
+    }
+    else
+    {
+      if(BCellgausstype=="Tessellation")//generate boundarycell gausspoints by triangulation
+      {
 #if 0 // create only triangles - result in large number of Gauss points
-          if(!fac->IsTriangulated())
-            fac->DoTriangulation( mesh, corners );
-          const std::vector<std::vector<Point*> > & triangulation = fac->Triangulation();
+        if(!fac->IsTriangulated())
+          fac->DoTriangulation( mesh, corners );
+        const std::vector<std::vector<Point*> > & triangulation = fac->Triangulation();
 #endif
 
 #if 1 // creates both tri and quad. less no of Gauss points
 
-          if( !fac->IsFacetSplit() )
-            fac->SplitFacet(  corners );
+        if( !fac->IsFacetSplit() )
+          fac->SplitFacet(  corners );
 
-          const std::vector<std::vector<Point*> > triangulation = fac->GetSplitCells();
+        const std::vector<std::vector<Point*> > triangulation = fac->GetSplitCells();
 #endif
 
-          for ( std::vector<std::vector<Point*> >::const_iterator j=triangulation.begin();
-                            j!=triangulation.end(); ++j )
-          {
-            std::vector<Point*> tri = *j;
+        for ( std::vector<std::vector<Point*> >::const_iterator j=triangulation.begin();
+                          j!=triangulation.end(); ++j )
+        {
+          std::vector<Point*> tri = *j;
 
-            OrientationFacet(tri,sideOri);
-            bool rever = ToReverse(posi,parOri,sideOri);
-            if(rever)
-              std::reverse(tri.begin(),tri.end());
-            if(tri.size()==3)
-              NewTri3Cell(mesh,fac,tri);
-            else if(tri.size()==4)
-              NewQuad4Cell(mesh,fac,tri);
-            else
-              dserror("Triangulation created neither tri3 or quad4");
-          }
-			  }
-
-			  else if(BCellgausstype=="MomentFitting")//generate boundarycell gausspoints by solving moment fitting equations
-			  {
-          BoundarycellIntegration bcell_inte(elem,fac,posi,BaseNos);
-          Bcellweights_ = bcell_inte.GenerateBoundaryCellIntegrationRule();
-          BcellgausPts_ = bcell_inte.getBcellGaussPointLocation();
-
-          //the boundarycell integration is carriedout in the local coord of the element
-          //to project the coordinates of Gauss points, shape functions of element can be used
-          //
-          //                                            area of facet in global coordinates
-          //but to transform the weight, the jacobian = -----------------------------------
-          //                                            area of facet in local coordinates
-          FacetIntegration bcellLocal(fac,elem,posi,true,false);
-          bcellLocal.set_integ_number(1);
-          double areaLocal = bcellLocal.integrate_facet();
-
-          FacetIntegration bcellGlobal(fac,elem,posi,true,true);
-          bcellGlobal.set_integ_number(1);
-          double areaGlobal = bcellGlobal.integrate_facet();
-          double jaco = areaGlobal/areaLocal;
-
-          int numBcellpts = BcellgausPts_.size();
-          Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints( numBcellpts ) );
-
-          LINALG::Matrix<3,1> xeLocal,xeGlobal;
-          for(unsigned i=0;i<BcellgausPts_.size();i++)
-          {
-            xeLocal(0,0) = BcellgausPts_[i][0];
-            xeLocal(1,0) = BcellgausPts_[i][1];
-            xeLocal(2,0) = BcellgausPts_[i][2];
-
-            elem->GlobalCoordinates( xeLocal, xeGlobal );
-
-            cgp->Append( xeGlobal, Bcellweights_(i)*jaco );
-          }
-
-          OrientationFacet(corners,sideOri);
-          bool rever = ToReverse(posi,parOri,sideOri);
-          LINALG::Matrix<3,1> normal;
-          double normalFac;
-          if(rever)
-          {
-            //std::reverse(corners.begin(),corners.end());
-            normalFac = -1.0;
-
-          }
+          if(tri.size()==3)
+            NewTri3Cell(mesh,fac,tri);
+          else if(tri.size()==4)
+            NewQuad4Cell(mesh,fac,tri);
           else
-            normalFac = 1.0;
+            dserror("Triangulation created neither tri3 or quad4");
+        }
+      }
 
-          normalFac = normalFac*sqrt(sideOri[0]*sideOri[0]+sideOri[1]*sideOri[1]+sideOri[2]*sideOri[2]);
-          for(unsigned i=0;i<3;i++)
-            normal(i,0) = sideOri[i]/normalFac;
+      else if(BCellgausstype=="MomentFitting")//generate boundarycell gausspoints by solving moment fitting equations
+      {
+        BoundarycellIntegration bcell_inte(elem,fac,posi,BaseNos);
+        Bcellweights_ = bcell_inte.GenerateBoundaryCellIntegrationRule();
+        BcellgausPts_ = bcell_inte.getBcellGaussPointLocation();
 
-          DRT::UTILS::GaussIntegration gi(cgp);
-          NewArbitraryCell(mesh, fac, corners, gi, normal);
-			  }
-			}
-		}
+        //the boundarycell integration is carriedout in the local coord of the element
+        //to project the coordinates of Gauss points, shape functions of element can be used
+        //
+        //                                            area of facet in global coordinates
+        //but to transform the weight, the jacobian = -----------------------------------
+        //                                            area of facet in local coordinates
+        FacetIntegration bcellLocal(fac,elem,posi,true,false);
+        bcellLocal.set_integ_number(1);
+        double areaLocal = bcellLocal.integrate_facet();
+
+        FacetIntegration bcellGlobal(fac,elem,posi,true,true);
+        bcellGlobal.set_integ_number(1);
+        double areaGlobal = bcellGlobal.integrate_facet();
+        double jaco = areaGlobal/areaLocal;
+
+        int numBcellpts = BcellgausPts_.size();
+        Teuchos::RCP<DRT::UTILS::CollectedGaussPoints> cgp = Teuchos::rcp( new DRT::UTILS::CollectedGaussPoints( numBcellpts ) );
+
+        LINALG::Matrix<3,1> xeLocal,xeGlobal;
+        for(unsigned i=0;i<BcellgausPts_.size();i++)
+        {
+          xeLocal(0,0) = BcellgausPts_[i][0];
+          xeLocal(1,0) = BcellgausPts_[i][1];
+          xeLocal(2,0) = BcellgausPts_[i][2];
+
+          elem->GlobalCoordinates( xeLocal, xeGlobal );
+
+          cgp->Append( xeGlobal, Bcellweights_(i)*jaco );
+        }
+
+        LINALG::Matrix<3,1> normal;
+        double normalFac;
+        if(rever)
+        {
+          //std::reverse(corners.begin(),corners.end());
+          normalFac = -1.0;
+        }
+        else
+          normalFac = 1.0;
+
+        normalFac = normalFac*sqrt(eqnfac[0]*eqnfac[0]+eqnfac[1]*eqnfac[1]+eqnfac[2]*eqnfac[2]);
+        for(unsigned i=0;i<3;i++)
+          normal(i,0) = eqnfac[i]/normalFac;
+
+        DRT::UTILS::GaussIntegration gi(cgp);
+        NewArbitraryCell(mesh, fac, corners, gi, normal);
+      }
+    }
 	}
 }
 
@@ -837,58 +895,37 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
     This is to check whether the corner points of the cut side facet is aligned to give outward normal
 *---------------------------------------------------------------------------------------------------------*/
 bool GEO::CUT::VolumeCell::ToReverse(const GEO::CUT::Point::PointPosition posi,
-                                     double* parOri,
-                                     double* sideOri)
+                                     std::vector<double> parEqn,
+                                     std::vector<double> facetEqn)
 {
 	bool rever = false;
+
+	// position is inside
 	if(posi==-3)
 	{
-		if(fabs(sideOri[0])>0.0000001 && sideOri[0]*parOri[0]>0.0)
+    if(fabs(parEqn[0])>TOL_EQN_PLANE && parEqn[0]*facetEqn[0]>0.0)
       rever = true;
-		else if(fabs(sideOri[1])>0.0000001 && sideOri[1]*parOri[1]>0.0)
+    else if(fabs(parEqn[1])>TOL_EQN_PLANE && parEqn[1]*facetEqn[1]>0.0)
       rever = true;
-		else if(fabs(sideOri[2])>0.0000001 && sideOri[2]*parOri[2]>0.0)
+    else if(fabs(parEqn[2])>TOL_EQN_PLANE && parEqn[2]*facetEqn[2]>0.0)
       rever = true;
-		else
-			//dserror("Point is given instead of side");
-    rever = false;
+    else
+      rever = false;
 	}
-	if(posi==-2)
+
+	// position is outside
+	else if(posi==-2)
 	{
-		if(fabs(sideOri[0])>0.0000001 && sideOri[0]*parOri[0]<0.0)
+		if(fabs(parEqn[0])>TOL_EQN_PLANE && parEqn[0]*facetEqn[0]<0.0)
       rever = true;
-		else if(fabs(sideOri[1])>0.0000001 && sideOri[1]*parOri[1]<0.0)
+		else if(fabs(parEqn[1])>TOL_EQN_PLANE && parEqn[1]*facetEqn[1]<0.0)
       rever = true;
-		else if(fabs(sideOri[2])>0.0000001 && sideOri[2]*parOri[2]<0.0)
+		else if(fabs(parEqn[2])>TOL_EQN_PLANE && parEqn[2]*facetEqn[2]<0.0)
       rever = true;
 		else
-			//dserror("Point is given instead of side");
 			rever = false;
 	}
 	return rever;
-}
-
-void GEO::CUT::VolumeCell::OrientationFacet(const std::vector<Point*>pts,
-                                            double *coef)
-{
-	int count=0;
-	double x1[3]={0.0,0.0,0.0},y1[3]={0.0,0.0,0.0},z1[3]={0.0,0.0,0.0};
-	for(std::vector<Point*>::const_iterator i=pts.begin();i!=pts.end();i++)
-	{
-		Point* pt1 = *i;
-		double xm[3];
-		pt1->Coordinates(xm);
-		x1[count] = xm[0];
-		y1[count] = xm[1];
-		z1[count] = xm[2];
-		count++;
-		if(count==3)
-			break;
-	}
-
-	coef[0] = y1[0]*(z1[1]-z1[2])+y1[1]*(z1[2]-z1[0])+y1[2]*(z1[0]-z1[1]);
-	coef[1] = z1[0]*(x1[1]-x1[2])+z1[1]*(x1[2]-x1[0])+z1[2]*(x1[0]-x1[1]);
-	coef[2] = x1[0]*(y1[1]-y1[2])+x1[1]*(y1[2]-y1[0])+x1[2]*(y1[0]-y1[1]);
 }
 
 /*------------------------------------------------------------------------------------------*
@@ -976,6 +1013,8 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem,
 
   // generate boundary cells -- when using tessellation this is automatically done
   GenerateBoundaryCells( mesh, posi, elem, BaseNos, BCellgausstype );
+
+  //std::cout<<"MOMENT FITTING ::: Number of points = "<<weights_.Length()<<"\n";
 }
 
 /*---------------------------------------------------------------------------------------------------------------*
@@ -1011,6 +1050,14 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
   // also check whether generated gauss rule predicts volume accurately
   DRT::UTILS::GaussIntegration gpi(gp_);
   dd.DebugVolume( gpi, RefEqnPlane_, intGP_ );
+
+#if 0 // integrate a predefined function
+  dd.IntegrateSpecificFuntions( gpi, RefEqnPlane_, intGP_ );
+#endif
+
+#ifdef DEBUGCUTLIBRARY  // write volumecell, main and internal Gauss points
+  dd.DivengenceCellsGMSH( gpi, intGP_ );
+#endif
 
   // generate boundary cells -- when using tessellation this is automatically done
   GenerateBoundaryCells( mesh, posi, elem, 0, "Tessellation" );

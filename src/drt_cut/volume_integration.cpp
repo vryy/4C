@@ -49,8 +49,11 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
       if(rhs_mom.InfNorm()>1e-5 && rhs_mom(0)<0.0)
         dserror("negaive volume in base function integration. is ordering of vertices right?");
     }
-
+    
   }
+
+  /*double intee = rhs_mom(56)+rhs_mom(68)+rhs_mom(72)+rhs_mom(83);
+  std::cout<<std::setprecision(20)<<"the INTEGRAL = "<<intee<<"\n";*/
 
   //set the volume of this volumecell
   //the volume from local coordinates is converted in terms of global coordinates
@@ -995,10 +998,20 @@ void GEO::CUT::VolumeIntegration::ErrorForSpecificFunction(Epetra_SerialDenseVec
   std::vector<double> error (7);
 
   double chek = 0.0,val=0.0;
-  for(unsigned i=0;i<gaus_pts_.size();i++)
+  /*for(unsigned i=0;i<gaus_pts_.size();i++)
 	{
-   chek += 5*weights(i);
+    double xx = gaus_pts_[i][0];
+    double yy = gaus_pts_[i][1];
+    double zz = gaus_pts_[i][2];
+    chek += (pow(xx,6)+xx*pow(yy,4)*zz+xx*xx*yy*yy*zz*zz+pow(zz,6))*weights(i);
 	}
+  std::cout<<"MOMENT FITTING :: Integral value = "<<chek<<"\n";*/
+
+  chek = 0.0;
+  for(unsigned i=0;i<gaus_pts_.size();i++)
+  {
+   chek += 5*weights(i);
+  }
   val = 5*rhs_moment(0);
   error[0] = (val-chek)/val;
 

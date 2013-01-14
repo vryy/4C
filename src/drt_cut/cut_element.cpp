@@ -760,6 +760,19 @@ void GEO::CUT::Element::CalculateVolumeOfCellsTessellation()
     vc1->SetVolume(volume);
   }
 }
+/*------------------------------------------------------------------------------------------------------------------*
+Integrate pre-defined functions over each volumecell created from this element when using Tessellation
+*-------------------------------------------------------------------------------------------------------------------*/
+void GEO::CUT::Element::integrateSpecificFunctionsTessellation()
+{
+  for(plain_volumecell_set::iterator i=cells_.begin();
+                                     i!=cells_.end();i++)
+  {
+    VolumeCell *cell1 = *i;
+    cell1->integrateSpecificFunctionsTessellation();
+  }
+}
+
 
 /*------------------------------------------------------------------------------------------------------------------*
       The Gauss rules for each cut element is constructed by performing moment fitting for each volumecells.

@@ -215,6 +215,15 @@ public:
    */
   std::string IsThisPointInside( LINALG::Matrix<3,1>& x );
 
+	/*!
+	\brief Integrate specific predifined functions over the volumecell by integrating over each of the
+	integration cells resulting from Tessellation.
+	For MomentFitting and DIrectDivergence this can't be used
+	 */
+  void integrateSpecificFunctionsTessellation();
+
+  template <DRT::Element::DiscretizationType distype>
+  Teuchos::RCP<DRT::UTILS::GaussPoints> CreateProjected( GEO::CUT::IntegrationCell * ic );
 
 private:
 
@@ -229,15 +238,10 @@ private:
   }
 
   /*!
-  \brief Compute the way in which the nodes of the facets are numbered (clockwise or anticlockwise)
-   */
-  void OrientationFacet(const std::vector<Point*>pts, double *coef);
-
-  /*!
   \brief Check whether the numbering of points need to be reversed. This is to ensure outward pointing normal for the
   boundarycells when triangulation is performed
    */
-  bool ToReverse(const GEO::CUT::Point::PointPosition posi,double* parOri,double* sideOri);
+  bool ToReverse( const GEO::CUT::Point::PointPosition posi, std::vector<double> parEqn, std::vector<double> facetEqn );
 
   /*!
   \brief return the Gauss points computed using moment fitting equations

@@ -21,9 +21,6 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
   std::vector<double> eqn_plane(4);
   int cornSize = cornersLocal.size();
 
-  std::string geoType;
-  std::vector<int> concavePts;
-
   // construct a temporary point list to find the concave points of the facet in local coords
   std::vector<GEO::CUT::Point*> ptlist(cornersLocal.size());
   GEO::CUT::Options options;
@@ -33,7 +30,6 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
   {
     std::vector<double> coordPt = cornersLocal[i];
     ptlist[i] = mesh.NewPoint( &coordPt[0], NULL, NULL );
-
   }
 
   CUT::KERNEL::DeleteInlinePts( ptlist );
@@ -47,49 +43,10 @@ std::vector<double> GEO::CUT::FacetIntegration::equation_plane(const std::vector
 #endif
     for( unsigned i=0;i<4;i++ )
       eqn_plane[i] = 0.0;
-
-    return eqn_plane;
   }
-
-  concavePts = KERNEL::CheckConvexity(  ptlist, geoType, false );
-
-  unsigned mm=0;
-  std::vector<Point*> pts(3);
-  for( int i=0;i<cornSize;i++ )
+  else
   {
-    // the concave points should not be used for to get equation of plane
-    // if it is used the normal direction will be wrong
-    if( geoType != "convex" )
-    {
-      std::vector<int>::iterator it = std::find( concavePts.begin(), concavePts.end(), i );
-      if( it!= concavePts.end() )
-        continue;
-    }
-
-    pts[mm] = ptlist[i];
-    mm++;
-
-    if( mm==3 )
-    {
-      // though inline points are deleted, skipping an intermediate point for concave facet
-      // can still result in inline points
-      if( geoType != "convex")
-      {
-        if( KERNEL::IsOnLine( pts[0],pts[1],pts[2] ) )
-        {
-          mm--;
-          continue;
-        }
-      }
-
-      eqn_plane = KERNEL::EqnPlane( pts[0], pts[1], pts[2] );
-      return eqn_plane;
-    }
-    else if( i==cornSize-1 )
-    {
-      dserror( "All points of a facet are on a line" );
-    }
-
+    eqn_plane = GEO::CUT::KERNEL::EqnPlanePolygon( ptlist );
   }
 
   return eqn_plane;
@@ -796,7 +753,10 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
       }
 
 #ifdef DEBUGCUTLIBRARY // check the area of facet computed from splitting and triangulation
-  DebugAreaCheck( divCells, splitMethod, mesh ); 
+  if(splitMethod=="split")
+  {
+    DebugAreaCheck( divCells, splitMethod, mesh );
+  }
 #endif
     }
   }
@@ -892,7 +852,7 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCel
   }
 
   //std::cout.precision(15);
-  if( fabs(area1-area2)>1e-8 )
+  if( fabs(area1-area2)>1e-16 )
   {
     std::cout<<"The coordinates of the facet\n";
     for( unsigned i=0;i<corners.size();i++ )

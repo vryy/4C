@@ -158,6 +158,8 @@ namespace GEO
                                        std::string& geoType,
                                        bool InSplit = true );
 
+      std::vector<double> EqnPlanePolygon( const std::vector<Point*>& ptlist );
+
       /*!
       \brief Find the equation of plane that contains these non-collinear points
       It must be noted while using this function to find equation of facets,
