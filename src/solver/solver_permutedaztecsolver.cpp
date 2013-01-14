@@ -12,6 +12,7 @@
 
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_MultiVectorFactory.hpp>
+#include <Xpetra_MapFactory.hpp>
 #include <Xpetra_CrsMatrixWrap.hpp>
 
 #include <MueLu.hpp>
@@ -42,6 +43,7 @@ LINALG::SOLVER::PermutedAztecSolver::PermutedAztecSolver( const Epetra_Comm & co
                                             FILE * outfile )
   : KrylovSolver(comm,params,outfile)
 {
+  bPermuteLinearSystem_ = true; // always permute linear system // TODO introduce decision
   ncall_ = 0;
 }
 
@@ -81,121 +83,31 @@ void LINALG::SOLVER::PermutedAztecSolver::Setup( Teuchos::RCP<Epetra_Operator> m
   // see whether operator is a Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>( matrix );
 
-  // wrap Epetra_CrsMatrix -> Xpetra::Matrix
-  Teuchos::RCP<Xpetra::CrsMatrix<Scalar,LO,GO,Node> > xCrsA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
-  Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
-  Teuchos::RCP<Matrix> xOp = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
-  xOp->SetFixedBlockSize(Params().sublist("NodalBlockInformation").get<int>("nv")); // set nBlockSize
+  std::cout << "zeros in original matrix (Epetra): " << CountZerosOnDiagonalEpetra(A) << std::endl;
 
-  if(data_==Teuchos::null) data_ = Teuchos::rcp(new Level());
-  data_->setDefaultVerbLevel(Teuchos::VERB_NONE);
-  data_->Set("A",xOp);
+  // build
+  // permP, permQT and A = permQ^T A permP
+  // all variables and information is stored in data_
+  BuildPermutationOperator(A);
 
-  //Teuchos::RCP<Epetra_Map> epMasterDofMap = params.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap");
-  Teuchos::RCP<Epetra_Map> epSlaveDofMap  = Params().sublist("Aztec Parameters").get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap");
-  //Teuchos::RCP<Epetra_Map> epActiveDofMap = params.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap");
+  // TODO decide whether to permute linear system or not using the information of
+  //      the permuted system matrix A
+  test();
 
-  // build map extractor from different maps
-  Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
+  if(bPermuteLinearSystem_) {
+    // set
+    // b_ = permP * b;
+    // A_ = permQ^T * A * permP
+    PermuteLinearSystem(A,b);
 
-  data_->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xSlaveDofMap));  // set map with active dofs
-
-  // define permutation factory for permuting the full matrix A
-  PermFact_ = Teuchos::rcp(new PermutationFactory("SlaveDofMap", MueLu::NoFactory::getRCP()));
-
-  // setup main factory manager
-  Teuchos::RCP<FactoryManager> M = Teuchos::rcp(new FactoryManager());
-  M->SetFactory("permQT",          PermFact_);
-  M->SetFactory("A",               MueLu::NoFactory::getRCP()); // this is the input matrix
-  MueLu::SetFactoryManager SFMFinest(data_, M); // set factory manager for data container
-
-  // prepare building process for permutation operators
-  data_->Request("A", PermFact_.get());
-  data_->Request("permA", PermFact_.get());
-  data_->Request("permP", PermFact_.get());
-  data_->Request("permQT", PermFact_.get());
-  data_->Request("permScaling", PermFact_.get());
-
-  // build permutation operators
-  PermFact_->Build(*data_);
-
-  // extract permuted matrix from Level
-  Teuchos::RCP<Epetra_CrsMatrix> xEpPermCrsMat = GetOperatorNonConst("A",PermFact_);
-
-  Teuchos::RCP<const Epetra_CrsMatrix> epPermPMatrix  = GetOperator("permP",  PermFact_);             // row permutation matrix
-  Teuchos::RCP<const Epetra_CrsMatrix> epPermScalingMatrix = GetOperator("permScaling",PermFact_); // leftScaling matrix
-  ////
-
-  Teuchos::RCP<Epetra_MultiVector> btemp1 = Teuchos::rcp(new Epetra_MultiVector(*b));
-
-  // P_trafo*b
-  epPermPMatrix->Multiply(false, *b, *btemp1);
-  // P_scaling * P_trafo * b
-  epPermScalingMatrix->Multiply(false, *btemp1, *b);
-
-  ////
-
-  // retransform nullspace vectors
-  // TODO: make this working for ML, too
-  if(Params().isSublist("MueLu Parameters")) {
-   
-    Teuchos::RCP<Matrix> xPermQtMatrix = data_->Get<Teuchos::RCP<Matrix> >("permQT", PermFact_.get());
-    int numdf = Params().sublist("MueLu Parameters").get<int>("PDE equations",-1);
-    int dimns = Params().sublist("MueLu Parameters").get<int>("null space: dimension",-1);
-    if(dimns == -1 || numdf == -1) dserror("Error: PDE equations or null space dimension wrong.");
-    Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = xOp->getRowMap();
-    
-    Teuchos::RCP<MultiVector> nspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
-    Teuchos::RCP<std::vector<double> > nsdata = Params().sublist("MueLu Parameters").get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
-
-    for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
-        Teuchos::ArrayRCP<Scalar> nspVectori = nspVector->getDataNonConst(i);
-        const size_t myLength = nspVector->getLocalLength();
-        for(size_t j=0; j<myLength; j++) {
-                nspVectori[j] = (*nsdata)[i*myLength+j];
-        }
-    }
-
-    // calculate transformed nullspace multivector
-    Teuchos::RCP<MultiVector> permutedNspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(xOp->getDomainMap(),dimns,true);
-    // calculate Q * b_f
-    xPermQtMatrix->apply(*nspVector, *permutedNspVector, Teuchos::TRANS);
-
-    // write data back
-    for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
-        Teuchos::ArrayRCP<Scalar> permutedNspVectori = permutedNspVector->getDataNonConst(i);
-        const size_t myLength = permutedNspVector->getLocalLength();
-        for(size_t j=0; j<myLength; j++) {
-                (*nsdata)[i*myLength+j] = permutedNspVectori[j];
-        }
-    }
-#if 0
-    // experiment
-    Teuchos::RCP<MultiVector> nspVector2 = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
-    Teuchos::RCP<std::vector<double> > nsdata2 = Params().sublist("MueLu Parameters").get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
-
-    for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
-        Teuchos::ArrayRCP<Scalar> nspVector2i = nspVector2->getDataNonConst(i);
-        const size_t myLength = nspVector2->getLocalLength();
-        for(size_t j=0; j<myLength; j++) {
-                nspVector2i[j] = (*nsdata2)[i*myLength+j];
-        }
-    }
-
-    Teuchos::RCP<MultiVector> test = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(xOp->getRowMap(),dimns,true);
-    xPermQtMatrix->apply(*nspVector2, *test, Teuchos::NO_TRANS);
-    test->update(-1.0, *nspVector, 1.0);
-    std::cout << *test << std::endl;
-#endif
+    // calculate (permQT)^T * b_f where b_f is the fine level null space (multi)vector
+    PermuteNullSpace(A);
+  } else {
+    b_ = b;
+    A_ = A;
   }
-
-  ////
-
   x_ = x;
-  b_ = b;
-  A_ = this->GetOperatorNonConst("A",PermFact_);//xEpPermCrsMat->getEpetra_CrsMatrixNonConst();
-
-  //data_->print(*fos,Teuchos::VERB_EXTREME);
+  ////
 
 #ifdef WRITEOUTSTATISTICS
   tttcreate.ResetStartTime();
@@ -215,6 +127,281 @@ void LINALG::SOLVER::PermutedAztecSolver::Setup( Teuchos::RCP<Epetra_Operator> m
 #ifdef WRITEOUTSTATISTICS
   dtimeprecondsetup = tttcreate.ElapsedTime();
 #endif
+}
+
+void LINALG::SOLVER::PermutedAztecSolver::BuildPermutationOperator(const Teuchos::RCP<Epetra_CrsMatrix>& A)
+{
+  // wrap Epetra_CrsMatrix -> Xpetra::Matrix
+  Teuchos::RCP<Xpetra::CrsMatrix<Scalar,LO,GO,Node> > xCrsA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
+  Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
+  Teuchos::RCP<Matrix> xOp = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
+  xOp->SetFixedBlockSize(Params().sublist("NodalBlockInformation").get<int>("nv")); // set nBlockSize
+
+  if(data_==Teuchos::null) data_ = Teuchos::rcp(new Level());
+  data_->setDefaultVerbLevel(Teuchos::VERB_NONE);
+  data_->Set("A",xOp);
+
+  // check, if "SlaveDofMap" information is available in parameter lists
+  bool bSlaveDofMapAvailable = false;
+  if(Params().isSublist("Aztec Parameters") &&
+      Params().sublist("Aztec Parameters").isParameter("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap")) {
+    bSlaveDofMapAvailable = true;
+  }
+
+  // build permutation factory
+  if(bSlaveDofMapAvailable) {
+    Teuchos::RCP<Epetra_Map> epSlaveDofMap  = Params().sublist("Aztec Parameters").get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap");
+    Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
+    data_->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xSlaveDofMap));  // set map with active dofs
+
+    // define permutation factory for permuting the full matrix A
+    //PermFact_ = Teuchos::rcp(new PermutationFactory("SlaveDofMap", MueLu::NoFactory::getRCP()));
+    PermFact_ = Teuchos::rcp(new PermutationFactory("", Teuchos::null));
+  }
+  else
+    // permute full matrix
+    PermFact_ = Teuchos::rcp(new PermutationFactory("",Teuchos::null));
+
+  // setup main factory manager
+  Teuchos::RCP<FactoryManager> M = Teuchos::rcp(new FactoryManager());
+  M->SetFactory("permQT",          PermFact_);
+  M->SetFactory("A",               MueLu::NoFactory::getRCP()); // this is the input matrix
+  MueLu::SetFactoryManager SFMFinest(data_, M); // set factory manager for data container
+
+  // prepare building process for permutation operators
+  data_->Request("A", PermFact_.get());
+  data_->Request("permA", PermFact_.get());
+  data_->Request("permP", PermFact_.get());
+  data_->Request("permQT", PermFact_.get());
+  data_->Request("permScaling", PermFact_.get());
+  data_->Request("#RowPermutations", PermFact_.get());
+  data_->Request("#ColPermutations", PermFact_.get());
+  data_->Request("#WideRangeRowPermutations", PermFact_.get());
+  data_->Request("#WideRangeColPermutations", PermFact_.get());
+
+  // build permutation operators
+  PermFact_->Build(*data_);
+
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::SOLVER::PermutedAztecSolver::PermuteLinearSystem(const Teuchos::RCP<Epetra_CrsMatrix>& A,const Teuchos::RCP<Epetra_MultiVector>& b) {
+
+  if(!data_->IsAvailable("A", PermFact_.get()) ||
+      !data_->IsAvailable("permP", PermFact_.get()) ||
+      !data_->IsAvailable("permScaling", PermFact_.get()))
+    dserror("PermutedAztecSolver: call BuildPermutationOperator before PermuteLinearSystem");
+
+  // extract permutation operators from data_
+  Teuchos::RCP<Epetra_CrsMatrix> xEpPermCrsMat = GetOperatorNonConst("A",PermFact_);
+  Teuchos::RCP<const Epetra_CrsMatrix> epPermPMatrix  = GetOperator("permP",  PermFact_);             // row permutation matrix
+  Teuchos::RCP<const Epetra_CrsMatrix> epPermScalingMatrix = GetOperator("permScaling",PermFact_); // leftScaling matrix
+
+  // P_trafo*b
+  Teuchos::RCP<Epetra_MultiVector> btemp1 = Teuchos::rcp(new Epetra_MultiVector(*b));
+  epPermPMatrix->Multiply(false, *b, *btemp1);
+  // P_scaling * P_trafo * b
+  epPermScalingMatrix->Multiply(false, *btemp1, *b);
+
+  // set
+  // b_ = permP * b;
+  // A_ = permQ^T * A * permP
+  b_ = b;   // note b is permuted
+  A_ = xEpPermCrsMat;//xEpPermCrsMat->getEpetra_CrsMatrixNonConst();
+
+}
+
+void LINALG::SOLVER::PermutedAztecSolver::PermuteNullSpace(const Teuchos::RCP<Epetra_CrsMatrix>& A)
+{
+  // wrap Epetra_CrsMatrix -> Xpetra::Matrix
+  Teuchos::RCP<Xpetra::CrsMatrix<Scalar,LO,GO,Node> > xCrsA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
+  Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
+  Teuchos::RCP<Matrix> xOp = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
+  xOp->SetFixedBlockSize(Params().sublist("NodalBlockInformation").get<int>("nv")); // set nBlockSize
+
+  // detect MueLu/ML Paramter list
+  std::string MultiGridParameterListName = "";
+  if(Params().isSublist("ML Parameters"))
+    MultiGridParameterListName = "ML Parameters";
+  else if(Params().isSublist("MueLu Parameters"))
+    MultiGridParameterListName = "MueLu Parameters";
+  else if(Params().isSublist("MueLu (Contact) Parameters"))
+    MultiGridParameterListName = "MueLu (Contact) Parameters";
+  else if(Params().isSublist("MueLu (Contact2) Parameters"))
+    MultiGridParameterListName = "MueLu (Contact2) Parameters";
+  else if(Params().isSublist("MueLu (Contact3) Parameters"))
+    MultiGridParameterListName = "MueLu (Contact3) Parameters";
+  else if(Params().isSublist("MueLu (PenaltyContact) Parameters"))
+    MultiGridParameterListName = "MueLu (PenaltyContact) Parameters";
+
+  // retransform nullspace vectors
+  if(MultiGridParameterListName == "")
+    return; // no nullspace to permute
+
+  Teuchos::RCP<Matrix> xPermQtMatrix = data_->Get<Teuchos::RCP<Matrix> >("permQT", PermFact_.get());
+  int numdf = Params().sublist(MultiGridParameterListName).get<int>("PDE equations",-1);
+  int dimns = Params().sublist(MultiGridParameterListName).get<int>("null space: dimension",-1);
+  if(dimns == -1 || numdf == -1) dserror("PermutedAztecSolver: Error in MueLu/ML parameters: PDE equations or null space dimension wrong.");
+  Teuchos::RCP<const Xpetra::Map<LO,GO,NO> > rowMap = xOp->getRowMap();
+
+  Teuchos::RCP<MultiVector> nspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
+  Teuchos::RCP<std::vector<double> > nsdata = Params().sublist(MultiGridParameterListName).get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
+
+  for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
+    Teuchos::ArrayRCP<Scalar> nspVectori = nspVector->getDataNonConst(i);
+    const size_t myLength = nspVector->getLocalLength();
+    for(size_t j=0; j<myLength; j++) {
+      nspVectori[j] = (*nsdata)[i*myLength+j];
+    }
+  }
+
+  // calculate transformed nullspace multivector
+  Teuchos::RCP<MultiVector> permutedNspVector = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(xOp->getDomainMap(),dimns,true);
+  // calculate Q * b_f
+  xPermQtMatrix->apply(*nspVector, *permutedNspVector, Teuchos::TRANS);
+
+  // write data back
+  for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
+    Teuchos::ArrayRCP<Scalar> permutedNspVectori = permutedNspVector->getDataNonConst(i);
+    const size_t myLength = permutedNspVector->getLocalLength();
+      for(size_t j=0; j<myLength; j++) {
+        (*nsdata)[i*myLength+j] = permutedNspVectori[j];
+      }
+  }
+  #if 0
+    // experiment
+    Teuchos::RCP<MultiVector> nspVector2 = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(rowMap,dimns,true);
+    Teuchos::RCP<std::vector<double> > nsdata2 = Params().sublist(MultiGridParameterListName).get<Teuchos::RCP<std::vector<double> > >("nullspace",Teuchos::null);
+
+    for ( size_t i=0; i < Teuchos::as<size_t>(dimns); i++) {
+        Teuchos::ArrayRCP<Scalar> nspVector2i = nspVector2->getDataNonConst(i);
+        const size_t myLength = nspVector2->getLocalLength();
+        for(size_t j=0; j<myLength; j++) {
+                nspVector2i[j] = (*nsdata2)[i*myLength+j];
+        }
+    }
+
+    Teuchos::RCP<MultiVector> test = Xpetra::MultiVectorFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node>::Build(xOp->getRowMap(),dimns,true);
+    xPermQtMatrix->apply(*nspVector2, *test, Teuchos::NO_TRANS);
+    test->update(-1.0, *nspVector, 1.0);
+    std::cout << *test << std::endl;
+  #endif
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+void LINALG::SOLVER::PermutedAztecSolver::test()
+{
+  // extract permutation operators from data_
+  Teuchos::RCP<Matrix> xPermA = data_->Get<Teuchos::RCP<Matrix> >("A", PermFact_.get());
+
+  const Teuchos::RCP< const Teuchos::Comm< int > > comm = xPermA->getRowMap()->getComm();
+
+  Teuchos::RCP<Vector> diagAVec = VectorFactory::Build(xPermA->getRowMap(),true);
+  xPermA->getLocalDiagCopy(*diagAVec);
+  Teuchos::ArrayRCP< const Scalar > diagAVecData = diagAVec->getData(0);
+  LocalOrdinal lNumZeros = 0;
+  std::vector<GlobalOrdinal> zeroGids;
+  for(size_t i = 0; i<diagAVec->getMap()->getNodeNumElements(); ++i) {
+    if(diagAVecData[i] == 0.0) {
+      lNumZeros++;
+      zeroGids.push_back(diagAVec->getMap()->getGlobalElement(i));
+
+      // check corresponding row for nonzero entries
+      //size_t nnz = xPermA->getNumEntriesInLocalRow(i);
+
+      // extract local row information from matrix
+      Teuchos::ArrayView<const LocalOrdinal> indices;
+      Teuchos::ArrayView<const Scalar> vals;
+      xPermA->getLocalRowView(i, indices, vals);
+
+      // find column entry with max absolute value
+      GlobalOrdinal gMaxValIdx = 0;
+      Scalar norm1 = 0.0;
+      Scalar maxVal = 0.0;
+      for (size_t j = 0; j < Teuchos::as<size_t>(indices.size()); j++) {
+       norm1 += std::abs(vals[j]);
+       if(std::abs(vals[j]) > maxVal) {
+         maxVal = std::abs(vals[j]);
+         gMaxValIdx = xPermA->getColMap()->getGlobalElement(indices[j]);
+       }
+      }
+
+      std::cout << "row: " << xPermA->getRowMap()->getGlobalElement(i) << " gMaxValIdx: " << gMaxValIdx << " maxVal: " << maxVal << std::endl;
+    }
+    else if(diagAVecData[i] != 1.0) {
+      // check corresponding row for nonzero entries
+       //size_t nnz = xPermA->getNumEntriesInLocalRow(i);
+
+       // extract local row information from matrix
+       Teuchos::ArrayView<const LocalOrdinal> indices;
+       Teuchos::ArrayView<const Scalar> vals;
+       xPermA->getLocalRowView(i, indices, vals);
+
+       // find column entry with max absolute value
+       GlobalOrdinal gMaxValIdx = 0;
+       Scalar norm1 = 0.0;
+       Scalar maxVal = 0.0;
+       for (size_t j = 0; j < Teuchos::as<size_t>(indices.size()); j++) {
+        norm1 += std::abs(vals[j]);
+        if(std::abs(vals[j]) > maxVal) {
+          maxVal = std::abs(vals[j]);
+          gMaxValIdx = xPermA->getColMap()->getGlobalElement(indices[j]);
+        }
+       }
+
+       std::cout << "row: " << xPermA->getRowMap()->getGlobalElement(i) << " diagonalEntry: " << diagAVecData[i] << " gMaxValIdx: " << gMaxValIdx << " maxVal: " << maxVal << std::endl;
+
+    }
+  }
+
+  const Teuchos::ArrayView<const LocalOrdinal> zeroGids_view(&zeroGids[0],zeroGids.size());
+
+
+  Teuchos::RCP<Map> singleNodeAggMap = MapFactory::Build(
+      xPermA->getRowMap()->lib(),
+      Teuchos::OrdinalTraits<int>::invalid(),
+      zeroGids_view,
+      0, comm);
+
+  std::cout << *singleNodeAggMap << std::endl;
+
+  //MueLu::Utils<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Write("xPermA.mat", *xPermA);
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+int LINALG::SOLVER::PermutedAztecSolver::CountZerosOnDiagonalEpetra(const Teuchos::RCP<Epetra_CrsMatrix>& A)
+{
+  // wrap Epetra_CrsMatrix -> Xpetra::Matrix
+  Teuchos::RCP<Xpetra::CrsMatrix<Scalar,LO,GO,Node> > xCrsA = Teuchos::rcp(new Xpetra::EpetraCrsMatrix(A));
+  Teuchos::RCP<CrsMatrixWrap> xCrsOp = Teuchos::rcp(new CrsMatrixWrap(xCrsA));
+  Teuchos::RCP<Matrix> xOp = Teuchos::rcp_dynamic_cast<Matrix>(xCrsOp);
+  xOp->SetFixedBlockSize(Params().sublist("NodalBlockInformation").get<int>("nv")); // set nBlockSize
+
+  return CountZerosOnDiagonal(xOp);
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+int LINALG::SOLVER::PermutedAztecSolver::CountZerosOnDiagonal(const Teuchos::RCP<const Matrix>& xOp)
+{
+  Teuchos::RCP<Vector> diagAVec = VectorFactory::Build(xOp->getRowMap(),true);
+  xOp->getLocalDiagCopy(*diagAVec);
+  Teuchos::ArrayRCP< const Scalar > diagAVecData = diagAVec->getData(0);
+  LocalOrdinal lNumZeros = 0;
+  GlobalOrdinal gNumZeros = 0;
+  for(size_t i = 0; i<diagAVec->getMap()->getNodeNumElements(); ++i) {
+    if(diagAVecData[i] == 0.0) {
+      lNumZeros++;
+    }
+  }
+
+  // sum up all entries in multipleColRequests over all processors
+  sumAll(diagAVec->getMap()->getComm(), (LocalOrdinal)lNumZeros, gNumZeros);
+
+  return Teuchos::as<int>(gNumZeros);
 }
 
 //----------------------------------------------------------------------------------
@@ -356,38 +543,36 @@ void LINALG::SOLVER::PermutedAztecSolver::Solve()
     }
 #endif
 
-  // repermutate solution vector
+  GlobalOrdinal rowperm  = 0;
+  GlobalOrdinal colperm  = 0;
+  GlobalOrdinal lrowperm = 0;
+  GlobalOrdinal lcolperm = 0;
 
-    /*Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-    data_->print(*fos,Teuchos::VERB_EXTREME);*/
-
-  // extract permuted matrix from Level
-  Teuchos::RCP<Matrix> xPermQT = data_->Get<Teuchos::RCP<Matrix> >("permQT", PermFact_.get());
-  Teuchos::RCP<CrsMatrixWrap> xPermCrsQT = Teuchos::rcp_dynamic_cast<CrsMatrixWrap>(xPermQT);
-  Teuchos::RCP<CrsMatrix> xPermCrsQTMat = xPermCrsQT->getCrsMatrix();
-  Teuchos::RCP<EpetraCrsMatrix> xEpPermCrsQTMat = Teuchos::rcp_dynamic_cast<EpetraCrsMatrix>(xPermCrsQTMat);
-
-  Teuchos::RCP<const Epetra_CrsMatrix> epPermQTMatrix = xEpPermCrsQTMat->getEpetra_CrsMatrix();
-
-  Teuchos::RCP<Epetra_MultiVector> xtemp = Teuchos::rcp(new Epetra_MultiVector(*x_));
-  //Teuchos::RCP<Epetra_MultiVector> xtemp2 = Teuchos::rcp(new Epetra_MultiVector(*x_));
-  xtemp->Update(1.0,*x_,0.0);
-  epPermQTMatrix->Multiply(false, *xtemp, *x_);
-
-  //x_->Update(1.0,*xtemp2,0.0);
-
-  //Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
-  //data_->print(*fos,Teuchos::VERB_EXTREME);
+  if(bPermuteLinearSystem_) {
+    // repermutate solution vector
+    this->ReTransformSolution();
+    rowperm = data_->Get<GlobalOrdinal>("#RowPermutations", PermFact_.get());
+    colperm = data_->Get<GlobalOrdinal>("#ColPermutations", PermFact_.get());
+    lrowperm = data_->Get<GlobalOrdinal>("#WideRangeRowPermutations", PermFact_.get());
+    lcolperm = data_->Get<GlobalOrdinal>("#WideRangeColPermutations", PermFact_.get());
+  }
 
   // print some output if desired
   if (comm_.MyPID()==0 && outfile_)
   {
-    fprintf(outfile_,"AztecOO: unknowns/iterations/time %d  %d  %f\n",
-            A_->OperatorRangeMap().NumGlobalElements(),(int)status[AZ_its],status[AZ_solve_time]);
+    fprintf(outfile_,"AztecOO: unknowns/iterations/time/rowpermutations/colpermutations/lrowperm/lcolperm %d  %d  %f %d %d %d %d\n",
+            A_->OperatorRangeMap().NumGlobalElements(),(int)status[AZ_its],status[AZ_solve_time],rowperm,colperm,lrowperm,lcolperm);
     fflush(outfile_);
   }
 
   ncall_ += 1;
+}
+
+void LINALG::SOLVER::PermutedAztecSolver::ReTransformSolution() {
+  Teuchos::RCP<const Epetra_CrsMatrix> epPermQTMatrix = GetOperator("permQT",PermFact_);
+  Teuchos::RCP<Epetra_MultiVector> xtemp = Teuchos::rcp(new Epetra_MultiVector(*x_));
+  xtemp->Update(1.0,*x_,0.0);
+  epPermQTMatrix->Multiply(false, *xtemp, *x_);
 }
 
 Teuchos::RCP<const Epetra_CrsMatrix> LINALG::SOLVER::PermutedAztecSolver::GetOperator(const std::string name, const Teuchos::RCP<FactoryBase> & fact)

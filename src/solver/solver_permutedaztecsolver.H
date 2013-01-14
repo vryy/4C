@@ -16,6 +16,9 @@ Created on: Dec 7, 2012
 #ifdef HAVE_MueLu
 #ifdef HAVE_EXPERIMENTAL_MueLu
 
+#include <Xpetra_Matrix.hpp>
+#include <Xpetra_MapFactory.hpp>
+
 #include <MueLu_PermutationFactory_fwd.hpp>
 #include <MueLu_FactoryBase_fwd.hpp>
 #include <MueLu_Level_fwd.hpp>
@@ -58,10 +61,23 @@ namespace LINALG
       virtual void Solve();
 
       private:
+          void BuildPermutationOperator(const Teuchos::RCP<Epetra_CrsMatrix>& A);
+          void PermuteLinearSystem(const Teuchos::RCP<Epetra_CrsMatrix>& A,const Teuchos::RCP<Epetra_MultiVector>& b);
+          void ReTransformSolution();
+
+          // parameter xOp only needed for RowMap and DomainMap? (use original matrix A without permutation)
+          void PermuteNullSpace(const Teuchos::RCP<Epetra_CrsMatrix>& A);
+
           Teuchos::RCP<const Epetra_CrsMatrix> GetOperator(const std::string name, const Teuchos::RCP<FactoryBase> & fact);
           Teuchos::RCP<Epetra_CrsMatrix>       GetOperatorNonConst(const std::string name, const Teuchos::RCP<FactoryBase> & fact);
 
+          int CountZerosOnDiagonalEpetra(const Teuchos::RCP<Epetra_CrsMatrix>& A);
+          int CountZerosOnDiagonal(const Teuchos::RCP<const Matrix>& xOp);
+
+          void test();
       private:
+          bool bPermuteLinearSystem_;
+
           Teuchos::RCP<MueLu::Level> data_; // data container
 
           Teuchos::RCP<PermutationFactory> PermFact_; // permutation factory
