@@ -1234,6 +1234,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
     std::string xmlfile = inparams.get<string>("STRATIMIKOS_XMLFILE");
     if (xmlfile != "none")
       outparams.set("xml file",xmlfile);
+    outparams.set("xml file",inparams.get<string>("STRATIMIKOS_XMLFILE"));
     Teuchos::ParameterList& stratimikoslist = outparams.sublist("Stratimikos Parameters");
     stratimikoslist = LINALG::Solver::TranslateToStratimikos(inparams);
   }
@@ -1388,6 +1389,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
     // set reuse parameters
     azlist.set("ncall",0);                         // counting number of solver calls
     azlist.set("reuse",inparams.get<int>("AZREUSE"));            // reuse info for n solver calls
+    azlist.set("verbosity",inparams.get<int>("VERBOSITY"));  // this is not an official Aztec flag, however we're using it all over the permutedAztec solver
     //-------------------------------- set parameters for Ifpack if used
     if (azprectyp == INPAR::SOLVER::azprec_ILU  ||
         azprectyp == INPAR::SOLVER::azprec_ILUT ||
