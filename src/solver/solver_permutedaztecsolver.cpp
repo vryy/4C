@@ -97,6 +97,8 @@ void LINALG::SOLVER::PermutedAztecSolver::Setup( Teuchos::RCP<Epetra_Operator> m
   Teuchos::ParameterList & precondParams = getPrecondParamterList();
   Teuchos::ParameterList & linSystemProps = precondParams.sublist("Linear System properties");
   linSystemProps.set<Teuchos::RCP<Map> >("non diagonal-dominant row map",nonDiagMap);
+  data_->Set("nonDiagDomRows",Teuchos::as<int>(nonDiagMap->getGlobalNumElements()));
+
 
   if(bPermuteLinearSystem_) {
     // set
@@ -570,6 +572,7 @@ void LINALG::SOLVER::PermutedAztecSolver::Solve()
   GlobalOrdinal colperm  = 0;
   GlobalOrdinal lrowperm = 0;
   GlobalOrdinal lcolperm = 0;
+  int nonDiagDomRows = 0;
 
   if(bPermuteLinearSystem_) {
     // repermutate solution vector
@@ -578,13 +581,14 @@ void LINALG::SOLVER::PermutedAztecSolver::Solve()
     colperm = data_->Get<GlobalOrdinal>("#ColPermutations", PermFact_.get());
     lrowperm = data_->Get<GlobalOrdinal>("#WideRangeRowPermutations", PermFact_.get());
     lcolperm = data_->Get<GlobalOrdinal>("#WideRangeColPermutations", PermFact_.get());
+    nonDiagDomRows = data_->Get<int>("nonDiagDomRows");
   }
 
   // print some output if desired
   if (comm_.MyPID()==0 && outfile_)
   {
-    fprintf(outfile_,"AztecOO: unknowns/iterations/time/rowpermutations/colpermutations/lrowperm/lcolperm %d  %d  %f %d %d %d %d\n",
-            A_->OperatorRangeMap().NumGlobalElements(),(int)status[AZ_its],status[AZ_solve_time],rowperm,colperm,lrowperm,lcolperm);
+    fprintf(outfile_,"AztecOO: unknowns/iterations/time/rowpermutations/colpermutations/lrowperm/lcolperm/nonDiagDomRows %d  %d  %f %d %d %d %d %d\n",
+            A_->OperatorRangeMap().NumGlobalElements(),(int)status[AZ_its],status[AZ_solve_time],rowperm,colperm,lrowperm,lcolperm,nonDiagDomRows);
     fflush(outfile_);
   }
 
