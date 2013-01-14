@@ -589,7 +589,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
         gl(2,1) = gl(1,2);
         gl(2,2) = glstrainbar(2);
 
-        LINALG::Matrix<3,3> Fbar(false);
+        LINALG::Matrix<3,3> Fbar(true);
         Fbar.SetCopy(F.A());
 #ifndef PUSO_NSTET5
         Fbar.Scale(pow(F.Determinant(),-1./3.));
@@ -645,7 +645,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
         LINALG::Matrix<3,3> temp;
         LINALG::Matrix<3,3> cauchystress;
 
-        LINALG::Matrix<3,3> Fbar(false);
+        LINALG::Matrix<3,3> Fbar(true);
         Fbar.SetCopy(F.A());
 #ifndef PUSO_NSTET5
         Fbar.Scale(pow(F.Determinant(),-1./3.));
@@ -673,7 +673,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
     // update internal force vector
     if (force)
     {
-      LINALG::Matrix<12,1> subforce; subforce(false);
+      LINALG::Matrix<12,1> subforce(true);
       // integrate internal force vector f = f + (B^T . sigma) * V
       subforce.MultiplyTN(SubV(sub),bop,stress,0.0);
       
@@ -689,7 +689,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
     if (stiffmatrix)
     {
       const double V = SubV(sub);
-      LINALG::Matrix<12,12> substiffmatrix(false);
+      LINALG::Matrix<12,12> substiffmatrix(true);
       // integrate elastic stiffness matrix
       // keu = keu + (B^T . C . B) * V
       LINALG::Matrix<6,12> cb;

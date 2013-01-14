@@ -56,12 +56,12 @@ void DRT::ELEMENTS::NStet5Type::ElementDeformationGradient(DRT::Discretization& 
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
     
     //------------------------------------subelement F
-    LINALG::Matrix<5,3>          subdisp(false);
+    LINALG::Matrix<5,3> subdisp(false);
     for (int j=0; j<3; ++j)
       for (int i=0; i<5; ++i)
         subdisp(i,j) = mydisp[i*3+j];
 
-    LINALG::Matrix<4,3>          disp(false);
+    LINALG::Matrix<4,3> disp(false);
     for (int k=0; k<4; ++k) // subelement k
     {
       for (int i=0; i<4; ++i)
@@ -565,7 +565,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
   
   // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-  LINALG::Matrix<6,1> glstrain(false);
+  LINALG::Matrix<6,1> glstrain(true);
   glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
   glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
   glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -641,8 +641,8 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
   {
     LINALG::Matrix<6,1> stressdev(true);
     LINALG::Matrix<6,6> cmatdev(true);
-    LINALG::Matrix<6,1> stressvol(false);
-    LINALG::Matrix<6,6> cmatvol(false);
+    LINALG::Matrix<6,1> stressvol(true);
+    LINALG::Matrix<6,6> cmatvol(true);
 
     // compute deviatoric stress and tangent from total stress and tangent
     DevStressTangent(stressdev,cmatdev,cmat,stress,cauchygreen);
