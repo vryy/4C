@@ -126,7 +126,16 @@ STEPSIZEMIN                     0
 NAME                            Structure_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_HUMPHREYCARDIO KAPPA 1000. MUE 70.0 DENS 1.0 K1C 28.0 K2C 13.2 K1M 16.0 K2M 7.0 PHIE 0.5 PHIC 0.25 PHIM 0.25 INIT 1
+MAT 1 MAT_ElastHyper NUMMAT 7 MATIDS 2 3 4 5 6 7 8 DENS 1.0
+MAT 2 ELAST_IsoNeoHooke MUE 35.0
+MAT 3 ELAST_VolSussmanBathe KAPPA 1000.
+// muscle fiber
+MAT 4 ELAST_IsoAnisoExpo K1 4.0 K2 7.0 GAMMA 0.0 K1COMP 4.0 K2COMP 7.0 INIT 1 ADAPT_ANGLE No
+// collagen fibers
+MAT 5 ELAST_IsoAnisoExpo K1 7.0 K2 13.2 GAMMA 0.0 K1COMP 4.0 K2COMP 7.0 INIT 1 ADAPT_ANGLE No
+MAT 6 ELAST_IsoAnisoExpo K1 7.0 K2 13.2 GAMMA 90.0 K1COMP 4.0 K2COMP 7.0 INIT 1 ADAPT_ANGLE No
+MAT 7 ELAST_IsoAnisoExpo K1 7.0 K2 13.2 GAMMA 45.0 K1COMP 4.0 K2COMP 7.0 INIT 1 ADAPT_ANGLE No
+MAT 8 ELAST_IsoAnisoExpo K1 7.0 K2 13.2 GAMMA -45.0 K1COMP 4.0 K2COMP 7.0 INIT 1 ADAPT_ANGLE No
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 4.0 c2 0.0
 ----------------------------------------------------------------------CURVE2
