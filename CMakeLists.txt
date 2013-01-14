@@ -102,6 +102,13 @@ if (HAVE_MueLu)
   add_definitions("-DHAVE_MueLu")
 endif (HAVE_MueLu)
 
+option (HAVE_MueLu "Turn on experimental code in MueLu (needs MueLu to be compiled within Trilinos" OFF)
+if (HAVE_EXPERIMENTAL_MueLu)
+  MESSAGE("II Turn on support for MueLu (experimental code)")
+  add_definitions("-DHAVE_MueLu")
+  add_definitions("-DHAVE_EXPERIMENTAL_MueLu")
+endif (HAVE_EXPERIMENTAL_MueLu)
+
 option (HAVE_Stratimikos "Turn on Stratimikos support (needs Stratimikos to be compiled within Trilinos" ON)
 if (HAVE_Stratimikos)
   MESSAGE("II Turn on support for Stratimikos")
@@ -1168,11 +1175,13 @@ set(OBJS_SOLVER
   src/solver/solver_muelupreconditioner.cpp
   src/solver/solver_muelucontactpreconditioner.cpp
   src/solver/solver_muelucontactpreconditioner2.cpp
+  src/solver/solver_muelucontactpreconditioner3.cpp
   src/solver/solver_muelucontactsppreconditioner.cpp
   src/solver/solver_muelucontactpenaltypreconditioner.cpp
   src/solver/solver_tekopreconditioner.cpp
   src/solver/solver_belossolver.cpp
   src/solver/solver_aztecsolver.cpp
+  src/solver/solver_permutedaztecsolver.cpp
   src/solver/solver_stratimikossolver.cpp
   src/solver/teko/teko_baciepetraoperatorwrapper.cpp
   src/solver/muelu/muelu_ContactAFilterFactory.cpp
@@ -1181,6 +1190,7 @@ set(OBJS_SOLVER
   src/solver/muelu/muelu_ContactASlaveDofFilterFactory.cpp 
   src/solver/muelu/muelu_ContactSPAggregationFactory.cpp
   src/solver/muelu/MueLu_MyTrilinosSmoother.cpp
+  src/solver/muelu/MueLu_PermutedEpetraOperator.cpp
 )
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp

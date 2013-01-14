@@ -48,7 +48,6 @@
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_NullspaceFactory.hpp>
 
-#include <MueLu_SegregationATransferFactory.hpp> // TODO remove me
 #include <MueLu_Aggregates.hpp>
 #include <MueLu_AggregationExportFactory.hpp>
 #include <MueLu_BlockedPFactory.hpp>
@@ -437,7 +436,8 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   SCList.set("relaxation: type", "Gauss-Seidel");
   Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp(new TrilinosSmoother("RELAXATION",SCList,0,SFact));*/
   //Teuchos::RCP<SmootherPrototype> smoProtoSC = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("ILU", SCList,0,SFact);
-  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp( new DirectSolver("Klu"/*"Umfpack"*/,Teuchos::ParameterList(),SFact) );
+  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp( new DirectSolver("Klu"/*"Umfpack"*/,Teuchos::ParameterList()) );
+  smoProtoSC->SetFactory("A",SFact);
   Teuchos::RCP<SmootherFactory> SmooSCFact = Teuchos::rcp(new SmootherFactory(smoProtoSC));
 
   // setup local factory manager for SchurComplementFactory
@@ -500,7 +500,8 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   SCList.set("relaxation: type", "Gauss-Seidel");
   Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp(new TrilinosSmoother("RELAXATION",SCList,0,SFact));*/
   //Teuchos::RCP<SmootherPrototype> smoProtoSC = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("ILU", SCList,0,SFact);
-  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp( new DirectSolver("Klu"/*"Umfpack"*/,Teuchos::ParameterList(),SFact) );
+  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp( new DirectSolver("Klu"/*"Umfpack"*/,Teuchos::ParameterList()) );
+  smoProtoSC->SetFactory("A",SFact);
   Teuchos::RCP<SmootherFactory> SmooSCFact = Teuchos::rcp(new SmootherFactory(smoProtoSC));
 
   // setup local factory manager for SchurComplementFactory

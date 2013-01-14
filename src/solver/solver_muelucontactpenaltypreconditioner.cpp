@@ -44,7 +44,7 @@
 #include <MueLu_IfpackSmoother.hpp>
 #include <MueLu_DirectSolver.hpp>
 //#include <MueLu_SegregationAFilterFactory.hpp>
-#include <MueLu_SegregationATransferFactory.hpp> // TODO remove me
+//#include <MueLu_SegregationATransferFactory.hpp> // TODO remove me
 #include <MueLu_Aggregates.hpp>
 
 #include <MueLu_AggregationExportFactory.hpp>
@@ -361,7 +361,8 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
       ifpackList.set("relaxation: damping factor", smolevelsublist.get<double>("smoother: damping factor"));
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Jacobi");
-    smooProto = Teuchos::rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+    smooProto = Teuchos::rcp( new TrilinosSmoother(ifpackType, ifpackList, 0) );
+    smooProto->SetFactory("A", AFact);
   } else if(type == "Gauss-Seidel") {
     if(smolevelsublist.isParameter("smoother: sweeps"))
       ifpackList.set<int>("relaxation: sweeps", smolevelsublist.get<int>("smoother: sweeps"));
@@ -369,7 +370,8 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
       ifpackList.set("relaxation: damping factor", smolevelsublist.get<double>("smoother: damping factor"));
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Gauss-Seidel");
-    smooProto = Teuchos::rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+    smooProto = Teuchos::rcp( new TrilinosSmoother(ifpackType, ifpackList, 0) );
+    smooProto->SetFactory("A", AFact);
   } else if (type == "symmetric Gauss-Seidel") {
     if(smolevelsublist.isParameter("smoother: sweeps"))
       ifpackList.set<int>("relaxation: sweeps", smolevelsublist.get<int>("smoother: sweeps"));
@@ -377,13 +379,15 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
       ifpackList.set("relaxation: damping factor", smolevelsublist.get<double>("smoother: damping factor"));
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Symmetric Gauss-Seidel");
-    smooProto = Teuchos::rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+    smooProto = Teuchos::rcp( new TrilinosSmoother(ifpackType, ifpackList, 0) );
+    smooProto->SetFactory("A", AFact);
     //std::cout << "built symm GS: " << smooProto << std::endl;
   } else if (type == "Chebyshev") {
     ifpackType = "CHEBYSHEV";
     if(smolevelsublist.isParameter("smoother: sweeps"))
       ifpackList.set("chebyshev: degree", smolevelsublist.get<int>("smoother: sweeps"));
-    smooProto = Teuchos::rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+    smooProto = Teuchos::rcp( new TrilinosSmoother(ifpackType, ifpackList, 0) );
+    smooProto->SetFactory("A", AFact);
     // TODO what about the other parameters
   } else if(type == "IFPACK") {
 #ifdef HAVE_MUELU_IFPACK
@@ -393,7 +397,8 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
       ifpackList.set<int>("fact: level-of-fill", (int)smolevelsublist.get<double>("smoother: ifpack level-of-fill"));
       ifpackList.set("partitioner: overlap", smolevelsublist.get<int>("smoother: ifpack overlap"));
       //int overlap = smolevelsublist.get<int>("smoother: ifpack overlap");
-      smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(ifpackType, ifpackList,smolevelsublist.get<int>("smoother: ifpack overlap"),AFact);
+      smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(ifpackType, ifpackList,smolevelsublist.get<int>("smoother: ifpack overlap")/*,AFact*/);
+      smooProto->SetFactory("A", AFact);
       //smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, overlap, AFact) );
     }
     else
@@ -443,7 +448,8 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     else ifpackList.set("relaxation: damping factor", 1.0);
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Jacobi");
-    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0) );
+    smooProto->SetFactory("A", AFact);
   } else if(type == "Gauss-Seidel") {
     if(paramList.isParameter("coarse: sweeps"))
       ifpackList.set<int>("relaxation: sweeps", paramList.get<int>("coarse: sweeps"));
@@ -453,7 +459,8 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     else ifpackList.set("relaxation: damping factor", 1.0);
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Gauss-Seidel");
-    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0) );
+    smooProto->SetFactory("A", AFact);
   } else if (type == "symmetric Gauss-Seidel") {
     if(paramList.isParameter("coarse: sweeps"))
       ifpackList.set<int>("relaxation: sweeps", paramList.get<int>("coarse: sweeps"));
@@ -463,14 +470,16 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     else ifpackList.set("relaxation: damping factor", 1.0);
     ifpackType = "RELAXATION";
     ifpackList.set("relaxation: type", "Symmetric Gauss-Seidel");
-    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0) );
+    smooProto->SetFactory("A", AFact);
   } else if (type == "Chebyshev") {
     ifpackType = "CHEBYSHEV";
     if(paramList.isParameter("coarse: sweeps"))
       ifpackList.set("chebyshev: degree", paramList.get<int>("coarse: sweeps"));
     if(paramList.isParameter("coarse: Chebyshev alpha"))
       ifpackList.set("chebyshev: alpha", paramList.get<double>("coarse: Chebyshev alpha"));
-    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0, AFact) );
+    smooProto = rcp( new TrilinosSmoother(ifpackType, ifpackList, 0) );
+    smooProto->SetFactory("A", AFact);
   } else if(type == "IFPACK") {
 #ifdef HAVE_MUELU_IFPACK
     // TODO change to TrilinosSmoother as soon as Ifpack2 supports all preconditioners from Ifpack
@@ -478,7 +487,8 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     if(ifpackType == "ILU") {
       ifpackList.set<int>("fact: level-of-fill", (int)paramList.get<double>("coarse: ifpack level-of-fill"));
       ifpackList.set("partitioner: overlap", paramList.get<int>("coarse: ifpack overlap"));
-      smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(ifpackType, ifpackList, paramList.get<int>("coarse: ifpack overlap"), AFact);
+      smooProto = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(ifpackType, ifpackList, paramList.get<int>("coarse: ifpack overlap")/*, AFact*/);
+      smooProto->SetFactory("A", AFact);
     }
     else
       TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: unknown ML smoother type " + type + " (IFPACK) not supported by MueLu. Only ILU is supported.");
@@ -486,15 +496,20 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: MueLu compiled without Ifpack support");
 #endif // HAVE_MUELU_IFPACK
   } else if(type == "Amesos-Superlu") {
-    smooProto = Teuchos::rcp( new DirectSolver("Superlu",Teuchos::ParameterList(),AFact) );
+    smooProto = Teuchos::rcp( new DirectSolver("Superlu",Teuchos::ParameterList()) );
+    smooProto->SetFactory("A", AFact);
   } else if(type == "Amesos-Superludist") {
-    smooProto = Teuchos::rcp( new DirectSolver("Superludist",Teuchos::ParameterList(),AFact) );
+    smooProto = Teuchos::rcp( new DirectSolver("Superludist",Teuchos::ParameterList()) );
+    smooProto->SetFactory("A", AFact);
   } else if(type == "Amesos-KLU") {
-    smooProto = Teuchos::rcp( new DirectSolver("Klu",Teuchos::ParameterList(),AFact) );
+    smooProto = Teuchos::rcp( new DirectSolver("Klu",Teuchos::ParameterList()) );
+    smooProto->SetFactory("A", AFact);
   } else if(type == "Amesos-UMFPACK") {
-    smooProto = Teuchos::rcp( new DirectSolver("Umfpack",Teuchos::ParameterList(),AFact) );
+    smooProto = Teuchos::rcp( new DirectSolver("Umfpack",Teuchos::ParameterList()) );
+    smooProto->SetFactory("A", AFact);
   } else if(type == "") {
-    smooProto = Teuchos::rcp( new DirectSolver("",Teuchos::ParameterList(),AFact) );
+    smooProto = Teuchos::rcp( new DirectSolver("",Teuchos::ParameterList()) );
+    smooProto->SetFactory("A", AFact);
   } else {
     TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: unknown coarsest solver type. '" << type << "' not supported by MueLu.");
   }

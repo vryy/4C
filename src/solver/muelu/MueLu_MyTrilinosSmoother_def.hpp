@@ -96,8 +96,10 @@ namespace MueLu {
 
     if(type_ == "ILU") {
       s_ = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(type_, paramList_,overlap_,AFact_);
+      s_->SetFactory("A", AFact_);
     } else {
       s_ = Teuchos::rcp(new TrilinosSmoother(type_, paramList_, overlap_, AFact_));
+      s_->SetFactory("A", AFact_);
     }
 
 

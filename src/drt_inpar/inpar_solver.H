@@ -42,6 +42,7 @@ namespace INPAR
       stratimikos_amesos,///< Stratimikos solver framework (Amesos KLU)
       stratimikos_aztec, ///< Stratimikos solver framework (Aztec)
       stratimikos_belos, ///< Stratimikos solver framework (Belos)
+      aztec_permuted,    ///< AztecOO solver with permutation applied
       undefined          ///< undefined solver
     };
 
@@ -94,6 +95,7 @@ namespace INPAR
       azprec_MueLuAMG_nonsym,	   ///< MueLu AMG preconditioner (PG-AMG for nonsymmetric problems ~ MLFLUID2)
       azprec_MueLuAMG_contact,   ///< MueLu AMG preconditioner (special handling for condensed contact formulation)
       azprec_MueLuAMG_contact2,  ///< MueLu AMG preconditioner (special enhanced handling for condensed contact formulation)
+      azprec_MueLuAMG_contact3,  ///< MueLu AMG preconditioner (special enhanced handling for condensed contact formulation)
       azprec_MueLuAMG_contactSP, ///< MueLu AMG preconditioner for saddlepoint formulation
       azprec_MueLuAMG_contactPen ///< MueLu AMG preconditioner for penalty formulation
     };

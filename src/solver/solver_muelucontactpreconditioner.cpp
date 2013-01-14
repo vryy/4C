@@ -42,7 +42,7 @@
 #include <MueLu_VerbosityLevel.hpp>
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_NullspaceFactory.hpp>
-#include <MueLu_SegregationATransferFactory.hpp> // TODO remove me
+//#include <MueLu_SegregationATransferFactory.hpp> // TODO remove me
 #include <MueLu_Aggregates.hpp>
 #include <MueLu_MapTransferFactory.hpp>
 #include <MueLu_AggregationExportFactory.hpp>
@@ -288,7 +288,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   UCAggFact->SetMaxNeighAlreadySelected(maxNbrAlreadySelected);
   UCAggFact->SetOrdering(MueLu::AggOptions::GRAPH);
   //UCAggFact->SetOrdering(MueLu::AggOptions::NATURAL);
+
   UCAggFact->SetOnePtMapName("SlaveDofMap", MueLu::NoFactory::getRCP());
+  //UCAggFact->SetSmallAggMapName("SlaveDofMap", MueLu::NoFactory::getRCP());
 
   Teuchos::RCP<PFactory> PFact;
   Teuchos::RCP<TwoLevelFactoryBase> RFact;
@@ -330,8 +332,14 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   AcFact->SetRepairZeroDiagonal(true); // repair zero diagonal entries in Ac, that are resulting from Ptent with nullspacedim > ndofspernode
 
   // write out aggregates
-  //Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out",UCAggFact.get(), dropFact.get(),NULL/*amalgFact*/));
-  //AcFact->AddTransferFactory(aggExpFact);
+  Teuchos::RCP<MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > aggExpFact = Teuchos::rcp(new MueLu::AggregationExportFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("aggs_level%LEVELID_proc%PROCID.out"));
+  aggExpFact->SetFactory("Aggregates",UCAggFact);
+  aggExpFact->SetFactory("DofsPerNode",dropFact);
+  //Input(fineLevel, "Aggregates");         //< factory which created aggregates
+  //Input(fineLevel, "DofsPerNode");        //< CoalesceAndDropFactory (needed for DofsPerNode variable)
+  //Input(fineLevel, "UnAmalgamationInfo"); //< AmalgamationFactory (needed for UnAmalgamationInfo variable)
+
+  AcFact->AddTransferFactory(aggExpFact);
 
   // transfer maps to coarser grids
   //Teuchos::RCP<MueLu::MapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > cmTransFact3 = Teuchos::rcp(new MueLu::MapTransferFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", PtentFact, MueLu::NoFactory::getRCP()));
@@ -553,18 +561,21 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: MueLu compiled without Ifpack support");
 #endif // HAVE_MUELU_IFPACK
   } else if(type == "Amesos-Superlu") {
-    smooProto = Teuchos::rcp( new DirectSolver("Superlu",Teuchos::ParameterList(),AFact) );
+    smooProto = Teuchos::rcp( new DirectSolver("Superlu",Teuchos::ParameterList()) );
   } else if(type == "Amesos-Superludist") {
-    smooProto = Teuchos::rcp( new DirectSolver("Superludist",Teuchos::ParameterList(),AFact) );
+    smooProto = Teuchos::rcp( new DirectSolver("Superludist",Teuchos::ParameterList()) );
   } else if(type == "Amesos-KLU") {
-    smooProto = Teuchos::rcp( new DirectSolver("Klu",Teuchos::ParameterList(),AFact) );
+    smooProto = Teuchos::rcp( new DirectSolver("Klu",Teuchos::ParameterList()) );
   } else if(type == "Amesos-UMFPACK") {
-    smooProto = Teuchos::rcp( new DirectSolver("Umfpack",Teuchos::ParameterList(),AFact) );
+    smooProto = Teuchos::rcp( new DirectSolver("Umfpack",Teuchos::ParameterList()) );
   } else if(type == "") {
-    smooProto = Teuchos::rcp( new DirectSolver("",Teuchos::ParameterList(),AFact) );
+    smooProto = Teuchos::rcp( new DirectSolver("",Teuchos::ParameterList()) );
   } else {
     TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: unknown coarsest solver type. '" << type << "' not supported by MueLu.");
   }
+
+  // set AFactory
+  smooProto->SetFactory("A", AFact);
 
   // create smoother factory
   TEUCHOS_TEST_FOR_EXCEPTION(smooProto == Teuchos::null, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: no smoother prototype. fatal error.");

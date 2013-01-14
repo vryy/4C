@@ -1,9 +1,10 @@
 /*
- * solver_muelucontactpreconditioner2.cpp
+ * solver_muelucontactpreconditioner3.cpp
  *
- *  Created on: Sep 7, 2012
- *      Author: wiesner
+ *  Created on: Dec 6, 2012
+ *      Author: tobias
  */
+
 
 #ifdef HAVE_MueLu
 #ifdef HAVE_EXPERIMENTAL_MueLu
@@ -62,11 +63,11 @@
 #include "muelu/muelu_ContactASlaveDofFilterFactory_decl.hpp"
 #include "muelu/MueLu_MyTrilinosSmoother_decl.hpp"
 
-#include "solver_muelucontactpreconditioner2.H"
+#include "solver_muelucontactpreconditioner3.H"
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-LINALG::SOLVER::MueLuContactPreconditioner2::MueLuContactPreconditioner2( FILE * outfile, Teuchos::ParameterList & mllist )
+LINALG::SOLVER::MueLuContactPreconditioner3::MueLuContactPreconditioner3( FILE * outfile, Teuchos::ParameterList & mllist )
   : PreconditionerType( outfile ),
     mllist_( mllist )
 {
@@ -74,7 +75,7 @@ LINALG::SOLVER::MueLuContactPreconditioner2::MueLuContactPreconditioner2( FILE *
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::MueLuContactPreconditioner2::Setup( bool create,
+void LINALG::SOLVER::MueLuContactPreconditioner3::Setup( bool create,
                                               Epetra_Operator * matrix,
                                               Epetra_MultiVector * x,
                                               Epetra_MultiVector * b )
@@ -131,7 +132,7 @@ void LINALG::SOLVER::MueLuContactPreconditioner2::Setup( bool create,
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierarchy(
+Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner3::SetupHierarchy(
     const Teuchos::ParameterList & params,
     const Teuchos::RCP<Matrix> & A,
     const Teuchos::RCP<MultiVector> nsp)
@@ -382,7 +383,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactPreconditioner2::GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact) {
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactPreconditioner3::GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact) {
 
   char levelchar[11];
   sprintf(levelchar,"(level %d)",level);
@@ -469,7 +470,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactPreconditioner2::GetContactCoarsestSolverFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact) {
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactPreconditioner3::GetContactCoarsestSolverFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact) {
 
   std::string type = ""; // use default defined by AmesosSmoother or Amesos2Smoother
 
@@ -577,6 +578,6 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   return SmooFact;
 }
 
-#endif // #ifdef HAVE_EXPERIMENTAL_MueLu
-#endif // #ifdef HAVE_MueLu
+#endif // HAVE_EXPERIMENTAL_MueLu
+#endif // HAVE_MueLu
 

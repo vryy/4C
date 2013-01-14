@@ -704,7 +704,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("NEWTON_MAX",100,"Maximum number of Newton steps.",&meshfree);
   DoubleParameter("T_RANGE_TOL",1,"Threshhold at which basis solution function prior is considered nmuerically zero.",&meshfree);
   DoubleParameter("CUTOFF_RADIUS",1e30,"Cutoff radius for influence of meshfree points on each other.",&meshfree);
-  setNumericStringParameter("BOUNDINGBOX","-1.e12 -1.e12 -1.e12 1.e12 1.e12 1.e12",
+  setNumericStringParameter("BOUNDINGBOX","-1e12 -1e12 -1e12 1e12 1e121e12",
                             "Bounding box for binning strategy in particle simulations.",
                             &meshfree);
   setStringToIntegralParameter<int>("T_PRIOR","Gauss","Defines the prior type of the basis solution function.",
@@ -4855,8 +4855,8 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;
 
-  Teuchos::Tuple<std::string,13> solver_name;
-  Teuchos::Tuple<int,13>  solver_number;
+  Teuchos::Tuple<std::string,14> solver_name;
+  Teuchos::Tuple<int,14>  solver_number;
 
   solver_name[0] = "Amesos_KLU_sym";               solver_number[0] = INPAR::SOLVER::amesos_klu_sym;
   solver_name[1] = "Amesos_KLU_nonsym";            solver_number[1] = INPAR::SOLVER::amesos_klu_nonsym;
@@ -4870,7 +4870,9 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   solver_name[9] = "Stratimikos_Amesos";           solver_number[9] = INPAR::SOLVER::stratimikos_amesos;
   solver_name[10]= "Stratimikos_Aztec";            solver_number[10]= INPAR::SOLVER::stratimikos_aztec;
   solver_name[11]= "Stratimikos_Belos";            solver_number[11]= INPAR::SOLVER::stratimikos_belos;
-  solver_name[12]= "undefined";                    solver_number[12]= INPAR::SOLVER::undefined;
+  solver_name[12]= "Aztec_permuted";               solver_number[12]= INPAR::SOLVER::aztec_permuted;
+  solver_name[13]= "undefined";                    solver_number[13]= INPAR::SOLVER::undefined;
+
 
   setStringToIntegralParameter<int>(
     "SOLVER", "undefined",
@@ -4905,8 +4907,8 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   {
     // this one is longer than 15 and the tuple<> function does not support this,
     // so build the Tuple class directly (which can be any size)
-    Teuchos::Tuple<std::string,29> name;
-    Teuchos::Tuple<int,29>  number;
+    Teuchos::Tuple<std::string,30> name;
+    Teuchos::Tuple<int,30>  number;
 
     name[0] = "none";                         number[0] = INPAR::SOLVER::azprec_none;
     name[1] = "ILU";                          number[1] = INPAR::SOLVER::azprec_ILU;
@@ -4935,8 +4937,9 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     name[24] = "MueLu_nonsym";                number[24] = INPAR::SOLVER::azprec_MueLuAMG_nonsym;
     name[25] = "MueLu_contact";               number[25] = INPAR::SOLVER::azprec_MueLuAMG_contact;
     name[26] = "MueLu_contact2";              number[26] = INPAR::SOLVER::azprec_MueLuAMG_contact2;
-    name[27] = "MueLu_contactSP";             number[27] = INPAR::SOLVER::azprec_MueLuAMG_contactSP;
-    name[28] = "MueLu_contactPenalty";        number[28] = INPAR::SOLVER::azprec_MueLuAMG_contactPen;
+    name[27] = "MueLu_contact3";              number[27] = INPAR::SOLVER::azprec_MueLuAMG_contact2;
+    name[28] = "MueLu_contactSP";             number[28] = INPAR::SOLVER::azprec_MueLuAMG_contactSP;
+    name[29] = "MueLu_contactPenalty";        number[29] = INPAR::SOLVER::azprec_MueLuAMG_contactPen;
 
     setStringToIntegralParameter<int>(
       "AZPREC", "ILU",

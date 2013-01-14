@@ -1,12 +1,12 @@
 /*
- * solver_muelucontactpreconditioner2.H
+ * solver_muelucontactpreconditioner3.H
  *
- *  Created on: Sep 7, 2012
- *      Author: wiesner
+ *  Created on: Dec 6, 2012
+ *      Author: tobias
  */
 
-#ifndef SOLVER_MUELUCONTACTPRECONDITIONER2_H_
-#define SOLVER_MUELUCONTACTPRECONDITIONER2_H_
+#ifndef SOLVER_MUELUCONTACTPRECONDITIONER3_H_
+#define SOLVER_MUELUCONTACTPRECONDITIONER3_H_
 
 #ifdef HAVE_MueLu
 #ifdef HAVE_EXPERIMENTAL_MueLu
@@ -25,10 +25,6 @@
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 #include <MueLu_UseShortNames.hpp>
 
-/*class HHierarchy;
-class OOperator;
-class MMultiVector;*/
-
 namespace LINALG
 {
   namespace SOLVER
@@ -38,11 +34,11 @@ namespace LINALG
       Set of single-matrix algebraic multi-grid preconditioners
       for contact/meshtying problems
      */
-    class MueLuContactPreconditioner2 : public PreconditionerType
+    class MueLuContactPreconditioner3 : public PreconditionerType
     {
     public:
 
-      MueLuContactPreconditioner2( FILE * outfile, Teuchos::ParameterList & mllist );
+      MueLuContactPreconditioner3( FILE * outfile, Teuchos::ParameterList & mllist );
 
       virtual void Setup( bool create,
                           Epetra_Operator * matrix,
@@ -81,4 +77,5 @@ namespace LINALG
 #endif // HAVE_EXPERIMENTAL_MueLu
 #endif // HAVE_MueLu
 
-#endif /* SOLVER_MUELUCONTACTPRECONDITIONER2_H_ */
+
+#endif /* SOLVER_MUELUCONTACTPRECONDITIONER3_H_ */
