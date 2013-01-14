@@ -249,8 +249,7 @@ void ADAPTER::FluidFSI::DisplacementToVelocity(
    *             \ = 1 / dt   if interface time integration is first order
    */
   const double ts = TimeScaling();
-  const double dt = fluidimpl_->Dt();
-  fcx->Update(-dt*ts,*veln,ts,*ddgpred,ts);
+  fcx->Update(-Dt()*ts,*veln,ts,*ddgpred,ts);
   fcx->Update(-1.0,*dugpred,1.0);
 }
 
@@ -324,7 +323,7 @@ void ADAPTER::FluidFSI::FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vecto
   // Delta d(n+1,i+1) = ( theta Delta u(n+1,i+1) + u(n) ) * dt
   //
   double timescale = TimeScaling();
-  fcx->Update(-timescale*fluidimpl_->Dt(),*veln,timescale);
+  fcx->Update(-timescale*Dt(),*veln,timescale);
 }
 
 /*----------------------------------------------------------------------*/
@@ -339,7 +338,7 @@ void ADAPTER::FluidFSI::FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vecto
   // Delta d(n+1,i+1) = ( theta Delta u(n+1,i+1) + u(n) ) * dt
   //
   double timescale = 1./TimeScaling();
-  fcx->Update(fluidimpl_->Dt(),*veln,timescale);
+  fcx->Update(Dt(),*veln,timescale);
 }
 
 /*----------------------------------------------------------------------*/
