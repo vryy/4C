@@ -30,6 +30,8 @@ namespace FSI
 {
   class Monolithic;
 
+  class MonolithicNoNOX;
+
   /*!
     \brief FSI specific result test class
 
@@ -49,6 +51,11 @@ namespace FSI
     //! constructor
     FSIResultTest(
       Teuchos::RCP<FSI::Monolithic> fsi,
+      const Teuchos::ParameterList& fsidyn
+    );
+
+    FSIResultTest(
+      Teuchos::RCP<FSI::MonolithicNoNOX> fsi,
       const Teuchos::ParameterList& fsidyn
     );
 

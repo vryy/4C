@@ -19,6 +19,7 @@ Maintainer: Matthias Mayr
 #include "fsi_monolithicfluidsplit.H"
 #include "fsi_mortarmonolithic_structuresplit.H"
 #include "fsi_mortarmonolithic_fluidsplit.H"
+#include "fsi_fluidfluidmonolithic_structuresplit_nonox.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
 
@@ -100,6 +101,40 @@ FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::Monolithic> fsi,
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::MonolithicNoNOX> fsi,
+                                  const Teuchos::ParameterList& fsidyn)
+  : DRT::ResultTest("FSI")
+{
+  int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
+  switch (coupling)
+  {
+    case fsi_iter_fluidfluid_monolithicstructuresplit:
+    {
+      const Teuchos::RCP<FSI::FluidFluidMonolithicStructureSplitNoNOX>& fsiobject
+        = Teuchos::rcp_dynamic_cast<FSI::FluidFluidMonolithicStructureSplitNoNOX>(fsi);
+
+      if (fsiobject == Teuchos::null)
+        dserror("Cast to FSI::FluidFluidMonolithicStructureSplitNoNOX failed.");
+
+      // Lagrange multipliers live on the slave field
+      slavedisc_ = fsiobject->StructureField()->Discretization();
+      fsilambda_ = fsiobject->lambda_;
+
+      break;
+    }
+    default:
+    {
+      slavedisc_ = Teuchos::null;
+      fsilambda_ = Teuchos::null;
+
+      cout << "\nNo FSI test routines implemented for this coupling algorithm." << endl;
+
+      break;
+    }
+  }
+}
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void FSI::FSIResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, int& test_count)

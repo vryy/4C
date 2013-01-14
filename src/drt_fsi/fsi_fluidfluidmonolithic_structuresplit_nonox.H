@@ -36,6 +36,8 @@ namespace FSI
   */
   class FluidFluidMonolithicStructureSplitNoNOX : public MonolithicNoNOX
   {
+    friend class FSI::FSIResultTest;
+
   public:
     explicit FluidFluidMonolithicStructureSplitNoNOX(const Epetra_Comm& comm,
                                                 const Teuchos::ParameterList& timeparams);

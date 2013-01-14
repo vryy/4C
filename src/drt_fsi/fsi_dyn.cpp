@@ -716,7 +716,14 @@ void fluid_fluid_fsi_drt()
 
     DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());
     DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+
+    // create fsi specific result test
+    Teuchos::RCP<FSI::FSIResultTest> fsitest = Teuchos::rcp(new FSI::FSIResultTest(fsi,fsidyn));
+    DRT::Problem::Instance()->AddFieldTest(fsitest);
+
+    // do the actual testing
     DRT::Problem::Instance()->TestAll(*comm);
+
   }
   break;
   default:
@@ -741,10 +748,11 @@ void fluid_fluid_fsi_drt()
       fsi->ReadRestart(restart);
     }
 
-
     fsi->Timeloop(fsi);
     DRT::Problem::Instance()->AddFieldTest(fsi->MBFluidField().CreateFieldTest());
     DRT::Problem::Instance()->AddFieldTest(fsi->StructureField()->CreateFieldTest());
+
+    // do the actual testing
     DRT::Problem::Instance()->TestAll(*comm);
 
     break;
