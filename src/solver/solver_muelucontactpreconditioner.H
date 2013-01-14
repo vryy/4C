@@ -14,6 +14,7 @@ Created on: Jan 11, 2012
 #define SOLVER_MUELUCONTACTPRECONDITIONER_H_
 
 #ifdef HAVE_MueLu
+#ifdef HAVE_EXPERIMENTAL_MueLu
 
 #include "solver_preconditionertype.H"
 
@@ -26,10 +27,6 @@ Created on: Jan 11, 2012
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 #include <MueLu_UseShortNames.hpp>
-
-/*class HHierarchy;
-class OOperator;
-class MMultiVector;*/
 
 namespace LINALG
 {
@@ -80,6 +77,7 @@ namespace LINALG
   }
 }
 
+#endif // #ifdef HAVE_EXPERIMENTAL_MueLu
 #endif // HAVE_MueLu
 
 

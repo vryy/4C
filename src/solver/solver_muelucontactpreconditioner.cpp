@@ -7,6 +7,7 @@
 
 
 #ifdef HAVE_MueLu
+#ifdef HAVE_EXPERIMENTAL_MueLu
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -594,5 +595,6 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   return SmooFact;
 }
 
+#endif // HAVE_EXPERIMENTAL_MueLu
 #endif
 

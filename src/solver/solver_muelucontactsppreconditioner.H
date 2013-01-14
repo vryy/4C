@@ -9,6 +9,7 @@
 #define SOLVER_MUELUCONTACTSPPRECONDITIONER_H_
 
 #ifdef HAVE_MueLu
+#ifdef HAVE_EXPERIMENTAL_MueLu
 
 #include "solver_preconditionertype.H"
 
@@ -81,6 +82,7 @@ namespace LINALG
   }
 }
 
+#endif //#ifdef HAVE_EXPERIMENTAL_MueLu
 #endif // HAVE_MueLu
 
 
