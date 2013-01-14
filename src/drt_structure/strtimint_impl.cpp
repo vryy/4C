@@ -1557,8 +1557,8 @@ void STR::TimIntImpl::CmtLinearSolve()
       mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap",innerDofMap);
       mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap",activeDofMap);
 
-      LINALG::PrintMapInMatlabFormat("slavemap.map",*slaveDofMap);
-      LINALG::PrintMapInMatlabFormat("mastermap.map",*masterDofMap);
+      //LINALG::PrintMapInMatlabFormat("slavemap.map",*slaveDofMap);
+      //LINALG::PrintMapInMatlabFormat("mastermap.map",*masterDofMap);
     }
   } // end: feed solver with contact/meshtying information
 
