@@ -54,6 +54,6 @@ void NOX::FSI::FixPoint::throwError(const std::string& functionName,
 {
     if (utils_->isPrintType(NOX::Utils::Error))
       utils_->err() << "FixPoint::" << functionName
-                    << " - " << errorMsg << endl;
+                    << " - " << errorMsg << std::endl;
     throw "NOX Error";
 }

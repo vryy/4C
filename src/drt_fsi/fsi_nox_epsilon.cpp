@@ -154,7 +154,7 @@ void NOX::FSI::EpsilonExtrapolation::throwError(const std::string& functionName,
 {
     if (utils_->isPrintType(NOX::Utils::Error))
       utils_->err() << "EpsilonExtrapolation::" << functionName
-                    << " - " << errorMsg << endl;
+                    << " - " << errorMsg << std::endl;
     throw "NOX Error";
 }
 
