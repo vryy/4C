@@ -25,10 +25,6 @@
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 #include <MueLu_UseShortNames.hpp>
 
-/*class HHierarchy;
-class OOperator;
-class MMultiVector;*/
-
 namespace LINALG
 {
   namespace SOLVER

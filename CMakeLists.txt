@@ -1190,8 +1190,9 @@ set(OBJS_SOLVER
   src/solver/muelu/muelu_ContactASlaveDofFilterFactory.cpp 
   src/solver/muelu/muelu_ContactSPAggregationFactory.cpp
   src/solver/muelu/MueLu_MyTrilinosSmoother.cpp
-  src/solver/muelu/MueLu_PermutedEpetraOperator.cpp
+  src/solver/muelu/MueLu_IterationAFactory.cpp
 )
+#src/solver/muelu/MueLu_PermutedEpetraOperator.cpp
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp
   src/drt_constraint/constraint_manager.cpp
