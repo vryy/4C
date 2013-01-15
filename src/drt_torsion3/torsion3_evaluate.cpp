@@ -11,6 +11,7 @@ Maintainer: Christian Cyron
 
  *-----------------------------------------------------------------------------------------------------------*/
 
+#include <cmath>
 #include "torsion3.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_dserror.H"
@@ -315,7 +316,7 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>&           dis
                                               Epetra_SerialDenseVector* force)
 {
   //current node position (first entries 0,1,2 for first node, 3,4,5 for second node , 6,7,8 for third node)
-  LINALG::Matrix<9,1> xcurr;
+  LINALG::Matrix<9,1> xcurr(true);
 
   //current nodal position
   for (int j=0; j<3; ++j)
@@ -326,12 +327,12 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>&           dis
   }
 
   //auxiliary vector for both internal force and stiffness matrix
-  LINALG::Matrix<6,1> aux;
+  LINALG::Matrix<6,1> aux(true);
   for (int j=0; j<6; ++j)
     aux(j) = xcurr(j+3)-xcurr(j);
 
   //current length of vectors 1-->2  and 2-->3
-  LINALG::Matrix<2,1> lcurr;
+  LINALG::Matrix<2,1> lcurr(true);
   for (int j=0; j<2; ++j)
     lcurr(j) = sqrt( pow(aux(3*j),2) + pow(aux(3*j+1),2) + pow(aux(3*j+2),2) );
 
@@ -344,6 +345,24 @@ void DRT::ELEMENTS::Torsion3::t3_nlnstiffmass(std::vector<double>&           dis
     dotprod +=  aux(j) * aux(3+j);
 
   s = dotprod/lcurr(0)/lcurr(1);
+  // Owing to round-off errors the variable s can be slightly
+  // outside the admissible range [-1.0;1.0]. We take care for this
+  // preventing potential floating point exceptions in acos(s)
+  if (s>1.0)
+  {
+    if ((s-1.0)>1.0e-14)
+      dserror("s out of admissible range [-1.0;1.0]");
+    else // tiny adaptation of s accounting for round-off errors
+      s = 1.0;
+  }
+  if (s<-1.0)
+  {
+    if ((s+1.0)<-1.0e-14)
+      dserror("s out of admissible range [-1.0;1.0]");
+    else // tiny adaptation of s accounting for round-off errors
+      s = -1.0;
+  }
+
   deltatheta=acos(s);
 
 
