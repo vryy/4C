@@ -448,7 +448,10 @@ bool FLD::CombustFluidImplicitTimeInt::FluidRefSolLoopFinished()
     case INPAR::COMBUST::xfemtimeintenr_project_scalar:
       break;
     default:
+    {
       dserror("enrichment recomputation approach in XFEM time integration not implemented");
+      break;
+    }
     }
 
     switch (xfemtimeint_)
@@ -465,7 +468,10 @@ bool FLD::CombustFluidImplicitTimeInt::FluidRefSolLoopFinished()
     case INPAR::COMBUST::xfemtimeint_mixedSLExtrapolNew:
       break;
     default:
+    {
       dserror("standard recomputation approach in XFEM time integration not implemented");
+      break;
+    }
     }
   }
 
@@ -612,7 +618,10 @@ void FLD::CombustFluidImplicitTimeInt::PrepareTimeStep()
     break;
   }
   default:
+  {
     dserror("unknown time integration scheme");
+    break;
+  }
   }
 }
 
@@ -988,7 +997,10 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
             break;
           }
           default:
+          {
             dserror("enrichment recomputation approach in XFEM time integration not implemented");
+            break;
+          }
           }
 
           switch (xfemtimeint_)
@@ -1037,7 +1049,10 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
             break;
           }
           default:
+          {
             dserror("standard recomputation approach in XFEM time integration not implemented");
+            break;
+          }
           }
         }
       }
@@ -1060,7 +1075,11 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
               oldNodalDofColDistrib); // new data due to gamma^n+1,i+1
           break;
         }
-        default: dserror("enrichment recomputation approach in XFEM time integration not implemented");
+        default:
+        {
+          dserror("enrichment recomputation approach in XFEM time integration not implemented");
+          break;
+        }
         }
 
         switch (xfemtimeint_)
@@ -1080,7 +1099,11 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
               state_.nodalDofDistributionMap_); // new data due to gamma^n+1,i+1
           break;
         }
-        default: dserror("standard recomputation approach in XFEM time integration not implemented");
+        default:
+        {
+          dserror("standard recomputation approach in XFEM time integration not implemented");
+          break;
+        }
         }
       } // end else if, nothing more to do
     }
@@ -2766,7 +2789,10 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
             break;
           }
           default:
+          {
             dserror("unknown type of combustion problem!");
+            break;
+          }
           }
 
           // copy values from matrix format to vector format
@@ -3861,7 +3887,10 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             break;
           }
           default:
+          {
             dserror("unknown type of combustion problem!");
+            break;
+          }
           }
 
           IO::GMSH::cellWithVectorFieldToStream(cell->Shape(), cellvalues, cell->CellNodalPosXYZ(), gmshfilecontent);
@@ -4693,7 +4722,10 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
     break;
   }
   default:
+  {
     dserror("type of initial field not available");
+    break;
+  }
   }
 
   return;
@@ -5419,7 +5451,10 @@ void FLD::CombustFluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
   }
   break;
   default:
+  {
     dserror("Cannot calculate error. Unknown type of analytical test problem");
+    break;
+  }
   }
   return;
 }
@@ -5537,8 +5572,8 @@ std::string FLD::CombustFluidImplicitTimeInt::MapTimIntEnumToString(const enum I
     break;
   default :
     dserror("Cannot cope with name %d", term);
-    return "";
     break;
   }
+  return "";
 }
 
