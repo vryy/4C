@@ -28,8 +28,8 @@ namespace DRT
 
 namespace FSI
 {
+  // forward declarations
   class Monolithic;
-
   class MonolithicNoNOX;
 
   /*!
@@ -48,12 +48,13 @@ namespace FSI
   class FSIResultTest : public DRT::ResultTest
   {
   public:
-    //! constructor
+    //! constructor for standard FSI
     FSIResultTest(
       Teuchos::RCP<FSI::Monolithic> fsi,
       const Teuchos::ParameterList& fsidyn
     );
 
+    //! constructor for FSI implementation without NOX
     FSIResultTest(
       Teuchos::RCP<FSI::MonolithicNoNOX> fsi,
       const Teuchos::ParameterList& fsidyn
@@ -70,6 +71,7 @@ namespace FSI
 
     //! slave discretisation
     Teuchos::RCP<DRT::Discretization> slavedisc_;
+
     //! Lagrange multiplier living on the slave discretization
     Teuchos::RCP<Epetra_Vector> fsilambda_;
   };
