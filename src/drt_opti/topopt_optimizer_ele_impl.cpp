@@ -69,7 +69,7 @@ DRT::ELEMENTS::TopOptImplInterface* DRT::ELEMENTS::TopOptImplInterface::Impl(
   case DRT::Element::tri6:
   {
     return TopOptImpl<DRT::Element::tri6>::Instance();
-
+  }
   case DRT::Element::line2:
   {
     return TopOptImpl<DRT::Element::line2>::Instance();
@@ -79,7 +79,9 @@ DRT::ELEMENTS::TopOptImplInterface* DRT::ELEMENTS::TopOptImplInterface::Impl(
     return TopOptImpl<DRT::Element::line3>::Instance();
   }
   default:
+  {
     dserror("Element shape %s not activated. Just do it.",DRT::DistypeToString(ele->Shape()).c_str());
+    break;
   }
   }
   return NULL;
@@ -299,7 +301,10 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Values(
       }
       break;
       default:
+      {
         dserror("unknown time integration scheme while evaluating objective gradient");
+        break;
+      }
       }
 
       objective += optiparams_->Dt()*fac_*optiparams_->ObjDissipationFac()*value;
@@ -485,7 +490,10 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
     }
     break;
     default:
+    {
       dserror("unknown time integration scheme while evaluating objective gradient");
+      break;
+    }
     }
 
 
@@ -668,7 +676,10 @@ DRT::ELEMENTS::TopOptBoundaryImplInterface* DRT::ELEMENTS::TopOptBoundaryImplInt
     return TopOptBoundaryImpl<DRT::Element::nurbs9>::Instance();
   }
   default:
+  {
     dserror("Element shape %d (%d nodes) not activated. Just do it.", ele->Shape(), ele->NumNode());
+    break;
+  }
   }
   return NULL;
 }
