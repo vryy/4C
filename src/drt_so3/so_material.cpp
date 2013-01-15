@@ -108,7 +108,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     case INPAR::MAT::m_thermostvenant: /*------------------ st.venant-kirchhoff-material with temperature */
     {
       MAT::ThermoStVenantKirchhoff* thrstvk = static_cast <MAT::ThermoStVenantKirchhoff*>(mat.get());
-      thrstvk->Evaluate(*glstrain,*cmat,*stress);
+      thrstvk->Evaluate(*glstrain,*cmat,*stress,params);
       *density = thrstvk->Density();
       break;
     }
@@ -1263,7 +1263,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
     case INPAR::MAT::m_thermostvenant: /*------------------ st.venant-kirchhoff-material with temperature */
     {
       MAT::ThermoStVenantKirchhoff* thrstvk = static_cast <MAT::ThermoStVenantKirchhoff*>(mat.get());
-      thrstvk->Evaluate(*glstrain,*cmat,*stress);
+      thrstvk->Evaluate(*glstrain,*cmat,*stress,params);
       *density = thrstvk->Density();
       break;
     }

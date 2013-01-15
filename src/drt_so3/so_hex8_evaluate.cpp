@@ -236,7 +236,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       else  // (kintype_ == DRT::ELEMENTS::So_hex8::soh8_geolin)
       {
         linstiffmass(lm,mydisp,myres,&elemat1,&elemat2,&elevec1,NULL,NULL,NULL,params,
-                          INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
+                     INPAR::STR::stress_none,INPAR::STR::strain_none,INPAR::STR::strain_none);
       }
 
       if (act==calc_struct_nlnstifflmass) soh8_lumpmass(&elemat2);

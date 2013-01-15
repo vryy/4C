@@ -56,12 +56,12 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::PreEvaluate(
         dserror("Cannot get state vector 'tempnp'.");
 
       // extract local values of the global vectors
-      Teuchos::RCP<std::vector<double> >robtempnp
+      Teuchos::RCP<std::vector<double> >nodaltempnp
         = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
-      DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
+      DRT::UTILS::ExtractMyValues(*tempnp,*nodaltempnp,la[1].lm_);
 
       // now set the current temperature vector in the parameter list
-      params.set<Teuchos::RCP<std::vector<double> > >("robinson_tempnp",robtempnp);
+      params.set<Teuchos::RCP<std::vector<double> > >("nodal_tempnp",nodaltempnp);
     }
   } // initial temperature dependence
 
@@ -642,17 +642,42 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
     // build the location vector only for the structure field
     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
 
+    // initialise the vectors
+    // Evaluate() is called the first time in StructureBaseAlgorithm: at this
+    // stage the coupling field is not yet known. Pass coupling vectors filled
+    // with zeros
+    // the size of the vectors is the length of the location vector/nsd_
+    std::vector<double> mytempnp( ( (la[0].lm_).size() )/nsd_, 0.0 );
+
+    // need current temperature state, call the temperature discretization
+    // disassemble temperature
+    if (discretization.HasState(1,"temperature"))
+    {
+      // check if you can get the temperature state
+      Teuchos::RCP<const Epetra_Vector> tempnp
+        = discretization.GetState(1,"temperature");
+      if (tempnp == Teuchos::null)
+        dserror("Cannot get state vector 'tempnp'");
+
+      // the temperature field has only one dof per node, disregarded by the
+      // dimension of the problem
+      const int numdofpernode_thr = NumDofPerNode(1,*(Nodes()[0]));
+      if (la[1].Size() != nen_*numdofpernode_thr)
+        dserror("Location vector length for temperature does not match!");
+      // extract the current temperatures
+      DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
+    }
     // default: geometrically non-linear analysis with Total Lagrangean approach
     if (kintype_ == geo_nonlinear)
     {
       // calculate the mechanical-thermal sub matrix k_dT of K_TSI
-      nln_kdT_tsi(la,mydisp,&stiffmatrix_kdT);
+      nln_kdT_tsi(la,mydisp,mytempnp,&stiffmatrix_kdT,params);
     }  // kintype_==linear
     // geometric linear
     else if (kintype_ == geo_linear)
     {
       // calculate the mechanical-thermal sub matrix k_dT of K_TSI
-      lin_kdT_tsi(la,mydisp,&stiffmatrix_kdT);
+      lin_kdT_tsi(la,mydisp,mytempnp,&stiffmatrix_kdT,params);
     }  // kintype_==geo_linear
   }  // calc_struct_stifftemp
   break;
@@ -839,7 +864,9 @@ template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_kdT_tsi(
   DRT::Element::LocationArray& la,
   std::vector<double>& disp,  // current displacement
-  LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT  // (nsd_*nen_ x nen_)
+  std::vector<double>& temp,  // current temperatures
+  LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT,  // (nsd_*nen_ x nen_)
+  Teuchos::ParameterList& params
   )
 {
   // update element geometry (8x3)
@@ -896,7 +923,24 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_kdT_tsi(
     */
     // get the thermal material tangent
     LINALG::Matrix<numstr_,1> ctemp(true);
-    Ctemp(&ctemp);
+    bool young_temp = params.get<int>("young_temp")==1;
+    if (young_temp==true)
+    {
+      // get the temperature vector
+      LINALG::Matrix<nen_,1> etemp(false);
+      for (int i=0; i<nen_; ++i)
+      {
+        etemp(i,0) = temp[i];
+      }
+      // copy structural shape functions needed for the thermo field
+      // identical shapefunctions for the displacements and the temperatures
+      LINALG::Matrix<1,1> Ntemp(false);
+      Ntemp.MultiplyTN(shapefunct,etemp);  // (1x1)
+      double scalartemp = Ntemp(0,0);
+      // now set the current temperature vector in the parameter list
+      params.set<double>("scalartemp",scalartemp);
+    }
+    Ctemp(&ctemp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     double detJ_w = detJ*intpoints_.Weight(gp);
@@ -1153,7 +1197,9 @@ template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
   DRT::Element::LocationArray& la,
   std::vector<double>& disp,  // current displacement
-  LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT  // (nsd_*nen_ x nen_)
+  std::vector<double>& temp, // current temperature
+  LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT,  // (nsd_*nen_ x nen_)
+  Teuchos::ParameterList& params
   )
   {
   // update element geometry (8x3)
@@ -1213,7 +1259,7 @@ xcurr(i,2) = xrefe(i,2) + disp[i*numdofpernode_+2];
     */
     // get the thermal material tangent
     LINALG::Matrix<numstr_,1> ctemp(true);
-    Ctemp(&ctemp);
+    Ctemp(&ctemp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     double detJ_w = detJ*intpoints_.Weight(gp);
@@ -1269,7 +1315,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
     {
       MAT::ThermoStVenantKirchhoff* thrstvk
         = static_cast <MAT::ThermoStVenantKirchhoff*>(mat.get());
-      thrstvk->Evaluate(*Ntemp,*ctemp,*couplstress);
+      thrstvk->Evaluate(*Ntemp,*ctemp,*couplstress,params);
       *density = thrstvk->Density();
       return;
       break;
@@ -1306,7 +1352,8 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
  *----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Ctemp(
-  LINALG::Matrix<numstr_,1>* ctemp
+  LINALG::Matrix<numstr_,1>* ctemp,
+  Teuchos::ParameterList& params
   )
 {
   Teuchos::RCP<MAT::Material> mat = Material();
@@ -1317,7 +1364,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Ctemp(
     {
       MAT::ThermoStVenantKirchhoff* thrstvk
         = static_cast<MAT::ThermoStVenantKirchhoff*>(mat.get());
-       return thrstvk->SetupCthermo(*ctemp);
+       return thrstvk->SetupCthermo(*ctemp,params);
        break;
     }
     // small strain von Mises thermoelastoplastic material

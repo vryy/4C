@@ -699,7 +699,8 @@ protected:
   virtual void soh8_stifftemp(
     DRT::Element::LocationArray& la,
     std::vector<double>& disp,  //!< (i): current displacement
-    LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>* stiffmatrixcoupl  //!< (o): mechanical thermal stiffness term at current gp
+    LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>* stiffmatrixcoupl,  //!< (o): mechanical thermal stiffness term at current gp
+    Teuchos::ParameterList params  //!< parameter list
     );
 
   //! \brief Interface to the temperature dependent material law working with soh8.
@@ -727,7 +728,8 @@ protected:
 
   //! calculate the constant temperature tangent for stresstemp
   void Ctemp(
-    LINALG::Matrix<6,1>* ctemp  // temperature dependent material tangent
+    LINALG::Matrix<6,1>* ctemp,  //!< temperature dependent material tangent
+    Teuchos::ParameterList& params  //!< parameter list
     );
 
   //@}

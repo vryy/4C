@@ -133,6 +133,7 @@ STR::TimInt::TimInt
   step_(0),
   stepn_(0),
   lumpmass_(DRT::INPUT::IntegralValue<int>(sdynparams,"LUMPMASS")==1),
+  young_temp_(DRT::INPUT::IntegralValue<int>(sdynparams,"YOUNG_IS_TEMP_DEPENDENT")==1),
   zeros_(Teuchos::null),
   dis_(Teuchos::null),
   vel_(Teuchos::null),
@@ -698,6 +699,7 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     // other parameters that might be needed by the elements
     p.set("total time", (*time_)[0]);
     p.set("delta time", (*dt_)[0]);
+    p.set<int>("young_temp", young_temp_);
     if (pressure_ != Teuchos::null) p.set("volume", 0.0);
     // set vector values needed by elements
     discret_->ClearState();
@@ -1235,6 +1237,7 @@ void STR::TimInt::DetermineStressStrain()
     // other parameters that might be needed by the elements
     p.set("total time", timen_);
     p.set("delta time", (*dt_)[0]);
+    p.set<int>("young_temp", young_temp_);
 
     stressdata_ = Teuchos::rcp(new std::vector<char>());
     p.set("stress", stressdata_);
@@ -1845,6 +1848,7 @@ void STR::TimInt::ApplyForceStiffInternal
   p.set("total time", time);
   p.set("delta time", dt);
   p.set("damping", damping_);
+  p.set<int>("young_temp", young_temp_);
   if (pressure_ != Teuchos::null) p.set("volume", 0.0);
   // set vector values needed by elements
   discret_->ClearState();
@@ -1897,6 +1901,7 @@ void STR::TimInt::ApplyForceInternal
   // other parameters that might be needed by the elements
   p.set("total time", time);
   p.set("delta time", dt);
+  p.set<int>("young_temp", young_temp_);
   if (pressure_ != Teuchos::null) p.set("volume", 0.0);
   // set vector values needed by elements
   discret_->ClearState();

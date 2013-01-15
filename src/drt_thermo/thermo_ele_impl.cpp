@@ -343,7 +343,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         &efint,
         NULL,
         NULL,
-        NULL
+        NULL,
+        params
         );
 
       if (plasticmat_)
@@ -352,7 +353,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           myvel,
           stepsize,
           &etang,
-          &efint
+          &efint,
+          params
           );
     }
     // geometrically nonlinear TSI problem
@@ -370,7 +372,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         NULL,
         NULL,
         INPAR::THR::heatflux_none,
-        INPAR::THR::tempgrad_none
+        INPAR::THR::tempgrad_none,
+        params
         );
     }
 #endif // MonTSIwithoutSTR
@@ -473,7 +476,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         &efint,
         NULL,
         NULL,
-        NULL
+        NULL,
+        params
         );
 
       if (plasticmat_)
@@ -482,7 +486,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           myvel,
           stepsize,
           NULL,
-          &efint
+          &efint,
+          params
           );
     }
     // geometrically nonlinear TSI problem
@@ -500,7 +505,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         NULL,  // heat flux at GP
         NULL,  // temperature gradients at GP
         INPAR::THR::heatflux_none,  // output option for q
-        INPAR::THR::tempgrad_none  // output option for grad T
+        INPAR::THR::tempgrad_none,  // output option for grad T
+        params
         );
     }
 
@@ -610,7 +616,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         &efint,
         NULL,
         NULL,
-        NULL
+        NULL,
+        params
         );
 
       if (plasticmat_)
@@ -619,7 +626,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           myvel,
           stepsize,
           NULL,
-          &efint
+          &efint,
+          params
           );
     }  // end geo_linear TSI
 
@@ -638,7 +646,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         NULL,
         NULL,
         INPAR::THR::heatflux_none,
-        INPAR::THR::tempgrad_none
+        INPAR::THR::tempgrad_none,
+        params
         );
     }
 
@@ -775,7 +784,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         &efint,
         NULL,
         NULL,
-        NULL
+        NULL,
+        params
         );
 
       if (plasticmat_)
@@ -784,7 +794,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           myvel,
           stepsize,
           &etang,
-          &efint
+          &efint,
+          params
           );
     }
     // geometrically nonlinear TSI problem
@@ -802,7 +813,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         NULL,  // heat flux at GP
         NULL,  // temperature gradients at GP
         INPAR::THR::heatflux_none,  // output option for q
-        INPAR::THR::tempgrad_none  // output option for grad T
+        INPAR::THR::tempgrad_none,  // output option for grad T
+        params
         );
     }
 #endif // MonTSIwithoutSTR
@@ -923,7 +935,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
             &eheatflux,  // heat flux at GP
             &etempgrad,  // temperature gradients at GP
             ioheatflux,  // output option for q
-            iotempgrad  // output option for grad T
+            iotempgrad,  // output option for grad T
+            params
             );
         }  // disp!=0 & vel!=0
       }  // la.Size>1
@@ -1138,7 +1151,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
             ele,
             mydisp,
             myvel,
-            &etangcoupl
+            &etangcoupl,
+            params
             );
 
           // consider linearisation of velocities due to displacements
@@ -1437,7 +1451,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
   LINALG::Matrix<nen_*numdofpernode_,1>* efint,  // internal force
   LINALG::Matrix<nen_*numdofpernode_,1>* efext,  // external force
   LINALG::Matrix<nquad_,nsd_>* eheatflux,  // heat fluxes at Gauss points
-  LINALG::Matrix<nquad_,nsd_>* etempgrad  // temperature gradients at Gauss points
+  LINALG::Matrix<nquad_,nsd_>* etempgrad,  // temperature gradients at Gauss points
+  Teuchos::ParameterList& params
   )
 {
   // get node coordinates
@@ -1461,10 +1476,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
   LINALG::Matrix<6,1> ctemp(true);
   // get constant initial temperature from the material
   double thetainit = 0.0;
-  Teuchos::RCP<MAT::Material> structmat = Teuchos::null;
-  GetStrMaterial(ele, &ctemp, &thetainit, structmat);
-  // insert the negative value of the coupling term (c.f. energy balance)
-  ctemp.Scale(-1.0);
 
   // ------------------------------- integration loop for one element
 
@@ -1479,6 +1490,16 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
     // compute inverse Jacobian matrix and derivatives at GP w.r.t material
     // coordinates
     EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+    // build the product of the shapefunctions and element temperatures T = N . T
+    LINALG::Matrix<1,1> nt(false);
+    nt.MultiplyTN(funct_,etemp_);
+    double scalartemp = nt(0,0);
+    params.set<double>("scalartemp",scalartemp);
+    Teuchos::RCP<MAT::Material> structmat = Teuchos::null;
+    GetStrMaterial(ele, &ctemp, &thetainit, structmat, params);
+    // insert the negative value of the coupling term (c.f. energy balance)
+    ctemp.Scale(-1.0);
 
     // calculate the linear B-operator
     LINALG::Matrix<6,nsd_*nen_*numdofpernode_> boplin;
@@ -1547,16 +1568,11 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
     // integrate internal force vector (coupling fraction towards displacements)
     if (efint != NULL)
     {
-      // build the product of the shapefunctions and element temperatures
-      LINALG::Matrix<1,1> nt(true);
 #ifdef COUPLEINITTEMPERATURE
       // for TSI validation/verification: change nt to Theta_0 here!!!! 14.01.11
       if (ele->Id()==0)
         std::cout << "ele Id= " << ele->Id() " coupling term in thermo field with T_0" << std::endl;
       nt(0,0) = thetainit;
-#else
-      // default: use scalar-valued current temperature T = N . T
-      nt.MultiplyTN(funct_,etemp_);
 #endif
 
       // fintdisp = fintdisp - N^T . Ctemp : (B .  (d^e)') . N . T
@@ -1603,7 +1619,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
   DRT::Element* ele,  // the element whose matrix is calculated
   std::vector<double>& disp,  // current displacements
   std::vector<double>& vel,  // current velocities
-  LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl  // conductivity matrix
+  LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  // conductivity matrix
+  Teuchos::ParameterList& params
   )
 {
   // get node coordinates
@@ -1624,10 +1641,6 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
   LINALG::Matrix<6,1> ctemp(true);
   // get constant initial temperature from the material
   double thetainit = 0.0;
-  // TODO 2012-11-14 in case of different material, pass structmat here, too
-  GetStrMaterial(ele, &ctemp, &thetainit, Teuchos::null);
-  // insert the negative value of the coupling term (c.f. energy balance)
-  ctemp.Scale(-1.0);
 
   // ------------------------------- integration loop for one element
 
@@ -1655,6 +1668,13 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplCond(
     // N_temp^T . N_temp . temp
     LINALG::Matrix<nen_,1> nnt(false);
     nnt.Multiply(funct_,nt); // (8x1)(1x1) = (8x1)
+
+    double scalartemp = nt(0,0);
+    params.set<double>("scalartemp",scalartemp);
+    // TODO 2012-11-14 in case of different material, pass structmat here, too
+    GetStrMaterial(ele, &ctemp, &thetainit, Teuchos::null, params);
+    // insert the negative value of the coupling term (c.f. energy balance)
+    ctemp.Scale(-1.0);
 
     // N_T^T . N_T . T . Ctemp
     LINALG::Matrix<nen_,6> nntc(false); // (8x1)(1x6)
@@ -1708,7 +1728,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
   LINALG::Matrix<nquad_,nsd_>* eheatflux,  // heat fluxes at Gauss points
   LINALG::Matrix<nquad_,nsd_>* etempgrad,  // temperature gradients at Gauss points
   const INPAR::THR::HeatFluxType ioheatflux,  // heat flux output option
-  const INPAR::THR::TempGradType iotempgrad  // tempgrad output option
+  const INPAR::THR::TempGradType iotempgrad,  // tempgrad output option
+  Teuchos::ParameterList& params
   )
 {
   // get node coordinates
@@ -1763,7 +1784,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
   // get constant initial temperature from the material
   double thetainit = 0.0;
   // TODO 2012-11-14 in case of different material, pass structmat here, too
-  GetStrMaterial(ele, &ctemp, &thetainit, Teuchos::null);
+  GetStrMaterial(ele, &ctemp, &thetainit, Teuchos::null, params);
   // insert the negative value of the coupling term (c.f. energy balance)
   ctemp.Scale(-1.0);
 
@@ -2079,7 +2100,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplCond(
   // get constant initial temperature from the material
   double thetainit = 0.0;
   // TODO 2012-11-14 in case of different material, pass structmat here, too
-  GetStrMaterial(ele, &ctemp, &thetainit, Teuchos::null);
+  GetStrMaterial(ele, &ctemp, &thetainit, Teuchos::null, params);
   // insert the negative value of the coupling term (c.f. energy balance)
   ctemp.Scale(-1.0);
 
@@ -2288,7 +2309,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateInternalDissipation(
   std::vector<double>& vel,  // current velocities
   const double& stepsize,
   LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* econd,  // conductivity matrix
-  LINALG::Matrix<nen_*numdofpernode_,1>* efint  // internal force
+  LINALG::Matrix<nen_*numdofpernode_,1>* efint,  // internal force
+  Teuchos::ParameterList& params
   )
 {
 
@@ -2312,7 +2334,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateInternalDissipation(
   // get constant initial temperature from the material
   double thetainit = 0.0;
   Teuchos::RCP<MAT::Material> structmat = Teuchos::null;
-  GetStrMaterial(ele, &ctemp, &thetainit, structmat);
+  GetStrMaterial(ele, &ctemp, &thetainit, structmat, params);
   // insert the negative value of the coupling term (c.f. energy balance)
   // TODO 2012-11-14 so far no scaling was used, correct??
   // ctemp.Scale(-1.0);
@@ -2912,7 +2934,8 @@ void DRT::ELEMENTS::TemperImpl<distype>::GetStrMaterial(
   DRT::Element* ele,  // the element whose matrix is calculated
   LINALG::Matrix<6,1>* ctemp,  // temperature-dependent material tangent,
   double* thetainit,
-  Teuchos::RCP<MAT::Material> structmat
+  Teuchos::RCP<MAT::Material> structmat,
+  Teuchos::ParameterList& params
   )
 {
   if (DRT::Problem::Instance()->DoesExistDis("structure"))
@@ -2948,17 +2971,17 @@ void DRT::ELEMENTS::TemperImpl<distype>::GetStrMaterial(
     {
       MAT::ThermoStVenantKirchhoff* thrstvk
         = static_cast <MAT::ThermoStVenantKirchhoff*>(structmat.get());
-      thrstvk->SetupCthermo(*ctemp);
-  #ifdef CALCSTABILOFREACTTERM
+      thrstvk->SetupCthermo(*ctemp,params);
+#ifdef CALCSTABILOFREACTTERM
       // kappa = k / (rho C_V)
       kappa = thrstvk->Conductivity();
       kappa /= thrstvk->Capacity();
-  #endif  // CALCSTABILOFREACTTERM
+#endif  // CALCSTABILOFREACTTERM
 
       //  for TSI validation/verification (2nd Danilovskaya problem): use COUPLEINITTEMPERATURE
-  #ifdef COUPLEINITTEMPERATURE
+#ifdef COUPLEINITTEMPERATURE
       thetainit = thrstvk->InitTemp();
-  #endif // COUPLEINITTEMPERATURE
+#endif // COUPLEINITTEMPERATURE
     }  // m_thermostvenant
 
     else if (structmat->MaterialType() == INPAR::MAT::m_thermopllinelast)

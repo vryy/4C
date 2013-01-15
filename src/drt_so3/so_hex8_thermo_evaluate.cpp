@@ -53,7 +53,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
       );
   }
 
-  // TSI: volume coupling stuff
+  // volume coupled stuff
 
   // type of kinematic of the problem
   // solve a geometric linear system
@@ -259,7 +259,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
 
     // calculate the mechanical-thermal system matrix
-    soh8_stifftemp(la,mydisp,&stiffmatrixcoupl);
+    soh8_stifftemp(la,mydisp,&stiffmatrixcoupl,params);
   }
   break;
 
@@ -530,9 +530,9 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
       // extract current temperatures declared as RCP<vector>
-      Teuchos::RCP<std::vector<double> >robtempnp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
-      DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
-      params.set<Teuchos::RCP<std::vector<double> > >("robinson_tempnp",robtempnp);
+      Teuchos::RCP<std::vector<double> >nodaltempnp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
+      DRT::UTILS::ExtractMyValues(*tempnp,*nodaltempnp,la[1].lm_);
+      params.set<Teuchos::RCP<std::vector<double> > >("nodal_tempnp",nodaltempnp);
 
       // calculate the THERMOmechanical term for fint
       soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,NULL,NULL,params,
@@ -593,9 +593,9 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
       // extract local values of the global vectors
-      Teuchos::RCP<std::vector<double> >robtempnp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
-      DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
-      params.set<Teuchos::RCP<std::vector<double> > >("robinson_tempnp",robtempnp);
+      Teuchos::RCP<std::vector<double> >nodaltempnp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
+      DRT::UTILS::ExtractMyValues(*tempnp,*nodaltempnp,la[1].lm_);
+      params.set<Teuchos::RCP<std::vector<double> > >("nodal_tempnp",nodaltempnp);
 
       // calculate the THERMOmechanical term for fint
       soh8_finttemp(la,mydisp,myres,mytempnp,&elevec1,
@@ -660,9 +660,9 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
       // extract local values of the global vectors
-      Teuchos::RCP<std::vector<double> >robtempnp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
-      DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
-      params.set<Teuchos::RCP<std::vector<double> > >("robinson_tempnp",robtempnp);
+      Teuchos::RCP<std::vector<double> >nodaltempnp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
+      DRT::UTILS::ExtractMyValues(*tempnp,*nodaltempnp,la[1].lm_);
+      params.set<Teuchos::RCP<std::vector<double> > >("nodal_tempnp",nodaltempnp);
 
       // build the current temperature vector
       LINALG::Matrix<nen_*numdofpernode_,1> etemp(&(mytempnp[1]),true);  // view only!
@@ -756,9 +756,9 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
         DRT::UTILS::ExtractMyValues(*tempnp,mytempnp,la[1].lm_);
 
         // extract local values of the global vectors
-        Teuchos::RCP<std::vector<double> >robtempnp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
-        DRT::UTILS::ExtractMyValues(*tempnp,*robtempnp,la[1].lm_);
-        params.set<Teuchos::RCP<std::vector<double> > >("robinson_tempnp",robtempnp);
+        Teuchos::RCP<std::vector<double> >nodaltempnp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
+        DRT::UTILS::ExtractMyValues(*tempnp,*nodaltempnp,la[1].lm_);
+        params.set<Teuchos::RCP<std::vector<double> > >("nodal_tempnp",nodaltempnp);
 
         // calculate the THERMOmechanical term for fint: temperature stresses
         soh8_finttemp(la,mydisp,myres,mytempnp,NULL,&stresstemp,NULL,params,
@@ -910,7 +910,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     DRT::UTILS::ExtractMyValues(*disp,mydisp,la[0].lm_);
 
     // calculate the mechanical-thermal system matrix
-    soh8_stifftemp(la,mydisp,&stiffmatrixcoupl);
+    soh8_stifftemp(la,mydisp,&stiffmatrixcoupl,params);
   }
   break;
 
@@ -1097,8 +1097,43 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
     LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
 
     // default: material call in structural function is purely deformation dependent
-    if ( Material()->MaterialType() != INPAR::MAT::m_vp_robinson )
+    if ( Material()->MaterialType() == INPAR::MAT::m_thermostvenant )
+    {
+      bool young_temp = (params.get<int>("young_temp")==1);
+      if (young_temp==true)
+      {
+        Teuchos::RCP<std::vector<double> > temperature_vector
+          = params.get<Teuchos::RCP<std::vector<double> > >("nodal_tempnp",Teuchos::null);
+        
+        double scalartemp = 0.0;
+        // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
+        if (temperature_vector==Teuchos::null)
+        {
+          MAT::ThermoStVenantKirchhoff* thrstvenant
+            = static_cast <MAT::ThermoStVenantKirchhoff*>(Material().get());
+          // initialise the temperature field
+          scalartemp = thrstvenant->InitTemp();
+        }
+        // temperature vector is available
+        else  // (temperature_vector!=Teuchos::null)
+        {
+          // get the temperature vector by extraction from parameter list
+          LINALG::Matrix<NUMNOD_SOH8,1> etemp(true);
+          for (int i=0; i<NUMNOD_SOH8; ++i)
+          {
+            etemp(i,0) = (*temperature_vector)[i];
+          }
+          // copy structural shape functions needed for the thermo field
+          // identical shapefunctions for the displacements and the temperatures
+          scalartemp  = (shapefcts[gp]).Dot(etemp);
+        }
+
+        // now set the current temperature vector in the parameter list
+        params.set<double>("scalartemp",scalartemp);
+      }
+
       soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&defgrd,gp,params);
+    }
     // if Robinson's material --> pass the current temperature to the material
     else if ( (Material()->MaterialType() == INPAR::MAT::m_vp_robinson) )
     {
@@ -1110,7 +1145,7 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
       LINALG::Matrix<NUMSTR_SOH8,1> ctemp(true);
 
       Teuchos::RCP<std::vector<double> > temperature_vector
-        = params.get<Teuchos::RCP<std::vector<double> > >("robinson_tempnp",Teuchos::null);
+        = params.get<Teuchos::RCP<std::vector<double> > >("nodal_tempnp",Teuchos::null);
       // in StructureBaseAlgorithm() temperature not yet available, i.e. ==null
       if (temperature_vector==Teuchos::null)
       {
@@ -1124,15 +1159,22 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
       {
         for (int i=0; i<NUMNOD_SOH8; ++i)
         {
-          etemp(i,0) = (*temperature_vector)[i+0];
+          etemp(i,0) = (*temperature_vector)[i];
         }
         // copy structural shape functions needed for the thermo field
         // identical shapefunctions for the displacements and the temperatures
         scalartemp  = (shapefcts[gp]).Dot(etemp);
       }
+      // now set the current temperature vector in the parameter list
+      params.set<double>("scalartemp",scalartemp);
       soh8_mat_temp(&stress,&ctemp,NULL,&cmat,&defgrd,&glstrain,&plglstrain,straininc,scalartemp,&density,gp,params);
 
     } // end Robinson's material
+    // default: material call in structural function is purely deformation dependent
+    else
+    {
+      soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&defgrd,gp,params);
+    }
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1460,7 +1502,8 @@ void DRT::ELEMENTS::So_hex8::soh8_stifftemp(
   DRT::Element::LocationArray& la,
   std::vector<double>& disp,
   // element mechanical-thermal stiffness matrix
-  LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>* stiffmatrixcoupl // (nsd_*nen_ x nen_)
+  LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>* stiffmatrixcoupl, // (nsd_*nen_ x nen_)
+  Teuchos::ParameterList params
   )
 {
 /* ============================================================================*
@@ -1560,7 +1603,7 @@ void DRT::ELEMENTS::So_hex8::soh8_stifftemp(
     */
     // get the thermal material tangent
     LINALG::Matrix<NUMSTR_SOH8,1> ctemp(true);
-    Ctemp(&ctemp);
+    Ctemp(&ctemp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     double detJ_w = detJ*gpweights[gp];
@@ -1620,7 +1663,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_temp(
     {
       MAT::ThermoStVenantKirchhoff* thrstvk
         = static_cast <MAT::ThermoStVenantKirchhoff*>(mat.get());
-      thrstvk->Evaluate(*Ntemp,*ctemp,*stresstemp);
+      thrstvk->Evaluate(*Ntemp,*ctemp,*stresstemp,params);
       *density = thrstvk->Density();
       return;
       break;
@@ -1655,7 +1698,10 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_temp(
 /*----------------------------------------------------------------------*
  | get the constant temperature fraction for stresstemp      dano 05/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_hex8::Ctemp(LINALG::Matrix<6,1>* ctemp)
+void DRT::ELEMENTS::So_hex8::Ctemp(
+  LINALG::Matrix<6,1>* ctemp,
+  Teuchos::ParameterList& params
+  )
 {
   Teuchos::RCP<MAT::Material> mat = Material();
   switch (mat->MaterialType())
@@ -1665,7 +1711,7 @@ void DRT::ELEMENTS::So_hex8::Ctemp(LINALG::Matrix<6,1>* ctemp)
     {
       MAT::ThermoStVenantKirchhoff* thrstvk
         = static_cast<MAT::ThermoStVenantKirchhoff*>(mat.get());
-       return thrstvk->SetupCthermo(*ctemp);
+       return thrstvk->SetupCthermo(*ctemp,params);
        break;
     }
     // small strain von Mises thermoelastoplastic material

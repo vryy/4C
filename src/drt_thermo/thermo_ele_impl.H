@@ -234,7 +234,8 @@ namespace ELEMENTS
       LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
       LINALG::Matrix<nen_*numdofpernode_,1>* efext,  //!< external force
       LINALG::Matrix<nquad_,nsd_>* eheatflux,  //!< heat fluxes at Gauss points
-      LINALG::Matrix<nquad_,nsd_>* etempgrad  //!< temperature gradients at Gauss points
+      LINALG::Matrix<nquad_,nsd_>* etempgrad,  //!< temperature gradients at Gauss points
+      Teuchos::ParameterList& params
       );
 
     //! calculate internal dissipation arising when a thermo-elasto-plastic
@@ -246,7 +247,8 @@ namespace ELEMENTS
       std::vector<double>& vel,  //!< current velocities
       const double& stepsize,  //!< step size Delta t
       LINALG::Matrix<nen_*numdofpernode_,nen_*numdofpernode_>* etang,  //!< conductivity matrix
-      LINALG::Matrix<nen_*numdofpernode_,1>* efint  //!< internal force
+      LINALG::Matrix<nen_*numdofpernode_,1>* efint,  //!< internal force
+      Teuchos::ParameterList& params
       );
 
     //! calculate thermal-mechanical system matrix term needed in monolithic TSI
@@ -254,7 +256,8 @@ namespace ELEMENTS
       DRT::Element* ele,  //!< the element whose matrix is calculated
       std::vector<double>& disp,  //!< current displacements
       std::vector<double>& vel,  //!< current velocities
-      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl  //!< k_Tu matrix
+      LINALG::Matrix<nen_*numdofpernode_,nsd_*nen_*numdofpernode_>* etangcoupl,  //!< k_Tu matrix
+      Teuchos::ParameterList& params
       );
 
     //@}
@@ -278,7 +281,8 @@ namespace ELEMENTS
       LINALG::Matrix<nquad_,nsd_>* eheatflux,  //!< heat fluxes at Gauss points
       LINALG::Matrix<nquad_,nsd_>* etempgrad,  //!< temperature gradients at Gauss points
       const INPAR::THR::HeatFluxType ioheatflux,  // heat flux output option
-      const INPAR::THR::TempGradType iotempgrad  // tempgrad output option
+      const INPAR::THR::TempGradType iotempgrad,  // tempgrad output option
+      Teuchos::ParameterList& params
       );
 
     //! calculate thermal-mechanical system matrix k_Td needed in monolithic TSI
@@ -319,7 +323,8 @@ namespace ELEMENTS
       DRT::Element* ele,  //!< the element whose matrix is calculated
       LINALG::Matrix<6,1>* ctemp,  //!< (io) temperature-dependent material tangent
       double* thetainit,  //!< (io) constant initial temperature
-      Teuchos::RCP<MAT::Material> structmat  //!< temperature-dependent solid material
+      Teuchos::RCP<MAT::Material> structmat,  //!< temperature-dependent solid material
+      Teuchos::ParameterList& params
       );
 
     //! calculate reactive term

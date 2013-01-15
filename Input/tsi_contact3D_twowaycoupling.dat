@@ -272,7 +272,7 @@ ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 1 1 1 1 1
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_ThrStVenantK YOUNG 400 NUE 0.0 DENS 1 THEXPANS 0.0001 CAPA 42 CONDUCT 5.2 INITTEMP 0
+MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 400 NUE 0.0 DENS 1 THEXPANS 0.0001 CAPA 42 CONDUCT 5.2 INITTEMP 0
 MAT 2 THERM_FourierIso CAPA 42 CONDUCT 5.2
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2

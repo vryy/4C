@@ -954,6 +954,7 @@ namespace STR
     int step_;  //!< time step index \f$n\f$
     int stepn_;  //!< time step index \f$n+1\f$
     bool lumpmass_;  //!< flag for lumping the mass matrix, default: false
+    bool young_temp_;  //!< flag deciding if young's modulus is temperature-dependent, default: false
     //@}
 
     //! @name Global vectors

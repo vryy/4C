@@ -57,8 +57,8 @@ namespace PAR
     //! @name material parameters
     //@{
 
-    //! Young's modulus
-    const double youngs_;
+    //! Young's modulus (temperature dependent --> polynomial expression)
+    const std::vector<double> youngs_;
     //! Possion's ratio \f$ \nu \f$
     const double poissonratio_;
     //! mass density \f$ \rho \f$
@@ -160,18 +160,12 @@ private:
       return Teuchos::rcp( new ThermoStVenantKirchhoff( *this ) );
     }
 
-    // evaluates stresses for 3d
-    void Evaluate(
-      const Epetra_SerialDenseVector* glstrain_e,  //!< Green-Lagrange strain (SerialDense)
-      Epetra_SerialDenseMatrix* cmat_e,  //!< elastic material tangent (SerialDense)
-      Epetra_SerialDenseVector* stress_e  //!< stress (SerialDense)
-      );
-
     //! evaluates stresses for 3d
     void Evaluate(
       const LINALG::Matrix<6,1>& glstrain,  //!< Green-Lagrange strain
       LINALG::Matrix<6,6>& cmat,  //!< elastic material tangent
-      LINALG::Matrix<6,1>& stress  //!< stress
+      LINALG::Matrix<6,1>& stress,  //!< stress
+      Teuchos::ParameterList& params  //!< parameter list
       );
 
     //! main 3D material call to determine stress and constitutive tensor ctemp
@@ -179,29 +173,34 @@ private:
     void Evaluate(
       const LINALG::Matrix<1,1>& Ntemp,  //!< temperature of element (N . T)
       LINALG::Matrix<6,1>& ctemp,  //!< temperature dependent material tangent
-      LINALG::Matrix<6,1>& stresstemp  //!< temperature dependent stress term
+      LINALG::Matrix<6,1>& stresstemp,  //!< temperature dependent stress term
+      Teuchos::ParameterList& params  //!< parameter list
       );
 
     //! computes isotropic elasticity tensor in matrix notion for 3d
-    void SetupCmat(LINALG::Matrix<6,6>& cmat);
-
-    // computes isotropic elasticity tensor in matrix notion for 2d
-    // plane strain, rotational symmetry
-    void SetupCmat2d(Epetra_SerialDenseMatrix* cmat);
+    void SetupCmat(
+      LINALG::Matrix<6,6>& cmat,
+      Teuchos::ParameterList params
+      );
 
     //! computes temperature dependent isotropic elasticity tensor in matrix
     //! notion for 3d
-    void SetupCthermo(LINALG::Matrix<6,1>& ctemp);
-
-    //! computes temperature dependent isotropic elasticity tensor in matrix
-    //" notion for 2d plane strain, rotational symmetry
-    void SetupCthermo2d(Epetra_SerialDenseMatrix* ctemp);
+    void SetupCthermo(
+      LINALG::Matrix<6,1>& ctemp,
+      Teuchos::ParameterList& params  //!< parameter list
+      );
 
     //! calculates stress-temperature modulus
-    double STModulus() const;
+    double STModulus(
+      Teuchos::ParameterList& params  //!< parameter list
+      ) const;
 
-    //! Young's modulus
-    double Youngs() const { return params_->youngs_; }
+    //! Young's modulus, here we suppose a constant value for E
+    double Youngs() const
+    {
+      dserror("return value 'E' not available due to possibly temperature-dependent Young's modulus.");
+      return (params_->youngs_)[0];
+    }
 
     //! Poisson's ratio \f$ \nu \f$
     double PoissonRatio() const { return params_->poissonratio_; }
@@ -218,11 +217,18 @@ private:
     //! Initial temperature \f$ \theta_0 \f$
     double InitTemp() const { return params_->thetainit_; }
 
-    //! shear modulus \f$ \mu \f$
+    //! shear modulus \f$ \mu \f$, here we suppose a constant value for E
     double ShearMod() const
     {
-      return 0.5*params_->youngs_/(1.0+params_->poissonratio_);
+      dserror("return value 'mu' not available due to possibly temperature-dependent Young's modulus");
+      return 0.5*(params_->youngs_)[0]/(1.0+params_->poissonratio_);
     }
+
+    //! calculate temperature dependent material parameter and return value
+    double GetMatParameterAtTempnp(
+      const std::vector<double>* paramvector,  //!< (i) given parameter is a vector
+      const double& tempnp  // tmpr (i) current temperature
+      ) const ;
 
     //! Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

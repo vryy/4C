@@ -121,6 +121,7 @@ UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
+YOUNG_IS_TEMP_DEPENDENT         Yes // No
 ----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 ALPHA_F                         0.5
 ALPHA_M                         0.5
@@ -315,7 +316,7 @@ SIMPLE_DAMPING                  1
 SOLVER                          Aztec_MSR // Aztec_MSR,Superlu,LAPACK_sym,LAPACK_nonsym,UMFPACK,Belos,Stratimikos_Amesos,Stratimikos_Aztec,Stratimikos_Belos
 ----------------------------------------------------------MATERIALS
 // CAPA = rho * C_V
-MAT 1 MAT_Struct_ThrStVenantK YOUNG 2.1e5 NUE 0.3 DENS 7850 THEXPANS 1.2e-05 CAPA 3297000 CONDUCT 52.0 INITTEMP 0.0
+MAT 1 MAT_Struct_ThrStVenantK YOUNGNUM 1 YOUNG 2.1e5 NUE 0.3 DENS 7850 THEXPANS 1.2e-05 CAPA 3297000 CONDUCT 52.0 INITTEMP 0.0
 MAT 2 THERM_FourierIso CAPA 3297000 CONDUCT 52
 -----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD structure SRC_MAT 1 TAR_FIELD thermo TAR_MAT 2

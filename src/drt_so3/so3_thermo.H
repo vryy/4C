@@ -320,7 +320,9 @@ namespace ELEMENTS
     virtual void lin_kdT_tsi(
       DRT::Element::LocationArray& la,
       std::vector<double>& disp,  //!< (i): current displacement
-      LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT  //!< (o): mechanical thermal stiffness term at current gp
+      std::vector<double>& temp,  // current temperatures
+      LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT,  //!< (o): mechanical thermal stiffness term at current gp
+      Teuchos::ParameterList& params
       );
 
     //! Calculate nonlinear stiffness and mass matrix with temperature fraction
@@ -340,7 +342,9 @@ namespace ELEMENTS
     virtual void nln_kdT_tsi(
       DRT::Element::LocationArray& la,
       std::vector<double>& disp,  //!< (i): current displacement
-      LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT  //!< (o): mechanical thermal stiffness term at current gp
+      std::vector<double>& temp, //!< current temperature
+      LINALG::Matrix<numdofperelement_,nen_>* stiffmatrix_kdT,  //!< (o): mechanical thermal stiffness term at current gp
+      Teuchos::ParameterList& params
       );
 
 
@@ -368,7 +372,8 @@ namespace ELEMENTS
 
     //! calculate the constant temperature tangent for stresstemp
     void Ctemp(
-      LINALG::Matrix<numstr_,1>* ctemp  //!< temperature dependent material tangent
+      LINALG::Matrix<numstr_,1>* ctemp,  //!< temperature dependent material tangent
+      Teuchos::ParameterList& params  //!< parameter list to access time, etc. in materials
       );
 
     //! calculate nonlinear B-operator

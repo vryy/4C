@@ -2824,7 +2824,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParams(
 
     // compute reaction coefficient
     // (divided by density due to later multiplication by density in CalMatAndRHS)
-    const double stmodulus = actmat->STModulus();
+    Teuchos::ParameterList dummyparams;
+    const double stmodulus = actmat->STModulus(dummyparams);
     reacoeff_[0] = -vdiv_*stmodulus/(actmat->Capacity()*densnp_[0]);
 
     // set reaction flag to true, check whether reaction coefficient is positive

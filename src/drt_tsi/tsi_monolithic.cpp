@@ -1202,7 +1202,8 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
   // other parameters that might be needed by the elements
   sparams.set("delta time", Dt());
   sparams.set("total time", Time());
-//  std::cout << "STR Parameterliste\n " <<  sparams <<  std::endl;
+  sparams.set<int>("young_temp", (DRT::INPUT::IntegralValue<int>(sdyn_,"YOUNG_IS_TEMP_DEPENDENT")));
+
   StructureField()->Discretization()->ClearState();
   StructureField()->Discretization()->SetState(0,"displacement",StructureField()->Dispnp());
 
@@ -1321,6 +1322,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
       break;
     }
   }
+  tparams.set<int>("young_temp", (DRT::INPUT::IntegralValue<int>(sdyn_,"YOUNG_IS_TEMP_DEPENDENT")));
 
   ThermoField()->Discretization()->ClearState();
   // set the variables that are needed by the elements

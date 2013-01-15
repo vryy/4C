@@ -5,8 +5,8 @@
        describing heat expansion
 
        example input line:
-       MAT 1   MAT_Struct_ThrStVenantK   YOUNG 1.48e8 NUE 0.3 DENS 9.130e-6
-       THEXPANS 1.72e-5 INITTEMP 293.15
+       MAT 1   MAT_Struct_ThrStVenantK YOUNGNUM 2 YOUNG 1.48e8 1.48e5 NUE 0.3 DENS
+       9.130e-6 THEXPANS 1.72e-5 INITTEMP 293.15
 
 <pre>
 Maintainer: Caroline Danowski
@@ -39,7 +39,7 @@ MAT::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  youngs_(matdata->GetDouble("YOUNG")),
+  youngs_(*(matdata->Get<std::vector<double> >("YOUNG"))),
   poissonratio_(matdata->GetDouble("NUE")),
   density_(matdata->GetDouble("DENS")),
   thermexpans_(matdata->GetDouble("THEXPANS")),
@@ -47,6 +47,9 @@ MAT::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
   conduct_(matdata->GetDouble("CONDUCT")),
   thetainit_(matdata->GetDouble("INITTEMP"))
 {
+  bool young_temp = (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StructuralDynamicParams(),"YOUNG_IS_TEMP_DEPENDENT")==1);
+  if ( (youngs_.size()>1) && (young_temp==false) )
+    dserror("in case of temperature-dependent Young's modulus you have to specifiy YOUNG_IS_TEMP_DEPENDENT in the input file");
 }
 
 /*----------------------------------------------------------------------*
@@ -77,7 +80,7 @@ DRT::ParObject* MAT::ThermoStVenantKirchhoffType::Create(
  |  constructor (public)                                     dano 02/10 |
  *----------------------------------------------------------------------*/
 MAT::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff()
-  : params_(NULL)
+: params_(NULL)
 {
 }
 
@@ -88,7 +91,7 @@ MAT::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff()
 MAT::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
   MAT::PAR::ThermoStVenantKirchhoff* params
   )
-  : params_(params)
+: params_(params)
 {
 }
 
@@ -144,56 +147,28 @@ void MAT::ThermoStVenantKirchhoff::Unpack(const std::vector<char>& data)
 
 
 /*----------------------------------------------------------------------*
- | computes isotropic eplane strain, rotational symmetry     dano 02/10 |
- | plane strain, rotational symmetry                                    |
- *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::SetupCmat2d(Epetra_SerialDenseMatrix* cmat)
-{
-  // get material parameters
-  // Young's modulus (modulus of elasticity)
-  const double ym = params_->youngs_;
-  // Poisson's ratio (Querdehnzahl)
-  const double pv = params_->poissonratio_;
-
-  // plane strain, rotational symmetry
-  // \f \frac{E}{1+\nu} \f
-  const double c1 = ym/(1.0+pv);
-  // \f  = \frac{E\,\nu}{(1-2\nu)(1+\nu)} \f
-  const double b1 = c1*pv/(1.0-2.0*pv);
-  // for the diagonal terms a1 = nu+lambda
-  const double a1 = b1+c1;
-
-  (*cmat)(0,0) = a1;
-  (*cmat)(0,1) = b1;
-  (*cmat)(0,2) = 0.;
-  (*cmat)(0,3) = b1;
-
-  (*cmat)(1,0) = b1;
-  (*cmat)(1,1) = a1;
-  (*cmat)(1,2) = 0.;
-  (*cmat)(1,3) = b1;
-
-  (*cmat)(2,0) = 0.;
-  (*cmat)(2,1) = 0.;
-  (*cmat)(2,2) = c1/2.;
-  (*cmat)(2,3) = 0.;
-
-  (*cmat)(3,0) = b1;
-  (*cmat)(3,1) = b1;
-  (*cmat)(3,2) = 0.;
-  (*cmat)(3,3) = a1;
-}
-
-
-/*----------------------------------------------------------------------*
  | computes isotropic elasticity tensor in matrix notion     dano 02/10 |
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::SetupCmat(LINALG::Matrix<6,6>& cmat)
+void MAT::ThermoStVenantKirchhoff::SetupCmat(
+  LINALG::Matrix<6,6>& cmat,
+  Teuchos::ParameterList params
+  )
 {
+  bool young_temp = params.get<int>("young_temp")==1;
   // get material parameters
   // Young's modulus (modulus of elasticity)
-  const double Emod = params_->youngs_;
+  double Emod = 0.0;
+  // young's modulus is temperature-dependent, E(T)
+  if (young_temp == true)
+  {
+    double tempnp = params.get<double>("scalartemp");
+    Emod = GetMatParameterAtTempnp(&(params_->youngs_), tempnp);
+  }
+  // young's modulus is constant
+  else
+    Emod = params_->youngs_[0];
+
   // Poisson's ratio (Querdehnzahl)
   const double nu = params_->poissonratio_;
 
@@ -262,35 +237,13 @@ void MAT::ThermoStVenantKirchhoff::SetupCmat(LINALG::Matrix<6,6>& cmat)
  | evaluate the elasticity tensor                                       |
  *----------------------------------------------------------------------*/
 void MAT::ThermoStVenantKirchhoff::Evaluate(
-  const Epetra_SerialDenseVector* glstrain_e,
-  Epetra_SerialDenseMatrix* cmat_e,
-  Epetra_SerialDenseVector* stress_e
-  )
-{
-  // this is temporary as long as the material does not have a
-  // Matrix-type interface
-  const LINALG::Matrix<6,1> glstrain(glstrain_e->A(),true);
-        LINALG::Matrix<6,6> cmat(cmat_e->A(),true);
-        LINALG::Matrix<6,1> stress(stress_e->A(),true);
-
-  SetupCmat(cmat);
-  // evaluate stresses
-  // \f \sigma = {\mathbf C}\, \varepsilon \f
-  stress.MultiplyNN(cmat,glstrain);
-}
-
-
-/*----------------------------------------------------------------------*
- | calculates stresses using one of the above method to      dano 02/10 |
- | evaluate the elasticity tensor                                       |
- *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::Evaluate(
   const LINALG::Matrix<6,1>& glstrain,
   LINALG::Matrix<6,6>& cmat,
-  LINALG::Matrix<6,1>& stress
+  LINALG::Matrix<6,1>& stress,
+  Teuchos::ParameterList& params
   )
 {
-  SetupCmat(cmat);
+  SetupCmat(cmat,params);
   // evaluate stresses
   // \f \sigma = {\mathbf C} \,\varepsilon \f
   stress.MultiplyNN(cmat,glstrain);
@@ -298,30 +251,25 @@ void MAT::ThermoStVenantKirchhoff::Evaluate(
 
 
 /*----------------------------------------------------------------------*
- | computes temperature dependent isotropic eplane           dano 02/10 |
- | strain, rotational symmetry,plane strain, rotational symmetry        |
- *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::SetupCthermo2d(
-  Epetra_SerialDenseMatrix* ctemp
-  )
-{
-  double m = STModulus();
-
-  // add the temperature part for the stress 10.02.10
-  (*ctemp)(0,0) = m;
-  (*ctemp)(0,1) = 0.;
-  (*ctemp)(1,0) = 0.;
-  (*ctemp)(1,1) = m;
-}
-
-
-/*----------------------------------------------------------------------*
  | calculates stress-temperature modulus                     dano 04/10 |
  *----------------------------------------------------------------------*/
-double MAT::ThermoStVenantKirchhoff::STModulus() const
+double MAT::ThermoStVenantKirchhoff::STModulus(
+  Teuchos::ParameterList& params
+  ) const
 {
+  bool young_temp = params.get<int>("young_temp")==1;
+
+  double Emod = 0.0;
+  // young's modulus is temperature-dependent, E(T)
+  if (young_temp == true)
+  {
+    double tempnp = params.get<double>("scalartemp");
+    Emod = GetMatParameterAtTempnp(&(params_->youngs_), tempnp);
+  }
+  else
+    Emod = params_->youngs_[0];
+
   // initialize the parameters for the lame constants
-  const double ym  = params_->youngs_;
   const double pv  = params_->poissonratio_;
 
   // initialize the thermal expansion coefficient
@@ -329,7 +277,7 @@ double MAT::ThermoStVenantKirchhoff::STModulus() const
 
   // plane strain, rotational symmetry
   // E / (1+nu)
-  const double c1 = ym/(1.0+pv);
+  const double c1 = Emod/(1.0+pv);
   // (E*nu) / ((1+nu)(1-2nu))
   const double b1 = c1*pv/(1.0-2.0*pv);
 
@@ -360,9 +308,12 @@ double MAT::ThermoStVenantKirchhoff::STModulus() const
  | computes temperature dependent isotropic                  dano 05/10 |
  | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
  *----------------------------------------------------------------------*/
-void MAT::ThermoStVenantKirchhoff::SetupCthermo(LINALG::Matrix<6,1>& ctemp)
+void MAT::ThermoStVenantKirchhoff::SetupCthermo(
+  LINALG::Matrix<6,1>& ctemp,
+  Teuchos::ParameterList& params
+  )
 {
-  double m = STModulus();
+  double m = STModulus(params);
 
   // isotropic elasticity tensor C_temp in Voigt matrix notation C_temp = m I
   //
@@ -394,11 +345,10 @@ void MAT::ThermoStVenantKirchhoff::SetupCthermo(LINALG::Matrix<6,1>& ctemp)
 void MAT::ThermoStVenantKirchhoff::Evaluate(
   const LINALG::Matrix<1,1>& Ntemp,  // shapefcts . temperatures
   LINALG::Matrix<6,1>& ctemp,
-  LINALG::Matrix<6,1>& stresstemp
+  LINALG::Matrix<6,1>& stresstemp,
+  Teuchos::ParameterList& params
   )
 {
-  SetupCthermo(ctemp);
-
   LINALG::Matrix<1,1> init(true);
   const double inittemp = -1.0*(params_->thetainit_);
   // loop over the element nodes
@@ -407,11 +357,43 @@ void MAT::ThermoStVenantKirchhoff::Evaluate(
   LINALG::Matrix<1,1> deltaT(true);
   deltaT.Update(Ntemp,init);
 
+  SetupCthermo(ctemp,params);
+
   // temperature dependent stress
   // sigma = C_theta * Delta T = (m*I) * Delta T
   stresstemp.MultiplyNN(ctemp,deltaT);
 
 } // Evaluate
+
+
+/*----------------------------------------------------------------------*
+ | return temperature-dependent material parameter           dano 01/13 |
+ | at current temperature --> polynomial type, cf. robinson material    |
+ *----------------------------------------------------------------------*/
+double MAT::ThermoStVenantKirchhoff::GetMatParameterAtTempnp(
+  const std::vector<double>* paramvector,  // (i) given parameter is a vector
+  const double& tempnp  // tmpr (i) current temperature
+  ) const
+{
+  // polynomial type
+
+  // initialise the temperature dependent material parameter
+  double parambytempnp = 0.0;
+  double tempnp_pow = 1.0;
+
+  // Param = a + b . T + c . T^2 + d . T^3 + ...
+  // with T: current temperature
+  for (unsigned i=0; i<(*paramvector).size(); ++i)
+  {
+    // calculate coefficient of variable T^i
+    parambytempnp += (*paramvector)[i] * tempnp_pow;
+    // for the higher polynom increase the exponent of the temperature
+    tempnp_pow *= tempnp;
+  }
+
+  return parambytempnp;
+
+}  // GetMatParameterAtTempnp()
 
 
 /*----------------------------------------------------------------------*/
