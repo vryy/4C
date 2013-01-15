@@ -241,25 +241,6 @@ void fluid_fluid_ale_drt()
   for( std::map<int, Teuchos::RCP< DRT::Element> >::iterator it = MovingFluidelemap.begin(); it != MovingFluidelemap.end(); ++it )
     MovingFluideleGIDs.push_back( it->first);
 
-  // ----------------------------------------------------------------
-  // copy the conditions to the embedded fluid discretization
-  std::vector<std::string>          conditions_to_copy;
-  conditions_to_copy.push_back("Dirichlet");
-  conditions_to_copy.push_back("XFEMCoupling");
-
-  // copy selected conditions to the new discretization
-  for (std::vector<std::string>::const_iterator conditername = conditions_to_copy.begin();
-       conditername != conditions_to_copy.end(); ++conditername)
-  {
-    std::vector<DRT::Condition*> conds;
-     bgfluiddis->GetCondition(*conditername, conds);
-     for (unsigned i=0; i<conds.size(); ++i)
-     {
-       // We use the same nodal ids and therefore we can just copy the conditions.
-       embfluiddis->SetCondition(*conditername, Teuchos::rcp(new DRT::Condition(*conds[i])));
-     }
-   }
-
   // --------------------------------------------------------------------------
   // ------------------ gather information for moving fluid  -------------------
 
@@ -502,27 +483,6 @@ void fluid_fluid_fsi_drt()
   for( std::map<int, Teuchos::RCP< DRT::Element> >::iterator it = MovingFluidelemap.begin(); it != MovingFluidelemap.end(); ++it )
     MovingFluideleGIDs.push_back( it->first);
 
-
-  // ----------------------------------------------------------------
-  // copy the conditions to the embedded fluid discretization
-  std::vector<std::string>          conditions_to_copy;
-  conditions_to_copy.push_back("Dirichlet");
-  conditions_to_copy.push_back("XFEMCoupling");
-  conditions_to_copy.push_back("FluidFluidCoupling");
-
-  // copy selected conditions to the new discretization
-  for (std::vector<std::string>::const_iterator conditername = conditions_to_copy.begin();
-       conditername != conditions_to_copy.end(); ++conditername)
-  {
-    std::vector<DRT::Condition*> conds;
-     bgfluiddis->GetCondition(*conditername, conds);
-     for (unsigned i=0; i<conds.size(); ++i)
-     {
-       // We use the same nodal ids and therefore we can just copy the conditions.
-       embfluiddis->SetCondition(*conditername, Teuchos::rcp(new DRT::Condition(*conds[i])));
-     }
-   }
-
   // --------------------------------------------------------------------------
   // ------------------ gather information for moving fluid -------------------
   //information how many processors work at all
@@ -593,7 +553,6 @@ void fluid_fluid_fsi_drt()
   cout << " maxNumMyReservedDofs " << maxNumMyReservedDofs << endl;
   bgfluiddis->ReplaceDofSet(maxdofset,true);
   bgfluiddis->FillComplete();
-
 
 #if defined(PARALLEL)
   std::vector<int> bgeleids;          // ele ids
