@@ -728,6 +728,9 @@ protected:
   //! \brief holds current position in ACTIONTIME / ACTIONDT
   int timeintervalstep_;
 
+  //! \brief holds position in ACTIONTIME from where on DBCs are applied
+  int dbctimeindex_;
+
   //! \brief end to end distance of a single filament at the beginning of statistical output
   double endtoendref_;
 

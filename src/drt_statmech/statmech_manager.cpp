@@ -423,9 +423,21 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
   }
 
   // increase the vector position if time values are equal
+  double tol = 1e-10;
   for(int i=0; i<(int)actiontime_->size()-1; i++)
-    if(fabs(actiontime_->at(i)-actiontime_->at(i+1))<timestepsizes_->at(i)/1e3)
-      timeintervalstep_++;
+    if(fabs(actiontime_->at(i)-actiontime_->at(i+1))<tol)
+      timeintervalstep_ = i+1;
+
+  // set dbctimeindex_ (position in actiontime_ where DBCs start being applied
+  dbctimeindex_ = statmechparams_.get<int>("DBCTIMEINDEX", -1);
+  if(dbctimeindex_<0) // default
+    dbctimeindex_ = (int)actiontime_->size()-1;
+  else if(dbctimeindex_==0)
+    dserror("Given index DBCTIMEINDEX = %i ! Start counting at 1!", dbctimeindex_);
+  else if(dbctimeindex_>(int)actiontime_->size())
+    dserror("Given index DBCTIMEINDEX = %i lies outside the ACTIONTIME vector! Check your input file!", dbctimeindex_);
+  else
+    dbctimeindex_--;
 
 //  if(!discret_->Comm().MyPID())
 //  {
@@ -1097,7 +1109,7 @@ void STATMECH::StatMechManager::PeriodicBoundaryShift(Epetra_Vector& disrow,
         }
         /*if node currently has coordinate value smaller than zero, it is shifted by periodlength sufficiently often
          *to lie again in the domain*/
-        if (xcurr < 0.0)
+        if (node->X()[j] + disrow[discret_->DofRowMap()->LID(dofnode[j])] < 0.0)
         {
           disrow[discret_->DofRowMap()->LID(dofnode[j])] -= (*periodlength_)[j]*floor(xcurr/(*periodlength_)[j]);
 
@@ -3342,8 +3354,8 @@ void STATMECH::StatMechManager::AddStatMechParamsTo(Teuchos::ParameterList& para
   params.set("SHEARAMPLITUDE",statmechparams_.get<double>("SHEARAMPLITUDE",0.0));
   params.set("CURVENUMBER",statmechparams_.get<int>("CURVENUMBER",-1));
   params.set("OSCILLDIR",statmechparams_.get<int>("OSCILLDIR",-1));
-  params.set("STARTTIMEACT",actiontime_->back());
-  params.set("DELTA_T_NEW",timestepsizes_->back());
+  params.set("STARTTIMEACT",actiontime_->at(dbctimeindex_));
+  params.set("DELTA_T_NEW",timestepsizes_->at(dbctimeindex_));
   params.set("PERIODLENGTH",GetPeriodLength());
   if(DRT::INPUT::IntegralValue<int>(statmechparams_,"FORCEDEPUNLINKING") || DRT::INPUT::IntegralValue<int>(statmechparams_,"LOOMSETUP"))
     params.set<string>("internalforces","yes");
@@ -4731,7 +4743,7 @@ bool STATMECH::StatMechManager::DBCStart(Teuchos::ParameterList& params)
 {
   // get the current time
   double time = params.get<double>("total time", 0.0);
-  double starttime = actiontime_->at((int)(actiontime_->size()-1));
+  double starttime = actiontime_->at(dbctimeindex_);
   double dt = params.get<double>("delta time", 0.01);
   if (time<0.0) dserror("t = %f ! Something is utterly wrong here. The total time should be positive!", time);
 
