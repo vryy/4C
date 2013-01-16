@@ -491,7 +491,6 @@ set(OBJS_DRT_ADAPT
   src/drt_adapter/adapter_scatra_fluid_ale_coupling_algo.cpp
   src/drt_adapter/adapter_scatra_fluid_coupling_algorithm.cpp
   src/drt_adapter/ad_str_structure.cpp
-  src/drt_adapter/ad_str_bio.cpp
   src/drt_adapter/ad_str_constr_merged.cpp
   src/drt_adapter/ad_str_lung.cpp
   src/drt_adapter/ad_str_redairway.cpp
