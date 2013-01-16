@@ -451,10 +451,6 @@ DEBUGOUTPUT                     No
 //     Yes,No,yes,no,YES,NO
 DIVPROJECTION                   no
 //
-// Energy check for iteration over fields
-//     Yes,No,yes,no,YES,NO
-ENERGYCHECK                     No
-//
 // Number of Richardson iterations on fluid block in MFSI block preconditioner
 FLUIDPCITER                     1 1 1 1
 //
@@ -554,9 +550,6 @@ SYMMETRICPRECOND                No
 //
 // Time increment dt
 TIMESTEP                        0.2
-//
-// Tolerance for energy check
-TOLENCHECK                      1e-06
 //
 // Increment for writing solution
 UPRES                           1
