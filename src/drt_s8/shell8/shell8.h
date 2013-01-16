@@ -10,7 +10,6 @@ Maintainer: Michael Gee
 </pre>
 
 *----------------------------------------------------------------------*/
-#include "../../drt_lib/standardtypes_cpp.H"
 #include "../../headers/am.h"
 #include "../../headers/materials.h"
 

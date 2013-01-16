@@ -43,6 +43,7 @@ http://www.lnm.mw.tum.de
 #ifndef STANDARDTYPES_CPP_H
 #define STANDARDTYPES_CPP_H
 
+#include <cmath>
 
 #ifdef __cplusplus
 extern "C" /* stuff which is c and is accessed from c++ */

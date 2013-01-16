@@ -13,6 +13,7 @@ Maintainer: Michael Gee
 #ifdef D_SHELL8
 
 #include "shell8.H"
+#include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
