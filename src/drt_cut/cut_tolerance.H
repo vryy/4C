@@ -31,10 +31,19 @@
 
 // if cross product constructed from any 3 points are less than this,
 // then these points are on the same line
-#define TOL_POINTS_ON_LINE 1e-10
+#define TOL_POINTS_ON_LINE 1e-16
 
 // In equation of plane ax+by+cz=d for a facet, this tolerance is used to check
 // whether any of the four coefficients are zero
-#define TOL_EQN_PLANE 1e-10
+#define TOL_EQN_PLANE 1e-12
+
+// For moment fitting, during line integration of base functions, if normal componenet of
+// lines of less than this, they are considered zero
+#define TOL_LINE_NORMAL 1e-12
+
+// Obtaining  internal Gauss points in directdivergence involves division by
+// coefficent 'a' in equation of plane. A facet whose 'a' is more than this tolerance is
+// chosen as reference plane to avoid a large number (and hence large error)
+#define REF_PLANE_DIRDIV 1e-3
 
 #endif

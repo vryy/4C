@@ -19,10 +19,10 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
 {
   std::vector<plain_facet_set::const_iterator> facetIterator; //iterators of facets which need to be considered for integration rule
   plain_facet_set::const_iterator IteratorRefFacet;           //iterator for the reference facet
-  isRef_ = false;                                  //whether ref plane is falling on facet?
+  isRef_ = false;                                             //whether ref plane is falling on facet?
 
+  // get integration facets and reference plane
   ListFacets( facetIterator, RefPlaneEqn, IteratorRefFacet, isRef_ );
-  refFacet_ = *IteratorRefFacet;
 
   if( facetIterator.size()==0 )
     dserror( "x-component normal is zero on all the facets? It should not be." );
@@ -48,8 +48,8 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
 }
 
 /*-------------------------------------------------------------------------------------------------------*
-        Identify the list of facets which need to be triangulated
-        Get the reference facet that will be used to get internal Gauss rule                sudhakar 04/12
+        Identify the list of facets which need to be triangulated (called as integration facets)
+        Get the reference facet that will be used to get internal Gauss rule                  (sudhakar 04/12)
         As far as possible, the reference facet is set on a cut side to reduce the no of Gauss pts
         Reference facet is selected so that all internal points are inside the volumecell
 *--------------------------------------------------------------------------------------------------------*/
@@ -73,10 +73,11 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
     std::vector<double> RefPlaneTemp = faee1.equation_plane(cornersLocal);
     eqnAllFacets[i-facete.begin()] = RefPlaneTemp;
 
+    // consider only facet whose x-direction normal componenet is non-zero
     if( fabs(RefPlaneTemp[0])>TOL_EQN_PLANE )
     {
       // store the non-cut facet as reference
-      if( isRef_==false && !fe->OnCutSide() )
+      if( isRef_==false && !fe->OnCutSide() && fabs(RefPlaneTemp[0])>REF_PLANE_DIRDIV )
       {
         RefPlaneEqn = RefPlaneTemp;
         IteratorRefFacet = i;
@@ -85,13 +86,13 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
       }
       // as far as possible, take cut side as reference
       // because it it possible to delet one or more from facetList
-      else if( RefOnCutSide==false && fe->OnCutSide() )
+      if( RefOnCutSide==false && fe->OnCutSide() && fabs(RefPlaneTemp[0])>REF_PLANE_DIRDIV )
       {
         bool addRef = false;
 
         // if any cut side is on the plane x=C definitely this can be a reference facet
         // this produces all internal points within background element
-        if( fabs(RefPlaneTemp[1])<1e-10 && fabs(RefPlaneTemp[2])<1e-10 )
+        if( fabs(RefPlaneTemp[1])<TOL_EQN_PLANE && fabs(RefPlaneTemp[2])<TOL_EQN_PLANE )
         {
           addRef = true;
         }
@@ -101,14 +102,7 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
         else
         {
           double x1=0.0,x2=0.0,x3=0.0,x4=0.0;
-
-          BoundingBox bb1( *volcell_, elem1_ );
-          double y1=bb1.miny();
-          double y2=bb1.maxy();
-          double z1=bb1.minz();
-          double z2=bb1.maxz();
-
-          //double y1=-1.0,y2=1.0,z1=-1.0,z2=1.0;
+          double y1=-1.0,y2=1.0,z1=-1.0,z2=1.0;
           x1 = (RefPlaneTemp[3]-RefPlaneTemp[2]*z1-RefPlaneTemp[1]*y1)/RefPlaneTemp[0];
           x2 = (RefPlaneTemp[3]-RefPlaneTemp[2]*z1-RefPlaneTemp[1]*y2)/RefPlaneTemp[0];
           x3 = (RefPlaneTemp[3]-RefPlaneTemp[2]*z2-RefPlaneTemp[1]*y1)/RefPlaneTemp[0];
@@ -163,9 +157,9 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
 
       if( fabs(RefPlaneEqn[3])>TOL_EQN_PLANE && fabs(facetRhs)>TOL_EQN_PLANE ) // planes for which ax+by+cz=d
       {
-        if( fabs(RefPlaneEqn[0]/RefPlaneEqn[3]-facetx/facetRhs)<1e-8 &&
-            fabs(RefPlaneEqn[1]/RefPlaneEqn[3]-facety/facetRhs)<1e-8 &&
-            fabs(RefPlaneEqn[2]/RefPlaneEqn[3]-facetz/facetRhs)<1e-8 )
+        if( fabs(RefPlaneEqn[0]/RefPlaneEqn[3]-facetx/facetRhs)<TOL_EQN_PLANE &&
+            fabs(RefPlaneEqn[1]/RefPlaneEqn[3]-facety/facetRhs)<TOL_EQN_PLANE &&
+            fabs(RefPlaneEqn[2]/RefPlaneEqn[3]-facetz/facetRhs)<TOL_EQN_PLANE )
         {
           facetIterator.erase( facetIterator.begin()+i );
           i--;
@@ -173,9 +167,9 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
       }
       else                            // planes for which ax+by+cz=0
       {
-        if( fabs(RefPlaneEqn[1]/RefPlaneEqn[0]-facety/facetx)<1e-8 &&
-            fabs(RefPlaneEqn[2]/RefPlaneEqn[0]-facetz/facetx)<1e-8 &&
-            fabs(RefPlaneEqn[3]/RefPlaneEqn[0]-facetRhs/facetx)<1e-8 )
+        if( fabs(RefPlaneEqn[1]/RefPlaneEqn[0]-facety/facetx)<TOL_EQN_PLANE &&
+            fabs(RefPlaneEqn[2]/RefPlaneEqn[0]-facetz/facetx)<TOL_EQN_PLANE &&
+            fabs(RefPlaneEqn[3]/RefPlaneEqn[0]-facetRhs/facetx)<TOL_EQN_PLANE )
         {
           facetIterator.erase( facetIterator.begin()+i );
           i--;

@@ -26,6 +26,7 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
 
   const plain_facet_set & facete = volcell_->Facets();
 
+  // integrate each base function over this volumecell
   for(int fnc=1;fnc<=num_func_;fnc++)
   {
     double mome = 0.0;
@@ -33,9 +34,13 @@ Epetra_SerialDenseVector GEO::CUT::VolumeIntegration::compute_rhs_moment()
     for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
     {
       Facet *fe = *i;
+
+      // an equivalent function corresponding to every base function will be
+      // integrated over facet of vcell
       FacetIntegration faee1(fe,elem1_,position_,false,false);
       faee1.set_integ_number(fnc);
       mome += faee1.integrate_facet();
+
       if(fnc==1)
       {
         std::vector<double> eqn = faee1.get_equation();

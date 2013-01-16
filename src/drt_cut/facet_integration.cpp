@@ -115,15 +115,15 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plan
 #if 1 //old method of checking the ordering - separate check for different background elements (is this necessary?)
   std::string ordering;
 
-  if( cornersLocal.size()==3 )
-  {
+  //if( cornersLocal.size()==3 )
+  //{
     if(eqn_plane[0]>0.0)
       ordering = "acw";
     else
       ordering = "cw";
-  }
+  //}
 #if 1
-  else
+  /*else
   {
     double crossProd = 0.0;
     for(unsigned i=0;i<cornersLocal.size();i++)
@@ -136,9 +136,12 @@ void GEO::CUT::FacetIntegration::IsClockwise( const std::vector<double> eqn_plan
     else if(crossProd<0)
       ordering = "acw";
     else
+    {
+      std::cout<<"value of cross product = "<<crossProd<<"\n";
       dserror("the points in the facet are neither ordered in clockwise not anti-clockwise or all collinear"
           " point in this facet");
-  }
+    }
+  }*/
 #else
   else
   {
@@ -394,10 +397,11 @@ double GEO::CUT::FacetIntegration::integrate_facet()
     eqn_plane_ = equation_plane(cornersLocal);
 
 // the face is in the x-y or in y-z plane which gives zero facet integral
-    if(fabs(eqn_plane_[0])<0.0000001 && bcellInt_==false)
+    if(fabs(eqn_plane_[0])<TOL_EQN_PLANE  && bcellInt_==false)
       return 0.0;
 //x=0 plane which also do not contribute to facet integral
-    if(fabs(eqn_plane_[1])<0.0000001 && fabs(eqn_plane_[2])<0.0000001 && fabs(eqn_plane_[3])<0.0000001 && bcellInt_==false)
+    if(fabs(eqn_plane_[1])<TOL_EQN_PLANE && fabs(eqn_plane_[2])<TOL_EQN_PLANE  &&
+       fabs(eqn_plane_[3])<TOL_EQN_PLANE && bcellInt_==false)
       return 0.0;
 
     if(bcellInt_==true) // the integral value of boundarycell will not change w.r.t the ordering of vertices
@@ -689,7 +693,7 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
 // the face is in the x-y or in y-z plane which will not be considered when divergence theorem is applied
   if(divergenceRule)
   {
-    if(fabs(eqn_plane_[0])<0.0000001)
+    if(fabs(eqn_plane_[0])<TOL_EQN_PLANE)
       return;
   }
 
@@ -718,7 +722,6 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
       std::string splitMethod;
 
 #if 1 // split facet
-
       if( !face1_->IsFacetSplit() )
         face1_->SplitFacet( corners );
       const std::vector<std::vector<GEO::CUT::Point*> > split = face1_->GetSplitCells();

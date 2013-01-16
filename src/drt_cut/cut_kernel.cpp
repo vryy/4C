@@ -154,7 +154,7 @@ bool GEO::CUT::KERNEL::IsOnLine( Point* & pt1, Point* & pt2, Point* & pt3 )
 
   // if the cross product is zero - on the same line
   // increasing this from 1e-10 to 1e-6 shown error in volume prediction
-  if(cross.NormInf()<1e-10)
+  if(cross.NormInf()<TOL_POINTS_ON_LINE)
     return true;
   return false;
 }
@@ -242,7 +242,7 @@ std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& pt
     double res = x3(ind1,0)*xtemp(ind2,0)-x3(ind2,0)*xtemp(ind1,0)+
                  xtemp(ind1,0)*x1(ind2,0)-xtemp(ind2,0)*x1(ind1,0);
 
-    if( fabs(res)<LINSOLVETOL ) //this means small angled lines are just eliminated
+    if( fabs(res)<TOL_POINTS_ON_LINE ) //this means small angled lines are just eliminated
       continue;
 
     if(res<0.0)
@@ -271,6 +271,7 @@ std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& pt
 /*-----------------------------------------------------------------------------------------------------*
             Find the equation of plane of the polygon defined by these facets
             KERNEL::DeleteInlinePts() must be called before using this function
+            This works only for simple polygons (not doubly connected, not self-intersecting)
                                                                                           Sudhakar 01/13
 *------------------------------------------------------------------------------------------------------*/
 std::vector<double> GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<Point*>& ptlist )
@@ -291,45 +292,58 @@ std::vector<double> GEO::CUT::KERNEL::EqnPlanePolygon( const std::vector<Point*>
   std::string geoType;
   concavePts = KERNEL::CheckConvexity(  ptlist, geoType, false ); // find concave points of the polygon
 
-  unsigned mm=0;
-  unsigned npts = ptlist.size();
-  std::vector<Point*> pts(3);
-
-  for( unsigned i=0;i<npts;i++ )
+  // for finding equation of convex facet, any 3 points can be used
+  if( concavePts.size() == 0 )
   {
-    // the concave points should not be used for to get equation of plane
-    // if it is used the normal direction will be wrong
-    if( geoType != "convex" )
-    {
-      std::vector<int>::iterator it = std::find( concavePts.begin(), concavePts.end(), i );
-      if( it!= concavePts.end() )
-        continue;
-    }
+    Point*p1 = ptlist[0];
+    Point*p2 = ptlist[1];
+    Point*p3 = ptlist[2];
 
-    pts[mm] = ptlist[i];
-    mm++;
-
-    if( mm==3 )
-    {
-      // though inline points are deleted, skipping an intermediate point for concave facet
-      // can still result in inline points
-      if( geoType != "convex")
-      {
-        if( KERNEL::IsOnLine( pts[0],pts[1],pts[2] ) )
-        {
-          mm--;
-          continue;
-        }
-      }
-
-      eqn_plane = KERNEL::EqnPlane( pts[0], pts[1], pts[2] );
-      return eqn_plane;
-    }
-    else if( i==npts-1 )
-    {
-      dserror( "All points of a facet are on a line" );
-    }
+    eqn_plane = EqnPlane( p1, p2, p3 );
+    return eqn_plane;
   }
+
+  // to find equation of plane for a concave facet we choose 3 adjacent points
+  // if secondpt is a concave point, normal direction is not computed correctly
+  unsigned ncross=0;
+  unsigned npts = ptlist.size();
+  bool eqndone=false;
+  int firstPt=0,secondPt=0,thirdPt=0;
+
+  for( unsigned i=0;i<npts;++i )
+  {
+    ncross++;
+
+    int concNo = 0;
+
+    if( i==0 )
+    {
+      firstPt = concavePts[concNo];
+      secondPt = (firstPt+1)%npts;
+    }
+    else
+    {
+      firstPt = (firstPt+1)%npts;
+      secondPt = (firstPt+1)%npts;
+    }
+    // check whether secondpt is a concave point
+    if(std::find(concavePts.begin(), concavePts.end(), secondPt) != concavePts.end())
+      continue;
+
+    thirdPt = (secondPt+1)%npts;
+
+    Point*p1 = ptlist[firstPt];
+    Point*p2 = ptlist[secondPt];
+    Point*p3 = ptlist[thirdPt];
+
+    eqn_plane = EqnPlane( p1, p2, p3 );
+
+    eqndone = true;
+  }
+
+  if( eqndone == false )
+    dserror("equation not computed");
+
   return eqn_plane;
 }
 

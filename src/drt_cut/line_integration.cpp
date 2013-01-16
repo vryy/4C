@@ -6,6 +6,7 @@ equations
  *------------------------------------------------------------------------------------------------*/
 
 #include "line_integration.H"
+#include "cut_tolerance.H"
 #include "base.H"
 #include "base_boundarycell.H"
 #include "../drt_fem_general/drt_utils_boundary_integration.H"
@@ -37,7 +38,7 @@ double LineIntegration::integrate_line()
   LINALG::Matrix<2,1> normal;
   normal = compute_normal();
 
-  if (fabs(normal(0,0))<0.000000001)
+  if (fabs(normal(0,0))<TOL_LINE_NORMAL)
     return 0.0;
 
       double inte = 0.0;

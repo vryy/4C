@@ -786,6 +786,13 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
     eqnpar = KERNEL::EqnPlane( parpts[0], parpts[1], parpts[2] );
 
     std::vector<Point*> corners = fac->CornerPoints();
+
+    // all points are on a line
+    // this may happen for very very sliver triangle
+    CUT::KERNEL::DeleteInlinePts( corners );
+    if( corners.size()==0 )
+      return;
+
     eqnfac = KERNEL::EqnPlanePolygon( corners );
     bool rever = ToReverse( posi, eqnpar, eqnfac );
 
@@ -1004,7 +1011,7 @@ void GEO::CUT::VolumeCell::MomentFitGaussWeights(Element *elem,
 		return;
 
 	int BaseNos=84;                                     // number of base functions to be used in the integration
-  VolumeIntegration vc_inte(this,elem,posi,BaseNos);  // change the number of equations
+  VolumeIntegration vc_inte(this,elem,posi,BaseNos);
 
   weights_ = vc_inte.compute_weights();              // obtain the integration weight at all points
   gausPts_ = vc_inte.getGaussPointLocation();        // get the coordinates of all the Gauss points
