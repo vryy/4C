@@ -81,8 +81,6 @@ TIMESTEP                        0.01
 NUMSTEP                         3
 RESTARTEVRY                     0
 COUPALGO                        iter_fluidfluid_monolithicstructuresplit
-ENERGYCHECK                     no
-TOLENCHECK                      1.0E-4
 RELAX                           1.0
 ITEMAX                          70
 CONVTOL                         1.0E-6

@@ -55,7 +55,6 @@ SECONDORDER                     no
 SHAPEDERIVATIVES                no
 SYMMETRICPRECOND                No
 TIMESTEP                        0.1
-TOLENCHECK                      1e-10
 UPRES                           1
 --------------------------------------------------------PROBLEM TYP
 NUMFIELD                        3

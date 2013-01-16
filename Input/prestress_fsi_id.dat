@@ -106,8 +106,6 @@ SHAPEDERIVATIVES                no
 PRECONDREUSE                    5                               // Number of preconditioner reused in monolithic FSI
 INFNORMSCALING                  yes
 PREDICTOR                       d(n)
-ENERGYCHECK                     no
-TOLENCHECK                      1.0E-6
 RELAX                           1.0
 ITEMAX                          100
 CONVTOL                         1.0E-6

@@ -95,7 +95,6 @@ COUPMETHOD                      conforming
 COUPVARIABLE                    Displacement
 DEBUGOUTPUT                     No
 DIVPROJECTION                   no
-ENERGYCHECK                     No
 FLUIDPCITER 1 1 1 1
 FLUIDPCOMEGA 1.0 1.0 1.0 1.0
 FSIAMGANALYZE                   No
@@ -123,7 +122,6 @@ STRUCTPCITER 1 1 1 1
 STRUCTPCOMEGA 1.0 1.0 1.0 1.0
 SYMMETRICPRECOND                No
 TIMESTEP                        0.1
-TOLENCHECK                      1e-06
 UPRES                           1
 --------------------------------------------------------------------------IO
 ALE_DISP                        No

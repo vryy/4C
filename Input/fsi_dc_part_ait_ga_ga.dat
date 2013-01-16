@@ -53,8 +53,6 @@ UPRES                           1
 RESTARTEVRY                     2
 COUPALGO                        iter_stagg_AITKEN_rel_param
 PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
-ENERGYCHECK                     yes
-TOLENCHECK                      1.0
 RELAX                           0.825
 ITEMAX                          100
 CONVTOL                         1.0E-7

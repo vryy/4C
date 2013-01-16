@@ -105,8 +105,6 @@ UPRES                           1
 RESTARTEVRY                     20
 COUPALGO                        iter_monolithicstructuresplit
 PREDICTOR                       d(n)
-ENERGYCHECK                     no
-TOLENCHECK                      1.0E-6
 RELAX                           1.0
 ITEMAX                          100
 CONVTOL                         1.0E-6

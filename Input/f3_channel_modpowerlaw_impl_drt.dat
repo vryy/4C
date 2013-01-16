@@ -83,7 +83,6 @@ COUPALGO                        iter_stagg_AITKEN_rel_param
 COUPMETHOD                      conforming
 COUPVARIABLE                    Displacement
 DEBUGOUTPUT                     No
-ENERGYCHECK                     No
 ITEMAX                          100
 MAXOMEGA                        0
 MAXTIME                         1000
@@ -94,7 +93,6 @@ RELAX                           1
 RESTARTEVRY                     1
 SECONDORDER                     No
 TIMESTEP                        0.1
-TOLENCHECK                      1e-06
 UPRES                           1
 --------------------------------------------------------------------------IO
 ALE_DISP                        No

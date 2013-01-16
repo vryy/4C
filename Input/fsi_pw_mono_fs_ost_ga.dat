@@ -86,8 +86,6 @@ FLUIDPCOMEGA 1.00 1.00 1.00
 ALEPCOMEGA 1.00 1.00 1.00
 PCOMEGA 1.00 1.00 1.00
 PREDICTOR                       d(n)
-ENERGYCHECK                     no
-TOLENCHECK                      1.0E-6
 RELAX                           1.0
 ITEMAX                          100
 CONVTOL                         1.0E-6

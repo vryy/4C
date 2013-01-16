@@ -89,8 +89,6 @@ NUMSTEP                         10
 UPRES                           1
 RESTARTEVRY                     1
 COUPALGO                        iter_mortar_monolithicfluidsplit
-ENERGYCHECK                     yes
-TOLENCHECK                      1.0
 RELAX                           0.825
 ITEMAX                          100
 CONVTOL                         1.0E-11

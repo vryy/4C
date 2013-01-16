@@ -124,8 +124,6 @@ UPRES                           1
 RESTARTEVRY                     20
 COUPALGO                        iter_stagg_AITKEN_rel_param
 PREDICTOR                       d(n)
-ENERGYCHECK                     no
-TOLENCHECK                      1.0E-6
 RELAX                           1.0
 ITEMAX                          100
 CONVTOL                         1.0E-6

@@ -123,8 +123,6 @@ SYMMETRICPRECOND                no
 PRECONDREUSE                    0
 INFNORMSCALING                  yes
 PREDICTOR                       d(n)
-ENERGYCHECK                     no
-TOLENCHECK                      1.0E-6
 RELAX                           1.0
 ITEMAX                          10
 CONVTOL                         1.0E-10

@@ -4409,10 +4409,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                tuple<int>(0,1),
                                &fsidyn);
 
-  setStringToIntegralParameter<int>("ENERGYCHECK","No",
-                               "Energy check for iteration over fields",
-                               yesnotuple,yesnovalue,&fsidyn);
-
   setStringToIntegralParameter<int>("COUPMETHOD","conforming",
                                "Coupling Method Mortar (mtr) or conforming nodes at interface",
                                tuple<std::string>(
@@ -4465,7 +4461,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&fsidyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fsidyn);
-  DoubleParameter("TOLENCHECK",1e-6,"Tolerance for energy check",&fsidyn);
   DoubleParameter("RELAX",1.0,"fixed relaxation parameter",&fsidyn);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&fsidyn);
   DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&fsidyn);

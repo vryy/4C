@@ -92,8 +92,6 @@ PREDICTOR                       d(n)
 //PREDICTOR                     d(n)+dt*(1.5*v(n)-0.5*v(n-1))
 //PREDICTOR                     d(n)+dt*v(n)
 //PREDICTOR                     d(n)+dt*v(n)+0.5*dt^2*a(n)
-ENERGYCHECK                     yes
-TOLENCHECK                      1.0
 RELAX                           0.825
 ITEMAX                          100
 CONVTOL                         1.0E-7

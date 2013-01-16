@@ -56,8 +56,6 @@ NUMSTEP                         10
 UPRES                           1
 RESTARTEVRY                     2
 COUPALGO                        iter_monolithicfluidsplit
-ENERGYCHECK                     yes
-TOLENCHECK                      1.0
 ITEMAX                          100
 CONVTOL                         1.0E-10
 --------------------------------------------------------------------SOLVER 1

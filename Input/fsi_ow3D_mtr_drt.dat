@@ -91,7 +91,6 @@ COUPALGO                        iter_stagg_AITKEN_rel_param
 COUPMETHOD                      mtr
 COUPVARIABLE                    Displacement
 DEBUGOUTPUT                     No
-ENERGYCHECK                     No
 FLUIDPCITER                     0
 FLUIDPCOMEGA                    1
 INFNORMSCALING                  Yes
@@ -110,7 +109,6 @@ SHAPEDERIVATIVES                No
 STRUCTPCITER                    0
 STRUCTPCOMEGA                   1
 TIMESTEP                        0.05
-TOLENCHECK                      1e-06
 UPRES                           1
 ------------------------------------------------------------INVERSE ANALYSIS
 INV_ANALYSIS                    none

@@ -93,7 +93,6 @@ COUPALGO                        iter_stagg_AITKEN_rel_param
 COUPMETHOD                      conforming
 COUPVARIABLE                    Displacement
 DEBUGOUTPUT                     No
-ENERGYCHECK                     No
 FLUIDPCITER                     0
 FLUIDPCOMEGA                    1
 ITEMAX                          100
@@ -109,7 +108,6 @@ SECONDORDER                     No
 STRUCTPCITER                    0
 STRUCTPCOMEGA                   1
 TIMESTEP                        0.01
-TOLENCHECK                      1e-06
 UPRES                           1
 NORM_INC                        Abs
 NORM_RESF                       Abs

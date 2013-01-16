@@ -75,7 +75,6 @@ SOLVER                          UMFPACK
 BASETOL                         1e-8
 CONVTOL                         1e-8
 COUPALGO                        iter_lung_monolithicstructuresplit
-ENERGYCHECK                     No
 ITEMAX                          100
 MAXTIME                         1000
 NUMSTEP                         10

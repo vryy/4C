@@ -84,8 +84,6 @@ RESTARTEVRY                     1
 COUPVARIABLE                    Force
 COUPALGO                        iter_stagg_MFNK_FSI
 PREDICTOR                       d(n)
-ENERGYCHECK                     yes
-TOLENCHECK                      1.0
 RELAX                           0.825
 ITEMAX                          100
 CONVTOL                         1.0E-11

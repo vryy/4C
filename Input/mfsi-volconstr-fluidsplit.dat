@@ -76,7 +76,6 @@ SOLVER                          Aztec_MSR
 BASETOL                         1e-8
 CONVTOL                         1e-8
 COUPALGO                        iter_lung_monolithicfluidsplit
-ENERGYCHECK                     No
 ITEMAX                          100
 MAXTIME                         1000
 NUMSTEP                         10

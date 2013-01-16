@@ -83,8 +83,6 @@ TIMESTEP                        0.05
 NUMSTEP                         200
 COUPALGO                        basic_sequ_stagg
 PREDICTOR                       d(n)
-ENERGYCHECK                     yes
-TOLENCHECK                      1.0E-6
 RELAX                           1.0
 ITEMAX                          1
 CONVTOL                         1.0E-6

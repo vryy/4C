@@ -76,8 +76,6 @@ UPRES                           1
 RESTARTEVRY                     1
 COUPALGO                        iter_monolithicfluidsplit
 PREDICTOR                       d(n)
-ENERGYCHECK                     no
-TOLENCHECK                      1.0E-6
 RELAX                           1.0
 ITEMAX                          100
 CONVTOL                         1.0E-8
