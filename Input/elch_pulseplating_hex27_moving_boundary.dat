@@ -118,14 +118,6 @@ MOVINGBOUNDARY                  fully-transient
 MOVBOUNDARYTHETA                1.0                             // backward-Euler style
 MOLARVOLUME                     10.0                            // 7.11E-3 // molar volume of copper: V_m = M/rho [mm^3/\mu mol]
 // Wikipedia: 7,11 x 10 a 6 m3/mol
------------------------------------------------------------------FSI DYNAMIC
-COUPALGO                        basic_sequ_stagg
-ITEMAX                          10
-MAXTIME                         0.02
-NUMSTEP                         21
-RESTARTEVRY                     1
-TIMESTEP                        0.0002
-UPRES                           1
 -----------------------------------------------------------------ALE DYNAMIC
 TIMESTEP                        0.0002
 NUMSTEP                         21

@@ -76,24 +76,6 @@ PHYSICAL_MODEL                  no_model
 SAMPLING_START                  1
 SAMPLING_STOP                   1
 TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
------------------------------------------------------------------FSI DYNAMIC
-BASETOL                         0.001
-CONVTOL                         1e-06
-COUPALGO                        iter_stagg_AITKEN_rel_param
-COUPMETHOD                      conforming
-COUPVARIABLE                    Displacement
-DEBUGOUTPUT                     No
-ITEMAX                          100
-MAXOMEGA                        0
-MAXTIME                         1000
-NUMSTEP                         200
-PARTITIONED                     DirichletNeumann
-PREDICTOR                       d(n)+dt*v(n)+0.5*dt^2*a(n)
-RELAX                           1
-RESTARTEVRY                     1
-SECONDORDER                     No
-TIMESTEP                        0.1
-UPRES                           1
 --------------------------------------------------------------------------IO
 ALE_DISP                        No
 FILESTEPS                       1000

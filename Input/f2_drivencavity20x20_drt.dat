@@ -51,15 +51,6 @@ VSTAB                           no_vstab                        // no_vstab vsta
 CSTAB                           cstab_qs                        // no_cstab cstab_qs cstab_td
 CROSS-STRESS                    no_cross                        // no_cross cross_complete cross_rhs
 REYNOLDS-STRESS                 no_reynolds                     // no_reynolds reynolds_rhs
------------------------------------------------------------------FSI DYNAMIC
-MAXTIME                         1000.0
-TIMESTEP                        0.05
-NUMSTEP                         200
-COUPALGO                        basic_sequ_stagg
-PREDICTOR                       d(n)
-RELAX                           1.0
-ITEMAX                          1
-CONVTOL                         1.0E-6
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
