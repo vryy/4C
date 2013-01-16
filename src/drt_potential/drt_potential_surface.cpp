@@ -25,6 +25,7 @@ Maintainer: Ursula Mayer
 #include "../drt_geometry/position_array.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_bele3/bele2.H"
+#include "../drt_lib/drt_condition_selector.H"
 #include <cstdlib>
 
 using namespace GEO;
@@ -77,9 +78,14 @@ POTENTIAL::SurfacePotential::SurfacePotential(
   const int err = potentialdis_->FillComplete();
   if (err) dserror("FillComplete() returned err=%d",err);
 
-  // split dof vector of soliddiscretization into a dof vector of potential boundary condition and
-  // remaining dofs
-  DRT::UTILS::SetupNDimExtractor(*discretRCP_ ,"Potential", potboundary_);
+  // split dof vector of soliddiscretization into a dof vector of potential boundary
+  // condition and remaining dofs
+  const int ndim = DRT::Problem::Instance()->NDim();
+  {
+    DRT::UTILS::MultiConditionSelector mcs;
+    mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(*discretRCP_,"Potential",0,ndim)));
+    mcs.SetupExtractor(*discretRCP_,*(discretRCP_->DofRowMap()),potboundary_);
+  }
 
   // create potential surface dof row map using the solid parallel distribution
   // for all potential surface elements belonging to the solid discretization on a single

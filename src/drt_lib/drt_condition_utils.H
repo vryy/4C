@@ -249,41 +249,6 @@ namespace DRT
                                                        const std::string& condname);
 
 
-    /// setup the extractor object to couple ndim dofs at the named condition
-    /*!
-
-      Partition the row dof map of the given discretization in two. Put this
-      first ndim dofs of the nodes covered by the given condition in slot
-      one. All the other dofs in slot zero.
-
-      \author u.kue
-      \date 01/08
-    */
-    void SetupNDimExtractor(const DRT::Discretization& dis,
-                            std::string condname,
-                            LINALG::MapExtractor& extractor);
-
-    /// setup the extractor object to couple ndim dofs at the named condition
-    void SetupNDimExtractor(const DRT::Discretization& dis,
-                            std::string condname,
-                            Teuchos::RCP<Epetra_Map> fullmap,
-                            LINALG::MapExtractor& extractor);
-
-    /// setup the extractor object to couple some dofs at the named condition
-    void SetupExtractor(const DRT::Discretization& dis,
-                        std::string condname,
-                        unsigned startdim,
-                        unsigned enddim,
-                        LINALG::MapExtractor& extractor);
-
-    /// setup the extractor object to couple some dofs at the named condition
-    void SetupExtractor(const DRT::Discretization& dis,
-                        std::string condname,
-                        unsigned startdim,
-                        unsigned enddim,
-                        Teuchos::RCP<Epetra_Map> fullmap,
-                        LINALG::MapExtractor& extractor);
-
     //! create discretization from a given condition
     Teuchos::RCP<DRT::Discretization> CreateDiscretizationFromCondition(
       Teuchos::RCP<DRT::Discretization> sourcedis,    ///< discretization with condition

@@ -492,55 +492,6 @@ Teuchos::RCP<std::set<int> > DRT::UTILS::ConditionedElementMap(const DRT::Discre
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void DRT::UTILS::SetupNDimExtractor(const DRT::Discretization& dis,
-                                    std::string condname,
-                                    LINALG::MapExtractor& extractor)
-{
-  const int ndim = DRT::Problem::Instance()->NDim();
-  SetupExtractor(dis,condname,0,ndim,Teuchos::rcp(new Epetra_Map(*(dis.DofRowMap()))),extractor);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::UTILS::SetupNDimExtractor(const DRT::Discretization& dis,
-                                    std::string condname,
-                                    Teuchos::RCP<Epetra_Map> fullmap,
-                                    LINALG::MapExtractor& extractor)
-{
-  const int ndim = DRT::Problem::Instance()->NDim();
-  SetupExtractor(dis,condname,0,ndim,fullmap,extractor);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
-                                std::string condname,
-                                unsigned startdim,
-                                unsigned enddim,
-                                LINALG::MapExtractor& extractor)
-{
-  const int ndim = DRT::Problem::Instance()->NDim();
-  SetupExtractor(dis,condname,0,ndim,Teuchos::rcp(new Epetra_Map(*(dis.DofRowMap()))),extractor);
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void DRT::UTILS::SetupExtractor(const DRT::Discretization& dis,
-                                std::string condname,
-                                unsigned startdim,
-                                unsigned enddim,
-                                Teuchos::RCP<Epetra_Map> fullmap,
-                                LINALG::MapExtractor& extractor)
-{
-  MultiConditionSelector mcs;
-  mcs.AddSelector(Teuchos::rcp(new NDimConditionSelector(dis,condname,startdim,enddim)));
-  mcs.SetupExtractor(dis,*fullmap,extractor);
-}
-
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Discretization> DRT::UTILS::CreateDiscretizationFromCondition(
     Teuchos::RCP<DRT::Discretization>  sourcedis,
         const string&                  condname,
