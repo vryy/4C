@@ -598,6 +598,13 @@ public:
    */
   Teuchos::RCP<Epetra_Vector> CalcDivOp();
 
+  //! @name Biofilm methods
+  //@{
+
+  // set fluid displacement vector due to biofilm growth
+  void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp);
+  //@}
+
 protected:
 
   // don't want = operator and cctor
@@ -928,6 +935,12 @@ protected:
 
   // possible inf-norm scaling of linear system / fluid matrix
   RCP<FLD::UTILS::FluidInfNormScaling> fluid_infnormscaling_;
+
+  //! @name Biofilm specific stuff
+  //@{
+  Teuchos::RCP<Epetra_Vector> fldgrdisp_;
+  //@}
+
 
 private:
 

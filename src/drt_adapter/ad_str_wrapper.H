@@ -307,6 +307,13 @@ namespace ADAPTER
 
     //@}
 
+    //! @name Biofilm specific methods
+    //@{
+
+    virtual void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp)
+    { return structure_->SetStrGrDisp(struct_growth_disp); }
+
+    //@}
 
   protected:
 

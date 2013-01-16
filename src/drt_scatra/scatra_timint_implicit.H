@@ -478,6 +478,17 @@ public:
   void AccessDynSmagFilter(Teuchos::RCP<FLD::DynSmagFilter> dynSmag);
 
   /*========================================================================*/
+  //! @name Biofilm methods
+  /*========================================================================*/
+
+  //! set scatra fluid displacement vector due to biofilm growth
+  void SetScFldGrDisp(Teuchos::RCP<Epetra_MultiVector> scatra_fluid_growth_disp);
+
+  //! set scatra structure displacement vector due to biofilm growth
+  void SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp);
+
+
+  /*========================================================================*/
   //! @name  not classified method - to be kept clean!!!
   /*========================================================================*/
 
@@ -1117,6 +1128,17 @@ protected:
   bool skipinitder_;
 
   /*========================================================================*/
+
+  /*========================================================================*/
+  //! @name Biofilm specific stuff
+  /*========================================================================*/
+
+  //! scatra fluid displacement due to growth
+  Teuchos::RCP<Epetra_MultiVector> scfldgrdisp_;
+
+  //! scatra structure displacement due to growth
+  Teuchos::RCP<Epetra_MultiVector> scstrgrdisp_;
+
 
 }; // class ScaTraTimIntImpl
 

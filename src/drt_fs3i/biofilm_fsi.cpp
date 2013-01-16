@@ -40,7 +40,7 @@
 #include <Epetra_SerialComm.h>
 
 #include "biofilm_fsi.H"
-#include "../drt_adapter/ad_str_bio.H"
+//#include "../drt_adapter/ad_str_bio.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
@@ -57,6 +57,8 @@
 #include "../linalg/linalg_serialdensevector.H"
 
 #include "../drt_constraint/constraint_manager.H"
+
+#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 //#define SCATRABLOCKMATRIXMERGE
 
@@ -638,7 +640,8 @@ void FS3I::BiofilmFSI::FluidAleSolve(
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(fsi_->AleField().ExtractDispnp());
   RCP<DRT::Discretization> fluiddis = fsi_->FluidField().Discretization();
 
-  fluid_growth_disp->Update(1,*fluiddisp,1.0);
+  //calculate the total displacement due to growth and set it for output reasons
+  fsi_->FluidField().SetFldGrDisp(fluiddisp);
 
   ChangeConfig(fluiddis, fluiddisp);
 
@@ -651,7 +654,13 @@ void FS3I::BiofilmFSI::FluidAleSolve(
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[0];
   RCP<DRT::Discretization> scatradis = scatra->ScaTraField().Discretization();
 
-  scatra_fluid_growth_disp->Update(1,*fluiddisp,1.0);
+  //calculate the total displacement for scatra due to growth and set it for output reasons
+  Teuchos::RCP<Epetra_MultiVector> scatraflddisp;
+  const Epetra_Map* noderowmap = scatradis->NodeRowMap();
+  scatraflddisp = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
+  VecToScatravec(scatradis, fluiddis, fluiddisp, scatraflddisp);
+
+  scatra->ScaTraField().SetScFldGrDisp(scatraflddisp);
 
   ScatraChangeConfig(scatradis, fluiddis, fluiddisp);
 
@@ -676,7 +685,8 @@ void FS3I::BiofilmFSI::StructAleSolve(
   Teuchos::RCP<Epetra_Vector> structdisp = AleToStructField(ale_->ExtractDispnp());
   RCP<DRT::Discretization> structdis = fsi_->StructureField()->Discretization();
 
-  struct_growth_disp->Update(1,*structdisp,1.0);
+  //calculate the total displacement due to growth and set it for output reasons
+  fsi_->StructureField()->SetStrGrDisp(structdisp);
 
   ChangeConfig(structdis, structdisp);
 
@@ -690,7 +700,15 @@ void FS3I::BiofilmFSI::StructAleSolve(
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> struscatra = scatravec_[1];
   RCP<DRT::Discretization> struscatradis = struscatra->ScaTraField().Discretization();
 
-  scatra_struct_growth_disp->Update(1,*structdisp,1.0);
+  //calculate the total displacement for scatra due to growth and set it for output reasons
+  Teuchos::RCP<Epetra_MultiVector> scatrastrudisp;
+  const Epetra_Map* noderowmap = struscatradis->NodeRowMap();
+
+  scatrastrudisp = Teuchos::rcp(new Epetra_MultiVector(*noderowmap, 3, true));
+
+  VecToScatravec(struscatradis, structdis, structdisp, scatrastrudisp);
+
+  struscatra->ScaTraField().SetScStrGrDisp(scatrastrudisp);
 
   ScatraChangeConfig(struscatradis, structdis, structdisp);
 
@@ -782,7 +800,6 @@ void FS3I::BiofilmFSI::ChangeConfig(RCP<DRT::Discretization> dis, Teuchos::RCP<E
   {
     // get current node
     int gid = (dis->NodeRowMap())->GID(i);
-
     DRT::Node* mynode = dis->gNode(gid);
 
     vector<int> globaldofs = dis->Dof(mynode);
@@ -860,6 +877,72 @@ void FS3I::BiofilmFSI::ScatraChangeConfig(RCP<DRT::Discretization> scatradis, RC
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void FS3I::BiofilmFSI::VecToScatravec(RCP<DRT::Discretization> scatradis, RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<Epetra_MultiVector> scatravec)
+{
+
+  // check existence of displacement vector
+  if (vec == Teuchos::null) dserror("Got null pointer for displacements!");
+
+  // define error variable
+  int err(0);
+
+  // get dofrowmap of discretization
+  const Epetra_Map* dofrowmap = dis->DofRowMap();
+
+  //-------------------------------------------------------------------------
+  // transfer of dofs
+  // (We rely on the fact that the scatra discretization is a clone of the
+  // fluid or structure mesh, respectively, meaning that a scatra node has the
+  // same local (and global) ID as its corresponding fluid/structure node.)
+  //-------------------------------------------------------------------------
+  // loop over all local nodes of scatra discretization
+  for (int lnodeid=0; lnodeid < scatradis->NumMyRowNodes(); lnodeid++)
+  {
+    // get local fluid/structure node with the same lnodeid
+    DRT::Node* lnode = dis->lRowNode(lnodeid);
+
+    // get degrees of freedom associated with this fluid/structure node
+    // (first dofset always considered, allowing for using multiple
+    //  dof sets, e.g., for structure-based scalar transport)
+    vector<int> nodedofs = dis->Dof(0,lnode);
+
+    // determine number of space dimensions
+    const int numdim = DRT::Problem::Instance()->NDim();
+
+    for (int index=0;index < numdim; ++index)
+    {
+      // get global and local ID
+      const int gid = nodedofs[index];
+      const int lid = dofrowmap->LID(gid);
+
+      //---------------------------------------------------------------------
+      // get displacement
+      //---------------------------------------------------------------------
+      double disp = (*vec)[lid];
+
+      // insert displacement value into node-based vector
+      err = scatravec->ReplaceMyValue(lnodeid,index,disp);
+
+      if (err != 0) dserror("Error while inserting value into vector scatravec!");
+    }
+
+    //-----------------------------------------------------------------------
+    // to be sure for 1- and 2-D problems:
+    // set all unused displacement components to zero
+    //-----------------------------------------------------------------------
+    for (int index=numdim; index < 3; ++index)
+    {
+      err = scatravec->ReplaceMyValue(lnodeid,index,0.0);
+      if (err != 0) dserror("Error while inserting value into vector scatravec!");
+    }
+  } // for lnodeid
+
+  return;
+
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void FS3I::BiofilmFSI::StructGmshOutput()
 {
   // write the structure mesh
@@ -881,13 +964,13 @@ void FS3I::BiofilmFSI::StructGmshOutput()
     gmshfilecontent << "};" << endl;
   }
 
-  Teuchos::RCP<Epetra_Vector> strucaletdisp = ale_->ExtractDispnp();
+  Teuchos::RCP<Epetra_Vector> structaledisp = ale_->ExtractDispnp();
 
   {
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" " << "struct ale displacement \" {" << endl;
     // draw vector field 'struct ale displacement' for every element
-    IO::GMSH::VectorFieldDofBasedToGmsh(structaledis,strucaletdisp,gmshfilecontent);
+    IO::GMSH::VectorFieldDofBasedToGmsh(structaledis,structaledisp,gmshfilecontent);
     gmshfilecontent << "};" << endl;
   }
 
@@ -905,7 +988,7 @@ void FS3I::BiofilmFSI::StructGmshOutput()
     // add 'View' to Gmsh postprocessing file
     gmshfilecontent << "View \" " << "fsi lambda \" {" << endl;
     // draw vector field 'struct phi' for every element
-    IO::GMSH::VectorFieldDofBasedToGmsh(structaledis,strucaletdisp,gmshfilecontent);
+    IO::GMSH::VectorFieldDofBasedToGmsh(structaledis,structaledisp,gmshfilecontent);
     gmshfilecontent << "};" << endl;
   }
 

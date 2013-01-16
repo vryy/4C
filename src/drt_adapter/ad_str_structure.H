@@ -359,8 +359,11 @@ namespace ADAPTER {
     /// create result test for encapsulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
 
-    /// reset time and state vectors (needed for biofilm simulations)
+    /// reset time and state vectors (needed for biofilm growth simulations)
     virtual void Reset() = 0;
+
+    /// set structure displacement vector due to biofilm growth
+    virtual void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp) = 0;
 
   };
 

@@ -2866,3 +2866,20 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/* set scatra-fluid displacement vector due to biofilm growth          */
+void SCATRA::ScaTraTimIntImpl::SetScFldGrDisp(Teuchos::RCP<Epetra_MultiVector> scatra_fluid_growth_disp)
+{
+  scfldgrdisp_= scatra_fluid_growth_disp;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* set scatra-structure displacement vector due to biofilm growth          */
+void SCATRA::ScaTraTimIntImpl::SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp)
+{
+  scstrgrdisp_= scatra_struct_growth_disp;
+
+  return;
+}

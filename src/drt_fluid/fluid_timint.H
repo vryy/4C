@@ -269,6 +269,9 @@ public:
     dserror("reset function not implemented for this fluid adapter");
   };
 
+  // set fluid displacement vector due to biofilm growth
+  virtual void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp){ dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+
 protected:
   //! fluid discretization
   Teuchos::RCP<DRT::Discretization>      discret_;
@@ -291,6 +294,11 @@ protected:
   INPAR::FLUID::PhysicalType          physicaltype_; ///< flag for physical type of fluid flow (standard: incompressible)
 
   int     myrank_;      ///< the processor ID from the communicator
+
+  //! @name Biofilm specific stuff
+  //@{
+  Teuchos::RCP<Epetra_Vector> fldgrdisp_;
+  //@}
 
 }; // class TimInt
 

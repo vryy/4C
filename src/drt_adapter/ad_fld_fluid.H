@@ -248,11 +248,10 @@ namespace ADAPTER {
     virtual void Reset(
         bool completeReset = false,
         bool newFiles = false,
-        int iter = -1)
-    {
-      dserror("reset function not implemented for this fluid adapter");
-    };
+        int iter = -1) = 0;
 
+    /// set fluid displacement vector due to biofilm growth
+    virtual void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp) = 0;
     //@}
 
     //! @name Time step helpers

@@ -58,6 +58,7 @@ namespace UTILS
   class ConstrManager;
   class ConstraintSolver;
   class SurfStressManager;
+//  class GrowthDisplManager;
 }
 
 namespace MORTAR
@@ -844,10 +845,13 @@ namespace STR
 
     //@}
 
-    // reset everything (needed for biofilm simulations)
     //! @name Biofilm methods
     //@{
+    // reset everything (needed for biofilm simulations)
     void Reset();
+
+    // set structure displacement vector due to biofilm growth
+    void SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp);
     //@}
 
   protected:
@@ -1027,6 +1031,10 @@ namespace STR
     Teuchos::RCP<Teuchos::ParameterList> pslist_;
     //@}
 
+    //! @name Biofilm specific stuff
+    //@{
+    Teuchos::RCP<Epetra_Vector> strgrdisp_;
+    //@}
   };
 
 }  // namespace STR

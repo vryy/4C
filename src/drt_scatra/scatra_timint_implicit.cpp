@@ -136,7 +136,9 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   uprestart_(params->get<int>("RESTARTEVRY")),
   neumanninflow_(DRT::INPUT::IntegralValue<int>(*params,"NEUMANNINFLOW")),
   convheatrans_(DRT::INPUT::IntegralValue<int>(*params,"CONV_HEAT_TRANS")),
-  skipinitder_(DRT::INPUT::IntegralValue<int>(*params,"SKIPINITDER"))
+  skipinitder_(DRT::INPUT::IntegralValue<int>(*params,"SKIPINITDER")),
+  scfldgrdisp_(Teuchos::null),
+  scstrgrdisp_(Teuchos::null)
 {
   // what kind of equations do we actually want to solve?
   // (For the moment, we directly conclude from the problem type, Only ELCH applications
@@ -1464,6 +1466,19 @@ void SCATRA::ScaTraTimIntImpl::Output()
     // magnetic field (if existing)
     if (magneticfield_ != Teuchos::null)
       output_->WriteVector("magnetic_field", magneticfield_,IO::DiscretizationWriter::nodevector);
+
+    // biofilm growth
+    if (scfldgrdisp_!=Teuchos::null)
+    {
+      output_->WriteVector("scfld_growth_displ", scfldgrdisp_);
+    }
+
+    // biofilm growth
+    if (scstrgrdisp_!=Teuchos::null)
+    {
+      output_->WriteVector("scstr_growth_displ", scstrgrdisp_);
+    }
+
   }
 
   // NOTE:

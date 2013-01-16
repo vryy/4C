@@ -151,7 +151,8 @@ STR::TimInt::TimInt
   dtele_(0.0),
   dtcmt_(0.0),
   fluidveln_(Teuchos::null),
-  pslist_(Teuchos::null)
+  pslist_(Teuchos::null),
+  strgrdisp_(Teuchos::null)
 {
   // welcome user
   if ( (printlogo_) and (myrank_ == 0) )
@@ -1137,6 +1138,12 @@ void STR::TimInt::OutputRestart
     output_->WriteVector("fexternal", Fext());
     if(!HaveStatMech())
       output_->WriteElementData();
+
+    //biofilm growth
+    if (strgrdisp_!=Teuchos::null)
+    {
+      output_->WriteVector("str_growth_displ", strgrdisp_);
+    }
   }
 
 
@@ -1205,6 +1212,13 @@ void STR::TimInt::OutputState
   output_->WriteVector("velocity", (*vel_)(0));
   output_->WriteVector("acceleration", (*acc_)(0));
   output_->WriteVector("fexternal", Fext());
+
+  //biofilm growth
+  if (strgrdisp_!=Teuchos::null)
+  {
+    output_->WriteVector("str_growth_displ", strgrdisp_);
+  }
+
   output_->WriteElementData();
 
   if (surfstressman_->HaveSurfStress() && writesurfactant_)
@@ -2184,6 +2198,15 @@ void STR::TimInt::Reset()
 
   // set initial fields
   SetInitialFields();
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* set structure displacement vector due to biofilm growth          */
+void STR::TimInt::SetStrGrDisp(Teuchos::RCP<Epetra_Vector> struct_growth_disp)
+{
+  strgrdisp_= struct_growth_disp;
 
   return;
 }
