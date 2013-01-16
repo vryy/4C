@@ -4626,19 +4626,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  tuple<int>(0,1,2),
                                  &xfem_general);
 
-  setStringToIntegralParameter<int>("2DFLOW",
-                               "no",
-                               "Flag needed for pseudo 2D-simulations for fluid-fluid-Coupling",
-                               tuple<std::string>(
-                                 "no",
-                                 "yes"),
-                               tuple<std::string>(
-                                 "No 2D-Simulation",
-                                 "2D-Simulation"),
-                               tuple<int>(0,1),
-                               &xfem_general);
-
-
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& xfluid_dyn = list->sublist("XFLUID DYNAMIC",false,"");
 

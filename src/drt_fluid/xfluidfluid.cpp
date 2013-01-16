@@ -77,6 +77,7 @@ FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epet
     wizard_(  Teuchos::rcp( new XFEM::FluidWizard(*xfluid.bgdis_, *xfluid.boundarydis_ )))
 {
 
+
   // do the (parallel!) cut for the 0 timestep and find the fluid dofset
   wizard_->Cut( false,                                 // include_inner
                 idispcol,                              // interface displacements
@@ -1765,13 +1766,12 @@ FLD::XFluidFluid::XFluidFluid(
   alefluid_(alefluid),
   monolithicfluidfluidfsi_(monolithicfluidfluidfsi)
 {
+
+  numdim_            = DRT::Problem::Instance()->NDim(); //params_->get<int>("DIM");
   dtp_               = params_->get<double>("time step size");
   theta_             = params_->get<double>("theta");
   newton_            = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
   convform_          = params_->get<string>("form of convective term","convective");
-
-  numdim_            = DRT::Problem::Instance()->NDim(); //params_->get<int>("DIM");
-
 
   Teuchos::ParameterList&   params_xfem    = params_->sublist("XFEM");
   Teuchos::ParameterList&   params_xf_gen  = params_->sublist("XFLUID DYNAMIC/GENERAL");
@@ -1919,10 +1919,6 @@ FLD::XFluidFluid::XFluidFluid(
   emboutput_ = Teuchos::rcp(new IO::DiscretizationWriter(embdis_));
   emboutput_->WriteMesh(0,0.0);
 
-  bool twoDFlow = false;
-  if (params_->get<string>("2DFLOW","no") == "yes") twoDFlow = true;
-
-
   // ensure that degrees of freedom in the discretization have been set
   if ( not bgdis_->Filled() or not actdis->HaveDofs() )
     bgdis_->FillComplete();
@@ -1931,98 +1927,6 @@ FLD::XFluidFluid::XFluidFluid(
   conditions_to_copy.push_back("XFEMCoupling");
   boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(embdis, "XFEMCoupling", "boundary", element_name, conditions_to_copy);
 
-
-  // delete the elements with the same coordinates if they are any
-  map<int, std::vector<double> > eleIdToNodeCoord;
-  for (int iele=0; iele< boundarydis_->NumMyColElements(); ++iele)
-  {
-    DRT::Element* ele = boundarydis_->lColElement(iele);
-    const DRT::Node*const* elenodes = ele->Nodes();
-    std::vector<double> nodeCoords;
-    for (int inode=0; inode<ele->NumNode(); ++inode)
-    {
-      nodeCoords.push_back(elenodes[inode]->X()[0]);
-      nodeCoords.push_back(elenodes[inode]->X()[1]);
-      nodeCoords.push_back(elenodes[inode]->X()[2]);
-    }
-    eleIdToNodeCoord[ele->Id()]=nodeCoords;
-  }
-
-  cout << "Number of boundarydis elements: " << boundarydis_->NumMyRowElements()  << ", Number of nodes: "
-       << boundarydis_->NumMyRowNodes()<< endl;
-#if(0) // delete duplicates of boundary elements
-   for ( std::map<int, std::vector<double> >::const_iterator iter=eleIdToNodeCoord.begin();
-             iter!=eleIdToNodeCoord.end(); ++iter)
-   {
-     int id1 = iter->first;
-     std::vector<double> corditer1 = iter->second;
-     for ( std::map<int, std::vector<double> >::const_iterator iter2=eleIdToNodeCoord.begin();
-           iter2!=eleIdToNodeCoord.end(); ++iter2)
-     {
-       int id2 = iter2->first;
-       std::vector<double> corditer2 = iter2->second;
-       double sub = 0.0;
-       unsigned int count = 0;
-       for (size_t c=0; c<corditer1.size(); ++c)
-       {
-         sub = (corditer1.at(c)-corditer2.at(c));
-         if (sub != 0.0)
-           continue;
-         else if (sub == 0.0)
-           count++;
-       }
-       if ((id1 < id2) and (count == corditer1.size()))
-       {
-         // duplicates!!!
-         boundarydis_->DeleteElement(id2);
-         eleIdToNodeCoord.erase(id2);
-       }
-     }
-   }
-#endif
-   boundarydis_->FillComplete();
-
-  cout << "Number of boundarydis elements after deleting the duplicates: " << boundarydis_->NumMyRowElements()  <<
-    ", Number of nodes: "<< boundarydis_->NumMyRowNodes()<< endl;
-
-  // if we have 2D problem delete the two side elements from the boundarydis
-  if (twoDFlow)
-  {
-    cout << "2D problem! -> Delete the side boundary elements if needed..." << endl;
-    std::set<int> elementstodelete;
-    for (int iele=0; iele< boundarydis_->NumMyColElements(); ++iele)
-    {
-      DRT::Element* ele = boundarydis_->lColElement(iele);
-      std::vector<double> zCoordNodes;
-      const DRT::Node*const* elenodes = ele->Nodes();
-      for (int inode=0; inode<ele->NumNode(); ++inode)
-        zCoordNodes.push_back(elenodes[inode]->X()[2]);
-
-      unsigned int count = 0;
-      for (size_t i=1;i<zCoordNodes.size();++i)
-      {
-        if (zCoordNodes.at(i-1) != zCoordNodes.at(i))
-          continue;
-        else
-          count++;
-      }
-      if ((count+1) == zCoordNodes.size())
-      {
-        // elements with same z-coordinate detected
-        elementstodelete.insert(ele->Id());
-        eleIdToNodeCoord.erase(ele->Id());
-      }
-    }
-
-    // delete elements with same z-coordiante
-    for (std::set<int>::const_iterator iter=elementstodelete.begin();
-         iter!=elementstodelete.end(); ++iter)
-      boundarydis_->DeleteElement(*iter);
-
-    boundarydis_->FillComplete();
-    cout << "Number of boundarydis elements after deleting the sides: " << boundarydis_->NumMyRowElements()  <<
-      ", Number of nodes: "<< boundarydis_->NumMyRowNodes()<< endl;
-  }
 
   //gmsh
   if(gmsh_discret_out_)
@@ -3184,12 +3088,15 @@ void FLD::XFluidFluid::Evaluate(
   LINALG::ApplyDirichlettoSystem(state_->fluidfluidsysmat_,state_->fluidfluidincvel_,state_->fluidfluidresidual_,
                                  state_->fluidfluidzeros_,*state_->fluidfluiddbcmaps_);
 
-//   if(monotype_ == "fully_newton")
-//     state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_inter", gmsh_count_, step_, state_->velnp_, alevelnp_,
-//                           aledispnp_);
-//   else
-//      state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_fixedfsi", -1, step_, state_->velnp_, alevelnp_,
-//                         aledispn_);
+  if(gmsh_debug_out_)
+  {
+    if(monotype_ == "fully_newton")
+      state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "result_evaluate", gmsh_count_, step_, state_->velnp_, alevelnp_,
+                         aledispnp_);
+    else
+      state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "res_evaluate", -1, step_, state_->velnp_, alevelnp_,
+                         aledispn_);
+  }
 
 }//FLD::XFluidFluid::Evaluate
 
@@ -3549,8 +3456,8 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
         xfluidfluid_timeint_->SolveIncompOptProb(state_->veln_);
         xfluidfluid_timeint_->SolveIncompOptProb(state_->velnm_);
 
-        //state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "incomvel",
-        //0,  step_,  state_->velnp_, alevelnp_, aledispnp_);
+        if (gmsh_debug_out_)
+          state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "incomvel", 0,  step_,  state_->velnp_, alevelnp_, aledispnp_);
       }
 
     }
@@ -3616,10 +3523,15 @@ void FLD::XFluidFluid::UpdateMonolithicFluidSolution()
   toggle_ = LINALG::CreateVector(*state_->fluidfluiddofrowmap_,true);
   LINALG::Export(*tmpvec,*toggle_);
 
-//   int count = 1;
-//   Teuchos::RCP<Epetra_Vector> testbg = state_->fluidfluidsplitter_->ExtractXFluidVector(toggle_);
-//   Teuchos::RCP<Epetra_Vector> testemb = state_->fluidfluidsplitter_->ExtractFluidVector(toggle_);
-//   state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "toggle", count,  step_, testbg , testemb, aledispnp_);
+  if (gmsh_debug_out_)
+  {
+    int count = 1;
+    Teuchos::RCP<Epetra_Vector> testbg = state_->fluidfluidsplitter_->ExtractXFluidVector(toggle_);
+    Teuchos::RCP<Epetra_Vector> testemb = state_->fluidfluidsplitter_->ExtractFluidVector(toggle_);
+    state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "toggle", count,  step_, testbg , testemb, aledispnp_);
+    state_->GmshOutput(*bgdis_,*embdis_,*boundarydis_, "res_nachcut", gmsh_count_, step_, state_->velnp_, alevelnp_,
+                       aledispnp_);
+  }
 
   NonlinearSolve();
 
