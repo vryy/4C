@@ -101,8 +101,7 @@ ML_SMOOTHERFINE                 SGS
 ML_SMOOTHERMED                  ILU
 ML_SMOTIMES 2 0 0 0 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  Yes
-2DFLOW                          yes
+GMSH_DEBUG_OUT                  no
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY               BoundaryTypeSigma               // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 CONV_STAB_FAC                   0.0

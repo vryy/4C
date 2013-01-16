@@ -106,7 +106,6 @@ ML_SMOTIMES 2 0 0 0 1 // no. smoothing steps or polynomial order on each level (
 GMSH_DEBUG_OUT                  Yes
 VOLUME_GAUSS_POINTS_BY          MomentFitting
 BOUNDARY_GAUSS_POINTS_BY        MomentFitting
-2DFLOW                          yes
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY               BoundaryTypeNitsche             // BoundaryTypeNitsche // BoundaryTypeNeumann
