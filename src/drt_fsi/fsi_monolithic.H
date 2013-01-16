@@ -298,7 +298,7 @@ namespace UTILS
                        NOX::Epetra::Vector& noxSoln,
                        Teuchos::RCP<NOX::Utils> utils) = 0;
 
-    /// setup of NOX convergence tests
+    //! setup of NOX convergence tests
     virtual Teuchos::RCP<NOX::StatusTest::Combo>
     CreateStatusTest(Teuchos::ParameterList& nlParams,
                      Teuchos::RCP<NOX::Epetra::Group> grp) = 0;

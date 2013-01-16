@@ -1131,18 +1131,23 @@ FSI::MonolithicFluidSplit::CreateStatusTest(Teuchos::ParameterList& nlParams,
   Teuchos::RCP<NOX::StatusTest::Combo> combo       = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
   Teuchos::RCP<NOX::StatusTest::Combo> converged   = Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::AND));
 
+  // Create some other plausibility tests
   Teuchos::RCP<NOX::StatusTest::MaxIters> maxiters = Teuchos::rcp(new NOX::StatusTest::MaxIters(nlParams.get("Max Iterations", 100)));
   Teuchos::RCP<NOX::StatusTest::FiniteValue> fv    = Teuchos::rcp(new NOX::StatusTest::FiniteValue);
 
+  Teuchos::RCP<NOX::StatusTest::NormUpdate> update =
+    Teuchos::rcp(new NOX::StatusTest::NormUpdate(nlParams.get("Norm Update", 1.0e-5)));
+
+  // Add single tests to the test combo
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
+  combo->addStatusTest(update);
   combo->addStatusTest(maxiters);
 
   // require one solve
   converged->addStatusTest(Teuchos::rcp(new NOX::FSI::MinIters(1)));
 
   // setup tests for structural displacements
-
   Teuchos::RCP<NOX::StatusTest::Combo> structcombo =
     Teuchos::rcp(new NOX::StatusTest::Combo(NOX::StatusTest::Combo::OR));
 
@@ -1165,7 +1170,6 @@ FSI::MonolithicFluidSplit::CreateStatusTest(Teuchos::ParameterList& nlParams,
   converged->addStatusTest(structcombo);
 
   // setup tests for interface
-
   std::vector<Teuchos::RCP<const Epetra_Map> > interface;
   interface.push_back(StructureField()->Interface()->FSICondMap());
   interface.push_back(Teuchos::null);
@@ -1193,7 +1197,6 @@ FSI::MonolithicFluidSplit::CreateStatusTest(Teuchos::ParameterList& nlParams,
   converged->addStatusTest(interfacecombo);
 
   // setup tests for fluid velocities
-
   std::vector<Teuchos::RCP<const Epetra_Map> > fluidvel;
   fluidvel.push_back(FluidField().InnerVelocityRowMap());
   fluidvel.push_back(Teuchos::null);
@@ -1221,7 +1224,6 @@ FSI::MonolithicFluidSplit::CreateStatusTest(Teuchos::ParameterList& nlParams,
   converged->addStatusTest(fluidvelcombo);
 
   // setup tests for fluid pressure
-
   std::vector<Teuchos::RCP<const Epetra_Map> > fluidpress;
   fluidpress.push_back(FluidField().PressureRowMap());
   fluidpress.push_back(Teuchos::null);

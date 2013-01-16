@@ -962,8 +962,12 @@ FSI::MortarMonolithicStructureSplit::CreateStatusTest(Teuchos::ParameterList& nl
   Teuchos::RCP<NOX::StatusTest::FiniteValue> fv    =
       Teuchos::rcp(new NOX::StatusTest::FiniteValue);
 
+  Teuchos::RCP<NOX::StatusTest::NormUpdate> update =
+    Teuchos::rcp(new NOX::StatusTest::NormUpdate(nlParams.get("Norm Update", 1.0e-5)));
+
   combo->addStatusTest(fv);
   combo->addStatusTest(converged);
+  combo->addStatusTest(update);
   combo->addStatusTest(maxiters);
 
   // require one solve
