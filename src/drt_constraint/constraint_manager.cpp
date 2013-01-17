@@ -51,19 +51,15 @@ actdisc_(discr)
   mpconline2d_=Teuchos::rcp(new MPConstraint2(actdisc_,"MPC_NodeOnLine_2D",offsetID_,maxConstrID));
   mpconplane3d_=Teuchos::rcp(new MPConstraint3(actdisc_,"MPC_NodeOnPlane_3D",offsetID_,maxConstrID));
   mpcnormcomp3d_=Teuchos::rcp(new MPConstraint3(actdisc_,"MPC_NormalComponent_3D",offsetID_,maxConstrID));
-  
+
   volconstr3dpen_=Teuchos::rcp(new ConstraintPenalty(actdisc_,"VolumeConstraint_3D_Pen"));
   areaconstr3dpen_=Teuchos::rcp(new ConstraintPenalty(actdisc_,"AreaConstraint_3D_Pen"));
   mpcnormcomp3dpen_=Teuchos::rcp(new MPConstraint3Penalty(actdisc_,"MPC_NormalComponent_3D_Pen"));
 
-  havepenaconstr_ = (mpcnormcomp3dpen_->HaveConstraint()) 
+  havepenaconstr_ = (mpcnormcomp3dpen_->HaveConstraint())
       or (volconstr3dpen_->HaveConstraint())
       or (areaconstr3dpen_->HaveConstraint());
-  
-  numConstrID_ = max(maxConstrID-offsetID_+1,0);
-  constrdofset_ = Teuchos::rcp(new ConstraintDofSet());
-  constrdofset_ ->AssignDegreesOfFreedom(actdisc_,numConstrID_,0);
-  offsetID_ -= constrdofset_->FirstGID();
+
   //----------------------------------------------------
   //-----------include possible further constraints here
   //----------------------------------------------------
@@ -76,6 +72,10 @@ actdisc_(discr)
   haveconstraint_ = havepenaconstr_ or havelagrconstr_;
   if (haveconstraint_)
   {
+    numConstrID_ = max(maxConstrID-offsetID_+1,0);
+    constrdofset_ = Teuchos::rcp(new ConstraintDofSet());
+    constrdofset_ ->AssignDegreesOfFreedom(actdisc_,numConstrID_,0);
+    offsetID_ -= constrdofset_->FirstGID();
     ParameterList p;
     uzawaparam_ = params.get<double>("uzawa parameter",1);
     double time = params.get<double>("total time"      ,0.0);
@@ -247,7 +247,7 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
     constrMatrix_->Complete();
   else
     constrMatrix_->Complete(*constrmap_,*dofrowmap);
-  
+
   return;
 }
 
