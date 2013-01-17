@@ -1885,10 +1885,21 @@ FLD::XFluidFluid::XFluidFluid(
   // check if fluidfluidcoupling is set for the right type. fluidfluidcoupling
   // is just related to fixedale monolithic approach
   std::vector<int> condnodes;
-  DRT::UTILS::FindConditionedNodes(*embdis,"FluidFluidCoupling",condnodes);
-  if (((monotype_ == "fixedale_partitioned") or (monotype_ == "fixedale_interpolation")) and (condnodes.size()==0))
+  std::vector<int> condnodesglobal;
+  DRT::UTILS::FindConditionedNodes(*embdis_,"FluidFluidCoupling",condnodes);
+
+  //information how many processors work at all
+  std::vector<int> allproc(embdis_->Comm().NumProc());
+
+  //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
+  for (int i=0; i<embdis_->Comm().NumProc(); ++i) allproc[i] = i;
+
+  //gathers information of condnodes of all processors
+  LINALG::Gather<int>(condnodes,condnodesglobal,(int)embdis_->Comm().NumProc(),&allproc[0],embdis_->Comm());
+
+  if (((monotype_ == "fixedale_partitioned") or (monotype_ == "fixedale_interpolation")) and (condnodesglobal.size()==0))
     dserror("FluidFluidCoupling condition is missing!");
-  else if (((monotype_ == "fully_newton") or (monotype_ == "no monolithicfsi")) and (condnodes.size()!=0))
+  else if (((monotype_ == "fully_newton") or (monotype_ == "no monolithicfsi")) and (condnodesglobal.size()!=0))
     dserror("FluidFluidCoupling condition is not related here!");
 
   // check xfluid input params
@@ -1926,7 +1937,6 @@ FLD::XFluidFluid::XFluidFluid(
   std::vector<std::string> conditions_to_copy;
   conditions_to_copy.push_back("XFEMCoupling");
   boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(embdis, "XFEMCoupling", "boundary", element_name, conditions_to_copy);
-
 
   //gmsh
   if(gmsh_discret_out_)
