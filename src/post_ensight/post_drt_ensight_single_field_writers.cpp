@@ -149,6 +149,9 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
   // additional forces due to lung fsi (volume constraint)
   EnsightWriter::WriteResult("Add_Forces", "Add_Forces", dofbased, field->problem()->num_dim());
 
+  //additional output for poro problems
+  EnsightWriter::WriteResult("convel", "convel", dofbased, field->problem()->num_dim());
+
   // additional fields due to adjoint equations
   EnsightWriter::WriteResult("adjoint_velnp", "adjoint_velocity", dofbased, field->problem()->num_dim());
   EnsightWriter::WriteResult("adjoint_pressure", "adjoint_pressure", dofbased, 1);
