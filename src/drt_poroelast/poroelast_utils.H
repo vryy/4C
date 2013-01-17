@@ -34,6 +34,12 @@ namespace POROELAST
 {
   class PoroBase;
 
+  enum coupltype
+  {
+    fluidfluid,
+    fluidstructure
+  };
+
   /// POROELAST::UTILS: Random stuff that might be helpful when dealing with poroelasticity problems
   namespace UTILS
   {
@@ -78,6 +84,8 @@ namespace POROELAST
                              );
 
   } // namespace UTILS
+
+  void PrintLogo();
 
 } // namespace POROELAST
 

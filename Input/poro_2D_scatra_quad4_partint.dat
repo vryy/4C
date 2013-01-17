@@ -15,7 +15,7 @@ created by pre_exodus
 //ELEMENTS    4
 //NODES       9
 DIM           2
---------------------------------------------------------------DISCRETISATION
+-----------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   0
 NUMALEDIS                       0
 NUMARTNETDIS                    0
@@ -63,10 +63,10 @@ CSTAB                           no_cstab
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            no_pspg //yes_pspg no_pspg
+PSPG                            yes_pspg
 REYNOLDS-STRESS                 no_reynolds
-RSTAB                           no_rstab  //rstab_gls no_rstab 
-STABTYPE                        no_stabilization //residual_based no_stabilization
+RSTAB                           rstab_gls
+STABTYPE                        residual_based
 SUPG                            no_supg
 TDS                             quasistatic
 TRANSIENT                       no_transient
@@ -96,10 +96,10 @@ INCTOL                          1e-06
 ITEMAX                          20
 ITEMIN                          1
 MAXTIME                         8
-NORMCOMBI_RESFINC               And
+NORMCOMBI_RESFINC               Or
 NORM_INC                        Abs
 NORM_RESF                       Abs
-NUMSTEP                         100
+NUMSTEP                         400
 RESTARTEVRY                     100
 RESTOL                          1e-08
 TIMESTEP                        0.01
@@ -109,15 +109,50 @@ SECONDORDER                     no
 CONTIPARTINT                    yes
 -----------------------------------------------------------------PROBLEM TYP
 NUMFIELD                        1
-PROBLEMTYP                      Poroelasticity
+PROBLEMTYP                      Poroelastic_scalar_transport
 RESTART                         0
 SHAPEFCT                        Polynomial
+-------------------------------------------SCALAR TRANSPORT DYNAMIC
+LINEAR_SOLVER                   4
+SOLVERTYPE                      linear_incremental
+TIMEINTEGR                      One_Step_Theta
+UPRES                           1
+RESTARTEVRY                     10
+NUMSTEP                         1000
+MAXTIME 4.0 //hill reaches point of departure (x0=2/15)
+TIMESTEP                        0.01                           
+THETA                           0.66
+VELOCITYFIELD                   Navier_Stokes
+VELFUNCNO                       -1
+INITIALFIELD                    field_by_function
+SCATRATYPE                      Poroscatra
+INITFUNCNO                      1
+FSSUGRDIFF                      No
+WRITEFLUX                       No
+MATID                           5
+-----------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+ASSUGRDIFF                      no
+CONSISTENCY                     no
+DEFINITION_ASSGD                artificial_linear
+DEFINITION_TAU                  Franca_Valentin
+EVALUATION_MAT                  element_center
+EVALUATION_TAU                  element_center
+STABTYPE                        no_stabilization
+SUGRVEL                         no
 --------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK
+SOLVER                          Aztec_MSR //UMFPACK Aztec_MSR
+AZTOL                           1.0E-9 
+AZPREC                          BGS2x2
 --------------------------------------------------------------------SOLVER 2
-SOLVER                          UMFPACK
+SOLVER                          Aztec_MSR //UMFPACK
+AZTOL                           1.0E-9 
 --------------------------------------------------------------------SOLVER 3
-SOLVER                          UMFPACK                         // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
+SOLVER                          Aztec_MSR //UMFPACK
+AZTOL                           1.0E-9 
+--------------------------------------------------------------------SOLVER 4
+NAME                            Sca_Tra_Solver
+SOLVER                          Aztec_MSR                       // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym 
+AZTOL                           1.0E-11                          // tolerance in (un)scaled residual
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
@@ -164,74 +199,61 @@ UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
-LINEAR_SOLVER                   1
---------------------------------------------------------CLONING MATERIAL MAP
-SRC_FIELD structure SRC_MAT 1 TAR_FIELD fluid TAR_MAT 3
+LINEAR_SOLVER                   2
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
+----------------------------------------------------------POROSCATRA CONTROL
+UPRES                           1
+RESTARTEVRY                     10
+NUMSTEP                         100
+MAXTIME                         8.0
+TIMESTEP                        0.01
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD fluid TAR_MAT 3
+SRC_FIELD structure SRC_MAT 1 TAR_FIELD scatra TAR_MAT 5
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_StructPoro MATID 2 INITPOROSITY 0.4 BULKMODULUS 2.0e8 PENALTYPARAMETER 0.001
 MAT 2 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 0.5
 MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy
+MAT 5 MAT_scatra DIFFUSIVITY 1.0
 ------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 2.0 // Tmax=4
-CURVE1 on EXPR FUNC -1.0                         t1 2.0 t2 2000.0 // Tmax=4
+CURVE1 on EXPR FUNC -1.0*0.5*(1-cos(t*pi/2.0)) t1 0.0 t2 8.0 
 ------------------------------------------------------------CURVE2
+CURVE2 on EXPR FUNC  4.0*0.5*(1-cos(t*pi/2.0))+1.0    t1 0.0 t2 2.0 
+CURVE2 on EXPR FUNC  5.0                              t1 2.0 t2 8.0 
 ------------------------------------------------------------CURVE3
+CURVE3 on EXPR FUNC  -1.0*0.5*(1-cos(t*pi/2.0))        t1 0.0 t2 2.0 // Tmax=4
+CURVE3 on EXPR FUNC  -1.0                              t1 2.0 t2 8.0 // Tmax=4
 ------------------------------------------------------------CURVE4
 ------------------------------------------------------------FUNCT1
+FUNCT1 EXPR 0 0.0 0 FUNCTION 1.0
 ------------------------------------------------------------FUNCT2
 ------------------------------------------------------------FUNCT3
 ------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 4 QUANTITY velx VALUE -7.85398163397448279e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 5 QUANTITY pressure VALUE 9.06626058957098913e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -2.50046855228057030e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.50046855227842924e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -5.00000000000000555e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 4 QUANTITY velx VALUE -7.85398163397448279e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 0 TOLERANCE 1e-14
+SCATRA DIS scatra NODE 2 QUANTITY phi VALUE 9.09376115078157077e-01 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 7 QUANTITY phi VALUE 9.09376117517963989e-01 TOLERANCE 1e-8
+SCATRA DIS scatra NODE 5 QUANTITY phi VALUE 1.47143512567284551e+00 TOLERANCE 1e-8
 ------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 5
-NDLINE  6
+NDPOINT 4
+NDLINE  4
 NDSURF  1
 NDVOL   0
 -------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT     4
-// Point x+y+
-E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
-// Point x-y+
-E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// Point x-y-
-E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// Point x+y-
-E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
--------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE  4
-// Line_x+
-E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
-// Line_x-
-E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// Line_y+
-E 3 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// Line_y-
-E 4 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
--------------------------------------DESIGN POINT PORO DIRICH CONDITIONS
 DPOINT     0
 // Point x+y+
-//E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+//E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
 // Point x-y+
-//E 2 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+//E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // Point x-y-
 //E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// Point x+y-
+// Point x+y+
 //E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
-//E 5 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
--------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
-DLINE  0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE  1
 // Line_x+
-//E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // Line_x-
 //E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // Line_y+
@@ -239,11 +261,11 @@ DLINE  0
 // Line_y-
 //E 4 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ------------------------------DESIGN LINE NORMAL NO PENETRATION CONDITION
-DLINE                           2
+DLINE                           0
 // Line_x+
-E 1 - 
+//E 1 - 
 // Line_x-
-E 2 - 
+//E 2 - 
 // Line_y+
 //E 3 - 
 // Line_y-
@@ -251,27 +273,37 @@ E 2 -
 ----------------------------------------DESIGN LINE PORO PARTIAL INTEGRATION
 DLINE  2
 // Line_x+
-//E 1 -
+E 1 -
 // Line_x-
-//E 2 - 
-// Line_y+
-E 3 - 
-// Line_y-
-E 4 -
-------------------------------DESIGN LINE PORO PRESSURE INTEGRATION
-DLINE  0
-// Line_x+
-//E 1 -
-// Line_x-
-//E 2 - 
+E 2 - 
 // Line_y+
 //E 3 - 
 // Line_y-
 //E 4 -
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF   0
+DSURF   1
 // Surface
-//E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+-------------------------------------DESIGN POINT PORO DIRICH CONDITIONS
+DPOINT     2
+// Point x+y+
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 3 none none none none none FUNCT 0 0 0 0 0 0
+// Point x-y+
+//E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Point x-y-
+//E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Point x+y+
+E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 3 none none none none none FUNCT 0 0 0 0 0 0
+-------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
+DLINE   3
+// Line_x+
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 3 none none none none none FUNCT 0 0 0 0 0 0
+// Line_x-
+//E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Line_y+
+E 3 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// Line_y-
+E 4 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -------------------------------------DESIGN SURF PORO DIRICH CONDITIONS
 DSURF   0
 // Surface
@@ -280,12 +312,14 @@ DSURF   0
 DSURF   1
 // Surface
 E 1 -  
+---------------------------DESIGN LINE TRANSPORT DIRICH CONDITIONS
+DLINE 1
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 2 none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
 NODE    5 DNODE 2
 NODE    9 DNODE 3
 NODE    8 DNODE 4
-NODE    2 DNODE 5
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1
 NODE    4 DLINE 1
@@ -299,12 +333,6 @@ NODE    5 DLINE 3
 NODE    7 DLINE 4
 NODE    8 DLINE 4
 NODE    9 DLINE 4
-NODE    1 DLINE 5
-NODE    2 DLINE 5
-NODE    5 DLINE 5
-NODE    7 DLINE 6
-NODE    8 DLINE 6
-NODE    9 DLINE 6
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1

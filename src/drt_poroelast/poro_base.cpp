@@ -29,6 +29,8 @@
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_mapextractor.H"
+#include "../linalg/linalg_sparsematrix.H"
+
 #include "../drt_inpar/inpar_solver.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -41,6 +43,7 @@
 #include "../drt_lib/drt_utils.H"
 
 #include "../drt_io/io_control.H"
+#include "../drt_io/io_pstream.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 
@@ -54,7 +57,7 @@
  | constructor (public)                                    vuong 01/12  |
  *----------------------------------------------------------------------*/
 POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
-                                          const Teuchos::ParameterList& timeparams) :
+                              const Teuchos::ParameterList& timeparams) :
       AlgorithmBase(comm, timeparams),
       subnodemap_(Teuchos::null),
       subelemap_(Teuchos::null)
@@ -76,6 +79,9 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
       Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(timeparams,true));
   fluid_ = Teuchos::rcp_dynamic_cast<ADAPTER::FluidPoro>(fluid->FluidFieldrcp());
+
+  if(fluid_ == Teuchos::null)
+    dserror("cast from ADAPTER::FluidBaseAlgorithm to ADAPTER::FluidPoro failed");
 
   // access the problem-specific parameter lists
   const Teuchos::ParameterList& fdyn
@@ -102,6 +108,14 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
   //check for submeshes and build of subnode and subelement map if necessary
   submeshes_ = BuildSubMaps();
 
+  int submeshcounter = 0;
+  int submesh = submeshes_;
+  StructureField()->Discretization()->Comm().SumAll(&submesh,&submeshcounter,1);
+
+  if(submesh)
+    submeshes_ = true;
+  else submeshes_ = false;
+
   // the problem is two way coupled, thus each discretization must know the other discretization
   Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
   Teuchos::RCP<DRT::DofSet> fluiddofset = Teuchos::null;
@@ -111,6 +125,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
    */
   if(submeshes_)
   {
+    cout<<"submeshes!!!!!!!!!!!!!"<<endl;
     // build a proxy of the structure discretization for the fluid field
     structdofset = StructureField()->Discretization()->GetDofSetProxy(subnodemap_, subelemap_);
     // build a proxy of the fluid discretization for the structure field
@@ -147,7 +162,6 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
   if(submeshes_)
     psiextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*StructureField()->DofRowMap(), coupfs_->MasterDofMap()));
 
-  //FluidField().SetMeshMap(coupfs_->MasterDofMap());
   FluidField().SetMeshMap(coupfs_->SlaveDofMap());
 
   //extractor for constraints on structure phase
@@ -163,8 +177,19 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
 
   std::vector<DRT::Condition*> nopencond;
   FluidField().Discretization()->GetCondition("NoPenetration", nopencond);
-
   noPenHandle_ = Teuchos::rcp(new POROELAST::NoPenetrationConditionHandle(nopencond));
+
+  partincond_=false;
+  std::vector<DRT::Condition*> poroPartInt;
+  FluidField().Discretization()->GetCondition("PoroPartInt",poroPartInt);
+  if(poroPartInt.size())
+    partincond_=true;
+
+  presintcond_=false;
+  std::vector<DRT::Condition*> poroPresInt;
+  FluidField().Discretization()->GetCondition("PoroPresInt",poroPresInt);
+  if(poroPresInt.size())
+    presintcond_=true;
 
   //do some checks
   {
@@ -306,7 +331,7 @@ void POROELAST::PoroBase::SetStructSolution()
   Teuchos::RCP<Epetra_Vector> structvel = StructureToFluidField(veln);
   FluidField().ApplyMeshVelocity(structvel);
 
-  CalculateSurfPoro("PoroPartInt");
+  //CalculateSurfPoro("PoroPartInt");
 }
 
 /*----------------------------------------------------------------------*/
@@ -352,7 +377,6 @@ bool POROELAST::PoroBase::BuildSubMaps()
 
   if(numstructnodes != numfluidnodes)
   {
-
     for(int i=0; i<(numfluidnodes);i++)
     {
       const int fluidgid = fluidnodemap->GID(i);
@@ -385,8 +409,7 @@ bool POROELAST::PoroBase::BuildSubMaps()
 
     return true;
   }
-  else
-    return false;
+  return false;
 }
 
 /*----------------------------------------------------------------------*
@@ -443,13 +466,94 @@ void POROELAST::NoPenetrationConditionHandle::BuidNoPenetrationMap(const Epetra_
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void POROELAST::NoPenetrationConditionHandle::ApplyCondRHS( Teuchos::RCP<Epetra_Vector> iterinc,
-                                                            Teuchos::RCP<Epetra_Vector> rhs,
-                                                            Teuchos::RCP<Epetra_Vector> cond_rhs)
+                                                            Teuchos::RCP<Epetra_Vector> rhs)
 {
   if(hascond_)
   {
     const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = nopenetration_->Map(1);
-    LINALG::ApplyDirichlettoSystem(iterinc,rhs,cond_rhs,*nopenetrationmap);
+    LINALG::ApplyDirichlettoSystem(iterinc,rhs,condRHS_,*nopenetrationmap);
   }
   return;
 }
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void POROELAST::NoPenetrationConditionHandle::Clear(POROELAST::coupltype coupltype)
+{
+  if(hascond_)
+  {
+    condRHS_->PutScalar(0.0);
+    condIDs_->clear();
+    if(coupltype == POROELAST::fluidfluid)
+      fluidfluidConstraintMatrix_->Zero();
+    else if(coupltype == POROELAST::fluidstructure)
+    {
+      fluidstructureConstraintMatrix_->Zero();
+      structVelConstraintMatrix_->Zero();
+    }
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void POROELAST::NoPenetrationConditionHandle::Setup(Teuchos::RCP<const Epetra_Map> dofRowMap, const Epetra_Map* dofRowMapFluid)
+{
+  if(hascond_)
+  {
+    condRHS_ = Teuchos::rcp(new Epetra_Vector(*dofRowMap, true));
+
+    condVector_ = Teuchos::rcp(new Epetra_Vector(*dofRowMapFluid, true));
+
+    fluidfluidConstraintMatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(
+                                                              *dofRowMapFluid,
+                                                              81,
+                                                              true,
+                                                              true)
+                                    );
+
+    fluidstructureConstraintMatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(
+                                                              *dofRowMapFluid,
+                                                              81,
+                                                              true,
+                                                              true)
+                                    );
+
+    structVelConstraintMatrix_ = Teuchos::rcp(new LINALG::SparseMatrix(
+                                                                      *dofRowMapFluid,
+                                                                      81,
+                                                                      true,
+                                                                      true)
+                                             );
+  }
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> POROELAST::NoPenetrationConditionHandle::ConstraintMatrix(POROELAST::coupltype coupltype)
+{
+  if(hascond_)
+  {
+    if(coupltype == POROELAST::fluidfluid)
+      return fluidfluidConstraintMatrix_;
+    else if(coupltype == POROELAST::fluidstructure)
+      return fluidstructureConstraintMatrix_;
+  }
+  return Teuchos::null;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::SparseMatrix> POROELAST::NoPenetrationConditionHandle::StructVelConstraintMatrix(POROELAST::coupltype coupltype)
+{
+  if(hascond_)
+  {
+    if(coupltype == POROELAST::fluidfluid)
+      return Teuchos::null;
+    else if(coupltype == POROELAST::fluidstructure)
+      return structVelConstraintMatrix_;
+  }
+  return Teuchos::null;
+}
+

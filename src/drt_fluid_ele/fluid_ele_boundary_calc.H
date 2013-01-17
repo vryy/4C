@@ -203,6 +203,14 @@ public:
       Epetra_SerialDenseVector&       elevec2
   ) = 0;
 
+  virtual void NoPenetrationIDs(
+      DRT::ELEMENTS::FluidBoundary*  ele1,
+      Teuchos::ParameterList&         params,
+      DRT::Discretization&            discretization,
+      Epetra_SerialDenseVector&        elevec1,
+      std::vector<int>&               lm
+  ) = 0;
+
   virtual void PoroBoundary(
       DRT::ELEMENTS::FluidBoundary*  ele1,
       Teuchos::ParameterList&         params,
@@ -211,6 +219,15 @@ public:
       Epetra_SerialDenseMatrix&       elemat1,
       Epetra_SerialDenseVector&       elevec1
   ) = 0;
+
+  virtual void PressureCoupling(
+      DRT::ELEMENTS::FluidBoundary*   ele1,
+      Teuchos::ParameterList&         params,
+      DRT::Discretization&            discretization,
+      std::vector<int>&               lm,
+      Epetra_SerialDenseMatrix&       elemat1,
+      Epetra_SerialDenseVector&       elevec1
+  )=0;
 
     /// Internal implementation class for FluidBoundary elements
   static FluidBoundaryImplInterface* Impl(const DRT::Element* ele);
@@ -571,6 +588,13 @@ public:
       Epetra_SerialDenseVector&  elevec1,
       Epetra_SerialDenseVector&  elevec2);
 
+  void NoPenetrationIDs(
+      DRT::ELEMENTS::FluidBoundary*  ele,
+      Teuchos::ParameterList&    params,
+      DRT::Discretization&       discretization,
+      Epetra_SerialDenseVector&        elevec1,
+      std::vector<int>&          lm);
+
   /*!
   \brief apply boundary integral for porous media problems
 
@@ -595,6 +619,15 @@ public:
       std::vector<int>&          lm,
       Epetra_SerialDenseMatrix&  elemat1,
       Epetra_SerialDenseVector&  elevec1);
+
+  void PressureCoupling(
+      DRT::ELEMENTS::FluidBoundary*   ele1,
+      Teuchos::ParameterList&         params,
+      DRT::Discretization&            discretization,
+      std::vector<int>&               lm,
+      Epetra_SerialDenseMatrix&       elemat1,
+      Epetra_SerialDenseVector&       elevec1
+  );
 
 private:
 

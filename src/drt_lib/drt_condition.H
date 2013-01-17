@@ -220,6 +220,7 @@ public:
     TotalTractionCorrectionBorderNodes,
     PoroCoupling,
     PoroPartInt,
+    PoroPresInt,
     RedAirwayVentilatorCond,
     RedAirwayTissue,
     RedAirwayNodeTissue

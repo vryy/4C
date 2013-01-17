@@ -35,6 +35,9 @@ void poroelast_drt()
   // create a communicator
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
 
+  // print Logo to screen
+  if (comm.MyPID()==0) POROELAST::PrintLogo();
+
   // setup of the discretizations, including clone strategy
   POROELAST::UTILS::SetupPoro();
 

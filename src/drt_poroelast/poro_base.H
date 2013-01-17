@@ -23,6 +23,7 @@
 #include "../drt_adapter/adapter_algorithmbase.H"
 
 #include "../drt_lib/drt_dserror.H"
+#include "poroelast_utils.H"
 
 /*----------------------------------------------------------------------*
  | forward declarations                                                 |
@@ -36,6 +37,7 @@ namespace DRT
 namespace LINALG
 {
   class MapExtractor;
+  class SparseMatrix;
 }
 
 namespace ADAPTER
@@ -142,6 +144,10 @@ namespace POROELAST
       //! helper class for no penetration condition
       Teuchos::RCP<NoPenetrationConditionHandle> noPenHandle_;
 
+      bool partincond_;
+
+      bool presintcond_;
+
     private:
       //! check for submeshes and build of subnode and subelement map if necessary
       bool BuildSubMaps();
@@ -178,14 +184,20 @@ namespace POROELAST
     //! create using a Epetra_Comm
     explicit NoPenetrationConditionHandle( std::vector<DRT::Condition*> nopencond):
     condIDs_(Teuchos::null),
+    condVector_(Teuchos::null),
+    condRHS_(Teuchos::null),
     nopencond_(nopencond),
     nopenetration_(Teuchos::null),
-    hascond_(false)
+    hascond_(false),
+    fluidfluidConstraintMatrix_(Teuchos::null),
+    fluidstructureConstraintMatrix_(Teuchos::null),
+    structVelConstraintMatrix_(Teuchos::null)
     {
       if(nopencond_.size())
       {
         hascond_ = true;
         condIDs_ = Teuchos::rcp(new std::set<int>());
+        //condRHS_ = Teuchos::rcp(new Epetra_Vector(dofrowmap, true));
       }
     };
 
@@ -196,8 +208,7 @@ namespace POROELAST
 
     //! apply rhs terms of no penetration condition to global rhs vector
     void ApplyCondRHS(Teuchos::RCP<Epetra_Vector> iterinc,
-                      Teuchos::RCP<Epetra_Vector> rhs,
-                      Teuchos::RCP<Epetra_Vector> cond_rhs);
+                      Teuchos::RCP<Epetra_Vector> rhs);
 
     //! return no penetration map extractor
     Teuchos::RCP< const LINALG::MapExtractor > Extractor(){return nopenetration_;};
@@ -205,13 +216,33 @@ namespace POROELAST
     //! return vector containing global IDs of dofs with no penetration condition
     Teuchos::RCP<std::set<int> > CondIDs(){return condIDs_;};
 
+    //! return vector containing global IDs of dofs with no penetration condition
+    Teuchos::RCP<Epetra_Vector> CondVector(){return condVector_;};
+
     //! check if a no penetration condition exists
     bool HasCond(){return hascond_;};
 
+    //! return condrhs
+    Teuchos::RCP<Epetra_Vector> RHS(){return condRHS_;};
+
+    void Clear(POROELAST::coupltype coupltype);
+
+    void Setup(Teuchos::RCP<const Epetra_Map> dofRowMap, const Epetra_Map* dofRowMapFluid);
+
+    Teuchos::RCP<LINALG::SparseMatrix> ConstraintMatrix(POROELAST::coupltype coupltype);
+
+    Teuchos::RCP<LINALG::SparseMatrix> StructVelConstraintMatrix(POROELAST::coupltype coupltype);
+
   private:
 
-    //! vector containing global IDs of dofs with no penetration condition
+    //! set containing global IDs of dofs with no penetration condition
     Teuchos::RCP<std::set<int> > condIDs_;
+
+    //! vector marking dofs with no penetration condition
+    Teuchos::RCP<Epetra_Vector> condVector_;
+
+    //! vector containing rhs terms from no penetration condition
+    Teuchos::RCP<Epetra_Vector> condRHS_;
 
     //! vector containing no penetration - conditions
     std::vector<DRT::Condition*> nopencond_;
@@ -221,6 +252,11 @@ namespace POROELAST
 
     //! flag indicating if a no penetration condition exists
     bool hascond_;
+
+    //!coupling matrices
+    Teuchos::RCP<LINALG::SparseMatrix> fluidfluidConstraintMatrix_;
+    Teuchos::RCP<LINALG::SparseMatrix> fluidstructureConstraintMatrix_;
+    Teuchos::RCP<LINALG::SparseMatrix> structVelConstraintMatrix_;
   };
 }
 

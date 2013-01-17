@@ -84,7 +84,7 @@ namespace POROELAST
     //! flag indicating whether there are no slip conditions to be evaluated at the interface
     bool evaluateinterface_;
 
-    //! map containing DOFs with fsi- and DBC conditions
+    //! map containing DOFs with both fsi- and DBC conditions
     Teuchos::RCP<Epetra_Map> fsibcmap_;
 
     /// @name Some quantities to recover the Langrange multiplier at the end of each time step

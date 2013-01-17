@@ -21,6 +21,7 @@
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_inpar/inpar_structure.H"
 #include "poro_base.H"
+#include "poroelast_utils.H"
 
 #include "../linalg/linalg_mapextractor.H"
 
@@ -143,12 +144,11 @@ namespace POROELAST
       //@}
 
       //finite difference check of stiffness matrix
-      //void PoroFDCheck();
+      void PoroFDCheck();
 
       /// Evaluate no penetration condition
       void EvaluateCondition(Teuchos::RCP<LINALG::SparseOperator> Sysmat,
-                             Teuchos::RCP<Epetra_Vector> Cond_RHS,
-                             int coupltype=0);
+                             POROELAST::coupltype coupltype = POROELAST::fluidfluid);
 
       /// recover Lagrange multiplier \f$\lambda_\Gamma\f$ at the interface at the end of each time step
       /// (i.e. condensed forces onto the structure) needed for rhs in next time step
@@ -310,13 +310,15 @@ namespace POROELAST
 
       //! @name Various global forces
 
-      Teuchos::RCP<Epetra_Vector> cond_rhs_;  //!< additional rhs-Terms for no penetration condition
+      //Teuchos::RCP<Epetra_Vector> cond_rhs_;  //!< additional rhs-Terms for no penetration condition
 
       Teuchos::RCP<Epetra_Vector> freact_;    //!< reaction force
       Teuchos::RCP<Epetra_Vector> iterinc_;   //!< increment between Newton steps k and k+1
       //!< \f$\Delta{x}^{<k>}_{n+1}\f$
 
       //@}
+
+      bool directsolve_;
 
   }; // Monolithic
 

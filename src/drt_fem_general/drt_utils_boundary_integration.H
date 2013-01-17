@@ -54,9 +54,10 @@ namespace UTILS
 \author gammi (gamnitzer@lnm.mw.tum.de), 05/09
 
   -----------------------------------------------------------------*/
+template<class V,class W>
 void SurfaceGPToParentGP(
-  Epetra_SerialDenseMatrix              & pqxg     ,
-  Epetra_SerialDenseMatrix              & derivtrafo,
+  V              & pqxg     ,
+  W              & derivtrafo,
   const DRT::UTILS::IntegrationPoints2D & intpoints,
   const DRT::Element::DiscretizationType  pdistype ,
   const DRT::Element::DiscretizationType  distype  ,
@@ -84,9 +85,10 @@ void SurfaceGPToParentGP(
 \author gammi (gamnitzer@lnm.mw.tum.de), 05/09
 
   -----------------------------------------------------------------*/
+template<class V,class W>
 void LineGPToParentGP(
-  Epetra_SerialDenseMatrix              & pqxg     ,
-  Epetra_SerialDenseMatrix              & derivtrafo,
+  V              & pqxg     ,
+  W              & derivtrafo,
   const DRT::UTILS::IntegrationPoints1D & intpoints,
   const DRT::Element::DiscretizationType  pdistype ,
   const DRT::Element::DiscretizationType  distype  ,
@@ -133,6 +135,35 @@ template<>
 void BoundaryGPToParentGP<2>(
 Epetra_SerialDenseMatrix                                                    & pqxg     ,
 Epetra_SerialDenseMatrix                                                    & derivtrafo,
+const DRT::UTILS::IntPointsAndWeights<1> &                                    intpoints,
+const DRT::Element::DiscretizationType                                        pdistype ,
+const DRT::Element::DiscretizationType                                        distype  ,
+const int                                                                     surfaceid);
+
+template<const int NSD>
+void BoundaryGPToParentGP(
+    Epetra_SerialDenseMatrix                                                    & pqxg     ,
+  LINALG::Matrix<NSD,NSD>                                                    & derivtrafo,
+  const DRT::UTILS::IntPointsAndWeights<NSD-1> &                                intpoints,
+  const DRT::Element::DiscretizationType                                        pdistype ,
+  const DRT::Element::DiscretizationType                                        distype  ,
+  const int                                                                     surfaceid);
+
+//! specialization for 3D
+template<>
+void BoundaryGPToParentGP<3>(
+    Epetra_SerialDenseMatrix                                                    & pqxg     ,
+    LINALG::Matrix<3,3>                                                    & derivtrafo,
+const DRT::UTILS::IntPointsAndWeights<2> &                                    intpoints,
+const DRT::Element::DiscretizationType                                        pdistype ,
+const DRT::Element::DiscretizationType                                        distype  ,
+const int                                                                     surfaceid);
+
+//! specialization for 2D
+template<>
+void BoundaryGPToParentGP<2>(
+    Epetra_SerialDenseMatrix                                                    & pqxg     ,
+    LINALG::Matrix<2,2>                                                    & derivtrafo,
 const DRT::UTILS::IntPointsAndWeights<1> &                                    intpoints,
 const DRT::Element::DiscretizationType                                        pdistype ,
 const DRT::Element::DiscretizationType                                        distype  ,

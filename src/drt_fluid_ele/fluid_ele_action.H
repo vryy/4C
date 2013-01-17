@@ -75,7 +75,9 @@ enum BoundaryAction {
     traction_velocity_component,
     traction_Uv_integral_component,
     no_penetration,
+    no_penetrationIDs,
     poro_boundary,
+    poro_prescoupl,
     ba_calc_adjoint_neumann
 }; // enum BoundaryAction
 

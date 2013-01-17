@@ -302,9 +302,30 @@ int DRT::ELEMENTS::FluidBoundary::Evaluate(
         elevec2);
     break;
   }
+  case FLD::no_penetrationIDs:
+  {
+    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->NoPenetrationIDs(
+        this,
+        params,
+        discretization,
+        elevec1,
+        lm);
+    break;
+  }
   case FLD::poro_boundary:
   {
     DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->PoroBoundary(
+        this,
+        params,
+        discretization,
+        lm,
+        elemat1,
+        elevec1);
+    break;
+  }
+  case FLD::poro_prescoupl:
+  {
+    DRT::ELEMENTS::FluidBoundaryImplInterface::Impl(this)->PressureCoupling(
         this,
         params,
         discretization,
@@ -387,3 +408,4 @@ void DRT::ELEMENTS::FluidBoundary::LocationVector(
   }
   return;
 }
+

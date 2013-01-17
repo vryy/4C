@@ -201,6 +201,13 @@ public:
   /// separately.
   virtual int NumDofPerNode(const DRT::Node& node) const { return Wall1::noddof_; }
 
+  virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
+  {
+    if (nds==1)
+      return 0;
+    return NumDofPerNode(node);
+  };
+
   /// Get number of degrees of freedom per element
   /// (implements pure virtual DRT::Element)
   ///

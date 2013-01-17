@@ -23,6 +23,8 @@
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_lib/drt_assemblestrategy.H"
 
+#include "../drt_lib/drt_globalproblem.H"
+
 /*======================================================================*/
 /* constructor */
 ADAPTER::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid,
@@ -47,60 +49,85 @@ ADAPTER::FluidPoro::FluidPoro(Teuchos::RCP<Fluid> fluid,
 void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> Cond_RHS,
                                               Teuchos::RCP<LINALG::SparseMatrix> ConstraintMatrix,
                                               Teuchos::RCP<LINALG::SparseMatrix> StructVelConstraintMatrix,
+                                              Teuchos::RCP<Epetra_Vector> condVector,
                                               Teuchos::RCP< std::set<int> > condIDs,
-                                              int coupltype)
+                                              POROELAST::coupltype coupltype)
 {
   if (!(Discretization()->Filled())) dserror("FillComplete() was not called");
   if (!Discretization()->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
-  Discretization()->ClearState();
-  Discretization()->SetState("dispn", Dispn());
-  Discretization()->SetState("dispnp", Dispnp());
-  Discretization()->SetState(0,"velnp",Velnp());
-  Discretization()->SetState(0,"gridv",GridVel());
-
-  ConstraintMatrix->Zero();
+  Discretization()->SetState(0,"dispnp", Dispnp());
 
   Teuchos::ParameterList params;
 
   params.set("timescale",TimeScaling());
 
-  condIDs->clear();
-
-  // set action for elements
-  params.set<int>("action",FLD::no_penetration);
-  if(coupltype==0)
+  if(coupltype == POROELAST::fluidfluid)
   {
-    params.set("coupling","fluid fluid");
+    //first, find out which dofs will be constraint
+    //Teuchos::RCP<Epetra_Vector> condset = Teuchos::rcp(new Epetra_Vector(ConstraintMatrix->RowMap(),true) );
 
-    Teuchos::RCP<Epetra_Vector> condset = Teuchos::rcp(new Epetra_Vector(ConstraintMatrix->RowMap(),true) );
+    params.set<int>("action",FLD::no_penetrationIDs);
+    Discretization()->EvaluateCondition( params, condVector,"NoPenetration" );
+
+    //write global IDs of dofs on which the no penetration condition is applied (can vary in time and iteration)
+    const int ndim = DRT::Problem::Instance()->NDim();
+    const int ndof = ndim +1;
+    const int length = condVector->MyLength();
+    const int nnod = length/ndof;
+    const Epetra_BlockMap& map = condVector->Map();
+    bool isset = false;
+    for(int i=0; i<nnod ; i++)
+    {
+      isset = false;
+      for(int j=0; j<ndof ; j++)
+      {
+        if((*condVector)[i*ndof+j] != 0.0 and isset==false)
+        {
+          condIDs->insert(map.GID(i*ndof+j));
+          isset=true;
+          //break;
+        }
+        else
+          (*condVector)[i*ndof+j] = 0.0;
+      }
+    }
+
+    // set action for elements
+    params.set<int>("action",FLD::no_penetration);
+    //params.set<Teuchos::RCP< std::set<int> > >("condIDs",condIDs);
+    params.set<POROELAST::coupltype>("coupling",POROELAST::fluidfluid);
 
     DRT::AssembleStrategy fluidstrategy(
         0,              // fluiddofset for row
         0,              // fluiddofset for column
         ConstraintMatrix,           // fluid-mechanical matrix
         Teuchos::null,
-        condset,
+        Teuchos::null,
         Teuchos::null,
         Teuchos::null
     );
 
+    Discretization()->SetState(0,"condVector", condVector);
+
     Discretization()->EvaluateCondition( params, fluidstrategy,"NoPenetration" );
-
-    //write global IDs of dofs on which the no penetration condition is applied (can vary in time)
-    const int length = condset->MyLength();
-    const Epetra_BlockMap& map = condset->Map();
-    for(int i=0; i<length ; i++)
-    {
-      if((*condset)[i] != 0.0)
-        condIDs->insert(map.GID(i));
-    }
   }
-  else if(coupltype==1)
+  else if(coupltype == POROELAST::fluidstructure)
   {
-    params.set("coupling","fluid structure");
-    StructVelConstraintMatrix->Zero();
+    //check
+    //if(condIDs->size() == 0)
+    //  dserror("no global IDs known for applying no penetration condition!");
 
+    Discretization()->SetState(0,"velnp",Velnp());
+    Discretization()->SetState(0,"gridv",GridVel());
+
+    Discretization()->SetState(0,"condVector", condVector);
+
+    // set action for elements
+    params.set<int>("action",FLD::no_penetration);
+    params.set<POROELAST::coupltype>("coupling",POROELAST::fluidstructure);
+
+    Epetra_Time timernopen(StructVelConstraintMatrix->Comm());
     // build specific assemble strategy for the fluid-mechanical system matrix
     // from the point of view of FluidField:
     // fluiddofset = 0, structdofset = 1

@@ -3119,7 +3119,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   // condition for evaluation of boundary terms in porous media problems
 
   Teuchos::RCP<ConditionDefinition> poropartint_surf =
-    Teuchos::rcp(new ConditionDefinition("DESIGN SUFACE PORO PARTIAL INTEGRATION",
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE PORO PARTIAL INTEGRATION",
                                          "PoroPartInt",
                                          "Poro Partial Integration",
                                          DRT::Condition::PoroPartInt,
@@ -3140,6 +3140,32 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                          DRT::Condition::Line));
 
   condlist.push_back(poropartint_line);
+
+  /*--------------------------------------------------------------------*/
+  // condition for evaluation of boundary terms in porous media problems
+
+  Teuchos::RCP<ConditionDefinition> poropresint_surf =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SURFACE PORO PRESSURE INTEGRATION",
+                                         "PoroPresInt",
+                                         "Poro Pressure Integration",
+                                         DRT::Condition::PoroPresInt,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  condlist.push_back(poropresint_surf);
+
+  /*--------------------------------------------------------------------*/
+  // condition for evaluation of boundary terms in porous media problems
+
+  Teuchos::RCP<ConditionDefinition> poropresint_line =
+    Teuchos::rcp(new ConditionDefinition("DESIGN LINE PORO PRESSURE INTEGRATION",
+                                         "PoroPresInt",
+                                         "Poro Pressure Integration",
+                                         DRT::Condition::PoroPresInt,
+                                         true,
+                                         DRT::Condition::Line));
+
+  condlist.push_back(poropresint_line);
 
   /*--------------------------------------------------------------------*/
   return vc;

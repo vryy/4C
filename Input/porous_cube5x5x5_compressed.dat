@@ -506,12 +506,6 @@ DSURF                           0
 ------------------------------------------DESIGN VOLUME POROCOUPLING CONDITION
 DVOL                            1
 E 1 -
------------------------------------------DESIGN SUFACE PORO PARTIAL INTEGRATION
-DSURF                           0
-// Surface x-
-//E 4 - 
-// Surface x+
-//E 6 - 
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 NODE 212 DNODE 1
 NODE 62 DNODE 2

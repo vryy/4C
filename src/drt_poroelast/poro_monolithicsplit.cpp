@@ -62,7 +62,7 @@ void POROELAST::MonolithicSplit::PrepareTimeStep()
   StructureField()->PrepareTimeStep();
   FluidField().PrepareTimeStep();
 
-  if (evaluateinterface_)
+  if (evaluateinterface_ and fsibcmap_->NumMyElements())
   {
     Teuchos::RCP<Epetra_Vector> iveln = StructureField()->Interface()->ExtractFSICondVector(StructureField()->ExtractVeln());
     FluidField().ApplyInterfaceVelocities(StructureToFluidAtInterface(iveln));
@@ -90,7 +90,7 @@ Teuchos::RCP<Epetra_Vector> POROELAST::MonolithicSplit::FluidToStructureAtInterf
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicFluidSplit::FSIDBCMap");
+  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicSplit::FSIDBCMap");
 
   std::vector<Teuchos::RCP<const Epetra_Map> > fluidmaps;
   fluidmaps.push_back(FluidField().Interface()->FSICondMap());
@@ -111,7 +111,7 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
   std::map<int,int> slavemastermap;
   icoupfs_->FillSlaveToMasterMap(slavemastermap);
 
-  Teuchos::RCP<Epetra_Vector> tmp = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap(), true));
+  Teuchos::RCP<Epetra_Vector> gidmarker_struct = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->FSICondMap(), true));
 
   const int mylength = structfsibcmap->NumMyElements(); //on each processor (lids)
   const int* mygids = structfsibcmap->MyGlobalElements();
@@ -121,24 +121,24 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
   {
     int gid = mygids[i];
     //dsassert(slavemastermap.count(gid),"master gid not found on slave side");
-    int err = tmp->ReplaceGlobalValue(gid, 0, 1.0);
+    int err = gidmarker_struct->ReplaceGlobalValue(gid, 0, 1.0);
     if(err) dserror("ReplaceMyValue failed for gid %i error code %d", gid, err);
   }
 
   //transfer to fluid side
-  Teuchos::RCP<Epetra_Vector> tmp2 = StructureToFluidAtInterface(tmp);
+  Teuchos::RCP<Epetra_Vector> gidmarker_fluid = StructureToFluidAtInterface(gidmarker_struct);
 
   std::vector<int> structfsidbcvector;
-  const int mylength2 = tmp2->MyLength(); //on each processor (lids)
-  double* myvalues = tmp2->Values();
-  const int* map = tmp2->Map().MyGlobalElements();
-  for (int i=0; i<mylength2; ++i)
+  const int numgids = gidmarker_fluid->MyLength(); //on each processor (lids)
+  double* mygids_fluid = gidmarker_fluid->Values();
+  const int* map = gidmarker_fluid->Map().MyGlobalElements();
+  for (int i=0; i<numgids; ++i)
   {
-    double val = myvalues[i];
-    int gid = map[i];
+    double val = mygids_fluid[i];
+    //int gid = map[i];
     //dsassert(slavemastermap.count(gid),"master gid not found on slave side");
     if(val)
-      structfsidbcvector.push_back(gid);
+      structfsidbcvector.push_back(map[i]);
   }
 
   Teuchos::RCP<Epetra_Map> structfsidbcmap = Teuchos::null;
@@ -196,7 +196,7 @@ void POROELAST::MonolithicSplit::SetupCouplingAndMatrixes()
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::CombinedDBCMap()
 {
-  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicStructureSplit::CombinedDBCMap");
+  TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicSplit::CombinedDBCMap");
 
   const Teuchos::RCP<const Epetra_Map > scondmap = StructureField()->GetDBCMapExtractor()->CondMap();
   const Teuchos::RCP<const Epetra_Map > fcondmap = FluidField().GetDBCMapExtractor()->CondMap();

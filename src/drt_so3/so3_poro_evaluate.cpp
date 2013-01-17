@@ -39,8 +39,60 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::PreEvaluate(Teuchos::ParameterLis
                                         DRT::Discretization&      discretization,
                                         DRT::Element::LocationArray& la)
 {
-  //do nothing
-    return;
+  if(scatracoupling_)
+  {
+    if(la.Size()>2)
+    {
+      //  dofs per node of second dofset
+      const int numdofpernode = NumDofPerNode(1,*(Nodes()[0]));
+
+      if (la[1].Size() != numnod_*numdofpernode)
+        dserror("calc_struct_nlnstiff: Location vector length for velocities does not match!");
+
+      if (discretization.HasState(1,"temperature"))
+      {
+        // check if you can get the scalar state
+        Teuchos::RCP<const Epetra_Vector> tempnp
+          = discretization.GetState(1,"temperature");
+
+        if (tempnp==Teuchos::null)
+          dserror("calc_struct_nlnstiff: Cannot get state vector 'fluidvel' ");
+
+        // extract local values of the global vectors
+        Teuchos::RCP<std::vector<double> >mytemp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
+        DRT::UTILS::ExtractMyValues(*tempnp,*mytemp,la[1].lm_);
+
+        params.set<Teuchos::RCP<std::vector<double> > >("scalar",mytemp);
+      }
+    }
+    /*
+    else
+    {
+      const double time = params.get("total time",0.0);
+    // find out whether we will use a time curve and get the factor
+      int num = 0; // TO BE READ FROM INPUTFILE AT EACH ELEMENT!!!
+      std::vector<double> xrefe; xrefe.resize(3);
+      DRT::Node** nodes = Nodes();
+      // get displacements of this element
+    //  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+     for (int i=0; i<numnod_; ++i){
+        const double* x = nodes[i]->X();
+        xrefe [0] +=  x[0]/numnod_;
+        xrefe [1] +=  x[1]/numnod_;
+        xrefe [2] +=  x[2]/numnod_;
+
+      }
+      const double* coordgpref = &xrefe[0];
+      double functfac = DRT::Problem::Instance()->Funct(num).Evaluate(0,coordgpref,time,NULL);
+      params.set<double>("scalar",functfac);
+    }
+    */
+  }
+  else
+  {
+    //do nothing
+  }//if(scatracoupling_)
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -1620,7 +1672,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
   LINALG::Matrix<numnod_,1> shapefct;           //  shape functions evalulated at gauss point
   LINALG::Matrix<numdim_,numnod_> deriv(true);  //  first derivatives at gausspoint w.r.t. r,s,t
   LINALG::Matrix<numderiv2_,numnod_> deriv2;             //  second derivatives at gausspoint w.r.t. r,s,t
-  //LINALG::Matrix<numdim_,1> xsi;
 
   for (int gp=0; gp<numgpt_; ++gp)
   {
@@ -1772,36 +1823,12 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
 
     //------------------------------------ build F^-1 as vector 9x1
     LINALG::Matrix<numdim_*numdim_,1> defgrd_inv_vec;
-    /*
-    defgrd_inv_vec(0)=defgrd_inv(0,0);
-    defgrd_inv_vec(1)=defgrd_inv(0,1);
-    defgrd_inv_vec(2)=defgrd_inv(0,2);
-    defgrd_inv_vec(3)=defgrd_inv(1,0);
-    defgrd_inv_vec(4)=defgrd_inv(1,1);
-    defgrd_inv_vec(5)=defgrd_inv(1,2);
-    defgrd_inv_vec(6)=defgrd_inv(2,0);
-    defgrd_inv_vec(7)=defgrd_inv(2,1);
-    defgrd_inv_vec(8)=defgrd_inv(2,2);
-    */
-
     for(int i=0; i<numdim_; i++)
       for(int j=0; j<numdim_; j++)
         defgrd_inv_vec(i*numdim_+j) = defgrd_inv(i,j);
 
     //------------------------------------ build F^-T as vector 9x1
     LINALG::Matrix<numdim_*numdim_,1> defgrd_IT_vec;
-    /*
-    defgrd_IT_vec(0)=defgrd_inv(0,0);
-    defgrd_IT_vec(1)=defgrd_inv(1,0);
-    defgrd_IT_vec(2)=defgrd_inv(2,0);
-    defgrd_IT_vec(3)=defgrd_inv(0,1);
-    defgrd_IT_vec(4)=defgrd_inv(1,1);
-    defgrd_IT_vec(5)=defgrd_inv(2,1);
-    defgrd_IT_vec(6)=defgrd_inv(0,2);
-    defgrd_IT_vec(7)=defgrd_inv(1,2);
-    defgrd_IT_vec(8)=defgrd_inv(2,2);
-    */
-
     for(int i=0; i<numdim_; i++)
       for(int j=0; j<numdim_; j++)
         defgrd_IT_vec(i*numdim_+j) = defgrd_inv(j,i);
@@ -2163,6 +2190,13 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::InitElement()
   }
 
   init_=true;
+
+  scatracoupling_=false;
+
+  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  if(probtype == prb_poroscatra)
+    scatracoupling_=true;
+
   return;
 }
 

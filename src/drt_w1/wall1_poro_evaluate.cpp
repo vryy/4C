@@ -546,7 +546,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
   // get global id of the structure element
   const int id = Id();
   //access fluid discretization
-  RCP<DRT::Discretization> fluiddis = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
   fluiddis = DRT::Problem::Instance()->GetDis("fluid");
   //get corresponding fluid element (it has the same global ID as the structure element)
   DRT::Element* fluidele = fluiddis->gElement(id);
@@ -1264,8 +1264,10 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::coupling_poroelast(
   // get global id of the structure element
   const int id = Id();
   //access fluid discretization
-  RCP<DRT::Discretization> fluiddis = Teuchos::null;
+  Teuchos::RCP<DRT::Discretization> fluiddis = Teuchos::null;
   fluiddis = DRT::Problem::Instance()->GetDis("fluid");
+  if(fluiddis == Teuchos::null)
+    dserror("no fluid discretization. Panic.");
   //get corresponding fluid element
   DRT::Element* fluidele = fluiddis->gElement(id);
   if (fluidele == NULL)

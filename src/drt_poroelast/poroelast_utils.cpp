@@ -59,6 +59,8 @@ std::map<std::string, std::string> POROELAST::UTILS::PoroelastCloneStrategy::Con
       "PoroCoupling"));
   conditions_to_copy.insert(std::pair<std::string, std::string> ("FSICoupling",
       "FSICoupling"));
+  conditions_to_copy.insert(std::pair<std::string, std::string> ("PoroPresInt",
+      "PoroPresInt"));
 
   return conditions_to_copy;
 }
@@ -266,4 +268,13 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
   poroalgo->SetupSolver();
 
   return poroalgo;
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROELAST::PrintLogo()
+{
+  std::cout << "This is a Porous Media problem" << std::endl;
+
+  return;
 }

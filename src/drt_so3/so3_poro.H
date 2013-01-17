@@ -195,15 +195,6 @@ public:
 
   //! @name Evaluation
 
-  void PreEvaluate
-    (
-      Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
-      DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
-      DRT::Element::LocationArray& la ///< location array for de-assembly
-    );
-
-  //! @name Evaluation
-
   /*!
   \brief Evaluate an element
 
@@ -313,6 +304,13 @@ protected:
     Epetra_SerialDenseVector& elevec3  ///< vector to be filled by element
   );
 
+  void PreEvaluate
+    (
+      Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
+      DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
+      DRT::Element::LocationArray& la ///< location array for de-assembly
+    );
+
   //! action parameters recognized by so_hex8
   enum ActionType
   {
@@ -381,6 +379,8 @@ protected:
   bool ishigherorder_;
 
   bool init_;
+
+  bool scatracoupling_;
 
 private:
 

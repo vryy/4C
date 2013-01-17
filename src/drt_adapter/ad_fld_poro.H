@@ -21,6 +21,8 @@
 #include "ad_fld_fluid_fsi.H"
 #include "../linalg/linalg_mapextractor.H"
 
+#include "../drt_poroelast/poroelast_utils.H"
+
 namespace DRT
 {
   class Condition;
@@ -53,8 +55,9 @@ namespace ADAPTER {
     void EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> Cond_RHS,
                            Teuchos::RCP<LINALG::SparseMatrix> ConstraintMatrix,
                            Teuchos::RCP<LINALG::SparseMatrix> StructVelConstraintMatrix,
+                           Teuchos::RCP<Epetra_Vector> condVector,
                            Teuchos::RCP<std::set<int> > condIDs,
-                           int coupltype=0);
+                           POROELAST::coupltype coupltype = POROELAST::fluidfluid);
 
     //! Evaluate no penetration constraint
     /*!

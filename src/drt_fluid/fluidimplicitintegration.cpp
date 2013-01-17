@@ -55,7 +55,7 @@ Maintainers: Volker Gravemeier & Andreas Ehrl
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/sutherland.H"
 #include "../drt_mat/newtonianfluid.H"
-
+#include "../drt_poroelast/poroelast_utils.H"
 
 #include "../drt_art_net/art_net_dyn_drt.H"
 #include "../drt_art_net/artnetexplicitintegration.H"
@@ -3057,19 +3057,39 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   //---------------------------
   if (physicaltype_ == INPAR::FLUID::poro)
   {
-    std::string condname = "PoroPartInt";
+    {
+      std::string condname = "PoroPartInt";
 
-    ParameterList eleparams;
+      ParameterList eleparams;
 
-    // set action for elements
-    eleparams.set<int>("action",FLD::poro_boundary);
+      // set action for elements
+      eleparams.set<int>("action",FLD::poro_boundary);
+      eleparams.set<POROELAST::coupltype>("coupling",POROELAST::fluidfluid);
 
-    discret_->ClearState();
-    discret_->SetState("dispnp", dispnp_);
-    discret_->SetState("gridv", gridv_);
-    discret_->SetState("velnp",velnp_);
-    discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
-    discret_->ClearState();
+      discret_->ClearState();
+      discret_->SetState("dispnp", dispnp_);
+      discret_->SetState("gridv", gridv_);
+      discret_->SetState("velnp",velnp_);
+      discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
+      discret_->ClearState();
+    }
+
+    {
+      std::string condname = "PoroPresInt";
+
+      ParameterList eleparams;
+
+      // set action for elements
+      eleparams.set<int>("action",FLD::poro_prescoupl);
+      eleparams.set<POROELAST::coupltype>("coupling",POROELAST::fluidfluid);
+
+      discret_->ClearState();
+      discret_->SetState("dispnp", dispnp_);
+      discret_->SetState("gridv", gridv_);
+      discret_->SetState("velnp",velnp_);
+      discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
+      discret_->ClearState();
+    }
   }
   //---------------------------
 
@@ -3441,6 +3461,14 @@ void FLD::FluidImplicitTimeInt::Output()
     {
       Teuchos::RCP<Epetra_Vector> scalar_field = velpressplitter_.ExtractCondVector(scaaf_);
       output_->WriteVector("scalar_field", scalar_field);
+    }
+
+    if(physicaltype_ == INPAR::FLUID::poro)
+    {
+      RCP<Epetra_Vector>  convel= rcp(new Epetra_Vector(*velnp_));
+      convel->Update(-1.0,*gridv_,1.0);
+      output_->WriteVector("convel", convel);
+      //output_->WriteVector("gridv", gridv_);
     }
 
     //only perform stress calculation when output is needed

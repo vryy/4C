@@ -40,6 +40,7 @@ intpoints_(distype)
   xsi_.resize(numgpt_, LINALG::Matrix<numdim_,1>(true));
 
   init_=false;
+  scatracoupling_=false;
   return;
 }
 
@@ -57,7 +58,8 @@ detJ_(old.detJ_),
 xsi_(old.xsi_),
 intpoints_(distype),
 ishigherorder_(old.ishigherorder_),
-init_(old.init_)
+init_(old.init_),
+scatracoupling_(old.scatracoupling_)
 {
   numgpt_ = intpoints_.NumPoints();
   return;
@@ -106,6 +108,9 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Pack(DRT::PackBuffer& data) const
   for (int i=0; i<size; ++i)
     so3_ele::AddtoPack(data,xsi_[i]);
 
+  // scatracoupling_
+  so3_ele::AddtoPack(data,scatracoupling_);
+
   // add base class Element
   so3_ele::Pack(data);
 
@@ -146,6 +151,9 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Unpack(const std::vector<char>& d
   xsi_.resize(size, LINALG::Matrix<numdim_,1>(true));
   for (int i=0; i<size; ++i)
     so3_ele::ExtractfromPack(position,data,xsi_[i]);
+
+  // scatracoupling_
+  scatracoupling_ = (bool)( so3_ele::ExtractInt(position,data) );
 
   // extract base class Element
   std::vector<char> basedata(0);

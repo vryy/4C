@@ -116,19 +116,14 @@ private:
      */
     int EvaluateOD(
         Teuchos::ParameterList&                                           params,
-        const LINALG::Matrix<my::nsd_, my::nen_> &                        ebofoaf,
         LINALG::Matrix<(my::nsd_ + 1) * my::nen_, my::nsd_ * my::nen_> &  elemat1,
         LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1> &                    elevec1,
         const LINALG::Matrix<my::nsd_,my::nen_> &                         evelaf,
         const LINALG::Matrix<my::nen_, 1> &                               epreaf,
         const LINALG::Matrix<my::nsd_, my::nen_> &                        evelnp,
         const LINALG::Matrix<my::nen_, 1> &                               eprenp,
-        const LINALG::Matrix<my::nsd_, my::nen_> &                        emhist,
-        const LINALG::Matrix<my::nen_, 1> &                               epren,
         const LINALG::Matrix<my::nen_, 1> &                               epressnp_timederiv,
-        const LINALG::Matrix<my::nsd_, my::nen_> &                        eaccam,
         const LINALG::Matrix<my::nsd_, my::nen_> &                        edispnp,
-        const LINALG::Matrix<my::nsd_, my::nen_> &                        edispn,
         const LINALG::Matrix<my::nsd_, my::nen_> &                        egridv,
         Teuchos::RCP<MAT::Material>                                       mat,
         bool                                                              isale,
@@ -176,17 +171,12 @@ private:
       const DRT::UTILS::GaussIntegration &                          intpoints);
 
   void SysmatOD(
-      const LINALG::Matrix<my::nsd_, my::nen_>&                       ebofoaf,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,
       const LINALG::Matrix<my::nen_, 1>&                              epreaf,
       const LINALG::Matrix<my::nen_, 1>&                              eprenp,
-      const LINALG::Matrix<my::nsd_, my::nen_>&                       eaccam,
-      const LINALG::Matrix<my::nsd_, my::nen_>&                       emhist,
-      const LINALG::Matrix<my::nen_, 1> &                             epren,
       const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
-      const LINALG::Matrix<my::nsd_, my::nen_>&                       edispn,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
       LINALG::Matrix<(my::nsd_ + 1) * my::nen_,my::nsd_ * my::nen_>&  ecoupl,
       LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1>&                   eforce,

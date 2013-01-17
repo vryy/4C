@@ -53,7 +53,7 @@ PORO_SCATRA::PartPORO_SCATRA::PartPORO_SCATRA(const Epetra_Comm& comm,
     INPAR::SCATRA::ConvForm convform
     = DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatradyn,"CONVFORM");
     if ( convform != INPAR::SCATRA::convform_convective )
-      dserror("The balance of mass is included in the formulation for scalart transport in porous media. "
+      dserror("The balance of mass is included in the formulation for scalar transport in porous media. "
           "Set 'CONVFORM' to 'convective' in the SCALAR TRANSPORT DYNAMIC section! ");
 
     INPAR::SCATRA::VelocityField velfield
@@ -197,7 +197,7 @@ void PORO_SCATRA::PartPORO_SCATRA::SetMeshDisp()
 void PORO_SCATRA::PartPORO_SCATRA::SetupDiscretizations(const Epetra_Comm& comm)
 {
   // Scheme    : the structure discretization is received from the input. Then, an ale-fluid disc.is cloned from the struct. one.
-  //  After that, an ale-scatra disc. is cloned from the fluid disc. already created.
+  //  After that, an ale-scatra disc. is cloned from the structure discretization.
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -229,7 +229,7 @@ void PORO_SCATRA::PartPORO_SCATRA::SetupDiscretizations(const Epetra_Comm& comm)
   if (fluiddis->NumGlobalNodes()==0) dserror("Fluid discretization is empty!");
 
   if(!scatradis->Filled())
-  scatradis->FillComplete();
+    scatradis->FillComplete();
 
   if (scatradis->NumGlobalNodes()==0)
   {
