@@ -31,7 +31,8 @@ Maintainer: Christoph Meier
 CONTACT::Beam3cmanager::Beam3cmanager(DRT::Discretization& discret, double alphaf):
 pdiscret_(discret),
 pdiscomm_(discret.Comm()),
-alphaf_(alphaf)
+alphaf_(alphaf),
+constrnorm_(0.0)
 {
   // create new (basically copied) discretization for contact
   // (to ease our search algorithms we afford the luxury of
