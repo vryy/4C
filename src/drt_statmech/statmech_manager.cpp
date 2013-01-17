@@ -588,19 +588,36 @@ void STATMECH::StatMechManager::Update(const int&                               
  | Update time step size in time integration       (public)mueller 06/12|
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::UpdateTimeAndStepSize(double& dt,
-                                                      double& timeconverged)
+                                                      double& timeconverged,
+                                                      bool    initialset)
 {
-  if(timeintervalstep_<(int)timestepsizes_->size())
+  if(initialset)
   {
-    // update time step
-    double dtnew = timestepsizes_->at(timeintervalstep_);
-    // update step size
-    double nexttimethreshold = actiontime_->at(timeintervalstep_);
-    double eps = 1.0e-10;
-    if((timeconverged>=nexttimethreshold || fabs(timeconverged-nexttimethreshold)<eps) && dtnew>0.0)
+    timeintervalstep_ = -1;
+    for(int i=0; i<(int)actiontime_->size(); i++)
+      if(timeconverged>=actiontime_->at(i))
+        timeintervalstep_++;
+      else
+        break;
+
+    dt = timestepsizes_->at(timeintervalstep_);
+    // "++" needed so that after initialization, no additional update occurs
+    timeintervalstep_++;
+  }
+  else
+  {
+    if(timeintervalstep_<(int)timestepsizes_->size())
     {
-      dt = dtnew;
-      timeintervalstep_++;
+      // update time step
+      double dtnew = timestepsizes_->at(timeintervalstep_);
+      // update step size
+      double nexttimethreshold = actiontime_->at(timeintervalstep_);
+      double eps = 1.0e-10;
+      if((timeconverged>=nexttimethreshold || fabs(timeconverged-nexttimethreshold)<eps) && dtnew>0.0)
+      {
+        dt = dtnew;
+        timeintervalstep_++;
+      }
     }
   }
   return;

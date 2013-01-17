@@ -249,6 +249,11 @@ void STR::TimIntStatMech::InitializeBeamContact()
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::Integrate()
 {
+  // set statmech internal time and time step size
+  statmechman_->UpdateTimeAndStepSize((*dt_)[0],(*time_)[0],true);
+  // this is necessary in case the time step size changed with the initial step (originally timen_ is set in strtimint.cpp)
+  timen_ = (*time_)[0] + (*dt_)[0];
+
   double eps = 1.0e-12;
   while( (timen_ <= timemax_+eps) and (stepn_ <= stepmax_) )
   {

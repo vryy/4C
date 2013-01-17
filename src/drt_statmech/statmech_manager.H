@@ -154,9 +154,11 @@ public:
 
   /*! \brief update time step size in time integration scheme
    *  \param dt            (in) time step size
-   *  \param timeconverged (in) time of last converged timestep*/
+   *  \param timeconverged (in) time of last converged timestep
+   *  \param initialaset   (in) different behavior depending on call*/
   void UpdateTimeAndStepSize(double& dt,
-                             double& timeconverged);
+                             double& timeconverged,
+                             bool initialset=false);
 
   //! \brief initializing special output for statistical mechanics by looking for a suitable name of the outputfile and setting up an empty file with this name
   void InitOutput(const int& ndim,
