@@ -21,7 +21,7 @@ p = 0.5 * (24999*y*y - 25001*x*x)
 o v_1 = 5*x + 2*y
 o v_2 = 3*x + 7*y
 - quadratic adjoint pressure field:
-q = -0.5 * (125000*x*x + 175000*y*y + 100000*x*y)
+q = 0.5 * (125000*x*x + 175000*y*y + 100000*x*y)
 - all right hand side terms set adequate (fluid bodyforce, DBC, NBC, adjoint bodyforce contforce, DBC, NBC)
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      10
@@ -115,7 +115,7 @@ FUNCT2 EXPR 0 0.0 0 FUNCTION 0.0 // 1=fluid,0=no fluid
 ---------------------------------------------FUNCT3 // initial adjoint field
 FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0//5*x+2*y//
 FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0//3*x+7*y//
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0//-0.5*(125000*x*x+175000*y*y+100000*x*y)//
+FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0//0.5*(125000*x*x+175000*y*y+100000*x*y)//
 -------------------------------FUNCT4 // x-component of fluid inflow profile
 FUNCT4 EXPR 0 0.0 0 FUNCTION x
 -------------------------------FUNCT5 // y-component of fluid inflow profile

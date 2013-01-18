@@ -21,7 +21,7 @@ p = 0
 o v_1 = x*x + x*y
 o v_2 = 2*y*y - 3*x*x
 - linear adjoint pressure field:
-q = 12*x + 9*y
+q = -12*x - 9*y
 - all right hand side terms set adequate (fluid bodyforce, DBC, NBC, adjoint bodyforce contforce, DBC, NBC)
 - all terms active
 - all constants different and unequal 1
@@ -117,7 +117,7 @@ FUNCT2 EXPR 0 0.0 0 FUNCTION 0.0 // 1=fluid,0=no fluid
 ---------------------------------------------FUNCT3 // initial adjoint field
 FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0//x*x+x*y//
 FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0//2*y*y-3*x*x//
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0//12*x+9*y//
+FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0//-12*x-9*y//
 -------------------------------FUNCT4 // x-component of fluid inflow profile
 FUNCT4 EXPR 0 0.0 0 FUNCTION x+2*y
 -------------------------------FUNCT5 // y-component of fluid inflow profile

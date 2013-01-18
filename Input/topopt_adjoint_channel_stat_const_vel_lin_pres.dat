@@ -22,7 +22,7 @@ p = 0
 o v_1 = 1
 o v_2 = 0
 - constant adjoint pressure field:
-q = 10
+q = -10
 - all right hand side terms set adequate (fluid bodyforce, DBC, NBC, adjoint bodyforce contforce, DBC, NBC)
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      20
@@ -116,7 +116,7 @@ FUNCT2 EXPR 0 0.0 0 FUNCTION 1.0 // 1=fluid,0=no fluid
 ---------------------------------------------FUNCT3 // initial adjoint field
 FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 0.0//1.0//
 FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0//0.0//
-FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0//10.0//
+FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0//-10.0//
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          3
