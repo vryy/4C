@@ -865,6 +865,7 @@ FSI::MonolithicFS::CreateLinearSystem(Teuchos::ParameterList& nlParams,
     break;
   default:
     dserror("unsupported linear block solver strategy: %d", linearsolverstrategy_);
+    break;
   }
 
   return linSys;
