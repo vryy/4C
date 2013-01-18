@@ -593,13 +593,18 @@ void STATMECH::StatMechManager::UpdateTimeAndStepSize(double& dt,
 {
   if(initialset)
   {
+    Teuchos::ParameterList sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
+    double maxtime = sdynparams.get<double>("MAXTIME",-1.0);
     timeintervalstep_ = -1;
     for(int i=0; i<(int)actiontime_->size(); i++)
       if(timeconverged>=actiontime_->at(i))
         timeintervalstep_++;
       else
+      {
+        if(actiontime_->at(i)==maxtime)
+          timeintervalstep_ = 0;
         break;
-
+      }
     dt = timestepsizes_->at(timeintervalstep_);
     // "++" needed so that after initialization, no additional update occurs
     timeintervalstep_++;
