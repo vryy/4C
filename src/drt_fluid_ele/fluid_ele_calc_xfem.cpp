@@ -1953,7 +1953,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
         //--------------------------------------------
         // evaluate additional inflow/convective stabilization terms
 
-
         if(fluidfluidcoupling)
         {
 
@@ -1962,7 +1961,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
           //zero velocity jump for fluidfluidcoupling
           LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
 
-
           si->Stab_InflowCoercivity(
               elemat1_epetra,          // standard bg-bg-matrix
               elevec1_epetra,          // standard bg-rhs
@@ -1970,7 +1968,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
               bg_mortaring,            // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
               normal,                  // normal vector
               fac,                     // theta*dt
-              my::visceff_,            // viscosity in background fluid
+              my::visceff_,            // dynamic viscosity in background fluid
               0.0,                     // viscosity in embedded fluid
               0.5,                     // mortaring weighting
               0.5,                     // mortaring weighting
@@ -1994,6 +1992,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
           // prescribed velocity vector at weak Dirichlet boundary
           LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
           si->get_vel_WeakDBC(ivelint_WDBC_JUMP);
+
 
 
           si->Stab_InflowCoercivity(
@@ -2856,14 +2855,12 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
         }
 
         //--------------------------------------------
-
         if(fluidfluidcoupling)
         {
           bool bg_mortaring = true; // one-sided background fluid mortaring (kappa1=1, kappa2=0)
 
           //zero velocity jump for fluidfluidcoupling
           LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
-
 
           si->NIT_buildCouplingMatrices(
               elemat1_epetra,          // standard bg-bg-matrix
@@ -2872,8 +2869,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               bg_mortaring,            // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
               normal,                  // normal vector
               timefacfac,              // theta*dt
-              my::visceff_,            // viscosity in background fluid
-              my::visceff_,            // viscosity in embedded fluid
+              my::visceff_,            // dynamic viscosity in background fluid
+              my::visceff_,            // dynamic viscosity in embedded fluid
               kappa1,                  // mortaring weighting
               kappa2,                  // mortaring weighting
               stabfac_visc,            // Nitsche non-dimensionless stabilization factor
@@ -2906,8 +2903,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
               bg_mortaring,            // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
               normal,                  // normal vector
               timefacfac,              // theta*dt
-              my::visceff_,            // viscosity in background fluid
-              0.0,                     // viscosity in embedded fluid
+              my::visceff_,            // dynamic viscosity in background fluid
+              0.0,                     // dynamic viscosity in embedded fluid
               kappa1,                  // mortaring weighting
               kappa2,                  // mortaring weighting
               stabfac_visc,            // Nitsche non-dimensionless stabilization factor
@@ -3393,7 +3390,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
           //zero velocity jump for fluidfluidcoupling
           LINALG::Matrix<my::nsd_,1> ivelint_WDBC_JUMP(true);
 
-
           emb->NIT2_buildCouplingMatrices(
               elemat1_epetra,              // standard bg-bg-matrix
               elevec1_epetra,              // standard bg-rhs
@@ -3401,8 +3397,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
               bg_mortaring,                // yes: background-sided mortaring, no: coupling between two meshes (mixed mortaring)
               normal,                      // normal vector
               timefacfac,                  // theta*dt
-              my::visceff_,                // viscosity in background fluid
-              my::visceff_,                // viscosity in embedded fluid
+              my::visceff_,                // dynvisc viscosity in background fluid
+              my::visceff_,                // dynvisc viscosity in embedded fluid
               kappa1,                      // mortaring weighting
               kappa2,                      // mortaring weighting
               stabfac_visc,                // Nitsche non-dimensionless stabilization factor
@@ -3546,21 +3542,37 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
     */
 
     // final stabilization factors
-    stabfac_visc   = max(NIT_stab_fac, nitsche_stab_conv*conv_stabfac);
+    stabfac_visc = max(NIT_stab_fac, nitsche_stab_conv*conv_stabfac*my::densaf_);
     stabfac_conv = 0.0;
     //=================================================================================
   }
   else //fluidfluidcoupling
   {
+    // nitsche_stab_conv := conv_stab in input-file (usually one)
+    // conv_stabfac := v*n;
+    // NIT_stab_fac := alpha (Nitsche parameter)
+
     // stabilization parameter for velocity-gradients penalty term
-    velgrad_interface_fac = gamma_ghost_penalty*my::visc_*h_k;
+    velgrad_interface_fac = gamma_ghost_penalty*my::visceff_*h_k;
 
     // stabilization parameter for pressure-gradients penalty term
 //     double gamma_p = 5.0 / 100;
 //     pressgrad_interface_fac = gamma_p*(1/my::visc_)*h_k*h_k*h_k;
 
     // stabilization parameter for pressure-coupling penalty term
-    press_coupling_fac = gamma_press_coupling*(1/my::visc_)*h_k;
+    // no scaling with density
+
+    bool nu_weighting = true;
+    press_coupling_fac = gamma_press_coupling;
+    double kinvisc = my::visceff_/my::densaf_;
+    if (nu_weighting)
+    {
+      press_coupling_fac /= (1.0 + (kinvisc/h_k));
+    }
+    else
+    {
+      press_coupling_fac *= (1/kinvisc)*h_k;
+    }
 
     /*
     //      viscous_Nitsche-part
@@ -3569,7 +3581,9 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
     //   \                                   /        \                               /
     */
 
-    stabfac_visc   = NIT_stab_fac;
+    // max(1,alpha)
+    //stabfac_visc = max(1.0*my::densaf_,NIT_stab_fac);
+    stabfac_visc = NIT_stab_fac;
 
     /*
     //    /                                           \        /                        i               \
@@ -3578,7 +3592,7 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
     //
     */
 
-    stabfac_conv = nitsche_stab_conv*conv_stabfac;
+    stabfac_conv = my::densaf_*nitsche_stab_conv*conv_stabfac;
   }
 
   return;

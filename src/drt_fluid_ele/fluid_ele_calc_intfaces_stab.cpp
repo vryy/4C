@@ -1180,8 +1180,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
       // we need the kinematic viscosity (nu ~ m^2/s) here
       pkinvisc = actmat->Viscosity()/actmat->Density();
       pdens = actmat->Density();
-      if (actmat->Density() != 1.0)
-        dserror("density 1.0 expected: the density need to be included in the linearization terms");
     }
 
     {
@@ -1189,9 +1187,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
       // we need the kinematic viscosity here
       nkinvisc = actmat->Viscosity()/actmat->Density();
       ndens = actmat->Density();
-      if (actmat->Density() != 1.0)
-        dserror("density 1.0 expected: the density need to be included in the linearization terms");
-      }
+    }
   }
   else
   {
@@ -1316,8 +1312,7 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Eval
   }
   else dserror("not implemented for nurbs");
 
-
-  // ------------------------------------------------
+   // ------------------------------------------------
   // shape functions and derivs of corresponding parent at gausspoint
   if(!(ndistype == DRT::Element::nurbs27))
   {
@@ -1673,7 +1668,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressu
   LINALG::Matrix<nsd_,1> prederxy_jump(true);
   prederxy_jump.Update(1.0, nprederxy_, -1.0, pprederxy_);
   prederxy_jump.Scale(tau_timefacfacpre);
-
 
 
   LINALG::Matrix<piel,piel> pderiv_dyad_pderiv(true);
@@ -2543,16 +2537,17 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     //           gamma_div *  h_E^2 * rho            with gamma_div = 0.05*gamma_u
     //
     // pressure:
-    //                                                                1.0
-    //             gamma_p *  h_E^2 * rho            with gamma_p = -------
-    //                                                               100.0
+    //
+    //                                                                                        1.0
+    //             gamma_p *  h_E^2                  no scaling with density, with gamma_p = -------
+    //                                                                                        100.0
     //--------------------------------------------------------------------------------------------------------------------------
     // E.Burman, P.Hansbo 2006
     // "Edge stabilization for the generalized Stokes problem: A continuous interior penalty method"
     //
     // pressure:
     //                      1                                             1.0
-    //             gamma_p --- *  h_E^(s+1) * rho        with gamma_u = -------
+    //             gamma_p --- *  h_E^(s+1)              with gamma_u = -------
     //                      2                                            100.0
     //
     //                                                   with s=2 (nu>=h) viscous case
@@ -2570,7 +2565,7 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     //           nu-weighting: gamma*(h_E^2) * -----------  (smoothing between h_E^3/nu and h_E^2 )
     //                                          (1+ nu/h)
     //--------------------------------------------------------------------------------------------------------------------------
-// TODO: scaling with density!!!
+
 
     //-----------------------------------------------
     // pressure
@@ -2588,7 +2583,7 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
 
     //-----------------------------------------------
     // streamline
-    tau_u = gamma_u * p_hk_*p_hk_;
+    tau_u = density * gamma_u * p_hk_*p_hk_;
 
     //-----------------------------------------------
     // divergence
