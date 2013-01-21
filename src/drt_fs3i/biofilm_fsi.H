@@ -1,4 +1,13 @@
+/*!----------------------------------------------------------------------
+\file biofilm_fsi.H
 
+<pre>
+Maintainer: Mirella Coroneo
+            coroneo@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236
+</pre>
+*----------------------------------------------------------------------*/
 
 #ifndef FSI_BIOFILM_GROWTH_H
 #define FSI_BIOFILM_GROWTH_H
@@ -35,11 +44,10 @@ namespace FS3I
 
     void InnerTimeloop();
 
-    void ComputeInterfaceVectors(
-      Teuchos::RCP<Epetra_Vector> idispnp_,
-      Teuchos::RCP<Epetra_Vector> iveln_,
-      Teuchos::RCP<Epetra_Vector> struidispnp_,
-      Teuchos::RCP<Epetra_Vector> struiveln_);
+    void ComputeInterfaceVectors(Teuchos::RCP<Epetra_Vector> idispnp_,
+                                 Teuchos::RCP<Epetra_Vector> iveln_,
+                                 Teuchos::RCP<Epetra_Vector> struidispnp_,
+                                 Teuchos::RCP<Epetra_Vector> struiveln_);
 
     Teuchos::RCP<Epetra_Vector> FluidToAle(Teuchos::RCP<Epetra_Vector> iv) const;
 
@@ -67,29 +75,20 @@ namespace FS3I
 
     const Epetra_Comm& Comm() { return comm_; }
 
-    void ChangeConfig(Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp);
+    void ChangeConfig(Teuchos::RCP<DRT::Discretization> dis,
+                      Teuchos::RCP<Epetra_Vector> disp);
 
-    void ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> scatradis, Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> disp);
+    void ScatraChangeConfig(Teuchos::RCP<DRT::Discretization> scatradis,
+                            Teuchos::RCP<DRT::Discretization> dis,
+                            Teuchos::RCP<Epetra_Vector> disp);
 
-    void VecToScatravec(Teuchos::RCP<DRT::Discretization> scatradis, Teuchos::RCP<DRT::Discretization> dis, Teuchos::RCP<Epetra_Vector> vec, Teuchos::RCP<Epetra_MultiVector> scatravec);
+    void VecToScatravec(Teuchos::RCP<DRT::Discretization> scatradis,
+                        Teuchos::RCP<Epetra_Vector> vec,
+                        Teuchos::RCP<Epetra_MultiVector> scatravec);
 
     void StructGmshOutput();
 
     void FluidGmshOutput();
-
-    void GrowthOutput();
-
-//    /// gives fluid displacement due to growth
-//    Teuchos::RCP<Epetra_Vector> GetFluidGrowthDisp() { return fluid_growth_disp;}
-//
-//    /// gives structure displacement due to growth
-//    Teuchos::RCP<Epetra_Vector> GetStructGrowthDisp() { return struct_growth_disp;}
-//
-//    /// gives scatra fluid displacement due to growth
-//    Teuchos::RCP<Epetra_MultiVector> GetScatraFluidGrowthDisp() { return scatra_fluid_growth_disp;}
-//
-//    /// gives scatra structure displacement due to growth
-//    Teuchos::RCP<Epetra_MultiVector> GetScatraStructGrowthDisp() { return scatra_struct_growth_disp;}
 
   private:
 
@@ -113,14 +112,13 @@ namespace FS3I
     //Teuchos::RCP<ALE::AleBaseAlgorithm> ale_;
     Teuchos::RCP<ALE::Ale> ale_;
 
-    // total flux at the interface overall the InnerTimeloop
-    Teuchos::RCP<Epetra_MultiVector> flux;
-
-    // total flux at the structure interface overall the InnerTimeloop
-    Teuchos::RCP<Epetra_MultiVector> struflux;
+//    // total flux at the interface overall the InnerTimeloop
+//    Teuchos::RCP<Epetra_MultiVector> flux;
+//
+//    // total flux at the structure interface overall the InnerTimeloop
+//    Teuchos::RCP<Epetra_MultiVector> struflux;
 
     Teuchos::RCP<Epetra_Vector> norminflux_;
-
 
     Teuchos::RCP<Epetra_Vector> lambda_;
     Teuchos::RCP<Epetra_Vector> normtraction_;
@@ -167,7 +165,6 @@ namespace FS3I
     // maximum time
     double maxtime_fsi;
 
-
     /// total time
     double time_;
 
@@ -188,18 +185,6 @@ namespace FS3I
 
     /// structure velocity at interface (always zero!)
     Teuchos::RCP<Epetra_Vector> struiveln_;
-
-    /// structure displacement due to growth
-    Teuchos::RCP<Epetra_Vector> struct_growth_disp;
-
-    /// fluid displacement due to growth
-    Teuchos::RCP<Epetra_Vector> fluid_growth_disp;
-
-    /// scatra structure displacement due to growth
-    Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp;
-
-    /// scatra fluid displacement due to growth
-    Teuchos::RCP<Epetra_MultiVector> scatra_fluid_growth_disp;
 
   };
 
