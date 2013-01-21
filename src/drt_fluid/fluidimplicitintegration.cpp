@@ -4046,7 +4046,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   // get scale-separation matrix
   {
     // this is important to have!!!
-    MLAPI::Init();
+    MLAPI::Init(Teuchos::rcp(sysmat_->Comm().Clone()));
 
     // extract the ML parameters:
     Teuchos::ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");

@@ -1878,6 +1878,8 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
     bool savegraph,
     bool complete)
 {
+  MLAPI::Init(Teuchos::rcp(Aorig.Comm().Clone()));
+
   EpetraExt::CrsMatrix_SolverMap Atransform;
   EpetraExt::CrsMatrix_SolverMap Btransform;
   const Epetra_CrsMatrix& A = Atransform(const_cast<Epetra_CrsMatrix&>(Aorig));

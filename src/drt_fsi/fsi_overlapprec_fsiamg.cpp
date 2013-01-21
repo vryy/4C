@@ -88,7 +88,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   dserror("class OverlappingBlockMatrixFSIAMG does not support #define BLOCKMATRIXMERGE");
 #endif
 
-  MLAPI::Init();
+  MLAPI::Init(Teuchos::rcp(Matrix(0,0).Comm().Clone()));
   const int myrank = Matrix(0,0).Comm().MyPID();
 
   const LINALG::SparseMatrix& structInnerOp = Matrix(0,0);

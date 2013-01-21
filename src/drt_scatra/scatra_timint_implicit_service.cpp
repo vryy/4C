@@ -2621,7 +2621,7 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
   // get normalized fine-scale subgrid-diffusivity matrix
   {
     // this is important to have!!!
-    MLAPI::Init();
+    MLAPI::Init(Teuchos::rcp(discret_->Comm().Clone()));
 
     // extract the ML parameters
     Teuchos::ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");
