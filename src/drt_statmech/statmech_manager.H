@@ -511,6 +511,9 @@ protected:
                            LINALG::Matrix<3,1>* vectorj,
                            const int&           maxiterations);
 
+  //! \brief output of unbinding time of linkers
+  void LinkerUnbindingTimes(const std::ostringstream& filename);
+
   //! \brief output distances between doubly bound crosslinkers in case of a loom setup
   void LoomOutput(const Epetra_Vector&      disrow,
                   const std::ostringstream& nearestneighborfilename,
@@ -832,6 +835,9 @@ protected:
 
   //! \brief a vector indicating the number of attached nodes to a crosslinker
   Teuchos::RCP<Epetra_Vector> numbond_;
+
+  //! \brief a vector storing information on how long linkers are bound to filaments
+  Teuchos::RCP<Epetra_MultiVector> crosslinkunbindingtimes_;
 
   //! \brief a vector indicating crosslinker elements that cover two binding spots on the same filament
   Teuchos::RCP<Epetra_Vector> crosslinkonsamefilament_;

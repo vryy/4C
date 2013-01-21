@@ -2009,6 +2009,14 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
                         oneLID(0,0) = LID(0,0);
                         CrosslinkerIntermediateUpdate(*bspotpositions, oneLID, irandom);
                       }
+
+                      if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
+                      {
+                        // set t_on and reset t_off-t_on
+                        (*crosslinkunbindingtimes_)[0][irandom] = timen;
+                        (*crosslinkunbindingtimes_)[1][irandom] = -1.0;
+                      }
+
                       bondestablished = true;
                     }
                   }
@@ -2547,6 +2555,14 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double&       
                   CrosslinkerIntermediateUpdate(*bspotpositions, LID, irandom);
                   break;
                 }
+
+              if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
+              {
+                double t_on = (*crosslinkunbindingtimes_)[0][irandom];
+                (*crosslinkunbindingtimes_)[1][irandom] = timen-t_on;
+                (*crosslinkunbindingtimes_)[0][irandom] = -1.0;
+              }
+
               // leave j-loop after first bond is dissolved
               break;
             }
@@ -2816,6 +2832,7 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
   std::vector<std::vector<double> > newcrosslinkerpositions;
   std::vector<std::vector<double> > newcrosslinkerbond;
   std::vector<std::vector<double> > newvisualizepositions;
+  std::vector<std::vector<double> > newcrosslinkunbindingtimes;
   std::vector<int> newcrosslinkonsamefilament;
   std::vector<int> newsearchforneighbours;
   std::vector<int> newnumbond;
@@ -2836,6 +2853,14 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
         visualpos.push_back((*visualizepositions_)[j][i]);
       for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
         crossbond.push_back((*crosslinkerbond_)[j][i]);
+
+      if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
+      {
+        std::vector<double> unbind;
+        for(int j=0; j<crosslinkunbindingtimes_->NumVectors(); j++)
+          unbind.push_back((*crosslinkunbindingtimes_)[j][i]);
+        newcrosslinkunbindingtimes.push_back(unbind);
+      }
 
       newcrosslinkerpositions.push_back(crosspos);
       newvisualizepositions.push_back(visualpos);
@@ -2896,6 +2921,8 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
   searchforneighbours_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
   numbond_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
   crosslink2element_ = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
+  if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
+    crosslinkunbindingtimes_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_,3));
 
   //copy information from the temporary vectors to the adjusted crosslinker vectors
   for(int i=0; i<crosslinkerpositions_->MyLength(); i++)
@@ -2906,6 +2933,10 @@ void STATMECH::StatMechManager::ReduceNumOfCrosslinkersBy(const int             
       (*visualizepositions_)[j][i] = (double)newvisualizepositions[i][j];
     for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
       (*crosslinkerbond_)[j][i] = (double)newcrosslinkerbond[i][j];
+
+    if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
+      for(int j=0; j<crosslinkerbond_->NumVectors(); j++)
+        (*crosslinkunbindingtimes_)[j][i] = (double)newcrosslinkunbindingtimes[i][j];
 
     (*crosslinkonsamefilament_)[i] = (double)newcrosslinkonsamefilament[i];
     (*searchforneighbours_)[i] = (double)newsearchforneighbours[i];
@@ -4113,7 +4144,7 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
   }
 
   // create density-density-correlation-function map with
-  if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr ||
+  if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly ||
      DRT::INPUT::IntegralValue<int>(statmechparams_, "GMSHOUTPUT"))
   {
     std::vector<int> bins;
@@ -4188,11 +4219,14 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
         }
       }
     }
+
+    if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
+    {
+      // initialize unbinding times vector to "-1"
+      crosslinkunbindingtimes_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_,2));
+      crosslinkunbindingtimes_->PutScalar(-1.0);
+    }
   }
-  /*cout<<"start indices: ";
-  for(int i=0; i<(int)startindex_->size(); i++)
-    cout<<(*startindex_)[i]<<" ";
-  cout<<endl;*/
 
   // in case the internal forces of the crosslinker affect the off-rate
   if(DRT::INPUT::IntegralValue<int>(statmechparams_, "FORCEDEPUNLINKING"))
@@ -4388,7 +4422,7 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
           int secondbspot = (int)(*neighbourslid)[currneighbour][currlink];
 
           // if second binding binding spot exists and spot is unoccupied
-          if((*neighbourslid)[currneighbour][currlink]>-0.1 && (*bspotstatus_)[secondbspot] < -0.9 && bspotcolmap_->GID(secondbspot)%bspotinterval==0)
+          if((*neighbourslid)[currneighbour][currlink]>-0.1 && (*bspotstatus_)[secondbspot] < -0.9)// && bspotcolmap_->GID(secondbspot)%bspotinterval==0)
           {
             Epetra_SerialDenseMatrix LID(2,1);
             for(int k=0; k<crosslinkerbond_->NumVectors(); k++)
@@ -4419,13 +4453,6 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
               }
             }
 
-            numsetelements++;
-            (*addcrosselement)[currlink] = 1.0;
-            // establish double bond to the first given neighbour
-            // attach it to the second binding spot
-            (*bspotstatus_)[secondbspot] = currlink;
-            (*numbond_)[currlink] = 2.0;
-
             // check for intersection in case of beam contact (CURRENTLY ONLY FOR CONVENTIONAL BEAM3 ELEMENT)
             bool intersection = false;
             if(beamcmanager!=Teuchos::null)
@@ -4444,8 +4471,26 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
               }
             }
 
-            if(!intersection)
+            // orientation check
+            //unit direction vector between currently considered two nodes
+            LINALG::Matrix<3,1> direction;
+            for(int j=0;j<3;j++)
+              direction(j) = (*bspotpositions)[j][(int)LID(0,0)]-(*bspotpositions)[j][(int)LID(1,0)];
+            direction.Scale(1.0/direction.Norm2());
+
+            if(CheckOrientation(direction, *bspottriadscol,LID) && !intersection)
             {
+              numsetelements++;
+              (*addcrosselement)[currlink] = 1.0;
+              // establish double bond to the first given neighbour
+              // attach it to the second binding spot
+              (*bspotstatus_)[secondbspot] = currlink;
+              (*numbond_)[currlink] = 2.0;
+
+              if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
+                for(int k=0; k<crosslinkunbindingtimes_->NumVectors(); k++)
+                (*crosslinkunbindingtimes_)[k][currlink] = 0.0;
+
               //update crosslinker position
               CrosslinkerIntermediateUpdate(*bspotpositions, LID, currlink);
               // update visualization

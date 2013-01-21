@@ -832,7 +832,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
       }
     }
     break;
-    case INPAR::STATMECH::statout_densitydensitycorr:
+    case INPAR::STATMECH::statout_structanaly:
     {
       //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps
       if( istep % statmechparams_.get<int>("OUTPUTINTERVALS",1) == 0 )
@@ -846,6 +846,10 @@ void STATMECH::StatMechManager::Output(const int                            ndim
         else
           dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
       }
+
+      std::ostringstream filename02;
+      filename02 << outputrootpath_ <<"/StatMechOutput/LinkerUnbindingTimes.dat";
+      LinkerUnbindingTimes(filename02);
     }
     break;
     case INPAR::STATMECH::statout_octree:
@@ -1169,7 +1173,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
     std::stringstream gmshfileend;
 
     if(DRT::INPUT::IntegralValue<int>(statmechparams_,"GMSHNETSTRUCT") &&
-       DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
+       DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
     {
       // plot the rotated material triad (with axis length 0.5)
       for(int i=0; i<trafo_->M(); i++)
@@ -2089,7 +2093,7 @@ void STATMECH::StatMechManager::GmshWedge(const int& n,
  *----------------------------------------------------------------------*/
 void STATMECH::StatMechManager::GmshNetworkStructVolume(const int& n, std::stringstream& gmshfilecontent, const double color)
 {
-  if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_densitydensitycorr)
+  if(DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_structanaly)
   {
     cout<<"Visualizing test volume: ";
     switch(structuretype_)
@@ -3926,6 +3930,30 @@ void STATMECH::StatMechManager::DDCorrFunction(Epetra_MultiVector& crosslinksper
         }
   return;
 }//STATMECH::StatMechManager::DDCorrFunction()
+
+/*------------------------------------------------------------------------------*                                                 |
+ | Output of linker unbinding times, i.e. time that a linker stays bound        |
+ |                                                      (private) mueller 01/13 |
+ *------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::LinkerUnbindingTimes(const std::ostringstream& filename)
+{
+  if(!discret_->Comm().MyPID())
+  {
+    FILE* fp = NULL;
+    fp = fopen(filename.str().c_str(), "a");
+
+    std::stringstream unbindingtimes;
+
+    for(int i=0; i<crosslinkunbindingtimes_->MyLength(); i++)
+    {
+      if((*crosslinkunbindingtimes_)[0][i]<-0.9 && (*crosslinkunbindingtimes_)[1][i]>=0.0)
+        unbindingtimes << (*crosslinkunbindingtimes_)[1][i] <<endl;
+    }
+    fprintf(fp, unbindingtimes.str().c_str());
+    fclose(fp);
+  }
+  return;
+}
 
 /*------------------------------------------------------------------------------*                                                 |
  | Output of distances between doubly bound linkers of the horizontal filament  |

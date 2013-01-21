@@ -42,8 +42,7 @@ namespace INPAR
       statout_anisotropic,  ///< measuring anisotropic diffusion of filament
       statout_viscoelasticity, ///< measuring viscoelastic properties of filament networks
       statout_gmsh, ///< writing special output in order to generate a Gmsh movie
-      statout_structpolymorph, ///< writing special output in order to determine network structure
-      statout_densitydensitycorr, ///< writing sepcial output in order to visualize density-density-corr.-function
+      statout_structanaly, ///< writing special output in order to determine network structure
       statout_octree, ///< writing output for octree visualization and checks
       statout_loom, ///< writing output for loom setup: a) nearest neighbor b) attractive forces c) coverage
       statout_loomelnrg ///< writing output for filament elastic energy
