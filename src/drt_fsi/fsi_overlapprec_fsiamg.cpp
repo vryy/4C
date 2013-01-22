@@ -655,7 +655,7 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   }
 
   // close MLAPI environment
-//  MLAPI::Finalize(true, false);
+  MLAPI::Finalize(true, false);
 
   return;
 }
@@ -1151,6 +1151,8 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
 {
   if (symmetric_)  dserror("FSIAMG symmetric Block Gauss-Seidel not impl.");
 
+  MLAPI::Init(Teuchos::rcp(Matrix(0,0).Comm().Clone()), true);
+
   // rewrap the matrix every time as it is killed irrespective
   // of whether the precond is reused or not.
   {
@@ -1371,6 +1373,9 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
   RangeExtractor().InsertVector(*sy,0,y);
   RangeExtractor().InsertVector(*fy,1,y);
   RangeExtractor().InsertVector(*ay,2,y);
+
+  // close MLAPI environment
+  MLAPI::Finalize(true, false);
 
   return;
 }
