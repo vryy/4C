@@ -4046,7 +4046,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   // get scale-separation matrix
   {
     // this is important to have!!!
-    MLAPI::Init(Teuchos::rcp(sysmat_->Comm().Clone()));
+    MLAPI::Init(Teuchos::rcp(sysmat_->Comm().Clone()), true);
 
     // extract the ML parameters:
     Teuchos::ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");
@@ -4102,6 +4102,9 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
     if (!Sep_->RowMap().SameAs(SystemMatrix()->RowMap())) dserror("rowmap not equal");
     if (!Sep_->RangeMap().SameAs(SystemMatrix()->RangeMap())) dserror("rangemap not equal");
     if (!Sep_->DomainMap().SameAs(SystemMatrix()->DomainMap())) dserror("domainmap not equal");
+
+    // close MLAPI environment
+    MLAPI::Finalize(true, false);
   }
 
   return;

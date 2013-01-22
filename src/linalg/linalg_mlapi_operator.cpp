@@ -71,7 +71,7 @@ void LINALG::AMG_Operator::Vcycle(const MLAPI::MultiVector& b_f, MLAPI::MultiVec
  *----------------------------------------------------------------------*/
 void LINALG::AMG_Operator::SetupNonSymStab()
 {
-  MLAPI::Init(Teuchos::rcp(A()->Comm().Clone()));
+  MLAPI::Init(Teuchos::rcp(A()->Comm().Clone()), true);
 
   //------------------------------------------------- get some parameters
   int maxlevels        = Params().get<int>("max levels",10);
@@ -318,6 +318,9 @@ void LINALG::AMG_Operator::SetupNonSymStab()
 
   //---------------------------------------------- store number of levels
   nlevel_ = level+1;
+
+  // close MLAPI environment
+  MLAPI::Finalize(true, false);
 
   return;
 }

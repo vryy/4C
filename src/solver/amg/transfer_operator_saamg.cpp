@@ -81,7 +81,7 @@ double LINALG::SAAMGTransferOperator::MaxEigCG(const SparseMatrix& A, const bool
     //TEUCHOS_FUNC_TIME_MONITOR("SaddlePointPreconditioner::MaxEigCG");
 
     // create ML_Operator from SparseMatrix A
-    MLAPI::Init(Teuchos::rcp(A.Comm().Clone()));
+    MLAPI::Init(Teuchos::rcp(A.Comm().Clone()), true);
     ML_A = ML_Operator_Create(MLAPI::GetML_Comm());
     ML_Operator_WrapEpetraMatrix(A.EpetraMatrix().get(),ML_A);
 
@@ -103,6 +103,9 @@ double LINALG::SAAMGTransferOperator::MaxEigCG(const SparseMatrix& A, const bool
     ML_Operator_Destroy(&ML_A);
     ML_A = NULL;
     kdata = NULL;
+
+    // close MLAPI environment
+    MLAPI::Finalize(true, false);
 
     return MaxEigenvalue;
   }

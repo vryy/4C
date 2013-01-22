@@ -1878,7 +1878,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
     bool savegraph,
     bool complete)
 {
-  MLAPI::Init(Teuchos::rcp(Aorig.Comm().Clone()));
+  MLAPI::Init(Teuchos::rcp(Aorig.Comm().Clone()),true);
 
   EpetraExt::CrsMatrix_SolverMap Atransform;
   EpetraExt::CrsMatrix_SolverMap Btransform;
@@ -2016,6 +2016,10 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
     return Teuchos::rcp(new SparseMatrix(finalresult,explicitdirichlet,savegraph));
 #endif
   }
+
+  // close MLAPI environment
+  MLAPI::Finalize(true, false);
+
   return Teuchos::rcp(new SparseMatrix(result,explicitdirichlet,savegraph));
 }
 /*----------------------------------------------------------------------*
