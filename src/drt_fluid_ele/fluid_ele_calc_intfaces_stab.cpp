@@ -2580,7 +2580,6 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     //scaling with h^2 (non-viscous case)
     tau_p = gamma_p * p_hk_*p_hk_;
 
-
     //-----------------------------------------------
     // streamline
     tau_u = density * gamma_u * p_hk_*p_hk_;
@@ -2599,6 +2598,12 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
       if(kinvisc >= p_hk_) tau_p /= (kinvisc/p_hk_);
     }
 
+    // to have a consistent formulation we need only one density factor for
+    // pressure stabilisation. That is because we have two times pressure
+    // (test functions and the shape function) in the formuation. If we do not
+    // cross out one density, we would multiply the term two times with
+    // density, which is not correct.
+    tau_p /= density;
 
   }
   break;

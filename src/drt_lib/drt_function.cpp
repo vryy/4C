@@ -1898,7 +1898,8 @@ double DRT::UTILS::BeltramiStatNavierStokesRHS::Evaluate(int index, const double
  *----------------------------------------------------------------------*/
 DRT::UTILS::KimMoinUP::KimMoinUP(int mat_id, bool is_stationary) :
 Function(),
-viscosity_(-999.0e99),
+density_(-999.0e99),
+kinviscosity_(-999.0e99),
 is_stationary_(is_stationary)
 {
 
@@ -1911,8 +1912,11 @@ is_stationary_(is_stationary)
   if (!fparams)
     dserror("Material does not cast to Newtonian fluid");
 
+  // get density
+  density_ = fparams->density_;
+
   // get kinematic viscosity
-  viscosity_ = fparams->viscosity_ / fparams->density_;
+  kinviscosity_ = fparams->viscosity_ / density_;
 
 }
 
@@ -1920,7 +1924,8 @@ is_stationary_(is_stationary)
  *----------------------------------------------------------------------*/
 DRT::UTILS::KimMoinUP::KimMoinUP( Teuchos::RCP<MAT::Material> & mat, bool is_stationary) :
 Function(),
-viscosity_(-999.0e99),
+density_(-999.0e99),
+kinviscosity_(-999.0e99),
 is_stationary_(is_stationary)
 {
 
@@ -1931,11 +1936,13 @@ is_stationary_(is_stationary)
   if (!fparams)
     dserror("Material does not cast to Newtonian fluid");
 
+  // get density
+  density_ = fparams->density_;
+
   // get kinematic viscosity
-  viscosity_ = fparams->viscosity_ / fparams->density_;
+  kinviscosity_ = fparams->viscosity_ / fparams->density_;
 
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -1957,10 +1964,9 @@ double DRT::UTILS::KimMoinUP::Evaluate(int index, const double* xp, double t, DR
 
   if(!is_stationary_)
   {
-    gu = exp(-2.0*a*a*PI*PI*t*viscosity_);
-    gp = exp(-4.0*a*a*PI*PI*t*viscosity_);
+    gu = exp(-2.0*a*a*PI*PI*t*kinviscosity_);
+    gp = exp(-4.0*a*a*PI*PI*t*kinviscosity_);
   }
-
 
   switch (index)
   {
@@ -1971,7 +1977,7 @@ double DRT::UTILS::KimMoinUP::Evaluate(int index, const double* xp, double t, DR
   case 2:
     return 0.0;
   case 3:
-    return  -1./4. * ( cos(2.0*a_pi_x) + cos(2.0*a_pi_y) ) * gp;
+    return  -1./4. * ( cos(2.0*a_pi_x) + cos(2.0*a_pi_y) ) * gp * density_;
   default:
     dserror("wrong index %d", index);
     break;
@@ -2956,7 +2962,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       std::vector<double> ynode;
       std::vector<double> znode;
       std::vector<DRT::Condition*> dirichlet;
-      
+
       dis->GetCondition("Dirichlet",dirichlet);
       if (!dirichlet.size())
       dserror("No Dirichlet boundary conditions in discretization");
@@ -2964,7 +2970,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       double centerx = 0.0;
       double centery = 0.0;
       double centerz = 0.0;
-      
+
       // create node id vector of inflow surface
       for(int i=0;i<(int)dirichlet.size();i++)
       {
@@ -2975,7 +2981,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
           surfnodeids_.at(j) = dirichlet.at(i)->Nodes()->at(j);
         }
       }
-      
+
       // look through all Dirichlet BCs
       for(int i=0;i<(int)dirichlet.size();i++)
       {
@@ -2986,12 +2992,12 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
           // the lines containing the edge nodes must share all their nodes
           // with the inflow surface. Other line Dirichlet BCs are skipped.
           int nodecount = (int)dirichlet.at(i)->Nodes()->size();
-          
+
           for(int k=0;k<(int)dirichlet.at(i)->Nodes()->size();k++)
           for(int l=0;l<(int)surfnodeids_.size();l++)
           if(dirichlet.at(i)->Nodes()->at(k)==surfnodeids_.at(l))
           nodecount--;
-          
+
           if(nodecount==0)
           {
             //cout<<"Line "<<dirichlet.at(i)->Id()<<" lies on surface "<<locsysid_<<endl;
@@ -3000,7 +3006,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
               int currentid = dirichlet.at(i)->Nodes()->at(j);
               bool havenode = dis->HaveGlobalNode(currentid);
               bool redundant = false;
-              
+
               nodeids_.push_back(dirichlet.at(i)->Nodes()->at(j));
               // check if node exists on current proc
               if(!havenode) continue;
@@ -3019,7 +3025,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
                 xnode.push_back(tempcoords[0]);
                 ynode.push_back(tempcoords[1]);
                 znode.push_back(tempcoords[2]);
-                
+
                 // calculation of the centroid (1/2), currently only for serial use
                 if(dis->Comm().NumProc()==1)
                 {
@@ -3036,7 +3042,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
           continue;
         }
       }
-      
+
       if (linecount<1)
       dserror("Define Line Dirichlet BC(s) delimiting the inflow surface in your input file!");
       // calculation of the centroid (2/2), currently only for serial use
@@ -3048,14 +3054,14 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
         cout.precision(15);
         cout<<"=== newly calculated inflow surface origin: "<<origin_.at(0)<<"   "<<origin_.at(1)<<"   "<<origin_.at(2)<<" ==="<<endl;
       }
-      
+
       //nodal polar coordinates
       std::vector<double> xpedge;
       std::vector<double> xpedgeloc;
       // transform global to local coordinates
       xpedge.assign(3,0.0);
       xpedgeloc.assign(3,0.0);
-      
+
       for(int i=0; i<(int)xnode.size(); i++)
       {
         xpedge.at(0) = xnode.at(i) - origin_.at(0);
@@ -3080,7 +3086,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       for(int j=i+1;j<(int)phi_.size();j++)
       if(phi_.at(i)==phi_.at(j))
       phi_.at(i)=2.0*M_PI;
-      
+
       // find locations of change of sign
       imaxplus_ = 0;
       imaxminus_ = 0;
@@ -3124,7 +3130,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
     }
     // Discrete Fourier Transform (results already scaled with 2/size within DFT())
     DFT(&flowvel, &fouphyscurve_, sizephyscurve);
-    
+
     //****************************************************************
     // Synthesis of the harmonics vector
     // used for transitional velocity profiles
@@ -3147,7 +3153,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
     }
     isinit_ = true;
   }// end of initialization
-  
+
   //**********************************************************************
   // FSI-specific section
   //**********************************************************************
@@ -3180,7 +3186,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
       for(int l=0;l<(int)surfnodeids_.size();l++)
       if(dirichlet.at(i)->Nodes()->at(k)==surfnodeids_.at(l))
       nodecount--;
-      
+
       if(nodecount==0)
       {
         for(int j=0; j<(int)dirichlet.at(i)->Nodes()->size(); j++)
@@ -3190,7 +3196,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
           bool redundant = false;
           if(!havenode)
           continue;
-          
+
           if(j>0)
           for(int k=0;k<j;k++)
           if(currentid==nodeids_.at(k))
@@ -3223,10 +3229,10 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
     }
     std::vector<double> xpedge;
     std::vector<double> xpedgeloc;
-    
+
     xpedge.assign(3,0.0);
     xpedgeloc.assign(3,0.0);
-    
+
     for(int i=0; i<(int)xnode.size(); i++)
     {
       xpedge.at(0) = xnode.at(i) - origin_.at(0);
@@ -3280,14 +3286,14 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
   double rabs;
    // current angle
   double phicurr;
-  
+
   //nodal polar coordinates
   std::vector<double> xptemp;
   std::vector<double> xplocal;
   // transform global to local coordinates
   xptemp.assign(3,0.0);
   xplocal.assign(3,0.0);
-  
+
   // calculate phase and radius of current node
   for(int i=0;i<(int)xptemp.size();i++)
   xptemp.at(i) = xp[i] - origin_.at(i);
@@ -3296,7 +3302,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
   //cout<<"xpTemp: "<<xptemp.at(0)<<","<<xptemp.at(1)<<","<<xptemp.at(2)<<endl;
   //(n,t1,t2), signed
   xplocal.assign(3,0.0);
-  
+
   for(int j=0;j<(int)xptemp.size();j++)
   {
     xplocal.at(0) += xptemp.at(j)*normal_.at(j);
@@ -3321,7 +3327,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
   double closest = 100.0;
   // second closest value to phicurr
   double close = 100.0;
-  
+
   for(int i=0; i<(int)phi_.size(); i++)
   {
     // find location i of closest value phi to phicurr
@@ -3354,8 +3360,8 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
   //linear interpolation in order to get current approximated vessel radius
   radius_ = noderadius_.at(imin1)+(phicurr-phi_.at(imin1))/(phi_.at(imin2)-phi_.at(imin1))*
     (noderadius_.at(imin2)-noderadius_.at(imin1));
-  
-  
+
+
   //**********************************************************************
   // Synthesis of the time-dependant harmonics vector
   // used to calculate the velocity profile
@@ -3396,7 +3402,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
   std::complex<double> z(0.0,0.0);
   // term consisting of several Bessel functions
   std::complex<double> bessel(0.0,0.0);
-  
+
   // calculation of the velocity by components (index)
   // linear transition to physiological profile (may be of advantage to introduce a flexible t_start, here fixed at 1.0)
   if(t<1.0)
@@ -3446,7 +3452,7 @@ double DRT::UTILS::WomersleyFunction::Evaluate(int index, const double* xp, doub
     w *= -normal_[index];
     return w;
   }
-  
+
   return -999.0e99;
 }
 /*----------------------------------------------------------------------*
@@ -3532,9 +3538,9 @@ double DRT::UTILS::ZalesaksDiskFunction::Evaluate(int index, const double* xp, d
   // the disk consists of 3 lines and a part of a circle and four points
   // decide if the orthogonal projection of the current point lies on the lines and the circle (four different distances possible)
   // additionally the smallest distance can be between the current point and one of the four corners
-  
+
   double distance = 99999.0;
-  
+
   //=====================================
   // distances to the four corners
   //=====================================

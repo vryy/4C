@@ -250,8 +250,9 @@ namespace UTILS {
     };
 
   private:
-    double viscosity_;
-    bool is_stationary_;
+    double density_;
+    double kinviscosity_;
+    bool   is_stationary_;
   };
 
 

@@ -2483,7 +2483,6 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
     bool                                                                fluidfluidcoupling ///< Is this xfluidfluid problem?
   )
 {
-
   bool compute_meas_surf = false;
   bool compute_meas_vol  = false;
 
@@ -3573,6 +3572,13 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
     {
       press_coupling_fac *= (1/kinvisc)*h_k;
     }
+
+    // to have a consistent formulation we need only one density factor for
+    // pressure coupling. That is because we have two times pressure (test
+    // functions and the shape function) in the formuation. If we do not
+    // cross out one density, we would multiply the term two times with
+    // density, which is not correct.
+    press_coupling_fac /= my::densaf_;
 
     /*
     //      viscous_Nitsche-part
