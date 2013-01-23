@@ -51,8 +51,13 @@ Teuchos::RCP<MAT::Material> MAT::PAR::AAAneohooke_stopro::CreateMaterial()
   return Teuchos::rcp(new MAT::AAAneohooke_stopro(this));
 }
 
-MAT::AAAneohooke_stoproType MAT::AAAneohooke_stoproType::instance_;
+void MAT::PAR::AAAneohooke_stopro::OptParams(std::vector<std::string>* pnames)
+{
+  pnames->push_back("YOUNG");
+  pnames->push_back("BETA");
+}
 
+MAT::AAAneohooke_stoproType MAT::AAAneohooke_stoproType::instance_;
 
 DRT::ParObject* MAT::AAAneohooke_stoproType::Create( const std::vector<char> & data )
 {
@@ -65,8 +70,10 @@ DRT::ParObject* MAT::AAAneohooke_stoproType::Create( const std::vector<char> & d
 /*----------------------------------------------------------------------*
  |  Constructor                                   (public)  chfoe 03/08 |
  *----------------------------------------------------------------------*/
-MAT::AAAneohooke_stopro::AAAneohooke_stopro()
-  : params_(NULL)
+MAT::AAAneohooke_stopro::AAAneohooke_stopro():
+params_(NULL),
+isinit_beta_(false),
+isinit_youngs_(false)
 {
 }
 
@@ -74,8 +81,10 @@ MAT::AAAneohooke_stopro::AAAneohooke_stopro()
 /*----------------------------------------------------------------------*
  |  Constructor                             (public)   chfoe 03/08 |
  *----------------------------------------------------------------------*/
-MAT::AAAneohooke_stopro::AAAneohooke_stopro(MAT::PAR::AAAneohooke_stopro* params)
-  : params_(params)
+MAT::AAAneohooke_stopro::AAAneohooke_stopro(MAT::PAR::AAAneohooke_stopro* params):
+params_(params),
+isinit_beta_(false),
+isinit_youngs_(false)
 {
 }
 
@@ -132,60 +141,57 @@ void MAT::AAAneohooke_stopro::Unpack(const std::vector<char>& data)
 // initialize function to be called from MLMC to get beta from a random field
 void MAT::AAAneohooke_stopro::Init(double value_stopro, string stochpar)
 {
-  int initflag = params_->init_;
-  // stochastic beta beta_mean+ beta_mean*value_stopro
-  if(initflag==0)
+  if(!stochpar.compare("BETA"))
   {
-   if(!stochpar.compare("beta"))
-   {
-     // calculation done in MLMC
-     beta_ = value_stopro;
-     youngs_ = params_->youngs_mean_;
-   }
-   else if(!stochpar.compare("youngs"))
-   {
-     youngs_ = value_stopro;
-     beta_ = params_->beta_mean_;
-   }
-   else
-   {
-     isinit_youngs_ = false;
-     isinit_beta_ = false;
-     dserror("Unknown parameter in AAAnohooke_stopro::Init()");
-   }
+   // calculation done in MLMC/elsewhere
+   beta_ = value_stopro;
+   isinit_beta_ = true;
   }
-  isinit_beta_ = true;
-  isinit_youngs_ = true;
+  else if(!stochpar.compare("YOUNG"))
+  {
+    youngs_ = value_stopro;
+    isinit_youngs_ = true;
+  }
+  else
+  {
+    dserror("Unknown parameter in AAAneohooke_stopro::Init()");
+  }
+
   return;
 }
 
 
-void MAT::AAAneohooke_stopro::Evaluate(
-            const LINALG::Matrix<6,1>& glstrain,
-      LINALG::Matrix<6,6>& cmat,
-      LINALG::Matrix<6,1>& stress)
+void MAT::AAAneohooke_stopro::Evaluate(const LINALG::Matrix<6,1>& glstrain,
+                                       LINALG::Matrix<6,6>& cmat,
+                                       LINALG::Matrix<6,1>& stress,
+                                       Teuchos::ParameterList& params)
 {
-    // init check here
-    if (!isinit_beta_&&!isinit_youngs_)
-   dserror("Stochastic Parameters of AAAneohooke_stopro have not been initialized! \n AAAneohooke_stopro for use with MLMC ONLY!!!");
+  double beta = params_->beta_mean_;
+  double youngs = params_->youngs_mean_;
 
-  // material parameters for isochoric part
-    double youngs;
+  // init check
+  if (isinit_beta_ && !isinit_youngs_)
+  {
+    beta   = beta_;
+  }
+  else if (!isinit_beta_ && isinit_youngs_)
+  {
     youngs = youngs_;
+  }
+  else if(isinit_beta_ && isinit_youngs_)
+  {
+    beta   = beta_;
+    youngs = youngs_;
+  }
+  else
+    dserror("Stochastic Parameters of AAAneohooke_stopro have not been initialized! \n AAAneohooke_stopro for use with MLMC ONLY!!!");
 
-  //else
-    //youngs   = params_->youngs_mean_;    // Young's modulus
-  // add stochastic part to beta
-    double beta;
-    beta     = beta_;
-  //else
-    //beta     = params_->beta_mean_;
-  const double nue      = params_->nue_;       // Poisson's ratio
-  const double alpha    = youngs*0.1666666666666666667;       // E = alpha * 6..
+  const double nue   = params_->nue_;       // Poisson's ratio
+  const double alpha = youngs*0.1666666666666666667;       // E = alpha * 6
 
   // material parameters for volumetric part
-  const double beta2 = -2.0;                                   // parameter from Holzapfel
-  const double komp  = (nue!=0.5) ? 2.0*alpha / (1.0-2.0*nue) : 0.0;              // bulk modulus
+  const double beta2 = -2.0;                                            // parameter from Holzapfel
+  double komp  = (nue!=0.5) ? 2.0*alpha / (1.0-2.0*nue) : 0.0;    // bulk modulus
 
   //--------------------------------------------------------------------------------------
   // build identity tensor I
@@ -231,15 +237,43 @@ void MAT::AAAneohooke_stopro::Evaluate(
   const double third = 1.0/3.0;
   const double twthi = 2.0/3.0;
 
+  double isochor1 = 0.0;
+  double isochor2 = 0.0;
 
-  //--- determine 2nd Piola Kirchhoff stresses pktwo -------------------------------------
-  // 1st step: isochoric part
-  //=========================
-  double isochor1 = 2.0*(alpha*pow(iiinv,third)
-       + 2.0*beta*inv - 6.0*beta*pow(iiinv,third))*pow(iiinv,-twthi);
-  double isochor2 = -twthi*inv*(alpha*pow(iiinv,third)
-        + 2.0*beta*inv
-        - 6.0*beta*pow(iiinv,third))*pow(iiinv,-twthi);
+  string deriv = params.get<string>("matparderiv","none");
+  if (deriv == "YOUNG")
+  {
+    //cout << "DERIV YOUNGS" << endl;
+    //deriv. w.r.t YOUNG!! -> factor 0.1666666666666666667 in here
+    isochor1 = 2.0*pow(iiinv,third)*pow(iiinv,-twthi)*0.1666666666666666667;
+    isochor2 = -twthi*inv*pow(iiinv,third)*pow(iiinv,-twthi)*0.1666666666666666667;
+
+    //do komp too:
+    komp = 2.0/(1.0-2.0*nue)*0.1666666666666666667;
+  }
+  else if(deriv == "BETA")
+  {
+    //cout << "DERIV BETA" << endl;
+    //deriv. w.r.t beta
+    isochor1 = 2.0*(2.0*inv - 6.0*pow(iiinv,third))*pow(iiinv,-twthi);
+    isochor2 = -twthi*inv*(2.0*inv - 6.0*pow(iiinv,third))*pow(iiinv,-twthi);
+
+    // vol part is not a function of beta -> derivative has to be zero
+    komp = 0.0;
+  }
+  else if(deriv == "none")
+  {
+    //--- determine 2nd Piola Kirchhoff stresses pktwo -------------------------------------
+    // 1st step: isochoric part
+    //=========================
+    isochor1 = 2.0*(alpha*pow(iiinv,third)
+         + 2.0*beta*inv - 6.0*beta*pow(iiinv,third))*pow(iiinv,-twthi);
+    isochor2 = -twthi*inv*(alpha*pow(iiinv,third)
+          + 2.0*beta*inv
+          - 6.0*beta*pow(iiinv,third))*pow(iiinv,-twthi);
+  }
+  else
+    dserror("give valid parameter for differentiation");
 
   // contribution: Cinv
   LINALG::Matrix<6,1> pktwoiso(invc);

@@ -150,8 +150,13 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   Teuchos::ParameterList& nox = xparams->sublist("NOX");
   nox = *snox;
   // Parameter to determine if MLMC is on/off
-  // Needed to for reduced restart output
+  // Needed for reduced restart output
   xparams->set<int>("REDUCED_OUTPUT",Teuchos::getIntegralValue<int>((*mlmcp),"REDUCED_OUTPUT"));
+
+  //dual problems need the primal results which need to be stored therefore
+  const Teuchos::ParameterList& ivap = DRT::Problem::Instance()->StatInverseAnalysisParams();
+  xparams->set<int>("MSTEPEVRY",Teuchos::getIntegralValue<int>(ivap,"MSTEPS"));
+
 
   // overrule certain parameters
   sdyn.set<double>("TIMESTEP", prbdyn.get<double>("TIMESTEP"));

@@ -26,6 +26,7 @@ Maintainer: Georg Hammerl
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_lib/drt_dserror.H"
 
+#include "../drt_structure/strtimint_mstep.H"
 
 // forward declarations:
 namespace DRT
@@ -60,6 +61,11 @@ namespace MORTAR
 namespace UTILS
 {
   class ConstrManager;
+}
+
+namespace STR
+{
+  class TimIntMStep<Epetra_Vector>;
 }
 
 
@@ -128,6 +134,12 @@ namespace ADAPTER {
 
     /// unknown displacements at t(n)
     virtual Teuchos::RCP<const Epetra_Vector> Dispn() = 0;
+
+    /// return displacements at all the time steps
+    virtual Teuchos::RCP<STR::TimIntMStep<Epetra_Vector> > DispMStep() = 0;
+
+    /// return times at all the time steps
+    virtual Teuchos::RCP<STR::TimIntMStep<double> > TimeMStep() = 0;
 
     //@}
 

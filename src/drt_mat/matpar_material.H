@@ -72,17 +72,17 @@ namespace MAT
 
   namespace PAR
   {
-class ParMaterialType : public DRT::ParObjectType
-{
-public:
+    class ParMaterialType : public DRT::ParObjectType
+    {
+    public:
 
-  std::string Name() const { return "ParMaterialType"; }
+      std::string Name() const { return "ParMaterialType"; }
 
-  static ParMaterialType & Instance() { return instance_; };
+      static ParMaterialType & Instance() { return instance_; };
 
-private:
+    private:
 
-  static ParMaterialType instance_;
+      static ParMaterialType instance_;
 };
 
     /// Container for read-in materials

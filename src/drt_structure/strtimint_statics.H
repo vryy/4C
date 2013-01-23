@@ -62,8 +62,8 @@ namespace STR
     // ....
 
     //! Resize #TimIntMStep<T> multi-step quantities
-    //! Single-step method: nothing to do here
-    void ResizeMStep() { ; }
+    //! Single-step method: nothing to do here exept when doing optimization
+    void ResizeMStep();
 
     //@}
 

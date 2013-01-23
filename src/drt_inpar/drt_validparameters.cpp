@@ -1224,21 +1224,46 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("XI",0.0,"generalisation factor in [0,1)",&gemm);
 
   /*----------------------------------------------------------------------*/
-   Teuchos::ParameterList& statinvp = list->sublist("STAT INVERSE ANALYSIS",false,"");
+  Teuchos::ParameterList& statinvp = list->sublist("STAT INVERSE ANALYSIS",false,"");
 
-   // Statistical Inverse Analysis
-   setStringToIntegralParameter<int>("STAT_INV_ANALYSIS","none",
+  // Statistical Inverse Analysis switch
+  setStringToIntegralParameter<int>("STAT_INV_ANALYSIS","none",
                                 "types of statistical inverse analysis and on/off switch",
                                 tuple<std::string>(
                                   "none",
-                                  "yes"),
+                                  "GradientDescent",
+                                  "MonteCarlo"),
                                 tuple<int>(
                                   INPAR::STR::stat_inv_none,
-                                  INPAR::STR::stat_inverse),
+                                  INPAR::STR::stat_inv_graddesc,
+                                  INPAR::STR::stat_inv_mc),
                                 &statinvp);
-   StringParameter("MONITORFILE","none.monitor",
-                   "filename of file containing measured displacements",
-                   &statinvp);
+
+  // monitorfile to provide measurements
+  StringParameter("MONITORFILE","none.monitor",
+                  "filename of file containing measured displacements",
+                  &statinvp);
+
+  // indicate whether to store results of the primal problem when using adjoints
+  setStringToIntegralParameter<int>("MSTEPS","NO",
+                                    "Store intermediate results of the primal problem?",
+                                    yesnotuple,yesnovalue,&statinvp);
+
+  // list of materials to be optimized
+  setNumericStringParameter("INV_LIST","-1",
+                            "IDs of materials that have to be fitted",
+                            &statinvp);
+
+  // list of parameters for the respective material
+  StringParameter("PARAMLIST","none",
+                  "list of string of parameters to be optimized, order as in INV_LIST",
+                  &statinvp);
+
+  // number of optimization steps
+  IntParameter("MAXITER",100,"max iterations for inverse analysis",&statinvp);
+
+  // stepsize for deterministic gradient based schemes
+  DoubleParameter("STEPSIZE",1.0,"stepsize for the gradient descent scheme",&statinvp);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& iap = list->sublist("INVERSE ANALYSIS",false,"");

@@ -81,8 +81,30 @@ STR::TimIntStatics::TimIntStatics
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*dofrowmap_, true);
 
+  // initial resize of multi-step quantities
+  if (xparams.isParameter("MSTEPEVRY") )
+  {
+    if (xparams.get<int>("MSTEPEVRY"))
+      ResizeMStep();
+  }
+
   // have a nice day
   return;
+}
+
+/*----------------------------------------------------------------------*/
+/* Resizing of multi-step quantities */
+void STR::TimIntStatics::ResizeMStep()
+{
+  // resize time and stepsize acc. to mstepevery_
+  time_->Resize(-(stepmax_-1), 0, (*time_)[0]);
+  dt_->Resize(-(stepmax_-1), 0, (*dt_)[0]);
+
+  // resize state vectors according to mstepevery_
+  dis_->Resize(-(stepmax_-1), 0, dofrowmap_, true);
+  vel_->Resize(-(stepmax_-1), 0, dofrowmap_, true);
+  acc_->Resize(-(stepmax_-1), 0, dofrowmap_, true);
+
 }
 
 /*----------------------------------------------------------------------*/

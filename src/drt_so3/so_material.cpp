@@ -165,7 +165,7 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
     case INPAR::MAT::m_aaaneohooke_stopro: /*-- special case of generalised NeoHookean material see Raghavan, Vorp with stochastic mat parameters*/
     {
       MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(mat.get());
-      aaa_stopro->Evaluate(*glstrain,*cmat,*stress);
+      aaa_stopro->Evaluate(*glstrain,*cmat,*stress, params);
       *density = aaa_stopro->Density();
       break;
     }
@@ -605,7 +605,7 @@ void DRT::ELEMENTS::So_weg6::sow6_mat_sel(
     case INPAR::MAT::m_aaaneohooke_stopro: /*-- special case of generalised NeoHookean material see Raghavan, Vorp with stochastic mat parameters*/
         {
           MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(mat.get());
-          aaa_stopro->Evaluate(*glstrain,*cmat,*stress);
+          aaa_stopro->Evaluate(*glstrain,*cmat,*stress,params);
           *density = aaa_stopro->Density();
           break;
     }
@@ -1284,7 +1284,7 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
     case INPAR::MAT::m_aaaneohooke_stopro: /*-- special case of generalised NeoHookean material see Raghavan, Vorp with stochastic mat parameters*/
         {
           MAT::AAAneohooke_stopro* aaa_stopro = static_cast <MAT::AAAneohooke_stopro*>(mat.get());
-          aaa_stopro->Evaluate(*glstrain,*cmat,*stress);
+          aaa_stopro->Evaluate(*glstrain,*cmat,*stress,params);
           *density = aaa_stopro->Density();
           break;
      }

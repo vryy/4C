@@ -49,6 +49,14 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Dispn()
     { return structure_->Dispn(); }
 
+    /// return displacements at all the time steps
+    virtual Teuchos::RCP<STR::TimIntMStep<Epetra_Vector> > DispMStep()
+    { return structure_->DispMStep(); }
+
+    /// return times at all the time steps
+    virtual Teuchos::RCP<STR::TimIntMStep<double> > TimeMStep()
+    { return structure_->TimeMStep(); }
+
     //@}
 
 

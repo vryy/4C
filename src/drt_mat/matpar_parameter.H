@@ -20,6 +20,7 @@ Maintainer: Burkhard Bornemann
 /* headers */
 #include <Teuchos_RCP.hpp>
 #include "../drt_inpar/inpar_material.H"
+#include "../drt_lib/drt_dserror.H"
 
 /*----------------------------------------------------------------------*/
 /* forward declarations */
@@ -77,6 +78,9 @@ namespace MAT
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial() = 0;
+
+      /// return number of parameters being optimizable
+      virtual void OptParams(std::vector<std::string>* pnames){dserror("This material does not implement OptParams()");};
 
     private:
 

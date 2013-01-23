@@ -17,6 +17,8 @@ Maintainer: Sebastian Kehl
 #include "str_statinvanalysis.H"
 #include "../drt_inv_analysis/stat_inv_analysis.H"
 #include "../drt_inpar/inpar_statinvanalysis.H"
+#include "../drt_inv_analysis/stat_inv_ana_graddesc.H"
+#include "../drt_inv_analysis/stat_inv_ana_mc.H"
 #include "../drt_lib/drt_discret.H"
 
 /*======================================================================*/
@@ -35,18 +37,22 @@ void STR::statinvanalysis()
   if (!actdis->HaveDofs()) actdis->FillComplete();
 
   // context for output and restart
-  Teuchos::RCP<IO::DiscretizationWriter> output
-    = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
-
+  //Teuchos::RCP<IO::DiscretizationWriter> output
+  //  = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
 
   switch(DRT::INPUT::IntegralValue<INPAR::STR::StatInvAnalysisType>(statinvp,"STAT_INV_ANALYSIS"))
   {
-    case INPAR::STR::stat_inverse:
+    case INPAR::STR::stat_inv_graddesc:
     {
-      STR::StatInvAnalysis ia(actdis,output);
-      ia.Sample();
+      STR::INVANA::StatInvAnaGradDesc ia(actdis);
+      ia.Optimize();
     }
-
+    break;
+    case INPAR::STR::stat_inv_mc:
+    {
+      STR::INVANA::StatInvAnaMC ia(actdis);
+      ia.Optimize();
+    }
     break;
     default:
       dserror("Unknown type of statistical inverse analysis");

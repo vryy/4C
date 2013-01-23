@@ -1027,6 +1027,11 @@ set(OBJS_INV_ANALYSIS
 set(OBJS_STATINV_ANALYSIS
   src/drt_inv_analysis/stat_inv_analysis.cpp
   src/drt_structure/str_statinvanalysis.cpp
+  src/drt_inv_analysis/timint_adjoint.cpp
+  src/drt_inv_analysis/objective_funct.cpp
+  src/drt_inv_analysis/matpar_manager.cpp
+  src/drt_inv_analysis/stat_inv_ana_graddesc.cpp
+  src/drt_inv_analysis/stat_inv_ana_mc.cpp
 )  
 set(OBJS_MLMC
   src/drt_mlmc/mlmc.cpp

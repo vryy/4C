@@ -81,8 +81,11 @@ namespace MAT
     virtual double Density() const
     {
       dserror("The material you are using does not provide a density");
-      return 0.;
+      return 0.0;
     }
+
+    /// Set elementwise material parameters
+    virtual void Init(double val, std::string name){dserror("not implemented in this material");};
   };
 
 }

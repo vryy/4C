@@ -70,24 +70,26 @@ namespace MAT
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-    };  // class AAAneohooke
+      void OptParams(std::vector<std::string>* pnames);
 
+    };  // class AAAneohooke
   }  // namespace PAR
 
-class AAAneohooke_stoproType : public DRT::ParObjectType
-{
-public:
 
-  std::string Name() const { return "AAAneohooke_stoproType"; }
+  class AAAneohooke_stoproType : public DRT::ParObjectType
+  {
+  public:
 
-  static AAAneohooke_stoproType & Instance() { return instance_; };
+    std::string Name() const { return "AAAneohooke_stoproType"; }
 
-  virtual DRT::ParObject* Create( const std::vector<char> & data );
+    static AAAneohooke_stoproType & Instance() { return instance_; };
 
-private:
+    virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  static AAAneohooke_stoproType instance_;
-};
+  private:
+
+    static AAAneohooke_stoproType instance_;
+  };
 
   /*----------------------------------------------------------------------*/
   /// aneurysm wall material according to Raghavan and Vorp [2000]
@@ -159,12 +161,13 @@ private:
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AAAneohooke_stopro( *this ) ); }
 
     // Init stochastic beta
-    void Init(double value_stopro, string stochpar);
+    void Init(double value_stopro, std::string stochpar);
 
     // THE material routine
     void Evaluate(const LINALG::Matrix<6,1>& glstrain,
       LINALG::Matrix<6,6>& cmat,
-      LINALG::Matrix<6,1>& stress);
+      LINALG::Matrix<6,1>& stress,
+      Teuchos::ParameterList& params);
 
 
     /// Return quick accessible material parameter data
@@ -182,8 +185,9 @@ private:
     bool isinit_beta_;
 
     double youngs_;
-   bool isinit_youngs_;
+    bool isinit_youngs_;
   };
-}
+
+}//namespace MAT
 
 #endif  // AAANEOHOOKE_STOPRO_H_

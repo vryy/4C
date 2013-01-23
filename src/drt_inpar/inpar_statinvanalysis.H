@@ -27,7 +27,8 @@ namespace INPAR
     enum StatInvAnalysisType
     {
       stat_inv_none,          // no
-      stat_inverse            // stochastic inverse analysis
+      stat_inv_mc,            // statistical inverse analysis using montecarlo
+      stat_inv_graddesc       // deterministic inverse analysis using gradient descent
     };
 
   }  // namespace STR
