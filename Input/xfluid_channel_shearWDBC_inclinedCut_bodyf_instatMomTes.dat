@@ -1,5 +1,5 @@
 //
-// Maintainer: Benedikt Schott
+// Maintainer: Sudhakar Yogaray
 //
 // necessary defines: D_FLUID3 D_SOLID3 CCADISCRET BINIO QHULL
 //
@@ -74,9 +74,8 @@ CSTAB cstab_qs //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT_SCREEN           No
 GMSH_DEBUG_OUT                  No
-GMSH_SOL_OUT                    Yes
+GMSH_SOL_OUT                    No
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          MomentFitting
