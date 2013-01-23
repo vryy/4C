@@ -4,6 +4,10 @@
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid.H"
 
+// needed for dserror nested parallelism AMG FSI
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_comm/comm_utils.H"
+
 #include <Epetra_Time.h>
 #include <ml_MultiLevelPreconditioner.h>
 #include "MLAPI_LoadBalanceOperator.h"
@@ -88,7 +92,14 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   dserror("class OverlappingBlockMatrixFSIAMG does not support #define BLOCKMATRIXMERGE");
 #endif
 
-  MLAPI::Init(Teuchos::rcp(Matrix(0,0).Comm().Clone()), true);
+  if(DRT::Problem::Instance()->GetNPGroup()->NumGroups() != 1)
+    dserror("No nested parallelism for AMG FSI. See comments in FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()!");
+  // Attention: No nested parallelism for AMG FSI due to MLAPI incompability
+  // MLAPI::Space::Reshape constructs an ML_RowMatrix object using a hard coded MPI_COMM_WORLD in MLAPI_Operator.h
+  // Fixing this needs major changes in Trilinos/MLAPI which is not desirable
+
+  // MLAPI::Init() without arguments uses internally MPI_COMM_WOLRD
+  MLAPI::Init();
   const int myrank = Matrix(0,0).Comm().MyPID();
 
   const LINALG::SparseMatrix& structInnerOp = Matrix(0,0);
@@ -654,9 +665,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
                   sml,fml,aml);
   }
 
-  // close MLAPI environment
-  MLAPI::Finalize(true, false);
-
   return;
 }
 
@@ -1151,8 +1159,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
 {
   if (symmetric_)  dserror("FSIAMG symmetric Block Gauss-Seidel not impl.");
 
-  MLAPI::Init(Teuchos::rcp(Matrix(0,0).Comm().Clone()), true);
-
   // rewrap the matrix every time as it is killed irrespective
   // of whether the precond is reused or not.
   {
@@ -1373,9 +1379,6 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
   RangeExtractor().InsertVector(*sy,0,y);
   RangeExtractor().InsertVector(*fy,1,y);
   RangeExtractor().InsertVector(*ay,2,y);
-
-  // close MLAPI environment
-  MLAPI::Finalize(true, false);
 
   return;
 }

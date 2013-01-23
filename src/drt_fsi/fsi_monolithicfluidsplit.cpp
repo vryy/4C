@@ -204,10 +204,6 @@ void FSI::MonolithicFluidSplit::SetupSystem()
   {
   case INPAR::FSI::PreconditionedKrylov:
   case INPAR::FSI::FSIAMG:
-  {
-    // MLAPI workspace has to be initialized due to MLAPI operator objects in OverlappingBlockMatrixFSIAMG
-    // this forces MLAPI to use the correct communicator and avoids generation of a default communicator in MLAPI
-    MLAPI::Init(Teuchos::rcp(StructureField()->Discretization()->Comm().Clone()), true);
     systemmatrix_ = Teuchos::rcp(new OverlappingBlockMatrixFSIAMG(
                                    Extractor(),
                                    *StructureField(),
@@ -228,10 +224,7 @@ void FSI::MonolithicFluidSplit::SetupSystem()
                                    DRT::INPUT::IntegralValue<int>(fsidyn,"FSIAMGANALYZE"),
                                    linearsolverstrategy_,
                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
-    // clean-up internal ML specific communicator
-    MLAPI::Finalize(true, false);
     break;
-  }
   default:
     dserror("Unsupported type of monolithic solver");
     break;
