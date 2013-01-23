@@ -1135,7 +1135,7 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
         else
           stoch_mat_par = random_field_->EvalFieldAtLocation(ele_center,false,false);
       }
-        aaa_stopro->Init(stoch_mat_par,"beta");
+        aaa_stopro->Init(stoch_mat_par,"BETA");
 
     }
   } // EOF loop elements
