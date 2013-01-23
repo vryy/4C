@@ -1083,6 +1083,7 @@ void GEO::CUT::Mesh::FindFacetPositions()
             throw std::runtime_error( "mixed facet set" );
           }
           position = fp;
+          break;
         }
       }
 
@@ -2093,9 +2094,9 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name, bool include_inner )
  *-------------------------------------------------------------------------------------*/
 void GEO::CUT::Mesh::DumpGmshIntegrationCells( std::string name )
 {
-#ifndef DEBUGCUTLIBRARY
-  return;
-#endif
+//#ifndef DEBUGCUTLIBRARY
+//  return;
+//#endif
 
   std::ofstream file( name.c_str() );
   file << "View \"IntegrationCells\" {\n";

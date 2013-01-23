@@ -138,6 +138,9 @@ void GEO::CUT::MeshIntersection::Cut( bool include_inner, std::string VCellgauss
   // create integration points and/or subtetrahedralization
   Cut_Finalize( include_inner, VCellgausstype, BCellgausstype);
 
+  // DumpGmshVolumeCells("CUT_vc", true);
+  // DumpGmshIntegrationCells("CUT_intcells");
+
 
   Status(VCellgausstype);
 }

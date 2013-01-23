@@ -276,6 +276,7 @@ void GEO::CUT::Edge::CutPointsInside( Element * element, std::vector<Point*> & l
 
 bool GEO::CUT::Edge::IsCut( Side * side )
 {
+  // cutpoints contains end-points and internal cut-points
   for ( std::vector<Point*>::iterator i=cut_points_.begin(); i!=cut_points_.end(); ++i )
   {
     Point * p = *i;

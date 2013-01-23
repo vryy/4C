@@ -95,7 +95,7 @@ void GEO::CUT::Parallel::CommunicateNodePositions()
     else
     {
       // perform a new Robin round to gather data from other procs
-      // (send from current proc to next proc and receive info from proc before)
+      // (send from current proc to next proc and receive info from proc before, numproc times)
       // fill the current maps with information (node positions) from myproc
       exportNodePositionData();
 
@@ -149,7 +149,7 @@ void GEO::CUT::Parallel::exportCommunicationFinished(bool & procDone)
    * first part: send procfinished in order to *
    * check whether all procs have finished     *
    *-------------------------------------------*/
-  for (int iproc=0;iproc<numproc_-1;iproc++)
+  for (int iproc=0;iproc<numproc_-1;iproc++) // proc obtains information from numproc_-1 other processors
   {
     DRT::PackBuffer dataSend;
 
@@ -162,15 +162,15 @@ void GEO::CUT::Parallel::exportCommunicationFinished(bool & procDone)
 
     // pointer to current position of group of cells in global string (counts bytes)
     size_t posinData = 0;
-    int allProcsDone;
+    int allProcsDone = 0;
 
     //unpack received data
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,allProcsDone);
 
     // if the received information is allProcsDone==false, then set the current proc also to procDone=false
     // within the next round-iteration the next proc is also set to procDone=false
-    if (allProcsDone==0)
-      procDone = 0;
+    if ((bool)allProcsDone==false)
+      procDone = false;
 
     // processors wait for each other
     discret_.Comm().Barrier();
@@ -381,6 +381,7 @@ void GEO::CUT::Parallel::CommunicateNodeDofSetNumbers()
  *------------------------------------------------------------------------------------------------*/
 void GEO::CUT::Parallel::exportDofSetData()
 {
+  bool include_inner = false;
 
   // destination proc (the "next" one)
   int dest = myrank_+1;
@@ -470,6 +471,14 @@ void GEO::CUT::Parallel::exportDofSetData()
     {
       bool find_volumecell = false; // do we have to identify the received volumecell on myrank?
 
+
+      // safety check
+      if(include_inner == false)
+      {
+        if(vc_data->inside_cell_ ==true)
+          dserror("why did you communicate volumecells with inside position in element %d, where include_inner is set to false", vc_data->peid_);
+      }
+
       std::map<int,int>& node_dofsetnumber_map = vc_data->node_dofsetnumber_map_;
 
 
@@ -543,7 +552,15 @@ void GEO::CUT::Parallel::exportDofSetData()
               //cout << "in my_vc != NULL" << endl;
               const std::vector<int> nds = my_vc->NodalDofSet();
 
-              if(index >= (int)nds.size()) dserror(" index can not be read in nds vector of size %d ", index, nds.size());
+              if( (int)(nds.size())== 0 )
+              {
+                cout << "position of found vc is " << my_vc->Position() << endl;
+                dserror("the nds-vector of volume cell in element %d on proc %d has size %d", my_vc->ParentElement()->Id(), myrank_, (int)(nds.size()) );
+              }
+              if(index >= (int)(nds.size()))
+              {
+                dserror(" index %d exceeds the nds vector of my vc with size %d in element %d on proc %d", index, nds.size(), my_vc->ParentElement()->Id(), myrank_);
+              }
 
               new_dofset_number = nds[index];
 

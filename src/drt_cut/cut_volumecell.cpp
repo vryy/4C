@@ -193,11 +193,11 @@ void GEO::CUT::VolumeCell::CreateTet4IntegrationCells( Mesh & mesh,
 
     length /= 3;
     std::vector<Point*> p( 3 );
-    for ( std::size_t i=0; i<length; ++i )
+    for ( std::size_t i=0; i<length; ++i ) // loop the list of triangles
     {
       std::copy( &points[3*i], &points[3*( i+1 )], &p[0] );
       //Tri3BoundaryCell::CreateCell( mesh, this, f, p );
-      NewTri3Cell( mesh, f, p );
+      NewTri3Cell( mesh, f, p ); // create tri3 cell
     }
   }
 }
@@ -684,7 +684,10 @@ void GEO::CUT::VolumeCell::integrateSpecificFunctionsTessellation()
       break;
     }
     default:
+    {
       dserror("Include this element here");
+      break;
+    }
     }
   }
 
@@ -817,9 +820,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
         if(!fac->IsTriangulated())
           fac->DoTriangulation( mesh, corners );
         const std::vector<std::vector<Point*> > & triangulation = fac->Triangulation();
-#endif
-
-#if 1 // creates both tri and quad. less no of Gauss points
+#else  // creates both tri and quad. less no of Gauss points
 
         if( !fac->IsFacetSplit() )
           fac->SplitFacet(  corners );

@@ -106,6 +106,15 @@ public:
 
   const plain_facet_set & Facets() const { return facets_; }
 
+  bool IsCut(Side* s)
+  {
+    for(plain_facet_set::iterator fac=facets_.begin(); fac!=facets_.end(); fac++)
+    {
+      if((*fac)->IsCutSide(s)) return true;
+    }
+    return false;
+  }
+
   /*!
   \brief Return the integrationcells generated from this volumecell
    */

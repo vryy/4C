@@ -63,6 +63,8 @@ public:
         inside_cell_(inside_cell),
         peid_(peid)
       {
+        node_dofsetnumber_map_.clear();
+        cut_points_coords_.clear();
         std::copy(node_dofsetnumber_map.begin(), node_dofsetnumber_map.end(), std::inserter(node_dofsetnumber_map_, node_dofsetnumber_map_.begin()) );
         std::copy(cut_points_coords.begin(), cut_points_coords.end(), std::inserter(cut_points_coords_, cut_points_coords_.begin()) );
       }
@@ -96,7 +98,7 @@ public:
       bool                               inside_cell_;            ///< bool inside or outside cell
       std::vector<LINALG::Matrix<3,1> >  cut_points_coords_;      ///< coordinates for points of Volumecell
       int                                peid_;                   ///< parent element Id for volumecell
-      std::map<int,int>                  node_dofsetnumber_map_;  ///< node Ids and dofset numbers that for that data has to be communicated
+      std::map<int,int>                  node_dofsetnumber_map_;  ///< node Ids and dofset numbers w.r.t volumecell for that data have to be communicated
 
 
     private:
