@@ -1246,7 +1246,10 @@ void FLD::XFluid::XFluidState::GmshOutputElement( DRT::Discretization & discret,
     if(acc_output) acc_f << "VH(";
     break;
   default:
+  {
     dserror( "unsupported shape" );
+    break;
+  }
   }
 
 //  for ( int i=0; i<actele->NumNode(); ++i )
@@ -1380,7 +1383,10 @@ void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discr
           if(acc_output) acc_f << "VQ(";
           break;
         default:
+        {
           dserror( "splitting facets failed" );
+          break;
+        }
         }
 
         for ( unsigned k=0; k<cell.size(); ++k )
@@ -1441,7 +1447,10 @@ void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discr
             break;
           }
           default:
+          {
             dserror( "unsupported shape" );
+            break;
+          }
           }
 
           if ( k > 0 )
@@ -1488,7 +1497,10 @@ void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discr
         if(acc_output) acc_f << "VS(";
         break;
       default:
+      {
         dserror( "unsupported shape" );
+        break;
+      }
       }
 
       for ( unsigned i=0; i<points.size(); ++i )
@@ -1549,7 +1561,10 @@ void FLD::XFluid::XFluidState::GmshOutputVolumeCell( DRT::Discretization & discr
           break;
         }
         default:
+        {
           dserror( "unsupported shape" );
+          break;
+        }
         }
 
 
@@ -1692,7 +1707,10 @@ void FLD::XFluid::XFluidState::GmshOutputBoundaryCell( DRT::Discretization & dis
           break;
         }
         default:
+        {
           dserror( "unsupported side shape %d", side->Shape() );
+          break;
+        }
         }
 
         if ( i!=points.begin() )
@@ -1893,6 +1911,9 @@ FLD::XFluid::XFluid(
               << "\t\t interface velocity             by funct: " <<  interface_vel_func_no_       << "\n"
               << "\t\t interface displacement         by funct: " <<  interface_disp_func_no_
                                                    << ", curve: " <<  interface_disp_curve_no_     <<  "\n\n";
+
+    if(interface_vel_func_no_ != interface_vel_init_func_no_ and interface_vel_init_func_no_ == -1)
+      dserror("Are you sure that you want to choose two different functions for VEL_INIT_FUNCT_NO and VEL_FUNCT_NO");
   }
 
   // get interface stabilization specific parameters
@@ -2760,7 +2781,10 @@ void FLD::XFluid::PrintTimeInt()
           time_,maxtime_,dta_,step_,stepmax_);
       break;
     default:
+    {
       dserror("parameter out of range: IOP\n");
+      break;
+    }
     } /* end of switch(timealgo) */
   }
 }
@@ -3881,7 +3905,10 @@ void FLD::XFluid::CutAndSetStateVectors()
           break;
         }
         default:
+        {
           dserror("unknown recomputation approach in XFEM time integration not implemented");
+          break;
+        }
         }
 
         totalitnumFRS_++;
@@ -4243,7 +4270,10 @@ void FLD::XFluid::LiftDrag() const
 
   const int liftdrag = params_->get<int>("liftdrag");
 
-  if (liftdrag == INPAR::FLUID::liftdrag_none); // do nothing, we don't want lift & drag
+  if (liftdrag == INPAR::FLUID::liftdrag_none)
+  {
+    // do nothing, we don't want lift & drag
+  }
 
   if (liftdrag == INPAR::FLUID::liftdrag_nodeforce)
   {
@@ -4643,9 +4673,18 @@ void FLD::XFluid::Output()
            // else copy the right nodes
            const std::vector<int> gdofs_current(discret_->Dof(xfemnode));
 
-           if(gdofs_current.size() == 0); // cout << "no dofs available->hole" << endl;
-           else if(gdofs_current.size() == gdofs_original.size()); //cout << "same number of dofs available" << endl;
-           else if(gdofs_current.size() > gdofs_original.size());  //cout << "more dofs available->decide" << endl;
+           if(gdofs_current.size() == 0)
+           {
+             // cout << "no dofs available->hole" << endl;
+           }
+           else if(gdofs_current.size() == gdofs_original.size())
+           {
+             //cout << "same number of dofs available" << endl;
+           }
+           else if(gdofs_current.size() > gdofs_original.size())
+           {
+             //cout << "more dofs available->decide" << endl;
+           }
            else cout << "decide which dofs can be copied and which have to be set to zero" << endl;
 
            if(gdofs_current.size() == 0)
