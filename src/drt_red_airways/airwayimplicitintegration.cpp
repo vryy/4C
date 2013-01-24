@@ -159,6 +159,7 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   acini_e_volumenp_     = LINALG::CreateVector(*elementcolmap,true);
   acini_e_volume_strain_= LINALG::CreateVector(*elementcolmap,true);
 
+  num_of_inter_acinar_linkers_ = LINALG::CreateVector(*dofrowmap,true);
   // Vectors used for solution process
   // ---------------------------------
 
@@ -217,7 +218,51 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
       double val = gid;
       nodeIds_->ReplaceGlobalValues(1,&val,&gid);
     }
+
+#if 0
+  // get number of inter-acinar linkers effecting an acinus which should be:
+    // ((number_of_elements) - 1)/2
+//    if (ele->Name()=="RedAcinusType")
+    {
+      for(int j=1;j<2;j++)
+      {
+        if(myrank_ == (*lmowner)[j])
+        {
+          DRT::Node ** nodes = ele->Nodes();
+          DRT::Element ** elems = nodes[j]->Elements();
+          for (int k=0;k<nodes[j]->NumElement();k++)
+          {
+            if (elems[k]->Owner()==myrank_)
+            {
+              int gid = lm[j];
+              int lid = num_of_inter_acinar_linkers_->Map().LID(gid);
+              double val = (*num_of_inter_acinar_linkers_)[lid]+1;
+              num_of_inter_acinar_linkers_->ReplaceGlobalValues(1,&val,&gid);
+            }
+          }
+        }
+      }
+    }
+#endif
   }
+
+#if 1
+  const Epetra_Map* nodeColwmap      = discret_->NodeColMap();
+  for (int nnode=0;nnode<discret_->NumMyColNodes();++nnode)
+  {
+    DRT::Node * node = discret_->lColNode(nnode);
+    int dofgid = discret_->Dof(node,0) ;
+    int doflid = num_of_inter_acinar_linkers_->Map().LID(dofgid);
+
+    for (int k=0;k<node->NumElement();k++)
+    {
+      {
+        double val = (*num_of_inter_acinar_linkers_)[doflid]+1;
+        num_of_inter_acinar_linkers_->ReplaceGlobalValues(1,&val,&dofgid);
+      }
+    }
+  }
+#endif
 
 } // RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt
 
@@ -633,6 +678,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
 
     sysmat_iad_->PutScalar(0.0);
     eleparams.set("sysmat_iad",sysmat_iad_);
+//    eleparams.set("num_of_inter_acinar_linkers",num_of_inter_acinar_linkers_);
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
@@ -665,6 +711,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     // action for elements
     eleparams.set("action","calc_sys_matrix_rhs_iad");
     discret_->SetState("sysmat_iad",sysmat_iad_);
+    discret_->SetState("num_of_inter_acinar_linkers",num_of_inter_acinar_linkers_);
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
@@ -843,7 +890,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     discret_->SetState("pnm",pnm_);
     //    discret_->SetState("acinar_vn" ,acini_e_volumen_);
     eleparams.set("acinar_vn" ,acini_e_volumen_);
-        
+
     eleparams.set("time step size",dta_);
     eleparams.set("total time",time_);
     eleparams.set("qin_nm",qin_nm_);
@@ -860,7 +907,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
 
     eleparams.set("acinar_vnp_strain",acini_e_volume_strain_);
     eleparams.set("acinar_vnp",acini_e_volumenp_);
-    
+
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,Teuchos::null ,rhs_,Teuchos::null,Teuchos::null);
     discret_->ClearState();
@@ -1043,7 +1090,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     output_.WriteVector("qout_n" ,qexp_);
     LINALG::Export(*qout_np_,*qexp_);
     output_.WriteVector("qout_np",qexp_);
-    
+
 #if 0
     // write the acinar values
     LINALG::Export(*acini_e_volumenm_,*qexp_);
@@ -1331,6 +1378,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<Teuchos::Param
     // action for elements
     eleparams.set("action","calc_sys_matrix_rhs_iad");
     discret_->SetState("sysmat_iad",sysmat_iad_);
+    discret_->SetState("num_of_inter_acinar_linkers",num_of_inter_acinar_linkers_);
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
@@ -1481,7 +1529,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::ExtractPressure(Teuchos::RCP<Epetra_Vecto
     const std::vector<int>* nodes = cond->Nodes();
     if (nodes->size()!=1)
       dserror("Too many nodes on coupling with tissue condition ID=[%d]\n",condgid);
-    
+
     int gid = (*nodes)[0];
     double pressure = 0.0;
     if (discret_->HaveGlobalNode(gid))
@@ -1534,7 +1582,7 @@ bool AIRWAY::RedAirwayImplicitTimeInt::SumAllColElemVal(Teuchos::RCP<Epetra_Vect
     if (err) dserror("Export using exporter returned err=%d",err);
   }
   // Get the mean acinar volume on the current processor
-  qexp_->MeanValue(&local_sum); 
+  qexp_->MeanValue(&local_sum);
 
   // Multiply the mean by the size of the vector to get the total
   // acinar volume on the current processor

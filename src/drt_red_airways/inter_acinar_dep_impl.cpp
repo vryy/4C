@@ -84,12 +84,12 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
 
 #if 0
   const int   myrank  = discretization.Comm().MyPID();
-  // get the nodes connected to this element
+  // get then nodes connected to this element
   DRT::Node** nodes = ele->Nodes();
-  
+
   for (int i=0;i<2;i++)
   {
-    // get the acinar element connected to the ith (i=0;1) node
+    // get the acinar element connected to the ith (i=0;1) nodes
     DRT::Element ** elems = (nodes[i])->Elements();
 
     int numOfElems = (nodes[i])->NumElement();
@@ -121,38 +121,48 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
                          elemat2_epetra,
                          elevec1_epetra,
                          elevec2_epetra,
-                         elevec3_epetra);          
+                         elevec3_epetra);
 
         int index = 0;
         if (i==0)
-        index = 1;
+          index = 1;
 
         for (int k=0;k<elevec1_epetra.Length();k++)
         {
           elemat1_epetra(index,k) = elemat_epetra(index,k);
         }
-        elevec1_epetra.Scale(0.0);      
+        elevec1_epetra.Scale(0.0);
       }
     }
   }
 
-  
+
   cout<<"sysmat: "<<elemat1_epetra<<endl;
   fflush(stdout);
 #else
   RCP<const Epetra_Vector> sysmat_iad  = discretization.GetState("sysmat_iad");
+  RCP<const Epetra_Vector> n_ialinkers = discretization.GetState("num_of_inter_acinar_linkers");
+
   // extract local values from the global vectors
   vector<double> my_sysmat_iad(lm.size());
   DRT::UTILS::ExtractMyValues(*sysmat_iad,my_sysmat_iad,lm);
+    vector<double> my_n_ialinkers(lm.size());
+  DRT::UTILS::ExtractMyValues(*n_ialinkers,my_n_ialinkers,lm);
 
-  elemat1_epetra(0,0) =  my_sysmat_iad[0];
-  elemat1_epetra(0,1) = -my_sysmat_iad[0];
-  elemat1_epetra(1,0) = -my_sysmat_iad[1];
-  elemat1_epetra(1,1) =  my_sysmat_iad[1];
+  elemat1_epetra(0,0) =  my_sysmat_iad[0]/(double(my_n_ialinkers[0]-1.)*0.5)*0.5;
+  elemat1_epetra(0,1) = -my_sysmat_iad[0]/(double(my_n_ialinkers[0]-1.)*0.5)*0.5;
+  elemat1_epetra(1,0) = -my_sysmat_iad[1]/(double(my_n_ialinkers[1]-1.)*0.5)*0.5;
+  elemat1_epetra(1,1) =  my_sysmat_iad[1]/(double(my_n_ialinkers[1]-1.)*0.5)*0.5;
 
-  elevec1_epetra.Scale(0.0);      
-#endif  
-  
+  elevec1_epetra.Scale(0.0);
+
+  #if 0
+  Node** nodes = ele->Nodes();
+  int n_elems1 = nodes[0]->NumElement();
+  int n_elems2 = nodes[1]->NumElement();
+  cout<<"Nodes of Element("<<ele->Id()<<") are connected to ["<< nodes[0]->Id()<<":"<<n_elems1<<"] and ["<< nodes[1]->Id()<<":"<<n_elems2<<"]"<<endl;
+  #endif
+#endif
   return 0;
 }
 
@@ -170,7 +180,7 @@ void DRT::ELEMENTS::InterAcinarDepImpl<distype>::Initial(
 {
 
   RCP<Epetra_Vector> generations   = params.get<RCP<Epetra_Vector> >("generations");
-  
+
   //--------------------------------------------------------------------
   // get the generation numbers
   //--------------------------------------------------------------------

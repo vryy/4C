@@ -623,6 +623,56 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
     // calculate out flow at the current time step
     //    q_out = (epnp(2)-epnp(1))/R;
   }
+  else if(ele->Type() == "ViscoElasticRLC")
+  {
+    // get element information
+    double Ew, tw;
+    ele->getParams("WallCompliance",Ew);
+    ele->getParams("WallThickness",tw);
+
+    // find Capacitance C
+    const double C = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
+
+    // The viscous part is currently fixed to the ratio obtained from Figure 2
+    // in:
+    // Viscoelastic and dynamic nonlinear properties of airway smooth muscle
+    // tissue: roles of mechanical force and the cytoskeleton
+    // Satoru Ito, Arnab Majumdar, Hiroaki Kume, Kaoru Shimokata, Keiji
+    // Naruse, Kenneth R. Lutchen, Dimitrije Stamenovic and Béla Suki
+    // Am J Physiol Lung Cell Mol Physiol 290:L1227-L1237, 2006. First published 13 January 2006;
+    const double Rvsc = (1.0/C)*(1.25/9.0);
+
+    // find Inductance I
+    const double I = dens*L/A;
+
+    //------------------------------------------------------------
+    //               Calculate the System Matrix
+    //------------------------------------------------------------
+    // Implcit integration
+    sysmat(0,0) = -1.0/Rvsc-1.0/R; sysmat(0,1) =  0.0 ; sysmat(0,2) =  1.0/R     ; sysmat(0,3) =  1.0/Rvsc     ;
+    sysmat(1,0) =  0.0           ; sysmat(1,1) = -dt/I; sysmat(1,2) =  dt/I      ; sysmat(1,3) =  0.0          ;
+    sysmat(2,0) =  1.0/R         ; sysmat(2,1) =  dt/I; sysmat(2,2) = -1.0/R-dt/I; sysmat(2,3) =  0.0          ;
+    sysmat(3,0) =  1.0/Rvsc      ; sysmat(3,1) =  0.0 ; sysmat(3,2) =  0.0       ; sysmat(3,3) = -C/dt - 1/Rvsc;
+
+    // get element information from the previous time step
+    double qln =0.0;
+    //  ele->getVars("capacitor_flow",qcn);
+    //  ele->getVars("inductor_flow",qln);
+    qln =  (epn(2)-epn(1))/R;
+
+    //------------------------------------------------------------
+    //               Calculate the right hand side
+    //------------------------------------------------------------
+    const double Pc_n = epn(3);
+    const double qoutn= (epn(0)-epn(2))/R;
+    rhs(0) =  0.0 ;
+    rhs(1) = -qoutn;
+    rhs(2) =  qoutn;
+    rhs(3) = -Pc_n*C/dt;
+
+    // calculate out flow at the current time step
+    //    q_out = (epnp(2)-epnp(1))/R;
+  }
   else if(ele->Type() == "SUKI")
   {
 
@@ -729,7 +779,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         curvefac_n  = DRT::Problem::Instance()->Curve(curvenum).f(time -     dt);
         curvefac_np = DRT::Problem::Instance()->Curve(curvenum).f(time         );
       }
-      
+
       if (pleuralPType == "FromCurve")
       {
         Pp_nm = curvefac_nm*(*vals)[0];
@@ -767,7 +817,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       int functnum = -1;
       if (functions) functnum = (*functions)[0];
       else functnum = -1;
-      
+
       double functionfac_nm = 0.0;
       double functionfac_n  = 0.0;
       double functionfac_np = 0.0;
@@ -777,7 +827,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         functionfac_n  = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time -     dt,NULL);
         functionfac_np = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(0,(ele->Nodes()[i])->X(),time         ,NULL);
       }
-      
+
       Pp_nm += functionfac_nm;
       Pp_n  += functionfac_n ;
       Pp_np += functionfac_np;
@@ -1658,6 +1708,36 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
 
     eqout_np = qlnp;
     eqin_np  = eqout_np + qcnp_val;
+  }
+  else if(ele->Type() == "ViscoElasticRLC")
+  {
+    // get element information
+    double Ew, tw;
+    ele->getParams("WallCompliance",Ew);
+    ele->getParams("WallThickness",tw);
+
+    // find Capacitance C
+    const double C = 2.0*pow(A,1.5)*L/(Ew*tw*sqrt(M_PI));
+
+    // The viscous part is currently fixed to the ratio obtained from Figure 2
+    // in:
+    // Viscoelastic and dynamic nonlinear properties of airway smooth muscle
+    // tissue: roles of mechanical force and the cytoskeleton
+    // Satoru Ito, Arnab Majumdar, Hiroaki Kume, Kaoru Shimokata, Keiji
+    // Naruse, Kenneth R. Lutchen, Dimitrije Stamenovic and Béla Suki
+    // Am J Physiol Lung Cell Mol Physiol 290:L1227-L1237, 2006. First
+    // published 13 January 2006;
+    const double Rvsc = (1.0/C)*(1.25/9.0);
+
+    // find Inductance I
+    const double I = dens*L/A;
+
+    //------------------------------------------------------------
+    //               Calculate the System Matrix
+    //------------------------------------------------------------
+    // Implcit integration
+    eqout_np = (epnp(0)-epnp(2))/R;
+    eqin_np  = (epnp(0)-epnp(3))/Rvsc;
   }
   else if(ele->Type() == "SUKI")
   {

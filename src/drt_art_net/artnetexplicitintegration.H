@@ -138,6 +138,8 @@ public:
   */
   void Solve(Teuchos::RCP<Teuchos::ParameterList> CouplingTo3DParams);
 
+  void SolveScatra();
+
   /*!
     \brief build linear system matrix and rhs
 
@@ -174,6 +176,9 @@ public:
   */
   void CalcPostprocessingValues();
 
+
+  void CalcScatraFromScatraFW(    RCP<Epetra_Vector>   scatra,
+                                  RCP<Epetra_Vector>   scatran_fb);
 
   /*!
   \brief read restart data
@@ -277,6 +282,16 @@ protected:
   /// rhs: right hand side vector
   RCP<Epetra_Vector>    rhs_;
 
+  /// (scatra) system matrix
+  RCP<LINALG::SparseOperator> scatra_sysmat_;
+
+  /// maps for scatra Dirichlet and free DOF sets
+  RCP<Epetra_Vector>    scatra_bcval_;
+  RCP<Epetra_Vector>    scatra_dbctog_;
+
+  /// rhs: right hand side vector of scatra
+  RCP<Epetra_Vector>    scatra_rhs_;
+
   //! @name Volumetric Flow rate and Cross-Sectional area at time n+1, n and n-1
   RCP<Epetra_Vector>    qanp_;
   RCP<Epetra_Vector>    qan_;
@@ -302,12 +317,33 @@ protected:
   //@}
 
   //! @name Forward and backwar characteristic wave speeds at time n+1, n and n-1
+  RCP<Epetra_Vector>    Wfo_;
+  RCP<Epetra_Vector>    Wbo_;
   RCP<Epetra_Vector>    Wfnp_;
   RCP<Epetra_Vector>    Wfn_;
   RCP<Epetra_Vector>    Wfnm_;
   RCP<Epetra_Vector>    Wbnp_;
   RCP<Epetra_Vector>    Wbn_;
   RCP<Epetra_Vector>    Wbnm_;
+  //@}
+
+  //! @name scalar transport vectors at time n+1, n and n-1
+  RCP<Epetra_Vector>    scatraO2n_;
+  RCP<Epetra_Vector>    scatraO2np_;
+  RCP<Epetra_Vector>    scatraO2wfn_;
+  RCP<Epetra_Vector>    scatraO2wfnp_;
+  RCP<Epetra_Vector>    scatraO2wbn_;
+  RCP<Epetra_Vector>    scatraO2wbnp_;
+
+  RCP<Epetra_Vector>    scatraCO2n_;
+  RCP<Epetra_Vector>    scatraCO2np_;
+  RCP<Epetra_Vector>    scatraCO2wfn_;
+  RCP<Epetra_Vector>    scatraCO2wfnp_;
+  RCP<Epetra_Vector>    scatraCO2wbn_;
+  RCP<Epetra_Vector>    scatraCO2wbnp_;
+
+  RCP<Epetra_Vector>    export_scatra_;
+  bool solvescatra_;
   //@}
 
 

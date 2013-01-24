@@ -2475,7 +2475,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(surfinvana);
 
-#ifdef D_ARTNET
   /*--------------------------------------------------------------------*/
   // 1D-Artery connector condition
 
@@ -2599,7 +2598,25 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
     true)));
 
   condlist.push_back(art_in_outlet_bc);
-#endif
+  /*--------------------------------------------------------------------*/
+  // 1D artery scalar transport condition
+  Teuchos::RCP<ConditionDefinition> art_scatra_bc =
+    Teuchos::rcp(new ConditionDefinition("DESIGN NODE 1D ARTERY SCATRA PRESCRIBED CONDITIONS",
+                                         "ArtPrescribedScatraCond",
+                                         "Artery prescribed scatra boundary condition",
+                                         DRT::Condition::ArtPrescribedScatraCond,
+                                         true,
+                                         DRT::Condition::Point));
+
+  std::vector<Teuchos::RCP<ConditionComponent> > artscatracomponents;
+  artscatracomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("val",1)));
+  artscatracomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("curve",1,true,true)));
+  for (unsigned i=0; i<artscatracomponents.size(); ++i)
+    art_scatra_bc->AddComponent(artscatracomponents[i]);
+
+  condlist.push_back(art_scatra_bc);
+
+  
   /*--------------------------------------------------------------------*/
   // 3-D/reduced-D coupling boundary condition
   Teuchos::RCP<ConditionDefinition> art_red_to_3d_bc =

@@ -251,6 +251,15 @@ public:
                Epetra_SerialDenseVector& elevec2,
                Epetra_SerialDenseVector& elevec3);
 
+  int ScatraEvaluate(Teuchos::ParameterList& params,
+               DRT::Discretization&      discretization,
+               std::vector<int>&         lm,
+               Epetra_SerialDenseMatrix& elemat1,
+               Epetra_SerialDenseMatrix& elemat2,
+               Epetra_SerialDenseVector& elevec1,
+               Epetra_SerialDenseVector& elevec2,
+               Epetra_SerialDenseVector& elevec3);
+
   /*!
   \brief Evaluate a Neumann boundary condition
 
@@ -293,6 +302,7 @@ public:
 
   //@}
 
+
   //! @name Other
 
   bool IsAle() const { return is_ale_; }
@@ -310,7 +320,12 @@ private:
     get_initail_artery_state,
     solve_riemann_problem,
     set_term_bc,
-    calc_postpro_vals
+    set_scatra_term_bc,
+    calc_postpro_vals,
+    calc_scatra_sys_matrix_rhs,
+    calc_scatra_from_scatra_fb,
+    evaluate_wf_wb,
+    evaluate_scatra_analytically
   };
 
 

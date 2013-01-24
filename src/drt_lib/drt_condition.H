@@ -223,7 +223,8 @@ public:
     PoroPresInt,
     RedAirwayVentilatorCond,
     RedAirwayTissue,
-    RedAirwayNodeTissue
+    RedAirwayNodeTissue,
+    ArtPrescribedScatraCond
   };
 
   /*!

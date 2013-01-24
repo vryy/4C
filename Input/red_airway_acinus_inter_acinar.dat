@@ -75,15 +75,17 @@ E 1 - pressure 0.0 2 0
 E 2 - pressure 1.0 2 0
 //E 3 - pressure 0.0 1
 --------------------------------------------------REDUCED D AIRWAYS ELEMENTS
-1 RED_AIRWAY LINE2 1 2 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.02827 Area 0.2827 Generation 0
-2 RED_AIRWAY LINE2 2 3 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.01000 Area 0.1000 Generation 0
-3 RED_AIRWAY LINE2 2 4 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.01000 Area 0.1000 Generation 0
-4 RED_AIRWAY LINE2 2 5 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.01000 Area 0.1000 Generation 0
-5 RED_ACINUS LINE2 3 6 MAT 2 TYPE Exponential AcinusVolume 0.03711 AlveolarDuctVolume 0.03711
-6 RED_ACINUS LINE2 4 7 MAT 2 TYPE Exponential AcinusVolume 0.03711 AlveolarDuctVolume 0.03711
-7 RED_ACINUS LINE2 5 8 MAT 2 TYPE Exponential AcinusVolume 0.03711 AlveolarDuctVolume 0.03711
-8 RED_ACINAR_INTER_DEP LINE2 6 7 MAT 2
-9 RED_ACINAR_INTER_DEP LINE2 7 8 MAT 2
+ 1 RED_AIRWAY LINE2 1 2 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.02827 Area 0.2827 Generation 0
+ 2 RED_AIRWAY LINE2 2 3 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.01000 Area 0.1000 Generation 0
+ 3 RED_AIRWAY LINE2 2 4 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.01000 Area 0.1000 Generation 0
+ 4 RED_AIRWAY LINE2 2 5 MAT 1 TYPE Resistive Resistance Poiseuille WallCompliance 3300.0 AirCompliance 0.0 WallThickness 0.01000 Area 0.1000 Generation 0
+ 5 RED_ACINUS LINE2 3 6 MAT 2 TYPE Exponential AcinusVolume 0.03711 AlveolarDuctVolume 0.03711
+ 6 RED_ACINUS LINE2 4 7 MAT 2 TYPE Exponential AcinusVolume 0.03711 AlveolarDuctVolume 0.03711
+ 7 RED_ACINUS LINE2 5 8 MAT 2 TYPE Exponential AcinusVolume 0.03711 AlveolarDuctVolume 0.03711
+ 8 RED_ACINAR_INTER_DEP LINE2 6 7 MAT 2
+ 9 RED_ACINAR_INTER_DEP LINE2 7 6 MAT 2
+10 RED_ACINAR_INTER_DEP LINE2 7 8 MAT 2
+11 RED_ACINAR_INTER_DEP LINE2 8 7 MAT 2
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.0  0.0 0.0
 NODE 2 COORD 3.0  0.0 0.0
@@ -101,7 +103,7 @@ NODE 8 DNODE 4
 --------------------------------DESIGN NODE REDUCED-D LUNG ACINUS CONDITIONS
 DPOINT                          0
 ----------------------------------------------------------RESULT DESCRIPTION
-RED_AIRWAY DIS red_airway NODE 3 QUANTITY pressure VALUE -2.54061113266270235e-03 TOLERANCE 1e-9
-RED_AIRWAY DIS red_airway NODE 4 QUANTITY pressure VALUE -1.97683084007376116e-03 TOLERANCE 1e-9
+RED_AIRWAY DIS red_airway NODE 3 QUANTITY pressure VALUE -2.53383529088527758e-03 TOLERANCE 1e-9
+RED_AIRWAY DIS red_airway NODE 4 QUANTITY pressure VALUE -1.95263530997033985e-03 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END

@@ -196,6 +196,10 @@ public:
       {
         return 1;
       }
+      if (elemType_ == "ViscoElasticRLC")
+      {
+        return 2;
+      }
       else
       {
         return 0;
@@ -583,6 +587,10 @@ public:
       {
         return 1;
       }
+      if (elemType_ == "ViscoElasticRLC")
+      {
+        return 2;
+      }
       else
       {
         return 0;
@@ -966,7 +974,7 @@ public:
   */
   virtual int NumDofPerElement() const
     {
-      
+
       return 0;
     }
 

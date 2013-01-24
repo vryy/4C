@@ -133,6 +133,16 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // solution output
   arterytimeparams.set                  ("write solution every"      ,artdyn.get<int>("UPRES"));
 
+  // solution output
+  if (artdyn.get<string>("SOLVESCATRA")=="yes")
+  {
+    arterytimeparams.set ("solve scatra", true);
+  }
+  else
+  {
+    arterytimeparams.set ("solve scatra", false);
+  }
+
   // flag for writing the hemodynamic physiological results
   //arterytimeparams.set ("write stresses"  ,DRT::INPUT::IntegralValue<int>(ioflags,"HEMO_PHYS_RESULTS"));
   //---------------------- A method to initialize the flow inside the

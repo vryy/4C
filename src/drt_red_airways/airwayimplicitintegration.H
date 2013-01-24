@@ -352,6 +352,8 @@ protected:
   RCP<Epetra_Vector>          dbctog_;
   RCP<Epetra_Vector>          acini_bc_;
 
+  RCP<Epetra_Vector>          num_of_inter_acinar_linkers_;
+
   //! @name acinar elementel values
   RCP<Epetra_Vector>          acini_e_volume0_;
   RCP<Epetra_Vector>          acini_e_volumenm_;

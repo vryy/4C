@@ -27,38 +27,38 @@ bool DRT::ELEMENTS::RedAirway::ReadElement(const std::string& eletype,
   const int ndim = DRT::Problem::Instance()->NDim();
   if (ndim!=3)
      dserror("Problem defined as %dd, but found Reduced dimensional AIRWAY element.",ndim);
-  
+
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
-  
-  
+
+
   linedef->ExtractString("TYPE",elemType_);
-  if (elemType_ == "Resistive" || elemType_ == "InductoResistive" || elemType_ == "ComplientResistive" || elemType_ == "RLC" || elemType_ == "SUKI")
+  if (elemType_ == "Resistive" || elemType_ == "InductoResistive" || elemType_ == "ComplientResistive" || elemType_ == "RLC" || elemType_ == "ViscoElasticRLC"|| elemType_ == "SUKI")
   {
     linedef->ExtractString("Resistance",resistance_);
     double Ew, Ea, tw, A;
     int generation;
     linedef->ExtractDouble("WallCompliance",Ew);
-    linedef->ExtractDouble("AirCompliance",Ea); 
+    linedef->ExtractDouble("AirCompliance",Ea);
     linedef->ExtractDouble("WallThickness",tw);
     linedef->ExtractDouble("Area",A);
     linedef->ExtractInt("Generation",generation);
-    
+
     elemParams_["WallCompliance"] = Ew;
-    elemParams_["AirCompliance"]  = Ea; 
+    elemParams_["AirCompliance"]  = Ea;
     elemParams_["WallThickness"]  = tw;
     elemParams_["Area"]           = A;
     generation_                   = generation;
-    
+
   }
   else
   {
-    dserror("Reading type of RED_AIRWAY element failed: ComplientResistive/PoiseuilleResistive/TurbulentPoiseuilleResistive/InductoResistive/RLC/SUKI");
+    dserror("Reading type of RED_AIRWAY element failed: ComplientResistive/PoiseuilleResistive/TurbulentPoiseuilleResistive/InductoResistive/RLC/ViscoElasticRLC/SUKI");
     exit(1);
   }
-  
+
   return true;
 }
 
@@ -76,28 +76,27 @@ bool DRT::ELEMENTS::RedAcinus::ReadElement(const std::string& eletype,
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
-  
-  
+
+
   linedef->ExtractString("TYPE",elemType_);
   if (elemType_ == "Exponential" || elemType_ == "DoubleExponential")
   {
-    
     double acinusVol, alveolarDuctVol;
     const int generation = -1;
     linedef->ExtractDouble("AcinusVolume",acinusVol);
     linedef->ExtractDouble("AlveolarDuctVolume",alveolarDuctVol);
-    
+
     elemParams_["AcinusVolume"]       = acinusVol;
     elemParams_["AlveolarDuctVolume"] = alveolarDuctVol;
     generation_                       = generation;
-    
+
   }
   else
   {
-    dserror("Reading type of RED_AIRWAY element failed: ComplientResistive/PoiseuilleResistive/TurbulentPoiseuilleResistive/InductoResistive/RLC/SUKI");
+    dserror("Reading type of Acinare element failed: Exponential/DoubleExponential");
     exit(1);
   }
-  
+
   return true;
 }
 
@@ -116,8 +115,8 @@ bool DRT::ELEMENTS::RedInterAcinarDep::ReadElement(const std::string& eletype,
   // read number of material model
   const int generation = -2;
   generation_                       = generation;
-  
-  
+
+
   return true;
 }
 
