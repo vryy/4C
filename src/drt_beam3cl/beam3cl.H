@@ -532,7 +532,8 @@ public:
           Qconv_[1] = Qconv_[0];
           Qnew_ = Qconv_;
           for(int i=0;i<4;i++)
-          { rQnew_[i]=Qconv_[0];
+          {
+            rQnew_[i]=Qconv_[0];
             rQold_[i]=Qconv_[0];
           }
          //compute local rotational vectors phi according to Crisfield 1999,(4.6) in quaterion form

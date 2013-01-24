@@ -92,8 +92,6 @@ isconverged_(false)
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::StatMechPrintDBCType()
 {
-  if((statmechman_->GetPeriodLength())->at(0) <= 0.0 && DRT::INPUT::IntegralValue<int>(statmechman_->GetStatMechParams(),"PERIODICDBC"))
-    dserror("Set PERIODLENGTH  > 0.0 for all three components if periodic DBCs are to be applied");
   if(!discret_->Comm().MyPID())
   {
     INPAR::STATMECH::DBCType dbctype = DRT::INPUT::IntegralValue<INPAR::STATMECH::DBCType>(statmechman_->GetStatMechParams(),"DBCTYPE");
@@ -114,6 +112,10 @@ void STR::TimIntStatMech::StatMechPrintDBCType()
       // pin down and release individual nodes
       case INPAR::STATMECH::dbctype_pinnodes:
         cout<<"- Special DBCs pinning down selected nodes"<<endl;
+      break;
+      // apply affine shear deformation
+      case INPAR::STATMECH::dbctype_affineshear:
+        cout<<"- DBCs for affine shear deformation"<<endl;
       break;
       // no DBCs at all
       case INPAR::STATMECH::dbctype_none:
@@ -1347,14 +1349,6 @@ void STR::TimIntStatMech::PTCBrownianForcesAndDamping(double& dt, double& crotpt
   p.set("ctransptc",ctransptc);
 
   //add statistical vector to parameter list for statistical forces and damping matrix computation
-//  p.set("ETA",(statmechman_->statmechparams_).get<double>("ETA",0.0));
-//  p.set("THERMALBATH",DRT::INPUT::IntegralValue<INPAR::STATMECH::ThermalBathType>(statmechman_->statmechparams_,"THERMALBATH"));
-//  p.set<int>("FRICTION_MODEL",DRT::INPUT::IntegralValue<INPAR::STATMECH::FrictionModel>(statmechman_->statmechparams_,"FRICTION_MODEL"));
-//  p.set("SHEARAMPLITUDE",(statmechman_->statmechparams_).get<double>("SHEARAMPLITUDE",0.0));
-//  p.set("CURVENUMBER",(statmechman_->statmechparams_).get<int>("CURVENUMBER",-1));
-//  p.set("OSCILLDIR",(statmechman_->statmechparams_).get<int>("OSCILLDIR",-1));
-//  p.set("PERIODLENGTH",statmechman_->GetPeriodLength());
-
   statmechman_->AddStatMechParamsTo(p);
 
   //evaluate ptc stiffness contribution in all the elements

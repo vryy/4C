@@ -294,18 +294,6 @@ public:
                                  Teuchos::RCP<Epetra_Vector>        dis,
                                  Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
 
-  /*! \brief adjusted DBC evaluation for periodic case
-   *  \param params          (in)     a parameter list
-   *  \param disn            (in)     displacement vector
-   *  \param dbcmapextractor (in/out) map extractor for Dirichlet DOFs (new method)*/
-  void EvaluateDirichletPeriodic(Teuchos::ParameterList&            params,
-                                 Teuchos::RCP<Epetra_Vector>        dis,
-                                 Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
-
-  /* \brief signals whether or not to start DBC application according to given time
-   * \param params  (in)  Paramter list*/
-  bool DBCStart(Teuchos::ParameterList& params);
-
   //! brief computes the internal energy of the network
   void ComputeInternalEnergy(const Teuchos::RCP<Epetra_Vector> dis,
                              std::vector<double>&              energy,
@@ -658,12 +646,20 @@ protected:
                               bool                             zerofy=true,
                               bool                             exportinsert=false);
 
-  /* \brief set Dirichlet values according to given Dirichlet map)
+  /*! \brief adjusted DBC evaluation for periodic case
+   *  \param params          (in)     a parameter list
    *  \param disn            (in)     displacement vector
-   *  \param  dbcgids        (in/out)  set holding dbc DOF GIDs (new method)*/
-  void DBCSetValues(Teuchos::RCP<Epetra_Vector>        dis,
-                    Teuchos::RCP<Epetra_Vector>        deltadbc,
-                    Teuchos::RCP<std::set<int> >       dbcgids);
+   *  \param dbcmapextractor (in/out) map extractor for Dirichlet DOFs (new method)*/
+  void EvaluateDirichletPeriodic(Teuchos::ParameterList&            params,
+                                 Teuchos::RCP<Epetra_Vector>        dis,
+                                 Teuchos::RCP<LINALG::MapExtractor> dbcmapextractor=Teuchos::null);
+
+  /*! \brief signals whether or not to start DBC application according to given time
+   * \param params  (in)  Paramter list*/
+  bool DBCStart(Teuchos::ParameterList& params);
+
+  //! \brief some simple checks for correct setup via input file
+  void DBCSanityCheck();
 
   /* \brief evaluate Dirichlet conditions*/
   void DoDirichletConditionPredefined(DRT::Condition&              cond,
@@ -679,9 +675,7 @@ protected:
   /*! \brief Determine Dirichlet condition at given time and apply its values to a system vector
    *  \param nodeids      (in)      vector containing DBC Node IDs
    *  \param onoff        (in)      vector containing onoff values for DOFs
-   *  \param disn         (in)      displacement vector
-   *  \param dirichtoggle (in/out)  vector marking the Dirichlet DOFs (old method)
-   *  \param invtoggle    (in/out)  the inverse vector of dirichtoggle (old method)
+   *  \param dis          (in)      displacement vector
    *  \param deltadbc     (in)      vector holding the increment in Dirichlet values
    *  \param dbcgids      (in/out)  set holding dbc DOF GIDs (new method)*/
   void DoDirichletConditionPeriodic(std::vector<int>*            nodeids,
@@ -695,16 +689,32 @@ protected:
                             Teuchos::RCP<Epetra_Vector> dis,
                             Teuchos::RCP<Epetra_Vector> deltadbc);
 
+  /*! \brief Apply affine shear deformation to network
+   *  \param params   (in)  Parameter List
+   *  \param dis      (in)  displacement vector
+   *  \param dbcgids  (in/out)  set of DOF GIDs on which Dirichlet values are imposed*/
+  void DBCAffineShear(Teuchos::ParameterList&     params,
+                      Teuchos::RCP<Epetra_Vector> dis,
+                      Teuchos::RCP<Epetra_Vector> deltadbc);
+
+  /*! \brief pin down and release nodes at their location by Dirichlet Values*/
+  void DBCPinNodes();
+
   /*! \brief Get DBCs defined in Input file and ad the DBCs DOFs to dbcgids
    *  \param params   (in)  Parameter List
    *  \param dis      (in)  displacement vector
    *  \param dbcgids  (in/out)  set of DOF GIDs on which Dirichlet values are imposed*/
-  void DBCGetPredefinedConditions(Teuchos::ParameterList& params,
-                            Teuchos::RCP<Epetra_Vector>   dis,
-                            Teuchos::RCP<std::set<int> >  dbcgids);
+  void DBCGetPredefinedConditions(Teuchos::ParameterList&       params,
+                                  Teuchos::RCP<Epetra_Vector>   dis,
+                                  Teuchos::RCP<std::set<int> >  dbcgids);
 
-  /*! \brief pin down and release nodes at their location by Dirichlet Values*/
-  void DBCPinNodes();
+  /* \brief set Dirichlet values according to given Dirichlet map)
+   *  \param disn            (in)     displacement vector
+   *  \param deltadbc        (in)     Dirichlet increments for DOFs
+   *  \param  dbcgids        (in/out)  set holding dbc DOF GIDs (new method)*/
+  void DBCSetValues(Teuchos::RCP<Epetra_Vector>        dis,
+                    Teuchos::RCP<Epetra_Vector>        deltadbc,
+                    Teuchos::RCP<std::set<int> >       dbcgids);
 
   /*! \brief pin down a node at its location by Dirichlet Values
    *  \param dbcgids               (in/out)  set holding dbc DOF GIDs (new method)
@@ -835,7 +845,6 @@ protected:
 
   //! \brief a vector indicating the number of attached nodes to a crosslinker
   Teuchos::RCP<Epetra_Vector> numbond_;
-
   //! \brief a vector storing information on how long linkers are bound to filaments
   Teuchos::RCP<Epetra_MultiVector> crosslinkunbindingtimes_;
 
