@@ -152,7 +152,7 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
       }
       else
       {
-        cout << "  hier ?! " <<  pos << " " <<  node->Id() <<  " numdof: " << bgdis->NumDof(node) << endl;
+        cout << "  here ?! " <<  pos << " " <<  node->Id() <<  " numdof: " << bgdis->NumDof(node) << endl;
       }
     }
     else if( bgdis->NumDof(node) != 0) // no xfem node
@@ -323,17 +323,17 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const R
     {
       vector<int> gdofsn = iterstn->second;
 
-      //TODO!! die richtige dofs von bgstatevn rauspicke, wenn mehrere
-      //dofsets vorhanden sind
-
       // Information
       if (iterstn->second.size()>4)
-        cout << RED_LIGHT << "BUG: more standard sets!!!! "<< "Node GID " << bgnode->Id() << END_COLOR << endl;
+        cout << RED_LIGHT << "INFO: more standard sets!!!!"<< "Node GID " << bgnode->Id() <<" size " <<
+          iterstn->second.size()  << END_COLOR << endl;
 
 //      int numsets = bgdis->NumDof(bgnode)/4;
 //      if (numsets > 1)
 //         cout << GREEN_LIGHT << "Info: more dofsets in transfer.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
 
+      // right now the first set of bgstatevn is transfered to
+      // bgstatevnp. Check if this is the stdset! TODO!
       WriteValuestoBgStateVector(bgdis,bgnode,gdofsn,bgstatevnp,bgstatevn);
 
     }
@@ -345,6 +345,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const R
              (iteren != enrichednoden_.end() and iterstnp != stdnodenp_.end()) or
              ((iterstn == stdnoden_.end() and iteren == enrichednoden_.end()) and iterenp != enrichednodenp_.end()))
     {
+
       // save the information needed from bg-nodes to call the method CommunicateNodes
       // set of are projected nodes
       projectednodeids_.insert(bgnode->Id());
@@ -364,10 +365,6 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const R
       LINALG::Matrix<4,1>    interpolatedvec(true);
       interpolated_vecs.push_back(interpolatedvec);
 
-//      int numsets = bgdis->NumDof(bgnode)/4;
-//       if( numsets > 1 )
-//         cout << GREEN_LIGHT << "Info: more dofsets in projection.. " <<  "Node GID " <<   bgnode->Id() << END_COLOR << endl;
-
     }
     //do nothing:
     //n: void->n+1: void, n:std->n+1:void, n:enriched->n+1:void
@@ -379,11 +376,11 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const R
 
       if( bgdis->NumDof(bgnode) > 0 )
         cout << RED_LIGHT <<  "BUG:: in do nothig!!" << " Node GID " << bgnode->Id() <<  END_COLOR<< endl;
-      //cout << "do nothing" << bgnode->Id() << endl; ;
     }
     else
       cout << "warum bin ich da?! " <<  bgdis->NumDof(bgnode)   << " " <<    bgnode->Id() <<  endl;
   }
+
 
   // call the Round Robin Communicator
   CommunicateNodes(bgdis,bgnodes_coords,interpolated_vecs,bgnodeidwithnohistory,embstatevn,aledispn,bgstatevnp,bgstatevn);
@@ -508,7 +505,7 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(const RCP<DRT::Discretiz
     // if no embedded element is found try to find an enriched value
     else
     {
-      cout << RED_LIGHT << "NodeDone " << NodeDone.at(i) << END_COLOR << endl;
+      //cout << RED_LIGHT << "NodeDone " << NodeDone.at(i) << END_COLOR << endl;
 
       map<int, vector<int> >::const_iterator iterstn = stdnoden_.find(bgnode->Id());
       map<int, vector<int> >::const_iterator iterstnp = stdnodenp_.find(bgnode->Id());
@@ -656,6 +653,7 @@ void XFEM::XFluidFluidTimeIntegration::FindEmbeleAndInterpolatevalues(std::vecto
     {
       DRT::Element* pele = embdis_->lColElement(e);
       insideelement = ComputeSpacialToElementCoordAndProject(pele,bgnodecords,interpolatedvec,embstatevn,aledispn,embdis_);
+
       if (insideelement and NodeDone.at(i)==0)
       {
         // Set NodeDone to 1 if the embedded-element is found
@@ -711,7 +709,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
 
       // Information
       if (iterstn->second.size()>4)
-        cout << RED_LIGHT << "BUG: more standard sets!!!! "<< "Node GID " << bgnode->Id() << END_COLOR << endl;
+        cout << RED_LIGHT << " INFO: more standard sets!!!! "<< "Node GID " << bgnode->Id() << END_COLOR << endl;
 
 //       if (numsets > 1)
 //         cout << GREEN_LIGHT << "Info: more dofsets in transfer.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
@@ -784,6 +782,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
   }
 
   // call the Round Robin Communicator
+
   CommunicateNodes(bgdis,bgnodes_coords,interpolated_vecs,bgnodeidwithnohistory,embstatevn,aledispn,bgstatevnp,bgstatevn);
 
 }//XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues
@@ -897,8 +896,6 @@ bool XFEM::XFluidFluidTimeIntegration::ComputeSpacialToElementCoordAndProject(DR
       GEO::CUT::Position <DRT::Element::hex8> pos(xyzem,x);
       double tol = 1e-10;
       bool insideelement = pos.ComputeTol(tol);
-      //bool insideelement = pos.Compute();
-
       // von ursula
       // bool in  = GEO::currentToVolumeElementCoordinates(DRT::Element::hex8, pxyze, x, xsi);
       // in  = GEO::checkPositionWithinElementParameterSpace(xsi, DRT::Element::hex8);
@@ -1249,7 +1246,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(const RCP<DRT::Discr
 // -------------------------------------------------------------------
 // Gmsh Output
 // -------------------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::GmshOutput(const RCP<DRT::Discretization>        bgdis)
+void XFEM::XFluidFluidTimeIntegration::GmshOutput(const RCP<DRT::Discretization>    bgdis)
 {
   const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("std_enriched_map", step_, 30, 0, bgdis->Comm().MyPID());
   std::ofstream gmshfilecontent(filename.c_str());
