@@ -81,7 +81,12 @@ if [[ ! "$CONFIGURATION_FILE" ]]; then
       echo $CONFIGURATION_FILE
     elif [ "`grep 'CentOS release 6.2' /etc/system-release`" ]; then
       echo "Detected CentOS 6.2 (kaiser)"
-      CONFIGURATION_FILE=$BACI_HOME/buildconfig/kaiser_Q12012_ACML.config
+      if [ $TRILINOS_EXPERIMENTAL == 1 ]; then
+	CONFIGURATION_FILE=$BACI_HOME/buildconfig/kaiser_Q12012_ACML.config
+      else 
+        CONFIGURATION_FILE=$BACI_HOME/buildconfig/kaiser_Q32012_ACML.config
+        #CONFIGURATION_FILE=$BACI_HOME/buildconfig/kaiser_Q32012_ACML_ompi162.config
+      fi
     fi
   elif [[ -f /etc/SuSE-release ]]; then
     if [ "`grep 'SUSE Linux Enterprise Server' /etc/SuSE-release`" ]; then
