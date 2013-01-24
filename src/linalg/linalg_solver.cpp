@@ -1829,10 +1829,11 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const LINALG::SparseMatrix
     const LINALG::SparseMatrix& B,
     bool explicitdirichlet,
     bool savegraph,
-    bool complete)
+    bool complete,
+    bool nestedparallelism /*= false*/)
 {
   return MLMultiply(*A.EpetraMatrix(),*B.EpetraMatrix(),
-      explicitdirichlet,savegraph,complete);
+      explicitdirichlet,savegraph,complete,nestedparallelism);
 }
 
 /*----------------------------------------------------------------------*
@@ -1876,9 +1877,11 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
     const Epetra_CrsMatrix& Borig,
     bool explicitdirichlet,
     bool savegraph,
-    bool complete)
+    bool complete,
+    bool nestedparallelism /*= false*/)
 {
-  MLAPI::Init(Teuchos::rcp(Aorig.Comm().Clone()),true);
+  if(nestedparallelism == true)
+    MLAPI::Init(Teuchos::rcp(Aorig.Comm().Clone()),true);
 
   EpetraExt::CrsMatrix_SolverMap Atransform;
   EpetraExt::CrsMatrix_SolverMap Btransform;
@@ -2018,7 +2021,8 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
   }
 
   // close MLAPI environment
-  MLAPI::Finalize(true, false);
+  if(nestedparallelism == true)
+    MLAPI::Finalize(true, false);
 
   return Teuchos::rcp(new SparseMatrix(result,explicitdirichlet,savegraph));
 }
