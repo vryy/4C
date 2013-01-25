@@ -332,6 +332,7 @@ bool checkPositionWithinElementParameterSpace(
     break;
   default:
     dserror("distype not yet implemented");
+    break;
   }
   return true;
 }
@@ -976,7 +977,7 @@ static bool ComputeLocalCoordinates(
 
   // newton loop
   int iter = 0;
-  while(residual > GEO::TOL12 && dx.Norm2()> GEO::TOL12)
+  while(residual > GEO::TOL12 or dx.Norm2()> GEO::TOL12)
   {
     DRT::UTILS::shape_function_deriv1<DISTYPE>(xsi, deriv1);
 
@@ -994,6 +995,7 @@ static bool ComputeLocalCoordinates(
       dserror("determinant is near zero %d", det);
     }
 
+    dx.Clear();
     dx.Multiply(A_inv,b);
 
     // update of local coordinates
