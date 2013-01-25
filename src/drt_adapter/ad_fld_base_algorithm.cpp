@@ -416,25 +416,23 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
 
     const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
 
-    if (coupling == fsi_iter_monolithicfluidsplit or
-        coupling == fsi_iter_monolithicstructuresplit or
-        coupling == fsi_iter_lung_monolithicstructuresplit or
-        coupling == fsi_iter_lung_monolithicstructuresplit or
+    if (coupling == fsi_iter_lung_monolithicstructuresplit or
+        coupling == fsi_iter_lung_monolithicfluidsplit or
         coupling == fsi_iter_constr_monolithicstructuresplit or
         coupling == fsi_iter_constr_monolithicfluidsplit or
-        coupling == fsi_iter_mortar_monolithicstructuresplit or
-        coupling == fsi_iter_mortar_monolithicfluidsplit or
         coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
     {
-      // there are a couple of restrictions in monolithic FSI
+      // no explicit predictor for these monolithic schemes yet.
       fluidtimeparams->set<bool>("do explicit predictor",false);
+
+      dserror("No fluid predictor allowed for these monolithic FSI schemes, yet.");
     }
   }
   if (probtype == prb_freesurf)
   {
     // in case of FSI calculations we do not want a stationary fluid solver
     if (timeint == INPAR::FLUID::timeint_stationary)
-      dserror("Stationary fluid solver not allowed for Freesurface problem.");
+      dserror("Stationary fluid solver not allowed for free surface problem.");
 
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
 
@@ -446,8 +444,10 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithicstructuresplit)
     {
-      // there are a couple of restrictions in monolithic Freesurface Algorithm
+      // there are a couple of restrictions in monolithic free surface Algorithm
       fluidtimeparams->set<bool>("do explicit predictor",false);
+
+      dserror("No fluid predictor allowed for free surface problem, yet.");
     }
   }
   // sanity checks and default flags
