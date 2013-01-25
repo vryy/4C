@@ -155,39 +155,39 @@ public:
    *   \f[ \hat{K} = Q \cdot K \f]
    */
   void RotateGlobalToLocal(
-    RCP<LINALG::SparseMatrix> sysmat,  ///< systemmatrix, will be transformed
-    RCP<Epetra_Vector> rhs  ///< right-hand-side vector, will be transformed
+    Teuchos::RCP<LINALG::SparseMatrix> sysmat,  ///< systemmatrix, will be transformed
+    Teuchos::RCP<Epetra_Vector> rhs  ///< right-hand-side vector, will be transformed
     );
 
   /*!
    * \brief Apply forward transformation of a single matrix
    *
    */
-  void RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sysmat);
+  void RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseMatrix> sysmat);
 
   /*!
    * \brief Apply forward transformation of a single vector
    *
    */
-  void RotateGlobalToLocal(RCP<Epetra_Vector> vec);
+  void RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> vec);
 
   /*!
    * \brief Apply backward transformation of result and linear system of equations
    *
    */
-  void RotateLocalToGlobal(RCP<Epetra_Vector> result, RCP<LINALG::SparseMatrix> sysmat, RCP<Epetra_Vector> rhs);
+  void RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> result, Teuchos::RCP<LINALG::SparseMatrix> sysmat, Teuchos::RCP<Epetra_Vector> rhs);
 
   /*!
    * \brief Apply backward transformation of a single vector
    *
    */
-  void RotateLocalToGlobal(RCP<Epetra_Vector> vec);
+  void RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> vec);
 
   /*!
 	 * \brief Apply backward transformation of a matrix
 	 *
 	 */
-  void RotateLocalToGlobal(RCP<LINALG::SparseMatrix> sysmat);
+  void RotateLocalToGlobal(Teuchos::RCP<LINALG::SparseMatrix> sysmat);
 
   //@}
 
@@ -315,14 +315,14 @@ protected:
   /// local system normals / tangents
   Epetra_SerialDenseMatrix                 normals_;
   Epetra_SerialDenseMatrix                 tangents_;
-  Epetra_SerialDenseMatrix								 origins_;
+  Epetra_SerialDenseMatrix                 origins_;
   Epetra_SerialDenseMatrix                 thirddir_;
 
   /// assignment of local systems to nodes
-  RCP<Epetra_Vector>                       locsystoggle_;
+  Teuchos::RCP<Epetra_Vector>                       locsystoggle_;
 
   /// maps containing the DOFs affected by locsys
-  RCP<Epetra_Map>                          locsysdofmap_;
+  Teuchos::RCP<Epetra_Map>                          locsysdofmap_;
 
   /// store OriginRadialSliding locsys IDs
   std::vector<int>                         radslideids_;
@@ -334,13 +334,13 @@ protected:
   /// one should be aware of that it is treated like a rotational
   /// transformation matrix. This means: The inverse (or 'backward') mapping
   /// is simply implemented as its transpose rather than a general inverse.
-  RCP<LINALG::SparseMatrix>                trafo_;
+  Teuchos::RCP<LINALG::SparseMatrix>                trafo_;
 
   /// Transformation 'sub'-matrix with non-identity entries
   ///
   /// This is actually not a sub-matrix, but a global matrix
   /// with nil entries at (a lot) places
-  RCP<LINALG::SparseMatrix>                subtrafo_;
+  Teuchos::RCP<LINALG::SparseMatrix>                subtrafo_;
 
   //@}
 

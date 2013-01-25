@@ -152,6 +152,7 @@ void DRT::UTILS::LocsysManager::Setup()
 
       // build locsystoggle vector with locsys IDs
       if (type_[i] == DRT::UTILS::LocsysManager::def)
+      {
         for (int k=0;k<(int)nodes->size();++k)
         {
           bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
@@ -161,36 +162,37 @@ void DRT::UTILS::LocsysManager::Setup()
           double values  = i;
           locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
         }
+      }
       if (type_[i] == DRT::UTILS::LocsysManager::functionevaluation)
       {
-      	// read origin from input file
-      	const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
-      	if(o->size() != 3)
-      		dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
-      	for (int k=0;k<origins_.N();k++)
-      		origins_(i,k) = (*o)[k];
+        // read origin from input file
+        const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
+        if(o->size() != 3)
+          dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
+        for (int k=0;k<origins_.N();k++)
+          origins_(i,k) = (*o)[k];
       }
       // special locsys case: originradialsliding
       if (type_[i] == DRT::UTILS::LocsysManager::originradialsliding)
-			{
-				// read origin from input file
-				const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
-				if(o->size() != 3)
-					dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
-				// store locsys position (to identify this locsys type later on)
-				radslideids_.push_back(i);
-				for (int k=0;k<origins_.M();k++)
-					origins_(i,k) = (*o)[k];
+      {
+        // read origin from input file
+        const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
+        if(o->size() != 3)
+          dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
+        // store locsys position (to identify this locsys type later on)
+        radslideids_.push_back(i);
+        for (int k=0;k<origins_.M();k++)
+          origins_(i,k) = (*o)[k];
 
-				for (int k=0;k<(int)nodes->size();++k)
-				{
-					bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
-					if (!havenode) continue;
-					int indices = (*nodes)[k];
-					double values  = i;
-					locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
-				}
-			}
+        for (int k=0;k<(int)nodes->size();++k)
+        {
+          bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
+          if (!havenode) continue;
+          int indices = (*nodes)[k];
+          double values  = i;
+          locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
+        }
+      }
     }
     else if (currlocsys->Type() == DRT::Condition::SurfaceLocsys ||
              currlocsys->Type() == DRT::Condition::LineLocsys ||
@@ -200,7 +202,7 @@ void DRT::UTILS::LocsysManager::Setup()
     }
     else
       dserror("ERROR: Unknown type of locsys condition!");
-  }
+  }  // end volume locsys
 
   //**********************************************************************
   // read surface locsys conditions
@@ -272,6 +274,7 @@ void DRT::UTILS::LocsysManager::Setup()
 
       // build locsystoggle vector with locsys IDs
       if (type_[i] == DRT::UTILS::LocsysManager::def)
+      {
         for (int k=0;k<(int)nodes->size();++k)
         {
           bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
@@ -281,36 +284,37 @@ void DRT::UTILS::LocsysManager::Setup()
           double values  = i;
           locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
         }
+      }
       if (type_[i] == DRT::UTILS::LocsysManager::functionevaluation)
       {
-      	// read origin from input file
-      	const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
-      	if(o->size() != 3)
-      		dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
+        // read origin from input file
+        const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
+        if(o->size() != 3)
+          dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
 
-      	for (int k=0;k<origins_.N();k++)
-      		origins_(i,k) = (*o)[k];
+        for (int k=0;k<origins_.N();k++)
+          origins_(i,k) = (*o)[k];
       }
       if (type_[i] == DRT::UTILS::LocsysManager::originradialsliding)
-			{
-				// read origin from input file
-				const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
-				if(o->size() != 3)
-					dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
-				// store locsys position (to identify this locsys type later on)
-				radslideids_.push_back(i);
-				for (int k=0;k<origins_.N();k++)
-					origins_(i,k) = (*o)[k];
+      {
+        // read origin from input file
+        const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
+        if(o->size() != 3)
+          dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
+        // store locsys position (to identify this locsys type later on)
+        radslideids_.push_back(i);
+        for (int k=0;k<origins_.N();k++)
+          origins_(i,k) = (*o)[k];
 
-				for (int k=0;k<(int)nodes->size();++k)
-				{
-					bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
-					if (!havenode) continue;
-					int indices = (*nodes)[k];
-					double values  = i;
-					locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
-				}
-			}
+        for (int k=0;k<(int)nodes->size();++k)
+        {
+          bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
+          if (!havenode) continue;
+          int indices = (*nodes)[k];
+          double values  = i;
+          locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
+        }
+      }
     }
     else if (currlocsys->Type() == DRT::Condition::VolumeLocsys ||
              currlocsys->Type() == DRT::Condition::LineLocsys ||
@@ -320,7 +324,7 @@ void DRT::UTILS::LocsysManager::Setup()
     }
     else
       dserror("ERROR: Unknown type of locsys condition!");
-  }
+  }  // end surface locsys
 
   //**********************************************************************
   // read line locsys conditions
@@ -392,6 +396,7 @@ void DRT::UTILS::LocsysManager::Setup()
 
       // build locsystoggle vector with locsys IDs
       if (type_[i] == DRT::UTILS::LocsysManager::def)
+      {
         for (int k=0;k<(int)nodes->size();++k)
         {
           bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
@@ -401,35 +406,36 @@ void DRT::UTILS::LocsysManager::Setup()
           double values  = i;
           locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
         }
+      }
       if (type_[i] == DRT::UTILS::LocsysManager::functionevaluation)
       {
-      	// read origin from input file
-      	const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
-      	if(o->size() != 3)
-      		dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
-      	for (int k=0;k<origins_.N();k++)
-      		origins_(i,k) = (*o)[k];
+        // read origin from input file
+        const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
+        if(o->size() != 3)
+            dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
+        for (int k=0;k<origins_.N();k++)
+            origins_(i,k) = (*o)[k];
       }
       if (type_[i] == DRT::UTILS::LocsysManager::originradialsliding)
-			{
-				// read origin from input file
-				const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
-				if(o->size() != 3)
-					dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
-				// store locsys position (to identify this locsys type later on)
-				radslideids_.push_back(i);
-				for (int k=0;k<origins_.N();k++)
-					origins_(i,k) = (*o)[k];
+      {
+        // read origin from input file
+        const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
+        if(o->size() != 3)
+          dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
+        // store locsys position (to identify this locsys type later on)
+        radslideids_.push_back(i);
+        for (int k=0;k<origins_.N();k++)
+          origins_(i,k) = (*o)[k];
 
-				for (int k=0;k<(int)nodes->size();++k)
-				{
-					bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
-					if (!havenode) continue;
-					int indices = (*nodes)[k];
-					double values  = i;
-					locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
-				}
-			}
+        for (int k=0;k<(int)nodes->size();++k)
+        {
+          bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
+          if (!havenode) continue;
+          int indices = (*nodes)[k];
+          double values  = i;
+          locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
+        }
+      }
     }
     else if (currlocsys->Type() == DRT::Condition::VolumeLocsys ||
              currlocsys->Type() == DRT::Condition::SurfaceLocsys ||
@@ -439,7 +445,7 @@ void DRT::UTILS::LocsysManager::Setup()
     }
     else
       dserror("ERROR: Unknown type of locsys condition!");
-  }
+  }  // end line locsys
 
   //**********************************************************************
   // read point locsys conditions
@@ -522,33 +528,33 @@ void DRT::UTILS::LocsysManager::Setup()
         }
       if (type_[i] == DRT::UTILS::LocsysManager::functionevaluation)
       {
-      	// read origin from input file
-      	const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
-      	if(o->size() != 3)
-      		dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
-      	for (int k=0;k<origins_.N();k++)
-      		origins_(i,k) = (*o)[k];
+        // read origin from input file
+        const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
+        if(o->size() != 3)
+          dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
+        for (int k=0;k<origins_.N();k++)
+          origins_(i,k) = (*o)[k];
       }
       if (type_[i] == DRT::UTILS::LocsysManager::originradialsliding)
-			{
-				// read origin from input file
-				const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
-				if(o->size() != 3)
-					dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
-				// store locsys position (to identify this locsys type later on)
-				radslideids_.push_back(i);
-				for (int k=0;k<origins_.N();k++)
-					origins_(i,k) = (*o)[k];
+      {
+        // read origin from input file
+        const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
+        if(o->size() != 3)
+          dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
+        // store locsys position (to identify this locsys type later on)
+        radslideids_.push_back(i);
+        for (int k=0;k<origins_.N();k++)
+          origins_(i,k) = (*o)[k];
 
-				for (int k=0;k<(int)nodes->size();++k)
-				{
-					bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
-					if (!havenode) continue;
-					int indices = (*nodes)[k];
-					double values  = i;
-					locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
-				}
-			}
+        for (int k=0;k<(int)nodes->size();++k)
+        {
+          bool havenode = Discret().HaveGlobalNode((*nodes)[k]);
+          if (!havenode) continue;
+                    int indices = (*nodes)[k];
+                    double values  = i;
+                    locsystoggle_->ReplaceGlobalValues(1,&values,&indices);
+        }
+      }
     }
     else if (currlocsys->Type() == DRT::Condition::VolumeLocsys ||
              currlocsys->Type() == DRT::Condition::SurfaceLocsys ||
@@ -558,7 +564,7 @@ void DRT::UTILS::LocsysManager::Setup()
     }
     else
       dserror("ERROR: Unknown type of locsys condition!");
-  }
+  }  // end point locsys
 
   Print(cout);
 
@@ -583,7 +589,7 @@ void DRT::UTILS::LocsysManager::Setup()
 
   // we need to make sure that two nodes sharing the same dofs are not
   // transformed twice. This is a NURBS/periodic boundary feature.
-  RCP<Epetra_Vector> already_processed = LINALG::CreateVector(*dofrowmap,true);
+  Teuchos::RCP<Epetra_Vector> already_processed = LINALG::CreateVector(*dofrowmap,true);
   already_processed->PutScalar(0.0);
 
   // for transformleftonly_ option, perform a check for zero diagonal
@@ -604,7 +610,7 @@ void DRT::UTILS::LocsysManager::Setup()
     int numdof = (int)dofs.size();
     int locsysindex = (int)(*locsystoggle_)[i];
 
-    // skip nodes whos dofs have already been processed
+    // skip nodes whose dofs have already been processed
     bool skip=false;
 
     for(int rr=0;rr<numdof;++rr)
@@ -667,7 +673,7 @@ void DRT::UTILS::LocsysManager::Setup()
       }
 
       DRT::Condition* currlocsys = locsysconds_[locsysindex];
-      const std::vector<int>*   funct = currlocsys->Get<std::vector<int> >("(axis,angle)-funct");
+      const std::vector<int>* funct = currlocsys->Get<std::vector<int> >("(axis,angle)-funct");
       if(funct)
       {
         // sanity checks
@@ -691,7 +697,6 @@ void DRT::UTILS::LocsysManager::Setup()
           // if necessary, the local coordinate system is rotated according to
           // a given spatial functions (for curved surfaces etc.)
           const double time =0.0;
-
 
           const double angle=(DRT::Problem::Instance()->Funct((*funct)[1]-1)).Evaluate(
             0        ,
@@ -750,7 +755,7 @@ void DRT::UTILS::LocsysManager::Setup()
       // set rotation of this nodes dofs ('nodetrafo')
       /* case: originradialsliding:
        * transformation matrix set up
-       * 	- n: standard (outward) normal given by input file
+       *  - n: standard (outward) normal given by input file
        *  - radialfirstdir: direction given by origin and coordinates of current node
        *  - radialsecdir: binormal to n and radialfirstdir
        */
@@ -763,7 +768,7 @@ void DRT::UTILS::LocsysManager::Setup()
 
         // get nodal coordinates
         const double *nodecoords;
-        //lenght of radial vector
+        // lenght of radial vector
         double lrad;
 
         nodecoords = Discret().gNode(gid)->X();
@@ -818,21 +823,21 @@ void DRT::UTILS::LocsysManager::Setup()
       // build trafo_ conventionally
       else
       {
-				// trafo for 2D and 3D case
-				nodetrafo(0,0)=n(0);
-				nodetrafo(0,1)=n(1);
-				nodetrafo(1,0)=t(0);
-				nodetrafo(1,1)=t(1);
+        // trafo for 2D and 3D case
+        nodetrafo(0,0)=n(0);
+        nodetrafo(0,1)=n(1);
+        nodetrafo(1,0)=t(0);
+        nodetrafo(1,1)=t(1);
 
-				// additional trafo for 3D case
-				if (Dim()==3)
-				{
-					nodetrafo(0,2)=n(2);
-					nodetrafo(1,2)=t(2);
-					nodetrafo(2,0)=b(0);
-					nodetrafo(2,1)=b(1);
-					nodetrafo(2,2)=b(2);
-				}
+        // additional trafo for 3D case
+        if (Dim()==3)
+        {
+          nodetrafo(0,2)=n(2);
+          nodetrafo(1,2)=t(2);
+          nodetrafo(2,0)=b(0);
+          nodetrafo(2,1)=b(1);
+          nodetrafo(2,2)=b(2);
+        }
 
         // fluid case, 4x4
         if(numdof==4)
@@ -845,19 +850,19 @@ void DRT::UTILS::LocsysManager::Setup()
           nodetrafo(3,3) = 1.0;
         }
 
-				// Assemble the rotation of this dofs ('nodetrafo') into the global matrix
-				for (int r=0;r<numdof;++r)
-				{
-					for (int c=0;c<numdof;++c)
-					{
-						trafo_->Assemble(nodetrafo(r,c),dofs[r],dofs[c]);
-					}
-				}
+        // Assemble the rotation of this dofs ('nodetrafo') into the global matrix
+        for (int r=0;r<numdof;++r)
+        {
+          for (int c=0;c<numdof;++c)
+          {
+            trafo_->Assemble(nodetrafo(r,c),dofs[r],dofs[c]);
+          }
+        }
 
-				// store the DOF with locsys
-				if (transformleftonly_)
-					for (int r=0;r<numdof;++r)
-						locsysdofset.insert(dofs[r]);
+        // store the DOF with locsys
+        if (transformleftonly_)
+          for (int r=0;r<numdof;++r)
+            locsysdofset.insert(dofs[r]);
       }
     }
 
@@ -969,8 +974,9 @@ void DRT::UTILS::LocsysManager::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  Transform system global -> local (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sysmat,
-                                                    RCP<Epetra_Vector> rhs)
+void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
+  Teuchos::RCP<LINALG::SparseMatrix> sysmat,
+  Teuchos::RCP<Epetra_Vector> rhs)
 {
   // transform rhs vector
   RotateGlobalToLocal(rhs);
@@ -979,14 +985,14 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sy
   if (transformleftonly_)
   {
     // selective multiplication from left
-    RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*subtrafo_,false,*sysmat,false,true);
+    Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*subtrafo_,false,*sysmat,false,true);
     // put transformed rows back into global matrix
     sysmat->Put(*temp,1.0,locsysdofmap_);
   }
   else
   {
-    RCP<LINALG::SparseMatrix> temp;
-    RCP<LINALG::SparseMatrix> temp2;
+    Teuchos::RCP<LINALG::SparseMatrix> temp;
+    Teuchos::RCP<LINALG::SparseMatrix> temp2;
 
     // We want to keep the SaveGraph() value of sysmat also after transformation.
     // It is not possible to keep ExplicitDirichlet()==true after transformation,
@@ -1004,20 +1010,20 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sy
 /*----------------------------------------------------------------------*
  |  Transform system matrix global -> local (public)       mueller 05/10|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sysmat)
+void DRT::UTILS::LocsysManager::RotateGlobalToLocal(Teuchos::RCP<LINALG::SparseMatrix> sysmat)
 {
   // transform system matrix
   if (transformleftonly_)
   {
     // selective multiplication from left
-    RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*subtrafo_,false,*sysmat,false,true);
+    Teuchos::RCP<LINALG::SparseMatrix> temp = LINALG::Multiply(*subtrafo_,false,*sysmat,false,true);
     // put transformed rows back into global matrix
     sysmat->Put(*temp,1.0,locsysdofmap_);
   }
   else
   {
-    RCP<LINALG::SparseMatrix> temp;
-    RCP<LINALG::SparseMatrix> temp2;
+    Teuchos::RCP<LINALG::SparseMatrix> temp;
+    Teuchos::RCP<LINALG::SparseMatrix> temp2;
 
     // We want to keep the SaveGraph() value of sysmat also after transformation.
     // It is not possible to keep ExplicitDirichlet()==true after transformation,
@@ -1035,8 +1041,9 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<LINALG::SparseMatrix> sy
 /*----------------------------------------------------------------------*
  |  Transform vector global -> local (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<Epetra_Vector> vec)
+void DRT::UTILS::LocsysManager::RotateGlobalToLocal(Teuchos::RCP<Epetra_Vector> vec)
 {
+  // y = trafo_ . x  with x = vec
   Epetra_Vector tmp(*vec);
   trafo_->Multiply(false,tmp,*vec);
   return;
@@ -1046,9 +1053,10 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(RCP<Epetra_Vector> vec)
 /*----------------------------------------------------------------------*
  |  Transform result + system local -> global (public)        popp 09/08|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateLocalToGlobal(RCP<Epetra_Vector> result,
-                                               RCP<LINALG::SparseMatrix> sysmat,
-                                               RCP<Epetra_Vector> rhs)
+void DRT::UTILS::LocsysManager::RotateLocalToGlobal(
+  Teuchos::RCP<Epetra_Vector> result,
+  Teuchos::RCP<LINALG::SparseMatrix> sysmat,
+  Teuchos::RCP<Epetra_Vector> rhs)
 {
   // transform result
   RotateLocalToGlobal(result);
@@ -1057,8 +1065,8 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(RCP<Epetra_Vector> result,
   RotateLocalToGlobal(rhs);
 
   // transform system matrix
-  RCP<LINALG::SparseMatrix> temp;
-  RCP<LINALG::SparseMatrix> temp2;
+  Teuchos::RCP<LINALG::SparseMatrix> temp;
+  Teuchos::RCP<LINALG::SparseMatrix> temp2;
 
   // We want to keep the SaveGraph() value of sysmat also after transformation.
   // It is not possible to keep ExplicitDirichlet()==true after transformation,
@@ -1075,7 +1083,7 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(RCP<Epetra_Vector> result,
 /*----------------------------------------------------------------------*
  |  Transform vector local -> global (public)                 popp 09/08|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateLocalToGlobal(RCP<Epetra_Vector> vec)
+void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<Epetra_Vector> vec)
 {
   Epetra_Vector tmp(*vec);
   trafo_->Multiply(true,tmp,*vec);
@@ -1084,10 +1092,10 @@ void DRT::UTILS::LocsysManager::RotateLocalToGlobal(RCP<Epetra_Vector> vec)
 /*----------------------------------------------------------------------*
  |  Transform matrix local -> global (public)              mueller 05/10|
  *----------------------------------------------------------------------*/
-void DRT::UTILS::LocsysManager::RotateLocalToGlobal(RCP<LINALG::SparseMatrix> sysmat)
+void DRT::UTILS::LocsysManager::RotateLocalToGlobal(Teuchos::RCP<LINALG::SparseMatrix> sysmat)
 {
-  RCP<LINALG::SparseMatrix> temp;
-  RCP<LINALG::SparseMatrix> temp2;
+  Teuchos::RCP<LINALG::SparseMatrix> temp;
+  Teuchos::RCP<LINALG::SparseMatrix> temp2;
   temp = LINALG::Multiply(*sysmat,false,*trafo_,false,false,sysmat->SaveGraph(),true);
   temp2 = LINALG::Multiply(*trafo_,true,*temp,false,false,sysmat->SaveGraph(),true);
   *sysmat = *temp2;
