@@ -2621,7 +2621,8 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
   // get normalized fine-scale subgrid-diffusivity matrix
   {
     // this is important to have!!!
-    MLAPI::Init(Teuchos::rcp(discret_->Comm().Clone()), true);
+    // MLAPI::Init() without arguments uses internally MPI_COMM_WOLRD
+    MLAPI::Init();
 
     // extract the ML parameters
     Teuchos::ParameterList&  mlparams = solver_->Params().sublist("ML Parameters");
@@ -2686,9 +2687,6 @@ void SCATRA::ScaTraTimIntImpl::AVM3Preparation()
       Mnsv_ = LINALG::Multiply(*sysmat_sd_,false,*Sep_,false);
       //Mnsv_ = LINALG::Multiply(*Sep_,true,*Mnsv_,false);
     }
-
-    // close MLAPI environment
-    MLAPI::Finalize(true, false);
   }
 
   return;

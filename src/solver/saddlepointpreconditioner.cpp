@@ -719,7 +719,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Teuc
   A21_[curlevel] = Teuchos::rcp(new SparseMatrix(Ainput_->Matrix(1,0),View));
   A22_[curlevel] = Teuchos::rcp(new SparseMatrix(Ainput_->Matrix(1,1),View));
 
-  MLAPI::Init(Teuchos::rcp(A->Comm().Clone()), true);
+  MLAPI::Init();
 
   for (curlevel = 0; curlevel < nmaxlevels_; ++curlevel)
   {
@@ -864,7 +864,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Teuc
     cout << "nlevels/maxlevels: " << nlevels_+1 << "/" << nmaxlevels_+1 << endl;
   }
 
-  MLAPI::Finalize(true, false);
+  MLAPI::Finalize();
 
 
 #ifdef WRITEOUTSTATISTICS

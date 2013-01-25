@@ -66,7 +66,6 @@ int LINALG::AggregationMethod_ML::GetAggregates(const RCP<Epetra_CrsMatrix>& A, 
 
   // create ML operator
   ML_Operator* ML_Ptent = 0;
-  MLAPI::Init(Teuchos::rcp(A->Comm().Clone()), true);
   ML_Ptent = ML_Operator_Create(MLAPI::GetML_Comm());
 
   //if(!thisns) cout << "error: null space is NULL" << endl;
@@ -132,9 +131,6 @@ int LINALG::AggregationMethod_ML::GetAggregates(const RCP<Epetra_CrsMatrix>& A, 
   ML_memory_free((void**)(&null_vect));  // temporary vector with null space data
   null_vect = NULL;
   ////////////////////////////////
-
-  // close MLAPI environment
-  MLAPI::Finalize(true, false);
 
   return (NextSize/nsdim);
 }

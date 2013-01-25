@@ -469,8 +469,7 @@ Teuchos::RCP<SparseMatrix> MLMultiply(const Epetra_CrsMatrix& Aorig,
                              const Epetra_CrsMatrix& Borig,
                              bool explicitdirichlet,
                              bool savegraph,
-                             bool complete,
-                             bool nestedparallelism = false);
+                             bool complete);
 
 /*!
 \brief Matrix-Matrix Multiply C = A*B using ML
@@ -482,8 +481,7 @@ Teuchos::RCP<SparseMatrix> MLMultiply(const SparseMatrix& A,
                              const SparseMatrix& B,
                              bool explicitdirichlet,
                              bool savegraph,
-                             bool complete,
-                             bool nestedparallelism = false);
+                             bool complete);
 
 /*!
 \brief Matrix-Matrix Multiply C = A*B using ML
