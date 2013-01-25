@@ -354,6 +354,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     // GMSH solution output
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_DEBUG_OUT",        DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_DEBUG_OUT"));
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_DEBUG_OUT_SCREEN", DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_DEBUG_OUT_SCREEN"));
+    fluidtimeparams->sublist("XFEM").set<int>("GMSH_EOS_OUT",          DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_EOS_OUT"));
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_SOL_OUT",          DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_SOL_OUT"));
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_DISCRET_OUT",      DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_DISCRET_OUT"));
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_CUT_OUT",          DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_CUT_OUT"));

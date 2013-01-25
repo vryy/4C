@@ -864,7 +864,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
       if ( ele==NULL ) dserror( "expect FluidIntFace element" );
 
-      edgestab_->EvaluateEdgeStabGhostPenalty(eleparams, xfluid_.bgdis_, ele, sysmat_, strategy.Systemvector1());
+      edgestab_->EvaluateEdgeStabGhostPenalty(eleparams, xfluid_.bgdis_, ele, sysmat_, strategy.Systemvector1(), xfluid_.gmsh_EOS_out_);
     }
   }
 
@@ -1007,7 +1007,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       DRT::Element* actface = xdiscret->lRowIntFace(i);
       DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
       if ( ele==NULL ) dserror( "expect FluidIntFace element" );
-      edgestab_->EvaluateEdgeStabGhostPenalty(eleparams, xfluid_.embdis_, ele, sysmat_linalg, ale_residual_col);
+      edgestab_->EvaluateEdgeStabStd(eleparams, xfluid_.embdis_, ele, sysmat_linalg, ale_residual_col);
     }
 
     //------------------------------------------------------------
@@ -1817,7 +1817,9 @@ FLD::XFluidFluid::XFluidFluid(
   gmsh_sol_out_          = (bool)params_xfem.get<int>("GMSH_SOL_OUT");
   gmsh_debug_out_        = (bool)params_xfem.get<int>("GMSH_DEBUG_OUT");
   gmsh_debug_out_screen_ = (bool)params_xfem.get<int>("GMSH_DEBUG_OUT_SCREEN");
+  gmsh_EOS_out_          = ((bool)params_xfem.get<int>("GMSH_EOS_OUT") && (edge_based_ or ghost_penalty_));
   gmsh_discret_out_      = (bool)params_xfem.get<int>("GMSH_DISCRET_OUT");
+  gmsh_step_diff_        = 500;
   gmsh_cut_out_          = (bool)params_xfem.get<int>("GMSH_CUT_OUT");
 
   // set the element name for boundary elements BELE3 or BELE3_4
@@ -1938,17 +1940,6 @@ FLD::XFluidFluid::XFluidFluid(
   conditions_to_copy.push_back("XFEMCoupling");
   boundarydis_ = DRT::UTILS::CreateDiscretizationFromCondition(embdis, "XFEMCoupling", "boundary", element_name, conditions_to_copy);
 
-  //gmsh
-  if(gmsh_discret_out_)
-  {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("Fluid_Fluid_Coupling", 1, 0, 0,actdis->Comm().MyPID());
-    std::ofstream gmshfilecontent(filename.c_str());
-    IO::GMSH::disToStream("Boundarydis", 0.0, boundarydis_,gmshfilecontent);
-    IO::GMSH::disToStream("Fluid", 0.0, actdis, gmshfilecontent);
-    IO::GMSH::disToStream("embeddedFluid", 0.0, embdis_,gmshfilecontent);
-    gmshfilecontent.close();
-  }
-
   if (boundarydis_->NumGlobalNodes() == 0)
   {
     dserror("Empty XFEM-boundary discretization detected!");
@@ -2033,8 +2024,8 @@ FLD::XFluidFluid::XFluidFluid(
   alevelnm_ = LINALG::CreateVector(*aledofrowmap_,true);
 
   // we need the displacement vector of an ALE element if alefluid_ or when we do not use Xfluid-sided-mortaring
-  if(alefluid_ || coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Mortaring)
-    aledispnp_ = LINALG::CreateVector(*aledofrowmap_,true);
+  //if(alefluid_ || coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Mortaring)
+  aledispnp_ = LINALG::CreateVector(*aledofrowmap_,true);
 
   if (alefluid_)
   {
@@ -2111,6 +2102,12 @@ FLD::XFluidFluid::XFluidFluid(
   // -----------------------------------------------------------------
   SetElementGeneralFluidParameter();
   SetElementTurbulenceParameter();
+
+  //gmsh discretization output
+  if(gmsh_discret_out_)
+  {
+    OutputDiscret();
+  }
 
   //--------------------------------------------------
   // XFluidFluid State
@@ -3662,6 +3659,44 @@ void FLD::XFluidFluid::StatisticsAndOutput()
   return;
 }//FLD::XFluidFluid::StatisticsAndOutput()
 
+
+/*----------------------------------------------------------------------*
+ |  write discretization output                            schott 03/12 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluidFluid::OutputDiscret()
+{
+  // compute the current solid and boundary position
+  std::map<int,LINALG::Matrix<3,1> >      curralepositions;
+  std::map<int,LINALG::Matrix<3,1> >      currinterfacepositions;
+
+  //---------------------------------- GMSH DISCRET OUTPUT (element and node ids for all discretizations) ------------------------
+  if(gmsh_discret_out_)
+  {
+    ExtractNodeVectors(*embdis_, aledispnp_, curralepositions);
+    ExtractNodeVectors(*boundarydis_, idispnp_, currinterfacepositions);
+    //TODO: fill the aledispnp_
+
+    // cast to DiscretizationXFEM
+    RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
+    if (xdiscret == Teuchos::null)
+      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
+
+    // output for Element and Node IDs
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("element_node_id", step_, gmsh_step_diff_, gmsh_debug_out_screen_, discret_->Comm().MyPID());
+    std::ofstream gmshfilecontent(filename.c_str());
+    gmshfilecontent.setf(std::ios::scientific,std::ios::floatfield);
+    gmshfilecontent.precision(16);
+
+    disToStream(discret_,     "bg ",     true, false, true, false, true,  false, gmshfilecontent);
+    disToStream(embdis_,      "emb",     true, false, true, false, true,  false, gmshfilecontent, &curralepositions);
+    disToStream(boundarydis_, "cut",     true, true,  true, true,  false, false, gmshfilecontent, &currinterfacepositions);
+
+    gmshfilecontent.close();
+
+  } // end if gmsh_discret_out_
+}
+
+
 // -------------------------------------------------------------------
 //
 // -------------------------------------------------------------------
@@ -3670,72 +3705,98 @@ void FLD::XFluidFluid::Output()
   const bool write_visualization_data = step_%upres_ == 0;
   const bool write_restart_data = step_!=0 and uprestart_ != 0 and step_%uprestart_ == 0;
 
+  const int step_diff = 500;
+  bool screen_out = false;
+
   if( !write_visualization_data && !write_restart_data )
-  	return;
+    return;
+
+  OutputDiscret();
+
+  std::map<int,LINALG::Matrix<3,1> >      curralepositions;
+  std::map<int,LINALG::Matrix<3,1> >      currinterfacepositions;
+
+  ExtractNodeVectors(*embdis_, aledispnp_, curralepositions);
+  ExtractNodeVectors(*boundarydis_, idispnp_, currinterfacepositions);
 
   //  ART_exp_timeInt_->Output();
   // output of solution
-  if(gmsh_sol_out_)
-  {
-    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("element_node_id", step_, 0, 0, bgdis_->Comm().MyPID());
-    std::ofstream gmshfilecontent(filename.c_str());
-    {
-      // draw bg elements with associated gid
-      gmshfilecontent << "View \" " << "bg Element->Id() \" {\n";
-      for (int i=0; i<bgdis_->NumMyColElements(); ++i)
-      {
-        const DRT::Element* actele = bgdis_->lColElement(i);
-        IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
-      };
-      gmshfilecontent << "};\n";
-    }
-    {
-      // draw cut elements with associated gid
-      gmshfilecontent << "View \" " << "cut Element->Id() \" {\n";
-      for (int i=0; i<boundarydis_->NumMyColElements(); ++i)
-      {
-        const DRT::Element* actele = boundarydis_->lColElement(i);
-        IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
-      };
-      gmshfilecontent << "};\n";
-    }
-    {
-      // draw embedded elements with associated gid
-      gmshfilecontent << "View \" " << "embedded Element->Id() \" {\n";
-      for (int i=0; i<embdis_->NumMyColElements(); ++i)
-      {
-        const DRT::Element* actele = embdis_->lColElement(i);
-        IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, gmshfilecontent);
-      };
-      gmshfilecontent << "};\n";
-    }
-    {
-      gmshfilecontent << "View \" " << "bg Node->Id() \" {\n";
-      for (int i=0; i<bgdis_->NumMyColNodes(); ++i)
-      {
-        const DRT::Node* actnode = bgdis_->lColNode(i);
-        const LINALG::Matrix<3,1> pos(actnode->X());
-        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, gmshfilecontent);
-      }
-      gmshfilecontent << "};\n";
-    }
-    {
-      gmshfilecontent << "View \" " << "embedded Node->Id() \" {\n";
-      for (int i=0; i<embdis_->NumMyColNodes(); ++i)
-      {
-        const DRT::Node* actnode = embdis_->lColNode(i);
-        const LINALG::Matrix<3,1> pos(actnode->X());
-        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, gmshfilecontent);
-      }
-      gmshfilecontent << "};\n";
-    }
-    gmshfilecontent.close();
-  }
 
 
   int count = -1;
   if (gmsh_sol_out_)
     state_->GmshOutput( *bgdis_, *embdis_, *boundarydis_, "result", count,  step_, state_->velnp_ , alevelnp_, aledispnp_);
+
+
+
+
+  //---------------------------------- GMSH DISCRET OUTPUT (element and node ids for all discretizations) ------------------------
+  if(gmsh_EOS_out_)
+  {
+
+    // cast to DiscretizationXFEM
+    RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret_, true);
+    if (xdiscret == Teuchos::null)
+      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
+
+    RCP<DRT::DiscretizationXFEM> embxdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(embdis_, true);
+    if (embxdiscret == Teuchos::null)
+      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
+
+
+    // output for Element and Node IDs
+    const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("EOS", step_, step_diff, screen_out, discret_->Comm().MyPID());
+    std::ofstream gmshfilecontent(filename.c_str());
+    gmshfilecontent.setf(std::ios::scientific,std::ios::floatfield);
+    gmshfilecontent.precision(16);
+
+    if( xdiscret->FilledExtension() == true && ghost_penalty_ ) // stabilization output
+    {
+      // draw internal faces elements with associated face's gid
+      gmshfilecontent << "View \" " << "ghost penalty stabilized \" {\n";
+
+      for (int i=0; i<xdiscret->NumMyRowIntFaces(); ++i)
+      {
+        const DRT::Element* actele = xdiscret->lRowIntFace(i);
+        std::map<int,int> & ghost_penalty_map = state_->EdgeStab()->GetGhostPenaltyMap();
+
+        std::map<int,int>::iterator it = ghost_penalty_map.find(actele->Id());
+        if(it != ghost_penalty_map.end())
+        {
+          int ghost_penalty = it->second;
+
+          if(ghost_penalty) IO::GMSH::elementAtInitialPositionToStream(double(ghost_penalty),actele, gmshfilecontent);
+        }
+        else dserror("face %d in map not found", actele->Id());
+      }
+      gmshfilecontent << "};\n";
+    }
+    if(xdiscret->FilledExtension() == true && edge_based_)
+    {
+      // draw internal faces elements with associated face's gid
+      gmshfilecontent << "View \" " << "edgebased stabilized \" {\n";
+
+      for (int i=0; i<xdiscret->NumMyRowIntFaces(); ++i)
+      {
+        const DRT::Element* actele = xdiscret->lRowIntFace(i);
+        std::map<int,int> & edge_based_map = state_->EdgeStab()->GetEdgeBasedMap();
+        std::map<int,int>::iterator it = edge_based_map.find(actele->Id());
+
+        if(it != edge_based_map.end())
+        {
+          int edge_stab =it->second;
+
+          if(edge_stab) IO::GMSH::elementAtInitialPositionToStream(double(edge_stab),actele, gmshfilecontent);
+        }
+      }
+      gmshfilecontent << "};\n";
+    } // end stabilization output
+
+    gmshfilecontent.close();
+
+  } // end if gmsh_discret_out_
+
+
 
   if (write_visualization_data)
   {
@@ -3977,6 +4038,184 @@ void FLD::XFluidFluid::Output()
 
    return;
 }// XFluidFluid::Output
+
+
+/*----------------------------------------------------------------------*
+ | print discretization to gmsh stream                     schott 01/13 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluidFluid::disToStream(Teuchos::RCP<DRT::Discretization> dis,
+                                   const std::string& disname,
+                                   const bool elements,
+                                   const bool elecol,
+                                   const bool nodes,
+                                   const bool nodecol,
+                                   const bool faces,
+                                   const bool facecol,
+                                   std::ostream& s,
+                                   std::map<int, LINALG::Matrix<3,1> >* curr_pos)
+{
+  if(elements)
+  {
+    // draw bg elements with associated gid
+    s << "View \" " << disname;
+    if(elecol)
+    {
+      s << " col e->Id() \" {\n";
+      for (int i=0; i<dis->NumMyColElements(); ++i)
+      {
+        const DRT::Element* actele = dis->lColElement(i);
+        if(curr_pos == NULL)
+          IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
+        else
+          IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, *curr_pos, s);
+      };
+    }
+    else
+    {
+      s << " row e->Id() \" {\n";
+      for (int i=0; i<dis->NumMyRowElements(); ++i)
+      {
+        const DRT::Element* actele = dis->lRowElement(i);
+        if(curr_pos == NULL)
+          IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
+        else
+          IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, *curr_pos, s);
+      };
+    }
+    s << "};\n";
+  }
+
+  if(nodes)
+  {
+    s << "View \" " << disname;
+    if(nodecol)
+    {
+      s << " col n->Id() \" {\n";
+      for (int i=0; i<dis->NumMyColNodes(); ++i)
+      {
+        const DRT::Node* actnode = dis->lColNode(i);
+        LINALG::Matrix<3,1> pos(true);
+
+        if(curr_pos != NULL)
+        {
+          const LINALG::Matrix<3,1>& curr_x = curr_pos->find(actnode->Id())->second;
+          pos(0) = curr_x(0);
+          pos(1) = curr_x(1);
+          pos(2) = curr_x(2);
+        }
+        else
+        {
+          const LINALG::Matrix<3,1> x(actnode->X());
+          pos(0) = x(0);
+          pos(1) = x(1);
+          pos(2) = x(2);
+        }
+        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, s);
+      }
+    }
+    else
+    {
+      s << " row n->Id() \" {\n";
+      for (int i=0; i<dis->NumMyRowNodes(); ++i)
+      {
+        const DRT::Node* actnode = dis->lRowNode(i);
+        LINALG::Matrix<3,1> pos(true);
+
+        if(curr_pos != NULL)
+        {
+          const LINALG::Matrix<3,1>& curr_x = curr_pos->find(actnode->Id())->second;
+          pos(0) = curr_x(0);
+          pos(1) = curr_x(1);
+          pos(2) = curr_x(2);
+        }
+        else
+        {
+          const LINALG::Matrix<3,1> x(actnode->X());
+          pos(0) = x(0);
+          pos(1) = x(1);
+          pos(2) = x(2);
+        }
+        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, actnode->Id(), pos, s);
+      }
+    }
+    s << "};\n";
+  }
+
+  if(faces)
+  {
+    // cast to DiscretizationXFEM
+    RCP<DRT::DiscretizationXFEM> xdis = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(dis, true);
+    if (xdis == Teuchos::null)
+      dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
+
+    s << "View \" " << disname;
+
+    if( xdis->FilledExtension() == true )     // faces output
+    {
+
+      if(facecol)
+      {
+        s << " col f->Id() \" {\n";
+        for (int i=0; i<xdis->NumMyColIntFaces(); ++i)
+        {
+          const DRT::Element* actele = xdis->lColIntFace(i);
+          if(curr_pos == NULL)
+            IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
+          else
+            IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, *curr_pos, s);
+        };
+      }
+      else
+      {
+        s << " row f->Id() \" {\n";
+        for (int i=0; i<xdis->NumMyRowIntFaces(); ++i)
+        {
+          const DRT::Element* actele = xdis->lRowIntFace(i);
+          if(curr_pos == NULL)
+            IO::GMSH::elementAtInitialPositionToStream(double(actele->Id()), actele, s);
+          else
+            IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, *curr_pos, s);
+        };
+      }
+      s << "};\n";
+    }
+  }
+}
+
+
+/*--------------------------------------------------------------------------*
+ | extract the nodal vectors and store them in node-vector-map schott 01/13 |
+ *--------------------------------------------------------------------------*/
+void FLD::XFluidFluid::ExtractNodeVectors(DRT::Discretization & dis,
+                                          Teuchos::RCP<Epetra_Vector> dofrowvec,
+                                          std::map<int, LINALG::Matrix<3,1> >& nodevecmap)
+{
+
+    Epetra_Vector dispcol( *dis.DofColMap() );
+    dispcol.PutScalar( 0. );
+
+    LINALG::Export(*dofrowvec,dispcol);
+
+    nodevecmap.clear();
+
+    for (int lid = 0; lid < dis.NumMyColNodes(); ++lid)
+    {
+      const DRT::Node* node = dis.lColNode(lid);
+      std::vector<int> lm;
+      dis.Dof(node, lm);
+      std::vector<double> mydisp;
+      DRT::UTILS::ExtractMyValues(dispcol,mydisp,lm);
+      if (mydisp.size() < 3)
+        dserror("we need at least 3 dofs here");
+
+      LINALG::Matrix<3,1> currpos;
+      currpos(0) = node->X()[0] + mydisp[0];
+      currpos(1) = node->X()[1] + mydisp[1];
+      currpos(2) = node->X()[2] + mydisp[2];
+      nodevecmap.insert(std::make_pair(node->Id(),currpos));
+    }
+}
+
 
 // -------------------------------------------------------------------
 // set general fluid parameter (AE 01/2011)

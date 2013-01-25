@@ -381,6 +381,9 @@ namespace FLD
     /// statistics
     void StatisticsAndOutput();
 
+    /// print discretization output
+    void OutputDiscret();
+
     /// update configuration and output to file/screen
     void Output();
 
@@ -547,6 +550,21 @@ namespace FLD
     /// return type of enforcing interface conditions
     const INPAR::XFEM::BoundaryIntegralType BoundIntType() const {return boundIntType_;}
 
+    /// print discretization to gmsh stream
+    void disToStream(Teuchos::RCP<DRT::Discretization> dis,
+                     const std::string& disname,
+                     const bool elements,
+                     const bool elecol,
+                     const bool nodes,
+                     const bool nodecol,
+                     const bool faces,
+                     const bool facecol,
+                     std::ostream& s,
+                     std::map<int, LINALG::Matrix<3,1> >* curr_pos = NULL);
+
+    /// extract the nodal vectors and store them in node-vector-map
+    void ExtractNodeVectors(DRT::Discretization & dis, Teuchos::RCP<Epetra_Vector> dofrowvec, std::map<int, LINALG::Matrix<3,1> >& nodevecmap);
+
 
     //-------------------------------------------------------------------------------
     // possible inf-norm scaling of linear system / fluid matrix
@@ -557,13 +575,6 @@ namespace FLD
     //! @name general algorithm parameters
     Teuchos::RCP<DRT::Discretization>      soliddis_;     //! solid discretization
     Teuchos::RCP<DRT::Discretization>      boundarydis_;  //! boundary discretization
-//     //! project nullspace (useful for completely Dirichlet bounded problems)
-//     bool                          project_;
-//     //! integrated basis vector (pressure component)
-//     Teuchos::RCP<Epetra_Vector>   w_;
-//     //! basis vector for nullspace (vector of ones in the pressure component)
-//     Teuchos::RCP<Epetra_Vector>   c_;
-    //@}
 
     //---------------------------------input parameters------------------
 
@@ -622,8 +633,10 @@ namespace FLD
     bool gmsh_debug_out_;
     bool gmsh_debug_out_screen_;
     bool gmsh_sol_out_;
+    bool gmsh_EOS_out_;                 //! output for edge-oriented stabilization and ghost-penalty stabilization
     bool gmsh_discret_out_;
     bool gmsh_cut_out_;
+    int  gmsh_step_diff_;
     //@}
 
     //-----------------------------time integration----------------------

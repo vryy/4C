@@ -191,6 +191,9 @@ namespace FLD
       void GenAlphaIntermediateValues();
       void GenAlphaUpdateAcceleration();
 
+      /// return edgestab object
+      Teuchos::RCP<XFEM::XFEM_EdgeStab> EdgeStab() {return edgestab_;}
+
 
     private:
 
@@ -339,6 +342,8 @@ namespace FLD
                         const LINALG::MultiMapExtractor& domainmaps,
                         const LINALG::MultiMapExtractor& rangemaps,
                         bool splitmatrix);
+
+    void OutputDiscret();
 
     /// update configuration and output to file/screen
     void Output();
@@ -580,6 +585,22 @@ namespace FLD
     */
     void GenAlphaUpdateAcceleration();
 
+    /// print discretization to gmsh stream
+    void disToStream(Teuchos::RCP<DRT::Discretization> dis,
+                     const std::string& disname,
+                     const bool elements,
+                     const bool elecol,
+                     const bool nodes,
+                     const bool nodecol,
+                     const bool faces,
+                     const bool facecol,
+                     std::ostream& s,
+                     std::map<int, LINALG::Matrix<3,1> >* curr_pos = NULL);
+
+    /// extract the nodal vectors and store them in node-vector-map
+    void ExtractNodeVectors(DRT::Discretization & dis, Teuchos::RCP<Epetra_Vector> dofrowvec, std::map<int, LINALG::Matrix<3,1> >& nodevecmap);
+
+
 
     //! @name general algorithm parameters
     //! fluid discretization
@@ -634,9 +655,10 @@ namespace FLD
     bool gmsh_debug_out_;
     bool gmsh_debug_out_screen_;
     bool gmsh_sol_out_;
+    bool gmsh_EOS_out_;
     bool gmsh_discret_out_;
     bool gmsh_cut_out_;
-    //@}
+    int  gmsh_step_diff_;
 
     Teuchos::RCP<IO::DiscretizationWriter>     emboutput_;
 

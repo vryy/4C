@@ -79,7 +79,7 @@ public:
                                      DRT::ELEMENTS::FluidIntFace *          faceele,                ///< face element
                                      Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,           ///< systemmatrix
                                      Teuchos::RCP<Epetra_Vector>            systemvector,           ///< systemvector
-                                     bool                                   gmsh_discret_out = true ///< stabilization gmsh output
+                                     bool                                   gmsh_eos_out = true     ///< stabilization gmsh output
                                      );
 
   //! calls the evaluate and assemble routine for edge based stabilization and ghost penaly in the XFEM
@@ -99,8 +99,7 @@ public:
                                      Teuchos::RCP<DRT::Discretization>      discret,                ///< discretization
                                      DRT::ELEMENTS::FluidIntFace *          faceele,                ///< face element
                                      Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,           ///< systemmatrix
-                                     Teuchos::RCP<Epetra_Vector>            systemvector,           ///< systemvector
-                                     bool                                   gmsh_discret_out = true ///< stabilization gmsh output
+                                     Teuchos::RCP<Epetra_Vector>            systemvector            ///< systemvector
                                      );
 
   //! returns a map containing the ghost penalty stabilized internal face elements

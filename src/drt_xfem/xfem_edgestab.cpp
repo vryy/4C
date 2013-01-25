@@ -60,7 +60,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
     DRT::ELEMENTS::FluidIntFace *          faceele,          ///< face element
     Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,     ///< systemmatrix
     Teuchos::RCP<Epetra_Vector>            systemvector,     ///< systemvector
-    bool                                   gmsh_discret_out  ///< stabilization gmsh output
+    bool                                   gmsh_eos_out      ///< stabilization gmsh output
 )
 {
 
@@ -390,7 +390,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
 
 
 
-  if(gmsh_discret_out)
+  if(gmsh_eos_out)
   {
     ghost_penalty_stab_.insert(std::pair<int,int>(faceele->Id(),num_ghostpenalty));
     edge_based_stab_.insert(std::pair<int,int>(faceele->Id(),num_edgestab));
@@ -505,8 +505,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabStd(
     Teuchos::RCP<DRT::Discretization>      discret,          ///< discretization
     DRT::ELEMENTS::FluidIntFace *          faceele,          ///< face element
     Teuchos::RCP<LINALG::SparseMatrix>     systemmatrix,     ///< systemmatrix
-    Teuchos::RCP<Epetra_Vector>            systemvector,     ///< systemvector
-    bool                                   gmsh_discret_out  ///< stabilization gmsh output
+    Teuchos::RCP<Epetra_Vector>            systemvector      ///< systemvector
 )
 {
   RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret);
