@@ -281,7 +281,7 @@ void SysmatDomainStressNormal(
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // time integration factor
-  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
+  const double timefac = COMBUST::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
   // get node coordinates of this element
   static LINALG::Matrix<nsd,numnode> xyze;
@@ -972,7 +972,7 @@ void SysmatDomainStressNormal(
 
       // time RHS vector from previous time step
       // remark: histvec = \rho^{n}*(u^n + delta t (1-theta) a^n)
-      LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT::GetOldPartOfRighthandside(
+      LINALG::Matrix<nsd,1> histvec = COMBUST::TIMEINT::GetOldPartOfRighthandside(
           gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
       histvec.Scale(densn);
 
@@ -1174,7 +1174,7 @@ void SysmatBoundaryStressNormal(
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // time integration constant
-  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
+  const double timefac = COMBUST::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
   // get node coordinates of the current element
   static LINALG::Matrix<nsd,numnode> xyze;

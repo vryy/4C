@@ -1448,6 +1448,12 @@ double DRT::UTILS::BeltramiFunction::Evaluate(int index, const double* xp, doubl
   double a = M_PI/4.0;
   double d = M_PI/2.0;
 
+  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+  if (id==-1) dserror("Newtonian fluid material could not be found");
+  const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+  const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+  double dens = actmat->density_;
+
   switch (index)
   {
   case 0:
@@ -1460,7 +1466,7 @@ double DRT::UTILS::BeltramiFunction::Evaluate(int index, const double* xp, doubl
     return -a * ( exp(a*xp[2]) * sin(a*xp[0] + d*xp[1]) +
                   exp(a*xp[1]) * cos(a*xp[2] + d*xp[0]) );
   case 3:
-    return -a*a/2 * ( exp(2*a*xp[0]) + exp(2*a*xp[1]) + exp(2*a*xp[2])
+    return -a*a/2 * dens * ( exp(2*a*xp[0]) + exp(2*a*xp[1]) + exp(2*a*xp[2])
                       + 2* sin(a*xp[0]+d*xp[1]) * cos(a*xp[2]+d*xp[0]) * exp(a*(xp[1]+xp[2]))
                       + 2* sin(a*xp[1]+d*xp[2]) * cos(a*xp[0]+d*xp[1]) * exp(a*(xp[2]+xp[0]))
                       + 2* sin(a*xp[2]+d*xp[0]) * cos(a*xp[1]+d*xp[2]) * exp(a*(xp[0]+xp[1])));

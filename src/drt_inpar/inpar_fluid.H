@@ -5,8 +5,8 @@
 \brief Input parameters for fluid
 
 <pre>
-Maintainer: Florian Henke
-            henke@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
 </pre>
 */
@@ -122,7 +122,7 @@ namespace INPAR
       tau_EOS_braack_burman_2007,
       tau_EOS_franca_barrenechea_valentin_wall,
       tau_EOS_burman_fernandez,
-      tau_EOS__not_defined
+      tau_EOS_not_defined
     };
 
     /// time integration scheme

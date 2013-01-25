@@ -34,7 +34,7 @@ LINEAR_SOLVER                   1
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 PHYSICAL_TYPE                   Incompressible
-PREDICTOR                       constant_acceleration_predictor
+PREDICTOR                       steady_state
 TIMEINTEGR                      BDF2
 -----------------------------------------------------------------FSI DYNAMIC
 BASETOL                         0.001

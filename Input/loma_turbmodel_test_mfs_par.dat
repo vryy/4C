@@ -9,7 +9,7 @@
 General Data File BACI
 ==================================================================
 -----------------------------------------------------------------------TITLE
-3d-channel with heating: fine-scale subgrid diffusivity
+3d-channel with heating: multifractal subgrid-scales
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      13824
 //NODES                         15625
@@ -60,22 +60,39 @@ REYNOLDS-STRESS                 no_reynolds
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
-TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
-PHYSICAL_MODEL                  no_model
+TURBULENCE_APPROACH             CLASSICAL_LES                   // DNS_OR_RESVMM_LES CLASSICAL_LES RANS
+PHYSICAL_MODEL                  Multifractal_Subgrid_Scales
 CANONICAL_FLOW                  loma_channel_flow_of_height_2
 CHAN_AMPL_INIT_DIST             0.3
 HOMDIR                          xz
 SAMPLING_START                  5001
 SAMPLING_STOP                   10000
 DUMPING_PERIOD                  500
-FSSUGRVISC                      Smagorinsky_small
+FSSUGRVISC                      No
+SUBGRID_DISSIPATION             Yes
 ---------------------------------------------FLUID DYNAMIC/SUBGRID VISCOSITY
 C_SMAGORINSKY                   0.0555555555555556
 C_TURBPRANDTL                   0.9
+-----------------------------------FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES
+CSGS                            0.25
+SCALE_SEPARATION                algebraic_multigrid_operator
+CALC_N                          yes
+N                               2
+REF_LENGTH                      cube_edge
+REF_VELOCITY                    resolved
+C_NU                            0.1
+NEAR_WALL_LIMIT                 yes
+EVALUATION_B                    element_center
+BETA                            0.0
+CSGS_PHI                        0.25
+ADAPT_CSGS_PHI                  yes
+C_DIFF                          0.1
+CONVFORM                        convective
+LOMA_CONTI                      yes
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC
 LINEAR_SOLVER                   2
 SOLVERTYPE nonlinear //linear_incremental
-FSSUGRDIFF                      Smagorinsky_small
+FSSUGRDIFF                      No
 INITFUNCNO                      2
 INITIALFIELD                    field_by_function
 MAXTIME                         100000.0
@@ -112,6 +129,7 @@ CONVTOL                         1.0E-6
 UPRES                           50000
 RESTARTEVRY                     5
 CONSTHERMPRESS                  No_mass
+SGS_MATERIAL_UPDATE             yes
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR                       // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -49078,15 +49096,15 @@ NODE 15625 COORD 3.1415926535000001e+00 1.0000000000000000e+00 -2.09439510250000
 ----------------------------------------------------------TRANSPORT ELEMENTS
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 3531 QUANTITY velx VALUE 1.07933150573473871e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 3531 QUANTITY vely VALUE 3.61836782290095979e-05 TOLERANCE 1e-9
-FLUID DIS fluid NODE 3531 QUANTITY velz VALUE -2.12711815494165662e-13 TOLERANCE 1e-9
-FLUID DIS fluid NODE 3531 QUANTITY pressure VALUE -7.38019043385430840e-03 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 3531 QUANTITY phi VALUE 1.00346397876190618e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 8438 QUANTITY velx VALUE 2.03144416395982255e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 8438 QUANTITY vely VALUE -1.06358132724823571e-05 TOLERANCE 1e-9
-FLUID DIS fluid NODE 8438 QUANTITY velz VALUE -5.93897610482726568e-14 TOLERANCE 1e-9
-FLUID DIS fluid NODE 8438 QUANTITY pressure VALUE 1.07801364192206483e-05 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 8438 QUANTITY phi VALUE 1.00000181342138617e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 3531 QUANTITY velx VALUE 1.02739764113556422e+01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 3531 QUANTITY vely VALUE -1.99108423769001203e-02 TOLERANCE 1e-9
+FLUID DIS fluid NODE 3531 QUANTITY velz VALUE -2.94698859439624580e-02 TOLERANCE 1e-9
+FLUID DIS fluid NODE 3531 QUANTITY pressure VALUE -7.12754964133925584e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 3531 QUANTITY phi VALUE 1.00353292180444420e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 8438 QUANTITY velx VALUE 2.02815497478413533e+01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 8438 QUANTITY vely VALUE 3.49014320961425831e-02 TOLERANCE 1e-9
+FLUID DIS fluid NODE 8438 QUANTITY velz VALUE 1.34681927809840903e-02 TOLERANCE 1e-9
+FLUID DIS fluid NODE 8438 QUANTITY pressure VALUE 2.26752413633943606e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 8438 QUANTITY phi VALUE 9.99942921238808458e-01 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END

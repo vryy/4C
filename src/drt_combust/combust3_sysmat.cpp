@@ -1158,7 +1158,7 @@ void SysmatNeumannInflow(
   case INPAR::COMBUST::combusttype_premixedcombustion:
   {
     // time integration constant
-    const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
+    const double timefac = COMBUST::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
     // get node coordinates of the current element
     static LINALG::Matrix<3,numnode> xyze;

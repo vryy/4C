@@ -335,6 +335,14 @@ public:
   void CreateInternalFacesExtension();
 
   /*!
+  \brief Evaluate edge-based integrals
+  */
+  void EvaluateEdgeBased(
+       Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+       Teuchos::RCP<Epetra_Vector>          systemvector1
+  );
+
+  /*!
   \brief Complete construction of a internal faces elements
   */
   void BuildInternalFaces();

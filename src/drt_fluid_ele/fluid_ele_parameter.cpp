@@ -8,10 +8,10 @@ FluidEleParameter::SetParameter(Teuchos::ParameterList& params)
 set all general fluid parameter once for all elements.
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+Maintainers: Ursula Rasthofer & Volker Gravemeier
+             {rasthofer,vgravem}@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15236/-245
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -237,6 +237,25 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
   cstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CStab>(stablist,"CSTAB");
   cross_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
   reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
+
+  // if edge-based stabilization is selected, all residual-based stabilization terms
+  // are switched off
+  if (stablist.get<std::string>("STABTYPE") == "edge_based")
+  {
+    if (myrank==0)
+    {
+      std::cout << "+----------------------------------------------------------------------------------+" << std::endl;
+      std::cout << " Edge-based stabilization: all residual-based stabilization terms are switched off!" << std::endl;
+      std::cout << "+----------------------------------------------------------------------------------+" << std::endl;
+    }
+    pspg_ = INPAR::FLUID::pstab_assume_inf_sup_stable;
+    supg_ = INPAR::FLUID::convective_stab_none;
+    vstab_ = INPAR::FLUID::viscous_stab_none;
+    rstab_ = INPAR::FLUID::reactive_stab_none;
+    cstab_ = INPAR::FLUID::continuity_stab_none;
+    cross_ = INPAR::FLUID::cross_stress_stab_none;
+    reynolds_ = INPAR::FLUID::reynolds_stress_stab_none;
+  }
 
   // safety checks for time-dependent subgrid scales
   if ((tds_ == INPAR::FLUID::subscales_time_dependent) or (transient_ != INPAR::FLUID::inertia_stab_drop))

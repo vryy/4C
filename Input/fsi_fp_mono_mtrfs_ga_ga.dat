@@ -45,7 +45,7 @@ LINEAR_SOLVER                   1
 MESHTYING                       no
 NONLINITER                      fixed_point_like
 PHYSICAL_TYPE                   Incompressible
-PREDICTOR                       steady_state_predictor
+PREDICTOR                       steady_state
 SIMPLER                         no
 STEADYTOL                       1e-06
 STRONG_REDD_3D_COUPLING_TYPE    no

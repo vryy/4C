@@ -12,10 +12,10 @@ as well as some additional service routines (for the evaluation
 of errors, turbulence statistics etc.).
 
 <pre>
-Maintainer: Volker Gravemeier & Andreas Ehrl
-            {vgravem,ehrl}@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer & Volker Gravemeier
+            {rasthofer,vgravem}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089-289-15245/15252
+            089 - 289-15236/-245
 </pre>
 */
 #ifndef DRT_FLUID_ELE_H

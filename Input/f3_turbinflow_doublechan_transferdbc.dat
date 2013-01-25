@@ -49,7 +49,6 @@ NUMSTASTEPS                     0
 NUMSTEP                         3
 TIMESTEP                        0.2
 PHYSICAL_TYPE                   Incompressible
-PREDICTOR                       default
 RESTARTEVRY                     5
 STARTFUNCNO                     1
 STARTINGALGO                    One_Step_Theta

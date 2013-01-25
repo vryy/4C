@@ -424,9 +424,12 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
     {
       // no explicit predictor for these monolithic schemes yet.
-      fluidtimeparams->set<bool>("do explicit predictor",false);
+//      fluidtimeparams->set<bool>("do explicit predictor",false);
+      fluidtimeparams->set<string>("predictor","steady_state");
 
-      dserror("No fluid predictor allowed for these monolithic FSI schemes, yet.");
+      std::cout << "#############################################" << std::endl;
+      std::cout << "# changed fluid predictor to 'steady_state' #" << std::endl;
+      std::cout << "#############################################" << std::endl;
     }
   }
   if (probtype == prb_freesurf)
@@ -446,9 +449,13 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         coupling == fsi_iter_monolithicstructuresplit)
     {
       // there are a couple of restrictions in monolithic free surface Algorithm
-      fluidtimeparams->set<bool>("do explicit predictor",false);
+//      fluidtimeparams->set<bool>("do explicit predictor",false);
+      fluidtimeparams->set<string>("predictor","steady_state");
 
-      dserror("No fluid predictor allowed for free surface problem, yet.");
+      std::cout << "#############################################" << std::endl;
+      std::cout << "# changed fluid predictor to 'steady_state' #" << std::endl;
+      std::cout << "#############################################" << std::endl;
+
     }
   }
   // sanity checks and default flags
@@ -465,11 +472,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
       // there are a couple of restrictions in monolithic FSI
       dserror("XFEM and monolithic FSI not tested!");
-      fluidtimeparams->set<bool>("do explicit predictor",false);
-    }
-    else
-    {
-      fluidtimeparams->set<bool>("do explicit predictor",true);
     }
   }
 
@@ -486,8 +488,11 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<bool>("poroelast",true);
     fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(porodyn,"SECONDORDER"));
     fluidtimeparams->set<bool>("shape derivatives",false);
-    fluidtimeparams->set<bool>("do explicit predictor",false);
     fluidtimeparams->set<bool>("conti partial integration", DRT::INPUT::IntegralValue<int>(porodyn,"CONTIPARTINT"));
+    fluidtimeparams->set<string>("predictor","steady_state");
+    std::cout << "#############################################" << std::endl;
+    std::cout << "# changed fluid predictor to 'steady_state' #" << std::endl;
+    std::cout << "#############################################" << std::endl;
   }
 
   // -------------------------------------------------------------------

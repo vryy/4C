@@ -1,3 +1,15 @@
+/*!
+\file fluid_ele_factory.H
+
+<pre>
+Maintainer: Ursula Rasthofer & Volker Gravemeier
+            {rasthofer,vgravem}@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15236/-245
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
 #ifndef FLUID_ELE_FACTORY_H
 #define FLUID_ELE_FACTORY_H
 

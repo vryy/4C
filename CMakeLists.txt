@@ -892,6 +892,7 @@ set(OBJS_DRT_COMBUST3_LIB
   src/drt_combust/combust3_surface.cpp
   src/drt_combust/combust3_surface_evaluate.cpp
   src/drt_combust/combust3_sysmat.cpp
+  src/drt_combust/combust_time_integration_element.cpp
 )
 set(OBJS_DRT_THERMO
   src/drt_thermo/thr_aux.cpp
@@ -919,6 +920,7 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluid_utils.cpp
   src/drt_fluid/fluid_utils_infnormscaling.cpp
   src/drt_fluid/fluid_utils_mapextractor.cpp
+  src/drt_fluid/fluid_utils_time_integration.cpp
   src/drt_fluid/fluid_MHD_evaluate.cpp
   src/drt_fluid/fluid_windkessel_optimization.cpp
   src/drt_fluid/fluidimpedancecondition.cpp
@@ -926,7 +928,6 @@ set(OBJS_DRT_FLUID
   src/drt_fluid/fluidimplicitintegration.cpp
   src/drt_fluid/fluidresulttest.cpp
   src/drt_fluid/scale_sep_gmo.cpp
-  src/drt_fluid/time_integration_scheme.cpp
   src/drt_fluid/turbulent_flow_algorithm.cpp
   src/drt_fluid/turbulence_statistic_manager.cpp
   src/drt_fluid/turbulence_statistics_bfs.cpp
@@ -1273,7 +1274,6 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_fluid_ele/fluid_ele_input.cpp
   src/drt_fluid_ele/fluid_ele_parameter.cpp
   src/drt_fluid_ele/fluid_ele_tds.cpp
-  src/drt_fluid/time_integration_element.cpp
   src/drt_opti/topopt_fluidAdjoint3_boundary.cpp
   src/drt_opti/topopt_fluidAdjoint3_impl.cpp
   src/drt_opti/topopt_fluidAdjoint3_impl_parameter.cpp

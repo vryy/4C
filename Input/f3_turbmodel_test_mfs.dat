@@ -48,7 +48,7 @@ ITEMAX                          2
 MAXTIME                         0.1
 NONLINITER Newton //fixed_point_like
 NUMSTEP                         4
-PREDICTOR                       steady_state_predictor
+PREDICTOR                       steady_state
 RESTARTEVRY                     20
 STARTFUNCNO                     -1
 STARTINGALGO                    One_Step_Theta
@@ -99,7 +99,7 @@ AZDROP                          0.0                             // drop toleranc
 IFPACKFILL                      1.0
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
-AZTOL                           1.0E-5                          // tolerance in (un)scaled residual
+AZTOL                           1.0E-9                          // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                            // max iterations
 AZSUB                           1000                            // size of krylov space for gmres
@@ -123,7 +123,7 @@ ML_DAMPFINE                     0.45                            // damping fine 
 ML_DAMPMED                      0.66                            // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0 // Re=6.62
+MAT 1 MAT_fluid DYNVISCOSITY 0.001 DENSITY 1.0 GAMMA 1.0 // Re=6620
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Explicit FUNC BELTRAMI c1 1.0 c2 1.0
 ----------------------------------------------------------------------CURVE2
@@ -133,22 +133,22 @@ CURVE2 on Explicit FUNC BELTRAMI c1 2.0 c2 1.0
 FUNCT1                          BELTRAMI
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 12 QUANTITY velx VALUE 1.33952445306756818e-01 TOLERANCE 1e-7
-FLUID DIS fluid NODE 12 QUANTITY vely VALUE -1.11591427694159293e-01 TOLERANCE 1e-7
-FLUID DIS fluid NODE 12 QUANTITY velz VALUE 7.83001975515633886e-01 TOLERANCE 1e-7
-FLUID DIS fluid NODE 12 QUANTITY pressure VALUE -3.32376560492310236e-01 TOLERANCE 1e-7
-FLUID DIS fluid NODE 365 QUANTITY velx VALUE -7.37135817444251717e-01 TOLERANCE 1e-7
-FLUID DIS fluid NODE 365 QUANTITY vely VALUE -7.37135796814644584e-01 TOLERANCE 1e-7
-FLUID DIS fluid NODE 365 QUANTITY velz VALUE -7.37135787265224440e-01 TOLERANCE 1e-7
-FLUID DIS fluid NODE 365 QUANTITY pressure VALUE -8.20260942898286993e-01 TOLERANCE 1e-7
-FLUID DIS fluid NODE 453 QUANTITY velx VALUE -1.65453539049429854e+00 TOLERANCE 1e-7
-FLUID DIS fluid NODE 453 QUANTITY vely VALUE -1.13320932029201993e+00 TOLERANCE 1e-7
-FLUID DIS fluid NODE 453 QUANTITY velz VALUE -1.24172105710757497e+00 TOLERANCE 1e-7
-FLUID DIS fluid NODE 453 QUANTITY pressure VALUE -2.80397760094183290e+00 TOLERANCE 1e-7
-FLUID DIS fluid NODE 637 QUANTITY velx VALUE 3.57257036213581236e-01 TOLERANCE 1e-7
-FLUID DIS fluid NODE 637 QUANTITY vely VALUE -2.24497896845623179e+00 TOLERANCE 1e-7
-FLUID DIS fluid NODE 637 QUANTITY velz VALUE -1.42961294172933728e+00 TOLERANCE 1e-7
-FLUID DIS fluid NODE 637 QUANTITY pressure VALUE -3.59818202622139083e+00 TOLERANCE 1e-7
+FLUID DIS fluid NODE 12 QUANTITY velx VALUE 1.40916496692533089e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 12 QUANTITY vely VALUE -1.19276760340156579e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 12 QUANTITY velz VALUE 8.36447944557600742e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 12 QUANTITY pressure VALUE -3.62964760103471451e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 365 QUANTITY velx VALUE -8.03186464666104771e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 365 QUANTITY vely VALUE -8.03186464666105548e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 365 QUANTITY velz VALUE -8.03186464666107214e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 365 QUANTITY pressure VALUE -7.55874584646542669e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 453 QUANTITY velx VALUE -1.75698304235891900e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 453 QUANTITY vely VALUE -1.20525047972926025e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 453 QUANTITY velz VALUE -1.31480151848984539e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 453 QUANTITY pressure VALUE -3.22036851751057851e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 637 QUANTITY velx VALUE 3.82636205743066726e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 637 QUANTITY vely VALUE -2.38681700970568267e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 637 QUANTITY velz VALUE -1.53611336692432232e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 637 QUANTITY pressure VALUE -4.10058891648839730e+00 TOLERANCE 1e-9
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          0

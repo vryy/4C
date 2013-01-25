@@ -3,10 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089-289-15245/15252
+            089 - 289-15236/-245
 </pre>
 
 *----------------------------------------------------------------------*/

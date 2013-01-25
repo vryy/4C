@@ -67,7 +67,7 @@ Maintainer:  Benedikt Schott
 #include "../drt_inpar/inpar_parameterlist_utils.H"
 #include "../drt_inpar/inpar_xfem.H"
 
-#include "time_integration_scheme.H"
+#include "fluid_utils_time_integration.H"
 
 #include "xfluid_defines.H"
 
@@ -76,6 +76,9 @@ Maintainer:  Benedikt Schott
 
 
 #include "xfluid.H"
+
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/matpar_bundle.H"
 
 /*----------------------------------------------------------------------*
  |  Constructor for XFluidState                            schott 03/12 |
@@ -3037,7 +3040,7 @@ void FLD::XFluid::PrepareNonlinearSolve()
   //
   // -------------------------------------------------------------------
 
-  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
+  UTILS::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
                                                 timealgo_, dta_, theta_, state_->hist_);
 
   // -------------------------------------------------------------------
@@ -3579,7 +3582,7 @@ void FLD::XFluid::TimeUpdate()
     Teuchos::RCP<Epetra_Vector> onlyveln  = state_->velpressplitter_->ExtractOtherVector(state_->veln_ );
     Teuchos::RCP<Epetra_Vector> onlyvelnp = state_->velpressplitter_->ExtractOtherVector(state_->velnp_);
 
-    TIMEINT_THETA_BDF2::CalculateAcceleration(onlyvelnp,
+    UTILS::CalculateAcceleration(onlyvelnp,
                                               onlyveln ,
                                               onlyvelnm,
                                               onlyaccn ,
@@ -5090,7 +5093,12 @@ void FLD::XFluid::SetInitialFlowField(
                     exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) );
 
       // compute initial pressure
-      p = -a*a/2.0 *
+      int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+      if (id==-1) dserror("Newtonian fluid material could not be found");
+      const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+      const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+      double dens = actmat->density_;
+      p = -a*a/2.0 * dens *
         ( exp(2.0*a*xyz[0])
           + exp(2.0*a*xyz[1])
           + exp(2.0*a*xyz[2])

@@ -32,7 +32,7 @@ NEUMANNINFLOW                   yes
 NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 PHYSICAL_TYPE                   Incompressible
-PREDICTOR                       constant_increment_predictor
+PREDICTOR                       steady_state
 TIMEINTEGR                      BDF2
 UPRES                           1
 -----------------------------------------------------------------FSI DYNAMIC

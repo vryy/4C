@@ -1028,7 +1028,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
     double gamma1 = 4.0/3.0;
     double gamma2 = 2.0;
     kappa_phi = 1.0/(1.0-pow(alpha,-gamma1));
-    D_mfs = Csgs_sgphi * sqrt(kappa_phi) * pow(2.0,-gamma2*Nphi/2.0) * sqrt((pow(2.0,gamma1*Nvel[0])-1)+4.0/3.0*(M_PI/hk)*(pow(2.0,gamma2*Nphi)-pow(2.0,gamma2*Nvel[0])));
+    D_mfs = Csgs_sgphi * sqrt(kappa_phi) * pow(2.0,-gamma2*Nphi/2.0) * sqrt((pow(2.0,gamma1*Nvel[0])-1)+2.0/3.0*pow((M_PI/hk),2.0/3.0)*(pow(2.0,gamma2*Nphi)-pow(2.0,gamma2*Nvel[0])));
   }
 
   // apply near-wall limit if required

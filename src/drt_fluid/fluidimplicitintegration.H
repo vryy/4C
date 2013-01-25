@@ -14,10 +14,10 @@
      and a stationary solver.
 
 <pre>
-Maintainers: Volker Gravemeier & Andreas Ehrl
-             {vgravem,ehrl}@lnm.mw.tum.de
+Maintainers: Ursula Rasthofer & Volker Gravemeier
+             {rasthofer,vgravem}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15245/-252
+             089 - 289-15236/-245
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -688,9 +688,6 @@ protected:
 
   //! use (or not) linearisation of reactive terms on the element
   INPAR::FLUID::LinearisationAction newton_;
-
-  /// whether we do some extrapolation at the begin of each time step (additional switch)
-  bool extrapolationpredictor_;
 
   //! kind of predictor used in nonlinear iteration
   string  predictor_;

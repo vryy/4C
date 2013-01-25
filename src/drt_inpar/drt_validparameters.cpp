@@ -2328,19 +2328,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::FLUID::Newton),
                                &fdyn);
 
-  setStringToIntegralParameter<int>("PREDICTOR","default",
+  setStringToIntegralParameter<int>("PREDICTOR","steady_state",
                                     "Predictor for first guess in nonlinear iteration",
                                     tuple<std::string>(
-                                      "disabled",
-                                      "default",
-                                      "steady_state_predictor",
-                                      "zero_acceleration_predictor",
-                                      "constant_acceleration_predictor",
-                                      "constant_increment_predictor",
+                                      "steady_state",
+                                      "zero_acceleration",
+                                      "constant_acceleration",
+                                      "constant_increment",
                                       "explicit_second_order_midpoint",
                                       "TangVel"
                                       ),
-                                    tuple<int>(1,2,3,4,5,6,7,8),
+                                    tuple<int>(1,2,3,4,5,6),
                                     &fdyn);
 
   setStringToIntegralParameter<int>("CONVCHECK","L_2_norm",

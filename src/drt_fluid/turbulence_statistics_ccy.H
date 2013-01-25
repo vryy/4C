@@ -25,10 +25,10 @@ parameter list given on input.
 This method is intended to be called every upres_ steps during fluid
 output.
 
-Maintainer: Peter Gamnitzer
-            gamnitzer@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15235
+            089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/

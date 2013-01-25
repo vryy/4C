@@ -16,7 +16,7 @@ Maintainer: Benedikt Schott
 
 #include "combust3_sysmat.H"
 #include "combust3_utils.H"
-#include "../drt_fluid/time_integration_element.H"
+#include "combust_time_integration_element.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 #include "../drt_xfem/enrichment_utils.H"
@@ -1326,7 +1326,7 @@ void SysmatBoundarySurfaceTension(
   const size_t numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement;
 
   // time integration constant
-  double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
+  double timefac = COMBUST::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
   if (timealgo == INPAR::FLUID::timeint_afgenalpha) // here the rhs timefac is needed
     timefac /= ga_alphaF;

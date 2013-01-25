@@ -6,10 +6,10 @@ Integrate a Surface Neumann boundary condition on a given boundary
 element
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15235
+Maintainers: Ursula Rasthofer & Volker Gravemeier
+             {rasthofer,vgravem}@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15236/-245
 </pre>
 
 *----------------------------------------------------------------------*/

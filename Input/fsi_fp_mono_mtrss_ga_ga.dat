@@ -43,7 +43,7 @@ LINEAR_SOLVER                   1
 MESHTYING                       no
 NONLINITER                      fixed_point_like
 PHYSICAL_TYPE                   Incompressible
-PREDICTOR                       steady_state_predictor
+PREDICTOR                       steady_state
 STEADYTOL                       1e-06
 TIMEINTEGR                      Np_Gen_Alpha
 --------------------------------------------------------FSI DYNAMIC

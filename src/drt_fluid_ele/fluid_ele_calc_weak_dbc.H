@@ -17,10 +17,10 @@ Literature:
     Volume 196, Issues 49-52, 1 November 2007, Pages 4853-4862
 
 <pre>
-Maintainer: Volker Gravemeier
-            gravemeier@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15245
+Maintainers: Ursula Rasthofer & Volker Gravemeier
+             {rasthofer,vgravem}@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15236/-245
 </pre>
 */
 /*----------------------------------------------------------------------*/

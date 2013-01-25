@@ -27,7 +27,7 @@ Maintainer: Ursula Rasthofer
 #include "two_phase_defines.H"
 #include "../drt_lib/drt_element.H"
 #include "../drt_lib/drt_utils.H"
-#include "../drt_fluid/time_integration_element.H"
+#include "combust_time_integration_element.H"
 #include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 #include "../drt_xfem/enrichment.H"
@@ -92,7 +92,7 @@ void SysmatTwoPhaseFlow(
   const size_t nsd = 3;
 
   // time integration constant
-  const double timefac = FLD::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
+  const double timefac = COMBUST::TIMEINT::ComputeTimeFac(timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma);
 
   // get node coordinates of the current element
   static LINALG::Matrix<nsd,numnode> xyze;
@@ -473,7 +473,7 @@ void SysmatTwoPhaseFlow(
       //                for (int iparam = 0; iparam < numparamvelx; ++iparam)
       //                    histvec(isd) += evelnp_hist(isd,iparam)*shp.d0(iparam);
       //            }
-      LINALG::Matrix<nsd,1> histvec = FLD::TIMEINT::GetOldPartOfRighthandside(
+      LINALG::Matrix<nsd,1> histvec = COMBUST::TIMEINT::GetOldPartOfRighthandside(
           gpveln, gpvelnm, gpaccn, timealgo, dt, theta);
       histvec.Scale(densaf);
 

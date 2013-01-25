@@ -12,20 +12,20 @@
      and ale displacement.
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/
 
-#include "time_integration_element.H"
+#include "combust_time_integration_element.H"
 
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3,1> FLD::TIMEINT::GetOldPartOfRighthandside(
+LINALG::Matrix<3,1> COMBUST::TIMEINT::GetOldPartOfRighthandside(
     const LINALG::Matrix<3,1>&                veln,
     const LINALG::Matrix<3,1>&                velnm,
     const LINALG::Matrix<3,1>&                accn,
@@ -71,7 +71,7 @@ LINALG::Matrix<3,1> FLD::TIMEINT::GetOldPartOfRighthandside(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-LINALG::Matrix<3,1> FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
+LINALG::Matrix<3,1> COMBUST::UTILS::GetOldPartOfRighthandside(
     const LINALG::Matrix<3,1>&                 veln,
     const LINALG::Matrix<3,1>&                 velnm,
     const LINALG::Matrix<3,1>&                 accn,
@@ -116,7 +116,7 @@ LINALG::Matrix<3,1> FLD::TIMEINT_THETA_BDF2::GetOldPartOfRighthandside(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double FLD::TIMEINT::ComputeTimeFac(
+double COMBUST::TIMEINT::ComputeTimeFac(
     const INPAR::FLUID::TimeIntegrationScheme timealgo,
     const double                              dt,
     const double                              theta,
@@ -153,7 +153,7 @@ double FLD::TIMEINT::ComputeTimeFac(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-double FLD::TIMEINT_THETA_BDF2::ComputeTimeFac(
+double COMBUST::UTILS::ComputeTimeFac(
     const INPAR::FLUID::TimeIntegrationScheme timealgo,
     const double                              dt,
     const double                              theta

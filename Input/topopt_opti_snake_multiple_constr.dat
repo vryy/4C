@@ -81,7 +81,7 @@ CONVTOL                         1e-10
 INITIALFIELD                    field_by_function
 ITEMAX                          10
 NONLINITER Newton //fixed_point_like
-PREDICTOR                       steady_state_predictor
+PREDICTOR                       steady_state
 STARTFUNCNO                     1
 STEADYSTEP                      -1
 STEADYTOL                       1e-6

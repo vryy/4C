@@ -33,7 +33,7 @@ ITEMAX                          10
 LINEAR_SOLVER                   1
 NONLINITER                      fixed_point_like
 PHYSICAL_TYPE                   Incompressible
-PREDICTOR                       constant_acceleration_predictor
+PREDICTOR                       steady_state
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 -----------------------------------------------------------------FSI DYNAMIC

@@ -100,25 +100,25 @@ public:
 
   */
   void ApplyFilterForDynamicComputationOfCs(
-    Teuchos::RCP<Epetra_Vector>             velocity,
-    Teuchos::RCP<Epetra_Vector>             scalar,
-    const double                            thermpress,
-    const Teuchos::RCP<const Epetra_Vector> dirichtoggle
+    const Teuchos::RCP<const Epetra_Vector>             velocity,
+    const Teuchos::RCP<const Epetra_Vector>             scalar,
+    const double                                        thermpress,
+    const Teuchos::RCP<const Epetra_Vector>             dirichtoggle
     );
 
   void ApplyFilterForDynamicComputationOfPrt(
-    Teuchos::RCP<Epetra_MultiVector>        velocity,
-    Teuchos::RCP<Epetra_Vector>             scalar,
-    const double                            thermpress,
-    const Teuchos::RCP<const Epetra_Vector> dirichtoggle,
-    Teuchos::ParameterList&                          extraparams
+    const Teuchos::RCP<const Epetra_MultiVector>        velocity,
+    const Teuchos::RCP<const Epetra_Vector>             scalar,
+    const double                                        thermpress,
+    const Teuchos::RCP<const Epetra_Vector>             dirichtoggle,
+    Teuchos::ParameterList&                             extraparams
     );
 
   void ApplyFilter(
-          Teuchos::RCP<Epetra_Vector>             velocity,
-          Teuchos::RCP<Epetra_Vector>             scalar,
-          const double                            thermpress,
-    const Teuchos::RCP<const Epetra_Vector> dirichtoggle
+    const Teuchos::RCP<const Epetra_Vector>             velocity,
+    const Teuchos::RCP<const Epetra_Vector>             scalar,
+    const double                                        thermpress,
+    const Teuchos::RCP<const Epetra_Vector>             dirichtoggle
     );
 
 

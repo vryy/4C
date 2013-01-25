@@ -5,10 +5,10 @@
 \brief Evaluate boundary conditions for fluid problems
 
 <pre>
-Maintainer: Volker Gravemeier & Andreas Ehrl
-            {vgravem,ehrl}@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer & Volker Gravemeier
+            {rasthofer,vgravem}@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089-289-15245/15252
+            089 - 289-15236/-245
 </pre>
  */
 /*----------------------------------------------------------------------*/

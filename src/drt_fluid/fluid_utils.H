@@ -4,8 +4,8 @@
 
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
@@ -409,10 +409,10 @@ Notice: Angular moments obtained from lift&drag forces currently refere to the
         node irrespective of its current position.
 
 <pre>
-Maintainer: Peter Gamnitzer
-            gamnitzer@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15235
+            089 - 289-15236
 </pre>
   \author chfoe
   \date 11/07

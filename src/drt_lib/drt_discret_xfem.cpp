@@ -54,6 +54,11 @@ Maintainer: Ursula Rasthofer
 #include "drt_utils.H"
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_fluid_ele/fluid_ele.H"
+#include "../drt_fluid_ele/fluid_ele_intfaces_calc.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
+
+#include "../drt_inpar/inpar_xfem.H"
 
 /*!
 \brief this is a modified copy of the original version DoDirchletCondition() for XFEM problems
@@ -1283,6 +1288,113 @@ void DRT::DiscretizationXFEM::CreateInternalFacesExtension()
 
   extension_filled_ =  true;
 
+  return;
+
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate edge-based integrals (public)               rasthofer 12/12|
+ *----------------------------------------------------------------------*/
+void DRT::DiscretizationXFEM::EvaluateEdgeBased(
+        Teuchos::RCP<LINALG::SparseOperator> systemmatrix1,
+        Teuchos::RCP<Epetra_Vector>          systemvector1
+)
+{
+
+//  std::cout << "->  EvaluateEdgeBased()" << std::endl;
+
+  TEUCHOS_FUNC_TIME_MONITOR( "DRT::DiscretizationXFEM::EdgeBased" );
+
+
+  Teuchos::RCP<Epetra_Vector> residual_col = LINALG::CreateVector(*(this->DofColMap()),true);
+
+  const Epetra_Map* rmap = NULL;
+//  const Epetra_Map* dmap = NULL;
+
+  Teuchos::RCP<Epetra_FECrsMatrix> sysmat_FE;
+  if (systemmatrix1 != Teuchos::null)
+  {
+    rmap = &(systemmatrix1->OperatorRangeMap());
+//    dmap = rmap;
+    sysmat_FE = Teuchos::rcp(new Epetra_FECrsMatrix(::Copy,*rmap,256,false));
+  }
+  else dserror("sysmat is NULL!");
+
+  Teuchos::RCP<LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(new LINALG::SparseMatrix(sysmat_FE,true,false,LINALG::SparseMatrix::FE_MATRIX));
+
+
+  //TODO: parallel: col oder row
+  const int numrowintfaces = NumMyRowIntFaces();
+
+  for (int i=0; i<numrowintfaces; ++i)
+  {
+    DRT::Element* actface = lRowIntFace(i);
+
+    DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>(actface);
+    if ( ele==NULL ) dserror( "expect FluidIntFace element" );
+
+    // get the parent fluid elements
+    DRT::ELEMENTS::Fluid* p_master = ele->ParentMasterElement();
+    DRT::ELEMENTS::Fluid* p_slave  = ele->ParentSlaveElement();
+
+    size_t p_master_numnode = p_master->NumNode();
+    size_t p_slave_numnode  = p_slave->NumNode();
+
+
+    std::vector<int> nds_master;
+    nds_master.reserve(p_master_numnode);
+
+    std::vector<int> nds_slave;
+    nds_slave.reserve(p_slave_numnode);
+
+    {
+      TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: create nds" );
+
+      for(size_t i=0; i< p_master_numnode; i++)  nds_master.push_back(0);
+
+      for(size_t i=0; i< p_slave_numnode; i++)   nds_slave.push_back(0);
+    }
+
+    // call the internal faces stabilization routine for the current side/surface
+    TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: AssembleEdgeStabGhostPenalty" );
+
+
+    // call edge-based stabilization and ghost penalty
+    Teuchos::ParameterList edgebasedparams;
+
+    // set action for elements
+    edgebasedparams.set<int>("action",FLD::EOS_and_GhostPenalty_stabilization);
+
+    edgebasedparams.set("edge_based_stab", true);
+    edgebasedparams.set("ghost_penalty", false);
+    edgebasedparams.set("ghost_penalty_reconstruct", false);
+    edgebasedparams.set("ghost_penalty_fac", 0.0);
+    edgebasedparams.set("eos_gp_pattern",INPAR::XFEM::EOS_GP_Pattern_full);
+
+    // call the egde-based assemble and evaluate routine
+    DRT::ELEMENTS::FluidIntFaceImplInterface::Impl(ele)->AssembleInternalFacesUsingNeighborData(ele,
+                                                                                                nds_master,
+                                                                                                nds_slave,
+                                                                                                edgebasedparams,
+                                                                                                *this,
+                                                                                                sysmat_linalg,
+                                                                                                residual_col);
+  }
+
+  sysmat_linalg->Complete();
+
+  (systemmatrix1)->Add(*sysmat_linalg, false, 1.0, 1.0);
+
+  //------------------------------------------------------------
+  // need to export ale_residual_col to systemvector1 (aleresidual_)
+  Epetra_Vector res_tmp(systemvector1->Map(),false);
+  Epetra_Export exporter(residual_col->Map(),res_tmp.Map());
+  int err2 = res_tmp.Export(*residual_col,exporter,Add);
+  if (err2) dserror("Export using exporter returned err=%d",err2);
+  systemvector1->Update(1.0,res_tmp,1.0);
+
+  return;
 }
 
 

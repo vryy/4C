@@ -1,5 +1,5 @@
 /*!----------------------------------------------------------------------
-\file time_integration_scheme.H
+\file fluid_utils_time_integration.H
 \brief routines for fluid (in)stationary time-integration,
 
      including instationary formulations
@@ -12,16 +12,16 @@
        (with potential one-step-theta start algorithm)
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/
 
-#ifndef TIME_INTEGRATION_SCHEME_H
-#define TIME_INTEGRATION_SCHEME_H
+#ifndef FLUID_UTILS_TIME_INTEGRATION_H
+#define FLUID_UTILS_TIME_INTEGRATION_H
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
@@ -39,7 +39,7 @@ namespace FLD
 {
 
 //! namespace for all time discretization routines of the fluid field
-namespace TIMEINT_THETA_BDF2
+namespace UTILS
 {
   /*!
   \brief Set the part of the righthandside belonging to the last

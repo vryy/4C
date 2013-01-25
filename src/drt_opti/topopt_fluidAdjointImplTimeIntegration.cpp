@@ -18,7 +18,7 @@ Maintainer: Martin Winklmaier
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "../drt_fluid/fluid_utils.H"
-#include "../drt_fluid/time_integration_scheme.H"
+#include "../drt_fluid/fluid_utils_time_integration.H"
 #include "../drt_fluid_ele/fluid_ele_action.H"
 #include "../drt_io/io_control.H"
 #include "../drt_io/io_gmsh.H"

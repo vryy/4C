@@ -1,8 +1,8 @@
 //
-// Maintainer: Peter Gamnitzer
-// gamnitzer@lnm.mw.tum.de
+// Maintainer: Ursula Rasthofer
+// rasthofer@lnm.mw.tum.de
 // http://www.lnm.mw.tum.de
-// 089 / 289 15235
+// 089 - 289-15236
 //
 // necessary defines: D_FLUID3 DEBUG CCADISCRET BINIO
 //
@@ -752,5 +752,8 @@ FLUID DIS fluid NODE 85 QUANTITY pressure VALUE 3.995208594e-13 TOLERANCE 1e-9
 FLUID DIS fluid NODE 90 QUANTITY tractionx VALUE 1.053750510e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 90 QUANTITY tractiony VALUE -6.346485837e-15 TOLERANCE 1e-9
 FLUID DIS fluid NODE 90 QUANTITY tractionz VALUE -1.071191746e-16 TOLERANCE 1e-9
+FLUID DIS fluid NODE 1 QUANTITY velx VALUE 0.0 TOLERANCE 1e-20
+FLUID DIS fluid NODE 1 QUANTITY vely VALUE 0.0 TOLERANCE 1e-20
+FLUID DIS fluid NODE 1 QUANTITY velz VALUE 0.0 TOLERANCE 1e-20
 -------------------------------------------------------------------------END
 //                              END

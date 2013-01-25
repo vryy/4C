@@ -200,10 +200,10 @@ void FLD::DynSmagFilter::AddScatra(
  |                                                           gammi 09/08|
  *----------------------------------------------------------------------*/
 void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
-  Teuchos::RCP<Epetra_Vector>             velocity,
-  Teuchos::RCP<Epetra_Vector>             scalar,
-  const double                            thermpress,
-  const Teuchos::RCP<const Epetra_Vector> dirichtoggle
+  const Teuchos::RCP<const Epetra_Vector>             velocity,
+  const Teuchos::RCP<const Epetra_Vector>             scalar,
+  const double                                        thermpress,
+  const Teuchos::RCP<const Epetra_Vector>             dirichtoggle
   )
 {
 
@@ -243,11 +243,11 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
  |                                                       rasthofer 08/12|
  *----------------------------------------------------------------------*/
 void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfPrt(
-  Teuchos::RCP<Epetra_MultiVector>        velocity,
-  Teuchos::RCP<Epetra_Vector>             scalar,
-  const double                            thermpress,
-  const Teuchos::RCP<const Epetra_Vector> dirichtoggle,
-  Teuchos::ParameterList&                          extraparams
+  const Teuchos::RCP<const Epetra_MultiVector>        velocity,
+  const Teuchos::RCP<const Epetra_Vector>             scalar,
+  const double                                        thermpress,
+  const Teuchos::RCP<const Epetra_Vector>             dirichtoggle,
+  Teuchos::ParameterList&                             extraparams
   )
 {
 
@@ -304,8 +304,8 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfPrt(
  | Perform box filter operation                                        |
  *---------------------------------------------------------------------*/
 void FLD::DynSmagFilter::ApplyFilter(
-  Teuchos::RCP<Epetra_Vector>             velocity,
-  Teuchos::RCP<Epetra_Vector>             scalar,
+  const Teuchos::RCP<const Epetra_Vector> velocity,
+  const Teuchos::RCP<const Epetra_Vector> scalar,
   const double                            thermpress,
   const Teuchos::RCP<const Epetra_Vector> dirichtoggle
   )
@@ -1377,7 +1377,7 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
         {
           is_dirichlet_node++;
           double vel_i = (*velocity)[lid];
-          if (vel_i < 10e-14) //==0.0?
+          if (abs(vel_i) < 1e-14)
           {
             is_no_slip_node++;
           }
@@ -1388,6 +1388,53 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
       if (is_dirichlet_node == numdim)
       {
         int err = 0;
+
+        // determine volume
+        double thisvol = (*patchvol)[lnodeid];
+
+        // determine density
+        double dens = 1.0;
+        if (physicaltype_ == INPAR::FLUID::incompressible and apply_dynamic_smagorinsky_) // this is important to have here,
+        {                                                                                 //  since, for the pure box filter application,
+           // get fluid viscosity from material definition                                //  we do not want to multiply the reynolds stress by density
+          int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+          if (id==-1)
+            dserror("Could not find Newtonian fluid material");
+          else
+          {
+            const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+            const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+            // we need the kinematic viscosity here
+            dens = actmat->density_;
+          }
+        }
+        if (physicaltype_ == INPAR::FLUID::loma and apply_dynamic_smagorinsky_)
+        {
+          dens = (*filtered_dens_)[lnodeid]/thisvol;
+        }
+
+        // set density (only required for loma)
+        if (physicaltype_ == INPAR::FLUID::loma and apply_dynamic_smagorinsky_)
+        {
+            // set value to mean value
+            // we already divide by the corresponding volume of all contributing elements,
+            // since we set the volume to 1.0 in the next step in order not to modify the dirichlet values
+            err += filtered_dens_->ReplaceMyValues(1,&dens,&lnodeid);
+
+            // this node is on a wall
+            if (is_no_slip_node == numdim)
+            {
+              // Peter style
+              double val = 0.0;
+              err += filtered_dens_strainrate_->ReplaceMyValues(1,&val,&lnodeid);
+            }
+            else
+            {
+              double val = (*filtered_dens_strainrate_)[lnodeid]/thisvol;
+              err += filtered_dens_strainrate_->ReplaceMyValues(1,&val,&lnodeid);
+            }
+        }
+
         for (int idim =0;idim<numdim;++idim)
         {
           int gid_i = nodedofset[idim];
@@ -1398,8 +1445,7 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
 
           if (physicaltype_ == INPAR::FLUID::loma and apply_dynamic_smagorinsky_)
           {
-            double thisvol = (*patchvol)[lnodeid];
-            double dens = (*filtered_dens_)[lnodeid]/thisvol;
+            // note: for incompressible flow, this vector is rebuild in calculation of Lij and Mij
             double valdensvel_i = dens*valvel_i;
             err += ((*filtered_dens_vel_)(idim))->ReplaceMyValues(1,&valdensvel_i,&lnodeid);
           }
@@ -1412,27 +1458,8 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
             int lid_j = dofrowmap->LID(gid_j);
 
             double valvel_j = (*velocity)[lid_j];
-            double dens = 1.0;
-            if (physicaltype_ == INPAR::FLUID::incompressible and apply_dynamic_smagorinsky_)
-            {
-               // get fluid viscosity from material definition
-              int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
-              if (id==-1)
-                dserror("Could not find Newtonian fluid material");
-              else
-              {
-                const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
-                const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
-                // we need the kinematic viscosity here
-                dens = actmat->density_;
-              }
-            }
-            if (physicaltype_ == INPAR::FLUID::loma and apply_dynamic_smagorinsky_)
-            {
-              double thisvol = (*patchvol)[lnodeid];
-              dens = (*filtered_dens_)[lnodeid]/thisvol;
-            }
             double valvel_ij= dens * valvel_i * valvel_j;
+            // remember: density = 1.0 for pure box filter application
             err += ((*filtered_reynoldsstress_         ) (ij))->ReplaceMyValues(1,&valvel_ij,&lnodeid);
 
             if (apply_dynamic_smagorinsky_)
@@ -1442,15 +1469,13 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
                 // set value to zero (original Peter style)
                 double val = 0.0;
                 err += ((*filtered_modeled_subgrid_stress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
-                if (physicaltype_ == INPAR::FLUID::loma)
-                  err += filtered_dens_strainrate_->ReplaceMyValues(1,&val,&lnodeid);
+                // remark: setting the modeled stresses equal to zero improves the estimated friction Reynolds number!
               }
               else
               {
                 // set value to mean value
                 // we already divide by the corresponding volume of all contributing elements,
                 // since we set the volume to 1.0 in the next step in order not to modify the dirichlet values
-                double thisvol = (*patchvol)[lnodeid];
                 double val = ((*((*filtered_modeled_subgrid_stress_ ) (ij)))[lnodeid])/thisvol;
                 err += ((*filtered_modeled_subgrid_stress_ ) (ij))->ReplaceMyValues(1,&val,&lnodeid);
               }
@@ -1458,22 +1483,13 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
           } // end loop jdim
         } // end loop idim
 
-        if (physicaltype_ == INPAR::FLUID::loma and apply_dynamic_smagorinsky_)
-        {
-            // set value to mean value
-            // we already divide by the corresponding volume of all contributing elements,
-            // since we set the volume to 1.0 in the next step in order not to modify the dirichlet values
-            double thisvol = (*patchvol)[lnodeid];
-            double val = (*filtered_dens_)[lnodeid]/thisvol;
-            err += filtered_dens_->ReplaceMyValues(1,&val,&lnodeid);
-        }
-
         double volval = 1.0;
         err += patchvol->ReplaceMyValues(1,&volval,&lnodeid);
-        if (err!=0) dserror("dof not on proc");
+        if (err!=0) dserror("dof/node not on proc");
       }// is dirichlet node
     } // end loop all nodes
   }
+
 
   // ---------------------------------------------------------------
   // scale vectors by element patch sizes --- this corresponds to
@@ -1863,68 +1879,113 @@ void FLD::DynSmagFilter::ApplyBoxFilterScatra(
 
   // ---------------------------------------------------------------
   // replace values at dirichlet nodes
-
-  // as far as there are not any troubles observed,
-  // special modifications of the filtering procedure
-  // at Dirichlet boundaries are not considered
-#if 0
   {
     // get a rowmap for the dofs
     const Epetra_Map* dofrowmap = scatradiscret_->DofRowMap();
+    
+    // as we want to identify nodes at walls,
+    // we have to be sure that fluid and scatra are still matching
+    if (not scatradiscret_->NodeRowMap()->SameAs(*(discret_->NodeRowMap())))
+      dserror("Fluid and ScaTra noderowmaps are NOT identical.");
 
     // loop all nodes on the processor
     for(int lnodeid=0;lnodeid<scatradiscret_->NumMyRowNodes();++lnodeid)
     {
       // get the processor local node
       DRT::Node*  lnode = scatradiscret_->lRowNode(lnodeid);
+      // get the corresponding porcessor local fluid node
+      DRT::Node*  fluidlnode = discret_->lRowNode(lnodeid);
 
-      // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = scatradiscret_->Dof(lnode);
+      // do we have a dirichlet boundary conditions in the fluid
+      std::vector<DRT::Condition*> dbccond;
+      fluidlnode->GetCondition("Dirichlet",dbccond);
 
-      // check whether the dofs
-      // are Dirichlet constrained
-      bool is_dirichlet_node = false;
-      int gid = nodedofset[0];
-      int lid = dofrowmap->LID(gid);
-
-      if ((*dirichtoggle)[lid]==1) //this is a dirichlet node
-          is_dirichlet_node = true;
-
-
-      // this node is on a dirichlet boundary
-      if (is_dirichlet_node == true)
+      // yes, we have a dirichlet boundary condition
+      if (dbccond.size()>0)
       {
-        int err = 0;
-
-        double temp  = (*scalar)[lid];
-        err += filtered_temp_->ReplaceMyValues(1,&temp,&lid);
-
-        double thisvol = (*patchvol)[lid];
-
-        double val = (*filtered_dens_)[lid]/thisvol;
-        err += filtered_dens_->ReplaceMyValues(1,&val,&lid);
-        val = (*filtered_dens_temp_)[lid]/thisvol;
-        err += filtered_dens_temp_->ReplaceMyValues(1,&val,&lid);
-
-        for (int idim =0;idim<numdim;++idim)
+#if DEBUG
+        if ((lnode->X()[0]!=fluidlnode->X()[0]) or 
+            (lnode->X()[1]!=fluidlnode->X()[1]) or
+            (lnode->X()[2]!=fluidlnode->X()[2]))
+          dserror("Nodes do not match.");
+#endif
+        // we only want to modify nodes at the wall, as the model should vanish there
+        // check, whether we have a no-slip node
+        int no_slip_node = 0;
+        for (int idim=0; idim<numdim; idim++)
         {
-           val = ((*((*filtered_vel_)(idim)))[lid])/thisvol;
-           err += ((*filtered_vel_)(idim))->ReplaceMyValues(1,&val,&lid);
-           val = ((*((*filtered_dens_vel_)(idim)))[lid])/thisvol;
-           err += ((*filtered_dens_vel_)(idim))->ReplaceMyValues(1,&val,&lid);
-           val = ((*((*filtered_dens_vel_temp_)(idim)))[lid])/thisvol;
-           err += ((*filtered_dens_vel_temp_)(idim))->ReplaceMyValues(1,&val,&lid);
-           val = ((*((*filtered_dens_rateofstrain_temp_)(idim)))[lid])/thisvol;
-           err += ((*filtered_dens_rateofstrain_temp_)(idim))->ReplaceMyValues(1,&val,&lid);
+          double vel_i = ((*((*velocity)(idim)))[lnodeid]);
+          if (abs(vel_i) < 1e-14)
+            no_slip_node++;
         }
 
-        double volval = 1.0;
-        err += patchvol->ReplaceMyValues(1,&volval,&lnodeid);
-        if (err!=0) dserror("dof not on proc");
+        // yes, we have a no-slip node
+        if (no_slip_node == numdim)
+        {
+          // do we also have a temperature dirichlet boundary condition
+          // get the set of temperature degrees of freedom associated with the node
+          vector<int> nodedofset = scatradiscret_->Dof(lnode);
+          if (nodedofset.size()>1)
+            dserror("Dynamic Smagorinsky currently only implemented for one scalar field!");
+
+          // check whether the dofs are Dirichlet constrained
+          bool is_dirichlet_node = false;
+          int gid = nodedofset[0];
+          int lid = dofrowmap->LID(gid);
+
+          //this is a dirichlet node
+          if ((*dirichtoggle)[lid]==1)
+            is_dirichlet_node = true;
+
+          //get volume
+          double thisvol = (*patchvol)[lnodeid];
+          // and density
+          double dens = (*filtered_dens_)[lnodeid]/thisvol;
+          int err = 0;
+          err += filtered_dens_->ReplaceMyValues(1,&dens,&lnodeid);
+
+          double temp = 0.0;
+          if (is_dirichlet_node)
+          {
+            temp  = (*scalar)[lid];
+            err += filtered_temp_->ReplaceMyValues(1,&temp,&lnodeid);
+            double val = dens*temp;
+            err += filtered_dens_temp_->ReplaceMyValues(1,&val,&lnodeid);
+          }
+          else
+          {
+            temp = (*filtered_temp_)[lnodeid]/thisvol;
+            err += filtered_temp_->ReplaceMyValues(1,&temp,&lnodeid);
+            double val = (*filtered_dens_temp_)[lnodeid]/thisvol;
+            err += filtered_dens_temp_->ReplaceMyValues(1,&val,&lnodeid);
+          }
+
+          for (int idim=0; idim<numdim; idim++)
+          {
+            double valvel_i = ((*((*velocity)(idim)))[lnodeid]);
+            err += ((*filtered_vel_)(idim))->ReplaceMyValues(1,&valvel_i,&lnodeid);
+
+            double valdensvel_i = dens*valvel_i;
+            err += ((*filtered_dens_vel_)(idim))->ReplaceMyValues(1,&valdensvel_i,&lnodeid);
+
+            double dvtval = dens*temp*valvel_i;
+            err += ((*filtered_dens_vel_temp_)(idim))->ReplaceMyValues(1,&dvtval,&lnodeid);
+
+            // Peter style
+            double drtval = 0.0;
+            err += ((*filtered_dens_rateofstrain_temp_)(idim))->ReplaceMyValues(1,&drtval,&lnodeid);
+            // alternative: see comment in ApplyBoxFilter() for velocity field
+            //double drtval = ((*((*filtered_dens_rateofstrain_temp_)(idim)))[lnodeid])/thisvol;
+            //err += ((*filtered_dens_rateofstrain_temp_)(idim))->ReplaceMyValues(1,&drtval,&lnodeid);
+          }
+
+          double volval = 1.0;
+          err += patchvol->ReplaceMyValues(1,&volval,&lnodeid);
+          if (err!=0) dserror("dof/node not on proc");
+        }
       }
-    } // end loop all nodes
+    }
   }
-#endif
 
   // ---------------------------------------------------------------
   // scale vectors by element patch sizes --- this corresponds to

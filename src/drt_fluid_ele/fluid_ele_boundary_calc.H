@@ -5,10 +5,10 @@
 \brief Internal implementation of fluid3 boundary elements
 
 <pre>
-Maintainer: Andreas Ehrl
-            ehrl@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15252
+Maintainers: Ursula Rasthofer & Volker Gravemeier
+             {rasthofer,vgravem}@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15236/-245
 </pre>
 */
 /*----------------------------------------------------------------------*/

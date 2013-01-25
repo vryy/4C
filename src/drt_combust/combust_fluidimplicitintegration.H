@@ -579,9 +579,6 @@ protected:
   /// flag for potential Neumann inflow
   bool neumanninflow_;
 
-  /// whether we do some extrapolation at the beginning of each time step
-  bool extrapolationpredictor_;
-
   //! @name restart variables
   const int writestresses_;
   //@}

@@ -3,19 +3,11 @@
 
 \brief A container for all time-dependent subgrid scale stuff
 
-This file contains the element-specific service routines such as
-Pack, Unpack, NumDofPerNode etc.
-
-In addition to that, it contains the interface between element call
-and Gauss point loop (depending on the fluid implementation)
-as well as some additional service routines (for the evaluation
-of errors, turbulence statistics etc.).
-
 <pre>
-Maintainer: Georg Bauer
-            bauer@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089-289-15245/15252
+            089 - 289-15236/-245
 </pre>
 */
 #ifndef DRT_FLUID_ELE_TDS_H

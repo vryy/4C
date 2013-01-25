@@ -10,22 +10,22 @@
        (with potential one-step-theta start algorithm)
 
 <pre>
-Maintainer: Axel Gerstenberger
-            gerstenberger@lnm.mw.tum.de
+Maintainer: Ursula Rasthofer
+            rasthofer@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15236
 </pre>
 
 *----------------------------------------------------------------------*/
 
-#ifndef TIME_INTEGRATION_SCHEME_H
-#define TIME_INTEGRATION_SCHEME_H
+#ifndef COMBUST_TIME_INTEGRATION_SCHEME_H
+#define COMBUST_TIME_INTEGRATION_SCHEME_H
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../drt_inpar/inpar_fluid.H"
 
-namespace FLD
+namespace COMBUST
 {
 
 //! namespace for all time discretization routines of the fluid field
@@ -77,7 +77,7 @@ namespace TIMEINT
 }
 
 //! namespace for all time discretization routines of the fluid field for One-Step-Theta and BDF2 schemes
-namespace TIMEINT_THETA_BDF2
+namespace UTILS
 {
 
   /*!

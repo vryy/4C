@@ -689,9 +689,6 @@ namespace FLD
     double thermpressdtaf_;
     double thermpressdtam_;
 
-    /// whether we do some extrapolation at the begin of each time step (additional switch)
-    bool extrapolationpredictor_;
-
     //! kind of predictor used in nonlinear iteration
     string  predictor_;
 

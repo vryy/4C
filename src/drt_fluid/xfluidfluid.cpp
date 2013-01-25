@@ -62,7 +62,7 @@ Maintainer:  Shadan Shahmiri
 #include "../drt_xfem/xfem_fluidwizard.H"
 #include "../drt_xfem/xfluidfluid_timeInt.H"
 
-#include "time_integration_scheme.H"
+#include "fluid_utils_time_integration.H"
 #include "xfluidfluidresulttest.H"
 
 #include "fluid_utils.H"
@@ -70,6 +70,9 @@ Maintainer:  Shadan Shahmiri
 #include "xfluid_defines.H"
 
 #include "xfluidfluid.H"
+
+#include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/matpar_bundle.H"
 // -------------------------------------------------------------------
 // -------------------------------------------------------------------
 FLD::XFluidFluid::XFluidFluidState::XFluidFluidState( XFluidFluid & xfluid, Epetra_Vector & idispcol )
@@ -1914,16 +1917,6 @@ FLD::XFluidFluid::XFluidFluid(
   // parameter for linearization scheme (fixed-point-like or Newton)
   newton_ = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
 
-
-  if(params_->get<string>("predictor","disabled") == "disabled")
-  {
-    if(myrank_==0)
-    {
-      printf("disabled extrapolation predictor\n\n");
-    }
-    extrapolationpredictor_=false;
-  }
-
   predictor_ = params_->get<string>("predictor","steady_state_predictor");
 
   // form of convective term
@@ -3311,7 +3304,7 @@ void FLD::XFluidFluid::TimeUpdate()
     Teuchos::RCP<Epetra_Vector> onlyveln  = state_->velpressplitter_.ExtractOtherVector(state_->veln_ );
     Teuchos::RCP<Epetra_Vector> onlyvelnp = state_->velpressplitter_.ExtractOtherVector(state_->velnp_);
 
-    TIMEINT_THETA_BDF2::CalculateAcceleration(onlyvelnp,
+    UTILS::CalculateAcceleration(onlyvelnp,
                                               onlyveln ,
                                               onlyvelnm,
                                               onlyaccn ,
@@ -3331,7 +3324,7 @@ void FLD::XFluidFluid::TimeUpdate()
     Teuchos::RCP<Epetra_Vector> aleonlyveln  = alevelpressplitter_.ExtractOtherVector(aleveln_ );
     Teuchos::RCP<Epetra_Vector> aleonlyvelnp = alevelpressplitter_.ExtractOtherVector(alevelnp_);
 
-    TIMEINT_THETA_BDF2::CalculateAcceleration(aleonlyvelnp,
+    UTILS::CalculateAcceleration(aleonlyvelnp,
                                               aleonlyveln ,
                                               aleonlyvelnm,
                                               aleonlyaccn ,
@@ -3608,9 +3601,9 @@ void FLD::XFluidFluid::SetHistoryValues()
   //
   //
   // ------------------------------------------------------------------
-  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
+  UTILS::SetOldPartOfRighthandside(state_->veln_,state_->velnm_, state_->accn_,
                                                 timealgo_, dta_, theta_, state_->hist_);
-  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(aleveln_,alevelnm_, aleaccn_,
+  UTILS::SetOldPartOfRighthandside(aleveln_,alevelnm_, aleaccn_,
                                                 timealgo_, dta_, theta_, alehist_);
 
 }//FLD::XFluidFluid::SetHistoryValues()
@@ -5193,7 +5186,12 @@ void FLD::XFluidFluid::SetInitialFlowField(
                     exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) );
 
       // compute initial pressure
-      p = -a*a/2.0 *
+      int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+      if (id==-1) dserror("Newtonian fluid material could not be found");
+      const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+      const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+      double dens = actmat->density_;
+      p = -a*a/2.0 * dens *
         ( exp(2.0*a*xyz[0])
           + exp(2.0*a*xyz[1])
           + exp(2.0*a*xyz[2])

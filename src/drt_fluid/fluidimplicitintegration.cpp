@@ -14,17 +14,17 @@
      and a stationary solver.
 
 <pre>
-Maintainers: Volker Gravemeier & Andreas Ehrl
-             {vgravem,ehrl}@lnm.mw.tum.de
+Maintainers: Ursula Rasthofer & Volker Gravemeier
+             {rasthofer,vgravem}@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15245/-252
+             089 - 289-15236/-245
 </pre>
 
 *----------------------------------------------------------------------*/
 #undef WRITEOUTSTATISTICS
 
 #include "fluidimplicitintegration.H"
-#include "time_integration_scheme.H"
+#include "fluid_utils_time_integration.H"
 #include "fluid_utils.H"
 #include "fluidresulttest.H"
 #include "fluidimpedancecondition.H"
@@ -97,7 +97,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
 ):TimInt(actdis,solver,params,output),
   // call constructor for "nontrivial" objects
   alefluid_(alefluid),
-  extrapolationpredictor_(params_->get("do explicit predictor",true)),
   writestresses_(params_->get<int>("write stresses", 0)),
   write_wall_shear_stresses_(params_->get<int>("write wall shear stresses", 0)),
   dtele_(0.0),
@@ -148,18 +147,6 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
 
   // parameter for linearization scheme (fixed-point-like or Newton)
   newton_ = DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation");
-
-  // use of specific predictor
-  // (might be used for af-generalized-alpha, but not yet activated)
-
-  if(params_->get<string>("predictor","disabled") == "disabled")
-  {
-    if(myrank_==0)
-    {
-      printf("disabled extrapolation predictor\n\n");
-    }
-    extrapolationpredictor_=false;
-  }
 
   predictor_ = params_->get<string>("predictor","steady_state_predictor");
 
@@ -876,51 +863,36 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   // BDF2: for constant time step:    hist_ = 4/3 veln_  - 1/3 velnm_
   //
   // -------------------------------------------------------------------
-  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(veln_,velnm_, accn_,
+  UTILS::SetOldPartOfRighthandside(veln_,velnm_, accn_,
                                         timealgo_, dta_, theta_, hist_);
 
   // -------------------------------------------------------------------
   //                     do explicit predictor step
-  //
-  // for example
-  //
-  //
-  //                      +-                                      -+
-  //                      | /     dta \          dta  veln_-velnm_ |
-  // velnp_ = veln_ + dta | | 1 + --- | accn_ - ----- ------------ |
-  //                      | \     dtp /          dtp     dtp       |
-  //                      +-                                      -+
-  //
   // -------------------------------------------------------------------
-  // We cannot have a predictor in certain cases of monolithic FSI here.
-  // Hence, the flag 'extrapolationpredictor_' is turned off in
-  // ADAPTER::FluidBaseAlgorithm::SetupFluid()' for these cases.
-  if(extrapolationpredictor_)
+
+  // no predictor in first time step
+  if (step_>1)
   {
-    // no predictor in first time step
-    if (step_>1)
+    if (predictor_ != "TangVel")
     {
-      if (predictor_ != "TangVel")
-      {
-        TIMEINT_THETA_BDF2::ExplicitPredictor(
-          predictor_,
-          veln_,
-          velnm_,
-          accn_,
-          velpressplitter_,
-          timealgo_,
-          theta_,
-          dta_,
-          dtp_,
-          velnp_,
-          discret_->Comm()
-          );
-      }
-      else
-      {
-        PredictTangVelConsistAcc();
-      }
+      UTILS::ExplicitPredictor(
+        predictor_,
+        veln_,
+        velnm_,
+        accn_,
+        velpressplitter_,
+        timealgo_,
+        theta_,
+        dta_,
+        dtp_,
+        velnp_,
+        discret_->Comm()
+        );
     }
+    else
+    {
+      PredictTangVelConsistAcc();
+     }
   }
 
   // -------------------------------------------------------------------
@@ -1841,6 +1813,8 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     // -------------------------------------------------------------------
     // update velocity and pressure values by increments
     // -------------------------------------------------------------------
+    // set increment at dirichlet boundary to zero
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),incvel_);
     velnp_->Update(1.0,*incvel_,1.0);
 
     // -------------------------------------------------------------------
@@ -2268,118 +2242,14 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
     // -------------------------------------------------------------------
     // update within iteration
     // -------------------------------------------------------------------
+    // set increment at dirichlet boundary to zero
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),incvel_);
     IterUpdate(incvel_);
 
     // -------------------------------------------------------------------
     // convergence check
     // -------------------------------------------------------------------
     stopnonliniter = ConvergenceCheck(itnum,itmax,ittol);
-#if 0
-<<<<<<< .mine
-      GenAlphaIntermediateValues();
-    }
-
-    // -------------------------------------------------------------------
-    // calculate and print out norms for convergence check
-    // (blank residual DOFs which are on Dirichlet BC
-    // We can do this because the values at the dirichlet positions
-    // are not used anyway.
-    // We could avoid this though, if velrowmap_ and prerowmap_ would
-    // not include the dirichlet values as well. But it is expensive
-    // to avoid that.)
-    // -------------------------------------------------------------------
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),residual_);
-
-    // Treat the surface volumetric flow rate
-    //    vol_surf_flow_bc_->InsertCondVector( *temp_vec , *residual_);
-    vol_flow_rates_bc_extractor_->InsertVolumetricSurfaceFlowCondVector(
-      vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(zeros_),
-      residual_);
-
-
-    Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
-    onlyvel->Norm2(&vresnorm);
-
-    velpressplitter_.ExtractOtherVector(incvel_,onlyvel);
-    onlyvel->Norm2(&incvelnorm_L2);
-
-    velpressplitter_.ExtractOtherVector(velnp_,onlyvel);
-    onlyvel->Norm2(&velnorm_L2);
-
-    Teuchos::RCP<Epetra_Vector> onlypre = velpressplitter_.ExtractCondVector(residual_);
-    onlypre->Norm2(&presnorm);
-
-    velpressplitter_.ExtractCondVector(incvel_,onlypre);
-    onlypre->Norm2(&incprenorm_L2);
-
-    velpressplitter_.ExtractCondVector(velnp_,onlypre);
-    onlypre->Norm2(&prenorm_L2);
-
-    // care for the case that nothing really happens in velocity
-    // or pressure field
-    if (velnorm_L2 < 1e-5) velnorm_L2 = 1.0;
-    if (prenorm_L2 < 1e-5) prenorm_L2 = 1.0;
-
-    if (myrank_ == 0)
-    {
-      printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",itnum,itemax,ittol,vresnorm,presnorm,
-                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-      printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-      if (dynamic_smagorinsky_ or scale_similarity_) printf(",tf=%10.3E",dtfilter_);
-      printf(")\n");
-    }
-
-    // -------------------------------------------------------------------
-    // check convergence and print out respective information:
-    // - stop if convergence is achieved
-    // - warn if itemax is reached without convergence, but proceed to
-    //   next timestep
-    // -------------------------------------------------------------------
-    if (vresnorm <= ittol and
-        presnorm <= ittol and
-        incvelnorm_L2/velnorm_L2 <= ittol and
-        incprenorm_L2/prenorm_L2 <= ittol)
-    {
-      stopnonliniter=true;
-      if (myrank_ == 0)
-      {
-        printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
-        FILE* errfile = params_->get<FILE*>("err file",NULL);
-        if (errfile!=NULL)
-        {
-          fprintf(errfile,"fluid solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-          itnum,itemax,ittol,vresnorm,presnorm,
-          incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-        }
-      }
-      break;
-    }
-
-    if ((itnum == itemax) and (vresnorm > ittol or
-                               presnorm > ittol or
-                               incvelnorm_L2/velnorm_L2 > ittol or
-                               incprenorm_L2/prenorm_L2 > ittol))
-    {
-      stopnonliniter=true;
-      if (myrank_ == 0)
-      {
-        printf("+---------------------------------------------------------------+\n");
-        printf("|            >>>>>> not converged in itemax steps!              |\n");
-        printf("+---------------------------------------------------------------+\n");
-
-        FILE* errfile = params_->get<FILE*>("err file",NULL);
-        if (errfile!=NULL)
-        {
-          fprintf(errfile,"fluid unconverged solve:   %3d/%3d  tol=%10.3E[L_2 ]  vres=%10.3E  pres=%10.3E  vinc=%10.3E  pinc=%10.3E\n",
-                  itnum,itemax,ittol,vresnorm,presnorm,
-                  incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-        }
-      }
-      break;
-    }
-=======
->>>>>>> .r15124
-#endif
   }
 
 } // FluidImplicitTimeInt::MultiCorrector
@@ -3240,7 +3110,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
       onlyvelnp = velnp_;
     }
 
-    TIMEINT_THETA_BDF2::CalculateAcceleration(onlyvelnp,
+    UTILS::CalculateAcceleration(onlyvelnp,
                                               onlyveln ,
                                               onlyvelnm,
                                               onlyaccn ,
@@ -4105,6 +3975,19 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
     if (!Sep_->DomainMap().SameAs(SystemMatrix()->DomainMap())) dserror("domainmap not equal");
   }
 
+  // perform initial separation to initialize fsvelaf_
+  // required for loma
+  if (physicaltype_ == INPAR::FLUID::loma)
+  {
+    if (is_genalpha_)
+    {
+      velaf_->Update((alphaF_),*velnp_,(1.0-alphaF_),*veln_,0.0);
+      Sep_->Multiply(false,*velaf_,*fsvelaf_);
+    }
+    else
+      Sep_->Multiply(false,*velnp_,*fsvelaf_);
+  }
+
   return;
 }// FluidImplicitTimeInt::AVM3Preparation
 
@@ -4438,7 +4321,14 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
                     exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) );
 
       // compute initial pressure
-      p = -a*a/2.0 *
+      int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+      if (id==-1) dserror("Newtonian fluid material could not be found");
+      const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+      const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+      double dens = actmat->density_;
+      double visc = actmat->viscosity_;
+
+      p = -a*a/2.0 * dens *
         ( exp(2.0*a*xyz[0])
           + exp(2.0*a*xyz[1])
           + exp(2.0*a*xyz[2])
@@ -4447,40 +4337,10 @@ void FLD::FluidImplicitTimeInt::SetInitialFlowField(
           + 2.0 * sin(a*xyz[2] + d*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) * exp(a*(xyz[0]+xyz[1]))
           );
 
-      // viscosity is necessary to compute initial accelerations
-      double visc=0.0;
-
-      // access of material parametes at time integration level
-      // disadvantages of this method:
-      // additional "unused" materials in the material list
-      // -> you do not know which material is really used
-
-      // routine to access element material parameters at time integration level
-      if(physicaltype_ == INPAR::FLUID::incompressible)
-      {
-        // make sure that only one material is defined in the dat-file
-        if ((DRT::Problem::Instance()->Materials()->Num())>1)
-          dserror("There is more than one material in the input file!!");
-
-        // make sure that a fluid material is defined in the dat-file
-        int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
-        if (id==-1)
-              dserror("Could not find fluid material");
-        else
-        {
-          const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
-          const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
-          // viscosity is constant for all times and all positions
-          visc = actmat->viscosity_;
-        }
-      }
-      else
-        dserror("The analytical solution of the Beltrami flow requires an incompressible flow field");
-
       // Beltrami is always 3D
-      acc[0] = u[0]*(-1.0*d*d*visc);
-      acc[1] = u[1]*(-1.0*d*d*visc);
-      acc[2] = u[2]*(-1.0*d*d*visc);
+      acc[0] = u[0]*(-1.0*d*d*visc/dens);
+      acc[1] = u[1]*(-1.0*d*d*visc/dens);
+      acc[2] = u[2]*(-1.0*d*d*visc/dens);
 
       // set initial velocity components
       for(int nveldof=0;nveldof<numdim_;nveldof++)

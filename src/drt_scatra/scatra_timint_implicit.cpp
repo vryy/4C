@@ -2476,6 +2476,8 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
     dtsolve_=Teuchos::Time::wallTime()-tcpusolve;
 
     //------------------------------------------------ update solution vector
+    // set increment at dirichlet boundary to zero
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),increment_);
     UpdateIter(increment_);
 
     //--------------------------------------------- compute norm of increment
@@ -2508,6 +2510,9 @@ void SCATRA::ScaTraTimIntImpl::LinearSolve()
 
     // end time measurement for solver
     dtsolve_=Teuchos::Time::wallTime()-tcpusolve;
+
+    // ensure dirichlet values at dirichlet dofs
+    ApplyDirichletBC(time_,phinp_,Teuchos::null);
 
     if (myrank_==0)
       printf("Solvertype linear_full (ts=%10.3E,te=%10.3E)\n",dtsolve_,dtele_);
@@ -2686,6 +2691,8 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     }
 
     //------------------------------------------------ update solution vector
+    // set increment at dirichlet boundary to zero
+    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),increment_);
     phinp_->Update(1.0,*increment_,1.0);
 
     //-------- update values at intermediate time steps (only for gen.-alpha)

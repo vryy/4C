@@ -57,6 +57,7 @@ NUMSTASTEPS                     0
 START_THETA                     0.67
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
+PREDICTOR                       explicit_second_order_midpoint
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        residual_based                  // no_stabilization residual_based inconsistent
 TDS                             quasistatic                     // quasistatic time_dependent

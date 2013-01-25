@@ -30,7 +30,7 @@ Maintainer: Florian Henke
 #include "combust_fluidresulttest.H"
 #include "two_phase_defines.H"
 
-#include "../drt_fluid/time_integration_scheme.H"
+#include "../drt_fluid/fluid_utils_time_integration.H"
 #include "../drt_fluid/fluid_utils.H"
 #include "../drt_fluid/drt_periodicbc.H"
 #include "../drt_fluid/drt_transfer_turb_inflow.H"
@@ -46,6 +46,7 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret_xfem.H"
 #include "../drt_mat/newtonianfluid.H"
+#include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_xfem/dof_distribution_switcher.H"
 #include "../drt_xfem/timeInt_std_SemiLagrange.H"
@@ -96,7 +97,6 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   itemaxFRS_(params_->sublist("COMBUSTION FLUID").get<int>("ITE_MAX_FRS")),
   totalitnumFRS_(0),
   curritnumFRS_(0),
-  extrapolationpredictor_(params_->get("do explicit predictor",false)),
   writestresses_(params_->get<int>("write stresses", 0)),
   project_(false),
   samstart_(-1),
@@ -635,7 +635,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
   // set part of the rhs vector belonging to the old timestep
   // -------------------------------------------------------------------
   // TODO Do we need this?
-//  TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(
+//  UTILS::SetOldPartOfRighthandside(
 //      state_.veln_, state_.velnm_, state_.accn_,
 //          timealgo_, dta_, theta_,
 //          hist_);
@@ -644,16 +644,13 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
   //                     do explicit predictor step
   // -------------------------------------------------------------------
   //
-  // We cannot have a predictor in case of monolithic FSI here. There needs to
-  // be a way to turn this off.
-//  if (extrapolationpredictor_)
 //  {
 //    // TODO Was davon brauchen wir?
 //    if (step_>1)
 //    {
 //      double timealgo_constant=theta_;
 //
-//      TIMEINT_THETA_BDF2::ExplicitPredictor(
+//      UTILS::ExplicitPredictor(
 //        "default",
 //        state_.veln_,
 //        state_.velnm_,
@@ -1314,7 +1311,7 @@ Teuchos::RCP<const Epetra_Vector> FLD::CombustFluidImplicitTimeInt::Hist()
   //stationary case (timealgo_== INPAR::FLUID::timeint_stationary))
   if ( (timealgo_==INPAR::FLUID::timeint_one_step_theta) or
        (timealgo_==INPAR::FLUID::timeint_afgenalpha) )
-    FLD::TIMEINT_THETA_BDF2::SetOldPartOfRighthandside(veln,Teuchos::null, accn,timealgo_, dta_, theta_, hist);
+    FLD::UTILS::SetOldPartOfRighthandside(veln,Teuchos::null, accn,timealgo_, dta_, theta_, hist);
   else
     dserror("time integration scheme not supported");
 
@@ -2161,7 +2158,7 @@ void FLD::CombustFluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector
 void FLD::CombustFluidImplicitTimeInt::TimeUpdate()
 {
   // compute acceleration
-  TIMEINT_THETA_BDF2::CalculateAcceleration(
+  UTILS::CalculateAcceleration(
       state_.velnp_, state_.veln_, state_.velnm_, state_.accn_,
           timealgo_, step_, theta_, dta_, dtp_,
           state_.accnp_);
@@ -4245,6 +4242,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
 
     double         p;
     std::vector<double> u  (numdim_);
+    std::vector<double> acc(numdim_);
     std::vector<double> xyz(numdim_);
 
     // check whether present flow is indeed three-dimensional
@@ -4278,7 +4276,13 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
                     exp(a*xyz[1]) * cos(a*xyz[2] + d*xyz[0]) );
 
       // compute initial pressure
-      p = -a*a/2.0 *
+      int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_fluid);
+      if (id==-1) dserror("Newtonian fluid material could not be found");
+      const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+      const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
+      double dens = actmat->density_;
+      double visc = actmat->viscosity_;
+      p = -a*a/2.0 * dens *
         ( exp(2.0*a*xyz[0])
           + exp(2.0*a*xyz[1])
           + exp(2.0*a*xyz[2])
@@ -4286,6 +4290,11 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
           + 2.0 * sin(a*xyz[1] + d*xyz[2]) * cos(a*xyz[0] + d*xyz[1]) * exp(a*(xyz[2]+xyz[0]))
           + 2.0 * sin(a*xyz[2] + d*xyz[0]) * cos(a*xyz[1] + d*xyz[2]) * exp(a*(xyz[0]+xyz[1]))
           );
+
+      // Beltrami is always 3D
+      acc[0] = u[0]*(-1.0*d*d*visc/dens);
+      acc[1] = u[1]*(-1.0*d*d*visc/dens);
+      acc[2] = u[2]*(-1.0*d*d*visc/dens);
 
       // set initial velocity components
       for(int nveldof=0;nveldof<numdim_;nveldof++)
@@ -4295,6 +4304,12 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
         err += state_.velnp_->ReplaceMyValues(1,&(u[nveldof]),&lid);
         err += state_.veln_ ->ReplaceMyValues(1,&(u[nveldof]),&lid);
         err += state_.velnm_->ReplaceMyValues(1,&(u[nveldof]),&lid);
+
+        // set additionally the values for the time derivative to start with an exact acceleration in case of OST (theta!=1.0)
+        // set initial acceleration components
+        err += state_.accnp_->ReplaceMyValues(1,&(acc[nveldof]),&lid);
+        err += state_.accn_ ->ReplaceMyValues(1,&(acc[nveldof]),&lid);
+        err += state_.accam_->ReplaceMyValues(1,&(acc[nveldof]),&lid);
       }
 
       // set initial pressure
