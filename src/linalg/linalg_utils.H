@@ -826,8 +826,8 @@ namespace LINALG
   /*!
   \brief split a rowmap of matrix A
 
-  splits A->RowMap() into 2 maps and returns them, where one of the rowmaps has
-  to be given on input
+  splits A->RowMap() into 2 maps, where one is given on input and the other map
+  is created as complementary map. The complementary map is returned.
 
   \param Amap      : Map to split on input
   \param Agiven    : on entry submap that is given and part of Amap
