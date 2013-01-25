@@ -505,6 +505,6 @@ Teuchos::RCP<Epetra_Vector> ALE::AleSprings::ExtractDispnp() const
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ALE::AleSprings::ExtractDispn() const
 {
-  dserror("Not implemented, yet.");
+  dserror("ExtractDispn() not implemented, yet.");
   return Teuchos::null;
 }
