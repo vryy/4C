@@ -105,7 +105,7 @@ AZSOLVE                         GMRES                           // CG GMRES CGS 
 //IFPACKGFILL                     0                               // (3 for edgebased stabilization pattern) graph fill for ILU
 
 -------------------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
+MAT 1 MAT_fluid DYNVISCOSITY 5.0 DENSITY 5.0 GAMMA 1.0
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 100000000000.0 NUE 0.0 DENS 0.0 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC 1.0+sin(2.0*pi/3.0*(t-0.75)) t1 0.0 t2 100.0 // displacement curve
@@ -115,7 +115,7 @@ CURVE2 on EXPR FUNC sin(t*pi/2.0)  t1 0.0 t2 1.0 //100.0
 CURVE3 on EXPR FUNC 2.0*pi/3.0*cos(2.0*pi/3.0*(t-0.75)) t1 0.0 t2 100.0 // velocity curve
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
----------------------------------------------------------------------FUNCT1
+----------------------------------------------------------------------FUNCT1
 FUNCT1 BELTRAMI-RHS MAT 1 ISSTAT 1 ISSTOKES 0
 ----------------------------------------------------------------------FUNCT2 // exact velocity/pressure solution
 FUNCT2 BELTRAMI-UP MAT 1 ISSTAT 1
@@ -127,11 +127,11 @@ FUNCT2 BELTRAMI-UP MAT 1 ISSTAT 1
 FLUID DIS fluid NODE 17597 QUANTITY velx VALUE 1.91007637804324698e-01 TOLERANCE 1e-12
 FLUID DIS fluid NODE 17597 QUANTITY vely VALUE 4.14943574514224200e-01 TOLERANCE 1e-12
 FLUID DIS fluid NODE 17597 QUANTITY velz VALUE -6.05828621100916842e-01 TOLERANCE 1e-12
-FLUID DIS fluid NODE 17597 QUANTITY pressure VALUE 5.81805669475934550e+00 TOLERANCE 1e-10
+FLUID DIS fluid NODE 17597 QUANTITY pressure VALUE 2.90902834737967524e+01 TOLERANCE 1e-10
 FLUID DIS fluid NODE 17616 QUANTITY velx VALUE 1.90517835643301242e-01 TOLERANCE 1e-12
 FLUID DIS fluid NODE 17616 QUANTITY vely VALUE 4.15529528342154286e-01 TOLERANCE 1e-12
 FLUID DIS fluid NODE 17616 QUANTITY velz VALUE -6.06051519571297548e-01 TOLERANCE 1e-12
-FLUID DIS fluid NODE 17616 QUANTITY pressure VALUE 5.80823658132812159e+00 TOLERANCE 1e-10
+FLUID DIS fluid NODE 17616 QUANTITY pressure VALUE 2.90411829066406781e+01 TOLERANCE 1e-10
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  0

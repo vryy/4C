@@ -2459,6 +2459,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "byfunct1",
                                  "beltrami_stat_stokes",
                                  "beltrami_stat_navier_stokes",
+                                 "beltrami_instat_stokes",
+                                 "beltrami_instat_navier_stokes",
                                  "kimmoin_stat_stokes",
                                  "kimmoin_stat_navier_stokes",
                                  "kimmoin_instat_stokes",
@@ -2473,6 +2475,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::FLUID::byfunct1,
                                    INPAR::FLUID::beltrami_stat_stokes,
                                    INPAR::FLUID::beltrami_stat_navier_stokes,
+                                   INPAR::FLUID::beltrami_instat_stokes,
+                                   INPAR::FLUID::beltrami_instat_navier_stokes,
                                    INPAR::FLUID::kimmoin_stat_stokes,
                                    INPAR::FLUID::kimmoin_stat_navier_stokes,
                                    INPAR::FLUID::kimmoin_instat_stokes,
@@ -4635,6 +4639,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("GMSH_DEBUG_OUT_SCREEN","No","Do you want to be informed, if Gmsh output is written?",
                                  yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("GMSH_SOL_OUT","Yes","Do you want to write extended Gmsh output for each timestep?",
+                               yesnotuple,yesnovalue,&xfem_general);
+  setStringToIntegralParameter<int>("GMSH_EOS_OUT","Yes","Do you want to write extended Gmsh output for each timestep?",
                                yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("GMSH_DISCRET_OUT","Yes","Do you want to write extended Gmsh output for each timestep?",
                                yesnotuple,yesnovalue,&xfem_general);

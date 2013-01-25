@@ -446,6 +446,8 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
   {
   case INPAR::FLUID::beltrami_stat_stokes:
   case INPAR::FLUID::beltrami_stat_navier_stokes:
+  case INPAR::FLUID::beltrami_instat_stokes:
+  case INPAR::FLUID::beltrami_instat_navier_stokes:
   {
 
     // function evaluation requires a 3D position vector!!
@@ -465,20 +467,23 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
     // evaluate the velocity gradient
     RCP<DRT::UTILS::Function> function_grad = Teuchos::null;
 
+    bool is_stationary = false;
+
     // evaluate velocity and pressure
     // evaluate the velocity gradient
-    if(calcerr == INPAR::FLUID::beltrami_stat_stokes)
+    if(calcerr == INPAR::FLUID::beltrami_stat_stokes or
+       calcerr == INPAR::FLUID::beltrami_stat_navier_stokes)
     {
-      function      = Teuchos::rcp(new DRT::UTILS::BeltramiStatStokesUP());
-      function_grad = Teuchos::rcp(new DRT::UTILS::BeltramiStatStokesGradU());
+      is_stationary = true;
     }
-    else if(calcerr == INPAR::FLUID::beltrami_stat_navier_stokes)
+    else if(calcerr == INPAR::FLUID::beltrami_instat_stokes or
+            calcerr == INPAR::FLUID::beltrami_instat_navier_stokes)
     {
-      // we use the same analytical solution for the navier-stokes equations
-      // remark: just the rhs is different
-      function      = Teuchos::rcp(new DRT::UTILS::BeltramiStatStokesUP());
-      function_grad = Teuchos::rcp(new DRT::UTILS::BeltramiStatStokesGradU());
+      is_stationary = false;
     }
+
+    function      = Teuchos::rcp(new DRT::UTILS::BeltramiUP( mat, is_stationary));
+    function_grad = Teuchos::rcp(new DRT::UTILS::BeltramiGradU( mat, is_stationary));
 
     if(my::nsd_==3)
     {
@@ -487,7 +492,7 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
       u(2) = function->Evaluate(2,position,t,NULL);
       p = function->Evaluate(3,position,t,NULL);
     }
-    else dserror("case 'beltrami_stat' is a 3D specific case");
+    else dserror("case 'kimmoin_stat' is a 3D specific case");
 
 
     if(my::nsd_==3)
@@ -504,7 +509,7 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
       grad_u(2,1) = function_grad->Evaluate(7,position,t,NULL); // w,y
       grad_u(2,2) = function_grad->Evaluate(8,position,t,NULL); // w,z
     }
-    else dserror("case 'beltrami_stat' is a 3D specific case");
+    else dserror("case 'kimmoin_stat' is a 3D specific case");
   }
   break;
 
