@@ -150,6 +150,7 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
   DRT::UTILS::ExtractMyValues(*pn,my_pn,lm);
 
 #if 0
+#if 0
   RCP<const Epetra_Vector> n_ialinkers = discretization.GetState("num_of_inter_acinar_linkers");
   vector<double> my_n_ialinkers(lm.size());
   DRT::UTILS::ExtractMyValues(*n_ialinkers,my_n_ialinkers,lm);
@@ -159,14 +160,25 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
   double N0 = double(ele->Nodes()[0]->NumElement());
   double N1 = double(ele->Nodes()[1]->NumElement());
 #endif
-  elemat1_epetra(0,0) =  my_sysmat_iad[0]/(N0-1.);
-  elemat1_epetra(0,1) = -my_sysmat_iad[0]/(N0-1.);
-  elemat1_epetra(1,0) = -my_sysmat_iad[1]/(N1-1.);
-  elemat1_epetra(1,1) =  my_sysmat_iad[1]/(N1-1.);
+
+  elemat1_epetra(0,0) =  my_sysmat_iad[0]*(N0-1.);
+  elemat1_epetra(0,1) = -my_sysmat_iad[0]*(N0-1.);
+  elemat1_epetra(1,0) = -my_sysmat_iad[1]*(N1-1.);
+  elemat1_epetra(1,1) =  my_sysmat_iad[1]*(N1-1.);
 
   elevec1_epetra.Scale(0.0);
-  elevec1_epetra(0)= -my_sysmat_iad[0]*(my_pn[0]-my_pn[1])/(N0-1.);
-  elevec1_epetra(1)= -my_sysmat_iad[1]*(my_pn[1]-my_pn[0])/(N1-1.);
+  elevec1_epetra(0)= -my_sysmat_iad[0]*(my_pn[0]-my_pn[1])*(N0-1.);
+  elevec1_epetra(1)= -my_sysmat_iad[1]*(my_pn[1]-my_pn[0])*(N1-1.);
+#else
+  elemat1_epetra(0,0) =  my_sysmat_iad[0]*(0.5);
+  elemat1_epetra(0,1) = -my_sysmat_iad[0]*(0.5);
+  elemat1_epetra(1,0) = -my_sysmat_iad[1]*(0.5);
+  elemat1_epetra(1,1) =  my_sysmat_iad[1]*(0.5);
+
+  elevec1_epetra.Scale(0.0);
+  elevec1_epetra(0)= -my_sysmat_iad[0]*(my_pn[0]-my_pn[1])*(0.5);
+  elevec1_epetra(1)= -my_sysmat_iad[1]*(my_pn[1]-my_pn[0])*(0.5);
+#endif
 
   #if 0
   Node** nodes = ele->Nodes();
