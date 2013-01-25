@@ -960,8 +960,7 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     }
     else
     {
-      fluiddis  = Teuchos::rcp(new DRT::DiscretizationXFEM("fluid",reader.Comm()));
-      //fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
+      fluiddis  = Teuchos::rcp(new DRT::Discretization("fluid",reader.Comm()));
     }
 
     AddDis("fluid", fluiddis);
