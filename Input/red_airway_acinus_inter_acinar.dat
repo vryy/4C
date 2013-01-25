@@ -103,7 +103,7 @@ NODE 8 DNODE 4
 --------------------------------DESIGN NODE REDUCED-D LUNG ACINUS CONDITIONS
 DPOINT                          0
 ----------------------------------------------------------RESULT DESCRIPTION
-RED_AIRWAY DIS red_airway NODE 3 QUANTITY pressure VALUE -2.53383529088527758e-03 TOLERANCE 1e-9
-RED_AIRWAY DIS red_airway NODE 4 QUANTITY pressure VALUE -1.95263530997033985e-03 TOLERANCE 1e-9
+RED_AIRWAY DIS red_airway NODE 3 QUANTITY pressure VALUE -2.54563750575499551e-03 TOLERANCE 1e-9
+RED_AIRWAY DIS red_airway NODE 4 QUANTITY pressure VALUE -1.99106688643882479e-03 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END

@@ -1,4 +1,3 @@
-
 /*!----------------------------------------------------------------------
 \file airwayimplicitintegration.H
 \brief Associated with control routine for reduced dimensional airways
@@ -351,8 +350,6 @@ protected:
   RCP<Epetra_Vector>          bcval_;
   RCP<Epetra_Vector>          dbctog_;
   RCP<Epetra_Vector>          acini_bc_;
-
-  RCP<Epetra_Vector>          num_of_inter_acinar_linkers_;
 
   //! @name acinar elementel values
   RCP<Epetra_Vector>          acini_e_volume0_;

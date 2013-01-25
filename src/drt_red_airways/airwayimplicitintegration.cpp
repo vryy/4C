@@ -159,7 +159,6 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
   acini_e_volumenp_     = LINALG::CreateVector(*elementcolmap,true);
   acini_e_volume_strain_= LINALG::CreateVector(*elementcolmap,true);
 
-  num_of_inter_acinar_linkers_ = LINALG::CreateVector(*dofrowmap,true);
   // Vectors used for solution process
   // ---------------------------------
 
@@ -218,35 +217,9 @@ AIRWAY::RedAirwayImplicitTimeInt::RedAirwayImplicitTimeInt(RCP<DRT::Discretizati
       double val = gid;
       nodeIds_->ReplaceGlobalValues(1,&val,&gid);
     }
-
-#if 0
-  // get number of inter-acinar linkers effecting an acinus which should be:
-    // ((number_of_elements) - 1)/2
-//    if (ele->Name()=="RedAcinusType")
-    {
-      for(int j=1;j<2;j++)
-      {
-        if(myrank_ == (*lmowner)[j])
-        {
-          DRT::Node ** nodes = ele->Nodes();
-          DRT::Element ** elems = nodes[j]->Elements();
-          for (int k=0;k<nodes[j]->NumElement();k++)
-          {
-            if (elems[k]->Owner()==myrank_)
-            {
-              int gid = lm[j];
-              int lid = num_of_inter_acinar_linkers_->Map().LID(gid);
-              double val = (*num_of_inter_acinar_linkers_)[lid]+1;
-              num_of_inter_acinar_linkers_->ReplaceGlobalValues(1,&val,&gid);
-            }
-          }
-        }
-      }
-    }
-#endif
   }
 
-#if 1
+#if 0
   const Epetra_Map* nodeColwmap      = discret_->NodeColMap();
   for (int nnode=0;nnode<discret_->NumMyColNodes();++nnode)
   {
@@ -711,7 +684,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     // action for elements
     eleparams.set("action","calc_sys_matrix_rhs_iad");
     discret_->SetState("sysmat_iad",sysmat_iad_);
-    discret_->SetState("num_of_inter_acinar_linkers",num_of_inter_acinar_linkers_);
+    discret_->SetState("pn" ,pn_ );
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
@@ -1378,7 +1351,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::EvalResidual( Teuchos::RCP<Teuchos::Param
     // action for elements
     eleparams.set("action","calc_sys_matrix_rhs_iad");
     discret_->SetState("sysmat_iad",sysmat_iad_);
-    discret_->SetState("num_of_inter_acinar_linkers",num_of_inter_acinar_linkers_);
+    discret_->SetState("pn" ,pn_ );
 
     // call standard loop over all elements
     discret_->Evaluate(eleparams,sysmat_,rhs_);
