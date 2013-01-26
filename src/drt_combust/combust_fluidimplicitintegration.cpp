@@ -4282,6 +4282,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       const MAT::PAR::NewtonianFluid* actmat = static_cast<const MAT::PAR::NewtonianFluid*>(mat);
       double dens = actmat->density_;
       double visc = actmat->viscosity_;
+
       p = -a*a/2.0 * dens *
         ( exp(2.0*a*xyz[0])
           + exp(2.0*a*xyz[1])
@@ -4309,7 +4310,8 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
         // set initial acceleration components
         err += state_.accnp_->ReplaceMyValues(1,&(acc[nveldof]),&lid);
         err += state_.accn_ ->ReplaceMyValues(1,&(acc[nveldof]),&lid);
-        err += state_.accam_->ReplaceMyValues(1,&(acc[nveldof]),&lid);
+        if (timealgo_ == INPAR::FLUID::timeint_afgenalpha)
+         err += state_.accam_->ReplaceMyValues(1,&(acc[nveldof]),&lid);
       }
 
       // set initial pressure
