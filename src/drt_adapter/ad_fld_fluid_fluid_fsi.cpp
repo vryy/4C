@@ -279,6 +279,10 @@ void ADAPTER::FluidFluidFSI::VelocityToDisplacement(
    * with fac = |
    *             \ = dt       if interface time integration is first order
    */
+
+  // NOTE: if we use steady_state predictors (only the old solution) dugpre and
+  // ddqpre are zero
+
   const double ts = 1.0/TimeScaling();
   fcx->Update(xfluidfluid_->Dt(), *veln, ts, *dugpre, ts);
   fcx->Update(-1.0, *ddgpre, 1.0);
