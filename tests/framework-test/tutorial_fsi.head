@@ -169,14 +169,13 @@ NUMSTEP                         1
 PHYSICAL_TYPE                   Incompressible
 //
 // Predictor for first guess in nonlinear iteration
-//     disabled
-//     default
-//     steady_state_predictor
-//     zero_acceleration_predictor
-//     constant_acceleration_predictor
-//     constant_increment_predictor
+//     steady_state
+//     zero_acceleration
+//     constant_acceleration
+//     constant_increment
 //     explicit_second_order_midpoint
-PREDICTOR                       default
+//     TangVel 
+PREDICTOR                       steady_state
 //
 // Increment for writing restart
 RESTARTEVRY                     20
