@@ -108,8 +108,8 @@ void FSI::MonolithicBase::PrepareTimeStep()
   PrintHeader();
 
   StructureField()->PrepareTimeStep();
-  FluidField().    PrepareTimeStep();
-  AleField().      PrepareTimeStep();
+  FluidField().     PrepareTimeStep();
+  AleField().       PrepareTimeStep();
 }
 
 
@@ -118,8 +118,8 @@ void FSI::MonolithicBase::PrepareTimeStep()
 void FSI::MonolithicBase::Update()
 {
   StructureField()->Update();
-  FluidField().    Update();
-  AleField().      Update();
+  FluidField().     Update();
+  AleField().       Update();
 }
 
 
@@ -140,8 +140,8 @@ void FSI::MonolithicBase::Output()
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
   StructureField()->Output();
-  FluidField().    Output();
-  AleField().      Output();
+  FluidField().     Output();
+  AleField().       Output();
 
   FluidField().LiftDrag();
 
@@ -267,8 +267,9 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
 
   firstcall_ = true;
 
-  ddgpre_ = Teuchos::null;
-  dugpre_ = Teuchos::null;
+  // "Initialize" interface solution increments due to single field predictors
+  ddgpred_ = Teuchos::null;
+  dugpred_ = Teuchos::null;
 }
 
 

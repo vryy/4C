@@ -7,8 +7,8 @@
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
 FSI:            iter_monolithicstructuresplit
-Fluid:          BDF2 with constant_acceleration_predictor
-Structure:      OneStepTheta with ConstVel
+Fluid:          BDF2 with steady_state
+Structure:      OneStepTheta with ConstAcc
 ----------------------------------------------------------------PROBLEM SIZE
 DIM                             3
 -----------------------------------------------------------------ALE DYNAMIC
@@ -22,21 +22,15 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
-CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-06
-INITIALFIELD                    zero_field
 ITEMAX                          10
 LINEAR_SOLVER                   1
 NEUMANNINFLOW                   yes
-NONLINITER                      fixed_point_like
-NUMSTASTEPS                     0
+NONLINITER                      Newton
 PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state
 TIMEINTEGR                      BDF2
-UPRES                           1
 -----------------------------------------------------------------FSI DYNAMIC
-BASETOL                         0.001
 CONVTOL                         1e-10
 COUPALGO                        iter_monolithicstructuresplit
 COUPMETHOD                      conforming
@@ -47,7 +41,6 @@ NORMCOMBI_RESFINC               And
 NORM_INC                        Rel
 NORM_RESF                       Rel
 NUMSTEP                         10
-RELAX                           1
 RESTARTEVRY                     2
 SECONDORDER                     yes
 SHAPEDERIVATIVES                yes
@@ -61,20 +54,8 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
-ITERNORM                        L2
-ITWANT                          0
 LINEAR_SOLVER                   1
-LUMPMASS                        No
-MAXITER                         50
-MINITER                         0
-MODIFIEDEXPLEULER               Yes
-NLNSOL                          fullnewton
-NORMCOMBI_RESFDISP              And
-NORM_DISP                       Abs
-NORM_RESF                       Abs
 PREDICT                         ConstAcc
-TOLDISP                         1e-10
-TOLRES                          1e-08
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
 --------------------------------------------------------------------SOLVER 1
@@ -86,7 +67,7 @@ MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 1.0 THEXPANS 0.0
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3
 ----------------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC t t1 0.0 t2 100.0
+CURVE1 on EXPR FUNC t t1 0.0 t2 1.0
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         3
 NDLINE                          0
@@ -97,7 +78,7 @@ DPOINT                          3
 //                              fsi_fluid_nodes
 E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 //                              fsi_str_nodes
-E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 2 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 //                              str_dry_nodes
 E 3 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS

@@ -6,10 +6,11 @@
 //
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
-FSI:                            iter_monolithicfluidsplit
-Fluid: One_Step_Theta with constant_acceleration_predictor
-Structure: OneStepTheta with ConstVel
+FSI:          iter_monolithicfluidsplit
+Fluid:        One_Step_Theta with constant_acceleration
+Structure:    OneStepTheta with ConstVel
 ==> comparison to analytical solution
+==> loose convergence tolerance to test predictor
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4
 //NODES                         24
@@ -25,20 +26,15 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
-CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-06
-INITIALFIELD                    zero_field
-ITEMAX                          10
 LINEAR_SOLVER                   1
 NONLINITER                      fixed_point_like
 PHYSICAL_TYPE                   Incompressible
-PREDICTOR                       steady_state
+PREDICTOR                       constant_acceleration
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 -----------------------------------------------------------------FSI DYNAMIC
-BASETOL                         0.001
-CONVTOL                         1e-10
+CONVTOL                         1e-2
 COUPALGO                        iter_monolithicfluidsplit
 COUPMETHOD                      conforming
 ITEMAX                          10
@@ -48,7 +44,6 @@ NORMCOMBI_RESFINC               And
 NORM_INC                        Rel
 NORM_RESF                       Rel
 NUMSTEP                         10
-RELAX                           1
 RESTARTEVRY                     2
 SECONDORDER                     yes
 SHAPEDERIVATIVES                yes
@@ -62,21 +57,8 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      OneStepTheta
-ITERNORM                        L2
-ITWANT                          0
 LINEAR_SOLVER                   1
-LUMPMASS                        No
-MAXITER                         50
-MAXTIME                         5
-MINITER                         0
-NLNSOL                          fullnewton
-NORMCOMBI_RESFDISP              And
-NORM_DISP                       Abs
-NORM_RESF                       Abs
-NUMSTEP                         200
 PREDICT                         ConstVel
-TOLDISP                         1e-10
-TOLRES                          1e-08
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66
 --------------------------------------------------------------------SOLVER 1
@@ -89,13 +71,6 @@ MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 1.0 THEXPANS 0.0
 SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC -t*t t1 0.0 t2 100.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         3
 NDLINE                          0
@@ -217,11 +192,13 @@ NODE 24 COORD 2.5000000000000000e+00 5.0000000000000000e-01 5.0000000000000000e-
 3 FLUID3 HEX8 5 6 7 8 9 10 11 12 MAT 2 NA ALE GP 2 2 2
 4 FLUID3 HEX8 9 10 11 12 13 14 15 16 MAT 2 NA ALE GP 2 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
+ALE DIS ale NODE 5 QUANTITY dispx VALUE -3.33333333e-01 TOLERANCE 1e-8
+ALE DIS ale NODE 12 QUANTITY dispx VALUE -6.66666666e-01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 5 QUANTITY velx VALUE -2.0 TOLERANCE 1e-8
 FLUID DIS fluid NODE 16 QUANTITY pressure VALUE 4.0 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE -1.0 TOLERANCE 1e-8
-FSI NODE 16 QUANTITY lambdax VALUE 1.0 TOLERANCE 1e-8
-FSI NODE 16 QUANTITY lambday VALUE 5.92592592592600220e-01 TOLERANCE 1e-8
-FSI NODE 16 QUANTITY lambdaz VALUE 5.92592592592600220e-01 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambdax VALUE 1.7457252626 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambday VALUE 1.1850215742 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambdaz VALUE 1.1850215742 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

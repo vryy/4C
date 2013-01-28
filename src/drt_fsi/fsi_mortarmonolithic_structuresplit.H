@@ -110,32 +110,32 @@ namespace FSI
     virtual void RecoverLagrangeMultiplier();
 
     //! Additional safety check of kinematic constraint during a single time step:
-    /* Constraint equation:
-     *
-     * \f$D \mathbf{d}_{\Gamma}^{n+1} - D \mathbf{d}_{\Gamma}^{n}
-     *      - \tau * M * \Delta \mathbf{u}_{\Gamma}^{n+1} - \Delta t M * \mathbf{u}_{\Gamma}^{n} \doteq \mathbf{0}\f$
-     * with interface time integration factor
-     * \f$\tau = \begin{cases}\frac{\Delta t}{2} & \text {if }2^{nd}\text{ order}\\ \Delta t& \text {if }1^{st}\text{ order}\end{cases}
-     *
-     * Do this check only for safety reasons. In principal, the constraint is satisfied due to solving the
-     * condensed nonlinear system of equations. We expect really small violation norms.
-     *
-     * \author mayr.mt
-     * \date 10/2012
-     */
+    //!
+    //! Constraint equation:
+    //!
+    //! \f$D \mathbf{d}_{\Gamma}^{n+1} - D \mathbf{d}_{\Gamma}^{n} - \tau * M * \Delta \mathbf{u}_{\Gamma}^{n+1} - \Delta t M * \mathbf{u}_{\Gamma}^{n} \doteq \mathbf{0}\f$
+    //!
+    //! with interface time integration factor
+    //! \f$\tau = \begin{cases}\frac{\Delta t}{2} & \text {if }2^{nd}\text{ order}\\ \Delta t& \text {if }1^{st}\text{ order}\end{cases}\f$
+    //!
+    //! Do this check only for safety reasons. Basically, the constraint is satisfied due to solving the
+    //! condensed nonlinear system of equations. We expect really small violation norms.
+    //!
+    //! \author mayr.mt
+    //! \date 10/2012
     virtual void CheckKinematicConstraint();
 
     //! Additional safety check of dynamic equilibrium during a single time step:
-    /* Dynamic equilibrium at the interface:
-     *
-     * \f$M^{T} \mathbf{\lambda} - D^{T} \mathbf{\lambda} = \mathbf{0}
-     *
-     * Do this check only for safety reasons. In principal, the constraint is satisfied due to solving the
-     * condensed nonlinear system of equations. We expect really small violation norms.
-     *
-     * \author mayr.mt
-     * \date 10/2012
-     */
+    //!
+    //! Dynamic equilibrium at the interface:
+    //!
+    //! \f$M^{T} \mathbf{\lambda} - D^{T} \mathbf{\lambda} = \mathbf{0}\f$
+    //!
+    //! Do this check only for safety reasons. Basically, the constraint is satisfied due to solving the
+    //! condensed nonlinear system of equations. We expect really small violation norms.
+    //!
+    //! \author mayr.mt
+    //! \date 10/2012
     virtual void CheckDynamicEquilibrium();
 
   protected:
@@ -155,16 +155,15 @@ namespace FSI
     CreateStatusTest(Teuchos::ParameterList& nlParams,
                      Teuchos::RCP<NOX::Epetra::Group> grp);
 
-    /*! Extract the three field vectors from a given composed vector
-     *
-     * The condensed structural and ale degrees of freedom have to be recovered
-     * from the fluid solution using a suitable velocity-displacement conversion.
-     *
-     * We are dealing with NOX here, so we get absolute values. x is the sum of
-     * all increments up to this point.
-     *
-     * \sa  ADAPTER::FluidFSI::VelocityToDisplacement()
-     */
+    //! Extract the three field vectors from a given composed vector
+    //!
+    //! The condensed structural and ale degrees of freedom have to be recovered
+    //! from the fluid solution using a suitable velocity-displacement conversion.
+    //!
+    //! We are dealing with NOX here, so we get absolute values. x is the sum of
+    //! all increments up to this point.
+    //!
+    //! \sa  ADAPTER::FluidFSI::VelocityToDisplacement()
     virtual void ExtractFieldVectors(
         Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
         Teuchos::RCP<const Epetra_Vector>& sx,  ///< structural displacements

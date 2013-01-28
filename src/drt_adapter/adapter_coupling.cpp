@@ -77,10 +77,10 @@ void ADAPTER::Coupling::SetupConditionCoupling(const DRT::Discretization& master
   // The point is to make sure there is only one map for each
   // interface.
 
-  if (not masterdofmap_->SameAs(*mastercondmap))
+  if (not masterdofmap_->PointSameAs(*mastercondmap))
     dserror("master dof map mismatch");
 
-  if (not slavedofmap_->SameAs(*slavecondmap))
+  if (not slavedofmap_->PointSameAs(*slavecondmap))
   {
     dserror("slave dof map mismatch");
   }
@@ -161,10 +161,10 @@ void ADAPTER::Coupling::SetupConstrainedConditionCoupling(const DRT::Discretizat
   // The point is to make sure there is only one map for each
   // interface.
 
-  if (not masterdofmap_->SameAs(*mastercondmap))
+  if (not masterdofmap_->PointSameAs(*mastercondmap))
     dserror("master dof map mismatch");
 
-  if (not slavedofmap_->SameAs(*slavecondmap))
+  if (not slavedofmap_->PointSameAs(*slavecondmap))
     dserror("slave dof map mismatch");
 
   masterdofmap_ = mastercondmap;
@@ -217,11 +217,11 @@ void ADAPTER::Coupling::SetupCoupling(const DRT::Discretization& masterdis,
             masternodes.NumGlobalElements(),
             slavenodes.NumGlobalElements());
 
-  vector<int> mastervect(masternodes.MyGlobalElements(),
+  std::vector<int> mastervect(masternodes.MyGlobalElements(),
                          masternodes.MyGlobalElements() + masternodes.NumMyElements());
-  vector<int> slavevect(slavenodes.MyGlobalElements(),
+  std::vector<int> slavevect(slavenodes.MyGlobalElements(),
                         slavenodes.MyGlobalElements() + slavenodes.NumMyElements());
-  vector<int> permslavenodes;
+  std::vector<int> permslavenodes;
 
   MatchNodes(masterdis, slavedis, mastervect, permslavenodes, slavevect, matchall);
 
@@ -267,7 +267,7 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
 
   // extract permutation
 
-  vector<int> patchedmasternodes;
+  std::vector<int> patchedmasternodes;
   patchedmasternodes.reserve(coupling.size());
   permslavenodes.reserve(slavenodes.size());
 
@@ -350,8 +350,8 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
 {
   // communicate dofs
 
-  vector<int> dofmapvec;
-  map<int, vector<int> > dofs;
+  std::vector<int> dofmapvec;
+  map<int, std::vector<int> > dofs;
 
   const int* nodes = nodemap->MyGlobalElements();
   const int numnode = nodemap->NumMyElements();
@@ -364,7 +364,7 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
     // get all periodic boundary conditions on this node
     // slave nodes do not contribute dofs, we skip them
     // ----------------------------------------------------------------
-    vector<DRT::Condition*> thiscond;
+    std::vector<DRT::Condition*> thiscond;
     actnode->GetCondition("SurfacePeriodic",thiscond);
 
     if(thiscond.empty())
@@ -379,8 +379,8 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
       unsigned ntimesmaster = 0;
       for (unsigned numcond=0;numcond<thiscond.size();++numcond)
       {
-        const string* mymasterslavetoggle
-          = thiscond[numcond]->Get<string>("Is slave periodic boundary condition");
+        const std::string* mymasterslavetoggle
+          = thiscond[numcond]->Get<std::string>("Is slave periodic boundary condition");
 
         if(*mymasterslavetoggle=="Master")
         {
@@ -491,9 +491,9 @@ Teuchos::RCP<Epetra_MultiVector> ADAPTER::Coupling::SlaveToMaster(Teuchos::RCP<c
 void ADAPTER::Coupling::MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv, Teuchos::RCP<Epetra_MultiVector> sv) const
 {
 #ifdef DEBUG
-  if (not mv->Map().SameAs(*masterdofmap_))
+  if (not mv->Map().PointSameAs(*masterdofmap_))
     dserror("master dof map vector expected");
-  if (not sv->Map().SameAs(*slavedofmap_))
+  if (not sv->Map().PointSameAs(*slavedofmap_))
     dserror("slave dof map vector expected");
   if (sv->NumVectors()!=mv->NumVectors())
     dserror("column number mismatch %d!=%d",sv->NumVectors(),mv->NumVectors());
@@ -513,14 +513,14 @@ void ADAPTER::Coupling::MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv,
 void ADAPTER::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv, Teuchos::RCP<Epetra_MultiVector> mv) const
 {
 #ifdef DEBUG
-  if (not mv->Map().SameAs(*masterdofmap_))
+  if (not mv->Map().PointSameAs(*masterdofmap_))
     dserror("master dof map vector expected");
-  if (not sv->Map().SameAs(*slavedofmap_))
+  if (not sv->Map().PointSameAs(*slavedofmap_))
   {
-    cout << "slavedofmap_" << endl;
-    cout << *slavedofmap_ << endl;
-    cout << "sv" << endl;
-    cout << sv->Map() << endl;
+    std::cout << "slavedofmap_" << std::endl;
+    std::cout << *slavedofmap_ << std::endl;
+    std::cout << "sv" << std::endl;
+    std::cout << sv->Map() << std::endl;
     dserror("slave dof map vector expected");
   }
   if (sv->NumVectors()!=mv->NumVectors())
@@ -589,7 +589,7 @@ Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::Coupling::MasterToPermMaster(const L
 Teuchos::RCP<LINALG::SparseMatrix> ADAPTER::Coupling::SlaveToPermSlave(const LINALG::SparseMatrix& sm) const
 {
 #ifdef DEBUG
-  if (not sm.RowMap().SameAs(*slavedofmap_))
+  if (not sm.RowMap().PointSameAs(*slavedofmap_))
     dserror("slave dof map vector expected");
   if (not sm.Filled())
     dserror("matrix must be filled");

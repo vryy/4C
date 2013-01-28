@@ -23,7 +23,7 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
-LINEAR_SOLVER                   3
+LINEAR_SOLVER                   1
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                0.1
 CONVCHECK                       L_2_norm
@@ -51,8 +51,6 @@ TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
 -----------------------------------------------------------------FSI DYNAMIC
-ADAPTIVEDIST                    0
-BASETOL                         1.0e-8
 CONVTOL                         1e-09
 COUPALGO                        iter_mortar_monolithicstructuresplit
 COUPMETHOD                      mtr
@@ -96,7 +94,7 @@ PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
-LINEAR_SOLVER                   2
+LINEAR_SOLVER                   1
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 ADAPTERDRIVE                    No
@@ -126,13 +124,6 @@ BETA                            0.25
 GAMMA                           0.5
 GENAVG                          ImrLike
 --------------------------------------------------------------------SOLVER 1
-NAME                            Ale_Solver
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 2
-NAME                            Structure_Solver
-SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 3
-NAME                            Fluid_Solver
 SOLVER                          UMFPACK
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_ElastHyper NUMMAT 1 MATIDS 4 DENS 500
@@ -3528,10 +3519,10 @@ NODE 1132 COORD 1.00000000e+00 1.10000002e+00 -5.00000007e-02
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 60 QUANTITY dispy VALUE -3.28504130468710919e-05 TOLERANCE 1e-9
-FLUID DIS fluid NODE 589 QUANTITY velx VALUE 3.00126570728137784e-05 TOLERANCE 1e-9
-FLUID DIS fluid NODE 589 QUANTITY vely VALUE -6.97217372818037919e-04 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 60 QUANTITY dispy VALUE -3.28428084667884310e-05 TOLERANCE 1e-9
+FLUID DIS fluid NODE 589 QUANTITY velx VALUE 3.00077758649603649e-05 TOLERANCE 1e-9
+FLUID DIS fluid NODE 589 QUANTITY vely VALUE -6.97286355327307161e-04 TOLERANCE 1e-9
 FLUID DIS fluid NODE 589 QUANTITY velz VALUE 0.0 TOLERANCE 1e-9
-FLUID DIS fluid NODE 589 QUANTITY pressure VALUE 6.36244314389491916e-03 TOLERANCE 1e-9
+FLUID DIS fluid NODE 589 QUANTITY pressure VALUE 6.36031034263605157e-03 TOLERANCE 1e-7
 -------------------------------------------------------------------------END
 //                              END

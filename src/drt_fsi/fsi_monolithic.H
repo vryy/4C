@@ -303,16 +303,19 @@ namespace UTILS
     CreateStatusTest(Teuchos::ParameterList& nlParams,
                      Teuchos::RCP<NOX::Epetra::Group> grp) = 0;
 
-    /// extract the three field vectors from a given composed vector
-    /*!
-      We are dealing with NOX here, so we get absolute values. x is the sum of
-      all increments up to this point.
-
-      \param x  (i) composed vector that contains all field vectors
-      \param sx (o) structural displacements
-      \param fx (o) fluid velocities and pressure
-      \param ax (o) ale displacements
-     */
+    //! Extract the three field vectors from a given composed vector
+    //!
+    //! We are dealing with NOX here, so x is step increment \f$\Delta x\f$
+    //! that brings us from \f$t^{n}\f$ to \f$t^{n+1}\f$:
+    //! \f$x^{n+1} = x^{n} + \Delta x\f$
+    //!
+    //! Iteration increments, that are needed internally in the single fields,
+    //! have to be computed somewhere else.
+    //!
+    //! \param x  (i) composed vector that contains all field vectors
+    //! \param sx (o) structural displacements
+    //! \param fx (o) fluid velocities and pressure
+    //! \param ax (o) ale displacements
     virtual void ExtractFieldVectors(Teuchos::RCP<const Epetra_Vector> x,
                                      Teuchos::RCP<const Epetra_Vector>& sx,
                                      Teuchos::RCP<const Epetra_Vector>& fx,
@@ -334,7 +337,7 @@ namespace UTILS
      */
     void SetDofRowMaps(const std::vector<Teuchos::RCP<const Epetra_Map> >& maps);
 
-    /// extractor to communicate between full monolithic map and block maps
+    /// extractor to communicate between full monolithic map and block maps of single fields
     const LINALG::MultiMapExtractor& Extractor() const { return blockrowdofmap_; }
 
     //@}
@@ -354,10 +357,10 @@ namespace UTILS
     //! @name Predictor/inhomogeneous Dirichlet related stuff
 
     //! structural displacement increment of interface DOFs due to predictor or inhomogeneous DBCs
-    Teuchos::RCP<Epetra_Vector> ddgpre_;
+    Teuchos::RCP<Epetra_Vector> ddgpred_;
 
     //! fluid velocity increment of interface DOFs due to predictor or inhomogeneous DBCs
-    Teuchos::RCP<Epetra_Vector> dugpre_;
+    Teuchos::RCP<Epetra_Vector> dugpred_;
 
     //@}
 

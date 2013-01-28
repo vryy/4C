@@ -58,6 +58,8 @@ RESTARTEVRY                     2
 COUPALGO                        iter_monolithicfluidsplit
 ITEMAX                          100
 CONVTOL                         1.0E-10
+BASETOL                         1.0E-5
+ADAPTIVEDIST                    0.001
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
@@ -7031,11 +7033,11 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 //CURVE1 on Explicit FUNC f(t)=exp(1-1:t) c1 1.0 c2 1.0
 CURVE1 on Explicit FUNC f(t)=1-cos(2*PI*C1*t) c1 0.2 c2 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1834 QUANTITY dispx VALUE -3.36179520567854456e-05 TOLERANCE 1e-9
-STRUCTURE DIS structure NODE 1834 QUANTITY dispy VALUE -3.68902187902123493e-04 TOLERANCE 1e-9
-FLUID DIS fluid NODE 2155 QUANTITY vely VALUE 3.23880209627335045e-04 TOLERANCE 1e-7
-FLUID DIS fluid NODE 2155 QUANTITY pressure VALUE -2.33900227912890290e-03 TOLERANCE 1e-7
-ALE DIS ale NODE 1380 QUANTITY dispx VALUE -1.94525993072178688e-05 TOLERANCE 1e-9
-ALE DIS ale NODE 1380 QUANTITY dispy VALUE -1.64560432029784462e-04 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 1834 QUANTITY dispx VALUE -3.36135355249076405e-05 TOLERANCE 1e-13
+STRUCTURE DIS structure NODE 1834 QUANTITY dispy VALUE -3.69133673948413249e-04 TOLERANCE 1e-13
+FLUID DIS fluid NODE 2155 QUANTITY vely VALUE 3.23471272284182973e-04 TOLERANCE 1e-12
+FLUID DIS fluid NODE 2155 QUANTITY pressure VALUE -2.33879577758925932e-03 TOLERANCE 1e-11
+ALE DIS ale NODE 1380 QUANTITY dispx VALUE -1.94606189068365402e-05 TOLERANCE 1e-13
+ALE DIS ale NODE 1380 QUANTITY dispy VALUE -1.64632359027916262e-04 TOLERANCE 1e-12
 -------------------------------------------------------------------------END
 //                              END

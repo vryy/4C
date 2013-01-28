@@ -70,15 +70,15 @@ FSI::MortarMonolithicStructureSplit::MortarMonolithicStructureSplit(const Epetra
   sggprev_  = Teuchos::null;
 
 #ifdef DEBUG
-  if (coupsfm_ == Teuchos::null)        { dserror("Allocation of 'coupsfm_' failed."); }
-  if (icoupfa_ == Teuchos::null)        { dserror("Allocation of 'icoupfa_' failed."); }
-  if (fscoupfa_ == Teuchos::null)       { dserror("Allocation of 'fscoupfa_' failed."); }
-  if (aigtransform_ == Teuchos::null)   { dserror("Allocation of 'aigtransform_' failed."); }
-  if (fmiitransform_ == Teuchos::null)  { dserror("Allocation of 'fmiitransform_' failed."); }
-  if (fmgitransform_ == Teuchos::null)  { dserror("Allocation of 'fmgitransform_' failed."); }
+  if (coupsfm_        == Teuchos::null) { dserror("Allocation of 'coupsfm_' failed."); }
+  if (icoupfa_        == Teuchos::null) { dserror("Allocation of 'icoupfa_' failed."); }
+  if (fscoupfa_       == Teuchos::null) { dserror("Allocation of 'fscoupfa_' failed."); }
+  if (aigtransform_   == Teuchos::null) { dserror("Allocation of 'aigtransform_' failed."); }
+  if (fmiitransform_  == Teuchos::null) { dserror("Allocation of 'fmiitransform_' failed."); }
+  if (fmgitransform_  == Teuchos::null) { dserror("Allocation of 'fmgitransform_' failed."); }
   if (fsaigtransform_ == Teuchos::null) { dserror("Allocation of 'fsaigtransform_' failed."); }
   if (fsmgitransform_ == Teuchos::null) { dserror("Allocation of 'fsmgitransform_' failed."); }
-  if (lambda_ == Teuchos::null)         { dserror("Allocation of 'lambda_' failed."); }
+  if (lambda_         == Teuchos::null) { dserror("Allocation of 'lambda_' failed."); }
 #endif
 
   return;
@@ -298,117 +298,255 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
 
   firstcall_ = firstcall;
 
-  // The following terms of rhs are only considered in the first Newton iteration.
-  // They transport information from the last time step into the system of equations.
+  // The following terms of rhs are only considered in the first Newton iteration
+  // since we formulate our linear system in iteration increments. They transport
+  // information from the last time step or the predictor into the Newton loop.
   if (firstcall)
   {
-    // get the Mortar projection matrix P = D^{-1} * M
-    const Teuchos::RCP<LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarTrafo();
+    // get time integration parameters of structure an fluid time integrators
+    // to enable consistent time integration among the fields
+    const double stiparam = StructureField()->TimIntParam();
+    const double ftiparam = FluidField().TimIntParam();
 
     // some scaling factors for fluid
-    const double scale = FluidField().ResidualScaling();
+    const double timescale = FluidField().TimeScaling();
+    const double scale     = FluidField().ResidualScaling();
 
-    // get single field block matrices
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> s = StructureField()->BlockSystemMatrix();
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
+    // old interface velocity of fluid field
+    const Teuchos::RCP<const Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
+
+    // store structural interface displacement increment due to predictor
+    // or inhomogeneous Dirichlet boundary conditions
+    ddgpred_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->ExtractInterfaceDispnp()));
+    ddgpred_->Update(-1.0, *StructureField()->ExtractInterfaceDispn(), 1.0);
+
+    // store fluid interface velocity increment due to predictor
+    // or inhomogeneous Dirichlet boundary conditions
+    dugpred_ = Teuchos::rcp(new Epetra_Vector(*FluidField().ExtractInterfaceVelnp()));
+    dugpred_->Update(-1.0, *fveln, 1.0);
+
+    // get the Mortar projection matrix P = D^{-1} * M
+    const Teuchos::RCP<const LINALG::SparseMatrix> mortarp = coupsfm_->GetMortarTrafo();
+
+    // get fluid shape derivatives matrix
+    const Teuchos::RCP<const LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
+
+    // get structure matrix
+    const Teuchos::RCP<const LINALG::BlockSparseMatrixBase> blocks = StructureField()->BlockSystemMatrix();
+
+    // get ale matrix
+    const Teuchos::RCP<const LINALG::BlockSparseMatrixBase> blocka = AleField().BlockSystemMatrix();
 
 #ifdef DEBUG
     if (mortarp==Teuchos::null) { dserror("Expected Teuchos::rcp to mortar matrix P."); }
-    if (s==Teuchos::null)       { dserror("Expected Teuchos::rcp to structure block matrix."); }
-    if (a==Teuchos::null)       { dserror("Expected Teuchos::rcp to ALE block matrix."); }
+    if (blocks==Teuchos::null)  { dserror("Expected Teuchos::rcp to structure block matrix."); }
+    if (blocka==Teuchos::null)  { dserror("Expected Teuchos::rcp to ALE block matrix."); }
 #endif
 
     // extract submatrices
-    LINALG::SparseMatrix& aig = a->Matrix(0,1);
+    const LINALG::SparseMatrix& sig = blocks->Matrix(0,1);  // S_{I\Gamma}
+    const LINALG::SparseMatrix& sgg = blocks->Matrix(1,1);  // S_{\Gamma\Gamma}
+    const LINALG::SparseMatrix& aig = blocka->Matrix(0,1);  // A_{I\Gamma}
 
     // some often re-used vectors
-    Teuchos::RCP<Epetra_Vector> rhs = Teuchos::null;
+    Teuchos::RCP<Epetra_Vector> rhs    = Teuchos::null;  // right hand side of single set of DOFs
+    Teuchos::RCP<Epetra_Vector> auxvec = Teuchos::null;  // just for convenience
+    Teuchos::RCP<Epetra_Vector> tmpvec = Teuchos::null;  // just for convenience
 
-    rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap(),true));
-    Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
+    // Different contributions/terms to the rhs are separated by the following comment line
+    // ---------- inner structure DOFs
+    /* The following terms are added to the inner structure DOFs of right hand side:
+     *
+     * rhs_firstnewtonstep =
+     *
+     * (1)  - dt * S_{I \Gamma} * P * u^{n}_{\Gamma}
+     *
+     * (2)  + S_{I \Gamma} * \Delta d_{\Gamma,p}
+     *
+     * (3)  - tau * S_{I \Gamma} * P * \Delta u_{\Gamma,p}
+     *
+     * Remarks on all terms:
+     * +  tau: time scaling factor for interface time integration (tau = 1/FluidField().TimeScaling())
+     *
+     */
+    // ----------addressing term 1
+    rhs = Teuchos::rcp(new Epetra_Vector(sig.RangeMap(),true));
+    auxvec = Teuchos::rcp(new Epetra_Vector(mortarp->RangeMap(),true));
+
+    mortarp->Apply(*fveln, *auxvec);
+    sig.Apply(*auxvec, *rhs);
+
+    rhs->Scale(-Dt());
+
+    Extractor().AddVector(*rhs, 0, f);
+    // ----------end of term 1
+
+    // ----------addressing term 2
+    rhs = Teuchos::rcp(new Epetra_Vector(sig.RangeMap(),true));
+
+    sig.Apply(*ddgpred_, *rhs);
+
+    Extractor().AddVector(*rhs, 0, f);
+    // ----------end of term 2
+
+    // ----------addressing term 3
+    rhs = Teuchos::rcp(new Epetra_Vector(sig.RangeMap(),true));
+    auxvec = Teuchos::rcp(new Epetra_Vector(mortarp->RangeMap(),true));
+
+    mortarp->Apply(*dugpred_, *auxvec);
+    sig.Apply(*auxvec, *rhs);
+
+    rhs->Scale(-1. / timescale);
+
+    Extractor().AddVector(*rhs, 0, f);
+    // ----------end of term 3
+    // ----------end of inner structure DOFs
+
+    // ---------- inner fluid DOFs
+    /* The following terms are added to the inner fluid DOFs of right hand side:
+     *
+     * rhs_firstnewtonstep =
+     *
+     * (1)  - dt * F^{G}_{I \Gamma} * u^{n}_{\Gamma}
+     *
+     */
+    // ----------addressing term 1
+    if (mmm != Teuchos::null)
+    {
+      // extract F^{G}_{I \Gamma}
+      const LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
+
+      rhs = Teuchos::rcp(new Epetra_Vector(fmig.RangeMap(),true));
+
+      fmig.Apply(*fveln, *rhs);
+
+      rhs->Scale(-Dt());
+      rhs = FluidField().Interface()->InsertOtherVector(rhs);
+
+      Extractor().AddVector(*rhs,1,f);
+    }
+    // ----------end of term 1
+    // ----------end of inner fluid DOFs
+
+    // ---------- interface fluid DOFs
+    /* The following terms are added to the interface fluid DOFs of right hand side:
+     *
+     * rhs_firstnewtonstep =
+     *
+     * (1)  - dt * F^{G}_{\Gamma\Gamma} * u^{n}_{\Gamma}
+     *
+     * (2)  - (1-ftiparam) / (1-stiparam) * dt * P^{T} * S_{\Gamma\Gamma} * P * u^{n}_{\Gamma}
+     *
+     * (3)  + (1-ftiparam) / (1-stiparam) * P^{T} * S_{\Gamma\Gamma} * \Delta d_{\Gamma,p}
+     *
+     * (4)  - (1-ftiparam) / (1-stiparam) * tau * P^{T} * S_{\Gamma\Gamma} * P * \Delta u_{\Gamma,p}
+     *
+     * Remarks on all terms:
+     * +  tau: time scaling factor for interface time integration (tau = 1/FluidField().TimeScaling())
+     *
+     */
+    // ----------addressing term 1
+    if (mmm != Teuchos::null)
+    {
+      // extract F^{G}_{\Gamma\Gamma}
+      const LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
+
+      rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RangeMap(),true));
+
+      fmgg.Apply(*fveln, *rhs);
+
+      rhs->Scale(-Dt());
+      rhs = FluidField().Interface()->InsertFSICondVector(rhs);
+
+      Extractor().AddVector(*rhs, 1, f);
+    }
+    // ----------end of term 1
+
+    // ----------addressing term 2
+    rhs = Teuchos::rcp(new Epetra_Vector(mortarp->DomainMap(),true));
+    auxvec = Teuchos::rcp(new Epetra_Vector(sgg.RangeMap(),true));
+    tmpvec = Teuchos::rcp(new Epetra_Vector(mortarp->RangeMap(),true));
+
+    mortarp->Apply(*fveln, *tmpvec);
+    sgg.Apply(*tmpvec, *auxvec);
+    mortarp->Multiply(true, *auxvec, *rhs);
+
+    rhs->Scale(-(1.-ftiparam) / (1.-stiparam) * Dt() / scale);
+    rhs = FluidField().Interface()->InsertFSICondVector(rhs);
+
+    Extractor().AddVector(*rhs, 1, f);
+    // ----------end of term 2
+
+    // ----------addressing term 3
+    rhs = Teuchos::rcp(new Epetra_Vector(mortarp->DomainMap(),true));
+    auxvec = Teuchos::rcp(new Epetra_Vector(sgg.RangeMap(),true));
+
+    sgg.Apply(*ddgpred_, *auxvec);
+    mortarp->Multiply(true, *auxvec, *rhs);
+
+    rhs->Scale((1.-ftiparam) / (1.-stiparam) / scale);
+    rhs = FluidField().Interface()->InsertFSICondVector(rhs);
+
+    Extractor().AddVector(*rhs, 1, f);
+    // ----------end of term 3
+
+    // ----------addressing term 4
+    rhs = Teuchos::rcp(new Epetra_Vector(mortarp->DomainMap(),true));
+    auxvec = Teuchos::rcp(new Epetra_Vector(sgg.RangeMap(),true));
+    tmpvec = Teuchos::rcp(new Epetra_Vector(mortarp->RangeMap(),true));
+
+    mortarp->Apply(*dugpred_, *tmpvec);
+    sgg.Apply(*tmpvec, *auxvec);
+    mortarp->Multiply(true, *auxvec, *rhs);
+
+    rhs->Scale(-(1.-ftiparam) / (1.-stiparam) / timescale  / scale);
+    rhs = FluidField().Interface()->InsertFSICondVector(rhs);
+
+    Extractor().AddVector(*rhs, 1, f);
+    // ----------end of term 4
+    // ----------end of interface fluid DOFs
+
+    // ---------- inner ALE DOFs
+    /* The following terms are added to the inner ALE DOFs of right hand side:
+     *
+     * rhs_firstnewtonstep =
+     *
+     * (1)  - dt * A_{I \Gamma} * u^{n}_{\Gamma}
+     *
+     */
+    // ----------addressing term 1
+    rhs = Teuchos::rcp(new Epetra_Vector(aig.RangeMap(),true));
+
+    aig.Apply(*icoupfa_->MasterToSlave(fveln), *rhs);
+
+    rhs->Scale(-Dt());
+
+    Extractor().AddVector(*rhs, 2, f);
+    // ----------end of term 1
+    // ----------end of inner ALE DOFs
 
     // only if relative movement between ale and structure is possible
     if (aleproj_!= INPAR::FSI::ALEprojection_none)
     {
+      rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap(),true));
 
       aig.Apply(*icoupfa_->MasterToSlave(iprojdispinc_),*rhs);
 
       Extractor().AddVector(*rhs,2,f);
-    }
-    // additional rhs term for ALE equations
-    // -dt Aig u(n)
-    //
-    //    1/dt Delta d(n+1) = theta Delta u(n+1) + u(n)
-    //
-    // And we are concerned with the u(n) part here.
-
-    Teuchos::RCP<Epetra_Vector> aveln = icoupfa_->MasterToSlave(fveln);
-
-    aig.Apply(*aveln,*rhs);
-
-    rhs->Scale(-1.*Dt());
-
-    Extractor().AddVector(*rhs,2,f);
-
-    Teuchos::RCP<Epetra_Vector> tmprhs = Teuchos::rcp(new Epetra_Vector(mortarp->RowMap(),true));
-
-    rhs = Teuchos::rcp(new Epetra_Vector(s->Matrix(0,1).RowMap(),true));
-
-    mortarp->Apply(*fveln,*tmprhs);
-    s->Matrix(0,1).Apply(*tmprhs,*rhs);
-    rhs->Scale(-1.*Dt());
-
-    Teuchos::RCP<const Epetra_Vector> zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
-    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(StructureField()->GetDBCMapExtractor()->CondMap()));
-
-    Extractor().AddVector(*rhs,0,f);
-    rhs = Teuchos::rcp(new Epetra_Vector(s->Matrix(1,1).RowMap(),true));
-    s->Matrix(1,1).Apply(*tmprhs,*rhs);
-    tmprhs = Teuchos::rcp(new Epetra_Vector(mortarp->DomainMap(),true));
-
-    mortarp->SetUseTranspose(true);
-    mortarp->Apply(*rhs,*tmprhs);
-    mortarp->SetUseTranspose(false);
-
-    rhs = FluidField().Interface()->InsertFSICondVector(tmprhs);
-    rhs->Scale(-1.*Dt()/scale);
-
-    zeros = Teuchos::rcp(new const Epetra_Vector(rhs->Map(),true));
-    LINALG::ApplyDirichlettoSystem(rhs,zeros,*(FluidField().GetDBCMapExtractor()->CondMap()));
-
-    Extractor().AddVector(*rhs,1,f);
-    // shape derivatives
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> mmm = FluidField().ShapeDerivatives();
-    if (mmm!=Teuchos::null)
-    {
-      LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
-      LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
-
-      rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap(),true));
-      fmig.Apply(*fveln,*rhs);
-      Teuchos::RCP<Epetra_Vector> veln = FluidField().Interface()->InsertOtherVector(rhs);
-
-      rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap(),true));
-      fmgg.Apply(*fveln,*rhs);
-      FluidField().Interface()->InsertFSICondVector(rhs,veln);
-
-      veln->Scale(-1.*Dt());
-
-      Extractor().AddVector(*veln,1,f);
     }
 
     // if there is a free surface
     if (FluidField().Interface()->FSCondRelevant())
     {
       // here we extract the free surface submatrices from position 2
-      LINALG::SparseMatrix& aig = a->Matrix(0,2);
+      const LINALG::SparseMatrix& afsig = blocka->Matrix(0,2);
 
       // extract fluid free surface velocities.
       Teuchos::RCP<Epetra_Vector> fveln = FluidField().ExtractFreeSurfaceVeln();
       Teuchos::RCP<Epetra_Vector> aveln = icoupfa_->MasterToSlave(fveln);
 
-      Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(aig.RowMap(),true));
-      aig.Apply(*aveln,*rhs);
+      Teuchos::RCP<Epetra_Vector> rhs = Teuchos::rcp(new Epetra_Vector(afsig.RowMap(),true));
+      afsig.Apply(*aveln,*rhs);
 
       rhs->Scale(-1.*Dt());
 
@@ -419,15 +557,15 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
       if (mmm!=Teuchos::null)
       {
         // here we extract the free surface submatrices from position 2
-        LINALG::SparseMatrix& fmig = mmm->Matrix(0,2);
-        LINALG::SparseMatrix& fmgg = mmm->Matrix(2,2);
+        LINALG::SparseMatrix& fmfsig = mmm->Matrix(0,2);
+        LINALG::SparseMatrix& fmfsgg = mmm->Matrix(2,2);
 
-        rhs = Teuchos::rcp(new Epetra_Vector(fmig.RowMap(),true));
-        fmig.Apply(*fveln,*rhs);
+        rhs = Teuchos::rcp(new Epetra_Vector(fmfsig.RowMap(),true));
+        fmfsig.Apply(*fveln,*rhs);
         Teuchos::RCP<Epetra_Vector> veln = FluidField().Interface()->InsertOtherVector(rhs);
 
-        rhs = Teuchos::rcp(new Epetra_Vector(fmgg.RowMap(),true));
-        fmgg.Apply(*fveln,*rhs);
+        rhs = Teuchos::rcp(new Epetra_Vector(fmfsgg.RowMap(),true));
+        fmfsgg.Apply(*fveln,*rhs);
         FluidField().Interface()->InsertFSCondVector(rhs,veln);
 
         veln->Scale(-1.*Dt());
@@ -446,6 +584,7 @@ void FSI::MortarMonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstc
 
   // NOX expects the 'positive' residual. The negative sign for the
   // linearized Newton system J*dx=-r is done internally by NOX.
+  // Since we assembled the right hand side, we have to invert the sign here.
   f.Scale(-1.);
 }
 
@@ -467,9 +606,16 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   const Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
   if (a==Teuchos::null) dserror("expect ale block matrix");
 
+#ifdef DEBUG
+  // some checks whether maps for matrix-matrix-mulitplication do really match
+  if (!s->Matrix(0,1).DomainMap().PointSameAs(mortarp->RangeMap())) { dserror("Maps do not match."); }
+  if (!s->Matrix(1,0).RangeMap(). PointSameAs(mortarp->RangeMap())) { dserror("Maps do not match."); }
+  if (!s->Matrix(1,1).DomainMap().PointSameAs(mortarp->RangeMap())) { dserror("Maps do not match."); }
+#endif
+
   // extract submatrices
   LINALG::SparseMatrix& aii = a->Matrix(0,0);
-  LINALG::SparseMatrix& aig = a->Matrix(0,1);
+  const LINALG::SparseMatrix& aig = a->Matrix(0,1);
 
   // scaling factors for fluid
   const double scale     = FluidField().ResidualScaling();
@@ -538,10 +684,10 @@ void FSI::MortarMonolithicStructureSplit::SetupSystemMatrix(LINALG::BlockSparseM
   if (mmm!=Teuchos::null)
   {
     // extract submatrices
-    LINALG::SparseMatrix& fmii = mmm->Matrix(0,0);
-    LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
-    LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
-    LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
+    const LINALG::SparseMatrix& fmii = mmm->Matrix(0,0);
+    const LINALG::SparseMatrix& fmig = mmm->Matrix(0,1);
+    const LINALG::SparseMatrix& fmgi = mmm->Matrix(1,0);
+    const LINALG::SparseMatrix& fmgg = mmm->Matrix(1,1);
 
     // ----------Addressing contribution to block (3,3)
     mat.Matrix(1,1).Add(fmgg,false,1./timescale,1.0);
@@ -1093,6 +1239,11 @@ void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MortarMonolithicStructureSplit::ExtractFieldVectors");
 
+#ifdef DEBUG
+  if(ddgpred_ == Teuchos::null) { dserror("Vector 'ddgpred_' has not been initialized properly."); }
+  if(dugpred_ == Teuchos::null) { dserror("Vector 'dugpred_' has not been initialized properly."); }
+#endif
+
   // We have overlap at the interface where we condensed the structure interface
   // displacements form the global system. Thus we need the interface part of the
   // velocity vector and append it to the structure and ale vector. (With the
@@ -1106,7 +1257,19 @@ void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(
 
   // process structure unknowns
   Teuchos::RCP<Epetra_Vector> fcx = FluidField().Interface()->ExtractFSICondVector(fx);
-  FluidField().VelocityToDisplacement(fcx);
+
+  Teuchos::RCP<Epetra_Vector> ddgpredfluid = Teuchos::rcp(new Epetra_Vector(mortarp->RangeMap(),true));
+  mortarp->Apply(*ddgpred_, *ddgpredfluid);
+  if (firstcall_)
+  {
+    FluidField().VelocityToDisplacement(fcx, ddgpredfluid, dugpred_);
+  }
+  else
+  {
+    Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(fcx->Map(),true));
+    FluidField().VelocityToDisplacement(fcx, ddgpredfluid, zeros);
+  }
+
   Teuchos::RCP<const Epetra_Vector> sox = Extractor().ExtractVector(x,0);
   Teuchos::RCP<Epetra_Vector> scx = LINALG::CreateVector(*StructureField()->Interface()->FSICondMap());
   mortarp->Apply(*fcx,*scx);
@@ -1115,8 +1278,20 @@ void FSI::MortarMonolithicStructureSplit::ExtractFieldVectors(
   sx = s;
 
   // process ale unknowns
+  Teuchos::RCP<Epetra_Vector> fcxforale = FluidField().Interface()->ExtractFSICondVector(fx);
+
+  if (firstcall_)
+  {
+    FluidField().VelocityToDisplacement(fcxforale, ddgpredfluid, dugpred_);
+  }
+  else
+  {
+    Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(fcxforale->Map(),true));
+    FluidField().VelocityToDisplacement(fcxforale, ddgpredfluid, zeros);
+  }
+
   Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
-  Teuchos::RCP<Epetra_Vector> acx = icoupfa_->MasterToSlave(fcx);
+  Teuchos::RCP<Epetra_Vector> acx = icoupfa_->MasterToSlave(fcxforale);
 
   Teuchos::RCP<Epetra_Vector> a = AleField().Interface()->InsertOtherVector(aox);
   AleField().Interface()->InsertFSICondVector(acx, a);
@@ -1285,11 +1460,13 @@ void FSI::MortarMonolithicStructureSplit::RecoverLagrangeMultiplier()
    */
 
   // ---------Addressing term (1)
-  lambda_->Update(-stiparam,*lambda_,0.0);
+//  lambda_->Update(-stiparam,*lambda_,0.0);
+  lambda_->Scale(-stiparam);
   // ---------End of term (1)
 
   // ---------Addressing term (3)
-  Teuchos::RCP<Epetra_Vector> structureresidual = StructureField()->Interface()->ExtractFSICondVector(StructureField()->RHS());
+  Teuchos::RCP<Epetra_Vector> structureresidual
+    = Teuchos::rcp(new Epetra_Vector(*StructureField()->Interface()->ExtractFSICondVector(StructureField()->RHS())));
   structureresidual->Scale(-1.0); // invert sign to obtain residual, not rhs
   tmpvec = Teuchos::rcp(new Epetra_Vector(*structureresidual));
   // ---------End of term (3)
@@ -1337,8 +1514,8 @@ void FSI::MortarMonolithicStructureSplit::RecoverLagrangeMultiplier()
   // Finally, the Lagrange multiplier lambda_ is recovered here. It has the unit [N/m^2].
   // Actual nodal forces are obtained by multiplication with mortar matrices M or D later on.
 
-  CheckKinematicConstraint();
-  CheckDynamicEquilibrium();
+//  CheckKinematicConstraint();
+//  CheckDynamicEquilibrium();
 
   return;
 }

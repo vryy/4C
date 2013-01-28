@@ -113,32 +113,32 @@ namespace FSI
     virtual void RecoverLagrangeMultiplier();
 
     //! Additional safety check of kinematic constraint during a single time step:
-    /* Constraint equation:
-     *
-     * \f$D \mathbf{d}_{\Gamma}^{n+1} - D \mathbf{d}_{\Gamma}^{n}
-     *      - \tau * M * \Delta \mathbf{u}_{\Gamma}^{n+1} - \Delta t M * \mathbf{u}_{\Gamma}^{n} \doteq \mathbf{0}\f$
-     * with interface time integration factor
-     * \f$\tau = \begin{cases}\frac{\Delta t}{2} & \text {if }2^{nd}\text{ order}\\ \Delta t& \text {if }1^{st}\text{ order}\end{cases}
-     *
-     * Do this check only for safety reasons. In principal, the constraint is satisfied due to solving the
-     * condensed nonlinear system of equations. We expect really small violation norms.
-     *
-     * \author mayr.mt
-     * \date 10/2012
-     */
+    //!
+    //! Constraint equation:
+    //!
+    //! \f$D \mathbf{d}_{\Gamma}^{n+1} - D \mathbf{d}_{\Gamma}^{n} - \tau * M * \Delta \mathbf{u}_{\Gamma}^{n+1} - \Delta t M * \mathbf{u}_{\Gamma}^{n} \doteq \mathbf{0}\f$
+    //!
+    //! with interface time integration factor
+    //! \f$\tau = \begin{cases}\frac{\Delta t}{2} & \text {if }2^{nd}\text{ order}\\ \Delta t& \text {if }1^{st}\text{ order}\end{cases}\f$
+    //!
+    //! Do this check only for safety reasons. Basically, the constraint is satisfied due to solving the
+    //! condensed nonlinear system of equations. We expect really small violation norms.
+    //!
+    //! \author mayr.mt
+    //! \date 10/2012
     virtual void CheckKinematicConstraint();
 
     //! Additional safety check of dynamic equilibrium during a single time step:
-    /* Dynamic equilibrium at the interface:
-     *
-     * \f$M^{T} \mathbf{\lambda} - D^{T} \mathbf{\lambda} = \mathbf{0}
-     *
-     * Do this check only for safety reasons. In principal, the constraint is satisfied due to solving the
-     * condensed nonlinear system of equations. We expect really small violation norms.
-     *
-     * \author mayr.mt
-     * \date 10/2012
-     */
+    //!
+    //! Dynamic equilibrium at the interface:
+    //!
+    //! \f$M^{T} \mathbf{\lambda} - D^{T} \mathbf{\lambda} = \mathbf{0}\f$
+    //!
+    //! Do this check only for safety reasons. Basically, the constraint is satisfied due to solving the
+    //! condensed nonlinear system of equations. We expect really small violation norms.
+    //!
+    //! \author mayr.mt
+    //! \date 10/2012
     virtual void CheckDynamicEquilibrium();
 
   protected:
@@ -158,17 +158,18 @@ namespace FSI
     CreateStatusTest(Teuchos::ParameterList& nlParams,
                      Teuchos::RCP<NOX::Epetra::Group> grp);
 
-    /*! Extract the three field vectors from a given composed vector
-     *
-     * The condensed fluid and ale degrees of freedom have to be recovered
-     * from the structure solution using a suitable displacement-velocity
-     * conversion.
-     *
-     * We are dealing with NOX here, so we get absolute values. x is the sum of
-     * all increments up to this point.
-     *
-     * \sa  ADAPTER::FluidFSI::DisplacementToVelocity()
-     */
+    //! Extract the three field vectors from a given composed vector
+    //!
+    //! The condensed fluid and ale degrees of freedom have to be recovered
+    //! from the structure solution using a suitable displacement-velocity
+    //! conversion.
+    //!
+    //! We are dealing with NOX here, so we get absolute values. x is the sum of
+    //! all increments up to this point within this time step. Hence, the
+    //! solution increments due to predictors have to be treated in a special
+    //! way.
+    //!
+    //! \sa  ADAPTER::FluidFSI::DisplacementToVelocity()
     virtual void ExtractFieldVectors(
         Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
         Teuchos::RCP<const Epetra_Vector>& sx,  ///< structural displacements
@@ -176,14 +177,12 @@ namespace FSI
         Teuchos::RCP<const Epetra_Vector>& ax   ///< ale displacements
     );
 
-
   private:
 
-    /// build block vector from field vectors
-    /* Here, all contributions to rhs vector, that are used in every Newton iteration, are assembled.
-     *  a) residuals from single fields
-     *  b) Lagrange multiplier \f$\lambda^n\f$ from last time step
-     */
+    //! Build block vector from field vectors
+    //! Here, all contributions to rhs vector, that are used in every Newton iteration, are assembled.
+    //!  a) residuals from single fields
+    //!  b) Lagrange multiplier \f$\lambda^n\f$ from last time step
     void SetupVector(
         Epetra_Vector &f,                       ///< composed vector that contains all field vectors
         Teuchos::RCP<const Epetra_Vector> sv,   ///< structural displacements
@@ -192,11 +191,10 @@ namespace FSI
         const double fluidscale                 ///< residual scaling for fluid
     );
 
-    /// block system matrix
-    /* System matrix has a 4x4-block structure corresponding to the vector of unknowns
-     *
-     * \f$\Delta x^T = [\Delta d_I^{S,n+1}~\Delta d_\Gamma^{S,n+1}~\Delta u_I^{F,n+1}~\Delta d_I^{G,n+1}]\f$
-     */
+    //! block system matrix
+    //! System matrix has a 4x4-block structure corresponding to the vector of unknowns
+    //!
+    //! \f$\Delta x^T = [\Delta d_I^{S,n+1}~\Delta d_\Gamma^{S,n+1}~\Delta u_I^{F,n+1}~\Delta d_I^{G,n+1}]\f$
     Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
 
     ///communicator
@@ -240,8 +238,8 @@ namespace FSI
 
     Teuchos::RCP<FSI::UTILS::SlideAleUtils> slideale_;  ///< Sliding Ale helper class
 
-    Teuchos::RCP<Epetra_Vector> iprojdispinc_;        ///<displacement of fluid side of the interface
-    Teuchos::RCP<Epetra_Vector> iprojdisp_;        ///<displacement of fluid side of the interface
+    Teuchos::RCP<Epetra_Vector> iprojdispinc_; ///<displacement of fluid side of the interface
+    Teuchos::RCP<Epetra_Vector> iprojdisp_;    ///<displacement of fluid side of the interface
 
     /// @name Recovery of Lagrange multiplier at the end of each time step
 

@@ -7,218 +7,202 @@
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
 FSI:            iter_monolithicstructuresplit
-Fluid:          Gen_Alpha with constant_acceleration_predictor
+Fluid:          Np_Gen_Alpha with constant_acceleration
 Structure:      GenAlpha with ConstVel
-------------------------------------------------------PROBLEM SIZE
-//ELEMENTS    4
-//NODES       24
-DIM           3
---------------------------------------------------------ALE DYNAMIC
+==> comparison to analytical solution
+----------------------------------------------------------------PROBLEM SIZE
+//ELEMENTS                      4
+//NODES                         24
+DIM                             3
+-----------------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        classic_lin
 LINEAR_SOLVER                   1
------------------------------------------------------DISCRETISATION
+--------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   1
 NUMALEDIS                       1
 NUMARTNETDIS                    1
 NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
-------------------------------------------------------FLUID DYNAMIC
-ALPHA_F                         0.666666666667
-ALPHA_M                         0.833333333333
-CONVCHECK                       L_2_norm
+---------------------------------------------------------------FLUID DYNAMIC
+ALPHA_F                         0.5
+ALPHA_M                         0.5
 CONVFORM                        convective
-CONVTOL                         1e-06
-GAMMA                           0.666666666667
-INITIALFIELD                    zero_field
-ITEMAX                          10
+GAMMA                           0.5
 LINEAR_SOLVER                   1
-NEUMANNINFLOW                   no
 NONLINITER                      fixed_point_like
 PHYSICAL_TYPE                   Incompressible
-PREDICTOR                       steady_state
+PREDICTOR                       constant_acceleration
 TIMEINTEGR                      Np_Gen_Alpha
---------------------------------------------------------FSI DYNAMIC
-BASETOL                         0.00001
+-----------------------------------------------------------------FSI DYNAMIC
 CONVTOL                         1e-10
 COUPALGO                        iter_monolithicstructuresplit
 COUPMETHOD                      conforming
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
-MAXTIME                         1
+MAXTIME                         1.0
 NORMCOMBI_RESFINC               And
 NORM_INC                        Rel
 NORM_RESF                       Rel
 NUMSTEP                         10
-RESTARTEVRY                     2
+RESTARTEVRY                     1
 SECONDORDER                     no
-SHAPEDERIVATIVES                no
+SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                No
 TIMESTEP                        0.1
 UPRES                           1
---------------------------------------------------------PROBLEM TYP
+-----------------------------------------------------------------PROBLEM TYP
 NUMFIELD                        3
 PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
--------------------------------------------------STRUCTURAL DYNAMIC
+----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
-ITERNORM                        L2
-ITWANT                          0
 LINEAR_SOLVER                   1
-LUMPMASS                        No
-MAXITER                         50
-MINITER                         0
-NLNSOL                          fullnewton
-NORMCOMBI_RESFDISP              And
-NORM_DISP                       Abs
-NORM_RESF                       Abs
 PREDICT                         ConstVel
-TOLDISP                         1e-10
-TOLRES                          1e-08
-----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-ALPHA_F                         0.444444444444
-ALPHA_M                         0.333333333333
-BETA                            0.308641975309
-GAMMA                           0.611111111111
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+ALPHA_F                         0.5
+ALPHA_M                         0.5
+BETA                            0.25
+GAMMA                           0.5
 GENAVG                          ImrLike
------------------------------------------------------------SOLVER 1
+--------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
-----------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 2000000 NUE 0.3 DENS 7.8e-4 THEXPANS 0.0
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 200000000000 NUE 0.3 DENS 7.8e-4 THEXPANS 0.0
 MAT 2 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1
-MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 1.0 THEXPANS 0.0 
------------------------------------------------CLONING MATERIAL MAP
+MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 1.0 THEXPANS 0.0
+--------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3
-------------------------------------------------------------CURVE1
-CURVE1 on EXPR FUNC t t1 0.0 t2 100.0
-------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 3
-NDLINE  0
-NDSURF  3
-NDVOL   3
-------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT 3
-// fsi_fluid_nodes
+----------------------------------------------------------------------CURVE1
+CURVE1 on EXPR FUNC -t*t*t t1 0.0 t2 1.0
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         3
+NDLINE                          0
+NDSURF                          3
+NDVOL                           3
+----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT                          3
+//                              fsi_fluid_nodes
 E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// fsi_str_nodes
-E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// str_dry_nodes
+//                              fsi_str_nodes
+E 2 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+//                              str_dry_nodes
+E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
+------------------------------------------------DESIGN VOL DIRICH CONDITIONS
+DVOL                            2
+//                              fluid_volume
+E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+//                              str_vol
+E 2 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
+-----------------------------------------------DESIGN SURF DIRICH CONDITIONS
+DSURF                           1
+//                              fluid_outflow
 E 3 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
---------------------------------------DESIGN VOL DIRICH CONDITIONS
-DVOL   2
-// fluid_volume
-E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-// str_vol
-E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
----------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF  1
-// fluid_outflow
-E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
----------------------------------DESIGN SURF ALE DIRICH CONDITIONS
-DSURF  1
-// fluid_outflow
+-------------------------------------------DESIGN SURF ALE DIRICH CONDITIONS
+DSURF                           1
+//                              fluid_outflow
 E 3 - NUMDOF 4 ONOFF 1 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
-----------------------------------DESIGN VOL ALE DIRICH CONDITIONS
-DVOL   1
-// fluid_volume
+--------------------------------------------DESIGN VOL ALE DIRICH CONDITIONS
+DVOL                            1
+//                              fluid_volume
 E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
--------------------------------DESIGN FSI COUPLING SURF CONDITIONS
-DSURF  2
-// fsi_fluid_interface
+-----------------------------------------DESIGN FSI COUPLING SURF CONDITIONS
+DSURF                           2
+//                              fsi_fluid_interface
 E 1 - 1
-// fsi_structure_interface
+//                              fsi_structure_interface
 E 2 - 1
------------------------------------------------DNODE-NODE TOPOLOGY
-NODE    13 DNODE 1
-NODE    14 DNODE 1
-NODE    15 DNODE 1
-NODE    16 DNODE 1
-NODE    17 DNODE 2
-NODE    18 DNODE 2
-NODE    19 DNODE 2
-NODE    20 DNODE 2
-NODE    21 DNODE 3
-NODE    22 DNODE 3
-NODE    23 DNODE 3
-NODE    24 DNODE 3
------------------------------------------------DLINE-NODE TOPOLOGY
------------------------------------------------DSURF-NODE TOPOLOGY
-NODE    13 DSURFACE 1
-NODE    14 DSURFACE 1
-NODE    15 DSURFACE 1
-NODE    16 DSURFACE 1
-NODE    17 DSURFACE 2
-NODE    18 DSURFACE 2
-NODE    19 DSURFACE 2
-NODE    20 DSURFACE 2
-NODE    1 DSURFACE 3
-NODE    2 DSURFACE 3
-NODE    3 DSURFACE 3
-NODE    4 DSURFACE 3
-------------------------------------------------DVOL-NODE TOPOLOGY
-NODE    1 DVOL 1
-NODE    2 DVOL 1
-NODE    3 DVOL 1
-NODE    4 DVOL 1
-NODE    5 DVOL 1
-NODE    6 DVOL 1
-NODE    7 DVOL 1
-NODE    8 DVOL 1
-NODE    9 DVOL 1
-NODE    10 DVOL 1
-NODE    11 DVOL 1
-NODE    12 DVOL 1
-NODE    13 DVOL 1
-NODE    14 DVOL 1
-NODE    15 DVOL 1
-NODE    16 DVOL 1
-NODE    17 DVOL 2
-NODE    18 DVOL 2
-NODE    19 DVOL 2
-NODE    20 DVOL 2
-NODE    21 DVOL 2
-NODE    22 DVOL 2
-NODE    23 DVOL 2
-NODE    24 DVOL 2
--------------------------------------------------------NODE COORDS
-NODE 1  	COORD	-1.5000000000000000e+00	-5.0000000000000000e-01	5.0000000000000000e-01	
-NODE 2  	COORD	-1.5000000000000000e+00	-5.0000000000000000e-01	-5.0000000000000000e-01	
-NODE 3  	COORD	-1.5000000000000000e+00	5.0000000000000000e-01	-5.0000000000000000e-01	
-NODE 4  	COORD	-1.5000000000000000e+00	5.0000000000000000e-01	5.0000000000000000e-01	
-NODE 5  	COORD	-5.0000000000000000e-01	-5.0000000000000000e-01	5.0000000000000000e-01	
-NODE 6  	COORD	-5.0000000000000000e-01	-5.0000000000000000e-01	-5.0000000000000000e-01	
-NODE 7  	COORD	-5.0000000000000000e-01	5.0000000000000000e-01	-5.0000000000000000e-01	
-NODE 8  	COORD	-5.0000000000000000e-01	5.0000000000000000e-01	5.0000000000000000e-01	
-NODE 9  	COORD	5.0000000000000000e-01	-5.0000000000000000e-01	5.0000000000000000e-01	
-NODE 10  	COORD	5.0000000000000000e-01	-5.0000000000000000e-01	-5.0000000000000000e-01	
-NODE 11  	COORD	5.0000000000000000e-01	5.0000000000000000e-01	-5.0000000000000000e-01	
-NODE 12  	COORD	5.0000000000000000e-01	5.0000000000000000e-01	5.0000000000000000e-01	
-NODE 13  	COORD	1.5000000000000000e+00	-5.0000000000000000e-01	5.0000000000000000e-01	
-NODE 14  	COORD	1.5000000000000000e+00	-5.0000000000000000e-01	-5.0000000000000000e-01	
-NODE 15  	COORD	1.5000000000000000e+00	5.0000000000000000e-01	-5.0000000000000000e-01	
-NODE 16  	COORD	1.5000000000000000e+00	5.0000000000000000e-01	5.0000000000000000e-01	
-NODE 17  	COORD	1.5000000000000000e+00	-5.0000000000000000e-01	5.0000000000000000e-01	
-NODE 18  	COORD	1.5000000000000000e+00	-5.0000000000000000e-01	-5.0000000000000000e-01	
-NODE 19  	COORD	1.5000000000000000e+00	5.0000000000000000e-01	-5.0000000000000000e-01	
-NODE 20  	COORD	1.5000000000000000e+00	5.0000000000000000e-01	5.0000000000000000e-01	
-NODE 21  	COORD	2.5000000000000000e+00	-5.0000000000000000e-01	5.0000000000000000e-01	
-NODE 22  	COORD	2.5000000000000000e+00	-5.0000000000000000e-01	-5.0000000000000000e-01	
-NODE 23  	COORD	2.5000000000000000e+00	5.0000000000000000e-01	-5.0000000000000000e-01	
-NODE 24  	COORD	2.5000000000000000e+00	5.0000000000000000e-01	5.0000000000000000e-01	
-------------------------------------------------STRUCTURE ELEMENTS
-1 SOLIDH8 HEX8  17 18 19 20 21 22 23 24    MAT 1 KINEM nonlinear EAS none
-----------------------------------------------------FLUID ELEMENTS
-2 FLUID3 HEX8  1 2 3 4 5 6 7 8    MAT 2 NA ALE GP 2 2 2
-3 FLUID3 HEX8  5 6 7 8 9 10 11 12    MAT 2 NA ALE GP 2 2 2
-4 FLUID3 HEX8  9 10 11 12 13 14 15 16    MAT 2 NA ALE GP 2 2 2
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+NODE 13 DNODE 1
+NODE 14 DNODE 1
+NODE 15 DNODE 1
+NODE 16 DNODE 1
+NODE 17 DNODE 2
+NODE 18 DNODE 2
+NODE 19 DNODE 2
+NODE 20 DNODE 2
+NODE 21 DNODE 3
+NODE 22 DNODE 3
+NODE 23 DNODE 3
+NODE 24 DNODE 3
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+NODE 13 DSURFACE 1
+NODE 14 DSURFACE 1
+NODE 15 DSURFACE 1
+NODE 16 DSURFACE 1
+NODE 17 DSURFACE 2
+NODE 18 DSURFACE 2
+NODE 19 DSURFACE 2
+NODE 20 DSURFACE 2
+NODE 1 DSURFACE 3
+NODE 2 DSURFACE 3
+NODE 3 DSURFACE 3
+NODE 4 DSURFACE 3
+----------------------------------------------------------DVOL-NODE TOPOLOGY
+NODE 1 DVOL 1
+NODE 2 DVOL 1
+NODE 3 DVOL 1
+NODE 4 DVOL 1
+NODE 5 DVOL 1
+NODE 6 DVOL 1
+NODE 7 DVOL 1
+NODE 8 DVOL 1
+NODE 9 DVOL 1
+NODE 10 DVOL 1
+NODE 11 DVOL 1
+NODE 12 DVOL 1
+NODE 13 DVOL 1
+NODE 14 DVOL 1
+NODE 15 DVOL 1
+NODE 16 DVOL 1
+NODE 17 DVOL 2
+NODE 18 DVOL 2
+NODE 19 DVOL 2
+NODE 20 DVOL 2
+NODE 21 DVOL 2
+NODE 22 DVOL 2
+NODE 23 DVOL 2
+NODE 24 DVOL 2
+-----------------------------------------------------------------NODE COORDS
+NODE 1 COORD -1.5000000000000000e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 2 COORD -1.5000000000000000e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 3 COORD -1.5000000000000000e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 4 COORD -1.5000000000000000e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 5 COORD -5.0000000000000000e-01 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 6 COORD -5.0000000000000000e-01 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 7 COORD -5.0000000000000000e-01 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 8 COORD -5.0000000000000000e-01 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 9 COORD 5.0000000000000000e-01 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 10 COORD 5.0000000000000000e-01 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 11 COORD 5.0000000000000000e-01 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 12 COORD 5.0000000000000000e-01 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 13 COORD 1.5000000000000000e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 14 COORD 1.5000000000000000e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 15 COORD 1.5000000000000000e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 16 COORD 1.5000000000000000e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 17 COORD 1.5000000000000000e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 18 COORD 1.5000000000000000e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 19 COORD 1.5000000000000000e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 20 COORD 1.5000000000000000e+00 5.0000000000000000e-01 5.0000000000000000e-01
+NODE 21 COORD 2.5000000000000000e+00 -5.0000000000000000e-01 5.0000000000000000e-01
+NODE 22 COORD 2.5000000000000000e+00 -5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 23 COORD 2.5000000000000000e+00 5.0000000000000000e-01 -5.0000000000000000e-01
+NODE 24 COORD 2.5000000000000000e+00 5.0000000000000000e-01 5.0000000000000000e-01
+----------------------------------------------------------STRUCTURE ELEMENTS
+1 SOLIDH8 HEX8 17 18 19 20 21 22 23 24 MAT 1 KINEM nonlinear EAS none
+--------------------------------------------------------------FLUID ELEMENTS
+2 FLUID3 HEX8 1 2 3 4 5 6 7 8 MAT 2 NA ALE GP 2 2 2
+3 FLUID3 HEX8 5 6 7 8 9 10 11 12 MAT 2 NA ALE GP 2 2 2
+4 FLUID3 HEX8 9 10 11 12 13 14 15 16 MAT 2 NA ALE GP 2 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
-ALE DIS ale NODE 8 QUANTITY dispx VALUE 1.83333333333333348e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 5 QUANTITY velx VALUE 1.0 TOLERANCE 1e-8
-FLUID DIS fluid NODE 16 QUANTITY pressure VALUE -8.96078472480509383e-04 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE 5.50000002897133577e-01 TOLERANCE 1e-8
-FSI NODE 18 QUANTITY lambdax VALUE -1.13560443616950646e-03 TOLERANCE 1e-8
-FSI NODE 18 QUANTITY lambday VALUE -2.43343791608659270e-04 TOLERANCE 1e-8
-FSI NODE 18 QUANTITY lambdaz VALUE -2.43343630127547178e-04 TOLERANCE 1e-8
----------------------------------------------------------------END
-// END
+ALE DIS ale NODE 11 QUANTITY dispx VALUE -6.666666666e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 5 QUANTITY velx VALUE -2.7099999999 TOLERANCE 1e-8
+FLUID DIS fluid NODE 16 QUANTITY pressure VALUE 1.079999999e+01 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE -9.99999999999e-01 TOLERANCE 1e-8
+FSI NODE 20 QUANTITY lambdax VALUE 2.72404996733 TOLERANCE 1e-8
+FSI NODE 20 QUANTITY lambday VALUE -1.16774124541 TOLERANCE 1e-8
+FSI NODE 20 QUANTITY lambdaz VALUE -1.16774766004 TOLERANCE 1e-8
+-------------------------------------------------------------------------END
+//                              END

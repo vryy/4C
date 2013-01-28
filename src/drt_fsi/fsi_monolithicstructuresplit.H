@@ -129,16 +129,15 @@ namespace FSI
     CreateStatusTest(Teuchos::ParameterList& nlParams,
                      Teuchos::RCP<NOX::Epetra::Group> grp);
 
-    /*! Extract the three field vectors from a given composed vector
-     *
-     * The condensed structural and ale degrees of freedom have to be recovered
-     * from the fluid solution using a suitable velocity-displacement conversion.
-     *
-     * We are dealing with NOX here, so we get absolute values. x is the sum of
-     * all increments up to this point.
-     *
-     * \sa  ADAPTER::FluidFSI::VelocityToDisplacement()
-     */
+    //! Extract the three field vectors from a given composed vector
+    //!
+    //! The condensed structural and ale degrees of freedom have to be recovered
+    //! from the fluid solution using a suitable velocity-displacement conversion.
+    //!
+    //! We are dealing with NOX here, so we get absolute values. x is the sum of
+    //! all increments up to this point.
+    //!
+    //! \sa  ADAPTER::FluidFSI::VelocityToDisplacement()
     virtual void ExtractFieldVectors(
         Teuchos::RCP<const Epetra_Vector> x,    ///< composed vector that contains all field vectors
         Teuchos::RCP<const Epetra_Vector>& sx,  ///< structural displacements

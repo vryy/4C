@@ -7,7 +7,7 @@
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
 FSI:            iter_monolithicfluidsplit
-Fluid:          BDF2 with zero_acceleration_predictor
+Fluid:          BDF2 with zero_acceleration
 Structure:      GenAlpha with TangDis
 ==> comparison to analytical solution
 ----------------------------------------------------------------PROBLEM SIZE
@@ -25,18 +25,13 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
-CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-06
-INITIALFIELD                    zero_field
-ITEMAX                          10
 LINEAR_SOLVER                   1
-NONLINITER                      fixed_point_like
+NONLINITER                      Newton
 PHYSICAL_TYPE                   Incompressible
-PREDICTOR                       steady_state
+PREDICTOR                       zero_acceleration
 TIMEINTEGR                      BDF2
 -----------------------------------------------------------------FSI DYNAMIC
-BASETOL                         0.001
 CONVTOL                         1e-10
 COUPALGO                        iter_monolithicfluidsplit
 COUPMETHOD                      conforming
@@ -47,7 +42,6 @@ NORMCOMBI_RESFINC               And
 NORM_INC                        Rel
 NORM_RESF                       Rel
 NUMSTEP                         10
-RELAX                           1
 RESTARTEVRY                     2
 SECONDORDER                     yes
 SHAPEDERIVATIVES                yes
@@ -61,21 +55,9 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
-ITERNORM                        L2
-ITWANT                          0
 LINEAR_SOLVER                   1
-LUMPMASS                        No
-MAXITER                         50
-MAXTIME                         5
-MINITER                         0
 NLNSOL                          fullnewton
-NORMCOMBI_RESFDISP              And
-NORM_DISP                       Abs
-NORM_RESF                       Abs
-NUMSTEP                         200
 PREDICT                         TangDis
-TOLDISP                         1e-10
-TOLRES                          1e-08
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 ALPHA_F                         0.444444444444
 ALPHA_M                         0.333333333333
@@ -92,13 +74,6 @@ MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 1.0 THEXPANS 0.0
 SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC -t*t t1 0.0 t2 100.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------FUNCT1
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         3
 NDLINE                          0
@@ -107,7 +82,7 @@ NDVOL                           3
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          3
 //                              fsi_fluid_nodes
-E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+E 1 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 //                              fsi_str_nodes
 E 2 - NUMDOF 4 ONOFF 1 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
 //                              str_dry_nodes
@@ -220,11 +195,13 @@ NODE 24 COORD 2.5000000000000000e+00 5.0000000000000000e-01 5.0000000000000000e-
 3 FLUID3 HEX8 5 6 7 8 9 10 11 12 MAT 2 NA ALE GP 2 2 2
 4 FLUID3 HEX8 9 10 11 12 13 14 15 16 MAT 2 NA ALE GP 2 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
+ALE DIS ale NODE 5 QUANTITY dispx VALUE -3.33333333e-01 TOLERANCE 1e-8
+ALE DIS ale NODE 12 QUANTITY dispx VALUE -6.66666666e-01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 5 QUANTITY velx VALUE -2.0 TOLERANCE 1e-8
 FLUID DIS fluid NODE 16 QUANTITY pressure VALUE 4.0 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE -1.0 TOLERANCE 1e-8
-FSI NODE 16 QUANTITY lambdax VALUE 9.22616122935782990e-01 TOLERANCE 1e-8
-FSI NODE 16 QUANTITY lambday VALUE 5.38428240558661786e-01 TOLERANCE 1e-8
-FSI NODE 16 QUANTITY lambdaz VALUE 5.38428240558661786e-01 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambdax VALUE 1.00032084 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambday VALUE 5.928652882e-01 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambdaz VALUE 5.928652882e-01 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

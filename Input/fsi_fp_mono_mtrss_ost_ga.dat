@@ -7,7 +7,7 @@
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
 FSI:            iter_mortar_monolithicstructuresplit
-Fluid:          One_Step_Theta with steady_state_predictor
+Fluid:          One_Step_Theta with steady_state
 Structure:      GenAlpha with ConstDisVelAcc
 ==> comparison to analytical solution
 ------------------------------------------------------PROBLEM SIZE
@@ -25,37 +25,18 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 ------------------------------------------------------FLUID DYNAMIC
-ADAPTCONV                       yes
-ADAPTCONV_BETTER                0.1
-CALCERROR                       no
-CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-06
-GMSH_OUTPUT                     No
 GRIDVEL                         1
-INFNORMSCALING                  no
-INITIALFIELD                    zero_field
-INITSTATITEMAX                  5
-ITEMAX                          10
-LIFTDRAG                        No
 LINEAR_SOLVER                   1
-MESHTYING                       no
 NONLINITER                      fixed_point_like
 PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state
-RESTARTEVRY                     20
-SIMPLER                         no
-STEADYTOL                       1e-06
-STRONG_REDD_3D_COUPLING_TYPE    no
 THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 --------------------------------------------------------FSI DYNAMIC
-ADAPTIVEDIST                    0
-BASETOL                         0.00001
 CONVTOL                         1e-10
 COUPALGO                        iter_mortar_monolithicstructuresplit
 COUPMETHOD                      mtr
-DEBUGOUTPUT                     No
 INFNORMSCALING                  Yes
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
@@ -64,11 +45,9 @@ NORMCOMBI_RESFINC               And
 NORM_INC                        Rel
 NORM_RESF                       Rel
 NUMSTEP                         10
-PARTITIONED                     DirichletNeumann
 PCITER                          1 1 1
 PCOMEGA                         1.0 1.0 1.0
 PRECONDREUSE                    10
-RELAX                           1
 RESTARTEVRY                     2
 SECONDORDER                     no
 SHAPEDERIVATIVES                yes
@@ -106,44 +85,9 @@ PROBLEMTYP                      Fluid_Structure_Interaction
 RESTART                         0
 SHAPEFCT                        Polynomial
 -------------------------------------------------STRUCTURAL DYNAMIC
-ADAPTCONV                       No
-ADAPTCONV_BETTER                0.1
-ADAPTERDRIVE                    No
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
-DAMPING                         No
-DIVERCONT                       No
 DYNAMICTYP                      GenAlpha
-ITERNORM                        L2
-ITWANT                          0
-K_DAMP                          0.5
 LINEAR_SOLVER                   1
-LUMPMASS                        No
-MAXDT                           0
-MAXITER                         50
-MINITER                         0
-MODIFIEDEXPLEULER               Yes
-M_DAMP                          0.5
-NLNSOL                          fullnewton
-NORMCOMBI_DISPPRES              And
-NORMCOMBI_RESFDISP              And
-NORMCOMBI_RESFINCO              And
-NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
-NORM_RESF                       Abs
 PREDICT                         ConstDisVelAcc
-STC_LAYER                       1
-STC_SCALING                     no
-TOLCONSTR                       1e-08
-TOLDISP                         1e-10
-TOLINCO                         1e-08
-TOLPRE                          1e-08
-TOLRES                          1e-08
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
 ----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 ALPHA_F                         0.444444444444
 ALPHA_M                         0.333333333333
@@ -153,7 +97,7 @@ GENAVG                          ImrLike
 -----------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------MATERIALS
-MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 200000 NUE 0.49 DENS 7.8e-7 THEXPANS 0.0
+MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 200000 NUE 0.3 DENS 1.0 THEXPANS 0.0
 MAT 2 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1 
 ----------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 1
@@ -547,15 +491,15 @@ NODE 108  	COORD	1.5000000000000000e+00	1.0000000000000000e+00	5.000000000000000
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-ALE DIS ale NODE 1 QUANTITY dispx VALUE -9.99998830649301507e-01 TOLERANCE 1e-8
-ALE DIS ale NODE 43 QUANTITY dispx VALUE -3.33332943549802141e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 1 QUANTITY velx VALUE -1.90000112801825893e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 1 QUANTITY pressure VALUE 4.00247660676703987e+00 TOLERANCE 1e-7
-FLUID DIS fluid NODE 43 QUANTITY velx VALUE -1.90000122392795201e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 43 QUANTITY pressure VALUE 1.33415935514177453e+00 TOLERANCE 1e-7
-STRUCTURE DIS structure NODE 58 QUANTITY dispx VALUE -9.99999415324643537e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 106 QUANTITY dispx VALUE -9.99998830649419412e-01 TOLERANCE 1e-8
-FSI NODE 70 QUANTITY lambdax VALUE 3.98814605528913102e+00 TOLERANCE 1e-3
-FSI NODE 105 QUANTITY lambdax VALUE 4.01070550671837811e+00 TOLERANCE 1e-3
+ALE DIS ale NODE 1 QUANTITY dispx VALUE -9.99980681759e-01 TOLERANCE 1e-9
+ALE DIS ale NODE 43 QUANTITY dispx VALUE -3.33326893934e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 1 QUANTITY velx VALUE -1.90000078744e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1 QUANTITY pressure VALUE 4.00178821278e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 43 QUANTITY velx VALUE -1.9000007885e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 43 QUANTITY pressure VALUE 1.3339294075e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 58 QUANTITY dispx VALUE -9.9998924812e-01 TOLERANCE 1e-9
+STRUCTURE DIS structure NODE 106 QUANTITY dispx VALUE -9.9998068178e-01 TOLERANCE 1e-9
+FSI NODE 70 QUANTITY lambdax VALUE 4.0017857260e+00 TOLERANCE 1e-8
+FSI NODE 105 QUANTITY lambdax VALUE 4.0017862683e+00 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END

@@ -7,7 +7,7 @@
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
 FSI:            iter_monolithicstructuresplit
-Fluid:          BDF2 with constant_acceleration_predictor
+Fluid:          BDF2 with constant_acceleration
 Structure:      GenAlpha with ConstVel
 ==> comparison to analytical solution
 ----------------------------------------------------------------PROBLEM SIZE
@@ -25,19 +25,13 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
-CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-06
-INITIALFIELD                    zero_field
-ITEMAX                          10
 LINEAR_SOLVER                   1
 NONLINITER                      fixed_point_like
-NUMSTASTEPS                     0
 PHYSICAL_TYPE                   Incompressible
-PREDICTOR                       steady_state
+PREDICTOR                       constant_acceleration
 TIMEINTEGR                      BDF2
 -----------------------------------------------------------------FSI DYNAMIC
-BASETOL                         0.001
 CONVTOL                         1e-10
 COUPALGO                        iter_monolithicstructuresplit
 COUPMETHOD                      conforming
@@ -48,7 +42,6 @@ NORMCOMBI_RESFINC               And
 NORM_INC                        Rel
 NORM_RESF                       Rel
 NUMSTEP                         10
-RELAX                           1
 RESTARTEVRY                     2
 SECONDORDER                     yes
 SHAPEDERIVATIVES                yes
@@ -62,20 +55,8 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
-ITERNORM                        L2
-ITWANT                          0
 LINEAR_SOLVER                   1
-LUMPMASS                        No
-MAXITER                         50
-MAXTIME                         5
-MINITER                         0
-NLNSOL                          fullnewton
-NORMCOMBI_RESFDISP              And
-NORM_DISP                       Abs
-NORM_RESF                       Abs
 PREDICT                         ConstVel
-TOLDISP                         1e-10
-TOLRES                          1e-08
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 ALPHA_F                         0.459459459459
 ALPHA_M                         0.378378378378
@@ -217,7 +198,7 @@ ALE DIS ale NODE 5 QUANTITY dispx VALUE -3.33332837126568637e-01 TOLERANCE 1e-8
 ALE DIS ale NODE 12 QUANTITY dispx VALUE -6.66665674253137275e-01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 5 QUANTITY velx VALUE -2.00008935727051451e+00 TOLERANCE 1e-8
 FLUID DIS fluid NODE 16 QUANTITY pressure VALUE 4.00704234057758413e+00 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE -9.99999999999999778e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE -1.0 TOLERANCE 1e-8
 FSI NODE 17 QUANTITY lambdax VALUE 1.00176058441236782e+00 TOLERANCE 1e-8
 FSI NODE 17 QUANTITY lambday VALUE 4.29410124595865084e-01 TOLERANCE 1e-8
 FSI NODE 17 QUANTITY lambdaz VALUE -4.29410124525799186e-01 TOLERANCE 1e-8

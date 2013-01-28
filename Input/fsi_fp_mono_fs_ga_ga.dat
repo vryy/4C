@@ -7,7 +7,7 @@
 -----------------------------------------------------------------------TITLE
 Monolithic FSI: pseudo-1D fluid pusher
 FSI:            iter_monolithicfluidsplit
-Fluid:          Gen_Alpha with constant_acceleration_predictor
+Fluid:          Np_Gen_Alpha with constant_acceleration
 Structure:      GenAlpha with ConstVel
 ==> comparison to analytical solution
 ------------------------------------------------------PROBLEM SIZE
@@ -27,22 +27,15 @@ NUMTHERMDIS                     1
 ------------------------------------------------------FLUID DYNAMIC
 ALPHA_F                         0.5
 ALPHA_M                         0.5
-CONVCHECK                       L_2_norm
 CONVFORM                        convective
-CONVTOL                         1e-06
 GAMMA                           0.5
-INITIALFIELD                    zero_field
-ITEMAX                          10
 LINEAR_SOLVER                   1
-NEUMANNINFLOW                   no
-NONLINITER                      fixed_point_like
+NONLINITER                      Newton
 PHYSICAL_TYPE                   Incompressible
-PREDICTOR                       steady_state
+PREDICTOR                       constant_acceleration
 TIMEINTEGR                      Np_Gen_Alpha
-TIMESTEP                        0.01
 --------------------------------------------------------FSI DYNAMIC
-BASETOL                         0.001
-CONVTOL                         1e-06
+CONVTOL                         1e-10
 COUPALGO                        iter_monolithicfluidsplit
 COUPMETHOD                      conforming
 ITEMAX                          10
@@ -52,7 +45,6 @@ NORMCOMBI_RESFINC               And
 NORM_INC                        Rel
 NORM_RESF                       Rel
 NUMSTEP                         10
-RELAX                           1
 RESTARTEVRY                     2
 SECONDORDER                     yes
 SHAPEDERIVATIVES                yes
@@ -66,18 +58,9 @@ RESTART                         0
 SHAPEFCT                        Polynomial
 -------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha
-ITERNORM                        L2
 LINEAR_SOLVER                   1
-LUMPMASS                        No
-MAXITER                         50
-MINITER                         0
 NLNSOL                          fullnewton
-NORMCOMBI_RESFDISP              And
-NORM_DISP                       Abs
-NORM_RESF                       Abs
 PREDICT                         ConstVel
-TOLDISP                         1e-10
-TOLRES                          1e-08
 ----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 ALPHA_F                         0.5
 ALPHA_M                         0.5
@@ -94,13 +77,6 @@ MAT 3 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 1.0 THEXPANS 0.0
 SRC_FIELD fluid SRC_MAT 2 TAR_FIELD ale TAR_MAT 3 
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC -t*t t1 0.0 t2 100.0
-------------------------------------------------------------CURVE2
-------------------------------------------------------------CURVE3
-------------------------------------------------------------CURVE4
-------------------------------------------------------------FUNCT1
-------------------------------------------------------------FUNCT2
-------------------------------------------------------------FUNCT3
-------------------------------------------------------------FUNCT4
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 3
 NDLINE  0
@@ -225,8 +201,8 @@ NODE 24  	COORD	2.5000000000000000e+00	5.0000000000000000e-01	5.0000000000000000
 FLUID DIS fluid NODE 5 QUANTITY velx VALUE -2.0 TOLERANCE 1e-8
 FLUID DIS fluid NODE 16 QUANTITY pressure VALUE 4.0 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE -1.0 TOLERANCE 1e-8
-FSI NODE 16 QUANTITY lambdax VALUE -5.49999999999906120e-01 TOLERANCE 1e-8
-FSI NODE 16 QUANTITY lambday VALUE -8.00148148148088545e-01 TOLERANCE 1e-8
-FSI NODE 16 QUANTITY lambdaz VALUE -8.00148148148088323e-01 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambdax VALUE -5.304853934e-01 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambday VALUE -7.769017800e-01 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambdaz VALUE -7.769017800e-01 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END
