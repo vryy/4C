@@ -1902,10 +1902,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         // reactive term using current scalar value
         if (is_reactive_)
         {
-          // scalar at integration point
-          // const double phi = funct_.Dot(ephinp_[k]);
-
-          rea_phi_[k] = densnp_[k]*reacterm_[k]; //reacoeff_[k]*phi;
+          rea_phi_[k] = densnp_[k]*reacterm_[k];
         }
         else rea_phi_[k] = 0.0;
 
@@ -5806,7 +5803,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcResidualAndSubgrScalar(
       scatrares_[k] += densnp_[k]*(phi - hist_[k])/dt;
     }
   }
-
   //--------------------------------------------------------------------
   // calculation of subgrid-scale part of scalar
   //--------------------------------------------------------------------
@@ -6139,12 +6135,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
           double laplacewf(0.0);
           GetLaplacianWeakForm(laplacewf, derxy_, ui,vi);
           matvalpot -= timetaufac*residual*diffus_valence_k*frt*laplacewf;
-
-          // migration convective stabilization of convective term
-          //emat(fvi,ui*numdofpernode_+numscal_) -= timetaufac*conv_(vi)*diffus_valence_k*frt*val_ui;
-          // migration convective stabilization of migration term
-          //double myval = timetaufac*diffus_valence_k*migconv_(vi);
-          //emat(fvi,ui*numdofpernode_+numscal_) -= 2.0*frt*myval*diffus_valence_k*val_ui;
         }
 
         // III) linearization of tau part of stabilization term
@@ -6204,10 +6194,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
           emat(pvi, fui) += valence_[k]*(timefacfac*diffus_[k]*laplawf);
           // b) derivative w.r.t. electric potential
           emat(pvi, ui*numdofpernode_+numscal_) += valence_[k]*(frt*timefacfac*diffus_valence_k*conint_[k]*laplawf);
-
-          // combine with ENC for reducing "drift-off"???
-          //const double beta=0.0;
-          //emat(vi*numdofpernode_+numscal_, fui) += beta*alphaF*valence_k_fac_funct_vi*funct_(ui);
         } // for ui
       } // for vi
     }
@@ -6407,23 +6393,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         erhs[fvi] -=  rhstaufac*diffus_valence_k*migconv_(vi)*residual;
       }
 
-      if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
-      {/*
-         erhs[vi*numdofpernode_+numscal_] -= valence_[k]*rhstaufac*conv_(vi)*residual;
-         if (migrationstab_)
-         {
-         erhs[vi*numdofpernode_+numscal_] -=  valence_[k]*rhstaufac*diffus_valence_k*migconv_(vi)*residual;
-         }
-       */
-/*
-  double rhstaufac_m = tau_[numscal_]*fac; // not always right!!!
-  erhs[vi*numdofpernode_+numscal_] += valence_[numscal_]*rhstaufac_m*conv_(vi)*residual_elim;
-  if (migrationstab_)
-  {
-  erhs[vi*numdofpernode_+numscal_] += valence_[numscal_]*rhstaufac_m*diffusvalence_[numscal_]*migconv_(vi)*residual_elim;
-  }*/
-      }
-
       // 2) diffusive stabilization
       //    not implemented. Only stabilization of SUPG type
 
@@ -6458,9 +6427,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
 
         // use 2nd order pde derived from electroneutrality condition (k=1,...,m)
         erhs[pvi] += rhsfac*valence_[k]*((diffus_valence_k*conint_[k]*migconv_(vi))-(diffus_[k]*laplawf));
-        //const double beta=0.0;
-        //erhs[vi*numdofpernode_+numscal_] -= beta*valence_[k]*fac*funct_(vi)*conint_[k];
-
       } // for vi
     }
     else if (scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
