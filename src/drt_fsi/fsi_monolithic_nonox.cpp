@@ -213,27 +213,25 @@ void FSI::MonolithicNoNOX::LinearSolve()
   else
     iterinc_->PutScalar(0.0);
 
+  LINALG::ApplyDirichlettoSystem(
+    sparse,
+    iterinc_,
+    rhs_,
+    Teuchos::null,
+    zeros_,
+    *CombinedDBCMap()
+    );
 
-   LINALG::ApplyDirichlettoSystem(
-     sparse,
-     iterinc_,
-     rhs_,
-     Teuchos::null,
-     zeros_,
-     *CombinedDBCMap()
-     );
-
-  // get UMFPACK...
-
-  Teuchos::ParameterList solverparams = DRT::Problem::Instance()->UMFPACKSolverParams();
-  solver_ = Teuchos::rcp(new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
-
-#ifdef moresolvers
+#ifndef moresolvers
   const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
   const int fluidsolver = fdyn.get<int>("LINEAR_SOLVER");
   solver_ = Teuchos::rcp(new LINALG::Solver(DRT::Problem::Instance()->SolverParams(fluidsolver),
                                    Comm(),
                                    DRT::Problem::Instance()->ErrorFile()->Handle()));
+#else
+  // get UMFPACK...
+  Teuchos::ParameterList solverparams = DRT::Problem::Instance()->UMFPACKSolverParams();
+  solver_ = Teuchos::rcp(new LINALG::Solver(solverparams, Comm(), DRT::Problem::Instance()->ErrorFile()->Handle()));
 #endif
 
 
@@ -250,7 +248,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
    Teuchos::RCP<const Epetra_Vector> fx;
    Teuchos::RCP<const Epetra_Vector> ax;
 
-   if (x!=Teuchos::null)
+   if (not firstcall_)
    {
      // structure, ale and fluid fields expects the step increment. So
      // we add all of the increments together to build the step
@@ -300,6 +298,7 @@ void FSI::MonolithicNoNOX::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
      FluidField().Evaluate(fx);
      //IO::cout << "fluid time : " << tf.ElapsedTime() << IO::endl;
    }
+
 
 }
 /*----------------------------------------------------------------------*/
