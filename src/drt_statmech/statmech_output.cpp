@@ -439,6 +439,31 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim,
       }
     }
       break;
+    case INPAR::STATMECH::statout_networkcreep:
+    {
+      if(!discret_->Comm().MyPID())
+      {
+        //pointer to file into which each processor writes the output related with the dof of which it is the row map owner
+        FILE* fp = NULL;
+
+        //content to be written into the output file
+        std::stringstream filecontent;
+
+        //defining name of output file related to processor Id
+        std::ostringstream outputfilename;
+        outputfilename.str("");
+        outputfilename << outputrootpath_ << "/StatMechOutput/CreepForces.dat";
+
+        fp = fopen(outputfilename.str().c_str(), "w");
+
+        //filecontent << "Output for measurement of viscoelastic properties written by processor "<< discret_->Comm().MyPID() << endl;
+
+        // move temporary stringstream to file and close it
+        fprintf(fp, filecontent.str().c_str());
+        fclose(fp);
+      }
+    }
+      break;
     case INPAR::STATMECH::statout_none:
     default:
       break;
@@ -829,6 +854,20 @@ void STATMECH::StatMechManager::Output(const int                            ndim
           ddcorrfilename << outputrootpath_ << "/StatMechOutput/DensityDensityCorrFunction_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
           DDCorrOutput(dis, ddcorrfilename, istep, dt);
         }
+      }
+    }
+    break;
+    case INPAR::STATMECH::statout_networkcreep:
+    {
+      Teuchos::ParameterList sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+      int numstep = sdyn.get<int>("NUMSTEP", -1);
+      //output in every statmechparams_.get<int>("OUTPUTINTERVALS",1) timesteps (or for the very last step)
+      if ((time>=starttime && istep<numstep && (istep-istart_) % statmechparams_.get<int> ("OUTPUTINTERVALS", 1) == 0) || fabs(time-starttime)<1e-8)
+      {
+        // name of file into which output is written
+        std::ostringstream filename;
+        filename << outputrootpath_ << "/StatMechOutput/CreepForces.dat";
+        ViscoelasticityOutput(time, dis, fint, filename);
       }
     }
     break;
