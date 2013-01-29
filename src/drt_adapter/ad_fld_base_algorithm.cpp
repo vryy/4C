@@ -423,10 +423,9 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
         coupling == fsi_iter_constr_monolithicfluidsplit or
         coupling == fsi_iter_fluidfluid_monolithicstructuresplit)
     {
-      // No explicit predictor for these monolithic schemes, yet.
+      // No explicit predictor for these monolithic FSI schemes, yet.
       // Check, whether fluid predictor is 'steady_state'. Otherwise, throw
       // an error.
-
       if (fluidtimeparams->get<string>("predictor") != "steady_state")
         dserror("No fluid predictor allowed for current monolithic FSI scheme, yet. Use 'steady_state', instead!");
     }
@@ -447,10 +446,16 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithicstructuresplit)
     {
-      // there are a couple of restrictions in monolithic free surface Algorithm
-      fluidtimeparams->set<bool>("do explicit predictor",false);
+//      // there are a couple of restrictions in monolithic free surface Algorithm
+//      fluidtimeparams->set<bool>("do explicit predictor",false);
+//
+//      dserror("No fluid predictor allowed for free surface problem, yet.");
 
-      dserror("No fluid predictor allowed for free surface problem, yet.");
+      // No explicit predictor for monolithic free surface flow schemes, yet.
+      // Check, whether fluid predictor is 'steady_state'. Otherwise, throw
+      // an error.
+      if (fluidtimeparams->get<string>("predictor") != "steady_state")
+        dserror("No fluid predictor allowed for current monolithic free surface scheme, yet. Use 'steady_state', instead!");
     }
   }
   // sanity checks and default flags
