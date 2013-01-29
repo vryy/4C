@@ -278,7 +278,7 @@ private:
         string                                                  coupl_method             ///< coupling method
     );
 
-    //! build traction vector
+    //! build traction vector w.r.t fluid domain
     void buildTractionVector(
         LINALG::Matrix<my::nsd_,1> &  traction,   ///< traction vector
         double &                      press,      ///< pressure at gaussian point

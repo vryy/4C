@@ -56,8 +56,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractInterfaceForces()
   cout << "ExtractInterfaceForces (itrueresnp)" << endl;
 
   // the trueresidual vector has to match the solid dis
-  cout << "itrueresidual_" << *(xfluid_->ITrueResidual()) << endl;
-
+  // it contains the forces acting on the structural surface
   return interface_->ExtractFSICondVector(xfluid_->ITrueResidual());
 }
 

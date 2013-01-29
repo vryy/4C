@@ -1658,8 +1658,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
 
   DRT::Element::LocationArray cutla( 1 );
 
-  LINALG::Matrix<3,1> normal;
-  LINALG::Matrix<3,1> x_side;
+  LINALG::Matrix<3,1> normal(true);
+  LINALG::Matrix<3,1> x_side(true);
 
   // side coupling implementation between background element and each cut side (map<sid, side_impl)
   std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > > side_impl;
@@ -2037,6 +2037,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
           double press = my::funct_.Dot(epreaf);
 
           //-------------------------------
+          // traction vector w.r.t fluid domain, resulting stresses acting on the fluid surface
+          // t= (-p*I + 2mu*eps(u))*n^f
           LINALG::Matrix<my::nsd_,1> traction(true);
 
           buildTractionVector( traction, press, normal );
@@ -2554,8 +2556,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
 
   DRT::Element::LocationArray cutla( 1 );
 
-  LINALG::Matrix<3,1> normal;
-  LINALG::Matrix<3,1> x_side;
+  LINALG::Matrix<3,1> normal(true); // normal vector w.r.t the fluid domain, points from the fluid into the structure
+  LINALG::Matrix<3,1> x_side(true);
 
   // side coupling implementation between background element and each cut side (map<sid, side_impl)
   std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > > side_impl;
@@ -2721,7 +2723,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
           ++i )
     {
       const DRT::UTILS::GaussIntegration & gi = *i;
-      GEO::CUT::BoundaryCell * bc = bcs[i - cutintpoints.begin()]; // get the corresponding boundary cell
+      GEO::CUT::BoundaryCell * bc = bcs[i - cutintpoints.begin()]; // get the corresponding boundary cell, bc-orientation is outward-pointing from fluid to structure
 
       //--------------------------------------------
       // loop gausspoints w.r.t current boundary cell
@@ -2934,6 +2936,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
           double press = my::funct_.Dot(epreaf);
 
           //-------------------------------
+          // traction vector w.r.t fluid domain, resulting stresses acting on the fluid surface
+          // t= (-p*I + 2mu*eps(u))*n^f
           LINALG::Matrix<my::nsd_,1> traction(true);
 
           buildTractionVector( traction, press, normal );
@@ -3053,8 +3057,8 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
   DRT::Element::LocationArray alela( 1 );
   DRT::Element::LocationArray cutla( 1 );
 
-  LINALG::Matrix<3,1> normal;
-  LINALG::Matrix<3,1> x_side;
+  LINALG::Matrix<3,1> normal(true);
+  LINALG::Matrix<3,1> x_side(true);
 
   bool fluidfluidcoupling = false;
 
@@ -3861,7 +3865,7 @@ void FluidEleCalcXFEM<distype>::EvalFuncAndDeriv( LINALG::Matrix<3,1> &  rst )
 
 
 /*----------------------------------------------------------------------*
- | build traction vector                                                |
+ | build traction vector w.r.t fluid domain                             |
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void FluidEleCalcXFEM<distype>::buildTractionVector(
@@ -3885,13 +3889,10 @@ void FluidEleCalcXFEM<distype>::buildTractionVector(
   // t = ( -pI + 2mu eps(u) )*n^f
   traction.Clear();
   traction.Multiply(eps, normal);
-  traction.Scale(2.0*my::visceff_);
 
-  // add the pressure part
-  traction.Update( -press, normal, 1.0);
+  // add the pressure part and scale the viscous part with the viscosity
+  traction.Update( -press, normal, 2.0*my::visceff_);
 
-  // we need normal vector on fluid
-  traction.Scale(-1.0);
 
   return;
 }

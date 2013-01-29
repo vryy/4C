@@ -423,6 +423,7 @@ namespace FLD
     Teuchos::RCP<const Epetra_Vector> Dispnp() { cout << "Dispnp " << endl; return state_->dispnp_; }
     Teuchos::RCP<const Epetra_Vector> Dispn()  { cout << "Dispn" << endl;   return state_->dispn_; }
 
+    //! get the interface forces acting on the structural surface
     Teuchos::RCP<const Epetra_Vector> ITrueResidual(){ return itrueresidual_; }
 
     Teuchos::RCP<Epetra_Vector> IVelnp(){return ivelnp_; }
@@ -470,11 +471,11 @@ namespace FLD
     double ResidualScaling() const
     {
       if (TimIntScheme()==INPAR::FLUID::timeint_stationary)
-        return density_;
+        return 1.0;
       else if (TimIntScheme()==INPAR::FLUID::timeint_afgenalpha)
-        return density_*alphaM_/(gamma_*dta_);
+        return alphaM_/(gamma_*dta_);
       else
-        return density_/(theta_*dta_);
+        return 1.0/(theta_*dta_);
     }
 
     /// return time integration factor
@@ -749,7 +750,7 @@ namespace FLD
 
     Teuchos::RCP<Epetra_Vector>    idispnp_;
     Teuchos::RCP<Epetra_Vector>    idispn_;
-    Teuchos::RCP<Epetra_Vector>    itrueresidual_;
+    Teuchos::RCP<Epetra_Vector>    itrueresidual_; //! interface forces acting on the structural surface
     Teuchos::RCP<Epetra_Vector>    iforcenp_;
     //@}
 

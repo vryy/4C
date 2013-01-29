@@ -730,11 +730,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
     Epetra_Export exporter_iforce(iforcecolnp->Map(),iforce_tmp.Map());
     int err1 = iforce_tmp.Export(*iforcecolnp,exporter_iforce,Add);
     if (err1) dserror("Export using exporter returned err=%d",err1);
-    xfluid_.itrueresidual_->Update(1.0,iforce_tmp,0.0);
-
-//    Teuchos::RCP<Epetra_Export> conimpo = Teuchos::rcp(new Epetra_Export(iforcecolnp->Map(),xfluid_.itrueresidual_->Map()));
-//    xfluid_.itrueresidual_->PutScalar(0.0);
-//    xfluid_.itrueresidual_->Export(*iforcecolnp,*conimpo,Add);
+    // scale the interface trueresidual with -1.0 to get the forces acting on structural side (no residual-scaling!)
+    xfluid_.itrueresidual_->Update(-1.0,iforce_tmp,0.0);
 
     //-------------------------------------------------------------------------------
     // need to export residual_col to systemvector1 (residual_)
@@ -742,11 +739,14 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
     Epetra_Export exporter(strategy.Systemvector1()->Map(),res_tmp.Map());
     int err2 = res_tmp.Export(*strategy.Systemvector1(),exporter,Add);
     if (err2) dserror("Export using exporter returned err=%d",err2);
+    // residual already includes neumann-loads
     residual_->Update(1.0,res_tmp,1.0);
 
     //-------------------------------------------------------------------------------
     // scaling to get true residual vector
-    trueresidual_->Update(xfluid_.ResidualScaling(),*residual_,0.0);
+    // negative sign to get forces acting on structural side
+    // additional residual-scaling to remove the theta*dt-scaling
+    trueresidual_->Update(-1.0*xfluid_.ResidualScaling(),*residual_,0.0);
 
     //-------------------------------------------------------------------------------
     // finalize the complete matrix
@@ -1079,7 +1079,7 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
    {
        gmshfilecontent_vel         << "View \"" << "SOL " << "vel "   << count << "\" {\n";
        gmshfilecontent_press       << "View \"" << "SOL " << "press " << count << "\" {\n";
-       gmshfilecontent_bound       << "View \"" << "SOL " << "bound " << count << "\" {\n";
+       gmshfilecontent_bound       << "View \"" << "SOL " << "side-normal " << count << "\" {\n";
        gmshfilecontent_vel_ghost   << "View \"" << "SOL " << "vel_ghost "   << count << "\" {\n";
        gmshfilecontent_press_ghost << "View \"" << "SOL " << "press_ghost " << count << "\" {\n";
    }
@@ -1088,7 +1088,7 @@ void FLD::XFluid::XFluidState::GmshOutput( DRT::Discretization & discret,
        gmshfilecontent_vel         << "View \"" << "SOL " << "vel "   << "\" {\n";
        gmshfilecontent_press       << "View \"" << "SOL " << "press " << "\" {\n";
        gmshfilecontent_acc         << "View \"" << "SOL " << "acc   " << "\" {\n";
-       gmshfilecontent_bound       << "View \"" << "SOL " << "bound " << "\" {\n";
+       gmshfilecontent_bound       << "View \"" << "SOL " << "side-normal " << "\" {\n";
        gmshfilecontent_vel_ghost   << "View \"" << "SOL " << "vel_ghost "   << "\" {\n";
        gmshfilecontent_press_ghost << "View \"" << "SOL " << "press_ghost " << "\" {\n";
        gmshfilecontent_acc_ghost   << "View \"" << "SOL " << "acc_ghost   " << "\" {\n";
@@ -1670,6 +1670,7 @@ void FLD::XFluid::XFluidState::GmshOutputBoundaryCell( DRT::Discretization & dis
       {
         GEO::CUT::Point * p = *i;
 
+        // the bc corner points will always lie on the respective side
         const LINALG::Matrix<2,1> & eta = s->LocalCoordinates( p );
 
         switch ( side->Shape() )
@@ -1720,6 +1721,7 @@ void FLD::XFluid::XFluidState::GmshOutputBoundaryCell( DRT::Discretization & dis
         if ( i!=points.begin() )
           bound_f << ",";
 
+        // side's outward point normal vector (not the bc's normal vector)
         bound_f << normal( 0 ) << "," << normal( 1 ) << "," << normal( 2 );
       }
       bound_f << "};\n";
@@ -3343,6 +3345,40 @@ void FLD::XFluid::NonlinearSolve()
       GenAlphaIntermediateValues();
     }
   }
+
+
+#if(0)
+  state_->GmshOutput( *discret_, *boundarydis_, "DEBUG_SOL_", step_, -1, state_->velnp_ );
+
+  //--------------------------------------------------------------------
+
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("DEBUG_SOL_force", step_, gmsh_step_diff_, gmsh_debug_out_screen_, boundarydis_->Comm().MyPID());
+  std::ofstream gmshfilecontent(filename.c_str());
+
+  {
+
+    // compute the current solid and boundary position
+    std::map<int,LINALG::Matrix<3,1> >      currsolidpositions;
+    std::map<int,LINALG::Matrix<3,1> >      currinterfacepositions;
+
+    if( gmsh_sol_out_ )
+    {
+      ExtractNodeVectors(*soliddis_, soliddispnp_, currsolidpositions);
+      ExtractNodeVectors(*boundarydis_, idispnp_, currinterfacepositions);
+      //TODO: fill the soliddispnp in the XFSI case!
+    }
+
+    // add 'View' to Gmsh postprocessing file
+    gmshfilecontent << "View \" " << "force \" {" << endl;
+    // draw vector field 'force' for every node
+    IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(boundarydis_,itrueresidual_,currinterfacepositions,gmshfilecontent,3,3);
+    gmshfilecontent << "};" << endl;
+  }
+
+  gmshfilecontent.close();
+
+#endif
+
 }
 
 void FLD::XFluid::LinearSolve()
