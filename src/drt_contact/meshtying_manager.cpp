@@ -383,6 +383,10 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
                                                    mortar.get<int>("MIN_ELEPROC") <  0)
     dserror("Minimum number of elements per processor for parallel redistribution must be >= 0");
 
+  if (mortar.get<int>("NUMGP_PER_DIM") > 0 && mortar.get<int>("NUMGP_PER_DIM")!=3 && DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
+    dserror("ERROR: Change of Gauss point number only allowed for FastIntegration!");
+
+
   // *********************************************************************
   // not (yet) implemented combinations
   // *********************************************************************
@@ -416,18 +420,54 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
       DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(mortar,"SHAPEFCN") == INPAR::MORTAR::shape_dual)
     dserror("Lin/lin approach (for LM) for quadratic meshtying with DUAL shape fct. requires MORTARTRAFO");
 #endif // #ifndef MORTARTRAFO
-    
+
   // *********************************************************************
   // warnings
   // *********************************************************************
   if (mortar.get<double>("SEARCH_PARAM") == 0.0)
     std::cout << ("Warning: Meshtying search called without inflation of bounding volumes\n") << endl;
 
+  // *********************************************************************
+  // warnings concerning integration method
+  // *********************************************************************
+  if (dim==2)
+  {
+    if (mortar.get<int>("NUMGP_PER_DIM") <= 0)
+    {
+      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
+      {
+        std::cout << "\n Warning: No or no valid Gauss point number for 2D segment-based mortar integration provided.\n"
+                  << "         Using default value of 5 Gauss points per integration segment.\n" << endl;
+      }
+      else
+      {
+        std::cout << "\n Warning: No or no valid Gauss point number for 2D fast mortar integration provided.\n"
+                  << "         Using default value of 5 Gauss points per slave element.\n" << endl;
+      }
+    }
+  }
+  else if (dim==3)
+  {
+    if (mortar.get<int>("NUMGP_PER_DIM") <= 0)
+    {
+      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
+      {
+        std::cout << "\n Warning: No or no valid Gauss point number for 3D segment-based mortar integration provided.\n"
+                  << "           Using default value of 7 Gauss points per triangular integration cell.\n" << endl;
+      }
+      else
+      {
+        std::cout << "\n Warning: No or no valid Gauss point number for 3D fast mortar integration provided.\n"
+                  << "           Using default value of 7/9 Gauss points per triangular/quadrilateral slave element.\n" << endl;
+      }
+    }
+  }
+  
   // store content of BOTH ParameterLists in local parameter list
   mtparams.setParameters(mortar);
   mtparams.setParameters(meshtying);
   mtparams.setName("CONTACT DYNAMIC / MORTAR COUPLING");
-  
+
   // no parallel redistribution in the serial case
   if (Comm().NumProc()==1) mtparams.set<std::string>("PARALLEL_REDIST","None");
 

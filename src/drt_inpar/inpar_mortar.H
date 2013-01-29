@@ -96,6 +96,14 @@ namespace INPAR
       parredist_static,    ///< static redistribution (at t=0 and after restart)
       parredist_dynamic    ///< dynamic redistribution
     };
+
+    // Type of integration procedure
+    enum IntType
+    {
+      inttype_segments,       ///< segmentation of mortar interface
+      inttype_fast,           ///< fast, elementwise integration
+      inttype_fast_BS         ///< fast, elementwise intgration with Boundary Segmentation
+    };
   }  // namespace MORTAR
 
 }  // namespace INPAR

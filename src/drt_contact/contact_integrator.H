@@ -120,6 +120,20 @@ public:
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg);
 
   /*!
+  \brief Build all integrals and linearizations without segmentation -- 2D
+         (i.e. M, g, LinM, Ling and possibly D, LinD)
+
+  */
+  void FastIntegration(
+      MORTAR::MortarElement& sele,
+      std::vector<MORTAR::MortarElement*> meles,
+      INPAR::MORTAR::LagMultQuad lmtype,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> wseg,
+      bool *boundary_ele);
+  /*!
   \brief Build all integrals and linearizations on a 1D slave /
          master overlap (i.e. M, g, LinM, Ling and possibly D, LinD and
          wear)
@@ -146,6 +160,19 @@ public:
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
       Teuchos::RCP<Epetra_SerialDenseVector> gseg);
     
+  /*!
+  \brief Build all integrals and linearizations without segmentation -- 3D
+         (i.e. M, g, LinM, Ling and possibly D, LinD)
+
+  */
+  void IntegrateDerivCell3D_Fast(
+      MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+      bool *boundary_ele,
+      bool *proj_);
+
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
          master integration cell (i.e. M, g, LinM, Ling and possibly D, LinD)
@@ -278,6 +305,15 @@ public:
                  MORTAR::MortarElement& mele,
                  Epetra_SerialDenseMatrix& M_seg);
   
+
+  /*!
+  \brief Assemble M contribution of current slave-master pairing for FastIntegration
+
+  */
+  virtual bool AssembleM_Fast(const Epetra_Comm& comm,
+                 MORTAR::MortarElement& sele,
+                 std::vector<MORTAR::MortarElement*> meles,
+                 Epetra_SerialDenseMatrix& M_seg);
   /*!
   \brief Assemble g~ contribution of current overlap into slave nodes
 

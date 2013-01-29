@@ -1479,6 +1479,18 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("MAX_BALANCE",2.0,"Maximum value of load balance measure before parallel redistribution",&mortar);
   IntParameter("MIN_ELEPROC",0,"Minimum no. of elements per processor for parallel redistribution",&mortar);
 
+  setStringToIntegralParameter<int>("INTTYPE","Segments","Type of numerical integration scheme",
+    tuple<std::string>("Segments","segments",
+             "Fast","fast",
+             "Fast_BS", "fast_BS"),
+    tuple<int>(
+        INPAR::MORTAR::inttype_segments, INPAR::MORTAR::inttype_segments,
+        INPAR::MORTAR::inttype_fast, INPAR::MORTAR::inttype_fast,
+        INPAR::MORTAR::inttype_fast_BS, INPAR::MORTAR::inttype_fast_BS),
+    &mortar);
+    
+  IntParameter("NUMGP_PER_DIM",0,"Number of employed integration points per dimension",&mortar);
+  
   /*----------------------------------------------------------------------*/
   /* parameters for structural meshtying and contact */
   Teuchos::ParameterList& scontact = list->sublist("CONTACT DYNAMIC",false,"");

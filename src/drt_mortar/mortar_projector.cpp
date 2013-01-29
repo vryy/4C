@@ -318,6 +318,166 @@ bool MORTAR::MortarProjector::ProjectGaussPoint(MORTAR::MortarElement& gpele,
 }
 
 /*----------------------------------------------------------------------*
+ | Check projection for warped elements                      farah 01/13|
+ *----------------------------------------------------------------------*/
+bool MORTAR::MortarProjector::CheckProjection4AUXPLANE(MORTAR::MortarElement& ele,
+                                             double* ngp, double* globgp )
+{
+  if (ele.Shape()==DRT::Element::tri3)
+    dserror("ELEMENT SHAPE TRI3 -- NO WARPING");
+
+  int nnode = ele.NumNode();
+  DRT::Node** mynodes = ele.Nodes();
+  if (!mynodes) dserror("ERROR: Project: Null pointer!");
+
+  //compute base-vectors
+  std::vector<double> t0(3);
+  std::vector<double> t1(3);
+  std::vector<double> auxn(3);
+  std::vector<double> auxc(3);
+  std::vector<double> proj_gp(3);
+  LINALG::Matrix<3,3> P;
+  LINALG::Matrix<3,3> T;
+  double n[3]={0.0 , 0.0 , 0.0};
+  double length_t=0.0;
+  double length_n=0.0;
+  double a1=0.0;
+  bool all_negative=true;
+  MortarNode* mycnode_0=0;
+  MortarNode* mycnode_1=0;
+  MortarNode* mycnode_2=0;
+
+  //project gp onto auxn
+  for (int i=0;i<nnode;++i) //loop over edges
+  {
+    if(i==0)
+    {
+      mycnode_1 = static_cast<MortarNode*> (mynodes[0]);
+      if (!mycnode_1) dserror("ERROR: Project: Null pointer!");
+
+      mycnode_0 = static_cast<MortarNode*> (mynodes[3]);
+      if (!mycnode_0) dserror("ERROR: Project: Null pointer!");
+
+      mycnode_2 = static_cast<MortarNode*> (mynodes[1]);
+      if (!mycnode_2) dserror("ERROR: Project: Null pointer!");
+    }
+    if(i==3)
+    {
+      mycnode_1 = static_cast<MortarNode*> (mynodes[3]);
+      if (!mycnode_1) dserror("ERROR: Project: Null pointer!");
+
+      mycnode_0 = static_cast<MortarNode*> (mynodes[2]);
+      if (!mycnode_0) dserror("ERROR: Project: Null pointer!");
+
+      mycnode_2 = static_cast<MortarNode*> (mynodes[0]);
+      if (!mycnode_2) dserror("ERROR: Project: Null pointer!");
+    }
+    if (i==1 || i==2)
+    {
+      mycnode_1 = static_cast<MortarNode*> (mynodes[i]);
+      if (!mycnode_1) dserror("ERROR: Project: Null pointer!");
+
+      mycnode_0 = static_cast<MortarNode*> (mynodes[i-1]);
+      if (!mycnode_0) dserror("ERROR: Project: Null pointer!");
+
+      mycnode_2 = static_cast<MortarNode*> (mynodes[i+1]);
+      if (!mycnode_2) dserror("ERROR: Project: Null pointer!");
+    }
+
+    //span vectors -- edges
+    t0[0]=mycnode_0->xspatial()[0] - mycnode_1->xspatial()[0];
+    t0[1]=mycnode_0->xspatial()[1] - mycnode_1->xspatial()[1];
+    t0[2]=mycnode_0->xspatial()[2] - mycnode_1->xspatial()[2];
+
+    t1[0]=mycnode_2->xspatial()[0] - mycnode_1->xspatial()[0];
+    t1[1]=mycnode_2->xspatial()[1] - mycnode_1->xspatial()[1];
+    t1[2]=mycnode_2->xspatial()[2] - mycnode_1->xspatial()[2];
+
+    auxc[0]=mycnode_1->xspatial()[0];
+    auxc[1]=mycnode_1->xspatial()[1];
+    auxc[2]=mycnode_1->xspatial()[2];
+
+    auxn[0]=t1[1]*t0[2] - t1[2]*t0[1];
+    auxn[1]=t1[2]*t0[0] - t1[0]*t0[2];
+    auxn[2]=t1[0]*t0[1] - t1[1]*t0[0];
+
+    //fill Projection matrix P
+    for (int j=0;j<3;++j)
+      P(j,2)=-ngp[j];
+
+    for (int j=0;j<3;++j)
+      P(j,0)=t0[j];
+
+    for (int j=0;j<3;++j)
+      P(j,1)=t1[j];
+
+    P.Invert();
+    double lambda1= P(0,0)*(globgp[0]-auxc[0]) + P(0,1)*(globgp[1]-auxc[1]) + P(0,2)*(globgp[2]-auxc[2]);
+    double lambda2= P(1,0)*(globgp[0]-auxc[0]) + P(1,1)*(globgp[1]-auxc[1]) + P(1,2)*(globgp[2]-auxc[2]);
+    //double alph= P(2,0)*(globgp[0]-auxc[0]) + P(2,1)*(globgp[1]-auxc[1]) + P(2,2)*(globgp[2]-auxc[2]);
+
+    proj_gp[0]=lambda1*t0[0] + lambda2*t1[0]+auxc[0];
+    proj_gp[1]=lambda1*t0[1] + lambda2*t1[1]+auxc[1];
+    proj_gp[2]=lambda1*t0[2] + lambda2*t1[2]+auxc[2];
+    //cout << "proj_gp_AUX4PLANE= " << proj_gp[0] << " "  << proj_gp[1] << " " << proj_gp[2] << endl;
+
+    //check
+    //edge 1
+    n[0]=-(t0[1]*auxn[2] - t0[2]*auxn[1]);
+    n[1]=-(t0[2]*auxn[0] - t0[0]*auxn[2]);
+    n[2]=-(t0[0]*auxn[1] - t0[1]*auxn[0]);
+
+    length_t=sqrt(t0[0]*t0[0] + t0[1]*t0[1] +t0[2]*t0[2]);
+    length_n=sqrt(n[0]*n[0] + n[1]*n[1] +n[2]*n[2]);
+    //fill Projection matrix T
+    for (int j=0;j<3;++j)
+      T(j,0)=n[j]/length_n;
+
+    for (int j=0;j<3;++j)
+      T(j,1)=t0[j]/length_t;
+
+    for (int j=0;j<3;++j)
+      T(j,2)=auxc[j];
+
+    T.Invert();
+    a1=T(0,0)*proj_gp[0] + T(0,1)*proj_gp[1] + T(0,2)*proj_gp[2];
+
+    if (a1>0.0)
+      all_negative=false;
+
+    //edge 2
+    n[0]=(t1[1]*auxn[2] - t1[2]*auxn[1]);
+    n[1]=(t1[2]*auxn[0] - t1[0]*auxn[2]);
+    n[2]=(t1[0]*auxn[1] - t1[1]*auxn[0]);
+
+    length_t=sqrt(t1[0]*t1[0] + t1[1]*t1[1] +t1[2]*t1[2]);
+    length_n=sqrt(n[0]*n[0] + n[1]*n[1] +n[2]*n[2]);
+    //fill Projection matrix T
+    for (int j=0;j<3;++j)
+      T(j,0)=n[j]/length_n;
+
+    for (int j=0;j<3;++j)
+      T(j,1)=t1[j]/length_t;
+
+    for (int j=0;j<3;++j)
+      T(j,2)=auxc[j];
+
+    T.Invert();
+
+    a1=T(0,0)*proj_gp[0] + T(0,1)*proj_gp[1] + T(0,2)*proj_gp[2];
+    //a2=T(1,0)*proj_gp[0] + T(1,1)*proj_gp[1] + T(1,2)*proj_gp[2];
+
+    if (a1>0.0)
+      all_negative=false;
+  }
+
+  if(all_negative==false)
+    return true;
+
+  return false; // creates error in ProjectGaussPoint3D()
+}
+
+/*----------------------------------------------------------------------*
  |  Project a Gauss point along its normal (3D)               popp 11/08|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarProjector::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
@@ -384,7 +544,6 @@ bool MORTAR::MortarProjector::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
     {
       EvaluateFGaussPoint3D(f,gpx,gpn,ele,eta,alpha);
       conv = sqrt(f[0]*f[0]+f[1]*f[1]+f[2]*f[2]);
-      //std::cout << "Iteration " << k << ": -> |f|=" << conv << endl;
       if (conv <= MORTARCONVTOL) break;
       EvaluateGradFGaussPoint3D(df,gpx,gpn,ele,eta,alpha);
 
@@ -396,18 +555,31 @@ bool MORTAR::MortarProjector::ProjectGaussPoint3D(MORTAR::MortarElement& gpele,
       eta[0] += -df(0,0)*f[0] - df(0,1)*f[1] - df(0,2)*f[2];
       eta[1] += -df(1,0)*f[0] - df(1,1)*f[1] - df(1,2)*f[2];
       alpha  += -df(2,0)*f[0] - df(2,1)*f[1] - df(2,2)*f[2];
+      
+      //Projection Check
+      if (k==MORTARMAXITER-1) 
+      {
+        bool check = CheckProjection4AUXPLANE(ele, gpn,gpx); 
+        if (check==false)
+        {
+          dserror("!!! STOP !!!   -->   Projection Error: Newton unconverged but GP on mele !!!");
+        }
+      }
     }
 
     // Newton iteration unconverged
     if (conv > MORTARCONVTOL)
-      dserror("ERROR: ProjectGaussPoint3D: Newton unconverged for GP at xi = %d,"
-                    " %d from MortarElementID %i", gpeta[0], gpeta[1], gpele.Id());
-
-    // Newton iteration converged
-    xi[0]=eta[0];
-    xi[1]=eta[1];
+		{
+		  xi[0]=1e12;
+      xi[1]=1e12;
+		}
+		else
+    {
+      xi[0]=eta[0];
+      xi[1]=eta[1];
+    }
+    
     par=alpha;
-    //std::cout << "Newton iteration converged in " << k << " steps!" << endl;
   }
 
   else dserror("ERROR: ProjectGaussPoint: Called 3D version for 2D problem!");

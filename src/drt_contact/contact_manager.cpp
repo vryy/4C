@@ -538,6 +538,9 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
                                                      mortar.get<double>("MAX_BALANCE") <  1.0)
     dserror("Maximum allowed value of load balance for dynamic parallel redistribution must be >= 1.0");
   
+  if (mortar.get<int>("NUMGP_PER_DIM") > 0 && mortar.get<int>("NUMGP_PER_DIM")!=3 && DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
+    dserror("ERROR: Change of Gauss point number only allowed for FastIntegration!");
+
   // *********************************************************************
   // not (yet) implemented combinations
   // *********************************************************************
@@ -635,6 +638,42 @@ bool CONTACT::CoManager::ReadAndCheckInput(Teuchos::ParameterList& cparams)
   // *********************************************************************
   if (mortar.get<double>("SEARCH_PARAM") == 0.0)
     std::cout << ("Warning: Contact search called without inflation of bounding volumes\n") << endl;
+
+  // *********************************************************************
+  // warnings concerning integration method
+  // *********************************************************************
+  if (dim==2)
+  {
+    if (mortar.get<int>("NUMGP_PER_DIM") <= 0)
+    {
+      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
+      {
+        std::cout << "\n Warning: No or no valid Gauss point number for 2D segment-based mortar integration provided.\n"
+                  << "         Using default value of 5 Gauss points per integration segment.\n" << endl;
+      }
+      else
+      {
+        std::cout << "\n Warning: No or no valid Gauss point number for 2D fast mortar integration provided.\n"
+                  << "         Using default value of 5 Gauss points per slave element.\n" << endl;
+      }
+    }
+  }
+  else if (dim==3)
+  {
+    if (mortar.get<int>("NUMGP_PER_DIM") <= 0)
+    {
+      if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(mortar,"INTTYPE") == INPAR::MORTAR::inttype_segments)
+      {
+        std::cout << "\n Warning: No or no valid Gauss point number for 3D segment-based mortar integration provided.\n"
+                  << "         Using default value of 7 Gauss points per triangular integration cell.\n" << endl;
+      }
+      else
+      {
+        std::cout << "\n Warning: No or no valid Gauss point number for 3D fast mortar integration provided.\n"
+                  << "         Using default value of 7/9 Gauss points per triangular/quadrilateral slave element.\n" << endl;
+      }
+    }
+  }
 
   // store contents of BOTH ParameterLists in local parameter list
   cparams.setParameters(mortar);

@@ -352,6 +352,7 @@ public:
   */
   CoCoupling3dManager(DRT::Discretization& idiscret,
                       int dim, bool quad, bool auxplane,
+                      INPAR::MORTAR::IntType inttype,
                       MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
   /*!
@@ -365,6 +366,7 @@ public:
   CoCoupling3dManager(const INPAR::MORTAR::ShapeFcn shapefcn,
                       DRT::Discretization& idiscret,
                       int dim, bool quad, bool auxplane,
+                      INPAR::MORTAR::IntType inttype,
                       MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
   /*!
@@ -404,6 +406,25 @@ public:
   virtual const int& IntegrationCells() { return ncells_; }
 
   /*!
+  \brief Get integration type
+
+  */
+  INPAR::MORTAR::IntType IntType() { return inttype_; };
+
+  /*!
+  \brief Get coupling type
+
+  */
+  virtual const bool& Quad() {return quad_;};
+
+  /*!
+  \brief Get communicator
+
+  */
+  virtual const Epetra_Comm& Comm() const;
+
+
+  /*!
   \brief Evaluate coupling pairs
 
   */
@@ -422,12 +443,65 @@ protected:
     int                                       dim_;         // problem dimension (here: 3D)
     bool                                      quad_;        // flag indicating coupling type (true = quadratic)
     bool                                      auxplane_;    // flag indicating coupling strategy (true = aux. plane)
+    INPAR::MORTAR::IntType                    inttype_;     // type of numerical integration scheme
     MORTAR::MortarElement*                    sele_;        // slave element
     std::vector<MORTAR::MortarElement*>       mele_;        // master elements
     std::vector<Teuchos::RCP<CoCoupling3d> >  coup_;        // coupling pairs
     int                                       ncells_;      // total number of integration cells
 
 }; // class CoCoupling3dManager
+
+class CoCoupling3dQuadManager : public MORTAR::Coupling3dQuadManager{
+
+public:
+  /*!
+  \brief Constructor
+
+  */
+  CoCoupling3dQuadManager(const INPAR::MORTAR::ShapeFcn shapefcn,
+                    DRT::Discretization& idiscret,
+                    int dim, bool quad, bool auxplane,
+                    INPAR::MORTAR::LagMultQuad lmtype,
+                    INPAR::MORTAR::IntType inttype,
+                    MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
+
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~CoCoupling3dQuadManager() {}
+
+  /*!
+  \brief Get number of slave / master integration pairs of this interface (proc local)
+
+  */
+  virtual const int& SlaveMasterIntPairs() { return smintpairs_;}
+
+  /*!
+  \brief Get number of integration cells of this interface (proc local)
+
+  */
+  virtual const int& IntegrationCells() { return intcells_;}
+
+  /*!
+  \brief Evaluate coupling pairs
+
+  */
+  virtual bool EvaluateCoupling();
+
+  // @
+
+protected:
+  // don't want = operator and cctor
+  CoCoupling3dQuadManager operator = (const CoCoupling3dQuadManager& old);
+  CoCoupling3dQuadManager(const CoCoupling3dQuadManager& old);
+
+  // new variables as compared to the base class:
+  int                                      smintpairs_;     // proc local number of slave/master integration pairs
+  int                                      intcells_;       // proc local number of integration cells
+
+};
+
 }  // namespace CONTACT
 
 

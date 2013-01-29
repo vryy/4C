@@ -689,6 +689,7 @@ bool MORTAR::Coupling2d::IntegrateOverlap()
 MORTAR::Coupling2dManager::Coupling2dManager(DRT::Discretization& idiscret,
                                              int dim, bool quad,
                                              INPAR::MORTAR::LagMultQuad lmtype,
+                                             INPAR::MORTAR::IntType inttype,
                                              MORTAR::MortarElement* sele,
                                              std::vector<MORTAR::MortarElement*> mele) :
 shapefcn_(INPAR::MORTAR::shape_undefined),
@@ -696,6 +697,7 @@ idiscret_(idiscret),
 dim_(dim),
 quad_(quad),
 lmtype_(lmtype),
+inttype_(inttype),
 sele_(sele),
 mele_(mele)
 {
@@ -712,6 +714,7 @@ MORTAR::Coupling2dManager::Coupling2dManager(const INPAR::MORTAR::ShapeFcn shape
                                              DRT::Discretization& idiscret,
                                              int dim, bool quad,
                                              INPAR::MORTAR::LagMultQuad lmtype,
+                                             INPAR::MORTAR::IntType inttype,
                                              MORTAR::MortarElement* sele,
                                              std::vector<MORTAR::MortarElement*> mele) :
 shapefcn_(shapefcn),
@@ -719,6 +722,7 @@ idiscret_(idiscret),
 dim_(dim),
 quad_(quad),
 lmtype_(lmtype),
+inttype_(inttype),
 sele_(sele),
 mele_(mele)
 {
@@ -733,21 +737,103 @@ mele_(mele)
  *----------------------------------------------------------------------*/
 bool MORTAR::Coupling2dManager::EvaluateCoupling()
 {
-  // loop over all master elements associated with this slave element
-  for (int m=0;m<(int)MasterElements().size();++m)
+  // decide which type of numerical integration scheme
+
+  //**********************************************************************
+  // STANDARD INTEGRATION (SEGMENTS)
+  //**********************************************************************
+  if (IntType()==INPAR::MORTAR::inttype_segments)
   {
-    // create Coupling2d object and push back
-    Coupling().push_back(Teuchos::rcp(new Coupling2d(
-      shapefcn_,idiscret_,dim_,quad_,lmtype_,SlaveElement(),MasterElement(m))));
+    // loop over all master elements associated with this slave element
+    for (int m=0;m<(int)MasterElements().size();++m)
+    {
+      // create Coupling2d object and push back
+      Coupling().push_back(Teuchos::rcp(new Coupling2d(
+        shapefcn_,idiscret_,dim_,quad_,lmtype_,SlaveElement(),MasterElement(m))));
 
-    // project the element pair
-    Coupling()[m]->Project();
+      // project the element pair
+      Coupling()[m]->Project();
 
-    // check for element overlap
-    Coupling()[m]->DetectOverlap();
+      // check for element overlap
+      Coupling()[m]->DetectOverlap();
 
-    // integrate the element overlap
-    Coupling()[m]->IntegrateOverlap();
+      // integrate the element overlap
+      Coupling()[m]->IntegrateOverlap();
+    }
+  }
+  //**********************************************************************
+  // FAST INTEGRATION (ELEMENTS)
+  //**********************************************************************
+  else if (IntType()==INPAR::MORTAR::inttype_fast || IntType()==INPAR::MORTAR::inttype_fast_BS)
+  {
+    if ((int)MasterElements().size()==0)
+      return false;
+
+    // create an integrator instance with correct NumGP and Dim
+    MORTAR::MortarIntegrator integrator(shapefcn_,SlaveElement().Shape());
+
+    int nrow = SlaveElement().NumNode();
+    int ncol = (MasterElements().size())*MasterElement(0).NumNode();
+    int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
+    bool boundary_ele=false;
+
+    Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,nrow*ndof));
+    Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*ndof,ncol*ndof));
+
+    // *******************************************************************
+    // different options for mortar integration
+    // *******************************************************************
+    // (1) no quadratic element(s) involved -> linear LM interpolation
+    // (2) quadratic element(s) involved -> quadratic LM interpolation
+    // (3) quadratic element(s) involved -> linear LM interpolation
+    // (4) quadratic element(s) involved -> piecew. linear LM interpolation
+    // *******************************************************************
+    INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
+
+    // *******************************************************************
+    // cases (1), (2) and (3)
+    // *******************************************************************
+    if (!Quad() ||
+        (Quad() && lmtype==INPAR::MORTAR::lagmult_quad_quad) ||
+        (Quad() && lmtype==INPAR::MORTAR::lagmult_lin_lin))
+    {
+      integrator.FastIntegration(dseg,mseg,lmtype,SlaveElement(),MasterElements(),&boundary_ele);
+
+      // Perform Boundary Segmentation if required
+      if (IntType()==INPAR::MORTAR::inttype_fast_BS)
+      {
+        if (boundary_ele==true)
+        {
+          for (int m=0;m<(int)MasterElements().size();++m)
+          {
+          // create Coupling2d object and push back
+          Coupling().push_back(Teuchos::rcp(new Coupling2d(
+            shapefcn_,idiscret_,dim_,quad_,lmtype_,SlaveElement(),MasterElement(m))));
+
+          // project the element pair
+          Coupling()[m]->Project();
+
+          // check for element overlap
+          Coupling()[m]->DetectOverlap();
+
+          // integrate the element overlap
+          Coupling()[m]->IntegrateOverlap();
+          }
+        }
+      }
+      else
+      {
+        integrator.AssembleD(idiscret_.Comm(),SlaveElement(),*dseg);
+        integrator.AssembleM_Fast(idiscret_.Comm(),SlaveElement(),MasterElements(),*mseg);
+      }
+    }
+  }
+  //**********************************************************************
+  // INVALID
+  //**********************************************************************
+  else
+  {
+    dserror("ERROR: Invalid type of numerical integration");
   }
 
   return true;

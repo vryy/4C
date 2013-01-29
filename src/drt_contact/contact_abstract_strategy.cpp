@@ -1190,6 +1190,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
       }
       default:
         dserror("ERROR: StoreNodalQuantities: Unknown state std::string variable!");
+        break;
     } // switch
 
     // slave dof and node map of the interface
@@ -1307,6 +1308,7 @@ void CONTACT::CoAbstractStrategy::StoreNodalQuantities(MORTAR::StrategyBase::Qua
         }
         default:
           dserror("ERROR: StoreNodalQuantities: Unknown state std::string variable!");
+          break;
         } // switch
       }
     }
@@ -1582,6 +1584,7 @@ void CONTACT::CoAbstractStrategy::StoreToOld(MORTAR::StrategyBase::QuantityType 
         }
         default:
           dserror("ERROR: StoreDMToNodes: Unknown state std::string variable!");
+          break;
       } // switch
     }
   }

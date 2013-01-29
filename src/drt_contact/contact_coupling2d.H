@@ -151,6 +151,7 @@ public:
   */
   CoCoupling2dManager(DRT::Discretization& idiscret,
                       int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
+                      INPAR::MORTAR::IntType inttype,
                       MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
   /*!
@@ -163,6 +164,7 @@ public:
   */
   CoCoupling2dManager(const INPAR::MORTAR::ShapeFcn shapefcn, DRT::Discretization& idiscret,
                       int dim, bool quad, INPAR::MORTAR::LagMultQuad lmtype,
+                      INPAR::MORTAR::IntType inttype,
                       MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
   /*!
@@ -196,6 +198,36 @@ public:
   virtual std::vector<Teuchos::RCP<CONTACT::CoCoupling2d> >& Coupling() { return coup_; }
 
   /*!
+  \brief Get type of quadratic LM interpolation
+
+  */
+  virtual INPAR::MORTAR::LagMultQuad LagMultQuad() { return lmtype_; };
+
+  /*!
+  \brief Get type of integration scheme
+
+  */
+  virtual INPAR::MORTAR::IntType IntType() { return inttype_; };
+
+  /*!
+  \brief Get coupling type
+
+  */
+  virtual const bool& Quad() {return quad_;}
+
+  /*!
+  \brief Get communicator
+
+  */
+  virtual const Epetra_Comm& Comm() const;
+
+  /*!
+  \brief Get problem dimension
+
+  */
+  virtual const int& Dim() {return dim_;}
+
+  /*!
   \brief Evaluate coupling pairs
 
   */
@@ -215,6 +247,7 @@ protected:
     int                                       dim_;       // problem dimension (here: 2D)
     bool                                      quad_;      // flag indicating coupling type (true = quadratic)
     INPAR::MORTAR::LagMultQuad                lmtype_;    // type of quadratic LM interpolation and testing
+    INPAR::MORTAR::IntType                    inttype_;   // type of numerical integration scheme
     MORTAR::MortarElement*                    sele_;      // slave element
     std::vector<MORTAR::MortarElement*>       mele_;      // master elements
     std::vector<Teuchos::RCP<CoCoupling2d> >  coup_;      // coupling pairs

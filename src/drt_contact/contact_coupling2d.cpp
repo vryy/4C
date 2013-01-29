@@ -43,7 +43,7 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_element.H"
 #include "../drt_mortar/mortar_node.H"
 #include "../drt_lib/drt_globalproblem.H"
-
+#include "../drt_lib/drt_discret.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 11/08|
@@ -186,6 +186,7 @@ bool CONTACT::CoCoupling2d::IntegrateOverlap()
 CONTACT::CoCoupling2dManager::CoCoupling2dManager(DRT::Discretization& idiscret,
                                                   int dim, bool quad,
                                                   INPAR::MORTAR::LagMultQuad lmtype,
+                                                  INPAR::MORTAR::IntType inttype,
                                                   MORTAR::MortarElement* sele,
                                                   std::vector<MORTAR::MortarElement*> mele) :
 shapefcn_(INPAR::MORTAR::shape_undefined),
@@ -193,6 +194,7 @@ idiscret_(idiscret),
 dim_(dim),
 quad_(quad),
 lmtype_(lmtype),
+inttype_(inttype),
 sele_(sele),
 mele_(mele)
 {
@@ -209,6 +211,7 @@ CONTACT::CoCoupling2dManager::CoCoupling2dManager(const INPAR::MORTAR::ShapeFcn 
                                                  DRT::Discretization& idiscret,
                                                  int dim, bool quad,
                                                  INPAR::MORTAR::LagMultQuad lmtype,
+                                                 INPAR::MORTAR::IntType inttype,
                                                  MORTAR::MortarElement* sele,
                                                  std::vector<MORTAR::MortarElement*> mele) :
 shapefcn_(shapefcn),
@@ -216,6 +219,7 @@ idiscret_(idiscret),
 dim_(dim),
 quad_(quad),
 lmtype_(lmtype),
+inttype_(inttype),
 sele_(sele),
 mele_(mele)
 {
@@ -226,24 +230,168 @@ mele_(mele)
 }
 
 /*----------------------------------------------------------------------*
+ |  get communicator  (public)                               farah 01/13|
+ *----------------------------------------------------------------------*/
+const Epetra_Comm& CONTACT::CoCoupling2dManager::Comm() const
+{
+  return idiscret_.Comm();
+}
+
+/*----------------------------------------------------------------------*
  |  Evaluate coupling pairs                                   popp 03/09|
  *----------------------------------------------------------------------*/
 bool CONTACT::CoCoupling2dManager::EvaluateCoupling()
 {
-  // loop over all master elements associated with this slave element
-  for (int m=0;m<(int)MasterElements().size();++m)
+  // decide which type of numerical integration scheme
+
+  //**********************************************************************
+  // STANDARD INTEGRATION (SEGMENTS)
+  //**********************************************************************
+  if (IntType()==INPAR::MORTAR::inttype_segments)
   {
-    // create CoCoupling2d object and push back
-    Coupling().push_back(Teuchos::rcp(new CoCoupling2d(shapefcn_,idiscret_,dim_,quad_,lmtype_,SlaveElement(),MasterElement(m))));
+    // loop over all master elements associated with this slave element
+    for (int m=0;m<(int)MasterElements().size();++m)
+    {
+      // create CoCoupling2d object and push back
+      Coupling().push_back(Teuchos::rcp(new CoCoupling2d(shapefcn_,idiscret_,dim_,quad_,lmtype_,SlaveElement(),MasterElement(m))));
 
-    // project the element pair
-    Coupling()[m]->Project();
+      // project the element pair
+      Coupling()[m]->Project();
 
-    // check for element overlap
-    Coupling()[m]->DetectOverlap();
+      // check for element overlap
+      Coupling()[m]->DetectOverlap();
 
-    // integrate the element overlap
-    Coupling()[m]->IntegrateOverlap();
+      // integrate the element overlap
+      Coupling()[m]->IntegrateOverlap();
+    }
+  }
+  //**********************************************************************
+  // FAST INTEGRATION (ELEMENTS)
+  //**********************************************************************
+  else if (IntType()==INPAR::MORTAR::inttype_fast || IntType()==INPAR::MORTAR::inttype_fast_BS)
+  {
+    if ((int)MasterElements().size()==0)
+        return false;
+
+    // create an integrator instance with correct NumGP and Dim
+    CONTACT::CoIntegrator integrator(shapefcn_,SlaveElement().Shape());
+
+    // *******************************************************************
+    // different options for mortar integration
+    // *******************************************************************
+    // (1) no quadratic element(s) involved -> linear LM interpolation
+    // (2) quadratic element(s) involved -> quadratic LM interpolation
+    // (3) quadratic element(s) involved -> linear LM interpolation
+    // (4) quadratic element(s) involved -> piecew. linear LM interpolation
+    // *******************************************************************
+    INPAR::MORTAR::LagMultQuad lmtype = LagMultQuad();
+
+    // *******************************************************************
+    // cases (1), (2) and (3)
+    // *******************************************************************
+    if (!Quad() ||
+        (Quad() && lmtype==INPAR::MORTAR::lagmult_quad_quad) ||
+        (Quad() && lmtype==INPAR::MORTAR::lagmult_lin_lin))
+    {
+      // Test whether projection from slave to master surface is feasible --> important for dual LM Fnc.
+      // Contact_interface.cpp --> AssembleG
+      for (int m=0;m<(int)MasterElements().size();++m)
+      {
+        // create CoCoupling2d object and push back
+        Coupling().push_back(Teuchos::rcp(new CoCoupling2d(shapefcn_,idiscret_,dim_,quad_,lmtype_,SlaveElement(),MasterElement(m))));
+
+        // project the element pair
+        Coupling()[m]->Project();
+      }
+
+      //Bool for identification of boundary elements
+      bool boundary_ele=false;
+
+        // do the integration (integrate and linearize both M and gap and wear)
+      int nrow = SlaveElement().NumNode();
+      int ncol = (MasterElements().size())*MasterElement(0).NumNode();
+      int ndof = static_cast<MORTAR::MortarNode*>(SlaveElement().Nodes()[0])->NumDof();
+
+      if (ndof != Dim()) dserror("ERROR: Problem dimension and dofs per node not identical");
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),nrow*Dim()));
+      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg = Teuchos::rcp(new Epetra_SerialDenseMatrix(nrow*Dim(),ncol*Dim() ));
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
+      Teuchos::RCP<Epetra_SerialDenseVector> wseg = Teuchos::null;
+      if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
+        wseg = Teuchos::rcp(new Epetra_SerialDenseVector(nrow));
+
+      //perform integration
+      integrator.FastIntegration(SlaveElement(),MasterElements(),lmtype,dseg,mseg,gseg,wseg,&boundary_ele);
+
+      if (IntType()==INPAR::MORTAR::inttype_fast_BS)
+      {
+        if (boundary_ele==true)
+        {
+          // loop over all master elements associated with this slave element
+          for (int m=0;m<(int)MasterElements().size();++m)
+          {
+            // create CoCoupling2d object and push back
+            Coupling().push_back(Teuchos::rcp(new CoCoupling2d(shapefcn_,idiscret_,dim_,quad_,lmtype_,SlaveElement(),MasterElement(m))));
+
+            // project the element pair
+            Coupling()[m]->Project();
+
+            // check for element overlap
+            Coupling()[m]->DetectOverlap();
+
+            // integrate the element overlap
+            Coupling()[m]->IntegrateOverlap();
+          }
+        }
+        else
+        {
+          // do the two assemblies into the slave nodes
+          integrator.AssembleD(Comm(),SlaveElement(),*dseg);
+          integrator.AssembleM_Fast(Comm(),SlaveElement(),MasterElements(),*mseg);
+
+          // also do assembly of weighted gap vector
+          integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+
+          // assemble wear
+          if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
+            integrator.AssembleWear(Comm(),SlaveElement(),*wseg);
+        }
+      }
+      else
+      {
+        // do the two assemblies into the slave nodes
+        integrator.AssembleD(Comm(),SlaveElement(),*dseg);
+        integrator.AssembleM_Fast(Comm(),SlaveElement(),MasterElements(),*mseg);
+
+        // also do assembly of weighted gap vector
+        integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+
+        // assemble wear
+        if((DRT::Problem::Instance()->ContactDynamicParams()).get<double>("WEARCOEFF")>0.0)
+          integrator.AssembleWear(Comm(),SlaveElement(),*wseg);
+      }
+    }
+    // *******************************************************************
+    // case (4)
+    // *******************************************************************
+    else if (Quad() && lmtype==INPAR::MORTAR::lagmult_pwlin_pwlin)
+    {
+       dserror("ERROR: Piecewise linear LM not (yet?) implemented in 2D");
+    }
+    // *******************************************************************
+    // other cases
+    // *******************************************************************
+    else
+    {
+      dserror("ERROR: Integrate: Invalid case for 2D mortar coupling LM interpolation");
+    }
+  }
+  //**********************************************************************
+  // INVALID TYPE OF NUMERICAL INTEGRATION
+  //**********************************************************************
+  else
+  {
+    dserror("ERROR: Invalid type of numerical integration");
   }
 
   return true;

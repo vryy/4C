@@ -632,6 +632,7 @@ public:
   */
   Coupling3dManager(DRT::Discretization& idiscret,
                     int dim, bool quad, bool auxplane,
+                    INPAR::MORTAR::IntType inttype,
                     MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
   /*!
@@ -645,6 +646,7 @@ public:
   Coupling3dManager(const INPAR::MORTAR::ShapeFcn shapefcn,
                     DRT::Discretization& idiscret,
                     int dim, bool quad, bool auxplane,
+                    INPAR::MORTAR::IntType inttype,
                     MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
 
   /*!
@@ -678,6 +680,24 @@ public:
   virtual std::vector<Teuchos::RCP<MORTAR::Coupling3d> >& Coupling() { return coup_; }
 
   /*!
+  \brief Get integration type
+
+  */
+   INPAR::MORTAR::IntType IntType() { return inttype_; }
+
+  /*!
+  \brief Get coupling type
+
+  */
+  virtual const bool& Quad() {return quad_;};
+
+  /*!
+  \brief Get communicator
+
+  */
+  virtual const Epetra_Comm& Comm() const;
+
+  /*!
   \brief Evaluate coupling pairs
 
   */
@@ -696,11 +716,119 @@ protected:
     int                                  dim_;              // problem dimension (here: 3D)
     bool                                 quad_;             // flag indicating coupling type (true = quadratic)
     bool                                 auxplane_;         // flag indicating coupling strategy (true = aux. plane)
+    INPAR::MORTAR::IntType               inttype_;   // type of numerical integration scheme
     MORTAR::MortarElement*               sele_;             // slave element
     std::vector<MORTAR::MortarElement*>  mele_;             // master elements
     std::vector<Teuchos::RCP<MORTAR::Coupling3d> >  coup_;  // coupling pairs
 
 }; // class Coupling3dManager
+
+
+
+class Coupling3dQuadManager {
+
+public:
+  /*!
+  \brief Constructor
+
+  */
+  Coupling3dQuadManager(const INPAR::MORTAR::ShapeFcn shapefcn,
+                    DRT::Discretization& idiscret,
+                    int dim, bool quad, bool auxplane,
+                    INPAR::MORTAR::LagMultQuad lmtype,
+                    INPAR::MORTAR::IntType inttype,
+                    MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
+
+  /*!
+  \brief empty Constructor
+
+  */
+  Coupling3dQuadManager(const INPAR::MORTAR::ShapeFcn shapefcn,
+                    DRT::Discretization& idiscret,
+                    int dim, bool quad, bool auxplane,
+                    INPAR::MORTAR::LagMultQuad lmtype,
+                    INPAR::MORTAR::IntType inttype,
+                    MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele,
+                    bool empty);
+  /*!
+  \brief Destructor
+
+  */
+  virtual ~Coupling3dQuadManager() {}
+
+
+  INPAR::MORTAR::LagMultQuad LagMultQuad() { return lmtype_; }
+
+  /*!
+  \brief Split MortarElements into IntElements for 3D quadratic coupling
+
+  */
+  virtual bool SplitIntElements(MORTAR::MortarElement& ele,
+                                std::vector<Teuchos::RCP<MORTAR::IntElement> >& auxele);
+
+  /*!
+  \brief Get coupling slave element
+
+  */
+  virtual MORTAR::MortarElement& SlaveElement() const { return *sele_; }
+
+  /*!
+  \brief Get one specific coupling master element
+
+  */
+  virtual MORTAR::MortarElement& MasterElement(int k) const { return *(mele_[k]); }
+
+  /*!
+  \brief Get all coupling master elements
+
+  */
+  virtual std::vector<MORTAR::MortarElement*> MasterElements() const { return mele_; }
+
+  /*!
+  \brief Get integration type
+
+  */
+   INPAR::MORTAR::IntType IntType() { return inttype_; }
+
+  /*!
+  \brief Get coupling type
+
+  */
+  virtual const bool& Quad() {return quad_;};
+
+  /*!
+  \brief Get communicator
+
+  */
+  virtual const Epetra_Comm& Comm() const;
+  /*!
+  \brief Evaluate coupling pairs
+
+  */
+  virtual bool EvaluateCoupling();
+
+  // @
+
+protected:
+  // don't want = operator and cctor
+  Coupling3dQuadManager operator = (const Coupling3dQuadManager& old);
+  Coupling3dQuadManager(const Coupling3dQuadManager& old);
+
+  const INPAR::MORTAR::ShapeFcn                   shapefcn_;         // employed type of shape function set
+  DRT::Discretization&                            idiscret_;         // discretization of the contact interface
+  int                                             dim_;              // problem dimension (here: 3D)
+  bool                                            quad_;             // flag indicating coupling type (true = quadratic)
+  bool                                            auxplane_;         // flag indicating coupling strategy (true = aux. plane)
+  INPAR::MORTAR::LagMultQuad                      lmtype_;
+  INPAR::MORTAR::IntType                          inttype_;   // type of numerical integration scheme
+  MORTAR::MortarElement*                          sele_;             // slave element
+  std::vector<MORTAR::MortarElement*>             mele_;             // master elements
+  //std::vector<Teuchos::RCP<MORTAR::Coupling3d> >  coup_;  // coupling pairs
+
+
+};
+
+
 }  // namespace MORTAR
 
 

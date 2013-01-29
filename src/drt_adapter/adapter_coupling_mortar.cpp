@@ -67,6 +67,8 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   // check for invalid parameter values
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
     dserror("Mortar coupling adapter only works for dual shape functions");
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(input,"INTTYPE") != INPAR::MORTAR::inttype_segments)
+    dserror("Mortar coupling adapter only works for segment-based integration");
 
   // check for parallel redistribution (only if more than 1 proc)
   bool parredist = false;
@@ -321,6 +323,8 @@ void ADAPTER::CouplingMortar::Setup
   // check for invalid parameter values
   if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
     dserror("Mortar coupling adapter only works for dual shape functions");
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(input,"INTTYPE") != INPAR::MORTAR::inttype_segments)
+    dserror("Mortar coupling adapter only works for segment-based integration");
 
   // check for parallel redistribution (only if more than 1 proc)
   bool parredist = false;
@@ -559,6 +563,8 @@ bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   if(meshtyingoption != INPAR::FLUID::sps_coupled and meshtyingoption != INPAR::FLUID::sps_pc)
     if (DRT::INPUT::IntegralValue<INPAR::MORTAR::ShapeFcn>(input,"SHAPEFCN") != INPAR::MORTAR::shape_dual)
       dserror("Condensation works only for dual shape functions");
+  if (DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(input,"INTTYPE") != INPAR::MORTAR::inttype_segments)
+    dserror("Mortar coupling adapter only works for segment-based integration");
 
   if (myrank == 0)
   {

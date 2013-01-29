@@ -44,6 +44,7 @@ Maintainer: Alexander Popp
 #include "mortar_projector.H"
 #include "mortar_coupling3d_classes.H"
 #include "mortar_defines.H"
+#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "../linalg/linalg_serialdensematrix.H"
@@ -82,13 +83,90 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
   // 9 points: for integrals on 2D quadrilaterals   (1,4,9,16,25,36,49,64)
   //           -> degree of precision: 5
   //**********************************************************************
+
+  // get input
+  const Teuchos::ParameterList& smortar  = DRT::Problem::Instance()->MortarCouplingParams();
+  int numgp = smortar.get<int>("NUMGP_PER_DIM");
+
+  INPAR::MORTAR::IntType integrationtype =
+    DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(smortar,"INTTYPE");
+
   switch(eletype)
   {
   case DRT::Element::line2:
   case DRT::Element::line3:
   {
+    // set default value for Gauss rule first
     dim_=2;
-    const DRT::UTILS::IntegrationPoints1D intpoints(DRT::UTILS::intrule_line_5point);
+    DRT::UTILS::GaussRule1D mygaussrule = DRT::UTILS::intrule_line_5point;
+
+    // GP switch if non-zero value provided by user
+    if(integrationtype==INPAR::MORTAR::inttype_fast ||integrationtype==INPAR::MORTAR::inttype_fast_BS)
+    {
+      if (numgp>0)
+      {
+        switch(numgp)
+        {
+          case 1:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_1point;
+            break;
+          }
+          case 2:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_2point;
+            break;
+          }
+          case 3:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_3point;
+            break;
+          }
+          case 4:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_4point;
+            break;
+          }
+          case 5:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_5point;
+            break;
+          }
+          case 6:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_6point;
+            break;
+          }
+          case 7:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_7point;
+            break;
+          }
+          case 8:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_8point;
+            break;
+          }
+          case 9:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_9point;
+            break;
+          }
+          case 10:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_10point;
+            break;
+          }
+          default:
+          {
+            dserror("Requested GP-Number is not implemented!");
+            break;
+          }
+        }
+      }
+    }
+
+    const DRT::UTILS::IntegrationPoints1D intpoints(mygaussrule);
     ngp_ = intpoints.nquad;
     coords_.Reshape(nGP(),2);
     weights_.resize(nGP());
@@ -103,8 +181,67 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
   case DRT::Element::tri3:
   case DRT::Element::tri6:
   {
+    // set default value for Gauss rule first
     dim_=3;
-    const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_tri_7point);
+    DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_tri_7point;
+
+    // GP switch if non-zero value provided by user
+    if(integrationtype==INPAR::MORTAR::inttype_fast ||integrationtype==INPAR::MORTAR::inttype_fast_BS)
+    {
+      if (numgp>0)
+      {
+        switch(numgp)
+        {
+          case 1:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_1point;
+            break;
+          }
+          case 2:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_6point;
+            break;
+          }
+          case 3:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_7point;
+            break;
+          }
+          case 4:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_12point;
+            break;
+          }
+          case 5:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_12point;
+            break;
+          }
+          case 6:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_37point;
+            break;
+          }
+          case 7:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_37point;
+            break;
+          }
+          case 8:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_64point;
+            break;
+          }
+          default:
+          {
+            dserror("Requested GP-Number is not implemented!");
+            break;
+          }
+        }
+      }
+    }
+
+    const DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
     ngp_ = intpoints.nquad;
     coords_.Reshape(nGP(),2);
     weights_.resize(nGP());
@@ -120,8 +257,62 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
   case DRT::Element::quad8:
   case DRT::Element::quad9:
   {
+    // set default value for Gauss rule first
     dim_=3;
-    const DRT::UTILS::IntegrationPoints2D intpoints(DRT::UTILS::intrule_quad_9point);
+    DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_quad_9point;
+
+    // GP switch if non-zero value provided by user
+    if(integrationtype==INPAR::MORTAR::inttype_fast ||integrationtype==INPAR::MORTAR::inttype_fast_BS)
+    {
+      if (numgp>0)
+      {
+        switch(numgp)
+        {
+          case 2:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_4point;
+            break;
+          }
+          case 3:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_9point;
+            break;
+          }
+          case 4:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_16point;
+            break;
+          }
+          case 5:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_25point;
+            break;
+          }
+          case 6:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_36point;
+            break;
+          }
+          case 7:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_49point;
+            break;
+          }
+          case 8:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_64point;
+            break;
+          }
+          default:
+          {
+            dserror("Requested GP-Number is not implemented!");
+            break;
+          }
+        }
+      }
+    }
+
+    const DRT::UTILS::IntegrationPoints2D intpoints(mygaussrule);
     ngp_ = intpoints.nquad;
     coords_.Reshape(nGP(),2);
     weights_.resize(nGP());
@@ -134,9 +325,331 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
     break;
   }
   default:
+  {
     dserror("ERROR: MortarIntegrator: This contact element type is not implemented!");
+    break;
+  }
   } // switch(eletype)
   
+  return;
+}
+
+/*--------------------------------------------------------------------------------------*
+ | Integrate without segmentation --> more GP required                       farah 01/13|
+ | Integration over the entire Slave-Element: no mapping sxi->eta                       |
+ | required                                                                             |
+ *--------------------------------------------------------------------------------------*/
+void MORTAR::MortarIntegrator::FastIntegration(
+       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+       INPAR::MORTAR::LagMultQuad& lmtype,
+       MORTAR::MortarElement& sele,
+       std::vector<MORTAR::MortarElement*> meles,
+       bool *boundary_ele)
+{
+  //check for problem dimension
+  if (Dim()!=2) dserror("ERROR: 2D integration method called for non-2D problem");
+
+  // number of nodes (slave, master)
+  int nrow    = sele.NumNode();
+  int ndof    = static_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+  int mndof   = static_cast<MORTAR::MortarNode*>(meles[0]->Nodes()[0])->NumDof();
+  int nodemaster  = meles[0]->NumNode();
+
+  // create empty vectors for shape fct. evaluation
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,1);
+  LINALG::SerialDenseVector mval(nodemaster);
+  LINALG::SerialDenseMatrix mderiv(nodemaster,1);
+  LINALG::SerialDenseVector lmval(nrow);
+  LINALG::SerialDenseMatrix lmderiv(nrow,1);
+
+  // get slave element nodes themselves
+  DRT::Node** mynodes = sele.Nodes();
+  if(!mynodes) dserror("ERROR: IntegrateAndDerivSegment: Null pointer!");
+
+  // decide whether boundary modification has to be considered or not
+  // this is element-specific (is there a boundary node in this element?)
+  bool bound = false;
+  for (int k=0;k<nrow;++k)
+  {
+    MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[k]);
+    if (!mymrtrnode) dserror("ERROR: IntegrateDerivSegment2D: Null pointer!");
+    bound += mymrtrnode->IsOnBound();
+  }
+
+  // decide whether linear LM are used for quadratic FE here
+  bool linlm = false;
+  if (lmtype == INPAR::MORTAR::lagmult_lin_lin && sele.Shape() == DRT::Element::line3)
+  {
+    bound = false; // crosspoints and linear LM NOT at the same time!!!!
+    linlm = true;
+  }
+
+  double sxia=-1;
+  double sxib=1;
+  double sxi[2]={0.0 , 0.0};
+
+  //**********************************************************************
+  // loop over all Gauss points for integration
+  //**********************************************************************
+  for (int gp=0;gp<nGP();++gp) //loop to the end //Number of the GP
+  {
+    bool is_on_mele=false;
+    bool kink_projection=false;
+    // coordinates and weight of the GP
+    double eta[2] = {Coordinate(gp,0), 0.0};
+    double wgt = Weight(gp);
+    sxi[0] = 0.5*(1-eta[0])*sxia + 0.5*(1+eta[0])*sxib;
+
+    // evaluate Lagrange multiplier shape functions (on slave element)
+    if (linlm)
+      sele.EvaluateShapeLagMultLin(shapefcn_,sxi,lmval,lmderiv,nrow);//nrow
+    else
+      sele.EvaluateShapeLagMult(shapefcn_,sxi,lmval,lmderiv,nrow);
+
+    sele.EvaluateShape(sxi,sval,sderiv,nrow);
+
+    // evaluate the two slave side Jacobians
+    double dxdsxi = sele.Jacobian(sxi);
+    double dsxideta = -0.5*sxia + 0.5*sxib;
+
+
+    //********************************************************************
+    //  loop over all involved masterelements
+    //********************************************************************
+    for (int nummaster=0;nummaster<(int)meles.size();++nummaster)
+    {
+      // get Master element nodes themselves
+      DRT::Node** mnodes = meles[nummaster]->Nodes();
+      if(!mnodes) dserror("ERROR: FastIntegration: Null pointer!");
+
+      // project Gauss point onto master element
+      double mxi[2] = {0.0, 0.0};
+      sxi[0]=eta[0];
+
+      MORTAR::MortarProjector projector(2); //2D Projector
+      projector.ProjectGaussPoint(sele,eta,*meles[nummaster],mxi);
+
+      // evaluate trace space shape functions (on both elements)
+      meles[nummaster]->EvaluateShape(mxi,mval,mderiv,meles[nummaster]->NumNode());
+
+      // check GP projection
+      if ((mxi[0]>=-1) && (mxi[0]<=1) && (kink_projection==false))
+      {
+        kink_projection=true;
+        is_on_mele=true;
+        //***************************
+        // standard shape functions
+        //***************************
+        if (shapefcn_ == INPAR::MORTAR::shape_standard)
+        {
+          // loop over all mseg matrix entries
+          // !!! nrow represents the slave Lagrange multipliers !!!
+          // !!! ncol represents the master dofs                !!!
+          // (this DOES matter here for mseg, as it might
+          // sometimes be rectangular, not quadratic!)
+          for (int j=0; j<nrow*ndof; ++j)
+          {
+            if (meles.size()>0)
+            {
+              // integrate mseg
+              for (int k=0; k<nodemaster*mndof; ++k)
+              {
+                int jindex = (int)(j/ndof);
+                int kindex = (int)(k/mndof);
+
+                  DRT::Node** mnodes = meles[nummaster]->Nodes();
+                MORTAR::MortarNode* mymnode = static_cast<MORTAR::MortarNode*> (mnodes[kindex]);
+                if (!mymnode) dserror("ERROR: Null pointer!");
+
+                // multiply the two shape functions
+                double prod = lmval[jindex]*mval[kindex];
+
+                // isolate the mseg and dseg entries to be filled
+                // (both the main diagonal and every other secondary diagonal)
+                // and add current Gauss point's contribution to mseg and dseg
+                if ((j==k) || ((j-jindex*ndof)==(k-kindex*mndof)))
+                {
+                (*mseg)(j, k+nummaster*nodemaster*mndof) += prod*dxdsxi*dsxideta*wgt;
+                }
+              }
+            }
+          }
+        }//std shape
+
+        //***********************
+        // dual shape functions
+        //***********************
+        else if (shapefcn_ == INPAR::MORTAR::shape_dual)
+        {
+          //dserror("ERROR: noch nicht vervollständigt");
+          // loop over all mseg matrix entries
+          // nrow represents the slave Lagrange multipliers !!!
+          // ncol represents the master dofs !!!
+          // (this DOES matter here for mseg, as it might
+          // sometimes be rectangular, not quadratic!)
+          for (int j=0;j<nrow*ndof;++j)
+          {
+            // for dual shape functions we can make use
+            // of the row summing lemma: D_jj = Sum(k) M_jk
+            // hence, they can be combined into one single loop
+
+            // integrate mseg and dseg (no boundary modification)
+            for (int k=0;k<nodemaster*mndof;++k)
+            {
+              int jindex = (int)(j/ndof);
+              int kindex = (int)(k/ndof);
+
+              // multiply the two shape functions
+              double prod = lmval[jindex]*mval[kindex];
+
+              // isolate the mseg and dseg entries to be filled
+              // (both the main diagonal and every other secondary diagonal for mseg)
+              // (only the main diagonal for dseg)
+              // and add current Gauss point's contribution to mseg
+              if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+              {
+                (*mseg)(j, k+nummaster*nodemaster*mndof) += prod*dxdsxi*dsxideta*wgt;
+                if(!bound)
+                  {
+                    (*dseg)(j,j) += prod*dxdsxi*dsxideta*wgt;
+                  }
+              }
+            }
+            // integrate dseg (boundary modification)
+            if (bound)
+            {
+              MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[(int)(j/ndof)]);
+              if (!mymrtrnode) dserror("ERROR: Fastintegration: Null pointer!");
+              bool j_boundnode = mymrtrnode->IsOnBound();
+
+              for (int k=0;k<nrow*ndof;++k)
+              {
+                MORTAR::MortarNode* mymrtrnode2 = static_cast<MORTAR::MortarNode*>(mynodes[(int)(k/ndof)]);
+                if (!mymrtrnode2) dserror("ERROR: FastIntegration: Null pointer!");
+                bool k_boundnode = mymrtrnode2->IsOnBound();
+
+                int jindex = (int)(j/ndof);
+                int kindex = (int)(k/ndof);
+
+                // do not assemble off-diagonal terms if j,k are both non-boundary nodes
+                if (!j_boundnode && !k_boundnode && (jindex!=kindex)) continue;
+
+                // multiply the two shape functions
+                double prod = lmval[jindex]*sval[kindex];
+
+                // isolate the dseg entries to be filled
+                // (both the main diagonal and every other secondary diagonal)
+                // and add current Gauss point's contribution to dseg
+                if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+                  (*dseg)(j,k) += prod*dxdsxi*dsxideta*wgt;
+              }
+            }
+          } //j-loop
+       } //end - if dualshapefunction
+      } // end - if Pojection on MasterElement
+    }//loop-end over all involved master elements
+
+    // strong discontinuity --> Boundary Segmentation
+    if(is_on_mele==false)
+    {
+      *boundary_ele=true;
+    }
+
+    //**********************************************************
+    //Dseg
+    //**********************************************************
+    if (shapefcn_ == INPAR::MORTAR::shape_standard)
+    {
+      if(is_on_mele==true)
+      {
+        //integrate dseg
+        for (int j=0; j<nrow*ndof; ++j)
+        {
+          for (int k=0; k<nrow*ndof; ++k)
+          {
+            int jindex = (int)(j/ndof);
+            int kindex = (int)(k/ndof);
+
+            // multiply the two shape functions
+            double prod = lmval[jindex]*sval[kindex];
+
+            // isolate the mseg and dseg entries to be filled
+            // (both the main diagonal and every other secondary diagonal)
+            // and add current Gauss point's contribution to mseg and dseg
+            if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+            {
+              (*dseg)(j, k) += prod*dxdsxi*dsxideta*wgt;
+            }
+          }
+        }
+      }
+    }
+    else if (shapefcn_ == INPAR::MORTAR::shape_dual)
+    {
+      if (is_on_mele==true)
+      {
+        for (int j=0;j<nrow*ndof;++j)
+        {
+        // integrate dseg (boundary modification)
+        if (bound)
+        {
+          MORTAR::MortarNode* mymrtrnode = static_cast<MORTAR::MortarNode*>(mynodes[(int)(j/ndof)]);
+          if (!mymrtrnode) dserror("ERROR: Fastintegration: Null pointer!");
+          bool j_boundnode = mymrtrnode->IsOnBound();
+
+          for (int k=0;k<nrow*ndof;++k)
+          {
+          MORTAR::MortarNode* mymrtrnode2 = static_cast<MORTAR::MortarNode*>(mynodes[(int)(k/ndof)]);
+          if (!mymrtrnode2) dserror("ERROR: FastIntegration: Null pointer!");
+          bool k_boundnode = mymrtrnode2->IsOnBound();
+
+          int jindex = (int)(j/ndof);
+          int kindex = (int)(k/ndof);
+
+          // do not assemble off-diagonal terms if j,k are both non-boundary nodes
+          if (!j_boundnode && !k_boundnode && (jindex!=kindex)) continue;
+
+          // multiply the two shape functions
+          double prod = lmval[jindex]*sval[kindex];
+
+          // isolate the dseg entries to be filled
+          // (both the main diagonal and every other secondary diagonal)
+          // and add current Gauss point's contribution to dseg
+          if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+            (*dseg)(j,k) += prod*dxdsxi*dsxideta*wgt;
+          }
+        }
+        }
+      }
+    }
+
+    }//loop-end over all gp
+
+    //consistency check
+    bool zero=true;
+    for (int m=0;m<(int)((meles.size())*4);++m)
+    {
+      for (int n=0;n<(int)4;++n)
+      {
+        if((*mseg)(n,m)!=0)
+        {
+          zero=false;
+        }
+      }
+    }
+    if (zero==true)
+    {
+      for (int i=0;i<(int)4;++i)
+      {
+        for (int j=0; j<(int)4;++j)
+        {
+          (*dseg)(i,j)=0.0;
+        }
+      }
+    }
+
   return;
 }
 
@@ -773,6 +1286,213 @@ void MORTAR::MortarIntegrator::IntegrateDerivCell3D(
     // compute cell D/M matrix *******************************************
   }
   //**********************************************************************
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
+ |  Integrate and linearize without segmentation             farah 01/13|
+ *----------------------------------------------------------------------*/
+void MORTAR::MortarIntegrator::IntegrateDerivCell3D_Fast(
+     MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+     Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+     Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+     bool *boundary_ele)
+{
+  // explicitely defined shapefunction type needed
+  if (shapefcn_ == INPAR::MORTAR::shape_undefined)
+    dserror("ERROR: IntegrateDerivCell3DAuxPlane called without specific shape function defined!");
+
+  //check for problem dimension
+  if (Dim()!=3) dserror("ERROR: 3D integration method called for non-3D problem");
+
+  // discretization type of master element
+  DRT::Element::DiscretizationType dt = meles[0]->Shape();
+
+  // check input data
+  for (int test=0; test<(int)meles.size();++test)
+  {
+    if ((!sele.IsSlave()) || (meles[test]->IsSlave()))
+      dserror("ERROR: IntegrateDerivCell3D called on a wrong type of MortarElement pair!");
+  }
+
+  int msize   = meles.size();
+  int nrow    = sele.NumNode();
+  int nmnode  = meles[0]->NumNode();
+  int ndof    = static_cast<MORTAR::MortarNode*>(sele.Nodes()[0])->NumDof();
+
+  // create empty vectors for shape fct. evaluation
+  LINALG::SerialDenseVector sval(nrow);
+  LINALG::SerialDenseMatrix sderiv(nrow,2,true);
+  LINALG::SerialDenseVector mval(nmnode);
+  LINALG::SerialDenseMatrix mderiv(nmnode,2,true);
+  LINALG::SerialDenseVector lmval(nrow);
+  LINALG::SerialDenseMatrix lmderiv(nrow,2,true);
+
+  //**********************************************************************
+  // loop over all Gauss points for integration
+  //**********************************************************************
+  for (int gp=0;gp<nGP();++gp)
+  {
+    // coordinates and weight
+    double eta[2] = {Coordinate(gp,0), Coordinate(gp,1)};
+    double wgt = Weight(gp);
+
+    // note that the third component of sxi is necessary!
+    // (although it will always be 0.0 of course)
+    //double tempsxi[3] = {0.0, 0.0, 0.0};
+    double sxi[2] = {0.0, 0.0};
+    double mxi[2] = {0.0, 0.0};
+    double projalpha = 0.0;
+
+    sxi[0]=eta[0];
+    sxi[1]=eta[1];
+
+    //check for Boundary Segmentation
+    bool projactable_gp=false;
+
+    //*******************************************************************
+    // loop over meles
+    //*******************************************************************
+    for(int nummaster=0;nummaster<msize;++nummaster)
+    {
+      // project Gauss point onto master element
+      MORTAR::MortarProjector projector(3);
+      projector.ProjectGaussPoint3D(sele,sxi,*meles[nummaster],mxi,projalpha);
+
+      bool is_on_mele=true;
+
+      // check GP projection
+      double tol = 0.00;
+      if (dt==DRT::Element::quad4 || dt==DRT::Element::quad8 || dt==DRT::Element::quad9)
+      {
+        if (mxi[0]<-1.0-tol || mxi[1]<-1.0-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol)
+        {
+//          std::cout << "\n***Warning: IntegrateDerivCell3D: Gauss point projection outside!";
+//          std::cout << "Slave ID: " << sele.Id() << " Master ID: " << meles[nummaster]->Id() << endl;
+//          std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+//          std::cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+//          std::cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+
+          is_on_mele=false;
+        }
+      }
+      else
+      {
+        if (mxi[0]<-tol || mxi[1]<-tol || mxi[0]>1.0+tol || mxi[1]>1.0+tol || mxi[0]+mxi[1]>1.0+2*tol)
+        {
+//          std::cout << "\n***Warning: IntegrateDerivCell3D: Gauss point projection outside!";
+//          std::cout << "Slave ID: " << sele.Id() << " Master ID: " << meles[nummaster]->Id() << endl;
+//          std::cout << "GP local: " << eta[0] << " " << eta[1] << endl;
+//          std::cout << "Gauss point: " << sxi[0] << " " << sxi[1] << endl;
+//          std::cout << "Projection: " << mxi[0] << " " << mxi[1] << endl;
+
+          is_on_mele=false;
+        }
+      }
+
+      if (is_on_mele==true)
+      {
+        projactable_gp=true;
+
+        // evaluate Lagrange multiplier shape functions (on slave element)
+        sele.EvaluateShapeLagMult(shapefcn_,sxi,lmval,lmderiv,nrow);
+
+        // evaluate trace space shape functions (on both elements)
+        sele.EvaluateShape(sxi,sval,sderiv,nrow);
+        meles[nummaster]->EvaluateShape(mxi,mval,mderiv,nmnode);
+
+        // evaluate the two Jacobians (int. cell and slave element)
+        //double jaccell = cell->Jacobian(eta);
+        double jacslave = sele.Jacobian(sxi);
+
+        // compute cell D/M matrix *******************************************
+        // standard shape functions
+        if (shapefcn_ == INPAR::MORTAR::shape_standard)
+        {
+          // loop over all mseg matrix entries
+          // !!! nrow represents the slave Lagrange multipliers !!!
+          // !!! ncol represents the master dofs                !!!
+          // (this DOES matter here for mseg, as it might
+          // sometimes be rectangular, not quadratic!)
+          for (int j=0; j<nrow*ndof; ++j)
+          {
+            // integrate mseg
+            for (int k=0; k<nmnode*ndof; ++k)
+            {
+              int jindex = (int)(j/ndof);
+              int kindex = (int)(k/ndof);
+
+              // multiply the two shape functions
+              double prod = lmval[jindex]*mval[kindex];
+
+              // isolate the mseg entries to be filled and
+              // add current Gauss point's contribution to mseg
+              if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+                (*mseg)(j, k+nummaster*nmnode*ndof)+= prod*jacslave*wgt; //*jaccell
+            }
+
+            // integrate dseg
+            for (int k=0; k<nrow*ndof; ++k)
+            {
+              int jindex = (int)(j/ndof);
+              int kindex = (int)(k/ndof);
+
+              // multiply the two shape functions
+              double prod = lmval[jindex]*sval[kindex];
+
+              // isolate the mseg entries to be filled and
+              // add current Gauss point's contribution to mseg
+              if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+                  (*dseg)(j, k) += prod*jacslave*wgt;//*jaccell
+            }
+          }
+        }
+
+        // dual shape functions
+        else if (shapefcn_ == INPAR::MORTAR::shape_dual)
+        {
+          // loop over all mseg matrix entries
+          // !!! nrow represents the slave Lagrange multipliers !!!
+          // !!! ncol represents the master dofs                !!!
+          // (this DOES matter here for mseg, as it might
+          // sometimes be rectangular, not quadratic!)
+          for (int j=0; j<nrow*ndof; ++j)
+          {
+            // for dual shape functions we can make use
+            // of the row summing lemma: D_jj = Sum(k) M_jk
+            // hence, they can be combined into one single loop
+
+            // integrate mseg and dseg
+            for (int k=0; k<nmnode*ndof; ++k)
+            {
+              int jindex = (int)(j/ndof);
+              int kindex = (int)(k/ndof);
+
+              // multiply the two shape functions
+              double prod = lmval[jindex]*mval[kindex];
+
+              // isolate the mseg entries to be filled and
+              // add current Gauss point's contribution to mseg
+              if ((j==k) || ((j-jindex*ndof)==(k-kindex*ndof)))
+              {
+                (*mseg)(j, k+nummaster*nmnode*ndof) += prod*jacslave*wgt; //*jaccell
+                (*dseg)(j, j) += prod*jacslave*wgt; //*jaccell
+              }
+            }
+          }
+        }
+      }//is_on_mele==true
+    }//loop over meles
+
+    // strong discontinuity --> Boundary Segmentation
+    if(projactable_gp==false)
+    {
+      *boundary_ele=true;
+    }
+
+  }
 
   return;
 }
@@ -1676,63 +2396,83 @@ bool MORTAR::MortarIntegrator::AssembleD(const Epetra_Comm& comm,
                                          MORTAR::MortarElement& sele,
                                           Epetra_SerialDenseMatrix& dseg)
 {
-  // get adjacent nodes to assemble to
-  DRT::Node** snodes = sele.Nodes();
-  if (!snodes)
-    dserror("ERROR: AssembleD: Null pointer for snodes!");
+  //problem dimension via numdof of an arbitrary slave node
+  DRT::Node** testnodes = sele.Nodes();
+  MORTAR::MortarNode* tnode = static_cast<MORTAR::MortarNode*>(testnodes[0]);
+  int dim = tnode->NumDof();
 
-  // loop over all slave nodes
-  for (int slave=0;slave<sele.NumNode();++slave)
+  bool nozero=false;
+  for (int i=0;i<dim*sele.NumNode();++i)
   {
-    MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(snodes[slave]);
-    int sndof = snode->NumDof();
-
-    // only process slave node rows that belong to this proc
-    if (snode->Owner() != comm.MyPID())
-      continue;
-
-    // do not process slave side boundary nodes
-    // (their row entries would be zero anyway!)
-    if (snode->IsOnBound())
-      continue;
-
-    // loop over all dofs of the slave node
-    for (int sdof=0;sdof<sndof;++sdof)
+    for (int j=0;j<dim*sele.NumNode();++j)
     {
-      // loop over all slave nodes again ("master nodes")
-      for (int master=0;master<sele.NumNode();++master)
+      if(dseg(i,j)!=0.0)
       {
-        MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(snodes[master]);
-        const int* mdofs = mnode->Dofs();
-        int mndof = mnode->NumDof();
-
-        // loop over all dofs of the slave node again ("master dofs")
-        for (int mdof=0;mdof<mndof;++mdof)
-        {
-          int col = mdofs[mdof];
-          double val = dseg(slave*sndof+sdof,master*mndof+mdof);
-
-          // BOUNDARY NODE MODIFICATION **********************************
-          // The boundary nodes have already been re-defined  as being
-          // master nodes, so all we have to do here is to shift the terms
-          // associated with a boundary node from D to the respective
-          // place in M! Mind the minus sign, which is needed because M
-          // will later enter the contact forces with another minus sign.
-          // *************************************************************
-          if (mnode->IsOnBound())
-          {
-            double minusval = -val;
-            snode->AddMValue(sdof,col,minusval);
-          }
-          else
-          {  
-            snode->AddDValue(sdof,col,val);
-          }  
-        }
+        nozero=true;
+        break;
       }
     }
   }
 
+  if(nozero==true)
+  {
+    // get adjacent nodes to assemble to
+    DRT::Node** snodes = sele.Nodes();
+    if (!snodes)
+      dserror("ERROR: AssembleD: Null pointer for snodes!");
+
+    // loop over all slave nodes
+    for (int slave=0;slave<sele.NumNode();++slave)
+    {
+      MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(snodes[slave]);
+      int sndof = snode->NumDof();
+
+      // only process slave node rows that belong to this proc
+      if (snode->Owner() != comm.MyPID())
+        continue;
+
+      // do not process slave side boundary nodes
+      // (their row entries would be zero anyway!)
+      if (snode->IsOnBound())
+        continue;
+
+      // loop over all dofs of the slave node
+      for (int sdof=0;sdof<sndof;++sdof)
+      {
+        // loop over all slave nodes again ("master nodes")
+        for (int master=0;master<sele.NumNode();++master)
+        {
+          MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(snodes[master]);
+          const int* mdofs = mnode->Dofs();
+          int mndof = mnode->NumDof();
+
+          // loop over all dofs of the slave node again ("master dofs")
+          for (int mdof=0;mdof<mndof;++mdof)
+          {
+            int col = mdofs[mdof];
+            double val = dseg(slave*sndof+sdof,master*mndof+mdof);
+
+            // BOUNDARY NODE MODIFICATION **********************************
+            // The boundary nodes have already been re-defined  as being
+            // master nodes, so all we have to do here is to shift the terms
+            // associated with a boundary node from D to the respective
+            // place in M! Mind the minus sign, which is needed because M
+            // will later enter the contact forces with another minus sign.
+            // *************************************************************
+            if (mnode->IsOnBound())
+            {
+              double minusval = -val;
+              snode->AddMValue(sdof,col,minusval);
+            }
+            else
+            {
+              snode->AddDValue(sdof,col,val);
+            }
+          }
+        }
+      }
+    }
+  }
   return true;
 }
 
@@ -1888,6 +2628,87 @@ bool MORTAR::MortarIntegrator::AssembleM(const Epetra_Comm& comm,
     }
   }
   
+  return true;
+}
+
+/*----------------------------------------------------------------------*
+ |  Assemble M contribution for FastIntegration(2D / 3D)     farah 01/13|
+ |  PIECEWISE LINEAR LM INTERPOLATION VERSION                           |
+ *----------------------------------------------------------------------*/
+bool MORTAR::MortarIntegrator::AssembleM_Fast(const Epetra_Comm& comm,
+                                         MORTAR::MortarElement& sele,
+                                         std::vector<MORTAR::MortarElement*> meles,
+                                         Epetra_SerialDenseMatrix& mseg)
+{
+  //problem dimension via numdof of an arbitrary slave node
+  DRT::Node** testnodes = sele.Nodes();
+  MORTAR::MortarNode* tnode = static_cast<MORTAR::MortarNode*>(testnodes[0]);
+  int dim = tnode->NumDof();
+
+  for ( int nummasterele=0;nummasterele<(int)meles.size();++nummasterele )
+  {
+    //if all entries zero-valued --> no assembly
+    bool nozero=false;
+    for ( int i=0;i<dim*meles[nummasterele]->NumNode();++i  )
+    {
+      for (int j=0;j<dim*sele.NumNode();++j)
+      {
+        if(mseg(j,i+nummasterele*meles[nummasterele]->NumNode()*dim) != 0.0 )
+        {
+          nozero=true;
+          break;
+        }
+      }
+    }
+
+    if (nozero==true)
+    {
+      // get adjacent slave nodes and master nodes
+      DRT::Node** snodes = sele.Nodes();
+      if (!snodes)
+      dserror("ERROR: AssembleM: Null pointer for snodes!");
+      DRT::Node** mnodes = meles[nummasterele]->Nodes();
+      if (!mnodes)
+      dserror("ERROR: AssembleM: Null pointer for mnodes!");
+
+      // loop over all slave nodes
+      for (int slave=0;slave<sele.NumNode();++slave)
+      {
+      MORTAR::MortarNode* snode = static_cast<MORTAR::MortarNode*>(snodes[slave]);
+      int sndof = snode->NumDof();
+
+      // only process slave node rows that belong to this proc
+      if (snode->Owner() != comm.MyPID())
+        continue;
+
+      // do not process slave side boundary nodes
+      // (their row entries would be zero anyway!)
+      if (snode->IsOnBound())
+        continue;
+
+      // loop over all dofs of the slave node
+      for (int sdof=0;sdof<sndof;++sdof)
+      {
+        // loop over all master nodes
+        for (int master=0;master<meles[nummasterele]->NumNode();++master)
+        {
+        MORTAR::MortarNode* mnode = static_cast<MORTAR::MortarNode*>(mnodes[master]);
+        const int* mdofs = mnode->Dofs(); //global dofs
+        int mndof = mnode->NumDof();
+
+        // loop over all dofs of the master node
+        for (int mdof=0;mdof<mndof;++mdof)
+        {
+          int col = mdofs[mdof];
+
+          double val = mseg(slave*sndof+sdof,master*mndof+mdof+nummasterele*mndof*meles[nummasterele]->NumNode());
+          snode->AddMValue(sdof,col,val);
+        }
+        }
+      }
+      }
+    }
+  }
   return true;
 }
 

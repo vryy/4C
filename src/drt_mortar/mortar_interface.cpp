@@ -1906,6 +1906,10 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
   INPAR::MORTAR::LagMultQuad lmtype =
     DRT::INPUT::IntegralValue<INPAR::MORTAR::LagMultQuad>(IParams(),"LAGMULT_QUAD");
 
+  // get numerical integration type
+  INPAR::MORTAR::IntType inttype =
+    DRT::INPUT::IntegralValue<INPAR::MORTAR::IntType>(IParams(),"INTTYPE");
+
   // *********************************************************************
   // do interface coupling within a new class
   // (projection slave and master, overlap detection, integration and
@@ -1919,7 +1923,7 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
     // interpolation need any special treatment in the 2d case
 
     // create Coupling2dManager
-    MORTAR::Coupling2dManager coup(shapefcn_,Discret(),Dim(),quadratic,lmtype,sele,mele);
+    MORTAR::Coupling2dManager coup(shapefcn_,Discret(),Dim(),quadratic,lmtype,inttype,sele,mele);
   }
   // ************************************************************** 3D ***
   else if (Dim()==3)
@@ -1931,34 +1935,14 @@ bool MORTAR::MortarInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
     if (!quadratic)
     {
       // create Coupling3dManager
-      MORTAR::Coupling3dManager coup(shapefcn_,Discret(),Dim(),false,auxplane,sele,mele);
+      MORTAR::Coupling3dManager coup(shapefcn_,Discret(),Dim(),false,auxplane,inttype,sele,mele);
     }
 
     // ************************************************** quadratic 3D ***
     else
     {
-      // loop over all master elements associated with this slave element
-      for (int m=0;m<(int)mele.size();++m)
-      {
-        // build linear integration elements from quadratic MortarElements
-        std::vector<Teuchos::RCP<MORTAR::IntElement> > sauxelements(0);
-        std::vector<Teuchos::RCP<MORTAR::IntElement> > mauxelements(0);
-        SplitIntElements(*sele,sauxelements);
-        SplitIntElements(*mele[m],mauxelements);
-
-        // loop over all IntElement pairs for coupling
-        for (int i=0;i<(int)sauxelements.size();++i)
-        {
-          for (int j=0;j<(int)mauxelements.size();++j)
-          {
-            // create instance of coupling class
-            MORTAR::Coupling3dQuad coup(shapefcn_,Discret(),Dim(),true,auxplane,
-                          *sele,*mele[m],*sauxelements[i],*mauxelements[j],lmtype);
-            // do coupling
-            coup.EvaluateCoupling();
-          } // for maux
-        } // for saux
-      } // for m
+      //create Coupling3dQuadManager
+      MORTAR::Coupling3dQuadManager coup(shapefcn_,Discret(),Dim(),false,auxplane,lmtype,inttype,sele,mele);
     } // quadratic
   } // 3D
   else

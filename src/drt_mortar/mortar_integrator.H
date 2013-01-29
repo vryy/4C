@@ -158,6 +158,18 @@ public:
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg);
 
   /*!
+  \brief Perform mortar-integration without previous segmentation -- 2D
+
+  */
+  virtual void FastIntegration(
+         Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+         Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+         INPAR::MORTAR::LagMultQuad& lmtype,
+         MORTAR::MortarElement& sele,
+         std::vector<MORTAR::MortarElement*> meles,
+         bool *boundary_ele);
+
+  /*!
   \brief Build all integrals and linearizations on a 1D slave /
          master overlap (i.e. D, M, g, LindD, LinM, Ling)
 
@@ -197,6 +209,18 @@ public:
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
       Teuchos::RCP<Epetra_SerialDenseVector> gseg);
     
+  /*!
+  \brief Build all integrals and linearizations without segmentation
+         (i.e. M, g, LinM, Ling and possibly D, LinD)
+
+  */
+  virtual void IntegrateDerivCell3D_Fast(
+      MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
+      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
+      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+      bool *boundary_ele);
+
   /*!
   \brief Build all integrals and linearizations on a 2D slave /
          master integration cell (i.e. M, g, LinM, Ling and possibly D, LinD)
@@ -279,6 +303,15 @@ public:
   virtual bool AssembleM(const Epetra_Comm& comm,
                  MORTAR::IntElement& sintele,
                  MORTAR::MortarElement& mele,
+                 Epetra_SerialDenseMatrix& M_seg);
+
+  /*!
+  \brief Assemble M contribution of current slave-master pairing for FastIntegration
+
+  */
+  virtual bool AssembleM_Fast(const Epetra_Comm& comm,
+                 MORTAR::MortarElement& sele,
+                 std::vector<MORTAR::MortarElement*> meles,
                  Epetra_SerialDenseMatrix& M_seg);
 
   /*!
