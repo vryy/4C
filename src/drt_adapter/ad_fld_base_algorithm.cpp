@@ -446,11 +446,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     if (coupling == fsi_iter_monolithicfluidsplit or
         coupling == fsi_iter_monolithicstructuresplit)
     {
-//      // there are a couple of restrictions in monolithic free surface Algorithm
-//      fluidtimeparams->set<bool>("do explicit predictor",false);
-//
-//      dserror("No fluid predictor allowed for free surface problem, yet.");
-
       // No explicit predictor for monolithic free surface flow schemes, yet.
       // Check, whether fluid predictor is 'steady_state'. Otherwise, throw
       // an error.
