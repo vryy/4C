@@ -300,16 +300,16 @@ void GEO::CUT::Point::Position( Point::PointPosition pos )
   if ( position_ != pos )
   {
 
-#ifdef DEBUGCUTLIBRARY
+//#ifdef DEBUGCUTLIBRARY
     // safety check, if the position of a facet changes from one side to the other
     if( (position_ == Point::inside and pos == Point::outside) or
         (position_ == Point::outside and pos == Point::inside) )
     {
 //      this->Print(std::cout);
       cout << "point with changing position inside->outside or vice versa " << pid_ << endl;
-      dserror("Are you sure that you want to change the point-position from inside to outside or vice versa?");
+      throw std::runtime_error("Are you sure that you want to change the point-position from inside to outside or vice versa?");
     }
-#endif
+//#endif
 
     // do not overwrite oncutsurface points
     if(position_ == Point::oncutsurface) return;

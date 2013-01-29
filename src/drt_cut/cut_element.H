@@ -91,8 +91,14 @@ public:
   */
   void MakeCutLines( Mesh & mesh, Creator & creator );
 
+  /*!
+  \brief Create facets
+  */
   void MakeFacets( Mesh & mesh );
 
+  /*!
+  \brief Create volumecells
+  */
   void MakeVolumeCells( Mesh & mesh );
 
   /*!
@@ -119,7 +125,25 @@ public:
    */
   void RemoveEmptyVolumeCells();
 
+  /*!
+  \brief Determine the inside/outside/oncutsurface position for the element's nodes
+   */
   void FindNodePositions();
+
+  /*
+  \brief main routine to compute the position based on the angle between the line-vec (p-c) and an appropriate cut-side
+   */
+  bool ComputePosition(Point * p,                        // the point for that the position has to be computed
+                       Point * cutpoint,                 // the point on cut side which is connected to p via a facets line)
+                       Facet * f,                        // the facet via which p and cutpoint are connected
+                       Side* s                           // the current cut side, the cutpoint lies on
+                       );
+
+  /*
+  \brief determine the position of point p based on the angle between the line (p-c) and the side's normal vector,
+  return if successful
+   */
+  bool PositionByAngle(Point* p, Point* cutpoint, Side* s );
 
   bool IsCut();
 
@@ -169,8 +193,14 @@ public:
    */
   const std::vector<Node*> & Nodes() { return nodes_; }
 
+  /*!
+  \brief Get the cutsides of this element
+   */
   const plain_side_set & CutSides() const { return cut_faces_; }
 
+  /*!
+  \brief Get cutpoints of this element
+   */
   void GetCutPoints( PointSet & cut_points );
 
   /*!
@@ -182,6 +212,13 @@ public:
   \brief Get the facets of this element
    */
   const plain_facet_set & Facets() const { return facets_; }
+
+  bool IsFacet(Facet* f){ return facets_.count( f )>0; }
+
+  /*!
+   \brief check if the side's normal vector is orthogonal to the line between p and the cutpoint
+   */
+  bool IsOrthogonalSide(Side* s, Point* p, Point* cutpoint);
 
   /*!
   \brief Get total number of Gaussinan points generated over all the volumecells of this element
@@ -264,7 +301,6 @@ private:
 
   plain_facet_set facets_;
 
-  //Teuchos::RCP<GEO::CELL::Cell> cell_;
   plain_volumecell_set cells_;
 };
 
@@ -526,6 +562,7 @@ public:
 //typedef EntityIdLess<Element> ElementIdLess;
 //
 //inline int EntityId( const Element & e ) { return e.Id(); }
+
 
 
 

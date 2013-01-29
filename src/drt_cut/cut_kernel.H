@@ -194,8 +194,8 @@ namespace GEO
       {
       public:
 
-        NewtonSolve( LINALG::Matrix<3,1> & xsi )
-          : Strategy( xsi )
+        NewtonSolve( LINALG::Matrix<3,1> & xsi, bool checklimits )
+          : Strategy( xsi, checklimits )
         {
         }
 
@@ -264,8 +264,8 @@ namespace GEO
       {
       public:
 
-        DebugNewtonStrategy( LINALG::Matrix<3,1> & xsi )
-          : Strategy( xsi )
+        DebugNewtonStrategy( LINALG::Matrix<3,1> & xsi, bool checklimits )
+          : Strategy( xsi, checklimits )
         {
         }
 
@@ -319,7 +319,7 @@ namespace GEO
       {
       public:
 
-        ComputePositionStrategy( LINALG::Matrix<3,1> & xsi )
+        ComputePositionStrategy( LINALG::Matrix<3,1> & xsi, bool checklimits )
           : xsi_( xsi ),
             xyze_( NULL ),
             px_( NULL )
@@ -412,7 +412,7 @@ namespace GEO
       public:
 
         GenericComputePosition( LINALG::Matrix<3,1> & xsi )
-          : Strategy( xsi )
+          : Strategy( xsi, true )
         {
         }
 
@@ -475,10 +475,11 @@ namespace GEO
       {
       public:
 
-        ComputeDistanceStrategy( LINALG::Matrix<3,1> & xsi )
+        ComputeDistanceStrategy( LINALG::Matrix<3,1> & xsi, bool checklimits )
           : xsi_( xsi ),
             xyze_surface_( NULL ),
-            px_( NULL )
+            px_( NULL ),
+            checklimits_(checklimits)
         {
         }
 
@@ -523,10 +524,13 @@ namespace GEO
                       << "  " << b_;
           }
 
-          if ( iter > 0 and not SurfaceWithinLimits<sidetype>( xsi_ ) )
+          if ( iter > 0 )
           {
-            // if we are outside our side, just go
-            return true;
+            if(checklimits_ and not SurfaceWithinLimits<sidetype>( xsi_ ) )
+            {
+              // if we are outside our side, just go
+              return true;
+            }
           }
 
           double solres = xsi_.Norm2();
@@ -673,6 +677,8 @@ namespace GEO
         LINALG::Matrix<3,1> b_;
         LINALG::Matrix<3,1> dx_;
         LINALG::Matrix<3,1> cross_;
+
+        bool checklimits_;
       };
 
 
@@ -687,8 +693,8 @@ namespace GEO
       {
       public:
 
-        GenericComputeDistance( LINALG::Matrix<3,1> & xsi )
-          : Strategy( xsi )
+        GenericComputeDistance( LINALG::Matrix<3,1> & xsi, bool checklimits )
+          : Strategy( xsi, checklimits )
         {
         }
 
@@ -726,9 +732,9 @@ namespace GEO
       {
       public:
 
-        ComputeDistance( LINALG::Matrix<3,1> & xsi )
+        ComputeDistance( LINALG::Matrix<3,1> & xsi, bool checklimits =true )
           : GenericComputeDistance<NewtonSolve<ComputeDistanceStrategy<false,edgetype,sidetype> >,
-                                   edgetype,sidetype>( xsi )
+                                   edgetype,sidetype>( xsi, checklimits )
         {
         }
       };
@@ -743,9 +749,9 @@ namespace GEO
       {
       public:
 
-        DebugComputeDistance( LINALG::Matrix<3,1> & xsi )
+        DebugComputeDistance( LINALG::Matrix<3,1> & xsi, bool checklimits = true )
           : GenericComputeDistance<NewtonSolve<DebugNewtonStrategy<ComputeDistanceStrategy<true,edgetype,sidetype> > >,
-                                   edgetype,sidetype>( xsi )
+                                   edgetype,sidetype>( xsi, checklimits )
         {
         }
       };
@@ -762,10 +768,11 @@ namespace GEO
       {
       public:
 
-        ComputeIntersectionStrategy( LINALG::Matrix<3,1> & xsi )
+        ComputeIntersectionStrategy( LINALG::Matrix<3,1> & xsi, bool checklimits )
           :  xsi_( xsi ),
              xyze_surface_( NULL ),
-             xyze_line_( NULL )
+             xyze_line_( NULL ),
+             check_limits_( checklimits )
         {
         }
 
@@ -788,7 +795,8 @@ namespace GEO
           xsi_ = 0;                // local coordinates (xi1_side, xi2_side, xi_line)
           dx_ = 0;                 // increment in local coordinates d(xi1_side, xi2_side, xi_line)
           old_b_ = 0;              // rhs of linear system
-          off_count_ = 0;
+          off_count_ = 0;          // count how many iterations during the newton, the local coordinates are not within limits!
+                                   // stop the newton scheme if the iteration is too often outside the limits
 
           residual_ = 0;           // residual
           incr_ = 1;               // increment 2-norm || dx_ = dxi_ ||
@@ -823,13 +831,17 @@ namespace GEO
           {
             return true;
           }
-          if ( iter > 0 and off_count_ == 0 )
+
+          if (iter > 0 )
           {
-            // test for stagnation
-            old_b_.Update( 1, b_, -1 );
-            if ( old_b_.Norm2() < tol )
+            if( (check_limits_ and off_count_ == 0) or not check_limits_)
             {
-              return true;
+              // test for stagnation (maybe the tolerances cannot be satisfied for ill-conditioned geometries!)
+              old_b_.Update( 1, b_, -1 );
+              if ( old_b_.Norm2() < tol )
+              {
+                return true;
+              }
             }
           }
           old_b_ = b_;
@@ -921,12 +933,14 @@ namespace GEO
           if ( not SurfaceWithinLimits<sidetype>( xsi_ ) or not LineWithinLimits( xsi_ ) )
           {
             off_count_ += 1;
-            if ( off_count_==3 )
+            // stop only if the iteration has to be within the limits of the side and the line and
+            // the iteration isn't within the the limits for too many iterations (off_counts)
+            if ( off_count_==3 and check_limits_)
               return false;
           }
           else
           {
-            off_count_ = 0;
+            off_count_ = 0; // reset the off-counter when the iteration is back within limits
           }
           return true;
         }
@@ -967,6 +981,7 @@ namespace GEO
         double incr_;
         double maxincr_;
         int off_count_;
+        bool check_limits_;
       };
 
       /// intersection of side and line
@@ -980,8 +995,8 @@ namespace GEO
       {
       public:
 
-        GenericComputeIntersection( LINALG::Matrix<3,1> & xsi )
-          : Strategy( xsi )
+        GenericComputeIntersection( LINALG::Matrix<3,1> & xsi, bool checklimits)
+          : Strategy( xsi, checklimits)
         {
         }
 
@@ -1023,9 +1038,9 @@ namespace GEO
       {
       public:
 
-        ComputeIntersection( LINALG::Matrix<3,1> & xsi )
+        ComputeIntersection( LINALG::Matrix<3,1> & xsi, bool checklimits = true )
           : GenericComputeIntersection<NewtonSolve<ComputeIntersectionStrategy<false,edgetype,sidetype> >,
-                                       edgetype,sidetype>( xsi )
+                                       edgetype,sidetype>( xsi, checklimits )
         {
         }
       };
@@ -1040,11 +1055,12 @@ namespace GEO
       {
       public:
 
-        DebugComputeIntersection( LINALG::Matrix<3,1> & xsi )
+        DebugComputeIntersection( LINALG::Matrix<3,1> & xsi, bool checklimits = true )
           : GenericComputeIntersection<NewtonSolve<DebugNewtonStrategy<ComputeIntersectionStrategy<true,edgetype,sidetype> > >,
-                                       edgetype,sidetype>( xsi )
+                                       edgetype,sidetype>( xsi, checklimits )
         {
         }
+
       };
 
     }

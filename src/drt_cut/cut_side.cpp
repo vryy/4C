@@ -653,10 +653,282 @@ bool GEO::CUT::Side::IsCut()
   return false;
 }
 
-bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
+/*--------------------------------------------------------------------*
+ * is this side closer to the startpoint than the other side?
+ * check based on ray-tracing technique
+ * set is_closer
+ * return if check was successful
+ *--------------------------------------------------------------------*/
+bool GEO::CUT::Side::IsCloserSide( LINALG::Matrix<3,1>& startpoint_xyz, GEO::CUT::Side* other, bool& is_closer)
+{
+  // shoot a ray starting from the startpoint through the midpoint of this side
+  // and find an intersection point with the other side
+  LINALG::Matrix<3,1> ray_point_xyz(true);
+  this->SideCenter(ray_point_xyz); // as second point on the ray we define the midpoint of this side
+
+  LINALG::Matrix<2,1> rs(true);
+  double line_xi = 0.0;
+
+  // shoot the ray and find a cutpoint with the other side's plane or curved surface space
+  bool cut_found = other->RayCut( startpoint_xyz, ray_point_xyz, rs, line_xi);
+
+  if(!cut_found) return false;
+  else
+  {
+    // The main decision if the side lies closer to the start-point than the other side
+
+    //cout << "line_xi " << line_xi << endl;
+
+    if(line_xi > 1.0+TOLERANCE)
+    {
+      // the first side is closer to the start point than the second side
+      is_closer = true;
+      return true;
+    }
+    else if(fabs(line_xi - 1.0) <= TOLERANCE)
+    {
+      // the found intersection point on the other is the midpoint of the fist side
+      // in that case both sides lie within one plane
+      // this case is catched in SameNormal afterwards
+
+      // std::cout << "line_xi " << line_xi << endl;
+      // std::cout << "check if both sides lie in one plane " << endl;
+
+      return false;
+    }
+    else if(line_xi < 1.0-TOLERANCE and line_xi > -1.0+TOLERANCE)
+    {
+      // the most safe check (accept the other side as the nearest side)
+      is_closer = false;
+      return true;
+    }
+    else if(fabs(line_xi + 1.0) <= TOLERANCE )
+    {
+      // the intersection point is the same as the start-point of the ray
+      // the other side contains the start-point and the cut-point shared with the original side
+      // in that case the line between the start-point and the cut-point lies in the second side
+      // then the side is orthogonal to the line
+      // this side should be removed in
+      std::cout << "line_xi " << line_xi << endl;
+      std::cout << "start-point: " << startpoint_xyz << endl;
+      std::cout << "side orthogonal ? " << endl; other->Print();
+
+      throw std::runtime_error("IsCloserSide along the ray-tracing line failed! ");
+
+      return false;
+    }
+    else if(line_xi < -1.0-TOLERANCE)
+    {
+      // both sides lead to the same result
+      is_closer = true; // false would be also okay
+      return true;
+    }
+    else
+    {
+      // undermined range of local coordinates!
+
+      std::cout << "line_xi " << line_xi << endl;
+      std::cout << "cut point found, but the local line coordinates along the ray-tracing line lies in undefined region" << endl;
+
+      throw std::runtime_error("IsCloserSide along the ray-tracing line failed! ");
+    }
+
+    return false;
+  }
+
+  return false; // return not successful
+}
+
+
+/*--------------------------------------------------------------------*
+ * get the global coordinates on side at given local coordinates
+ *--------------------------------------------------------------------*/
+void GEO::CUT::ConcreteSide<DRT::Element::tri3>::PointAt( double r, double s, LINALG::Matrix<3,1> & xyz)
+{
+  LINALG::Matrix<3,1> funct(true);
+  LINALG::Matrix<3,3> xyz_surface(true);
+  this->Coordinates(xyz_surface);
+
+  DRT::UTILS::shape_function_2D( funct, r, s, DRT::Element::tri3 );
+  xyz.Multiply(xyz_surface,funct);
+}
+
+
+/*--------------------------------------------------------------------*
+ * get the global coordinates on side at given local coordinates
+ *--------------------------------------------------------------------*/
+void GEO::CUT::ConcreteSide<DRT::Element::quad4>::PointAt( double r, double s, LINALG::Matrix<3,1> & xyz)
+{
+  LINALG::Matrix<4,1> funct(true);
+  LINALG::Matrix<3,4> xyz_surface(true);
+  this->Coordinates(xyz_surface);
+
+  DRT::UTILS::shape_function_2D( funct, r, s, DRT::Element::quad4 );
+  xyz.Multiply(xyz_surface,funct);
+}
+
+
+/*--------------------------------------------------------------------*
+ * get global coordinates of the center of the side
+ *--------------------------------------------------------------------*/
+void GEO::CUT::ConcreteSide<DRT::Element::tri3>::SideCenter( LINALG::Matrix<3,1> & midpoint )
+{
+  LINALG::Matrix<2,1> center_rs(DRT::UTILS::getLocalCenterPosition<2>(DRT::Element::tri3));
+  PointAt(center_rs(0), center_rs(1), midpoint);
+}
+
+
+/*--------------------------------------------------------------------*
+ * get global coordinates of the center of the side
+ *--------------------------------------------------------------------*/
+void GEO::CUT::ConcreteSide<DRT::Element::quad4>::SideCenter( LINALG::Matrix<3,1> & midpoint )
+{
+  LINALG::Matrix<2,1> center_rs(DRT::UTILS::getLocalCenterPosition<2>(DRT::Element::quad4));
+  PointAt(center_rs(0), center_rs(1), midpoint);
+}
+
+
+/*--------------------------------------------------------------------*
+ * lies point with given coordinates within this side?
+ *--------------------------------------------------------------------*/
+bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist, const double & Tol)
 {
   Position2d<DRT::Element::tri3> pos( *this, xyz );
-  bool success = pos.Compute();
+  bool success = pos.ComputeDistance();
+  if ( not success )
+  {
+    throw std::runtime_error( "ComputeDistance w.r.t tri3 side not successful" );
+  }
+  LINALG::Matrix<3,1> rst = pos.LocalCoordinates();
+
+  rs(0)= rst(0);
+  rs(1)= rst(1);
+  dist = rst(2);
+
+  if(pos.WithinLimitsTol(Tol, false, TOLERANCE))
+  {
+    return true;
+  }
+
+  return false;
+}
+
+
+/*--------------------------------------------------------------------*
+ * lies point with given coordinates within this side?
+ *--------------------------------------------------------------------*/
+bool GEO::CUT::ConcreteSide<DRT::Element::quad4>::WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist, const double & Tol)
+{
+  Position2d<DRT::Element::quad4> pos( *this, xyz );
+  bool success = pos.ComputeDistance();
+  if ( not success )
+  {
+    throw std::runtime_error( "ComputeDistance w.r.t quad4 side not successful" );
+  }
+  LINALG::Matrix<3,1> rst = pos.LocalCoordinates();
+
+  rs(0)= rst(0);
+  rs(1)= rst(1);
+  dist = rst(2);
+
+  if(pos.WithinLimitsTol(Tol, false, TOLERANCE))
+  {
+    return true;
+  }
+
+  return false;
+}
+
+
+/*--------------------------------------------------------------------*
+ * compute the cut of a ray through two points with the 2D space defined by the side
+ *--------------------------------------------------------------------*/
+bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::RayCut( const LINALG::Matrix<3,1> & p1_xyz, const LINALG::Matrix<3,1> & p2_xyz, LINALG::Matrix<2,1> & rs, double & line_xi)
+{
+
+  LINALG::Matrix<3,3> xyze_surfaceElement(true);
+  this->Coordinates(xyze_surfaceElement);
+
+  LINALG::Matrix<3,2> xyze_lineElement(true);
+  xyze_lineElement(0,0) = p1_xyz(0);
+  xyze_lineElement(1,0) = p1_xyz(1);
+  xyze_lineElement(2,0) = p1_xyz(2);
+
+  xyze_lineElement(0,1) = p2_xyz(0);
+  xyze_lineElement(1,1) = p2_xyz(1);
+  xyze_lineElement(2,1) = p2_xyz(2);
+
+  LINALG::Matrix<3,1> xsi(true);
+
+  // do not check for within-limits during the Newton-scheme, since the cut-point is allowed to be not within the side and line
+  bool checklimits = false;
+
+  GEO::CUT::KERNEL::ComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci( xsi, checklimits );
+  //GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, DRT::Element::tri3> ci( xsi, checklimits );
+
+  // successful line-side intersection
+  if ( ci( xyze_surfaceElement, xyze_lineElement ) )
+  {
+    rs(0)   = xsi(0);
+    rs(1)   = xsi(1);
+    line_xi = xsi(2);
+
+    return true;
+  }
+
+  return false;
+
+}
+
+
+/*--------------------------------------------------------------------*
+ * compute the cut of a ray through two points with the 2D space defined by the side
+ *--------------------------------------------------------------------*/
+bool GEO::CUT::ConcreteSide<DRT::Element::quad4>::RayCut( const LINALG::Matrix<3,1> & p1_xyz, const LINALG::Matrix<3,1> & p2_xyz, LINALG::Matrix<2,1> & rs, double & line_xi)
+{
+
+  LINALG::Matrix<3,4> xyze_surfaceElement(true);
+  this->Coordinates(xyze_surfaceElement);
+
+  LINALG::Matrix<3,2> xyze_lineElement(true);
+  xyze_lineElement(0,0) = p1_xyz(0);
+  xyze_lineElement(1,0) = p1_xyz(1);
+  xyze_lineElement(2,0) = p1_xyz(2);
+
+  xyze_lineElement(0,1) = p2_xyz(0);
+  xyze_lineElement(1,1) = p2_xyz(1);
+  xyze_lineElement(2,1) = p2_xyz(2);
+
+  LINALG::Matrix<3,1> xsi(true);
+
+  // do not check for within-limits during the Newton-scheme, since the cut-point is allowed to be not within the side and line
+  bool checklimits = false;
+
+  GEO::CUT::KERNEL::ComputeIntersection<DRT::Element::line2, DRT::Element::quad4> ci( xsi, checklimits );
+  //GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, DRT::Element::quad4> ci( xsi, checklimits );
+
+  // successful line-side intersection
+  if ( ci( xyze_surfaceElement, xyze_lineElement ) )
+  {
+    rs(0)   = xsi(0);
+    rs(1)   = xsi(1);
+    line_xi = xsi(2);
+
+    return true;
+  }
+
+  return false;
+
+}
+
+
+/*--------------------------------------------------------------------*
+ * Calculates the local coordinates (rst) with respect to the element shape from its global coordinates (xyz), return if successful
+ *--------------------------------------------------------------------*/
+bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst, bool allow_dist )
+{
+  Position2d<DRT::Element::tri3> pos( *this, xyz );
+  bool success = pos.Compute(allow_dist);
   if ( not success )
   {
 //     throw std::runtime_error( "global point not within element" );
@@ -665,14 +937,68 @@ bool GEO::CUT::ConcreteSide<DRT::Element::tri3>::LocalCoordinates( const LINALG:
   return success;
 }
 
-bool GEO::CUT::ConcreteSide<DRT::Element::quad4>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
+
+/*--------------------------------------------------------------------*
+ * Calculates the local coordinates (rst) with respect to the element shape from its global coordinates (xyz), return if successful
+ *--------------------------------------------------------------------*/
+bool GEO::CUT::ConcreteSide<DRT::Element::quad4>::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst, bool allow_dist)
 {
   Position2d<DRT::Element::quad4> pos( *this, xyz );
-  bool success = pos.Compute();
+  bool success = pos.Compute(allow_dist);
   if ( not success )
   {
 //     throw std::runtime_error( "global point not within element" );
   }
   rst = pos.LocalCoordinates();
   return success;
+}
+
+
+/*--------------------------------------------------------------------*
+ * Calculates the normal vector with respect to the element shape at local coordinates xsi
+ *--------------------------------------------------------------------*/
+void GEO::CUT::ConcreteSide<DRT::Element::tri3>::Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal )
+{
+  // get derivatives at pos
+  LINALG::Matrix<3,3> side_xyze( true );
+  this->Coordinates(side_xyze);
+
+  LINALG::Matrix<2,3> deriv(true);
+  LINALG::Matrix<2,3> A(true);
+
+  DRT::UTILS::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), DRT::Element::tri3);
+  A.MultiplyNT( deriv, side_xyze );
+
+  // cross product to get the normal at the point
+  normal( 0 ) = A( 0, 1 )*A( 1, 2 ) - A( 0, 2 )*A( 1, 1 );
+  normal( 1 ) = A( 0, 2 )*A( 1, 0 ) - A( 0, 0 )*A( 1, 2 );
+  normal( 2 ) = A( 0, 0 )*A( 1, 1 ) - A( 0, 1 )*A( 1, 0 );
+
+  double norm = normal.Norm2();
+  normal.Scale( 1./norm );
+}
+
+
+/*--------------------------------------------------------------------*
+ * Calculates the normal vector with respect to the element shape at local coordinates xsi
+ *--------------------------------------------------------------------*/
+void GEO::CUT::ConcreteSide<DRT::Element::quad4>::Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal )
+{
+  // get derivatives at pos
+  LINALG::Matrix<3,4> side_xyze( true );
+  this->Coordinates(side_xyze);
+
+  LINALG::Matrix<2,4> deriv(true);
+  LINALG::Matrix<2,3> A(true);
+
+  DRT::UTILS::shape_function_2D_deriv1(deriv, xsi(0), xsi(1), DRT::Element::quad4);
+  A.MultiplyNT( deriv, side_xyze );
+
+  // cross product to get the normal at the point
+  normal( 0 ) = A( 0, 1 )*A( 1, 2 ) - A( 0, 2 )*A( 1, 1 );
+  normal( 1 ) = A( 0, 2 )*A( 1, 0 ) - A( 0, 0 )*A( 1, 2 );
+  normal( 2 ) = A( 0, 0 )*A( 1, 1 ) - A( 0, 1 )*A( 1, 0 );
+
+  double norm = normal.Norm2();
+  normal.Scale( 1./norm );
 }

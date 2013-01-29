@@ -374,7 +374,11 @@ bool GEO::CUT::IntegrationCell::Contains( LINALG::Matrix<3,1>& x)
   {
     return Contains<DRT::Element::hex8>( x );
   }
-  default: dserror("unknown type of integration cell ");
+  default:
+  {
+    dserror("unknown type of integration cell ");
+    break;
+  }
   }
 
   return false;

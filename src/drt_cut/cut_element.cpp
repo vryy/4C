@@ -11,6 +11,105 @@
 #include <string>
 #include <stack>
 
+
+/*--------------------------------------------------------------------*
+ * struct for comparison of position of sides using ray-tracing techniques
+ * shoot a ray starting from startpoint through the midpoint of one side
+ * find the intersection point with the second side
+ * dependent on the local coordinates along the ray, decide which
+ * side lies in front of the other one
+ *--------------------------------------------------------------------*/
+struct nextSideAlongRay {
+  nextSideAlongRay(GEO::CUT::Point* startpoint, GEO::CUT::Point* cutpoint) : startpoint_(startpoint),cutpoint_(cutpoint) {
+    startpoint_->Coordinates(startpoint_xyz_.A());
+    cutpoint_->Coordinates(cutpoint_xyz_.A());
+  };
+
+
+  /*--------------------------------------------------------------------*
+   * check if both sides have the same normal vector
+   *--------------------------------------------------------------------*/
+  bool SameNormal(GEO::CUT::Side* s1, GEO::CUT::Side* s2, const LINALG::Matrix<3,1> & cutpoint_xyz)
+  {
+
+    LINALG::Matrix<3,1> rst(true);
+    LINALG::Matrix<2,1> rs(true);
+
+    //-------------
+    // first side
+    s1->LocalCoordinates(cutpoint_xyz, rst, false);
+
+    rs(0)=rst(0);
+    rs(1)=rst(1);
+
+    LINALG::Matrix<3,1> normal_1(true);
+    s1->Normal(rs, normal_1);
+
+    //-------------
+    // second side
+    s2->LocalCoordinates(cutpoint_xyz, rst, false);
+
+    rs(0)=rst(0);
+    rs(1)=rst(1);
+
+    LINALG::Matrix<3,1> normal_2(true);
+    s2->Normal(rs, normal_2);
+
+    //-------------
+    if(normal_1.Dot(normal_2) > 1-TOLERANCE) return true;
+
+    return false;
+  }
+
+  /*--------------------------------------------------------------------*
+   * comparator function to sort two sides, which side lies in front of the other along the ray
+   *--------------------------------------------------------------------*/
+  bool operator()(GEO::CUT::Side* s1, GEO::CUT::Side* s2)
+  {
+
+    // REMARK:
+    // shoot a ray through the first side s1 starting from startpoint and find intersection with side s2
+    // if not successful shoot a second ray through side s2 and find intersection with s1
+    // if not successful check if the sides are parallel
+    bool is_closer = false;
+
+    if(s1->IsCloserSide(startpoint_xyz_, s2, is_closer))
+    {
+      if(is_closer) return true;
+      else return false;
+    }
+    else if(s2->IsCloserSide(startpoint_xyz_, s1, is_closer))
+    {
+      if(!is_closer) return true;
+      else return false;
+    }
+    else if(SameNormal(s1, s2, cutpoint_xyz_)) // check if both sides are parallel to each other, then both sides lead the same position
+    {
+      return true;
+    }
+    else
+    {
+      //TODO: check if we can relax this case (Parallelogramm, both Positions would be the same!?)
+      // try to return true or false, both sides should lead to the same position, sorting not necessary
+
+      //return true;
+
+      throw std::runtime_error("ray-tracing-based comparisons to find the nearest side along the ray failed for the first time!");
+    }
+
+    return false;
+  }
+
+
+   GEO::CUT::Point* startpoint_;
+   GEO::CUT::Point* cutpoint_;
+
+   LINALG::Matrix<3,1> startpoint_xyz_;
+   LINALG::Matrix<3,1> cutpoint_xyz_;
+};
+
+
+
 /*--------------------------------------------------------------------*
  *            cut this element with given cut_side
  *--------------------------------------------------------------------*/
@@ -125,6 +224,9 @@ bool GEO::CUT::Element::FindCutLines( Mesh & mesh, Side & ele_side, Side & cut_s
   return cut or reverse_cut;
 }
 
+/*------------------------------------------------------------------------------------------*
+ * Create facets
+ *------------------------------------------------------------------------------------------*/
 void GEO::CUT::Element::MakeFacets( Mesh & mesh )
 {
   if ( facets_.size()==0 )
@@ -143,8 +245,165 @@ void GEO::CUT::Element::MakeFacets( Mesh & mesh )
   }
 }
 
+
+/*------------------------------------------------------------------------------------------*
+ *     Determine the inside/outside/oncutsurface position for the element's nodes
+ *------------------------------------------------------------------------------------------*/
 void GEO::CUT::Element::FindNodePositions()
 {
+
+  // DEBUG flag for FindNodePositions
+  // compute positions for nodes again, also if already set by other nodes, facets, vcs (safety check)
+//  #define check_for_all_nodes
+
+
+#if(1)
+  //----------------------------------------------------------------------------------------
+  // new implementation based on cosine between normal vector on cut side and line-vec between point and cut-point
+  //----------------------------------------------------------------------------------------
+
+  const std::vector<Node*> & nodes = Nodes();
+
+  // determine positions for all the element's nodes
+  for ( std::vector<Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+  {
+    Node * n = *i;
+    Point * p = n->point();
+    Point::PointPosition pos = p->Position();
+
+#ifdef check_for_all_nodes
+    std::cout << "Position for node " << n->Id() << endl;
+    // do the computation in all cases
+#else
+    if ( pos==Point::undecided )
+#endif
+    {
+      bool done = false;
+
+      // a) this line lies on the cut surface, then p has to be on cut surface for a least one cut-side
+      // b) the line connects two points, both lying on different cut sides, then p has to be on cut surface for a least one cut-side
+
+      // check if the node lies on a cut-surface
+      for ( plain_side_set::const_iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
+      {
+        Side * s = *i;
+
+        // check if the point lies on one of the element's cut sides
+        if ( p->IsCut( s ) )
+        {
+          p->Position( Point::oncutsurface );
+
+          done = true;
+          break;
+        }
+      }
+
+      if(done) continue; // next node
+
+      // c) search for a line connection between the point p and a cut side in this element
+      //
+      // is there a facet's (!) line between the point p and a cut-point on the side s ?
+      // if there is a line, then no further point lies between p and the cut side
+      // this line goes either through the outside or inside region
+
+      const plain_facet_set & facets = p->Facets();
+
+      // loop all the facets sharing this node
+      for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+      {
+        Facet * f = *i;
+
+        // loop all the cut-faces stored for this element
+        // (includes cut-faces that only touch the element at points, edges, sides or parts of them)
+        for ( plain_side_set::const_iterator i=cut_faces_.begin(); i!=cut_faces_.end(); ++i )
+        {
+          Side * s = *i;
+
+          // is there a common point between facet and side?
+          // and belongs the facet to the element (otherwise we enter the neighboring element via the facet)?
+          // - however we include cut-sides of neighboring elements that only touches the facet,
+          // - the facet however has to an element's facet
+          if( f->IsCutSide( s ) and IsFacet(f) )
+          {
+            // for inside-outside decision there must be a direct line connection between the point and the cut-side
+            // check for a common facet's line between a side's cut point and point p
+
+            std::map<std::pair<Point*, Point*>, plain_facet_set > lines;
+            f->GetLines(lines); // all facet's lines, each line sorted by P1->Id() < P2->Id()
+
+            for(std::map<std::pair<Point*,Point*>, plain_facet_set>::iterator line_it = lines.begin();
+                line_it != lines.end();
+                line_it++)
+            {
+              std::pair<Point*,Point*> line = line_it->first;
+
+              Point* cutpoint = NULL;
+
+              // find the right facet's line and the which endpoint is the cut-point
+              if(line.first->Id() == p->Id() and line.second->IsCut(s) )
+              {
+                cutpoint = line.second;
+              }
+              else if(line.second->Id() == p->Id() and line.first->IsCut(s))
+              {
+                cutpoint = line.first;
+              }
+              else
+              {
+                // this line is not a line between the point and the cut-side
+                // continue with next line
+                continue;
+              }
+
+              //---------------------------------------------------
+              // call the main routine to compute the position based on the angle between
+              // the line-vec (p-c) and an appropriate cut-side
+              done = ComputePosition(p, cutpoint, f, s);
+              //---------------------------------------------------
+
+              if(done) break;
+            } // end lines
+
+            if(done) break;
+          }
+        } // end cutsides
+
+        if(done) break;
+      } // loop facets
+      if ( p->Position()==Point::undecided )
+      {
+        // Still undecided! No facets with cut side attached! Will be set in a
+        // minute.
+      }
+
+      if(done) continue;
+    } // end if undecided
+
+#ifdef check_for_all_nodes
+    if ( pos==Point::outside or pos==Point::inside )
+#else
+      else if ( pos==Point::outside or pos==Point::inside )
+#endif
+    {
+      // The nodal position is already known. Set it to my facets. If the
+      // facets are already set, this will not have much effect anyway. But on
+      // multiple cuts we avoid unset facets this way.
+      const plain_facet_set & facets = p->Facets();
+      for ( plain_facet_set::const_iterator i=facets.begin(); i!=facets.end(); ++i )
+      {
+        Facet * f = *i;
+        f->Position( pos );
+      }
+    } // end if outside or inside
+
+  } // loop nodes
+
+#else
+
+  //----------------------------------------------------------------------------------------
+  // improved old implementation, causes wrong positions especially when line, sides are cut more than one
+  //----------------------------------------------------------------------------------------
+
   LINALG::Matrix<3,1> xyz;
   LINALG::Matrix<3,1> rst;
 
@@ -229,7 +488,7 @@ void GEO::CUT::Element::FindNodePositions()
                     }
                     else // d<0
                     {
-                    	pos = Point::inside;
+                      pos = Point::inside;
                         smallest_dist = d;
                     }
                 }
@@ -272,7 +531,7 @@ void GEO::CUT::Element::FindNodePositions()
     }
 
   } // loop nodes
-
+#endif
 }
 
 // Uli's original version
@@ -360,6 +619,236 @@ void GEO::CUT::Element::FindNodePositions()
 //}
 
 
+/*------------------------------------------------------------------------------------------*
+ *  main routine to compute the position based on the angle between the line-vec (p-c) and an appropriate cut-side
+ *------------------------------------------------------------------------------------------*/
+bool GEO::CUT::Element::ComputePosition(Point * p,                        // the point for that the position has to be computed
+                                        Point * cutpoint,                 // the point on cut side which is connected to p via a facets line)
+                                        Facet * f,                        // the facet via which p and cutpoint are connected
+                                        Side* s                           // the current cut side, the cutpoint lies on
+)
+{
+
+  // REMARK: the following inside/outside position is based on comparisons of the line vec between point and the cut-point
+  // and the normal vector w.r.t cut-side "angle-comparison"
+  // in case the cut-side is not unique we have to determine at least one cut-side which can be used for the "angle-criterion"
+  // such that the right position is guaranteed
+  //
+  // in case that the cut-point lies on an edge between two different cut-sides or even on a node between several cut-sides,
+  // then we have to find the side (maybe not unique, but at least one of these) that defines the right position
+  // based on the "angle-criterion"
+
+  //---------------------------
+  // find the element's volume-cell the cut-side and the line has to be adjacent to
+  const plain_volumecell_set & facet_cells = f->Cells();
+  plain_volumecell_set adjacent_cells;
+
+  for(plain_volumecell_set::const_iterator f_cells_it= facet_cells.begin(); f_cells_it!=facet_cells.end(); f_cells_it++)
+  {
+    if(cells_.count(*f_cells_it)) adjacent_cells.insert(*f_cells_it); // insert this cell
+  }
+
+  if(adjacent_cells.size()> 1)
+  {
+    std::cout << "Warning: there is not a unique element's volumecell, number="  << adjacent_cells.size() << ", the line and facet is adjacent to-> Check this" << endl;
+    throw std::runtime_error("Warning: there is not a unique element's volumecell");
+  }
+  else if(adjacent_cells.size()==0)
+  {
+    std::cout << "facet cells" << facet_cells.size() << endl;
+    std::cout << "Warning: there is no adjacent volumecell, the line and facet is adjacent to-> Check this" << endl;
+    throw std::runtime_error("Warning: there is no adjacent volumecell");
+  }
+
+  // that's the adjacent volume-cell
+  VolumeCell* vc = adjacent_cells[0];
+
+
+  //---------------------------
+  // get the element's cut-sides adjacent to this cut-point and adjacent to the same volume-cell
+  const plain_side_set & cut_sides = this->CutSides();
+  plain_side_set point_cut_sides;
+
+  //  plain_side_set e_cut_sides;
+  for(plain_side_set::const_iterator side_it = cut_sides.begin(); side_it!=cut_sides.end(); side_it++)
+  {
+    // is the cut-point a cut-point of this element's cut_side?
+    // and is this side a cut-side adjacent to this volume-cell ?
+    // and remove sides, if normal vector is orthogonal to side and cut-point lies on edge, since then the angle criterion does not work
+    if(     cutpoint->IsCut(*side_it)
+        and vc->IsCut(*side_it)
+        and !IsOrthogonalSide(*side_it, p, cutpoint) )
+    {
+      // the angle-criterion has to be checked for this side
+      point_cut_sides.insert(*side_it);
+    }
+  }
+
+  //std::cout << "how many cut_sides found? " << point_cut_sides.size() << endl;
+
+
+  if(point_cut_sides.size()==0)
+  {
+    // no right cut_side found! -> Either another node can compute the position or hope for distributed positions or hope for parallel communication
+    return false;
+  }
+
+  //------------------------------------------------------------------------
+  // sort the sides and do the check for the first one!
+  // the sorting is based on ray-tracing techniques:
+  // shoot a ray starting from point p through the midpoint of one of the two sides and find another intersection point
+  // the local coordinates along this ray determines the order of the sides
+  //------------------------------------------------------------------------
+  std::sort(point_cut_sides.begin(), point_cut_sides.end(), nextSideAlongRay(p, cutpoint));
+
+
+  //------------------------------------------------------------------------
+  // determine the inside/outside position w.r.t the chosen cut-side
+  // in case of the right side the "angle-criterion" leads to the right decision (position)
+  Side* cut_side = point_cut_sides[0];
+
+  bool successful = PositionByAngle(p, cutpoint, cut_side);
+  //------------------------------------------------------------------------
+
+
+  //if(successful) std::cout << "set position to " << p->Position() << endl;
+  //else std::cout << "not successful" << endl;
+
+  return successful;
+}
+
+
+/*------------------------------------------------------------------------------------------*
+ *  determine the position of point p based on the angle between the line (p-c) and the side's normal vector, return if successful
+ *------------------------------------------------------------------------------------------*/
+bool GEO::CUT::Element::PositionByAngle(Point* p, Point* cutpoint, Side* s )
+{
+
+  LINALG::Matrix<3,1> xyz(true);
+  LINALG::Matrix<3,1> cut_point_xyz(true);
+
+  p->Coordinates( xyz.A() );
+  cutpoint->Coordinates( cut_point_xyz.A() );
+
+  //------------------------------------------------------------------------
+  // determine the inside/outside position w.r.t the chosen cut-side
+  // in case of the right side the "angle-criterion" leads to the right decision (position)
+
+  LINALG::Matrix<2,1> rs(true);      // local coordinates of the cut-point w.r.t side
+  double dist = 0.0;                 // just used for within-side-check, has to be about 0.0
+  double Tol_2D = 1e-09;             // choose a very rough tolerance to allow "bad" cuts as in cut-tests, just to catch non-sense
+  bool within_side = s->WithinSide(cut_point_xyz, rs, dist, Tol_2D);
+
+  if(!within_side)
+  {
+    std::cout << "Side: " << endl; s->Print();
+    std::cout << "Point: " << endl; p->Print(std::cout);
+    std::cout << "local coordinates " << rs << " dist " << dist << endl;
+    throw std::runtime_error("cut-point does not lie on side! That's wrong, because it is a side's cut-point!");
+  }
+
+
+  LINALG::Matrix<3,1> normal(true);
+  s->Normal(rs, normal); // outward pointing normal at cut-point
+
+  LINALG::Matrix<3,1> line_vec(true);
+  line_vec.Update(1.0, xyz ,-1.0, cut_point_xyz); // vector representing the line between p and the cut-point
+
+  // check the cosine between normal and line_vec
+  double n_norm = normal.Norm2();
+  double l_norm = line_vec.Norm2();
+  if(n_norm < MINIMALTOL or l_norm < MINIMALTOL)
+  {
+    dserror(" the norm of line_vec or n_norm is smaller than %d, should these points be one point in pointpool?, lnorm=%d, nnorm=%d", MINIMALTOL, l_norm, n_norm);
+  }
+
+  // cosine between the line-vector and the normal vector
+  double cosine = normal.Dot(line_vec);
+  cosine /= (n_norm * l_norm);
+
+  if( cosine > 0.0)
+  {
+    p->Position(Point::outside);
+    // cout << " set position to outside" << endl;
+    return true;
+  }
+  else if ( cosine < 0.0 )
+  {
+    p->Position(Point::inside);
+    // cout << " set position to inside" << endl;
+    return true;
+  }
+  else
+  {
+    // Still undecided!
+    // There must be another side with cosine != 0.0
+    return false;
+  }
+  //------------------------------------------------------------------------
+  return false;
+}
+
+
+/*------------------------------------------------------------------------------------------*
+ *  check if the side's normal vector is orthogonal to the line between p and the cutpoint
+ *------------------------------------------------------------------------------------------*/
+bool GEO::CUT::Element::IsOrthogonalSide(Side* s, Point* p, Point* cutpoint)
+{
+  if(s->OnEdge(cutpoint)) // check if the point lies on at least one edge of the side, otherwise it cannot be orthogonal
+  {
+    LINALG::Matrix<3,1> line(true);
+    LINALG::Matrix<3,1> p_xyz(true);
+    LINALG::Matrix<3,1> cut_point_xyz(true);
+
+    p->Coordinates(p_xyz.A());
+    cutpoint->Coordinates(cut_point_xyz.A());
+    line.Update(1.0, p_xyz, -1.0, cut_point_xyz);
+
+    double line_norm = line.Norm2();
+
+    if(line_norm > TOLERANCE )
+    {
+      line.Scale(1./line_norm);
+    }
+    else
+    {
+      std::cout << "point: " << p_xyz << endl;
+      std::cout << "cutpoint: " << cut_point_xyz << endl;
+      dserror("the line has nearly zero length: %d", line_norm);
+    }
+
+    if(s->Shape() != DRT::Element::tri3)
+    {
+      std::cout << "HERE !tri3 cutsides are used!!!" << endl;
+//      throw std::runtime_error("expect only tri3 cutsides!");
+    }
+
+    // tri3/quad4 element center
+    LINALG::Matrix<2,1> rs(true);
+
+    if(s->Shape()==DRT::Element::tri3)
+    {
+      rs = DRT::UTILS::getLocalCenterPosition<2>(DRT::Element::tri3);
+    }
+    else if(s->Shape()==DRT::Element::quad4)
+    {
+      rs = DRT::UTILS::getLocalCenterPosition<2>(DRT::Element::quad4);
+    }
+    else throw std::runtime_error("unsupported side-shape");
+
+
+    LINALG::Matrix<3,1> normal(true);
+    s->Normal(rs, normal);
+
+    // check for angle=+-90 between line and normal
+    if( fabs(normal.Dot(line)) < (0.0 + TOLERANCE) ) return true;
+
+  }
+
+  return false;
+}
+
+
 bool GEO::CUT::Element::IsCut()
 {
   if ( cut_faces_.size()>0 )
@@ -438,6 +927,10 @@ void GEO::CUT::Element::GetBoundaryCells( plain_boundarycell_set & bcells )
   }
 }
 
+
+/*------------------------------------------------------------------------------------------*
+ * Get cutpoints of this element
+ *------------------------------------------------------------------------------------------*/
 void GEO::CUT::Element::GetCutPoints( PointSet & cut_points )
 {
   for ( std::vector<Side*>::const_iterator i=Sides().begin(); i!=Sides().end(); ++i )
@@ -564,6 +1057,9 @@ void GEO::CUT::Element::RemoveEmptyVolumeCells()
   }
 }
 
+/*------------------------------------------------------------------------------------------*
+ * Create volumecells
+ *------------------------------------------------------------------------------------------*/
 void GEO::CUT::Element::MakeVolumeCells( Mesh & mesh )
 {
 #if 0
@@ -825,3 +1321,7 @@ void GEO::CUT::Element::DirectDivergenceGaussRule( Mesh & mesh, bool include_inn
     cell1->DirectDivergenceGaussRule(this, mesh, include_inner, Bcellgausstype);
   }
 }
+
+
+
+

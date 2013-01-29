@@ -17,9 +17,35 @@ void GEO::CUT::LevelSetSide::EdgeAt( double r, double s, std::vector<Edge*> & ed
   throw std::runtime_error( "no edges on level set cut surface" );
 }
 
-bool GEO::CUT::LevelSetSide::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst )
+void GEO::CUT::LevelSetSide::PointAt( double r, double s, LINALG::Matrix<3,1> & xyz)
+{
+  throw std::runtime_error( "no PointAt on level set cut surface defined" );
+}
+
+void GEO::CUT::LevelSetSide::SideCenter( LINALG::Matrix<3,1> & midpoint )
+{
+  throw std::runtime_error( "no SideCenter on level set cut surface defined" );
+
+}
+
+bool GEO::CUT::LevelSetSide::WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist, const double & Tol )
+{
+  throw std::runtime_error( "no WithinSide check implemented" );
+}
+
+bool GEO::CUT::LevelSetSide::RayCut( const LINALG::Matrix<3,1> & p1_xyz, const LINALG::Matrix<3,1> & p2_xyz, LINALG::Matrix<2,1> & rs, double & line_xi)
+{
+  throw std::runtime_error( "no RayCut with level set cut surface implemented" );
+}
+
+bool GEO::CUT::LevelSetSide::LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst, bool allow_dist )
 {
   throw std::runtime_error( "no local coordinates on level set cut surface" );
+}
+
+void GEO::CUT::LevelSetSide::Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal )
+{
+  throw std::runtime_error( "no normal vector on level set cut surface implemented" );
 }
 
 void GEO::CUT::LevelSetSide::MakeOwnedSideFacets( Mesh & mesh, Element * element, plain_facet_set & facets )
@@ -229,6 +255,7 @@ bool GEO::CUT::LevelSetSide::FindAmbiguousCutLines( Mesh & mesh, Element * eleme
       return false;
     }
   }
+  break;
   default:
     throw std::runtime_error( "unsupported side shape" );
   }

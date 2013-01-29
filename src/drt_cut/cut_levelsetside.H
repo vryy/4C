@@ -36,7 +36,17 @@ public:
 
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges );
 
-  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
+  virtual void PointAt( double r, double s, LINALG::Matrix<3,1> & xyz);
+
+  virtual void SideCenter( LINALG::Matrix<3,1> & midpoint );
+
+  virtual bool WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist, const double & Tol );
+
+  virtual bool RayCut( const LINALG::Matrix<3,1> & p1_xyz, const LINALG::Matrix<3,1> & p2_xyz, LINALG::Matrix<2,1> & rs, double & line_xi);
+
+  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst, bool allow_dist=false );
+
+  virtual void Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal );
 
   virtual void MakeOwnedSideFacets( Mesh & mesh, Element * element, plain_facet_set & facets );
 

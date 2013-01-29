@@ -37,9 +37,13 @@ public:
     Scale();
   }
 
-  bool Compute();
+  bool Compute(bool allow_dist = false);
 
-  bool WithinLimits();
+  bool ComputeDistance();
+
+  bool WithinLimits(bool allow_dist);
+
+  bool WithinLimitsTol(double TOL, bool allow_dist, double dist_TOL);
 
   const LINALG::Matrix<3,1> & LocalCoordinates() { return xsi_; }
 
@@ -105,13 +109,14 @@ private:
 template <DRT::Element::DiscretizationType elementtype,
           int numNodesElement
 >
-bool Position2d<elementtype,numNodesElement>::Compute()
+bool Position2d<elementtype,numNodesElement>::Compute(bool allow_dist)
 {
+  // try to compute the local coordinates and the distance using the Newton scheme
   KERNEL::ComputeDistance<DRT::Element::line2, elementtype> cd( xsi_ );
   //KERNEL::DebugComputeDistance<DRT::Element::line2, elementtype> cd( xsi_ );
 
-  double dist;
-  if ( not cd( xyze_, px_, dist ) )
+  double dist = 0.0;
+  if ( not cd( xyze_, px_, dist ) ) // if newton did not converge, do a simpler check
   {
     switch ( elementtype )
     {
@@ -167,8 +172,24 @@ bool Position2d<elementtype,numNodesElement>::Compute()
     throw std::runtime_error( "failed to calculate side--point distance" );
   }
 
-  return WithinLimits();
-}
+  return WithinLimits(allow_dist);
+ }
+
+template <DRT::Element::DiscretizationType elementtype,
+          int numNodesElement
+>
+bool Position2d<elementtype,numNodesElement>::ComputeDistance()
+{
+  // try to compute the local coordinates and the distance using the Newton scheme
+  KERNEL::ComputeDistance<DRT::Element::line2, elementtype> cd( xsi_ );
+  //KERNEL::DebugComputeDistance<DRT::Element::line2, elementtype> cd( xsi_ );
+
+  double dist = 0.0;
+
+  if ( not cd( xyze_, px_, dist ) ) return false;
+
+  return true;
+ }
 
 
 template <DRT::Element::DiscretizationType elementtype,
@@ -204,7 +225,7 @@ bool Position2d<elementtype,numNodesElement>::LinePointDistance( const LINALG::M
 template <DRT::Element::DiscretizationType elementtype,
           int numNodesElement
 >
-bool Position2d<elementtype,numNodesElement>::WithinLimits()
+bool Position2d<elementtype,numNodesElement>::WithinLimits(bool allow_dist)
 {
   bool intersects = false;
   switch ( elementtype )
@@ -228,7 +249,40 @@ bool Position2d<elementtype,numNodesElement>::WithinLimits()
   default:
     throw std::runtime_error( "unsupported side type" );
   }
-  return intersects and fabs( xsi_( 2 ) ) < TOLERANCE;
+  if(allow_dist) return intersects;
+  else  return (intersects and fabs( xsi_( 2 ) ) < TOLERANCE);
+}
+
+
+template <DRT::Element::DiscretizationType elementtype,
+          int numNodesElement
+>
+bool Position2d<elementtype,numNodesElement>::WithinLimitsTol(double TOL, bool allow_dist, double dist_TOL)
+{
+  bool intersects = false;
+  switch ( elementtype )
+  {
+  case DRT::Element::quad4:
+  case DRT::Element::quad8:
+  case DRT::Element::quad9:
+  {
+    intersects = ( xsi_( 0 ) >= -1-TOL and xsi_( 1 ) >= -1-TOL and
+                   xsi_( 0 ) <=  1+TOL and xsi_( 1 ) <=  1+TOL );
+    break;
+  }
+  case DRT::Element::tri3:
+  case DRT::Element::tri6:
+  {
+    intersects = ( xsi_( 0 ) >= 0-TOL and xsi_( 1 ) >= 0-TOL and
+                   xsi_( 0 ) <= 1+TOL and xsi_( 1 ) <= 1+TOL and
+                   xsi_( 1 ) <= ( 1 - xsi_( 0 ) )+TOL );
+    break;
+  }
+  default:
+    throw std::runtime_error( "unsupported side type" );
+  }
+  if(allow_dist) return intersects;
+  else  return (intersects and fabs( xsi_( 2 ) ) < dist_TOL);
 }
 
 }

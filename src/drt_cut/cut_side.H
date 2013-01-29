@@ -67,6 +67,11 @@ public:
   }*/
 
   /*!
+  \brief is this side closer to the startpoint than the other side? set is_closer, return if check was successful
+   */
+  bool IsCloserSide( LINALG::Matrix<3,1>& startpoint_xyz, GEO::CUT::Side* other,  bool& is_closer);
+
+  /*!
   \brief Returns the geometrical shape of this side
    */
   virtual DRT::Element::DiscretizationType Shape() = 0;
@@ -81,12 +86,40 @@ public:
    */
   virtual void Cut( Mesh & mesh, Edge & edge, PointSet & cut_points ) = 0;
 
+  /*!
+   \brief get all edges adjacent to given local coordinates
+   */
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges ) = 0;
 
   /*!
-  \brief Calculates the local coordinates (rst) with respect to the element shape from its global coordinates (xyz)
+   \brief get the global coordinates on side at given local coordinates
    */
-  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst ) = 0;
+  virtual void PointAt( double r, double s, LINALG::Matrix<3,1> & xyz) = 0;
+
+  /*!
+   \brief get global coordinates of the center of the side
+   */
+  virtual void SideCenter( LINALG::Matrix<3,1> & midpoint ) = 0;
+
+  /*!
+  \brief Calculates the local coordinates (rst) with respect to the element shape from its global coordinates (xyz), return if successful
+   */
+  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst, bool allow_dist = false ) = 0;
+
+  /*!
+   \brief lies point with given coordinates within this side?
+   */
+  virtual bool WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist, const double & Tol) = 0;
+
+  /*
+   \brief compute the cut of a ray through two points with the 2D space defined by the side
+   */
+  virtual bool RayCut( const LINALG::Matrix<3,1> & p1_xyz, const LINALG::Matrix<3,1> & p2_xyz, LINALG::Matrix<2,1> & rs, double & line_xi) = 0;
+
+  /*!
+  \brief Calculates the normal vector with respect to the element shape at local coordinates xsi
+   */
+  virtual void Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal ) = 0;
 
   /*!
   \brief Returns the global coordinates of the nodes of this side
@@ -231,21 +264,25 @@ public:
     : Side( sid, nodes, edges )
   {}
 
+  /// Returns the geometrical shape of this side
   virtual DRT::Element::DiscretizationType Shape()
   {
     return DRT::Element::tri3;
   }
 
+  /// Returns the topology data for the side from Shards library
   virtual const CellTopologyData * Topology()
   {
     return shards::getCellTopologyData< shards::Triangle<3> >();
   }
 
+  /// Calculates the points at which the side is cut by this edge
   virtual void Cut( Mesh & mesh, Edge & edge, PointSet & cut_points )
   {
     return edge.Cut( mesh, *this, cut_points );
   }
 
+  /// get all edges adjacent to given local coordinates
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges )
   {
     if ( fabs( s     ) < MINIMALTOL ) edges.push_back( Edges()[0] );
@@ -253,10 +290,28 @@ public:
     if ( fabs( r     ) < MINIMALTOL ) edges.push_back( Edges()[2] );
   }
 
-  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
+  /// get the global coordinates on side at given local coordinates
+  virtual void PointAt( double r, double s, LINALG::Matrix<3,1> & xyz);
 
+  /// get global coordinates of the center of the side
+  virtual void SideCenter( LINALG::Matrix<3,1> & midpoint );
+
+  ///  lies point with given coordinates within this side?
+  virtual bool WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist, const double & Tol );
+
+  /// compute the cut of a ray through two points with the 2D space defined by the side
+  virtual bool RayCut( const LINALG::Matrix<3,1> & p1_xyz, const LINALG::Matrix<3,1> & p2_xyz, LINALG::Matrix<2,1> & rs, double & line_xi);
+
+  /// Calculates the local coordinates (rst) with respect to the element shape from its global coordinates (xyz), return if successful
+  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst, bool allow_dist=false );
+
+  /// Calculates the normal vector with respect to the element shape at local coordinates xsi
+  virtual void Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal );
+
+  /// get coordinates of side
   void Coordinates( LINALG::Matrix<3, 3> & xyze_surfaceElement )
   { Side::Coordinates( xyze_surfaceElement.A() ); }
+
 };
 
 
@@ -274,21 +329,25 @@ public:
     : Side( sid, nodes, edges )
   {}
 
+  /// Returns the geometrical shape of this side
   virtual DRT::Element::DiscretizationType Shape()
   {
     return DRT::Element::quad4;
   }
 
+  /// Returns the topology data for the side from Shards library
   virtual const CellTopologyData * Topology()
   {
     return shards::getCellTopologyData< shards::Quadrilateral<4> >();
   }
 
+  /// Calculates the points at which the side is cut by this edge
   virtual void Cut( Mesh & mesh, Edge & edge, PointSet & cut_points )
   {
     return edge.Cut( mesh, *this, cut_points );
   }
 
+  /// get all edges adjacent to given local coordinates
   virtual void EdgeAt( double r, double s, std::vector<Edge*> & edges )
   {
     if ( fabs( s+1 ) < MINIMALTOL ) edges.push_back( Edges()[0] );
@@ -297,10 +356,28 @@ public:
     if ( fabs( r+1 ) < MINIMALTOL ) edges.push_back( Edges()[3] );
   }
 
-  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst );
+  /// get the global coordinates on side at given local coordinates
+  virtual void PointAt( double r, double s, LINALG::Matrix<3,1> & xyz);
 
+  /// get global coordinates of the center of the side
+  virtual void SideCenter( LINALG::Matrix<3,1> & midpoint );
+
+  ///  lies point with given coordinates within this side?
+  virtual bool WithinSide( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<2,1> & rs, double & dist, const double & Tol );
+
+  /// compute the cut of a ray through two points with the 2D space defined by the side
+  virtual bool RayCut( const LINALG::Matrix<3,1> & p1_xyz, const LINALG::Matrix<3,1> & p2_xyz, LINALG::Matrix<2,1> & rs, double & line_xi);
+
+  /// Calculates the local coordinates (rst) with respect to the element shape from its global coordinates (xyz), return if successful
+  virtual bool LocalCoordinates( const LINALG::Matrix<3,1> & xyz, LINALG::Matrix<3,1> & rst, bool allow_dist = false );
+
+  /// Calculates the normal vector with respect to the element shape at local coordinates xsi
+  virtual void Normal( const LINALG::Matrix<2,1> & xsi, LINALG::Matrix<3,1> & normal );
+
+  /// get coordinates of side
   void Coordinates( LINALG::Matrix<3, 4> & xyze_surfaceElement )
   { Side::Coordinates( xyze_surfaceElement.A() ); }
+
 };
 
 
