@@ -4369,26 +4369,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::Tuple<std::string,20> name;
   Teuchos::Tuple<int,20> label;
 
-  name[ 0] = "basic_sequ_stagg";                   label[ 0] = fsi_basic_sequ_stagg;
-  name[ 1] = "iter_stagg_fixed_rel_param";         label[ 1] = fsi_iter_stagg_fixed_rel_param;
-  name[ 2] = "iter_stagg_AITKEN_rel_param";        label[ 2] = fsi_iter_stagg_AITKEN_rel_param;
-  name[ 3] = "iter_stagg_steep_desc";              label[ 3] = fsi_iter_stagg_steep_desc;
-  name[ 4] = "iter_stagg_NLCG";                    label[ 4] = fsi_iter_stagg_NLCG;
-  name[ 5] = "iter_stagg_MFNK_FD";                 label[ 5] = fsi_iter_stagg_MFNK_FD;
-  name[ 6] = "iter_stagg_MFNK_FSI";                label[ 6] = fsi_iter_stagg_MFNK_FSI;
-  name[ 7] = "iter_stagg_MPE";                     label[ 7] = fsi_iter_stagg_MPE;
-  name[ 8] = "iter_stagg_RRE";                     label[ 8] = fsi_iter_stagg_RRE;
-  name[ 9] = "iter_monolithicfluidsplit";          label[ 9] = fsi_iter_monolithicfluidsplit;
-  name[10] = "iter_monolithicstructuresplit";      label[10] = fsi_iter_monolithicstructuresplit;
-  name[11] = "iter_lung_monolithicstructuresplit"; label[11] = fsi_iter_lung_monolithicstructuresplit;
-  name[12] = "iter_lung_monolithicfluidsplit";     label[12] = fsi_iter_lung_monolithicfluidsplit;
-  name[13] = "iter_monolithicxfem";                label[13] = fsi_iter_monolithicxfem;
-  name[14] = "pseudo_structure";                   label[14] = fsi_pseudo_structureale;
-  name[15] = "iter_constr_monolithicfluidsplit";     label[15] = fsi_iter_constr_monolithicfluidsplit;
-  name[16] = "iter_constr_monolithicstructuresplit";     label[16] = fsi_iter_constr_monolithicstructuresplit;
-  name[17] = "iter_mortar_monolithicstructuresplit";     label[17] = fsi_iter_mortar_monolithicstructuresplit;
-  name[18] = "iter_mortar_monolithicfluidsplit";     label[18] = fsi_iter_mortar_monolithicfluidsplit;
-  name[19] = "iter_fluidfluid_monolithicstructuresplit";     label[19] = fsi_iter_fluidfluid_monolithicstructuresplit;
+  name[ 0] = "basic_sequ_stagg";                          label[ 0] = fsi_basic_sequ_stagg;
+  name[ 1] = "iter_stagg_fixed_rel_param";                label[ 1] = fsi_iter_stagg_fixed_rel_param;
+  name[ 2] = "iter_stagg_AITKEN_rel_param";               label[ 2] = fsi_iter_stagg_AITKEN_rel_param;
+  name[ 3] = "iter_stagg_steep_desc";                     label[ 3] = fsi_iter_stagg_steep_desc;
+  name[ 4] = "iter_stagg_NLCG";                           label[ 4] = fsi_iter_stagg_NLCG;
+  name[ 5] = "iter_stagg_MFNK_FD";                        label[ 5] = fsi_iter_stagg_MFNK_FD;
+  name[ 6] = "iter_stagg_MFNK_FSI";                       label[ 6] = fsi_iter_stagg_MFNK_FSI;
+  name[ 7] = "iter_stagg_MPE";                            label[ 7] = fsi_iter_stagg_MPE;
+  name[ 8] = "iter_stagg_RRE";                            label[ 8] = fsi_iter_stagg_RRE;
+  name[ 9] = "iter_monolithicfluidsplit";                 label[ 9] = fsi_iter_monolithicfluidsplit;
+  name[10] = "iter_monolithicstructuresplit";             label[10] = fsi_iter_monolithicstructuresplit;
+  name[11] = "iter_lung_monolithicstructuresplit";        label[11] = fsi_iter_lung_monolithicstructuresplit;
+  name[12] = "iter_lung_monolithicfluidsplit";            label[12] = fsi_iter_lung_monolithicfluidsplit;
+  name[13] = "iter_monolithicxfem";                       label[13] = fsi_iter_monolithicxfem;
+  name[14] = "pseudo_structure";                          label[14] = fsi_pseudo_structureale;
+  name[15] = "iter_constr_monolithicfluidsplit";          label[15] = fsi_iter_constr_monolithicfluidsplit;
+  name[16] = "iter_constr_monolithicstructuresplit";      label[16] = fsi_iter_constr_monolithicstructuresplit;
+  name[17] = "iter_mortar_monolithicstructuresplit";      label[17] = fsi_iter_mortar_monolithicstructuresplit;
+  name[18] = "iter_mortar_monolithicfluidsplit";          label[18] = fsi_iter_mortar_monolithicfluidsplit;
+  name[19] = "iter_fluidfluid_monolithicstructuresplit";  label[19] = fsi_iter_fluidfluid_monolithicstructuresplit;
 
   setStringToIntegralParameter<int>("COUPALGO","iter_stagg_AITKEN_rel_param",
                                     "Iteration Scheme over the fields",
@@ -4449,7 +4449,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fsidyn);
 
   setStringToIntegralParameter<int>("COUPVARIABLE","Displacement",
-                               "Coupling variable at the interface",
+                               "Coupling variable at the interface for partitioned FSI solvers",
                                tuple<std::string>("Displacement","Force"),
                                tuple<int>(0,1),
                                &fsidyn);
@@ -4506,7 +4506,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&fsidyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fsidyn);
-  DoubleParameter("RELAX",1.0,"fixed relaxation parameter",&fsidyn);
+  DoubleParameter("RELAX",1.0,"fixed relaxation parameter for partitioned FSI solvers",&fsidyn);
   DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&fsidyn);
   DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&fsidyn);
 
@@ -4515,7 +4515,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                   "This tolerance will be used for the linear solve of the FSI block system.\n"
                   "The linear convergence test will always use the relative residual norm (AZ_r0).\n"
                   "Not to be confused with the Newton tolerance (CONVTOL) that applies\n"
-                  "to the nonlinear convergence test.",
+                  "to the nonlinear convergence test using a absolute residual norm.",
                   &fsidyn);
 
   DoubleParameter("ADAPTIVEDIST",0.0,
@@ -4601,7 +4601,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   //             "Number of Richardson iterations on whole MFSI block preconditioner",
   //             &fsidyn);
 
-  setStringToIntegralParameter<int>("INFNORMSCALING","Yes","Scale Blocks in Mono-FSI with row infnorm?",
+  setStringToIntegralParameter<int>("INFNORMSCALING","Yes","Scale Blocks in monolithic FSI with row infnorm?",
                                      yesnotuple,yesnovalue,&fsidyn);
   setStringToIntegralParameter<int>("SYMMETRICPRECOND","No","Symmetric block GS preconditioner in monolithic FSI or ordinary GS",
                                      yesnotuple,yesnovalue,&fsidyn);
