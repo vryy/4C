@@ -68,6 +68,7 @@ if [[ ! "$CONFIGURATION_FILE" ]]; then
       echo "Detected Fedora 16"
       if [ $TRILINOS_EXPERIMENTAL == 1 ]; then
 	CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc16_Q32012.config
+	TRILINOSDEV=ON
       else
 	CONFIGURATION_FILE=$BACI_HOME/buildconfig/fc16_Q12012.config
       fi
