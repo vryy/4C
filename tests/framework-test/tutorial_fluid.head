@@ -106,7 +106,7 @@ PHYSICAL_TYPE                   Incompressible
 //     constant_increment
 //     explicit_second_order_midpoint
 //     TangVel 
-PREDICTOR                       steady_state
+PREDICTOR                       explicit_second_order_midpoint
 //
 // Increment for writing restart
 RESTARTEVRY                     20
