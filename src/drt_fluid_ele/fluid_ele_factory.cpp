@@ -110,8 +110,6 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
     return DRT::ELEMENTS::FluidEleCalcLoma<distype>::Instance();
   else if (problem == "poro")
     return DRT::ELEMENTS::FluidEleCalcPoro<distype>::Instance();
-  else if (problem == "xfem")
-    return DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance();
   else
     dserror("Defined problem type does not exist!!");
 
@@ -124,7 +122,7 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemType
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(DRT::Element::DiscretizationType distype, string problem)
 {
-  if(problem != "xfem") dserror("call ProvideImplXFEM just for xfem problems");
+  if(problem != "xfem") dserror("Call ProvideImplXFEM just for xfem problems!");
 
   switch(distype)
   {
@@ -144,12 +142,26 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(D
 }
 
 /*--------------------------------------------------------------------------*
+ |                                                 (public) rasthofer Jan13 |
+ *--------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemTypeXFEM(string problem)
+{
+  if (problem == "xfem")
+    return DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance();
+  else
+    dserror("Defined problem type does not exist!!");
+
+  return NULL;
+}
+
+/*--------------------------------------------------------------------------*
  |  special implementation of ProvideImpl for meshfree problems             |
  |  to reduce created template combination         (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
 DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplMeshfree(DRT::Element::DiscretizationType distype, string problem)
 {
-  if(problem != "std_meshfree") dserror("Call ProvideImplMeshfree just for meshfree problems.");
+  if(problem != "std_meshfree") dserror("Call ProvideImplMeshfree just for meshfree problems!");
 
   switch(distype)
   {
@@ -174,3 +186,18 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplMeshfr
     }
   return NULL;
 }
+
+/*--------------------------------------------------------------------------*
+ |                                                 (public) rasthofer Jan13 |
+ *--------------------------------------------------------------------------*/
+template<DRT::Element::DiscretizationType distype>
+DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemTypeMeshfree(string problem)
+{
+  if (problem == "std_meshfree")
+    return NULL;//DRT::ELEMENTS::FluidEleCalcXFEM<distype>::Instance();
+  else
+    dserror("Defined problem type does not exist!!");
+
+  return NULL;
+}
+

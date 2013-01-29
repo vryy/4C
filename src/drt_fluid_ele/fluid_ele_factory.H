@@ -56,6 +56,14 @@ private:
   template<DRT::Element::DiscretizationType distype>
   static FluidEleInterface* DefineProblemType(string problem);
 
+  //! special DefineProblemTypeXFEM for XFEM problems
+  template<DRT::Element::DiscretizationType distype>
+  static FluidEleInterface* DefineProblemTypeXFEM(string problem);
+
+  //! special DefineProblemTypeMeshfree for Meshfree problems
+  template<DRT::Element::DiscretizationType distype>
+  static FluidEleInterface* DefineProblemTypeMeshfree(string problem);
+
 }; // end class FluidFactory
 
 } // end ELEMENTS
