@@ -29,17 +29,6 @@ NUMTHERMDIS                     0
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
 DYNAMICTYP                      GenAlpha
-RESULTSEVRY                     1
-RESTARTEVRY                     1
-TIMESTEP                        0.05
-NUMSTEP                         200
-MAXTIME                         5.0
-DAMPING                         No
-M_DAMP                          0.5
-K_DAMP                          0.5
-TOLDISP                         1.0E-07
-MAXITER                         50
-TIMEADAPT                       0
 PREDICT                         ConstDisVelAcc
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          ImrLike
@@ -49,53 +38,25 @@ BETA                            0.5
 GAMMA                           1.0
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   3
-INITIALFIELD                    zero_field
-STARTFUNCNO                     2
 TIMEINTEGR                      One_Step_Theta
-STARTINGALGO                    One_Step_Theta
-//NONLINITER                    fixed_point_like
 NONLINITER                      Newton
-ITEMAX                          5
-CONVCHECK                       L_2_norm
-CONVTOL                         1.0E-6
-UPRES                           1
-RESTARTEVRY                     20
-NUMSTEP                         200
-NUMSTASTEPS                     0
-MAXTIME                         1000.0
-TIMESTEP                        0.05
 THETA                           0.66
-START_THETA                     0.67
-ALPHA_F                         1.0
-ALPHA_M                         1.0
-GAMMA                           1.0
-LIFTDRAG                        no
 -----------------------------------------------------------------FSI DYNAMIC
-MAXTIME                         1000.0
+MAXTIME                         0.0005
 TIMESTEP                        0.0001
 NUMSTEP                         5
 UPRES                           1
 RESTARTEVRY                     1
 COUPALGO                        iter_monolithicstructuresplit
-PREDICTOR                       d(n)
-RELAX                           1.0
 ITEMAX                          100
 CONVTOL                         1.0E-6
 BASETOL                         1.0E-3
-STRUCTPCOMEGA 1.0 1.0
-STRUCTPCITER 1 1
-FLUIDPCOMEGA 1.0 1.0 1.0
-FLUIDPCITER 1 1 1
-PCITER 1 1 2
-PCOMEGA 0.89 0.95 0.95
+PCITER                          1 1 2
+PCOMEGA                         0.89 0.95 0.95
 SHAPEDERIVATIVES                Yes
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
-TIMESTEP                        0.1
-NUMSTEP                         200
-MAXTIME                         5.0
 ALE_TYPE                        classic_lin
-RESULTSEVRY                     1
 --------------------------------------------------------------------SOLVER 1
 NAME                            Ale_Solver
 SOLVER                          Aztec_MSR

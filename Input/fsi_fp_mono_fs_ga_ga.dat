@@ -9,7 +9,6 @@ Monolithic FSI: pseudo-1D fluid pusher
 FSI:            iter_monolithicfluidsplit
 Fluid:          Np_Gen_Alpha with constant_acceleration
 Structure:      GenAlpha with ConstVel
-==> comparison to analytical solution
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    4
 //NODES       24
