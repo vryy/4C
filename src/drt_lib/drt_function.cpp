@@ -2101,8 +2101,6 @@ double DRT::UTILS::TurbBouLayerFunction::Evaluate(int index, const double* xp, d
         return utau * ( 5.0 * log(myplus) - 3.05 ) + noise;
       else if (myplus <= 5.0)
         return utau * myplus + noise;
-
-      break;
     }
     case 1:
     {
@@ -2198,7 +2196,6 @@ double DRT::UTILS::TurbBouLayerFunctionBFS::Evaluate(int index, const double* xp
         if (upre > max) return max + noise;
         else            return upre + noise;
       }
-      break;
     }
     case 1:
     {
@@ -2321,7 +2318,6 @@ double DRT::UTILS::TurbBouLayerFunctionORACLES::Evaluate(int index, const double
         if (upre > umax) return umax + noise;
         else             return upre + noise;
       }
-      break;
     }
     // return velocity value in z or y-direction
     case 1:
