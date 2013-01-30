@@ -146,6 +146,18 @@ namespace ELEMENTS
                           std::vector<int>&         lm,
                           Epetra_SerialDenseVector& elevec1) = 0;
 
+    /*! \brief Calculate material derivative of fluid velocity at specified element coordinates
+     *
+     *   The vector valued operator \f$B\f$ is constructed such that
+     *   \f$\frac{Du}{Dt} = \frac{du}{dt} + u grad(u)\f$
+     */
+    virtual int CalcMatDeriv(DRT::ELEMENTS::Fluid*     ele,
+                             Teuchos::ParameterList&   params,
+                             DRT::Discretization&      discretization,
+                             std::vector<int>&         lm,
+                             Epetra_SerialDenseVector& elevec1,
+                             Epetra_SerialDenseVector& elevec2) = 0;
+
 
     /*! \brief Calculate a divergence of velocity at the element center
      *

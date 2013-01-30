@@ -22,6 +22,9 @@ Maintainer: Georg Hammerl
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_mat/particle_mat.H"
+#include "../drt_mat/matpar_bundle.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*/
 /* Constructor */
@@ -48,9 +51,17 @@ PARTICLE::TimIntCentrDiff::TimIntCentrDiff(
   // allocate vectors
   radius_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
   radiusn_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
-  density_ = LINALG::CreateVector(*discret_->NodeRowMap(), true);
-  densityn_  = LINALG::CreateVector(*discret_->NodeRowMap(), true);
 
+  // make sure that a particle material is defined in the dat-file
+  int id = DRT::Problem::Instance()->Materials()->FirstIdByType(INPAR::MAT::m_particlemat);
+  if (id==-1)
+    dserror("Could not find particle material");
+
+  const MAT::PAR::Parameter* mat = DRT::Problem::Instance()->Materials()->ParameterById(id);
+  const MAT::PAR::ParticleMat* actmat = static_cast<const MAT::PAR::ParticleMat*>(mat);
+  // currently all particles have identical density and radius
+  density_ = actmat->density_;
+  double initial_radius = actmat->initialradius_;
   // initialize displacement field with nodal positions
   for(int n=0; n<discret_->NumMyRowNodes(); n++)
   {
@@ -63,14 +74,13 @@ PARTICLE::TimIntCentrDiff::TimIntCentrDiff(
       (*(*dis_)(0))[lid+dim] = actnode->X()[dim];
     }
 
-    // for testing reasons
-    (*radiusn_)[n] = 1.3;
-    (*densityn_)[n] = 2.4;
+    // initialize radii of particles
+    (*radiusn_)[n] = initial_radius;
 
-    double mass = (*densityn_)[n] * 4.0/3.0 * M_PI * pow((*radiusn_)[n], 3.0);
+    double mass = density_ * 4.0/3.0 * M_PI * initial_radius * initial_radius * initial_radius ;
     for (int dim=2; dim<3; dim++)
     {
-      double force = 2.3;
+      double force = 0.0;
       (*(*acc_)(0))[lid+dim] = force / mass;
     }
     // end: for testing reasons
@@ -99,113 +109,30 @@ void PARTICLE::TimIntCentrDiff::IntegrateStep()
   disn_->Update(1.0, *(*dis_)(0), 0.0);
   disn_->Update(dt, *veln_, 1.0);
 
-  // apply Dirichlet BCs
-//  ApplyDirichletBC(timen_, disn_, veln_, Teuchos::null, false);
-
-  // build new external forces
+  // build new external forces (This is too much work here because an assembled row vector
+  // for the forces would be enough. But in later applications with particle contact
+  // it is necessary to evaluate also ghost bubbles.
+  // in short: correct col layout is available but only row layout is needed
+  // --> LINALG::Export(col->row) from bubbleforces to fextn_
+  Teuchos::RCP<const Epetra_Vector> bubbleforces = discret_->GetState("bubbleforces");
   fextn_->PutScalar(0.0);
-//  ApplyForceExternal(timen_, disn_, veln_, fextn_);
+  LINALG::Export(*bubbleforces, *fextn_);
 
-//   TIMING
-//  double dtcpu = timer_->WallTime();
-//
-//  // initialise internal forces
-//  fintn_->PutScalar(0.0);
-//
-//  // ordinary internal force and stiffness
-//  {
-//    // displacement increment in step
-//    Epetra_Vector disinc = Epetra_Vector(*disn_);
-//    disinc.Update(-1.0, *(*dis_)(0), 1.0);
-//    // internal force
-//    ApplyForceInternal(timen_, dt,
-//                       disn_, Teuchos::rcp(&disinc,false), veln_,
-//                       fintn_);
-//  }
-//
-//   TIMING
-//  if (!myrank_) cout << "\nT_internal: " << timer_->WallTime() -dtcpu << endl;
-//
-//   viscous forces due Rayleigh damping
-//  if (damping_ == INPAR::STR::damp_rayleigh)
-//  {
-//    damp_->Multiply(false, *veln_, *fviscn_);
-//  }
-//
-//   TIMING
-//  dtcpu = timer_->WallTime();
-
-
-
-  // TIMING
-  //if (!myrank_) cout << "T_contact:  " << timer_->WallTime() - dtcpu  << endl;
-
-//   determine time derivative of linear momentum vector,
-//   ie \f$\dot{P} = M \dot{V}_{n=1}\f$
-//  frimpn_->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
-
-//  if (damping_ == INPAR::STR::damp_rayleigh)
-//  {
-//    frimpn_->Update(-1.0, *fviscn_, 1.0);
-//  }
-
-  // TIMING
-  //dtcpu = timer_->WallTime();
-
-  // obtain new accelerations \f$A_{n+1}\f$
-//  {
-//    dsassert(mass_->Filled(), "Mass matrix has to be completed");
-//    // blank linear momentum zero on DOFs subjected to DBCs
-//    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), frimpn_);
-//    // get accelerations
-//    accn_->PutScalar(0.0);
-//
-//    // in case of no lumping or if mass matrix is a BlockSparseMatrix, use solver
-//    if (lumpmass_==false || Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_)==Teuchos::null)
-//    {
-//      // linear solver call
-//      // refactor==false: This is not necessary, because we always
-//      // use the same constant mass matrix, which was firstly factorised
-//      // in TimInt::DetermineMassDampConsistAccel
-//      solver_->Solve(mass_->EpetraOperator(), accn_, frimpn_, false, true);
-//    }
-//
-//    // direct inversion based on lumped mass matrix
-//    else
-//    {
-//      RCP<LINALG::SparseMatrix> massmatrix = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(mass_);
-//      RCP<Epetra_Vector> diagonal = LINALG::CreateVector(*dofrowmap_, true);
-//      int error = massmatrix->ExtractDiagonalCopy(*diagonal);
-//      if (error!=0) dserror("ERROR: ExtractDiagonalCopy went wrong");
-//      accn_->ReciprocalMultiply(1.0,*diagonal,*frimpn_,0.0);
-//    }
-//  }
-
-  // obtain new accelerations \f$A_{n+1}\f$
-  for(int n=0; n<discret_->NumMyRowNodes(); n++)
+  double maxradius=-1.0;
+  double minradius=-0.5;
+  radiusn_->MaxValue(&maxradius);
+  radiusn_->MinValue(&minradius);
+  if(abs(maxradius-minradius) > EPS10)
+    dserror("Assumption of equally sized bubbles is not valid. Implementation is missing!");
+  // normal case is a proc with at least a few bubbles
+  if(radiusn_->MyLength() != 0)
   {
-    DRT::Node* actnode = discret_->lRowNode(n);
-
-    double mass = (*densityn_)[n] * 4.0/3.0 * M_PI * pow((*radiusn_)[n], 3.0);
-
-    // get the first gid of a node and convert it into a LID
-    int gid = discret_->Dof(actnode, 0);
-    int lid = discret_->DofRowMap()->LID(gid);
-    // Vorsicht: hier nur z momentan
-    for (int i=2; i<3; i++)
-    {
-      double force = 2.3;
-      double zahl=1.0; //1.0+std::sin(timen_*2*M_PI/7.0);
-      (*accn_)[lid+i] = zahl*force / mass;
-    }
+    // as long as it is valid, mass can be calculated just once
+    double mass = density_ * 4.0/3.0 * M_PI * pow((*radiusn_)[0], 3.0);
+    accn_->Update(1/mass, *fextn_, 0.0);
   }
-
-
-  // TIMING
-  //if (!myrank_) cout << "T_linsolve: " << timer_->WallTime() - dtcpu << endl;
-
-  // apply Dirichlet BCs on accelerations
-//  ApplyDirichletBC(timen_, Teuchos::null, Teuchos::null, accn_, false);
+  else
+    accn_->PutScalar(0.0);
 
   // update of end-velocities \f$V_{n+1}\f$
   veln_->Update(dthalf, *accn_, 1.0);
@@ -269,11 +196,9 @@ void PARTICLE::TimIntCentrDiff::UpdateStatesAfterParticleTransfer()
     LINALG::Export(*old, *radiusn_);
   }
 
-  if (densityn_ != Teuchos::null)
+  if (fextn_ != Teuchos::null)
   {
-    old = densityn_;
-    densityn_ = LINALG::CreateVector(*discret_->NodeRowMap(),true);
-    LINALG::Export(*old, *densityn_);
+    fextn_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
   }
 
   return;

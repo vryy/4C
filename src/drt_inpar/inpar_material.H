@@ -139,6 +139,7 @@ namespace INPAR
       m_spring,       ///< elastic spring (translational or rotational)
       m_opti_dens,    ///< density field for topology optimization
       m_0d_maxwell_acinus, ///< 0D acinar Maxwell material
+      m_particlemat,  ///< particle material
       m_none          ///< undefined
     };
 

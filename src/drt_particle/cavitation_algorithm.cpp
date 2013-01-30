@@ -16,8 +16,11 @@ Maintainer: Georg Hammerl
  | headers                                                  ghamm 11/12 |
  *----------------------------------------------------------------------*/
 #include "cavitation_algorithm.H"
-#include "../drt_adapter/ad_str_structure.H"
+#include "particle_timint_centrdiff.H"
 #include "../drt_adapter/ad_fld_base_algorithm.H"
+#include "../drt_fluid_ele/fluid_ele_action.H"
+#include "../drt_fluid_ele/fluid_ele_calc.H"
+#include "../drt_mat/newtonianfluid.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
@@ -160,19 +163,308 @@ void CAVITATION::Algorithm::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::Integrate()
 {
-  fluid_->NonlinearSolve();
+  CalculateAndApplyFluidForcesToParticles();
   PARTICLE::Algorithm::Integrate();
+//  fluid_->NonlinearSolve(); // after discussion with Ursula
+  fluid_->MultiCorrector();
   return;
 }
 
 
 /*----------------------------------------------------------------------*
+ | calculate fluid forces on particle and apply it         ghamm 01/13  |
+ *----------------------------------------------------------------------*/
+void CAVITATION::Algorithm::CalculateAndApplyFluidForcesToParticles()
+{
+  fluiddis_->ClearState();
+  particledis_->ClearState();
+
+  //TODO 1: Test whether these states are updated enough
+  // at the beginning of the time step: veln := velnp(previous step)
+  fluiddis_->SetState("veln",fluid_->Veln());
+  fluiddis_->SetState("velnm",fluid_->Velnm());
+
+  particledis_->SetState("bubblepos", particles_->ExtractDispn());
+  particledis_->SetState("bubblevel", particles_->ExtractVeln());
+  particledis_->SetState("bubbleacc", particles_->ExtractAccn());
+  // miraculous transformation from row to col layout ...
+  Teuchos::RCP<const Epetra_Vector> bubblepos = particledis_->GetState("bubblepos");
+  Teuchos::RCP<const Epetra_Vector> bubblevel = particledis_->GetState("bubblevel");
+  Teuchos::RCP<const Epetra_Vector> bubbleacc = particledis_->GetState("bubbleacc");
+
+  // bubble radius of layout nodal col map --> SetState not possible
+  Teuchos::RCP<Epetra_Vector> bubbleradius = LINALG::CreateVector(*particledis_->NodeColMap(),false);
+  LINALG::Export(*Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadiusnp(),*bubbleradius);
+
+  // vectors to be filled with forces
+  Teuchos::RCP<Epetra_Vector> bubbleforces = LINALG::CreateVector(*particledis_->DofColMap(),true);
+  Teuchos::RCP<Epetra_Vector> fluidforces = LINALG::CreateVector(*fluiddis_->DofRowMap(),true);
+
+  if(fluiddis_->NumMyColElements() <= 0)
+    dserror("there is no fluid element to ask for material parameters");
+  Teuchos::RCP<MAT::NewtonianFluid> actmat = rcp_dynamic_cast<MAT::NewtonianFluid>(fluiddis_->lColElement(0)->Material());
+  if(actmat == Teuchos::null)
+    dserror("type cast of fluid material failed");
+
+  double fluiddensity = actmat->Density();
+  double fluiddynviscosity = actmat->Viscosity();
+  double particledensity = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ParticleDensity();
+
+  // define element matrices and vectors
+  Epetra_SerialDenseMatrix elematrix1;
+  Epetra_SerialDenseMatrix elematrix2;
+  Epetra_SerialDenseVector elevector1;
+  Epetra_SerialDenseVector elevector2;
+  Epetra_SerialDenseVector elevector3;
+
+  // all particles (incl ghost) are evaluated
+  const int numcolbin = particledis_->NumMyColElements();
+  for (int ibin=0; ibin<numcolbin; ++ibin)
+  {
+    DRT::Element* actbin = particledis_->lColElement(ibin);
+    DRT::Node** particlesinbin = actbin->Nodes();
+
+    // calculate forces for all particles in this bin
+    for(int iparticle=0; iparticle<actbin->NumNode();iparticle++)
+    {
+      const DRT::Node* currparticle = particlesinbin[iparticle];
+      // fill particle position
+      LINALG::Matrix<3,1> particleposition;
+      std::vector<int> lm_b = particledis_->Dof(currparticle);
+      double posx = bubblepos->Map().LID(lm_b[0]);
+      for (int dim=0; dim<3; dim++)
+      {
+        particleposition(dim) = (*bubblepos)[posx+dim];
+      }
+
+
+      // 1st step: element coordinates of particle position in fluid element
+
+      // variables to store information about element in which the particle is located
+      DRT::Element* targetfluidele = NULL;
+      LINALG::Matrix<3,1> elecoord(true);
+
+      // find out in which fluid element the current particle is located
+      std::set<int> fluideleIdsinbin = extendedfluidghosting_[actbin->Id()];
+      std::set<int>::const_iterator eleiter;
+      for(eleiter=fluideleIdsinbin.begin();eleiter!=fluideleIdsinbin.end();++eleiter)
+      {
+        DRT::Element* fluidele = fluiddis_->gElement(*eleiter);
+        DRT::Node** fluidnodes = fluidele->Nodes();
+        const int numnode = fluidele->NumNode();
+
+        // fill currentpositions of fluid element
+        std::map<int,LINALG::Matrix<3,1> > currentfluidpositions;
+        for (int j=0; j < numnode; j++)
+        {
+          const DRT::Node* node = fluidnodes[j];
+          LINALG::Matrix<3,1> currpos;
+          for (int dim=0; dim<3; dim++)
+          {
+            currpos(dim,0) = node->X()[dim];
+          }
+          currentfluidpositions[node->Id()] = currpos;
+        }
+        const LINALG::SerialDenseMatrix xyze(GEO::getCurrentNodalPositions(fluidele, currentfluidpositions));
+
+        //get coordinates of the particle position in parameter space of the element
+        bool insideele = GEO::currentToVolumeElementCoordinates(fluidele->Shape(), xyze, particleposition, elecoord);
+
+        if(insideele == true)
+        {
+          targetfluidele = fluidele;
+          // leave loop over all fluid eles
+          break;
+        }
+      }
+
+
+      // 2nd step: forces on this bubble are calculated
+      if(targetfluidele == NULL)
+      {
+        cout << "INFO: currparticle with Id: " << currparticle->Id() << " and position: " << particleposition(0) << " "
+            << particleposition(1) << " " << particleposition(2) << " " << " does not have an underlying fluid element -> no forces calculated" << endl;
+        // do not assemble forces for this bubble and continue with next bubble
+        continue;
+      }
+
+      // get element location vector and ownerships
+      std::vector<int> lm_f;
+      std::vector<int> lmowner_f;
+      std::vector<int> lmstride;
+      targetfluidele->LocationVector(*fluiddis_,lm_f,lmowner_f,lmstride);
+
+      // Reshape element matrices and vectors and initialize to zero
+      elevector1.Size(lm_f.size());
+      elevector2.Size(lm_f.size());
+
+      // set action in order to calculate the velocity and material derivative of the velocity
+      Teuchos::ParameterList params;
+      params.set<int>("action",FLD::calc_mat_derivative_u);
+      params.set<double>("timestep",Dt());
+      double tmpelecoords[3];
+      for (int dim=0; dim<3; dim++)
+      {
+        tmpelecoords[dim] = elecoord(dim);
+      }
+      params.set<double*>("elecoords",tmpelecoords);
+
+      // call the element specific evaluate method (elevec1 = fluid vel u; elevec2 = mat deriv of fluid vel, elevec3 = dummy)
+      targetfluidele->Evaluate(params,*fluiddis_,lm_f,elematrix1,elematrix2,elevector1,elevector2,elevector3);
+
+//      cout << "fluid vel at bubble position: " << elevector1(0) << "  " << elevector1(1) << "  " << elevector1(2) << "  " << endl;
+//      cout << "mat deriv of fluid at bubble position: " << elevector2(0) << "  " << elevector2(1) << "  " << elevector2(2) << "  " << endl;
+
+      // get bubble velocity and acceleration
+      std::vector<double> v_bub(lm_b.size());
+      DRT::UTILS::ExtractMyValues(*bubblevel,v_bub,lm_b);
+      std::vector<double> acc_bub(lm_b.size());
+      DRT::UTILS::ExtractMyValues(*bubbleacc,acc_bub,lm_b);
+
+      // get bubble radius
+      double r_bub = (*bubbleradius)[ particledis_->NodeColMap()->LID(currparticle->Id()) ];
+
+      // bubble Reynolds number
+      LINALG::Matrix<3,1> v_rel(false);
+      for (int dim=0; dim<3; dim++)
+      {
+        v_rel(dim) = elevector1[dim] - v_bub[dim];
+      }
+      double v_relabs = v_rel.Norm2();
+      double Re_b = 2.0 * r_bub * v_relabs * fluiddensity / fluiddynviscosity;
+
+//      cout << "v_rel: " << v_rel(0) << "  " << v_rel(1) << "  " << v_rel(2) << "  " << endl;
+//      cout << "v_relabs: " << v_relabs << endl;
+//      cout << "bubble Reynolds number: " << Re_b << endl;
+
+      // variable to sum forces for the current bubble under observation
+      Epetra_SerialDenseVector forcecurrbubble(3);
+      /*------------------------------------------------------------------*/
+      //// 2.1) drag force = 0.5 * c_d * rho_l * Pi * r_b^2 * |u-v| * (u-v) or
+      //// Stokes law for very small Re: drag force = 6.0 * Pi * mu_l * r_b * (u-v)
+      double coeff1 = 0.0;
+      if(Re_b < 0.1)
+      {
+        coeff1 = 6.0 * M_PI * fluiddynviscosity * r_bub;
+      }
+      else
+      {
+        double c_d = 0.0;
+        if(Re_b < 1000.0)
+          c_d = 24.0 * (1.0 + 0.15 * pow(Re_b,0.687)) / Re_b;
+        else
+          c_d = 0.44;
+
+        coeff1 = 0.5 * c_d * fluiddensity * M_PI * r_bub * r_bub * v_relabs;
+      }
+
+      LINALG::Matrix<3,1> dragforce(true);
+      dragforce.Update(coeff1, v_rel);
+      //assemble
+      for(int dim=0; dim<3; dim++)
+        forcecurrbubble[dim] += dragforce(dim);
+      /*------------------------------------------------------------------*/
+
+//      /*------------------------------------------------------------------*/
+//      //// 2.2) virtual/added mass = c_VM * rho_l * volume_b * ( Du/Dt - Dv/Dt )
+//      // OUTDATED: see 2.4)
+//      double c_VM = 0.5;
+//      double vol_bub = 4.0 / 3.0 * M_PI * r_bub * r_bub* r_bub;
+//      double coeff2 = c_VM * fluiddensity * vol_bub;
+//      // material derivative of fluid velocity
+//      LINALG::Matrix<3,1> Du_Dt(false);
+//      for (int dim=0; dim<3; dim++)
+//      {
+//        Du_Dt(dim) = elevector2[dim];
+//      }
+//      cout << "Du_Dt: " << Du_Dt(0) << "  " << Du_Dt(1) << "  " << Du_Dt(2) << "  " << endl;
+//      // material derivative of bubble velocity
+//      LINALG::Matrix<3,1> Dv_Dt(false);
+//      for (int dim=0; dim<3; dim++)
+//      {
+//        Dv_Dt(dim) = acc_bub[dim];
+//      }
+//      LINALG::Matrix<3,1> addedmassforce(true);
+//        addedmassforce.Update(coeff2, Du_Dt, -coeff2, Dv_Dt);
+//      //assemble
+//      for(int dim=0; dim<3; dim++)
+//        forcecurrbubble[dim] += addedmassforce(dim);
+//      /*------------------------------------------------------------------*/
+
+      /*------------------------------------------------------------------*/
+      //// 2.3) buoyancy and gravity forces = volume_b * ( rho_bub - rho_l ) * g
+      double vol_bub = 4.0 / 3.0 * M_PI * r_bub * r_bub* r_bub;
+      double coeff3 = vol_bub * ( particledensity - fluiddensity);
+      LINALG::Matrix<3,1> gravityforce(true);
+      gravityforce.Update(coeff3, gravity_acc_);
+      //assemble
+      for(int dim=0; dim<3; dim++)
+        forcecurrbubble[dim] += gravityforce(dim);
+      /*------------------------------------------------------------------*/
+
+      /*------------------------------------------------------------------*/
+      //// 2.4) implicit treatment of bubble acceleration in added mass, other forces explicit
+      //// final force = \frac{ sum all forces (2.1, ..) + c_VM * rho_l * volume_b * Du/Dt }{ 1 + c_VM * rho_l / rho_b }
+      double c_VM = 0.5;
+      double coeff4 = c_VM * fluiddensity * vol_bub;
+      double coeff5 = 1.0 + c_VM * fluiddensity / particledensity;
+      // material derivative of fluid velocity
+      LINALG::Matrix<3,1> Du_Dt(false);
+      LINALG::Matrix<3,1> sumcurrforces(false);
+      for (int dim=0; dim<3; dim++)
+      {
+        Du_Dt(dim) = elevector2[dim];
+        sumcurrforces(dim) = forcecurrbubble[dim];
+      }
+
+      LINALG::Matrix<3,1> finalforce(true);
+      finalforce.Update(1.0/coeff5, sumcurrforces, coeff4/coeff5, Du_Dt);
+      //assemble
+      for(int dim=0; dim<3; dim++)
+        forcecurrbubble[dim] = finalforce(dim);
+      /*------------------------------------------------------------------*/
+
+
+      // 3rd step: assemble bubble forces
+
+      // assemble of bubble forces can be done without further need of LINALG::Export (ghost bubbles also evaluated)
+      std::vector<int> lmowner_b(lm_b.size(), myrank_);
+      LINALG::Assemble(*bubbleforces,forcecurrbubble,lm_b,lmowner_b);
+
+      // assemble of fluid forces can only be done on row elements (all bubbles in this element must be considered: ghost near boundary)
+      const int numnode = targetfluidele->NumNode();
+      Epetra_SerialDenseVector funct(numnode);
+      // get shape functions of the element; evaluated at the bubble position --> distribution
+      DRT::UTILS::shape_function_3D(funct,elecoord(0,0),elecoord(1,0),elecoord(2,0),targetfluidele->Shape());
+      // prepare assembly for fluid forces (pressure degrees do not have to be filled); actio = reactio --> minus sign
+      int dim = 3;
+      Epetra_SerialDenseVector val(numnode*(dim+1));
+      for(int iter=0; iter<numnode; iter++)
+      {
+        for(int k=0; k<dim; k++)
+        {
+          val[iter*(dim+1) + k] = -1.0 * funct[iter] * forcecurrbubble(k);
+        }
+      }
+      // do assembly of bubble forces on fluid
+      LINALG::Assemble(*fluidforces,val,lm_f,lmowner_f);
+    } // end iparticle
+
+  } // end ibin
+
+
+  // 4th step: apply forces to bubbles and fluid field
+  particledis_->SetState("bubbleforces", bubbleforces);
+
+  return;
+}
+/*----------------------------------------------------------------------*
  | update the current time step                            ghamm 11/12  |
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::Update()
 {
-  fluid_->Update();
   PARTICLE::Algorithm::Update();
+  fluid_->Update();
   return;
 }
 
@@ -182,8 +474,8 @@ void CAVITATION::Algorithm::Update()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::ReadRestart(int restart)
 {
-  fluid_->ReadRestart(restart);
   PARTICLE::Algorithm::ReadRestart(restart);
+  fluid_->ReadRestart(restart);
   return;
 }
 
@@ -236,6 +528,10 @@ void CAVITATION::Algorithm::CreateBins()
 Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs()
 {
   std::vector<int> rowbins;
+
+  // NOTE: This part of the setup can be the bottleneck because vectors of all bins
+  // are needed on each proc (memory issue!!); std::map could perhaps help when gathering
+  // num fluid nodes in each bin, then block wise communication after copying data to vector
 
   int numbins = bin_per_dir_[0]*bin_per_dir_[1]*bin_per_dir_[2];
 
@@ -334,7 +630,6 @@ void CAVITATION::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
 
     // do communication to gather all elements for extended ghosting
     const int numproc = fluiddis_->Comm().NumProc();
-    std::map<int, std::set<int> > extendedfluidghosting;
 
     for (int iproc = 0; iproc < numproc; ++iproc)
     {
@@ -365,14 +660,14 @@ void CAVITATION::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
       // proc i has to store the received data
       if(iproc == myrank_)
       {
-        extendedfluidghosting = rdata;
+        extendedfluidghosting_ = rdata;
       }
     }
 
     //reduce map of sets to one set and copy to a vector to create fluidcolmap
     std::set<int> redufluideleset;
     std::map<int, std::set<int> >::iterator iter;
-    for(iter=extendedfluidghosting.begin(); iter!= extendedfluidghosting.end(); ++iter)
+    for(iter=extendedfluidghosting_.begin(); iter!= extendedfluidghosting_.end(); ++iter)
     {
       redufluideleset.insert(iter->second.begin(),iter->second.end());
     }

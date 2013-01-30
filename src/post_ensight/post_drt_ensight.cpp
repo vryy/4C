@@ -173,6 +173,13 @@ int main(
         }
         break;
     }
+    case prb_cavitation:
+    {
+      PostField* field = problem.get_discretization(0);
+      FluidEnsightWriter writer(field, problem.outname());
+      writer.WriteFiles();
+      break;
+    }
     case prb_redairways_tissue:
     {
         PostField* structfield = problem.get_discretization(0);

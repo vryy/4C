@@ -41,6 +41,7 @@ enum Action {
     calc_smagorinsky_const,
     integrate_shape,
     calc_divop,
+    calc_mat_derivative_u,
     calc_node_normal,
     set_general_fluid_parameter,
     set_time_parameter,

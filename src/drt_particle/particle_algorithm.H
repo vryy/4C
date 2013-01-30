@@ -153,6 +153,8 @@ namespace PARTICLE
 
     int bin_per_dir_[3];    ///< number of bins per direction
 
+    LINALG::Matrix<3,1> gravity_acc_;   ///< acceleration due to gravity
+
     //@}
 
     //! @name miscellaneous stuff

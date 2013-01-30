@@ -156,6 +156,65 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDivOp(
   return 0;
 }
 
+/*---------------------------------------------------------------------*
+ | Action type: calc_mat_derivative_u                                  |
+ | calculate material derivative of velocity               ghamm 01/13 |
+ *---------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::FluidEleCalc<distype>::CalcMatDeriv(
+  DRT::ELEMENTS::Fluid*     ele,
+  Teuchos::ParameterList&   params,
+  DRT::Discretization&      discretization,
+  std::vector<int>&         lm,
+  Epetra_SerialDenseVector& elevec1,
+  Epetra_SerialDenseVector& elevec2)
+{
+  // fill the local element vector/matrix with the global values
+  LINALG::Matrix<nsd_,nen_> eveln(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &eveln, NULL,"veln");
+  LINALG::Matrix<nsd_,nen_> evelnm(true);
+  ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &evelnm, NULL,"velnm");
+
+  // coordinates of the current integration point
+  const double* coord = params.get<double*>("elecoords");
+  for (int isd=0;isd<nsd_;isd++)
+  {
+    xsi_(isd) = coord[isd];
+  }
+
+  // shape functions and their first derivatives
+  DRT::UTILS::shape_function<distype>(xsi_,funct_);
+  DRT::UTILS::shape_function_deriv1<distype>(xsi_,deriv_);
+
+  // get velocities u_n and u_nm at integration point
+  velint_.Multiply(eveln,funct_);
+  LINALG::Matrix<nsd_,1> velintnm(true);
+  velintnm.Multiply(evelnm,funct_);
+
+  for (int isd=0;isd<nsd_;isd++)
+  {
+    elevec1[isd] = velint_(isd);
+  }
+
+  // get gradient of velocity at integration point
+  vderxy_.MultiplyNT(eveln,deriv_);
+
+  // calculate (u_n * nabla) u_n
+  conv_old_.Multiply(vderxy_,velint_);
+
+  double invdt = 1.0 / params.get<double>("timestep");
+
+  // calculate (u_n - u_nm)/dt + (u_n * nabla) u_n
+  conv_old_.Update(invdt, velint_, -invdt, velintnm, 1.0);
+
+  for (int isd=0;isd<nsd_;isd++)
+  {
+    elevec2[isd] = conv_old_(isd);
+  }
+
+  return 0;
+}
+
 /*----------------------------------------------------------------------*
  * Action type: Compute Div u                                 ehrl 12/12|
  *----------------------------------------------------------------------*/

@@ -4844,13 +4844,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   Teuchos::ParameterList& cavitationdyn = list->sublist(
       "CAVITATION DYNAMIC",
       false,
-      "control parameters for cavitation problems\n");
+      "control parameters for cavitation/particle problems\n");
 
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&cavitationdyn);
   IntParameter("NUMSTEP",20,"Total number of time steps",&cavitationdyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&cavitationdyn);
   IntParameter("UPRES",1,"Increment for writing solution",&cavitationdyn);
   IntParameter("RESTARTEVRY",1,"Increment for writing restart",&cavitationdyn);
+  setNumericStringParameter("GRAVITY_ACCELERATION","0.0 0.0 0.0",
+                            "Acceleration due to gravity in particle/cavitation simulations.",
+                            &cavitationdyn);
 
   /*----------------------------------------------------------------------*/
   // set valid parameters for solver blocks

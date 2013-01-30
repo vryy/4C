@@ -66,6 +66,17 @@ PARTICLE::Algorithm::Algorithm(
     bin_size_[dim] = 0.0;
   }
 
+  const Teuchos::ParameterList& cavitationparams = DRT::Problem::Instance()->CavitationParams();
+  gravity_acc_.PutScalar(0.0);
+  // get acceleration vector due to gravity for particles
+  std::istringstream accstream(Teuchos::getNumericStringParameter(cavitationparams,"GRAVITY_ACCELERATION"));
+  for(int dim=0; dim<3; dim++)
+  {
+    double value = 0.0;
+    if(accstream >> value)
+      gravity_acc_(dim) = value;
+  }
+
   return;
 }
 
@@ -772,7 +783,7 @@ void PARTICLE::Algorithm::Output()
         posXYZDomain(dim) = (*disnp)[lid+dim];
       }
 
-      double density = (*Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractDensitynp())[n];
+      double density = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ParticleDensity();
 
       // write data to Gmsh file
       IO::GMSH::ScalarToStream(posXYZDomain, density, gmshfilecontent);

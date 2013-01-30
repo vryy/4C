@@ -465,6 +465,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_matelast/elast_isovolHUdependentneohooke.cpp
   src/drt_patspec/patspec.cpp
   src/drt_mat/maxwell_0d_acinus.cpp
+  src/drt_mat/particle_mat.cpp
 )
 set(OBJS_DRT_STATMECH
   src/drt_statmech/statmech_manager.cpp

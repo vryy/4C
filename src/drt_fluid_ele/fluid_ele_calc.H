@@ -126,6 +126,22 @@ namespace ELEMENTS
     );
 
 
+    /*! \brief Calculate material derivative of velocity at specified material coordinate
+     *
+     *   \author: ghamm
+     *   \date:   01/2013
+     */
+    virtual int CalcMatDeriv(
+        DRT::ELEMENTS::Fluid*           ele,              //< current fluid element
+        Teuchos::ParameterList&         params,           //< parameter list
+        DRT::Discretization&            discretization,   //< fluid discretization
+        std::vector<int>&               lm,               //< location vector for DOF management
+        Epetra_SerialDenseVector&       elevec1,          //< reference to element vector to be filled
+        Epetra_SerialDenseVector&       elevec2           //< reference to element vector to be filled
+        );
+
+
+
     /*! \brief Calculate a divergence of velocity at the element center
      *
      *   \author: ehrl

@@ -1936,6 +1936,22 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*----------------------------------------------------------------------*/
+
+  /*----------------------------------------------------------------------*/
+  // particle material
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_Particle",
+                                            "particle material",
+                                            INPAR::MAT::m_particlemat));
+
+    AddNamedReal(m,"DENSITY","mass density");
+    AddNamedReal(m,"INITRADIUS","initial radius of particle");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+
+  /*----------------------------------------------------------------------*/
   // deliver
   return vm;
 }

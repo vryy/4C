@@ -80,6 +80,7 @@ Maintainer: Lena Wiechert
 #include "structporo.H"
 #include "spring.H"
 #include "maxwell_0d_acinus.H"
+#include "particle_mat.H"
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
@@ -552,11 +553,18 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::TopOptDens* params = static_cast<MAT::PAR::TopOptDens*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-    case INPAR::MAT::m_spring:
+  case INPAR::MAT::m_spring:
   {
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::Spring(curmat));
     MAT::PAR::Spring* params = static_cast<MAT::PAR::Spring*>(curmat->Parameter());
+    return params->CreateMaterial();
+  }
+  case INPAR::MAT::m_particlemat:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::PAR::ParticleMat(curmat));
+    MAT::PAR::ParticleMat* params = static_cast<MAT::PAR::ParticleMat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_pl_mises_3D:

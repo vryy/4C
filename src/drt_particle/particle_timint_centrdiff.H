@@ -87,11 +87,11 @@ namespace PARTICLE
     //! @name Vector access
     //@{
 
-    //! Return densities
+    //! Return radii of particles
     Teuchos::RCP<Epetra_Vector> ExtractRadiusnp() { return radiusn_; }
 
-    //! Return densities
-    Teuchos::RCP<Epetra_Vector> ExtractDensitynp() { return densityn_; }
+    //! Return density
+    double ParticleDensity() { return density_; }
 
     //@}
 
@@ -104,9 +104,7 @@ namespace PARTICLE
 
     Teuchos::RCP<Epetra_Vector> radiusn_;  //!< radius of each particle at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> density_; //!< density of each particle at \f$t_{n}\f$
-
-    Teuchos::RCP<Epetra_Vector> densityn_; //!< density of each particle at \f$t_{n+1}\f$
+    double density_; //!< density of each particle$
 
     //@}
 
