@@ -129,11 +129,11 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(D
     // only 3D elements
     case DRT::Element::hex8:
     {
-      return DefineProblemType<DRT::Element::hex8>(problem);
+      return DefineProblemTypeXFEM<DRT::Element::hex8>(problem);
     }
     case DRT::Element::hex20:
     {
-      return DefineProblemType<DRT::Element::hex20>(problem);
+      return DefineProblemTypeXFEM<DRT::Element::hex20>(problem);
     }
     default:
       dserror("Element shape %s not activated for XFEM problems. Just do it.",DRT::DistypeToString(distype).c_str());
@@ -142,7 +142,8 @@ DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::ProvideImplXFEM(D
 }
 
 /*--------------------------------------------------------------------------*
- |                                                 (public) rasthofer Jan13 |
+ |  special implementation of DefineProblemTypeX for XFEM problems          |
+ |  to reduce created template combination         (public) rasthofer Jan13 |
  *--------------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::FluidEleInterface* DRT::ELEMENTS::FluidFactory::DefineProblemTypeXFEM(string problem)
