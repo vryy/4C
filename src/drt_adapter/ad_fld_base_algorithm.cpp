@@ -467,11 +467,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     {
       // there are a couple of restrictions in monolithic FSI
       dserror("XFEM and monolithic FSI not tested!");
-      fluidtimeparams->set<bool>("do explicit predictor",false);
-    }
-    else
-    {
-      fluidtimeparams->set<bool>("do explicit predictor",true);
     }
   }
 
@@ -488,7 +483,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->set<bool>("poroelast",true);
     fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(porodyn,"SECONDORDER"));
     fluidtimeparams->set<bool>("shape derivatives",false);
-    fluidtimeparams->set<bool>("do explicit predictor",false);
     fluidtimeparams->set<bool>("conti partial integration", DRT::INPUT::IntegralValue<int>(porodyn,"CONTIPARTINT"));
   }
 

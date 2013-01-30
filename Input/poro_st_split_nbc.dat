@@ -51,7 +51,6 @@ NONLINITER                      fixed_point_like
 NUMSTASTEPS                     0
 NUMSTEP                         1
 PHYSICAL_TYPE                   Poro
-PREDICTOR                       explicit_second_order_midpoint
 RESTARTEVRY                     20
 SIMPLER                         no
 STARTFUNCNO                     -1
