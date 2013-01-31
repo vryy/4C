@@ -220,6 +220,9 @@ public:
   /// number of space dimensions (as specified in the input file)
   int NDim() const;
 
+  // do bandwith optimization of dofsets (as specified in the input file)
+  //bool BandWidthOpt() const;
+
   // give string name of my basis function type (polynomial/nurbs)
   std::string SpatialApproximation() const;
 
