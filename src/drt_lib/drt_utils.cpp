@@ -63,8 +63,7 @@ void DRT::UTILS::ExtractMyValues(const Epetra_Vector& global,
   for (size_t i=0; i<ldim; ++i)
   {
     const int lid = global.Map().LID(lm[i]);
-    if (lid<0)
-      dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",global.Comm().MyPID(),lm[i]);
+    if (lid<0) dserror("Proc %d: Cannot find gid=%d in Epetra_Vector",global.Comm().MyPID(),lm[i]);
     local[i] = global[lid];
   }
   return;

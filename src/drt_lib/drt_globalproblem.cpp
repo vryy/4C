@@ -163,6 +163,21 @@ int DRT::Problem::NDim() const
 }
 
 
+#if 0 // Currently unused, might come back into usage though
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool DRT::Problem::BandWidthOpt() const
+{
+  // in case of filters (e.g. post_drt_ensight) we don't have the list
+  Teuchos::RCP<const Teuchos::ParameterList> list = getParameterList();
+  if (list==Teuchos::null) return false;
+  
+  const Teuchos::ParameterList& typeparams = ProblemTypeParams();
+  bool yesno = Teuchos::getIntegralValue<int>(typeparams,"BANDWIDTHOPT");
+  return yesno;
+}
+#endif
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 std::string DRT::Problem::SpatialApproximation() const

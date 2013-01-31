@@ -48,9 +48,15 @@ Maintainer: Ulrrich Kuettler
 #include "drt_dofset_proxy.H"
 #include "drt_discret.H"
 #include "drt_utils.H"
+#include "drt_globalproblem.H"
 
 #include "../linalg/linalg_utils.H"
 
+#include <Epetra_FECrsGraph.h>
+#include <Ifpack_Graph_Epetra_CrsGraph.h>
+#include <Ifpack_RCMReordering.h>
+#include <Ifpack_METISReordering.h>
+#include <Ifpack_AMDReordering.h>
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             ukue 04/07|
@@ -149,7 +155,6 @@ void DRT::DofSet::Reset()
   NotifyReset();
 }
 
-
 /*----------------------------------------------------------------------*
  |  setup everything  (public)                                ukue 04/07|
  *----------------------------------------------------------------------*/
@@ -212,52 +217,189 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   idxcolelements_ = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
 
   //////////////////////////////////////////////////////////////////
-
-  // do the nodes first
-
-  Epetra_IntVector numdfrownodes(*dis.NodeRowMap());
-  Epetra_IntVector idxrownodes(*dis.NodeRowMap());
-
-  int numrownodes = dis.NumMyRowNodes();
-  for (int i=0; i<numrownodes; ++i)
-  {
-    DRT::Node* actnode = dis.lRowNode(i);
-    //const int gid = actnode->Id();
-    numdfrownodes[i] = NumDofPerNode(*actnode,dspos);
-  }
-
-  int minnodegid = dis.NodeRowMap()->MinAllGID();
-  int maxnodenumdf = numdfrownodes.MaxValue();
-
+  //////////////////////////////////////////////////////////////////
+  int maxnodenumdf = 0;
+  int maxelementnumdf = 0;
   std::map<int,std::vector<int> > nodedofset;
-
-  for (int i=0; i<numrownodes; ++i)
+  std::map<int,std::vector<int> > elementdofset;
+  // bandwidth optimization is implemented here and works. It though leads to
+  // a totally different dof numbering (mixed between elements and nodes) and therefore
+  // currently crashes the I/O of results. 
+  // Bandwidth opt seems to be also performed by most of our direct solvers 
+  // (umfpack, superlu) and does not matter that much in iterative methods.
+  // So currently, we do not support bw, but might want to turn this on at some
+  // later time.
+  // Also, this method is also called from filters where the parameter list from input
+  // does not exist. This is not resolved yet.
+  // mwgee 01/13
+  //bool bw = DRT::Problem::Instance()->BandWidthOpt();
+  bool bw = false;
+  if (bw)
   {
-    DRT::Node* actnode = dis.lRowNode(i);
-    const int gid = actnode->Id();
-    int numdf = numdfrownodes[i];
-    int dof = count + ( gid-minnodegid )*maxnodenumdf;
-    idxrownodes[i] = dof;
-    std::vector<int> & dofs = nodedofset[gid];
-    dofs.reserve( numdf );
-    for ( int j=0; j<numdf; ++j )
+    int maxnodegid = dis.NodeRowMap()->MaxAllGID();
+    // we have to invent some temporary element gids
+    // that do not overlap with the node gids
+    const Epetra_Map& elerowmap = *dis.ElementRowMap();
+    RCP<Epetra_IntVector> elerowgids = Teuchos::rcp(new Epetra_IntVector(elerowmap));
+    vector<int> ssizeelerowgids(elerowmap.Comm().NumProc(),0);
+    vector<int> rsizeelerowgids(elerowmap.Comm().NumProc(),0);
+    ssizeelerowgids[elerowmap.Comm().MyPID()] = elerowmap.NumMyElements();
+    elerowmap.Comm().SumAll(&ssizeelerowgids[0],&rsizeelerowgids[0],(int)ssizeelerowgids.size());
+    for (unsigned i=0; i<rsizeelerowgids.size(); ++i)
     {
-      dofs.push_back( dof+j );
+      ssizeelerowgids[i] = maxnodegid+1;
+      for (unsigned j=0; j<i; ++j)
+        ssizeelerowgids[i] += rsizeelerowgids[j];
     }
-  }
 
-  Epetra_Import nodeimporter( numdfcolnodes_->Map(), numdfrownodes.Map() );
-  int err = numdfcolnodes_->Import( numdfrownodes, nodeimporter, Insert );
-  if (err) dserror( "Import using importer returned err=%d", err );
-  err = idxcolnodes_->Import( idxrownodes, nodeimporter, Insert );
-  if (err) dserror( "Import using importer returned err=%d", err );
+    //if (elerowgids->Map().Comm().MyPID()==0)
+    //  for (unsigned i=0; i<rsizeelerowgids.size(); ++i)
+    //    printf("maxnodegid %d proc %d ssize %d rsize %d \n",maxnodegid,i,ssizeelerowgids[i],rsizeelerowgids[i]);
 
-  count = idxrownodes.MaxValue() + maxnodenumdf + 1;
+    for (int i=0; i<elerowgids->Map().NumMyElements(); ++i)
+      (*elerowgids)[i] = ssizeelerowgids[elerowgids->Comm().MyPID()] + i;
+    
+    // export elerowgids to column map elecolgids
+    RCP<Epetra_IntVector> elecolgids = Teuchos::rcp(new Epetra_IntVector(*dis.ElementColMap()));
+    LINALG::Export(*elerowgids,*elecolgids);
+    
+    // Build a rowmap that contains node and element gids
+    // Consider only elements that have dofs
+    vector<int> mygids(0,0);
+    for (int i=0; i<dis.NodeRowMap()->NumMyElements(); ++i)
+      mygids.push_back(dis.NodeRowMap()->GID(i));
+    for (int i=0; i<elerowgids->Map().NumMyElements(); ++i)
+    {
+      if (dis.lRowElement(i)->NumDofPerElement() != 0)
+        mygids.push_back((*elerowgids)[i]);
+    }
+    
+    Epetra_Map rowmapcombo(-1,(int)mygids.size(),&mygids[0],0,dis.Comm());
+    
+    // Loop Nodes and Elements and build a common nodal-elemental connectivity graph
+    // Consider only elementsw rthat have dofs
+    RCP<Epetra_FECrsGraph> graphcombo =
+                        Teuchos::rcp( new Epetra_FECrsGraph(Copy,rowmapcombo,180,false));
+    for (int i=0; i<dis.ElementColMap()->NumMyElements(); ++i)
+    {
+      const int  nnode   = dis.lColElement(i)->NumNode();
+      int*       nodeids = const_cast<int*>(dis.lColElement(i)->NodeIds());
+      for (int row=0; row<nnode; ++row)
+      {
+//        if (!dis.NodeRowMap()->MyGID(nodeids[row])) continue; // only add into my own nodal rows
+        int err = graphcombo->InsertGlobalIndices(1,&nodeids[row],nnode,nodeids);
+        if (err<0) dserror("graphcombo->InsertGlobalIndices returned err=%d",err);
+      }
+      // check whether this element is actually a row element
+      //if (dis.ElementRowMap()->MyGID(dis.lColElement(i)->Id()) == false) continue;
+      // check whether this element has elemental dofs
+      if (dis.lColElement(i)->NumDofPerElement() == 0) continue;
+      // get the pseudo gid of this element
+      int lid = dis.ElementColMap()->LID(dis.lColElement(i)->Id());
+      if (lid==-1) dserror("Cannot find lid");
+      int pseudogid = (*elecolgids)[lid];
+      // check whether this pseudogid is actually in rowmapcombo on this proc
+      //if (rowmapcombo.MyGID(pseudogid) != true) dserror("gid unknown on this proc");
+      // the element dofs connect to itself
+      int err = graphcombo->InsertGlobalIndices(1,&pseudogid,1,&pseudogid);
+      if (err<0) dserror("graphcombo->InsertGlobalIndices returned err=%d",err);
+      // the element dofs connect to the nodal dofs
+      err = graphcombo->InsertGlobalIndices(1,&pseudogid,nnode,nodeids);
+      if (err<0) dserror("graphcombo->InsertGlobalIndices returned err=%d",err);
+      // the nodal dofs connect to the element dofs
+      for (int row=0; row<nnode; ++row)
+      {
+        //if (!dis.NodeRowMap()->MyGID(nodeids[row])) continue; // only add into my own nodal rows
+        int err = graphcombo->InsertGlobalIndices(1,&nodeids[row],1,&pseudogid);
+        if (err<0) dserror("graphcombo->InsertGlobalIndices returned err=%d",err);
+      }
+    } // for (int i=0; i<dis.ElementColMap()->NumMyElements(); ++i)
+
+    int err = graphcombo->GlobalAssemble(true);
+    if (err) dserror("graphcombo->GlobalAssemble() returned err=%d",err);
+    err = graphcombo->OptimizeStorage();
+    if (err) dserror("graphcombo->OptimizeStorage() returned err=%d",err);
+    //cout << *graphcombo; fflush(stdout);
+
+    Ifpack_Graph_Epetra_CrsGraph ifgraph(graphcombo);
+    Ifpack_RCMReordering reorderer;
+//    Ifpack_AMDReordering reorderer;
+    reorderer.Compute(ifgraph);
+    vector<int> permute(rowmapcombo.NumMyElements(),-1);
+    for (int i=0; i<rowmapcombo.NumMyElements(); ++i)
+    {
+      permute[i] = rowmapcombo.GID(reorderer.Reorder(i));
+      if (permute[i]==-1) dserror("Cannot find gid for lid %d %d",i,reorderer.Reorder(i));
+    }
+    Epetra_IntVector permutation(::Copy,rowmapcombo,&permute[0]);
+//    cout << rowmapcombo; fflush(stdout); rowmapcombo.Comm().Barrier();
+//    fflush(stdout); rowmapcombo.Comm().Barrier(); cout << permutation; fflush(stdout);
+//    rowmapcombo.Comm().Barrier();
+//    exit(0);    
+    
+#if 0
+    for (int i=0; i<dis.Comm().NumProc(); ++i)
+    {
+      if (i==dis.Comm().MyPID())
+      {
+        for (int j=0; j<rowmapcombo.NumMyElements(); ++j)
+          printf("proc %d oldgid %d newgid %d\n",i,rowmapcombo.GID(j),permute[j]);
+      }
+      fflush(stdout);
+      dis.Comm().Barrier();
+    }
+#endif
+    
+        
+    // Assign dofs to nodes using the permuted node gids
+    // These two fields use the unpermuted gids and lids
+    Epetra_IntVector numdfrownodes(*dis.NodeRowMap());
+    Epetra_IntVector idxrownodes(*dis.NodeRowMap());
+    
+    int numrownodes = dis.NumMyRowNodes();
+    for (int i=0; i<numrownodes; ++i)
+    {
+      DRT::Node* actnode = dis.lRowNode(i);
+      numdfrownodes[i] = NumDofPerNode(*actnode,dspos);
+    }
+
+//    int minnodegid = dis.NodeRowMap()->MinAllGID();
+    const int minnodegid = permutation.MinValue();
+    maxnodenumdf = numdfrownodes.MaxValue();
+
+    for (int i=0; i<numrownodes; ++i)
+    {
+      const int gid = dis.lRowNode(i)->Id();
+      const int plid = permutation.Map().LID(gid);
+      if (plid==-1) dserror("Cannot find lid for gid %d",gid);
+      const int permutegid = permutation[plid];
+      if (i!=plid) printf("Found an inconsistency %d vs. %d\n",i,plid);
+      int numdf = numdfrownodes[i];
+//      int dof = count + ( gid-minnodegid )*maxnodenumdf;
+      int dof = count + ( permutegid-minnodegid )*maxnodenumdf;
+      idxrownodes[i] = dof;
+      std::vector<int> & dofs = nodedofset[gid]; // FIXME: permutegid? No!
+      if (dofs.size()) dserror("Dofs for node-gid %d have been previously assigned",permutegid);
+      dofs.reserve(numdf);
+      if (!numdf) dserror("Node has numdf %d",numdf);
+      for ( int j=0; j<numdf; ++j ) dofs.push_back(dof+j);
+    }
+    // These col vectors use the original gids
+    Epetra_Import nodeimporter( numdfcolnodes_->Map(), numdfrownodes.Map() );
+    err = numdfcolnodes_->Import( numdfrownodes, nodeimporter, Insert );
+    if (err) dserror( "Import using importer returned err=%d", err );
+    err = idxcolnodes_->Import( idxrownodes, nodeimporter, Insert );
+    if (err) dserror( "Import using importer returned err=%d", err );
+
+    //cout << idxrownodes;
+
+    // do not increase the count, refer to the lowest gid in town which is nodal
+    //count = idxrownodes.MaxValue() + maxnodenumdf + 1;
 
   //////////////////////////////////////////////////////////////////
 
   // Now do it again for the elements
-
+  // These vectors use the original element gids
   Epetra_IntVector numdfrowelements(*dis.ElementRowMap());
   Epetra_IntVector idxrowelements(*dis.ElementRowMap());
 
@@ -270,24 +412,31 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     numdfrowelements[i] = numdf;
   }
 
-  int minelementgid = dis.ElementRowMap()->MinAllGID();
-  int maxelementnumdf = numdfrowelements.MaxValue();
-
-  std::map<int,std::vector<int> > elementdofset;
+  //int minelementgid = dis.ElementRowMap()->MinAllGID();
+  // Since we have not increased count, we refer to the lowest gid in town
+  const int minelementgid = minnodegid;
+  maxelementnumdf = numdfrowelements.MaxValue();
+  maxelementnumdf = max(maxelementnumdf,maxnodenumdf);
 
   for (int i=0; i<numrowelements; ++i)
   {
-    DRT::Element* actelement = dis.lRowElement(i);
-    const int gid = actelement->Id();
+    const int gid = dis.lRowElement(i)->Id();
+    const int uniquegid = (*elerowgids)[i];
+    const int lid = permutation.Map().LID(uniquegid);
+    const int permutegid = permutation[lid];
     int numdf = numdfrowelements[i];
-    int dof = count + ( gid-minelementgid )*maxelementnumdf;
+    if (lid==-1 && numdf) dserror("Cannot find element lid in rowmapcombo");
+    int dof = count + ( permutegid-minelementgid )*maxelementnumdf;
+    // in case the element does not have any dofs the following is wrong, 
+    // but it won't matter, since numdf==0
     idxrowelements[i] = dof;
-    std::vector<int> & dofs = elementdofset[gid];
-    dofs.reserve( numdf );
-    for ( int j=0; j<numdf; ++j )
-    {
-      dofs.push_back( dof+j );
-    }
+//    std::vector<int> & test = nodedofset[permutegid];
+//    if (test.size()) dserror("Dofs for ele-gid %d have been previously assigned as nodal",permutegid);
+    std::vector<int>& dofs = elementdofset[gid]; // FIXME permutegid? No!
+    if (dofs.size()) dserror("Dofs for ele-gid %d have been previously assigned",permutegid);
+    dofs.reserve(numdf);
+    if (!numdf) dserror("Ele has numdf %d",numdf);
+    for ( int j=0; j<numdf; ++j ) dofs.push_back(dof+j);
   }
 
   Epetra_Import elementimporter( numdfcolelements_->Map(), numdfrowelements.Map() );
@@ -296,8 +445,96 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   err = idxcolelements_->Import( idxrowelements, elementimporter, Insert );
   if (err) dserror( "Import using importer returned err=%d", err );
 
-  // Now finally we have everything in place to build the maps.
+  //cout << idxrowelements;
+  } // if (bw)
+  //////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////
+  else // don't do bandwidth optimization
+  {  
+    
+    // do the nodes first
+    Epetra_IntVector numdfrownodes(*dis.NodeRowMap());
+    Epetra_IntVector idxrownodes(*dis.NodeRowMap());
 
+    int numrownodes = dis.NumMyRowNodes();
+    for (int i=0; i<numrownodes; ++i)
+    {
+      DRT::Node* actnode = dis.lRowNode(i);
+      numdfrownodes[i] = NumDofPerNode(*actnode,dspos);
+    }
+
+    int minnodegid = dis.NodeRowMap()->MinAllGID();
+    maxnodenumdf = numdfrownodes.MaxValue();
+
+    for (int i=0; i<numrownodes; ++i)
+    {
+      DRT::Node* actnode = dis.lRowNode(i);
+      const int gid = actnode->Id();
+      int numdf = numdfrownodes[i];
+      int dof = count + ( gid-minnodegid )*maxnodenumdf;
+      idxrownodes[i] = dof;
+      std::vector<int> & dofs = nodedofset[gid];
+      dofs.reserve( numdf );
+      for ( int j=0; j<numdf; ++j )
+      {
+        dofs.push_back( dof+j );
+      }
+    }
+
+    Epetra_Import nodeimporter( numdfcolnodes_->Map(), numdfrownodes.Map() );
+    int err = numdfcolnodes_->Import( numdfrownodes, nodeimporter, Insert );
+    if (err) dserror( "Import using importer returned err=%d", err );
+    err = idxcolnodes_->Import( idxrownodes, nodeimporter, Insert );
+    if (err) dserror( "Import using importer returned err=%d", err );
+
+    count = idxrownodes.MaxValue() + maxnodenumdf + 1;
+
+    //////////////////////////////////////////////////////////////////
+
+    // Now do it again for the elements
+    Epetra_IntVector numdfrowelements(*dis.ElementRowMap());
+    Epetra_IntVector idxrowelements(*dis.ElementRowMap());
+
+    int numrowelements = dis.NumMyRowElements();
+    for (int i=0; i<numrowelements; ++i)
+    {
+      DRT::Element* actele = dis.lRowElement(i);
+      //const int gid = actele->Id();
+      int numdf = NumDofPerElement(*actele,dspos);
+      numdfrowelements[i] = numdf;
+    }
+
+    int minelementgid = dis.ElementRowMap()->MinAllGID();
+    maxelementnumdf = numdfrowelements.MaxValue();
+
+    for (int i=0; i<numrowelements; ++i)
+    {
+      DRT::Element* actelement = dis.lRowElement(i);
+      const int gid = actelement->Id();
+      int numdf = numdfrowelements[i];
+      int dof = count + ( gid-minelementgid )*maxelementnumdf;
+      idxrowelements[i] = dof;
+      std::vector<int> & dofs = elementdofset[gid];
+      dofs.reserve( numdf );
+      for ( int j=0; j<numdf; ++j )
+      {
+        dofs.push_back( dof+j );
+      }
+    }
+
+    Epetra_Import elementimporter( numdfcolelements_->Map(), numdfrowelements.Map() );
+    err = numdfcolelements_->Import( numdfrowelements, elementimporter, Insert );
+    if (err) dserror( "Import using importer returned err=%d", err );
+    err = idxcolelements_->Import( idxrowelements, elementimporter, Insert );
+    if (err) dserror( "Import using importer returned err=%d", err );
+
+  } // end of else
+  /////////////////////////////////////////////////////////////////
+
+  // Now finally we have everything in place to build the maps.
+  int numrownodes = dis.NumMyRowNodes();
+  int numrowelements = dis.NumMyRowElements();
+  
   std::vector<int> localrowdofs;
   std::vector<int> localcoldofs;
   localrowdofs.reserve( numrownodes*maxnodenumdf + numrowelements*maxelementnumdf );
@@ -309,6 +546,9 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   {
     std::vector<int> & dofs = i->second;
     std::copy( dofs.begin(), dofs.end(), std::back_inserter( localrowdofs ) );
+    //printf("Proc %d nodal gid %d ndofs %d\n",proc,i->first,(int)dofs.size());
+    //for (unsigned j=0; j<dofs.size(); ++j) printf(" %d ",dofs[j]);
+    //printf("\n");
   }
   for ( std::map<int,std::vector<int> >::iterator i=elementdofset.begin();
         i!=elementdofset.end();
@@ -316,6 +556,9 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   {
     std::vector<int> & dofs = i->second;
     std::copy( dofs.begin(), dofs.end(), std::back_inserter( localrowdofs ) );
+    //printf("Proc %d ele gid %d ndofs %d\n",proc,i->first,(int)dofs.size());
+    //for (unsigned j=0; j<dofs.size(); ++j) printf(" %d ",dofs[j]);
+    //printf("\n");
   }
 
   Exporter nodeexporter( *dis.NodeRowMap(), *dis.NodeColMap(), dis.Comm() );
@@ -338,17 +581,27 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     std::vector<int> & dofs = i->second;
     std::copy( dofs.begin(), dofs.end(), std::back_inserter( localcoldofs ) );
   }
+  
+  // in case of bandwidth optimization we have to sort localrowdofs and
+  // localcoldofs in ascending order for the optimization to take effect.
+  // the linear solver will operate in local ids, so it does not care for
+  // gids to be renumbered if the lids do not change
+  if (bw)
+  {
+    std::sort(localrowdofs.begin(),localrowdofs.end());
+    std::sort(localcoldofs.begin(),localcoldofs.end());
+  }
 
   dofrowmap_ = Teuchos::rcp(new Epetra_Map(-1,localrowdofs.size(),&localrowdofs[0],0,dis.Comm()));
   if (!dofrowmap_->UniqueGIDs()) dserror("Dof row map is not unique");
-
   dofcolmap_ = Teuchos::rcp(new Epetra_Map(-1,localcoldofs.size(),&localcoldofs[0],0,dis.Comm()));
 
   filled_ = true;
 
   // tell all proxies
   NotifyAssigned();
-
+  
+  count = dofrowmap_->MaxAllGID() + 1;
   return count;
 }
 
