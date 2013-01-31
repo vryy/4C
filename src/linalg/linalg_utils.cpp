@@ -136,6 +136,70 @@ void LINALG::Export(const Epetra_MultiVector& source, Epetra_MultiVector& target
 
 
 /*----------------------------------------------------------------------*
+ |  export a Epetra_IntVector  (public)                      mwgee 01/13|
+ *----------------------------------------------------------------------*/
+void LINALG::Export(const Epetra_IntVector& source, Epetra_IntVector& target)
+{
+  try
+  {
+    const bool sourceunique = source.Map().UniqueGIDs();
+    const bool targetunique = target.Map().UniqueGIDs();
+
+    // both are unique, does not matter whether ex- or import
+    if (sourceunique && targetunique &&
+        source.Comm().NumProc()==1   &&
+        target.Comm().NumProc()==1 )
+    {
+        for (int i=0; i<target.Map().NumMyElements(); ++i)
+        {
+          const int gid = target.Map().GID(i);
+          if (gid<0) dserror("No gid for i");
+          const int lid = source.Map().LID(gid);
+          if (lid<0) continue;
+          target[i] = source[lid];
+        }
+      return;
+    }
+    else if (sourceunique && targetunique)
+    {
+      Epetra_Export exporter(source.Map(),target.Map());
+      int err = target.Export(source,exporter,Insert);
+      if (err) dserror("Export using exporter returned err=%d",err);
+      return;
+    }
+    else if (sourceunique && !targetunique)
+    {
+      Epetra_Import importer(target.Map(),source.Map());
+      int err = target.Import(source,importer,Insert);
+      if (err) dserror("Export using exporter returned err=%d",err);
+      return;
+    }
+    else if (!sourceunique && targetunique)
+    {
+      Epetra_Export exporter(source.Map(),target.Map());
+      int err = target.Export(source,exporter,Insert);
+      if (err) dserror("Export using exporter returned err=%d",err);
+      return;
+    }
+    else if (!sourceunique && !targetunique)
+    {
+      // Neither target nor source are unique - this is a problem.
+      // We need a unique in between stage which we have to create artificially.
+      // That's nasty.
+      // As it is unclear whether this will ever be needed - do it later.
+      dserror("Neither target nor source maps are unique - cannot export");
+    }
+    else dserror("VERY strange");
+  }
+  catch(int error)
+  {
+    dserror("Caught an Epetra exception %d",error);
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*
  |  assemble a matrix  (public)                               popp 01/08|
  *----------------------------------------------------------------------*/
 void LINALG::Assemble(Epetra_CrsMatrix& A, const Epetra_SerialDenseMatrix& Aele,

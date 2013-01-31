@@ -101,6 +101,21 @@ namespace LINALG
   void Export(const Epetra_MultiVector& source, Epetra_MultiVector& target);
 
   /*!
+  \brief Export a vector to a different map
+
+  Values of source are copied to target where maps don't have to match.
+  Prerequisite: Either the map of source OR the map of target has to be unique
+                (will be tested)
+  \warning When source is overlapping (and therefore target is unique), values
+           in the overlapping region are inserted into the target on a first come
+           first serve basis, meaning they should be equal in the source to
+           be deterministic
+  \param source (in) : source vector values are taken from
+  \param target (out): target vector values will be inserted in
+  */
+  void Export(const Epetra_IntVector& source, Epetra_IntVector& target);
+
+  /*!
   \brief Make Epetra_SerialDenseMatrix symmetric by averaging upper and lower traingular indices
 
   \param A (in/out): Matrix to be symmetrised
