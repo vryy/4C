@@ -45,7 +45,7 @@ Maintainer: Michael Gee
 #include "../linalg/linalg_utils.H"
 
 #include <Epetra_Time.h>
-#include <Isorropia_EpetraPartitioner.hpp>
+//#include <Isorropia_EpetraPartitioner.hpp>
 
 #include <iterator>
 
