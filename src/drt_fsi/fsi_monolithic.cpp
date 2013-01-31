@@ -611,25 +611,6 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   nlParams.set("Tol vel inc L2",  fsidyn.get<double>("TOL_VEL_INC_L2"));
   nlParams.set("Tol vel inc Inf", fsidyn.get<double>("TOL_VEL_INC_INF"));
 
-  nlParams.set("Tol dis res L2",  fsidyn.get<double>("CONVTOL"));
-//  nlParams.set("Tol dis res Inf", fsidyn.get<double>("CONVTOL"));
-//  nlParams.set("Tol dis inc L2",  fsidyn.get<double>("CONVTOL"));
-//  nlParams.set("Tol dis inc Inf", fsidyn.get<double>("CONVTOL"));
-  nlParams.set("Tol vel res L2",  fsidyn.get<double>("CONVTOL"));
-//  nlParams.set("Tol vel res Inf", fsidyn.get<double>("CONVTOL"));
-//  nlParams.set("Tol vel inc L2",  fsidyn.get<double>("CONVTOL"));
-//  nlParams.set("Tol vel inc Inf", fsidyn.get<double>("CONVTOL"));
-  nlParams.set("Tol pre res L2",  fsidyn.get<double>("CONVTOL"));
-//  nlParams.set("Tol pre res Inf", fsidyn.get<double>("CONVTOL"));
-//  nlParams.set("Tol pre inc L2",  fsidyn.get<double>("CONVTOL"));
-//  nlParams.set("Tol pre inc Inf", fsidyn.get<double>("CONVTOL"));
-  nlParams.set("Tol fsi res L2",  fsidyn.get<double>("CONVTOL"));
-//  nlParams.set("Tol fsi res Inf", fsidyn.get<double>("CONVTOL"));
-//  nlParams.set("Tol fsi inc L2",  fsidyn.get<double>("CONVTOL"));
-//  nlParams.set("Tol fsi inc Inf", fsidyn.get<double>("CONVTOL"));
-
-
-
   // sublists
 
   Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
