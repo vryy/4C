@@ -91,6 +91,15 @@ public:
                            bool set_object_label=true);
 
   /*!
+  \brief Standard Constructor allowing view on Epetra_SerialDenseMatrix and wrapping
+         SerialDenseMatrix(Epetra_DataAccess CV, double* A, int LDA, int NumRows, int NumCols,
+                           bool set_object_label=true);
+
+
+  */
+  SerialDenseMatrix(Epetra_SerialDenseMatrix& Source, Epetra_DataAccess CV, bool set_object_label=true);
+
+  /*!
   \brief Standard Copy Constructor wraps
          Epetra_SerialDenseMatrix(const SerialDenseMatrix& Source);
 

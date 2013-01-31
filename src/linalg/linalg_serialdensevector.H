@@ -90,11 +90,25 @@ public:
   SerialDenseVector(Epetra_DataAccess CV, double* Values, int Length);
 
   /*!
+  \brief Standard Constructor allowing view on Epetra_SerialDenseVector and wrapping
+         SerialDenseVector(Epetra_DataAccess CV, double* Values, int Length);
+
+  */
+  SerialDenseVector(Epetra_SerialDenseVector& Source, Epetra_DataAccess CV);
+
+  /*!
   \brief Standard Copy Constructor wraps
-         Epetra_SerialDenseVector(const SerialDenseVector& Source);
+         Epetra_SerialDenseVector(const Epetra_SerialDenseVector& Source);
 
   */
   SerialDenseVector(const SerialDenseVector& Source);
+
+  /*!
+  \brief Epetra_SerialDenseVector Copy Constructor wraps
+         Epetra_SerialDenseVector(const Epetra_SerialDenseVector& Source);
+
+  */
+  SerialDenseVector(const Epetra_SerialDenseVector& Source);
 
   /*!
   \brief Set length of this vector but do NOT initialize to zero

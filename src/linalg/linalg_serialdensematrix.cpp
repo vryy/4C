@@ -91,6 +91,18 @@ Epetra_SerialDenseMatrix(CV,A,LDA,NumRows,NumCols,false)
 
 
 /*----------------------------------------------------------------------*
+ | ctor (public)                                              nis Jan13 |
+ *----------------------------------------------------------------------*/
+LINALG::SerialDenseMatrix::SerialDenseMatrix(Epetra_SerialDenseMatrix& Source,
+                                             Epetra_DataAccess CV,
+                                             bool set_object_label) :
+Epetra_SerialDenseMatrix(CV, Source.A(), Source.LDA(), Source.M(), Source.N(), false)
+{
+  if (set_object_label) SetLabel("LINALG::SerialDenseMatrix");
+}
+
+
+/*----------------------------------------------------------------------*
  | copy-ctor (public)                                        mwgee 05/07|
  *----------------------------------------------------------------------*/
 LINALG::SerialDenseMatrix::SerialDenseMatrix(const SerialDenseMatrix& Source) :
@@ -100,11 +112,14 @@ Epetra_SerialDenseMatrix(Source)
 
 
 /*----------------------------------------------------------------------*
- | copy-ctor (public)                                        mwgee 05/07|
+ | copy-ctor (public)                                         nis Jan13 |
  *----------------------------------------------------------------------*/
-LINALG::SerialDenseMatrix::SerialDenseMatrix(const Epetra_SerialDenseMatrix& Source)
-  : Epetra_SerialDenseMatrix(Source)
+LINALG::SerialDenseMatrix::SerialDenseMatrix(const Epetra_SerialDenseMatrix& Source) :
+Epetra_SerialDenseMatrix(Source)
 {
+  if (Source.Label()) {
+    SetLabel("LINALG::SerialDenseMatrix");
+  }
 }
 
 

@@ -76,7 +76,7 @@ Epetra_SerialDenseVector()
 
 
 /*----------------------------------------------------------------------*
- | ctor (public)                                             mwgee 05/07|
+ | ctor (public)                                              nis Jan13 |
  *----------------------------------------------------------------------*/
 LINALG::SerialDenseVector::SerialDenseVector(Epetra_DataAccess CV,
                                                    double* Values,
@@ -86,7 +86,15 @@ Epetra_SerialDenseVector(CV,Values,Length)
   SetLabel("LINALG::SerialDenseVector");
 }
 
-
+/*----------------------------------------------------------------------*
+ | ctor (public)                                              nis Jan13 |
+ *----------------------------------------------------------------------*/
+LINALG::SerialDenseVector::SerialDenseVector(Epetra_SerialDenseVector& Source,
+                                             Epetra_DataAccess CV) :
+Epetra_SerialDenseVector(CV,Source.Values(),Source.Length())
+{
+  SetLabel("LINALG::SerialDenseVector");
+}
 
 /*----------------------------------------------------------------------*
  | copy-ctor (public)                                        mwgee 05/07|
@@ -96,6 +104,14 @@ Epetra_SerialDenseVector(Source)
 {
 }
 
+/*----------------------------------------------------------------------*
+ | copy-ctor (public)                                         nis Jan13 |
+ *----------------------------------------------------------------------*/
+LINALG::SerialDenseVector::SerialDenseVector(const Epetra_SerialDenseVector& Source) :
+Epetra_SerialDenseVector(Source)
+{
+  SetLabel("LINALG::SerialDenseVector");
+}
 
 /*----------------------------------------------------------------------*
  | dtor (public)                                             mwgee 05/07|
