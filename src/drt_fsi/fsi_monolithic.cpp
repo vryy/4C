@@ -390,7 +390,7 @@ void FSI::Monolithic::PrepareTimeloop()
   if (Comm().MyPID()==0)
   {
     (*log_) << "# num procs      = " << Comm().NumProc() << "\n"
-            << "# Method         = " << nlParams.sublist("Direction").get("Method","Newton") << "\n"
+            << "# Method         = " << nlParams.sublist("Direction").get<string>("Method") << "\n"
             << "# step | time | time/step | #nliter | res-norm | #liter\n"
             << "#\n"
       ;
@@ -460,8 +460,7 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
   NOX::Epetra::Vector noxSoln(initial_guess, NOX::Epetra::Vector::CreateView);
 
   // Create the linear system
-  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys =
-    CreateLinearSystem(nlParams, noxSoln, utils_);
+  Teuchos::RCP<NOX::Epetra::LinearSystem> linSys = CreateLinearSystem(nlParams, noxSoln, utils_);
 
   // Create the Group
   Teuchos::RCP<NOX::FSI::Group> grp =
@@ -497,9 +496,9 @@ void FSI::Monolithic::TimeStep(const Teuchos::RCP<NOX::Epetra::Interface::Requir
     (*log_) << Step()
             << "\t" << Time()
             << "\t" << timer.totalElapsedTime()
-            << "\t" << nlParams.sublist("Output").get("Nonlinear Iterations",0)
-            << "\t" << nlParams.sublist("Output").get("2-Norm of Residual", 0.)
-            << "\t" << lsParams.sublist("Output").get("Total Number of Linear Iterations",0)
+            << "\t" << nlParams.sublist("Output").get<int>("Nonlinear Iterations")
+            << "\t" << nlParams.sublist("Output").get<double>("2-Norm of Residual")
+            << "\t" << lsParams.sublist("Output").get<int>("Total Number of Linear Iterations")
       ;
     (*log_) << std::endl;
     lsParams.sublist("Output").set("Total Number of Linear Iterations",0);
@@ -586,9 +585,50 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   nlParams.set("Max Iterations", fsidyn.get<int>("ITEMAX"));
   //nlParams.set("Max Iterations", 1);
 
+  // ToDo: Remove the CONVTOL-tolerances and replace them by the single field
+  //       tolerances given just below also for lung- and constraint-FSI
+  //
+  // Currently, we have to keep the parameter CONVTOL for constraint FSI
   nlParams.set("Norm abs pres", fsidyn.get<double>("CONVTOL"));
   nlParams.set("Norm abs vel",  fsidyn.get<double>("CONVTOL"));
   nlParams.set("Norm abs disp", fsidyn.get<double>("CONVTOL"));
+
+  // set tolerances for nonlinear solver
+  nlParams.set("Tol dis res L2",  fsidyn.get<double>("TOL_DIS_RES_L2"));
+  nlParams.set("Tol dis res Inf", fsidyn.get<double>("TOL_DIS_RES_INF"));
+  nlParams.set("Tol dis inc L2",  fsidyn.get<double>("TOL_DIS_INC_L2"));
+  nlParams.set("Tol dis inc Inf", fsidyn.get<double>("TOL_DIS_INC_INF"));
+  nlParams.set("Tol fsi res L2",  fsidyn.get<double>("TOL_FSI_RES_L2"));
+  nlParams.set("Tol fsi res Inf", fsidyn.get<double>("TOL_FSI_RES_INF"));
+  nlParams.set("Tol fsi inc L2",  fsidyn.get<double>("TOL_FSI_INC_L2"));
+  nlParams.set("Tol fsi inc Inf", fsidyn.get<double>("TOL_FSI_INC_INF"));
+  nlParams.set("Tol pre res L2",  fsidyn.get<double>("TOL_PRE_RES_L2"));
+  nlParams.set("Tol pre res Inf", fsidyn.get<double>("TOL_PRE_RES_INF"));
+  nlParams.set("Tol pre inc L2",  fsidyn.get<double>("TOL_PRE_INC_L2"));
+  nlParams.set("Tol pre inc Inf", fsidyn.get<double>("TOL_PRE_INC_INF"));
+  nlParams.set("Tol vel res L2",  fsidyn.get<double>("TOL_VEL_RES_L2"));
+  nlParams.set("Tol vel res Inf", fsidyn.get<double>("TOL_VEL_RES_INF"));
+  nlParams.set("Tol vel inc L2",  fsidyn.get<double>("TOL_VEL_INC_L2"));
+  nlParams.set("Tol vel inc Inf", fsidyn.get<double>("TOL_VEL_INC_INF"));
+
+  nlParams.set("Tol dis res L2",  fsidyn.get<double>("CONVTOL"));
+//  nlParams.set("Tol dis res Inf", fsidyn.get<double>("CONVTOL"));
+//  nlParams.set("Tol dis inc L2",  fsidyn.get<double>("CONVTOL"));
+//  nlParams.set("Tol dis inc Inf", fsidyn.get<double>("CONVTOL"));
+  nlParams.set("Tol vel res L2",  fsidyn.get<double>("CONVTOL"));
+//  nlParams.set("Tol vel res Inf", fsidyn.get<double>("CONVTOL"));
+//  nlParams.set("Tol vel inc L2",  fsidyn.get<double>("CONVTOL"));
+//  nlParams.set("Tol vel inc Inf", fsidyn.get<double>("CONVTOL"));
+  nlParams.set("Tol pre res L2",  fsidyn.get<double>("CONVTOL"));
+//  nlParams.set("Tol pre res Inf", fsidyn.get<double>("CONVTOL"));
+//  nlParams.set("Tol pre inc L2",  fsidyn.get<double>("CONVTOL"));
+//  nlParams.set("Tol pre inc Inf", fsidyn.get<double>("CONVTOL"));
+  nlParams.set("Tol fsi res L2",  fsidyn.get<double>("CONVTOL"));
+//  nlParams.set("Tol fsi res Inf", fsidyn.get<double>("CONVTOL"));
+//  nlParams.set("Tol fsi inc L2",  fsidyn.get<double>("CONVTOL"));
+//  nlParams.set("Tol fsi inc Inf", fsidyn.get<double>("CONVTOL"));
+
+
 
   // sublists
 

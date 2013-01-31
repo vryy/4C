@@ -32,21 +32,35 @@ PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       zero_acceleration
 TIMEINTEGR                      BDF2
 -----------------------------------------------------------------FSI DYNAMIC
-CONVTOL                         1e-10
+ADAPTIVEDIST                    0.001
+BASETOL                         1e-6
 COUPALGO                        iter_monolithicfluidsplit
 COUPMETHOD                      conforming
 ITEMAX                          10
 LINEARBLOCKSOLVER               PreconditionedKrylov
-MAXTIME                         1
-NORMCOMBI_RESFINC               And
-NORM_INC                        Rel
-NORM_RESF                       Rel
+MAXTIME                         1.0
 NUMSTEP                         10
 RESTARTEVRY                     2
 SECONDORDER                     yes
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                No
 TIMESTEP                        0.1
+TOL_DIS_INC_INF                 1e-08
+TOL_DIS_INC_L2                  1e-10
+TOL_DIS_RES_INF                 1e-08
+TOL_DIS_RES_L2                  1e-10
+TOL_FSI_INC_INF                 1e-08
+TOL_FSI_INC_L2                  1e-10
+TOL_FSI_RES_INF                 1e-08
+TOL_FSI_RES_L2                  1e-10
+TOL_PRE_INC_INF                 1e-08
+TOL_PRE_INC_L2                  1e-10
+TOL_PRE_RES_INF                 1e-08
+TOL_PRE_RES_L2                  1e-10
+TOL_VEL_INC_INF                 1e-08
+TOL_VEL_INC_L2                  1e-10
+TOL_VEL_RES_INF                 1e-08
+TOL_VEL_RES_L2                  1e-10
 UPRES                           1
 -----------------------------------------------------------------PROBLEM TYP
 NUMFIELD                        3
@@ -200,8 +214,8 @@ ALE DIS ale NODE 12 QUANTITY dispx VALUE -6.66666666e-01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 5 QUANTITY velx VALUE -2.0 TOLERANCE 1e-8
 FLUID DIS fluid NODE 16 QUANTITY pressure VALUE 4.0 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE -1.0 TOLERANCE 1e-8
-FSI NODE 16 QUANTITY lambdax VALUE 1.00032084 TOLERANCE 1e-8
-FSI NODE 16 QUANTITY lambday VALUE 5.928652882e-01 TOLERANCE 1e-8
-FSI NODE 16 QUANTITY lambdaz VALUE 5.928652882e-01 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambdax VALUE 1.000000000 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambday VALUE 5.925925925e-01 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambdaz VALUE 5.925925925e-01 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

@@ -51,7 +51,6 @@ TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
 -----------------------------------------------------------------FSI DYNAMIC
-CONVTOL                         1e-09
 COUPALGO                        iter_mortar_monolithicstructuresplit
 COUPMETHOD                      mtr
 COUPVARIABLE                    Displacement
@@ -69,6 +68,22 @@ SECONDORDER                     Yes
 SHAPEDERIVATIVES                Yes
 TIMESTEP                        0.05
 UPRES                           1
+TOL_DIS_INC_INF                 1e-09
+TOL_DIS_INC_L2                  1e-09
+TOL_DIS_RES_INF                 1e-09
+TOL_DIS_RES_L2                  1e-09
+TOL_FSI_INC_INF                 1e-09
+TOL_FSI_INC_L2                  1e-09
+TOL_FSI_RES_INF                 1e-09
+TOL_FSI_RES_L2                  1e-09
+TOL_PRE_INC_INF                 1e-09
+TOL_PRE_INC_L2                  1e-09
+TOL_PRE_RES_INF                 1e-09
+TOL_PRE_RES_L2                  1e-09
+TOL_VEL_INC_INF                 1e-09
+TOL_VEL_INC_L2                  1e-09
+TOL_VEL_RES_INF                 1e-09
+TOL_VEL_RES_L2                  1e-09
 -------------------------------------------------------------MORTAR COUPLING
 PARALLEL_REDIST                 No
 SHAPEFCN                        Dual
@@ -3519,10 +3534,10 @@ NODE 1132 COORD 1.00000000e+00 1.10000002e+00 -5.00000007e-02
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 60 QUANTITY dispy VALUE -3.28428084667884310e-05 TOLERANCE 1e-9
-FLUID DIS fluid NODE 589 QUANTITY velx VALUE 3.00077758649603649e-05 TOLERANCE 1e-9
-FLUID DIS fluid NODE 589 QUANTITY vely VALUE -6.97286355327307161e-04 TOLERANCE 1e-9
-FLUID DIS fluid NODE 589 QUANTITY velz VALUE 0.0 TOLERANCE 1e-9
-FLUID DIS fluid NODE 589 QUANTITY pressure VALUE 6.36031034263605157e-03 TOLERANCE 1e-7
+STRUCTURE DIS structure NODE 60 QUANTITY dispy VALUE -3.28423205315e-05 TOLERANCE 1e-13
+FLUID DIS fluid NODE 589 QUANTITY velx VALUE 3.00088907326e-05 TOLERANCE 1e-13
+FLUID DIS fluid NODE 589 QUANTITY vely VALUE -6.97276265617e-04 TOLERANCE 1e-12
+FLUID DIS fluid NODE 589 QUANTITY velz VALUE 0.0 TOLERANCE 1e-8
+FLUID DIS fluid NODE 589 QUANTITY pressure VALUE 6.36024615347e-03 TOLERANCE 1e-11
 -------------------------------------------------------------------------END
 //                              END

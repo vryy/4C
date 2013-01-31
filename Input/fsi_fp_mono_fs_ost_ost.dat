@@ -34,7 +34,8 @@ PREDICTOR                       constant_acceleration
 THETA                           1.0
 TIMEINTEGR                      One_Step_Theta
 -----------------------------------------------------------------FSI DYNAMIC
-CONVTOL                         1e-2
+ADAPTIVEDIST                    0.01
+BASETOL                         1e-06
 COUPALGO                        iter_monolithicfluidsplit
 COUPMETHOD                      conforming
 ITEMAX                          10
@@ -50,6 +51,22 @@ SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                No
 TIMESTEP                        0.1
 UPRES                           1
+TOL_DIS_INC_INF                 1e-08
+TOL_DIS_INC_L2                  1e-10
+TOL_DIS_RES_INF                 1e-08
+TOL_DIS_RES_L2                  1e-10
+TOL_FSI_INC_INF                 1e-08
+TOL_FSI_INC_L2                  1e-10
+TOL_FSI_RES_INF                 1e-08
+TOL_FSI_RES_L2                  1e-10
+TOL_PRE_INC_INF                 1e-08
+TOL_PRE_INC_L2                  1e-10
+TOL_PRE_RES_INF                 1e-08
+TOL_PRE_RES_L2                  1e-10
+TOL_VEL_INC_INF                 1e-08
+TOL_VEL_INC_L2                  1e-10
+TOL_VEL_RES_INF                 1e-08
+TOL_VEL_RES_L2                  1e-10
 -----------------------------------------------------------------PROBLEM TYP
 NUMFIELD                        3
 PROBLEMTYP                      Fluid_Structure_Interaction
@@ -192,13 +209,13 @@ NODE 24 COORD 2.5000000000000000e+00 5.0000000000000000e-01 5.0000000000000000e-
 3 FLUID3 HEX8 5 6 7 8 9 10 11 12 MAT 2 NA ALE GP 2 2 2
 4 FLUID3 HEX8 9 10 11 12 13 14 15 16 MAT 2 NA ALE GP 2 2 2
 ----------------------------------------------------------RESULT DESCRIPTION
-ALE DIS ale NODE 5 QUANTITY dispx VALUE -3.33333333e-01 TOLERANCE 1e-8
-ALE DIS ale NODE 12 QUANTITY dispx VALUE -6.66666666e-01 TOLERANCE 1e-8
+ALE DIS ale NODE 5 QUANTITY dispx VALUE -3.33333333e-01 TOLERANCE 1e-9
+ALE DIS ale NODE 12 QUANTITY dispx VALUE -6.66666666e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 5 QUANTITY velx VALUE -2.0 TOLERANCE 1e-8
 FLUID DIS fluid NODE 16 QUANTITY pressure VALUE 4.0 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE -1.0 TOLERANCE 1e-8
-FSI NODE 16 QUANTITY lambdax VALUE 1.7457252626 TOLERANCE 1e-8
-FSI NODE 16 QUANTITY lambday VALUE 1.1850215742 TOLERANCE 1e-8
-FSI NODE 16 QUANTITY lambdaz VALUE 1.1850215742 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambdax VALUE 1.000000000 TOLERANCE 1e-8
+FSI NODE 16 QUANTITY lambday VALUE 5.925925925e-01 TOLERANCE 1e-9
+FSI NODE 16 QUANTITY lambdaz VALUE 5.925925925e-01 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END

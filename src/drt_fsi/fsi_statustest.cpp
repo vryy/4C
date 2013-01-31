@@ -136,23 +136,11 @@ std::ostream& NOX::FSI::GenericNormF::print(std::ostream& stream, int indent) co
   for (int j = 0; j < indent; j ++)
     stream << ' ';
 
-  stream << status_
-         << name_ << "-Norm = " << NOX::Utils::sciformat(normF_,3)
-         << " < " << NOX::Utils::sciformat(trueTolerance_, 3)
-         << "\n";
+  stream << status_ // test status
+         << name_   // what is tested?
+         << " ";
 
-  for (int j = 0; j < indent; j ++)
-    stream << ' ';
-
-  stream << std::setw(13) << " (";
-
-  if (scaleType_ == Scaled)
-    stream << "Length-Scaled";
-  else
-    stream << "Unscaled";
-
-  stream << " ";
-
+  // check which norm is used and print its name
   if (normType_ == NOX::Abstract::Vector::TwoNorm)
     stream << "Two-Norm";
   else if (normType_ == NOX::Abstract::Vector::OneNorm)
@@ -160,14 +148,49 @@ std::ostream& NOX::FSI::GenericNormF::print(std::ostream& stream, int indent) co
   else if (normType_ == NOX::Abstract::Vector::MaxNorm)
     stream << "Max-Norm";
 
-  stream << ", ";
+  // print current value of norm and given tolerance
+  stream << " = " << NOX::Utils::sciformat(normF_, 3)
+         << " < " << NOX::Utils::sciformat(trueTolerance_, 3)
+         << "\n";
 
-  if (toleranceType_ == Absolute)
-    stream << "Absolute Tolerance";
-  else
-    stream << "Relative Tolerance";
-
-  stream << ")\n";
+//  for (int j = 0; j < indent; j ++)
+//    stream << ' ';
+//
+//  stream << status_
+//         << name_ << "-Norm = " << NOX::Utils::sciformat(normF_,3)
+//         << " < " << NOX::Utils::sciformat(trueTolerance_, 3)
+//         << "\n";
+//
+//  for (int j = 0; j < indent; j ++)
+//    stream << ' ';
+//
+//  stream << std::setw(13) << " (";
+//
+//  if (scaleType_ == Scaled)
+//    stream << "Length-Scaled";
+//  else
+//    stream << "Unscaled";
+//
+//  stream << " ";
+//
+//  if (normType_ == NOX::Abstract::Vector::TwoNorm)
+//    stream << "Two-Norm";
+//  else if (normType_ == NOX::Abstract::Vector::OneNorm)
+//    stream << "One-Norm";
+//  else if (normType_ == NOX::Abstract::Vector::MaxNorm)
+//    stream << "Max-Norm";
+//
+//  // we do not have to print this, sinve we know, that in the nonlinear solver
+//  // all tolerances are absolute tolerances
+//  //                                                          mayt.mt 01/2012
+////  stream << ", ";
+////
+////  if (toleranceType_ == Absolute)
+////    stream << "Absolute Tolerance";
+////  else
+////    stream << "Relative Tolerance";
+//
+//  stream << ")\n";
 
   return stream;
 }
@@ -421,14 +444,65 @@ NOX::StatusTest::StatusType NOX::FSI::GenericNormUpdate::getStatus() const
 /*----------------------------------------------------------------------*/
 std::ostream& NOX::FSI::GenericNormUpdate::print(std::ostream& stream, int indent) const
 {
-  for (int j = 0; j < indent; j ++)
-    stream << ' ';
-  stream << status_
-         << "Absolute Update-Norm = "
-         << NOX::Utils::sciformat(normUpdate_, 3)
-	 << " < "
-         << NOX::Utils::sciformat(tolerance_, 3)
-         << endl;
+    for (int j = 0; j < indent; j ++)
+      stream << ' ';
+
+    stream << status_ // test status
+           << name_   // what is tested?
+           << " ";
+
+    // check which norm is used and print its name
+    if (normType_ == NOX::Abstract::Vector::TwoNorm)
+      stream << "Two-Norm";
+    else if (normType_ == NOX::Abstract::Vector::OneNorm)
+      stream << "One-Norm";
+    else if (normType_ == NOX::Abstract::Vector::MaxNorm)
+      stream << "Max-Norm";
+
+    // print current value of norm and given tolerance
+    stream << " = " << NOX::Utils::sciformat(normUpdate_, 3)
+           << " < " << NOX::Utils::sciformat(tolerance_, 3)
+           << "\n";
+
+
+//  for (int j = 0; j < indent; j ++)
+//    stream << ' ';
+//  stream << status_
+//         << name_ << "-Norm = " << NOX::Utils::sciformat(normUpdate_, 3)
+//	       << " < " << NOX::Utils::sciformat(tolerance_, 3)
+//         << "\n";
+//
+////  for (int j = 0; j < indent; j ++)
+////    stream << ' ';
+////
+////  stream << std::setw(13) << " (";
+//
+//  if (scaleType_ == Scaled)
+////    stream << "Length-Scaled";
+//  else
+//    dserror("Use length-scaled norm!"); //stream << "Unscaled";
+//
+//  stream << " ";
+//
+//  if (normType_ == NOX::Abstract::Vector::TwoNorm)
+//    stream << "Two-Norm";
+//  else if (normType_ == NOX::Abstract::Vector::OneNorm)
+//    stream << "One-Norm";
+//  else if (normType_ == NOX::Abstract::Vector::MaxNorm)
+//    stream << "Max-Norm";
+//
+//  // we do not have to print this, sinve we know, that in the nonlinear solver
+//  // all tolerances are absolute tolerances
+//  //                                                          mayt.mt 01/2012
+////  stream << ", ";
+////
+////  if (toleranceType_ == Absolute)
+////    stream << "Absolute Tolerance";
+////  else
+////    stream << "Relative Tolerance";
+//
+//  stream << ")\n";
+
   return stream;
 }
 
@@ -448,6 +522,20 @@ double NOX::FSI::GenericNormUpdate::getTolerance() const
   return tolerance_;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+NOX::FSI::PartialNormUpdate::PartialNormUpdate(std::string name,
+                                               const LINALG::MultiMapExtractor& extractor,
+                                               int blocknum,
+                                               double tolerance,
+                                               NOX::Abstract::Vector::NormType ntype,
+                                               ScaleType stype)
+  : GenericNormUpdate(name,tolerance,ntype,stype),
+    extractor_(extractor),
+    blocknum_(blocknum)
+{
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

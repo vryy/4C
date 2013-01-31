@@ -52,9 +52,25 @@ COUPALGO                        iter_monolithicfluidsplit
 PCITER                          1 1 1
 PCOMEGA                         1.00 1.00 1.00
 ITEMAX                          100
-CONVTOL                         1.0E-6
-BASETOL                         1.0E-3
+ADAPTIVEDIST                    0.001
+BASETOL                         1.0E-6
 SHAPEDERIVATIVES                No
+TOL_DIS_INC_INF                 1e-06
+TOL_DIS_INC_L2                  1e-06
+TOL_DIS_RES_INF                 1e-06
+TOL_DIS_RES_L2                  1e-06
+TOL_FSI_INC_INF                 1e-06
+TOL_FSI_INC_L2                  1e-06
+TOL_FSI_RES_INF                 1e-06
+TOL_FSI_RES_L2                  1e-06
+TOL_PRE_INC_INF                 1e-06
+TOL_PRE_INC_L2                  1e-06
+TOL_PRE_RES_INF                 1e-06
+TOL_PRE_RES_L2                  1e-06
+TOL_VEL_INC_INF                 1e-06
+TOL_VEL_INC_L2                  1e-06
+TOL_VEL_RES_INF                 1e-06
+TOL_VEL_RES_L2                  1e-06
 -----------------------------------------------------------------ALE DYNAMIC
 LINEAR_SOLVER                   1
 ALE_TYPE                        classic_lin

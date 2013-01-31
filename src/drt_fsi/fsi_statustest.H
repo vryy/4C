@@ -188,7 +188,7 @@ namespace FSI
   /// Norm of inner dofs of one of our fields
   /*!
 
-    For FSI status tests independant norms of the inner dofs of
+    For FSI status tests independent norms of the inner dofs of
     structural and fluid field are required.
 
     \author u.kue
@@ -242,6 +242,12 @@ namespace FSI
 
 
   /// Copy of NOX::StatusTest::NormUpdate
+  /*!
+   *  Compute norm of the iterative solution increment.
+   *
+   *  The iterative solution increment is computed as difference of solutions
+   *  of two subsequent nonlinear iterations.
+   */
   class GenericNormUpdate : public NOX::StatusTest::Generic
   {
   public:
@@ -324,11 +330,23 @@ namespace FSI
   class PartialNormUpdate : public GenericNormUpdate
   {
   public:
+    //! Constructor for absolute norm
+    /*! This constructor defaults to the \c Absolute tolerance type. */
     PartialNormUpdate(std::string name,
                       const LINALG::MultiMapExtractor& extractor,
                       int blocknum,
                       double tolerance,
+                      NOX::Abstract::Vector::NormType ntype = NOX::Abstract::Vector::TwoNorm,
                       ScaleType stype = Scaled);
+
+    //! Constructor for absolute norm
+    /*! This constructor defaults to the \c Absolute ToleranceType and \c TWO NormType. */
+    PartialNormUpdate(std::string name,
+                          const LINALG::MultiMapExtractor& extractor,
+                          int blocknum,
+                          double tolerance,
+                          ScaleType stype = Scaled);
+
   protected:
 
     /// compute the norm of a given vector

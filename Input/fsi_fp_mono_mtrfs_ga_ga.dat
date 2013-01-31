@@ -36,16 +36,14 @@ PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       steady_state
 TIMEINTEGR                      Np_Gen_Alpha
 --------------------------------------------------------FSI DYNAMIC
-CONVTOL                         1e-10
+ADAPTIVEDIST                    0.01
+BASETOL                         1e-06
 COUPALGO                        iter_mortar_monolithicfluidsplit
 COUPMETHOD                      mtr
 INFNORMSCALING                  Yes
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
-MAXTIME                         1
-NORMCOMBI_RESFINC               And
-NORM_INC                        Rel
-NORM_RESF                       Rel
+MAXTIME                         1.0
 NUMSTEP                         10
 PCITER                          1 1 1
 PCOMEGA                         1.0 1.0 1.0
@@ -56,6 +54,22 @@ SHAPEDERIVATIVES                yes
 SLIDEALEPROJ                    None
 SYMMETRICPRECOND                No
 TIMESTEP                        0.1
+TOL_DIS_INC_INF                 1e-08
+TOL_DIS_INC_L2                  1e-10
+TOL_DIS_RES_INF                 1e-08
+TOL_DIS_RES_L2                  1e-10
+TOL_FSI_INC_INF                 1e-08
+TOL_FSI_INC_L2                  1e-10
+TOL_FSI_RES_INF                 1e-08
+TOL_FSI_RES_L2                  1e-10
+TOL_PRE_INC_INF                 1e-08
+TOL_PRE_INC_L2                  1e-10
+TOL_PRE_RES_INF                 1e-08
+TOL_PRE_RES_L2                  1e-10
+TOL_VEL_INC_INF                 1e-08
+TOL_VEL_INC_L2                  1e-10
+TOL_VEL_RES_INF                 1e-08
+TOL_VEL_RES_L2                  1e-10
 UPRES                           1
 -----------------------------------------------------------------IO
 ALE_DISP                        No
@@ -501,7 +515,7 @@ FLUID DIS fluid NODE 43 QUANTITY velx VALUE -1.900001272e+00 TOLERANCE 1e-8
 FLUID DIS fluid NODE 43 QUANTITY pressure VALUE 1.333336236e+00 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 58 QUANTITY dispx VALUE -9.999994475e-01 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 106 QUANTITY dispx VALUE -9.99998895e-01 TOLERANCE 1e-9
-FSI NODE 1 QUANTITY lambdax VALUE 3.782246824 TOLERANCE 1e-8
-FSI NODE 34 QUANTITY lambdax VALUE 3.782244951 TOLERANCE 1e-8
+FSI NODE 1 QUANTITY lambdax VALUE 3.7821840650 TOLERANCE 1e-8
+FSI NODE 34 QUANTITY lambdax VALUE 3.7821840650 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END

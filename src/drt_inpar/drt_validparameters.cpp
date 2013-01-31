@@ -621,6 +621,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;
 
+  // define some tuples that are often used to account for different writing of certain key words
   Teuchos::Array<std::string> yesnotuple = tuple<std::string>("Yes","No","yes","no","YES","NO");
   Teuchos::Array<int> yesnovalue = tuple<int>(true,false,true,false,true,false);
 
@@ -4552,11 +4553,34 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  &fsidyn);
 
   setStringToIntegralParameter<int>("NORMCOMBI_RESFINC","And","binary operator to combine primary variables and residual force values",
-                               tuple<std::string>("And"),
-                               tuple<int>(
-                                 INPAR::FSI::bop_and
-                                 ),
+                                 tuple<std::string>(
+                                   "And"),
+                                 tuple<int>(
+                                 INPAR::FSI::bop_and),
                                &fsidyn);
+
+  // tolerances for convergence check of nonlinear solver in monolithic FSI
+  // structure displacements
+  DoubleParameter("TOL_DIS_RES_L2",1e-6,"Absolute tolerance for structure displacement residual in L2-norm",&fsidyn);
+  DoubleParameter("TOL_DIS_RES_INF",1e-6,"Absolute tolerance for structure displacement residual in Inf-norm",&fsidyn);
+  DoubleParameter("TOL_DIS_INC_L2",1e-6,"Absolute tolerance for structure displacement increment in L2-norm",&fsidyn);
+  DoubleParameter("TOL_DIS_INC_INF",1e-6,"Absolute tolerance for structure displacement increment in Inf-norm",&fsidyn);
+  // interface tolerances
+  DoubleParameter("TOL_FSI_RES_L2",1e-6,"Absolute tolerance for interface residual in L2-norm",&fsidyn);
+  DoubleParameter("TOL_FSI_RES_INF",1e-6,"Absolute tolerance for interface residual in Inf-norm",&fsidyn);
+  DoubleParameter("TOL_FSI_INC_L2",1e-6,"Absolute tolerance for interface increment in L2-norm",&fsidyn);
+  DoubleParameter("TOL_FSI_INC_INF",1e-6,"Absolute tolerance for interface increment in Inf-norm",&fsidyn);
+  // fluid pressure
+  DoubleParameter("TOL_PRE_RES_L2",1e-6,"Absolute tolerance for fluid pressure residual in L2-norm",&fsidyn);
+  DoubleParameter("TOL_PRE_RES_INF",1e-6,"Absolute tolerance for fluid pressure residual in Inf-norm",&fsidyn);
+  DoubleParameter("TOL_PRE_INC_L2",1e-6,"Absolute tolerance for fluid pressure increment in L2-norm",&fsidyn);
+  DoubleParameter("TOL_PRE_INC_INF",1e-6,"Absolute tolerance for fluid pressure increment in Inf-norm",&fsidyn);
+  // fluid velocities
+  DoubleParameter("TOL_VEL_RES_L2",1e-6,"Absolute tolerance for fluid velocity residual in L2-norm",&fsidyn);
+  DoubleParameter("TOL_VEL_RES_INF",1e-6,"Absolute tolerance for fluid velocity residual in Inf-norm",&fsidyn);
+  DoubleParameter("TOL_VEL_INC_L2",1e-6,"Absolute tolerance for fluid velocity increment in L2-norm",&fsidyn);
+  DoubleParameter("TOL_VEL_INC_INF",1e-6,"Absolute tolerance for fluid velocity increment in Inf-norm",&fsidyn);
+
 
   // monolithic preconditioner parameter
 

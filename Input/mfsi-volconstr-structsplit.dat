@@ -85,6 +85,22 @@ TIMESTEP                        0.05
 UPRES                           1
 SHAPEDERIVATIVES                Yes
 SECONDORDER                     No
+TOL_DIS_INC_INF                 1e-08
+TOL_DIS_INC_L2                  1e-08
+TOL_DIS_RES_INF                 1e-08
+TOL_DIS_RES_L2                  1e-08
+TOL_FSI_INC_INF                 1e-08
+TOL_FSI_INC_L2                  1e-08
+TOL_FSI_RES_INF                 1e-08
+TOL_FSI_RES_L2                  1e-08
+TOL_PRE_INC_INF                 1e-08
+TOL_PRE_INC_L2                  1e-08
+TOL_PRE_RES_INF                 1e-08
+TOL_PRE_RES_L2                  1e-08
+TOL_VEL_INC_INF                 1e-08
+TOL_VEL_INC_L2                  1e-08
+TOL_VEL_RES_INF                 1e-08
+TOL_VEL_RES_L2                  1e-08
 ------------------------------------------------------FSI DYNAMIC/CONSTRAINT
 ALPHA                           0.8
 SIMPLEITER                      2
@@ -154,9 +170,9 @@ FUNCT1 EXPR 0 0 0 FUNCTION (x*x*y*y-4*x*x-4*y*y+16)/16
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 237 QUANTITY dispx VALUE 9.004108385e-04 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 237 QUANTITY dispy VALUE 1.438538726e-03 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 237 QUANTITY dispz VALUE -6.858572604e-04 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 237 QUANTITY dispx VALUE 9.00410837615e-04 TOLERANCE 1e-12
+STRUCTURE DIS structure NODE 237 QUANTITY dispy VALUE 1.43853872518e-03 TOLERANCE 1e-11
+STRUCTURE DIS structure NODE 237 QUANTITY dispz VALUE -6.85857279512e-04 TOLERANCE 1e-12
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          2

@@ -35,21 +35,35 @@ PHYSICAL_TYPE                   Incompressible
 PREDICTOR                       constant_acceleration
 TIMEINTEGR                      Np_Gen_Alpha
 -----------------------------------------------------------------FSI DYNAMIC
-CONVTOL                         1e-10
+ADAPTIVEDIST                    0.01
+BASETOL                         1e-06
 COUPALGO                        iter_monolithicstructuresplit
 COUPMETHOD                      conforming
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
 MAXTIME                         1.0
-NORMCOMBI_RESFINC               And
-NORM_INC                        Rel
-NORM_RESF                       Rel
 NUMSTEP                         10
 RESTARTEVRY                     1
 SECONDORDER                     no
 SHAPEDERIVATIVES                yes
 SYMMETRICPRECOND                No
 TIMESTEP                        0.1
+TOL_DIS_INC_INF                 1e-06
+TOL_DIS_INC_L2                  1e-06
+TOL_DIS_RES_INF                 1e-06
+TOL_DIS_RES_L2                  1e-06
+TOL_FSI_INC_INF                 1e-06
+TOL_FSI_INC_L2                  1e-06
+TOL_FSI_RES_INF                 1e-06
+TOL_FSI_RES_L2                  1e-06
+TOL_PRE_INC_INF                 1e-06
+TOL_PRE_INC_L2                  1e-06
+TOL_PRE_RES_INF                 1e-06
+TOL_PRE_RES_L2                  1e-06
+TOL_VEL_INC_INF                 1e-06
+TOL_VEL_INC_L2                  1e-06
+TOL_VEL_RES_INF                 1e-06
+TOL_VEL_RES_L2                  1e-06
 UPRES                           1
 -----------------------------------------------------------------PROBLEM TYP
 NUMFIELD                        3
@@ -201,8 +215,8 @@ ALE DIS ale NODE 11 QUANTITY dispx VALUE -6.666666666e-01 TOLERANCE 1e-8
 FLUID DIS fluid NODE 5 QUANTITY velx VALUE -2.7099999999 TOLERANCE 1e-8
 FLUID DIS fluid NODE 16 QUANTITY pressure VALUE 1.079999999e+01 TOLERANCE 1e-7
 STRUCTURE DIS structure NODE 24 QUANTITY dispx VALUE -9.99999999999e-01 TOLERANCE 1e-8
-FSI NODE 20 QUANTITY lambdax VALUE 2.72404996733 TOLERANCE 1e-8
-FSI NODE 20 QUANTITY lambday VALUE -1.16774124541 TOLERANCE 1e-8
-FSI NODE 20 QUANTITY lambdaz VALUE -1.16774766004 TOLERANCE 1e-8
+FSI NODE 20 QUANTITY lambdax VALUE 2.7240205502 TOLERANCE 1e-8
+FSI NODE 20 QUANTITY lambday VALUE -1.1677431268 TOLERANCE 1e-8
+FSI NODE 20 QUANTITY lambdaz VALUE -1.1677582246 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END

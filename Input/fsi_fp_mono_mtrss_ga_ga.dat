@@ -33,20 +33,17 @@ GRIDVEL                         2
 LINEAR_SOLVER                   1
 NONLINITER                      Newton
 PHYSICAL_TYPE                   Incompressible
-PREDICTOR                       steady_state
 THETA                           0.66
 TIMEINTEGR                      Np_Gen_Alpha
 --------------------------------------------------------FSI DYNAMIC
-CONVTOL                         1.0e-10
+ADAPTIVEDIST                    0.01
+BASETOL                         1e-06
 COUPALGO                        iter_mortar_monolithicstructuresplit
 COUPMETHOD                      mtr
 INFNORMSCALING                  Yes
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
-MAXTIME                         1
-NORMCOMBI_RESFINC               And
-NORM_INC                        Rel
-NORM_RESF                       Rel
+MAXTIME                         1.0
 NUMSTEP                         10
 PCITER                          1 1 1
 PCOMEGA                         1.0 1.0 1.0
@@ -57,6 +54,22 @@ SHAPEDERIVATIVES                yes
 SLIDEALEPROJ                    None
 SYMMETRICPRECOND                No
 TIMESTEP                        0.1
+TOL_DIS_INC_INF                 1e-08
+TOL_DIS_INC_L2                  1e-10
+TOL_DIS_RES_INF                 1e-08
+TOL_DIS_RES_L2                  1e-10
+TOL_FSI_INC_INF                 1e-08
+TOL_FSI_INC_L2                  1e-10
+TOL_FSI_RES_INF                 1e-08
+TOL_FSI_RES_L2                  1e-10
+TOL_PRE_INC_INF                 1e-08
+TOL_PRE_INC_L2                  1e-10
+TOL_PRE_RES_INF                 1e-08
+TOL_PRE_RES_L2                  1e-10
+TOL_VEL_INC_INF                 1e-08
+TOL_VEL_INC_L2                  1e-10
+TOL_VEL_RES_INF                 1e-08
+TOL_VEL_RES_L2                  1e-10
 UPRES                           1
 -----------------------------------------------------------------IO
 ALE_DISP                        No
@@ -494,15 +507,15 @@ NODE 108    COORD 1.5000000000000000e+00  1.0000000000000000e+00  5.000000000000
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-ALE DIS ale NODE 1 QUANTITY dispx VALUE -9.99984128055e-01 TOLERANCE 1e-8
-ALE DIS ale NODE 43 QUANTITY dispx VALUE -3.33328042691e-01 TOLERANCE 1e-8
+ALE DIS ale NODE 1 QUANTITY dispx VALUE -9.99984128055e-01 TOLERANCE 1e-9
+ALE DIS ale NODE 43 QUANTITY dispx VALUE -3.33328042691e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 1 QUANTITY velx VALUE -1.90001590582e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 1 QUANTITY pressure VALUE 4.00003569203e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 43 QUANTITY velx VALUE -1.90001589228e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 43 QUANTITY pressure VALUE 1.33334537967e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 1 QUANTITY pressure VALUE 4.0000344382e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 43 QUANTITY velx VALUE -1.9000159046e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 43 QUANTITY pressure VALUE 1.3333448127e+00 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 58 QUANTITY dispx VALUE -9.99992064108e-01 TOLERANCE 1e-9
 STRUCTURE DIS structure NODE 106 QUANTITY dispx VALUE -9.99984128085e-01 TOLERANCE 1e-9
-FSI NODE 70 QUANTITY lambdax VALUE 3.80917742343e+00 TOLERANCE 1e-8
-FSI NODE 105 QUANTITY lambdax VALUE 3.80917796182e+00 TOLERANCE 1e-8
+FSI NODE 70 QUANTITY lambdax VALUE 3.809173098e+00 TOLERANCE 1e-8
+FSI NODE 105 QUANTITY lambdax VALUE 3.809173637e+00 TOLERANCE 1e-8
 ---------------------------------------------------------------END
 // END

@@ -58,9 +58,24 @@ UPRES                           1
 RESTARTEVRY                     2
 COUPALGO                        iter_mortar_monolithicfluidsplit
 ITEMAX                          100
-CONVTOL                         1.0E-11
 BASETOL                         1.0E-5
 ADAPTIVEDIST                    0.01
+TOL_DIS_INC_INF                 1e-11
+TOL_DIS_INC_L2                  1e-11
+TOL_DIS_RES_INF                 1e-11
+TOL_DIS_RES_L2                  1e-11
+TOL_FSI_INC_INF                 1e-11
+TOL_FSI_INC_L2                  1e-11
+TOL_FSI_RES_INF                 1e-11
+TOL_FSI_RES_L2                  1e-11
+TOL_PRE_INC_INF                 1e-11
+TOL_PRE_INC_L2                  1e-11
+TOL_PRE_RES_INF                 1e-11
+TOL_PRE_RES_L2                  1e-11
+TOL_VEL_INC_INF                 1e-11
+TOL_VEL_INC_L2                  1e-11
+TOL_VEL_RES_INF                 1e-11
+TOL_VEL_RES_L2                  1e-11
 --------------------------------------------------------------------SOLVER 1
 SOLVER                          UMFPACK
 ----------------------------------------------------------DESIGN DESCRIPTION
@@ -7033,13 +7048,9 @@ SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 2
 ----------------------------------------------------------------------CURVE1
 //CURVE1 on Explicit FUNC f(t)=exp(1-1:t) c1 1.0 c2 1.0
 CURVE1 on Explicit FUNC f(t)=1-cos(2*PI*C1*t) c1 0.2 c2 1.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 2155 QUANTITY vely VALUE 3.430305010e-04 TOLERANCE 1e-12
-FLUID DIS fluid NODE 2155 QUANTITY pressure VALUE -2.4542787411e-03 TOLERANCE 1e-11
-STRUCTURE DIS structure NODE 1782 QUANTITY dispy VALUE -4.0404481670e-04 TOLERANCE 1e-12
+FLUID DIS fluid NODE 2155 QUANTITY vely VALUE 3.43031200e-04 TOLERANCE 1e-12
+FLUID DIS fluid NODE 2155 QUANTITY pressure VALUE -2.45427589e-03 TOLERANCE 1e-11
+STRUCTURE DIS structure NODE 1782 QUANTITY dispy VALUE -4.04044730e-04 TOLERANCE 1e-12
 -------------------------------------------------------------------------END
 //                              END

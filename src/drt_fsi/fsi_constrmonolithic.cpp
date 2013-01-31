@@ -44,6 +44,7 @@ void FSI::ConstrMonolithic::GeneralSetup()
 
   SetDefaultParameters(fsidyn,NOXParameterList());
 
+  // ToDo: Set more detailed convergence tolerances like in standard FSI
   // additionally set tolerance for volume constraint
   NOXParameterList().set("Norm abs vol constr", fsidyn.get<double>("CONVTOL"));
 
@@ -365,13 +366,13 @@ FSI::ConstrMonolithic::CreateStatusTest(Teuchos::ParameterList& nlParams,
   Teuchos::RCP<NOX::FSI::PartialNormF> structureDisp =
     Teuchos::rcp(new NOX::FSI::PartialNormF("displacement",
                                             Extractor(),0,
-                                            nlParams.get("Norm abs disp", 1.0e-6),
+                                            nlParams.get<double>("Norm abs disp"),
                                             NOX::Abstract::Vector::TwoNorm,
                                             NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> structureDispUpdate =
     Teuchos::rcp(new NOX::FSI::PartialNormUpdate("displacement update",
                                                  Extractor(),0,
-                                                 nlParams.get("Norm abs disp", 1.0e-6),
+                                                 nlParams.get<double>("Norm abs disp"),
                                                  NOX::FSI::PartialNormUpdate::Scaled));
 
   AddStatusTest(structureDisp);
@@ -421,13 +422,13 @@ FSI::ConstrMonolithic::CreateStatusTest(Teuchos::ParameterList& nlParams,
   Teuchos::RCP<NOX::FSI::PartialNormF> innerFluidVel =
     Teuchos::rcp(new NOX::FSI::PartialNormF("velocity",
                                             fluidvelextract,0,
-                                            nlParams.get("Norm abs vel", 1.0e-6),
+                                            nlParams.get<double>("Norm abs vel"),
                                             NOX::Abstract::Vector::TwoNorm,
                                             NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> innerFluidVelUpdate =
     Teuchos::rcp(new NOX::FSI::PartialNormUpdate("velocity update",
                                                  fluidvelextract,0,
-                                                 nlParams.get("Norm abs vel", 1.0e-6),
+                                                 nlParams.get<double>("Norm abs vel"),
                                                  NOX::FSI::PartialNormUpdate::Scaled));
 
   AddStatusTest(innerFluidVel);
@@ -449,13 +450,13 @@ FSI::ConstrMonolithic::CreateStatusTest(Teuchos::ParameterList& nlParams,
   Teuchos::RCP<NOX::FSI::PartialNormF> fluidPress =
     Teuchos::rcp(new NOX::FSI::PartialNormF("pressure",
                                             fluidpressextract,0,
-                                            nlParams.get("Norm abs pres", 1.0e-6),
+                                            nlParams.get<double>("Norm abs pres"),
                                             NOX::Abstract::Vector::TwoNorm,
                                             NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> fluidPressUpdate =
     Teuchos::rcp(new NOX::FSI::PartialNormUpdate("pressure update",
                                                  fluidpressextract,0,
-                                                 nlParams.get("Norm abs pres", 1.0e-6),
+                                                 nlParams.get<double>("Norm abs pres"),
                                                  NOX::FSI::PartialNormUpdate::Scaled));
 
   AddStatusTest(fluidPress);
@@ -475,13 +476,13 @@ FSI::ConstrMonolithic::CreateStatusTest(Teuchos::ParameterList& nlParams,
   Teuchos::RCP<NOX::FSI::PartialNormF> VolConstr =
       Teuchos::rcp(new NOX::FSI::PartialNormF("constraints",
                                               volconstrextract,0,
-                                              nlParams.get("Norm abs vol constr", 1.0e-6),
+                                              nlParams.get<double>("Norm abs vol constr"),
                                               NOX::Abstract::Vector::TwoNorm,
                                               NOX::FSI::PartialNormF::Scaled));
   Teuchos::RCP<NOX::FSI::PartialNormUpdate> VolConstrUpdate =
       Teuchos::rcp(new NOX::FSI::PartialNormUpdate("constraints update",
                                                    volconstrextract,0,
-                                                   nlParams.get("Norm abs vol constr", 1.0e-6),
+                                                   nlParams.get<double>("Norm abs vol constr"),
                                                    NOX::FSI::PartialNormUpdate::Scaled));
 
   AddStatusTest(VolConstr);
