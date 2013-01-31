@@ -5308,11 +5308,11 @@ void CONTACT::CoIntegrator::FastIntegration(
 
   // prepare directional derivative of dual shape functions
   // this is only necessary for quadratic dual shape functions in 2D
-  bool duallin = false;
+  //bool duallin = false; // --> coming soon
   std::vector<std::vector<std::map<int,double> > > dualmap(nrow,std::vector<std::map<int,double> >(nrow));
   if ((shapefcn_ == INPAR::MORTAR::shape_dual) && (sele.Shape()==MORTAR::MortarElement::line3))
   {
-    duallin=true;
+    //duallin=true;
     sele.DerivShapeDual(dualmap);
   }
 
