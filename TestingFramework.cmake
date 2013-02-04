@@ -1,4 +1,4 @@
-ll###------------------------------------------------------------------ Test definitions
+###------------------------------------------------------------------ Test definitions
 
 macro (baci_test arg nproc restart)
   add_test(NAME ${arg}-p${nproc}
