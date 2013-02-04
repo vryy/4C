@@ -21,6 +21,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_mat/holzapfelcardiovascular.H"
 #include "../drt_mat/humphreycardiovascular.H"
+#include "../drt_mat/structporo.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 
@@ -35,36 +36,46 @@ bool DRT::ELEMENTS::So_hex27::ReadElement(const std::string& eletype,
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
+  Teuchos::RCP<MAT::Material> mat = Material();
+
+  if(mat->MaterialType() == INPAR::MAT::m_structporo)
+  {
+    MAT::StructPoro* actmat = static_cast<MAT::StructPoro*>(mat.get());
+    //setup is done in so3_poro
+    //actmat->Setup(NUMGPT_SOH8);
+    mat = actmat->GetMaterial();
+  }
+
   // special element-dependent input of material parameters
-  switch (Material()->MaterialType())
+  switch (mat->MaterialType())
   {
   case INPAR::MAT::m_artwallremod:
   {
-    MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(Material().get());
+    MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(mat.get());
     remo->Setup(NUMGPT_SOH27, this->Id(), linedef);
     break;
   }
   case INPAR::MAT::m_viscoanisotropic:
   {
-    MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
+    MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
     visco->Setup(NUMGPT_SOH27, linedef);
     break;
   }
   case INPAR::MAT::m_visconeohooke:
   {
-    MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(Material().get());
+    MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
     visco->Setup(NUMGPT_SOH27);
     break;
   }
   case INPAR::MAT::m_viscogenmax:
   {
-    MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(Material().get());
+    MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(mat.get());
     viscogenmax->Setup(NUMGPT_SOH27, linedef);
     break;
   }
   case INPAR::MAT::m_charmm:
   {
-    MAT::CHARMM* charmm = static_cast <MAT::CHARMM*>(Material().get());
+    MAT::CHARMM* charmm = static_cast <MAT::CHARMM*>(mat.get());
     charmm->Setup(data_);
     break;
   }
@@ -72,26 +83,26 @@ bool DRT::ELEMENTS::So_hex27::ReadElement(const std::string& eletype,
   {
     double strength = 0.0; // section for extracting the element strength
     linedef->ExtractDouble("STRENGTH",strength);
-    MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(Material().get());
+    MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
     aaadamage->Setup(NUMGPT_SOH27,strength);
     //aaadamage->Setup(NUMGPT_SOH27);
     break;
   }
   case INPAR::MAT::m_holzapfelcardiovascular:
   {
-  	MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(Material().get());
+  	MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
   	holzcard->Setup(NUMGPT_SOH27, linedef);
   	break;
   }
   case INPAR::MAT::m_humphreycardiovascular:
   {
-  	MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(Material().get());
+  	MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
   	humcard->Setup(NUMGPT_SOH27, linedef);
   	break;
   }
   case INPAR::MAT::m_elasthyper
   :{
-    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(mat.get());
     elahy->Setup(linedef);
     break;
   }
@@ -114,7 +125,7 @@ bool DRT::ELEMENTS::So_hex27::ReadElement(const std::string& eletype,
   else dserror ("Reading SO_HEX27 element failed KINEM unknown");
 
   // check for SVK material if geometrically linear
-  if (kintype_==soh27_linear && Material()->MaterialType()!=INPAR::MAT::m_stvenant)
+  if (kintype_==soh27_linear && mat->MaterialType()!=INPAR::MAT::m_stvenant)
     dserror("ERROR: Only linear elasticity (SVK) for geometrically linear hex27 element");
 
   return true;

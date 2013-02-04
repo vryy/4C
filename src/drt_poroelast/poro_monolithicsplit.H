@@ -22,8 +22,6 @@
 
 #include "poroelast_monolithic.H"
 
-#include "../drt_adapter/adapter_coupling.H"
-
 namespace ADAPTER
 {
   class CouplingConverter;
@@ -87,6 +85,8 @@ namespace POROELAST
     //! map containing DOFs with both fsi- and DBC conditions
     Teuchos::RCP<Epetra_Map> fsibcmap_;
 
+    Teuchos::RCP< LINALG::MapExtractor > fsibcextractor_;
+
     /// @name Some quantities to recover the Langrange multiplier at the end of each time step
 
     //! Lagrange multiplier \f$\lambda_\Gamma^n\f$ at the interface (ie condensed forces onto the structure)
@@ -124,6 +124,8 @@ namespace POROELAST
     Teuchos::RCP<const Epetra_Vector> solgvelpre_;
 
     //@}
+
+    Teuchos::RCP<Epetra_Vector> ddi_;
 
     //! Extractor used for fsi boundary with dirichlet bc
     //LINALG::MapExtractor fsibcsplitter_;

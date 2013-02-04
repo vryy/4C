@@ -210,6 +210,8 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==RedAirwayTissue)               os << "tissue RedAirway coupling surface condition";
   else if (Type()==RedAirwayNodeTissue)           os << "tissue RedAirway coupling node condition";
   else if (Type()==PoroCoupling)                  os << "porous media coupling condition";
+  else if (Type()==PoroPartInt)                   os << "porous media partial integration condition";
+  else if (Type()==PoroPresInt)                   os << "porous media pressure integration condition";
   else if (Type()==ScaTraCoupling)                os << "scatra coupling condition";
   else dserror("no output string for condition defined in DRT::Condition::Print");
 

@@ -4024,18 +4024,11 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
   if(bdrynsd_!=2 and bdrynsd_!=1)
     dserror("NoPenetration is only implemented for 3D and 2D!");
 
-  //Teuchos::RCP< std::set<int> > condids = params.get<Teuchos::RCP< std::set<int> > >("condIDs",Teuchos::null);
- // if(condids == Teuchos::null)
- //   dserror("got Teuchos::null when reading condition ids!");
- // if(condids->size() == 0)
- //   dserror("no global IDs known for applying no penetration condition!");
-
   // get integration rule
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
-  //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
   // displacements
@@ -4091,7 +4084,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
   LINALG::Matrix<numdofpernode_,1> nodenormal(true);
 
   //check which matrix is to be filled
-  POROELAST::coupltype coupling = params.get<POROELAST::coupltype>("coupling",POROELAST::fluidfluid);
+  POROELAST::coupltype coupling = params.get<POROELAST::coupltype>("coupling",POROELAST::undefined);
+
   if (coupling == POROELAST::fluidfluid)
   {
     //fill element matrix
@@ -4189,8 +4183,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
           normalderiv(1,nsd_*node)   += -deriv_(0,node) * funct_(node) * fac;
           normalderiv(1,nsd_*node+1) += 0.;
         }
-      else
-        dserror("NoPenetration is only implemented for 1D!");
     }//loop over gp
 
     //allocate auxiliary variable (= normalderiv^T * velocity)
@@ -4277,6 +4269,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetrationIDs(
       for (int idim=0; idim<nsd_; ++idim)
         xyze_(idim,inode)+=mydispnp[numdofpernode_*inode+idim];
   }
+  else
+    dserror("fluid poro element not an ALE element!");
 
   //calculate normal
   Epetra_SerialDenseVector        normal;
@@ -4299,7 +4293,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetrationIDs(
   } /* end of loop over integration points gpid */
 
   LINALG::Matrix<numdofpernode_,1> nodenormal(true);
-
 
   //fill element matrix
   for (int inode=0;inode<bdrynen_;inode++)
@@ -4352,7 +4345,25 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
     }
     else
     {
-      dserror("expected combination quad4/hex8 or line2/quad4 for surface/parent pair");
+      dserror("expected combination line2/quad4 for line/parent pair");
+    }
+    break;
+  }
+  case DRT::Element::line3:
+  {
+    if(ele->ParentElement()->Shape()==DRT::Element::quad9)
+    {
+      PoroBoundary<DRT::Element::quad9>(
+          ele,
+          params,
+          discretization,
+          plm,
+          elemat1,
+          elevec1);
+    }
+    else
+    {
+      dserror("expected combination line3/quad9 for line/parent pair");
     }
     break;
   }
@@ -4372,6 +4383,42 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
     else
     {
       dserror("expected combination quad4/hex8 for surface/parent pair");
+    }
+    break;
+  }
+  case DRT::Element::tri3:
+  {
+    if(ele->ParentElement()->Shape()==DRT::Element::tet4)
+    {
+      PoroBoundary<DRT::Element::tet4>(
+          ele,
+          params,
+          discretization,
+          plm,
+          elemat1,
+          elevec1);
+    }
+    else
+    {
+      dserror("expected combination tri3/tet4 for surface/parent pair");
+    }
+    break;
+  }
+  case DRT::Element::quad9:
+  {
+    if(ele->ParentElement()->Shape()==DRT::Element::hex27)
+    {
+      PoroBoundary<DRT::Element::hex27>(
+          ele,
+          params,
+          discretization,
+          plm,
+          elemat1,
+          elevec1);
+    }
+    else
+    {
+      dserror("expected combination hex27/hex27 for surface/parent pair");
     }
     break;
   }
@@ -4400,10 +4447,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
   if(bdrynsd_!=2 and bdrynsd_!=1)
     dserror("PoroBoundary is only implemented for 3D and 2D!");
 
-  POROELAST::coupltype coupling = params.get<POROELAST::coupltype>("coupling",POROELAST::fluidfluid);
-  //LINALG::Matrix<bdrynen_,1> elevec1_linalg(elevec1.A(),true);
-  //const bool offdiag(not elevec1_linalg.IsInitialized());
-  const bool offdiag( coupling != POROELAST::fluidfluid);
+  POROELAST::coupltype coupling = params.get<POROELAST::coupltype>("coupling",POROELAST::undefined);
+  if(coupling == POROELAST::undefined) dserror("no coupling defined for poro-boundary condition");
+  const bool offdiag( coupling == POROELAST::fluidstructure);
 
   const double timescale = params.get<double>("timescale",-1.0);
   if(timescale == -1.0 and offdiag)
@@ -4525,6 +4571,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
   //structure velocity at gausspoint
   LINALG::Matrix<nsd_,1> gridvelint;
 
+  //coordinates of gauss points of parent element
   LINALG::Matrix<nsd_ , 1>    pxsi(true);
 
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
@@ -4549,8 +4596,11 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
     LINALG::Matrix<nsd_,nsd_> Jmat;
     xjm.MultiplyNT(pderiv_loc,xcurr);
     Jmat.MultiplyNT(pderiv_loc,xrefe);
+    // jacobian determinat "det(dx/ds)"
     double det = xjm.Determinant();
+    // jacobian determinat "det(dX/ds)"
     double detJ = Jmat.Determinant();
+    // jacobian determinat "det(dx/dX) = det(dx/ds)/det(dX/ds)"
     const double J = det/detJ;
 
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
@@ -4590,27 +4640,27 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
     dxyzdrs.MultiplyNT(deriv_,xyze_);
 
     if(nsd_==3)
-      for (int node=0;node<bdrynsd_;++node)
+      for (int node=0;node<nenparent;++node)
       {
         normalderiv(0,nsd_*node)   += 0.;
-        normalderiv(0,nsd_*node+1) += (pderiv(0,node)*dxyzdrs(1,2)-pderiv(1,node)*dxyzdrs(0,2)) * pfunct(node) * fac;
-        normalderiv(0,nsd_*node+2) += (pderiv(1,node)*dxyzdrs(0,1)-pderiv(0,node)*dxyzdrs(1,1)) * pfunct(node) * fac;
+        normalderiv(0,nsd_*node+1) += (pderiv(0,node)*dxyzdrs(1,2)-pderiv(1,node)*dxyzdrs(0,2)) * fac;
+        normalderiv(0,nsd_*node+2) += (pderiv(1,node)*dxyzdrs(0,1)-pderiv(0,node)*dxyzdrs(1,1)) * fac;
 
-        normalderiv(1,nsd_*node)   += (pderiv(1,node)*dxyzdrs(0,2)-pderiv(0,node)*dxyzdrs(1,2)) * pfunct(node) * fac;
+        normalderiv(1,nsd_*node)   += (pderiv(1,node)*dxyzdrs(0,2)-pderiv(0,node)*dxyzdrs(1,2)) * fac;
         normalderiv(1,nsd_*node+1) += 0.;
-        normalderiv(1,nsd_*node+2) += (pderiv(0,node)*dxyzdrs(1,0)-pderiv(1,node)*dxyzdrs(0,0)) * pfunct(node) * fac;
+        normalderiv(1,nsd_*node+2) += (pderiv(0,node)*dxyzdrs(1,0)-pderiv(1,node)*dxyzdrs(0,0)) * fac;
 
-        normalderiv(2,nsd_*node)   += (pderiv(0,node)*dxyzdrs(1,1)-pderiv(1,node)*dxyzdrs(0,1)) * pfunct(node) * fac;
-        normalderiv(2,nsd_*node+1) += (pderiv(1,node)*dxyzdrs(0,0)-pderiv(0,node)*dxyzdrs(1,0)) * pfunct(node) * fac;
+        normalderiv(2,nsd_*node)   += (pderiv(0,node)*dxyzdrs(1,1)-pderiv(1,node)*dxyzdrs(0,1)) * fac;
+        normalderiv(2,nsd_*node+1) += (pderiv(1,node)*dxyzdrs(0,0)-pderiv(0,node)*dxyzdrs(1,0)) * fac;
         normalderiv(2,nsd_*node+2) += 0.;
       }
     else //if(nsd_==2)
       for (int node=0;node<nenparent;++node)
       {
         normalderiv(0,nsd_*node)   += 0.;
-        normalderiv(0,nsd_*node+1) += pderiv(0,node) * pfunct(node) * fac;
+        normalderiv(0,nsd_*node+1) += pderiv(0,node) * fac;
 
-        normalderiv(1,nsd_*node)   += -pderiv(0,node) * pfunct(node) * fac;
+        normalderiv(1,nsd_*node)   += -pderiv(0,node) * fac;
         normalderiv(1,nsd_*node+1) += 0.;
       }
 
@@ -4681,10 +4731,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureCoupling(
   if(bdrynsd_!=2 and bdrynsd_!=1)
     dserror("PressureCoupling is only implemented for 3D!");
 
-  POROELAST::coupltype coupling = params.get<POROELAST::coupltype>("coupling",POROELAST::fluidfluid);
-  //LINALG::Matrix<bdrynen_,1> elevec1_linalg(elevec1.A(),true);
-  //const bool offdiag(not elevec1_linalg.IsInitialized());
-  const bool offdiag( coupling != POROELAST::fluidfluid);
+  POROELAST::coupltype coupling = params.get<POROELAST::coupltype>("coupling",POROELAST::undefined);
+  if(coupling == POROELAST::undefined) dserror("no coupling defined for poro-boundary condition");
+  const bool offdiag( coupling == POROELAST::fluidstructure);
 
   // get integration rule
   const DRT::UTILS::IntPointsAndWeights<bdrynsd_> intpoints(DRT::ELEMENTS::DisTypeToOptGaussRule<distype>::rule);

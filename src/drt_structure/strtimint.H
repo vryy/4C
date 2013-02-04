@@ -1028,7 +1028,7 @@ namespace STR
     //! @name Poroelasticity specific stuff
     //@{
     // global coupling variable of the fluid field (for poroelasticity problems only)
-    Teuchos::RCP<const Epetra_Vector> fluidveln_; //!< global velocities and pressures at n+1
+    Teuchos::RCP<Epetra_Vector> fluidveln_; //!< global velocities and pressures at n+1
     //double initporosity_;
 
     //@}

@@ -2927,9 +2927,11 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   //---------------------------
   if (physicaltype_ == INPAR::FLUID::poro)
   {
+    std::string condname = "PoroPartInt";
+    std::vector<DRT::Condition*> poroPartInt;
+    discret_->GetCondition(condname,poroPartInt);
+    if(poroPartInt.size())
     {
-      std::string condname = "PoroPartInt";
-
       ParameterList eleparams;
 
       // set action for elements
@@ -2944,9 +2946,11 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
       discret_->ClearState();
     }
 
+    condname = "PoroPresInt";
+    std::vector<DRT::Condition*> poroPresInt;
+    discret_->GetCondition(condname,poroPresInt);
+    if(poroPresInt.size())
     {
-      std::string condname = "PoroPresInt";
-
       ParameterList eleparams;
 
       // set action for elements
@@ -3338,7 +3342,7 @@ void FLD::FluidImplicitTimeInt::Output()
       RCP<Epetra_Vector>  convel= rcp(new Epetra_Vector(*velnp_));
       convel->Update(-1.0,*gridv_,1.0);
       output_->WriteVector("convel", convel);
-      //output_->WriteVector("gridv", gridv_);
+      output_->WriteVector("gridv", gridv_);
     }
 
     //only perform stress calculation when output is needed
@@ -3415,9 +3419,6 @@ void FLD::FluidImplicitTimeInt::Output()
         output_->WriteVector("dispn", dispn_);
         output_->WriteVector("dispnm",dispnm_);
       }
-
-      if(physicaltype_ == INPAR::FLUID::poro)
-        output_->WriteVector("gridv", gridv_);
 
       // write mesh in each restart step --- the elements are required since
       // they contain history variables (the time dependent subscales)

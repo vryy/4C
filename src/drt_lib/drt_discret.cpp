@@ -561,8 +561,8 @@ Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetProxy()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetProxy(Teuchos::RCP<const Epetra_Map> subcolnodes,
-                                                              Teuchos::RCP<const Epetra_Map> subcoleles )
+Teuchos::RCP<DRT::DofSet> DRT::Discretization::GetDofSetProxy(const Epetra_Map* subcolnodes,
+                                                              const Epetra_Map* subcoleles )
 {
   return Teuchos::rcp(new DofSetSubProxy(&*dofsets_[0],subcolnodes,subcoleles));
 }

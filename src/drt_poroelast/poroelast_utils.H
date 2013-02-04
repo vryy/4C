@@ -37,7 +37,8 @@ namespace POROELAST
   enum coupltype
   {
     fluidfluid,
-    fluidstructure
+    fluidstructure,
+    undefined
   };
 
   /// POROELAST::UTILS: Random stuff that might be helpful when dealing with poroelasticity problems

@@ -126,14 +126,14 @@ void POROELAST::Monolithic::NewtonFull()
     // 2.) EvaluateForceStiffResidual(),
     // 3.) PrepareSystemForNewtonSolve()
     Evaluate(iterinc_);
-    cout << "  time for Evaluate diagonal blocks: " << timer.ElapsedTime() << "\n";
+    //cout << "  time for Evaluate diagonal blocks: " << timer.ElapsedTime() << "\n";
     timer.ResetStartTime();
 
     // create the linear system
     // \f$J(x_i) \Delta x_i = - R(x_i)\f$
     // create the systemmatrix
     SetupSystemMatrix();
-    cout << "  time for Evaluate offdiagonal blocks: " << timer.ElapsedTime() << "\n";
+    //cout << "  time for Evaluate offdiagonal blocks: " << timer.ElapsedTime() << "\n";
     timer.ResetStartTime();
 
     // check whether we have a sanely filled tangent matrix
@@ -144,13 +144,13 @@ void POROELAST::Monolithic::NewtonFull()
 
     // create full monolithic rhs vector
     SetupRHS(iter_==1);
-    cout << "  time for Evaluate SetupRHS: " << timer.ElapsedTime() << "\n";
+    //cout << "  time for Evaluate SetupRHS: " << timer.ElapsedTime() << "\n";
     timer.ResetStartTime();
 
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
     // is done in PrepareSystemForNewtonSolve() within Evaluate(iterinc_)
     LinearSolve();
-    cout << "  time for Evaluate LinearSolve: " << timer.ElapsedTime() << "\n";
+    //cout << "  time for Evaluate LinearSolve: " << timer.ElapsedTime() << "\n";
     timer.ResetStartTime();
 
     // reset solver tolerance
@@ -218,7 +218,6 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   //Epetra_Time timerstructure(Comm());
 
   // apply current velocity and pressures to structure
-  //fluidveln_ ->Update(1.0, *FluidField().Velnp(),0.0);
   SetFluidSolution();
 
   // Monolithic Poroelasticity accesses the linearised structure problem:
@@ -227,7 +226,6 @@ void POROELAST::Monolithic::Evaluate(Teuchos::RCP<const Epetra_Vector> x)
   //   PrepareSystemForNewtonSolve()
   StructureField()->Evaluate(sx);
   //cout << "  structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
-
   /// fluid field
 
   // fluid Evaluate
@@ -429,7 +427,6 @@ void POROELAST::Monolithic::SetupSystemMatrix(LINALG::BlockSparseMatrixBase& mat
   /*----------------------------------------------------------------------*/
   // done. make sure all blocks are filled.
   mat.Complete();
-
 } // SetupSystemMatrix
 
 /*----------------------------------------------------------------------*
@@ -464,8 +461,6 @@ void POROELAST::Monolithic::LinearSolve()
     double wanted = tolfres_;
     solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
   }
-  //PoroFDCheck();
-  //dserror("done");
   // apply Dirichlet BCs to system of equations
   iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
 
@@ -485,7 +480,11 @@ void POROELAST::Monolithic::LinearSolve()
     //  if ( Comm().MyPID()==0 ) { cout << " DBC applied to system" << endl; }
 
     // standard solver call
-    solver_->Solve(sparse->EpetraOperator(), iterinc_, rhs_, true, iter_ == 1);
+    solver_->Solve( sparse->EpetraOperator(),
+                    iterinc_, rhs_,
+                    true,
+                    iter_ == 1
+                    );
     //  if ( Comm().MyPID()==0 ) { cout << " Solved" << endl; }
   }
   else // use bgs2x2_operator
@@ -1101,6 +1100,8 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
   }
 
   FluidField().Discretization()->ClearState();
+
+  return;
 }    // ApplyFluidCouplMatrix()
 
 /*----------------------------------------------------------------------*
@@ -1376,6 +1377,7 @@ void POROELAST::Monolithic::EvaluateCondition(Teuchos::RCP<LINALG::SparseOperato
   Sysmat->ApplyDirichlet(*nopenetrationmap, false);
   Sysmat->UnComplete();
   Sysmat->Add(*ConstraintMatrix, false, 1.0, 1.0);
+
   return;
 }
 

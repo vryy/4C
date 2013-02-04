@@ -234,6 +234,28 @@ bool DRT::ELEMENTS::So3_Poro<so3_ele,distype>::VisData(const string& name, std::
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
+int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::UniqueParObjectId() const
+{
+  switch(distype)
+  {
+  case DRT::Element::tet4:
+    return So_tet4PoroType::Instance().UniqueParObjectId();
+    break;
+  case DRT::Element::hex8:
+    return So_hex8PoroType::Instance().UniqueParObjectId();
+    break;
+  case DRT::Element::hex27:
+    return So_hex27PoroType::Instance().UniqueParObjectId();
+    break;
+  default: dserror("unknown element type!");
+    break;
+  }
+  return -1;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
 inline DRT::Node** DRT::ELEMENTS::So3_Poro<so3_ele,distype>::Nodes()
 {
   return so3_ele::Nodes();

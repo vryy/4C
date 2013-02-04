@@ -135,7 +135,8 @@ void DRT::UTILS::SurfaceGPToParentGP(
   const int                               surfaceid)
 {
 
-  if(distype==DRT::Element::quad4 && pdistype==DRT::Element::hex8)
+  if( (distype==DRT::Element::quad4 && pdistype==DRT::Element::hex8) or
+      (distype==DRT::Element::quad9 && pdistype==DRT::Element::hex27) )
   {
     switch(surfaceid)
     {
@@ -164,7 +165,7 @@ void DRT::UTILS::SurfaceGPToParentGP(
       }
       derivtrafo(0,1)= 1.0;
       derivtrafo(1,0)= 1.0;
-      derivtrafo(2,2)=-1.0;
+      derivtrafo(2,2)= -1.0;
       break;
     }
     case 1:
@@ -186,12 +187,12 @@ void DRT::UTILS::SurfaceGPToParentGP(
       for (int iquad=0;iquad<intpoints.nquad;++iquad)
       {
         pqxg(iquad,0)= intpoints.qxg[iquad][0];
-        pqxg(iquad,1)=-1.0;
+        pqxg(iquad,1)= -1.0;
         pqxg(iquad,2)= intpoints.qxg[iquad][1];
       }
       derivtrafo(0,0)= 1.0;
-      derivtrafo(1,1)=-1.0;
-      derivtrafo(2,2)= 1.0;
+      derivtrafo(1,2)= -1.0;
+      derivtrafo(2,1)= 1.0;
       break;
     }
     case 2:
@@ -216,9 +217,9 @@ void DRT::UTILS::SurfaceGPToParentGP(
         pqxg(iquad,1)= intpoints.qxg[iquad][0];
         pqxg(iquad,2)= intpoints.qxg[iquad][1];
       }
-      derivtrafo(0,1)= 1.0;
-      derivtrafo(1,2)= 1.0;
-      derivtrafo(2,0)= 1.0;
+      derivtrafo(0,2)= 1.0;
+      derivtrafo(1,0)= 1.0;
+      derivtrafo(2,1)= 1.0;
       break;
     }
     case 3:
@@ -243,7 +244,7 @@ void DRT::UTILS::SurfaceGPToParentGP(
         pqxg(iquad,1)= 1.0;
         pqxg(iquad,2)= intpoints.qxg[iquad][1];
       }
-      derivtrafo(0,0)=-1.0;
+      derivtrafo(0,0)= -1.0;
       derivtrafo(1,2)= 1.0;
       derivtrafo(2,1)= 1.0;
       break;
@@ -266,13 +267,13 @@ void DRT::UTILS::SurfaceGPToParentGP(
       */
       for (int iquad=0;iquad<intpoints.nquad;++iquad)
       {
-        pqxg(iquad,0)=-1.0;
+        pqxg(iquad,0)= -1.0;
         pqxg(iquad,1)= intpoints.qxg[iquad][1];
         pqxg(iquad,2)= intpoints.qxg[iquad][0];
       }
-      derivtrafo(0,2)= 1.0;
+      derivtrafo(0,2)= -1.0;
       derivtrafo(1,1)= 1.0;
-      derivtrafo(2,0)=-1.0;
+      derivtrafo(2,0)= 1.0;
       break;
     }
     case 5:
@@ -381,12 +382,12 @@ void DRT::UTILS::SurfaceGPToParentGP(
       for (int iquad=0;iquad<intpoints.nquad;++iquad)
       {
         pqxg(iquad,0)= intpoints.qxg[iquad][0];
-        pqxg(iquad,1)=-1.0;
+        pqxg(iquad,1)= -1.0;
         pqxg(iquad,2)= intpoints.qxg[iquad][1];
       }
       derivtrafo(0,0)= 1.0;
-      derivtrafo(2,1)=-1.0;
-      derivtrafo(1,2)= 1.0;
+      derivtrafo(1,2)= -1.0;
+      derivtrafo(2,1)= 1.0;
       break;
     }
     case 3:
@@ -411,8 +412,8 @@ void DRT::UTILS::SurfaceGPToParentGP(
         pqxg(iquad,2)= intpoints.qxg[iquad][1];
       }
       derivtrafo(0,0)= 1.0;
-      derivtrafo(2,1)= 1.0;
       derivtrafo(1,2)= 1.0;
+      derivtrafo(2,1)= 1.0;
       break;
     }
     case 4:
@@ -436,9 +437,9 @@ void DRT::UTILS::SurfaceGPToParentGP(
         pqxg(iquad,1)= intpoints.qxg[iquad][0];
         pqxg(iquad,2)= intpoints.qxg[iquad][1];
       }
-      derivtrafo(2,0)= 1.0;
-      derivtrafo(0,1)= 1.0;
-      derivtrafo(1,2)= 1.0;
+      derivtrafo(0,2)= 1.0;
+      derivtrafo(1,0)= 1.0;
+      derivtrafo(2,1)= 1.0;
       break;
     }
     case 5:
@@ -458,13 +459,82 @@ void DRT::UTILS::SurfaceGPToParentGP(
       */
       for (int iquad=0;iquad<intpoints.nquad;++iquad)
       {
-        pqxg(iquad,0)=-1.0;
+        pqxg(iquad,0)= -1.0;
         pqxg(iquad,1)= intpoints.qxg[iquad][0];
         pqxg(iquad,2)= intpoints.qxg[iquad][1];
       }
-      derivtrafo(2,0)=-1.0;
-      derivtrafo(0,1)= 1.0;
+      derivtrafo(0,2)= -1.0;
+      derivtrafo(1,0)= 1.0;
+      derivtrafo(2,1)= 1.0;
+      break;
+    }
+    default:
+      dserror("invalid number of surfaces, unable to determine intpoint in parent");
+    }
+  }
+  else if( (distype==DRT::Element::tri3 && pdistype==DRT::Element::tet4) or
+           (distype==DRT::Element::tri6 && pdistype==DRT::Element::tet10))
+  {
+    switch(surfaceid)
+    {
+    case 0:
+    {
+      // s=0
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      {
+        pqxg(iquad,0)= intpoints.qxg[iquad][0];
+        pqxg(iquad,1)= 0.0;
+        pqxg(iquad,2)= intpoints.qxg[iquad][1];
+      }
+      derivtrafo(0,0)= 1.0;
+      derivtrafo(1,2)= -1.0;
+      derivtrafo(2,1)= 1.0;
+      break;
+    }
+    case 1:
+    {
+      // r+s+t=1
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      {
+        pqxg(iquad,0)= 1.0 - intpoints.qxg[iquad][0] - intpoints.qxg[iquad][1];
+        pqxg(iquad,1)= intpoints.qxg[iquad][0];
+        pqxg(iquad,2)= intpoints.qxg[iquad][1];
+      }
+      derivtrafo(0,0)= -1.0;
+      derivtrafo(0,1)= -1.0;
+      derivtrafo(0,2)= 1.0;
+      derivtrafo(1,0)= 1.0;
       derivtrafo(1,2)= 1.0;
+      derivtrafo(2,1)= 1.0;
+      derivtrafo(2,2)= 1.0;
+      break;
+    }
+    case 2:
+    {
+      // r=0
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      {
+        pqxg(iquad,0)= 0.0;
+        pqxg(iquad,1)= intpoints.qxg[iquad][1];
+        pqxg(iquad,2)= intpoints.qxg[iquad][0];
+      }
+      derivtrafo(0,2)= -1.0;
+      derivtrafo(1,1)= 1.0;
+      derivtrafo(2,0)= 1.0;
+      break;
+    }
+    case 3:
+    {
+      // t=0
+      for (int iquad=0;iquad<intpoints.nquad;++iquad)
+      {
+        pqxg(iquad,0)= intpoints.qxg[iquad][1];
+        pqxg(iquad,1)= intpoints.qxg[iquad][0];
+        pqxg(iquad,2)= 0.0;
+      }
+      derivtrafo(0,1)= 1.0;
+      derivtrafo(1,0)= 1.0;
+      derivtrafo(2,2)=-1.0;
       break;
     }
     default:
@@ -473,7 +543,7 @@ void DRT::UTILS::SurfaceGPToParentGP(
   }
   else
   {
-      dserror("only quad4/hex8 and nurbs9/nurbs27 mappings of surface gausspoint to parent element implemented up to now\n");
+      dserror("only quad4/hex8, quad9/hex27, tri3/tet4 and nurbs9/nurbs27 mappings of surface gausspoint to parent element implemented up to now\n");
   }
 
   return;
@@ -501,7 +571,8 @@ void DRT::UTILS::LineGPToParentGP(
   //pqxg.Shape(intpoints.nquad,2);
   //derivtrafo.Shape(2,2);
 
-  if(distype==DRT::Element::line2 && pdistype==DRT::Element::quad4)
+  if( (distype==DRT::Element::line2 && pdistype==DRT::Element::quad4) or
+      (distype==DRT::Element::line3 && pdistype==DRT::Element::quad9) )
   {
     switch(lineid)
     {
@@ -775,7 +846,7 @@ void DRT::UTILS::LineGPToParentGP(
   }
   else
   {
-      dserror("only line2/quad4 and nurbs3/nurbs9 mappings of surface gausspoint to parent element implemented up to now\n");
+      dserror("only line2/quad4, line3/quad9 and nurbs3/nurbs9 mappings of surface gausspoint to parent element implemented up to now\n");
   }
 
   return;

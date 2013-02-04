@@ -58,9 +58,7 @@
  *----------------------------------------------------------------------*/
 POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
                               const Teuchos::ParameterList& timeparams) :
-      AlgorithmBase(comm, timeparams),
-      subnodemap_(Teuchos::null),
-      subelemap_(Teuchos::null)
+      AlgorithmBase(comm, timeparams)
 {
   // access the structural discretization
   Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
@@ -83,12 +81,35 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
   if(fluid_ == Teuchos::null)
     dserror("cast from ADAPTER::FluidBaseAlgorithm to ADAPTER::FluidPoro failed");
 
-  // access the problem-specific parameter lists
-  const Teuchos::ParameterList& fdyn
-  = DRT::Problem::Instance()->FluidDynamicParams();
+  //as this is a two way coupled problem, every discretization needs to know the other one.
+  // For this we use DofSetProxies and coupling objects which are setup here
+  SetupProxiesAndCoupling();
 
-  // check time integration algo -> currently only one-step-theta scheme supported
+  //extractor for constraints on structure phase
+  //
+  // when using constraints applied via Lagrange-Multipliers there is a
+  // difference between StructureField()->DofRowMap() and StructureField()->DofRowMap(0).
+  // StructureField()->DofRowMap(0) returns the DofRowMap
+  // known to the discretization (without lagrange multipliers)
+  // while StructureField()->DofRowMap() returns the DofRowMap known to
+  // the constraint manager (with lagrange multipliers)
+  consplitter_ = Teuchos::rcp(new LINALG::MapExtractor(*StructureField()->DofRowMap(),
+      StructureField()->DofRowMap(0)));
+
+  //look for special poro conditions and set flags
+  CheckForPoroConditions();
+
+  //do some checks
   {
+    // access the problem-specific parameter lists
+    const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
+
+    std::vector<DRT::Condition*> porocoupl;
+    FluidField().Discretization()->GetCondition("PoroCoupling", porocoupl);
+    if ( porocoupl.size() == 0 )
+      dserror("no Poro Coupling Condition defined for porous media problem. Fix your input file!");
+
+    // check time integration algo -> currently only one-step-theta scheme supported
     INPAR::STR::DynamicType structtimealgo
     = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP");
     INPAR::FLUID::TimeIntegrationScheme fluidtimealgo
@@ -103,100 +124,6 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
 
     if(theta_struct != theta_fluid)
       dserror("porous media problem is limited in functionality. Only one-step-theta scheme with equal theta for both fields possible");
-  }
-
-  //check for submeshes and build of subnode and subelement map if necessary
-  submeshes_ = BuildSubMaps();
-
-  int submeshcounter = 0;
-  int submesh = submeshes_;
-  StructureField()->Discretization()->Comm().SumAll(&submesh,&submeshcounter,1);
-
-  if(submesh)
-    submeshes_ = true;
-  else submeshes_ = false;
-
-  // the problem is two way coupled, thus each discretization must know the other discretization
-  Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
-  Teuchos::RCP<DRT::DofSet> fluiddofset = Teuchos::null;
-
-  /* When coupling porous media with a pure structure or fluid we will have two discretizations
-   * of different size. In this case we need a special proxy, which can handle submeshes.
-   */
-  if(submeshes_)
-  {
-    cout<<"submeshes!!!!!!!!!!!!!"<<endl;
-    // build a proxy of the structure discretization for the fluid field
-    structdofset = StructureField()->Discretization()->GetDofSetProxy(subnodemap_, subelemap_);
-    // build a proxy of the fluid discretization for the structure field
-    fluiddofset = FluidField().Discretization()->GetDofSetProxy(subnodemap_, subelemap_);
-  }
-  else
-  {
-    // build a proxy of the structure discretization for the fluid field
-    structdofset = StructureField()->Discretization()->GetDofSetProxy();
-    // build a proxy of the fluid discretization for the structure field
-    fluiddofset = FluidField().Discretization()->GetDofSetProxy();
-  }
-
-  // check if FluidField has 2 discretizations, so that coupling is possible
-  if (FluidField().Discretization()->AddDofSet(structdofset) != 1)
-    dserror("unexpected dof sets in fluid field");
-  if (StructureField()->Discretization()->AddDofSet(fluiddofset)!=1)
-    dserror("unexpected dof sets in structure field");
-
-  // the fluid-ale coupling not always matches
-  const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeRowMap();
-  const Epetra_Map* structurenodemap = StructureField()->Discretization()->NodeRowMap();
-
-  coupfs_ = Teuchos::rcp(new ADAPTER::Coupling());
-  const int ndim = DRT::Problem::Instance()->NDim();
-
-  coupfs_->SetupCoupling(*StructureField()->Discretization(),
-                         *FluidField().Discretization(),
-                         *structurenodemap,
-                         *fluidnodemap,
-                          ndim,
-                          not submeshes_);
-
-  if(submeshes_)
-    psiextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*StructureField()->DofRowMap(), coupfs_->MasterDofMap()));
-
-  FluidField().SetMeshMap(coupfs_->SlaveDofMap());
-
-  //extractor for constraints on structure phase
-  //
-  // when using constraints applied via Lagrange-Multipliers there is a
-  // difference between StructureField()->DofRowMap() and StructureField()->DofRowMap(0).
-  // StructureField()->DofRowMap(0) returns the DofRowMap
-  // known to the discretization (without lagrange multipliers)
-  // while StructureField()->DofRowMap() returns the DofRowMap known to
-  // the constraint manager (with lagrange multipliers)
-  consplitter_ = Teuchos::rcp(new LINALG::MapExtractor(*StructureField()->DofRowMap(),
-      StructureField()->DofRowMap(0)));
-
-  std::vector<DRT::Condition*> nopencond;
-  FluidField().Discretization()->GetCondition("NoPenetration", nopencond);
-  noPenHandle_ = Teuchos::rcp(new POROELAST::NoPenetrationConditionHandle(nopencond));
-
-  partincond_=false;
-  std::vector<DRT::Condition*> poroPartInt;
-  FluidField().Discretization()->GetCondition("PoroPartInt",poroPartInt);
-  if(poroPartInt.size())
-    partincond_=true;
-
-  presintcond_=false;
-  std::vector<DRT::Condition*> poroPresInt;
-  FluidField().Discretization()->GetCondition("PoroPresInt",poroPresInt);
-  if(poroPresInt.size())
-    presintcond_=true;
-
-  //do some checks
-  {
-    std::vector<DRT::Condition*> porocoupl;
-    FluidField().Discretization()->GetCondition("PoroCoupling", porocoupl);
-    if ( porocoupl.size() == 0 )
-      dserror("no Poro Coupling Condition defined for porous media problem. Fix your input file!");
   }
 }
 
@@ -313,25 +240,23 @@ Teuchos::RCP<Epetra_Vector> POROELAST::PoroBase::FluidToStructureField(
 /*----------------------------------------------------------------------*/
 void POROELAST::PoroBase::SetStructSolution()
 {
-  Teuchos::RCP<Epetra_Vector> dispn;
+  Teuchos::RCP<Epetra_Vector> dispnp;
     // apply current displacements and velocities to the fluid field
   if (StructureField()->HaveConstraint())
     //displacement vector without lagrange-multipliers
-    dispn = consplitter_->ExtractCondVector(StructureField()->Dispnp());
+    dispnp = consplitter_->ExtractCondVector(StructureField()->Dispnp());
   else
-    dispn = StructureField()->ExtractDispnp();
+    dispnp = StructureField()->ExtractDispnp();
 
-  Teuchos::RCP<Epetra_Vector> veln = StructureField()->ExtractVelnp();
+  Teuchos::RCP<Epetra_Vector> velnp = StructureField()->ExtractVelnp();
 
   // transfer the current structure displacement to the fluid field
-  Teuchos::RCP<Epetra_Vector> structdisp = StructureToFluidField(dispn);
+  Teuchos::RCP<Epetra_Vector> structdisp = StructureToFluidField(dispnp);
   FluidField().ApplyMeshDisplacement(structdisp);
 
   // transfer the current structure velocity to the fluid field
-  Teuchos::RCP<Epetra_Vector> structvel = StructureToFluidField(veln);
+  Teuchos::RCP<Epetra_Vector> structvel = StructureToFluidField(velnp);
   FluidField().ApplyMeshVelocity(structvel);
-
-  //CalculateSurfPoro("PoroPartInt");
 }
 
 /*----------------------------------------------------------------------*/
@@ -367,49 +292,104 @@ void POROELAST::PoroBase::Output()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool POROELAST::PoroBase::BuildSubMaps()
+void POROELAST::PoroBase::SetupProxiesAndCoupling()
 {
-  std::set<int> subnodegids;
-  const Epetra_Map* structnodemap = StructureField()->Discretization()->NodeColMap();
-  const Epetra_Map* fluidnodemap = FluidField().Discretization()->NodeColMap();
-  const int numstructnodes = structnodemap->NumMyElements();
-  const int numfluidnodes = fluidnodemap->NumMyElements();
 
-  if(numstructnodes != numfluidnodes)
+  //get discretizations
+  Teuchos::RCP<DRT::Discretization> structdis = StructureField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
+
+  // if one discretization is a subset of the other, they will differ in node number (and element number)
+  // we assume matching grids for the overlapping part here
+  const Epetra_Map* structnodecolmap = structdis->NodeColMap();
+  const Epetra_Map* fluidnodecolmap = fluiddis->NodeColMap();
+
+  const int numglobalstructnodes = structnodecolmap->NumGlobalElements();
+  const int numglobalfluidnodes = fluidnodecolmap->NumGlobalElements();
+
+  //check for submeshes
+  if(numglobalstructnodes != numglobalfluidnodes)
+    submeshes_ = true;
+  else
+    submeshes_ = false;
+
+  // the problem is two way coupled, thus each discretization must know the other discretization
+  Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
+  Teuchos::RCP<DRT::DofSet> fluiddofset = Teuchos::null;
+
+  /* When coupling porous media with a pure structure we will have two discretizations
+   * of different size. In this case we need a special proxy, which can handle submeshes.
+   */
+  if(submeshes_)
   {
-    for(int i=0; i<(numfluidnodes);i++)
-    {
-      const int fluidgid = fluidnodemap->GID(i);
-      if(fluidgid == -1) dserror("Node with gobal id gid=%d not stored on this proc",fluidgid);
-      const int structlid = structnodemap->LID(fluidgid);
-      if(structlid != -1)
-        subnodegids.insert(fluidgid);
-      else
-        dserror("Node with gobal id gid=%d not existent on other discretization",fluidgid);
-    }
-
-    subnodemap_ = LINALG::CreateMap(subnodegids, Comm());
-
-    std::set<int> subelegids;
-    const Epetra_Map* structelemap = StructureField()->Discretization()->ElementColMap();
-    const Epetra_Map* fluidelemap = FluidField().Discretization()->ElementColMap();
-
-    for(int i=0; i<(fluidelemap->NumMyElements());i++)
-    {
-      const int fluidgid = fluidelemap->GID(i);
-      if(fluidgid == -1) dserror("Element with gobal id gid=%d not stored on this proc",fluidgid);
-      const int structlid = structelemap->LID(fluidgid);
-      if(structlid != -1)
-        subelegids.insert(fluidgid);
-      else
-        dserror("Node with gobal id gid=%d not existent on other discretization",fluidgid);
-    }
-
-    subelemap_ = LINALG::CreateMap(subelegids, Comm());
-
-    return true;
+    // build a proxy of the structure discretization for the fluid field (the structure disc. is the bigger one)
+    structdofset = structdis->GetDofSetProxy(structdis->NodeColMap(),structdis->ElementColMap());
+    // build a proxy of the fluid discretization for the structure field
+    fluiddofset = fluiddis->GetDofSetProxy(fluiddis->NodeColMap(),fluiddis->ElementColMap());
   }
-  return false;
+  else
+  {
+    // build a proxy of the structure discretization for the fluid field
+    structdofset = structdis->GetDofSetProxy();
+    // build a proxy of the fluid discretization for the structure field
+    fluiddofset = fluiddis->GetDofSetProxy();
+  }
+
+  // check if FluidField has 2 discretizations, so that coupling is possible
+  if (fluiddis->AddDofSet(structdofset) != 1)
+    dserror("unexpected dof sets in fluid field");
+  if (structdis->AddDofSet(fluiddofset)!=1)
+    dserror("unexpected dof sets in structure field");
+
+  // the fluid-ale coupling not always matches
+  const Epetra_Map* fluidnoderowmap = fluiddis->NodeRowMap();
+  const Epetra_Map* structurenoderowmap= structdis->NodeRowMap();
+
+  coupfs_ = Teuchos::rcp(new ADAPTER::Coupling());
+  const int ndim = DRT::Problem::Instance()->NDim();
+
+  if(submeshes_)
+    //for submeshes we only couple a part of the structure disc. with the fluid disc.
+    // we use the fact, that we have matching grids and matiching gids
+    coupfs_->SetupCoupling(*structdis,
+                           *fluiddis,
+                           *fluidnoderowmap,
+                           *fluidnoderowmap,
+                            ndim,
+                            not submeshes_);
+  else
+    coupfs_->SetupCoupling(*structdis,
+                           *fluiddis,
+                           *structurenoderowmap,
+                           *fluidnoderowmap,
+                            ndim,
+                            not submeshes_);
+
+  if(submeshes_)
+    psiextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*StructureField()->DofRowMap(), coupfs_->MasterDofMap()));
+
+  FluidField().SetMeshMap(coupfs_->SlaveDofMap());
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROELAST::PoroBase::CheckForPoroConditions()
+{
+  std::vector<DRT::Condition*> nopencond;
+  FluidField().Discretization()->GetCondition("NoPenetration", nopencond);
+  noPenHandle_ = Teuchos::rcp(new POROELAST::NoPenetrationConditionHandle(nopencond));
+
+  partincond_=false;
+  std::vector<DRT::Condition*> poroPartInt;
+  FluidField().Discretization()->GetCondition("PoroPartInt",poroPartInt);
+  if(poroPartInt.size())
+    partincond_=true;
+
+  presintcond_=false;
+  std::vector<DRT::Condition*> poroPresInt;
+  FluidField().Discretization()->GetCondition("PoroPresInt",poroPresInt);
+  if(poroPresInt.size())
+    presintcond_=true;
 }
 
 /*----------------------------------------------------------------------*
@@ -441,8 +421,8 @@ void POROELAST::PoroBase::CalculateSurfPoro(const string& condstring)
 
     structdis->SetState(1,"fluidvel",FluidField().Velnp());
 
-    StructureField()->Discretization()->EvaluateCondition(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condstring);
-    StructureField()->Discretization()->ClearState();
+    structdis->EvaluateCondition(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condstring);
+    structdis->ClearState();
   }
 }
 
@@ -473,6 +453,7 @@ void POROELAST::NoPenetrationConditionHandle::ApplyCondRHS( Teuchos::RCP<Epetra_
     const Teuchos::RCP<const Epetra_Map >& nopenetrationmap = nopenetration_->Map(1);
     LINALG::ApplyDirichlettoSystem(iterinc,rhs,condRHS_,*nopenetrationmap);
   }
+
   return;
 }
 
@@ -483,11 +464,21 @@ void POROELAST::NoPenetrationConditionHandle::Clear(POROELAST::coupltype couplty
   if(hascond_)
   {
     condRHS_->PutScalar(0.0);
+    //condVector_->PutScalar(0.0);
     condIDs_->clear();
-    if(coupltype == POROELAST::fluidfluid)
-      fluidfluidConstraintMatrix_->Zero();
-    else if(coupltype == POROELAST::fluidstructure)
+    switch(coupltype)
     {
+    case POROELAST::fluidfluid:
+      fluidfluidConstraintMatrix_->Zero();
+      condVector_->PutScalar(0.0);
+      break;
+    case POROELAST::fluidstructure:
+      fluidstructureConstraintMatrix_->Zero();
+      structVelConstraintMatrix_->Zero();
+      break;
+    default:
+      condVector_->PutScalar(0.0);
+      fluidfluidConstraintMatrix_->Zero();
       fluidstructureConstraintMatrix_->Zero();
       structVelConstraintMatrix_->Zero();
     }

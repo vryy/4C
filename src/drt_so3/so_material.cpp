@@ -91,8 +91,8 @@ void DRT::ELEMENTS::So_hex8::soh8_mat_sel(
 
   if(mat->MaterialType() == INPAR::MAT::m_structporo)
   {
-	  const MAT::StructPoro* actmat = static_cast<const MAT::StructPoro*>(mat.get());
-	  mat = actmat->GetMaterial();
+    const MAT::StructPoro* actmat = static_cast<const MAT::StructPoro*>(mat.get());
+    mat = actmat->GetMaterial();
   }
 
   switch (mat->MaterialType())
@@ -759,6 +759,13 @@ void DRT::ELEMENTS::So_hex27::soh27_mat_sel(
 {
 
   RCP<MAT::Material> mat = Material();
+
+  if(mat->MaterialType() == INPAR::MAT::m_structporo)
+  {
+    const MAT::StructPoro* actmat = static_cast<const MAT::StructPoro*>(mat.get());
+    mat = actmat->GetMaterial();
+  }
+
   switch (mat->MaterialType())
   {
     case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */

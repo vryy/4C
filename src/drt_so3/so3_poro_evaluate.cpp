@@ -450,9 +450,6 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
       if (velnp==Teuchos::null)
         dserror("Cannot get state vector 'fluidvel'");
 
-   //   dsassert(la[1].Size() == numnod_*numdofpernode_,
-   //           "Location vector length for fluid velocities and pressures does not match!");
-
       // extract the current velocitites and pressures of the global vectors
       std::vector<double> mymatrix(la[1].lm_.size());
       DRT::UTILS::ExtractMyValues(*velnp,mymatrix,la[1].lm_);
@@ -519,9 +516,6 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::MyEvaluate(
 
       LINALG::Matrix<numdim_,numnod_> myfluidvel(true);
       LINALG::Matrix<numnod_,1> myepreaf(true);
-
-  //    if (la[1].Size() != numnod_*numdofpernode_)
-  //      dserror("Location vector length for velocities does not match!");
 
       // check if you can get the velocity state
       Teuchos::RCP<const Epetra_Vector> velnp

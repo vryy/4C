@@ -116,22 +116,7 @@ public:
   every class implementing ParObject needs a unique id defined at the
   top of this file.
   */
-  //virtual int UniqueParObjectId() const = 0 ;
-  virtual int UniqueParObjectId() const
-  {
-    switch(distype)
-    {
-    case DRT::Element::tet4:
-      return So_tet4PoroType::Instance().UniqueParObjectId();
-      break;
-    case DRT::Element::hex8:
-      return So_hex8PoroType::Instance().UniqueParObjectId();
-      break;
-    default: dserror("unknown element type!");
-      break;
-    }
-    return -1;
-  };
+  virtual int UniqueParObjectId() const;
 
   /*!
   \brief Pack this class so it can be communicated
@@ -185,6 +170,8 @@ public:
       return So_tet4PoroType::Instance();
     case DRT::Element::hex8:
       return So_hex8PoroType::Instance();
+    case DRT::Element::hex27:
+      return So_hex27PoroType::Instance();
     default: dserror("unknown element type!");
       break;
     }
@@ -378,8 +365,10 @@ protected:
   //!flag indicating higher order element
   bool ishigherorder_;
 
+  //!flag indicating if element has been initialized
   bool init_;
 
+  //! flag for scatra coupling
   bool scatracoupling_;
 
 private:

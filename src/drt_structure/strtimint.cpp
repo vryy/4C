@@ -2035,13 +2035,17 @@ void STR::TimInt::ApplyVelAndPress(
   Teuchos::RCP<const Epetra_Vector> veln  ///< the current velocities
   )
 {
-  if(veln != Teuchos::null)
+  if (fluidveln_ == Teuchos::null)
+    fluidveln_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
+
+  dsassert( fluidveln_->Map().SameAs(veln->Map()), "maps do not match!");
+
+  if(veln != Teuchos::null )
   {
     // velocities and pressures at t_{n+1}
-	  fluidveln_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
-	  fluidveln_ = veln;
+    fluidveln_->Update(1.0, *veln, 0.0);
   }
-  else dserror("no velocities and pressures available for poroelasticity");
+  else dserror("no velocities and pressures available");
 
   return;
 }

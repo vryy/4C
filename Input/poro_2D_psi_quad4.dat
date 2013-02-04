@@ -71,6 +71,49 @@ SUPG                            no_supg
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
+--------------------------------------------------------------------SOLVER 3
+AMGBS_BS_DAMPING 1.3 1.3 1.3
+AMGBS_BS_PCCOARSE               Umfpack
+AMGBS_BS_PCDAMPING 1.0 1.0 1.0
+AMGBS_BS_PCFINE                 Umfpack
+AMGBS_BS_PCMEDIUM               Umfpack
+AMGBS_BS_PCSWEEPS 2 2 2
+AMGBS_PSMOOTHER_PRE             PA-AMG
+AMGBS_PSMOOTHER_VEL             PA-AMG
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+AZPOLY                          3
+AZPREC                          ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+IFPACKCOMBINE                   Add
+IFPACKFILL                      1
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES 1 1 1 1 1
+SOLVER                          UMFPACK
 --------------------------------------------------------------------------IO
 ALE_DISP                        Yes
 FILESTEPS                       1000
@@ -96,10 +139,10 @@ INCTOL                          1e-06
 ITEMAX                          20
 ITEMIN                          1
 MAXTIME                         8
-NORMCOMBI_RESFINC               And
+NORMCOMBI_RESFINC               Or
 NORM_INC                        Abs
 NORM_RESF                       Abs
-NUMSTEP                         100
+NUMSTEP                         50
 RESTARTEVRY                     100
 RESTOL                          1e-08
 TIMESTEP                        0.01
@@ -107,17 +150,97 @@ UPRES                           1
 LINEAR_SOLVER                   1
 SECONDORDER                     no
 CONTIPARTINT                    yes
+--------------------------------------------------------------------SOLVER 1
+AMGBS_BS_DAMPING 1.3 1.3 1.3
+AMGBS_BS_PCCOARSE               Umfpack
+AMGBS_BS_PCDAMPING 1.0 1.0 1.0
+AMGBS_BS_PCFINE                 Umfpack
+AMGBS_BS_PCMEDIUM               Umfpack
+AMGBS_BS_PCSWEEPS 2 2 2
+AMGBS_PSMOOTHER_PRE             PA-AMG
+AMGBS_PSMOOTHER_VEL             PA-AMG
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+AZPOLY                          3
+AZPREC                          ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+IFPACKCOMBINE                   Add
+IFPACKFILL                      1
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES 1 1 1 1 1
+SOLVER                          UMFPACK
 -----------------------------------------------------------------PROBLEM TYP
 NUMFIELD                        1
 PROBLEMTYP                      Poroelasticity
 RESTART                         0
 SHAPEFCT                        Polynomial
---------------------------------------------------------------------SOLVER 1
-SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
+AMGBS_BS_DAMPING 1.3 1.3 1.3
+AMGBS_BS_PCCOARSE               Umfpack
+AMGBS_BS_PCDAMPING 1.0 1.0 1.0
+AMGBS_BS_PCFINE                 Umfpack
+AMGBS_BS_PCMEDIUM               Umfpack
+AMGBS_BS_PCSWEEPS 2 2 2
+AMGBS_PSMOOTHER_PRE             PA-AMG
+AMGBS_PSMOOTHER_VEL             PA-AMG
+AZBDIAG                         0
+AZCONV                          AZ_r0
+AZDROP                          0
+AZGRAPH                         0
+AZITER                          1000
+AZOMEGA                         0
+AZOUTPUT                        0
+AZPOLY                          3
+AZPREC                          ILU
+AZREUSE                         0
+AZSCAL                          none
+AZSOLVE                         GMRES
+AZSUB                           300
+AZTOL                           1e-08
+DWINDTAU                        1.5
+IFPACKCOMBINE                   Add
+IFPACKFILL                      1
+IFPACKGFILL                     0
+IFPACKOVERLAP                   0
+ML_AGG_SIZE                     27
+ML_COARSEN                      UC
+ML_DAMPCOARSE                   1
+ML_DAMPFINE                     1
+ML_DAMPMED                      1
+ML_MAXCOARSESIZE                5000
+ML_MAXLEVEL                     5
+ML_PRINT                        0
+ML_PROLONG_SMO                  0
+ML_PROLONG_THRES                0
+ML_SMOOTHERCOARSE               Umfpack
+ML_SMOOTHERFINE                 ILU
+ML_SMOOTHERMED                  ILU
+ML_SMOTIMES 1 1 1 1 1
 SOLVER                          UMFPACK
---------------------------------------------------------------------SOLVER 3
-SOLVER                          UMFPACK                         // Amesos_KLU_sym,Amesos_KLU_nonsym,Superlu,vm3,Aztec_MSR,LAPACK_sym,LAPACK_nonsym,UMFPACK
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
@@ -176,7 +299,6 @@ MAT 4 ELAST_CoupNeoHooke YOUNG 2.0e4 NUE 0.3
 MAT 3 MAT_FluidPoro DYNVISCOSITY 0.01 DENSITY 1.0 PERMEABILITY 1.0e-2 TYPE Darcy
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC -1.0*0.5*(1-cos((t*pi/2.0))) t1 0.0 t2 2.0 // Tmax=4
-CURVE1 on EXPR FUNC -1.0                         t1 2.0 t2 2000.0 // Tmax=4
 ------------------------------------------------------------CURVE2
 ------------------------------------------------------------CURVE3
 ------------------------------------------------------------CURVE4
@@ -185,81 +307,48 @@ CURVE1 on EXPR FUNC -1.0                         t1 2.0 t2 2000.0 // Tmax=4
 ------------------------------------------------------------FUNCT3
 ------------------------------------------------------------FUNCT4
 -------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 4 QUANTITY velx VALUE -7.85398163397448279e-01 TOLERANCE 1e-8
-FLUID DIS fluid NODE 5 QUANTITY pressure VALUE 6.20950207684689906e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 2 QUANTITY dispx VALUE -2.50028320120861403e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 3 QUANTITY dispx VALUE -2.50043647426255844e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 4 QUANTITY dispx VALUE -5.00000000000000555e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 4 QUANTITY velx VALUE -7.85398163397448279e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 5 QUANTITY dispx VALUE 0 TOLERANCE 1e-14
+FLUID DIS fluid NODE 4 QUANTITY velx VALUE 4.73012191202632992e-01 TOLERANCE 1e-8
+FLUID DIS fluid NODE 8 QUANTITY pressure VALUE 2.55924164710887014e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE -1.46446609406726325e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 3 QUANTITY dispy VALUE -6.98581291625165052e-02 TOLERANCE 1e-8
 ------------------------------------------------DESIGN DESCRIPTION
-NDPOINT 5
-NDLINE  6
+NDPOINT 4
+NDLINE  7
 NDSURF  1
-NDVOL   0
+NDVOL   1
 -------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT     4
 // Point x+y+
-E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 0 0 0 0 0
 // Point x-y+
-E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 0 0 0 0 0
 // Point x-y-
 E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // Point x+y-
-E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE  4
 // Line_x+
-E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
+E 1 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // Line_x-
-E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // Line_y+
-E 3 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 1.0 0.0 0.0 0.0 0.0 CURVE none 1 none none none none FUNCT 0 0 0 0 0 0
 // Line_y-
-E 4 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
--------------------------------------DESIGN POINT PORO DIRICH CONDITIONS
-DPOINT     0
-// Point x+y+
-//E 1 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// Point x-y+
-//E 2 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// Point x-y-
-//E 3 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// Point x+y-
-//E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
-//E 5 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
--------------------------------------DESIGN LINE PORO DIRICH CONDITIONS
-DLINE  0
-// Line_x+
-//E 1 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
-// Line_x-
-//E 2 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// Line_y+
-//E 3 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-// Line_y-
-//E 4 - NUMDOF 6 ONOFF 0 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+E 4 - NUMDOF 6 ONOFF 1 1 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 ------------------------------DESIGN LINE NORMAL NO PENETRATION CONDITION
-DLINE                           2
+DLINE                           1
 // Line_x+
-E 1 - 
+//E 1 - 
 // Line_x-
-E 2 - 
+//E 2 - 
 // Line_y+
 //E 3 - 
 // Line_y-
 //E 4 - 
+E 5 -
 ----------------------------------------DESIGN LINE PORO PARTIAL INTEGRATION
-DLINE  2
-// Line_x+
-//E 1 -
-// Line_x-
-//E 2 - 
-// Line_y+
-E 3 - 
-// Line_y-
-E 4 -
-------------------------------DESIGN LINE PORO PRESSURE INTEGRATION
-DLINE  0
+DLINE  3
 // Line_x+
 //E 1 -
 // Line_x-
@@ -267,7 +356,11 @@ DLINE  0
 // Line_y+
 //E 3 - 
 // Line_y-
-//E 4 -
+E 4 -
+//rightporo
+E 6 -
+//leftporo
+E 7 -
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF   0
 // Surface
@@ -276,16 +369,14 @@ DSURF   0
 DSURF   0
 // Surface
 //E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
-------------------------------DESIGN SURFACE POROCOUPLING CONDITION
-DSURF   1
-// Surface
+------------------------------DESIGN VOLUME POROCOUPLING CONDITION
+DVOL   1
 E 1 -  
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    1 DNODE 1
 NODE    5 DNODE 2
 NODE    9 DNODE 3
 NODE    8 DNODE 4
-NODE    2 DNODE 5
 -----------------------------------------------DLINE-NODE TOPOLOGY
 NODE    1 DLINE 1
 NODE    4 DLINE 1
@@ -299,12 +390,13 @@ NODE    5 DLINE 3
 NODE    7 DLINE 4
 NODE    8 DLINE 4
 NODE    9 DLINE 4
-NODE    1 DLINE 5
-NODE    2 DLINE 5
-NODE    5 DLINE 5
-NODE    7 DLINE 6
+NODE    3 DLINE 5
+NODE    4 DLINE 5
+NODE    6 DLINE 5
+NODE    4 DLINE 6
 NODE    8 DLINE 6
-NODE    9 DLINE 6
+NODE    6 DLINE 7
+NODE    9 DLINE 7
 -----------------------------------------------DSURF-NODE TOPOLOGY
 NODE    1 DSURFACE 1
 NODE    2 DSURFACE 1
@@ -316,6 +408,12 @@ NODE    7 DSURFACE 1
 NODE    8 DSURFACE 1
 NODE    9 DSURFACE 1
 ------------------------------------------------DVOL-NODE TOPOLOGY
+NODE    3 DVOLUME 1
+NODE    4 DVOLUME 1
+NODE    6 DVOLUME 1
+NODE    7 DVOLUME 1
+NODE    8 DVOLUME 1
+NODE    9 DVOLUME 1
 -------------------------------------------------------NODE COORDS
 NODE 1  	COORD	5.0000000000000000e+00	5.0000000000000000e+00	0.0000000000000000e+00	
 NODE 2  	COORD	0.0000000000000000e+00	5.0000000000000000e+00	0.0000000000000000e+00	
@@ -327,8 +425,8 @@ NODE 7  	COORD	0.0000000000000000e+00	-5.0000000000000000e+00	0.0000000000000000
 NODE 8  	COORD	5.0000000000000000e+00	-5.0000000000000000e+00	0.0000000000000000e+00	
 NODE 9  	COORD	-5.0000000000000000e+00	-5.0000000000000000e+00	0.0000000000000000e+00	
 ------------------------------------------------STRUCTURE ELEMENTS
-   1 WALLQ4PORO QUAD4  1 2 3 4    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2
-   2 WALLQ4PORO QUAD4  2 5 6 3    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2
+   1 WALL QUAD4  1 2 3 4    MAT 2 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2
+   2 WALL QUAD4  2 5 6 3    MAT 2 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2
    3 WALLQ4PORO QUAD4  4 3 7 8    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2
    4 WALLQ4PORO QUAD4  3 6 9 7    MAT 1 KINEM nonlinear EAS none THICK 0.1 STRESS_STRAIN plane_strain GP 2 2
 ---------------------------------------------------------------END

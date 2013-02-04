@@ -209,7 +209,7 @@ void DRT::ELEMENTS::So_hex27PoroType::SetupElementDefinition( std::map<std::stri
  *----------------------------------------------------------------------*/
 int DRT::ELEMENTS::So_hex27PoroType::Initialize(DRT::Discretization& dis)
 {
-  So_hex27PoroType::Initialize(dis);
+  So_hex27Type::Initialize(dis);
   for (int i=0; i<dis.NumMyColElements(); ++i)
   {
     if (dis.lColElement(i)->ElementType() != *this) continue;

@@ -150,7 +150,8 @@ void FluidEnsightWriter::WriteAllResults(PostField* field)
   EnsightWriter::WriteResult("Add_Forces", "Add_Forces", dofbased, field->problem()->num_dim());
 
   //additional output for poro problems
-  EnsightWriter::WriteResult("convel", "convel", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("convel", "convective_velocity", dofbased, field->problem()->num_dim());
+  EnsightWriter::WriteResult("gridv", "grid_velocity", dofbased, field->problem()->num_dim());
 
   // additional fields due to adjoint equations
   EnsightWriter::WriteResult("adjoint_velnp", "adjoint_velocity", dofbased, field->problem()->num_dim());

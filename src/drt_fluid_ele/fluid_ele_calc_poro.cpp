@@ -304,7 +304,6 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
   // ---------------------------------------------------------------------
   LINALG::Matrix<my::nsd_, my::nen_> edispnp(true);
   LINALG::Matrix<my::nsd_, my::nen_> egridv(true);
-  LINALG::Matrix<my::nsd_, my::nen_> edispn(true);
 
   this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, &edispnp,
       NULL, "dispnp");

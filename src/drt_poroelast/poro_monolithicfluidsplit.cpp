@@ -100,6 +100,8 @@ void POROELAST::MonolithicFluidSplit::SetupRHS( bool firstcall)
               FluidField().RHS(),
               FluidField().ResidualScaling());
 
+// i am not sure, if this is needed
+#if 1
   if (firstcall and evaluateinterface_)
   {
     //add additional rhs-terms depending on the solution on the interface
@@ -177,6 +179,7 @@ void POROELAST::MonolithicFluidSplit::SetupRHS( bool firstcall)
     //fgicur_ = Teuchos::null;
     //fggcur_ = Teuchos::null;
   }
+#endif
 
   // store interface force onto the structure to know it in the next time step as previous force
   // in order to recover the Lagrange multiplier
@@ -416,11 +419,11 @@ void POROELAST::MonolithicFluidSplit::ExtractFieldVectors(
     fox = FluidField().Interface()->ExtractOtherVector(fox);
 #endif
 
-    if(firstcall)
-    {
-      FluidField().DisplacementToVelocity(fcx);
-    }
-    else
+    //if(firstcall)
+    //{
+    //  FluidField().DisplacementToVelocity(fcx);
+    //}
+    //else
     {
       double timescale = FluidField().TimeScaling();
       fcx->Scale(timescale);

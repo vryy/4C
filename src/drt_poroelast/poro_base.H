@@ -149,14 +149,12 @@ namespace POROELAST
       bool presintcond_;
 
     private:
-      //! check for submeshes and build of subnode and subelement map if necessary
-      bool BuildSubMaps();
 
-      //!map containing global IDs of nodes belonging to submesh
-      Teuchos::RCP<Epetra_Map> subnodemap_;
+      //! setup of everything, that is needed for the volumetric coupling
+      void SetupProxiesAndCoupling();
 
-      //!map containing global IDs of elements belonging to submesh
-      Teuchos::RCP<Epetra_Map> subelemap_;
+      //! check for special poro conditions and set bools
+      void CheckForPoroConditions();
 
       //!flag indicating not fully overlapping fluid and structure discretization
       bool submeshes_;
@@ -197,7 +195,6 @@ namespace POROELAST
       {
         hascond_ = true;
         condIDs_ = Teuchos::rcp(new std::set<int>());
-        //condRHS_ = Teuchos::rcp(new Epetra_Vector(dofrowmap, true));
       }
     };
 
@@ -225,7 +222,7 @@ namespace POROELAST
     //! return condrhs
     Teuchos::RCP<Epetra_Vector> RHS(){return condRHS_;};
 
-    void Clear(POROELAST::coupltype coupltype);
+    void Clear(POROELAST::coupltype coupltype=POROELAST::undefined);
 
     void Setup(Teuchos::RCP<const Epetra_Map> dofRowMap, const Epetra_Map* dofRowMapFluid);
 
