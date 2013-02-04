@@ -217,7 +217,7 @@ static inline bool intersectionPointInElementsRCI(
       return true;
   }
   default:
-    dserror("surface type not implemented");
+    dserror("surface type not implemented"); break;
 
   };
   return false;
@@ -481,7 +481,8 @@ bool computeRecoveryPlaneT(
     updateAForRCIPlane<linetype>( A, xsi, plane, xyze_lineElement);
 
     // check if singular computatio necessary
-    if(!gaussElimination<true,3>(A, b, dx, GEO::TOL13))
+    double det = LINALG::gaussElimination<true,3>(A, b, dx);
+    if(fabs(det) > TOL14)
       return false;
 
     if(iter >= maxiter || GEO::SumOfFabsEntries(xsi) > GEO::TOLPLUS8 || isNaN<3>(xsi))

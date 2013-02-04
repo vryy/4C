@@ -19,6 +19,7 @@ Maintainer: Ursula Mayer
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_geometry/intersection_math.H"
+#include "../linalg/linalg_gauss.H"
 
 
 namespace GEO
@@ -109,7 +110,7 @@ static inline void elementToCurrentCoordinatesInPlace(
       break;
   default:
       std::cout << DistypeToString(distype) << endl;
-      dserror("add your 3D distype to this switch!");
+      dserror("add your 3D distype to this switch!"); break;
   }
   return;
 }
@@ -211,7 +212,7 @@ static inline void elementToCurrentCoordinates(
       break;
   default:
       std::cout << DistypeToString(distype) << endl;
-      dserror("add your 3D distype to this switch!");
+      dserror("add your 3D distype to this switch!"); break;
   }
   return;
 }
@@ -264,7 +265,7 @@ static inline void startingValueCurrentToElementCoords(
     break;
   }
   default:
-    dserror("distype not yet implemented");
+    dserror("distype not yet implemented"); break;
   }
   return;
 }
@@ -445,10 +446,11 @@ static inline bool currentToVolumeElementCoordinatesT(
   {
     updateAForNWE<DISTYPE,dim>( A, xsi, xyze);
 
-    if(!GEO::gaussElimination<true,3>(A, b, dx, GEO::TOL14))
+    double det = LINALG::gaussElimination<true,3>(A, b, dx);
+
+    if(fabs(det)< GEO::TOL14)
     {
-      nodeWithinElement = false;
-      break;
+      dserror("determinant is near zero %d", det);
     }
 
     xsi += dx;
@@ -512,6 +514,7 @@ bool currentToVolumeElementCoordinates(
         std::cout << DistypeToString(distype) << endl;
         dserror("add your 3D distype to this switch!");
         nodeWithinElement = false;
+        break;
     }
 
     return nodeWithinElement;
@@ -590,7 +593,7 @@ LINALG::Matrix<3,1> currentToVolumeElementCoordinatesExact(
       break;
     }
     default:
-      dserror("element type not implemented");
+      dserror("element type not implemented"); break;
     };
 
     return xsi;
@@ -752,7 +755,9 @@ static void currentToSurfaceElementCoordinatesT(
     static LINALG::Matrix<2,1> dx;
     dx = 0.0;
 
-    if(!GEO::gaussElimination<true,2>(A, b, dx, GEO::TOL14))
+    double det = LINALG::gaussElimination<true,2>(A, b, dx);
+
+    if(fabs(det)< GEO::TOL14)
     {
       break;
     }
@@ -799,7 +804,7 @@ static void CurrentToSurfaceElementCoordinates(
     currentToSurfaceElementCoordinatesT<DRT::Element::tri6>(xyze_surfaceElement,physCoord,eleCoord);
     break;
   default:
-    dserror("please add your surface element type here");
+    dserror("please add your surface element type here"); break;
   }
 }
 
@@ -922,7 +927,7 @@ static void CurrentToLineElementCoordinates(
     currentToLineElementCoordinatesT<DRT::Element::line3>(xyze_lineElement,physCoord,eleCoord);
     break;
   default:
-    dserror("please add your line element type here");
+    dserror("please add your line element type here"); break;
   }
 }
 
