@@ -4943,6 +4943,16 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
         // determine existence and location of broken element
         if(CheckForBrokenElement(coord,cut))
         {
+          // reduce the axial stiffness of the element drastically, close to zero in order to take this element out
+          // only for Beam3ii case
+          //for(int n=0; n<cut.N(); n++)
+          //  if(element->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance() && cut(2,n)>0.0)
+          //  {
+          //    dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSec(1.0e-9);
+          //    dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSecShear(1.1e-9);
+          //    break;
+          //  }
+
           for(int n=0; n<cut.N(); n++)
           {
             int nodelidn = discret_->NodeRowMap()->LID(element->Nodes()[n]->Id());
@@ -5164,6 +5174,16 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
         // shifted elements
         if(CheckForBrokenElement(coord,cut))
         {
+          // reduce the axial stiffness of the element drastically, close to zero in order to take this element out
+          // only for Beam3ii case
+          //for(int n=0; n<cut.N(); n++)
+          //  if(element->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance() && cut(2,n)>0.0)
+          //  {
+          //    dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSec(1.0e-12);
+          //    dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSecShear(1.1e-12);
+          //    break;
+          //  }
+
           for(int n=0; n<cut.N(); n++)
           {
             int nodelidn = discret_->NodeRowMap()->LID(element->Nodes()[n]->Id());
@@ -5295,7 +5315,6 @@ void STATMECH::StatMechManager::DBCAffineShear(Teuchos::ParameterList&     param
       }
     }
   }
-
   return;
 }
 
