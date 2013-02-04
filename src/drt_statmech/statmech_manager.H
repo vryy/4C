@@ -518,9 +518,10 @@ protected:
                             const int&                step);
 
   //! \brief measure the filaments' internal elastic energy and separation between the hoop and the fixed end
-  void LoomOutputElasticEnergy(const Epetra_Vector&      disrow,
-                               const double&             dt,
-                               const std::ostringstream& filename);
+  void LoomOutputElasticEnergy(const Epetra_Vector&                 disrow,
+                               const double&                        dt,
+                               const std::ostringstream&            filename,
+                               Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager=Teuchos::null);
 
   //! \brief output of nodal coordinates in a loom setup
   void OutputNodalDisplacements(const Epetra_Vector&      disrow,

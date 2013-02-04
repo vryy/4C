@@ -4389,7 +4389,10 @@ void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow
  | simply counts the number of free, one-bonded, and two-bonded crosslinkers    |
  |                                                        (public) mueller 4/11 |
  *------------------------------------------------------------------------------*/
-void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector& disrow, const double& dt, const std::ostringstream& filename)
+void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector&                 disrow,
+                                                        const double&                        dt,
+                                                        const std::ostringstream&            filename,
+                                                        Teuchos::RCP<CONTACT::Beam3cmanager> beamcmanager)
 {
   Epetra_Vector discol(*discret_->DofColMap(), true);
   LINALG::Export(disrow, discol);
@@ -4403,27 +4406,30 @@ void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector& dis
   // retrieve distance between fixed end (at x=0) and hoop position (x=x_hoop)
   if(!discret_->Comm().MyPID())
   {
-    for(int i=0; i<filamentnumber_->MyLength(); i++)
+    FILE* fp = NULL;
+    fp = fopen(filename.str().c_str(), "a");
+    std::stringstream elasticenergy;
+
+    if(beamcmanager!=Teuchos::null)
     {
-      if((*filamentnumber_)[i]>0)
+      for(int i=0; i<filamentnumber_->MyLength(); i++)
       {
-        DRT::Node* ringnode = discret_->lColNode(i);
-        std::vector<int> dofnode = discret_->Dof(ringnode);
-        double xring = discret_->lColNode(i)->X()[0] + discol[discret_->DofColMap()->LID(dofnode[0])];
-
-        FILE* fp = NULL;
-        fp = fopen(filename.str().c_str(), "a");
-        std::stringstream elasticenergy;
-
-        elasticenergy << std::scientific << std::setprecision(15) << xring << " ";
-        for(int j=0; j<(int)internalenergy.size(); j++)
-          elasticenergy << std::scientific << std::setprecision(15)<< internalenergy[j] <<" ";
-        elasticenergy<<endl;
-        fprintf(fp, elasticenergy.str().c_str());
-        fclose(fp);
-        break;
+        if((*filamentnumber_)[i]>0)
+        {
+          DRT::Node* ringnode = discret_->lColNode(i);
+          std::vector<int> dofnode = discret_->Dof(ringnode);
+          double xring = discret_->lColNode(i)->X()[0] + discol[discret_->DofColMap()->LID(dofnode[0])];
+          elasticenergy << std::scientific << std::setprecision(15) << xring << " ";
+          break;
+        }
       }
     }
+
+    for(int j=0; j<(int)internalenergy.size(); j++)
+      elasticenergy << std::scientific << std::setprecision(15)<< internalenergy[j] <<" ";
+    elasticenergy<<endl;
+    fprintf(fp, elasticenergy.str().c_str());
+    fclose(fp);
   }
   discret_->Comm().Barrier();
   return;
@@ -4432,8 +4438,8 @@ void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector& dis
 /*------------------------------------------------------------------------------*                                                 |
  | output nodal displacements                                      mueller 5/12 |
  *------------------------------------------------------------------------------*/
-void STATMECH::StatMechManager::OutputNodalDisplacements(const Epetra_Vector&      disrow,
-                                                         const std::ostringstream& filename)
+void STATMECH::StatMechManager::OutputNodalDisplacements(const Epetra_Vector&                 disrow,
+                                                         const std::ostringstream&            filename)
 {
   FILE* fp = NULL;
   fp = fopen(filename.str().c_str(), "a");
