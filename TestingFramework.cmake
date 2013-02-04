@@ -1,4 +1,4 @@
-###------------------------------------------------------------------ Test definitions
+ll###------------------------------------------------------------------ Test definitions
 
 macro (baci_test arg nproc restart)
   add_test(NAME ${arg}-p${nproc}
@@ -525,6 +525,7 @@ baci_test(fsi_ves_mono_mtrss_ost_ost_slidcurr 1 "")
 baci_test(fsi_ves_mono_mtrss_ost_ost_slidcurr 2 "")
 baci_test(fsi_ves_mono_mtrss_ost_ost_slidrot 1 "")
 baci_test(fsi_ves_mono_mtrss_ost_ost_slidrot 2 "")
+baci_test(fsi_artery_coupled_with_3_1d_arteries 2 214)
 baci_test(inv_analysis 1 "")
 baci_test(invaaa 1 "")
 baci_test(invaaa 2 "")
