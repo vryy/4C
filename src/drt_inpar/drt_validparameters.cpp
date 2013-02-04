@@ -3260,6 +3260,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     IntParameter("NUMSTEP",0,"Number of Time Steps",&andyn);
     IntParameter("RESTARTEVRY",1,"Increment for writing restart",&andyn);
     IntParameter("UPRES",1,"Increment for writing solution",&andyn);
+    setStringToIntegralParameter<int>("SOLVESCATRA",
+                               "no",
+                               "Flag to (de)activate solving scalar transport in blood",
+                               tuple<std::string>(
+                                 "no",
+                                 "yes"),
+                               tuple<std::string>(
+                                 "do not solve scatra",
+                                 "solve scatra"),
+                               tuple<int>(0,1),
+                               &andyn);
 
     // number of linear solver used for arterial dynamics
     IntParameter("LINEAR_SOLVER",-1,"number of linear solver used for arterial dynamics",&andyn);

@@ -3250,6 +3250,7 @@ void FLD::FluidImplicitTimeInt::StatisticsAndOutput()
   //                         output of solution
   // -------------------------------------------------------------------
   Output();
+  OutputReducedD();
 
   // -------------------------------------------------------------------
   //          dumping of turbulence statistics if required
@@ -3308,7 +3309,6 @@ void FLD::FluidImplicitTimeInt::StatisticsOutput()
 void FLD::FluidImplicitTimeInt::Output()
 {
 
-  //  ART_exp_timeInt_->Output();
   // output of solution
   if (step_%upres_ == 0)
   {
@@ -3436,6 +3436,17 @@ void FLD::FluidImplicitTimeInt::Output()
 
     vol_surf_flow_bc_->Output(*output_);
     traction_vel_comp_adder_bc_->Output(*output_);
+    // write reduced model problem
+    // Check if one-dimensional artery network problem exist
+    if (ART_exp_timeInt_ != Teuchos::null)
+    {
+      coupled3D_redDbc_art_->WriteRestart(*output_);
+    }
+    // Check if zero-dimensional airway network problem exist
+    if (airway_imp_timeInt_ != Teuchos::null)
+    {
+      coupled3D_redDbc_airways_->WriteRestart(*output_);
+    }
   }
   // write restart also when uprestart_ is not a integer multiple of upres_
   else if (uprestart_ > 0 && step_%uprestart_ == 0)
@@ -3491,35 +3502,6 @@ void FLD::FluidImplicitTimeInt::Output()
     Wk_optimization_->WriteRestart(*output_);
     vol_surf_flow_bc_->Output(*output_);
     traction_vel_comp_adder_bc_->Output(*output_);
-  }
-
-  // write reduced model problem
-  // Check if one-dimensional artery network problem exist
-  if (ART_exp_timeInt_ != Teuchos::null)
-  {
-    RCP<Teuchos::ParameterList> redD_export_params;
-    redD_export_params = Teuchos::rcp(new Teuchos::ParameterList());
-
-    redD_export_params->set<int>("step",step_);
-    redD_export_params->set<int>("upres",upres_);
-    redD_export_params->set<int>("uprestart",uprestart_);
-    redD_export_params->set<double>("time",time_);
-
-    ART_exp_timeInt_->Output(true, redD_export_params);
-  }
-
-  // Check if one-dimensional artery network problem exist
-  if (airway_imp_timeInt_ != Teuchos::null)
-  {
-    RCP<Teuchos::ParameterList> redD_export_params;
-    redD_export_params = Teuchos::rcp(new Teuchos::ParameterList());
-
-    redD_export_params->set<int>("step",step_);
-    redD_export_params->set<int>("upres",upres_);
-    redD_export_params->set<int>("uprestart",uprestart_);
-    redD_export_params->set<double>("time",time_);
-
-    airway_imp_timeInt_->Output(true, redD_export_params);
   }
 
 //#define PRINTALEDEFORMEDNODECOORDS // flag for printing all ALE nodes and xspatial in current configuration - only works for 1 processor  devaal 02.2011
@@ -3595,6 +3577,52 @@ void FLD::FluidImplicitTimeInt::Output()
 } // FluidImplicitTimeInt::Output
 
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | output of solution vector of ReducedD problem to binio   ismail 01/13|
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidImplicitTimeInt::OutputReducedD()
+{
+  // output of solution
+  if (step_%upres_ == 0)
+  {
+    // write reduced model problem
+    // Check if one-dimensional artery network problem exist
+    if (ART_exp_timeInt_ != Teuchos::null)
+    {
+      RCP<Teuchos::ParameterList> redD_export_params;
+      redD_export_params = Teuchos::rcp(new Teuchos::ParameterList());
+
+      redD_export_params->set<int>("step",step_);
+      redD_export_params->set<int>("upres",upres_);
+      redD_export_params->set<int>("uprestart",uprestart_);
+      redD_export_params->set<double>("time",time_);
+
+      ART_exp_timeInt_->Output(true, redD_export_params);
+    }
+
+    // Check if one-dimensional artery network problem exist
+    if (airway_imp_timeInt_ != Teuchos::null)
+    {
+      RCP<Teuchos::ParameterList> redD_export_params;
+      redD_export_params = Teuchos::rcp(new Teuchos::ParameterList());
+
+      redD_export_params->set<int>("step",step_);
+      redD_export_params->set<int>("upres",upres_);
+      redD_export_params->set<int>("uprestart",uprestart_);
+      redD_export_params->set<double>("time",time_);
+
+      airway_imp_timeInt_->Output(true, redD_export_params);
+    }
+  }
+  return;
+}//FLD::FluidImplicitTimeInt::OutputReducedD
+
 void FLD::FluidImplicitTimeInt::OutputToGmsh(
     const int step,
     const double time,
@@ -3650,7 +3678,6 @@ void FLD::FluidImplicitTimeInt::OutputToGmsh(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::ReadRestart(int step)
 {
-  //  ART_exp_timeInt_->ReadRestart(step);
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
   step_ = reader.ReadInt("step");
@@ -3698,19 +3725,6 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
 
   traction_vel_comp_adder_bc_->ReadRestart(reader);
 
-
-  // Check if one-dimensional artery network problem exist
-  if (ART_exp_timeInt_ != Teuchos::null)
-  {
-    ART_exp_timeInt_->ReadRestart(step_);
-  }
-
-  // Check if one-dimensional artery network problem exist
-  if (airway_imp_timeInt_ != Teuchos::null)
-  {
-    airway_imp_timeInt_->ReadRestart(step_);
-  }
-
   // ensure that the overall dof numbering is identical to the one
   // that was used when the restart data was written. Especially
   // in case of multiphysics problems & periodic boundary conditions
@@ -3723,8 +3737,40 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
     dserror("Global dof numbering in maps does not match");
 
   // Read restart of one-dimensional arterial network
+  if (ART_exp_timeInt_ != Teuchos::null)
+  {
+    coupled3D_redDbc_art_->ReadRestart(reader);
+  }
+  // Check if zero-dimensional airway network problem exist
+  if (airway_imp_timeInt_ != Teuchos::null)
+  {
+    coupled3D_redDbc_airways_->ReadRestart(reader);
+  }
 }
 
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ |                                                          ismail 01/13|
+ -----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidImplicitTimeInt::ReadRestartReducedD(int step)
+{
+  // Check if one-dimensional artery network problem exist
+  if (ART_exp_timeInt_ != Teuchos::null)
+  {
+    ART_exp_timeInt_->ReadRestart(step,true);
+  }
+
+  // Check if one-dimensional artery network problem exist
+  if (airway_imp_timeInt_ != Teuchos::null)
+  {
+    airway_imp_timeInt_->ReadRestart(step,true);
+  }
+}//FLD::FluidImplicitTimeInt::ReadRestartReadRestart(int step)
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

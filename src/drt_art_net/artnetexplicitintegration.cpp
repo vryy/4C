@@ -29,6 +29,7 @@ Maintainer: Mahmoud Ismail
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_nodematchingoctree.H"
 #include "../drt_lib/drt_function.H"
+#include "artery_resulttest.H"
 #include "art_junction.H"
 
 //#include "../drt_fluid/fluidimpedancecondition.H"
@@ -149,7 +150,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
   Wbnp_          = LINALG::CreateVector(*noderowmap,true);
   Wbn_           = LINALG::CreateVector(*noderowmap,true);
   Wbnm_          = LINALG::CreateVector(*noderowmap,true);
-  
+
   // a vector of zeros to be used to enforce zero dirichlet boundary conditions
   // This part might be optimized later
   bcval_   = LINALG::CreateVector(*dofrowmap,true);
@@ -160,7 +161,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
   qn_           = LINALG::CreateVector(*noderowmap,true);
   pn_           = LINALG::CreateVector(*noderowmap,true);
   an_           = LINALG::CreateVector(*noderowmap,true);
-  
+  nodeIds_      = LINALG::CreateVector(*noderowmap,true);
 
   // right hand side vector and right hand side corrector
   rhs_     = LINALG::CreateVector(*dofrowmap,true);
@@ -209,6 +210,34 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 
   }
+    // Fill the NodeId vector
+  for (int nele=0;nele<discret_->NumMyColElements();++nele)
+  {
+    // get the element
+    DRT::Element* ele = discret_->lColElement(nele);
+
+    // get element location vector, dirichlet flags and ownerships
+    std::vector<int> lm;
+    std::vector<int> lmstride;
+    //vector<int> lmowner;
+    RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
+    ele->LocationVector(*discret_,lm,*lmowner,lmstride);
+
+    // loop all nodes of this element, add values to the global vectors
+
+    if(myrank_ == (*lmowner)[0])
+    {
+      int    gid = lm[0];
+      double val = gid;
+      nodeIds_->ReplaceGlobalValues(1,&val,&gid);
+    }
+    if(myrank_ == (*lmowner)[1])
+    {
+      int    gid = lm[1];
+      double val = gid;
+      nodeIds_->ReplaceGlobalValues(1,&val,&gid);
+    }
+  }
 
 // -----------------------------------------------------------------------
 // initialize all scatra related stuff
@@ -220,7 +249,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
     scatra_sysmat_  = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,6,false,true));
     // right hand side vector and right hand side corrector
     scatra_rhs_     = LINALG::CreateVector(*dofrowmap,true);
-    
+
     // Scalar transport vector of O2 and CO2
     export_scatra_        = LINALG::CreateVector(*noderowmap,true);
     scatraO2n_        = LINALG::CreateVector(*dofrowmap,true);
@@ -236,7 +265,7 @@ ART::ArtNetExplicitTimeInt::ArtNetExplicitTimeInt(RCP<DRT::Discretization>  actd
     scatraCO2wfnp_      = LINALG::CreateVector(*noderowmap,true);
     scatraCO2wbn_      = LINALG::CreateVector(*noderowmap,true);
     scatraCO2wbnp_      = LINALG::CreateVector(*noderowmap,true);
-    
+
     // a vector of zeros to be used to enforce zero dirichlet boundary conditions
     // This part might be optimized later
     scatra_bcval_   = LINALG::CreateVector(*dofrowmap,true);
@@ -322,7 +351,7 @@ void ART::ArtNetExplicitTimeInt::TimeLoop(bool CoupledTo3D,
   {
     TEUCHOS_FUNC_TIME_MONITOR(" + time loop");
   }
-  
+
   while (step_<stepmax_ and time_<maxtime_)
   {
     PrepareTimeStep();
@@ -495,7 +524,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
   }
 
   // -------------------------------------------------------------------
-  // Solve the boundary conditions 
+  // Solve the boundary conditions
   // -------------------------------------------------------------------
   bcval_->PutScalar(0.0);
   dbctog_->PutScalar(0.0);
@@ -522,7 +551,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
 
     // Add the parameters to solve terminal BCs coupled to 3D fluid boundary
     eleparams.set("coupling with 3D fluid params",CouplingTo3DParams);
-    
+
     // solve junction boundary conditions
     artjun_->Solve(eleparams);
 
@@ -569,7 +598,7 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
       (A_debug->EpetraMatrix())->Print(cout);
     }
 
-#endif 
+#endif
     // call solver
     solver_.Solve(sysmat_->EpetraOperator(),qanp_,rhs_,true,true);
   }
@@ -598,10 +627,10 @@ void ART::ArtNetExplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList> Coup
     eleparams.set("total time",time_);
     eleparams.set("Wfnp",Wfnp_);
     eleparams.set("Wbnp",Wbnp_);
-    
+
     discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
-    
-  }  
+
+  }
 } // ArtNetExplicitTimeInt:Solve
 
 
@@ -612,17 +641,17 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     // set both system matrix and rhs vector to zero
     scatra_sysmat_->Zero();
     scatra_rhs_->PutScalar(0.0);
-    
+
     // create the parameters for the discretization
     ParameterList eleparams;
-    
+
     // action for elements
     eleparams.set("action","calc_scatra_sys_matrix_rhs");
     eleparams.set("time step size",dta_);
-    
+
     // other parameters that might be needed by the elements
     eleparams.set("total time",time_);
-    
+
     // set vector values needed by elements
     eleparams.set<RCP<Epetra_Vector> >("qanp",qanp_);
     eleparams.set<RCP<Epetra_Vector> >("qan",qan_);
@@ -631,7 +660,7 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     eleparams.set<RCP<Epetra_Vector> >("Wfo",Wfo_);
     eleparams.set<RCP<Epetra_Vector> >("Wbo",Wbo_);
     eleparams.set<RCP<Epetra_Vector> >("scatran",scatraO2n_);
-    
+
     // call standard loop over all elements
 #if 0 // Exporting some values for debugging purposes
     {
@@ -642,7 +671,7 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
         (A_debug->EpetraMatrix())->Print(cout);
       }
     }
-#endif 
+#endif
 
     discret_->Evaluate(eleparams,scatra_sysmat_,scatra_rhs_);
     discret_->ClearState();
@@ -656,12 +685,12 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
         (A_debug->EpetraMatrix())->Print(cout);
       }
     }
-#endif 
+#endif
 
-    
+
     // finalize the complete matrix
     scatra_sysmat_->Complete();
-    
+
   }
   // Solve terminal BCs
   {
@@ -669,14 +698,14 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     scatra_dbctog_->PutScalar(0.0);
     // create the parameters for the discretization
     ParameterList eleparams;
-    
+
     // action for elements
     eleparams.set("action","set_scatra_term_bc");
-    
+
     // set vecotr values needed by elements
     discret_->ClearState();
     discret_->SetState("qanp",qanp_);
-    
+
     eleparams.set("time step size",dta_);
     eleparams.set("time",time_);
     eleparams.set("bcval",scatra_bcval_);
@@ -694,10 +723,10 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     scatraO2np_->PutScalar(0.0);
     // create the parameters for the discretization
     ParameterList eleparams;
-    
+
     // action for elements
     eleparams.set("action","evaluate_scatra_analytically");
-    
+
     // set vecotr values needed by elements
     discret_->ClearState();
 
@@ -707,9 +736,9 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     eleparams.set<RCP<Epetra_Vector> >("Wbo",Wbo_);
     eleparams.set<RCP<Epetra_Vector> >("scatran",scatraO2n_);
     eleparams.set<RCP<Epetra_Vector> >("scatranp",scatraO2np_);
-    
+
     eleparams.set("time step size",dta_);
-    
+
     // call standard loop over all elements
     discret_->Evaluate(eleparams,scatra_sysmat_,scatra_rhs_);
   }
@@ -718,14 +747,14 @@ void ART::ArtNetExplicitTimeInt::SolveScatra()
     scatra_dbctog_->PutScalar(0.0);
     // create the parameters for the discretization
     ParameterList eleparams;
-    
+
     // action for elements
     eleparams.set("action","set_scatra_term_bc");
-    
+
     // set vecotr values needed by elements
     discret_->ClearState();
     discret_->SetState("qanp",qanp_);
-    
+
     eleparams.set("time step size",dta_);
     eleparams.set("time",time_);
     eleparams.set("bcval",scatra_bcval_);
@@ -808,9 +837,9 @@ void ART::ArtNetExplicitTimeInt::TimeUpdate()
 
   if (solvescatra_)
   {
-    //    scatraO2wfn_->Update(1.0,*scatraO2wfnp_ ,0.0);  
-    //    scatraO2wbn_->Update(1.0,*scatraO2wbnp_ ,0.0);  
-    scatraO2n_->Update(1.0,*scatraO2np_ ,0.0);  
+    //    scatraO2wfn_->Update(1.0,*scatraO2wfnp_ ,0.0);
+    //    scatraO2wbn_->Update(1.0,*scatraO2wbnp_ ,0.0);
+    scatraO2n_->Update(1.0,*scatraO2np_ ,0.0);
   }
 
   return;
@@ -835,10 +864,10 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
   double time_backup =0.0;
 
   // -------------------------------------------------------------------
-  // if coupled to 3D problem, then get the export information from 
+  // if coupled to 3D problem, then get the export information from
   // the 3D problem
   // -------------------------------------------------------------------
-  
+
   if (CoupledTo3D)
   {
     step        = step_;
@@ -855,6 +884,7 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
   {
     // step number and time
     output_.NewStep(step_,time_);
+//    output_.WriteVector("NodeIDs",nodeIds_);
 
     // "volumetric flow rate/cross-sectional area" vector
     output_.WriteVector("qanp",qanp_);
@@ -878,7 +908,7 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
     // other parameters that might be needed by the elements
     params.set("total time",time_);
 
-    // set the dof vector values 
+    // set the dof vector values
     //    discret_->ClearState();
     //    discret_->SetState("qanp",qanp_);
 
@@ -892,17 +922,20 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
     output_.WriteVector("one_d_artery_pressure",pn_);
     output_.WriteVector("one_d_artery_area",an_);
 
-    this->CalcScatraFromScatraFW(export_scatra_,  scatraO2np_);
-    output_.WriteVector("one_d_o2_scatra",export_scatra_);
+    if(solvescatra_)
+    {
+      this->CalcScatraFromScatraFW(export_scatra_,  scatraO2np_);
+      output_.WriteVector("one_d_o2_scatra",export_scatra_);
+    }
 
-    output_.WriteVector("forward_speed",Wfnp_);    
-    output_.WriteVector("forward_speed0",Wfo_); 
+    output_.WriteVector("forward_speed",Wfnp_);
+    output_.WriteVector("forward_speed0",Wfo_);
     output_.WriteVector("backward_speed",Wbnp_);
     output_.WriteVector("backward_speed0",Wbo_);
-    
+
     if (CoupledTo3D)
     {
-      output_.WriteDouble("Actual_RedD_step", step);
+      output_.WriteInt("Actual_RedD_step", step);
     }
 
   }
@@ -921,12 +954,15 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
     output_.WriteVector("one_d_artery_pressure",pn_);
     output_.WriteVector("one_d_artery_area",an_);
 
-    this->CalcScatraFromScatraFW(export_scatra_,  scatraO2np_);
-    output_.WriteVector("one_d_o2_scatra",export_scatra_);
+    if(solvescatra_)
+    {
+      this->CalcScatraFromScatraFW(export_scatra_,  scatraO2np_);
+      output_.WriteVector("one_d_o2_scatra",export_scatra_);
+    }
 
 
-    output_.WriteVector("forward_speed",Wfnp_);    
-    output_.WriteVector("forward_speed0",Wfo_); 
+    output_.WriteVector("forward_speed",Wfnp_);
+    output_.WriteVector("forward_speed0",Wfo_);
     output_.WriteVector("backward_speed",Wbnp_);
     output_.WriteVector("backward_speed0",Wbo_);
 
@@ -942,7 +978,7 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
     // other parameters that might be needed by the elements
     params.set("total time",time_);
 
-    // set the dof vector values 
+    // set the dof vector values
     //    discret_->ClearState();
     //    discret_->SetState("qanp",qanp_);
 
@@ -952,7 +988,7 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
 
     if (CoupledTo3D)
     {
-      output_.WriteDouble("Actual_RedD_step", step);
+      output_.WriteInt("Actual_RedD_step", step);
     }
 
   }
@@ -981,12 +1017,14 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
  -----------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>// 
-void ART::ArtNetExplicitTimeInt::ReadRestart(int step)
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void ART::ArtNetExplicitTimeInt::ReadRestart(int step,
+                                             bool coupledTo3D)
 {
 
+  coupledTo3D_ = coupledTo3D;
   IO::DiscretizationReader reader(discret_,step);
-  
+
   time_ = reader.ReadDouble("time");
 
   if (coupledTo3D_)
@@ -1054,10 +1092,10 @@ void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
 
   // create the parameters for the discretization
   ParameterList eleparams;
-  
+
   // action for elements
   eleparams.set("action","calc_postprocessing_values");
-  
+
   // set vecotr values needed by elements
   discret_->ClearState();
   cout<<"On proc("<<myrank_<<"): "<<"postpro setting qanp"<<endl;
@@ -1066,7 +1104,7 @@ void ART::ArtNetExplicitTimeInt::CalcPostprocessingValues()
   discret_->SetState("Wfnp",Wfnp_);
   cout<<"On proc("<<myrank_<<"): "<<"postpro setting wbnp"<<endl;
   discret_->SetState("Wbnp",Wbnp_);
-  
+
   eleparams.set("time step size",dta_);
   eleparams.set("total time",time_);
   eleparams.set("pressure",pn_);
@@ -1084,7 +1122,7 @@ void ART::ArtNetExplicitTimeInt::CalcScatraFromScatraFW(
   RCP<Epetra_Vector>   scatra_fb
   )
 {
-  scatra->PutScalar(0.0);  
+  scatra->PutScalar(0.0);
 
   // create the parameters for the discretization
   ParameterList eleparams;
@@ -1096,8 +1134,14 @@ void ART::ArtNetExplicitTimeInt::CalcScatraFromScatraFW(
   discret_->ClearState();
   eleparams.set("scatra",scatra);
   eleparams.set("scatra_fb",scatra_fb);
-  
+
   // call standard loop over all elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
 }
-  
+
+void ART::ArtNetExplicitTimeInt::TestResults()
+{
+    Teuchos::RCP<DRT::ResultTest> resulttest = Teuchos::rcp(new ART::ArteryResultTest(*(this)));
+    DRT::Problem::Instance()->AddFieldTest(resulttest);
+    DRT::Problem::Instance()->TestAll(discret_->Comm());
+}

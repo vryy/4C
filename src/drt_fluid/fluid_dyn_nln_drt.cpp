@@ -320,7 +320,11 @@ void fluid_fluid_drt(const int restart)
   Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluidalgo = Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(fdyn,false));
 
   // read the restart information, set vectors and variables
-  if (restart) fluidalgo->FluidField().ReadRestart(restart);
+  if (restart)
+  {
+    fluidalgo->FluidField().ReadRestart(restart);
+    fluidalgo->FluidField().ReadRestartReducedD(restart);
+  }
 
   // run the simulation
 //  fluidalgo->FluidField().TimeLoop();

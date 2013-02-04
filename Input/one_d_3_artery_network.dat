@@ -18,6 +18,7 @@ NUMSTEP                         10000
 TIMESTEP                        1.0e-4
 RESTARTEVRY                     1
 UPRES                           1
+SOLVESCATRA                     no
 ---------------------------------------------------------------FLUID DYNAMIC
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2

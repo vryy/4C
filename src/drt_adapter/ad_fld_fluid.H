@@ -298,6 +298,9 @@ namespace ADAPTER {
     /// output results
     virtual void Output() = 0;
 
+    /// output ReducedD results
+    virtual void OutputReducedD() = 0;
+
     /// output statistics
     virtual void StatisticsOutput() = 0;
 
@@ -306,6 +309,8 @@ namespace ADAPTER {
 
     /// read restart information for given time step
     virtual void ReadRestart(int step) = 0;
+    /// read restart information for given time step
+    virtual void ReadRestartReducedD(int step) = 0;
     /// set restart
     virtual void SetRestart(const int step,
                     const double time,

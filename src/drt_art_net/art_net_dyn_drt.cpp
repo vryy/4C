@@ -136,10 +136,12 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   // solution output
   if (artdyn.get<string>("SOLVESCATRA")=="yes")
   {
+    cout<<"Scatra will be solved"<<endl;
     arterytimeparams.set ("solve scatra", true);
   }
   else
   {
+    cout<<"Scatra will not be solved"<<endl;
     arterytimeparams.set ("solve scatra", false);
   }
 
@@ -179,10 +181,13 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
     RCP<Teuchos::ParameterList> param_temp;
     artnetexplicit->Integrate(CoupledTo3D,param_temp);
 
+    /*
     Teuchos::RCP<DRT::ResultTest> resulttest
       = Teuchos::rcp(new ART::ArteryResultTest(*artnetexplicit));
     DRT::Problem::Instance()->AddFieldTest(resulttest);
     DRT::Problem::Instance()->TestAll(actdis->Comm());
+    */
+    artnetexplicit->TestResults();
 
     return artnetexplicit;
     //    return  Teuchos::null;

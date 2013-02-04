@@ -77,7 +77,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( Teuchos::RCP<DRT::Di
     {
       // ---------------------------------------------------------------
       // Read in the artery number and the nodes assosiated with the
-      // condition 
+      // condition
       // ---------------------------------------------------------------
       int Artery_Number;
       Artery_Number = myConditions[i]->GetInt("ArteryNumber");
@@ -87,7 +87,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( Teuchos::RCP<DRT::Di
       // Sort all nodes so such that inlet node is the first and outlet
       // node is the last
       // ---------------------------------------------------------------
-      
+
       // step (1) find both inlet and outlet nodes
       DRT::Node* ndi = NULL; // ith node
       DRT::Node* ndl = NULL; // last node
@@ -140,15 +140,15 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( Teuchos::RCP<DRT::Di
         Elem_i = Elements[0];
         else
         Elem_i = Elements[1];
-        sorted_nodes->push_back(ndi->Id());        
+        sorted_nodes->push_back(ndi->Id());
       }
-      
+
       sorted_nodes->push_back(ndl->Id());
 
       // ---------------------------------------------------------------
       // Allocate the gnuplot export condition
       // ---------------------------------------------------------------
-      RCP<ArtWriteGnuplot> artgnu_c = Teuchos::rcp(new ArtWriteGnuplot(Artery_Number));    
+      RCP<ArtWriteGnuplot> artgnu_c = Teuchos::rcp(new ArtWriteGnuplot(Artery_Number));
 
 
       // ---------------------------------------------------------------
@@ -193,12 +193,12 @@ void ART::UTILS::ArtWriteGnuplotWrapper::Write(Teuchos::ParameterList & params)
   //----------------------------------------------------------------------
   if (discret_->Comm().MyPID()==0)
   {
-  
+
     // -------------------------------------------------------------------
     // loop over all conditions and export the arteries values
     // -------------------------------------------------------------------
     map<const int, RCP<class ArtWriteGnuplot> >::iterator mapiter;
-    
+
     // defining a constant that will have the artery number
     int art_num;
     for (mapiter = agmap_.begin(); mapiter != agmap_.end(); mapiter++ )
@@ -224,7 +224,7 @@ ART::UTILS::ArtWriteGnuplot:: ArtWriteGnuplot(int ArteryNum):
 {
 
   // -------------------------------------------------------------------
-  // Create the file with the following name 
+  // Create the file with the following name
   // artery[ArteryNum]_.art
   // -------------------------------------------------------------------
   std::stringstream out;
@@ -233,7 +233,7 @@ ART::UTILS::ArtWriteGnuplot:: ArtWriteGnuplot(int ArteryNum):
   out << ArteryNum;
   Numb_str = out.str();
   str.clear();
-  str = "artery";
+  str = "xxx";
   str+= Numb_str;
   str+= "_";
   str+= ".art";
@@ -279,7 +279,7 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
   int ElemNum;
 
   for(unsigned int i =0; i<nodes->size()-1; i++)
-  {  
+  {
 
     // get the elements connected to the node
     if  (! discret->HaveGlobalNode((*nodes)[i]))
@@ -288,7 +288,7 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
       dserror("Global Node (%d) doesn't exist on processor (%d)\n",(*nodes)[i],proc);
       exit(1);
     }
-    
+
     //    DRT::Node * nd = discret->lColNode((*nodes)[i]);
     DRT::Node * nd = discret->gNode((*nodes)[i]);
     DRT::Element** ele = nd->Elements();

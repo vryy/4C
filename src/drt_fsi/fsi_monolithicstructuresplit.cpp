@@ -131,7 +131,7 @@ void FSI::MonolithicStructureSplit::SetupSystem()
 
   // call SetupSystem in base class
   FSI::Monolithic::SetupSystem();
-  
+
   // we might have a free surface
   if (FluidField().Interface()->FSCondRelevant())
   {
@@ -343,7 +343,7 @@ void FSI::MonolithicStructureSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
      * (2)  - dt * S_{I \Gamma} * u^{n}_{\Gamma}
      *
      * (3)  - tau * S_{I \Gamma} *  \Delta u_{\Gamma,p}
-     * 
+     *
      * Remarks on all terms:
      * +  tau: time scaling factor for interface time integration (tau = 1/FluidField().TimeScaling())
      *
@@ -1337,6 +1337,7 @@ void FSI::MonolithicStructureSplit::Output()
   }
 
   FluidField().    Output();
+  FluidField().    OutputReducedD();
   AleField().      Output();
   FluidField().LiftDrag();
 
@@ -1362,6 +1363,7 @@ void FSI::MonolithicStructureSplit::ReadRestart(int step)
 
   StructureField()->ReadRestart(step);
   FluidField().ReadRestart(step);
+  FluidField().ReadRestartReducedD(step);
   AleField().ReadRestart(step);
 
   SetTimeStep(FluidField().Time(),FluidField().Step());

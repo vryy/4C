@@ -1594,7 +1594,7 @@ void FSI::MortarMonolithicFluidSplit::Output()
     if ((uprestart != 0 && FluidField().Step() % uprestart == 0) || FluidField().Step() % upres)
       FluidField().DiscWriter()->WriteVector("fsilambda", lambdafull);
   }
-
+  FluidField().    OutputReducedD();
   AleField().      Output();
   FluidField().LiftDrag();
 
@@ -1630,7 +1630,7 @@ void FSI::MortarMonolithicFluidSplit::ReadRestart(int step)
     reader.ReadVector(iprojdispinc_, "slideALEincr");
     slideale_->ReadRestart(reader);
   }
-
+  FluidField().ReadRestartReducedD(step);
   AleField().ReadRestart(step);
 
   SetTimeStep(FluidField().Time(),FluidField().Step());

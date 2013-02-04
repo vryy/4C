@@ -278,7 +278,7 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
 
     // old interface velocity of fluid field
     const Teuchos::RCP<const Epetra_Vector> fveln = FluidField().ExtractInterfaceVeln();
-    
+
     // store structural interface displacement increment due to predictor
     // or inhomogeneous Dirichlet boundary conditions
     ddgpred_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->ExtractInterfaceDispnp()));
@@ -570,7 +570,7 @@ void FSI::MonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatrixBase&
   LINALG::SparseMatrix& fgg = f->Matrix(1,1);
   LINALG::SparseMatrix& aii = a->Matrix(0,0);
   LINALG::SparseMatrix& aig = a->Matrix(0,1);
-  
+
   // scaling factors for fluid
   const double scale     = FluidField().ResidualScaling();
   const double timescale = FluidField().TimeScaling();
@@ -1445,7 +1445,7 @@ void FSI::MonolithicFluidSplit::Output()
     if ((uprestart != 0 && FluidField().Step() % uprestart == 0) || FluidField().Step() % upres == 0)
       FluidField().DiscWriter()->WriteVector("fsilambda", lambdafull);
   }
-
+  FluidField().    OutputReducedD();
   AleField().      Output();
   FluidField().LiftDrag();
 
@@ -1471,7 +1471,7 @@ void FSI::MonolithicFluidSplit::ReadRestart(int step)
     reader.ReadVector(lambdafull, "fsilambda");
     lambda_ = FluidField().Interface()->ExtractFSICondVector(lambdafull);
   }
-
+  FluidField().    ReadRestartReducedD(step);
   AleField().ReadRestart(step);
 
   SetTimeStep(FluidField().Time(),FluidField().Step());

@@ -1202,9 +1202,9 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step)
+void AIRWAY::RedAirwayImplicitTimeInt::ReadRestart(int step, bool coupledTo3D)
 {
-
+  coupledTo3D_ = coupledTo3D;
   IO::DiscretizationReader reader(discret_,step);
   time_ = reader.ReadDouble("time");
 

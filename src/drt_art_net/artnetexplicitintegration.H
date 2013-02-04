@@ -164,11 +164,16 @@ public:
               RCP<Teuchos::ParameterList> CouplingParams);
 
   /*!
-  \brief Assembling of the RHS Vector and the LHS Matrix 
+  \brief Assembling of the RHS Vector and the LHS Matrix
 
   */
   void AssembleMatAndRHS();
 
+  /*!
+  \brief Test results
+
+  */
+  void TestResults();
 
   /*!
   \brief calculate values that could be used for postprocessing
@@ -184,7 +189,8 @@ public:
   \brief read restart data
 
   */
-  void ReadRestart(int step);
+  void ReadRestart(int  step,
+                   bool CoupledTo3D=false);
 
   //! @name access methods for composite algorithms
 
@@ -286,6 +292,7 @@ protected:
   RCP<LINALG::SparseOperator> scatra_sysmat_;
 
   /// maps for scatra Dirichlet and free DOF sets
+  RCP<Epetra_Vector>    nodeIds_;
   RCP<Epetra_Vector>    scatra_bcval_;
   RCP<Epetra_Vector>    scatra_dbctog_;
 

@@ -1457,7 +1457,7 @@ void FSI::MortarMonolithicStructureSplit::Output()
       slideale_->OutputRestart(*FluidField().DiscWriter());
     }
   }
-
+  FluidField().    OutputReducedD();
   AleField().Output();
   FluidField().LiftDrag();
 
@@ -1494,6 +1494,7 @@ void FSI::MortarMonolithicStructureSplit::ReadRestart(int step)
     slideale_->ReadRestart(reader);
   }
 
+  FluidField().ReadRestartReducedD(step);
   AleField().ReadRestart(step);
 
   SetTimeStep(FluidField().Time(),FluidField().Step());

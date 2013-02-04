@@ -202,7 +202,8 @@ public:
   \brief read restart data
 
   */
-  void ReadRestart(int step);
+  void ReadRestart(int  step,
+                   bool coupledTo3D=false);
 
   Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 

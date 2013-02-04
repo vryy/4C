@@ -140,11 +140,15 @@ namespace ADAPTER
     { return fluid_->StatisticsAndOutput(); }
     virtual void Output()
     { return fluid_->Output(); }
+    virtual void OutputReducedD()
+    { return fluid_->OutputReducedD(); }
     virtual void StatisticsOutput() { dserror("not implemented!"); return; }
     virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter()
     { return fluid_->DiscWriter();}
     virtual void ReadRestart(int step)
     { return fluid_->ReadRestart(step); }
+    virtual void ReadRestartReducedD(int step)
+    { return fluid_->ReadRestartReducedD(step); }
     virtual void SetRestart(const int step,
                     const double time,
                     Teuchos::RCP<const Epetra_Vector> readvelnp,

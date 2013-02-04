@@ -198,7 +198,7 @@ int DRT::ELEMENTS::ArteryLinExp<distype>::ScatraEvaluate(
   RCP<Epetra_Vector> wbnp  = params.get<RCP<Epetra_Vector> >("Wbnp");
   RCP<Epetra_Vector> wfo  = params.get<RCP<Epetra_Vector> >("Wfo");
   RCP<Epetra_Vector> wbo  = params.get<RCP<Epetra_Vector> >("Wbo");
-  
+
   RCP<Epetra_Vector> scatran    = params.get<RCP<Epetra_Vector> >("scatran");
 
   if (qanp==Teuchos::null)
@@ -461,7 +461,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
     pext1  = actmat->pext(0);
     // Read in artery's external forces at node 1
     pext2  = actmat->pext(1);
-    
+
     // Set up all the needed vectors for furthur calculations
     area0_(0,0) = Ao1;
     area0_(1,0) = Ao2;
@@ -484,7 +484,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
   // defining some redundantly used matrices
 
   // Defining the shape functions
-  LINALG::Matrix<2*iel,2> Nxi;   Nxi.Clear();  
+  LINALG::Matrix<2*iel,2> Nxi;   Nxi.Clear();
   // Defining the derivative of shape functions
   LINALG::Matrix<2*iel,2> dNdxi; dNdxi.Clear();
 
@@ -521,7 +521,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
   //
   /*
     In the case of the linear elastic material behavior of arteries,
-    the system matrix is the same as the mass matrix, and thus it 
+    the system matrix is the same as the mass matrix, and thus it
     could be derived analytically.
 
                     +-    .      .      .     -+
@@ -550,9 +550,9 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
                     |..........................|
                     |     .  2   .      .  1   |
                     |  0  . ---  .   0  . ---  |
-                    |     .  3   .      .  3   |    L 
-    MassMat =       |..........................| * --- 
-                    |  1  .      .   2  .      |    2 
+                    |     .  3   .      .  3   |    L
+    MassMat =       |..........................| * ---
+                    |  1  .      .   2  .      |    2
                     | --- .   0  .  --- .  0   |
                     |  3  .      .   3  .      |
                     |..........................|
@@ -587,9 +587,9 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
     // actually compute its transpose....
     /*
                              _____________________________________
-        ds     L            /         2            2            2    
-        --- = ---   ;  L = / ( x - x )  + ( y - y )  + ( z - z )     
-        dxi    2          v     1   2        2    2       1   2      
+        ds     L            /         2            2            2
+        --- = ---   ;  L = / ( x - x )  + ( y - y )  + ( z - z )
+        dxi    2          v     1   2        2    2       1   2
 
     */
 
@@ -633,148 +633,148 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Sysmat(
     //                   compute the rhs vector
     //--------------------------------------------------------------
     /*
-       Compute the rhs of the linear elastic artery with a 
+       Compute the rhs of the linear elastic artery with a
        Taylor-Galerkin skeme for the nonlinear diff. equation
-      
-         1- Since this element is explicitly solved in time domain 
-            the results from time step "n" will only be used to compute 
+
+         1- Since this element is explicitly solved in time domain
+            the results from time step "n" will only be used to compute
             the results from time step "n+1"
-      
-            /   \                                                      
-         2- |.,.| is the Lebesgue inner product                        
-            \   /                                                       
-                                                                        
+
+            /   \
+         2- |.,.| is the Lebesgue inner product
+            \   /
+
          3- Psi is the weight function for the Galerkin approximation
-                                                                       
-      
-            
-                                                                          
-                        n                     n                         n 
-            /          \        /            \      2 /                \  
-        n   |          |        |       dPsi |    Dt  |    par F       |  
-  o  rhs =  | U  , Psi |   + Dt | F   , ---- |  - --- | B  ----- , Psi |  
-            |          |        |  LW    ds  |     2  |  U par s       |  
-            \          /        \            /        \                /  
-           +------------+    +----------------+ +-----------------------+ 
-              (Term 1)            (Term 2)             (Term 3)           
-                                                                          
-                                   n                    n                 
-               2 /                \        /           \                  
-             Dt  |   par F   dPsi |        |           |                  
-           - --- | H ----- , ---- |   + Dt | B   , Psi |                  
-              2  |   par s    ds  |        |  LW       |                  
-                 \                /        \           /                  
-          +-------------------------+   +----------------+                
-                  (Term 4)                  (Term 5)                      
-                                                                          
-                                                                          
-                                                                          
-                                +-     -+                                 
-          +- -+                 | psi   |                                 
-          | A |                 |    a  |                                 
-  o U   = |   |     ;     Psi = |       |                                 
-          | Q |                 | psi   |                                 
-          +- -+                 |    q  |                                 
-                                +-     -+                                 
-                                                                          
-                                                                          
-               Dt                                                         
-  o F   = F + --- H B                                                     
-     LW        2                                                          
-                                                                          
-               Dt                                                         
-  o B   = B + --- B  B                                                    
-     LW        2   U                                                      
-                                                                          
-                                                                          
-        +-                  -+                                            
-        |                    |                                            
-        |         Q          |                                            
-        |                    |                                            
-  o F = |....................|                                            
-        |  2                 |                                            
-        | Q      beta    3/2 |                                            
-        |--- + -------- A    |                                            
-        | A    3 rho Ao      |                                            
-        +-                  -+                                            
-                                                                          
-                                                                          
-        +-                                                -+              
-        |                                                  |              
-        |                         0                        |              
-    dF  |                                                  |              
-  o -- =|..................................................|              
-    ds  |             /      2                  \          |              
-        |   Q   dQ    |  / Q \      beta    1/2 | dA       |              
-        | 2---.---  + | -|---|  + -------- A    | --- +    |              
-        |   A   ds    \  \ A /    2.rho.Ao      / ds       |              
-        |                                                  |              
-        |                  3/2  /                     \    |              
-        |                 A     | d beta    beta  dAo |    |              
-        |           +  -------- | ------ - -----  --- |    |              
-        |              3.rho.Ao \ d x        Ao   ds  /    |              
-        +-                                                -+              
-                                                                          
-                                                                          
-        +-                                                          -+    
-        |                                                            |    
-        |                            0                               |    
-        |                                                            |    
-  o B = |............................................................|    
-        |                                                            |    
-        |     Q        A    / 2   1/2    1/2 \ par beta              |    
-        |- Kr---  -  ------ |--- A    - Ao   | --------              |    
-        |     A      Ao rho \ 3              /  par s                |    
-        |                                                            |    
-        |                                                            |    
-        |             beta   A  / 2  1/2     1  1/2 \ par Ao         |    
-        |         +  ------ --- |---A     - ---Ao   | ------         |     
-        |            Ao rho  Ao \ 3          2      /  par s         |    
-        |                                                            |    
-        |                                                            |    
-        |              A    par Pext                                 |    
-        |         -  -----.---------                                 |    
-        |             rho    par s                                   |    
-        |                                                            |    
-        +-                                                          -+    
-                                                                          
-                                                                          
-        +-                                                   .      -+    
-        |                                                    .       |    
-        |                            0                       .   0   |    
-    dB  |                                                    .       |    
-  o -- =|............................................................|    
-    dU  |                                                    .       |    
-        |     Q        1    /  1/2    1/2 \ par beta         .   Kr  |    
-        |- Kr---  -  ------ | A    - Ao   | --------         . - --- |    
-        |     A^2    Ao rho \             /  par s           .    A  |    
-        |                                                    .       |    
-        |                                                    .       |    
-        |             beta   1  /  1/2    1  1/2 \ par Ao    .       |    
-        |         +  ------ --- | A    - -- Ao   | ------    .       |    
-        |            Ao rho  Ao \         2      /  par s    .       |    
-        |                                                    .       |    
-        |                                                    .       |    
-        |              1     par Pext                        .       |    
-        |         -  -----. ---------                        .       |    
-        |             rho     par s                          .       |    
-        |                                                    .       |    
-        +-                                                          -+    
-                                                                          
-                                                                          
-        +-                           .        -+                          
-        |                            .         |                          
-        |             0              .   1     |                          
-  o H = |......................................|                          
-        |                            .         |                          
-        |        2                   .         |                          
-        |   / Q \       beta    1/2  .     Q   |                          
-        | - |---|  +  -------- A     .  2 ---  |                          
-        |   \ A /     2 rho Ao       .     A   |                          
-        |                            .         |                          
-        +-                           .        -+                          
-                                                                          
-                                                                          
+
+
+
+
+                        n                     n                         n
+            /          \        /            \      2 /                \
+        n   |          |        |       dPsi |    Dt  |    par F       |
+  o  rhs =  | U  , Psi |   + Dt | F   , ---- |  - --- | B  ----- , Psi |
+            |          |        |  LW    ds  |     2  |  U par s       |
+            \          /        \            /        \                /
+           +------------+    +----------------+ +-----------------------+
+              (Term 1)            (Term 2)             (Term 3)
+
+                                   n                    n
+               2 /                \        /           \
+             Dt  |   par F   dPsi |        |           |
+           - --- | H ----- , ---- |   + Dt | B   , Psi |
+              2  |   par s    ds  |        |  LW       |
+                 \                /        \           /
+          +-------------------------+   +----------------+
+                  (Term 4)                  (Term 5)
+
+
+
+                                +-     -+
+          +- -+                 | psi   |
+          | A |                 |    a  |
+  o U   = |   |     ;     Psi = |       |
+          | Q |                 | psi   |
+          +- -+                 |    q  |
+                                +-     -+
+
+
+               Dt
+  o F   = F + --- H B
+     LW        2
+
+               Dt
+  o B   = B + --- B  B
+     LW        2   U
+
+
+        +-                  -+
+        |                    |
+        |         Q          |
+        |                    |
+  o F = |....................|
+        |  2                 |
+        | Q      beta    3/2 |
+        |--- + -------- A    |
+        | A    3 rho Ao      |
+        +-                  -+
+
+
+        +-                                                -+
+        |                                                  |
+        |                         0                        |
+    dF  |                                                  |
+  o -- =|..................................................|
+    ds  |             /      2                  \          |
+        |   Q   dQ    |  / Q \      beta    1/2 | dA       |
+        | 2---.---  + | -|---|  + -------- A    | --- +    |
+        |   A   ds    \  \ A /    2.rho.Ao      / ds       |
+        |                                                  |
+        |                  3/2  /                     \    |
+        |                 A     | d beta    beta  dAo |    |
+        |           +  -------- | ------ - -----  --- |    |
+        |              3.rho.Ao \ d x        Ao   ds  /    |
+        +-                                                -+
+
+
+        +-                                                          -+
+        |                                                            |
+        |                            0                               |
+        |                                                            |
+  o B = |............................................................|
+        |                                                            |
+        |     Q        A    / 2   1/2    1/2 \ par beta              |
+        |- Kr---  -  ------ |--- A    - Ao   | --------              |
+        |     A      Ao rho \ 3              /  par s                |
+        |                                                            |
+        |                                                            |
+        |             beta   A  / 2  1/2     1  1/2 \ par Ao         |
+        |         +  ------ --- |---A     - ---Ao   | ------         |
+        |            Ao rho  Ao \ 3          2      /  par s         |
+        |                                                            |
+        |                                                            |
+        |              A    par Pext                                 |
+        |         -  -----.---------                                 |
+        |             rho    par s                                   |
+        |                                                            |
+        +-                                                          -+
+
+
+        +-                                                   .      -+
+        |                                                    .       |
+        |                            0                       .   0   |
+    dB  |                                                    .       |
+  o -- =|............................................................|
+    dU  |                                                    .       |
+        |     Q        1    /  1/2    1/2 \ par beta         .   Kr  |
+        |- Kr---  -  ------ | A    - Ao   | --------         . - --- |
+        |     A^2    Ao rho \             /  par s           .    A  |
+        |                                                    .       |
+        |                                                    .       |
+        |             beta   1  /  1/2    1  1/2 \ par Ao    .       |
+        |         +  ------ --- | A    - -- Ao   | ------    .       |
+        |            Ao rho  Ao \         2      /  par s    .       |
+        |                                                    .       |
+        |                                                    .       |
+        |              1     par Pext                        .       |
+        |         -  -----. ---------                        .       |
+        |             rho     par s                          .       |
+        |                                                    .       |
+        +-                                                          -+
+
+
+        +-                           .        -+
+        |                            .         |
+        |             0              .   1     |
+  o H = |......................................|
+        |                            .         |
+        |        2                   .         |
+        |   / Q \       beta    1/2  .     Q   |
+        | - |---|  +  -------- A     .  2 ---  |
+        |   \ A /     2 rho Ao       .     A   |
+        |                            .         |
+        +-                           .        -+
+
+
     */
     //Calculate Kr
     Kr = 8.0 * M_PI * visc / dens;
@@ -902,10 +902,10 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::ScatraSysmat(
 
   // evaluate CFL number
   double cfl_np = 0.5*(evnp(1)+evnp(0))*dt/L;
-  
+
   // Evaluate the system mass matrix
-  sysmat(0,0) =  0.5+cfl_np;   sysmat(0,1) =  0.5-cfl_np; 
-  sysmat(1,0) = -0.5-cfl_np;   sysmat(1,1) = -0.5+cfl_np; 
+  sysmat(0,0) =  0.5+cfl_np;   sysmat(0,1) =  0.5-cfl_np;
+  sysmat(1,0) = -0.5-cfl_np;   sysmat(1,1) = -0.5+cfl_np;
 
   // Evaluate rhs vector
   rhs (0) = 0.5*(escatran(1)+escatran(0));
@@ -945,13 +945,13 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::ScatraSysmat(
   // evaluate CFL number
   double f_cfl_np = 0.5*(0.5*ewfnp(1)+0.5*ewfnp(0))*dt/L;
   double b_cfl_np = 0.5*(0.5*ewbnp(1)+0.5*ewbnp(0))*dt/L;
-  
+
   // Evaluate the system mass matrix
-  sysmat(0,0) =  0.5+f_cfl_np;   sysmat(0,2) =  0.5-f_cfl_np; 
+  sysmat(0,0) =  0.5+f_cfl_np;   sysmat(0,2) =  0.5-f_cfl_np;
   sysmat(1,1) =  0.5+b_cfl_np;   sysmat(1,3) =  0.5-b_cfl_np;
-  sysmat(2,0) = -0.5-f_cfl_np;   sysmat(2,2) = -0.5+f_cfl_np; 
+  sysmat(2,0) = -0.5-f_cfl_np;   sysmat(2,2) = -0.5+f_cfl_np;
   sysmat(3,1) = -0.5-b_cfl_np;   sysmat(3,3) = -0.5+b_cfl_np;
-  
+
   // Evaluate rhs vector
   rhs (0) = 0.5*(escatran(2)+escatran(0));
   rhs (1) = 0.5*(escatran(3)+escatran(1));
@@ -1022,7 +1022,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
     pext1  = actmat->pext(0);
     // Read in artery's external forces at node 1
     pext2  = actmat->pext(1);
-    
+
     // Set up all the needed vectors for furthur calculations
     area0_(0,0) = Ao1;
     area0_(1,0) = Ao2;
@@ -1116,7 +1116,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
   // IO_BC_HERE
 #if 0
   if(! ele->Nodes()[0]->GetCondition("ArtInOutCond") && ! ele->Nodes()[0]->GetCondition("ArtInOutCond"))
-    return BCnodes;    
+    return BCnodes;
   else if (ele->Nodes()[0]->GetCondition("ArtInOutCond") && ele->Nodes()[0]->GetCondition("ArtInOutCond"))
   {
     const DRT::Condition *cond1 = ele->Nodes()[0]->GetCondition("ArtInOutCond");
@@ -1200,7 +1200,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
         exit(1);
       }
       if(TermIO == -1.0)
-        (*junc_nodal_vals)[local_id]->W_     = (*Wbnp)[local_id];        
+        (*junc_nodal_vals)[local_id]->W_     = (*Wbnp)[local_id];
       else if (TermIO == 1.0)
         (*junc_nodal_vals)[local_id]->W_     = (*Wfnp)[local_id];
       (*junc_nodal_vals)[local_id]->A_     = earean(i);
@@ -1212,7 +1212,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
     }
 
     BCnodes = true;
-      
+
     }
   }
 
@@ -1280,7 +1280,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
     pext1  = actmat->pext(0);
     // Read in artery's external forces at node 1
     pext2  = actmat->pext(1);
-    
+
     // Set up all the needed vectors for furthur calculations
     area0_(0,0) = Ao1;
     area0_(1,0) = Ao2;
@@ -1372,7 +1372,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
         dserror("node (%d) doesn't exist on proc(%d)",ele->Nodes()[i],discretization.Comm().MyPID());
         exit(1);
       }
-                            
+
       if (TermIO == -1)
       {
          Cparams.set<double>("backward characteristic wave speed",(*Wbnp)[local_id]);
@@ -1457,14 +1457,14 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
             Wf = (*Wfnp)[local_id];
           }
         }
-        
+
         // calculating A at node i
-        int    gid; 
-        double val; 
+        int    gid;
+        double val;
         double cross_area;
 
         cross_area = std::pow(2.0*dens*area0_(i)/beta,2.0)*pow((Wf - Wb)/8.0,4.0);
-     
+
         gid = lm[2*i];
         val = cross_area;
         bcval->ReplaceGlobalValues(1,&val,&gid);
@@ -1487,7 +1487,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
 
   // ---------------------------------------------------------------------------------
   // Solve the any available junction boundary conditions
-  // ---------------------------------------------------------------------------------   
+  // ---------------------------------------------------------------------------------
   for (int i =0; i<2; i++)
   {
     if(ele->Nodes()[i]->GetCondition("ArtJunctionCond"))
@@ -1546,14 +1546,14 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateScatraBC(
       RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
       double time = params.get<double>("time");
 
-      //  
+      //
       // calculating Q at node i
       const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("ArtPrescribedScatraCond");
-        
+
       const  vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
       double curvefac = 1.0;
       const  vector<double>* vals   = condition->Get<std::vector<double> >("val");
-      
+
       curvefac = (*vals)[0];
       int curvenum = -1;
       if (curve) curvenum = (*curve)[0];
@@ -1561,7 +1561,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateScatraBC(
       {
         curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
       }
-      
+
 
       string TerminalType = *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
       int dof = 0;
@@ -1606,8 +1606,8 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
   //  RCP<const Epetra_Vector> Wbnp  = discretization.GetState("Wbnp");
 
   RCP<Epetra_Vector>   pn  = params.get<RCP<Epetra_Vector> >("pressure");
-  RCP<Epetra_Vector>   qn  = params.get<RCP<Epetra_Vector> >("flow"); 
-  RCP<Epetra_Vector>   an  = params.get<RCP<Epetra_Vector> >("art_area"); 
+  RCP<Epetra_Vector>   qn  = params.get<RCP<Epetra_Vector> >("flow");
+  RCP<Epetra_Vector>   an  = params.get<RCP<Epetra_Vector> >("art_area");
 
   // get time-step size
   //  const double dt = params.get<double>("time step size");
@@ -1654,7 +1654,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
     pext1  = actmat->pext(0);
     // Read in artery's external forces at node 1
     pext2  = actmat->pext(1);
-    
+
     // Set up all the needed vectors for furthur calculations
     area0_(0,0) = Ao1;
     area0_(1,0) = Ao2;
@@ -1718,7 +1718,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
     if(myrank == ele->Nodes()[i]->Owner())
     {
       int    gid  = ele->Nodes()[i]->Id();
-      double val; 
+      double val;
 
       // calculating P at node i
       double pressure = 0.0;
@@ -1728,14 +1728,14 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
       val = pressure;
       pn->ReplaceGlobalValues(1,&val,&gid);
 
-      // calculating Q at node i      
+      // calculating Q at node i
       val = qn_(i);
       qn->ReplaceGlobalValues(1,&val,&gid);
-      
-      // evaluate area 
+
+      // evaluate area
       val = an_(i);
       an->ReplaceGlobalValues(1,&val,&gid);
-      
+
     }
   } // End of node i has a condition
 }
@@ -1793,7 +1793,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
     pext1  = actmat->pext(0);
     // Read in artery's external forces at node 1
     pext2  = actmat->pext(1);
-    
+
     // Set up all the needed vectors for furthur calculations
     area0_(0,0) = Ao1;
     area0_(1,0) = Ao2;
@@ -1857,7 +1857,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
     if(myrank == ele->Nodes()[i]->Owner())
     {
       int    gid  = ele->Nodes()[i]->Id();
-      double val; 
+      double val;
 
       // calculating P at node i
       double pressure = 0.0;
@@ -1867,10 +1867,10 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
       val = pressure;
       pn->ReplaceGlobalValues(1,&val,&gid);
 
-      // calculating Q at node i      
+      // calculating Q at node i
       val = qn_(i);
       qn->ReplaceGlobalValues(1,&val,&gid);
-      
+
     }
   } // End of node i has a condition
 }
@@ -1909,7 +1909,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcScatraFromScatraFW(
     gid = ele->Nodes()[i]->Id();
     scatra->ReplaceGlobalValues(1,&val,&gid);
   }
-  
+
 }
 
 
@@ -1925,7 +1925,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateWfAndWb(
   std::vector<int>&            lm,
   RCP<MAT::Material>   material)
 {
-  
+
   // Define Geometric variables
   double Ao1 = 0.0;
   double Ao2 = 0.0;
@@ -1967,7 +1967,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateWfAndWb(
     pext1  = actmat->pext(0);
     // Read in artery's external forces at node 1
     pext2  = actmat->pext(1);
-    
+
     // Set up all the needed vectors for furthur calculations
     area0_(0,0) = Ao1;
     area0_(1,0) = Ao2;
@@ -2042,7 +2042,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateWfAndWb(
     double Wf = eqn(i)/earean(i) +4.0*c;
     double Wb = eqn(i)/earean(i) -4.0*c;
 
-    cout<<"Wb:  "<<Wb<<endl;
+//    cout<<"Wb:  "<<Wb<<endl;
     int    gid = ele->Nodes()[i]->Id();
     Wbnp->ReplaceGlobalValues(1,&Wb,&gid);
     Wfnp->ReplaceGlobalValues(1,&Wf,&gid);
@@ -2088,7 +2088,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::SolveScatraAnalytically(
   RCP<Epetra_Vector> wbn  = params.get<RCP<Epetra_Vector> >("Wbn");
   RCP<Epetra_Vector> wfo  = params.get<RCP<Epetra_Vector> >("Wfo");
   RCP<Epetra_Vector> wbo  = params.get<RCP<Epetra_Vector> >("Wbo");
-  
+
   RCP<Epetra_Vector> scatran    = params.get<RCP<Epetra_Vector> >("scatran");
   RCP<Epetra_Vector> scatranp   = params.get<RCP<Epetra_Vector> >("scatranp");
 
@@ -2123,30 +2123,30 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::SolveScatraAnalytically(
     xyze(1,inode) = x[1];
     xyze(2,inode) = x[2];
   }
-  
+
   const double L=sqrt(
     pow(xyze(0,0) - xyze(0,1),2)
     + pow(xyze(1,0) - xyze(1,1),2)
     + pow(xyze(2,0) - xyze(2,1),2));
-  
+
   // Evaluate forward Scalar transport at n+1
   //  if(! ele->Nodes()[0]->GetCondition("ArtInOutCond"))
   {
     int nodenum = 1;
     // evaluta forward scatra
     int gid = lm[2*nodenum];
-    
+
     // get forward speed
     const double cf = ewfn(nodenum);
     double x = cf*dt;
-    
+
     // get shape functions of forward speed
     const double N1 = (L-x)/L;
     const double N2 = (x)/L;
-    
+
     double cn1 = escatran(0);
     double cn2 = escatran(2);
-    
+
     double val = cn1*N1 + cn2*N2;
     scatranp->ReplaceGlobalValues(1,&val,&gid);
   }
@@ -2157,18 +2157,18 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::SolveScatraAnalytically(
     int nodenum = 0;
     // evaluta forward scatra
     int gid = lm[2*nodenum+1];
-    
+
     // get forward speed
     const double cf = ewbn(nodenum);
     double x = cf*dt;
-    
+
     // get shape functions of forward speed
     const double N1 = (L-x)/L;
     const double N2 = (x)/L;
-    
+
     double cn1 = escatran(1);
     double cn2 = escatran(3);
-    
+
     double val = cn1*N1 + cn2*N2;
     scatranp->ReplaceGlobalValues(1,&val,&gid);
   }

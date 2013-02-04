@@ -115,6 +115,7 @@ public:
   virtual void Update() = 0;
   virtual void StatisticsAndOutput() { dserror("Not implemented in the base class, may be overridden by a subclass."); }
   virtual void Output()              { dserror("Not implemented in the base class, may be overridden by a subclass."); }
+  virtual void OutputReducedD()      { dserror("Not implemented in the base class, may be overridden by a subclass."); }
   virtual void StatisticsOutput()    { dserror("Not implemented in the base class, may be overridden by a subclass."); }
   virtual const Teuchos::RCP<IO::DiscretizationWriter>& DiscWriter() { return output_; }
 
@@ -148,6 +149,7 @@ public:
   virtual void ImportFlameFront(const Teuchos::RCP<COMBUST::FlameFront> flamefront, bool UpdateDofSet) {dserror("Not implemented in the base class, may be overridden by a subclass."); }
 
   virtual void ReadRestart(int step) {dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+  virtual void ReadRestartReducedD(int step) {dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
   virtual void SetRestart(const int step,
                     const double time,
                     Teuchos::RCP<const Epetra_Vector> readvelnp,

@@ -275,6 +275,12 @@ public:
   */
   void Output();
 
+    /*!
+  \brief update configuration and output to file/screen
+
+  */
+  void OutputReducedD();
+
   void OutputToGmsh(
       const int step,
       const double time,
@@ -349,6 +355,12 @@ public:
 
   */
   void ReadRestart(int step);
+
+  /*!
+  \brief read restart data
+
+  */
+  void ReadRestartReducedD(int step);
   /*!
   \brief get restart data in case of turbulent inflow computation
 

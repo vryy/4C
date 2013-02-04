@@ -14,8 +14,8 @@ LINEAR_SOLVER                   1
 DYNAMICTYP                      CrankNicolson
 NUMSTEP                         900
 TIMESTEP                        1.0e-2
-RESTARTEVRY                     5
-UPRES                           5
+RESTARTEVRY                     1
+UPRES                           1
 SOLVERTYPE                      Nonlinear                       // Linear Nonlinear
 MAXITERATIONS                   40
 TOLERANCE                       1E-7
@@ -83,9 +83,8 @@ E 2 - pressure 1.0 2 0
  6 RED_ACINUS LINE2 4 7 MAT 2 TYPE Exponential AcinusVolume 0.03711 AlveolarDuctVolume 0.03711
  7 RED_ACINUS LINE2 5 8 MAT 2 TYPE Exponential AcinusVolume 0.03711 AlveolarDuctVolume 0.03711
  8 RED_ACINAR_INTER_DEP LINE2 6 7 MAT 2
- 9 RED_ACINAR_INTER_DEP LINE2 7 6 MAT 2
-10 RED_ACINAR_INTER_DEP LINE2 7 8 MAT 2
-11 RED_ACINAR_INTER_DEP LINE2 8 7 MAT 2
+ 9 RED_ACINAR_INTER_DEP LINE2 7 8 MAT 2
+10 RED_ACINAR_INTER_DEP LINE2 8 6 MAT 2
 -----------------------------------------------------------------NODE COORDS
 NODE 1 COORD 0.0  0.0 0.0
 NODE 2 COORD 3.0  0.0 0.0
@@ -103,7 +102,7 @@ NODE 8 DNODE 4
 --------------------------------DESIGN NODE REDUCED-D LUNG ACINUS CONDITIONS
 DPOINT                          0
 ----------------------------------------------------------RESULT DESCRIPTION
-RED_AIRWAY DIS red_airway NODE 3 QUANTITY pressure VALUE -2.54563750575499551e-03 TOLERANCE 1e-9
-RED_AIRWAY DIS red_airway NODE 4 QUANTITY pressure VALUE -1.99106688643882479e-03 TOLERANCE 1e-9
+RED_AIRWAY DIS red_airway NODE 3 QUANTITY pressure VALUE -2.55207432497517794e-03 TOLERANCE 1e-9
+RED_AIRWAY DIS red_airway NODE 4 QUANTITY pressure VALUE -2.01127177311618893e-03 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END
