@@ -103,7 +103,7 @@ RESULTSEVRY                     1
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         9.0
 TIMESTEP                        0.001
-NUMSTEP                         215
+NUMSTEP                         10
 UPRES                           1
 RESTARTEVRY                     1
 COUPALGO                        iter_monolithicfluidsplit       // iter_monolithicstructuresplit iter_monolithicfluidsplit iter_stagg_AITKEN_rel_param
@@ -264,11 +264,11 @@ ML_DAMPCOARSE                   1.0                             // damping coars
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 0.004 DENSITY 0.001 GAMMA 1.0
 //MAT 2 MAT_Struct_NeoHooke YOUNG 2.4E6 NUE 0.499 DENS 1.0
-MAT 3 MAT_CNST_ART VISCOSITY 0.004 DENS 0.001 YOUNG 2.4E6 NUE 0.5 DIAM 19.8350956 TH 0.5 PEXT1 0.0 PEXT2 0.0
-MAT 4 MAT_CNST_ART VISCOSITY 0.004 DENS 0.001 YOUNG 1.4E6 NUE 0.5 DIAM 6.00000000 TH 0.2 PEXT1 0.0 PEXT2 0.0
+MAT 3 MAT_CNST_ART VISCOSITY 0.004 DENS 0.001 YOUNG 2.4E6 NUE 0.4 DIAM 19.8350956 TH 0.5 PEXT1 0.0 PEXT2 0.0
+MAT 4 MAT_CNST_ART VISCOSITY 0.004 DENS 0.001 YOUNG 1.4E6 NUE 0.4 DIAM 6.00000000 TH 0.2 PEXT1 0.0 PEXT2 0.0
 MAT 5 MAT_Struct_StVenantKirchhoff YOUNG 1.2E5NUE 0.499 DENS 1.0 THEXPANS 0.0
 MAT 6 MAT_ElastHyper   NUMMAT 1 MATIDS 7 DENS 0.001
-MAT 7 ELAST_CoupNeoHooke YOUNG 2.4E3 NUE 0.499
+MAT 7 ELAST_CoupNeoHooke YOUNG 2.4E6 NUE 0.4
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD ale TAR_MAT 5
 ----------------------------------------------------------------------CURVE1
@@ -4521,13 +4521,13 @@ NODE 1551 COORD -1.0000000000 -10.00000000000 125.32
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 60 QUANTITY pressure VALUE  2.62131838331083422e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 60 QUANTITY     velx VALUE -1.56858007508349147e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 60 QUANTITY     vely VALUE -8.11660296621162018e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 60 QUANTITY     velz VALUE  2.85408464947129694e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 86 QUANTITY pressure VALUE  4.47387319263654888e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 86 QUANTITY     velx VALUE -1.88537605438684928e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 86 QUANTITY     vely VALUE  1.24211696435385388e+01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 86 QUANTITY     velz VALUE -5.15511199514412652e+01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 60 QUANTITY pressure VALUE  3.05535375550003550e+02 TOLERANCE 1e-9
+FLUID DIS fluid NODE 60 QUANTITY     velx VALUE  1.03877845578624473e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 60 QUANTITY     vely VALUE  4.34388536916722323e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 60 QUANTITY     velz VALUE  7.40486496814405939e+01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 86 QUANTITY pressure VALUE  3.07728397536328998e+02 TOLERANCE 1e-9
+FLUID DIS fluid NODE 86 QUANTITY     velx VALUE -3.03761916229868767e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 86 QUANTITY     vely VALUE  4.54810706813113086e-01 TOLERANCE 1e-9
+FLUID DIS fluid NODE 86 QUANTITY     velz VALUE  5.83109889950800664e+01 TOLERANCE 1e-9
 -------------------------------------------------------------------------END
 //                              END
