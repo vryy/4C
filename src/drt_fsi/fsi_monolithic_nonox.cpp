@@ -375,8 +375,8 @@ void FSI::MonolithicNoNOX::PrintNewtonIter()
   if ( Comm().MyPID()==0 )
   {
     if (iter_== 1)
-      PrintNewtonIterHeader(stdout);
-    PrintNewtonIterText(stdout);
+      PrintNewtonIterHeader(std::cout);
+    PrintNewtonIterText(std::cout);
   }
 
 //   // print to error file
@@ -387,16 +387,15 @@ void FSI::MonolithicNoNOX::PrintNewtonIter()
 //     PrintNewtonIterText(errfile_);
 //   }
 }
-
 /*----------------------------------------------------------------------*/
 /* print Newton-Raphson iteration to screen and error file              */
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::PrintNewtonIterHeader(FILE* ofile)
+void FSI::MonolithicNoNOX::PrintNewtonIterHeader(std::ostream & oss)
 {
-  cout << "CONVTOL: " << tolfres_ << std::endl;
+  oss << "CONVTOL: " << tolfres_ << std::endl;
 
   // open outstringstream
-  std::ostringstream oss;
+  //std::ostringstream oss;
 
   // enter converged state etc
   oss << std::setw(6)<< "numiter  |";
@@ -436,30 +435,15 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader(FILE* ofile)
   }
 
   // add solution time
-  oss << std::setw(12)<< "wct    |";
-  cout << "==========================================================================================================================================="<< std::endl;
-
-  // finish oss
-  oss << std::ends;
-
-  // print to screen (could be done differently...)
-  if (ofile==NULL)
-    dserror("no ofile available");
-  fprintf(ofile, "%s\n", oss.str().c_str());
-
-  // print it, now
-  fflush(ofile);
-  cout << "===========================================================================================================================================";
+  oss << std::setw(12)<< "wct    |" << endl;
+  oss << "==========================================================================================================================================="<< std::endl;
 }
 
 /*---------------------------------------------------------------------*/
 /*  print Newton-Raphson iteration to screen                           */
 /*---------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::PrintNewtonIterText(FILE* ofile)
+void FSI::MonolithicNoNOX::PrintNewtonIterText(std::ostream & oss)
 {
-  // open outstringstream
-  std::ostringstream oss;
-
   // enter converged state etc
   oss << std::setw(3)<< iter_ << "/" << itermax_;
 
@@ -468,8 +452,7 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText(FILE* ofile)
   switch ( normtypefres_ )
   {
   case INPAR::FSI::convnorm_abs :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << (normrhs_);
-    printf("\n");
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << (normrhs_) << std::endl;
     break;
   case INPAR::FSI::convnorm_rel :
     oss << std::setw(14) << std::setprecision(3) << std::scientific << (normstrrhs_/ns_)
@@ -492,38 +475,28 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText(FILE* ofile)
   switch ( normtypeinc_ )
   {
   case INPAR::FSI::convnorm_abs :
-    oss << std::setw(18) << std::setprecision(3) << std::scientific << norminc_;
-    printf("\n");
+    oss << std::setw(18) << std::setprecision(3) << std::scientific << norminc_ << std::endl;
+    //   printf("\n");
     break;
   case INPAR::FSI::convnorm_rel :
     oss << std::setw(12) << std::setprecision(3) << std::scientific <<  (normstrinc_/ns_)
         << std::setw(12) << std::setprecision(3) << std::scientific <<  (norminterfaceinc_/ni_)
         << std::setw(12) << std::setprecision(3) << std::scientific <<  (normflvelinc_/nfv_)
         << std::setw(12) << std::setprecision(3) << std::scientific << (normflpresinc_/nfp_)
-        << std::setw(12) << std::setprecision(3) << std::scientific << (normaleinc_/na_);
-    printf("\n");
+        << std::setw(12) << std::setprecision(3) << std::scientific << (normaleinc_/na_) << "\n";
+    // printf("\n");
     break;
   case INPAR::FSI::convnorm_mix :
     oss << std::setw(12) << std::setprecision(3) << std::scientific << (normstrinc_/ns_)
         << std::setw(12) << std::setprecision(3) << std::scientific << (norminterfaceinc_/ni_)
         << std::setw(12) << std::setprecision(3) << std::scientific << (normflvelinc_/nfv_)
         << std::setw(12) << std::setprecision(3) << std::scientific << (normflpresinc_/nfp_)
-        << std::setw(12) << std::setprecision(3) << std::scientific << (normaleinc_/na_);
-    printf("\n");
+        << std::setw(12) << std::setprecision(3) << std::scientific << (normaleinc_/na_) << "\n";
+    //  printf("\n");
     break;
   default:
     dserror("You should not turn up here.");
   }
-
-  // finish oss
-  oss << std::ends;
-
-  // print to screen (could be done differently...)
-  if (ofile==NULL)
-    dserror("no ofile available");
-  fprintf(ofile, "%s", oss.str().c_str());
-
-  // print it, now
-  fflush(ofile);
 }
+
 
