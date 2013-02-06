@@ -26,6 +26,7 @@ Maintainer: Susanna Tinkl
 
 #include "constraintmixture.H"
 #include "../drt_lib/drt_globalproblem.H"
+//#include "../drt_lib/standardtypes_cpp.H" // for PI, not needed here?
 #include "matpar_bundle.H"
 #include "../drt_mat/material_service.H"
 #include "../drt_lib/drt_linedefinition.H"
@@ -234,9 +235,9 @@ void MAT::ConstraintMixture::Unpack(const std::vector<char>& data)
   int sizehistory;
   ExtractfromPack(position, data, sizehistory);
   history_ = Teuchos::rcp(new std::vector<ConstraintMixtureHistory> (sizehistory));
-  std::vector<char> datahistory;
   for (int idpast = 0; idpast < sizehistory; idpast++)
   {
+    std::vector<char> datahistory;
     ExtractfromPack(position, data, datahistory);
     history_->at(idpast).Unpack(datahistory);
   }
@@ -366,7 +367,7 @@ void MAT::ConstraintMixture::SetupHistory (const int numgp)
   for (int idpast = 0; idpast < numpast - firstiter; idpast++)
   {
     double degr = 0.0;
-    Degradation((numpast-1-idpast)*dt, &degr);
+    Degradation((numpast-1-idpast)*dt, degr);
     intdegr += degr * dt;
   }
   massprodbasal_ = (1.0 - params_->phimuscle_ - params_->phielastin_) * params_->density_ / 4.0 / intdegr;
@@ -402,12 +403,12 @@ void MAT::ConstraintMixture::Update()
     int eraseiter = 0;
     history_->at(eraseiter).GetTime(&deptime, &depdt);
     double degrad = 0.0;
-    Degradation(acttime-deptime, &degrad);
+    Degradation(acttime-deptime, degrad);
     while (degrad < params_->degtol_ && eraseiter < sizehistory)
     {
       eraseiter +=1;
       history_->at(eraseiter).GetTime(&deptime, &depdt);
-      Degradation(acttime-deptime, &degrad);
+      Degradation(acttime-deptime, degrad);
     }
     if (eraseiter > 0)
     {
@@ -425,13 +426,15 @@ void MAT::ConstraintMixture::Update()
     newhis.SetTime(0.0, 0.0);
     history_->push_back(newhis);
 
-  } else {
+  }
+  else
+  {
     // just adopt deposition time, the rest stays the same
     double newtime = 0.0;
     double newdt = 0.0;
     history_->at(0).GetTime(&newtime, &newdt);
     double degrad = 0.0;
-    Degradation(deptime-newtime, &degrad);
+    Degradation(deptime-newtime, degrad);
     if (degrad < params_->degtol_)
     {
       for (int iter = 0; iter < sizehistory-1; iter++)
@@ -440,14 +443,17 @@ void MAT::ConstraintMixture::Update()
         history_->at(iter).SetTime(newtime, newdt);
       }
       history_->back().SetTime(0.0, 0.0);
-    } else if (deptime == depdt || (deptime == 2*depdt && *params_->integration_ == "Implicit"))
+    }
+    else if (deptime == depdt || (deptime == 2*depdt && *params_->integration_ == "Implicit"))
     {
       // special case of first time step
       ConstraintMixtureHistory newhis;
       newhis.Setup(numgp, massprodbasal_);
       newhis.SetTime(0.0, 0.0);
       history_->push_back(newhis);
-    } else {
+    }
+    else
+    {
       dserror("You should not change your timestep size in the case time < starttime! %f", deptime);
     }
   }
@@ -515,14 +521,14 @@ void MAT::ConstraintMixture::Evaluate
             history_->at(idpast+1).GetTime(&timeloc, &dtloc);
             degrdt = dtloc;
           }
-          Degradation(time-degrtime, &degr);
+          Degradation(time-degrtime, degr);
           intdegr += degr * degrdt;
         }
         massprodbasal_ = (1.0 - params_->phimuscle_ - params_->phielastin_) * params_->density_ / 4.0 / intdegr;
 //        massprodbasal_ = (1.0 - params_->phimuscle_ - params_->phielastin_) * params_->density_ / 10.0 / intdegr;
       }
     }
-    else if (time > temptime)
+    else if (time > temptime + 1.0e-11)
     {
       // might be the case in prestressing as Update is not called during prestress
       // thus time has to be adapted and nothing else, as there is no growth & remodeling during prestress
@@ -829,6 +835,31 @@ void MAT::ConstraintMixture::EvaluateFiberFamily
     visrefmassdens_->at(gp)(idfiber) = 0.0;
 
   //--------------------------------------------------------------------------------------
+  // build identity tensor I
+  LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
+  for (int i = 0; i < 3; i++) Id(i) = 1.0;
+  // right Cauchy-Green Tensor  C = 2 * E + I
+  LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
+  C.Scale(2.0);
+  C += Id;
+
+  //--------------------------------------------------------------------------------------
+  // structural tensors in voigt notation
+  // A = a x a
+  LINALG::Matrix<NUM_STRESS_3D,1>  A;
+  for (int i = 0; i < 3; i++)
+    A(i) = a(i)*a(i);
+
+  A(3) = a(0)*a(1); A(4) = a(1)*a(2); A(5) = a(0)*a(2);
+
+  double I4 =  A(0)*C(0) + A(1)*C(1) + A(2)*C(2)
+             + 1.*(A(3)*C(3) + A(4)*C(4) + A(5)*C(5)); // I4 = trace(A C)
+
+  // variables for stress and cmat
+  double fac_cmat = 0.0;
+  double fac_stress = 0.0;
+
+  //--------------------------------------------------------------------------------------
   // prestress time
 //  const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
 //  INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(pslist,"PRESTRESS");
@@ -850,12 +881,14 @@ void MAT::ConstraintMixture::EvaluateFiberFamily
       double dtloc = 0.0;
       history_->at(idpast+1).GetTime(&timeloc, &dtloc);
       depdt = dtloc;
-    } else if (deptime >= (time - params_->lifetime_ - eps) &&
-               (deptime - depdt) < (time - params_->lifetime_ - eps) &&
-               (params_->degoption_ != "Exp"))
+    }
+    else if (deptime >= (time - params_->lifetime_ - eps) &&
+             (deptime - depdt) < (time - params_->lifetime_ - eps) &&
+             (params_->degoption_ != "Exp"))
     {
       depdt = deptime - time + params_->lifetime_;
     }
+
     LINALG::Matrix<4,1> collstretch(true);
     history_->at(idpast).GetStretches(gp, &collstretch);
     double stretch = prestretchcollagen / collstretch(idfiber);
@@ -864,43 +897,47 @@ void MAT::ConstraintMixture::EvaluateFiberFamily
     if (*params_->initstretch_ == "experimental" && deptime <= params_->starttime_ + eps)
       stretch = 1.0 / collstretch(idfiber);
 
-    LINALG::Matrix<NUM_STRESS_3D,1> Saniso(true);
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmataniso(true);
-    EvaluateSingleFiber(glstrain, & cmataniso, & Saniso, a, stretch);
     double qdegrad = 0.0;
-    Degradation(time - deptime, &qdegrad);
+    Degradation(time - deptime, qdegrad);
     LINALG::Matrix<4,1> collmass(true);
     history_->at(idpast).GetMass(gp, &collmass);
-    double facS = stretch*stretch * qdegrad * collmass(idfiber) / density * depdt;
-    Saniso.Scale(facS);
-    (*stress) += Saniso;
+
+    double fac_cmat_loc = 0.0;
+    double fac_stress_loc = 0.0;
+    EvaluateSingleFiberScalars(I4, fac_cmat_loc, fac_stress_loc, stretch);
+    fac_stress += fac_stress_loc * stretch*stretch * qdegrad * collmass(idfiber) / density * depdt;
 
     if (*params_->initstretch_ == "Homeo" || (idpast == sizehistory - 1 && time > params_->starttime_ + 1.0e-11))
     {
-      // special derivative for last implicit step or initstretch homeo
-      LINALG::Matrix<NUM_STRESS_3D,1>  A;
-      for (int i = 0; i < 3; i++)
-        A(i) = a(i)*a(i);
-
-      A(3) = a(0)*a(1); A(4) = a(1)*a(2); A(5) = a(0)*a(2);
+      LINALG::Matrix<NUM_STRESS_3D,1> Saniso_loc(A);
+      Saniso_loc.Scale(fac_stress_loc * stretch*stretch * qdegrad * collmass(idfiber) / density * depdt);
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatanisoadd(true);
-      cmatanisoadd.MultiplyNT(A, Saniso);
+      cmatanisoadd.MultiplyNT(A, Saniso_loc);
       cmatanisoadd.Scale(-2.0/(collstretch(idfiber)*collstretch(idfiber)));
       (*cmat) += cmatanisoadd;
-    } else {
-      double faccmat = stretch*stretch*stretch*stretch * qdegrad * collmass(idfiber) / density * depdt;
-      cmataniso.Scale(faccmat);
-      (*cmat) += cmataniso;
+    }
+    else
+    {
+      fac_cmat += fac_cmat_loc * stretch*stretch*stretch*stretch * qdegrad * collmass(idfiber) / density * depdt;
     }
 
     (*currmassdens) += qdegrad * collmass(idfiber) * depdt;
     if (idfiber != 3)
       visrefmassdens_->at(gp)(idfiber) += qdegrad * collmass(idfiber) * depdt;
   }
+
+  // matrices for stress and cmat
+  LINALG::Matrix<NUM_STRESS_3D,1> Saniso(A);
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmataniso(true);
+  cmataniso.MultiplyNT(A,A);
+  Saniso.Scale(fac_stress);
+  cmataniso.Scale(fac_cmat);
+  (*stress) += Saniso;
+  (*cmat) += cmataniso;
 }
 
 /*----------------------------------------------------------------------*
- |  EvaluateSingleFiber                           (private)        12/10|
+ |  EvaluateSingleFiberScalars                    (private)        02/12|
  *----------------------------------------------------------------------*
  strain energy function
 
@@ -908,38 +945,17 @@ void MAT::ConstraintMixture::EvaluateFiberFamily
 
  I_4 .. invariant accounting for the fiber direction
  */
-void MAT::ConstraintMixture::EvaluateSingleFiber
+void MAT::ConstraintMixture::EvaluateSingleFiberScalars
 (
-  const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,
-  LINALG::Matrix<NUM_STRESS_3D,1>* stress,
-  LINALG::Matrix<3,1> a,
+  double I4,
+  double& fac_cmat,
+  double& fac_stress,
   double stretch
 )
 {
   const double k1 = params_->k1_;
   const double k2 = params_->k2_;
 
-  //--------------------------------------------------------------------------------------
-  // build identity tensor I
-  LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
-  for (int i = 0; i < 3; i++) Id(i) = 1.0;
-  // right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
-  C.Scale(2.0);
-  C += Id;
-
-  //--------------------------------------------------------------------------------------
-  // structural tensors in voigt notation
-  // A = a x a
-  LINALG::Matrix<NUM_STRESS_3D,1>  A;
-  for (int i = 0; i < 3; i++)
-    A(i) = a(i)*a(i);
-
-  A(3) = a(0)*a(1); A(4) = a(1)*a(2); A(5) = a(0)*a(2);
-
-  double I4 =  A(0)*C(0) + A(1)*C(1) + A(2)*C(2)
-             + 1.*(A(3)*C(3) + A(4)*C(4) + A(5)*C(5)); // I4 = trace(A C)
   I4 = I4 * stretch*stretch;  // account for prestretch and stretch at deposition time
 
   //--------------------------------------------------------------------------------------
@@ -953,28 +969,14 @@ void MAT::ConstraintMixture::EvaluateSingleFiber
     fib1_tension = 0.0;
   }
 
-  //--- determine 2nd Piola Kirchhoff stresses S -----------------------------------------
-  LINALG::Matrix<NUM_STRESS_3D,1> Saniso(A); // first compute S = 2 dW/dI4 A
+  // stress
   const double exp1 = exp(k2*(I4-1.)*(I4-1.));
   if (isinf(exp1))
     dserror("stretch in fiber direction is too high");
-  const double fib1 = 2.*(k1*(I4-1.)*exp1);  // 2 dW/dI4
-  Saniso.Scale(fib1);  //S
+  fac_stress = 2.*(k1*(I4-1.)*exp1);  // 2 dW/dI4
 
-  *stress = Saniso;
-
-  //--- do elasticity matrix -------------------------------------------------------------
-  if (cmat != NULL)
-  {
-    const double delta7 = fib1_tension* 4.0*(k1*exp1 + 2.0*k1*k2*(I4-1.0)*(I4-1.0)*exp1); // 4 d^2Wf/dI4dI4
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmataniso;
-    for (int i = 0; i < 6; ++i) {
-      for (int j = 0; j < 6; ++j) {
-          cmataniso(i,j) = delta7 * A(i) * A(j);  // delta7 A x A
-      }
-    }
-    *cmat = cmataniso;
-  }
+  // cmat
+  fac_cmat = fib1_tension* 4.0*(k1*exp1 + 2.0*k1*k2*(I4-1.0)*(I4-1.0)*exp1); // 4 d^2Wf/dI4dI4
 }
 
 /*----------------------------------------------------------------------*
@@ -1351,28 +1353,28 @@ void MAT::ConstraintMixture::MassProductionSingleFiber
 /*----------------------------------------------------------------------*
  |  Degradation                                   (private)        10/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixture::Degradation(double t, double* degr)
+void MAT::ConstraintMixture::Degradation(double t, double& degr)
 {
   if (params_->degoption_ == "Lin")  // heaviside step function
   {
     if (t <= params_->lifetime_ + 1.0e-11) {
-      *degr = 1.0;
+      degr = 1.0;
     } else {
-      *degr = 0.0;
+      degr = 0.0;
     }
   }
   else if (params_->degoption_ == "Exp")  // exponential decrease
   {
-    *degr = exp(- t / params_->lifetime_);
+    degr = exp(- t / params_->lifetime_);
   }
   else if (params_->degoption_ == "Cos")  // transition zone with cos shape
   {
     if (t < 0.2 * params_->lifetime_ - 1.0e-11) {
-      *degr = 1.0;
+      degr = 1.0;
     } else if (t < params_->lifetime_ - 1.0e-11) {
-      *degr = 0.5*(cos(PI*(t-0.2*params_->lifetime_)/(0.8*params_->lifetime_))+1.0);
+      degr = 0.5*(cos(PI*(t-0.2*params_->lifetime_)/(0.8*params_->lifetime_))+1.0);
     } else {
-      *degr = 0.0;
+      degr = 0.0;
     }
   } else dserror("Degradation option not implemented! Valid options are Lin, Exp and Cos !");
 }
@@ -1697,7 +1699,7 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle
   const int firstiter = 0;
   double currmassdens = 0.0;
   double qdegrad = 0.0;
-  Degradation(0.0, &qdegrad);
+  Degradation(0.0, qdegrad);
   double density = params_->density_;
   // store actual collagen stretches, do not change anymore
   LINALG::Matrix<4,1> actcollstretch(true);
@@ -1941,11 +1943,35 @@ void MAT::ConstraintMixture::GradStressDMass
 )
 {
   double density = params_->density_;
-  double qdegrad;
-  Degradation(0.0,&qdegrad);
-  LINALG::Matrix<NUM_STRESS_3D,1> Saniso(true);
-  EvaluateSingleFiber(glstrain, NULL, & Saniso, a, stretch);
-  double facS = stretch*stretch * qdegrad / density * dt;
+  double qdegrad = 0.0;
+  Degradation(0.0, qdegrad);
+
+  //--------------------------------------------------------------------------------------
+  // build identity tensor I
+  LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
+  for (int i = 0; i < 3; i++) Id(i) = 1.0;
+  // right Cauchy-Green Tensor  C = 2 * E + I
+  LINALG::Matrix<NUM_STRESS_3D,1> C(*glstrain);
+  C.Scale(2.0);
+  C += Id;
+
+  //--------------------------------------------------------------------------------------
+  // structural tensors in voigt notation
+  // A = a x a
+  LINALG::Matrix<NUM_STRESS_3D,1>  A;
+  for (int i = 0; i < 3; i++)
+    A(i) = a(i)*a(i);
+
+  A(3) = a(0)*a(1); A(4) = a(1)*a(2); A(5) = a(0)*a(2);
+
+  double I4 =  A(0)*C(0) + A(1)*C(1) + A(2)*C(2)
+             + 1.*(A(3)*C(3) + A(4)*C(4) + A(5)*C(5)); // I4 = trace(A C)
+
+  double facS = 0.0;
+  double temp = 0.0;
+  LINALG::Matrix<NUM_STRESS_3D,1> Saniso(A);
+  EvaluateSingleFiberScalars(I4, temp, facS, stretch);
+  facS = facS * stretch*stretch * qdegrad / density * dt;
   Saniso.Scale(facS);
   if (option)
     (*derivative).Update(-dt/density*qdegrad*params_->kappa_*J,Cinv,1.0,Saniso);

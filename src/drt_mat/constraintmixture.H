@@ -389,12 +389,11 @@ namespace MAT
      );
 
     /// elastic response for one collagen fiber
-    void EvaluateSingleFiber
+    void EvaluateSingleFiberScalars
     (
-      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
-      LINALG::Matrix<3,1> a,  ///< fiber vector
+      double I4,  ///< fourth invariant
+      double& fac_cmat,  ///< scalar factor for material stiffness matrix
+      double& fac_stress,  ///< scalar factor for 2nd PK-stress
       double stretch  ///< prestretch / stretch at deposition time
     );
 
@@ -449,7 +448,7 @@ namespace MAT
     );
 
     /// returns how much collagen has been degraded
-    void Degradation(double t, double* degr);
+    void Degradation(double t, double& degr);
 
     /// compute stress and cmat for implicit integration with whole stress as driving force
     void EvaluateImplicitAll
