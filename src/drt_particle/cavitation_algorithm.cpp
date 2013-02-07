@@ -26,6 +26,7 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_utils_parallel.H"
 
+#include "../drt_geometry/searchtree.H"
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_geometry/intersection_math.H"
 #include "../drt_geometry/element_coordtrafo.H"
@@ -34,6 +35,8 @@ Maintainer: Georg Hammerl
 #include "../linalg/linalg_utils.H"
 
 #include "../drt_io/io_pstream.H"
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
  | Algorithm constructor                                    ghamm 11/12 |
@@ -108,7 +111,9 @@ void CAVITATION::Algorithm::Init()
   Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*particledis_->NodeRowMap()));
   CreateBins();
 
-  Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcs();
+  // gather all fluid coleles in each bin for proper extended ghosting
+  std::map<int, std::set<int> > fluideles;
+  Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcs(fluideles);
 
   if(binrowmap->NumGlobalElements() > fluiddis_->NumGlobalElements() / 4.0)
     IO::cout << "\n\n\n WARNING: Reduction of number of bins recommended!! Increase cutoff radius. \n\n\n" << IO::endl;
@@ -127,8 +132,8 @@ void CAVITATION::Algorithm::Init()
   // start round robin loop to fill particles into their correct bins
   FillParticlesIntoBins(homelessparticles);
 
-  // ghost bins and particles according to the bins
-  SetupGhosting(binrowmap);
+  // ghost bins, particles and fluid elements according to the bins
+  SetupGhosting(binrowmap, fluideles);
 
   // some output
   IO::cout << "after ghosting" << IO::endl;
@@ -166,6 +171,8 @@ void CAVITATION::Algorithm::Integrate()
   CalculateAndApplyFluidForcesToParticles();
   PARTICLE::Algorithm::Integrate();
 //  fluid_->NonlinearSolve(); // after discussion with Ursula
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("CAVITATION::Algorithm::__fluid_->MultiCorrector()");
+  Teuchos::TimeMonitor monitor(*t);
   fluid_->MultiCorrector();
   return;
 }
@@ -176,6 +183,9 @@ void CAVITATION::Algorithm::Integrate()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::CalculateAndApplyFluidForcesToParticles()
 {
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("CAVITATION::Algorithm::CalculateAndApplyFluidForcesToParticles");
+  Teuchos::TimeMonitor monitor(*t);
+
   fluiddis_->ClearState();
   particledis_->ClearState();
 
@@ -525,8 +535,121 @@ void CAVITATION::Algorithm::CreateBins()
 /*----------------------------------------------------------------------*
 | bins are distributed to the processors                    ghamm 11/12 |
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs()
+Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs(std::map<int, std::set<int> >& fluideles)
 {
+
+  // 1st step: loop over all fluid nodes and fill adjacent elements into corresponding bin
+
+  {
+    for(int inode=0; inode<fluiddis_->NumMyColNodes(); inode++)
+    {
+      DRT::Node* currnode = fluiddis_->lColNode(inode);
+      const double* currpos = currnode->X();
+      int binId = ConvertPosToGid(currpos);
+      DRT::Element** adjeles = currnode->Elements();
+      // Note: only row eles are inserted here
+      for(int iele=0; iele<currnode->NumElement(); iele++)
+      {
+        if(adjeles[iele]->Owner() == myrank_)
+          fluideles[binId].insert(adjeles[iele]->Id());
+      }
+    }
+  }
+
+
+  // 2nd step: loop over all corners of bins and find corresponding fluid element
+
+  {
+    // find proper search radius for search tree (currently brute force)
+    double searchradius = 0.0;
+    for (int lid = 0; lid < fluiddis_->NumMyColElements(); ++lid)
+    {
+      DRT::Element* fluidele = fluiddis_->lColElement(lid);
+      DRT::Node** nodes = fluidele->Nodes();
+
+      // choose arbitrary nodes on the diagonal
+      DRT::Node* currnode0 = nodes[0];
+      DRT::Node* currnode1 = nodes[6];
+      const double* pos0 = currnode0->X();
+      const double* pos1 = currnode1->X();
+      double dist = 0.0;
+      for(int dim=0; dim<3; dim++)
+        dist += (pos0[dim]-pos1[dim]) * (pos0[dim]-pos1[dim]);
+      dist = sqrt(dist);
+      if(dist > searchradius)
+        searchradius = dist;
+    }
+    // add some safety
+    searchradius *= 1.5;
+
+    // find current positions for fluid discretization
+    std::map<int,LINALG::Matrix<3,1> > currentpositions;
+    for (int lid = 0; lid < fluiddis_->NumMyColNodes(); ++lid)
+    {
+      const DRT::Node* node = fluiddis_->lColNode(lid);
+      LINALG::Matrix<3,1> currpos;
+      currpos(0) = node->X()[0];
+      currpos(1) = node->X()[1];
+      currpos(2) = node->X()[2];
+      currentpositions[node->Id()] = currpos;
+    }
+
+    // init of 3D search tree
+    Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(8));
+    const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofDis(*fluiddis_, currentpositions);
+    searchTree->initializeTree(rootBox, *fluiddis_, GEO::TreeType(GEO::OCTTREE));
+
+    // loop over all corners of bins
+    LINALG::Matrix<3,1> cornerpos(3);
+    for(int i=0;i<bin_per_dir_[0]+1;i++)
+    {
+      cornerpos(0) = XAABB_(0,0) + i * bin_size_[0];
+      for(int j=0;j<bin_per_dir_[1]+1;j++)
+      {
+        cornerpos(1) = XAABB_(1,0) + j * bin_size_[1];
+        for(int k=0;k<bin_per_dir_[2]+1;k++)
+        {
+          cornerpos(2) = XAABB_(2,0) + k * bin_size_[2];
+
+          //search for near elements to the corner of the bin
+          std::map<int,std::set<int> >  closeeles =
+              searchTree->searchElementsInRadius(*fluiddis_,currentpositions,cornerpos,searchradius,0);
+
+          //if no close elements could be found the current corner is far away of fluid elements
+          if (not closeeles.empty())
+          {
+            // label is always -1
+            for(std::set<int>::const_iterator eleIter = closeeles[-1].begin(); eleIter != closeeles[-1].end(); ++eleIter)
+            {
+              DRT::Element* element = fluiddis_->gElement(*eleIter);
+              // Note: only row elements are added
+              if(element->Owner() == myrank_)
+              {
+                LINALG::Matrix<3,1> elecoord(true);
+                const LINALG::SerialDenseMatrix xyze(GEO::getCurrentNodalPositions(Teuchos::rcp(element,false), currentpositions));
+                bool foundele = GEO::currentToVolumeElementCoordinates(element->Shape(), xyze, cornerpos, elecoord);
+                if(foundele == true)
+                {
+                  // insert all adjacent bins to the current corner
+                  // ijk corresponds to the first octant w.r.t. the corner
+                  int ijk[3] = {i,j,k};
+                  std::vector<int> adjbins = AdjacentBinstoCorner(&ijk[0]);
+                  for(size_t ibin=0; ibin<adjbins.size(); ibin++)
+                    fluideles[adjbins[ibin]].insert(*eleIter);
+                }
+              }
+            }
+          }
+
+        } // end for int k
+      } // end for int j
+    } // end for int i
+
+  }
+
+
+  // 3rd step: decide which proc will be owner of each bin
+
   std::vector<int> rowbins;
 
   // NOTE: This part of the setup can be the bottleneck because vectors of all bins
@@ -534,37 +657,29 @@ Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs()
   // num fluid nodes in each bin, then block wise communication after copying data to vector
 
   int numbins = bin_per_dir_[0]*bin_per_dir_[1]*bin_per_dir_[2];
+  std::vector<int> mynumeles_per_bin(numbins,0);
 
-  // loop over all fluid nodes and determine their number in each bin (init with 0)
-  std::vector<int> mynumnodes_per_bin(numbins,0);
-  for(int inode=0; inode<fluiddis_->NumMyRowNodes(); inode++)
+  std::map<int, std::set<int> >::const_iterator iter;
+  for(iter=fluideles.begin(); iter!=fluideles.end(); ++ iter)
   {
-    int ijk[3] = {0,0,0};
-    const double* currpos = fluiddis_->lRowNode(inode)->X();
-    for(int dim=0; dim < 3; dim++)
-    {
-      ijk[dim] = (int)((currpos[dim]-XAABB_(dim,0)) / bin_size_[dim]);
-    }
-
-    int binId = ConvertijkToGid(&ijk[0]);
-    ++mynumnodes_per_bin[binId];
+    mynumeles_per_bin[iter->first] = iter->second.size();
   }
 
-  // find maximum number of nodes in each bin over all procs (init with -1)
-  std::vector<int> maxnumnodes_per_bin(numbins,-1);
-  fluiddis_->Comm().MaxAll(&mynumnodes_per_bin[0], &maxnumnodes_per_bin[0], numbins);
+  // find maximum number of eles in each bin over all procs (init with -1)
+  std::vector<int> maxnumeles_per_bin(numbins,-1);
+  fluiddis_->Comm().MaxAll(&mynumeles_per_bin[0], &maxnumeles_per_bin[0], numbins);
 
-  // it is possible that several procs have the same number of nodes in a bin
-  // only proc which has maximum number of nodes in a bin writes its rank
+  // it is possible that several procs have the same number of eles in a bin
+  // only proc which has maximum number of eles in a bin writes its rank
   std::vector<int> myrank_per_bin(numbins,-1);
   for(int i=0; i<numbins; i++)
   {
-    if(mynumnodes_per_bin[i] == maxnumnodes_per_bin[i])
+    if(mynumeles_per_bin[i] == maxnumeles_per_bin[i])
       myrank_per_bin[i] = myrank_;
   }
 
-  mynumnodes_per_bin.clear();
-  maxnumnodes_per_bin.clear();
+  mynumeles_per_bin.clear();
+  maxnumeles_per_bin.clear();
 
   // find maximum myrank for each bin over all procs (init with -1)
   std::vector<int> maxmyrank_per_bin(numbins,-1);
@@ -584,7 +699,7 @@ Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs()
   myrank_per_bin.clear();
   maxmyrank_per_bin.clear();
 
-  // return binrowmap
+  // return binrowmap (without having called FillComplete on particledis_ so far)
   return Teuchos::rcp(new Epetra_Map(-1,(int)rowbins.size(),&rowbins[0],0,Comm()));
 }
 
@@ -592,42 +707,13 @@ Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs()
 /*----------------------------------------------------------------------*
 | setup ghosting of bins, particles & underlying fluid      ghamm 11/12 |
  *----------------------------------------------------------------------*/
-void CAVITATION::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
+void CAVITATION::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap, std::map<int, std::set<int> >& fluideles)
 {
   // 1st and 2nd step
   PARTICLE::Algorithm::SetupGhosting(binrowmap);
 
   // 3st step: extend ghosting of underlying fluid discretization according to bin distribution
   {
-    // gather all fluid roweles /*and their nodes*/ in each bin
-    std::map<int, std::set<int> > fluideles;
-    /*std::map<int, std::set<int> > fluidnodes;*/
-    for (int lid=0;lid<fluiddis_->NumMyRowElements();++lid)
-    {
-      DRT::Element* fluidele = fluiddis_->lRowElement(lid);
-      DRT::Node** nodes = fluidele->Nodes();
-
-      /*const int numnode = fluidele->NumNode();*/
-      for(int inode=0; inode<fluidele->NumNode(); inode++)
-      {
-        DRT::Node* currnode = nodes[inode];
-        const double* pos = currnode->X();
-        int ijk[3] = {-1,-1,-1};
-        for(int dim=0; dim < 3; dim++)
-        {
-          ijk[dim] = (int)(((pos)[dim]-XAABB_(dim,0)) / bin_size_[dim]);
-        }
-        int gidofbin = ConvertijkToGid(&ijk[0]);
-        /*
-        const int* nodeids = fluidele->NodeIds();
-        // insert node ids into set
-        fluidnodes[gidofbin].insert(nodeids,nodeids+numnode);
-        */
-        // insert ele id into set; one element can be part of several bins
-        fluideles[gidofbin].insert(fluidele->Id());
-      }
-    }
-
     // do communication to gather all elements for extended ghosting
     const int numproc = fluiddis_->Comm().NumProc();
 
@@ -742,9 +828,12 @@ void CAVITATION::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
       bool withinele = pos.ComputeTol(GEO::TOL7);
       LINALG::Matrix<3,1> elecoordCut = pos.LocalCoordinates();
 
-      if(abs(elecoordCut(0) - elecoord(0)) > GEO::TOL12 or abs(elecoordCut(1) - elecoord(1)) > GEO::TOL12
-          or abs(elecoordCut(2) - elecoord(2)) > GEO::TOL12 or withinele != foundele)
-        dserror("GEO::currentToVolumeElementCoordinates delivers different results compared to GEO::CUT::Position");
+      if(withinele != foundele)
+      {
+        cout << "withinele is unequal foundele!" << endl;
+        if(abs(elecoordCut(0)-elecoord(0)) > GEO::TOL7 or abs(elecoordCut(1)-elecoord(1)) > GEO::TOL7 or abs(elecoordCut(2)-elecoord(2)) > GEO::TOL7)
+          dserror("GEO::currentToVolumeElementCoordinates delivers different results compared to GEO::CUT::Position");
+      }
       // END: THIS IS JUST TO CHECK WHETHER GEO::currentToVolumeElementCoordinates delivers correct results
 
       if(foundele == true)
@@ -780,3 +869,32 @@ void CAVITATION::Algorithm::Output()
   return;
 }
 
+
+/*----------------------------------------------------------------------*
+ | get adjacent bins to corner, where ijk is in 1st octant ghamm 02/13  |
+ *----------------------------------------------------------------------*/
+std::vector<int> CAVITATION::Algorithm::AdjacentBinstoCorner(int* ijk)
+{
+  std::vector<int> adjbins;
+  adjbins.reserve(8);
+
+  // get all adjacent bins to the current corner, including the bin itself
+  for(int i=-1;i<1;i++)
+  {
+    for(int j=-1;j<1;j++)
+    {
+      for(int k=-1;k<1;k++)
+      {
+        int ijk_neighbor[3] = {ijk[0]+i, ijk[1]+j, ijk[2]+k};
+
+        int neighborgid = ConvertijkToGid(&ijk_neighbor[0]);
+        if(neighborgid != -1)
+        {
+          adjbins.push_back(neighborgid);
+        }
+      } // end for int k
+    } // end for int j
+  } // end for int i
+
+  return adjbins;
+}

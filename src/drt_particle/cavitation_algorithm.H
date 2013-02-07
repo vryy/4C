@@ -95,11 +95,19 @@ namespace CAVITATION
     virtual void CreateBins();
 
     /// bins are distributed to the processors
-    virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcs();
+    virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcs(
+      std::map<int, std::set<int> >& fluideles  ///< map from bin id to fluid elements in this bin
+      );
 
-    /// setup ghosting of bins and particles
+    /// setup ghosting of bins, particles & underlying fluid
     virtual void SetupGhosting(
-      Teuchos::RCP<Epetra_Map> binrowmap  ///< rowmap of bins
+      Teuchos::RCP<Epetra_Map> binrowmap,  ///< rowmap of bins
+      std::map<int, std::set<int> >& fluideles   ///< map from bin id to fluid elements in this bin
+      );
+
+    /// get adjacent bins to corner, where ijk is in 1st octant
+    std::vector<int> AdjacentBinstoCorner(
+      int* ijk   ///< ijk is 1st octant
       );
 
 

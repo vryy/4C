@@ -32,6 +32,8 @@ Maintainer: Georg Hammerl
 
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/io_gmsh.H"
+#include <Teuchos_TimeMonitor.hpp>
+#include <Teuchos_Time.hpp>
 
 /*----------------------------------------------------------------------*
  | Algorithm constructor                                    ghamm 09/12 |
@@ -186,6 +188,9 @@ void PARTICLE::Algorithm::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::Integrate()
 {
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("PARTICLE::Algorithm::Integrate");
+  Teuchos::TimeMonitor monitor(*t);
+
   particles_->Solve();
   return;
 }
@@ -568,6 +573,9 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::TransferParticles()
 {
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("PARTICLE::Algorithm::TransferParticles");
+  Teuchos::TimeMonitor monitor(*t);
+
   // set of homeless particles
   std::set<Teuchos::RCP<DRT::Node>,Less> homelessparticles;
 
@@ -681,6 +689,36 @@ void PARTICLE::Algorithm::TransferParticles()
   particledis_->FillComplete(true, false, true);
 
   return;
+}
+
+
+/*----------------------------------------------------------------------*
+| convert position first to i,j,k, then into bin id         ghamm 01/13 |
+ *----------------------------------------------------------------------*/
+int PARTICLE::Algorithm::ConvertPosToGid(const std::vector<double>& pos)
+{
+  int ijk[3] = {0,0,0};
+  for(int dim=0; dim < 3; dim++)
+  {
+    ijk[dim] = (int)((pos[dim]-XAABB_(dim,0)) / bin_size_[dim]);
+  }
+
+  return ConvertijkToGid(&ijk[0]);
+}
+
+
+/*----------------------------------------------------------------------*
+| convert position first to i,j,k, then into bin id         ghamm 01/13 |
+ *----------------------------------------------------------------------*/
+int PARTICLE::Algorithm::ConvertPosToGid(const double* pos)
+{
+  int ijk[3] = {0,0,0};
+  for(int dim=0; dim < 3; dim++)
+  {
+    ijk[dim] = (int)((pos[dim]-XAABB_(dim,0)) / bin_size_[dim]);
+  }
+
+  return ConvertijkToGid(&ijk[0]);
 }
 
 
