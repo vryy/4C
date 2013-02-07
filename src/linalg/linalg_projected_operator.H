@@ -15,21 +15,20 @@ Maintainer: Peter Gamnitzer
 #ifndef LINALG_PROJECTED_OPERATOR_H_
 #define LINALG_PROJECTED_OPERATOR_H_
 
-#include "Epetra_MultiVector.h"
-#include "Epetra_Vector.h"
-#include "Epetra_Operator.h"
-#include "Epetra_CrsMatrix.h"
-
 #include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "../drt_lib/drt_dserror.H"
+#include "Epetra_Operator.h"
 
-#include "linalg_sparsematrix.H"
-#include "linalg_krylov_projector.H"
+/* --------------------------------------------------------------------
+//! @name forward declarations
+-------------------------------------------------------------------- */
+class Epetra_MultiVector;
 
 namespace LINALG
 {
-  /*!
+  class KrylovProjector;
+
+  /*! @name
+
   \brief A slightly modified Epetra_Operator class allowing the
          application of a 'rank 1' projector P^T after applying the
          underlying operator

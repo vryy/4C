@@ -20,19 +20,17 @@ Maintainer: Peter Gamnitzer
 #define LINALG_PROJECTED_PRECOND_H_
 
 
-#include "Epetra_CrsMatrix.h"
-#include "Epetra_MultiVector.h"
-#include "Epetra_Vector.h"
-#include "Epetra_SerialDenseMatrix.h"
-
+#include "Epetra_Operator.h"
 #include "Teuchos_RCP.hpp"
-#include "Teuchos_ParameterList.hpp"
-#include "../drt_lib/drt_dserror.H"
-#include "linalg_krylov_projector.H"
 
+//!@name forward decarations
+class Epetra_MultiVector;
 
 namespace LINALG
 {
+  class KrylovProjector;
+
+
   /*!
 
   A common interface for ifpack, ml and simpler preconditioners.

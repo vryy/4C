@@ -11,6 +11,9 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 
 #include "linalg_projected_operator.H"
+#include "Epetra_MultiVector.h"
+#include "linalg_krylov_projector.H"
+#include "../drt_lib/drt_dserror.H"
 
 /* --------------------------------------------------------------------
                           Constructor

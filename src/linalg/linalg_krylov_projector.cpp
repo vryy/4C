@@ -11,6 +11,11 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 
 #include "linalg_krylov_projector.H"
+#include "linalg_serialdensevector.H"
+#include "Epetra_MultiVector.h"
+#include "Epetra_Vector.h"
+#include "Epetra_Operator.h"
+#include "../drt_lib/drt_dserror.H"
 
 /* --------------------------------------------------------------------
                           Constructor
@@ -22,8 +27,7 @@ LINALG::KrylovProjector::KrylovProjector(
   Teuchos::RCP<Epetra_Operator>    A
   ) :
   project_(project),
-  nsdim_(0),
-  cTw_(0)
+  nsdim_(0)
 {
   w_=w;
   c_=c;
@@ -40,7 +44,7 @@ LINALG::KrylovProjector::KrylovProjector(
     {
       dserror("number of basis and weight vectors are not the same");
     }
-    cTw_.Resize(nsdim_);
+    cTw_ = Teuchos::rcp(new LINALG::SerialDenseVector(nsdim_));
 
     // loop all kernel basis vectors
     for(int mm=0;mm<nsdim_;++mm)
@@ -98,7 +102,7 @@ LINALG::KrylovProjector::KrylovProjector(
             dserror("weight vector w_%i must not be orthogonal to c_%i",rr,mm);
           }
           else
-            cTw_(mm) = cTw; // store value of scalar product
+            (*cTw_)(mm) = cTw; // store value of scalar product
         }
         else
         {
@@ -160,7 +164,7 @@ int LINALG::KrylovProjector::ApplyP(Epetra_MultiVector& Y) const
                    T
                   w * c
         */
-        double cTw=cTw_(rr);
+      double cTw=(*cTw_)(rr);
 
         /*
 
@@ -218,7 +222,7 @@ int LINALG::KrylovProjector::ApplyPT(Epetra_MultiVector& Y) const
                    T
                   w * c
           */
-          double cTw=cTw_(rr);
+      double cTw=(*cTw_)(rr);
 
           /*
                                   T

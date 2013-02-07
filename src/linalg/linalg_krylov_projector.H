@@ -19,17 +19,15 @@ Maintainer: Peter Gamnitzer
 #ifndef LINALG_KRYLOV_PROJECTOR_H_
 #define LINALG_KRYLOV_PROJECTOR_H_
 
-#include "Epetra_MultiVector.h"
-#include "Epetra_Vector.h"
-#include "Epetra_SerialDenseVector.h"
-#include "Epetra_Operator.h"
-
 #include "Teuchos_RCP.hpp"
-#include "../drt_lib/drt_dserror.H"
 
+//!@name forward decarations
+class Epetra_MultiVector;
+class Epetra_Operator;
 
 namespace LINALG
 {
+  class SerialDenseVector;
   /*!
 
   A class providing Krylov projectors. Used for projected preconditioner
@@ -175,20 +173,20 @@ public:
 
 private:
   //! flag whether to do a projection or just pass through
-  bool                               project_;
+  bool project_;
 
   //! dimension of nullspace
-  int nsdim_;
+  int  nsdim_;
 
   //! a set of vectors defining weighted (basis integral) vector for the projector
-  Teuchos::RCP<Epetra_MultiVector>   w_;
+  Teuchos::RCP<Epetra_MultiVector> w_;
 
   //! a set of vectors defining the vectors of ones (in the respective components)
   //! for the matrix kernel
-  Teuchos::RCP<Epetra_MultiVector>   c_;
+  Teuchos::RCP<Epetra_MultiVector> c_;
 
   //! values for scalar products c_i o w_i, computed once after setting c_ and w_
-  Epetra_SerialDenseVector           cTw_;
+  Teuchos::RCP<LINALG::SerialDenseVector> cTw_;
 
 };
 
