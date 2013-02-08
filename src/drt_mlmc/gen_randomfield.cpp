@@ -211,7 +211,7 @@ GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretizati
       dserror("Dimension of random field must be 2 or 3, fix your input file");
       break;
     }
-    //WriteRandomFieldToFile();
+    WriteRandomFieldToFile();
     if(UseFFT_)
       TranslateToNonGaussian();
 
@@ -249,7 +249,7 @@ void GenRandomField::CreateNewPhaseAngles(unsigned int seed)
   boost::uniform_real<double> random( 0, 2*pi_ );
 
   // set seed of random number generator
-  // same seed produces same string of random numbers
+  // same seed produces same string of random numbers // on the same platform :-)
   mt.seed(seed);
   switch (dim_){
 
@@ -281,6 +281,17 @@ void GenRandomField::CreateNewPhaseAngles(unsigned int seed)
     dserror("Dimension of random field must be 2 or 3, fix your input file");
     break;
   }
+  if (myrank_ == 0)
+   {
+     std::ofstream File;
+     File.open("Phi.txt",std::ios::out);
+    int size = int (Phi_0_.size());
+     for(int i=0;i<size;i++)
+     {
+       File << setprecision(15) << Phi_0_[i]<< endl;
+     }
+     File.close();
+   }
 
 }
 
@@ -1138,7 +1149,7 @@ void GenRandomField::SpectralMatching()
       discrete_PSD_[h]=0.0;
   }
   // Write to file
-   if (myrank_ == 0 && !reduced_output_)
+   /*if (myrank_ == 0 && !reduced_output_)
      {
        std::ofstream File;
        File.open("DiscretePSDTranslated.txt",std::ios::out);
@@ -1155,7 +1166,7 @@ void GenRandomField::SpectralMatching()
            File2 << PSD_ng[i]<< endl;
          }
          File2.close();
-     }
+     }*/
    IO::cout<< "Spectral Matching done "<< IO::endl;
 }
 // Transform PSD of underlying gauusian process
@@ -1689,7 +1700,7 @@ void GenRandomField::WriteRandomFieldToFile()
    int size = int (pow(M_,double(dim_)));
     for(int i=0;i<size;i++)
     {
-      File << values_[i]<< endl;
+      File << setprecision(10) << values_[i]<< endl;
     }
     File.close();
   }
