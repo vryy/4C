@@ -2747,7 +2747,7 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
 //      fclose(fp);
 
       // adjusted off-rate according to Bell's equation (Howard, eq 5.10, p.89)
-      double koff = koff0 ; //* exp(sgn * F * delta / kt);
+      double koff = koff0*exp(sgn*F*delta/kt);
 
       int crosslid = crosslinkermap_->LID((int)(*element2crosslink_)[i]);
       (*punlink)[crosslid] = 1 - exp(-dt*koff);
