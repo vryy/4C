@@ -2661,8 +2661,18 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
                                                       const Epetra_Vector&        discol,
                                                       Teuchos::RCP<Epetra_Vector> punlink)
 {
+  // thermal energy
+  double kt = statmechparams_.get<double>("KT",0.00404531);
+  // characteristic vond length (=nodereldis)
+  // from B. Gui and W. Guilford: Mechanics of actomyosin bonds in different nucleotide states are tuned to muscle contraction
+  // Fig 2: slip pathway, ADP, nodereldis = 0.0004;
+  double delta = statmechparams_.get<double>("DELTABELLSEQ", 0.0004);
+
+
   // update element2crosslink_
+  element2crosslink_ = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementRowMap())));
   element2crosslink_->PutScalar(-1.0);
+
   for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
     if((*crosslink2element_)[i]>-0.9) // there exists a linker element
     {
@@ -2680,51 +2690,75 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
       }
     }
 
+  // vector with unbinding probabilities
+  punlink->PutScalar(1.0 - exp(-dt*koff0));
+
   for(int i=0; i<discret_->ElementRowMap()->NumMyElements(); i++)
     if((*element2crosslink_)[i]>-0.9)
     {
       Teuchos::RCP<Epetra_SerialDenseVector> force = Teuchos::null;
       DRT::Element* crosslinker = discret_->lRowElement(i);
-      const DRT::ElementType & eot = crosslinker->ElementType();
+      const DRT::ElementType &eot = crosslinker->ElementType();
       // retrieve internal force vector
       if(eot == DRT::ELEMENTS::Beam3Type::Instance())
-        force = dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker)->InternalForces();
+      {
+        force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->InternalForces();
+
+        // new linker without history
+        if(force==Teuchos::null)
+          force = Teuchos::rcp(new Epetra_SerialDenseVector(6.0*(crosslinker->NumNode())));
+      }
       else // nothing yet, new crosslinker element soon to come
       {
         // force value for interpolated position xi given by bspotxi_
       }
+
       // currently, only forces (not moments) considered
       // nodal forces
       LINALG::Matrix<3,1> f0;
       LINALG::Matrix<3,1> f1;
+
       for(int j=0; j<(int)f0.M(); j++)
       {
         f0(j) = (*force)[j];
         f1(j) = (*force)[6+j];
       }
-      // pick the larger absolute force value among the nodes
-      int nodeid = -1;
-      if(f0.Norm2()>=f1.Norm2())
-        nodeid = crosslinker->NodeIds()[0];
-      else
-        nodeid = crosslinker->NodeIds()[1];
-      DRT::Node* node = discret_->lColNode(discret_->NodeColMap()->LID(nodeid));
-      std::vector<int> dofnode = discret_->Dof(node);
-      // calculate the relative displacement between t_i and t_(i-1)
-      double nodereldis = 0.0;
-      for(int j=0; j<3; j++)
-        nodereldis += (discol[dofnode[j]]-(*disprev_)[dofnode[j]])*(discol[dofnode[j]]-(*disprev_)[dofnode[j]]);
-      nodereldis = sqrt(nodereldis);
-      // adjusted off-rate according to Bell's equation (Howard, eq 5.10, p.89)
-      double koff = koff0 * exp((max(f0.Norm2(),f1.Norm2())*nodereldis)/statmechparams_.get<double>("KT",0.00404531));
-      (*punlink)[(int)(*element2crosslink_)[i]] = 1 - exp(-dt*koff);
-    }
-    else
-      (*punlink)[(int)(*element2crosslink_)[i]] = 0.0;
 
-  // Export and and reimport -> redundancy on all Procs
+      // pick the larger absolute force value among the nodes (should be identical?)
+      double F = max(f0.Norm2(), f1.Norm2());
+
+      // calculation of sign of Bell's equation: sgn
+      // * negative: koff (reactionrate) gets smaller than without a force --> the reaction gets slower
+      // * positive: koff (reactionrate) gets bigger than without a force --> the reaction gets faster; the crosslinker detaches more likely
+      // - epsilon axial in crosslinker < 0 --> elongation --> sgn = positive
+      // - epsilon axial in crosslinker > 0 --> compression --> sgn = negative
+      double eps = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->EpsilonSgn();
+      double sgn = 0.0;
+      if (eps<0) sgn = -1.0;
+      else if (eps>0) sgn = 1.0;
+
+//      FILE* fp = NULL;
+//      std::ostringstream filename;
+//      filename << outputrootpath_<<"/StatMechOutput/LinkerInternalForces.dat";
+//      fp = fopen(filename.str().c_str(), "a");
+//      std::stringstream internalforces;
+//      internalforces << sgn <<" " << F <<endl;
+//      fprintf(fp, internalforces.str().c_str());
+//      fclose(fp);
+
+      // adjusted off-rate according to Bell's equation (Howard, eq 5.10, p.89)
+      double koff = koff0 ; //* exp(sgn * F * delta / kt);
+
+      int crosslid = crosslinkermap_->LID((int)(*element2crosslink_)[i]);
+      (*punlink)[crosslid] = 1 - exp(-dt*koff);
+    }
+
+  // import -> redundancy on all Procs
   Teuchos::RCP<Epetra_Vector> punlinktrans = Teuchos::rcp(new Epetra_Vector(*transfermap_,true));
-  CommunicateVector(punlinktrans, punlink);
+  CommunicateVector(punlinktrans,punlink, true, true, false, false);
+
+  return;
+//============================================================
   return;
 }// StatMechManager::ForceDependentOffRate
 

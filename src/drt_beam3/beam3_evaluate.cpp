@@ -1068,6 +1068,10 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
 		epsilonn.Scale(1/jacobi_[numgp]);
 		epsilonn(0) -=  1.0;
 
+		// in statistical mechanics simulations, a deletion influence by the value of epsilonn(0) might occur --> store
+		if((params.get<string>("internalforces","no")=="yes") && (force != NULL))
+			eps_ = epsilonn(0);
+
 		epsilonm.Clear();
 
 		//computing spin matrix S(dxdxi_gp) according to Crisfield, Vol. 2, equation (17.100)

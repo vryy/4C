@@ -213,6 +213,12 @@ public:
   //! quaternions of triads at GPs during the current iteration step due to Crisfield, Vol. 2, equation (17.65)
   const std::vector<LINALG::Matrix<4,1> >& Qnew() const {return Qnew_;}
 
+  //! \brief vector, which stores the actual x node coordinates of the element; changes during calculation
+  LINALG::Matrix<6,1> xactrefe_;
+
+  //! \brief vector, which stores the initial rotational node coordinates of the element
+  LINALG::Matrix<6,1> rotinitrefe_;
+
   /*!
   \brief Set moment of inertia of area Iyy_ of this element
   */
@@ -243,6 +249,10 @@ public:
 
   //! \brief internal force vector
   const Teuchos::RCP<Epetra_SerialDenseVector> InternalForces() const {return internalforces_;}
+  //@}
+
+  //! brief epsilonnormal
+  const double& EpsilonSgn() const { return eps_;}
   //@}
 
   //! @name Construction
@@ -354,6 +364,17 @@ public:
      *the method and is true the element is initialized another time with respective xrefe and rotrefe;
      *note: the isinit_ flag is important for avoiding reinitialization upon restart. However, it should be possible to conduct a
      *second initilization in principle (e.g. for periodic boundary conditions*/
+
+		//just during initialization of a new crosslinker
+  	if(!isinit_)
+  	{
+      //store node x and rotational coordinates of this element
+      for (int k=0; k<6; k++)
+      {
+      	xactrefe_(k,0) = xrefe[k];
+      	rotinitrefe_(k,0) = rotrefe[k];
+      }
+  	}
 
     if(!isinit_ || secondinit)
     {
@@ -541,6 +562,9 @@ public:
 
   }//DRT::ELEMENTS::Beam3::SetUpReferenceGeometry()
 
+  //! changes the actual linker length
+  void SetReferenceLength(const bool changetoshort);
+
   //@}
 
 private:
@@ -577,6 +601,9 @@ private:
   bool isinit_;
   //! vector storing the internal force vector
   Teuchos::RCP<Epetra_SerialDenseVector> internalforces_;
+
+  //! storing epsilonn(0)
+  double eps_;
 
   //! quaternions of triads at GPs at the end of the preceeding time step due to Crisfield, Vol. 2, equation (17.65)
   std::vector<LINALG::Matrix<4,1> > Qconv_;

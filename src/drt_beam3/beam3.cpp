@@ -527,3 +527,48 @@ int DRT::ELEMENTS::Beam3Type::Initialize(DRT::Discretization& dis)
 }
 
 
+/*----------------------------------------------------------------------*
+ | (public) change active linker length                   mueller 10/12 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Beam3::SetReferenceLength(const bool changetoshort)
+{
+	// here: scaling-factor = 0.7
+	double sca = 0.7;
+
+	// change linker length from long to short
+	if(changetoshort)
+	{
+		// new linker length = initial linker length * scale
+		// first node belongs to substrate filament -> just second node changes his coordinates for change of linker length
+		xactrefe_(3,0) = xactrefe_(0,0) + (sca * (xactrefe_(3,0)-xactrefe_(0,0)));
+		xactrefe_(4,0) = xactrefe_(1,0) + (sca * (xactrefe_(4,0)-xactrefe_(1,0)));
+		xactrefe_(5,0) = xactrefe_(2,0) + (sca * (xactrefe_(5,0)-xactrefe_(2,0)));
+	}
+	// change linker length from short to long
+	else
+	{
+		// new linker length = initial linker length * (1/scale)
+		// first node belongs to substrate filament -> just second node changes his coordinates for change of linker length
+		sca = 1/sca;
+		cout<<"xinit vorher k-l: "<<xactrefe_<<endl;
+		xactrefe_(3,0) = xactrefe_(0,0) + (sca * (xactrefe_(3,0)-xactrefe_(0,0)));
+		xactrefe_(4,0) = xactrefe_(1,0) + (sca * (xactrefe_(4,0)-xactrefe_(1,0)));
+		xactrefe_(5,0) = xactrefe_(2,0) + (sca * (xactrefe_(5,0)-xactrefe_(2,0)));
+		cout<<"xinit nachher k-l: "<<xactrefe_<<endl;
+	}
+
+	// store linker coordinates
+  std::vector<double> xrefe(6);
+  std::vector<double> rotrefe(6);
+  for (int k=0; k<6; k++)
+  {
+    xrefe[k] = xactrefe_(k,0);
+    rotrefe[k] = rotinitrefe_(k,0);
+  }
+
+  // call function to update the linker with the new coordinates
+  SetUpReferenceGeometry<2>(xrefe,rotrefe,true);
+	return;
+}
+
+

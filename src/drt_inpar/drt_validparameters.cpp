@@ -1825,6 +1825,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("K_OFF_end",0.0,"crosslinker off-rate at the end",&statmech);
   //Reading double parameter for crosslinker off-rate at the end
   DoubleParameter("K_ON_SELF",0.0,"crosslinker on-rate for crosslinkers with both bonds on same filament",&statmech);
+  //displacement in the reaction coordinate used in Bell's euqations
+  DoubleParameter("DELTABELLSEQ",0.001,"displacement in the reaction coordinate used in Bell's euqations",&statmech);
   //number of overall crosslink molecules in the boundary volume
   IntParameter("N_crosslink",0,"number of crosslinkers for switching on- and off-rates; if molecule diffusion model is used: number of crosslink molecules",&statmech);
   //number of overall crosslink molecules in the boundary volume
