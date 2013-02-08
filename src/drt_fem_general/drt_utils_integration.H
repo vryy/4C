@@ -143,6 +143,7 @@ enum GaussRule2D
     intrule_quad_9point,             ///< degree of precision: 5  (open)
     intrule_quad_16point,
     intrule_quad_25point,
+    intrule_quad_lobatto25point,     ///< degree of precision: 7  (closed)
     intrule_quad_36point,
     intrule_quad_49point,
     intrule_quad_64point,
@@ -174,8 +175,14 @@ enum GaussRule1D
     intrule_line_8point,           ///< degree of precision: 15 (open)
     intrule_line_9point,           ///< degree of precision: 17 (open)
     intrule_line_10point,          ///< degree of precision: 19 (open)
+    intrule_line_16point,					 ///< degree of precision: 31 (open)
+    intrule_line_20point,          ///< degree of precision: 39 (open)
+    intrule_line_32point,					 ///< degree of precision: 63 (open)
     intrule_line_lobatto2point,    ///< degree of precision: 1  (closed)
-    intrule_line_lobatto3point     ///< degree of precision: 3  (closed)
+    intrule_line_lobatto3point,    ///< degree of precision: 3  (closed)
+    intrule_line_lobatto4point,    ///< degree of precision: 5  (closed)
+    intrule_line_lobatto5point     ///< degree of precision: 7  (closed)
+
 };
 
 
