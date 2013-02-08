@@ -166,8 +166,8 @@ namespace IO
     /// bool whether group ID is prefixed in each line
     bool prefixgroupID_;
 
-    /// bool whether group ID is prefixed in each line
-    bool groupID_;
+    /// group ID that is prefixed in each line if desired
+    int groupID_;
 
     /// buffer the output in a stringstream
     std::stringstream buffer_;
