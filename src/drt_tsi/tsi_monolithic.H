@@ -56,7 +56,6 @@ namespace DRT
   }
 }
 
-
 namespace MORTAR
 {
   class ManagerBase;
@@ -328,7 +327,7 @@ namespace TSI
 
   private:
 
-    //! dof row map splitted in (field) blocks
+    //! dofrowmap splitted in (field) blocks
     Teuchos::RCP<LINALG::MultiMapExtractor> blockrowdofmap_;
 
     //! build block vector from field vectors, e.g. rhs, increment vector

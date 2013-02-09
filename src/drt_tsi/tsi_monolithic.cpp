@@ -22,22 +22,24 @@ Maintainer: Caroline Danowski
 
 #include <Teuchos_TimeMonitor.hpp>
 
-// include this header for coupling stiffness terms
 #include "../drt_lib/drt_assemblestrategy.H"
-#include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
-#include "../linalg/linalg_sparsematrix.H"
+#include "../drt_lib/drt_globalproblem.H"
+#include "../drt_lib/drt_locsys.H"
+
 #include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_utils.H"
-#include "../drt_inpar/inpar_solver.H"
+#include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_utils.H"
+
+#include "../drt_inpar/inpar_solver.H"
 
 // contact
 #include "../drt_contact/contact_abstract_strategy.H"
 #include "../drt_contact/contact_interface.H"
 #include "../drt_contact/contact_node.H"
-#include "../drt_thermo/thr_contact.H"
 #include "../drt_mortar/mortar_manager_base.H"
+#include "../drt_thermo/thr_contact.H"
 
 //! Note: The order of calling the two BaseAlgorithm-constructors is
 //! important here! In here control file entries are written. And these entries
@@ -152,12 +154,14 @@ TSI::Monolithic::Monolithic(
       dserror ("TSI with contact only for frictionless contact so far!");
   }
 
-  // StructureField: check whether we have locsys BCs and create LocSysManager
-  // if so after checking
+  // StructureField: check whether we have locsys BCs, i.e. inclined structural
+  //  Dirichlet BC
   {
     std::vector<DRT::Condition*> locsysconditions(0);
     (StructureField()->Discretization())->GetCondition("Locsys", locsysconditions);
-    if (locsysconditions.size())
+    
+    // if there are inclined structural Dirichlet BC, get the structural LocSysManager
+    if ( locsysconditions.size() )
     {
       locsysman_ = StructureField()->LocsysManager();
     }
@@ -202,7 +206,7 @@ void TSI::Monolithic::PrepareTimeStep()
   // call the predictor
   StructureField()->PrepareTimeStep();
   ThermoField()->PrepareTimeStep();
-
+  
 }  // PrepareTimeStep()
 
 
@@ -375,8 +379,8 @@ void TSI::Monolithic::NewtonFull()
 
   // time parameters
   // call the TSI parameter list
-  const Teuchos::ParameterList& tsidyn =
-    DRT::Problem::Instance()->TSIDynamicParams();
+  const Teuchos::ParameterList& tsidyn
+    = DRT::Problem::Instance()->TSIDynamicParams();
   // Get the parameters for the Newton iteration
   itermax_ = tsidyn.get<int>("ITEMAX");
   itermin_ = tsidyn.get<int>("ITEMIN");
@@ -425,7 +429,7 @@ void TSI::Monolithic::NewtonFull()
     // field, here e.g. for structure field: field want the iteration increment
     // 1.) Update(iterinc_),
     // 2.) EvaluateForceStiffResidual(),
-    // 3.) PrepareSystemForNewtonSolve()
+    // 3.) PrepareSystemForNewtonSolve() --> if (locsysman_!=null) k_ss is rotated
     Evaluate(iterinc_);
 
     // create the linear system
@@ -440,7 +444,8 @@ void TSI::Monolithic::NewtonFull()
     }
 
     // create full monolithic rhs vector
-    // make negative residual not necessary: rhs_ is yet TSI negative
+    // make negative residual not necessary: rhs_ is already negative
+    // (STR/THR)-RHS is put negative in PrepareSystemForNewtonSolve()
     SetupRHS();
 
     // (Newton-ready) residual with blanked Dirichlet DOFs (see adapter_timint!)
@@ -552,11 +557,11 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
 #endif // TSIPARALLEL
 
 #ifdef TSIMONOLITHASOUTPUT
-//    Teuchos::RCP<Epetra_Vector> tempera = Teuchos::rcp(new Epetra_Vector(ThermoField()->Tempn()->Map(),true));
-//    if (ThermoField()->Tempnp() != Teuchos::null)
-//      tempera->Update(1.0, *ThermoField()->Tempnp(), 0.0);
-//    StructureField()->ApplyTemperatures(tempera);
-//    StructureField()->ApplyTemperatures(ThermoField()->Tempn());
+    Teuchos::RCP<Epetra_Vector> tempera = Teuchos::rcp(new Epetra_Vector(ThermoField()->Tempn()->Map(),true));
+    if (ThermoField()->Tempnp() != Teuchos::null)
+      tempera->Update(1.0, *ThermoField()->Tempnp(), 0.0);
+    StructureField()->ApplyTemperatures(tempera);
+    StructureField()->ApplyTemperatures(ThermoField()->Tempn());
 #endif // TSIMONOLITHASOUTPUT
 
   // Monolithic TSI accesses the linearised structure problem:
@@ -564,9 +569,10 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   //   EvaluateForceStiffResidual()
   //   PrepareSystemForNewtonSolve()
   //     blank residual DOFs that are on Dirichlet BC
-  //     in the case of local systems we have to rotate forth and back
-  //     ApplyDirichlettoSystem is called as well with roated stiff_!
+  //     in case of local coordinate systems rotate the residual forth and back
+  //     Be AWARE: ApplyDirichlettoSystem has to be called with rotated stiff_!
   StructureField()->Evaluate(sx);
+  
 #ifndef TFSI
   std::cout << "  structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
 #endif
@@ -703,7 +709,7 @@ void TSI::Monolithic::SetupSystemMatrix()
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupSystemMatrix");
 
   /*----------------------------------------------------------------------*/
-  // initialize TSI-systemmatrix_
+  // initialise TSI-systemmatrix_
   systemmatrix_
     = Teuchos::rcp(
         new LINALG::BlockSparseMatrix<LINALG::DefaultBlockMatrixStrategy>(
@@ -723,22 +729,19 @@ void TSI::Monolithic::SetupSystemMatrix()
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here. Extract Jacobian matrices and put them into composite system
   // matrix W
+  // k_ss: already applied ApplyDirichletWithTrafo() in PrepareSystemToNewtonSolve
   Teuchos::RCP<LINALG::SparseMatrix> k_ss = StructureField()->SystemMatrix();
 
   // build block matrix
   // The maps of the block matrix have to match the maps of the blocks we
   // insert here.
-
-  // uncomplete because the fluid interface can have more connections than the
-  // structural one. (Tet elements in fluid can cause this.) We should do
-  // this just once...
   k_ss->UnComplete();
 
   // assign structure part to the TSI matrix
   systemmatrix_->Assign(0,0,View,*k_ss);
 
   /*----------------------------------------------------------------------*/
-  // structural part k_st (3nxn)
+  // structural block k_st (3nxn)
   // build mechanical-thermal block
 
   // create empty matrix
@@ -755,14 +758,48 @@ void TSI::Monolithic::SetupSystemMatrix()
   // call the element and calculate the matrix block
 #ifndef MonTSIwithoutTHR
   ApplyStrCouplMatrix(k_st);
-
 #endif // MonTSIwithoutTHR
 
   // modify towards contact
   ApplyStructContact(k_st);
 
-  // Uncomplete mechanical-thermal matrix to be able to deal with slightly
-  // defective interface meshes.
+  // apply dirichlet boundary conditions properly on matrix k_st, i.e. blank row
+  // if dof is a structural DBC
+  // Normally, DBC should be applied on complete systemmatrix k_TSI, but for
+  // diagonal blocks (here k_ss, k_tt) DBC are ALREADY applied in
+  // PrepareSystemForNewtonSolve() included in Evaluate(sx)
+  //
+  // to avoid double work, we only call ApplyDirichlet for the off-diagonal blocks,
+  // here k_st
+  // k_st is an off-diagonal block --> pass the bool diagonal==false
+  // ApplyDirichlet*() expect filled matrix
+  //
+  // in case of inclined STR-DBC
+  //   1.) transform the off-diagonal block k_st to the local system --> k_st^{~}
+  //   2.) apply ApplyDirichletWithTrafo() on rotated block k_st^{~}
+  //              --> blank the row, which has a DBC
+  //
+  // to apply Multiply in LocSys, k_st has to be FillCompleted
+  k_st->Complete(
+          *(ThermoField()->Discretization()->DofColMap(0)),
+          *(StructureField()->Discretization()->DofRowMap(0))
+          );
+  if (locsysman_ != Teuchos::null)
+  {
+    // rotate k_st to local coordinate system --> k_st^{~}
+    locsysman_->RotateGlobalToLocal(k_st);
+    // apply ApplyDirichletWithTrafo() on rotated block k_st^{~}
+    // --> if dof has an inclined DBC: blank the complete row, the '1.0' is set
+    //     on diagonal of row, i.e. on diagonal of k_ss
+    k_st->ApplyDirichletWithTrafo(
+            locsysman_->Trafo(),
+            *StructureField()->GetDBCMapExtractor()->CondMap(),
+            false
+            );
+  }  // end locsys
+  else
+    k_st->ApplyDirichlet(*StructureField()->GetDBCMapExtractor()->CondMap(),false);
+
   k_st->UnComplete();
 
   // assign thermo part to the TSI matrix
@@ -809,8 +846,19 @@ void TSI::Monolithic::SetupSystemMatrix()
   // modify towards contact
   ApplyThermContact(k_ts);
 
-  // Uncomplete thermo matrix to be able to deal with slightly defective
-  // interface meshes.
+  // apply dirichlet boundary conditions properly on matrix k_ts, i.e. blank row
+  // if dof is a thermal DBC
+  // Normally, DBC should be applied on full systemmatrix k_TSI, but on diagonal
+  // blocks (here k_ss, k_tt) DBC are already applied in PrepareSystemForNewtonSolve()
+  // to avoid double work, we only call ApplyDirichlet at the off-diagonal blokcs,
+  // here k_ts
+  // k_ts is an off-diagonal block --> pass the bool diagonal==false
+  // ApplyDirichlet() expect filled matrix
+  k_ts->Complete(
+          *(StructureField()->Discretization()->DofColMap(0)),
+          *(ThermoField()->Discretization()->DofRowMap(0))
+          );
+  k_ts->ApplyDirichlet(*ThermoField()->GetDBCMapExtractor()->CondMap(),false);
   k_ts->UnComplete();
 
   // assign thermo part to the TSI matrix
@@ -851,6 +899,11 @@ void TSI::Monolithic::SetupRHS()
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::LinearSolve()
 {
+#ifndef TFSI
+  if ( Comm().MyPID()==0 )
+    std::cout << " TSI::Monolithic::LinearSolve()" <<  std::endl;
+#endif
+
   // Solve for inc_ = [disi_,tempi_]
   // Solve K_Teffdyn . IncX = -R  ===>  IncX_{n+1} with X=[d,T]
   // \f$x_{i+1} = x_i + \Delta x_i\f$
@@ -861,20 +914,18 @@ void TSI::Monolithic::LinearSolve()
     solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
   }
 
+  // Dirichlet boundary conditions are already applied to TSI system, i.e.
+  // TSI system is prepared for solve, i.e. TSI systemmatrix, TSI rhs, TSI inc
+  // --> in PrepareSystemForNewtonSolve(): done for rhs and diagonal blocks
+  // --> in SetupSystemMatrix() done for off-diagonal blocks k_st, k_ts
+
+  // apply Dirichlet BCs to system of equations
+  iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
+
 #ifdef TSIBLOCKMATRIXMERGE
   // merge blockmatrix to SparseMatrix and solve
   Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
-  // apply Dirichlet BCs to system of equations
-  iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
-  LINALG::ApplyDirichlettoSystem(
-    sparse,
-    iterinc_,
-    rhs_,
-    Teuchos::null,
-    zeros_,
-    *CombinedDBCMap()
-    );
 #ifndef TFSI
   if ( Comm().MyPID()==0 ) { std::cout << " DBC applied to TSI system" <<  std::endl; }
 #endif
@@ -893,20 +944,6 @@ void TSI::Monolithic::LinearSolve()
 #endif
 
 #else // use bgs2x2_operator
-
-  // apply Dirichlet BCs to system of equations
-  iterinc_->PutScalar(0.0);  // Useful? depends on solver and more
-
-  // in case of inclined boundary conditions
-  // rotate systemmatrix_ using GetLocSysTrafo()!=Teuchos::null
-  LINALG::ApplyDirichlettoSystem(
-    systemmatrix_,
-    iterinc_,
-    rhs_,
-    Teuchos::null,
-    zeros_,
-    *CombinedDBCMap()
-    );
 
 #ifndef TFSI
   if ( Comm().MyPID()==0 )
