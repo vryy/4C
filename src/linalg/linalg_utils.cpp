@@ -836,10 +836,11 @@ void LINALG::ApplyDirichlettoSystem(RCP<LINALG::SparseOperator>       A,
 {
   if (trafo != Teuchos::null)
     Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(A)->ApplyDirichletWithTrafo(trafo,dbcmap);
-  else
+  else  // trafo==Teuchos::null
     A->ApplyDirichlet(dbcmap);
   ApplyDirichlettoSystem(x,b,dbcval,dbcmap);
 }
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

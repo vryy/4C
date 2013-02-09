@@ -325,7 +325,6 @@ class SparseMatrix : public SparseMatrixBase
                                  const Epetra_Map& dbctoggle,
                                  bool diagonalblock=true);
 
-
     /// create matrix that contains all Dirichlet lines from my
     Teuchos::RCP<SparseMatrix> ExtractDirichletRows(const Teuchos::RCP<Epetra_Vector> dbctoggle);
 

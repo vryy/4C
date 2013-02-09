@@ -1161,6 +1161,7 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
 
     // allocate a new matrix and copy all rows that are not dirichlet
     const Epetra_Map& rowmap = sysmat_->RowMap();
+    const Epetra_Map& colmap = sysmat_->ColMap();
     const int nummyrows      = sysmat_->NumMyRows();
     const int maxnumentries  = sysmat_->MaxNumEntries();
 
@@ -1170,13 +1171,15 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
     std::vector<int> trafoindices(trafomaxnumentries,0);
     std::vector<double> trafovalues(trafomaxnumentries,0.0);
 
-    Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,maxnumentries,false));
+    // initialise matrix Anew with general size (rowmap x colmap)
+    // in case of coupled problem (e.g. TSI) transform the rectangular off-diagonal block k_Td
+    Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,colmap,maxnumentries,false));
     vector<int> indices(maxnumentries,0);
     std::vector<double> values(maxnumentries,0.0);
     for (int i=0; i<nummyrows; ++i)
     {
       int row = sysmat_->GRID(i);
-      if (not dbctoggle.MyGID(row))
+      if (not dbctoggle.MyGID(row)) // dof is not a Dirichlet dof
       {
         int numentries;
 #ifdef DEBUG
@@ -1193,10 +1196,12 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
         Anew->InsertGlobalValues(row,numentries,&values[0],&indices[0]);
 #endif
       }
-      else
+      else // dof is an inclined Dirichlet dof
       {
+        // diagonal block of dof with INCLINED Dirichlet boundary condition
         if (diagonalblock)
         {
+          // extract values of trafo at the inclined dbc dof
 #ifdef DEBUG
           int err = trafo->EpetraMatrix()->ExtractGlobalRowCopy(row,trafomaxnumentries,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
           if (err<0) dserror("Epetra_CrsMatrix::ExtractGlobalRowCopy returned err=%d",err);
@@ -1204,12 +1209,15 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
           trafo->EpetraMatrix()->ExtractGlobalRowCopy(row,trafomaxnumentries,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
 #endif
         }
+        // if entry of dof with inclined dbc is not a diagonal block, set zero
+        // at this position
         else
         {
           trafonumentries = 1;
           trafovalues[0] = 0.0;
           trafoindices[0] = row;
         }
+        // insert all these entries in transformed sysmat, i.e. in Anew
 #ifdef DEBUG
         {
           int err = Anew->InsertGlobalValues(row,trafonumentries,&(trafovalues[0]),&(trafoindices[0]));
@@ -1220,6 +1228,14 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
 #endif
       }
     }
+    // Updated sysmat_
+    // normal DBC dof: '1.0' at diagonal, rest of row is blanked --> row remains
+    //                 the same
+    // inclined DBC: (in) rotated matrix k^{~}, i.e. '1.0' at diagonal, rest of
+    //                    row is blanked for n/t/b-direction
+    //               (out) matrix in global system, i.e. k: for a node with 3
+    //                     dofs in x/y/z-direction, trafo block is put at the
+    //                     position of the dofs of this node, rest of row is blanked
     sysmat_ = Anew;
     Complete();
   }
