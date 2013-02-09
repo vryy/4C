@@ -2353,7 +2353,6 @@ Teuchos::RCP<Epetra_Vector> STR::TimIntImpl::SolveRelaxationLinear()
 /* Prepare system for solving with Newton's method */
 void STR::TimIntImpl::PrepareSystemForNewtonSolve()
 {
-
   // rotate residual to local coordinate systems
   if (locsysman_ != Teuchos::null)
     locsysman_->RotateGlobalToLocal(fres_);
@@ -2365,16 +2364,26 @@ void STR::TimIntImpl::PrepareSystemForNewtonSolve()
   // rotate reaction forces back to global coordinate system
   if (locsysman_ != Teuchos::null)
     locsysman_->RotateLocalToGlobal(freact_);
+  // blank residual at DOFs on Dirichlet BCs
+  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+  // rotate reaction forces back to global coordinate system
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateLocalToGlobal(fres_);
 
   // make the residual negative
   fres_->Scale(-1.0);
-  // blank residual at DOFs on Dirichlet BCs
-  dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), fres_);
+  
+  // transform stiff_ and fres_ to local coordinate system
+  if (locsysman_ != Teuchos::null)
+    locsysman_->RotateGlobalToLocal(SystemMatrix(),fres_);
+  // local matrix and rhs required for correctly applying Dirichlet boundary
+  // conditions: rows with inclined Dirichlet boundary condition can be blanked
+  // and a '1.0' is put at the diagonal term
+
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);  // Useful? depends on solver and more
   LINALG::ApplyDirichlettoSystem(stiff_, disi_, fres_,
                                  GetLocSysTrafo(), zeros_, *(dbcmaps_->CondMap()));
-
   // final sip
   return;
 }
