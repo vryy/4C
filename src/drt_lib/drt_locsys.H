@@ -18,6 +18,8 @@ Maintainer: Alexander Popp
 
 namespace LINALG {
   class SparseMatrix;
+  class MultiMapExtractor;
+  class BlockSparseMatrixBase;
 }
 
 namespace DRT {
@@ -319,10 +321,10 @@ protected:
   Epetra_SerialDenseMatrix                 thirddir_;
 
   /// assignment of local systems to nodes
-  Teuchos::RCP<Epetra_Vector>                       locsystoggle_;
+  Teuchos::RCP<Epetra_Vector>              locsystoggle_;
 
   /// maps containing the DOFs affected by locsys
-  Teuchos::RCP<Epetra_Map>                          locsysdofmap_;
+  Teuchos::RCP<Epetra_Map>                 locsysdofmap_;
 
   /// store OriginRadialSliding locsys IDs
   std::vector<int>                         radslideids_;
@@ -334,13 +336,13 @@ protected:
   /// one should be aware of that it is treated like a rotational
   /// transformation matrix. This means: The inverse (or 'backward') mapping
   /// is simply implemented as its transpose rather than a general inverse.
-  Teuchos::RCP<LINALG::SparseMatrix>                trafo_;
+  Teuchos::RCP<LINALG::SparseMatrix>       trafo_;
 
   /// Transformation 'sub'-matrix with non-identity entries
   ///
   /// This is actually not a sub-matrix, but a global matrix
   /// with nil entries at (a lot) places
-  Teuchos::RCP<LINALG::SparseMatrix>                subtrafo_;
+  Teuchos::RCP<LINALG::SparseMatrix>       subtrafo_;
 
   //@}
 

@@ -15,7 +15,10 @@ Maintainer: Alexander Popp
 *----------------------------------------------------------------------*/
 
 #include "drt_locsys.H"
+
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_blocksparsematrix.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_function.H"
 
@@ -46,8 +49,13 @@ void DRT::UTILS::LocsysManager::Setup()
   // combination with Dirichlet boundary conditions. This means that
   // in order to define a symmetry boundary condition, both locsys
   // AND Dirichlet condition have to formulated for the same entity
-  // (i.e. point, line, surface, volume). Due to the coordinate trafo
-  // the Dirichlet DOFs in the input file transform: x->n, y->t1, z->t2
+  // (i.e. point, line, surface, volume).
+
+  // Due to the coordinate trafo the Dirichlet DOFs in the input file transform:
+  // x->n, y->t1, z->t2
+  // --> normal and tangent vector MUST be part of xy-plane
+  if ( Comm().MyPID()==0 )
+    std::cout << "KEEP IN MIND: inclined area MUST be part of the xy-plane" << std::endl;
 
   // STILL MISSING:
   // - Testing on fluid problems in 2D and 3D
@@ -672,6 +680,17 @@ void DRT::UTILS::LocsysManager::Setup()
         }
       }
 
+      if(transformleftonly_)
+      {
+        // BE AWARE: LocSys assumes, that the inclined boundary condition is
+        // part of the xy-plane!! (NO other alternative allowed)
+        // sanity check
+        if(fabs(n(0))<1e-9 || fabs(t(1))<1e-9 || fabs(b(2))<1e-9)
+        {
+          sanity_check=true;
+        }
+      }
+
       DRT::Condition* currlocsys = locsysconds_[locsysindex];
       const std::vector<int>* funct = currlocsys->Get<std::vector<int> >("(axis,angle)-funct");
       if(funct)
@@ -728,15 +747,6 @@ void DRT::UTILS::LocsysManager::Setup()
           LocalRotation(t);
           LocalRotation(b);
         } // end if(funct)
-
-        if(transformleftonly_)
-        {
-          // sanity check
-          if(fabs(n(0))<1e-9 || fabs(t(1))<1e-9 || fabs(b(2))<1e-9)
-          {
-            sanity_check=true;
-          }
-        }
       }
 
       // case: originradialsliding
@@ -1006,6 +1016,7 @@ void DRT::UTILS::LocsysManager::RotateGlobalToLocal(
 
   return;
 }
+
 
 /*----------------------------------------------------------------------*
  |  Transform system matrix global -> local (public)       mueller 05/10|
