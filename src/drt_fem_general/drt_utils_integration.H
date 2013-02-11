@@ -315,7 +315,7 @@ struct IntegrationPoints1D
       const GaussRule1D intrule       ///< 1d rule
       );
 private:
-  static const int max_nquad = 10;    ///< size of c array
+  static const int max_nquad = 32;    ///< size of c array
   DRT::UTILS::GaussRule1D intrule_;   ///< associated integration rule name
 public:
   int           nquad;                ///< number of integration points
