@@ -700,7 +700,9 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 
     // get the displacements of the monitored timesteps
     {
-      if (abs(time-timesteps_[writestep]) < 1.0e-7)
+//      cout << "time = " << time << endl ;
+//      cout << "timestep = " << timesteps_[writestep] << endl ;
+      if (abs(time-timesteps_[writestep]) < 1.0e-5)
       {
         Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(sti_->DisNew()));
         if (!myrank)
@@ -711,7 +713,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(bool outputtofile)
 
       // check if timestepsize is smaller than the tolerance above
       double deltat = sti_->GetTimeStepSize();
-      if (deltat < 1.0e-7)
+      if (deltat < 1.0e-5)
         dserror("your time step size is too small, you will have problems with the monitored steps, thus adapt the tolerance");
     }
   }
@@ -795,7 +797,10 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
 
     // get the displacements of the monitored timesteps
     {
-      if (abs(time-timesteps_[writestep]) < 1.0e-7)
+//      cout << "time = " << time << endl ;
+//      cout << "timestep = " << timesteps_[writestep] << endl ;
+
+      if (abs(time-timesteps_[writestep]) < 1.0e-5)
       {
         Epetra_SerialDenseVector cvector_arg = GetCalculatedCurve(*(sti_->DisNew()));
         if (!lmyrank)
@@ -806,7 +811,7 @@ Epetra_SerialDenseVector STR::GenInvAnalysis::CalcCvector(
 
       // check if timestepsize is smaller than the tolerance above
       double deltat = sti_->GetTimeStepSize();
-      if (deltat < 1.0e-7)
+      if (deltat < 1.0e-5)
         dserror("your time step size is too small, you will have problems with the monitored steps, thus adapt the tolerance");
     }
   }
@@ -1020,15 +1025,16 @@ void STR::GenInvAnalysis::PrintFile()
 #endif
 
   pFile  = fopen((para).c_str(), "w");
-  fprintf(pFile, "#Error       Parameter    Delta_p      mu \n");
+  fprintf(pFile, "#Error    #Grad_error       Parameter    Delta_p      mu \n");
   for (int i=0; i < numb_run_; i++)
   {
-    fprintf(pFile, "%10.3f,", error_s_(i));
+    fprintf(pFile, "%10.6f, ", error_s_(i));
+    fprintf(pFile, "%10.6f, ", error_grad_s_(i));
     for (int j=0; j < np_; j++)
-      fprintf(pFile, "%10.3f,", p_s_(i, j));
+      fprintf(pFile, "%10.6f, ", p_s_(i, j));
     for (int j=0; j < np_; j++)
-      fprintf(pFile, "%10.3f,", delta_p_s_(i, j));
-    fprintf(pFile, "%10.3f", mu_s_(i));
+      fprintf(pFile, "%10.6f, ", delta_p_s_(i, j));
+    fprintf(pFile, "%10.6f", mu_s_(i));
     fprintf(pFile, "\n");
   }
   fclose(pFile);
@@ -1346,21 +1352,6 @@ void STR::GenInvAnalysis::ReadInParameters()
           p_[j] = viscoparams->relax_anisot_princ_;
 //            p_[j+1] = viscoparams->beta_anisot_princ_;
         }
-        if (viscoparams->relax_anisot_mod_vol_ != 0)
-        {
-          int j = p_.Length();
-          p_.Resize(j+1);
-          p_[j] = viscoparams->relax_anisot_mod_vol_;
-//            p_[j+1] = viscoparams->beta_anisot_mod_vol_;
-        }
-        if (viscoparams->relax_anisot_mod_isoc_ != 0)
-        {
-          int j = p_.Length();
-          p_.Resize(j+1);
-          p_[j] = viscoparams->relax_anisot_mod_isoc_;
-//            p_[j+1] = viscoparams->beta_anisot_mod_isoc_;
-        }
-
 
         for (int i=0; i<nummat; ++i)
         {
@@ -1874,24 +1865,24 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
 //            j += 2;
         j += 1;
       }
-      if (viscoparams->relax_anisot_mod_vol_ != 0)
-      {
-        const_cast<double&> (viscoparams->relax_anisot_mod_vol_) = p_cur[j];
-//            viscoparams->SetTauAnisoModVol(abs(p_cur(j)));
-        if (lmyrank == 0) printf("MAT::PAR::ViscoGenMax - tau_anisot_mod_vol = %20.15e \n",p_cur[j]);
-//            const_cast<double&> (viscoparams->beta_anisot_mod_vol_)  = p_cur[j+1];
-//            j += 2;
-        j += 1;
-      }
-      if (viscoparams->relax_anisot_mod_isoc_ != 0)
-      {
-        const_cast<double&> (viscoparams->relax_anisot_mod_isoc_) = p_cur[j];
-//            viscoparams->SetTauAnisoModIsoc(abs(p_cur(j)));
-        if (lmyrank == 0) printf("MAT::PAR::ViscoGenMax - tau_anisot_mod_isoc = %20.15e \n",p_cur[j]);
-//            const_cast<double&> (viscoparams->beta_anisot_mod_isoc_)  = p_cur[j+1];
-//            j += 2;
-        j += 1;
-      }
+//      if (viscoparams->relax_anisot_mod_vol_ != 0)
+//      {
+//        const_cast<double&> (viscoparams->relax_anisot_mod_vol_) = p_cur[j];
+////            viscoparams->SetTauAnisoModVol(abs(p_cur(j)));
+//        if (lmyrank == 0) printf("MAT::PAR::ViscoGenMax - tau_anisot_mod_vol = %20.15e \n",p_cur[j]);
+////            const_cast<double&> (viscoparams->beta_anisot_mod_vol_)  = p_cur[j+1];
+////            j += 2;
+//        j += 1;
+//      }
+//      if (viscoparams->relax_anisot_mod_isoc_ != 0)
+//      {
+//        const_cast<double&> (viscoparams->relax_anisot_mod_isoc_) = p_cur[j];
+////            viscoparams->SetTauAnisoModIsoc(abs(p_cur(j)));
+//        if (lmyrank == 0) printf("MAT::PAR::ViscoGenMax - tau_anisot_mod_isoc = %20.15e \n",p_cur[j]);
+////            const_cast<double&> (viscoparams->beta_anisot_mod_isoc_)  = p_cur[j+1];
+////            j += 2;
+//        j += 1;
+//      }
 
       for (int i=0; i<nummat; ++i)
       {
