@@ -76,11 +76,6 @@ namespace MAT
       // anisotropic principal configuration
       double relax_anisot_princ_; // relaxation time
       double beta_anisot_princ_; // ratio between the two branches of the gen. maxwell model
-      // anisotropic modified configuration
-      double relax_anisot_mod_vol_; // relaxation time
-      double beta_anisot_mod_vol_; // ratio between the two branches of the gen. maxwell model
-      double relax_anisot_mod_isoc_; // relaxation time
-      double beta_anisot_mod_isoc_; // ratio between the two branches of the gen. maxwell model
 
       /// create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
@@ -91,17 +86,8 @@ namespace MAT
       void SetTauIsoModVol(const double relax_isot_mod_vol) { relax_isot_mod_vol_ = relax_isot_mod_vol; }
       void SetTauIsoModIsoc(const double relax_isot_mod_isoc) { relax_isot_mod_isoc_ = relax_isot_mod_isoc; }
       void SetTauAnisoPri(const double relax_anisot_princ) { relax_anisot_princ_ = relax_anisot_princ; }
-      void SetTauAnisoModVol(const double relax_anisot_mod_vol) { relax_anisot_mod_vol_ = relax_anisot_mod_vol; }
-      void SetTauAnisoModIsoc(const double relax_anisot_mod_isoc) { relax_anisot_mod_isoc_ = relax_anisot_mod_isoc; }
 
       //@}
-
-//      void SetTauIsoPri(const double relax_isot_princ) { tau_isoprinc_ = relax_isot_princ; }
-//      void SetTauIsoModVol(const double relax_isot_mod_vol) { tau_isomod_vol_ = relax_isot_mod_vol; }
-//      void SetTauIsoModIsoc(const double relax_isot_mod_isoc) { tau_isomod_iso_ = relax_isot_mod_isoc; }
-//      void SetTauAnisoPri(const double relax_anisot_princ) { tau_anisoprinc_ = relax_anisot_princ; }
-//      void SetTauAnisoModVol(const double relax_anisot_mod_vol) { tau_anisomod_vol_ = relax_anisot_mod_vol; }
-//      void SetTauAnisoModIsoc(const double relax_anisot_mod_isoc) { tau_anisomod_iso_ = relax_anisot_mod_isoc; }
 
 
    private:
@@ -278,30 +264,8 @@ private:
     bool vis_isomod_vol_; ///< indicates that a viscous contribution is added to the isotropic splitted contribution on the volumetric part
     bool vis_isomod_iso_; ///< indicates that a viscous contribution is added to the isotropic splitted contribution on the isochoric part
     bool vis_anisoprinc_; ///< indicates that a viscous contribution is added to the anisotropic not splitted contribution
-    bool vis_anisomod_vol_; ///< indicates that a viscous contribution is added to the anisotropic splitted contribution on the volumetric part
-    bool vis_anisomod_iso_;///< indicates that a viscous contribution is added to the anisotropic splitted contribution on the isochoric part
 
-//    /// viscous constants of the different formulations
-//    double tau_isoprinc_;
-//    double beta_isoprinc_;
-//    double tau_isomod_vol_;
-//    double beta_isomod_vol_;
-//    double tau_isomod_iso_;
-//    double beta_isomod_iso_;
-//    double tau_anisoprinc_;
-//    double beta_anisoprinc_;
-//    double tau_anisomod_vol_;
-//    double beta_anisomod_vol_;
-//    double tau_anisomod_iso_ ;
-//    double beta_anisomod_iso_;
-
-//    void SetTauIsoPri(const double relax_isot_princ) { tau_isoprinc_ = relax_isot_princ; }
-//    void SetTauIsoModVol(const double relax_isot_mod_vol) { tau_isomod_vol_ = relax_isot_mod_vol; }
-//    void SetTauIsoModIsoc(const double relax_isot_mod_isoc) { tau_isomod_iso_ = relax_isot_mod_isoc; }
-//    void SetTauAnisoPri(const double relax_anisot_princ) { tau_anisoprinc_ = relax_anisot_princ; }
-//    void SetTauAnisoModVol(const double relax_anisot_mod_vol) { tau_anisomod_vol_ = relax_anisot_mod_vol; }
-//    void SetTauAnisoModIsoc(const double relax_anisot_mod_isoc) { tau_anisomod_iso_ = relax_anisot_mod_isoc; }
-    };
+  };
 
 }
 

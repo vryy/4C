@@ -47,14 +47,9 @@ MAT::PAR::ViscoGenMax::ViscoGenMax(
   relax_isot_mod_isoc_(matdata->GetDouble("RELAX_ISOT_MOD_ISOC")),
   beta_isot_mod_isoc_(matdata->GetDouble("BETA_ISOT_MOD_ISOC")),
   relax_anisot_princ_(matdata->GetDouble("RELAX_ANISOT_PRINC")),
-  beta_anisot_princ_(matdata->GetDouble("BETA_ANISOT_PRINC")),
-  relax_anisot_mod_vol_(matdata->GetDouble("RELAX_ANISOT_MOD_VOL")),
-  beta_anisot_mod_vol_(matdata->GetDouble("BETA_ANISOT_MOD_VOL")),
-  relax_anisot_mod_isoc_(matdata->GetDouble("RELAX_ANISOT_MOD_ISOC")),
-  beta_anisot_mod_isoc_(matdata->GetDouble("BETA_ANISOT_MOD_ISOC"))
+  beta_anisot_princ_(matdata->GetDouble("BETA_ANISOT_PRINC"))
 
 {
-//  cout << " relax_isot_princ_ = " << relax_isot_princ_ << endl ;
 }
 
 /*----------------------------------------------------------------------*/
@@ -258,45 +253,22 @@ void MAT::ViscoGenMax::Setup(const int numgp,DRT::INPUT::LineDefinition* linedef
   vis_isomod_vol_ = false ;
   vis_isomod_iso_ = false ;
   vis_anisoprinc_ = false ;
-  vis_anisomod_vol_ = false ;
-  vis_anisomod_iso_ = false ;
 
   if (viscoparams_->relax_isot_princ_!=0)
     {
       vis_isoprinc_ = true ;
-//      tau_isoprinc_  = viscoparams_->relax_isot_princ_;
-//      beta_isoprinc_ = viscoparams_->beta_isot_princ_;
     }
   if (viscoparams_->relax_isot_mod_vol_!=0)
     {
       vis_isomod_vol_ = true ;
-//      tau_isomod_vol_  = viscoparams_->relax_isot_mod_vol_;
-//      beta_isomod_vol_ = viscoparams_->beta_isot_mod_vol_;
     }
   if (viscoparams_->relax_isot_mod_isoc_!=0)
     {
       vis_isomod_iso_ = true ;
-//      tau_isomod_iso_  = viscoparams_->relax_isot_mod_isoc_;
-//      tau_isomod_iso_  = viscoparams_->relax_isot_mod_vol_;
-//      beta_isomod_iso_ = viscoparams_->beta_isot_mod_isoc_;
     }
   if (viscoparams_->relax_anisot_princ_!=0)
     {
       vis_anisoprinc_ = true ;
-//      tau_anisoprinc_  = viscoparams_->relax_anisot_princ_;
-//      beta_anisoprinc_ = viscoparams_->beta_anisot_princ_;
-    }
-  if (viscoparams_->relax_anisot_mod_vol_!=0)
-    {
-      vis_anisomod_vol_ = true ;
-//      tau_anisomod_vol_  = viscoparams_->relax_anisot_mod_vol_;
-//      beta_anisomod_vol_ = viscoparams_->beta_anisot_mod_vol_;
-    }
-  if (viscoparams_->relax_anisot_mod_isoc_!=0)
-    {
-      vis_anisomod_iso_ = true ;
-//      tau_anisomod_iso_  = viscoparams_->relax_anisot_mod_isoc_;
-//      beta_anisomod_iso_ = viscoparams_->beta_anisot_mod_isoc_;
     }
 
   // Initialise/allocate internal stress variables
@@ -363,8 +335,6 @@ void MAT::ViscoGenMax::Setup(const int numgp,DRT::INPUT::LineDefinition* linedef
   }
   isinit_ = true;
 
-//  cout << "relax_iso_princ_setup = " << viscoparams_->relax_isot_princ_ << endl ;
-//  cout << "proc "<< DRT::Problem::Instance()->Dis(0,0)->Comm().MyPID();
   return ;
 }
 
@@ -378,46 +348,6 @@ void MAT::ViscoGenMax::Setupvisco(const int numgp)
   vis_isomod_vol_ = false ;
   vis_isomod_iso_ = false ;
   vis_anisoprinc_ = false ;
-  vis_anisomod_vol_ = false ;
-  vis_anisomod_iso_ = false ;
-
-//  if (viscoparams_->relax_isot_princ_!=0)
-//    {
-//      vis_isoprinc_ = true ;
-//      tau_isoprinc_  = viscoparams_->relax_isot_princ_;
-//      beta_isoprinc_ = viscoparams_->beta_isot_princ_;
-//    }
-//  if (viscoparams_->relax_isot_mod_vol_!=0)
-//    {
-//      vis_isomod_vol_ = true ;
-//      tau_isomod_vol_  = viscoparams_->relax_isot_mod_vol_;
-//      beta_isomod_vol_ = viscoparams_->beta_isot_mod_vol_;
-//    }
-//  if (viscoparams_->relax_isot_mod_isoc_!=0)
-//    {
-//      vis_isomod_iso_ = true ;
-////      tau_isomod_iso_  = viscoparams_->relax_isot_mod_isoc_;
-//      tau_isomod_iso_  = viscoparams_->relax_isot_mod_vol_;
-//      beta_isomod_iso_ = viscoparams_->beta_isot_mod_isoc_;
-//    }
-//  if (viscoparams_->relax_anisot_princ_!=0)
-//    {
-//      vis_anisoprinc_ = true ;
-//      tau_anisoprinc_  = viscoparams_->relax_anisot_princ_;
-//      beta_anisoprinc_ = viscoparams_->beta_anisot_princ_;
-//    }
-//  if (viscoparams_->relax_anisot_mod_vol_!=0)
-//    {
-//      vis_anisomod_vol_ = true ;
-//      tau_anisomod_vol_  = viscoparams_->relax_anisot_mod_vol_;
-//      beta_anisomod_vol_ = viscoparams_->beta_anisot_mod_vol_;
-//    }
-//  if (viscoparams_->relax_anisot_mod_isoc_!=0)
-//    {
-//      vis_anisomod_iso_ = true ;
-//      tau_anisomod_iso_  = viscoparams_->relax_anisot_mod_isoc_;
-//      beta_anisomod_iso_ = viscoparams_->beta_anisot_mod_isoc_;
-//    }
 
   // Initialise/allocate internal stress variables
 
@@ -483,7 +413,6 @@ void MAT::ViscoGenMax::Setupvisco(const int numgp)
   }
   isinit_ = true;
 
-//  cout << "tauisopri_setupvisco = " << tau_isoprinc_ << endl ;
   return ;
 }
 
@@ -492,44 +421,6 @@ void MAT::ViscoGenMax::Setupvisco(const int numgp)
 *-------------------------------------------------------------------------------*/
 void MAT::ViscoGenMax::SetupTimeVariables()
 {
-//  if (vis_isoprinc_)
-////    if (viscoparams_->relax_isot_princ_!=0)
-//    {
-//      tau_isoprinc_  = viscoparams_->relax_isot_princ_;
-//      beta_isoprinc_ = viscoparams_->beta_isot_princ_;
-//    }
-//  if (vis_isomod_vol_ )
-////    if (viscoparams_->relax_isot_mod_vol_!=0)
-//    {
-//      tau_isomod_vol_  = viscoparams_->relax_isot_mod_vol_;
-//      beta_isomod_vol_ = viscoparams_->beta_isot_mod_vol_;
-//    }
-//  if (vis_isomod_iso_)
-////    if (viscoparams_->relax_isot_mod_isoc_!=0)
-//    {
-////      tau_isomod_iso_  = viscoparams_->relax_isot_mod_isoc_;
-//      tau_isomod_iso_  = viscoparams_->relax_isot_mod_vol_;
-//      beta_isomod_iso_ = viscoparams_->beta_isot_mod_isoc_;
-//    }
-//  if (vis_anisoprinc_)
-////    if (viscoparams_->relax_anisot_princ_!=0)
-//    {
-//      tau_anisoprinc_  = viscoparams_->relax_anisot_princ_;
-//      beta_anisoprinc_ = viscoparams_->beta_anisot_princ_;
-//    }
-//  if (vis_anisomod_vol_)
-////    if (viscoparams_->relax_anisot_mod_vol_!=0)
-//    {
-//      tau_anisomod_vol_  = viscoparams_->relax_anisot_mod_vol_;
-//      beta_anisomod_vol_ = viscoparams_->beta_anisot_mod_vol_;
-//    }
-//  if (vis_anisomod_iso_)
-////    if (viscoparams_->relax_anisot_mod_isoc_!=0)
-//    {
-//      tau_anisomod_iso_  = viscoparams_->relax_anisot_mod_isoc_;
-//      beta_anisomod_iso_ = viscoparams_->beta_anisot_mod_isoc_;
-//    }
-
   return ;
 }
 
@@ -600,58 +491,6 @@ void MAT::ViscoGenMax::Evaluate(
   Teuchos::ParameterList& params
   )
 {
-//  Setupvisco(gp);
-//  if (vis_isoprinc_)
-//    {
-//    const double tau_isoprinc  = viscoparams_->relax_isot_princ_;
-//    const double beta_isoprinc = viscoparams_->beta_isot_princ_;
-//    }
-//  if (vis_isomod_vol_)
-//    {
-//    const double tau_isomod_vol  = viscoparams_->relax_isot_mod_vol_;
-//    const double beta_isomod_vol = viscoparams_->beta_isot_mod_vol_;
-//    }
-//  if (vis_isomod_iso_)
-//    {
-//    const double  tau_isomod_iso  = viscoparams_->relax_isot_mod_isoc_;
-//    const double  beta_isomod_iso = viscoparams_->beta_isot_mod_isoc_;
-//    }
-//  if (vis_anisoprinc_)
-//    {
-//    const double  tau_anisoprinc  = viscoparams_->relax_anisot_princ_;
-//    const double  beta_anisoprinc = viscoparams_->beta_anisot_princ_;
-//    }
-//  if (vis_anisomod_vol_)
-//    {
-//    const double  tau_anisomod_vol  = viscoparams_->relax_anisot_mod_vol_;
-//    const double  beta_anisomod_vol = viscoparams_->beta_anisot_mod_vol_;
-//    }
-//  if (vis_anisomod_iso_)
-//    {
-//    const double  tau_anisomod_iso = viscoparams_->relax_anisot_mod_isoc_;
-//    const double  beta_anisomod_iso = viscoparams_->beta_anisot_mod_isoc_;
-//    }
-
-
-//  SetupTimeVariables();
-
-//  cout << " ## Material parameters at the beginning of Evaluate function ##" << endl ;
-//  cout << " tau_isoprinc = " << tau_isoprinc_ << endl ;
-//  cout << " viscoparams_->relax_isot_princ_ = " << viscoparams_->relax_isot_princ_ << endl ;
-//  cout << " tau_isomod_vol_1 = " << viscoparams_->relax_isot_mod_vol_ << endl ;
-//  cout << " beta_isoprinc = " << beta_isoprinc_ << endl ;
-//  cout << " tau_isomod_vol = " << tau_isomod_vol_ << endl ;
-//  cout << " beta_isomod_vol = " << beta_isomod_vol_ << endl ;
-//  cout << " tau_isomod_iso = " << tau_isomod_iso_ << endl ;
-//  cout << " beta_isomod_iso = " << beta_isomod_iso_ << endl ;
-//  cout << " tau_anisoprinc = " << tau_anisoprinc_ << endl ;
-//  cout << " beta_anisoprinc = " << beta_anisoprinc_ << endl ;
-//  cout << " tau_anisomod_vol = " << tau_anisomod_vol_ << endl ;
-//  cout << " beta_anisomod_vol = " << beta_anisomod_vol_ << endl ;
-//  cout << " tau_anisomod_iso = " << tau_anisomod_iso_ << endl ;
-//  cout << " beta_anisomod_iso = " << beta_anisomod_iso_ << endl ;
-
-//  dserror("stop");
 
   if (viscoparams_->relax_isot_princ_!=0)
     {
@@ -669,17 +508,6 @@ void MAT::ViscoGenMax::Evaluate(
     {
       vis_anisoprinc_ = true ;
     }
-  if (viscoparams_->relax_anisot_mod_vol_!=0)
-    {
-      vis_anisomod_vol_ = true ;
-    }
-  if (viscoparams_->relax_anisot_mod_isoc_!=0)
-    {
-      vis_anisomod_iso_ = true ;
-    }
-
-//  cout << "vis_isomod_vol" << vis_isomod_vol_ << endl ;
-//  cout << "vis_isomod_iso" << vis_isomod_iso_ << endl ;
 
   LINALG::Matrix<6,1> id2(true) ;
   LINALG::Matrix<6,1> rcg(true) ;
@@ -720,8 +548,6 @@ void MAT::ViscoGenMax::Evaluate(
       {
         const double tau_isoprinc  = viscoparams_->relax_isot_princ_;
         const double beta_isoprinc = viscoparams_->beta_isot_princ_;
-//        cout << " tau_isoprinc = " << tau_isoprinc << endl ;
-//        cout << " beta_isoprinc = " << beta_isoprinc << endl ;
         //initialize scalars
         double artscalar1(true);
         double artscalar2(true);
@@ -784,9 +610,6 @@ void MAT::ViscoGenMax::Evaluate(
     stress.Update(1.0, stressisomodvol, 1.0);
     cmat.Update(1.0,cmatisomodiso,1.0);
     cmat.Update(1.0,cmatisomodvol,1.0);
-//
-//    cout << "visisomodisoc = " << vis_isomod_iso_ << endl ;
-//    cout << "visisomodvol = " << vis_isomod_vol_ << endl ;
 
     // viscous contribution
 
@@ -794,17 +617,12 @@ void MAT::ViscoGenMax::Evaluate(
     //-----------------------------------------------------------------------
     if (vis_isomod_iso_)
       {
-//        cout << " tau_isomod_iso = " << viscoparams_->relax_isot_mod_isoc_ << endl ;
         const double  tau_isomod_iso  = viscoparams_->relax_isot_mod_isoc_;
         const double  beta_isomod_iso = viscoparams_->beta_isot_mod_isoc_;
-//        cout << " tau_isomod_iso = " << tau_isomod_iso << endl ;
-//        cout << " beta_isomod_iso = " << beta_isomod_iso << endl ;
         //initialize scalars
         double artscalar1(true);
         double artscalar2(true);
         double scalarvisco(true);
-
-//        cout << "tauisomodiso" << tau_isomod_iso_ << endl ;
 
         const double theta= 0.5 ;//params_->theta_;
 
@@ -818,8 +636,8 @@ void MAT::ViscoGenMax::Evaluate(
         artscalar1=(tau_isomod_iso - dt + theta*dt)/tau_isomod_iso;
         artscalar2=tau_isomod_iso/(tau_isomod_iso + theta*dt);
 
+
         // factor to calculate visco stiffness matrix from elastic stiffness matrix
-//        scalarvisco = 1+beta_isomod_iso*exp(-dt/(2*tau_isomod_iso));//+alpha1*tau/(tau+theta*dt);
         scalarvisco = beta_isomod_iso*exp(-dt/(2*tau_isomod_iso));
 
         // read history
@@ -827,7 +645,7 @@ void MAT::ViscoGenMax::Evaluate(
         Siso_n.Scale(-beta_isomod_iso);
         LINALG::Matrix<NUM_STRESS_3D,1> Qiso_n (artstressisomodisolast_->at(gp));
 
-        // artificial visco stresses
+//        // artificial visco stresses
         LINALG::Matrix<NUM_STRESS_3D,1> Qiso(Qiso_n);
         Qiso.Scale(artscalar1);
         stressisomodiso.Scale(beta_isomod_iso);
@@ -854,14 +672,11 @@ void MAT::ViscoGenMax::Evaluate(
       {
         const double tau_isomod_vol  = viscoparams_->relax_isot_mod_vol_;
         const double beta_isomod_vol = viscoparams_->beta_isot_mod_vol_;
-//        cout << " tau_isomod_vol_2 = " << tau_isomod_vol << endl ;
-//        cout << " beta_isomod_vol = " << beta_isomod_vol << endl ;
         //initialize scalars
         double artscalar1(true);
         double artscalar2(true);
         double scalarvisco(true);
 
-//        cout << "tauisomodvol" << tau_isomod_vol_ << endl ;
 
         const double theta= 0.5 ;//params_->theta_;
 
@@ -876,7 +691,6 @@ void MAT::ViscoGenMax::Evaluate(
         artscalar2=tau_isomod_vol/(tau_isomod_vol + theta*dt);
 
         // factor to calculate visco stiffness matrix from elastic stiffness matrix
-//        scalarvisco = 1+beta_isomod_vol*exp(-dt/(2*tau_isomod_vol));//+alpha1*tau/(tau+theta*dt);
         scalarvisco = beta_isomod_vol*exp(-dt/(2*tau_isomod_vol));
 
         // read history
@@ -884,13 +698,16 @@ void MAT::ViscoGenMax::Evaluate(
         Svol_n.Scale(-beta_isomod_vol);
         LINALG::Matrix<NUM_STRESS_3D,1> Qvol_n (artstressisomodvollast_->at(gp));
 
-        // artificial visco stresses
+        // with holzapfel formula with Hn
+
+        double xsi(true);
+        xsi = -dt/(2*tau_isomod_vol);
         LINALG::Matrix<NUM_STRESS_3D,1> Qvol(Qvol_n);
-        Qvol.Scale(artscalar1);
-        stressisomodvol.Scale(beta_isomod_vol);
-        Qvol += stressisomodvol;
+        Qvol.Scale(exp(xsi));
+        stressisomodvol.Scale(beta_isomod_vol*exp(xsi));
         Qvol += Svol_n;
-        Qvol.Scale(artscalar2);  // Q^(n+1) = artscalar2* [artscalar1* Q + S^(n+1) - S^n]
+        Qvol.Scale(exp(xsi));  // Q^(n+1) = artscalar2* [artscalar1* Q + beta*(S^(n+1) - S^n)]
+        Qvol += stressisomodvol ;
 
         // update history
         histstressisomodvolcurr_->at(gp) = stressisomodvol;
@@ -938,7 +755,7 @@ void MAT::ViscoGenMax::Evaluate(
           double artscalar2(true);
           double scalarvisco(true);
 
-          const double theta= 0.5 ;//params_->theta_;
+          const double theta= 0.5 ;
 
           // get time algorithmic parameters
           // NOTE: dt can be zero (in restart of STI) for Generalized Maxwell model

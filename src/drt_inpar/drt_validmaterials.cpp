@@ -1269,10 +1269,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"BETA_ISOT_MOD_ISOC","viscous constant of the generalized maxwell model - isotropic splitted formulation - isochoric contribution - Leave it to 0 if you don't use it");
     AddNamedReal(m,"RELAX_ANISOT_PRINC","relaxation time - anisotropic not splitted formulation - Leave it to 0 if you don't use it");
     AddNamedReal(m,"BETA_ANISOT_PRINC","viscous constant of the generalized maxwell model - anisotropic not splitted formulation - Leave it to 0 if you don't use it");
-    AddNamedReal(m,"RELAX_ANISOT_MOD_VOL","relaxation time - anisotropic splitted formulation - volumetric contribution - Leave it to 0 if you don't use it");
-    AddNamedReal(m,"BETA_ANISOT_MOD_VOL","viscous constant of the generalized maxwell model - anisotropic splitted formulation - volumetric contribution - Leave it to 0 if you don't use it");
-    AddNamedReal(m,"RELAX_ANISOT_MOD_ISOC","relaxation time - anisotropic splitted formulation - isochoric contribution - Leave it to 0 if you don't use it");
-    AddNamedReal(m,"BETA_ANISOT_MOD_ISOC","viscous constant of the generalized maxwell model - anisotropic splitted formulation - isochoric contribution - Leave it to 0 if you don't use it");
 
     // optional
 
