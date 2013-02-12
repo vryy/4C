@@ -4441,18 +4441,21 @@ void STATMECH::StatMechManager::LoomOutputElasticEnergy(const Epetra_Vector&    
 void STATMECH::StatMechManager::OutputNodalDisplacements(const Epetra_Vector&                 disrow,
                                                          const std::ostringstream&            filename)
 {
-  FILE* fp = NULL;
-  fp = fopen(filename.str().c_str(), "a");
+  if(!discret_->Comm().MyPID())
+  {
+    FILE* fp = NULL;
+    fp = fopen(filename.str().c_str(), "a");
 
-  Epetra_Vector discol(*(discret_->DofColMap()), true);
-  LINALG::Export(disrow, discol);
+    Epetra_Vector discol(*(discret_->DofColMap()), true);
+    LINALG::Export(disrow, discol);
 
-  std::stringstream dispnode;
-  // retrieve translational node displacements
-  for(int i=0; i<discret_->DofColMap()->NumMyElements(); i=i+6)
-      dispnode << discol[i]<<" "<< discol[i+1]<<" "<< discol[i+2]<<endl;
-  fprintf(fp, dispnode.str().c_str());
-  fclose(fp);
+    std::stringstream dispnode;
+    // retrieve translational node displacements
+    for(int i=0; i<discret_->DofColMap()->NumMyElements(); i=i+6)
+        dispnode << discol[i]<<" "<< discol[i+1]<<" "<< discol[i+2]<<endl;
+    fprintf(fp, dispnode.str().c_str());
+    fclose(fp);
+  }
   return;
 }
 
