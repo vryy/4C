@@ -45,7 +45,9 @@ public:
   void SetPressure(Teuchos::RCP<Epetra_Vector> couppres);
 
   /// calculate outlet fluxes for reduced-d airway tree
-  void CalcFlux(Teuchos::RCP<Epetra_Vector> coupflux, double dt);
+  void CalcFlux(Teuchos::RCP<Epetra_Vector> coupflux,
+		Teuchos::RCP<Epetra_Vector> coupvol,
+		double dt);
 
   /// calculate volume
   void CalcVol(std::map<int,double>& V);

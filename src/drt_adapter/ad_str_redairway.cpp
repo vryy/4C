@@ -135,7 +135,10 @@ void ADAPTER::StructureRedAirway::InitVol()
 
 
 /*======================================================================*/
-void ADAPTER::StructureRedAirway::CalcFlux(Teuchos::RCP<Epetra_Vector> coupflux, double dt)
+void ADAPTER::StructureRedAirway::CalcFlux
+(Teuchos::RCP<Epetra_Vector> coupflux,
+Teuchos::RCP<Epetra_Vector> coupvol,
+ double dt)
 {
   CalcVol(Vnp_);
 
@@ -144,6 +147,7 @@ void ADAPTER::StructureRedAirway::CalcFlux(Teuchos::RCP<Epetra_Vector> coupflux,
     int coupID = coupmap_->GID(i);
     int lid = coupflux->Map().LID(coupID);
     (*coupflux)[lid] = (Vnp_[coupID]-Vn_[coupID])/dt;
+    (*coupvol)[lid] = Vnp_[coupID];
   }
 }
 

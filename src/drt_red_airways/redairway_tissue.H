@@ -84,11 +84,20 @@ private:
   /// redundant vector of outlet fluxes (old iteration step)
   Teuchos::RCP<Epetra_Vector> coupflux_im_;
 
+  /// redundant vector of 3D volumes (new iteration step)
+  Teuchos::RCP<Epetra_Vector> coupvol_ip_;
+
+  /// redundant vector of 3D volumes (old iteration step)
+  Teuchos::RCP<Epetra_Vector> coupvol_im_;
+
   /// internal iteration step
   int itermax_ ;
 
   /// internal iteration step
   double tol_ ;
+
+  /// defined normal direction
+  double normal_;
 
 };
 }

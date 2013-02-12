@@ -105,6 +105,8 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(const Epetra_Comm& comm,
   couppres_im_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
   coupflux_ip_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
   coupflux_im_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
+  coupvol_ip_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
+  coupvol_im_ = Teuchos::rcp(new Epetra_Vector(redundantmap, true));
 
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
 
@@ -132,7 +134,10 @@ AIRWAY::RedAirwayTissue::RedAirwayTissue(const Epetra_Comm& comm,
   // get tolarence
   tol_ = rawtisdyn.get<double>("CONVTOL");;
   
-
+  // get normal direction 
+  // -> if normal == 1.0 : the pressure will be implimented from inside the element to the outside
+  // -> if normal ==-1.0 : the pressure will be implimented from outside the element to the inside
+  normal_ = rawtisdyn.get<double>("NORMAL");
   // determine initial volume
   structure_->InitVol();
 }
@@ -180,9 +185,9 @@ void AIRWAY::RedAirwayTissue::OutputIteration(double pres_inc_norm, double flux_
     cout << "-------------------------  FIELD ITERATION ---------------------------" << endl;
     for (int i=0; i<couppres_ip_->Map().NumMyElements(); ++i)
     {
-      //      cout << "\t time:\t" << Time() << "\t ID:\t" << couppres_ip_->Map().GID(i) << "\t P:\t" <<  (*couppres_ip_)[i]
-      //           << "\t Q:\t" <<  (*coupflux_ip_)[i] << "\t DP2:\t" << pres_inc_norm << "\t DQ2:\t" << flux_inc_norm << endl;
-      printf("\t time:\t%f\t ID:\t%d\t P:\t%f\t Q:\t%f\t DP2:\t%f \t DQ2:\t %f\n", Time(), couppres_ip_->Map().GID(i),  (*couppres_ip_)[i],  (*coupflux_ip_)[i], pres_inc_norm , flux_inc_norm);
+      //            cout << "\t time:\t" << Time() << "\t ID:\t" << couppres_ip_->Map().GID(i) << "\t P:\t" <<  (*couppres_ip_)[i]
+      //        << "\t Q:\t" <<  (*coupflux_ip_)[i] << "\t DP2:\t" << pres_inc_norm << "\t DQ2:\t" << flux_inc_norm << endl;
+            printf("\t time:\t%f\t ID:\t%d\t P:\t%f\t Q:\t%f\t V:\t%f\t DP2:\t%f \t DQ2:\t %f\n", Time(), couppres_ip_->Map().GID(i), (*couppres_ip_)[i],  (*coupflux_ip_)[i], (*coupvol_ip_)[i], pres_inc_norm , flux_inc_norm);
     }
     cout << "---------------------------------------------------------------------" << endl;
   }
@@ -214,6 +219,7 @@ void AIRWAY::RedAirwayTissue::DoRedAirwayStep()
   redairways_->SetAirwayFluxFromTissue(coupflux_ip_);
   redairways_->IntegrateStep();
   redairways_->ExtractPressure(couppres_ip_);
+  couppres_ip_->Update(0.0,*couppres_ip_,normal_);
 }
 
 /*----------------------------------------------------------------------*
@@ -223,7 +229,8 @@ void AIRWAY::RedAirwayTissue::DoStructureStep()
 {
   structure_->SetPressure(couppres_ip_);
   structure_->IntegrateStep();
-  structure_->CalcFlux(coupflux_ip_,Dt());
+  structure_->CalcFlux(coupflux_ip_,coupvol_ip_,Dt());
+ 
 }
 
 
@@ -247,6 +254,7 @@ bool AIRWAY::RedAirwayTissue::NotConverged()
 
   couppres_im_->Update(1.0,*couppres_ip_,0.0);
   coupflux_im_->Update(1.0,*coupflux_ip_,0.0);
+  coupvol_im_->Update(1.0,*coupvol_ip_,0.0);
 //  couppres_ip_->PutScalar(0.0);
 //  coupflux_ip_->PutScalar(0.0);
 

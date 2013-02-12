@@ -3284,6 +3284,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
      DoubleParameter("TIMESTEP",0.01,"Time increment dt",&redtisdyn);
      IntParameter("NUMSTEP",1,"Number of Time Steps",&redtisdyn);
      DoubleParameter("MAXTIME",4.0,"",&redtisdyn);
+     DoubleParameter("NORMAL",1.0,"",&redtisdyn);
 
     /*----------------------------------------------------------------------*/
      Teuchos::ParameterList& redawdyn = list->sublist("REDUCED DIMENSIONAL AIRWAYS DYNAMIC",false,"");
