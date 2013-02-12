@@ -89,7 +89,7 @@ INITIALSEED         1                     // manipulate initial seed of pseudo r
 GMSHOUTPUT          No                    // visualization via Gmsh
 GMSHNETSTRUCT       No                    // visualize structure detection
 PlotFactorThick     0                     // 0 = gmsh line output, >0 = gmsh wedge output (c * (real thickness))
-SPECIAL_OUTPUT      networkcreep                  // densitydensitycorr viscoelasticity
+SPECIAL_OUTPUT      none                  // densitydensitycorr viscoelasticity
 GMSHOUTINTERVALS    1                     // gmsh output interval
 OUTPUTINTERVALS     1                  // specialoutput interval
 //============== EVENT TRIGGERS =============
