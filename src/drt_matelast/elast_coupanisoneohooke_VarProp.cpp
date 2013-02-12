@@ -206,10 +206,10 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::AddStressAnisoPrincipal(
     Teuchos::ParameterList& params
 )
 {
-   double stressFact_=params.get<double>("scalar", 1.0);
+   double stressFact_=params.get<double>("scalar");
    stress.Update(2*(params_->c_)*stressFact_, A_, 1.0);
 
-  // no contribution to cmat
+   // no contribution to cmat
   // double delta = 0.0;
   // cmat.MultiplyNT(delta, A_, A_, 1.0);
 }

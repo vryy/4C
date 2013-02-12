@@ -137,6 +137,66 @@ int DRT::ELEMENTS::So_tet4ScatraType::Initialize(DRT::Discretization& dis)
   return 0;
 }
 
+/*----------------------------------------------------------------------*
+ |  TET 10 Element                                       |
+ *----------------------------------------------------------------------*/
+
+
+DRT::ELEMENTS::So_tet10ScatraType DRT::ELEMENTS::So_tet10ScatraType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::So_tet10ScatraType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>* object =
+          new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10ScatraType::Create( const string eletype,
+                                                            const string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SOLIDT10SCATRA" )
+  {
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>
+                                                                    (id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10ScatraType::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>
+                                                                        (id,owner));
+  return ele;
+}
+
+void DRT::ELEMENTS::So_tet10ScatraType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >  definitions_tet10;
+  So_tet10Type::SetupElementDefinition(definitions_tet10);
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet10 =
+      definitions_tet10["SOLIDT10"];
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs =
+      definitions["SOLIDT10SCATRA"];
+
+  defs["TET10"]=defs_tet10["TET10"];
+}
+
+/*----------------------------------------------------------------------*
+ |  init the element (public)                                           |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_tet10ScatraType::Initialize(DRT::Discretization& dis)
+{
+  So_tet10Type::Initialize(dis);
+  return 0;
+}
 
 /*----------------------------------------------------------------------*
  |  WEDGE 6 Element                                       |

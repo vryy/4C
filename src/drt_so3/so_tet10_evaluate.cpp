@@ -49,7 +49,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
   DRT::ELEMENTS::So_tet10::ActionType act = So_tet10::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff")      act = So_tet10::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff")      act = So_tet10::calc_struct_nlnstiff;
@@ -198,7 +198,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
         params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
       if (gpstressmap==Teuchos::null)
         dserror("no gp stress/strain map available for postprocessing");
-      string stresstype = params.get<string>("stresstype","ndxyz");
+      std::string stresstype = params.get<std::string>("stresstype","ndxyz");
       int gid = Id();
       LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10> gpstress(((*gpstressmap)[gid])->A(),true);
 
@@ -468,7 +468,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 				double density = 0.0;
 				LINALG::Matrix<NUMSTR_SOTET10,NUMSTR_SOTET10> cmat(true);
 				LINALG::Matrix<NUMSTR_SOTET10,1> stress(true);
-				so_tet10_mat_sel(&stress,&cmat,&density,&strainerror,&defgrd,gp);
+				so_tet10_mat_sel(&stress,&cmat,&density,&strainerror,&defgrd,gp,params);
 
 				// compute GP contribution to energy error norm
 				energynorm += fac * stress.Dot(strainerror);
@@ -844,7 +844,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_nlnstiffmass(
 
     LINALG::Matrix<NUMSTR_SOTET10,NUMSTR_SOTET10> cmat(true);
     LINALG::Matrix<NUMSTR_SOTET10,1> stress(true);
-    so_tet10_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp);
+    so_tet10_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses

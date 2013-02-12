@@ -53,8 +53,8 @@ public:
 
   virtual DRT::ParObject* Create( const std::vector<char> & data );
 
-  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
-                                             const string eledistype,
+  virtual Teuchos::RCP<DRT::Element> Create( const std::string eletype,
+                                             const std::string eledistype,
                                              const int id,
                                              const int owner );
 
@@ -243,7 +243,7 @@ public:
     names.insert(std::pair<string,int>("StressesXYZ",6));
   \endcode*/
 
-  virtual void VisNames(std::map<string,int>& names); ///< to be filled with key names of data to visualize and with int dimensions
+  virtual void VisNames(std::map<std::string,int>& names); ///< to be filled with key names of data to visualize and with int dimensions
 
   /*!
   \brief Query data to be visualized using BINIO of a given name
@@ -259,7 +259,7 @@ public:
   */
   virtual bool VisData
   (
-    const string& name, ///< Name of data that is currently processed for visualization
+    const std::string& name, ///< Name of data that is currently processed for visualization
     std::vector<double>& data   ///<d ata to be filled by element if element recognizes the name
   );
   //@}
@@ -441,21 +441,15 @@ protected:
   const std::vector<double>& so_tet10_11gp_weights();
 
 
+//  // Material selection
   void so_tet10_mat_sel(
-                      LINALG::Matrix<6,1>* stress,
-                      LINALG::Matrix<6,6>* cmat,
+                      LINALG::Matrix<NUMSTR_SOTET10,1>* stress,
+                      LINALG::Matrix<NUMSTR_SOTET10,NUMSTR_SOTET10>* cmat,
                       double* density,
-                      LINALG::Matrix<6,1>* glstrain,
-                      LINALG::Matrix<3,3>* defgrd,
-                      const int gp);
-
-  /// material selection
-  void so_tet10_mat_sel(Epetra_SerialDenseVector* stress,
-                    Epetra_SerialDenseMatrix* cmat,
-                    double* density,
-                    const Epetra_SerialDenseVector* glstrain,
-                    const Epetra_SerialDenseMatrix* defgrd,
-                    int gp);
+                      LINALG::Matrix<NUMSTR_SOTET10,1>* glstrain,
+                      LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10>* defgrd,
+                      const int gp,
+                      Teuchos::ParameterList params);
 
 }; // class So_tet10
 

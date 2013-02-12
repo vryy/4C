@@ -174,6 +174,7 @@ std::string DRT::ParObjectList()
     << DRT::ELEMENTS::So_sh8p8Type::Instance().Name() << " "
     << DRT::ELEMENTS::So_shw6Type::Instance().Name() << " "
     << DRT::ELEMENTS::So_tet10Type::Instance().Name() << " "
+    << DRT::ELEMENTS::So_tet10ScatraType::Instance().Name() << " "
     << DRT::ELEMENTS::So_tet4Type::Instance().Name() << " "
     << DRT::ELEMENTS::So_tet4PoroType::Instance().Name() << " "
     << DRT::ELEMENTS::So_tet4ScatraType::Instance().Name() << " "

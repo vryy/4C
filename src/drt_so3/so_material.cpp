@@ -1383,17 +1383,17 @@ void DRT::ELEMENTS::So_tet4::so_tet4_mat_sel(
 
 }
 
-/*----------------------------------------------------------------------*
- | material laws for So_tet10                                   maf 04/07|
- *----------------------------------------------------------------------*/
+///*----------------------------------------------------------------------*
+// | material laws for So_tet10                                   maf 04/07|
+// *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
                     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
                     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
                     double* density,
                     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
                     LINALG::Matrix<3,3>* defgrd,
-                    const int gp
-                    // ParameterList& params
+                    const int gp,
+                    Teuchos::ParameterList params
                     )
 {
 #ifdef DEBUG
@@ -1455,7 +1455,6 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
     case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
-      Teuchos::ParameterList params;
       hyper->Evaluate(*glstrain,*cmat,*stress,params);
       *density = hyper->Density();
       break;
@@ -1479,7 +1478,7 @@ void DRT::ELEMENTS::So_tet10::so_tet10_mat_sel(
     break;
   } // switch (mat->MaterialType())
 
-  return;
-} // of So_tet10_mat_sel
+	return;
+}	// of So_tet10_mat_sel
 
 

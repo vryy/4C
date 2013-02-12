@@ -41,6 +41,7 @@ class So3_Scatra : public so3_ele
 
   //! @name Friends
   friend class So_tet4ScatraType;
+  friend class So_tet10ScatraType;
   friend class So_hex8ScatraType;
   friend class So_hex8fbarScatraType;
   friend class So_weg6ScatraType;
@@ -126,6 +127,8 @@ public:
       // else
        // return NStet5ScatraType::Instance().UniqueParObjectId();
     }
+    case DRT::Element::tet10:
+      return So_tet10ScatraType::Instance().UniqueParObjectId();
     case DRT::Element::hex8:
       return So_hex8ScatraType::Instance().UniqueParObjectId();
     case DRT::Element::wedge6:
@@ -195,6 +198,8 @@ public:
       // else
       //  return NStet5ScatraType::Instance();
     }
+    case DRT::Element::tet10:
+    	return So_tet10ScatraType::Instance();
     case DRT::Element::hex8:
       return So_hex8ScatraType::Instance();
     case DRT::Element::wedge6:
