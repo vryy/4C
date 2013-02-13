@@ -854,6 +854,13 @@ void STATMECH::StatMechManager::Output(const int                            ndim
           ddcorrfilename << outputrootpath_ << "/StatMechOutput/DensityDensityCorrFunction_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
           DDCorrOutput(dis, ddcorrfilename, istep, dt);
         }
+
+        if(DRT::INPUT::IntegralValue<int>(statmechparams_,"FORCEDEPUNLINKING"))
+        {
+          std::ostringstream forcedepfilename;
+          forcedepfilename << outputrootpath_ << "/StatMechOutput/UnbindingProbability_"<<std::setw(6) << std::setfill('0') << istep <<".dat";
+          BellsEquationOutput(dis, forcedepfilename, dt);
+        }
       }
     }
     break;
@@ -2569,7 +2576,10 @@ void STATMECH::StatMechManager::GmshNetworkStructVolumePeriodic(const Epetra_Ser
 /*----------------------------------------------------------------------*
  | output for density-density-correlation-function(public) mueller 07/10|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector& disrow, const std::ostringstream& filename, const int& istep, const double& dt)
+void STATMECH::StatMechManager::DDCorrOutput(const Epetra_Vector&      disrow,
+                                             const std::ostringstream& filename,
+                                             const int&                istep,
+                                             const double&             dt)
 {
   /*Output:
    * (1) structure number and characteristic length (radius, thickness)
@@ -4968,7 +4978,7 @@ void STATMECH::StatMechManager::ComputeLocalMeshSize(const Epetra_Vector& disrow
 }
 
 /*------------------------------------------------------------------------------*                                                 |
-| distribution of spherical coordinates                  (public) mueller 11/12|
+| Viscoelasticity ouput                                  (public) mueller 11/12|
 *------------------------------------------------------------------------------*/
 void STATMECH::StatMechManager::ViscoelasticityOutput(const double& time, const Epetra_Vector& dis, const Epetra_Vector& fint, std::ostringstream& filename)
 {
@@ -5016,6 +5026,30 @@ void STATMECH::StatMechManager::ViscoelasticityOutput(const double& time, const 
   }
 }
 
+/*------------------------------------------------------------------------------*                                                 |
+| distribution of spherical coordinates                  (public) mueller 11/12|
+*------------------------------------------------------------------------------*/
+void STATMECH::StatMechManager::BellsEquationOutput(const Epetra_Vector&      disrow,
+                                                    const std::ostringstream& filename,
+                                                    const double&             dt)
+{
+  if(!discret_->Comm().MyPID())
+  {
+    FILE* fp = NULL;
+    std::stringstream filecontent;
+    fp = fopen(filename.str().c_str(), "a");
+
+    double tol = 1e-9;
+    for(int i=0; i<unbindingprobability_->MyLength(); i++)
+      if((*unbindingprobability_)[0][i]>tol) // there are either two non-zero entries or none
+        filecontent<<std::scientific<<std::setprecision(6)<<(*unbindingprobability_)[0][i]<<" "<<(*unbindingprobability_)[1][i]<<" "<<(*crosslinkerpositions_)[0][i]<<" "<<(*crosslinkerpositions_)[1][i]<<" "<<(*crosslinkerpositions_)[2][i]<<endl;
+
+    fprintf(fp,filecontent.str().c_str());
+    fclose(fp);
+  }
+
+  return;
+}
 
 /*------------------------------------------------------------------------------*                                                 |
 | distribution of spherical coordinates                  (public) mueller 12/10|

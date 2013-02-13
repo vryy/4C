@@ -548,7 +548,7 @@ void STATMECH::StatMechManager::Update(const int&                               
       if(beamcmanager!=Teuchos::null && rebuildoctree)
         beamcmanager->ResetPairs();
       
-      SearchAndDeleteCrosslinkers(timen, dt, bspotpositions, bspotrotations, discol,beamcmanager,printscreen);
+      SearchAndDeleteCrosslinkers(istep, timen, dt, bspotpositions, bspotrotations, discol,beamcmanager,printscreen);
 
 #ifdef MEASURETIME
       t5 = Teuchos::Time::wallTime();
@@ -2444,7 +2444,8 @@ bool STATMECH::StatMechManager::SetCrosslinkerLoom(Epetra_SerialDenseMatrix& LID
  | searches crosslinkers and deletes them if probability check is passed|
  | (public)                                               mueller (7/10)|
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double&                              timen,
+void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&                                 istep,
+                                                            const double&                              timen,
                                                             const double&                              dt,
                                                             const Teuchos::RCP<Epetra_MultiVector>     bspotpositions,
                                                             const Teuchos::RCP<Epetra_MultiVector>     bspotrotations,
@@ -2473,7 +2474,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double&       
 
   // if off-rate is also dependent on the forces acting within the crosslinker
   if(DRT::INPUT::IntegralValue<int>(statmechparams_, "FORCEDEPUNLINKING"))
-    ForceDependentOffRate(dt, koff,discol,punlink);
+    ForceDependentOffRate(istep, dt, koff,discol,punlink);
 
   // a vector indicating the upcoming deletion of crosslinker elements
   Teuchos::RCP<Epetra_Vector> delcrosselement = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, true));
@@ -2656,7 +2657,8 @@ void STATMECH::StatMechManager::RemoveCrosslinkerElements(DRT::Discretization& m
 /*----------------------------------------------------------------------*
  | (private) force dependent off-rate                      mueller 1/11 |
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::ForceDependentOffRate(const double&                    dt,
+void STATMECH::StatMechManager::ForceDependentOffRate(const int&                       istep,
+                                                      const double&                    dt,
                                                       const double&                    koff0,
                                                       const Epetra_Vector&             discol,
                                                       Teuchos::RCP<Epetra_MultiVector> punlink)
@@ -2668,6 +2670,10 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
   // Fig 2: slip pathway, ADP, nodereldis = 0.0004;
   double delta = statmechparams_.get<double>("DELTABELLSEQ", 0.0004);
 
+  if(istep%statmechparams_.get<int>("OUTPUTINTERVALS",1000)==0 && DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_viscoelasticity)
+    unbindingprobability_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_,2,true));
+  else
+    unbindingprobability_ = Teuchos::null;
 
   // update element2crosslink_
   element2crosslink_ = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementRowMap())));
@@ -2763,11 +2769,22 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
       {
         (*punlink)[0][crosslid] = 1 - exp(-dt*koffbspot0);
         (*punlink)[1][crosslid] = 1 - exp(-dt*koffbspot1);
+
+        if(unbindingprobability_ != Teuchos::null)
+        {
+          (*unbindingprobability_)[0][crosslid] = 1 - exp(-dt*koffbspot0);
+          (*unbindingprobability_)[1][crosslid] = 1 - exp(-dt*koffbspot1);
+        }
       }
       else
       {
         (*punlink)[1][crosslid] = 1 - exp(-dt*koffbspot0);
         (*punlink)[0][crosslid] = 1 - exp(-dt*koffbspot1);
+        if(unbindingprobability_ != Teuchos::null)
+        {
+          (*unbindingprobability_)[0][crosslid] = 1 - exp(-dt*koffbspot0);
+          (*unbindingprobability_)[1][crosslid] = 1 - exp(-dt*koffbspot1);
+        }
       }
 
 //      FILE* fp = NULL;
@@ -2787,6 +2804,8 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
   // import -> redundancy on all Procs
   Teuchos::RCP<Epetra_MultiVector> punlinktrans = Teuchos::rcp(new Epetra_MultiVector(*transfermap_,true));
   CommunicateMultiVector(punlinktrans,punlink, true, true, false, false);
+  punlinktrans->PutScalar(0.0);
+  CommunicateMultiVector(punlinktrans,unbindingprobability_, true, true, false, false);
 
   return;
 }// StatMechManager::ForceDependentOffRate

@@ -349,6 +349,7 @@ protected:
 
 
   /*! \brief delete crosslinkers according to delcrosslinkercol (if entry for a node equals 1 its crosslinker is deleted)
+   *  \param istep            (in) time step number
    *  \param timen            (in) target time
    *  \param dt               (in) step size
    *  \param bspotpositions   (in) positions of the nodes in column map format (fully overlapping)
@@ -356,7 +357,8 @@ protected:
    *  \param discol           (in) node discplacement in column map format (fully overlapping)
    *  \param beamcmanager     (in) beam contact manager
    */
-  void SearchAndDeleteCrosslinkers(const double&                                   timen,
+  void SearchAndDeleteCrosslinkers(const int&                                      istep,
+                                   const double&                                   timen,
                                    const double&                                   dt,
                                    const Teuchos::RCP<Epetra_MultiVector>          bspotpositions,
                                    const Teuchos::RCP<Epetra_MultiVector>          bspotrotations,
@@ -402,11 +404,13 @@ protected:
                                      LINALG::Matrix<4,1>&               rQxi);
 
   /*! \brief adjust off-rate by considering forces in the crosslinker
+   *  \param (in) istep time step number
    *  \param (in) dt  time step size
    *  \param (in) koff0 initial chemical dissaociation rate
    *  \param (in) discol  displacement vector in column map format
    *  \param (in) punlink dissociation probability*/
-  void ForceDependentOffRate(const double&                    dt,
+  void ForceDependentOffRate(const int&                       istep,
+                             const double&                    dt,
                              const double&                    koff0,
                              const Epetra_Vector&             discol,
                              Teuchos::RCP<Epetra_MultiVector> punlink);
@@ -544,6 +548,11 @@ protected:
                              const Epetra_Vector& dis,
                              const Epetra_Vector& fint,
                              std::ostringstream&  filename);
+
+  //! \brief output for density-density-correlation output
+  void BellsEquationOutput(const Epetra_Vector&      disrow,
+                           const std::ostringstream& filename,
+                           const double&             dt);
 
   //! \brief check whether a crosslink connects two filaments or occupies two binding spots of the same element and therefore is to be visualized differently
   bool CheckForKinkedVisual(int eleid);
@@ -854,8 +863,12 @@ protected:
 
   //! \brief a vector indicating the number of attached nodes to a crosslinker
   Teuchos::RCP<Epetra_Vector> numbond_;
+
   //! \brief a vector storing information on how long linkers are bound to filaments
   Teuchos::RCP<Epetra_MultiVector> crosslinkunbindingtimes_;
+
+  //! \brief vector storing unbinding probabilites in case of force-dependent unlinking
+  Teuchos::RCP<Epetra_MultiVector> unbindingprobability_;
 
   //! \brief a vector indicating crosslinker elements that cover two binding spots on the same filament
   Teuchos::RCP<Epetra_Vector> crosslinkonsamefilament_;
