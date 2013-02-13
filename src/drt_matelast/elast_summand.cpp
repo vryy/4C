@@ -34,6 +34,7 @@ Maintainer: Burkhard Bornemann
 #include "elast_coupanisoexpo.H"
 #include "elast_coupanisoexpotwocoup.H"
 #include "elast_coupanisoneohooke.H"
+#include "elast_coupanisoneohooke_ActiveStress.H"
 #include "elast_coupanisoneohooke_VarProp.H"
 #include "elast_isoanisoexpo.H"
 #include "elast_coupvarga.H"
@@ -220,13 +221,20 @@ Teuchos::RCP<MAT::ELASTIC::Summand> MAT::ELASTIC::Summand::Factory(int matnum)
     MAT::ELASTIC::PAR::CoupAnisoNeoHooke* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHooke*>(curmat->Parameter());
     return Teuchos::rcp(new CoupAnisoNeoHooke(params));
   }
+  case INPAR::MAT::mes_coupanisoneohooke_activestress:
+  {
+    if (curmat->Parameter() == NULL)
+      curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoNeoHooke_ActiveStress(curmat));
+    MAT::ELASTIC::PAR::CoupAnisoNeoHooke_ActiveStress* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHooke_ActiveStress*>(curmat->Parameter());
+    return Teuchos::rcp(new CoupAnisoNeoHooke_ActiveStress(params));
+  }
   case INPAR::MAT::mes_coupanisoneohooke_varprop:
   {
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp(curmat));
     MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp* params = static_cast<MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp*>(curmat->Parameter());
     return Teuchos::rcp(new CoupAnisoNeoHooke_VarProp(params));
-  }  
+  }
   case INPAR::MAT::mes_isoanisoexpo:
   {
     if (curmat->Parameter() == NULL)

@@ -1634,7 +1634,43 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   }
 
   /*--------------------------------------------------------------------*/
-  // coupled anisotropic material with two exponential fiber families and variable coefficient
+  // coupled anisotropic material with the stress given by a the contraction law of Bestel-Clement-Sorine
+ /* {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoNeoHooke_ActiveStress",
+                                            "anisotropic part with one neo Hookean fiber with coefficient given by a simplification of the activation-contraction law of Bestel-Clement-Sorine-2001",
+                                            INPAR::MAT::mes_coupanisoneohooke_activestress));
+
+    AddNamedReal(m,"SIGMA0","Contractility (maximal stress)");
+    AddNamedReal(m,"TAUC_0","Initial value for the active stress");
+    AddNamedReal(m,"GAMMA","angle");
+    AddNamedInt(m,"INIT","initialization modus for fiber alignment");
+    AddNamedInt(m,"ADAPT_ANGLE","adapt angle during remodeling");
+
+    AppendMaterialDefinition(matlist,m);
+  }
+  */
+
+   /*--------------------------------------------------------------------*/
+  // coupled anisotropic material with the stress given by a the contraction law of Bestel-Clement-Sorine
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoNeoHooke_ActiveStress",
+                                            "anisotropic part with one neo Hookean fiber with coefficient given by a simplification of the activation-contraction law of Bestel-Clement-Sorine-2001",
+                                            INPAR::MAT::mes_coupanisoneohooke_activestress));
+
+    AddNamedReal(m,"C","linear constant");
+    AddNamedReal(m,"GAMMA","azimuth angle", true);
+    AddNamedReal(m,"THETA","polar angle", true);
+    AddNamedInt(m,"INIT","initialization mode for fiber alignment", 1, true);
+    AddNamedBool(m,"ADAPT_ANGLE","adapt angle during remodeling", false, true);
+
+    AppendMaterialDefinition(matlist,m);
+  }
+ 
+ 
+  /*--------------------------------------------------------------------*/
+  // coupled anisotropic material with variable stress coefficient
   {
     Teuchos::RCP<MaterialDefinition> m
       = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoNeoHooke_VarProp",
