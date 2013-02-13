@@ -1659,7 +1659,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             "anisotropic part with one neo Hookean fiber with coefficient given by a simplification of the activation-contraction law of Bestel-Clement-Sorine-2001",
                                             INPAR::MAT::mes_coupanisoneohooke_activestress));
 
-    AddNamedReal(m,"C","linear constant");
+    AddNamedReal(m,"SIGMA","Contractility (maximal stress)");
+    AddNamedReal(m,"TAUC0","Initial value for the active stress");
     AddNamedReal(m,"GAMMA","azimuth angle", true);
     AddNamedReal(m,"THETA","polar angle", true);
     AddNamedInt(m,"INIT","initialization mode for fiber alignment", 1, true);

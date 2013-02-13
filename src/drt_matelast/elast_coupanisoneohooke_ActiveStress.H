@@ -49,7 +49,9 @@ namespace ELASTIC
       //@{
 
       /// fiber params
-      double c_;
+      double sigma_;
+      /// initial condition
+      double tauc0_;
       /// azimute angle of spherical coordinates
       double gamma_;
       /// polar angle of spherical coordinates
@@ -66,7 +68,7 @@ namespace ELASTIC
 
       /// @name Write methods
       //@{
-      void SetC(const double c) { c_ = c; }
+      void SetC(const double sigma) { sigma_ = sigma; }
       //@}
 
     };  // class CoupAnisoNeoHooke_ActiveStress
@@ -133,7 +135,7 @@ namespace ELASTIC
 
     /// @name Access methods
     //@{
-    double C() const { return params_->c_; }
+    double SIGMA() const { return params_->sigma_; }
 
     //@}
 

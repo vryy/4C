@@ -28,7 +28,8 @@ MAT::ELASTIC::PAR::CoupAnisoNeoHooke_ActiveStress::CoupAnisoNeoHooke_ActiveStres
   Teuchos::RCP<MAT::PAR::Material> matdata
   )
 : Parameter(matdata),
-  c_(matdata->GetDouble("C")),
+  sigma_(matdata->GetDouble("SIGMA")),
+  tauc0_(matdata->GetDouble("TAUC0")),
   gamma_(matdata->GetDouble("GAMMA")),
   theta_(matdata->GetDouble("THETA")),
   init_(matdata->GetInt("INIT")),
@@ -207,7 +208,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::AddStressAnisoPrincipal(
 )
 {
    double stressFact_=params.get<double>("scalar");
-   stress.Update(2*(params_->c_)*stressFact_, A_, 1.0);
+   stress.Update((params_->sigma_)*stressFact_, A_, 1.0);
 
    // no contribution to cmat
   // double delta = 0.0;
