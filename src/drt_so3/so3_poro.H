@@ -205,7 +205,7 @@ public:
   );
 
 
-  //! init the inverse of the jacobian and its determinant in the material configuration
+  //! initialize the inverse of the jacobian and its determinant in the material configuration
   void InitElement();
 
   //@}
@@ -302,23 +302,12 @@ protected:
   enum ActionType
   {
     none,
-    calc_struct_linstiff,
     calc_struct_nlnstiff,
     calc_struct_internalforce,
-    calc_struct_linstiffmass,
     calc_struct_nlnstiffmass,
-    calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
     calc_struct_stress,
-    calc_struct_update_istep,
-    calc_struct_reset_istep,  //!< reset elementwise internal variables
-                              //!< during iteration to last converged state
-    calc_struct_reset_discretization,  //!< reset elementwise internal variables
-                                       //!< to state in the beginning of the computation
-    calc_struct_energy,       //!< compute internal energy
-    calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
-    postprocess_stress,       //!< postprocess stresses
-    prestress_update,
     calc_struct_multidofsetcoupling,//!< structure-fluid coupling: internal force, stiffness for poroelasticity (structural part)
+    postprocess_stress
   };
 
   //! container containing all kind of solid3 thisandthat
@@ -341,10 +330,7 @@ protected:
       LINALG::Matrix<numdof_,numdof_>* stiffmatrix, ///< element stiffness matrix
       LINALG::Matrix<numdof_,numdof_>* reamatrix, // element reactive matrix
       LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
-      //LINALG::Matrix<numgpt_,numstr_>* elestress, ///< stresses at GP
-      //LINALG::Matrix<numgpt_,numstr_>* elestrain, ///< strains at GP
       Teuchos::ParameterList& params ///< algorithmic parameters e.g. time
-  //    const INPAR::STR::StressType iostress ///< stress output option
       );
 
   //! Calculate coupling terms in nonlinear stiffness and internal force for poroelasticity problems
@@ -359,7 +345,31 @@ protected:
       LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
       Teuchos::ParameterList& params); ///< algorithmic parameters e.g. time
 
-  //Gauss integration rule
+  //! Calculate coupling stress for poroelasticity problems
+  virtual void couplstress_poroelast(
+      std::vector<double>& disp, ///< current displacements
+      LINALG::Matrix<numdim_,numnod_> & evelnp, //< fluid velocity of element
+      LINALG::Matrix<numnod_,1> & epreaf, //< fluid pressure of element
+      Epetra_SerialDenseMatrix* elestress, ///< stresses at GP
+      Epetra_SerialDenseMatrix* elestrain, ///< strains at GP
+      Teuchos::ParameterList& params, ///< algorithmic parameters e.g. time
+      const INPAR::STR::StressType iostress ///< stress output option
+      );
+
+private:
+
+  //! Extrapolate Gauss-point values (e.g. stresses) to nodes
+  void stress_expol(Epetra_SerialDenseMatrix& stresses,
+                   Epetra_MultiVector& expolstresses);
+
+  //! push forward of material stresses to the current, spatial configuration
+  void PK2toCauchy(
+    LINALG::Matrix<numstr_,1>& stress,
+    LINALG::Matrix<numdim_,numdim_>& defgrd,
+    LINALG::Matrix<numdim_,numdim_>& cauchystress
+    );
+
+  //!Gauss integration rule
   DRT::UTILS::GaussIntegration intpoints_;
 
   //!flag indicating higher order element
@@ -371,12 +381,13 @@ protected:
   //! flag for scatra coupling
   bool scatracoupling_;
 
-private:
-
+  //! get nodes of element
   DRT::Node** Nodes();
 
+  //! get material of element
   Teuchos::RCP<MAT::Material> Material() const;
 
+  //! get global id of element
   int Id() const;
 }; // class So3_Poro
 

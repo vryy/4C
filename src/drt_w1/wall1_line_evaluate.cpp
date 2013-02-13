@@ -588,13 +588,6 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       // pressure at integration point
       double press = funct1D.Dot(mypres);
 
-      double dphi_dp=0.0;
-      double dphi_dJ=0.0;
-      double dphi_dJdp=0.0;
-      double dphi_dJJ=0.0;
-      double dphi_dpp=0.0;
-      double porosity=0.0;
-
       // get Jacobian matrix and determinant w.r.t. spatial configuration
       //! transposed jacobian "dx/ds"
       LINALG::SerialDenseMatrix xjm(numdim,numdim);
@@ -618,7 +611,13 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       MAT::StructPoro* structmat = static_cast<MAT::StructPoro*>((parentele->Material()).get());
       if(structmat->MaterialType() != INPAR::MAT::m_structporo)
         dserror("invalid structure material for poroelasticity");
-      structmat->ComputeSurfPorosity(press, J,LLineNumber(),gp,porosity,dphi_dp,dphi_dJ,dphi_dJdp,dphi_dJJ,dphi_dpp);
+      double porosity=0.0;
+      structmat->ComputeSurfPorosity( params,
+                                      press,
+                                      J,
+                                      LLineNumber(),
+                                      gp,
+                                      porosity);
     }
   }
   break;

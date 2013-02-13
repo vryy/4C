@@ -2887,6 +2887,9 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
       discret_->SetState("veln", veln_);
       discret_->SetState("accnp", accnp_);
       discret_->SetState("accn", accn_);
+
+      eleparams.set("total time", time_);
+      eleparams.set("delta time", dta_);
     }
   }
 
@@ -2936,6 +2939,8 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 
       // set action for elements
       eleparams.set<int>("action",FLD::poro_boundary);
+      eleparams.set("total time", time_);
+      eleparams.set("delta time", dta_);
       eleparams.set<POROELAST::coupltype>("coupling",POROELAST::fluidfluid);
 
       discret_->ClearState();

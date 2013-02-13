@@ -22,6 +22,9 @@
 #include "Teuchos_RCP.hpp"
 #include "../drt_inpar/inpar_poroelast.H"
 
+/*----------------------------------------------------------------------*
+ |  forward declaration                                                 |
+ *----------------------------------------------------------------------*/
 namespace DRT
 {
   class Element;
@@ -34,6 +37,7 @@ namespace POROELAST
 {
   class PoroBase;
 
+  //! coupling types of porous media problem
   enum coupltype
   {
     fluidfluid,

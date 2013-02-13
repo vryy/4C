@@ -49,6 +49,7 @@ namespace POROELAST
           const Teuchos::ParameterList& timeparams
           );
 
+      //! virtual destructor
       virtual ~Monolithic(){};
 
       /*! do the setup for the monolithic system
@@ -66,17 +67,11 @@ namespace POROELAST
        directly in the constructor. This is necessary since during restart (if
        ReadMesh is called), the dofmaps for the blocks might get invalid.
        */
-      // Setup the monolithic Poroelasticity system
+      //! Setup the monolithic Poroelasticity system
       virtual void SetupSystem();
-
-      /// outer level Poroelasticity time loop
-      //void TimeLoop();
 
       //! setup composed right hand side from field solvers
       virtual void SetupRHS(bool firstcall=false) ;
-
-      //! setup composed system matrix from field solvers
-      //void SetupSystemMatrix();
 
       /// setup composed system matrix from field solvers
       virtual void SetupSystemMatrix() { SetupSystemMatrix(*systemmatrix_); }
@@ -255,20 +250,22 @@ namespace POROELAST
       //! dof row map splitted in (field) blocks
       LINALG::MultiMapExtractor blockrowdofmap_;
 
+      //! return structure fluid coupling sparse matrix
       Teuchos::RCP<LINALG::SparseMatrix> StructFluidCouplingMatrix();
 
+      //! return fluid structure coupling sparse matrix
       Teuchos::RCP<LINALG::SparseMatrix> FluidStructCouplingMatrix();
 
+      //! return structure fluid coupling block sparse matrix
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> StructFluidCouplingBlockMatrix();
 
+      //! return fluid structure coupling block sparse matrix
       Teuchos::RCP<LINALG::BlockSparseMatrixBase> FluidStructCouplingBlockMatrix();
 
-
-      //void UseBlockCoulpingMatrix();
-
-      //coupling matrixes
+      //! @name coupling matrices
       Teuchos::RCP<LINALG::SparseOperator> k_sf_;
       Teuchos::RCP<LINALG::SparseOperator> k_fs_;
+      //@}
 
     private:
 
@@ -318,6 +315,7 @@ namespace POROELAST
 
       //@}
 
+      //! flag for direct solver
       bool directsolve_;
 
   }; // Monolithic

@@ -4551,8 +4551,8 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
   if (structele == NULL)
     dserror("Structure element %i not on local processor", peleid);
 
-  const Teuchos::RCP<const MAT::StructPoro>& structmat
-            = Teuchos::rcp_dynamic_cast<const MAT::StructPoro>(structele->Material());
+  const Teuchos::RCP<MAT::StructPoro>& structmat
+            = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(structele->Material());
   if(structmat->MaterialType() != INPAR::MAT::m_structporo)
     dserror("invalid structure material for poroelasticity");
 
@@ -4596,11 +4596,11 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
     LINALG::Matrix<nsd_,nsd_> Jmat;
     xjm.MultiplyNT(pderiv_loc,xcurr);
     Jmat.MultiplyNT(pderiv_loc,xrefe);
-    // jacobian determinat "det(dx/ds)"
+    // jacobian determinant "det(dx/ds)"
     double det = xjm.Determinant();
-    // jacobian determinat "det(dX/ds)"
+    // jacobian determinant "det(dX/ds)"
     double detJ = Jmat.Determinant();
-    // jacobian determinat "det(dx/dX) = det(dx/ds)/det(dX/ds)"
+    // jacobian determinant "det(dx/dX) = det(dx/ds)/det(dX/ds)"
     const double J = det/detJ;
 
     // Computation of the integration factor & shape function at the Gauss point & derivative of the shape function at the Gauss point
@@ -4625,7 +4625,17 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
     double dphi_dpp=0.0;
     double porosity_gp=0.0;
 
-    structmat->ComputeSurfPorosity(press, J,ele->SurfaceNumber(),gpid,porosity_gp,dphi_dp,dphi_dJ,dphi_dJdp,dphi_dJJ,dphi_dpp);
+    structmat->ComputeSurfPorosity(params,
+                                   press,
+                                   J,
+                                   ele->SurfaceNumber(),
+                                   gpid,
+                                   porosity_gp,
+                                   dphi_dp,
+                                   dphi_dJ,
+                                   dphi_dJdp,
+                                   dphi_dJJ,
+                                   dphi_dpp);
 
     // The integration factor is not multiplied with drs
     // since it is the same as the scaling factor for the unit normal derivatives

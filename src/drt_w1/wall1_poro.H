@@ -73,7 +73,7 @@ namespace ELEMENTS
     static const int numnod_ = DRT::UTILS::DisTypeToNumNodePerEle<distype>::numNodePerElement;
 
     //! number of strains per node
-    static const int numstr_ = (int) (0.5*numdim_*(numdim_+1));
+    static const int numstr_ = 3;
 
     //! number or second derivatives
     static const int numderiv2_ = DRT::UTILS::DisTypeToNumDeriv2<distype>::numderiv2;;
@@ -101,7 +101,6 @@ namespace ELEMENTS
     every class implementing ParObject needs a unique id defined at the
     top of this file.
     */
-    //virtual int UniqueParObjectId() const = 0 ;
     virtual int UniqueParObjectId() const
     {
       switch(distype)
@@ -160,7 +159,6 @@ namespace ELEMENTS
     */
     void Print(ostream& os) const  ;
 
-    //virtual DRT::ElementType & ElementType() const = 0 ;
     virtual DRT::ElementType & ElementType() const
     {
       switch(distype)
@@ -189,8 +187,6 @@ namespace ELEMENTS
         DRT::Element::LocationArray& la ///< location array for de-assembly
       );
 
-    //! @name Evaluation
-
     /*!
     \brief Evaluate an element
 
@@ -214,7 +210,7 @@ namespace ELEMENTS
     );
 
 
-    //! init the inverse of the jacobian and its determinant in the material configuration
+    //! initialize the inverse of the jacobian and its determinant in the material configuration
     virtual void InitJacobianMapping();
 
     //@}
@@ -304,22 +300,10 @@ namespace ELEMENTS
     enum ActionType
     {
       none,
-      calc_struct_linstiff,
       calc_struct_nlnstiff,
       calc_struct_internalforce,
-      calc_struct_linstiffmass,
       calc_struct_nlnstiffmass,
-      calc_struct_nlnstifflmass,  //!< internal force, its stiffness and lumped mass matrix
       calc_struct_stress,
-      calc_struct_update_istep,
-      calc_struct_reset_istep,  //!< reset elementwise internal variables
-                                //!< during iteration to last converged state
-      calc_struct_reset_discretization,  //!< reset elementwise internal variables
-                                         //!< to state in the beginning of the computation
-      calc_struct_energy,       //!< compute internal energy
-      calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
-      postprocess_stress,       //!< postprocess stresses
-      prestress_update,
       calc_struct_multidofsetcoupling,//!< structure-fluid coupling: internal force, stiffness for poroelasticity (structural part)
     };
 
@@ -361,12 +345,31 @@ namespace ELEMENTS
         LINALG::Matrix<numdof_,1>* force, ///< element internal force vector
         Teuchos::ParameterList& params); ///< algorithmic parameters e.g. time
 
-    //Gauss integration rule
+    //! Calculate coupling stress for poroelasticity problems
+    virtual void couplstress_poroelast(
+        std::vector<double>& disp, ///< current displacements
+        LINALG::Matrix<numdim_,numnod_> & evelnp, //< fluid velocity of element
+        LINALG::Matrix<numnod_,1> & epreaf, //< fluid pressure of element
+        Epetra_SerialDenseMatrix*      elestress, ///< stresses at GP
+        Epetra_SerialDenseMatrix* elestrain, ///< strains at GP
+        Teuchos::ParameterList& params, ///< algorithmic parameters e.g. time
+        const INPAR::STR::StressType iostress ///< stress output option
+        );
+
+    //! push forward of material stresses to the current, spatial configuration
+    void PK2toCauchy(
+      LINALG::Matrix<Wall1::numstr_,1>& stress,
+      LINALG::Matrix<numdim_,numdim_>& defgrd,
+      LINALG::Matrix<numdim_,numdim_>& cauchystress
+      );
+
+    //!Gauss integration rule
     DRT::UTILS::GaussIntegration intpoints_;
 
     //!flag indicating higher order element
     bool ishigherorder_;
 
+    //! flag indicating initialization of element
     bool init_;
 
   }; // class So3_Poro

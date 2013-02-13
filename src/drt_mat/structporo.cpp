@@ -51,6 +51,10 @@ MAT::StructPoro::StructPoro() :
   params_(NULL),
   mat_(Teuchos::null),
   porosity_(Teuchos::null),
+  refporosity_(-1.0),
+  dphiDphiref_(0.0),
+  refporositydot_(0.0),
+  reaction_(false),
   surfporosity_(Teuchos::null),
   dporodt_(Teuchos::null),
   gradporosity_(Teuchos::null),
@@ -63,6 +67,10 @@ MAT::StructPoro::StructPoro() :
 MAT::StructPoro::StructPoro(MAT::PAR::StructPoro* params) :
   params_(params),
   porosity_(Teuchos::null),
+  refporosity_(-1.0),
+  dphiDphiref_(0.0),
+  refporositydot_(0.0),
+  reaction_(false),
   surfporosity_(Teuchos::null),
   dporodt_(Teuchos::null),
   gradporosity_(Teuchos::null),
@@ -100,19 +108,20 @@ void MAT::StructPoro::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,(*porosity_)[i]);
   }
 
-  // surfporosity_
+  // refporosity_
+  AddtoPack(data, refporosity_);
+
+  // surfporosity_ (i think it is not necessary to pack/unpack this...)
   size = (int) surfporosity_->size();
   AddtoPack(data,size);
 
   // iterator
   std::map<int,std::vector<double> >::const_iterator iter;
 
-  int i=0;
   for(iter=surfporosity_->begin();iter!=surfporosity_->end();++iter)
   {
     AddtoPack(data,iter->first);
     AddtoPack(data,iter->second);
-    ++i;
   }
 
   // gradporosity_
@@ -179,10 +188,12 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
     porosity_->push_back(tmp);
   }
 
+  // refporosity_
+  ExtractfromPack(position,data,refporosity_);
+
+  // surface porosity (i think it is not necessary to pack/unpack this...)
   ExtractfromPack(position,data,size);
-
   surfporosity_ = Teuchos::rcp(new std::map<int, std::vector< double > >);
-
   for(int i=0;i<size;i++)
   {
     int dof;
@@ -192,7 +203,6 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
 
     //add to map
     surfporosity_->insert(std::pair<int,std::vector<double > >(dof,value));
-
   }
 
   // gradporosity_
@@ -215,7 +225,7 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
     dporodt_->push_back(tmp);
   }
 
-  // gradporosity_
+  // gradJ_
   gradJ_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,3> >);
   ExtractfromPack(position,data,size);
   LINALG::Matrix<1,3> tmp3(true);
@@ -231,7 +241,7 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
     // This way however the material is fully setup according to the dat-file and in order to
     // get a correct material the called unpack method must overwrite all sub-material members.
 
-    if (params_ != NULL)// material are not accessible in postprocessing mode
+    if (params_ != NULL)// materials are not accessible in postprocessing mode
     {
       mat_ = MAT::Material::Factory(params_->matid_);
 
@@ -248,7 +258,8 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::StructPoro::ComputePorosity( double press,
+void MAT::StructPoro::ComputePorosity( Teuchos::ParameterList& params,
+                                       double press,
                                        double J,
                                        int gp,
                                        double& porosity,
@@ -256,20 +267,23 @@ void MAT::StructPoro::ComputePorosity( double press,
                                        double& dphi_dJ,
                                        double& dphi_dJdp,
                                        double& dphi_dJJ,
-                                       double& dphi_dpp) const
+                                       double& dphi_dpp,
+                                       double cnp)
 {
 
   const double & bulkmodulus  = params_->bulkmodulus_;
   const double & penalty      = params_->penaltyparameter_;
-  const double & initporosity = params_->initporosity_;
+
+  Reaction(cnp,params);
+  const double & initporosity = refporosity_;//params_->initporosity_;
 
   const double a = (bulkmodulus / (1 - initporosity) + press - penalty / initporosity) * J;
   const double b = -a + bulkmodulus + penalty;
   const double c = (b / a) * (b / a) + 4.0 * penalty / a;
   double d = sqrt(c) * a;
-  double sign = 1.0;
 
   double test = 1 / (2.0 * a) * (-b + d);
+  double sign = 1.0;
   if (test >= 1.0 or test < 0.0)
   {
     sign = -1.0;
@@ -288,21 +302,19 @@ void MAT::StructPoro::ComputePorosity( double press,
   const double d_J_J = ( a*a/(J*J)-d_J*d_J )/ d;
 
   //d(porosity) / d(p)
-  double tmp1= - J * phi/a + (J+d_p)/(2.0*a);
-  dphi_dp = tmp1;
+  dphi_dp = - J * phi/a + (J+d_p)/(2.0*a);
 
   //d(porosity) / d(J)
-  double tmp2= -phi/J+ 1/(2*J) + d_J / (2.0*a);
-  dphi_dJ = tmp2;
+  dphi_dJ= -phi/J+ 1/(2*J) + d_J / (2.0*a);
 
   //d(porosity) / d(J)d(pressure)
-  dphi_dJdp= -1/J* tmp1+ d_J_p/(2*a) - d_J*J/(2.0*a*a);
+  dphi_dJdp= -1/J* dphi_dp+ d_J_p/(2*a) - d_J*J/(2.0*a*a);
 
   //d^2(porosity) / d(J)^2
-  dphi_dJJ= phi/(J*J) - tmp2/J - 1/(2.0*J*J) - d_J/(2*a*J) + d_J_J/(2.0*a);
+  dphi_dJJ= phi/(J*J) - dphi_dJ/J - 1/(2.0*J*J) - d_J/(2*a*J) + d_J_J/(2.0*a);
 
   //d^2(porosity) / d(pressure)^2
-  dphi_dpp= -J/a* tmp1 + phi*J*J/(a*a) - J/(2.0*a*a)*(J+d_p) + d_p_p/(2.0*a);
+  dphi_dpp= -J/a* dphi_dp + phi*J*J/(a*a) - J/(2.0*a*a)*(J+d_p) + d_p_p/(2.0*a);
 
   /*
   dphi_dp = 0.0;
@@ -329,12 +341,51 @@ void MAT::StructPoro::ComputePorosity( double press,
   //save porosity
   porosity_->at(gp) = phi;
 
+  const double dadphiref = J*(bulkmodulus / ((1 - initporosity)*(1 - initporosity)) + penalty / (initporosity*initporosity));
+  const double tmp = 2*dadphiref/a * (-b*(a+b)/a - 2*penalty);
+  const double dddphiref = sign*(dadphiref * sqrt(c) + tmp);
+
+  dphiDphiref_ = ( a * (dadphiref+dddphiref) - dadphiref * (-b + d) )/(2*a*a);
+
+  //dphiDphiref_ = dadphiref/(2*a*a) * ( a - sign/(sqrt(c)) * (b + b*b/a + 2*penalty ) + b);
+
+  //cout<<"dphi_dphi"<<dphiDphiref_<<endl;
+
   return;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::StructPoro::ComputeSurfPorosity( double     press,
+void MAT::StructPoro::ComputePorosity( Teuchos::ParameterList& params,
+                                       double press,
+                                       double J,
+                                       int gp,
+                                       double& porosity)
+{
+  double dphi_dp   = 0.0;
+  double dphi_dJ   = 0.0;
+  double dphi_dJdp = 0.0;
+  double dphi_dJJ  = 0.0;
+  double dphi_dpp  = 0.0;
+
+  ComputePorosity( params,
+                   press,
+                   J,
+                   gp,
+                   porosity,
+                   dphi_dp,
+                   dphi_dJ,
+                   dphi_dJdp,
+                   dphi_dJJ,
+                   dphi_dpp);
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::StructPoro::ComputeSurfPorosity( Teuchos::ParameterList& params,
+                                           double     press,
                                            double     J,
                                            const int  surfnum,
                                            int        gp,
@@ -343,10 +394,11 @@ void MAT::StructPoro::ComputeSurfPorosity( double     press,
                                            double&    dphi_dJ,
                                            double&    dphi_dJdp,
                                            double&    dphi_dJJ,
-                                           double&    dphi_dpp) const
+                                           double&    dphi_dpp)
 {
   double phi= 0.0;
-  ComputePorosity(press,
+  ComputePorosity(params,
+                  press,
                   J,
                   gp,
                   phi,
@@ -356,12 +408,43 @@ void MAT::StructPoro::ComputeSurfPorosity( double     press,
                   dphi_dJJ,
                   dphi_dpp);
 
+  //we are at a new iteration, so old values are not needed any more
   if(gp==0)
    ( (*surfporosity_)[surfnum] ).clear();
 
   ( (*surfporosity_)[surfnum] ).push_back(phi);
 
   porosity = phi;
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::StructPoro::ComputeSurfPorosity( Teuchos::ParameterList& params,
+                                           double     press,
+                                           double     J,
+                                           const int  surfnum,
+                                           int        gp,
+                                           double&    porosity)
+{
+  double dphi_dp   = 0.0;
+  double dphi_dJ   = 0.0;
+  double dphi_dJdp = 0.0;
+  double dphi_dJJ  = 0.0;
+  double dphi_dpp  = 0.0;
+
+  ComputeSurfPorosity( params,
+                       press,
+                       J,
+                       surfnum,
+                       gp,
+                       porosity,
+                       dphi_dp,
+                       dphi_dJ,
+                       dphi_dJdp,
+                       dphi_dJJ,
+                       dphi_dpp);
 
   return;
 }
@@ -541,6 +624,7 @@ void MAT::StructPoro::Setup(const int numgp)
   gradporosity_ = Teuchos::rcp(new std::vector< LINALG::Matrix<3,1> > (numgp));
   dporodt_ = Teuchos::rcp(new std::vector<double> (numgp));
   gradJ_ = Teuchos::rcp(new std::vector< LINALG::Matrix<1,3> > (numgp));
+  refporosity_ = params_->initporosity_;
 
   const LINALG::Matrix<3,1> emptyvec(true);
   const LINALG::Matrix<1,3> emptyvecT(true);
@@ -552,3 +636,78 @@ void MAT::StructPoro::Setup(const int numgp)
   isinitialized_=true;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::StructPoro::CouplStress(  const LINALG::Matrix<3,3>& defgrd,
+                                    const LINALG::Matrix<3,1>& fluidvel,
+                                    const double& press,
+                                    LINALG::Matrix<6,1>& couplstress
+                                    ) const
+{
+  const double J = defgrd.Determinant();
+
+  // Right Cauchy-Green tensor = F^T * F
+  LINALG::Matrix<3,3> cauchygreen;
+  cauchygreen.MultiplyTN(defgrd,defgrd);
+
+  // inverse Right Cauchy-Green tensor
+  LINALG::Matrix<3,3> C_inv;
+  C_inv.Invert(cauchygreen);
+
+  //inverse Right Cauchy-Green tensor as vector
+  LINALG::Matrix<6,1> C_inv_vec;
+  for(int i =0, k=0;i<3; i++)
+    for(int j =0;j<3-i; j++,k++)
+      C_inv_vec(k)=C_inv(i+j,j);
+
+  for(int i=0; i<6 ; i++)
+    couplstress(i)= -1.0*J*press*C_inv_vec(i);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::StructPoro::CouplStress(  const LINALG::Matrix<2,2>& defgrd,
+                                    const LINALG::Matrix<2,1>& fluidvel,
+                                    const double& press,
+                                    LINALG::Matrix<3,1>& couplstress
+                                    ) const
+{
+  const double J = defgrd.Determinant();
+
+  // Right Cauchy-Green tensor = F^T * F
+  LINALG::Matrix<2,2> cauchygreen;
+  cauchygreen.MultiplyTN(defgrd,defgrd);
+
+  // inverse Right Cauchy-Green tensor
+  LINALG::Matrix<2,2> C_inv;
+  C_inv.Invert(cauchygreen);
+
+  //inverse Right Cauchy-Green tensor as vector
+  LINALG::Matrix<3,1> C_inv_vec;
+  for(int i =0, k=0;i<2; i++)
+    for(int j =0;j<2-i; j++,k++)
+      C_inv_vec(k)=C_inv(i+j,j);
+
+  for(int i=0; i<3 ; i++)
+    couplstress(i)= -1.0*J*press*C_inv_vec(i);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::StructPoro::Reaction(double cnp, Teuchos::ParameterList& params)
+{
+  if(reaction_)
+  {
+    //double dt = params.get<double>("delta time",-1.0);
+    double time = params.get<double>("total time",-1.0);
+
+    if(time==-1.0)
+      dserror("time step or total time not available");
+
+    double tau = 4.0;
+    double limitporosity = 0.45;
+
+    refporosity_= limitporosity - (limitporosity - params_->initporosity_)* exp(-1.0*time/tau);
+    refporositydot_= (limitporosity - params_->initporosity_)/tau * exp(-1.0*time/tau);
+  }
+}

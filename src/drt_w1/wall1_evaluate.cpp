@@ -309,10 +309,10 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       // nothing to do for ghost elements
       if (discretization.Comm().MyPID()==Owner())
       {
-        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
-        RCP<std::vector<char> > stressdata = params.get<RCP<std::vector<char> > >("stress",Teuchos::null);
-        RCP<std::vector<char> > straindata = params.get<RCP<std::vector<char> > >("strain",Teuchos::null);
+        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        Teuchos::RCP<const Epetra_Vector> res  = discretization.GetState("residual displacement");
+        Teuchos::RCP<std::vector<char> > stressdata = params.get<Teuchos::RCP<std::vector<char> > >("stress",Teuchos::null);
+        Teuchos::RCP<std::vector<char> > straindata = params.get<Teuchos::RCP<std::vector<char> > >("strain",Teuchos::null);
         if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata==Teuchos::null) dserror("Cannot get stress 'data'");
         if (straindata==Teuchos::null) dserror("Cannot get strain 'data'");
@@ -323,7 +323,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
         std::vector<double> mydispmat(lm.size());
         if (structale_)
         {
-          RCP<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
+          Teuchos::RCP<const Epetra_Vector> dispmat = discretization.GetState("material displacement");;
           DRT::UTILS::ExtractMyValues(*dispmat,mydispmat,lm);
         }
         const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
@@ -368,43 +368,49 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
     // (depending on what this routine is called for from the post filter)
     case postprocess_stress:
     {
-      const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
-      if (gpstressmap==Teuchos::null)
-        dserror("no gp stress/strain map available for postprocessing");
-      string stresstype = params.get<string>("stresstype","ndxyz");
-      int gid = Id();
-      RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
-      RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
-      if (poststress==Teuchos::null)
-        dserror("No element stress/strain vector available");
+      string groupname = params.get<string>("groupname","gauss_2PK_stresses_xyz");
 
-      if (stresstype=="ndxyz")
+      //coupling stress are evaluated in the respective coupling element
+      //if( groupname != "gauss_2PK_coupling_stresses_xyz" and groupname!= "gauss_cauchy_coupling_stresses_xyz")
       {
-        // extrapolate stresses/strains at Gauss points to nodes
-        w1_expol(*gpstress, *poststress);
-      }
-      else if (stresstype=="cxyz")
-      {
-        const Epetra_BlockMap& elemap = poststress->Map();
-        int lid = elemap.LID(Id());
-        const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
-        if (lid!=-1)
+        const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+          params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+        if (gpstressmap==Teuchos::null)
+          dserror("no gp stress/strain map available for postprocessing");
+        std::string stresstype = params.get<std::string>("stresstype","ndxyz");
+        int gid = Id();
+        Teuchos::RCP<Epetra_SerialDenseMatrix> gpstress = (*gpstressmap)[gid];
+        Teuchos::RCP<Epetra_MultiVector> poststress=params.get<Teuchos::RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
+        if (poststress==Teuchos::null)
+          dserror("No element stress/strain vector available");
+
+        if (stresstype=="ndxyz")
         {
-          // maximum 4 independent stresses exist in 2D
-          for (int i = 0; i < Wall1::numstr_; ++i)
+          // extrapolate stresses/strains at Gauss points to nodes
+          w1_expol(*gpstress, *poststress);
+        }
+        else if (stresstype=="cxyz")
+        {
+          const Epetra_BlockMap& elemap = poststress->Map();
+          int lid = elemap.LID(Id());
+          const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+          if (lid!=-1)
           {
-            (*((*poststress)(i)))[lid] = 0.;
-            for (int j = 0; j < intpoints.nquad; ++j)
+            // maximum 4 independent stresses exist in 2D
+            for (int i = 0; i < Wall1::numstr_; ++i)
             {
-              (*((*poststress)(i)))[lid] += 1.0/intpoints.nquad * (*gpstress)(j,i);
+              (*((*poststress)(i)))[lid] = 0.;
+              for (int j = 0; j < intpoints.nquad; ++j)
+              {
+                (*((*poststress)(i)))[lid] += 1.0/intpoints.nquad * (*gpstress)(j,i);
+              }
             }
           }
         }
-      }
-      else
-      {
-        dserror("unknown type of stress/strain output on element level");
+        else
+        {
+          dserror("unknown type of stress/strain output on element level");
+        }
       }
     }
     break;
@@ -437,7 +443,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       if (elevec1.Length() < 3) dserror("The given result vector is too short.");
 
       // check material law
-      RCP<MAT::Material> mat = Material();
+      Teuchos::RCP<MAT::Material> mat = Material();
 
       //******************************************************************
       // only for St.Venant Kirchhoff material
@@ -471,7 +477,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
         const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 
         // get displacements and extract values of this element
-        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+        Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==Teuchos::null) dserror("Cannot get state displacement vector");
         std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
@@ -657,12 +663,12 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
     break;
     case Wall1::calc_potential_stiff:
     {
-      RCP<PotentialManager> potentialmanager =
-        params.get<RCP<PotentialManager> >("pot_man",Teuchos::null);
+      Teuchos::RCP<PotentialManager> potentialmanager =
+        params.get<Teuchos::RCP<PotentialManager> >("pot_man",Teuchos::null);
       if (potentialmanager==Teuchos::null)
         dserror("No PotentialManager in Wall1 Volume available");
 
-      RCP<DRT::Condition> cond = params.get<RCP<DRT::Condition> >("condition",Teuchos::null);
+      Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition",Teuchos::null);
       if (cond==Teuchos::null)
         dserror("Condition not available in Wall1 Volume");
 
@@ -697,7 +703,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
                                           Epetra_SerialDenseVector& elevec1,
                                           Epetra_SerialDenseMatrix* elemat1)
 {
-  RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
+  Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
   vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);

@@ -21,9 +21,6 @@
   //! global control routine for Poro + ScaTra problem.
   void poro_scatra_drt();
 
-  //! global control routine for poro structure interaction problem.
-  void psi_drt();
-
 
 /*----------------------------------------------------------------------*/
 #endif /* #ifndef POROELAST_H */

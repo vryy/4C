@@ -132,6 +132,7 @@ private:
     /*!
     \brief calculate element matrix and rhs for porous flow
 
+    \param params           (i) element parameter list
     \param ebofoaf          (i) body force at n+alpha_F/n+1
     \param evelaf           (i) nodal velocities at n+alpha_F/n+1
     \param evelnp           (i) nodal velocities at n+1 (np_genalpha)
@@ -150,6 +151,7 @@ private:
 
     */
   void Sysmat(
+      Teuchos::ParameterList&                                       params,
       const LINALG::Matrix<my::nsd_,my::nen_>&                      ebofoaf,
       const LINALG::Matrix<my::nsd_,my::nen_>&                      evelaf,
       const LINALG::Matrix<my::nsd_,my::nen_>&                      evelnp,
@@ -171,6 +173,7 @@ private:
       const DRT::UTILS::GaussIntegration &                          intpoints);
 
   void SysmatOD(
+      Teuchos::ParameterList&                                         params,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,
       const LINALG::Matrix<my::nen_, 1>&                              epreaf,
@@ -211,6 +214,7 @@ private:
       const double &                                                    dphi_dp,
       const double &                                                    dphi_dJ,
       const double &                                                    J,
+      const double &                                                    refporositydot,
       LINALG::Matrix<1, my::nsd_>&                                      gradJ,
       const double & timefac, const double &                            timefacfac
       );

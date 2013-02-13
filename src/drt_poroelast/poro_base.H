@@ -49,8 +49,10 @@ namespace ADAPTER
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
+/// POROELAST: namespace for all porous media problems
 namespace POROELAST
 {
+  //forward declaration
   class NoPenetrationConditionHandle;
 
   /// base class for porous media algorithm
@@ -144,8 +146,10 @@ namespace POROELAST
       //! helper class for no penetration condition
       Teuchos::RCP<NoPenetrationConditionHandle> noPenHandle_;
 
+      //! flag for partial integration condition of porous fluid continuity equation
       bool partincond_;
 
+      //! flag for pressure coupling condition
       bool presintcond_;
 
     private:
@@ -222,12 +226,16 @@ namespace POROELAST
     //! return condrhs
     Teuchos::RCP<Epetra_Vector> RHS(){return condRHS_;};
 
+    //! clear everything that is needed for coupling
     void Clear(POROELAST::coupltype coupltype=POROELAST::undefined);
 
+    //! setup coupling matrixes and vecors
     void Setup(Teuchos::RCP<const Epetra_Map> dofRowMap, const Epetra_Map* dofRowMapFluid);
 
+    //! return constraint matrix, that fits to coupling type
     Teuchos::RCP<LINALG::SparseMatrix> ConstraintMatrix(POROELAST::coupltype coupltype);
 
+    //! return constraint matrix for structure velocity coupling
     Teuchos::RCP<LINALG::SparseMatrix> StructVelConstraintMatrix(POROELAST::coupltype coupltype);
 
   private:
@@ -250,10 +258,11 @@ namespace POROELAST
     //! flag indicating if a no penetration condition exists
     bool hascond_;
 
-    //!coupling matrices
+    //! @name coupling matrices
     Teuchos::RCP<LINALG::SparseMatrix> fluidfluidConstraintMatrix_;
     Teuchos::RCP<LINALG::SparseMatrix> fluidstructureConstraintMatrix_;
     Teuchos::RCP<LINALG::SparseMatrix> structVelConstraintMatrix_;
+    //@}
   };
 }
 

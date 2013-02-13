@@ -1063,6 +1063,8 @@ void POROELAST::Monolithic::ApplyFluidCouplMatrix(
     Teuchos::ParameterList params;
     // action for elements
     params.set<int>("action", FLD::poro_boundary);
+    params.set("total time", Time());
+    params.set("delta time", Dt());
     params.set<POROELAST::coupltype>("coupling",POROELAST::fluidstructure);
     params.set("timescale",FluidField().ResidualScaling());
 
@@ -1172,8 +1174,8 @@ void POROELAST::Monolithic::PoroFDCheck()
     cout << "gridvel struct" << endl << *(StructureField()->ExtractVelnp());
   }
 
-  int spaltenr = -1;
   int zeilennr = -1;
+  int spaltenr = -1;
   for (int i = 0; i < dofs; ++i)
   {
     if (CombinedDBCMap()->MyGID(i))

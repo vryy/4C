@@ -1281,7 +1281,7 @@ void STR::TimInt::DetermineStressStrain()
     if(tempn_!=Teuchos::null)
       discret_->SetState(1,"temperature",tempn_);
     if(fluidveln_!=Teuchos::null)
-      discret_->SetState(1,"fluidveln",fluidveln_);
+      discret_->SetState(1,"fluidvel",fluidveln_);
     if(dismatn_!= Teuchos::null)
       discret_->SetState(0,"material displacement",dismatn_);
 

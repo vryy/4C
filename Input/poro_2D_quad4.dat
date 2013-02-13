@@ -86,6 +86,7 @@ STRUCT_SE                       No
 STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   No
 STRUCT_STRESS                   No
+STRUCT_COUPLING_STRESS          Cauchy
 STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  None
 THERM_TEMPERATURE               No

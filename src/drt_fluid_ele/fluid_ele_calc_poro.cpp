@@ -95,7 +95,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid*    
                                                  Epetra_SerialDenseVector&      elevec3_epetra,
                                                  bool                           offdiag)
 {
-  if (not offdiag)
+  if (not offdiag) //evaluate diagonal block (pure fluid block)
     return Evaluate(  ele,
                       discretization,
                       lm,
@@ -107,7 +107,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(DRT::ELEMENTS::Fluid*    
                       elevec2_epetra,
                       elevec3_epetra,
                       my::intpoints_);
-  else
+  else // evaluate off diagonal block (coupling block)
     return EvaluateOD(  ele,
                         discretization,
                         lm,
@@ -379,7 +379,8 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   // ---------------------------------------------------------------------
   // call routine for calculating element matrix and right hand side
   // ---------------------------------------------------------------------
-  Sysmat(ebofoaf,
+  Sysmat(params,
+       ebofoaf,
        evelaf,
        evelnp,
        epreaf,
@@ -440,6 +441,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
     // call routine for calculating element matrix and right hand side
     // ---------------------------------------------------------------------
     SysmatOD(
+        params,
         evelaf,
         evelnp,
         epreaf,
@@ -462,6 +464,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
+  Teuchos::ParameterList&                                        params,
   const LINALG::Matrix<my::nsd_,my::nen_>&                      ebofoaf,
   const LINALG::Matrix<my::nsd_,my::nen_>&                      evelaf,
   const LINALG::Matrix<my::nsd_,my::nen_>&                      evelnp,
@@ -750,7 +753,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     double dphi_dpp=0.0;
     double porosity=0.0;
 
-    structmat->ComputePorosity(press, J, *(iquad),porosity,dphi_dp,dphi_dJ,dphi_dJdp,dphi_dJJ,dphi_dpp);;
+    structmat->ComputePorosity(params,press, J, *(iquad),porosity,dphi_dp,dphi_dJ,dphi_dJdp,dphi_dJJ,dphi_dpp);
+    double refporositydot = structmat->RefPorosityTimeDeriv();
 
     //--------------------------- compute dJ/dx = dJ/dF : dF/dx = JF^-T : dF/dx at gausspoint
     //LINALG::Matrix<1,my::nsd_> gradJ_2(true);
@@ -993,7 +997,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     my::rhscon_ =0.0;
 
     // compute residual of continuity equation
-    my::conres_old_ = (dphi_dp  * press_dot+ dphi_dJ  * J  * gridvdiv
+    my::conres_old_ = (dphi_dp  * press_dot + refporositydot + dphi_dJ  * J  * gridvdiv
           + porosity*my::vdiv_+grad_porosity_relvelint)/my::fldpara_->Theta()-my::rhscon_;
 
     // compute first version of velocity-based momentum residual containing
@@ -1454,17 +1458,17 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
 
        //transient porosity terms
        /*
-            /                             \   /                                          \
-           |                   n+1         |    |                      /   n+1  \             |
+            /                             \      /                                             \
+           |                   n+1         |    |                        /   n+1  \             |
          - | d(grad(phi))/dp* vs    Dp, q  |  + | d(phi)/(dJdp) * J *div| vs       |  * Dp , q  |
-           |                   (i)         |    |                      \  (i)   /             |
-            \                             /    \                                             /
+           |                   (i)         |    |                        \  (i)   /             |
+            \                             /      \                                             /
 
-            /                    \       /                                \
+            /                    \     /                                \
            |                      |   |                    n+1           |
          + | d(phi)/dp *  Dp , q  | + | d^2(phi)/(dp)^2 * p   *  Dp , q  |
            |                      |   |                    (i)           |
-            \                    /       \                                /
+            \                    /     \                                /
 
        */
 
@@ -1489,7 +1493,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
          for (int vi=0; vi<my::nen_; ++vi)
          {
            preforce(vi)-= rhsfac * ( press_dot *
-                       dphi_dp
+                       dphi_dp + refporositydot
                      ) * my::funct_(vi) ;
          }
 
@@ -1608,7 +1612,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
          for (int vi=0; vi<my::nen_; ++vi)
          {
            preforce(vi)-= rhsfac * ( press_dot *
-                       dphi_dp
+                       dphi_dp + refporositydot
                      ) * my::funct_(vi) ;
          }
 
@@ -1755,6 +1759,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
  *----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
+    Teuchos::ParameterList&                                         params,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       evelaf,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       evelnp,
     const LINALG::Matrix<my::nen_, 1>&                              epreaf,
@@ -1797,8 +1802,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
   //------------------------------------------------------------------------
   //  start loop over integration points
   //------------------------------------------------------------------------
-  //for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
-
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints.begin(); iquad!=intpoints.end(); ++iquad )
   {
 
@@ -1967,10 +1970,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
     if(structele == NULL)
       dserror("Structure element %i not on local processor", my::eid_);
     //get structure material
-    const MAT::StructPoro* structmat = static_cast<const MAT::StructPoro*>((structele->Material()).get());
+    MAT::StructPoro* structmat = static_cast< MAT::StructPoro*>((structele->Material()).get());
 
-    structmat->ComputePorosity(press, J, *(iquad),porosity,dphi_dp,dphi_dJ,dphi_dJdp,dphi_dJJ,dphi_dpp);
-    //porosity = structmat->GetPorosityAtGP(*(iquad));
+    structmat->ComputePorosity(params,press, J, *(iquad),porosity,dphi_dp,dphi_dJ,dphi_dJdp,dphi_dJJ,dphi_dpp);
+    double refporositydot = structmat->RefPorosityTimeDeriv();
 
     //--------------------------- build d^2 N/(dX dx) at gausspoint (wrt xyt)
     //! second derivatives are orderd as followed: (N,Xx ; N,Yy ; N,Zz ; N,Xy ; N,Xz ; N,Yx ; N,Yz;  N,Zx ; N,Zy)
@@ -2574,7 +2577,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
 
     //*************************************************************************************************************
     // 3) shape derivatives
-
     if (my::nsd_ == 3)
       LinMeshMotion_3D_OD(
           emesh,
@@ -2600,6 +2602,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
           dphi_dp,
           dphi_dJ,
           J,
+          refporositydot,
           gradJ,
           my::fldpara_->TimeFac(),
           timefacfac);
@@ -2613,22 +2616,16 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
   //------------------------------------------------------------------------
 
   //------------------------------------------------------------------------
-  //  add contributions to element matrix and right-hand-side vector
+  //  add contributions to element matrix
   //------------------------------------------------------------------------
-  // add pressure part to right-hand-side vector
-  /*
-
-   */
 
   // add fluid velocity-structure displacement part to matrix
   for (int ui=0; ui<my::nen_; ++ui)
   {
-    //   const int numdof_ui = numdofpernode_*ui;
     const int nsd_ui = my::nsd_*ui;
 
     for (int jdim=0; jdim < my::nsd_;++jdim)
     {
-      //   const int numdof_ui_jdim = numdof_ui+jdim;
       const int nsd_ui_jdim = nsd_ui+jdim;
 
       for (int vi=0; vi<my::nen_; ++vi)
@@ -2647,7 +2644,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
   // add fluid pressure-structure displacement part to matrix
   for (int ui=0; ui<my::nen_; ++ui)
   {
-    //    const int numdof_ui = my::numdofpernode_*ui;
     const int nsd_ui = my::nsd_*ui;
 
     for (int jdim=0; jdim < my::nsd_;++jdim)
@@ -2660,9 +2656,6 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
       }
     }
   }
-
-  //add linearisation of mesh motion
-  //ecoupl.Update(1.0,emesh,1.0);
 
   return;
 }    //SysmatOD
@@ -3526,6 +3519,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
     const double &                                                    dphi_dp,
     const double &                                                    dphi_dJ,
     const double &                                                    J,
+    const double &                                                    refporositydot,
     LINALG::Matrix<1, my::nsd_>&                                      gradJ,
     const double & timefac, const double &                            timefacfac)
 {
@@ -3748,7 +3742,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::LinMeshMotion_2D_OD(
   // dphi_dp*dp/dt
   for (int vi = 0; vi < my::nen_; ++vi)
   {
-    double v = timefacfac * my::funct_(vi, 0) * dphi_dp * press_dot;
+    double v = timefacfac * my::funct_(vi, 0) * (dphi_dp * press_dot + refporositydot);
     for (int ui = 0; ui < my::nen_; ++ui)
     {
       emesh(vi * 3 + 2, ui * 2    ) += v * my::derxy_(0, ui);
