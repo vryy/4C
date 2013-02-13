@@ -5203,7 +5203,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3DAuxPlaneQuad(
         if (duallin)
           for (int m=0;m<nrow;++m)
           {
-            fac = wgt*sval[m]*gap*jac;
+            if (dualquad3d) fac = wgt*svalmod[m]*gap*jac;
+            else            fac = wgt*sval[m]*gap*jac;
+
             for (CI p=dualmap[j][m].begin();p!=dualmap[j][m].end();++p)
               dgmap[p->first] += fac*(p->second);
           }
