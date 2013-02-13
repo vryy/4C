@@ -157,6 +157,8 @@ void DRT::ELEMENTS::Beam3Type::SetupElementDefinition( std::map<std::string,std:
 DRT::ELEMENTS::Beam3::Beam3(int id, int owner) :
 DRT::Element(id,owner),
 isinit_(false),
+internalforces_(Teuchos::null),
+eps_(0.0),
 crosssec_(0),
 crosssecshear_(0),
 Iyy_(0),

@@ -169,6 +169,8 @@ void DRT::ELEMENTS::BeamCLType::SetupElementDefinition( std::map<std::string,std
 DRT::ELEMENTS::BeamCL::BeamCL(int id, int owner) :
 DRT::Element(id,owner),
 isinit_(false),
+internalforces_(Teuchos::null),
+eps_(0.0),
 nodeI_(0),
 nodeJ_(0),
 crosssec_(0),

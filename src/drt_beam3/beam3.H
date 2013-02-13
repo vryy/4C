@@ -249,11 +249,9 @@ public:
 
   //! \brief internal force vector
   const Teuchos::RCP<Epetra_SerialDenseVector> InternalForces() const {return internalforces_;}
-  //@}
 
   //! brief epsilonnormal
   const double& EpsilonSgn() const { return eps_;}
-  //@}
 
   //! @name Construction
 

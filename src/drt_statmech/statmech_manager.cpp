@@ -2105,7 +2105,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
         Epetra_Map bspotcolmap(*bspotcolmap_);
 
         // obtain binding spot GID
-        std::vector<int> bspotgid(2);
+        std::vector<int> bspotgid(2,0);
         // determine smaller and larger of the GIDs
         bspotgid.at(1) = min((int)(*crosslinkerbond_)[0][i],(int)(*crosslinkerbond_)[1][i]);
         bspotgid.at(0) = max((int)(*crosslinkerbond_)[0][i],(int)(*crosslinkerbond_)[1][i]);
@@ -2115,7 +2115,7 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
         if(DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
         {
           globalnodeids = Teuchos::rcp(new std::vector<int>(4,0));
-          for(int l=0;l<2;l++)
+          for(int l=0; l<(int)bspot2nodes_->NumVectors(); l++)
           {
             (*globalnodeids)[l]=(int)(*bspot2nodes_)[l][bspotgid[0]];
             (*globalnodeids)[l+2]=(int)(*bspot2nodes_)[l][bspotgid[1]];
@@ -2464,7 +2464,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double&       
   //probability with which a crosslink breaks up in the current time step
   double p = 1.0 - exp(-dt * koff);
 
-  Teuchos::RCP<Epetra_Vector> punlink = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_));
+  Teuchos::RCP<Epetra_MultiVector> punlink = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_,2));
   punlink->PutScalar(p);
 
   // binding spot triads
@@ -2501,7 +2501,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double&       
         {
           for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
             if ((*crosslinkerbond_)[j][irandom]>-0.9)
-              if ((*uniformgen_)() < (*punlink)[irandom])
+              if ((*uniformgen_)() < (*punlink)[j][irandom])
               {
                 // obtain LID and reset crosslinkerbond_ at this position
                 int bspotLID = bspotcolmap_->LID((int) (*crosslinkerbond_)[j][irandom]);
@@ -2522,7 +2522,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const double&       
           std::vector<int> jorder = Permutation(crosslinkerbond_->NumVectors());
           for (int j=0; j<crosslinkerbond_->NumVectors(); j++)
           {
-            if ((*uniformgen_)() < (*punlink)[irandom])
+            if ((*uniformgen_)() < (*punlink)[j][irandom])
             {
               (*numbond_)[irandom] = 1.0;
 
@@ -2656,10 +2656,10 @@ void STATMECH::StatMechManager::RemoveCrosslinkerElements(DRT::Discretization& m
 /*----------------------------------------------------------------------*
  | (private) force dependent off-rate                      mueller 1/11 |
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::ForceDependentOffRate(const double&               dt,
-                                                      const double&               koff0,
-                                                      const Epetra_Vector&        discol,
-                                                      Teuchos::RCP<Epetra_Vector> punlink)
+void STATMECH::StatMechManager::ForceDependentOffRate(const double&                    dt,
+                                                      const double&                    koff0,
+                                                      const Epetra_Vector&             discol,
+                                                      Teuchos::RCP<Epetra_MultiVector> punlink)
 {
   // thermal energy
   double kt = statmechparams_.get<double>("KT",0.00404531);
@@ -2674,43 +2674,66 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
   element2crosslink_->PutScalar(-1.0);
 
   for(int i=0; i<crosslinkermap_->NumMyElements(); i++)
+  {
     if((*crosslink2element_)[i]>-0.9) // there exists a linker element
     {
       // reverse mapping
       int elelid = discret_->ElementRowMap()->LID((int)(*crosslink2element_)[i]);
       if(elelid>-0.9)
-      {
-        // 4-noded crosslinker beam element
-        if(DRT::INPUT::IntegralValue<int>(statmechparams_, "INTERNODALBSPOTS"))
-        {
-          //multiple crosslinkers may be mapped to the same element. Hence, the reverse mapping has to be a MultiVector
-        }
-        else  //conventional beam3 crosslinker element
-          (*element2crosslink_)[elelid] = i;
-      }
+        (*element2crosslink_)[elelid] = i;
     }
-
-  // vector with unbinding probabilities
-  punlink->PutScalar(1.0 - exp(-dt*koff0));
+  }
 
   for(int i=0; i<discret_->ElementRowMap()->NumMyElements(); i++)
+  {
     if((*element2crosslink_)[i]>-0.9)
     {
-      Teuchos::RCP<Epetra_SerialDenseVector> force = Teuchos::null;
       DRT::Element* crosslinker = discret_->lRowElement(i);
+      int crosslid = crosslinkermap_->LID((int)(*element2crosslink_)[i]);
+      int bspotgid0 = (int)(*crosslinkerbond_)[0][crosslid];
+      int bspotgid1 = (int)(*crosslinkerbond_)[1][crosslid];
+
+      // GID (be it a node ID or a binding spot ID)
+      int checkgid = -1;
+
+      // element internal force vector
+      Teuchos::RCP<Epetra_SerialDenseVector> force = Teuchos::null;
+      // normal strain
+      double eps = 0.0;
+
       const DRT::ElementType &eot = crosslinker->ElementType();
       // retrieve internal force vector
       if(eot == DRT::ELEMENTS::Beam3Type::Instance())
       {
         force = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->InternalForces();
-
+        eps = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->EpsilonSgn();
         // new linker without history
         if(force==Teuchos::null)
-          force = Teuchos::rcp(new Epetra_SerialDenseVector(6.0*(crosslinker->NumNode())));
+          force = Teuchos::rcp(new Epetra_SerialDenseVector(6*(crosslinker->NumNode())));
+
+        checkgid = crosslinker->Nodes()[0]->Id();
       }
-      else // nothing yet, new crosslinker element soon to come
+      else if(eot == DRT::ELEMENTS::BeamCLType::Instance())
       {
-        // force value for interpolated position xi given by bspotxi_
+        if(crosslinker->NumNode()!=4)
+          dserror("Currently only implemented for BEAM3CL with four nodes.");
+        force = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->InternalForces();
+        eps = (dynamic_cast<DRT::ELEMENTS::BeamCL*>(crosslinker))->EpsilonSgn();
+        if(force==Teuchos::null)
+          force = Teuchos::rcp(new Epetra_SerialDenseVector(6*(crosslinker->NumNode()/2)));
+
+        // mapping from binding spot to internal forces
+        // convention (see SearchAndSetCrosslinkers): two subsequent node IDs belong to the same filament
+        int crossnodegid0 = crosslinker->Nodes()[0]->Id();
+        int crossnodegid1 = crosslinker->Nodes()[1]->Id();
+
+        // node IDs from management vector
+        int bspot0nodegid0 = (*bspot2nodes_)[0][bspotcolmap_->LID(bspotgid0)];
+
+        if(bspot0nodegid0 == crossnodegid0 || bspot0nodegid0 == crossnodegid1)
+          checkgid = bspotgid0;
+        else
+          checkgid = bspotgid1;
       }
 
       // currently, only forces (not moments) considered
@@ -2724,41 +2747,47 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const double&             
         f1(j) = (*force)[6+j];
       }
 
-      // pick the larger absolute force value among the nodes (should be identical?)
-      double F = max(f0.Norm2(), f1.Norm2());
-
-      // calculation of sign of Bell's equation: sgn
-      // * negative: koff (reactionrate) gets smaller than without a force --> the reaction gets slower
-      // * positive: koff (reactionrate) gets bigger than without a force --> the reaction gets faster; the crosslinker detaches more likely
-      // - epsilon axial in crosslinker < 0 --> elongation --> sgn = positive
-      // - epsilon axial in crosslinker > 0 --> compression --> sgn = negative
-      double eps = (dynamic_cast<DRT::ELEMENTS::Beam3*>(crosslinker))->EpsilonSgn();
+      // pick the larger absolute force value among the nodes
+      double Fbspot0 = f0.Norm2();
+      double Fbspot1 = f1.Norm2();
       double sgn = 0.0;
       if (eps<0) sgn = -1.0;
       else if (eps>0) sgn = 1.0;
+
+      // adjusted off-rate according to Bell's equation (Howard, eq 5.10, p.89)
+      double koffbspot0 = koff0 * exp(sgn * Fbspot0 * delta/kt);
+      double koffbspot1 = koff0 * exp(sgn * Fbspot1 * delta/kt);
+
+      // relate off-rates tp binding spots
+      if(bspotgid0 == checkgid)
+      {
+        (*punlink)[0][crosslid] = 1 - exp(-dt*koffbspot0);
+        (*punlink)[1][crosslid] = 1 - exp(-dt*koffbspot1);
+      }
+      else
+      {
+        (*punlink)[1][crosslid] = 1 - exp(-dt*koffbspot0);
+        (*punlink)[0][crosslid] = 1 - exp(-dt*koffbspot1);
+      }
 
 //      FILE* fp = NULL;
 //      std::ostringstream filename;
 //      filename << outputrootpath_<<"/StatMechOutput/LinkerInternalForces.dat";
 //      fp = fopen(filename.str().c_str(), "a");
 //      std::stringstream internalforces;
-//      internalforces << sgn <<" " << F <<endl;
+//      internalforces << sgn <<" " << Fnode0 << " " << Fnode1 <<endl;
 //      fprintf(fp, internalforces.str().c_str());
 //      fclose(fp);
-
-      // adjusted off-rate according to Bell's equation (Howard, eq 5.10, p.89)
-      double koff = koff0*exp(sgn*F*delta/kt);
-
-      int crosslid = crosslinkermap_->LID((int)(*element2crosslink_)[i]);
-      (*punlink)[crosslid] = 1 - exp(-dt*koff);
+//      cout<<"\n\nelement "<<crosslinker->Id()<<":"<<endl;
+//      cout<<" bspot "<<bspotgid0<<std::setprecision(8)<<": F = "<<Fbspot0<<", eps = "<<eps<<", k_off = "<<koffbspot0<<", p = "<<(*punlink)[0][crosslid]<<endl;
+//      cout<<" bspot "<<bspotgid1<<std::setprecision(8)<<": F = "<<Fbspot1<<", eps = "<<eps<<", k_off = "<<koffbspot1<<", p = "<<(*punlink)[1][crosslid]<<endl;
     }
+  }
 
   // import -> redundancy on all Procs
-  Teuchos::RCP<Epetra_Vector> punlinktrans = Teuchos::rcp(new Epetra_Vector(*transfermap_,true));
-  CommunicateVector(punlinktrans,punlink, true, true, false, false);
+  Teuchos::RCP<Epetra_MultiVector> punlinktrans = Teuchos::rcp(new Epetra_MultiVector(*transfermap_,true));
+  CommunicateMultiVector(punlinktrans,punlink, true, true, false, false);
 
-  return;
-//============================================================
   return;
 }// StatMechManager::ForceDependentOffRate
 
@@ -3948,7 +3977,7 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
         bspotxirow[i] = bspotxi[i];
         (*bspot2element_)[i] = bspot2element[i];
         DRT::Element *ele = discret_->gElement(bspot2element[i]);
-        for(int l=0;l<2;l++)
+        for(int l=0;l<ele->NumNode();l++)
           bspot2nodesrow[l][i]=ele->NodeIds()[l];
       }
       // make information on orientations and curve parameters redundant on all procs

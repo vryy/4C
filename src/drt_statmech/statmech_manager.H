@@ -401,11 +401,15 @@ protected:
                                      LINALG::Matrix<3, 1>&              ThetaXi,
                                      LINALG::Matrix<4,1>&               rQxi);
 
-  //! \brief adjust off-rate by considering forces in the crosslinker
-  void ForceDependentOffRate(const double&               dt,
-                             const double&               koff0,
-                             const Epetra_Vector&        discol,
-                             Teuchos::RCP<Epetra_Vector> punlink);
+  /*! \brief adjust off-rate by considering forces in the crosslinker
+   *  \param (in) dt  time step size
+   *  \param (in) koff0 initial chemical dissaociation rate
+   *  \param (in) discol  displacement vector in column map format
+   *  \param (in) punlink dissociation probability*/
+  void ForceDependentOffRate(const double&                    dt,
+                             const double&                    koff0,
+                             const Epetra_Vector&             discol,
+                             Teuchos::RCP<Epetra_MultiVector> punlink);
 
   /*! \brief reduce number of currently existing crosslinker elements by numtoreduce
    *  \param (in) numtoreduce number of crosslinkers by which overall number of crosslinkers is reduced
@@ -871,7 +875,7 @@ protected:
   //! \brief a vector storing the curve parameters xi of the respective binding spots (Column Map)
   Teuchos::RCP<Epetra_Vector> bspotxi_;
 
-  //! \brief a vector managing binding spots to their respective element (Row Map)
+  //! \brief a vector mapping binding spots to their respective element (Row Map)
   Teuchos::RCP<Epetra_Vector> bspot2element_;
 
   //! \brief a vector just for the sake of visual quality

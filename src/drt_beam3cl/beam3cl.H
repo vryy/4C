@@ -335,6 +335,12 @@ public:
   //!computes the number of different random numbers required in each time step for generation of stochastic forces
   int HowManyRandomNumbersINeed();
 
+  //! \brief internal force vector
+  const Teuchos::RCP<Epetra_SerialDenseVector> InternalForces() const {return internalforces_;}
+
+  //! brief epsilonnormal
+  const double& EpsilonSgn() const { return eps_;}
+
   //@}
 
 
@@ -662,9 +668,14 @@ private:
   };
   //! variable saving whether element has already been initialized (then isinit_ == true)
   bool isinit_;
-  
+
   //! reference coordinates of the interpolated nodes
   std::vector<double> xrefe_;
+
+  //! vector storing the internal force vector
+  Teuchos::RCP<Epetra_SerialDenseVector> internalforces_;
+  //! storing epsilonn(0)
+  double eps_;
   
   //------------- nodal triads and angle displacements for real nodes
 

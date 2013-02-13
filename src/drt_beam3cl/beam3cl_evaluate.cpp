@@ -588,6 +588,7 @@ inline void DRT::ELEMENTS::BeamCL::computestrain(const LINALG::Matrix<3,1>& rpri
   //convected strain gamma according to Crisfield 1999, eq. (3.4)
   gamma.MultiplyTN(Lambda,rprime);
   gamma(0) = gamma(0) - 1.0;
+
   //compute local rotational vectors phi according to Crisfield 1999,(4.6) in quaterion form
   LINALG::Matrix<4,1> phi12;
   LARGEROTATIONS::quaternionproduct(Qnew_[1],LARGEROTATIONS::inversequaternion(Qnew_[0]),phi12);
@@ -915,6 +916,9 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
      *between (2.22) and (2.23) and Romero 2004, (3.10)*/
     pushforward(Lambda[numgp],stressN,CN,stressM,CM,stressn,cn,stressm,cm);    
 
+    if((params.get<string>("internalforces","no")=="yes") && (force != NULL))
+      eps_ = gamma(0);
+
     /*computation of internal forces according to Jelenic 1999, eq. (4.3); computation split up with respect
     *to single blocks of matrix in eq. (4.3); note that Jacobi determinantn in diagonal blocks cancels out
     *determinant*/
@@ -1029,7 +1033,7 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
 
    if(stiffmatrix != NULL)
    {
-     //Transform 12x12 stiffness matrix for fiktive nodal beam back to 24x24 stiffness matrix of 4-noded beam
+     //Transform 12x12 stiffness matrix for fictitious nodal beam back to 24x24 stiffness matrix of 4-noded beam
       //upper left block & lower left block
      //auxiliary variables for storing intermediate matrices in computation of entries of stiffness matrix
      LINALG::Matrix<3,3> auxmatrix1;
@@ -1074,7 +1078,12 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
        for(int i=0;i<6;i++)
          (*force)(12*node+6*Ri+i)+=Ibp[node](Ri)*fforce(6*node+i);
    }
-    return;
+
+   // Note that we return the internal force vector of the interpolated/fictitious nodes!
+   if(params.get<string>("internalforces","no")=="yes" && force != NULL)
+     internalforces_ = Teuchos::rcp(new Epetra_SerialDenseVector(fforce));
+
+   return;
 
 } // DRT::ELEMENTS::BeamCL::b3_nlnstiffmass
 
