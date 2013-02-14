@@ -2074,6 +2074,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
    "Dynamic section for TSI solver with various coupling methods"
    );
 
+  setStringToIntegralParameter<int>("INFNORMSCALING","no",
+                               "Scale blocks of matrix with row infnorm?",
+                               yesnotuple,yesnovalue,&tsidyn);
+
   // Coupling strategy for (partitioned and monolithic) TSI solvers
   setStringToIntegralParameter<int>(
                               "COUPALGO","tsi_monolithic",
@@ -5238,6 +5242,9 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     tuple<std::string>("block0_block1_order","block1_block0_order"),
     tuple<int>(0,1),
     &list);
+
+  // damping parameter for BGS2X2
+  DoubleParameter("BGS2X2_GLOBAL_DAMPING",1.,"damping parameter for BGS2X2 preconditioner",&list);
 
   // verbosity flag (for Belos)
   IntParameter("VERBOSITY",0,"verbosity level (0=no output,... 10=extreme), for Belos only",&list);

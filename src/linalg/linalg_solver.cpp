@@ -1159,7 +1159,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(const Teuchos:
     // currently, the number of Gauss-Seidel iterations and the relaxation
     // parameter on the global level are set to 1 and 1.0, respectively
     bgslist.set("global_iter",1);
-    bgslist.set("global_omega",1.0);
+    bgslist.set("global_omega",inparams.get<double>("BGS2X2_GLOBAL_DAMPING"));
 
     // the order of blocks in the given EpetraOperator can be changed in the
     // Gauss-Seidel procedure,
@@ -1170,9 +1170,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(const Teuchos:
     // currently, the number of Richardson iteratios and the relaxation
     // parameter on the individual block level are set to 1 and 1.0, respectively
     bgslist.set("block1_iter",1);
-    bgslist.set("block1_omega",1.0);
+    bgslist.set("block1_omega",0.8);
     bgslist.set("block2_iter",1);
-    bgslist.set("block2_omega",1.0);
+    bgslist.set("block2_omega",0.8);
   }
 
   return outparams;
@@ -1784,7 +1784,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       // currently, the number of Gauss-Seidel iterations and the relaxation
       // parameter on the global level are set to 1 and 1.0, respectively
       bgslist.set("global_iter",1);
-      bgslist.set("global_omega",1.0);
+      bgslist.set("global_omega",inparams.get<double>("BGS2X2_GLOBAL_DAMPING"));
 
       // the order of blocks in the given EpetraOperator can be changed in the
       // Gauss-Seidel procedure,
@@ -1795,9 +1795,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       // currently, the number of Richardson iteratios and the relaxation
       // parameter on the individual block level are set to 1 and 1.0, respectively
       bgslist.set("block1_iter",1);
-      bgslist.set("block1_omega",1.0);
+      bgslist.set("block1_omega",0.8);
       bgslist.set("block2_iter",1);
-      bgslist.set("block2_omega",1.0);
+      bgslist.set("block2_omega",0.8);
     }
   }
   break;
