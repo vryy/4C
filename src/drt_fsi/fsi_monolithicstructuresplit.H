@@ -47,8 +47,10 @@ namespace FSI
     class MatrixColTransform;
     class MatrixRowColTransform;
   }
+}
 
-
+namespace FSI
+{
   /// monolithic FSI algorithm with overlapping interface equations
   /*!
 

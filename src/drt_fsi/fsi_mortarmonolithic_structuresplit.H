@@ -20,7 +20,6 @@ Maintainer: Matthias Mayr
 
 #include "../drt_inpar/inpar_fsi.H"
 #include "fsi_monolithic.H"
-#include "fsi_overlapprec.H"
 
 // forward declarations
 namespace ADAPTER
@@ -31,6 +30,8 @@ namespace ADAPTER
 
 namespace FSI
 {
+  class OverlappingBlockMatrix;
+
   namespace UTILS
   {
     class MatrixColTransform;

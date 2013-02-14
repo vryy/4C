@@ -22,12 +22,10 @@ Maintainer: Matthias Mayr
 #include "../drt_inpar/inpar_fsi.H"
 #include "fsi_overlapprec.H"
 
+// forward declarations
 namespace FSI
 {
-  // forward declarations
-
   class OverlappingBlockMatrix;
-  
   
   namespace UTILS
   {
@@ -35,8 +33,10 @@ namespace FSI
     class MatrixColTransform;
     class MatrixRowColTransform;
   }
+}
 
-
+namespace FSI
+{
   /// monolithic FSI algorithm with overlapping interface equations
   /*!
 

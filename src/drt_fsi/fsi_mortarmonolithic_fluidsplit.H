@@ -19,7 +19,6 @@ Maintainer: Matthias Mayr
 #define FSI_MORTARMONOLITHICFLUID_H
 
 #include "fsi_monolithic.H"
-#include "fsi_overlapprec.H"
 #include "../drt_inpar/inpar_fsi.H"
 
 // forward declarations
@@ -31,6 +30,8 @@ namespace ADAPTER
 
 namespace FSI
 {
+  class OverlappingBlockMatrix;
+
   namespace UTILS
   {
     class MatrixColTransform;
