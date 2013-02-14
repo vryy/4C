@@ -22,6 +22,7 @@ Maintainer: Mirella Coroneo
 #include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_adapter/adapter_scatra_base_algorithm.H"
 #include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 
 //#define SCATRABLOCKMATRIXMERGE
 

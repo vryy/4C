@@ -21,15 +21,21 @@ Maintainer: Matthias Mayr
 #include "fsi_matrixtransform.H"
 #include "fsi_debugwriter.H"
 #include "fsi_statustest.H"
+#include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_monolithic_linearsystem.H"
 #include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_adapter/ad_str_structure.H"
+#include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
 #include "../drt_ale/ale_utils_mapextractor.H"
+
+#include "fsi_nox_group.H"
 
 #include "../drt_constraint/constraint_manager.H"
 
@@ -244,6 +250,12 @@ void FSI::MonolithicFluidSplit::SetupSystem()
   }
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> FSI::MonolithicFluidSplit::SystemMatrix() const
+{
+  return systemmatrix_;
+}
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

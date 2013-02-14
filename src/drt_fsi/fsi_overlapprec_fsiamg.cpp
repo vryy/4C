@@ -3,6 +3,8 @@
 #include "fsi_overlapprec_fsiamg.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid.H"
+#include "../linalg/linalg_precond.H"
+#include "../linalg/linalg_solver.H"
 
 // needed for dserror nested parallelism AMG FSI
 #include "../drt_lib/drt_globalproblem.H"

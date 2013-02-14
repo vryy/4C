@@ -4,8 +4,6 @@
 #define FSI_OVERLAPPREC_H
 
 #include "../linalg/linalg_blocksparsematrix.H"
-#include "../linalg/linalg_precond.H"
-#include "../linalg/linalg_solver.H"
 
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_ale/ale.H"
@@ -23,10 +21,10 @@ namespace ADAPTER
 
 namespace FSI
 {
-namespace UTILS
-{
-  class MonolithicDebugWriter;
-}
+  namespace UTILS
+  {
+    class MonolithicDebugWriter;
+  }
 }
 
 namespace FSI

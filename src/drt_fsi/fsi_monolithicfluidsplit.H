@@ -20,9 +20,28 @@ Maintainer: Matthias Mayr
 
 #include "fsi_monolithic.H"
 #include "../drt_inpar/inpar_fsi.H"
-#include "fsi_overlapprec.H"
 
 // forward declarations
+namespace ADAPTER
+{
+  class Structure;
+  class Fluid;
+}
+
+namespace NOX
+{
+  namespace FSI
+  {
+    class AdaptiveNewtonNormF;
+    class Group;
+  }
+}
+
+namespace LINALG
+{
+  class BlockSparseMatrixBase;
+}
+
 namespace FSI
 {
   class OverlappingBlockMatrix;
@@ -104,7 +123,7 @@ namespace FSI
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
 
     /// the composed system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const;
 
     /// apply infnorm scaling to linear block system
     virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);

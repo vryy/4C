@@ -27,6 +27,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_lib/drt_condition_selector.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_solver.H"
 
 
 #include "../drt_lib/drt_globalproblem.H"
@@ -34,6 +35,7 @@ Maintainers: Lena Yoshihara & Volker Gravemeier
 #include "../drt_lib/drt_colors.H"
 
 #include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 
 #include "../drt_scatra/passive_scatra_algorithm.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
@@ -155,7 +157,10 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
       break;
     }
     default:
+    {
       dserror("Unknown coupling FSI algorithm");
+      break;
+    }
   }
 
   //---------------------------------------------------------------------

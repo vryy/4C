@@ -7,6 +7,9 @@
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_lib/drt_discret.H"
 
+#include "../linalg/linalg_precond.H"
+#include "../linalg/linalg_solver.H"
+
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 FSI::BlockPreconditioningMatrix::BlockPreconditioningMatrix(Teuchos::RCP<UTILS::MonolithicDebugWriter> pcdbg,

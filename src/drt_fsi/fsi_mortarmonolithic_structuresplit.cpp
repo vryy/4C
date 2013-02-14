@@ -22,6 +22,7 @@ Maintainer: Matthias Mayr
 
 #include "fsi_mortarmonolithic_structuresplit.H"
 #include "fsi_debugwriter.H"
+#include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
 #include "fsi_monolithic_linearsystem.H"
@@ -280,6 +281,13 @@ void FSI::MortarMonolithicStructureSplit::SetupSystem()
     }
     notsetup_=false;
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> FSI::MortarMonolithicStructureSplit::SystemMatrix() const
+{
+  return systemmatrix_;
 }
 
 /*----------------------------------------------------------------------*/

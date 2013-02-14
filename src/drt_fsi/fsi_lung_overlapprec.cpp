@@ -21,6 +21,8 @@ Maintainer: Lena Yoshihara
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_fluid.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../linalg/linalg_precond.H"
+#include "../linalg/linalg_solver.H"
 
 // /*----------------------------------------------------------------------*
 //  *----------------------------------------------------------------------*/

@@ -19,6 +19,7 @@ Maintainer: Matthias Mayr
 
 #include "fsi_monolithicstructuresplit.H"
 #include "fsi_matrixtransform.H"
+#include "fsi_overlapprec.H"
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
 #include "../drt_lib/drt_colors.H"
@@ -264,6 +265,13 @@ void FSI::MonolithicStructureSplit::SetupSystem()
     dserror("Unsupported type of monolithic solver");
   break;
   }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+Teuchos::RCP<LINALG::BlockSparseMatrixBase> FSI::MonolithicStructureSplit::SystemMatrix() const
+{
+  return systemmatrix_;
 }
 
 /*----------------------------------------------------------------------*/

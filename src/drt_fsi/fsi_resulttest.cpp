@@ -22,6 +22,7 @@ Maintainer: Matthias Mayr
 #include "fsi_fluidfluidmonolithic_structuresplit_nonox.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_discret.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 
 
 /*----------------------------------------------------------------------*/

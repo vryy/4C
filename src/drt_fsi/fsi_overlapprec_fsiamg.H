@@ -613,7 +613,7 @@ namespace FSI
     Teuchos::ParameterList               fparams_;
     mutable std::vector<MLAPI::Operator> Aff_;
     std::vector<Teuchos::RCP<MLAPI::InverseOperator> > Sff_;
-    mutable vector<MLAPI::Operator>      Schurff_;
+    mutable std::vector<MLAPI::Operator> Schurff_;
     std::vector<MLAPI::Operator>         Pff_;
     std::vector<MLAPI::Operator>         Rff_;
 

@@ -37,6 +37,11 @@ namespace NOX
   }
 }
 
+namespace LINALG
+{
+  class BlockSparseMatrixBase;
+}
+
 namespace FSI
 {
   class OverlappingBlockMatrix;
@@ -101,7 +106,7 @@ namespace FSI
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig);
 
     /// the composed system matrix
-    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const { return systemmatrix_; }
+    Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const;
 
     /// apply infnorm scaling to linear block system
     virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);

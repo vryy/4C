@@ -29,6 +29,8 @@
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"
 
+#include "../linalg/linalg_precond.H"
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 FSI::MonolithicBaseFS::MonolithicBaseFS(const Epetra_Comm& comm,
