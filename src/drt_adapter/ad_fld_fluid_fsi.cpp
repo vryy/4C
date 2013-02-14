@@ -206,7 +206,7 @@ void ADAPTER::FluidFSI::DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx)
 
 #ifdef DEBUG
   // check, whether maps are the same
-  if (! fcx->Map().PointSameAs(veln->Map()))   { dserror("Maps do not match, but they have to."); }
+  if (! fcx->Map().PointSameAs(veln->Map()))  { dserror("Maps do not match, but they have to."); }
 #endif
 
   /*
@@ -233,7 +233,7 @@ void ADAPTER::FluidFSI::DisplacementToVelocity(
 
 #ifdef DEBUG
   // check, whether maps are the same
-  if (! fcx->Map().PointSameAs(veln->Map()))   { dserror("Maps do not match, but they have to."); }
+  if (! fcx->Map().PointSameAs(veln->Map()))    { dserror("Maps do not match, but they have to."); }
   if (! fcx->Map().PointSameAs(ddgpred->Map())) { dserror("Maps do not match, but they have to."); }
   if (! fcx->Map().PointSameAs(dugpred->Map())) { dserror("Maps do not match, but they have to."); }
 #endif
@@ -263,7 +263,7 @@ void ADAPTER::FluidFSI::VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx)
 
 #ifdef DEBUG
   // check, whether maps are the same
-  if (! fcx->Map().PointSameAs(veln->Map()))   { dserror("Maps do not match, but they have to."); }
+  if (! fcx->Map().PointSameAs(veln->Map()))  { dserror("Maps do not match, but they have to."); }
 #endif
 
   /*
@@ -309,7 +309,6 @@ void ADAPTER::FluidFSI::VelocityToDisplacement(
   fcx->Update(Dt(), *veln, tau, *dugpred, tau);
   fcx->Update(-1.0, *ddgpred, 1.0);
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

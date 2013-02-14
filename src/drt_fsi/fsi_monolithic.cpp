@@ -202,6 +202,13 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToAleInterface(Teuchos::RC
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluidInterface(Teuchos::RCP<Epetra_Vector> iv) const
+{
+  return icoupfa_->SlaveToMaster(iv);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const
 {
   return coupsa_->MasterToSlave(iv);
@@ -248,6 +255,13 @@ Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::FluidToAleInterface(Teuchos::RC
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+Teuchos::RCP<Epetra_Vector> FSI::MonolithicBase::AleToFluidInterface(Teuchos::RCP<const Epetra_Vector> iv) const
+{
+  return icoupfa_->SlaveToMaster(iv);
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
                             const Teuchos::ParameterList& timeparams)
   : MonolithicBase(comm,timeparams)
@@ -267,9 +281,8 @@ FSI::Monolithic::Monolithic(const Epetra_Comm& comm,
 
   firstcall_ = true;
 
-  // "Initialize" interface solution increments due to single field predictors
+  // "Initialize" interface solution increments due to structural predictor
   ddgpred_ = Teuchos::null;
-  dugpred_ = Teuchos::null;
 }
 
 

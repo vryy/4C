@@ -131,8 +131,11 @@ namespace FSI
 
     //! Extract the three field vectors from a given composed vector
     //!
-    //! The condensed structural and ale degrees of freedom have to be recovered
-    //! from the fluid solution using a suitable velocity-displacement conversion.
+    //! The condensed ale degrees of freedom have to be recovered
+    //! from the fluid solution using a suitable velocity-displacement
+    //! conversion. After that, the ale solution increment is projected onto the
+    //! structure where a possible structural predictor has to
+    //! be considered.
     //!
     //! We are dealing with NOX here, so we get absolute values. x is the sum of
     //! all increments up to this point.

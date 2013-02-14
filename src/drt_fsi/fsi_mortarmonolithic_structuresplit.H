@@ -157,8 +157,11 @@ namespace FSI
 
     //! Extract the three field vectors from a given composed vector
     //!
-    //! The condensed structural and ale degrees of freedom have to be recovered
-    //! from the fluid solution using a suitable velocity-displacement conversion.
+    //! The condensed ale degrees of freedom have to be recovered
+    //! from the fluid solution using a suitable velocity-displacement
+    //! conversion. After that, the ale solution increment is projected onto the
+    //! structure in mortar style where a possible structural predictor has to
+    //! be considered.
     //!
     //! We are dealing with NOX here, so we get absolute values. x is the sum of
     //! all increments up to this point.
@@ -186,14 +189,11 @@ namespace FSI
     /// block system matrix
     Teuchos::RCP<OverlappingBlockMatrix> systemmatrix_;
 
-    /// coupling of fluid and ale (interface only)
-    Teuchos::RCP< ::ADAPTER::Coupling> icoupfa_;
-
     /// coupling of fluid and ale at the free surface
     Teuchos::RCP< ::ADAPTER::Coupling> fscoupfa_;
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP< ::ADAPTER::CouplingMortar>               coupsfm_;
+    Teuchos::RCP< ::ADAPTER::CouplingMortar> coupsfm_;
 
     ///communicator
     const Epetra_Comm& comm_;

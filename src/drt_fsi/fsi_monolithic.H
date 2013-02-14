@@ -145,6 +145,7 @@ namespace UTILS
     virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> FluidToAleInterface(Teuchos::RCP<Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> AleToFluidInterface(Teuchos::RCP<Epetra_Vector> iv) const;
 
     virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> AleToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
@@ -152,6 +153,7 @@ namespace UTILS
     virtual Teuchos::RCP<Epetra_Vector> FluidToStruct(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> AleToFluid(Teuchos::RCP<const Epetra_Vector> iv) const;
     virtual Teuchos::RCP<Epetra_Vector> FluidToAleInterface(Teuchos::RCP<const Epetra_Vector> iv) const;
+    virtual Teuchos::RCP<Epetra_Vector> AleToFluidInterface(Teuchos::RCP<const Epetra_Vector> iv) const;
 
     //@}
 
@@ -358,9 +360,6 @@ namespace UTILS
 
     //! structural displacement increment of interface DOFs due to predictor or inhomogeneous DBCs
     Teuchos::RCP<Epetra_Vector> ddgpred_;
-
-    //! fluid velocity increment of interface DOFs due to predictor or inhomogeneous DBCs
-    Teuchos::RCP<Epetra_Vector> dugpred_;
 
     //@}
 

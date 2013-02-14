@@ -160,8 +160,10 @@ namespace FSI
 
     //! Extract the three field vectors from a given composed vector
     //!
-    //! The condensed fluid and ale degrees of freedom have to be recovered
-    //! from the structure solution using a suitable displacement-velocity
+    //! The condensed ale degrees of freedom have to be recovered
+    //! from the structure solution by a mortar mapping across the interface.
+    //! The condensed fluid degrees of freedom have to be recovered
+    //! from the ale solution using a suitable displacement-velocity
     //! conversion.
     //!
     //! We are dealing with NOX here, so we get absolute values. x is the sum of
@@ -203,14 +205,11 @@ namespace FSI
     /// @name Matrix block transform objects
     /// Handle row and column map exchange for matrix blocks
 
-    /// coupling of fluid and ale (interface only)
-    Teuchos::RCP< ::ADAPTER::Coupling> icoupfa_;
-
     /// coupling of fluid and ale at the free surface
     Teuchos::RCP< ::ADAPTER::Coupling> fscoupfa_;
 
     /// coupling of structure and fluid at the interface
-    Teuchos::RCP< ::ADAPTER::CouplingMortar>               coupsfm_;
+    Teuchos::RCP< ::ADAPTER::CouplingMortar> coupsfm_;
 
     Teuchos::RCP<UTILS::MatrixColTransform> aigtransform_;
     Teuchos::RCP<UTILS::MatrixColTransform> fmiitransform_;

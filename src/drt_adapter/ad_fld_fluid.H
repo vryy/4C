@@ -489,18 +489,18 @@ namespace ADAPTER {
         Teuchos::RCP<Epetra_Vector> fcx,      ///< fluid displacement step increment at interface
         Teuchos::RCP<Epetra_Vector> ddgpred,  ///< displacement increment due to structural predictor
         Teuchos::RCP<Epetra_Vector> dugpred   ///< velocity increment due to fluid predictor
-    ){ dserror("Not implemented in base class."); }
+    ) = 0;
 
     /// convert the fluid unknown to Delta d(n+1,i+1) at the interface
     virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx) = 0;
 
-    /// Conversion of velocity to displacement at the interface considering predictors or inhomogeneous DBCs
+		/// Conversion of velocity to displacement at the interface considering predictors or inhomogeneous DBCs
     virtual void VelocityToDisplacement(
         Teuchos::RCP<Epetra_Vector> fcx,      ///< fluid velocity step increment at interface
         Teuchos::RCP<Epetra_Vector> ddgpred,  ///< displacement increment due to structural predictor
         Teuchos::RCP<Epetra_Vector> dugpred   ///< velocity increment due to fluid predictor
-    ){ dserror("Not implemented in base class."); }
-
+    ) = 0;
+    
     /// convert Delta d(n+1,i+1) to the fluid unknown at the free surface
     virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) = 0;
 

@@ -143,8 +143,10 @@ namespace FSI
 
     //! Extract the three field vectors from a given composed vector
     //!
-    //! The condensed fluid and ale degrees of freedom have to be recovered
-    //! from the structure solution using a suitable displacement-velocity
+    //! The condensed ale degrees of freedom have to be recovered
+    //! from the structure solution by a mapping across the interface.
+    //! The condensed fluid degrees of freedom have to be recovered
+    //! from the ale solution using a suitable displacement-velocity
     //! conversion.
     //!
     //! We are dealing with NOX here, so we get absolute values. x is the sum of

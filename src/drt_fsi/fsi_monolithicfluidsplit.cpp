@@ -284,11 +284,6 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
     ddgpred_ = Teuchos::rcp(new Epetra_Vector(*StructureField()->ExtractInterfaceDispnp()));
     ddgpred_->Update(-1.0, *StructureField()->ExtractInterfaceDispn(), 1.0);
 
-    // store fluid interface velocity increment due to predictor
-    // or inhomogeneous Dirichlet boundary conditions
-    dugpred_ = Teuchos::rcp(new Epetra_Vector(*FluidField().ExtractInterfaceVelnp()));
-    dugpred_->Update(-1.0, *fveln, 1.0);
-
     // get fluid matrix
     const Teuchos::RCP<LINALG::BlockSparseMatrixBase> blockf = FluidField().BlockSystemMatrix();
 
@@ -322,8 +317,6 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
      * (2)  - (1-stiparam)/(1-ftiparam) / tau * F_{\Gamma\Gamma} * \Delta d_{\Gamma,p}
      *
      * (3)  - (1-stiparam)/(1-ftiparam) * F^{G}_{\Gamma\Gamma} * \Delta d_{\Gamma,p}
-     *
-     * (4)  + (1-stiparam)/(1-ftiparam) * F_{\Gamma\Gamma} * \Delta u_{\Gamma,p}
      *
      * Remarks on all terms:
      * +  tau: time scaling factor for interface time integration (tau = 1/FluidField().TimeScaling())
@@ -375,23 +368,6 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
       Extractor().AddVector(*rhs,0,f);
     }
     // ----------end of term 3
-
-    // ----------addressing term 4:
-    rhs = Teuchos::rcp(new Epetra_Vector(fgg.RowMap(),true));
-
-    fgg.Apply(*dugpred_,*rhs);
-
-    rhs->Scale((1.0-stiparam)/(1.0-ftiparam));
-    rhs = StructureField()->Interface()->InsertFSICondVector(FluidToStruct(rhs));
-
-    if (StructureField()->GetSTCAlgo() == INPAR::STR::stc_currsym)
-    {
-      Teuchos::RCP<LINALG::SparseMatrix> stcmat = StructureField()->GetSTCMat();
-      stcmat->Multiply(true,*rhs,*rhs);
-    }
-
-    Extractor().AddVector(*rhs,0,f);
-    // ----------end of term 4
     // ----------end of structural interface DOFs
 
     // ---------- inner fluid DOFs
@@ -399,13 +375,11 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
      *
      * rhs_firstnewtonstep =
      *
-     * (1)  + dt / tau F_{I \Gamma} u^{n}_{\Gamma}
+     * (1)  + dt / tau * F_{I \Gamma} * u^{n}_{\Gamma}
      *
      * (2)  - 1 / tau F_{I \Gamma} * \Delta d_{\Gamma,p}
      *
      * (3)  - F^{G}_{I \Gamma} * \Delta d_{\Gamma,p}
-     *
-     * (4)  + F_{I \Gamma} * \Delta u_{\Gamma,p}
      *
      * Remarks on all terms:
      * +  tau: time scaling factor for interface time integration (tau = 1/FluidField().TimeScaling())
@@ -458,18 +432,6 @@ void FSI::MonolithicFluidSplit::SetupRHS(Epetra_Vector& f, bool firstcall)
       Extractor().AddVector(*rhs,1,f);
     }
     // ----------end of term 3
-
-    // ----------addressing term 4
-    rhs = Teuchos::rcp(new Epetra_Vector(fig.RangeMap(),true));
-
-    fig.Apply(*dugpred_,*rhs);
-
-#ifdef FLUIDSPLITAMG
-    rhs = FluidField().Interface()->InsertOtherVector(rhs);
-#endif
-
-    Extractor().AddVector(*rhs,1,f);
-    // ----------end of term 4
     // ----------end of inner fluid DOFs
 
     // ---------- inner ale DOFs
@@ -1352,48 +1314,49 @@ void FSI::MonolithicFluidSplit::ExtractFieldVectors(Teuchos::RCP<const Epetra_Ve
 
 #ifdef DEBUG
   if(ddgpred_ == Teuchos::null) { dserror("Vector 'ddgpred_' has not been initialized properly."); }
-  if(dugpred_ == Teuchos::null) { dserror("Vector 'dugpred_' has not been initialized properly."); }
 #endif
 
-  // We have overlap at the interface. Thus we need the interface part of the
-  // structure vector and append it to the fluid and ale vector. (With the
-  // right translation.)
-
+  // ---------------------------------------------------------------------------
+  // process structure unknowns
+  // ---------------------------------------------------------------------------
+  // extract structure solution increment from NOX increment
   sx = Extractor().ExtractVector(x,0);
-  Teuchos::RCP<Epetra_Vector> scx = StructureField()->Interface()->ExtractFSICondVector(sx);
 
+  // ---------------------------------------------------------------------------
+  // process ale unknowns
+  // ---------------------------------------------------------------------------
+  // extract inner ALE solution increment from NOX increment
+  Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
+
+  // convert structure solution increment to ALE solution increment at the interface
+  Teuchos::RCP<Epetra_Vector> scx = StructureField()->Interface()->ExtractFSICondVector(sx);
+  scx->Update(1.0, *ddgpred_, 1.0);
+  Teuchos::RCP<const Epetra_Vector> acx = StructToAle(scx);
+
+  // put inner and interface ALE solution increments together
+  Teuchos::RCP<Epetra_Vector> a = AleField().Interface()->InsertOtherVector(aox);
+  AleField().Interface()->InsertFSICondVector(acx, a);
+  ax = a;
+
+  // ---------------------------------------------------------------------------
   // process fluid unknowns
+  // ---------------------------------------------------------------------------
+  // extract inner fluid solution increment from NOX increment
   Teuchos::RCP<const Epetra_Vector> fox = Extractor().ExtractVector(x,1);
 #ifdef FLUIDSPLITAMG
   fox = FluidField().Interface()->ExtractOtherVector(fox);
 #endif
-  Teuchos::RCP<Epetra_Vector> fcx = StructToFluid(scx);
 
-  // consider fluid predictor increment only in first Newton iteration
-  if (firstcall_)
-  {
-    FluidField().DisplacementToVelocity(fcx,StructToFluid(ddgpred_),dugpred_);
-  }
-  else
-  {
-    Teuchos::RCP<Epetra_Vector> zeros = Teuchos::rcp(new Epetra_Vector(fcx->Map(),true));
-    FluidField().DisplacementToVelocity(fcx,StructToFluid(ddgpred_),zeros);
-//    FluidField().DisplacementToVelocity(fcx);
-  }
+  // convert ALE solution increment to fluid solution increment at the interface
+  Teuchos::RCP<Epetra_Vector> fcx = AleToFluidInterface(acx);
+  FluidField().DisplacementToVelocity(fcx);
 
+  // put inner and interface fluid solution increments together
   Teuchos::RCP<Epetra_Vector> f = FluidField().Interface()->InsertOtherVector(fox);
   FluidField().Interface()->InsertFSICondVector(fcx, f);
   fx = f;
 
-  // process ale unknowns
-  scx->Update(1.0,*ddgpred_,1.0);
-
-  Teuchos::RCP<const Epetra_Vector> aox = Extractor().ExtractVector(x,2);
-  Teuchos::RCP<Epetra_Vector> acx = StructToAle(scx);
-
-  Teuchos::RCP<Epetra_Vector> a = AleField().Interface()->InsertOtherVector(aox);
-  AleField().Interface()->InsertFSICondVector(acx, a);
-  ax = a;
+  // ---------------------------------------------------------------------------
 
   // Store field vectors to know them later on as previous quantities
   // inner ale displacement increment

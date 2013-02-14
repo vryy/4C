@@ -182,7 +182,9 @@ public:
   virtual void ApplyMeshVelocity(Teuchos::RCP<const Epetra_Vector> gridvel) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
   virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx){ dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+  virtual void DisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx, Teuchos::RCP<Epetra_Vector> ddgpred, Teuchos::RCP<Epetra_Vector> dugpred){ dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
   virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx){ dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+  virtual void VelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx, Teuchos::RCP<Epetra_Vector> ddgpred, Teuchos::RCP<Epetra_Vector> dugpred){ dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
   virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
   virtual void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx) { dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
