@@ -220,6 +220,14 @@ namespace TSI
 
     //@}
 
+
+    /// apply infnorm scaling to linear block system
+    virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
+
+    /// undo infnorm scaling from scaled solution
+    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
+
+
   protected:
 
     //! @name Time loop building blocks
@@ -390,6 +398,16 @@ namespace TSI
     Teuchos::RCP<LINALG::SparseMatrix> invdtherm_;  // stiffness block K_ss (needed for LM)
 
     //@}
+
+    /// @name infnorm scaling
+
+    Teuchos::RCP<Epetra_Vector> srowsum_;
+    Teuchos::RCP<Epetra_Vector> scolsum_;
+    Teuchos::RCP<Epetra_Vector> trowsum_;
+    Teuchos::RCP<Epetra_Vector> tcolsum_;
+
+    //@}
+
 
   }; // Monolithic
 

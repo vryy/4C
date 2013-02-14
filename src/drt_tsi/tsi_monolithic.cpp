@@ -950,6 +950,8 @@ void TSI::Monolithic::LinearSolve()
   { std::cout << " DBC applied to TSI system on proc" << Comm().MyPID() <<  std::endl; }
 #endif
 
+  ScaleSystem(*systemmatrix_,*rhs_);
+
   solver_->Solve(
              systemmatrix_->EpetraOperator(),
              iterinc_,
@@ -957,6 +959,8 @@ void TSI::Monolithic::LinearSolve()
              true,
              iter_==1
              );
+
+  UnscaleSolution(*systemmatrix_,*iterinc_,*rhs_);
 
 #ifndef TFSI
   if ( Comm().MyPID()==0 ) { std::cout << " Solved" <<  std::endl; }
@@ -2223,6 +2227,105 @@ void TSI::Monolithic::AssembleThermContCondition(
   return;
 
 }  // AssembleThermContCondition()
+
+
+/*----------------------------------------------------------------------*/
+void TSI::Monolithic::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
+{
+  //should we scale the system?
+  const Teuchos::ParameterList& tsidyn   = DRT::Problem::Instance()->TSIDynamicParams();
+  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(tsidyn,"INFNORMSCALING");
+
+  if (scaling_infnorm)
+  {
+    // The matrices are modified here. Do we have to change them back later on?
+    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0,0).EpetraMatrix();
+    srowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
+    scolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
+    A->InvRowSums(*srowsum_);
+    A->InvColSums(*scolsum_);
+    if (A->LeftScale(*srowsum_) or
+        A->RightScale(*scolsum_) or
+        mat.Matrix(0,1).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(1,0).EpetraMatrix()->RightScale(*scolsum_))
+      dserror("structure scaling failed");
+
+    A = mat.Matrix(1,1).EpetraMatrix();
+    trowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
+    tcolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
+    A->InvRowSums(*trowsum_);
+    A->InvColSums(*tcolsum_);
+    if (A->LeftScale(*trowsum_) or
+        A->RightScale(*tcolsum_) or
+        mat.Matrix(1,0).EpetraMatrix()->LeftScale(*trowsum_) or
+        mat.Matrix(0,1).EpetraMatrix()->RightScale(*tcolsum_))
+      dserror("ale scaling failed");
+
+    Teuchos::RCP<Epetra_Vector> sx = Extractor()->ExtractVector(b,0);
+    Teuchos::RCP<Epetra_Vector> tx = Extractor()->ExtractVector(b,1);
+
+    if (sx->Multiply(1.0, *srowsum_, *sx, 0.0))
+      dserror("structure scaling failed");
+    if (tx->Multiply(1.0, *trowsum_, *tx, 0.0))
+      dserror("ale scaling failed");
+
+    Extractor()->InsertVector(*sx,0,b);
+    Extractor()->InsertVector(*tx,1,b);
+  }
+}
+
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void TSI::Monolithic::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b)
+{
+  const Teuchos::ParameterList& tsidyn   = DRT::Problem::Instance()->TSIDynamicParams();
+  const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(tsidyn,"INFNORMSCALING");
+
+  if (scaling_infnorm)
+  {
+    Teuchos::RCP<Epetra_Vector> sy = Extractor()->ExtractVector(x,0);
+    Teuchos::RCP<Epetra_Vector> ty = Extractor()->ExtractVector(x,1);
+
+    if (sy->Multiply(1.0, *scolsum_, *sy, 0.0))
+      dserror("structure scaling failed");
+    if (ty->Multiply(1.0, *tcolsum_, *ty, 0.0))
+      dserror("thermo scaling failed");
+
+    Extractor()->InsertVector(*sy,0,x);
+    Extractor()->InsertVector(*ty,1,x);
+
+    Teuchos::RCP<Epetra_Vector> sx = Extractor()->ExtractVector(b,0);
+    Teuchos::RCP<Epetra_Vector> tx = Extractor()->ExtractVector(b,1);
+
+    if (sx->ReciprocalMultiply(1.0, *srowsum_, *sx, 0.0))
+      dserror("structure scaling failed");
+    if (tx->ReciprocalMultiply(1.0, *trowsum_, *tx, 0.0))
+      dserror("ale scaling failed");
+
+    Extractor()->InsertVector(*sx,0,b);
+    Extractor()->InsertVector(*tx,1,b);
+
+    Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0,0).EpetraMatrix();
+    srowsum_->Reciprocal(*srowsum_);
+    scolsum_->Reciprocal(*scolsum_);
+    if (A->LeftScale(*srowsum_) or
+        A->RightScale(*scolsum_) or
+        mat.Matrix(0,1).EpetraMatrix()->LeftScale(*srowsum_) or
+        mat.Matrix(1,0).EpetraMatrix()->RightScale(*scolsum_))
+      dserror("structure scaling failed");
+
+    A = mat.Matrix(1,1).EpetraMatrix();
+    trowsum_->Reciprocal(*trowsum_);
+    tcolsum_->Reciprocal(*tcolsum_);
+    if (A->LeftScale(*trowsum_) or
+        A->RightScale(*tcolsum_) or
+        mat.Matrix(1,0).EpetraMatrix()->LeftScale(*trowsum_) or
+        mat.Matrix(0,1).EpetraMatrix()->RightScale(*tcolsum_))
+      dserror("thermo scaling failed");
+
+  }
+}
 
 
 /*----------------------------------------------------------------------*/
