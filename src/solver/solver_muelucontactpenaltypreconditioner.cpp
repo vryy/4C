@@ -201,7 +201,9 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPenaltyPreconditioner::Setup
   // create factories
 
   // prepare (filtered) A Factory
-  Teuchos::RCP<SingleLevelFactoryBase> segAFact = Teuchos::rcp(new MueLu::ContactAFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("A", NULL, map_extractor));
+  Teuchos::RCP<SingleLevelFactoryBase> segAFact = Teuchos::rcp(new MueLu::ContactAFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>(/*"A", NULL, map_extractor*/));
+  // TODO fix me
+  dserror("TODO: fix segAFact. line 206 in solver_muelucontactpenaltypreconditioner.cpp");
 
   // Coalesce and drop factory with constant number of Dofs per freedom
   Teuchos::RCP<CoalesceDropFactory> dropFact = Teuchos::rcp(new CoalesceDropFactory(/*segAFact*//*,nspFact*/));

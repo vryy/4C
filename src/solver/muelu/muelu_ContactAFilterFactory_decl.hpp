@@ -10,6 +10,11 @@
 
 #ifdef HAVE_MueLu
 
+//#include <Xpetra_CrsMatrixWrap_fwd.hpp>
+#include <Xpetra_VectorFactory_fwd.hpp>
+#include <Xpetra_Matrix_fwd.hpp>
+#include <Xpetra_MatrixFactory_fwd.hpp>
+
 #include "MueLu_ConfigDefs.hpp"
 #include "MueLu_SingleLevelFactoryBase.hpp"
 #include "MueLu_ThresholdAFilterFactory_fwd.hpp"
@@ -19,7 +24,7 @@
 namespace MueLu {
 
 
-#if 0
+#if 1
 /*!
   @class ContactAFilterFactory class.
   @brief special factory for segregation master/slave Dofs in matrix A for contact/meshtying problems
@@ -38,10 +43,14 @@ public:
   //@{
 
   //! Constructor.
-  ContactAFilterFactory(const std::string& ename, const FactoryBase* fac);
+  ContactAFilterFactory(/*const std::string& ename, const FactoryBase* fac*/);
 
   //! Destructor.
   virtual ~ContactAFilterFactory();
+
+  //! define valid factory parameters
+  RCP<const ParameterList> GetValidParameterList(const ParameterList& paramList = ParameterList()) const;
+
   //@}
 
   //! Input
@@ -63,8 +72,8 @@ private:
 
   //bool IsGlobalId(Teuchos::RCP<const Map> & map, GlobalOrdinal gid) const;
 
-  std::string        varName_;   ///< name of input and output variable
-  const FactoryBase* factory_;   ///< generating factory of input variable
+  //std::string        varName_;   ///< name of input and output variable
+  //const FactoryBase* factory_;   ///< generating factory of input variable
   //const Scalar       threshold_; ///< threshold parameter
 
   //RCP<const MapExtractorClass> mapextractor_;   ///< user given map extractor (for finest level only)

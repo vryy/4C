@@ -25,6 +25,8 @@
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 #include <MueLu_UseShortNames.hpp>
 
+#include "muelu/muelu_ContactAFilterFactory_fwd.hpp"
+
 namespace LINALG
 {
   namespace SOLVER

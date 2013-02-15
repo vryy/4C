@@ -201,7 +201,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
 
   // transform Epetra maps to Xpetra maps (if necessary)
   Teuchos::RCP<const Map> xfullmap = A->getRowMap(); // full map (MasterDofMap + SalveDofMap + InnerDofMap)
-  //Teuchos::RCP<Xpetra::EpetraMap> xMasterDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epMasterDofMap ));
+  Teuchos::RCP<Xpetra::EpetraMap> xMasterDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epMasterDofMap ));
   Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
   //Teuchos::RCP<Xpetra::EpetraMap> xActiveDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epActiveDofMap ));
   //Teuchos::RCP<Xpetra::EpetraMap> xInnerDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epInnerDofMap  )); // TODO check me
@@ -226,7 +226,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   // use given fine level null space or extract pre-computed nullspace from ML parameter list
  Teuchos::RCP<MueLu::Level> Finest = hierarchy->GetLevel();  // get finest level
 
- Finest->Set("A",A);
+ Finest->Set("A",A); // not necessary
 
 
   if (nsp != Teuchos::null) {
@@ -278,6 +278,22 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     Finest->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xSlaveDofMap));
 
   ///////////////////////////////////////////////////////////////////////
+  // declare "MasterDofMap" on finest level
+  // this map marks the master DOFs (ignoring permutations)
+  // needed together with SlaveDofMap to define a segregated matrix, used for
+  // building aggregates
+  // -> ContactAFilterFactory
+  if(xMasterDofMap != Teuchos::null)
+    Finest->Set("MasterDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xMasterDofMap));
+
+  // for the Jacobi/SGS smoother we wanna change the input matrix A and set Dirichlet bcs for the (active?) slave dofs
+  Teuchos::RCP<Factory> segregatedAFact =
+       Teuchos::rcp(new MueLu::ContactAFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>());
+  segregatedAFact->SetParameter("Input matrix name",Teuchos::ParameterEntry(std::string("A")));
+  segregatedAFact->SetParameter("Map block 1 name",Teuchos::ParameterEntry(std::string("SlaveDofMap")));
+  segregatedAFact->SetParameter("Map block 2 name",Teuchos::ParameterEntry(std::string("MasterDofMap")));
+
+  ///////////////////////////////////////////////////////////////////////
   // declare "NearZeroDiagMap" on finest level
   // this map marks rows of A with a near zero diagonal entry (usually the
   // tolerance is 1e-5). This is a sign of a badly behaving matrix. Usually
@@ -302,6 +318,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   // Coalesce and drop factory with constant number of Dofs per freedom
   // note: coalescing based on original matrix A
   Teuchos::RCP<CoalesceDropFactory> dropFact = Teuchos::rcp(new CoalesceDropFactory());
+  dropFact->SetFactory("A",segregatedAFact);
 
   // aggregation factory
   Teuchos::RCP<UncoupledAggregationFactory> UCAggFact = Teuchos::rcp(new UncoupledAggregationFactory(dropFact));
@@ -396,8 +413,13 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     cmTransFact->SetFactory("P", PtentFact);
     AcFact->AddTransferFactory(cmTransFact);
   }
-  if(xSlaveDofMap != Teuchos::null) {
+  if(xSlaveDofMap != Teuchos::null) { // needed for ContactAFilterFactory, IterationAFactory
     Teuchos::RCP<MapTransferFactory> cmTransFact = Teuchos::rcp(new MapTransferFactory("SlaveDofMap", MueLu::NoFactory::getRCP()));
+    cmTransFact->SetFactory("P", PtentFact);
+    AcFact->AddTransferFactory(cmTransFact);
+  }
+  if(xMasterDofMap != Teuchos::null) { // needed for ContactAFilterFactory
+    Teuchos::RCP<MapTransferFactory> cmTransFact = Teuchos::rcp(new MapTransferFactory("MasterDofMap", MueLu::NoFactory::getRCP()));
     cmTransFact->SetFactory("P", PtentFact);
     AcFact->AddTransferFactory(cmTransFact);
   }
