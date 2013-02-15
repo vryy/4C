@@ -23,8 +23,6 @@
 #include "../linalg/linalg_utils.H"
 #include <string>
 
-using namespace std;
-
 /*----------------------------------------------------------------------*/
 /*
     Write the coordinates for a Nurbs discretization
@@ -37,21 +35,21 @@ using namespace std;
 void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
 (
   std::ofstream&                              geofile ,
-  const RCP<DRT::Discretization> dis     ,
-  RCP<Epetra_Map>&               proc0map
+  const Teuchos::RCP<DRT::Discretization> dis     ,
+  Teuchos::RCP<Epetra_Map>&               proc0map
   )
 {
   // refcountpointer to vector of all coordinates
   // distributed among all procs
-  RCP<Epetra_MultiVector> nodecoords;
+  Teuchos::RCP<Epetra_MultiVector> nodecoords;
 
   // the ids of the visualisation points on this proc
-  vector<int> local_vis_point_ids;
+  std::vector<int> local_vis_point_ids;
   local_vis_point_ids.clear();
 
   // the coordinates of the visualisation points on this proc
   // used to construct the multivector nodecoords
-  vector<std::vector<double> > local_vis_point_x;
+  std::vector<std::vector<double> > local_vis_point_x;
   local_vis_point_x.clear();
 
   // cast dis to NurbsDiscretisation
@@ -68,13 +66,13 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
   int dim = (nurbsdis->Return_nele_x_mele_x_lele(0)).size();
 
   // get the knotvector itself
-  RCP<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
+  Teuchos::RCP<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
 
   // determine number of patches from knotvector
   int npatches=knotvec->ReturnNP();
 
   // get vispoint offsets among patches
-  vector<int> vpoff(npatches);
+  std::vector<int> vpoff(npatches);
 
   vpoff[0]=0;
 
@@ -82,7 +80,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
   for(int np=1;np<npatches;++np)
   {
     // get nurbs dis' knotvector sizes
-    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np-1));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np-1));
 
     int numvisp=1;
 
@@ -109,7 +107,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
     // get gid, location in the patch
     int gid = actele->Id();
 
-    vector<int> ele_cart_id(dim);
+    std::vector<int> ele_cart_id(dim);
     int np=-1;
 
     knotvec->ConvertEleGidToKnotIds(gid,np,ele_cart_id);
@@ -134,7 +132,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
     DRT::Node**   nodes = actele->Nodes();
 
     // get nurbs dis' element numbers
-    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np));
 
     // want to loop all control points of the element,
     // so get the number of points
@@ -1445,8 +1443,9 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
       break;
     }
     default:
-      cout << *actele;
+      std::cout << *actele;
       dserror("Unknown distype for nurbs element output\n");
+      break;
     }
   }
 
@@ -1458,7 +1457,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
   for(int np=0;np<npatches;++np)
   {
     // get nurbs dis' knotvector sizes
-    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np));
 
     int numvisp=1;
 
@@ -1493,7 +1492,7 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map,*vispointmap_);
-  RCP<Epetra_MultiVector> allnodecoords = Teuchos::rcp(new Epetra_MultiVector(*proc0map,3));
+  Teuchos::RCP<Epetra_MultiVector> allnodecoords = Teuchos::rcp(new Epetra_MultiVector(*proc0map,3));
   int err = allnodecoords->Import(*nodecoords,proc0importer,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
@@ -1533,12 +1532,12 @@ void EnsightWriter::WriteCoordinatesForNurbsShapefunctions
          the patch offset.                             (gammi)
 ----------------------------------------------------------------------*/
 void EnsightWriter::WriteNurbsCell(
-  const DRT::Element::DiscretizationType distype   ,
-  const int                              gid       ,
-  std::ofstream&                              geofile   ,
-  std::vector<int>&                      nodevector,
-  const RCP<DRT::Discretization> dis       ,
-  const RCP<Epetra_Map>&         proc0map
+  const DRT::Element::DiscretizationType  distype   ,
+  const int                               gid       ,
+  std::ofstream&                          geofile   ,
+  std::vector<int>&                       nodevector,
+  const Teuchos::RCP<DRT::Discretization> dis       ,
+  const Teuchos::RCP<Epetra_Map>&         proc0map
 ) const
 {
   // cast dis to NurbsDiscretisation
@@ -1552,13 +1551,13 @@ void EnsightWriter::WriteNurbsCell(
   }
 
   // get the knotvector itself
-  RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+  Teuchos::RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
   // determine number of patches from knotvector
   int npatches=knots->ReturnNP();
 
   // get vispoint offsets among patches
-  vector<int> vpoff(npatches);
+  std::vector<int> vpoff(npatches);
 
   vpoff[0]=0;
 
@@ -1566,7 +1565,7 @@ void EnsightWriter::WriteNurbsCell(
   for(int np=1;np<npatches;++np)
   {
     // get nurbs dis' knotvector sizes
-    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np-1));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np-1));
 
     int numvisp=1;
 
@@ -1586,11 +1585,11 @@ void EnsightWriter::WriteNurbsCell(
     const int dim = 2;
 
     // get the knotvector itself
-    RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
+    Teuchos::RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
 
     // get location in the patch and the number of the patch
     int npatch  =-1;
-    vector<int> ele_cart_id(dim);
+    std::vector<int> ele_cart_id(dim);
     knots->ConvertEleGidToKnotIds(gid,npatch,ele_cart_id);
 
     // number of visualisation points in u direction
@@ -1630,7 +1629,7 @@ void EnsightWriter::WriteNurbsCell(
 
     // get location in the patch from gid
     int npatch  =-1;
-    vector<int> ele_cart_id(dim);
+    std::vector<int> ele_cart_id(dim);
     knots->ConvertEleGidToKnotIds(gid,npatch,ele_cart_id);
 
     // number of visualisation points in u direction
@@ -1716,7 +1715,7 @@ void EnsightWriter::WriteNurbsCell(
 
     // get location in the patch
     int npatch  =-1;
-    vector<int> ele_cart_id(dim);
+    std::vector<int> ele_cart_id(dim);
     knots->ConvertEleGidToKnotIds(gid,npatch,ele_cart_id);
 
     // number of visualisation points in u direction
@@ -1726,7 +1725,7 @@ void EnsightWriter::WriteNurbsCell(
     int nvpv=2*(nurbsdis->Return_nele_x_mele_x_lele(npatch))[1]+1;
 
     // vector containing node connectivity for all sub hexes (in blocks of 8)
-    vector<int> cellnodes(0);
+    std::vector<int> cellnodes(0);
 
     // bottom, left front
     AppendNurbsSubHex(cellnodes,0,0,0,ele_cart_id,nvpu,nvpv,npatch);
@@ -1769,6 +1768,7 @@ void EnsightWriter::WriteNurbsCell(
   default:
   {
     dserror("unknown nurbs discretisation type\n");
+    break;
   }
   } // end switch distype
   return;
@@ -1798,11 +1798,11 @@ void EnsightWriter::WriteNurbsCell(
 */
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteDofResultStepForNurbs(
-  std::ofstream&                        file ,
-  const int                        numdf,
-  const RCP<Epetra_Vector> data ,
-  const string                     name ,
-  const int                      offset
+  std::ofstream&                    file ,
+  const int                         numdf,
+  const Teuchos::RCP<Epetra_Vector> data ,
+  const std::string                 name ,
+  const int                         offset
   ) const
 {
   // a multivector for the interpolated data
@@ -1833,10 +1833,10 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     int numvisp=1;
 
     // get nurbs dis' knotvector sizes
-    vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(np));
+    std::vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(np));
 
     // get nurbs dis' knotvector sizes
-    vector<int> degree(nurbsdis->Return_degree(np));
+    std::vector<int> degree(nurbsdis->Return_degree(np));
 
     for(unsigned rr=0;rr<n_x_m_x_l.size();++rr)
     {
@@ -1845,11 +1845,11 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     numvispoints+=numvisp;
   } // end loop over patches
 
-    // get the knotvector itself
-  RCP<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
+  // get the knotvector itself
+  Teuchos::RCP<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
 
   // get vispoint offsets among patches
-  vector<int> vpoff(npatches);
+  std::vector<int> vpoff(npatches);
 
   vpoff[0]=0;
 
@@ -1857,7 +1857,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
   for(int np=1;np<npatches;++np)
   {
     // get nurbs dis' knotvector sizes
-    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np-1));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np-1));
 
     int numvisp=1;
 
@@ -1982,7 +1982,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
   coldofmapvec.clear();
 
   const Epetra_Map* fulldofmap = &(*coldofmap);
-  const RCP<Epetra_Vector> coldata
+  const Teuchos::RCP<Epetra_Vector> coldata
     = Teuchos::rcp(new Epetra_Vector(*fulldofmap,true));
 
   // create an importer and import the data
@@ -1999,7 +1999,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
     DRT::Element* actele = nurbsdis->gElement(elementmap->GID(iele));
 
     // get gid, location in the patch
-    vector<int> ele_cart_id(dim);
+    std::vector<int> ele_cart_id(dim);
     int gid = actele->Id();
     int np=-1;
 
@@ -2159,7 +2159,7 @@ void EnsightWriter::WriteDofResultStepForNurbs(
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map_,*vispointmap_);
-  RCP<Epetra_MultiVector> allsols = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
+  Teuchos::RCP<Epetra_MultiVector> allsols = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
   int err = allsols->Import(*idata,proc0importer,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
@@ -2222,7 +2222,7 @@ void EnsightWriter::InterpolateNurbsResultToVizPoints(
   Epetra_SerialDenseVector uv(dim);
 
   // get nele_x_mele_x_lele array
-  vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(npatch));
+  std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(npatch));
 
 switch (actele->Shape())
 {
@@ -3485,11 +3485,11 @@ return;
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteNodalResultStepForNurbs(
-    std::ofstream&                             file ,
-    const int                             numdf,
-    const RCP<Epetra_MultiVector> data ,
-    const string                          name ,
-    const int                             offset
+    std::ofstream&                          file ,
+    const int                               numdf,
+    const Teuchos::RCP<Epetra_MultiVector>  data ,
+    const std::string                       name ,
+    const int                               offset
 ) const
 {
   // a multivector for the interpolated data
@@ -3519,10 +3519,10 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
     int numvisp=1;
 
     // get nurbs dis' knotvector sizes
-    vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(np));
+    std::vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(np));
 
     // get nurbs dis' knotvector sizes
-    vector<int> degree(nurbsdis->Return_degree(np));
+    std::vector<int> degree(nurbsdis->Return_degree(np));
 
     for(unsigned rr=0;rr<n_x_m_x_l.size();++rr)
     {
@@ -3532,10 +3532,10 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
   } // end loop over patches
 
   // get the knotvector itself
-  RCP<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
+  Teuchos::RCP<DRT::NURBS::Knotvector> knotvec=nurbsdis->GetKnotVector();
 
   // get vispoint offsets among patches
-  vector<int> vpoff(npatches);
+  std::vector<int> vpoff(npatches);
 
   vpoff[0]=0;
 
@@ -3543,7 +3543,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
   for(int np=1;np<npatches;++np)
   {
     // get nurbs dis' knotvector sizes
-    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np-1));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np-1));
 
     int numvisp=1;
 
@@ -3595,7 +3595,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
   colnodemapvec.clear();
 
   const Epetra_Map* fullnodemap = &(*colnodemap);
-  const RCP<Epetra_MultiVector> coldata
+  const Teuchos::RCP<Epetra_MultiVector> coldata
   = Teuchos::rcp(new Epetra_MultiVector(*fullnodemap,3,true));
 
   // create an importer and import the data
@@ -3612,7 +3612,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
     DRT::Element* actele = nurbsdis->gElement(elementmap->GID(iele));
 
     // get gid, location in the patch
-    vector<int> ele_cart_id(dim);
+    std::vector<int> ele_cart_id(dim);
     int gid = actele->Id();
     int np=-1;
 
@@ -3680,7 +3680,7 @@ void EnsightWriter::WriteNodalResultStepForNurbs(
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map_,*vispointmap_);
-  RCP<Epetra_MultiVector> allsols = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
+  Teuchos::RCP<Epetra_MultiVector> allsols = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
   int err = allsols->Import(*idata,proc0importer,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 

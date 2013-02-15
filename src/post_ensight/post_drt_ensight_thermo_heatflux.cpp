@@ -131,7 +131,7 @@ void ThermoEnsightWriter::WriteNodalHeatflux(
   int stepsize = 0;
 
   if (myrank_ == 0)
-    cout << "writing node-based " << out << endl;
+    std::cout << "writing node-based " << out << std::endl;
 
   // store information for later case file creation
   variableresulttypemap_[name] = "node";
@@ -193,7 +193,7 @@ void ThermoEnsightWriter::WriteNodalHeatflux(
 void ThermoEnsightWriter::WriteNodalHeatfluxStep(
   std::ofstream& file,
   PostResult& result,
-  std::map<std::string, std::vector<ofstream::pos_type> >& resultfilepos,
+  std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
   const std::string groupname,
   const std::string name,
   const int numdf
@@ -373,7 +373,7 @@ void ThermoEnsightWriter::WriteElementCenterHeatflux(
   int stepsize = 0;
 
   if (myrank_ == 0)
-    cout << "writing element-based center " << out << endl;
+    std::cout << "writing element-based center " << out << std::endl;
 
   // store information for later case file creation
   variableresulttypemap_[name] = "element";
@@ -436,7 +436,7 @@ void ThermoEnsightWriter::WriteElementCenterHeatfluxStep(
   std::ofstream& file,
   PostResult& result,
   std::map<std::string,
-  std::vector<ofstream::pos_type> >& resultfilepos,
+  std::vector<std::ofstream::pos_type> >& resultfilepos,
   const std::string groupname,
   const std::string name,
   const int numdf
@@ -466,7 +466,7 @@ void ThermoEnsightWriter::WriteElementCenterHeatfluxStep(
   //--------------------------------------------------------------------
   // write some key words
   //--------------------------------------------------------------------
-  std::vector<ofstream::pos_type>& filepos = resultfilepos[name];
+  std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
   Write(file, "BEGIN TIME STEP");
   filepos.push_back(file.tellp());
   Write(file, "description");

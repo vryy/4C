@@ -27,10 +27,6 @@ extern "C" {
 #include "../pss_full/pss_table_iter.h"
 }
 
-
-using namespace std;
-
-
 //! 6 Surfaces of a Hex27 element with 9 nodes per surface
 const int Hex20_BaciToEnsightGold[20] =
         { 0,  1,  2,  3,
@@ -42,14 +38,14 @@ const int Hex20_BaciToEnsightGold[20] =
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 EnsightWriter::EnsightWriter(PostField* field,
-                             const string filename)
+                             const std::string filename)
   : field_(field),
     filename_(filename),
     myrank_(((field->problem())->comm())->MyPID()),
     nodeidgiven_(true)
 {
   // initialize proc0map_ correctly
-  const RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
   const Epetra_Map* noderowmap = dis->NodeRowMap();
   proc0map_ = LINALG::AllreduceEMap(*noderowmap,0);
 
@@ -107,14 +103,14 @@ void EnsightWriter::WriteFiles()
   ///////////////////////////////////
   //  write geometry file          //
   ///////////////////////////////////
-  const string geofilename = filename_ + "_"+ field_->name() + ".geo";
+  const std::string geofilename = filename_ + "_"+ field_->name() + ".geo";
   const size_t found_path = geofilename.find_last_of("/\\");
-  const string geofilename_nopath = geofilename.substr(found_path+1);
+  const std::string geofilename_nopath = geofilename.substr(found_path+1);
   WriteGeoFile(geofilename);
-  vector<int> filesteps;
+  std::vector<int> filesteps;
   filesteps.push_back(1);
   filesetmap_["geo"] = filesteps;
-  vector<double> timesteps;
+  std::vector<double> timesteps;
   if (soltime.size()>0)
     timesteps.push_back(soltime[0]);
   else
@@ -130,9 +126,9 @@ void EnsightWriter::WriteFiles()
   // prepare the time sets and file sets for case file creation
   int setcounter = 0;
   int allresulttimeset = 0;
-  for (map<string,vector<double> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry)
+  for (std::map<std::string,std::vector<double> >::const_iterator entry = timesetmap_.begin(); entry != timesetmap_.end(); ++entry)
   {
-    string key = entry->first;
+    std::string key = entry->first;
     if ((entry->second).size()== numsoltimes)
     {
       if (allresulttimeset == 0)
@@ -151,9 +147,9 @@ void EnsightWriter::WriteFiles()
 
   // Paraview wants the geo file to be fileset number one
   setcounter = 1;
-  for (map<string,vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry)
+  for (std::map<std::string,std::vector<int> >::const_iterator entry = filesetmap_.begin(); entry != filesetmap_.end(); ++entry)
   {
-    string key = entry->first;
+    std::string key = entry->first;
     if (entry->first=="geo")
     {
       filesetnumbermap_[key] = 1;
@@ -170,7 +166,7 @@ void EnsightWriter::WriteFiles()
   ///////////////////////////////////
   if (myrank_ == 0)
   {
-    const string casefilename = filename_ + "_"+ field_->name() + ".case";
+    const std::string casefilename = filename_ + "_"+ field_->name() + ".case";
     std::ofstream casefile;
     casefile.open(casefilename.c_str());
     casefile << "# created using post_drt_ensight\n"<< "FORMAT\n\n"<< "type:\tensight gold\n";
@@ -195,7 +191,7 @@ void EnsightWriter::WriteFiles()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteGeoFile(const string& geofilename)
+void EnsightWriter::WriteGeoFile(const std::string& geofilename)
 {
   // open file
   std::ofstream geofile;
@@ -211,7 +207,7 @@ void EnsightWriter::WriteGeoFile(const string& geofilename)
 
   // print out one
   // if more are needed, this has to go into a loop
-  map<string, vector<ofstream::pos_type> > resultfilepos;
+  std::map<std::string, std::vector<std::ofstream::pos_type> > resultfilepos;
 
   {
     WriteGeoFileOneTimeStep(geofile, resultfilepos, "geo");
@@ -235,10 +231,10 @@ void EnsightWriter::WriteGeoFile(const string& geofilename)
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteGeoFileOneTimeStep(
   std::ofstream& file,
-  map<string, vector<ofstream::pos_type> >& resultfilepos,
-  const string name)
+  std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+  const std::string name)
 {
-  vector<ofstream::pos_type>& filepos = resultfilepos[name];
+  std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
   Write(file, "BEGIN TIME STEP");
   filepos.push_back(file.tellp());
 
@@ -282,7 +278,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
     for(int np=0;np<npatches;++np)
     {
       // get nurbs dis' knotvector sizes
-      vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np));
+      std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(np));
 
       int numvisp=1;
 
@@ -294,7 +290,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
     }
     if(myrank_==0)
     {
-      cout << "Writing coordinates for " << totalnumvisp << " visualisation points\n";
+      std::cout << "Writing coordinates for " << totalnumvisp << " visualisation points\n";
     }
     Write(file, "coordinates");
     Write(file, totalnumvisp);
@@ -306,7 +302,7 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
   }
 
   // write the grid information
-  RCP<Epetra_Map> proc0map = WriteCoordinates(file, field_->discretization());
+  Teuchos::RCP<Epetra_Map> proc0map = WriteCoordinates(file, field_->discretization());
   proc0map_=proc0map; // update the internal map
   WriteCells(file, field_->discretization(), proc0map);
 
@@ -319,20 +315,20 @@ void EnsightWriter::WriteGeoFileOneTimeStep(
 /*----------------------------------------------------------------------*/
 RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
   std::ofstream& geofile,
-  const RCP<DRT::Discretization> dis
+  const Teuchos::RCP<DRT::Discretization> dis
   )
 {
 
   if (myrank_==0)
   {
-    cout << "(computing) coordinates for a ";
-    cout << field_->problem()->SpatialApproximation();
-    cout << " approximation\n";
+    std::cout << "(computing) coordinates for a ";
+    std::cout << field_->problem()->SpatialApproximation();
+    std::cout << " approximation\n";
   }
 
   // map for all visualisation points after they have been
   // communicated to proc 0
-  RCP<Epetra_Map> proc0map;
+  Teuchos::RCP<Epetra_Map> proc0map;
 
   if(field_->problem()->SpatialApproximation()=="Polynomial")
   {
@@ -358,13 +354,13 @@ RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
   *----------------------------------------------------------------------*/
 void EnsightWriter::WriteCells(
   std::ofstream& geofile,
-  const RCP<DRT::Discretization> dis,
-  const RCP<Epetra_Map>& proc0map
+  const Teuchos::RCP<DRT::Discretization> dis,
+  const Teuchos::RCP<Epetra_Map>& proc0map
   ) const
 {
   const Epetra_Map* elementmap = dis->ElementRowMap();
 
-  vector<int> nodevector;
+  std::vector<int> nodevector;
   if (myrank_>0)
   {
     //reserve sufficient memory for storing the node connectivity
@@ -378,12 +374,12 @@ void EnsightWriter::WriteCells(
   {
     const DRT::Element::DiscretizationType distypeiter = iter->first;
     const int ne = GetNumEleOutput(distypeiter, iter->second);
-    const string ensightCellType = GetEnsightString(distypeiter);
+    const std::string ensightCellType = GetEnsightString(distypeiter);
 
     if (myrank_ == 0)
     {
-      cout << "writing "<< iter->second<< " "<< DRT::DistypeToString(distypeiter) << " element(s) as "
-           << ne << " " << ensightCellType << " ensight cell(s)..." << endl;
+      std::cout << "writing "<< iter->second<< " "<< DRT::DistypeToString(distypeiter) << " element(s) as "
+           << ne << " " << ensightCellType << " ensight cell(s)..." << std::endl;
       Write(geofile, ensightCellType);
       Write(geofile,ne);
     }
@@ -512,15 +508,15 @@ void EnsightWriter::WriteCells(
 */
 void EnsightWriter::WriteNodeConnectivityPar(
   std::ofstream& geofile,
-  const RCP<DRT::Discretization> dis,
+  const Teuchos::RCP<DRT::Discretization> dis,
   const std::vector<int>& nodevector,
-  const RCP<Epetra_Map> proc0map) const
+  const Teuchos::RCP<Epetra_Map> proc0map) const
 {
 #ifdef PARALLEL
   // no we have communicate the connectivity infos from proc 1...proc n to proc 0
 
-  vector<char> sblock; // sending block
-  vector<char> rblock; // recieving block
+  std::vector<char> sblock; // sending block
+  std::vector<char> rblock; // recieving block
 
   // create an exporter for communication
   DRT::Exporter exporter(dis->Comm());
@@ -573,7 +569,7 @@ void EnsightWriter::WriteNodeConnectivityPar(
     if (myrank_==0)
     {
       std::vector<char>::size_type index = 0;
-      vector<int> nodeids;
+      std::vector<int> nodeids;
       // extract data from recieved package
       while (index < rblock.size())
       {
@@ -606,7 +602,7 @@ void EnsightWriter::WriteNodeConnectivityPar(
  * \date 01/08
  */
 NumElePerDisType EnsightWriter::GetNumElePerDisType(
-  const RCP<DRT::Discretization> dis
+  const Teuchos::RCP<DRT::Discretization> dis
   ) const
 {
   const Epetra_Map* elementmap = dis->ElementRowMap();
@@ -630,7 +626,7 @@ NumElePerDisType EnsightWriter::GetNumElePerDisType(
   DRT::Element::DiscretizationType numeledistypes = DRT::Element::max_distype;
 
   // write the final local numbers into a vector
-  vector<int> myNumElePerDisType(numeledistypes);
+  std::vector<int> myNumElePerDisType(numeledistypes);
   NumElePerDisType::const_iterator iter;
   for (iter=numElePerDisType.begin(); iter != numElePerDisType.end(); ++iter)
   {
@@ -643,7 +639,7 @@ NumElePerDisType EnsightWriter::GetNumElePerDisType(
   (dis->Comm()).Barrier();
 
   // form the global sum
-  vector<int> globalnumeleperdistype(numeledistypes);
+  std::vector<int> globalnumeleperdistype(numeledistypes);
   (dis->Comm()).SumAll(&(myNumElePerDisType[0]),&(globalnumeleperdistype[0]),numeledistypes);
 
   // create return argument containing the global element numbers per distype
@@ -702,7 +698,7 @@ int EnsightWriter::GetNumSubEle(
  * \brief parse all elements and get the global ids of the elements for each distype
  */
 EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
-  const RCP<DRT::Discretization> dis,
+  const Teuchos::RCP<DRT::Discretization> dis,
   NumElePerDisType numeleperdistype
   ) const
 {
@@ -741,8 +737,8 @@ EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
     (dis->Comm()).Barrier();
 
     // no we have to communicate everything from proc 1...proc n to proc 0
-    vector<char> sblock; // sending block
-    vector<char> rblock; // recieving block
+    std::vector<char> sblock; // sending block
+    std::vector<char> rblock; // recieving block
 
     // create an exporter for communication
     DRT::Exporter exporter(dis->Comm());
@@ -795,7 +791,7 @@ EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
       if (myrank_==0)
       {
         std::vector<char>::size_type index = 0;
-        vector<int> elegids;
+        std::vector<int> elegids;
         // extract data from recieved package
         while (index < rblock.size())
         {
@@ -822,7 +818,7 @@ EleGidPerDisType EnsightWriter::GetEleGidPerDisType(
 string EnsightWriter::GetEnsightString(
   const DRT::Element::DiscretizationType distype) const
 {
-  map<DRT::Element::DiscretizationType, string>::const_iterator entry;
+  std::map<DRT::Element::DiscretizationType, std::string>::const_iterator entry;
   switch (distype)
   {
   case DRT::Element::hex27:
@@ -836,6 +832,7 @@ string EnsightWriter::GetEnsightString(
     break;
   default:
     entry = distype2ensightstring_.find(distype);
+    break;
   }
   if (entry == distype2ensightstring_.end())
     dserror("no entry in distype2ensightstring_ found");
@@ -888,8 +885,8 @@ void EnsightWriter::WriteAnyResults(PostField* field, const char* type, const Re
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EnsightWriter::WriteResult(const string groupname,
-                                const string name,
+void EnsightWriter::WriteResult(const std::string groupname,
+                                const std::string name,
                                 const ResultType restype,
                                 const int numdf,
                                 const int from)
@@ -910,7 +907,7 @@ void EnsightWriter::WriteResult(const string groupname,
   bool multiple_files = false;
 
   // open file
-  const string filename = filename_ + "_"+ field_->name() + "."+ name;
+  const std::string filename = filename_ + "_"+ field_->name() + "."+ name;
   std::ofstream file;
   int startfilepos = 0;
   if (myrank_==0)
@@ -919,7 +916,7 @@ void EnsightWriter::WriteResult(const string groupname,
     startfilepos = file.tellp(); // file position should be zero, but we stay flexible
   }
 
-  map<string, vector<ofstream::pos_type> > resultfilepos;
+  std::map<std::string, std::vector<std::ofstream::pos_type> > resultfilepos;
   int stepsize = 0;
 
   // distinguish between node- and element-based results
@@ -928,7 +925,7 @@ void EnsightWriter::WriteResult(const string groupname,
   case dofbased:
   {
     if (myrank_==0)
-      cout<<"writing node-based field "<<name<<endl;
+      std::cout<<"writing node-based field "<<name<<std::endl;
     // store information for later case file creation
     variableresulttypemap_[name] = "node";
 
@@ -967,7 +964,7 @@ void EnsightWriter::WriteResult(const string groupname,
   case nodebased:
   {
     if (myrank_==0)
-      cout<<"writing node-based field "<<name<<endl;
+      std::cout<<"writing node-based field "<<name<<std::endl;
     // store information for later case file creation
     variableresulttypemap_[name] = "node";
 
@@ -996,7 +993,7 @@ void EnsightWriter::WriteResult(const string groupname,
   case elementdof:
   {
     if (myrank_==0)
-      cout<<"writing element based field "<<name<<endl;
+      std::cout<<"writing element based field "<<name<<std::endl;
     // store information for later case file creation
     variableresulttypemap_[name] = "element";
 
@@ -1025,7 +1022,7 @@ void EnsightWriter::WriteResult(const string groupname,
   case elementbased:
   {
     if (myrank_==0)
-      cout<<"writing element-based field "<<name<<endl;
+      std::cout<<"writing element-based field "<<name<<std::endl;
     // store information for later case file creation
     variableresulttypemap_[name] = "element";
 
@@ -1085,11 +1082,11 @@ void EnsightWriter::WriteResult(const string groupname,
 void EnsightWriter::FileSwitcher(
   std::ofstream& file,
   bool& multiple_files,
-  map<string,vector<int> >& filesetmap,
-  map<string, vector<ofstream::pos_type> >& resultfilepos,
+  std::map<std::string, std::vector<int> >& filesetmap,
+  std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
   const int stepsize,
-  const string name,
-  const string filename
+  const std::string name,
+  const std::string filename
   ) const
 {
   if (myrank_==0)
@@ -1100,7 +1097,7 @@ void EnsightWriter::FileSwitcher(
     {
       multiple_files = true;
 
-      vector<int> numsteps;
+      std::vector<int> numsteps;
       numsteps.push_back(file.tellp()/stepsize);
       filesetmap[name] = numsteps;
 
@@ -1138,9 +1135,9 @@ void EnsightWriter::FileSwitcher(
 */
 void EnsightWriter::WriteDofResultStep(std::ofstream& file,
                                        PostResult& result,
-                                       map<string, vector<ofstream::pos_type> >& resultfilepos,
-                                       const string groupname,
-                                       const string name,
+                                       std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                                       const std::string groupname,
+                                       const std::string name,
                                        const int numdf,
                                        const int frompid) const
 {
@@ -1148,7 +1145,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
   // write some key words and read result data
   //-------------------------------------------
 
-  vector<ofstream::pos_type>& filepos = resultfilepos[name];
+  std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
   Write(file, "BEGIN TIME STEP");
   filepos.push_back(file.tellp());
   Write(file, "description");
@@ -1156,15 +1153,15 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
   Write(file, field_->field_pos()+1);
   Write(file, "coordinates");
 
-  const RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
   const Epetra_Map* nodemap = dis->NodeRowMap(); //local node row map
   const int numnp = nodemap->NumGlobalElements();
 
-  const RCP<Epetra_Vector> data = result.read_result(groupname);
+  const Teuchos::RCP<Epetra_Vector> data = result.read_result(groupname);
   const Epetra_BlockMap& datamap = data->Map();
 
   // do stupid conversion into Epetra map
-  RCP<Epetra_Map> epetradatamap;
+  Teuchos::RCP<Epetra_Map> epetradatamap;
   epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
                                      datamap.NumMyElements(),
                                      datamap.MyGlobalElements(),
@@ -1207,12 +1204,12 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
     // each processor provides its result values for proc 0
     //------------------------------------------------------
 
-    RCP<Epetra_Map> proc0datamap;
+    Teuchos::RCP<Epetra_Map> proc0datamap;
     proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
 
     // contract result values on proc0 (proc0 gets everything, other procs empty)
     Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);
-    RCP<Epetra_Vector> proc0data = Teuchos::rcp(new Epetra_Vector(*proc0datamap));
+    Teuchos::RCP<Epetra_Vector> proc0data = Teuchos::rcp(new Epetra_Vector(*proc0datamap));
     int err = proc0data->Import(*data,proc0dataimporter,Insert);
     if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
@@ -1223,7 +1220,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
     //------------------------------------------------------------------
 
     // would be nice to have an Epetra_IntMultiVector, instead of casting to doubles
-    RCP<Epetra_MultiVector> dofgidpernodelid = Teuchos::rcp(new Epetra_MultiVector(*nodemap,numdf));
+    Teuchos::RCP<Epetra_MultiVector> dofgidpernodelid = Teuchos::rcp(new Epetra_MultiVector(*nodemap,numdf));
     dofgidpernodelid->PutScalar(-1.0);
 
     const int mynumnp = nodemap->NumMyElements();
@@ -1246,7 +1243,7 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
     }
 
     // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-    RCP<Epetra_MultiVector> dofgidpernodelid_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
+    Teuchos::RCP<Epetra_MultiVector> dofgidpernodelid_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
     Epetra_Import proc0dofimporter(*proc0map_,*nodemap);
     err = dofgidpernodelid_proc0->Import(*dofgidpernodelid,proc0dofimporter,Insert);
     if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
@@ -1260,8 +1257,8 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
     {
       // care for rotationally symmetric periodic boundary conditions
       // note: only vector fields with numdf > 1 require checking!
-      map<int,double> pbcslavenodemap;
-      map<int,double>::iterator iter;
+      std::map<int,double> pbcslavenodemap;
+      std::map<int,double>::iterator iter;
       if(numdf > 1)
         FLD::GetRelevantSlaveNodesOfRotSymPBC(pbcslavenodemap, dis);
 
@@ -1325,16 +1322,16 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
 */
 void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
                                          PostResult& result,
-                                         map<string, vector<ofstream::pos_type> >& resultfilepos,
-                                         const string groupname,
-                                         const string name,
+                                         std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                                         const std::string groupname,
+                                         const std::string name,
                                          const int numdf) const
 {
   //-------------------------------------------
   // write some key words and read result data
   //-------------------------------------------
 
-  vector<ofstream::pos_type>& filepos = resultfilepos[name];
+  std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
   Write(file, "BEGIN TIME STEP");
   filepos.push_back(file.tellp());
   Write(file, "description");
@@ -1342,11 +1339,11 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
   Write(file, field_->field_pos()+1);
   Write(file, "coordinates");
 
-  const RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
+  const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
   const Epetra_BlockMap& datamap = data->Map();
 
   // do stupid conversion into Epetra map
-  RCP<Epetra_Map> epetradatamap;
+  Teuchos::RCP<Epetra_Map> epetradatamap;
   epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
                                      datamap.NumMyElements(),
                                      datamap.MyGlobalElements(),
@@ -1368,7 +1365,7 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
   {
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
+    Teuchos::RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdf));
   Epetra_Import proc0dofimporter(*proc0map_,datamap);
   int err = data_proc0->Import(*data,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
@@ -1409,9 +1406,9 @@ else
 void EnsightWriter::WriteElementDOFResultStep(
   std::ofstream& file,
   PostResult& result,
-  map<string, vector<ofstream::pos_type> >& resultfilepos,
-  const string groupname,
-  const string name,
+  std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+  const std::string groupname,
+  const std::string name,
   const int numdof,
   const int from
   ) const
@@ -1420,21 +1417,21 @@ void EnsightWriter::WriteElementDOFResultStep(
   // write some key words and read result data
   //-------------------------------------------
 
-  vector<ofstream::pos_type>& filepos = resultfilepos[name];
+  std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
   Write(file, "BEGIN TIME STEP");
   filepos.push_back(file.tellp());
   Write(file, "description");
   Write(file, "part");
   Write(file, field_->field_pos()+1);
 
-  const RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
   const Epetra_Map* elementmap = dis->ElementRowMap(); //local node row map
 
-  const RCP<Epetra_Vector> data = result.read_result(groupname);
+  const Teuchos::RCP<Epetra_Vector> data = result.read_result(groupname);
   const Epetra_BlockMap& datamap = data->Map();
 
   // do stupid conversion into Epetra map
-  RCP<Epetra_Map> epetradatamap;
+  Teuchos::RCP<Epetra_Map> epetradatamap;
   epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
                                      datamap.NumMyElements(),
                                      datamap.MyGlobalElements(),
@@ -1442,7 +1439,7 @@ void EnsightWriter::WriteElementDOFResultStep(
                                      datamap.Comm()));
 #if 0
   if (epetradatamap->PointSameAs(*proc0map_))
-    cout<<"INFO: proc0map and epetradatamap are identical."<<endl;
+    std::cout<<"INFO: proc0map and epetradatamap are identical."<<std::endl;
   // check if the data is distributed over several processors
   bool isdistributed = (data->DistributedGlobal());
 #endif
@@ -1451,12 +1448,12 @@ void EnsightWriter::WriteElementDOFResultStep(
   // each processor provides its result values for proc 0
   //------------------------------------------------------
 
-  RCP<Epetra_Map> proc0datamap;
+  Teuchos::RCP<Epetra_Map> proc0datamap;
   proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
 
   // contract result values on proc0 (proc0 gets everything, other procs empty)
   Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);
-  RCP<Epetra_Vector> proc0data = Teuchos::rcp(new Epetra_Vector(*proc0datamap));
+  Teuchos::RCP<Epetra_Vector> proc0data = Teuchos::rcp(new Epetra_Vector(*proc0datamap));
   int err = proc0data->Import(*data,proc0dataimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
@@ -1466,7 +1463,7 @@ void EnsightWriter::WriteElementDOFResultStep(
   // each processor provides its dof global id information for proc 0
   //------------------------------------------------------------------
 
-  RCP<Epetra_MultiVector> dofgidperelementlid = Teuchos::rcp(new Epetra_MultiVector(*elementmap,numdof));
+  Teuchos::RCP<Epetra_MultiVector> dofgidperelementlid = Teuchos::rcp(new Epetra_MultiVector(*elementmap,numdof));
   dofgidperelementlid->PutScalar(-1.0);
 
   const int nummyelem = elementmap->NumMyElements();
@@ -1488,7 +1485,7 @@ void EnsightWriter::WriteElementDOFResultStep(
   }
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RCP<Epetra_MultiVector> dofgidperelementlid_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdof));
+  Teuchos::RCP<Epetra_MultiVector> dofgidperelementlid_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,numdof));
   Epetra_Import proc0dofimporter(*proc0map_,*elementmap);
   err = dofgidperelementlid_proc0->Import(*dofgidperelementlid,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
@@ -1502,9 +1499,9 @@ void EnsightWriter::WriteElementDOFResultStep(
   EleGidPerDisType::const_iterator iter;
   for (iter=eleGidPerDisType_.begin(); iter != eleGidPerDisType_.end(); ++iter)
   {
-    const string ensighteleString = GetEnsightString(iter->first);
+    const std::string ensighteleString = GetEnsightString(iter->first);
     const int numelepertype = (iter->second).size();
-    vector<int> actelegids(numelepertype);
+    std::vector<int> actelegids(numelepertype);
     actelegids = iter->second;
     // write element type
     Write(file, ensighteleString);
@@ -1570,9 +1567,9 @@ void EnsightWriter::WriteElementDOFResultStep(
 void EnsightWriter::WriteElementResultStep(
   std::ofstream& file,
   PostResult& result,
-  map<string, vector<ofstream::pos_type> >& resultfilepos,
-  const string groupname,
-  const string name,
+  std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+  const std::string groupname,
+  const std::string name,
   const int numdf,
   const int from
   ) const
@@ -1582,7 +1579,7 @@ void EnsightWriter::WriteElementResultStep(
   // write some key words and read result data
   //-------------------------------------------
 
-  vector<ofstream::pos_type>& filepos = resultfilepos[name];
+  std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
   Write(file, "BEGIN TIME STEP");
   filepos.push_back(file.tellp());
   Write(file, "description");
@@ -1590,12 +1587,12 @@ void EnsightWriter::WriteElementResultStep(
   Write(file, field_->field_pos()+1);
 
   // read the results
-  const RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
+  const Teuchos::RCP<Epetra_MultiVector> data = result.read_multi_result(groupname);
   const Epetra_BlockMap& datamap = data->Map();
   const int numcol = data->NumVectors();
 
   // do stupid conversion into Epetra map
-  RCP<Epetra_Map> epetradatamap;
+  Teuchos::RCP<Epetra_Map> epetradatamap;
   epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
                                      datamap.NumMyElements(),
                                      datamap.MyGlobalElements(),
@@ -1606,12 +1603,12 @@ void EnsightWriter::WriteElementResultStep(
   // each processor provides its result values for proc 0
   //------------------------------------------------------
 
-  RCP<Epetra_Map> proc0datamap;
+  Teuchos::RCP<Epetra_Map> proc0datamap;
   proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
 
   // contract result values on proc0 (proc0 gets everything, other procs empty)
   Epetra_Import proc0dataimporter(*proc0datamap,*epetradatamap);
-  RCP<Epetra_MultiVector> proc0data = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,numcol));
+  Teuchos::RCP<Epetra_MultiVector> proc0data = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,numcol));
   int err = proc0data->Import(*data,proc0dataimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 
@@ -1628,12 +1625,12 @@ void EnsightWriter::WriteElementResultStep(
   EleGidPerDisType::const_iterator iter;
   for (iter=eleGidPerDisType_.begin(); iter != eleGidPerDisType_.end(); ++iter)
   {
-    const string ensighteleString = GetEnsightString(iter->first);
+    const std::string ensighteleString = GetEnsightString(iter->first);
 
     int numsubele = GetNumSubEle(iter->first);
 
     const int numelepertype = (iter->second).size();
-    vector<int> actelegids(numelepertype);
+    std::vector<int> actelegids(numelepertype);
     actelegids = iter->second;
     // write element type
     Write(file, ensighteleString);
@@ -1688,7 +1685,7 @@ void EnsightWriter::WriteElementResultStep(
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteIndexTable(
   std::ofstream& file,
-  const std::vector<ofstream::pos_type>& filepos
+  const std::vector<std::ofstream::pos_type>& filepos
   ) const
 {
   std::ofstream::pos_type lastpos = file.tellp();
@@ -1712,10 +1709,10 @@ void EnsightWriter::WriteIndexTable(
 /*----------------------------------------------------------------------*/
 void EnsightWriter::WriteString(
   std::ofstream& stream,
-  const string str) const
+  const std::string str) const
 {
   // we need to write 80 bytes per string
-  vector<char> s(str.begin(), str.end());
+  std::vector<char> s(str.begin(), str.end());
   while (s.size()<80)
   {
     s.push_back('\0');
@@ -1728,42 +1725,42 @@ void EnsightWriter::WriteString(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-string EnsightWriter::GetVariableSection(
-  map<string,vector<int> >  filesetmap,
-  map<string,int>           variablenumdfmap,
-  map<string,string>        variablefilenamemap
-  ) const
+std::string EnsightWriter::GetVariableSection(
+  std::map<std::string,std::vector<int> > filesetmap,
+  std::map<std::string,int>               variablenumdfmap,
+  std::map<std::string,std::string>       variablefilenamemap
+) const
 {
   std::stringstream str;
 
-  map<string,int>::const_iterator variable;
+  std::map<std::string,int>::const_iterator variable;
 
   for (variable = variablenumdfmap.begin(); variable != variablenumdfmap.end(); ++variable)
   {
-    const string key = variable->first;
+    const std::string key = variable->first;
     const int numdf = variable->second;
-    const string filename = variablefilenamemap[key];
+    const std::string filename = variablefilenamemap[key];
 
     // Get rid of path
     const size_t found_path = filename.find_last_of("/\\");
-    const string filename_nopath = filename.substr(found_path+1);
+    const std::string filename_nopath = filename.substr(found_path+1);
 
-    map<string,int>::const_iterator timeentry = timesetnumbermap_.find(key);
+    std::map<std::string,int>::const_iterator timeentry = timesetnumbermap_.find(key);
     if (timeentry == timesetnumbermap_.end())
       dserror("key not found!");
     const int timesetnumber = timeentry->second;
 
-    map<string,int>::const_iterator entry1 = filesetnumbermap_.find(key);
+    std::map<std::string,int>::const_iterator entry1 = filesetnumbermap_.find(key);
     if (entry1 == filesetnumbermap_.end())
       dserror("key not found!");
     const int setnumber = entry1->second;
 
-    map<string,vector<int> >::const_iterator entry2 = filesetmap.find(key);
+    std::map<std::string,std::vector<int> >::const_iterator entry2 = filesetmap.find(key);
     if (entry2 == filesetmap.end())
       dserror("filesetmap not defined for '%s'", key.c_str());
 
     const int numsubfilesteps = entry2->second.size();
-    string filename_for_casefile;
+    std::string filename_for_casefile;
     if (numsubfilesteps > 1)
     {
       filename_for_casefile = filename_nopath + "***";
@@ -1781,21 +1778,21 @@ string EnsightWriter::GetVariableSection(
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-string EnsightWriter::GetVariableEntryForCaseFile(
+std::string EnsightWriter::GetVariableEntryForCaseFile(
   const int numdf,
   const unsigned int fileset,
-  const string name,
-  const string filename,
+  const std::string name,
+  const std::string filename,
   const int timeset
   ) const
 {
   std::stringstream str;
 
   // determine the type of this result variable (node-/element-based)
-  map<string,string>::const_iterator entry = variableresulttypemap_.find(name);
+  std::map<std::string,std::string>::const_iterator entry = variableresulttypemap_.find(name);
   if (entry == variableresulttypemap_.end())
     dserror("key not found!");
-  const string restypestring = entry->second;
+  const std::string restypestring = entry->second;
 
   // create variable entry in the case-file
   switch (numdf)
@@ -1825,7 +1822,7 @@ string EnsightWriter::GetVariableEntryForCaseFile(
   \brief create string for one TIME set in the case file
 */
 /*----------------------------------------------------------------------*/
-string EnsightWriter::GetTimeSectionString(
+std::string EnsightWriter::GetTimeSectionString(
   const int timeset,
   const std::vector<double>& times
   ) const
@@ -1850,18 +1847,18 @@ string EnsightWriter::GetTimeSectionString(
   \brief create string for the TIME section in the case file
 */
 /*----------------------------------------------------------------------*/
-string EnsightWriter::GetTimeSectionStringFromTimesets(
-  const map<string,vector<double> >& timesetmap
+std::string EnsightWriter::GetTimeSectionStringFromTimesets(
+  const std::map<std::string,std::vector<double> >& timesetmap
   ) const
 {
   std::stringstream s;
-  map<string,vector<double> >::const_iterator timeset;
+  std::map<std::string,std::vector<double> >::const_iterator timeset;
   std::set<int> donetimesets;
 
   for (timeset = timesetmap.begin(); timeset != timesetmap.end(); ++timeset)
   {
-    string key = timeset->first;
-    map<string,int>::const_iterator entry = timesetnumbermap_.find(key);
+    std::string key = timeset->first;
+    std::map<std::string,int>::const_iterator entry = timesetnumbermap_.find(key);
     if (entry == timesetnumbermap_.end())
       dserror("key not found!");
     const int timesetnumber = entry->second;
@@ -1869,8 +1866,8 @@ string EnsightWriter::GetTimeSectionStringFromTimesets(
     if (donetimesets.find(timesetnumber)==donetimesets.end()) // do not write redundant time sets
     {
       donetimesets.insert(timesetnumber);
-      string outstring = GetTimeSectionString(timesetnumber, soltimes);
-      s<< outstring<<endl;
+      std::string outstring = GetTimeSectionString(timesetnumber, soltimes);
+      s<< outstring<<std::endl;
     }
   }
   return s.str();
@@ -1881,22 +1878,22 @@ string EnsightWriter::GetTimeSectionStringFromTimesets(
   \brief create string for the FILE section in the case file
 */
 /*----------------------------------------------------------------------*/
-string EnsightWriter::GetFileSectionStringFromFilesets(
-  const map<string,vector<int> >& filesetmap
+std::string EnsightWriter::GetFileSectionStringFromFilesets(
+  const std::map<std::string,std::vector<int> >& filesetmap
   ) const
 {
   std::stringstream s;
-  map<string,vector<int> >::const_iterator fileset;
+  std::map<std::string,std::vector<int> >::const_iterator fileset;
 
   // print filesets in increasing numbering, starting with "geo"
 
-  map<string,int>::const_iterator entry = filesetnumbermap_.find("geo");
+  std::map<std::string,int>::const_iterator entry = filesetnumbermap_.find("geo");
   if (entry == filesetnumbermap_.end())
     dserror("key 'geo' not found!");
   const int setnumber = entry->second;
   if (setnumber != 1) dserror ("geometry file must have file set number 1");
   fileset= filesetmap.find("geo");
-  vector<int> stepsperfile = fileset->second;
+  std::vector<int> stepsperfile = fileset->second;
   s << "file set:\t\t"<< setnumber << "\n";
   if (stepsperfile.size() == 1)
   {
@@ -1914,15 +1911,15 @@ string EnsightWriter::GetFileSectionStringFromFilesets(
 
   for (fileset = filesetmap.begin(); fileset != filesetmap.end(); ++fileset)
   {
-    string key = fileset->first;
+    std::string key = fileset->first;
     // skip geometry file since it was already considered above!
     if (key=="geo") continue;
 
-    map<string,int>::const_iterator entry = filesetnumbermap_.find(key);
+    std::map<std::string,int>::const_iterator entry = filesetnumbermap_.find(key);
     if (entry == filesetnumbermap_.end())
       dserror("key not found!");
     const int setnumber = entry->second;
-    vector<int> stepsperfile = fileset->second;
+    std::vector<int> stepsperfile = fileset->second;
     s << "file set:\t\t"<< setnumber << "\n";
     if (stepsperfile.size() == 1)
     {
@@ -1952,14 +1949,14 @@ string EnsightWriter::GetFileSectionStringFromFilesets(
 void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions
 (
   std::ofstream&                      geofile ,
-  const RCP<DRT::Discretization> dis     ,
-  RCP<Epetra_Map>&               proc0map
+  const Teuchos::RCP<DRT::Discretization> dis     ,
+  Teuchos::RCP<Epetra_Map>&               proc0map
   )
 {
 
   // refcountpointer to vector of all coordinates
   // distributed among all procs
-  RCP<Epetra_MultiVector> nodecoords;
+  Teuchos::RCP<Epetra_MultiVector> nodecoords;
 
   const int NSD = 3; // number of space dimensions
 
@@ -1985,7 +1982,7 @@ void EnsightWriter::WriteCoordinatesForPolynomialShapefunctions
 
   // import my new values (proc0 gets everything, other procs empty)
   Epetra_Import proc0importer(*proc0map,*nodemap);
-  RCP<Epetra_MultiVector> allnodecoords = Teuchos::rcp(new Epetra_MultiVector(*proc0map,3));
+  Teuchos::RCP<Epetra_MultiVector> allnodecoords = Teuchos::rcp(new Epetra_MultiVector(*proc0map,3));
   int err = allnodecoords->Import(*nodecoords,proc0importer,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
 

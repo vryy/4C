@@ -54,7 +54,7 @@ int main(
     case prb_fsi:
     case prb_fsi_lung:
     {
-        string basename = problem.outname();
+        std::string basename = problem.outname();
         PostField* structfield = problem.get_discretization(0);
         StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
         structwriter.WriteFiles();
@@ -77,7 +77,7 @@ int main(
 #endif //D_ARTNET
         if (problem.num_discr() > 2 and problem.get_discretization(2)->name()=="xfluid")
         {
-          string basename = problem.outname();
+          std::string basename = problem.outname();
           PostField* fluidfield = problem.get_discretization(2);
           XFluidEnsightWriter xfluidwriter(fluidfield, basename);
           xfluidwriter.WriteFiles();
@@ -87,7 +87,7 @@ int main(
     case prb_gas_fsi:
     case prb_thermo_fsi:
     {
-      string basename = problem.outname();
+      std::string basename = problem.outname();
       PostField* structfield = problem.get_discretization(0);
       StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
@@ -109,7 +109,7 @@ int main(
     }
     case prb_biofilm_fsi:
     {
-      string basename = problem.outname();
+      std::string basename = problem.outname();
       PostField* structfield = problem.get_discretization(0);
       StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
       structwriter.WriteFiles();
@@ -143,14 +143,14 @@ int main(
       {
         // 1d artery
 #ifdef D_ARTNET
-        string basename = problem.outname();
+        std::string basename = problem.outname();
         PostField* field = problem.get_discretization(1);
         StructureEnsightWriter writer(field, basename, problem.stresstype(), problem.straintype());
         writer.WriteFiles();
 #endif //D_ARTNET
         if (problem.get_discretization(1)->name()=="xfluid")
         {
-          string basename = problem.outname();
+          std::string basename = problem.outname();
           PostField* fluidfield = problem.get_discretization(1);
           XFluidEnsightWriter xfluidwriter(fluidfield, basename);
           xfluidwriter.WriteFiles();
@@ -166,7 +166,7 @@ int main(
         writer.WriteFiles();
         if (problem.num_discr()>1 and problem.get_discretization(1)->name()=="xfluid")
         {
-          string basename = problem.outname();
+          std::string basename = problem.outname();
           PostField* fluidfield = problem.get_discretization(1);
           XFluidEnsightWriter xfluidwriter(fluidfield, basename);
           xfluidwriter.WriteFiles();
@@ -193,7 +193,7 @@ int main(
     }
     case prb_fluid_fluid:
     {
-      string basename = problem.outname();
+      std::string basename = problem.outname();
 
       PostField* fluidfield = problem.get_discretization(0);
       FluidEnsightWriter fluidwriter(fluidfield, basename);
@@ -206,7 +206,7 @@ int main(
     }
     case prb_fluid_fluid_ale:
     {
-      string basename = problem.outname();
+      std::string basename = problem.outname();
 
       PostField* fluidfield = problem.get_discretization(0);
       FluidEnsightWriter fluidwriter(fluidfield, basename);
@@ -220,7 +220,7 @@ int main(
     }
     case prb_fluid_fluid_fsi:
     {
-      string basename = problem.outname();
+      std::string basename = problem.outname();
       PostField* fluidfield = problem.get_discretization(2);
       FluidEnsightWriter fluidwriter(fluidfield, basename);
       fluidwriter.WriteFiles();
@@ -243,7 +243,7 @@ int main(
     }
     case prb_scatra:
     {
-        string basename = problem.outname();
+        std::string basename = problem.outname();
         // do we have a fluid discretization?
         int numfield = problem.num_discr();
         if(numfield==2)
@@ -269,27 +269,27 @@ int main(
     }
     case prb_fsi_xfem:
     {
-        cout << "Output XFEM Problem" << endl;
+      std::cout << "Output XFEM Problem" << std::endl;
 
-        string basename = problem.outname();
+        std::string basename = problem.outname();
 
-        cout << "  Structural Field" << endl;
+        std::cout << "  Structural Field" << std::endl;
         PostField* structfield = problem.get_discretization(0);
         StructureEnsightWriter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
         structwriter.WriteFiles();
 
-//         cout << "  Fluid Field" << endl;
+//         std::cout << "  Fluid Field" << std::endl;
 //         PostField* fluidfield = problem.get_discretization(1);
 //         XFluidEnsightWriter xfluidwriter(fluidfield, basename);
 //         xfluidwriter.WriteFiles();
 
-        cout << "  Fluid Field" << endl;
+        std::cout << "  Fluid Field" << std::endl;
         PostField* fluidfield = problem.get_discretization(1);
         FluidEnsightWriter fluidwriter(fluidfield, basename);
         fluidwriter.WriteFiles();
 
 
-        cout << "  Interface Field" << endl;
+        std::cout << "  Interface Field" << std::endl;
         PostField* ifacefield = problem.get_discretization(2);
         InterfaceEnsightWriter ifacewriter(ifacefield, basename);
         ifacewriter.WriteFiles();
@@ -298,7 +298,7 @@ int main(
         // in the future, we might also write the interface
         // but at the moment, some procs might have no row elements
         // and the HDF5 writing process can not handle this
-//        cout << "  Interface Field" << endl;
+//        std::cout << "  Interface Field" << std::endl;
 //        PostField* ifacefield = problem.get_discretization(2);
 //        InterfaceEnsightWriter ifacewriter(ifacefield, basename);
 //        ifacewriter.WriteFiles();
@@ -306,23 +306,23 @@ int main(
     }
     case prb_fluid_xfem2:
     {
-        cout << "Output XFluid2 Problem" << endl;
+        std::cout << "Output XFluid2 Problem" << std::endl;
 
-        string basename = problem.outname();
+        std::string basename = problem.outname();
 
-//        cout << "  Structural Field" << endl;
+//        std::cout << "  Structural Field" << std::endl;
 //        PostField* structfield = problem.get_discretization(0);
 //        StructureEnsightWriter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
 //        structwriter.WriteFiles();
 
 
-        cout << "  Fluid Field" << endl;
+        std::cout << "  Fluid Field" << std::endl;
         PostField* fluidfield = problem.get_discretization(0);
         FluidEnsightWriter fluidwriter(fluidfield, basename);
         fluidwriter.WriteFiles();
 
 
-        cout << "  Interface Field" << endl;
+        std::cout << "  Interface Field" << std::endl;
         PostField* ifacefield = problem.get_discretization(1);
         InterfaceEnsightWriter ifacewriter(ifacefield, basename);
         ifacewriter.WriteFiles();
@@ -331,7 +331,7 @@ int main(
     }
     case prb_loma:
     {
-        string basename = problem.outname();
+        std::string basename = problem.outname();
 
         PostField* fluidfield = problem.get_discretization(0);
         FluidEnsightWriter fluidwriter(fluidfield, basename);
@@ -344,7 +344,7 @@ int main(
     }
     case prb_elch:
     {
-      string basename = problem.outname();
+      std::string basename = problem.outname();
       int numfield = problem.num_discr();
       if(numfield==3)
       {
@@ -386,7 +386,7 @@ int main(
     }
     case prb_combust:
     {
-        string basename = problem.outname();
+        std::string basename = problem.outname();
 
         PostField* fluidfield = problem.get_discretization(0);
         XFluidEnsightWriter fluidwriter(fluidfield, basename);
@@ -399,7 +399,7 @@ int main(
     }
     case prb_art_net:
     {
-      string basename = problem.outname();
+      std::string basename = problem.outname();
       PostField* field = problem.get_discretization(0);
       //AnyEnsightWriter writer(field, problem.outname());
       StructureEnsightWriter writer(field, basename, problem.stresstype(), problem.straintype());
@@ -417,9 +417,9 @@ int main(
     case prb_tsi:
     case prb_tfsi_aero:
     {
-      cout << "Output TSI Problem" << endl;
+      std::cout << "Output TSI Problem" << std::endl;
 
-      string basename = problem.outname();
+      std::string basename = problem.outname();
 
       PostField* structfield = problem.get_discretization(0);
       StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
@@ -432,7 +432,7 @@ int main(
     }
     case prb_red_airways:
     {
-      string basename = problem.outname();
+      std::string basename = problem.outname();
       PostField* field = problem.get_discretization(0);
       //AnyEnsightWriter writer(field, problem.outname());
       StructureEnsightWriter writer(field, basename, problem.stresstype(), problem.straintype());
@@ -443,7 +443,7 @@ int main(
     }
     case prb_poroelast:
     {
-      string basename = problem.outname();
+      std::string basename = problem.outname();
 
       PostField* structfield = problem.get_discretization(0);
       StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
@@ -456,7 +456,7 @@ int main(
     }
     case prb_poroscatra:
     {
-      string basename = problem.outname();
+      std::string basename = problem.outname();
 
       PostField* structfield = problem.get_discretization(0);
       StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
@@ -474,7 +474,7 @@ int main(
     }
     case prb_ssi:
     {
-      string basename = problem.outname();
+      std::string basename = problem.outname();
 
       PostField* structfield = problem.get_discretization(0);
       StructureEnsightWriter structwriter(structfield, basename, problem.stresstype(), problem.straintype());
@@ -488,7 +488,7 @@ int main(
     }
     case prb_fluid_topopt:
     {
-      string basename = problem.outname();
+      std::string basename = problem.outname();
       int numfield = problem.num_discr();
 
       PostField* fluidfield = problem.get_discretization(0);

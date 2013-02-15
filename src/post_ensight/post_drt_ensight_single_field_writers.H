@@ -25,9 +25,9 @@ class StructureEnsightWriter : public EnsightWriter
 {
 public:
   StructureEnsightWriter(PostField* field,
-                         string filename,
-                         string stresstype="none",
-                         string straintype="none") :
+      std::string filename,
+      std::string stresstype="none",
+      std::string straintype="none") :
   EnsightWriter(field, filename), stresstype_(stresstype), straintype_(straintype)
   {
   }
@@ -41,38 +41,38 @@ protected:
   \author lw
   \date 02/08
   */
-  void PostStress(const string groupname, const string stresstype);
-  void WriteNodalStress(const string groupname,
+  void PostStress(const std::string groupname, const std::string stresstype);
+  void WriteNodalStress(const std::string groupname,
                         PostResult& result);
   void WriteNodalStressStep(std::ofstream& file,
                             PostResult& result,
-                            map<string, vector<ofstream::pos_type> >& resultfilepos,
-                            const string groupname,
-                            const string name) const;
-  void WriteElementCenterStress(const string groupname,
+                            std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                            const std::string groupname,
+                            const std::string name) const;
+  void WriteElementCenterStress(const std::string groupname,
                                 PostResult& result);
   void WriteElementCenterStressStep(std::ofstream& file,
                                     PostResult& result,
-                                    map<string, vector<ofstream::pos_type> >& resultfilepos,
-                                    const string groupname,
-                                    const string name) const;
-  void WriteNodalEigenStress(const string groupname,
+                                    std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                                    const std::string groupname,
+                                    const std::string name) const;
+  void WriteNodalEigenStress(const std::string groupname,
                              PostResult& result);
-  void WriteNodalEigenStressStep(std::vector<Teuchos::RCP<ofstream> > files,
+  void WriteNodalEigenStressStep(std::vector<Teuchos::RCP<std::ofstream> > files,
                                  PostResult& result,
-                                 map<string, vector<ofstream::pos_type> >& resultfilepos,
-                                 const string groupname,
-                                 vector<string> name);
-  void WriteElementCenterEigenStress(const string groupname,
+                                 std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                                 const std::string groupname,
+                                 std::vector<std::string> name);
+  void WriteElementCenterEigenStress(const std::string groupname,
                                      PostResult& result);
-  void WriteElementCenterEigenStressStep(std::vector<Teuchos::RCP<ofstream> > files,
+  void WriteElementCenterEigenStressStep(std::vector<Teuchos::RCP<std::ofstream> > files,
                                          PostResult& result,
-                                         map<string, vector<ofstream::pos_type> >& resultfilepos,
-                                         const string groupname,
-                                         vector<string> name);
+                                         std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                                         const std::string groupname,
+                                         std::vector<std::string> name);
 
-  string stresstype_;
-  string straintype_;
+  std::string stresstype_;
+  std::string straintype_;
 };
 
 /*!
@@ -83,7 +83,7 @@ class FluidEnsightWriter : public EnsightWriter
 public:
     FluidEnsightWriter(
             PostField* field,
-            string filename) :
+            std::string filename) :
         EnsightWriter(field, filename)
     {
     }
@@ -102,7 +102,7 @@ class XFluidEnsightWriter : public EnsightWriter
 public:
     XFluidEnsightWriter(
             PostField* field,
-            string filename) :
+            std::string filename) :
         EnsightWriter(field, filename)
     {
     }
@@ -121,7 +121,7 @@ class AleEnsightWriter : public EnsightWriter
 public:
     AleEnsightWriter(
             PostField* field,
-            string filename) :
+            std::string filename) :
         EnsightWriter(field, filename)
     {
     }
@@ -141,7 +141,7 @@ class InterfaceEnsightWriter : public EnsightWriter
 public:
     InterfaceEnsightWriter(
             PostField* field,
-            string filename) :
+            std::string filename) :
         EnsightWriter(field, filename)
     {
     }
@@ -165,7 +165,7 @@ public:
     /// constructor
     ScaTraEnsightWriter(
             PostField* field,
-            string filename) :
+            std::string filename) :
         EnsightWriter(field, filename)
     {
     }
@@ -189,7 +189,7 @@ public:
     /// constructor
     ElchEnsightWriter(
             PostField* field,
-            string filename) :
+            std::string filename) :
         EnsightWriter(field, filename)
     {
     }
@@ -212,9 +212,9 @@ class ThermoEnsightWriter : public EnsightWriter
 public:
     /// constructor
     ThermoEnsightWriter(PostField* field,
-                        string filename,
-                        string heatfluxtype="none",
-                        string tempgradtype="none") :
+        std::string filename,
+        std::string heatfluxtype="none",
+        std::string tempgradtype="none") :
     EnsightWriter(field, filename), heatfluxtype_(heatfluxtype), tempgradtype_(tempgradtype)
     {
     }
@@ -228,26 +228,26 @@ protected:
     \author originally by lw
     \date 11/09
     */
-    void PostHeatflux(const string groupname, const string heatfluxtype);
-    void WriteNodalHeatflux(const string groupname,
+    void PostHeatflux(const std::string groupname, const std::string heatfluxtype);
+    void WriteNodalHeatflux(const std::string groupname,
                             PostResult& result);
     void WriteNodalHeatfluxStep(std::ofstream& file,
                                 PostResult& result,
-                                map<string, vector<ofstream::pos_type> >& resultfilepos,
-                                const string groupname,
-                                const string name,
+                                std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                                const std::string groupname,
+                                const std::string name,
                                 const int numdf) const;
-    void WriteElementCenterHeatflux(const string groupname,
+    void WriteElementCenterHeatflux(const std::string groupname,
                                     PostResult& result);
     void WriteElementCenterHeatfluxStep(std::ofstream& file,
                                         PostResult& result,
-                                        map<string, vector<ofstream::pos_type> >& resultfilepos,
-                                        const string groupname,
-                                        const string name,
+                                        std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                                        const std::string groupname,
+                                        const std::string name,
                                         const int numdf) const;
 
-    string heatfluxtype_;  ///< type of heat flux output
-    string tempgradtype_;  ///< type of spatial temperature gradient output
+    std::string heatfluxtype_;  ///< type of heat flux output
+    std::string tempgradtype_;  ///< type of spatial temperature gradient output
 };
 
 

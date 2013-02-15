@@ -195,7 +195,7 @@ void XFluidEnsightWriter::WriteAllResults(PostField* field)
   }
   else
   {
-    cout << "Depreciated naming convention!!!" << endl;
+    std::cout << "Depreciated naming convention!!!" << std::endl;
     // note old output files might still use the name names velnp and pressure
     // just turn the following lines on
     EnsightWriter::WriteResult("velnp", "velocity", dofbased, field->problem()->num_dim());
@@ -253,7 +253,7 @@ void ScaTraEnsightWriter::WriteAllResults(PostField* field)
     {
       std::ostringstream temp;
       temp << k;
-      string name = "phi_"+temp.str();
+      std::string name = "phi_"+temp.str();
       EnsightWriter::WriteResult("phinp", name, dofbased, 1,k-1);
       EnsightWriter::WriteResult("averaged_phinp", "averaged_"+name, dofbased, 1,k-1);
       // intermediate work-around for nurbs discretizations (no normal vectors applied)
@@ -293,15 +293,15 @@ void ElchEnsightWriter::WriteAllResults(PostField* field)
   if (numdofpernode == 1)
   {
     // do the single ion concentration
-      string name = "c_1";
-      EnsightWriter::WriteResult("phinp", name, dofbased, 1, 0);
-      // write flux vectors (always 3D)
-      EnsightWriter::WriteResult("flux", "flux", nodebased, 3);
+    std::string name = "c_1";
+    EnsightWriter::WriteResult("phinp", name, dofbased, 1, 0);
+    // write flux vectors (always 3D)
+    EnsightWriter::WriteResult("flux", "flux", nodebased, 3);
 
-      // there is no electric potential in this special case
+    // there is no electric potential in this special case
 
-      // temporal mean field from turbulent statistics (if present)
-      EnsightWriter::WriteResult("averaged_phinp", "averaged_"+name, dofbased, 1, 0);
+    // temporal mean field from turbulent statistics (if present)
+    EnsightWriter::WriteResult("averaged_phinp", "averaged_"+name, dofbased, 1, 0);
   }
   else
   {
@@ -310,7 +310,7 @@ void ElchEnsightWriter::WriteAllResults(PostField* field)
     {
       std::ostringstream temp;
       temp << k;
-      string name = "c_"+temp.str();
+      std::string name = "c_"+temp.str();
       EnsightWriter::WriteResult("phinp", name, dofbased, 1,k-1);
       // write flux vectors (always 3D)
       EnsightWriter::WriteResult("flux_phi_"+temp.str(), "flux_"+name, nodebased, 3);
