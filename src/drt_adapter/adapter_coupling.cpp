@@ -256,7 +256,7 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
   // hurt that much. It just means we will have to test more nodes.
   DRT::UTILS::NodeMatchingOctree tree(masterdis, masternodes, 150, 1e-3);
 
-  map<int,std::pair<int,double> > coupling;
+  std::map<int,std::pair<int,double> > coupling;
   tree.FindMatch(slavedis, slavenodes, coupling);
 
 #if 1
@@ -351,7 +351,7 @@ void ADAPTER::Coupling::BuildDofMaps(const DRT::Discretization& dis,
   // communicate dofs
 
   std::vector<int> dofmapvec;
-  map<int, std::vector<int> > dofs;
+  std::map<int, std::vector<int> > dofs;
 
   const int* nodes = nodemap->MyGlobalElements();
   const int numnode = nodemap->NumMyElements();

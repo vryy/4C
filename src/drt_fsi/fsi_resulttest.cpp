@@ -95,7 +95,7 @@ FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::Monolithic> fsi,
       slavedisc_ = Teuchos::null;
       fsilambda_ = Teuchos::null;
 
-      cout << "\nNo FSI test routines implemented for this coupling algorithm." << endl;
+      std::cout << "\nNo FSI test routines implemented for this coupling algorithm." << std::endl;
 
       break;
     }
@@ -130,7 +130,7 @@ FSI::FSIResultTest::FSIResultTest(Teuchos::RCP<FSI::MonolithicNoNOX> fsi,
       slavedisc_ = Teuchos::null;
       fsilambda_ = Teuchos::null;
 
-      cout << "\nNo FSI test routines implemented for this coupling algorithm." << endl;
+      std::cout << "\nNo FSI test routines implemented for this coupling algorithm." << std::endl;
 
       break;
     }

@@ -550,7 +550,7 @@ void fluid_fluid_fsi_drt()
   int numglobalnodes = bgfluiddis->NumGlobalNodes();
   int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
   Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
-  cout << " maxNumMyReservedDofs " << maxNumMyReservedDofs << endl;
+  std::cout << " maxNumMyReservedDofs " << maxNumMyReservedDofs << endl;
   bgfluiddis->ReplaceDofSet(maxdofset,true);
   bgfluiddis->FillComplete();
 
@@ -1008,15 +1008,15 @@ void xfsi_drt()
 
   if (comm.MyPID() == 0)
   {
-    cout << endl;
-    cout << "       @..@    " << endl;
-    cout << "      (----)      " << endl;
-    cout << "     ( >__< )   " << endl;
-    cout << "     ^^ ~~ ^^  " << endl;
-    cout << "     _     _ _______ _______ _____" << endl;
-    cout << "      \\\\__/  |______ |______   |  " << endl;
-    cout << "     _/  \\\\_ |       ______| __|__" << endl;
-    cout <<  endl << endl;
+    std::cout << std::endl;
+    std::cout << "       @..@    " << std::endl;
+    std::cout << "      (----)      " << std::endl;
+    std::cout << "     ( >__< )   " << std::endl;
+    std::cout << "     ^^ ~~ ^^  " << std::endl;
+    std::cout << "     _     _ _______ _______ _____" << std::endl;
+    std::cout << "      \\\\__/  |______ |______   |  " << std::endl;
+    std::cout << "     _/  \\\\_ |       ______| __|__" << std::endl;
+    std::cout <<  std::endl << std::endl;
   }
 
   DRT::Problem* problem = DRT::Problem::Instance();

@@ -79,7 +79,7 @@ void FSI::UTILS::DumpJacobian(NOX::Epetra::Interface::Required& interface,
   for (int i=0; i<map.NumGlobalElements(); ++i)
   {
     if (map.Comm().MyPID()==0)
-      cout << "calculate column " << i << "\n";
+      std::cout << "calculate column " << i << "\n";
 
     int proc = 0;
     int idx = 0;
@@ -676,7 +676,7 @@ void FSI::UTILS::SlideAleUtils::SlideProjection
       //if no close elements could be found, try with a much larger radius and print a warning
       if (closeeles.empty())
       {
-        cout<<"WARNING: no elements found in radius r="<<maxmindist_<<". Will try once with a bigger radius!"<<endl;
+        std::cout<<"WARNING: no elements found in radius r="<<maxmindist_<<". Will try once with a bigger radius!"<< std::endl;
         closeeles = searchTree->searchElementsInRadius(interfacedis,currentpositions,alenodecurr,100.0*maxmindist_,0);
         maxmindist_ *= 10.0;
 

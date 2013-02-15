@@ -726,7 +726,7 @@ Teuchos::RCP<Epetra_Map> FSI::FluidFluidMonolithicStructureSplitNoNOX::CombinedD
   //structure and ale maps should not have any fsiCondDofs, so we
   //throw them away from overallfsidbcmaps
 
-  vector<int> otherdbcmapvector; //vector of dbc
+  std::vector<int> otherdbcmapvector; //vector of dbc
   const int mylength = overallfsidbcmaps->NumMyElements(); //on each prossesor (lids)
   const int* mygids = overallfsidbcmaps->MyGlobalElements();
   for (int i=0; i<mylength; ++i)

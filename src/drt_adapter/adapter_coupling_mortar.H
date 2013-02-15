@@ -78,66 +78,66 @@ namespace ADAPTER
     void MeshInit( DRT::Discretization& masterdis,
                    DRT::Discretization& slavedis,
                    DRT::Discretization& aledis,
-                   RCP<Epetra_Map> masterdofrowmap,
-                   RCP<Epetra_Map> slavedofrowmap,
+                   Teuchos::RCP<Epetra_Map> masterdofrowmap,
+                   Teuchos::RCP<Epetra_Map> slavedofrowmap,
                    const Epetra_Comm& comm,
                    bool structslave);
 
     ///filling matrices (standard case)
-    void Evaluate(RCP<Epetra_Vector> idisp);
+    void Evaluate(Teuchos::RCP<Epetra_Vector> idisp);
 
     ///filling matrices (case of transferring same dofs on two different meshes)
-    void Evaluate(RCP<Epetra_Vector> idispma, RCP<Epetra_Vector> idispsl);
+    void Evaluate(Teuchos::RCP<Epetra_Vector> idispma, Teuchos::RCP<Epetra_Vector> idispsl);
 
-    RCP<Epetra_Vector> MasterToSlave
+    Teuchos::RCP<Epetra_Vector> MasterToSlave
     (
-        RCP<Epetra_Vector> mv ///< structural interface displacements
+        Teuchos::RCP<Epetra_Vector> mv ///< structural interface displacements
     ) const;
 
     /// const version
-    RCP<Epetra_Vector> MasterToSlave
+    Teuchos::RCP<Epetra_Vector> MasterToSlave
     (
-        RCP<const Epetra_Vector> mv ///< structural interface displacements
+        Teuchos::RCP<const Epetra_Vector> mv ///< structural interface displacements
     ) const;
 
     /// transfer a dof vector from slave to master
-    RCP<Epetra_Vector> SlaveToMaster
+    Teuchos::RCP<Epetra_Vector> SlaveToMaster
     (
-        RCP<Epetra_Vector> sv   ///< fluid interface loads
+        Teuchos::RCP<Epetra_Vector> sv   ///< fluid interface loads
     ) const;
 
     /// const version
-    RCP<Epetra_Vector> SlaveToMaster
+    Teuchos::RCP<Epetra_Vector> SlaveToMaster
     (
-        RCP<const Epetra_Vector> sv   ///< fluid interface loads
+        Teuchos::RCP<const Epetra_Vector> sv   ///< fluid interface loads
     ) const;
 
     /// the mortar interface
-    RCP<MORTAR::MortarInterface> Interface() const { return interface_;}
+    Teuchos::RCP<MORTAR::MortarInterface> Interface() const { return interface_;}
 
     /// the interface dof map of the master side
-    RCP<Epetra_Map> MasterDofRowMap() const { return masterdofrowmap_; }
+    Teuchos::RCP<Epetra_Map> MasterDofRowMap() const { return masterdofrowmap_; }
 
     /// the interface dof map of the slave side
-    RCP<Epetra_Map> SlaveDofRowMap()  const { return slavedofrowmap_; }
+    Teuchos::RCP<Epetra_Map> SlaveDofRowMap()  const { return slavedofrowmap_; }
 
     /// the interface dof map of the lagrainge multiplier
-    RCP<Epetra_Map> LmDofRowMap()  const { return glmdofrowmap_; }
+    Teuchos::RCP<Epetra_Map> LmDofRowMap()  const { return glmdofrowmap_; }
 
     /// the mortar projection operator
-    RCP<LINALG::SparseMatrix> GetMortarTrafo() const { return DinvM_;}
+    Teuchos::RCP<LINALG::SparseMatrix> GetMortarTrafo() const { return DinvM_;}
 
     /// return constraint matrix
-    RCP<LINALG::SparseMatrix> GetConMatrix() const { return conmatrix_;}
+    Teuchos::RCP<LINALG::SparseMatrix> GetConMatrix() const { return conmatrix_;}
 
     /// return mortar M matrix
-    RCP<LINALG::SparseMatrix> GetMMatrix() const { return M_;}
+    Teuchos::RCP<LINALG::SparseMatrix> GetMMatrix() const { return M_;}
 
     /// return mortar D matrix
-    RCP<LINALG::SparseMatrix> GetDMatrix() const { return D_;}
+    Teuchos::RCP<LINALG::SparseMatrix> GetDMatrix() const { return D_;}
 
     /// return inverted mortar matrix \f$D^{-1}\f$
-    RCP<LINALG::SparseMatrix> GetDinvMatrix() const { return Dinv_;}
+    Teuchos::RCP<LINALG::SparseMatrix> GetDinvMatrix() const { return Dinv_;}
 
 
   private:
@@ -145,16 +145,16 @@ namespace ADAPTER
     ///filling matrices by using mortar interface
     void Evaluate();
 
-    RCP<MORTAR::MortarInterface>  interface_;        ///< interface
-    RCP<Epetra_Map>       masterdofrowmap_;  ///< map of master row dofs
-    RCP<Epetra_Map>       slavedofrowmap_;   ///< map of slave row dofs
-    RCP<Epetra_Map>       glmdofrowmap_;   ///< map of slave row dofs
-    RCP<LINALG::SparseMatrix>     conmatrix_ ;
+    Teuchos::RCP<MORTAR::MortarInterface> interface_;       ///< interface
+    Teuchos::RCP<Epetra_Map>              masterdofrowmap_; ///< map of master row dofs
+    Teuchos::RCP<Epetra_Map>              slavedofrowmap_;  ///< map of slave row dofs
+    Teuchos::RCP<Epetra_Map>              glmdofrowmap_;    ///< map of slave row dofs
+    Teuchos::RCP<LINALG::SparseMatrix>    conmatrix_ ;
 
-    RCP<LINALG::SparseMatrix> D_;            ///< mortar matrix
-    RCP<LINALG::SparseMatrix> Dinv_;         ///< inverse of mortar matrix #D_
-    RCP<LINALG::SparseMatrix> M_;            ///< mortar matrix
-    RCP<LINALG::SparseMatrix> DinvM_;        ///< product of Dinv_ \times M_
+    Teuchos::RCP<LINALG::SparseMatrix> D_;            ///< mortar matrix
+    Teuchos::RCP<LINALG::SparseMatrix> Dinv_;         ///< inverse of mortar matrix #D_
+    Teuchos::RCP<LINALG::SparseMatrix> M_;            ///< mortar matrix
+    Teuchos::RCP<LINALG::SparseMatrix> DinvM_;        ///< product of Dinv_ \times M_
   };
 }
 
