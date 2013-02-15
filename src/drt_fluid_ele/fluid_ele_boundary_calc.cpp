@@ -4653,24 +4653,24 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
       for (int node=0;node<nenparent;++node)
       {
         normalderiv(0,nsd_*node)   += 0.;
-        normalderiv(0,nsd_*node+1) += (pderiv(0,node)*dxyzdrs(1,2)-pderiv(1,node)*dxyzdrs(0,2)) * fac;
-        normalderiv(0,nsd_*node+2) += (pderiv(1,node)*dxyzdrs(0,1)-pderiv(0,node)*dxyzdrs(1,1)) * fac;
+        normalderiv(0,nsd_*node+1) += (pderiv(0,node)*dxyzdrs(1,2)-pderiv(1,node)*dxyzdrs(0,2)) ;
+        normalderiv(0,nsd_*node+2) += (pderiv(1,node)*dxyzdrs(0,1)-pderiv(0,node)*dxyzdrs(1,1)) ;
 
-        normalderiv(1,nsd_*node)   += (pderiv(1,node)*dxyzdrs(0,2)-pderiv(0,node)*dxyzdrs(1,2)) * fac;
+        normalderiv(1,nsd_*node)   += (pderiv(1,node)*dxyzdrs(0,2)-pderiv(0,node)*dxyzdrs(1,2)) ;
         normalderiv(1,nsd_*node+1) += 0.;
-        normalderiv(1,nsd_*node+2) += (pderiv(0,node)*dxyzdrs(1,0)-pderiv(1,node)*dxyzdrs(0,0)) * fac;
+        normalderiv(1,nsd_*node+2) += (pderiv(0,node)*dxyzdrs(1,0)-pderiv(1,node)*dxyzdrs(0,0)) ;
 
-        normalderiv(2,nsd_*node)   += (pderiv(0,node)*dxyzdrs(1,1)-pderiv(1,node)*dxyzdrs(0,1)) * fac;
-        normalderiv(2,nsd_*node+1) += (pderiv(1,node)*dxyzdrs(0,0)-pderiv(0,node)*dxyzdrs(1,0)) * fac;
+        normalderiv(2,nsd_*node)   += (pderiv(0,node)*dxyzdrs(1,1)-pderiv(1,node)*dxyzdrs(0,1)) ;
+        normalderiv(2,nsd_*node+1) += (pderiv(1,node)*dxyzdrs(0,0)-pderiv(0,node)*dxyzdrs(1,0)) ;
         normalderiv(2,nsd_*node+2) += 0.;
       }
     else //if(nsd_==2)
       for (int node=0;node<nenparent;++node)
       {
         normalderiv(0,nsd_*node)   += 0.;
-        normalderiv(0,nsd_*node+1) += pderiv(0,node) * fac;
+        normalderiv(0,nsd_*node+1) += pderiv(0,node) ;
 
-        normalderiv(1,nsd_*node)   += -pderiv(0,node) * fac;
+        normalderiv(1,nsd_*node)   += -pderiv(0,node) ;
         normalderiv(1,nsd_*node+1) += 0.;
       }
 
@@ -4750,7 +4750,6 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureCoupling(
 
   // get node coordinates
   // (we have a nsd_ dimensional domain, since nsd_ determines the dimension of FluidBoundary element!)
-  //GEO::fillInitialPositionArray<distype,nsd_,Epetra_SerialDenseMatrix>(ele,xyze_);
   GEO::fillInitialPositionArray<distype,nsd_,LINALG::Matrix<nsd_,bdrynen_> >(ele,xyze_);
 
   // displacements
@@ -4802,6 +4801,10 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureCoupling(
     // Computation of nurb specific stuff is not activated here
     EvalShapeFuncAtBouIntPoint(intpoints,gpid,NULL,NULL);
 
+    const double timefac       = fldpara_->TimeFac() ;
+    const double timefacfac    = fldpara_->TimeFac() * fac_;
+    const double rhsfac        = fldpara_->TimeFacRhs() * fac_;
+
     // get pressure at integration point
     double press = funct_.Dot(epressnp);
 
@@ -4836,9 +4839,9 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureCoupling(
       for (int node=0;node<bdrynen_;++node)
       {
         normalderiv(0,nsd_*node)   += 0.;
-        normalderiv(0,nsd_*node+1) += deriv_(0,node) * funct_(node) * fac;
+        normalderiv(0,nsd_*node+1) += deriv_(0,node) * funct_(node) ;
 
-        normalderiv(1,nsd_*node)   += -deriv_(0,node) * funct_(node) * fac;
+        normalderiv(1,nsd_*node)   += -deriv_(0,node) * funct_(node) ;
         normalderiv(1,nsd_*node+1) += 0.;
       }
 
@@ -4848,17 +4851,18 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PressureCoupling(
       for (int idof=0;idof<nsd_;idof++)
       {
         if(not offdiag)
-          elevec1(inode*numdofpernode_+idof) -=  funct_(inode) * unitnormal_(idof) * press * fac_;
+          elevec1(inode*numdofpernode_+idof) -=  funct_(inode) * unitnormal_(idof) * press * rhsfac;
         for (int nnod=0;nnod<bdrynen_;nnod++)
         {
           if(not offdiag)
             elemat1(inode*numdofpernode_+idof,nnod*numdofpernode_+nsd_) +=
-                 funct_(inode) * unitnormal_(idof) * funct_(nnod) * fac_;
+                 funct_(inode) * unitnormal_(idof) * funct_(nnod) * timefacfac
+            ;
           else
             for (int idof2=0;idof2<nsd_;idof2++)
             {
               elemat1(inode*numdofpernode_+idof,nnod*nsd_+idof2) +=
-                   normalderiv(idof,nnod*nsd_+idof2) * press * funct_(inode) * fac;
+                   normalderiv(idof,nnod*nsd_+idof2) * press * funct_(inode) * timefac * fac;
             }
         }
       }

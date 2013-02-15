@@ -185,7 +185,7 @@ public:
   //! flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation
   bool MultiFracLomaConti(){return multifrac_loma_conti_;};
 
-  //! some loma specific parameters
+  //! some poro specific parameters
   //! partial integration of porosity gradient in continuity equation
   bool PoroContiPartInt(){return poro_conti_partint_;};
 
