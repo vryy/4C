@@ -117,16 +117,16 @@ void LINALG::SOLVER::BelosSolver::Setup(  Teuchos::RCP<Epetra_Operator>     matr
       Teuchos::ParameterList & precondParams = Params().sublist(precondParamListName);
       Teuchos::ParameterList & linSystemProps = precondParams.sublist("Linear System properties");
 
-      LINALG_COPY_PARAM(Params().sublist("Aztec Parameters").sublist("Linear System properties"),
+      LINALG_COPY_PARAM(Params().sublist("Belos Parameters").sublist("Linear System properties"),
           "contact slaveDofMap", Teuchos::RCP<Epetra_Map>, Teuchos::null,
           linSystemProps, "contact slaveDofMap");
-      LINALG_COPY_PARAM(Params().sublist("Aztec Parameters").sublist("Linear System properties"),
+      LINALG_COPY_PARAM(Params().sublist("Belos Parameters").sublist("Linear System properties"),
           "contact masterDofMap", Teuchos::RCP<Epetra_Map>, Teuchos::null,
           linSystemProps, "contact masterDofMap");
-      LINALG_COPY_PARAM(Params().sublist("Aztec Parameters").sublist("Linear System properties"),
+      LINALG_COPY_PARAM(Params().sublist("Belos Parameters").sublist("Linear System properties"),
           "contact innerDofMap", Teuchos::RCP<Epetra_Map>, Teuchos::null,
           linSystemProps, "contact innerDofMap");
-      LINALG_COPY_PARAM(Params().sublist("Aztec Parameters").sublist("Linear System properties"),
+      LINALG_COPY_PARAM(Params().sublist("Belos Parameters").sublist("Linear System properties"),
           "contact activeDofMap", Teuchos::RCP<Epetra_Map>, Teuchos::null,
           linSystemProps, "contact activeDofMap");
 
