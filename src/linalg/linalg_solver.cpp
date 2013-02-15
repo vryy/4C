@@ -962,7 +962,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
   // set init smoother list
   // only needed for MueLu::AdaptiveSaMLParameterListInterpreter
   // currently used in MueLuContactPreconditioner3
-  ParameterList& initList = mllist.sublist("init smoother");
+  Teuchos::ParameterList& initList = mllist.sublist("init smoother");
   switch (DRT::INPUT::IntegralValue<int>(inparams,"MueLu_INITSMOOTHER"))
   {
   case 0:
