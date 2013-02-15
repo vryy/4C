@@ -25,10 +25,6 @@ is handed to a c++ object mesh.
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_element.H"
 
-
-using std::map;
-using std::vector;
-
 namespace EXODUS
 {
 
@@ -46,15 +42,15 @@ class Mesh
 {
 public:
   //! constructor
-  Mesh(string exofilename);
+  Mesh(std::string exofilename);
 
   //! extension constructor, adds Elementblock and nodes to a basemesh
   Mesh(const Mesh& basemesh,
-       const Teuchos::RCP<map<int,std::vector<double> > > extNodes,
-       const map<int,Teuchos::RCP<ElementBlock> >& extBlocks,
-       const map<int,NodeSet>& extNodesets,
-       const map<int,SideSet>& extSidesets,
-       const string newtitle);
+       const Teuchos::RCP<std::map<int,std::vector<double> > > extNodes,
+       const std::map<int,Teuchos::RCP<ElementBlock> >& extBlocks,
+       const std::map<int,NodeSet>& extNodesets,
+       const std::map<int,SideSet>& extSidesets,
+       const std::string newtitle);
 
   //! empty constructor
   Mesh();
@@ -84,10 +80,10 @@ public:
   int GetExoId() const {return exoid_;}
 
   //! Get mesh title
-  string GetTitle() const;
+  std::string GetTitle() const;
 
   //! Get ElementBlock map
-  map<int,Teuchos::RCP<ElementBlock> > GetElementBlocks() const {return elementBlocks_;}
+  std::map<int,Teuchos::RCP<ElementBlock> > GetElementBlocks() const {return elementBlocks_;}
 
   //! Get Number of ElementBlocks
   int GetNumElementBlocks() const {return elementBlocks_.size();}
@@ -96,7 +92,7 @@ public:
   Teuchos::RCP<ElementBlock> GetElementBlock(const int id) const;
 
   //! Get NodeSet map
-  map<int,NodeSet> GetNodeSets() const {return nodeSets_;}
+  std::map<int,NodeSet> GetNodeSets() const {return nodeSets_;}
 
   //! Get Number of NodeSets
   int GetNumNodeSets() const {return nodeSets_.size();}
@@ -105,7 +101,7 @@ public:
   NodeSet GetNodeSet(const int id) const;
 
   //! Get SideSet map
-  map<int,SideSet> GetSideSets() const {return sideSets_;}
+  std::map<int,SideSet> GetSideSets() const {return sideSets_;}
 
   //! Get Number of SideSets
   int GetNumSideSets() const {return sideSets_.size();}
@@ -114,37 +110,37 @@ public:
   SideSet GetSideSet(const int id) const;
 
   //! Get Side Set Connectivity with Global Nodes
-  map<int,std::vector<int> > GetSideSetConn(const SideSet sideset) const;
+  std::map<int,std::vector<int> > GetSideSetConn(const SideSet sideset) const;
 
   //! Get Side Set Connectivity with Global Nodes
-  map<int,std::vector<int> > GetSideSetConn(const SideSet sideset, bool checkoutside) const;
+  std::map<int,std::vector<int> > GetSideSetConn(const SideSet sideset, bool checkoutside) const;
 
   //! Make sure child ele (SideSet) is outward oriented w.r.t. parent ele
-  vector<int> OutsideOrientedSide(const vector<int> parentele, const vector<int> sidemap) const;
+  std::vector<int> OutsideOrientedSide(const std::vector<int> parentele, const std::vector<int> sidemap) const;
 
   //! Get egde Normal at node
-  vector<double> Normal(const int head1, const int origin, const int head2) const;
+  std::vector<double> Normal(const int head1, const int origin, const int head2) const;
 
   //! Get normalized Vector between 2 nodes
-  vector<double> NodeVec(const int tail, const int head) const;
+  std::vector<double> NodeVec(const int tail, const int head) const;
 
   //! Transform SideSet into ElementBlock
-  vector<ElementBlock> SideSetToEBlocks(const SideSet& sideset, const map<int,std::vector<int> >& sidesetconn) const;
+  std::vector<ElementBlock> SideSetToEBlocks(const SideSet& sideset, const std::map<int,std::vector<int> >& sidesetconn) const;
 
   //! Transform SideSet into NodeSet
-  NodeSet SideSetToNodeSet(const SideSet& sideset, const map<int,std::vector<int> >& sideconn) const;
+  NodeSet SideSetToNodeSet(const SideSet& sideset, const std::map<int,std::vector<int> >& sideconn) const;
 
   //! Get Set of Nodes in SideSet
   std::set<int> GetSideSetNodes(const EXODUS::SideSet& sideset, const std::map<int,std::vector<int> >& sideconn) const;
 
   //! Get Node map
-  Teuchos::RCP<map<int,std::vector<double> > > GetNodes() const {return nodes_;}
+  Teuchos::RCP<std::map<int,std::vector<double> > > GetNodes() const {return nodes_;}
 
   //! Get one nodal coords
-  vector<double> GetNode(const int NodeID) const;
+  std::vector<double> GetNode(const int NodeID) const;
   
   //! Set one nodal coords
-  void SetNode(const int NodeID, const vector<double> coord);
+  void SetNode(const int NodeID, const std::vector<double> coord);
 
   //! Set number of space dimensions
   void SetNsd (const int nsd);
@@ -153,7 +149,7 @@ public:
   void CloseExo() const;
 
   //! Write Mesh into exodus file
-  void WriteMesh(const string newexofilename) const;
+  void WriteMesh(const std::string newexofilename) const;
 
   //! Add Element Block to mesh
   void AddElementBlock(const Teuchos::RCP<EXODUS::ElementBlock> eblock) const;
@@ -165,29 +161,29 @@ public:
   void EraseSideSet(const int id);
 
   //! Calculate the midpoint of all elements and return map<midpoint,map<eb,ele> >
-  std::map<int,std::pair<int,int> > createMidpoints(map<int,std::vector<double> >& midpoints, const vector<int>& eb_ids) const;
+  std::map<int,std::pair<int,int> > createMidpoints(std::map<int,std::vector<double> >& midpoints, const std::vector<int>& eb_ids) const;
 
   //! Adjust local element ids referenced in SideSet to global ids
-  map<int,std::vector<int> > GlobalifySSeleids(const int ssid) const;
+  std::map<int,std::vector<int> > GlobalifySSeleids(const int ssid) const;
 
   //! Plot Nodes in Gmsh-file
   void PlotNodesGmsh() const;
 
   //! Plot all ElementBlocks into Gmsh-file
-  void PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& mymesh) const;
-  void PlotElementBlocksGmsh(const string fname,const EXODUS::Mesh& mymesh, const vector<int>& ebids) const;
+  void PlotElementBlocksGmsh(const std::string fname,const EXODUS::Mesh& mymesh) const;
+  void PlotElementBlocksGmsh(const std::string fname,const EXODUS::Mesh& mymesh, const std::vector<int>& ebids) const;
 
   //! Plot Connectivity into Gmsh-file
-  void PlotConnGmsh(const string fname,const EXODUS::Mesh& mymesh, const map<int,std::vector<int> >& conn) const;
+  void PlotConnGmsh(const std::string fname,const EXODUS::Mesh& mymesh, const std::map<int,std::vector<int> >& conn) const;
 
 private:
-  Teuchos::RCP<map<int,std::vector<double> > > nodes_;
+  Teuchos::RCP<std::map<int,std::vector<double> > > nodes_;
 
-  map<int,Teuchos::RCP<ElementBlock> > elementBlocks_;
+  std::map<int,Teuchos::RCP<ElementBlock> > elementBlocks_;
 
-  map<int,NodeSet> nodeSets_;
+  std::map<int,NodeSet> nodeSets_;
 
-  map<int,SideSet> sideSets_;
+  std::map<int,SideSet> sideSets_;
 
   //! number of dimensions
   int num_dim_;
@@ -238,8 +234,8 @@ public:
   };
 
   ElementBlock(ElementBlock::Shape DisType,
-               Teuchos::RCP<map<int,std::vector<int> > >& eleconn,    // Element connectivity
-               string name);
+               Teuchos::RCP<std::map<int,std::vector<int> > >& eleconn,    // Element connectivity
+               std::string name);
 
   virtual ~ElementBlock();
 
@@ -247,9 +243,9 @@ public:
 
   int GetNumEle() const {return eleconn_->size();}
 
-  Teuchos::RCP<map<int,std::vector<int> > > GetEleConn() const {return eleconn_;}
+  Teuchos::RCP<std::map<int,std::vector<int> > > GetEleConn() const {return eleconn_;}
 
-  vector<int> GetEleNodes(int i) const;
+  std::vector<int> GetEleNodes(int i) const;
 
   string GetName() const {return name_;}
 
@@ -296,34 +292,34 @@ private:
 class SideSet
 {
 public:
-  SideSet(const map<int,std::vector<int> >& sides, const string& name);
+  SideSet(const std::map<int,std::vector<int> >& sides, const std::string& name);
 
   virtual ~SideSet();
 
   inline int GetNumSides() const {return sides_.size();}
 
-  string GetName() const {return name_;}
+  std::string GetName() const {return name_;}
 
-  map<int,std::vector<int> > GetSideSet() const {return sides_;}
+  std::map<int,std::vector<int> > GetSideSet() const {return sides_;}
 
-  void ReplaceSides(map<int,std::vector<int> >newsides) {sides_ = newsides; return;};
+  void ReplaceSides(std::map<int,std::vector<int> >newsides) {sides_ = newsides; return;};
 
-  vector<int> GetFirstSideSet() const {return sides_.begin()->second;}
+  std::vector<int> GetFirstSideSet() const {return sides_.begin()->second;}
 
   void FillSideLists(int* elemlist, int* sidelist) const;
-  void FillSideLists(int* elemlist, int* sidelist, const map<int,std::vector<int> >& sides) const;
+  void FillSideLists(int* elemlist, int* sidelist, const std::map<int,std::vector<int> >& sides) const;
 
   void Print(ostream& os, bool verbose=false) const;
 
 private:
-  map<int,std::vector<int> > sides_;
+  std::map<int,std::vector<int> > sides_;
   string name_;
 };
 // *********** end of classes
 
 Mesh QuadtoTri(EXODUS::Mesh& basemesh);
 
-inline ElementBlock::Shape StringToShape(const string shape)
+inline ElementBlock::Shape StringToShape(const std::string shape)
 {
   if      (shape.compare("SPHERE")== 0)   return ElementBlock::point1;
   else if (shape.compare("QUAD4")== 0)    return ElementBlock::quad4;
@@ -410,16 +406,16 @@ inline DRT::Element::DiscretizationType PreShapeToDrt(const ElementBlock::Shape 
 
 }
 
-void PrintMap(ostream& os,const map<int,std::vector<int> > mymap);
-void PrintMap(ostream& os, const map<int,std::vector<double> >mymap);
-void PrintMap(ostream& os,const map<int,std::set<int> > mymap);
-void PrintMap(ostream& os,const map<int,map<int,int> > mymap);
-void PrintMap(ostream& os,const map<int,std::pair<int,int> > mymap);
-void PrintMap(ostream& os,const map<int,int> mymap);
-void PrintMap(ostream& os,const map<int,double> mymap);
-void PrintMap(ostream& os,const map<double,int> mymap);
-void PrintVec(ostream& os, const vector<int> actvec);
-void PrintVec(ostream& os, const vector<double> actvec);
+void PrintMap(ostream& os,const std::map<int,std::vector<int> > mymap);
+void PrintMap(ostream& os, const std::map<int,std::vector<double> >mymap);
+void PrintMap(ostream& os,const std::map<int,std::set<int> > mymap);
+void PrintMap(ostream& os,const std::map<int,std::map<int,int> > mymap);
+void PrintMap(ostream& os,const std::map<int,std::pair<int,int> > mymap);
+void PrintMap(ostream& os,const std::map<int,int> mymap);
+void PrintMap(ostream& os,const std::map<int,double> mymap);
+void PrintMap(ostream& os,const std::map<double,int> mymap);
+void PrintVec(ostream& os, const std::vector<int> actvec);
+void PrintVec(ostream& os, const std::vector<double> actvec);
 void PrintSet(ostream& os, const std::set<int> actset);
 
 

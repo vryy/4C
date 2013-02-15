@@ -34,7 +34,7 @@ class Mesh;
 class ElementBlock;
 
 //! validate a given datfile
-void ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const string datfile);
+void ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::string datfile);
 
 //! Check Elements for positive Jacobian and otherwise 'rewind' them
 void ValidateMeshElementJacobians(EXODUS::Mesh& mymesh);

@@ -28,46 +28,46 @@ Here is everything related with writing a dat-file
 namespace EXODUS
 {
 //! write datfile
-int WriteDatFile(const string& datfile, const EXODUS::Mesh& mymesh,
-    const string& headfile, const vector<EXODUS::elem_def>& eledefs, const vector<EXODUS::cond_def>& condefs,
-    const map<int,map<int,std::vector<std::vector<double> > > >& elecenterlineinfo);
+int WriteDatFile(const std::string& datfile, const EXODUS::Mesh& mymesh,
+    const std::string& headfile, const std::vector<EXODUS::elem_def>& eledefs, const std::vector<EXODUS::cond_def>& condefs,
+    const std::map<int,std::map<int,std::vector<std::vector<double> > > >& elecenterlineinfo);
 
 //! datfile Intro
-void WriteDatIntro(const string& headfile,const EXODUS::Mesh& mymesh, ostream& dat);
+void WriteDatIntro(const std::string& headfile,const EXODUS::Mesh& mymesh, std::ostream& dat);
 
 //! headfile content into datfile
-void WriteDatHead(const string& headfile, ostream& dat);
+void WriteDatHead(const std::string& headfile, std::ostream& dat);
 
 //! remove a specific input file section
-void RemoveDatSection(const string secname, string& headstring);
+void RemoveDatSection(const std::string secname, std::string& headstring);
 
 //! design description
-void WriteDatDesign(const vector<EXODUS::cond_def>& condefs, ostream& dat);
+void WriteDatDesign(const std::vector<EXODUS::cond_def>& condefs, std::ostream& dat);
 
 //! conditions
-void WriteDatConditions(const vector<EXODUS::cond_def>& condefs,const EXODUS::Mesh& mymesh, ostream& dat);
+void WriteDatConditions(const std::vector<EXODUS::cond_def>& condefs,const EXODUS::Mesh& mymesh, std::ostream& dat);
 
 //! special condition SurfLocsys: calculates Normal and Tangent
-vector<double> CalcNormalSurfLocsys(const int ns_id,const EXODUS::Mesh& m);
+std::vector<double> CalcNormalSurfLocsys(const int ns_id,const EXODUS::Mesh& m);
 
 //! DesignNode - Node Topology
-void WriteDatDesignTopology(const vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, ostream& dat);
+void WriteDatDesignTopology(const std::vector<EXODUS::cond_def>& condefs, const EXODUS::Mesh& mymesh, std::ostream& dat);
 
 //! return set of nodes in bc_entity
 const std::set<int> GetNsFromBCEntity(const EXODUS::cond_def& e, const EXODUS::Mesh& m);
 
 //! Nodes into datfile
-void WriteDatNodes(const EXODUS::Mesh& mymesh, ostream& dat);
+void WriteDatNodes(const EXODUS::Mesh& mymesh, std::ostream& dat);
 
 //! Elements into datfile
-void WriteDatEles(const vector<EXODUS::elem_def>& eledefs, const EXODUS::Mesh& mymesh, ostream& dat,
-    const map<int,map<int,std::vector<std::vector<double> > > >& elecenterlineinfo);
+void WriteDatEles(const std::vector<EXODUS::elem_def>& eledefs, const EXODUS::Mesh& mymesh, std::ostream& dat,
+    const std::map<int,std::map<int,std::vector<std::vector<double> > > >& elecenterlineinfo);
 
 //! Elements from eblock
-void DatEles(Teuchos::RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, int& struele, ostream& dat,
-    const map<int,map<int,std::vector<std::vector<double> > > >& elecenterlineinfo,const int eb_id);
+void DatEles(Teuchos::RCP< const EXODUS::ElementBlock> eb, const EXODUS::elem_def& acte, int& struele, std::ostream& dat,
+    const std::map<int,std::map<int,std::vector<std::vector<double> > > >& elecenterlineinfo,const int eb_id);
 
-inline string CondGeomTypeToString(const EXODUS::cond_def& def)
+inline std::string CondGeomTypeToString(const EXODUS::cond_def& def)
 {
   switch (def.gtype){
   case DRT::Condition::Volume:  return "DVOL  "; break;

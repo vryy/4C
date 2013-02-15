@@ -17,9 +17,9 @@ bool MyDataSortPredicate(std::pair<int, double> lhs,std::pair<int, double> rhs);
 namespace EXODUS
 {
 
-std::map<int,std::map<int,std::vector<std::vector<double> > > > EleCenterlineInfo(string& cline,EXODUS::Mesh& mymesh, const std::vector<double> coordcorr);
+std::map<int,std::map<int,std::vector<std::vector<double> > > > EleCenterlineInfo(std::string& cline,EXODUS::Mesh& mymesh, const std::vector<double> coordcorr);
 
-std::map<int,double> NdCenterlineThickness(string cline,const std::set<int>& nodes, const map<int,std::vector<int> >& conn, const EXODUS::Mesh& mesh, const double ratio, const std::vector<double> coordcorr);
+std::map<int,double> NdCenterlineThickness(std::string cline,const std::set<int>& nodes, const std::map<int,std::vector<int> >& conn, const EXODUS::Mesh& mesh, const double ratio, const std::vector<double> coordcorr);
 
 class Centerline
 {
@@ -29,14 +29,14 @@ private:
 
 public:
   //ctor
-  Centerline(string,std::vector<double> coordcorr);
-  Centerline(const EXODUS::NodeSet& ns, const Teuchos::RCP<map<int,std::vector<double> > > nodes);
+  Centerline(std::string,std::vector<double> coordcorr);
+  Centerline(const EXODUS::NodeSet& ns, const Teuchos::RCP<std::map<int,std::vector<double> > > nodes);
   //dtor
   ~Centerline();
   //returns points_
-  Teuchos::RCP<map<int,std::vector<double> > > GetPoints() const {return points_;};
+  Teuchos::RCP<std::map<int,std::vector<double> > > GetPoints() const {return points_;};
   //returns diam_
-  Teuchos::RCP<map<int,double> > GetDiams() const {return diam_;};
+  Teuchos::RCP<std::map<int,double> > GetDiams() const {return diam_;};
   //displays points_ on console
   void PrintPoints();
   //creates gmsh-file to visualize points
@@ -57,14 +57,14 @@ double scalar_product3d(std::vector<double> v1,std::vector<double> v2);
 //! normalizes a vector
 void normalize3d(std::vector<double>&);
 //! creates local coordinate systems for each element and returns resulting map
-map<int,map<int,std::vector<std::vector<double> > > > element_cosys(EXODUS::Centerline&,const EXODUS::Mesh&, const std::vector<int>&);
+std::map<int,std::map<int,std::vector<std::vector<double> > > > element_cosys(EXODUS::Centerline&,const EXODUS::Mesh&, const std::vector<int>&);
 /// creates local coordinate systems for each element and returns resulting map 
 ///different calculation method for element normals applied in this function
-map<int,map<int,std::vector<std::vector<double> > > > element_cosys(EXODUS::Centerline&,const EXODUS::Mesh&, const std::vector<int>&, std::set<int>& );
+std::map<int,std::map<int,std::vector<std::vector<double> > > > element_cosys(EXODUS::Centerline&,const EXODUS::Mesh&, const std::vector<int>&, std::set<int>& );
 
 /*! creates degenerated local coordinate system in case of given centerpoint for each element and returns resulting map.
  * CoSys contains only three copies of the same vector!  */
-map<int,map<int,std::vector<std::vector<double> > > > element_degcosys
+std::map<int,std::map<int,std::vector<std::vector<double> > > > element_degcosys
 (
   EXODUS::Centerline&,  ///< centerpoints
   const EXODUS::Mesh&,  ///< mech

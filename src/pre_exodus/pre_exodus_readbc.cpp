@@ -22,7 +22,7 @@ Here is everything related with reading a bc file
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs, vector<EXODUS::cond_def>& condefs)
+void EXODUS::ReadBCFile(const std::string& bcfile, std::vector<EXODUS::elem_def>& eledefs, std::vector<EXODUS::cond_def>& condefs)
 {
   // first we read the whole file into one stream/string
   std::stringstream bcstream;
@@ -35,13 +35,13 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
   while (bcfstream.good()) bcstream << (char) bcfstream.get();
   bcfstream.close();
   // string which contains the whole file
-  string allconds = bcstream.str();
+  std::string allconds = bcstream.str();
   allconds.erase(allconds.end()-1);  //delete last 'whatisthis'-char
 
   // get rid of first part
   size_t found;
   found = allconds.find("BCSPECS");
-  if (found==string::npos) dserror ("No specifications found in bcfile");
+  if (found==std::string::npos) dserror ("No specifications found in bcfile");
   allconds.erase(allconds.begin(),allconds.begin()+found);
 
   // get rid of 'validconditions' part
@@ -49,45 +49,45 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
   allconds.erase(allconds.begin()+found,allconds.end());
 
   // define markers
-  const string ebmarker("*eb");
-  const string nsmarker("*ns");
-  const string ssmarker("*ss");
+  const std::string ebmarker("*eb");
+  const std::string nsmarker("*ns");
+  const std::string ssmarker("*ss");
   const int markerlength=3;
-  const string marker("*");
+  const std::string marker("*");
 
   // necessary counters
   int E_id = 0; //the 'E num -' in the datfile
   int ndp = 0; int ndl = 0; int nds = 0; int ndv = 0;
 
   // map to avoid double assignment
-  map<int,int> eb_dp2Eid; // ele block point E id
-  map<int,int> eb_dl2Eid; // ele block line E id
-  map<int,int> eb_ds2Eid; // ele block surf E id
-  map<int,int> eb_dv2Eid; // ele block vol E id
-  map<int,int> ns_dp2Eid; // node set point E id
-  map<int,int> ns_dl2Eid; // node set line E id
-  map<int,int> ns_ds2Eid; // node set surf E id
-  map<int,int> ns_dv2Eid; // node set vol E id
+  std::map<int,int> eb_dp2Eid; // ele block point E id
+  std::map<int,int> eb_dl2Eid; // ele block line E id
+  std::map<int,int> eb_ds2Eid; // ele block surf E id
+  std::map<int,int> eb_dv2Eid; // ele block vol E id
+  std::map<int,int> ns_dp2Eid; // node set point E id
+  std::map<int,int> ns_dl2Eid; // node set line E id
+  std::map<int,int> ns_ds2Eid; // node set surf E id
+  std::map<int,int> ns_dv2Eid; // node set vol E id
 
-  if( allconds.find("**") != string::npos)
+  if( allconds.find("**") != std::string::npos)
     dserror("String '**' detected. More * than one not allowed due to usage as a marker.");
 
   found = allconds.find_first_of(marker);
-  while (found != string::npos){
+  while (found != std::string::npos){
     int startpos=found;
     found = allconds.find(marker,found+1);  //step forward to find next match
     // get actual condition
-    string actcond = allconds.substr(startpos,found-startpos);
+    std::string actcond = allconds.substr(startpos,found-startpos);
 
     // ensure substring has minimum length!
     if (actcond.size()<3) dserror("Substring is too short");
 
     // find out what mesh_entity type we have
-    string mesh_entity = actcond.substr(0,3);
+    std::string mesh_entity = actcond.substr(0,3);
 
     // get its id
     size_t found2 = actcond.find_first_of("=");
-    string buffer = actcond.substr(markerlength,found2-markerlength);
+    std::string buffer = actcond.substr(markerlength,found2-markerlength);
     // convert string to int
     std::istringstream bufferstream(buffer);
     int id;
@@ -96,7 +96,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
     // condition type
     size_t left = actcond.find_first_of("\"",0);
     size_t right = actcond.find_first_of("\"",left+1);
-    string type = actcond.substr(left+1,right-left-1);
+    std::string type = actcond.substr(left+1,right-left-1);
 
     if (mesh_entity.compare(ebmarker)==0) {
       // in case of eb we differntiate between 'element' or 'condition'
@@ -154,6 +154,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
           break;
         default:
           dserror("geometry type unspecified");
+          break;
         }
         cdef.e_id = E_id;
         condefs.push_back(cdef);
@@ -211,6 +212,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
         break;
       default:
         dserror("geometry type unspecified");
+        break;
       }
       cdef.e_id = E_id;
       condefs.push_back(cdef);
@@ -229,7 +231,7 @@ void EXODUS::ReadBCFile(const string& bcfile, vector<EXODUS::elem_def>& eledefs,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-EXODUS::elem_def EXODUS::ReadEdef(const string& mesh_entity,const int id, const string& actcond)
+EXODUS::elem_def EXODUS::ReadEdef(const std::string& mesh_entity,const int id, const std::string& actcond)
 {
   EXODUS::elem_def edef;
   edef.id = id;
@@ -255,7 +257,7 @@ EXODUS::elem_def EXODUS::ReadEdef(const string& mesh_entity,const int id, const 
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-EXODUS::cond_def EXODUS::ReadCdef(const string& mesh_entity,const int id, const string& actcond)
+EXODUS::cond_def EXODUS::ReadCdef(const std::string& mesh_entity,const int id, const std::string& actcond)
 {
   EXODUS::cond_def cdef;
   cdef.id = id;
@@ -267,71 +269,71 @@ EXODUS::cond_def EXODUS::ReadCdef(const string& mesh_entity,const int id, const 
   // read sectionname
   size_t left = actcond.find("sectionname=\"");  // 13 chars
   size_t right = actcond.find_first_of("\"",left+13);
-  string secname = actcond.substr(left+13,right-(left+13));
+  std::string secname = actcond.substr(left+13,right-(left+13));
   cdef.sec = secname;
 
   // read description
   left = actcond.find("description=\"");  // 13 chars
   right = actcond.find_first_of("\"",left+13);
-  string description = actcond.substr(left+13,right-(left+13));
+  std::string description = actcond.substr(left+13,right-(left+13));
   cdef.desc = description;
 
   // figure out geometry type
   cdef.gtype = DRT::Condition::NoGeom;  // default
   size_t found = secname.find("POINT");
-  if (found!=string::npos){
+  if (found!=std::string::npos){
     cdef.gtype = DRT::Condition::Point;
     return cdef;
   }
   found = secname.find("LINE");
-  if (found!=string::npos){
+  if (found!=std::string::npos){
     cdef.gtype = DRT::Condition::Line;
     return cdef;
   }
   found = secname.find("SURF");
-  if (found!=string::npos){
+  if (found!=std::string::npos){
     cdef.gtype = DRT::Condition::Surface;
     return cdef;
   }
   found = secname.find("VOL");
-  if (found!=string::npos) cdef.gtype = DRT::Condition::Volume;
+  if (found!=std::string::npos) cdef.gtype = DRT::Condition::Volume;
 
   return cdef;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintBCDef(ostream& os, const EXODUS::elem_def& def)
+void EXODUS::PrintBCDef(std::ostream& os, const EXODUS::elem_def& def)
 {
-  string mesh_entity;
+  std::string mesh_entity;
   if (def.me==EXODUS::bceb) mesh_entity = "ElementBlock";
   else if (def.me==EXODUS::bcns) mesh_entity = "NodeSet";
   else if (def.me==EXODUS::bcss) mesh_entity = "SideSet";
-  os << "The ELEMENT definition " << def.id << " refers to a " << mesh_entity << endl;
-  os << "Sectionname: " << def.sec << endl;
-  os << "Description: " << def.desc << endl;
-  os << endl;
+  os << "The ELEMENT definition " << def.id << " refers to a " << mesh_entity << std::endl;
+  os << "Sectionname: " << def.sec << std::endl;
+  os << "Description: " << def.desc << std::endl;
+  os << std::endl;
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::PrintBCDef(ostream& os, const EXODUS::cond_def& def)
+void EXODUS::PrintBCDef(std::ostream& os, const EXODUS::cond_def& def)
 {
-  string mesh_entity;
+  std::string mesh_entity;
   if (def.me==EXODUS::bceb) mesh_entity = "ElementBlock";
   else if (def.me==EXODUS::bcns) mesh_entity = "NodeSet";
   else if (def.me==EXODUS::bcss) mesh_entity = "SideSet";
-  os << "The CONDITION definition " << def.id << " refers to a " << mesh_entity << endl;
-  os << "Sectionname: " << def.sec << endl;
-  os << "Description: " << def.desc << endl;
-  os << endl;
+  os << "The CONDITION definition " << def.id << " refers to a " << mesh_entity << std::endl;
+  os << "Sectionname: " << def.sec << std::endl;
+  os << "Description: " << def.desc << std::endl;
+  os << std::endl;
 }
 
 
 /*----------------------------------------------------------------------*
  * check if periodic boundary conditions are defined        u.may 02/10 *
  *----------------------------------------------------------------------*/
-bool EXODUS::PeriodicBoundaryConditionsFound(vector<EXODUS::cond_def> condefs)
+bool EXODUS::PeriodicBoundaryConditionsFound(std::vector<EXODUS::cond_def> condefs)
 {
   bool pbc_defined = false;
   for(unsigned int i=0; i<condefs.size(); i++)
@@ -355,8 +357,8 @@ bool EXODUS::PeriodicBoundaryConditionsFound(vector<EXODUS::cond_def> condefs)
  * periodic boundary conditions are defined                 u.may 02/10 *
  *----------------------------------------------------------------------*/
 void EXODUS::CorrectNodalCoordinatesForPeriodicBoundaryConditions(
-    EXODUS::Mesh&             mesh,
-    vector<EXODUS::cond_def>  condefs)
+    EXODUS::Mesh&                 mesh,
+    std::vector<EXODUS::cond_def> condefs)
 {
   CorrectYZPlaneForPeriodicBoundaryConditions(mesh,condefs);
   CorrectXZPlaneForPeriodicBoundaryConditions(mesh,condefs);
@@ -371,8 +373,8 @@ void EXODUS::CorrectNodalCoordinatesForPeriodicBoundaryConditions(
  * periodic boundary conditions are defined                 u.may 02/10 *
  *----------------------------------------------------------------------*/
 void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
-    EXODUS::Mesh&                   mesh,
-    const std::vector<EXODUS::cond_def>& condefs)
+    EXODUS::Mesh&                         mesh,
+    const std::vector<EXODUS::cond_def>&  condefs)
 {
   // loop over all conditions
   for(unsigned int i=0; i<condefs.size(); i++)
@@ -390,7 +392,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
       
       // get condition id for master pbc
       size_t end_m = master_con.desc.find("Master"); // master
-      string string_mconditionid = master_con.desc.substr(0,end_m-1);
+      std::string string_mconditionid = master_con.desc.substr(0,end_m-1);
       // convert string to int
       std::istringstream string_mconditionidstream(string_mconditionid);
       int master_conditionID = -1;
@@ -409,7 +411,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
               slave_con.desc.find("ANGLE 0") != std::string::npos  ))
         {
           size_t end_s = slave_con.desc.find("Slave"); // slave
-          string string_sconditionid = slave_con.desc.substr(0,end_s-1); // one whitespaces
+          std::string string_sconditionid = slave_con.desc.substr(0,end_s-1); // one whitespaces
           // convert string to int
           std::istringstream string_sconditionidstream(string_sconditionid);
           string_sconditionidstream >> slave_conditionID;
@@ -427,7 +429,7 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
       size_t start_tol = slave_con.desc.find("ABSTREETOL");
       size_t tol_length = std::string("ABSTREETOL").length();
       start_tol = start_tol + tol_length + 1;
-      string string_tol = slave_con.desc.substr(start_tol,slave_con.desc.length()-start_tol); // two whitespaces
+      std::string string_tol = slave_con.desc.substr(start_tol,slave_con.desc.length()-start_tol); // two whitespaces
       // convert string to int
       std::istringstream string_tolstream(string_tol);
       double abstol = -1.0;
@@ -509,8 +511,8 @@ void EXODUS::CorrectYZPlaneForPeriodicBoundaryConditions(
  * periodic boundary conditions are defined                 u.may 02/10 *
  *----------------------------------------------------------------------*/
 void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
-    EXODUS::Mesh&                   mesh,
-    const std::vector<EXODUS::cond_def>& condefs)
+    EXODUS::Mesh&                         mesh,
+    const std::vector<EXODUS::cond_def>&  condefs)
 {
   // loop over all conditions
   for(unsigned int i=0; i<condefs.size(); i++)
@@ -528,7 +530,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
       
       // get condition id for master pbc
       size_t end_m = master_con.desc.find("Master"); // master
-      string string_mconditionid = master_con.desc.substr(0,end_m-1);
+      std::string string_mconditionid = master_con.desc.substr(0,end_m-1);
       // convert string to int
       std::istringstream string_mconditionidstream(string_mconditionid);
       int master_conditionID = -1;
@@ -548,7 +550,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
               slave_con.desc.find("ANGLE 0") != std::string::npos  ))
         {
           size_t end_s = slave_con.desc.find("Slave"); // slave
-          string string_sconditionid = slave_con.desc.substr(0,end_s-1); // one whitespaces
+          std::string string_sconditionid = slave_con.desc.substr(0,end_s-1); // one whitespaces
           // convert string to int
           std::istringstream string_sconditionidstream(string_sconditionid);
           string_sconditionidstream >> slave_conditionID;
@@ -566,7 +568,7 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
       size_t start_tol = slave_con.desc.find("ABSTREETOL");
       size_t tol_length = std::string("ABSTREETOL").length();
       start_tol = start_tol + tol_length + 1;
-      string string_tol = slave_con.desc.substr(start_tol,slave_con.desc.length()-start_tol); // two whitespaces
+      std::string string_tol = slave_con.desc.substr(start_tol,slave_con.desc.length()-start_tol); // two whitespaces
       // convert string to int
       std::istringstream string_tolstream(string_tol);
       double abstol = -1.0;
@@ -578,8 +580,8 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
       
       if(slave_nodeset.GetNumNodes() != master_nodeset.GetNumNodes() )
       {
-         cout << "xz num master nodes = " << master_nodeset.GetNumNodes() << endl;
-         cout << "xz num slave nodes = " << slave_nodeset.GetNumNodes() << endl;
+        std::cout << "xz num master nodes = " << master_nodeset.GetNumNodes() << std::endl;
+         std::cout << "xz num slave nodes = " << slave_nodeset.GetNumNodes() << std::endl;
          dserror("xz num master nodes != num slave nodes before adjusting coords");
        }
       
@@ -633,8 +635,8 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
       } // loop all master nodes
       if(mesh.GetNodeSet(master_nodeset_id).GetNumNodes() != mesh.GetNodeSet(slave_nodeset_id).GetNumNodes() )
       {
-        cout << "xz num master nodes = " << mesh.GetNodeSet(master_nodeset_id).GetNumNodes() << endl;
-        cout << "xz num slave nodes = " << mesh.GetNodeSet(slave_nodeset_id).GetNumNodes() << endl;
+        std::cout << "xz num master nodes = " << mesh.GetNodeSet(master_nodeset_id).GetNumNodes() << std::endl;
+        std::cout << "xz num slave nodes = " << mesh.GetNodeSet(slave_nodeset_id).GetNumNodes() << std::endl;
         dserror("xz num master nodes != num slave nodes after adjusting coords");
       }
     }
@@ -648,8 +650,8 @@ void EXODUS::CorrectXZPlaneForPeriodicBoundaryConditions(
  * periodic boundary conditions are defined                 u.may 02/10 *
  *----------------------------------------------------------------------*/
 void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
-    EXODUS::Mesh&                   mesh,
-    const std::vector<EXODUS::cond_def>& condefs)
+    EXODUS::Mesh&                         mesh,
+    const std::vector<EXODUS::cond_def>&  condefs)
 {
   // loop over all conditions
    for(unsigned int i=0; i<condefs.size(); i++)
@@ -667,7 +669,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
        
        // get condition id for master pbc
        size_t end_m = master_con.desc.find("Master"); // master
-       string string_mconditionid = master_con.desc.substr(0,end_m-1);
+       std::string string_mconditionid = master_con.desc.substr(0,end_m-1);
        // convert string to int
        std::istringstream string_mconditionidstream(string_mconditionid);
        int master_conditionID = -1;
@@ -686,7 +688,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
                slave_con.desc.find("ANGLE 0") != std::string::npos  ))
          {
            size_t end_s = slave_con.desc.find("Slave"); // slave
-           string string_sconditionid = slave_con.desc.substr(0,end_s-1); // one whitespaces
+           std::string string_sconditionid = slave_con.desc.substr(0,end_s-1); // one whitespaces
            // convert string to int
            std::istringstream string_sconditionidstream(string_sconditionid);
            string_sconditionidstream >> slave_conditionID;
@@ -704,7 +706,7 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
        size_t start_tol = slave_con.desc.find("ABSTREETOL");
        size_t tol_length = std::string("ABSTREETOL").length();
        start_tol = start_tol + tol_length + 1;
-       string string_tol = slave_con.desc.substr(start_tol,slave_con.desc.length()-start_tol); // two whitespaces
+       std::string string_tol = slave_con.desc.substr(start_tol,slave_con.desc.length()-start_tol); // two whitespaces
        // convert string to int
        std::istringstream string_tolstream(string_tol);
        double abstol = -1.0;

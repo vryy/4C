@@ -72,11 +72,11 @@ int main(
     if ((comm->NumProc()>1))
       dserror("Using more than one processor is not supported.");
 
-  string exofile;
-  string bcfile;
-  string headfile;
-  string datfile;
-  string cline;
+  std::string exofile;
+  std::string bcfile;
+  std::string headfile;
+  std::string datfile;
+  std::string cline;
 
   int printparobjecttypes = 0;
 
@@ -89,7 +89,7 @@ int main(
   int diveblocks = 0;
 
   // related to centerline
-  vector<double> cline_coordcorr(3);
+  std::vector<double> cline_coordcorr(3);
   double clinedx = 0.0;
   double clinedy = 0.0;
   double clinedz = 0.0;
@@ -157,7 +157,7 @@ int main(
   // create error file (enforce the file opening!)
   if (datfile!="")
   {
-    const string basename = datfile.substr(0,datfile.find_last_of(".")) + "_pre";
+    const std::string basename = datfile.substr(0,datfile.find_last_of(".")) + "_pre";
     IO::cout.setup(true,false,false,comm,0,0,basename);    // necessary setup of IO::cout
     problem->OpenErrorFile(*comm,basename,true);
   }
@@ -227,8 +227,8 @@ int main(
    **************************************************************************/
 
   // declare empty vectors for holding "boundary" conditions
-  vector<EXODUS::elem_def> eledefs;
-  vector<EXODUS::cond_def> condefs;
+  std::vector<EXODUS::elem_def> eledefs;
+  std::vector<EXODUS::cond_def> condefs;
 
   if (bcfile=="")
   {
@@ -251,7 +251,7 @@ int main(
    **************************************************************************/
   if (headfile=="")
   {
-    const string defaultheadfilename = "default.head";
+    const std::string defaultheadfilename = "default.head";
     cout << "found no header file           --> creating "<<defaultheadfilename<< endl;
 
     // open default header file
@@ -264,9 +264,9 @@ int main(
     // write default .dat header into file
     std::stringstream prelimhead;
     DRT::INPUT::PrintDatHeader(prelimhead,*list);
-    string headstring = prelimhead.str();
+    std::string headstring = prelimhead.str();
     size_t size_section = headstring.find("-------------------------------------------------------PROBLEM SIZE");
-    if (size_section!=string::npos){
+    if (size_section!=std::string::npos){
       size_t typ_section = headstring.find("--------------------------------------------------------PROBLEM TYP");
       headstring.erase(size_section,typ_section-size_section);
     }
@@ -294,10 +294,10 @@ int main(
       DRT::UTILS::TimeCurveManager timecurvemanager;
       Teuchos::RCP<DRT::INPUT::Lines> tlines = timecurvemanager.ValidTimeCurveLines();
       tlines->Print(tmp);
-      string tmpstring = tmp.str();
-      string removeit = "--------------------------------------------------------------CURVE\n";
+      std::string tmpstring = tmp.str();
+      std::string removeit = "--------------------------------------------------------------CURVE\n";
       size_t pos = tmpstring.find(removeit);
-      if (pos !=string::npos)
+      if (pos !=std::string::npos)
       {
         tmpstring.erase(pos,removeit.length());
       }
@@ -315,10 +315,10 @@ int main(
       DRT::UTILS::FunctionManager functionmanager;
       Teuchos::RCP<DRT::INPUT::Lines> flines = functionmanager.ValidFunctionLines();
       flines->Print(tmp);
-      string tmpstring = tmp.str();
-      string removeit = "--------------------------------------------------------------FUNCT\n";
+      std::string tmpstring = tmp.str();
+      std::string removeit = "--------------------------------------------------------------FUNCT\n";
       size_t pos = tmpstring.find(removeit);
-      if (pos !=string::npos)
+      if (pos !=std::string::npos)
       {
         tmpstring.erase(pos,removeit.length());
       }
@@ -344,7 +344,7 @@ int main(
     // set default dat-file name if needed
     if (datfile=="")
     {
-      const string exofilebasename = exofile.substr(0,exofile.find_last_of("."));
+      const std::string exofilebasename = exofile.substr(0,exofile.find_last_of("."));
       datfile=exofilebasename+".dat";
     }
 
@@ -438,8 +438,8 @@ int main(
 /*----------------------------------------------------------------------*/
 int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
 {
-  string defaultbcfilename = "default.bc";
-  cout << "found no BC specification file --> creating " <<defaultbcfilename<< endl;
+  std::string defaultbcfilename = "default.bc";
+  std::cout << "found no BC specification file --> creating " <<defaultbcfilename<< std::endl;
 
   // open default bc specification file
   std::ofstream defaultbc(defaultbcfilename.c_str());
@@ -447,49 +447,49 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
     dserror("failed to open file: %s", defaultbcfilename.c_str());
 
   // write mesh verbosely
-  defaultbc<<"----------- Mesh contents -----------"<<endl<<endl;
+  defaultbc<<"----------- Mesh contents -----------"<<std::endl<<std::endl;
   mymesh.Print(defaultbc, false);
 
   // give examples for element and boundary condition syntax
-  defaultbc<<"---------- Syntax examples ----------"<<endl<<endl<<
-  "Element Block, named: "<<endl<<
-  "of Shape: TET4"<<endl<<
-  "has 9417816 Elements"<<endl<<
-  "'*eb0=\"ELEMENT\"'"<<endl<<
-  "sectionname=\"FLUID\""<<endl<<
-  "description=\"MAT 1 NA Euler\""<<endl<<
-  "elementname=\"FLUID\" \n"<<endl<<
-  "Element Block, named: "<<endl<<
-  "of Shape: HEX8"<<endl<<
-  "has 9417816 Elements"<<endl<<
-  "'*eb0=\"ELEMENT\"'"<<endl<<
-  "sectionname=\"STRUCTURE\""<<endl<<
-  "description=\"MAT 1 KINEM nonlinear EAS none\""<<endl<<
-  "elementname=\"SOLIDH8\" \n"<<endl<<
-  "Node Set, named:"<<endl<<
-  "Property Name: INFLOW"<<endl<<
-  "has 45107 Nodes"<<endl<<
-  "'*ns0=\"CONDITION\"'"<<endl<<
+  defaultbc<<"---------- Syntax examples ----------"<<std::endl<<std::endl<<
+  "Element Block, named: "<<std::endl<<
+  "of Shape: TET4"<<std::endl<<
+  "has 9417816 Elements"<<std::endl<<
+  "'*eb0=\"ELEMENT\"'"<<std::endl<<
+  "sectionname=\"FLUID\""<<std::endl<<
+  "description=\"MAT 1 NA Euler\""<<std::endl<<
+  "elementname=\"FLUID\" \n"<<std::endl<<
+  "Element Block, named: "<<std::endl<<
+  "of Shape: HEX8"<<std::endl<<
+  "has 9417816 Elements"<<std::endl<<
+  "'*eb0=\"ELEMENT\"'"<<std::endl<<
+  "sectionname=\"STRUCTURE\""<<std::endl<<
+  "description=\"MAT 1 KINEM nonlinear EAS none\""<<std::endl<<
+  "elementname=\"SOLIDH8\" \n"<<std::endl<<
+  "Node Set, named:"<<std::endl<<
+  "Property Name: INFLOW"<<std::endl<<
+  "has 45107 Nodes"<<std::endl<<
+  "'*ns0=\"CONDITION\"'"<<std::endl<<
   "sectionname=\"DESIGN SURF DIRICH CONDITIONS\""<<endl<<
   "description=\"NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 2.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 1 0 0 0 0 0\""
-  <<endl<<endl;
+  <<std::endl<<std::endl;
 
-  defaultbc << "MIND that you can specify a condition also on an ElementBlock, just replace 'ELEMENT' with 'CONDITION'"<<endl;
-  defaultbc << "The 'E num' in the dat-file depends on the order of the specification below" << endl;
-  defaultbc<<"------------------------------------------------BCSPECS"<<endl<<endl;
+  defaultbc << "MIND that you can specify a condition also on an ElementBlock, just replace 'ELEMENT' with 'CONDITION'"<<std::endl;
+  defaultbc << "The 'E num' in the dat-file depends on the order of the specification below" << std::endl;
+  defaultbc<<"------------------------------------------------BCSPECS"<<std::endl<<std::endl;
 
   // write ElementBlocks with specification proposal
   const std::map<int,RCP<EXODUS::ElementBlock> > myblocks = mymesh.GetElementBlocks();
   std::map<int,RCP<EXODUS::ElementBlock> >::const_iterator it;
   for (it = myblocks.begin(); it != myblocks.end(); ++it){
     it->second->Print(defaultbc);
-    defaultbc<<"*eb"<< it->first << "=\"ELEMENT\""<<endl
-    <<"sectionname=\"\""<<endl
-    <<"description=\"\""<<endl
-    <<"elementname=\"\""<<endl
+    defaultbc<<"*eb"<< it->first << "=\"ELEMENT\""<<std::endl
+    <<"sectionname=\"\""<<std::endl
+    <<"description=\"\""<<std::endl
+    <<"elementname=\"\""<<std::endl
     //<<"elementshape=\""
     //<< DRT::DistypeToString(PreShapeToDrt(it->second.GetShape()))<<"\""<<endl
-    <<endl;
+    <<std::endl;
   }
 
   // write NodeSets with specification proposal
@@ -497,10 +497,10 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   std::map<int,EXODUS::NodeSet>::const_iterator ins;
   for (ins =mynodesets.begin(); ins != mynodesets.end(); ++ins){
     ins->second.Print(defaultbc);
-    defaultbc<<"*ns"<< ins->first << "=\"CONDITION\""<<endl
-    <<"sectionname=\"\""<<endl
-    <<"description=\"\""<<endl
-    <<endl;
+    defaultbc<<"*ns"<< ins->first << "=\"CONDITION\""<<std::endl
+    <<"sectionname=\"\""<<std::endl
+    <<"description=\"\""<<std::endl
+    <<std::endl;
   }
 
   // write SideSets with specification proposal
@@ -508,19 +508,19 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
   std::map<int,EXODUS::SideSet>::const_iterator iss;
   for (iss = mysidesets.begin(); iss!=mysidesets.end(); ++iss){
     iss->second.Print(defaultbc);
-    defaultbc<<"*ss"<< iss->first << "=\"CONDITION\""<<endl
-    <<"sectionname=\"\""<<endl
-    <<"description=\"\""<<endl
-    <<endl;
+    defaultbc<<"*ss"<< iss->first << "=\"CONDITION\""<<std::endl
+    <<"sectionname=\"\""<<std::endl
+    <<"description=\"\""<<std::endl
+    <<std::endl;
   }
 
   // print validconditions as proposal
-  defaultbc << "-----------------------------------------VALIDCONDITIONS"<< endl;
+  defaultbc << "-----------------------------------------VALIDCONDITIONS"<< std::endl;
   Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > condlist = DRT::INPUT::ValidConditions();
   DRT::INPUT::PrintEmptyConditionDefinitions(defaultbc,*condlist,false);
 
   // print valid element lines as proposal (parobjects have to be registered for doing this!)
-  defaultbc << endl << endl;
+  defaultbc << std::endl << std::endl;
   DRT::INPUT::ElementDefinition ed;
   ed.PrintElementDatHeaderToStream(defaultbc);
 

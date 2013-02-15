@@ -26,13 +26,9 @@ Validate a given BACI input file (after all preprocessing steps)
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_inputreader.H"
 
-
-using std::vector;
-
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const string datfile)
+void EXODUS::ValidateInputFile(const Teuchos::RCP<Epetra_Comm> comm, const std::string datfile)
 {
   // read and check the provided header file
   //cout << "checking BACI input file       --> "<<datfile<< endl;
@@ -86,8 +82,8 @@ void EXODUS::ValidateMeshElementJacobians(Mesh& mymesh)
 {
   if (mymesh.GetNumDim() != 3) dserror("Element Validation only for 3 Dimensions");
 
-  map<int,Teuchos::RCP<ElementBlock> > myebs = mymesh.GetElementBlocks();
-  map<int,Teuchos::RCP<ElementBlock> >::iterator i_eb;
+  std::map<int,Teuchos::RCP<ElementBlock> > myebs = mymesh.GetElementBlocks();
+  std::map<int,Teuchos::RCP<ElementBlock> >::iterator i_eb;
 
   for(i_eb=myebs.begin(); i_eb!=myebs.end(); ++i_eb){
     Teuchos::RCP<ElementBlock> eb = i_eb->second;
@@ -141,8 +137,8 @@ void EXODUS::ValidateElementJacobian(Mesh& mymesh, const DRT::Element::Discretiz
   Epetra_SerialDenseMatrix    deriv(NSD, iel);
 
   // go through all elements
-  Teuchos::RCP<map<int,std::vector<int> > > eleconn = eb->GetEleConn();
-  map<int,std::vector<int> >::iterator i_ele;
+  Teuchos::RCP<std::map<int,std::vector<int> > > eleconn = eb->GetEleConn();
+  std::map<int,std::vector<int> >::iterator i_ele;
   int numrewindedeles=0;
   for(i_ele=eleconn->begin();i_ele!=eleconn->end();++i_ele){
     int rewcount=0;
@@ -219,8 +215,8 @@ int EXODUS::ValidateElementJacobian_fullgp(Mesh& mymesh, const DRT::Element::Dis
 
   // go through all elements
   int invalids = 0;
-  Teuchos::RCP<map<int,std::vector<int> > > eleconn = eb->GetEleConn();
-  map<int,std::vector<int> >::iterator i_ele;
+  Teuchos::RCP<std::map<int,std::vector<int> > > eleconn = eb->GetEleConn();
+  std::map<int,std::vector<int> >::iterator i_ele;
   for(i_ele=eleconn->begin();i_ele!=eleconn->end();++i_ele){
     for (int igp = 0; igp < intpoints.nquad; ++igp) {
       DRT::UTILS::shape_function_3D_deriv1(deriv,intpoints.qxg[igp][0],intpoints.qxg[igp][1],intpoints.qxg[igp][2],distype);
