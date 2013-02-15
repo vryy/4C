@@ -404,13 +404,11 @@ protected:
                                      LINALG::Matrix<4,1>&               rQxi);
 
   /*! \brief adjust off-rate by considering forces in the crosslinker
-   *  \param (in) istep time step number
    *  \param (in) dt  time step size
    *  \param (in) koff0 initial chemical dissaociation rate
    *  \param (in) discol  displacement vector in column map format
    *  \param (in) punlink dissociation probability*/
-  void ForceDependentOffRate(const int&                       istep,
-                             const double&                    dt,
+  void ForceDependentOffRate(const double&                    dt,
                              const double&                    koff0,
                              const Epetra_Vector&             discol,
                              Teuchos::RCP<Epetra_MultiVector> punlink);
@@ -929,9 +927,6 @@ protected:
   Teuchos::RCP<Epetra_Vector> crosslink2elementconv_;
   //! \brief vector holding converged state of searchforneighbour_
   Teuchos::RCP<Epetra_Vector> searchforneighboursconv_;
-
-  //! \brief column map displacement of the previous time step (needed to calculate off-rate in case of force dependency)
-  Teuchos::RCP<Epetra_Vector> disprev_;
 
   //! \brief structure type
   int structuretype_;

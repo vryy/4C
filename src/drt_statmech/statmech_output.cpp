@@ -5033,7 +5033,7 @@ void STATMECH::StatMechManager::BellsEquationOutput(const Epetra_Vector&      di
                                                     const std::ostringstream& filename,
                                                     const double&             dt)
 {
-  if(!discret_->Comm().MyPID())
+  if(!discret_->Comm().MyPID() && unbindingprobability_!=Teuchos::null)
   {
     FILE* fp = NULL;
     std::stringstream filecontent;

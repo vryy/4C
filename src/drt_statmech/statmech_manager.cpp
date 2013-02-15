@@ -563,11 +563,6 @@ void STATMECH::StatMechManager::Update(const int&                               
     if(fabs(timen-dt-actiontime_->back())<(dt/1e3) && statmechparams_.get<int>("REDUCECROSSLINKSBY",0)>0)
       ReduceNumOfCrosslinkersBy(statmechparams_.get<int>("REDUCECROSSLINKSBY",0), beamcmanager);
 
-    // force dependent unlinking: store displacement vector of current time step for next one
-    if(DRT::INPUT::IntegralValue<int>(statmechparams_, "FORCEDEPUNLINKING"))
-      for(int i=0; i<disprev_->MyLength(); i++)
-        (*disprev_)[i] = discol[i];
-
     /*settling administrative stuff in order to make the discretization ready for the next time step:
      * done in SearchAndeDeleteCrosslinkers():
      * synchronize the Filled() state on all processors after having added or deleted elements by CheckFilledGlobally();
@@ -622,11 +617,12 @@ void STATMECH::StatMechManager::UpdateTimeAndStepSize(double& dt,
   {
     if(timeintervalstep_<(int)timestepsizes_->size())
     {
+      
       // update time step
       double dtnew = timestepsizes_->at(timeintervalstep_);
       // update step size
       double nexttimethreshold = actiontime_->at(timeintervalstep_);
-      double eps = 1.0e-10;
+      double eps = 1.0e-9;
       if((timeconverged>=nexttimethreshold || fabs(timeconverged-nexttimethreshold)<eps) && dtnew>0.0)
       {
         dt = dtnew;
@@ -2474,7 +2470,7 @@ void STATMECH::StatMechManager::SearchAndDeleteCrosslinkers(const int&          
 
   // if off-rate is also dependent on the forces acting within the crosslinker
   if(DRT::INPUT::IntegralValue<int>(statmechparams_, "FORCEDEPUNLINKING"))
-    ForceDependentOffRate(istep, dt, koff,discol,punlink);
+    ForceDependentOffRate(dt, koff,discol,punlink);
 
   // a vector indicating the upcoming deletion of crosslinker elements
   Teuchos::RCP<Epetra_Vector> delcrosselement = Teuchos::rcp(new Epetra_Vector(*crosslinkermap_, true));
@@ -2657,8 +2653,7 @@ void STATMECH::StatMechManager::RemoveCrosslinkerElements(DRT::Discretization& m
 /*----------------------------------------------------------------------*
  | (private) force dependent off-rate                      mueller 1/11 |
  *----------------------------------------------------------------------*/
-void STATMECH::StatMechManager::ForceDependentOffRate(const int&                       istep,
-                                                      const double&                    dt,
+void STATMECH::StatMechManager::ForceDependentOffRate(const double&                    dt,
                                                       const double&                    koff0,
                                                       const Epetra_Vector&             discol,
                                                       Teuchos::RCP<Epetra_MultiVector> punlink)
@@ -2669,12 +2664,7 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const int&                
   // from B. Gui and W. Guilford: Mechanics of actomyosin bonds in different nucleotide states are tuned to muscle contraction
   // Fig 2: slip pathway, ADP, nodereldis = 0.0004;
   double delta = statmechparams_.get<double>("DELTABELLSEQ", 0.0004);
-
-  if(istep%statmechparams_.get<int>("OUTPUTINTERVALS",1000)==0 && DRT::INPUT::IntegralValue<INPAR::STATMECH::StatOutput>(statmechparams_, "SPECIAL_OUTPUT")==INPAR::STATMECH::statout_viscoelasticity)
-    unbindingprobability_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_,2,true));
-  else
-    unbindingprobability_ = Teuchos::null;
-
+  
   // update element2crosslink_
   element2crosslink_ = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementRowMap())));
   element2crosslink_->PutScalar(-1.0);
@@ -2804,9 +2794,11 @@ void STATMECH::StatMechManager::ForceDependentOffRate(const int&                
   // import -> redundancy on all Procs
   Teuchos::RCP<Epetra_MultiVector> punlinktrans = Teuchos::rcp(new Epetra_MultiVector(*transfermap_,true));
   CommunicateMultiVector(punlinktrans,punlink, true, true, false, false);
-  punlinktrans->PutScalar(0.0);
-  CommunicateMultiVector(punlinktrans,unbindingprobability_, true, true, false, false);
-
+  if(unbindingprobability_!=Teuchos::null)
+  {
+    punlinktrans->PutScalar(0.0);
+    CommunicateMultiVector(punlinktrans,unbindingprobability_, true, true, false, false);
+  }
   return;
 }// StatMechManager::ForceDependentOffRate
 
@@ -4334,7 +4326,12 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
   {
     element2crosslink_ = Teuchos::rcp(new Epetra_Vector(*(discret_->ElementRowMap())));
     element2crosslink_->PutScalar(-1.0);
-    disprev_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofColMap()),true));
+    unbindingprobability_ = Teuchos::rcp(new Epetra_MultiVector(*crosslinkermap_,2,true));
+  }
+  else
+  {
+    element2crosslink_ = Teuchos::null;
+    unbindingprobability_ = Teuchos::null;
   }
 
   std::vector<double> upperbound = *periodlength_;
@@ -5030,7 +5027,7 @@ void STATMECH::StatMechManager::DBCOscillatoryMotion(Teuchos::ParameterList& par
           for(int n=0; n<cut.N(); n++)
             if(element->ElementType()==DRT::ELEMENTS::Beam3iiType::Instance() && cut(2,n)>0.0)
             {
-              cout<<"Element "<<element->Id()<<" now has a reduced cross section"<<endl;
+              //cout<<"Element "<<element->Id()<<" now has a reduced cross section"<<endl;
 
               dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSec(1.0e-9);
               dynamic_cast<DRT::ELEMENTS::Beam3ii*>(element)->SetCrossSecShear(1.1e-9);
