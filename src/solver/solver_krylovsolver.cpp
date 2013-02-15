@@ -68,12 +68,15 @@ LINALG::SOLVER::KrylovSolver::KrylovSolver( const Epetra_Comm & comm,
     ,
     bAllowPermutation_( false ),
     bPermuteLinearSystem_( false ),
-    /*data_( Teuchos::null ),*/
     PermFact_( Teuchos:: null )
 #endif
 #endif
 {
+#ifdef HAVE_MueLu
+#ifdef HAVE_EXPERIMENTAL_MueLu
   data_ = Teuchos::rcp(new Level());
+#endif
+#endif
 }
 
 //----------------------------------------------------------------------------------
@@ -84,7 +87,11 @@ LINALG::SOLVER::KrylovSolver::~KrylovSolver()
   A_              = Teuchos::null;
   x_              = Teuchos::null;
   b_              = Teuchos::null;
+#ifdef HAVE_MueLu
+#ifdef HAVE_EXPERIMENTAL_MueLu
   data_           = Teuchos::null;
+#endif
+#endif
 }
 
 //----------------------------------------------------------------------------------
