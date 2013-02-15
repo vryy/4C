@@ -291,6 +291,19 @@ void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void MAT::ElastHyper::Update()
+{
+  // loop map of associated potential summands
+  for (unsigned int p=0; p<potsum_.size(); ++p)
+  {
+    potsum_[p]->Update();
+  }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void MAT::ElastHyper::GetFiberVecs(std::vector<LINALG::Matrix<3,1> >& fibervecs)
 {
   if (anisoprinc_ || anisomod_)

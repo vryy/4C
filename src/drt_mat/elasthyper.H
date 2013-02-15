@@ -206,6 +206,8 @@ private:
 
     virtual void Setup(DRT::INPUT::LineDefinition* linedef);
 
+    virtual void Update();
+
     /// setup patient-specific AAA stuff
     virtual void SetupAAA(Teuchos::ParameterList& params);
 

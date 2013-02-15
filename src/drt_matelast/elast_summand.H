@@ -99,6 +99,9 @@ namespace MAT
       /// Dummy routine for setup of patient-specific materials
       virtual void SetupAAA(Teuchos::ParameterList& params) { return; };
 
+      /// Dummy routine for setup update of summand
+      virtual void Update() { return; };
+
       /// add shear modulus equivalent
       virtual void AddShearMod(
         bool& haveshearmod,  ///< non-zero shear modulus was added

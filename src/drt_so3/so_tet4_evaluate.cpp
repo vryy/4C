@@ -417,6 +417,12 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
         MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
         micro->Update();
       }
+      else if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
+      {
+        MAT::ElastHyper* elasthyper = static_cast <MAT::ElastHyper*>(mat.get());
+        elasthyper->Update();
+      }
+
     }
     break;
 
@@ -450,6 +456,11 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
       {
         MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
         micro->Update();
+      }
+      else if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
+      {
+        MAT::ElastHyper* elasthyper = static_cast <MAT::ElastHyper*>(mat.get());
+        elasthyper->Update();
       }
     }
     break;
