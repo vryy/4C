@@ -257,7 +257,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
   // select fsi boundaries
   // (in the future it would be better to introduce a special condition "growth - surface/line"
   // to separate fsi boundaries from growth ones, instead of considering all fsi boundaries as growth boundaries)
-  vector<std::string> condnames(1);
+  std::vector<std::string> condnames(1);
   condnames[0] = "FSICoupling";
 
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> struscatra = scatravec_[1];
@@ -314,7 +314,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
       int gnodeid = condnodemap->GID(nodei);
       DRT::Node* strulnode = strudis->gNode(gnodeid);
       // get the degrees of freedom associated with this node
-      vector<int> strunodedofs = strudis->Dof(strulnode);
+      std::vector<int> strunodedofs = strudis->Dof(strulnode);
       // determine number of space dimensions
       const int numdim = ((int) strunodedofs.size());
 
@@ -680,7 +680,7 @@ void FS3I::BiofilmFSI::ChangeConfig(RCP<DRT::Discretization> dis, Teuchos::RCP<E
     int gid = (dis->NodeRowMap())->GID(index);
     DRT::Node* mynode = dis->gNode(gid);
 
-    vector<int> globaldofs = dis->Dof(mynode);
+    std::vector<int> globaldofs = dis->Dof(mynode);
     std::vector<double> nvector(globaldofs.size());
 
     // determine number of space dimensions
@@ -721,7 +721,7 @@ void FS3I::BiofilmFSI::ScatraChangeConfig(RCP<DRT::Discretization> scatradis,
     DRT::Node* lnode = dis->lRowNode(index);
 
     // get degrees of freedom associated with this fluid/structure node
-    vector<int> nodedofs = dis->Dof(0,lnode);
+    std::vector<int> nodedofs = dis->Dof(0,lnode);
 
     std::vector<double> nvector(nodedofs.size());
 

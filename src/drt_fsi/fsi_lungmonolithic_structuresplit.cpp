@@ -86,13 +86,13 @@ void FSI::LungMonolithicStructureSplit::SetupSystem()
   AleField().BuildSystemMatrix(false);
 
   // get the PCITER from inputfile
-  vector<int> pciter;
-  vector<double> pcomega;
-  vector<int> spciter;
-  vector<double> spcomega;
-  vector<int> fpciter;
-  vector<double> fpcomega;
-  vector<int> apciter;
+  std::vector<int> pciter;
+  std::vector<double> pcomega;
+  std::vector<int> spciter;
+  std::vector<double> spcomega;
+  std::vector<int> fpciter;
+  std::vector<double> fpcomega;
+  std::vector<int> apciter;
   std::vector<double> apcomega;
   {
     int    word1;
