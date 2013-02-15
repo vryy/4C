@@ -169,7 +169,7 @@ void LINALG::SOLVER::BelosSolver::Setup(  Teuchos::RCP<Epetra_Operator>     matr
 #endif // HAVE_EXPERIMENTAL_MueLu
 #endif // HAVE_MueLu
     b_ = b;
-    A_ = A;
+    A_ = matrix; // we cannot use A here, since it could be Teuchos::null (for blocked operators);
 #ifdef HAVE_MueLu
 #ifdef HAVE_EXPERIMENTAL_MueLu
   }

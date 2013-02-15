@@ -130,7 +130,6 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
     else if ( Params().isSublist("MueLu Parameters") )
     {
 #ifdef HAVE_MueLu
-      std::cout << "TEST MueLu preconditioner" << std::endl;
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuPreconditioner( outfile_, Params().sublist("MueLu Parameters") ) );
 #else
       dserror("MueLu only available in DEV version of BACI with Trilinos Q1/2012 or newer.");
@@ -144,7 +143,6 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
       //Params().sublist("MueLu (Contact) Parameters").set("time-step",Params().get<int>("time-step"));
       //Params().sublist("MueLu (Contact) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
       ////////////////////////////// EXPERIMENTAL
-      std::cout << "TEST MueLu contact preconditioner 1" << std::endl;
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPreconditioner( outfile_, Params().sublist("MueLu (Contact) Parameters") ) );
 #else
       dserror("MueLu (Contact) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer. needs the HAVE_EXPERIMENTAL_MueLu flag.");
@@ -161,7 +159,6 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
       //Params().sublist("MueLu (Contact2) Parameters").set("time-step",Params().get<int>("time-step"));
       //Params().sublist("MueLu (Contact2) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
       ////////////////////////////// EXPERIMENTAL
-      std::cout << "TEST MueLu contact preconditioner 2" << std::endl;
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPreconditioner2( outfile_, Params().sublist("MueLu (Contact2) Parameters") ) );
 #else
       dserror("MueLu (Contact2) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer. needs the HAVE_EXPERIMENTAL_MueLu flag.");
@@ -176,7 +173,6 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
       //Params().sublist("MueLu (Contact2) Parameters").set("time-step",Params().get<int>("time-step"));
       //Params().sublist("MueLu (Contact2) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
       ////////////////////////////// EXPERIMENTAL
-      std::cout << "TEST MueLu contact preconditioner 3" << std::endl;
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPreconditioner3( outfile_, Params().sublist("MueLu (Contact3) Parameters") ) );
 #else
       dserror("MueLu (Contact3) preconditioner only available in DEV version of BACI with Trilinos Q4/2012 or newer. needs the HAVE_EXPERIMENTAL_MueLu flag.");

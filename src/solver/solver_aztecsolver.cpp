@@ -165,7 +165,7 @@ void LINALG::SOLVER::AztecSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
 #endif // HAVE_EXPERIMENTAL_MueLu
 #endif // HAVE_MueLu
     b_ = b;
-    A_ = A;
+    A_ = matrix; // we cannot use A, since it could be Teuchos::null (for blocked operators)
 #ifdef HAVE_MueLu
 #ifdef HAVE_EXPERIMENTAL_MueLu
   }
