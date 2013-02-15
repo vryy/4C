@@ -42,6 +42,17 @@ namespace TSI
     Monolithic
   };
 
+  /// Type of coupling strategy for BACI-INCA coupling (TFSI)
+  enum BaciIncaCoupling
+  {
+    undefinded,
+    conforming,
+    mortar_mortar_dual,
+    mortar_mortar_std,
+    proj_mortar_std,
+    proj_LSI
+  };
+
   /// @name Solution technique and related
 
   /// type of norm to check for convergence

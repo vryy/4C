@@ -104,7 +104,6 @@ void GEO::SearchTree::initializePointTree(
 
 /*----------------------------------------------------------------------*
  | initialization of searchtree for SlipAle                 u.may 09/09 |
- | pay attention to the Ids, no global Ids of the discretization	      |
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::initializeTreeSlideALE(
     const LINALG::Matrix<3,2>&          nodeBox,

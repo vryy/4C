@@ -841,6 +841,7 @@ set(OBJS_DRT_FS3I
   src/drt_fs3i/biofilm_fsi.cpp
   src/drt_fs3i/aero_tfsi.cpp
   src/drt_fs3i/aero_tfsi_serv.cpp
+  src/drt_fs3i/aero_tfsi_delaunay.cpp
 )
 set(OBJS_DRT_RED_AIRWAYS
   src/drt_red_airways/airwayimplicitintegration.cpp

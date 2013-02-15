@@ -101,6 +101,15 @@ namespace GEO
       const DRT::Discretization& dis
       );
   
+  /*!
+  \brief Returns the eXtendedAxisAlignedBoundingBox of coords
+  \param currentpositions     current nodal positions
+  \return  XAxisAlignedBoundingBox
+   */
+  LINALG::Matrix<3,2> getXAABBofPositions(
+      const std::map<int,LINALG::Matrix<3,1> >& currentpositions
+      );
+
   
   /*!
   \brief Returns the eXtendedAxisAlignedBoundingBox of a discretization,

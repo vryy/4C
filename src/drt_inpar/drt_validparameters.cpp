@@ -2112,6 +2112,26 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                               tuple<int>(0,1),
                               &tsidyn);
 
+  // Coupling strategy for BACI-INCA coupling (TFSI)
+  setStringToIntegralParameter<int>(
+                              "TFSI_COUPALGO","tfsi_conforming",
+                              "Coupling strategies for BACI-INCA coupling (TFSI)",
+                              tuple<std::string>(
+                                "tfsi_conforming",
+                                "tfsi_mortar_mortar_dual",
+                                "tfsi_mortar_mortar_std",
+                                "tfsi_proj_mortar_std",
+                                "tfsi_proj_LSI"
+                                ),
+                              tuple<int>(
+                                INPAR::TSI::conforming,
+                                INPAR::TSI::mortar_mortar_dual,
+                                INPAR::TSI::mortar_mortar_std,
+                                INPAR::TSI::proj_mortar_std,
+                                INPAR::TSI::proj_LSI
+                                ),
+                              &tsidyn);
+
   // Output type
   IntParameter("RESTARTEVRY",1,"write restart possibility every RESTARTEVRY steps",&tsidyn);
   // Time loop control

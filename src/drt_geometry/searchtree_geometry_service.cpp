@@ -77,6 +77,15 @@ LINALG::Matrix<3,2> GEO::getXAABBofEles(
   if (elements.begin() == elements.end())
     return XAABB;
 
+  // initialize XAABB as rectangle around the first point of the first element
+  const int nodeid = elements.begin()->second->Nodes()[0]->Id();
+  const LINALG::Matrix<3,1> pos = currentpositions.find(nodeid)->second;
+  for(int dim=0; dim<3; ++dim)
+  {
+    XAABB(dim, 0) = pos(dim) - GEO::TOL7;
+    XAABB(dim, 1) = pos(dim) + GEO::TOL7;
+  }
+
   std::map<int, RCP<DRT::Element> >::const_iterator elemiter;
   for (elemiter = elements.begin(); elemiter != elements.end(); ++elemiter)
   {
@@ -219,6 +228,41 @@ LINALG::Matrix<3,2> GEO::getXAABBofNodes(
     {
       XAABB(dim, 0) = std::min( XAABB(dim, 0), node->X()[dim] - TOL7);
       XAABB(dim, 1) = std::max( XAABB(dim, 1), node->X()[dim] + TOL7);
+    }
+  }
+  return XAABB;
+}
+
+
+
+/*----------------------------------------------------------------------*
+ | delivers an axis-aligned bounding box for coords          ghamm 11/12|
+ *----------------------------------------------------------------------*/
+LINALG::Matrix<3,2> GEO::getXAABBofPositions(
+    const std::map<int,LINALG::Matrix<3,1> >&   currentpositions)
+{
+  LINALG::Matrix<3,2> XAABB(true);
+
+  if(currentpositions.size() == 0)
+    dserror("map with current positions is emtpy");
+
+  // initialize XAABB as rectangle around the first node
+  const LINALG::Matrix<3,1> initcurrentpos = currentpositions.begin()->second;
+  for(int dim=0; dim<3; ++dim)
+  {
+    XAABB(dim, 0) = initcurrentpos(dim) - GEO::TOL7;
+    XAABB(dim, 1) = initcurrentpos(dim) + GEO::TOL7;
+  }
+
+  // loop over remaining entries and merge XAABB with their eXtendedAxisAlignedBoundingBox
+  std::map<int,LINALG::Matrix<3,1> >::const_iterator iter;
+  for (iter = currentpositions.begin(); iter != currentpositions.end(); ++iter)
+  {
+    const LINALG::Matrix<3,1> currentpos = iter->second;
+    for(int dim=0; dim < 3; dim++)
+    {
+      XAABB(dim, 0) = std::min( XAABB(dim, 0), currentpos(dim) - TOL7);
+      XAABB(dim, 1) = std::max( XAABB(dim, 1), currentpos(dim) + TOL7);
     }
   }
   return XAABB;

@@ -112,16 +112,19 @@ namespace FS3I
 
     /// modifiy the reveived data into a more useful format
     void SplitData(
-    std::vector<double> aerodata,  ///< raw data from INCA
-    std::map<int, std::map<int, LINALG::Matrix<3,1> > >& aerocoords,  ///< coordinates where loads are applied
-    std::map<int, std::map<int, LINALG::Matrix<4,1> > >& aeroforces  ///< loads to be applied
+    std::vector<double>& aerodata,  ///< raw data from INCA
+    std::map<int, LINALG::Matrix<3,1> >& aerocoords,  ///< coordinates where loads are applied
+    std::map<int, LINALG::Matrix<4,1> >& aeroforces,  ///< loads to be applied
+    int startingvalue   ///< entry number in aerodata to start with
     );
 
     /// received and processed data is applied to the structural/thermal solver
     void ApplyInterfaceData(
-    Teuchos::RCP<Epetra_Vector> iforce,  ///< interface forces due to the fluid
-    Teuchos::RCP<Epetra_Vector> ithermoload  ///< interface thermal loads due to the fluid
+    Teuchos::RCP<Epetra_Vector> strfifc,  ///< interface forces due to the fluid (on full vector)
+    Teuchos::RCP<Epetra_Vector> thrfifc  ///< interface thermal loads due to the fluid (on full vector)
     );
+
+    void PrintCouplingStrategy();   ///< print chosen coupling strategy for TFSI to screen
 
     /// call the solver for the current TSI time step
     void SolveTSIstep();
@@ -141,6 +144,8 @@ namespace FS3I
     Teuchos::RCP<TSI::Algorithm> tsi_;  ///< Monolithic TSI system that is calculated
 
     INPAR::TSI::SolutionSchemeOverFields coupling_;  ///< Coupling type of the TSI system
+
+    INPAR::TSI::BaciIncaCoupling tfsi_coupling_;   ///< Coupling strategy for TFSI problem
 
     Teuchos::RCP<FS3I::UTILS::AeroCouplingUtils> aerocoupling_;  ///< Aero coupling helper class
 
