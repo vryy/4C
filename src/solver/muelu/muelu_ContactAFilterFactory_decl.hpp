@@ -9,6 +9,9 @@
 #define MUELU_CONTACTAFILTERFACTORY_DECL_HPP_
 
 #ifdef HAVE_MueLu
+#ifdef HAVE_EXPERIMENTAL_MueLu
+
+#include <Teuchos_ParameterList.hpp>
 
 //#include <Xpetra_CrsMatrixWrap_fwd.hpp>
 #include <Xpetra_VectorFactory_fwd.hpp>
@@ -49,7 +52,7 @@ public:
   virtual ~ContactAFilterFactory();
 
   //! define valid factory parameters
-  RCP<const ParameterList> GetValidParameterList(const ParameterList& paramList = ParameterList()) const;
+  Teuchos::RCP<const Teuchos::ParameterList> GetValidParameterList(const Teuchos::ParameterList& paramList = Teuchos::ParameterList()) const;
 
   //@}
 
@@ -139,5 +142,7 @@ private:
 
 
 #define MUELU_CONTACTAFILTERFACTORY_SHORT
+
+#endif // #ifdef HAVE_EXPERIMENTAL_MueLu
 #endif // HAVE_MueLu
 #endif /* MUELU_CONTACTAFILTERFACTORY_DECL_HPP_ */

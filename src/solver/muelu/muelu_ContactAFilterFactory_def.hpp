@@ -9,6 +9,7 @@
 #define MUELU_CONTACTAFILTERFACTORY_DEF_HPP_
 
 #ifdef HAVE_MueLu
+#ifdef HAVE_EXPERIMENTAL_MueLu
 
 #include "muelu_ContactAFilterFactory_decl.hpp"
 
@@ -36,8 +37,8 @@ namespace MueLu {
   ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::~ContactAFilterFactory() {}
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  RCP<const ParameterList> ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetValidParameterList(const ParameterList& paramList) const {
-    RCP<ParameterList> validParamList = rcp(new ParameterList());
+  Teuchos::RCP<const Teuchos::ParameterList> ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::GetValidParameterList(const Teuchos::ParameterList& paramList) const {
+    Teuchos::RCP<Teuchos::ParameterList> validParamList = Teuchos::rcp(new Teuchos::ParameterList());
 
     validParamList->set< std::string >           ("Input matrix name", "A", "Name of input matrix. (default='A')");
     validParamList->set< RCP<const FactoryBase> >("Input matrix factory", Teuchos::null, "Generating factory of the input matrix.");
@@ -74,7 +75,7 @@ namespace MueLu {
   void ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::Build(Level & currentLevel) const {
     Monitor m(*this, "A filtering (contact)");
 
-    const ParameterList & pL = GetParameterList();
+    const Teuchos::ParameterList & pL = GetParameterList();
     std::string inputName  = pL.get<std::string> ("Input matrix name");
     std::string blockName1 = pL.get<std::string> ("Map block 1 name");
     std::string blockName2 = pL.get<std::string> ("Map block 2 name");
@@ -328,7 +329,7 @@ namespace MueLu {
 } // namespace MueLu
 #endif
 
-
+#endif // #ifdef HAVE_EXPERIMENTAL_MueLu
 #endif // HAVE_MueLu
 
 #endif /* MUELU_CONTACTAFILTERFACTORY_DEF_HPP_ */

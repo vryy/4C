@@ -1,4 +1,5 @@
 #ifdef HAVE_MueLu
+#ifdef HAVE_EXPERIMENTAL_MueLu
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
@@ -22,4 +23,6 @@ template class MueLu::ContactAFilterFactory<std::complex<double>, int, int, Kokk
 # warning To compile MueLu with 'complex' support, please turn on Teuchos_ENABLE_COMPLEX
 # endif
 #endif
+
+#endif // #ifdef HAVE_EXPERIMENTAL_MueLu
 #endif // HAVE_MueLu

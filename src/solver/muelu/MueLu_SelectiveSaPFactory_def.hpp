@@ -9,6 +9,7 @@
 #define MUELU_SELECTIVESAPFACTORY_DEF_HPP_
 
 #ifdef HAVE_MueLu
+#ifdef HAVE_EXPERIMENTAL_MueLu
 
 #include <Xpetra_Map.hpp>
 #include <Xpetra_MapFactory.hpp>
@@ -506,7 +507,7 @@ namespace MueLu {
 
 } //namespace MueLu
 
-
+#endif //#ifdef HAVE_EXPERIMENTAL_MueLu
 #endif // HAVE_MueLu
 
 #endif /* MUELU_SELECTIVESAPFACTORY_DEF_HPP_ */
