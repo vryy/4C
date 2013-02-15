@@ -214,11 +214,11 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::AddStressAnisoPrincipal(
     Teuchos::ParameterList& params
 )
 {
+   double dt = params.get("delta time",1.0);
    double activationFunction_=params.get<double>("scalar", 1.0);
-   double dt_=0.002; //params.get<double>("dt", 1.0);
    double abs_u_ = abs(activationFunction_);
    double absplus_u_ = abs_u_*(activationFunction_>0.0);
-   tauc_ =  (tauc_last_/dt_ + params_->sigma_*absplus_u_)/(1/dt_ + abs_u_);
+   tauc_ =  (tauc_last_/dt + params_->sigma_*absplus_u_)/(1/dt + abs_u_);
 
    stress.Update(tauc_, A_, 1.0);
 
