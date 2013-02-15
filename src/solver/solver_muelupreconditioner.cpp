@@ -140,12 +140,12 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
     // DO NOT COMMIT THIS STUFF
     LINALG::PrintMatrixInMatlabFormat("F.out",*A,true);
 
-    std::ofstream os;
+    std::ofstream os2;
 
     // open file for writing
-    os.open("bF.out",std::fstream::trunc);
-    os << "%%MatrixMarket matrix array real general" << std::endl;
-    os << b->Map().NumGlobalElements() << " " << 1 << std::endl;
+    os2.open("bF.out",std::fstream::trunc);
+    os2 << "%%MatrixMarket matrix array real general" << std::endl;
+    os2 << b->Map().NumGlobalElements() << " " << 1 << std::endl;
 
         int NumMyElements1 = b->Map().NumMyElements();
         int MaxElementSize1 = b->Map().MaxElementSize();
@@ -156,13 +156,13 @@ void LINALG::SOLVER::MueLuPreconditioner::Setup( bool create,
 
         for (int i=0; i<NumMyElements1; i++)
         {
-            os << std::setw(30) << std::setprecision(16) <<  A_Pointers[0][i];    // print out values of 1. vector (only Epetra_Vector supported, no Multi_Vector)
-            os << endl;
+            os2 << std::setw(30) << std::setprecision(16) <<  A_Pointers[0][i];    // print out values of 1. vector (only Epetra_Vector supported, no Multi_Vector)
+            os2 << endl;
         }
-        os << flush;
+        os2 << flush;
 
       // close file
-      os.close();
+      os2.close();
 
       dserror("exit");
     // END DO NOT COMMIT THIS STUFF

@@ -18,7 +18,8 @@
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_DirectSolver_fwd.hpp>
 #include <MueLu_PermutationFactory_fwd.hpp>
-#include <MueLu_PermutingSmoother_fwd.hpp>
+#include <MueLu_AdaptiveSaMLParameterListInterpreter_fwd.hpp>
+//#include <MueLu_PermutingSmoother_fwd.hpp>
 #include <MueLu_MapTransferFactory_fwd.hpp>
 
 // header files for default types, must be included after all other MueLu/Xpetra headers
@@ -49,18 +50,10 @@ namespace LINALG
 
       virtual void Print( std::ostream & stream ) { stream << "MueLu"; }
 
+      /// return name of sublist in paramterlist which contains parameters for preconditioner
+      virtual const std::string getParameterListName() const { return "MueLu (Contact3) Parameters"; }
+
     private:
-
-      //! function interprets ML parameter lists for creating contact level smoothers
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetContactSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact);
-
-      //! function interprets ML parameter lists for creating contact coarse solver
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetContactCoarsestSolverFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact = Teuchos::null);
-
-      //void ExportAggregates(const Teuchos::RCP<Level>& level, const MueLu::FactoryBase* AFact, const MueLu::FactoryBase* aggFact,const Teuchos::RCP<const Teuchos::Comm<int> >& comm, int numDofsPerNode);
-
-      // private Setup routine for MueLu Multigrid hierarchy
-      Teuchos::RCP<Hierarchy> SetupHierarchy(const Teuchos::ParameterList & params, const Teuchos::RCP<Matrix> & A, const Teuchos::RCP<MultiVector> nsp = Teuchos::null);
 
       Teuchos::ParameterList & mllist_;
 

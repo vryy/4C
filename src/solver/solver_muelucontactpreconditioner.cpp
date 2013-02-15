@@ -188,10 +188,18 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   // extract additional maps from parameter list
   // these maps are provided by the STR::TimInt::PrepareContactMeshtying routine, that
   // has access to the contact manager class
-  Teuchos::RCP<Epetra_Map> epMasterDofMap = params.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap");
-  Teuchos::RCP<Epetra_Map> epSlaveDofMap  = params.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap");
-  Teuchos::RCP<Epetra_Map> epActiveDofMap = params.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap");
-  //Teuchos::RCP<Epetra_Map> epInnerDofMap  = params.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap"); // TODO check me
+  Teuchos::RCP<Epetra_Map> epMasterDofMap = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> epSlaveDofMap = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> epInnerDofMap = Teuchos::null;
+  if(params.isSublist("Linear System properties")) {
+    const Teuchos::ParameterList & linSystemProps = params.sublist("Linear System properties");
+    //linSystemProps.set<Teuchos::RCP<Map> >("non diagonal-dominant row map",nonDiagMap);
+    epMasterDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact masterDofMap");
+    epSlaveDofMap =  linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact slaveDofMap");
+    epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact activeDofMap");
+    epInnerDofMap  = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact innerDofMap");
+  }
 
   // build map extractor from different maps
   // note that the ordering (Master, Slave, Inner) is important to be the same overall the whole algorithm

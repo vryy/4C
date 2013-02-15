@@ -42,7 +42,6 @@ namespace INPAR
       stratimikos_amesos,///< Stratimikos solver framework (Amesos KLU)
       stratimikos_aztec, ///< Stratimikos solver framework (Aztec)
       stratimikos_belos, ///< Stratimikos solver framework (Belos)
-      aztec_permuted,    ///< AztecOO solver with permutation applied
       undefined          ///< undefined solver
     };
 

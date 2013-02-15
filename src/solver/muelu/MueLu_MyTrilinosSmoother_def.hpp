@@ -90,10 +90,11 @@ namespace MueLu {
     if (SmootherPrototype::IsSetup() == true) VerboseObject::GetOStream(Warnings0, 0) << "Warning: MueLu::MyTrilinosSmoother::Setup(): Setup() has already been called";
     TEUCHOS_TEST_FOR_EXCEPTION(s_ != Teuchos::null, Exceptions::RuntimeError, "IsSetup() == false but s_ != Teuchos::null. This does not make sense");
 
-    map_ = currentLevel.Get<RCP<const Map> >(mapName_,mapFact_.get());
-    TEUCHOS_TEST_FOR_EXCEPTION(map_ == Teuchos::null, Exceptions::RuntimeError, "MueLu::MyTrilinosSmoother::Setup: map is Teuchos::null.");
-
-    //std::cout << "slaveDofMap: " << slaveDofMap->getGlobalNumElements() << std::endl;
+    if(currentLevel.IsAvailable(mapName_,mapFact_.get())) {
+      map_ = currentLevel.Get<RCP<const Map> >(mapName_,mapFact_.get());
+      TEUCHOS_TEST_FOR_EXCEPTION(map_ == Teuchos::null, Exceptions::RuntimeError, "MueLu::MyTrilinosSmoother::Setup: map is Teuchos::null.");
+    }
+    else map_ = Teuchos::null; // no map with artificial Dirichlet boundaries available.
 
     if(type_ == "ILU") {
       s_ = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>(type_, paramList_,overlap_,AFact_);
@@ -125,21 +126,23 @@ namespace MueLu {
     RCP<MultiVector> Btemp = MultiVectorFactory::Build(B.getMap(),1,true);
     Btemp->update(1.0,B,0.0);
 
-    size_t sz = map_->getNodeNumElements();
-    for(size_t it = 0; it < sz; it++) {
-      GlobalOrdinal gid = map_->getGlobalElement(Teuchos::as<LocalOrdinal>(it));
-      if(X.getMap()->isNodeGlobalElement(gid)) {
-        LocalOrdinal xlid = X.getMap()->getLocalElement(gid);        //
-        Teuchos::ArrayRCP<const Scalar> data = X.getDataNonConst(0); // extract data
-        Btemp->replaceGlobalValue(gid,0,data[xlid]);
-        X.replaceGlobalValue(gid,0,data[xlid]); // not necessary
+    if (map_ != Teuchos::null) {
+      size_t sz = map_->getNodeNumElements();
+      for(size_t it = 0; it < sz; it++) {
+        GlobalOrdinal gid = map_->getGlobalElement(Teuchos::as<LocalOrdinal>(it));
+        if(X.getMap()->isNodeGlobalElement(gid)) {
+          LocalOrdinal xlid = X.getMap()->getLocalElement(gid);        //
+          Teuchos::ArrayRCP<const Scalar> data = X.getDataNonConst(0); // extract data
+          Btemp->replaceGlobalValue(gid,0,data[xlid]);
+          X.replaceGlobalValue(gid,0,data[xlid]); // not necessary
+        }
+        else {
+          // gid is not stored on current processor for (overlapping) map of X
+          // this should not be the case
+          std::cout << "GID not stored in variable X on current processor" << std::endl;
+        }
       }
-      else {
-        // gid is not stored on current processor for (overlapping) map of X
-        // this should not be the case
-        std::cout << "GID not stored in variable X on current processor" << std::endl;
-      }
-    }
+    } // end if map_ != Teuchos::null
     s_->Apply(X, *Btemp, InitialGuessIsZero);
   }
 

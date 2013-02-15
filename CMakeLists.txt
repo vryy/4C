@@ -1188,7 +1188,6 @@ set(OBJS_SOLVER
   src/solver/solver_tekopreconditioner.cpp
   src/solver/solver_belossolver.cpp
   src/solver/solver_aztecsolver.cpp
-  src/solver/solver_permutedaztecsolver.cpp
   src/solver/solver_stratimikossolver.cpp
   src/solver/teko/teko_baciepetraoperatorwrapper.cpp
   src/solver/muelu/muelu_ContactAFilterFactory.cpp
@@ -1198,8 +1197,8 @@ set(OBJS_SOLVER
   src/solver/muelu/muelu_ContactSPAggregationFactory.cpp
   src/solver/muelu/MueLu_MyTrilinosSmoother.cpp
   src/solver/muelu/MueLu_IterationAFactory.cpp
+  src/solver/muelu/MueLu_SelectiveSaPFactory.cpp
 )
-#src/solver/muelu/MueLu_PermutedEpetraOperator.cpp
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp
   src/drt_constraint/constraint_manager.cpp

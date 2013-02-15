@@ -39,6 +39,9 @@ namespace LINALG
 
       virtual void Print( std::ostream & stream ) { stream << "CheapSimple"; }
 
+      /// return name of sublist in paramterlist which contains parameters for preconditioner
+      virtual const std::string getParameterListName() const { return "CheapSIMPLE Parameters"; }
+
     private:
       Teuchos::ParameterList & params_;
 
@@ -61,6 +64,9 @@ namespace LINALG
       virtual Epetra_Operator * PrecOperator() const { return &*P_; }
 
       virtual void Print( std::ostream & stream ) { stream << "AMG BS"; }
+
+      /// return name of sublist in paramterlist which contains parameters for preconditioner
+      virtual const std::string getParameterListName() const { return "AMGBS Parameters"; }
 
     private:
       Teuchos::ParameterList & params_;
@@ -86,6 +92,9 @@ namespace LINALG
       virtual Epetra_Operator * PrecOperator() const { return &*P_; }
 
       virtual void Print( std::ostream & stream ) { stream << "BGS"; }
+
+      /// return name of sublist in paramterlist which contains parameters for preconditioner
+      virtual const std::string getParameterListName() const { return "BGS Parameters"; }
 
     private:
 

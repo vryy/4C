@@ -61,6 +61,8 @@ namespace LINALG
         stream << ")";
       }
 
+      /// return name of sublist in paramterlist which contains parameters for preconditioner
+      virtual const std::string getParameterListName() const { return "unknown"; }
     private:
       Teuchos::RCP<PreconditionerType> preconditioner_;
 

@@ -52,6 +52,8 @@ namespace LINALG
 
       Teuchos::ParameterList& Params() {return tekolist_; };
 
+      /// return name of sublist in paramterlist which contains parameters for preconditioner
+      virtual const std::string getParameterListName() const { return "Teko Parameters"; }
     private:
 
       Teuchos::ParameterList & tekolist_;

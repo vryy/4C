@@ -36,6 +36,9 @@ namespace LINALG
 
       virtual void Print( std::ostream & stream ) { stream << "None"; }
 
+      /// return name of sublist in paramterlist which contains parameters for preconditioner
+      virtual const std::string getParameterListName() const { return "unknown"; }
+
       private:
 
       Teuchos::RCP<LINALG::NoneOperator> prec_;
@@ -82,6 +85,9 @@ namespace LINALG
           stream << ")";
         }
 
+        /// return name of sublist in paramterlist which contains parameters for preconditioner
+        virtual const std::string getParameterListName() const { return "unknown"; }
+
       private:
 
         Teuchos::RCP<SOLVER::PreconditionerType> preconditioner_;
@@ -127,6 +133,9 @@ namespace LINALG
         stream << ")";
       }
 
+      /// return name of sublist in paramterlist which contains parameters for preconditioner
+      virtual const std::string getParameterListName() const { return "unknown"; }
+
       private:
       Teuchos::RCP<PreconditionerType> preconditioner_;
       Teuchos::RCP<Epetra_Vector> rowsum_;
@@ -163,6 +172,9 @@ namespace LINALG
         preconditioner_->Print( stream );
         stream << ")";
       }
+
+      /// return name of sublist in paramterlist which contains parameters for preconditioner
+      virtual const std::string getParameterListName() const { return "unknown"; }
 
       private:
 

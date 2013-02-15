@@ -57,6 +57,8 @@ namespace LINALG
 
       virtual void Print( std::ostream & stream ) { stream << "MueLu"; }
 
+      /// return name of sublist in paramterlist which contains parameters for preconditioner
+      virtual const std::string getParameterListName() const { return "MueLu (Contact) Parameters"; } // TODO check me
     private:
 
       //! function interprets ML parameter lists for creating a Braess Sarazin level smoother

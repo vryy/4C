@@ -72,7 +72,6 @@ Maintainer: Michael Gee
 
 #include "../solver/solver_directsolver.H"
 #include "../solver/solver_aztecsolver.H"
-#include "../solver/solver_permutedaztecsolver.H"
 #include "../solver/solver_stratimikossolver.H"
 
 #include <Teuchos_TimeMonitor.hpp>
@@ -255,14 +254,6 @@ void LINALG::Solver::Setup(
     if ("aztec"  ==solvertype)
     {
       solver_ = Teuchos::rcp( new LINALG::SOLVER::AztecSolver( comm_, Params(), outfile_ ) );
-    }
-    else if ("aztec_permuted" == solvertype)
-    {
-#ifdef HAVE_EXPERIMENTAL_MueLu
-      solver_ = Teuchos::rcp( new LINALG::SOLVER::PermutedAztecSolver( comm_, Params(), outfile_ ) );
-#else
-      dserror("no permutation solver available. Please add MueLu to your configuration.");
-#endif
     }
     else if ("belos"  ==solvertype)
     {
@@ -968,6 +959,47 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
   mllist.set("repartition: min per proc",3000);
 #endif
 
+  // set init smoother list
+  // only needed for MueLu::AdaptiveSaMLParameterListInterpreter
+  // currently used in MueLuContactPreconditioner3
+  ParameterList& initList = mllist.sublist("init smoother");
+  switch (DRT::INPUT::IntegralValue<int>(inparams,"MueLu_INITSMOOTHER"))
+  {
+  case 0:
+    initList.set("smoother: type"            ,"symmetric Gauss-Seidel");
+    initList.set("relaxation: sweeps"        ,inparams.get<int>("MueLu_INITSMOO_SWEEPS"));
+    initList.set("relaxation: damping factor",inparams.get<double>("MueLu_INITSMOO_DAMPING"));
+    break;
+  case 7:
+  case 8:
+    initList.set("smoother: type"            ,"Gauss-Seidel");
+    initList.set("relaxation: sweeps"        ,inparams.get<int>("MueLu_INITSMOO_SWEEPS"));
+    initList.set("relaxation: damping factor",inparams.get<double>("MueLu_INITSMOO_DAMPING"));
+    break;
+  case 1:
+    initList.set("smoother: type"            ,"Jacobi");
+    initList.set("relaxation: sweeps"        ,inparams.get<int>("MueLu_INITSMOO_SWEEPS"));
+    initList.set("relaxation: damping factor",inparams.get<double>("MueLu_INITSMOO_DAMPING"));
+    break;
+  case 2: // Chebychev
+    mllist.set("smoother: type"                        ,"Chebyshev");
+    mllist.set("chebyshev: degree"                     ,inparams.get<int>("MueLu_INITSMOO_SWEEPS"));
+    mllist.set("chebyshev: alpha"                      ,Teuchos::as<int>(inparams.get<double>("MueLu_INITSMOO_DAMPING")));
+    break;
+  case 4:
+  {
+    mllist.set("smoother: type"          ,"IFPACK");
+    mllist.set("smoother: ifpack type"   ,"ILU");
+    mllist.set("smoother: ifpack overlap",0);
+    Teuchos::ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
+    ifpacklist.set<int>("fact: level-of-fill", inparams.get<int>("MueLu_INITSMOO_SWEEPS"));
+    ifpacklist.set("schwarz: reordering type","rcm");
+    ifpacklist.set("partitioner: overlap",0);
+  }
+  break;
+  default: dserror("Unknown type of smoother for adaptive SA initialization phase in MueLu"); break;
+  } // init smoother
+
   return mllist;
 }
 
@@ -1092,7 +1124,10 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(const Teuchos:
   else if (verbosity > 4) beloslist.set("Verbosity", Belos::Errors + Belos::Warnings + Belos::StatusTestDetails);
   else if (verbosity > 2) beloslist.set("Verbosity", Belos::Errors + Belos::Warnings);
   else if (verbosity > 0) beloslist.set("Verbosity", Belos::Errors);
-  //beloslist.set("Output Style",Belos::Brief);
+  //beloslist.set("allow permutation", DRT::INPUT::IntegralValue<int>(inparams,"PERMUTE_SYSTEM"));
+  bool bAllowPermutation = DRT::INPUT::IntegralValue<bool>(inparams,"PERMUTE_SYSTEM");
+  beloslist.set("allow permutation", bAllowPermutation);
+  beloslist.set("Output Style",Belos::Brief);
   beloslist.set("Convergence Tolerance",inparams.get<double>("AZTOL"));
   //-------------------------------- set parameters for Ifpack if used
   if (azprectyp == INPAR::SOLVER::azprec_ILU  ||
@@ -1245,12 +1280,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
   }
   break;
   case INPAR::SOLVER::aztec_msr://================================================= AztecOO
-  case INPAR::SOLVER::aztec_permuted://============================================ AztecOO
   {
-    if(DRT::INPUT::IntegralValue<INPAR::SOLVER::SolverType>(inparams,"SOLVER") == INPAR::SOLVER::aztec_msr)
-      outparams.set("solver","aztec");
-    else
-      outparams.set("solver","aztec_permuted");
+    outparams.set("solver","aztec");
     outparams.set("symmetric",false);
     Teuchos::ParameterList& azlist = outparams.sublist("Aztec Parameters");
     //--------------------------------- set scaling of linear problem
@@ -1389,7 +1420,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
     // set reuse parameters
     azlist.set("ncall",0);                         // counting number of solver calls
     azlist.set("reuse",inparams.get<int>("AZREUSE"));            // reuse info for n solver calls
-    azlist.set("verbosity",inparams.get<int>("VERBOSITY"));  // this is not an official Aztec flag, however we're using it all over the permutedAztec solver
+    bool bAllowPermutation = DRT::INPUT::IntegralValue<bool>(inparams,"PERMUTE_SYSTEM");
+    azlist.set("allow permutation", bAllowPermutation);
+    azlist.set("verbosity",inparams.get<int>("VERBOSITY"));  // this is not an official Aztec flag
     //-------------------------------- set parameters for Ifpack if used
     if (azprectyp == INPAR::SOLVER::azprec_ILU  ||
         azprectyp == INPAR::SOLVER::azprec_ILUT ||
@@ -1947,7 +1980,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
   dtemp.clear();
 
   // we can now determine a matching column map for the result
-  Epetra_Map gcmap(-1,N_local+N_rcvd,&cmap[0],0,A.Comm());
+  Epetra_Map gcmap(-1,N_local+N_rcvd,&cmap[0],B.ColMap().IndexBase(),A.Comm());
 
   int allocated=0;
   int rowlength;

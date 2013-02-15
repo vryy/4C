@@ -38,6 +38,8 @@ namespace LINALG
 
       virtual void Print( std::ostream & stream ) { stream << "ML"; }
 
+      /// return name of sublist in paramterlist which contains parameters for preconditioner
+      virtual const std::string getParameterListName() const { return "ML Parameters"; }
     private:
       Teuchos::ParameterList & mllist_;
 

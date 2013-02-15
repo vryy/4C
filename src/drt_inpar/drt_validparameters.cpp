@@ -4937,8 +4937,8 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   using Teuchos::tuple;
   using Teuchos::setStringToIntegralParameter;
 
-  Teuchos::Tuple<std::string,14> solver_name;
-  Teuchos::Tuple<int,14>  solver_number;
+  Teuchos::Tuple<std::string,13> solver_name;
+  Teuchos::Tuple<int,13>  solver_number;
 
   solver_name[0] = "Amesos_KLU_sym";               solver_number[0] = INPAR::SOLVER::amesos_klu_sym;
   solver_name[1] = "Amesos_KLU_nonsym";            solver_number[1] = INPAR::SOLVER::amesos_klu_nonsym;
@@ -4952,8 +4952,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   solver_name[9] = "Stratimikos_Amesos";           solver_number[9] = INPAR::SOLVER::stratimikos_amesos;
   solver_name[10]= "Stratimikos_Aztec";            solver_number[10]= INPAR::SOLVER::stratimikos_aztec;
   solver_name[11]= "Stratimikos_Belos";            solver_number[11]= INPAR::SOLVER::stratimikos_belos;
-  solver_name[12]= "Aztec_permuted";               solver_number[12]= INPAR::SOLVER::aztec_permuted;
-  solver_name[13]= "undefined";                    solver_number[13]= INPAR::SOLVER::undefined;
+  solver_name[12]= "undefined";                    solver_number[12]= INPAR::SOLVER::undefined;
 
 
   setStringToIntegralParameter<int>(
@@ -5019,7 +5018,7 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     name[24] = "MueLu_nonsym";                number[24] = INPAR::SOLVER::azprec_MueLuAMG_nonsym;
     name[25] = "MueLu_contact";               number[25] = INPAR::SOLVER::azprec_MueLuAMG_contact;
     name[26] = "MueLu_contact2";              number[26] = INPAR::SOLVER::azprec_MueLuAMG_contact2;
-    name[27] = "MueLu_contact3";              number[27] = INPAR::SOLVER::azprec_MueLuAMG_contact2;
+    name[27] = "MueLu_contact3";              number[27] = INPAR::SOLVER::azprec_MueLuAMG_contact3;
     name[28] = "MueLu_contactSP";             number[28] = INPAR::SOLVER::azprec_MueLuAMG_contactSP;
     name[29] = "MueLu_contactPenalty";        number[29] = INPAR::SOLVER::azprec_MueLuAMG_contactPen;
 
@@ -5193,6 +5192,15 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     tuple<int>(0,1,2,3,4,5,6,7,8,9),
     &list);
 
+  setStringToIntegralParameter<int>(
+    "MueLu_INITSMOOTHER","SGS","",
+    tuple<std::string>("SGS","Jacobi","Chebychev","ILU","GS"),
+    tuple<int>(0,1,2,4,7),
+    &list);
+
+  IntParameter("MueLu_INITSMOO_SWEEPS", 1  ,"number of sweeps for adaptive SA smoother (initialization phase). For Chebyshev it is used as polynomial degree",&list);
+  DoubleParameter("MueLu_INITSMOO_DAMPING",1.,"damping parameter for adaptive SA smoother (initialization phase). For Chebyshev it is used as alpha parameter",&list);
+  
   // parameters for AMG(BS)
   setNumericStringParameter("AMGBS_BS_DAMPING","1.3 1.3 1.3",
                             "Relaxation factor for Braess-Sarazin smoother within AMGBS method",
@@ -5245,7 +5253,9 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
 
   // damping parameter for BGS2X2
   DoubleParameter("BGS2X2_GLOBAL_DAMPING",1.,"damping parameter for BGS2X2 preconditioner",&list);
-
+  
+  BoolParameter("PERMUTE_SYSTEM","No","allow linear solver to permute linear system to improve properties of linear system for iterative methods",&list);
+  
   // verbosity flag (for Belos)
   IntParameter("VERBOSITY",0,"verbosity level (0=no output,... 10=extreme), for Belos only",&list);
 

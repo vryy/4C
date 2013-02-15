@@ -61,6 +61,8 @@
 #include "muelu/muelu_ContactTransferFactory_decl.hpp"
 #include "muelu/MueLu_MyTrilinosSmoother_decl.hpp"
 #include "muelu/MueLu_IterationAFactory_decl.hpp"
+#include "muelu/MueLu_SelectiveAFactory_decl.hpp"
+#include "muelu/MueLu_SelectiveSaPFactory_decl.hpp"
 
 #include "solver_muelucontactpreconditioner2.H"
 
@@ -174,37 +176,36 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   if(verbosityLevel > 7 )  eVerbLevel = Teuchos::VERB_HIGH;
   if(verbosityLevel > 9 )  eVerbLevel = Teuchos::VERB_EXTREME;
 
+
   // extract additional maps from parameter list
   // these maps are provided by the STR::TimInt::PrepareContactMeshtying routine, that
   // has access to the contact manager class
-  Teuchos::RCP<Epetra_Map> epMasterDofMap = params.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap");
-  Teuchos::RCP<Epetra_Map> epSlaveDofMap  = params.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap");
-  Teuchos::RCP<Epetra_Map> epActiveDofMap = params.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap");
-  //Teuchos::RCP<Epetra_Map> epInnerDofMap  = params.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap"); // TODO check me
+  Teuchos::RCP<Epetra_Map> epMasterDofMap = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> epSlaveDofMap = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
+  Teuchos::RCP<Epetra_Map> epInnerDofMap = Teuchos::null;
+  Teuchos::RCP<Map> xSingleNodeAggMap = Teuchos::null;
+  Teuchos::RCP<Map> xNearZeroDiagMap = Teuchos::null;
+  if(params.isSublist("Linear System properties")) {
+    const Teuchos::ParameterList & linSystemProps = params.sublist("Linear System properties");
+    // extract information provided by solver (e.g. PermutedAztecSolver)
+    epMasterDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact masterDofMap");
+    epSlaveDofMap =  linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact slaveDofMap");
+    epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact activeDofMap");
+    epInnerDofMap  = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact innerDofMap");
+    if(linSystemProps.isParameter("non diagonal-dominant row map"))
+      xSingleNodeAggMap = linSystemProps.get<Teuchos::RCP<Map> > ("non diagonal-dominant row map");
+    if(linSystemProps.isParameter("near-zero diagonal row map"))
+      xNearZeroDiagMap  = linSystemProps.get<Teuchos::RCP<Map> > ("near-zero diagonal row map");
+  }
 
-  // build map extractor from different maps
-  // note that the ordering (Master, Slave, Inner) is important to be the same overall the whole algorithm
+  // transform Epetra maps to Xpetra maps (if necessary)
   Teuchos::RCP<const Map> xfullmap = A->getRowMap(); // full map (MasterDofMap + SalveDofMap + InnerDofMap)
   //Teuchos::RCP<Xpetra::EpetraMap> xMasterDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epMasterDofMap ));
   Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
   //Teuchos::RCP<Xpetra::EpetraMap> xActiveDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epActiveDofMap ));
   //Teuchos::RCP<Xpetra::EpetraMap> xInnerDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epInnerDofMap  )); // TODO check me
 
-  Teuchos::RCP<Map> xSingleNodeAggMap = Teuchos::null;
-  if(params.isSublist("Linear System properties")) {
-    const Teuchos::ParameterList & linSystemProps = params.sublist("Linear System properties");
-    //linSystemProps.set<Teuchos::RCP<Map> >("non diagonal-dominant row map",nonDiagMap);
-    xSingleNodeAggMap = linSystemProps.get<Teuchos::RCP<Map> > ("non diagonal-dominant row map");
-  }
-
-
-
-  //Teuchos::RCP<Map> xSingleNodeAggMap = params.get<Teuchos::RCP<Map> > ("LINALG::SOLVER::PermutedAztecSolver::SingleNodeAggMap");
-
-  ///////////////////////////////////////////////////////////
-
-  // calculate number of DOFs in xSlaveDofMap to extend maxCoarseSize
-  //Xpetra::global_size_t nSlaveDofs = xSlaveDofMap->getGlobalNumElements();
 
   ///////////////////////////////////////////////////////////
 
@@ -265,10 +266,38 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
    Finest->Set("SingleNodeAggDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xSingleNodeAggMap));
 
   // for the Jacobi/SGS smoother we wanna change the input matrix A and set Dirichlet bcs for the (active?) slave dofs
-  Teuchos::RCP<FactoryBase> slaveDcAFact =
+  Teuchos::RCP<FactoryBase> singleNodeAFact =
        Teuchos::rcp(new MueLu::IterationAFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SingleNodeAggDofMap",MueLu::NoFactory::getRCP()));
 
-  Finest->Keep("A",slaveDcAFact.get()); // do not forget to keep A for level smoothers!
+  ///////////////////////////////////////////////////////////////////////
+  // declare "SlaveDofMap" on finest level
+  // this map marks the slave DOFs (ignoring permutations) which shall
+  // be excluded from transfer operator smoothing
+  // -> SelectiveSaPFactory
+  if(xSlaveDofMap != Teuchos::null)
+    Finest->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xSlaveDofMap));
+
+  ///////////////////////////////////////////////////////////////////////
+  // declare "NearZeroDiagMap" on finest level
+  // this map marks rows of A with a near zero diagonal entry (usually the
+  // tolerance is 1e-5). This is a sign of a badly behaving matrix. Usually
+  // one should not used smoothed aggregation for these type of problems but
+  // rather try plain aggregation (PA-AMG)
+  // -> SelectiveSaPFactory
+  if(xNearZeroDiagMap != Teuchos::null)
+    Finest->Set("NearZeroDiagMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xNearZeroDiagMap));
+
+  ///////////////////////////////////////////////////////////////////////
+  // keep factories
+
+  // note: the slaveTransferAFactory is only needed/used for the setup
+  //       we don't have to keep it over all multigrid levels
+  /*Teuchos::RCP<FactoryBase> slaveTransferAFactory =
+       Teuchos::rcp(new MueLu::SelectiveAFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap",MueLu::NoFactory::getRCP()));*/
+
+  // keep singleNodeAFact since it's needed in the solution phase by MyTrilinosSmoother
+  if(xSingleNodeAggMap != Teuchos::null)
+    Finest->Keep("A",singleNodeAFact.get());
 
   // Coalesce and drop factory with constant number of Dofs per freedom
   // note: coalescing based on original matrix A
@@ -301,17 +330,38 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     PFact = PtentFact;
     RFact = Teuchos::rcp( new TransPFactory() );
   } else if (agg_damping > 0.0) {
-    // Petrov Galerkin PG-AMG smoothed aggregation (energy minimization in ML)
-    PFact  = Teuchos::rcp( new SaPFactory() );
+    // smoothed aggregation (SA-AMG)
+    PFact  = Teuchos::rcp( new MueLu::SelectiveSaPFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>() );
+
+    // feed SelectiveSAPFactory with information
     PFact->SetFactory("P",PtentFact);
+    // use user-given damping parameter
     PFact->SetParameter("Damping factor", Teuchos::ParameterEntry(agg_damping));
-    //PFact->SetFactory("A",slaveDcAFact);
-    RFact  = Teuchos::rcp( new TransPFactory() );
+    PFact->SetParameter("Damping strategy", Teuchos::ParameterEntry(std::string("User")));
+    // only prolongator smoothing for transfer operator basis functions which
+    // correspond to non-slave rows in (permuted) matrix A
+    // We use the tentative prolongator to detect the corresponding prolongator basis functions for given row gids.
+    // Note: this ignores the permutations in A. In case, the matrix A has been permuted it can happen
+    //       that problematic columns in Ptent are not corresponding to columns that belong to the
+    //       with nonzero entries in slave rows. // TODO think more about this -> aggregation
+    PFact->SetParameter("NonSmoothRowMapName", Teuchos::ParameterEntry(std::string("SlaveDofMap")));
+    //PFact->SetParameter("NonSmoothRowMapName", Teuchos::ParameterEntry(std::string("")));
+    PFact->SetFactory("NonSmoothRowMapFactory", MueLu::NoFactory::getRCP());
+
+    // provide diagnostics of diagonal entries of current matrix A
+    // if the solver object detects some significantly small entries on diagonal the contact
+    // preconditioner can decide to skip transfer operator smoothing to increase robustness
+    PFact->SetParameter("NearZeroDiagMapName", Teuchos::ParameterEntry(std::string("NearZeroDiagMap")));
+    //PFact->SetParameter("NearZeroDiagMapName", Teuchos::ParameterEntry(std::string("")));
+    PFact->SetFactory("NearZeroDiagMapFactory", MueLu::NoFactory::getRCP());
+
+    RFact  = Teuchos::rcp( new GenericRFactory() );
   } else {
     // Petrov Galerkin PG-AMG smoothed aggregation (energy minimization in ML)
     PFact  = Teuchos::rcp( new PgPFactory() );
     PFact->SetFactory("P",PtentFact);
-    //PFact->SetFactory("A",slaveDcAFact);
+    //PFact->SetFactory("A",singleNodeAFact);
+    //PFact->SetFactory("A",slaveTransferAFactory);  // produces nans
     RFact  = Teuchos::rcp( new GenericRFactory() );
   }
 #else
@@ -346,7 +396,16 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     cmTransFact->SetFactory("P", PtentFact);
     AcFact->AddTransferFactory(cmTransFact);
   }
-
+  if(xSlaveDofMap != Teuchos::null) {
+    Teuchos::RCP<MapTransferFactory> cmTransFact = Teuchos::rcp(new MapTransferFactory("SlaveDofMap", MueLu::NoFactory::getRCP()));
+    cmTransFact->SetFactory("P", PtentFact);
+    AcFact->AddTransferFactory(cmTransFact);
+  }
+  if(xNearZeroDiagMap != Teuchos::null) {
+    Teuchos::RCP<MapTransferFactory> cmTransFact = Teuchos::rcp(new MapTransferFactory("NearZeroDiagMap", MueLu::NoFactory::getRCP()));
+    cmTransFact->SetFactory("P", PtentFact);
+    AcFact->AddTransferFactory(cmTransFact);
+  }
   ///////////////////////////////////////////////////////////////////////
   // setup coarse level smoothers/solvers
   ///////////////////////////////////////////////////////////////////////
@@ -367,7 +426,11 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     vecManager[i] = Teuchos::rcp(new FactoryManager());
 
     // fine/intermedium level smoother
-    Teuchos::RCP<SmootherFactory> SmooFactFine = GetContactSmootherFactory(pp, i, slaveDcAFact); // use filtered matrix on fine and intermedium levels
+    Teuchos::RCP<SmootherFactory> SmooFactFine = Teuchos::null;
+    if(xSingleNodeAggMap != Teuchos::null)
+      SmooFactFine = GetContactSmootherFactory(pp, i, singleNodeAFact); // use filtered matrix on fine and intermedium levels
+    else
+      SmooFactFine = GetContactSmootherFactory(pp, i, Teuchos::null); // use filtered matrix on fine and intermedium levels
 
     if(SmooFactFine != Teuchos::null)
       vecManager[i]->SetFactory("Smoother" ,  SmooFactFine);    // Hierarchy.Setup uses TOPSmootherFactory, that only needs "Smoother"

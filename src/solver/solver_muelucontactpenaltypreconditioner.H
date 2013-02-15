@@ -53,6 +53,8 @@ namespace LINALG
 
       virtual void Print( std::ostream & stream ) { stream << "MueLu"; }
 
+      /// return name of sublist in paramterlist which contains parameters for preconditioner
+      virtual const std::string getParameterListName() const { return "MueLu (PenaltyContact) Parameters"; }
     private:
 
       //void ExportAggregates(const Teuchos::RCP<Level>& level, const MueLu::FactoryBase* AFact, const MueLu::FactoryBase* aggFact,const Teuchos::RCP<const Teuchos::Comm<int> >& comm, int numDofsPerNode);

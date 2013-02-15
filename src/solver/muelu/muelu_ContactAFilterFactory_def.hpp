@@ -20,7 +20,7 @@
 #include "MueLu_Level.hpp"
 #include "MueLu_Monitor.hpp"
 
-#if 0 // use old version with map extractor...
+#if 0
 namespace MueLu {
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
