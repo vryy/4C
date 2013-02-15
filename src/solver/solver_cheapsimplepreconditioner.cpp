@@ -173,8 +173,10 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
   //-------------------------------------------------------------------------
   // Allocate preconditioner for pressure and velocity
   //-------------------------------------------------------------------------
-    if (visml)
+    if (visml) {
+      predictSolver_list_.sublist("ML Parameters").remove("init smoother",false);
       Ppredict_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*A00,predictSolver_list_.sublist("ML Parameters"),true));
+    }
     else
     {
       string type = predictSolver_list_.sublist("Aztec Parameters").get("Preconditioner Type","ILU");
@@ -190,6 +192,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
 
     if (pisml)
     {
+      schurSolver_list_.sublist("ML Parameters").remove("init smoother",false);
       Pschur_ = Teuchos::rcp(new ML_Epetra::MultiLevelPreconditioner(*A11,schurSolver_list_.sublist("ML Parameters"),true));
     }
     else

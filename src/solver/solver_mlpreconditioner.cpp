@@ -112,6 +112,9 @@ void LINALG::SOLVER::MLPreconditioner::Setup( bool create,
     // END DO NOT COMMIT THIS STUFF
 #endif
 
+    std::cout << mllist_ << std::endl;
+    mllist_.remove("init smoother",false);
+
     // see whether we use standard ml or our own mlapi operator
     const bool domlapioperator = mllist_.get<bool>("LINALG::AMG_Operator",false);
     const bool doamgpreconditioner = mllist_.get<bool>("LINALG::AMGPreconditioner",false);
