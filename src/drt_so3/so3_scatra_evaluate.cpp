@@ -127,6 +127,8 @@ int DRT::ELEMENTS::So3_Scatra< so3_ele, distype>::Evaluate(Teuchos::ParameterLis
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_multidofsetcoupling")   act = So3_Scatra::calc_struct_multidofsetcoupling;
   else if (action=="postprocess_stress")   act = So3_Scatra::postprocess_stress;
+  else if (action=="calc_struct_update_istep") act = So3_Scatra::calc_struct_update_istep;
+
   // what should the element do
   switch(act)
   {
@@ -157,6 +159,18 @@ int DRT::ELEMENTS::So3_Scatra< so3_ele, distype>::Evaluate(Teuchos::ParameterLis
                           elevec3_epetra);
   }
   break;
+  /*case So3_Scatra::calc_struct_update_istep:
+  {
+    so3_ele::Evaluate(params,
+                      discretization,
+                      la[0].lm_,
+                      elemat1_epetra,
+                      elemat2_epetra,
+                      elevec1_epetra,
+                      elevec2_epetra,
+                      elevec3_epetra);
+  }
+  break;*/
   //==================================================================================
   default:
   {

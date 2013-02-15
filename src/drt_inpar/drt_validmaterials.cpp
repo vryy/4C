@@ -1633,24 +1633,6 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
-  /*--------------------------------------------------------------------*/
-  // coupled anisotropic material with the stress given by a the contraction law of Bestel-Clement-Sorine
- /* {
-    Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("ELAST_CoupAnisoNeoHooke_ActiveStress",
-                                            "anisotropic part with one neo Hookean fiber with coefficient given by a simplification of the activation-contraction law of Bestel-Clement-Sorine-2001",
-                                            INPAR::MAT::mes_coupanisoneohooke_activestress));
-
-    AddNamedReal(m,"SIGMA0","Contractility (maximal stress)");
-    AddNamedReal(m,"TAUC_0","Initial value for the active stress");
-    AddNamedReal(m,"GAMMA","angle");
-    AddNamedInt(m,"INIT","initialization modus for fiber alignment");
-    AddNamedInt(m,"ADAPT_ANGLE","adapt angle during remodeling");
-
-    AppendMaterialDefinition(matlist,m);
-  }
-  */
-
    /*--------------------------------------------------------------------*/
   // coupled anisotropic material with the stress given by a the contraction law of Bestel-Clement-Sorine
   {

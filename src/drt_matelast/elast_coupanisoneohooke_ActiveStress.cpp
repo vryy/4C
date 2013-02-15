@@ -69,6 +69,7 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::PackSummand(DRT::PackBuffer& 
 {
   AddtoPack(data,a_);
   AddtoPack(data,A_);
+  AddtoPack(data,tauc_last_);
 }
 
 
@@ -79,12 +80,18 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::UnpackSummand(const std::vect
 {
   ExtractfromPack(position,data,a_);
   ExtractfromPack(position,data,A_);
+  ExtractfromPack(position,data,tauc_last_);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::Setup(DRT::INPUT::LineDefinition* linedef)
 {
+  // Setup of active stress model
+  tauc_last_ = params_->tauc0_;
+  tauc_ = params_->tauc0_;
+
+  // Setup of fibers
   if (params_->init_ == 0)
   {
     // fibers aligned in YZ-plane with gamma around Z in global cartesian cosy
@@ -207,8 +214,13 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::AddStressAnisoPrincipal(
     Teuchos::ParameterList& params
 )
 {
-   double stressFact_=params.get<double>("scalar");
-   stress.Update((params_->sigma_)*stressFact_, A_, 1.0);
+   double activationFunction_=params.get<double>("scalar", 1.0);
+   double dt_=0.002; //params.get<double>("dt", 1.0);
+   double abs_u_ = abs(activationFunction_);
+   double absplus_u_ = abs_u_*(activationFunction_>0.0);
+   tauc_ =  (tauc_last_/dt_ + params_->sigma_*absplus_u_)/(1/dt_ + abs_u_);
+
+   stress.Update(tauc_, A_, 1.0);
 
    // no contribution to cmat
   // double delta = 0.0;
@@ -262,5 +274,14 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::GetFiberVecs(
 )
 {
   fibervecs.push_back(a_);
+}
+
+/*----------------------------------------------------------------------*
+ |  Update internal stress variables              (public)         05/08|
+ *----------------------------------------------------------------------*/
+void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::Update()
+{
+  tauc_last_ = tauc_;
+  return;
 }
 
