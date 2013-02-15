@@ -406,18 +406,39 @@ public:
        nodeI_ = (int)floor(0.5*(0.5*NumNode()+1)) - 1;
        nodeJ_ = (int)floor(0.5*(0.5*NumNode()+2)) - 1;
 
+
+
        //resize and initialized STL vectors for interpolated nodes for rotational displacements so that they can store one value at each node
-       dispthetaconv_.resize(fnnode);
-       dispthetaold_.resize(fnnode);
-       dispthetanew_.resize(fnnode);
+       dispthetaconv_.clear();
+       dispthetaold_.clear();
+       dispthetanew_.clear();
+       for(int i=0; i<fnnode; i++)
+       {
+         dispthetaconv_.push_back(LINALG::Matrix<3,1>(true));
+         dispthetaold_.push_back(LINALG::Matrix<3,1>(true));
+         dispthetanew_.push_back(LINALG::Matrix<3,1>(true));
+       }
 
        //set nodal tridas according to input file
-       rQnew_.resize(4);
-       rQold_.resize(4);
-       rQconv_.resize(4);
-       Qnew_.resize(2);
-       Qold_.resize(2);
-       Qconv_.resize(2);
+       rQnew_.clear();
+       rQold_.clear();
+       rQconv_.clear();
+       for(int i=0; i<4; i++)
+       {
+         rQnew_.push_back(LINALG::Matrix<4,1>(true));
+         rQold_.push_back(LINALG::Matrix<4,1>(true));
+         rQconv_.push_back(LINALG::Matrix<4,1>(true));
+       }
+
+       Qnew_.clear();
+       Qold_.clear();
+       Qconv_.clear();
+       for(int i=0; i<2; i++)
+       {
+         Qnew_.push_back(LINALG::Matrix<4,1>(true));
+         Qold_.push_back(LINALG::Matrix<4,1>(true));
+         Qconv_.push_back(LINALG::Matrix<4,1>(true));
+       }
 
        for(int i=0; i<fnnode; i++)
          for(int j=0; j<3; j++)

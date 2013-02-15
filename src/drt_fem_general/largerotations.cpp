@@ -243,8 +243,8 @@ void LARGEROTATIONS::triadtoquaternion(const LINALG::Matrix<3,3>& R, LINALG::Mat
  *---------------------------------------------------------------------------*/
 LINALG::Matrix<3,3> LARGEROTATIONS::Tmatrix(LINALG::Matrix<3,1> theta)
 {
-  LINALG::Matrix<3,3> result;
-  double theta_abs = std::pow(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2) ,0.5);
+  LINALG::Matrix<3,3> result(true);
+  double theta_abs = sqrt(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2));
 
   //in case of theta_abs == 0 the following computation has problems with singularities
   if(theta_abs > 0)
@@ -252,19 +252,21 @@ LINALG::Matrix<3,3> LARGEROTATIONS::Tmatrix(LINALG::Matrix<3,1> theta)
     computespin(result, theta);
     result.Scale(-0.5);
 
+    double theta_abs_half = theta_abs/2.0;
+
     for(int i = 0; i<3; i++)
-      result(i,i) += theta_abs/( 2*tan(theta_abs/2) );
+      result(i,i) += theta_abs/( 2.0*tan(theta_abs_half) );
 
     for(int i = 0; i<3; i++)
       for(int j=0; j<3; j++)
-        result(i,j) += theta(i) * theta(j) * (1 - theta_abs/(2*tan(theta_abs/2)) )/pow(theta_abs,2);
+        result(i,j) += theta(i) * theta(j) * (1.0 - theta_abs/(2.0*tan(theta_abs_half)) )/(theta_abs*theta_abs);
   }
   //in case of theta_abs == 0 H(theta) is the identity matrix and hence also Hinv
   else
   {
     result.PutScalar(0.0);
     for(int j=0; j<3; j++)
-      result(j,j) = 1;
+      result(j,j) = 1.0;
   }
 
   return result;
@@ -280,7 +282,8 @@ LINALG::Matrix<3,3> LARGEROTATIONS::Tinvmatrix(LINALG::Matrix<3,1> theta)
 {
 
   LINALG::Matrix<3,3> result;
-  double theta_abs = std::pow(theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2) ,0.5);
+  double rootarg = theta(0)*theta(0) + theta(1)*theta(1) + theta(2)*theta(2);
+  double theta_abs = sqrt(rootarg);
 
   //in case of theta_abs == 0 the following computation has problems with singularities
   if(theta_abs > 0)
@@ -296,7 +299,7 @@ LINALG::Matrix<3,3> LARGEROTATIONS::Tinvmatrix(LINALG::Matrix<3,1> theta)
     //first term on the right side in eq. (2.5)
     for(int i = 0; i<3; i++)
       for(int j=0; j<3; j++)
-        result(i,j) += theta(i) * theta(j) * (1 - sin(theta_abs)/(theta_abs) )/pow(theta_abs,2);
+        result(i,j) += theta(i) * theta(j) * (1 - sin(theta_abs)/(theta_abs) )/(theta_abs*theta_abs);
   }
   //in case of theta_abs == 0 H(theta) is the identity matrix and hence also Hinv
   else
