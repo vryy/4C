@@ -5273,7 +5273,9 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
 
   // damping parameter for BGS2X2
   DoubleParameter("BGS2X2_GLOBAL_DAMPING",1.,"damping parameter for BGS2X2 preconditioner",&list);
-  
+  DoubleParameter("BGS2X2_BLOCK1_DAMPING",1.,"damping parameter for BGS2X2 preconditioner block1",&list);
+  DoubleParameter("BGS2X2_BLOCK2_DAMPING",1.,"damping parameter for BGS2X2 preconditioner block2",&list);
+
   BoolParameter("PERMUTE_SYSTEM","No","allow linear solver to permute linear system to improve properties of linear system for iterative methods",&list);
   
   // verbosity flag (for Belos)

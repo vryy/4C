@@ -1205,9 +1205,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(const Teuchos:
     // currently, the number of Richardson iteratios and the relaxation
     // parameter on the individual block level are set to 1 and 1.0, respectively
     bgslist.set("block1_iter",1);
-    bgslist.set("block1_omega",0.8);
+    bgslist.set("block1_omega",inparams.get<double>("BGS2X2_BLOCK1_DAMPING"));
     bgslist.set("block2_iter",1);
-    bgslist.set("block2_omega",0.8);
+    bgslist.set("block2_omega",inparams.get<double>("BGS2X2_BLOCK2_DAMPING"));
   }
 
   return outparams;
@@ -1828,9 +1828,9 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       // currently, the number of Richardson iteratios and the relaxation
       // parameter on the individual block level are set to 1 and 1.0, respectively
       bgslist.set("block1_iter",1);
-      bgslist.set("block1_omega",0.8);
+      bgslist.set("block1_omega",inparams.get<double>("BGS2X2_BLOCK1_DAMPING"));
       bgslist.set("block2_iter",1);
-      bgslist.set("block2_omega",0.8);
+      bgslist.set("block2_omega",inparams.get<double>("BGS2X2_BLOCK2_DAMPING"));
     }
   }
   break;
