@@ -170,11 +170,11 @@ void MAT::Myocard::Unpack(const std::vector<char>& data)
  |  Setup conductivity tensor                                ljag 06/12 |
  *----------------------------------------------------------------------*/
 
-void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
+/*void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
     {
     // get conductivity values of main fibre direction and
     const double maindirdiffusivity = params_->maindirdiffusivity;
-    const double offdirdiffusivity  = params_->maindirdiffusivity;
+    const double offdirdiffusivity  = params_->offdirdiffusivity;
 
     // read local eigenvectors of diffusion tensor at current element
     std::vector<double> rad;
@@ -232,7 +232,112 @@ void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
 
     // done
   return;
-}
+}*/
+
+
+
+/*----------------------------------------------------------------------*
+ |  Setup conductivity tensor                                ljag 02/13 |
+ *----------------------------------------------------------------------*/
+
+void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
+  {
+    // get conductivity values of main fiber direction and perpendicular to fiber direction (rot symmetry)
+    const double maindirdiffusivity = params_->maindirdiffusivity;
+    const double offdirdiffusivity  = params_->offdirdiffusivity;
+
+    // read local eigenvectors of diffusion tensor at current element
+    std::vector<double> fiber1(3);
+    std::vector<double> fiber2(3);
+    std::vector<double> fiber3(3);
+
+    linedef->ExtractDoubleVector("FIBER1",fiber1);
+
+    // eigenvector matrix
+    double fiber1norm=0.;
+    double fiber2norm=0.;
+    double fiber3norm=0.;
+    LINALG::Matrix<3,3> evmat(true);
+    LINALG::Matrix<3,3> evmatinv(true);
+
+    // construction of ONB for fibers
+    fiber2[0] = -fiber1[1];
+    fiber2[1] = fiber1[0];
+    fiber2[2] = 0;
+
+    fiber3[0] = -fiber1[2]*fiber2[1];
+    fiber3[1] = fiber1[2]*fiber2[0];
+    fiber3[2] = fiber1[0]*fiber2[1]-fiber1[1]*fiber2[0];
+    for (int i = 0; i < 3; ++i)
+      {
+        fiber1norm += fiber1[i]*fiber1[i];
+        fiber2norm += fiber2[i]*fiber2[i];
+        fiber3norm += fiber3[i]*fiber3[i];
+      }
+    fiber1norm = sqrt(fiber1norm);
+    fiber2norm = sqrt(fiber2norm);
+    fiber3norm = sqrt(fiber3norm);
+    for (int i=0; i<3; ++i)
+      {
+        evmat(i,0) = fiber1[i]/fiber1norm;
+        evmat(i,1) = fiber2[i]/fiber2norm;
+        evmat(i,2) = fiber3[i]/fiber3norm;
+      }
+
+    //paranoia check if we really computed an ONB
+    double test1 = 0.0;
+    double test2 = 0.0;
+    double test3 = 0.0;
+    for (int i = 0; i < 3; ++i)
+      {
+        test1 += fiber1[i]*fiber2[i];
+        test2 += fiber1[i]*fiber3[i];
+        test3 += fiber2[i]*fiber3[i];
+      }
+    if (test1>1e-10 or test2>1e-10 or test3>1e-10)
+      {
+        dserror("ONB Calculation in Myocard Material failed");
+      }
+
+    // determinant of eigenvector matrix
+    double const evmatdet = evmat(0,0)*evmat(1,1)*evmat(2,2)
+                    + evmat(0,1)*evmat(1,2)*evmat(2,0)
+                    + evmat(0,2)*evmat(1,0)*evmat(2,1)
+                    - evmat(0,2)*evmat(1,1)*evmat(2,0)
+                    - evmat(0,1)*evmat(1,0)*evmat(2,2)
+                    - evmat(0,0)*evmat(1,2)*evmat(2,1);
+    // double const evmatdet = evmat.Determinant();
+
+    // inverse of eigenvector matrix
+    evmatinv(0,0) = evmat(1,1)*evmat(2,2)-evmat(1,2)*evmat(2,1);
+    evmatinv(0,1) = evmat(0,2)*evmat(2,1)-evmat(0,1)*evmat(2,2);
+    evmatinv(0,2) = evmat(0,1)*evmat(1,2)-evmat(0,2)*evmat(1,1);
+    evmatinv(1,0) = evmat(1,2)*evmat(2,0)-evmat(1,0)*evmat(2,2);
+    evmatinv(1,1) = evmat(0,0)*evmat(2,2)-evmat(0,2)*evmat(2,0);
+    evmatinv(1,2) = evmat(0,2)*evmat(1,0)-evmat(0,0)*evmat(1,2);
+    evmatinv(2,0) = evmat(1,0)*evmat(2,1)-evmat(1,1)*evmat(2,0);
+    evmatinv(2,1) = evmat(0,1)*evmat(2,0)-evmat(0,0)*evmat(2,1);
+    evmatinv(2,2) = evmat(0,0)*evmat(1,1)-evmat(0,1)*evmat(1,0);
+    evmatinv.Scale(1/evmatdet);
+    //const LINALG::Matrix<3,3> ematinv;
+    //evmat.Invert(ematinv);
+    //cout << "EVMAT: " << evmat << "   EVMATinv: " << evmatinv << endl;
+    // Conductivity matrix D = EVmat*DiagonalConductivityMatrix*EVmatinv
+    for (int i = 0; i<3; i++)
+      {
+        evmatinv(0,i) *= maindirdiffusivity;
+        evmatinv(1,i) *= offdirdiffusivity;
+        evmatinv(2,i) *= offdirdiffusivity;
+      }
+
+    difftensor_.Multiply(evmat, evmatinv);
+
+
+    // done
+    return;
+
+  }
+
 
 void MAT::Myocard::ComputeDiffusivity(LINALG::Matrix<1,1>& diffus3) const
 {
