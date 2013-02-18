@@ -26,9 +26,9 @@ class StructureEnsightWriter : public EnsightWriter
 {
 public:
   StructureEnsightWriter(PostField* field,
-                         string filename,
-                         string stresstype="none",
-                         string straintype="none") :
+                         std::string filename,
+                         std::string stresstype="none",
+                         std::string straintype="none") :
   EnsightWriter(field, filename), stresstype_(stresstype), straintype_(straintype)
   {
   }
@@ -42,38 +42,38 @@ protected:
   \author lw
   \date 02/08
   */
-  void PostStress(const string groupname, const string stresstype);
-  void WriteNodalStress(const string groupname,
+  void PostStress(const std::string groupname, const std::string stresstype);
+  void WriteNodalStress(const std::string groupname,
                         PostResult& result);
   void WriteNodalStressStep(std::ofstream& file,
                             PostResult& result,
-                            map<string, vector<ofstream::pos_type> >& resultfilepos,
-                            const string groupname,
-                            const string name) const;
-  void WriteElementCenterStress(const string groupname,
+                            std::map<std::string, std::vector< std::ofstream::pos_type> >& resultfilepos,
+                            const std::string groupname,
+                            const std::string name) const;
+  void WriteElementCenterStress(const std::string groupname,
                                 PostResult& result);
   void WriteElementCenterStressStep(std::ofstream& file,
                                     PostResult& result,
-                                    map<string, vector<ofstream::pos_type> >& resultfilepos,
-                                    const string groupname,
-                                    const string name) const;
-  void WriteNodalEigenStress(const string groupname,
+                                    std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                                    const std::string groupname,
+                                    const std::string name) const;
+  void WriteNodalEigenStress(const std::string groupname,
                              PostResult& result);
-  void WriteNodalEigenStressStep(std::vector<RCP<ofstream> > files,
+  void WriteNodalEigenStressStep(std::vector<Teuchos::RCP<std::ofstream> > files,
                                  PostResult& result,
-                                 map<string, vector<ofstream::pos_type> >& resultfilepos,
-                                 const string groupname,
-                                 vector<string> name);
-  void WriteElementCenterEigenStress(const string groupname,
+                                 std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                                 const std::string groupname,
+                                 std::vector<std::string> name);
+  void WriteElementCenterEigenStress(const std::string groupname,
                                      PostResult& result);
-  void WriteElementCenterEigenStressStep(std::vector<RCP<ofstream> > files,
+  void WriteElementCenterEigenStressStep(std::vector<Teuchos::RCP<std::ofstream> > files,
                                          PostResult& result,
-                                         map<string, vector<ofstream::pos_type> >& resultfilepos,
-                                         const string groupname,
-                                         vector<string> name);
+                                         std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                                         const std::string groupname,
+                                         std::vector<std::string> name);
 
-  string stresstype_;
-  string straintype_;
+  std::string stresstype_;
+  std::string straintype_;
 };
 
 

@@ -151,7 +151,7 @@ namespace DRT
     void FindConditionObjects(const DRT::Discretization& dis,
         std::map<int, DRT::Node*>& nodes,
         std::map<int, Teuchos::RCP<DRT::Element> >& elements,
-                              const string& condname);
+                              const std::string& condname);
 
     /// collect all nodes (in- and excluding 'ghosts') and
     /// elements (including ghosts) in a condition
@@ -181,7 +181,7 @@ namespace DRT
                               std::map<int, DRT::Node*>& nodes,
                               std::map<int, DRT::Node*>& ghostnodes,
                               std::map< int, Teuchos::RCP<DRT::Element> >& elements,
-                              const string& condname);
+                              const std::string& condname);
 
     /// collect all nodes (in- and excluding 'ghosts') and
     /// elements (including ghosts) in a condition
@@ -196,7 +196,7 @@ namespace DRT
                               std::map<int, std::map<int, DRT::Node*> >& nodes,
                               std::map<int, std::map<int, DRT::Node*> >& ghostnodes,
                               std::map<int, std::map< int, Teuchos::RCP<DRT::Element> > >& elements,
-                              const string& condname);
+                              const std::string& condname);
 
     /// collect all elements in a condition including ghosts
     /*!
@@ -206,7 +206,7 @@ namespace DRT
      */
     void FindConditionObjects(const DRT::Discretization& dis,
                               std::map<int, Teuchos::RCP<DRT::Element> >& elements,
-                              const string& condname);
+                              const std::string& condname);
 
 
     /// Create element map to given condition
@@ -263,7 +263,7 @@ namespace DRT
     void CollectElementsByConditionLabel(
         const DRT::Discretization&           discret,               ///< discretization with condition
         std::map<int,std::set<int> >&        elementsByLabel,       ///< map from label to set of element GID
-        const string&                        name                   ///< name of the condition
+        const std::string&                        name                   ///< name of the condition
         );
 
   }

@@ -32,7 +32,7 @@ Maintainer: Christiane FÃ¶rster
 /*----------------------------------------------------------------------*/
 MonWriter::MonWriter(
   PostProblem& problem,
-  string& infieldtype,
+  std::string& infieldtype,
   int node
   )
   : myrank_(problem.comm()->MyPID()) // get my processor id
@@ -76,7 +76,7 @@ MonWriter::MonWriter(
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonFile(
   PostProblem& problem,
-  string& infieldtype,
+  std::string& infieldtype,
   int node
   )
 {
@@ -167,8 +167,8 @@ void MonWriter::WriteMonFile(
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonStressFile(
   PostProblem& problem,
-  string& infieldtype,
-  string stresstype,
+  std::string& infieldtype,
+  std::string stresstype,
   int node
   )
 {
@@ -195,8 +195,8 @@ void MonWriter::WriteMonStressFile(
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonStrainFile(
   PostProblem& problem,
-  string& infieldtype,
-  string straintype,
+  std::string& infieldtype,
+  std::string straintype,
   int node
   )
 {
@@ -224,8 +224,8 @@ void MonWriter::WriteMonStrainFile(
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonPlStrainFile(
   PostProblem& problem,
-  string& infieldtype,
-  string straintype,
+  std::string& infieldtype,
+  std::string straintype,
   int node
   )
 {
@@ -253,11 +253,11 @@ void MonWriter::WriteMonPlStrainFile(
 
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonStrFile(
-  const string& filename,
+  const std::string& filename,
   PostProblem& problem,
-  string& infieldtype,
-  const string strname,
-  const string strtype,
+  std::string& infieldtype,
+  const std::string strname,
+  const std::string strtype,
   std::vector<std::string> groupnames,
   int node
   )
@@ -348,8 +348,8 @@ void MonWriter::WriteMonStrFile(
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonHeatfluxFile(
   PostProblem& problem,
-  string& infieldtype,
-  string heatfluxtype,
+  std::string& infieldtype,
+  std::string heatfluxtype,
   int node
   )
 {
@@ -379,8 +379,8 @@ void MonWriter::WriteMonHeatfluxFile(
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonTempgradFile(
   PostProblem& problem,
-  string& infieldtype,
-  string tempgradtype,
+  std::string& infieldtype,
+  std::string tempgradtype,
   int node
   )
 {
@@ -410,11 +410,11 @@ void MonWriter::WriteMonTempgradFile(
 
 /*----------------------------------------------------------------------*/
 void MonWriter::WriteMonThrFile(
-  const string& filename,
+  const std::string& filename,
   PostProblem& problem,
-  string& infieldtype,
-  const string thrname,
-  const string thrtype,
+  std::string& infieldtype,
+  const std::string thrname,
+  const std::string thrtype,
   std::vector<std::string> groupnames,
   int node
   )
@@ -516,7 +516,7 @@ PostField* FieldMonWriter::GetFieldPtr(PostProblem& problem)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FluidMonWriter::CheckInfieldType(string& infieldtype)
+void FluidMonWriter::CheckInfieldType(std::string& infieldtype)
 {
   if (infieldtype != "fluid")
     cout << "\nPure fluid problem, field option other than fluid has been ignored!\n\n";
@@ -563,8 +563,8 @@ void FluidMonWriter::WriteResult(
   Teuchos::RCP< Epetra_Vector > resvec = result.read_result("velnp");
   const Epetra_BlockMap& velmap = resvec->Map();
   // do output of general time step data
-  outfile << right << std::setw(20) << result.step();
-  outfile << right << std::setw(20) << std::scientific << result.time();
+  outfile << std::right << std::setw(20) << result.step();
+  outfile << std::right << std::setw(20) << std::scientific << result.time();
 
   //compute second part of offset
   int offset2 = velmap.MinAllGID();
@@ -573,7 +573,7 @@ void FluidMonWriter::WriteResult(
   for(unsigned i=0; i < gdof.size(); ++i)
   {
     const int lid = velmap.LID(gdof[i]+offset2);
-    outfile << right << std::setw(20) << std::setprecision(10) << std::scientific << (*resvec)[lid];
+    outfile << std::right << std::setw(20) << std::setprecision(10) << std::scientific << (*resvec)[lid];
   }
   outfile << "\n";
 }
@@ -582,7 +582,7 @@ void FluidMonWriter::WriteResult(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void CombustMonWriter::CheckInfieldType(string& infieldtype)
+void CombustMonWriter::CheckInfieldType(std::string& infieldtype)
 {
   if (infieldtype != "fluid")
     cout << "\nPure fluid problem, field option other than fluid has been ignored!\n\n";
@@ -629,8 +629,8 @@ void CombustMonWriter::WriteResult(
   Teuchos::RCP< Epetra_Vector > resvec = result.read_result("velocity_smoothed");
   const Epetra_BlockMap& velmap = resvec->Map();
   // do output of general time step data
-  outfile << right << std::setw(20) << result.step();
-  outfile << right << std::setw(20) << std::scientific << result.time();
+  outfile << std::right << std::setw(20) << result.step();
+  outfile << std::right << std::setw(20) << std::scientific << result.time();
 
   //compute second part of offset
   int offset2 = velmap.MinAllGID();
@@ -639,7 +639,7 @@ void CombustMonWriter::WriteResult(
   for(unsigned i=0; i < gdof.size(); ++i)
   {
     const int lid = velmap.LID(gdof[i]+offset2);
-    outfile << right << std::setw(20) << std::setprecision(10) << std::scientific << (*resvec)[lid];
+    outfile << std::right << std::setw(20) << std::setprecision(10) << std::scientific << (*resvec)[lid];
   }
   outfile << "\n";
 }
@@ -648,7 +648,7 @@ void CombustMonWriter::WriteResult(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StructMonWriter::CheckInfieldType(string& infieldtype)
+void StructMonWriter::CheckInfieldType(std::string& infieldtype)
 {
   if (infieldtype != "structure")
     cout << "\nPure structural problem, field option other than structure has been ignored!\n\n";
@@ -810,8 +810,8 @@ void StructMonWriter::WriteResult(
 /*----------------------------------------------------------------------*/
 void StructMonWriter::WriteStrTableHead(
   std::ofstream& outfile,
-  const string strname,
-  const string strtype,
+  const std::string strname,
+  const std::string strtype,
   const int dim
   )
 {
@@ -852,8 +852,8 @@ void StructMonWriter::WriteStrResults(
   PostResult& result,
   std::vector<int>& gdof,
   int dim,
-  string strtype,
-  string groupname,
+  std::string strtype,
+  std::string groupname,
   const int node
   )
 {
@@ -932,8 +932,8 @@ void StructMonWriter::WriteStrResult(
   std::ofstream& outfile,
   PostField*& field,
   PostResult& result,
-  const string groupname,
-  const string name,
+  const std::string groupname,
+  const std::string name,
   const int numdf,
   const int node
   ) const
@@ -950,7 +950,7 @@ void StructMonWriter::WriteStrResult(
   p.set("gpstressmap", data);
 
   const Epetra_Map* nodemap = dis->NodeRowMap();
-  RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(new Epetra_MultiVector(*nodemap,6));
+  Teuchos::RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(new Epetra_MultiVector(*nodemap,6));
   p.set("poststress",nodal_stress);
   dis->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
     if (nodal_stress==Teuchos::null)
@@ -973,7 +973,7 @@ void StructMonWriter::WriteStrResult(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void AleMonWriter::CheckInfieldType(string& infieldtype)
+void AleMonWriter::CheckInfieldType(std::string& infieldtype)
 {
   if (infieldtype != "ale")
     cout << "\nPure ALE problem, field option other than ale has been ignored!\n\n";
@@ -1019,8 +1019,8 @@ void AleMonWriter::WriteResult(
   Teuchos::RCP< Epetra_Vector > resvec = result.read_result("displacement");
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
-  outfile << right << std::setw(10) << result.step();
-  outfile << right << std::setw(16) << std::scientific << result.time();
+  outfile << std::right << std::setw(10) << result.step();
+  outfile << std::right << std::setw(16) << std::scientific << result.time();
 
   //compute second part of offset
   int offset2 = dispmap.MinAllGID();
@@ -1029,7 +1029,7 @@ void AleMonWriter::WriteResult(
   for(unsigned i=0; i < gdof.size()-1; ++i)
   {
     const int lid = dispmap.LID(gdof[i]+offset2);
-    outfile << right << std::setw(16) << std::scientific << (*resvec)[lid];
+    outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
   outfile << "\n";
 }
@@ -1081,8 +1081,8 @@ void FsiFluidMonWriter::WriteResult(
   Teuchos::RCP< Epetra_Vector > resvec = result.read_result("dispnp");
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
-  outfile << right << std::setw(10) << result.step();
-  outfile << right << std::setw(16) << std::scientific << result.time();
+  outfile << std::right << std::setw(10) << result.step();
+  outfile << std::right << std::setw(16) << std::scientific << result.time();
 
   //compute second part of offset
   int offset2 = dispmap.MinAllGID();
@@ -1090,7 +1090,7 @@ void FsiFluidMonWriter::WriteResult(
   for(unsigned i=0; i < gdof.size()-1; ++i)
   {
     const int lid = dispmap.LID(gdof[i]+offset2);
-    outfile << right << std::setw(16) << std::scientific << (*resvec)[lid];
+    outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
 
 
@@ -1105,7 +1105,7 @@ void FsiFluidMonWriter::WriteResult(
   for(unsigned i=0; i < gdof.size(); ++i)
   {
     const int lid = velmap.LID(gdof[i]+offset2);
-    outfile << right << std::setw(16) << std::scientific << (*resvec)[lid];
+    outfile << std::right << std::setw(16) << std::scientific << (*resvec)[lid];
   }
   outfile << "\n";
 }
@@ -1153,7 +1153,7 @@ void FsiAleMonWriter::WriteHeader(std::ofstream& outfile)
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ScatraMonWriter::CheckInfieldType(string& infieldtype)
+void ScatraMonWriter::CheckInfieldType(std::string& infieldtype)
 {
   cout << "\nscatra something\n\n";
 }
@@ -1209,8 +1209,8 @@ void ScatraMonWriter::WriteResult(
 
   const Epetra_BlockMap& dispmap = resvec->Map();
   // do output of general time step data
-  outfile << right << std::setw(10) << result.step();
-  outfile << right << std::setw(20) << std::scientific << result.time();
+  outfile << std::right << std::setw(10) << result.step();
+  outfile << std::right << std::setw(20) << std::scientific << result.time();
 
   //compute second part of offset
   int offset2 = dispmap.MinAllGID();
@@ -1219,7 +1219,7 @@ void ScatraMonWriter::WriteResult(
   for(unsigned i=0; i < gdof.size(); ++i)
   {
     const int lid = dispmap.LID(gdof[i]+offset2);
-    outfile << right << std::setw(20) << std::setprecision(10) << std::scientific << (*resvec)[lid];
+    outfile << std::right << std::setw(20) << std::setprecision(10) << std::scientific << (*resvec)[lid];
   }
   outfile << "\n";
 }
@@ -1228,7 +1228,7 @@ void ScatraMonWriter::WriteResult(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ThermoMonWriter::CheckInfieldType(string& infieldtype)
+void ThermoMonWriter::CheckInfieldType(std::string& infieldtype)
 {
   if (infieldtype != "thermo")
     cout << "\nPure thermal problem, field option other than thermo has been ignored!\n\n";
@@ -1311,8 +1311,8 @@ void ThermoMonWriter::WriteResult(
 /*----------------------------------------------------------------------*/
 void ThermoMonWriter::WriteThrTableHead(
   std::ofstream& outfile,
-  const string thrname,
-  const string thrtype,
+  const std::string thrname,
+  const std::string thrtype,
   const int dim
   )
 {
@@ -1356,8 +1356,8 @@ void ThermoMonWriter::WriteThrResults(
   PostResult& result,
   std::vector<int>& gdof,
   int dim,
-  string thrtype,
-  string groupname,
+  std::string thrtype,
+  std::string groupname,
   const int node
   )
 {
@@ -1417,8 +1417,8 @@ void ThermoMonWriter::WriteThrResult(
   std::ofstream& outfile,
   PostField*& field,
   PostResult& result,
-  const string groupname,
-  const string name,
+  const std::string groupname,
+  const std::string name,
   const int dim,
   const int node
   ) const

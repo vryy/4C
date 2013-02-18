@@ -50,8 +50,8 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   MPI_Init(&argc,&argv);
 #endif
 
-  string file = "xxx";
-  string output;
+  std::string file = "xxx";
+  std::string output;
 
   int printparobjecttypes = 0;
 
@@ -122,7 +122,7 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
     tempgradtype_ = "none";
   }
 
-  result_group_ = vector<MAP*>();
+  result_group_ = std::vector<MAP*>();
   setup_filter(file, output);
 
   ndim_ = map_read_int(&control_table_, "ndim");
@@ -189,7 +189,7 @@ PostField* PostProblem::get_discretization(const int num)
  *----------------------------------------------------------------------*/
 int PostProblem::field_pos(const PostField* field) const
 {
-  for (vector<PostField>::const_iterator i = fields_.begin();
+  for (std::vector<PostField>::const_iterator i = fields_.begin();
        i!=fields_.end();
        ++i)
   {
@@ -216,7 +216,7 @@ RCP<Epetra_Comm> PostProblem::comm()
  * initializes all the data a filter needs. This function is called by
  * the Constructor.  (private)
  *----------------------------------------------------------------------*/
-void PostProblem::setup_filter(string control_file_name, string output_name)
+void PostProblem::setup_filter(std::string control_file_name, std::string output_name)
 {
   MAP temp_table;
 
@@ -243,8 +243,8 @@ void PostProblem::setup_filter(string control_file_name, string output_name)
   MAP* table = &control_table_;
 
   /* copy directory information */
-  string::size_type separator = basename_.rfind('/', string::npos);
-  if (separator != string::npos)
+  string::size_type separator = basename_.rfind('/', std::string::npos);
+  if (separator != std::string::npos)
   {
     input_dir_ = basename_.substr(0,separator+1);
   }
@@ -420,7 +420,7 @@ void PostProblem::read_meshes()
       char* fn;
       if (!map_find_string(meshmap,"mesh_file",&fn))
         dserror("No meshfile name for discretization %s.", currfield.discretization()->Name().c_str());
-      string filename = fn;
+      std::string filename = fn;
       IO::HDFReader reader = IO::HDFReader(input_dir_);
       reader.Open(filename,num_output_procs,comm_->NumProc(),comm_->MyPID());
 
@@ -444,7 +444,7 @@ void PostProblem::read_meshes()
           dserror("condition name expected");
 
         // read periodic boundary conditions if available
-        if (string(condname)=="LinePeriodic")
+        if (std::string(condname)=="LinePeriodic")
         {
 
           DRT::Exporter exporter(*comm_);
@@ -484,7 +484,7 @@ void PostProblem::read_meshes()
             int frompid= 0;
             int mypid  =comm_->MyPID();
 
-            vector<char> rblock;
+            std::vector<char> rblock;
 
             exporter.ReceiveAny(frompid,mypid,rblock,length);
 
@@ -494,7 +494,7 @@ void PostProblem::read_meshes()
 
           currfield.discretization()->UnPackCondition(cond_pbcsline, "LinePeriodic");
         }
-        else if (string(condname)=="SurfacePeriodic")
+        else if (std::string(condname)=="SurfacePeriodic")
         {
           DRT::Exporter exporter(*comm_);
 
@@ -533,7 +533,7 @@ void PostProblem::read_meshes()
             int frompid= 0;
             int mypid  =comm_->MyPID();
 
-            vector<char> rblock;
+            std::vector<char> rblock;
 
             exporter.ReceiveAny(frompid,mypid,rblock,length);
 
@@ -614,7 +614,7 @@ void PostProblem::read_meshes()
             int frompid= 0;
             int mypid  =comm_->MyPID();
 
-            vector<char> rblock;
+            std::vector<char> rblock;
 
             exporter.ReceiveAny(frompid,mypid,rblock,length);
 
@@ -720,7 +720,7 @@ PostField PostProblem::getfield(MAP* field_info)
 PostField::PostField(
     RCP<DRT::Discretization> dis,
     PostProblem* problem,
-    string field_name,
+    std::string field_name,
     const int numnd,
     const int numele)
 : dis_(dis),
@@ -762,7 +762,7 @@ PostResult::~PostResult()
 /*----------------------------------------------------------------------*
  * get timesteps when the solution is written
  *----------------------------------------------------------------------*/
-vector<double> PostResult::get_result_times(const string& fieldname)
+std::vector<double> PostResult::get_result_times(const std::string& fieldname)
 {
     std::vector<double> times; // timesteps when the solution is written
 
@@ -788,9 +788,9 @@ vector<double> PostResult::get_result_times(const string& fieldname)
  * get timesteps when the specific solution vector >name< is written
  *                                                               gjb02/08
  *----------------------------------------------------------------------*/
-vector<double> PostResult::get_result_times(
-        const string& fieldname,
-        const string& groupname)
+std::vector<double> PostResult::get_result_times(
+        const std::string& fieldname,
+        const std::string& groupname)
 {
     std::vector<double> times; // timesteps when the solution is written
 
@@ -866,7 +866,7 @@ int PostResult::next_result()
  * specified by a given groupname. Returns 1 when a new result block has
  * been found, otherwise returns 0                              gjb 02/08
  *----------------------------------------------------------------------*/
-int PostResult::next_result(const string& groupname)
+int PostResult::next_result(const std::string& groupname)
 {
     int ret = next_result();
     // go on, until the specified result is contained or end of time slice reached
@@ -910,7 +910,7 @@ void PostResult::open_result_files(MAP* field_info)
   {
     num_output_procs = 1;
   }
-  const string basename = map_read_string(field_info,"result_file");
+  const std::string basename = map_read_string(field_info,"result_file");
   //field_->problem()->set_basename(basename);
   Epetra_Comm& comm = *field_->problem()->comm();
   file_.Open(basename,num_output_procs,comm.NumProc(),comm.MyPID());
@@ -920,7 +920,7 @@ void PostResult::open_result_files(MAP* field_info)
  * reads the data of the result vector 'name' from the current result
  * block and returns it as an Epetra Vector.
  *----------------------------------------------------------------------*/
-RCP<Epetra_Vector> PostResult::read_result(const string name)
+RCP<Epetra_Vector> PostResult::read_result(const std::string name)
 {
   MAP* result = map_read_map(group_, name.c_str());
   int columns;
@@ -938,12 +938,12 @@ RCP<Epetra_Vector> PostResult::read_result(const string name)
  * elemap is returned, too.
  *----------------------------------------------------------------------*/
 RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > >
-PostResult::read_result_serialdensematrix(const string name)
+PostResult::read_result_serialdensematrix(const std::string name)
 {
   RCP<Epetra_Comm> comm = field_->problem()->comm();
   MAP* result = map_read_map(group_, name.c_str());
-  string id_path = map_read_string(result, "ids");
-  string value_path = map_read_string(result, "values");
+  std::string id_path = map_read_string(result, "ids");
+  std::string value_path = map_read_string(result, "values");
   int columns = map_find_int(result,"columns",&columns);
   if (not map_find_int(result,"columns",&columns))
   {
@@ -978,12 +978,12 @@ PostResult::read_result_serialdensematrix(const string name)
  * reads the data of the result vector 'name' from the current result
  * block and returns it as an Epetra Vector.
  *----------------------------------------------------------------------*/
-RCP<Epetra_MultiVector> PostResult::read_multi_result(const string name)
+RCP<Epetra_MultiVector> PostResult::read_multi_result(const std::string name)
 {
   const RCP<Epetra_Comm> comm = field_->problem()->comm();
   MAP* result = map_read_map(group_, name.c_str());
-  const string id_path = map_read_string(result, "ids");
-  const string value_path = map_read_string(result, "values");
+  const std::string id_path = map_read_string(result, "ids");
+  const std::string value_path = map_read_string(result, "values");
   int columns;
   if (not map_find_int(result,"columns",&columns))
   {

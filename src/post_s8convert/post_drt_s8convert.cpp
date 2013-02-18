@@ -21,8 +21,8 @@ public:
 
   void ConvertResults();
 
-  void write_vector_result(string result_name, PostField* field, PostResult* result);
-  void write_element_result(string result_name, PostField* field, PostResult* result);
+  void write_vector_result(std::string result_name, PostField* field, PostResult* result);
+  void write_element_result(std::string result_name, PostField* field, PostResult* result);
 
 private:
   PostField* field_;
@@ -91,20 +91,20 @@ Converter::Converter(PostField* field)
 
   // create new nodes
   maxgid_ = 0;
-  for (map<int, int>::iterator i=nodeids_.begin();
+  for (std::map<int, int>::iterator i=nodeids_.begin();
        i!=nodeids_.end();
        ++i)
   {
     int lid = i->first;
     int gid = i->second;
-    maxgid_ = max(maxgid_, gid);
+    maxgid_ = std::max(maxgid_, gid);
     double x[3];
     x[0] = coords(lid, 0);
     x[1] = coords(lid, 1);
     x[2] = coords(lid, 2);
     h8dis_->AddNode(Teuchos::rcp(new DRT::Node(gid, x, 0)));
   }
-  for (map<int, int>::iterator i=nodeids_.begin();
+  for (std::map<int, int>::iterator i=nodeids_.begin();
        i!=nodeids_.end();
        ++i)
   {
@@ -171,7 +171,7 @@ void Converter::ConvertResults()
 }
 
 
-void Converter::write_vector_result(string result_name,
+void Converter::write_vector_result(std::string result_name,
                                     PostField* field,
                                     PostResult* result)
 {
@@ -204,7 +204,7 @@ void Converter::write_vector_result(string result_name,
 }
 
 
-void Converter::write_element_result(string result_name,
+void Converter::write_element_result(std::string result_name,
                                      PostField* field,
                                      PostResult* result)
 {

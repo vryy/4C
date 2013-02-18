@@ -30,8 +30,6 @@
 #include "../drt_lib/drt_element.H"
 #include "../linalg/linalg_utils.H"
 
-using namespace std;
-
 //forward declaration
 namespace DRT
 {
@@ -69,9 +67,9 @@ const int subhexmap[8][8] =
         { 26, 22, 14, 23, 25, 17, 6, 18 },
         { 24, 26, 23, 15, 19, 25, 18, 7 } };
 
-typedef map<DRT::Element::DiscretizationType, int> NumElePerDisType;
+typedef std::map<DRT::Element::DiscretizationType, int> NumElePerDisType;
 
-typedef map<DRT::Element::DiscretizationType, vector<int> > EleGidPerDisType;
+typedef std::map<DRT::Element::DiscretizationType, std::vector<int> > EleGidPerDisType;
 
 //! defines different result types (node-based, element-based, Gauss-Points?)
 enum ResultType
@@ -91,7 +89,7 @@ public:
     //! constructor
     EnsightWriter(
             PostField* field,
-            const string filename);
+            const std::string filename);
     //! destructor
     virtual ~EnsightWriter()
     {
@@ -147,8 +145,8 @@ protected:
      \date 03/07
      */
     void WriteResult(
-            const string groupname, ///< name of the result group in the control file
-            const string name, ///< name of the result to be written
+            const std::string groupname, ///< name of the result group in the control file
+            const std::string name, ///< name of the result to be written
             const ResultType restype, ///< type of the result to be written (nodal-/element-based)
             const int numdf, ///< number of dofs per node to this result
             const int from=0 ///< start position of values in nodes
@@ -165,7 +163,7 @@ protected:
 
     void Write(
             std::ofstream& os,
-            const string s) const
+            const std::string s) const
     {
     	// only processor 0 does the writing !!
         if (myrank_==0)
@@ -183,14 +181,14 @@ protected:
 
     void WriteString(
             std::ofstream& stream,  ///< filestream we are writing to
-            const string str   ///< string to be written to file
+            const std::string str   ///< string to be written to file
             ) const;
     void WriteGeoFile(
-            const string& geofilename);
+            const std::string& geofilename);
     void WriteGeoFileOneTimeStep(
             std::ofstream& file,
-            map<string, vector<ofstream::pos_type> >& resultfilepos,
-            const string name);
+            std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+            const std::string name);
 
     RCP<Epetra_Map> WriteCoordinates(
             std::ofstream& geofile,                         ///< filestream for the geometry
@@ -237,8 +235,8 @@ protected:
 
     \param DRT::Element::DiscretizationType (i)          the nurbs discretisation type
     \param int                              (i)          global element id
-    \param ofstream                         (used for o) direct print to file
-    \param vector<int>                      (o)          remember node values for parallel IO
+    \param std::ofstream                         (used for o) direct print to file
+    \param std::vector<int>                      (o)          remember node values for parallel IO
     \param RCP<DRT::Discretization> (i)          the discretisation holding knots etc
     \param RCP<Epetra_Map>          (i)          an allreduced nodemap
 
@@ -263,7 +261,7 @@ protected:
     \param int                              (i)          0: left      1: right (which hex to generate)
     \param int                              (i)          0: front     1: rear  (which hex to generate)
     \param int                              (i)          0: bottom    1: top   (which hex to generate)
-    \param vector<int>                      (i)          cartesian element ids in patch
+    \param std::vector<int>                      (i)          cartesian element ids in patch
     \param int                              (i)          number of visualisation points in u direction
     \param int                              (i)          number of visualisation points in v direction
     \param int                              (i)          number of patch
@@ -272,7 +270,7 @@ protected:
 
   */
   void AppendNurbsSubHex(
-    vector<int>       & cellnodes,
+    std::vector<int>       & cellnodes,
     const int         & l,
     const int         & m,
     const int         & n,
@@ -309,9 +307,9 @@ protected:
     void WriteDofResultStep(
             std::ofstream& file,
             PostResult& result,
-            map<string, vector<ofstream::pos_type> >& resultfilepos,
-            const string groupname,
-            const string name,
+            std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+            const std::string groupname,
+            const std::string name,
             const int numdf,
             const int from) const;
 
@@ -337,10 +335,10 @@ protected:
 
                          .                              (gammi)
 
-    \param ofstream                         (used for o) direct print to file
+    \param std::ofstream                         (used for o) direct print to file
     \param int                              (i)          number of degrees of freedom
     \param RCP<Epetra_Vector>       (i)          the result data read from the baci output
-    \param string                           (i)          name of the thing we are writing
+    \param std::string                           (i)          name of the thing we are writing
                                                          (velocity, pressure etc.)
     \param int                              (i)          potential offset in dof numbering
 
@@ -349,7 +347,7 @@ protected:
     std::ofstream&                        file ,
     const int                        numdf,
     const RCP<Epetra_Vector> data ,
-    const string                     name ,
+    const std::string                     name ,
     const int                      offset
     ) const;
 
@@ -372,7 +370,7 @@ protected:
     std::ofstream&                        file ,
     const int                        numdf,
     const RCP<Epetra_MultiVector> data ,
-    const string                     name ,
+    const std::string                     name ,
     const int                      offset
     ) const;
 
@@ -380,48 +378,48 @@ protected:
     void WriteNodalResultStep(
             std::ofstream& file,
             PostResult& result,
-            map<string, vector<ofstream::pos_type> >& resultfilepos,
-            const string groupname,
-            const string name,
+            std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+            const std::string groupname,
+            const std::string name,
             const int numdf) const;
     void WriteElementDOFResultStep(
             std::ofstream& file,
             PostResult& result,
-            map<string, vector<ofstream::pos_type> >& resultfilepos,
-            const string groupname,
-            const string name,
+            std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+            const std::string groupname,
+            const std::string name,
             const int numdf,
             const int from) const;
     void WriteElementResultStep(
             std::ofstream& file,
             PostResult& result,
-            map<string, vector<ofstream::pos_type> >& resultfilepos,
-            const string groupname,
-            const string name,
+            std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+            const std::string groupname,
+            const std::string name,
             const int numdf,
             const int from) const;
     void WriteIndexTable(
             std::ofstream& file,
-            const std::vector<ofstream::pos_type>& filepos) const;
+            const std::vector<std::ofstream::pos_type>& filepos) const;
     /*!
      * \brief create string for the VARIABLE section
      *        that corresponds to the current field
      */
-    string GetVariableEntryForCaseFile(
+    std::string GetVariableEntryForCaseFile(
             int numdf,               ///< degrees of freedom per node for this field
             unsigned int fileset,
-            const string name,
-            const string filename,
+            const std::string name,
+            const std::string filename,
             const int timeset
             ) const;
     /*!
      * \brief create string for the VARIABLE section
      *        for all fields in the variablemap
      */
-    string GetVariableSection(
-            map<string,vector<int> > filesetmap,
-            map<string,int>          variablenumdfmap,
-            map<string,string>       variablefilenamemap
+    std::string GetVariableSection(
+            std::map<std::string,std::vector<int> > filesetmap,
+            std::map<std::string,int>          variablenumdfmap,
+            std::map<std::string,std::string>       variablefilenamemap
             ) const;
 
 
@@ -432,7 +430,7 @@ protected:
     NumElePerDisType GetNumElePerDisType(
             const RCP<DRT::Discretization> dis) const;
 
-    string GetEnsightString(
+    std::string GetEnsightString(
             const DRT::Element::DiscretizationType distype) const;
 
     /*!
@@ -441,11 +439,11 @@ protected:
     void FileSwitcher(
             std::ofstream& file,                                          ///< filestream that is switched
             bool& multiple_files,                                    ///< ???
-            map<string,vector<int> >& filesetmap,                    ///< ???
-            map<string, vector<ofstream::pos_type> >& resultfilepos, ///< ???
+            std::map<std::string,std::vector<int> >& filesetmap,                    ///< ???
+            std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos, ///< ???
             const int stepsize,                                      ///< ???
-            const string name,                                       ///< ???
-            const string filename                                    ///< constant part of the filename
+            const std::string name,                                       ///< ???
+            const std::string filename                                    ///< constant part of the filename
             ) const;
 
     int GetNumEleOutput(
@@ -465,23 +463,23 @@ protected:
             ) const;
 
     //! create string for one TIME section in the case file
-    string GetTimeSectionString(
+    std::string GetTimeSectionString(
             const int timeset,            ///< number of timeset to be written
             const std::vector<double>& times   ///< vector with time value for each time step
             ) const;
 
     //! create string for TIME section in the case file
-    string GetTimeSectionStringFromTimesets(
-      const map<string,vector<double> >& timesetmap
+    std::string GetTimeSectionStringFromTimesets(
+      const std::map<std::string,std::vector<double> >& timesetmap
       ) const;
 
     //! create string for FILE section in the case file
-    string GetFileSectionStringFromFilesets(
-            const map<string,vector<int> >& filesetmap  ///< filesets when using multiple huge binary files
+    std::string GetFileSectionStringFromFilesets(
+            const std::map<std::string,std::vector<int> >& filesetmap  ///< filesets when using multiple huge binary files
             ) const;
 
     PostField* field_;
-    string filename_;
+    std::string filename_;
     int myrank_; ///< global processor id
     bool nodeidgiven_; ///< indicates whether BACI global node ids are written to geometry file. default value: true
 
@@ -492,18 +490,18 @@ protected:
 
     Teuchos::RCP<Epetra_Map> vispointmap_; ///< map for all visualisation points
 
-    map<string,vector<int> > filesetmap_;
-    map<string,vector<double> > timesetmap_;
+    std::map<std::string,std::vector<int> > filesetmap_;
+    std::map<std::string,std::vector<double> > timesetmap_;
 
-    map<string,int>          variablenumdfmap_;
-    map<string,string>       variablefilenamemap_;
-    map<string,string>       variableresulttypemap_; ///< STL map for storing the result-type per variable name
+    std::map<std::string,int>          variablenumdfmap_;
+    std::map<std::string,std::string>       variablefilenamemap_;
+    std::map<std::string,std::string>       variableresulttypemap_; ///< STL map for storing the result-type per variable name
 
-    map<string,int> timesetnumbermap_;
-    map<string,int> filesetnumbermap_;
+    std::map<std::string,int> timesetnumbermap_;
+    std::map<std::string,int> filesetnumbermap_;
 
     //! maps a distype to the corresponding Ensight cell type
-    map<DRT::Element::DiscretizationType, string> distype2ensightstring_;
+    std::map<DRT::Element::DiscretizationType, std::string> distype2ensightstring_;
 
     //! maximum file size
     static const unsigned FILE_SIZE_LIMIT_ = 0x7fffffff; // 2GB

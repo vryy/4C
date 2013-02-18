@@ -121,7 +121,7 @@ protected:
     string& infieldtype,
     const string strname,
     const string strtype,
-    vector<string> groupnames,
+    std::vector<string> groupnames,
     int node
     );
 
@@ -154,7 +154,7 @@ protected:
     string& infieldtype,
     const string thrname,
     const string thrtype,
-    vector<string> groupnames,
+    std::vector<string> groupnames,
     int node
     );
 

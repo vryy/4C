@@ -19,12 +19,10 @@
 #include "post_drt_generic_single_field_writers.H"
 #include "../pss_full/pss_cpp.h"
 
-using namespace std;
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StructureEnsightWriter::PostStress(const string groupname, const string stresstype)
+void StructureEnsightWriter::PostStress(const std::string groupname, const std::string stresstype)
 {
   PostResult result = PostResult(field_);
   result.next_result();
@@ -94,11 +92,11 @@ void StructureEnsightWriter::PostStress(const string groupname, const string str
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StructureEnsightWriter::WriteNodalStress(const string groupname,
+void StructureEnsightWriter::WriteNodalStress(const std::string groupname,
                                               PostResult& result)
 {
-  string name;
-  string out;
+  std::string name;
+  std::string out;
 
   if (groupname=="gauss_2PK_stresses_xyz")
   {
@@ -130,7 +128,7 @@ void StructureEnsightWriter::WriteNodalStress(const string groupname,
   bool multiple_files = false;
 
   // open file
-  const string filename = filename_ + "_"+ field_->name() + "."+ name;
+  const std::string filename = filename_ + "_"+ field_->name() + "."+ name;
   std::ofstream file;
   int startfilepos = 0;
   if (myrank_==0)
@@ -139,7 +137,7 @@ void StructureEnsightWriter::WriteNodalStress(const string groupname,
     startfilepos = file.tellp(); // file position should be zero, but we stay flexible
   }
 
-  map<string, vector<ofstream::pos_type> > resultfilepos;
+  std::map<std::string, std::vector<std::ofstream::pos_type> > resultfilepos;
   int stepsize = 0;
 
   if (myrank_==0)
@@ -194,25 +192,25 @@ void StructureEnsightWriter::WriteNodalStress(const string groupname,
 /*----------------------------------------------------------------------*/
 void StructureEnsightWriter::WriteNodalStressStep(std::ofstream& file,
                                                   PostResult& result,
-                                                  map<string, vector<ofstream::pos_type> >& resultfilepos,
-                                                  const string groupname,
-                                                  const string name) const
+                                                  std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                                                  const std::string groupname,
+                                                  const std::string name) const
 {
   //--------------------------------------------------------------------
   // calculate nodal stresses from gauss point stresses
   //--------------------------------------------------------------------
 
-  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > data =
+  const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > data =
     result.read_result_serialdensematrix(groupname);
 
-  const RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
 
   Teuchos::ParameterList p;
   p.set("action","postprocess_stress");
   p.set("stresstype","ndxyz");
   p.set("gpstressmap", data);
   const Epetra_Map* nodemap = dis->NodeRowMap();
-  RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(new Epetra_MultiVector(*nodemap,6));
+  Teuchos::RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(new Epetra_MultiVector(*nodemap,6));
   p.set("poststress",nodal_stress);
   dis->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   if (nodal_stress==Teuchos::null)
@@ -223,7 +221,7 @@ void StructureEnsightWriter::WriteNodalStressStep(std::ofstream& file,
   const Epetra_BlockMap& datamap = nodal_stress->Map();
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,6));
+  Teuchos::RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,6));
   Epetra_Import proc0dofimporter(*proc0map_,datamap);
   int err = data_proc0->Import(*nodal_stress,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
@@ -233,7 +231,7 @@ void StructureEnsightWriter::WriteNodalStressStep(std::ofstream& file,
   // write some key words
   //--------------------------------------------------------------------
 
-  vector<ofstream::pos_type>& filepos = resultfilepos[name];
+  std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
   Write(file, "BEGIN TIME STEP");
   filepos.push_back(file.tellp());
   Write(file, "description");
@@ -264,11 +262,11 @@ void StructureEnsightWriter::WriteNodalStressStep(std::ofstream& file,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StructureEnsightWriter::WriteElementCenterStress(const string groupname,
+void StructureEnsightWriter::WriteElementCenterStress(const std::string groupname,
                                                       PostResult& result)
 {
-  string name;
-  string out;
+  std::string name;
+  std::string out;
 
   if (groupname=="gauss_2PK_stresses_xyz")
   {
@@ -300,7 +298,7 @@ void StructureEnsightWriter::WriteElementCenterStress(const string groupname,
   bool multiple_files = false;
 
   // open file
-  const string filename = filename_ + "_"+ field_->name() + "."+ name;
+  const std::string filename = filename_ + "_"+ field_->name() + "."+ name;
   std::ofstream file;
   int startfilepos = 0;
   if (myrank_==0)
@@ -309,7 +307,7 @@ void StructureEnsightWriter::WriteElementCenterStress(const string groupname,
     startfilepos = file.tellp(); // file position should be zero, but we stay flexible
   }
 
-  map<string, vector<ofstream::pos_type> > resultfilepos;
+  std::map<std::string, std::vector<std::ofstream::pos_type> > resultfilepos;
   int stepsize = 0;
 
   if (myrank_==0)
@@ -364,22 +362,22 @@ void StructureEnsightWriter::WriteElementCenterStress(const string groupname,
 /*----------------------------------------------------------------------*/
 void StructureEnsightWriter::WriteElementCenterStressStep(std::ofstream& file,
                                                           PostResult& result,
-                                                          map<string, vector<ofstream::pos_type> >& resultfilepos,
-                                                          const string groupname,
-                                                          const string name) const
+                                                          std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                                                          const std::string groupname,
+                                                          const std::string name) const
 {
   //--------------------------------------------------------------------
   // calculate element center stresses from gauss point stresses
   //--------------------------------------------------------------------
 
-  const RCP<DRT::Discretization> dis = field_->discretization();
-  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > data =
+  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > data =
     result.read_result_serialdensematrix(groupname);
   Teuchos::ParameterList p;
   p.set("action","postprocess_stress");
   p.set("stresstype","cxyz");
   p.set("gpstressmap", data);
-  RCP<Epetra_MultiVector> elestress = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),6));
+  Teuchos::RCP<Epetra_MultiVector> elestress = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),6));
   p.set("poststress",elestress);
   dis->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   if (elestress==Teuchos::null)
@@ -391,7 +389,7 @@ void StructureEnsightWriter::WriteElementCenterStressStep(std::ofstream& file,
   // write some key words
   //--------------------------------------------------------------------
 
-  vector<ofstream::pos_type>& filepos = resultfilepos[name];
+  std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name];
   Write(file, "BEGIN TIME STEP");
   filepos.push_back(file.tellp());
   Write(file, "description");
@@ -401,14 +399,14 @@ void StructureEnsightWriter::WriteElementCenterStressStep(std::ofstream& file,
   const Epetra_BlockMap& datamap = elestress->Map();
 
   // do stupid conversion into Epetra map
-  RCP<Epetra_Map> epetradatamap;
+  Teuchos::RCP<Epetra_Map> epetradatamap;
   epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
                                      datamap.NumMyElements(),
                                      datamap.MyGlobalElements(),
                                      0,
                                      datamap.Comm()));
 
-  RCP<Epetra_Map> proc0datamap;
+  Teuchos::RCP<Epetra_Map> proc0datamap;
   proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
   // sort proc0datamap so that we can loop it and get nodes in ascending order.
   std::vector<int> sortmap;
@@ -418,7 +416,7 @@ void StructureEnsightWriter::WriteElementCenterStressStep(std::ofstream& file,
   proc0datamap = Teuchos::rcp(new Epetra_Map(-1, sortmap.size(), &sortmap[0], 0, proc0datamap->Comm()));
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,6));
+  Teuchos::RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,6));
   Epetra_Import proc0dofimporter(*proc0datamap,datamap);
   int err = data_proc0->Import(*elestress,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
@@ -434,9 +432,9 @@ void StructureEnsightWriter::WriteElementCenterStressStep(std::ofstream& file,
   EleGidPerDisType::const_iterator iter;
   for (iter=eleGidPerDisType_.begin(); iter != eleGidPerDisType_.end(); ++iter)
   {
-    const string ensighteleString = GetEnsightString(iter->first);
+    const std::string ensighteleString = GetEnsightString(iter->first);
     const int numelepertype = (iter->second).size();
-    vector<int> actelegids(numelepertype);
+    std::vector<int> actelegids(numelepertype);
     actelegids = iter->second;
     // write element type
     Write(file, ensighteleString);
@@ -470,12 +468,12 @@ void StructureEnsightWriter::WriteElementCenterStressStep(std::ofstream& file,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StructureEnsightWriter::WriteNodalEigenStress(const string groupname,
+void StructureEnsightWriter::WriteNodalEigenStress(const std::string groupname,
                                                    PostResult& result)
 {
 	int numfiles = 6;
-  vector<string> name(numfiles);
-  string out;
+  std::vector<std::string> name(numfiles);
+  std::string out;
 
   if (groupname=="gauss_2PK_stresses_xyz")
   {
@@ -524,26 +522,26 @@ void StructureEnsightWriter::WriteNodalEigenStress(const string groupname,
   }
 
   // new for file continuation
-  vector<bool> multiple_files(numfiles);
+  std::vector<bool> multiple_files(numfiles);
   for (int i=0;i<numfiles;++i)
   {
     multiple_files[i] = false;
   }
 
   // open file
-  vector<string> filenames(numfiles);
+  std::vector<std::string> filenames(numfiles);
   for (int i=0;i<numfiles;++i)
   {
     filenames[i] = filename_ + "_"+ field_->name() + "."+ name[i];
   }
 
-  std::vector<RCP<ofstream> > files(numfiles);
-  vector<int> startfilepos(numfiles);
+  std::vector<Teuchos::RCP<std::ofstream> > files(numfiles);
+  std::vector<int> startfilepos(numfiles);
   for (int i=0;i<numfiles;++i)
     startfilepos[i] = 0;
   for (int i=0;i<numfiles;++i)
   {
-    files[i] = Teuchos::rcp(new ofstream);
+    files[i] = Teuchos::rcp(new std::ofstream);
 
     if (myrank_==0)
     {
@@ -552,8 +550,8 @@ void StructureEnsightWriter::WriteNodalEigenStress(const string groupname,
     }
   }
 
-  map<string, vector<ofstream::pos_type> > resultfilepos;
-  vector<int> stepsize(numfiles);
+  std::map<std::string, std::vector<std::ofstream::pos_type> > resultfilepos;
+  std::vector<int> stepsize(numfiles);
   for (int i=0;i<numfiles;++i)
   {
     stepsize[i]=0;
@@ -646,27 +644,27 @@ void StructureEnsightWriter::WriteNodalEigenStress(const string groupname,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream> > files,
+void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<Teuchos::RCP<std::ofstream> > files,
                                                        PostResult& result,
-                                                       map<string, vector<ofstream::pos_type> >& resultfilepos,
-                                                       const string groupname,
-                                                       vector<string> name)
+                                                       std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                                                       const std::string groupname,
+                                                       std::vector<std::string> name)
 {
   //--------------------------------------------------------------------
   // calculate nodal stresses from gauss point stresses
   //--------------------------------------------------------------------
 
-  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > data =
+  const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > data =
     result.read_result_serialdensematrix(groupname);
 
-  const RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
 
   Teuchos::ParameterList p;
   p.set("action","postprocess_stress");
   p.set("stresstype","ndxyz");
   p.set("gpstressmap", data);
   const Epetra_Map* nodemap = dis->NodeRowMap();
-  RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(new Epetra_MultiVector(*nodemap,6));
+  Teuchos::RCP<Epetra_MultiVector> nodal_stress = Teuchos::rcp(new Epetra_MultiVector(*nodemap,6));
   p.set("poststress",nodal_stress);
   dis->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   if (nodal_stress==Teuchos::null)
@@ -675,7 +673,7 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
   }
 
   // Epetra_MultiVector with eigenvalues (3) and eigenvectors (9 components) in each row (=node)
-  RCP<Epetra_MultiVector> nodal_eigen_val_vec = Teuchos::rcp(new Epetra_MultiVector(*nodemap,12));
+  Teuchos::RCP<Epetra_MultiVector> nodal_eigen_val_vec = Teuchos::rcp(new Epetra_MultiVector(*nodemap,12));
 
   const int numnodes = dis->NumMyRowNodes();
   bool threedim = true;
@@ -747,7 +745,7 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
   }
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,12));
+  Teuchos::RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0map_,12));
   Epetra_Import proc0dofimporter(*proc0map_,*nodemap);
   int err = data_proc0->Import(*nodal_eigen_val_vec,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
@@ -759,7 +757,7 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
   int numfiles=6;
   for (int i=0;i<numfiles;++i)
   {
-    vector<ofstream::pos_type>& filepos = resultfilepos[name[i]];
+    std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name[i]];
     Write(*(files[i]), "BEGIN TIME STEP");
     filepos.push_back(files[i]->tellp());
     Write(*(files[i]), "description");
@@ -803,12 +801,12 @@ void StructureEnsightWriter::WriteNodalEigenStressStep(std::vector<RCP<ofstream>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StructureEnsightWriter::WriteElementCenterEigenStress(const string groupname,
+void StructureEnsightWriter::WriteElementCenterEigenStress(const std::string groupname,
                                                            PostResult& result)
 {
   int numfiles = 6;
-  vector<string> name(numfiles);
-  string out;
+  std::vector<std::string> name(numfiles);
+  std::string out;
 
   if (groupname=="gauss_2PK_stresses_xyz")
   {
@@ -857,27 +855,27 @@ void StructureEnsightWriter::WriteElementCenterEigenStress(const string groupnam
   }
 
   // new for file continuation
-  vector<bool> multiple_files(numfiles);
+  std::vector<bool> multiple_files(numfiles);
   for (int i=0;i<numfiles;++i)
   {
     multiple_files[i] = false;
   }
 
   // open file
-  vector<string> filenames(numfiles);
+  std::vector<std::string> filenames(numfiles);
   for (int i=0;i<numfiles;++i)
   {
     filenames[i] = filename_ + "_"+ field_->name() + "."+ name[i];
   }
 
-  std::vector<RCP<ofstream> > files(numfiles);
-  vector<int> startfilepos(numfiles);
+  std::vector<Teuchos::RCP<std::ofstream> > files(numfiles);
+  std::vector<int> startfilepos(numfiles);
   for (int i=0;i<numfiles;++i)
     startfilepos[i] = 0;
 
   for (int i=0;i<numfiles;++i)
   {
-    files[i] = Teuchos::rcp(new ofstream);
+    files[i] = Teuchos::rcp(new std::ofstream);
 
     if (myrank_==0)
     {
@@ -886,8 +884,8 @@ void StructureEnsightWriter::WriteElementCenterEigenStress(const string groupnam
     }
   }
 
-  map<string, vector<ofstream::pos_type> > resultfilepos;
-  vector<int> stepsize(numfiles);
+  std::map<std::string, std::vector<std::ofstream::pos_type> > resultfilepos;
+  std::vector<int> stepsize(numfiles);
   for (int i=0;i<numfiles;++i)
   {
     stepsize[i]=0;
@@ -980,26 +978,26 @@ void StructureEnsightWriter::WriteElementCenterEigenStress(const string groupnam
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<ofstream> > files,
+void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<Teuchos::RCP<std::ofstream> > files,
                                                                PostResult& result,
-                                                               map<string, vector<ofstream::pos_type> >& resultfilepos,
-                                                               const string groupname,
-                                                               vector<string> name)
+                                                               std::map<std::string, std::vector<std::ofstream::pos_type> >& resultfilepos,
+                                                               const std::string groupname,
+                                                               std::vector<std::string> name)
 {
   //--------------------------------------------------------------------
   // calculate nodal stresses from gauss point stresses
   //--------------------------------------------------------------------
 
-  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > data =
+  const Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > data =
     result.read_result_serialdensematrix(groupname);
 
-  const RCP<DRT::Discretization> dis = field_->discretization();
+  const Teuchos::RCP<DRT::Discretization> dis = field_->discretization();
 
   Teuchos::ParameterList p;
   p.set("action","postprocess_stress");
   p.set("stresstype","cxyz");
   p.set("gpstressmap", data);
-  RCP<Epetra_MultiVector> elestress = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),6));
+  Teuchos::RCP<Epetra_MultiVector> elestress = Teuchos::rcp(new Epetra_MultiVector(*(dis->ElementRowMap()),6));
   p.set("poststress",elestress);
   dis->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
   if (elestress==Teuchos::null)
@@ -1010,14 +1008,14 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
   const Epetra_BlockMap& datamap = elestress->Map();
 
   // do stupid conversion into Epetra map
-  RCP<Epetra_Map> epetradatamap;
+  Teuchos::RCP<Epetra_Map> epetradatamap;
   epetradatamap = Teuchos::rcp(new Epetra_Map(datamap.NumGlobalElements(),
                                      datamap.NumMyElements(),
                                      datamap.MyGlobalElements(),
                                      0,
                                      datamap.Comm()));
 
-  RCP<Epetra_Map> proc0datamap;
+  Teuchos::RCP<Epetra_Map> proc0datamap;
   proc0datamap = LINALG::AllreduceEMap(*epetradatamap,0);
   // sort proc0datamap so that we can loop it and get nodes in acending order.
   std::vector<int> sortmap;
@@ -1027,7 +1025,7 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
   proc0datamap = Teuchos::rcp(new Epetra_Map(-1, sortmap.size(), &sortmap[0], 0, proc0datamap->Comm()));
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
-  RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,6));
+  Teuchos::RCP<Epetra_MultiVector> data_proc0 = Teuchos::rcp(new Epetra_MultiVector(*proc0datamap,6));
   Epetra_Import proc0dofimporter(*proc0datamap,datamap);
   int err = data_proc0->Import(*elestress,proc0dofimporter,Insert);
   if (err>0) dserror("Importing everything to proc 0 went wrong. Import returns %d",err);
@@ -1039,7 +1037,7 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
   int numfiles=6;
   for (int i=0;i<numfiles;++i)
   {
-    vector<ofstream::pos_type>& filepos = resultfilepos[name[i]];
+    std::vector<std::ofstream::pos_type>& filepos = resultfilepos[name[i]];
     Write(*(files[i]), "BEGIN TIME STEP");
     filepos.push_back(files[i]->tellp());
     Write(*(files[i]), "description");
@@ -1058,9 +1056,9 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
   EleGidPerDisType::const_iterator iter;
   for (iter=eleGidPerDisType_.begin(); iter != eleGidPerDisType_.end(); ++iter)
   {
-    const string ensighteleString = GetEnsightString(iter->first);
+    const std::string ensighteleString = GetEnsightString(iter->first);
     const int numelepertype = (iter->second).size();
-    vector<int> actelegids(numelepertype);
+    std::vector<int> actelegids(numelepertype);
     actelegids = iter->second;
     // write element type
     for (int i=0;i<numfiles;++i) Write(*(files[i]), ensighteleString);
@@ -1071,8 +1069,8 @@ void StructureEnsightWriter::WriteElementCenterEigenStressStep(std::vector<RCP<o
 
     if (myrank_==0) // ensures pointer dofgids is valid
     {
-      vector<Epetra_SerialDenseMatrix> eigenvec(numelepertype, Epetra_SerialDenseMatrix(3,3));
-      vector<Epetra_SerialDenseVector> eigenval(numelepertype, Epetra_SerialDenseVector(3));
+      std::vector<Epetra_SerialDenseMatrix> eigenvec(numelepertype, Epetra_SerialDenseMatrix(3,3));
+      std::vector<Epetra_SerialDenseVector> eigenval(numelepertype, Epetra_SerialDenseVector(3));
 
       bool threedim = true;
       if (field_->problem()->num_dim()==2) threedim = false;

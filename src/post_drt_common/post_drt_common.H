@@ -58,9 +58,6 @@ namespace DRT
 class Discretization;
 }
 
-using namespace std;
-using Teuchos::RCP;
-
 /*!
   \brief Foundation class of the filter
 
@@ -91,19 +88,19 @@ public:
   // @{ \name Access methods
 
   //! returns the basename of the control file
-  string basename() const { return basename_; }
+  std::string basename() const { return basename_; }
 
   //! sets the basename of the control file to name
-  void set_basename(string name) { basename_ = name; }
+  void set_basename(std::string name) { basename_ = name; }
 
   //! returns the basename of the output files
-  string outname() const { return outname_; }
+  std::string outname() const { return outname_; }
 
   //! returns the number of result groups that are stored in the control file
   int num_results() { return static_cast<int>(result_group_.size()); }
 
   //! returns a pointer to a vector of all result groups
-  vector<MAP*>* result_groups() { return &result_group_; }
+  std::vector<MAP*>* result_groups() { return &result_group_; }
 
   //! returns the number of discretizations
   int num_discr() { return static_cast<int>(fields_.size()); }
@@ -127,28 +124,28 @@ public:
   //! returns the step parameter the user specified
   int step() const { return step_; }
 
-  RCP<Epetra_Comm> comm();
+  Teuchos::RCP<Epetra_Comm> comm();
 
   //! returns the directory name in which the control files and data files are
-  string input_dir() { return input_dir_; }
+  std::string input_dir() { return input_dir_; }
 
   //! returns type of the simulation
   PROBLEM_TYP Problemtype() { return problemtype_; }
 
   //! returns type of the spatial approximation (nurbs/polynomial)
-  string SpatialApproximation() { return spatial_approx_; }
+  std::string SpatialApproximation() { return spatial_approx_; }
 
   //! returns stress type
-  string stresstype() { return stresstype_; }
+  std::string stresstype() { return stresstype_; }
 
   //! returns strain type
-  string straintype() { return straintype_; }
+  std::string straintype() { return straintype_; }
 
   //! returns heatflux type
-  string heatfluxtype() { return heatfluxtype_; }
+  std::string heatfluxtype() { return heatfluxtype_; }
 
   //! returns tempgrad type
-  string tempgradtype() { return tempgradtype_; }
+  std::string tempgradtype() { return tempgradtype_; }
 
   //@}
 
@@ -157,7 +154,7 @@ private:
   //! initializes all the data a filter needs.
   //
   // This function is called by the Constructor.
-  void setup_filter(string control_file_name, string output_name);
+  void setup_filter(std::string control_file_name, std::string output_name);
 
   //! reads the mesh files
   //
@@ -175,16 +172,16 @@ private:
   PROBLEM_TYP problemtype_;
 
   //! type of the spatial approximation of theproblem we post process
-  string spatial_approx_;
+  std::string spatial_approx_;
 
   //! number of dimensions
   int ndim_;
 
   //! control file base name (possibly including directory)
-  string basename_;
+  std::string basename_;
 
   //! output file base name (possibly including directory)
-  string outname_;
+  std::string outname_;
 
   //! memory version of control file
   /*! If a restarted run is post processed this is a merged control
@@ -192,7 +189,7 @@ private:
   MAP control_table_;
 
   //! the meshes of our problem (fields are discretizations here!)
-  vector<PostField> fields_;
+  std::vector<PostField> fields_;
 
   /* start, stop and step numbers. a python like slice. */
   /* We don't have to read each result. This is set by command line
@@ -202,23 +199,23 @@ private:
   int step_;
 
   //! stress output type optionally set by command line argument
-  string stresstype_;
+  std::string stresstype_;
 
   //! strain output type optionally set by command line argument
-  string straintype_;
+  std::string straintype_;
 
   //! heatflux output type optionally set by command line argument
-  string heatfluxtype_;
+  std::string heatfluxtype_;
 
   //! spatial temperature gradient output type optionally set by command line argument
-  string tempgradtype_;
+  std::string tempgradtype_;
 
   //! MAP pointers into the control file map.
   // We don't own these pointers, so no reference counting.
-  vector<MAP*> result_group_;
+  std::vector<MAP*> result_group_;
 
-  string input_dir_;
-  RCP<Epetra_Comm> comm_;
+  std::string input_dir_;
+  Teuchos::RCP<Epetra_Comm> comm_;
 };
 
 
@@ -240,9 +237,9 @@ public:
   // @{ \name Constructors and destructors
 
   PostField(
-      RCP<DRT::Discretization> dis,
+      Teuchos::RCP<DRT::Discretization> dis,
       PostProblem* problem,
-      string field_name,
+      std::string field_name,
       const int numnd,
       const int numele);
 
@@ -253,7 +250,7 @@ public:
   // @{ \name Access methods
 
   //! returns the discretization of this field
-  RCP<DRT::Discretization> discretization() { return dis_; }
+  Teuchos::RCP<DRT::Discretization> discretization() { return dis_; }
 
   //! returns the number of output processors
   int num_output_procs() const { return num_output_procs_; }
@@ -268,7 +265,7 @@ public:
   PostProblem* problem() { return problem_; }
 
   //! returns the name of the field
-  string name() const { return field_name_; }
+  std::string name() const { return field_name_; }
 
   //! returns the type of this field
   //FIELDTYP type() const { return type_; }
@@ -284,10 +281,10 @@ public:
   //@}
 
 private:
-  RCP<DRT::Discretization> dis_;
+  Teuchos::RCP<DRT::Discretization> dis_;
   PostProblem* problem_;
   int num_output_procs_;
-  string field_name_;
+  std::string field_name_;
   int numnd_;
   int numele_;
 };
@@ -315,12 +312,12 @@ public:
   //! get result times for a given fieldname
   //
   // \returns vector with timesteps when the solution was written
-  vector<double> get_result_times(const string& fieldname);
+  std::vector<double> get_result_times(const std::string& fieldname);
 
   //! get result times for a given fieldname and specific result
   //
   // \returns vector with timesteps when the specific solution was written
-  vector<double> get_result_times(const string& fieldname, const string& groupname);
+  std::vector<double> get_result_times(const std::string& fieldname, const std::string& groupname);
 
   //! goes to the next result block in the slice
   //
@@ -334,14 +331,14 @@ public:
   // Automatically opens new result files.
   //
   // \returns 1 if a new result block has been found, otherwise returns 0
-  int next_result(const string& name);
+  int next_result(const std::string& name);
 
   //! reads the data of the result vector 'name' from the current result block
   //
   // \param name (in): result vector name inside the control file
   //
   // \returns vector with results read
-  RCP<Epetra_Vector> read_result(const string name);
+  Teuchos::RCP<Epetra_Vector> read_result(const std::string name);
 
   //! reads the data of the result vector 'name' from the current result block
   //
@@ -349,14 +346,14 @@ public:
   // \param elemap (out): element map
   //
   // \returns vector with results read
-  RCP<std::map<int, RCP<Epetra_SerialDenseMatrix> > > read_result_serialdensematrix(const string name);
+  Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > read_result_serialdensematrix(const std::string name);
 
   //! reads the data of the result vector 'name' from the current result block
   //
   // \param name (in): result vector name inside the control file
   //
   // \returns vector with results read
-  RCP<Epetra_MultiVector> read_multi_result(const string name);
+  Teuchos::RCP<Epetra_MultiVector> read_multi_result(const std::string name);
 
   //@}
 
