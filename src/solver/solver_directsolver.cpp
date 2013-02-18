@@ -21,13 +21,19 @@
 // BACI headers
 #include "solver_directsolver.H"
 
+#include "../linalg/linalg_sparsematrix.H"
+#include "../linalg/linalg_krylov_projector.H"
+#include <Epetra_CrsMatrix.h>
+
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 LINALG::SOLVER::DirectSolver::DirectSolver( std::string solvertype )
   : solvertype_( solvertype ),
-    factored_( false )
+    factored_( false ),
+    project_( false)
 {
   lp_ = Teuchos::rcp( new Epetra_LinearProblem() );
+  projector_ = Teuchos::null;
 }
 
 //----------------------------------------------------------------------------------
@@ -41,21 +47,51 @@ LINALG::SOLVER::DirectSolver::~DirectSolver()
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::DirectSolver::Setup( RCP<Epetra_Operator> matrix,
-                                          RCP<Epetra_MultiVector> x,
-                                          RCP<Epetra_MultiVector> b,
+void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
+                                          Teuchos::RCP<Epetra_MultiVector> x,
+                                          Teuchos::RCP<Epetra_MultiVector> b,
                                           bool refactor,
                                           bool reset,
-                                          RCP<Epetra_MultiVector> weighted_basis_mean,
-                                          RCP<Epetra_MultiVector> kernel_c,
+                                          Teuchos::RCP<Epetra_MultiVector> weighted_basis_mean,
+                                          Teuchos::RCP<Epetra_MultiVector> kernel_c,
                                           bool project)
 {
   if ( project )
-    dserror( "a projection of Krylov space basis vectors is possible only for aztec type iterative solvers" );
+  {
+    project_ = true;
+    // create projector from weights and kernels
+    projector_ = Teuchos::rcp(new LINALG::KrylovProjector(project_, weighted_basis_mean, kernel_c, matrix));
 
-  x_ = x;
-  b_ = b;
-  A_ = matrix;
+    // cast system matrix to LINALG::SparseMatrix
+    Teuchos::RCP<Epetra_CrsMatrix> A_Crs = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(matrix);
+    // check whether cast was successfull
+    if (A_Crs==Teuchos::null) {dserror("Could not cast system matrix to Epetra_CrsMatrix.");}
+    // get view on systemmatrix as LINALG::SparseMatrix - this is no copy!
+    LINALG::SparseMatrix A_view(A_Crs);
+
+    // create projector matrix
+    Teuchos::RCP<LINALG::SparseMatrix> P  = projector_->CreateP();
+    // compute (A P)
+    Teuchos::RCP<LINALG::SparseMatrix> A1 = MLMultiply(A_view,*P);
+    // compute (P^T (A P)) - here, one could think about creating a P^T
+    // directly, similar to the ApplyP/ApplyPT implementation
+    Teuchos::RCP<LINALG::SparseMatrix> A2 = MLMultiply(*P,true,*A1,false,true,false,true);
+
+    // hand matrix over to A_
+    A_ = A2->EpetraMatrix();
+    // hand over to b_ and project to (P^T b)
+    b_ = b;
+    projector_->ApplyPT(*b_);
+    // hand over x_
+    x_ = x;
+  }
+  else
+  {
+    project_ = false;
+    x_ = x;
+    b_ = b;
+    A_ = matrix;
+  }
 
   // fill the linear problem
   lp_->SetRHS(b_.get());
@@ -129,6 +165,12 @@ void LINALG::SOLVER::DirectSolver::Solve()
 
   int err = amesos_->Solve();
   if (err) dserror("Amesos::Solve returned an err");
+
+  // retransform x
+  if (project_)
+  {
+    projector_->ApplyP(*x_);
+  }
 }
 
 

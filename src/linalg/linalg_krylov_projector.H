@@ -4,14 +4,14 @@
 \brief A common interface for ifpack, ml and simpler preconditioners.
        This interface allows a modification of the vector returned
        by the ApplyInverse call, which is necessary to do a solution on
-       a Krylov space orthogonalized to certain (for example rigid body
+       a Krylov space krylovized to certain (for example rigid body
        or zero pressure) modes.
 
 <pre>
-Maintainer: Peter Gamnitzer
-            gamnitzer@lnm.mw.tum.de
+Maintainer: Keijo Nissen
+            nissen@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15235
+            089 - 289-15253
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -27,7 +27,9 @@ class Epetra_Operator;
 
 namespace LINALG
 {
+  class SerialDenseMatrix;
   class SerialDenseVector;
+  class SparseMatrix;
   /*!
 
   A class providing Krylov projectors. Used for projected preconditioner
@@ -69,20 +71,26 @@ public:
   */
   ~KrylovProjector();
 
-  //! @name Mathematical functions required to support the Epetra_Operator interface (pass through)
+  Teuchos::RCP<LINALG::SparseMatrix> CreateP() const;
+
   int ApplyP(Epetra_MultiVector &Y) const;
 
-  //! @name Mathematical functions required to support the Epetra_Operator interface (pass through)
-  int ApplyPT (Epetra_MultiVector &Y) const;
+  int ApplyPT(Epetra_MultiVector &Y) const;
 
-  //! @}
+  int ApplyProjector(
+    Epetra_MultiVector& Y,
+    const Teuchos::RCP<Epetra_MultiVector>& v1,
+    const Teuchos::RCP<Epetra_MultiVector>& v2,
+    const Teuchos::RCP<LINALG::SerialDenseMatrix>& v2Tv1
+    ) const;
+//! @}
 
   //! @name Mathematical functions required to support the Epetra_Operator interface (modified)
   /*
     (Modified) ApplyInverse call
 
     This method calls ApplyInverse on the actual preconditioner and, the
-    solution is orthogonalized against a set of weight vectors provided in a
+    solution is krylovized against a set of weight vectors provided in a
     multivector.
 
     This is done using a projector P defined by
@@ -130,7 +138,7 @@ public:
                           T
                          w * c
 
-    2) The space spanned by P x is orthogonal to the weight vector
+    2) The space spanned by P x is krylov to the weight vector
 
                        /      T      \              T
      T   /   \     T  |      x * w    |    T       x * w     T       T       T
@@ -185,8 +193,8 @@ private:
   //! for the matrix kernel
   Teuchos::RCP<Epetra_MultiVector> c_;
 
-  //! values for scalar products c_i o w_i, computed once after setting c_ and w_
-  Teuchos::RCP<LINALG::SerialDenseVector> cTw_;
+  //! inverse of product (c_^T * w_), computed once after setting c_ and w_
+  Teuchos::RCP<LINALG::SerialDenseMatrix> invwTc_;
 
 };
 

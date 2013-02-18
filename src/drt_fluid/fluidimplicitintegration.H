@@ -196,6 +196,12 @@ public:
   void PrepareSolve();
 
   /*!
+  \brief preparations for Krylov space projection
+
+  */
+  void PrepareKrylovSpaceProjection();
+
+  /*!
   \brief update within iteration
 
   */
@@ -224,7 +230,7 @@ public:
 //
 //
 //  void findNeighborElement(DRT::ELEMENTS::Fluid * actele,
-//                           RCP<DRT::Element> surface,
+//                           Teuchos::RCP<DRT::Element> surface,
 //                           bool & neighbor_found,
 //                           int & neighbor_id);
 //
@@ -236,7 +242,7 @@ public:
 //
 //  void callEdgeStabandGhostPenalty(                           bool & edge_based_stab,
 //                                                              bool & ghost_penalty,
-//                                                              RCP<DRT::Element>       surface,
+//                                                              Teuchos::RCP<DRT::Element>       surface,
 //                                                              DRT::Element * fele_1,
 //                                                              DRT::Element * fele_2,
 //                                                              std::vector<int> & nds_1,
@@ -307,8 +313,8 @@ public:
 
   */
   void SetTopOptData(
-      RCP<const Epetra_Vector> porosity,
-      RCP<TOPOPT::Optimizer>& optimizer
+      Teuchos::RCP<const Epetra_Vector> porosity,
+      Teuchos::RCP<TOPOPT::Optimizer>& optimizer
   );
 
   /// Reset state vectors
@@ -496,10 +502,10 @@ public:
   \brief set fields for low-Mach-number flow within outer iteration loop
 
   */
-  void SetIterLomaFields(RCP<const Epetra_Vector> scalaraf,
-                         RCP<const Epetra_Vector> scalaram,
-                         RCP<const Epetra_Vector> scalardtam,
-                         RCP<const Epetra_Vector> fsscalaraf,
+  void SetIterLomaFields(Teuchos::RCP<const Epetra_Vector> scalaraf,
+                         Teuchos::RCP<const Epetra_Vector> scalaram,
+                         Teuchos::RCP<const Epetra_Vector> scalardtam,
+                         Teuchos::RCP<const Epetra_Vector> fsscalaraf,
                          const double             thermpressaf,
                          const double             thermpressam,
                          const double             thermpressdtaf,
@@ -510,9 +516,9 @@ public:
   \brief set fields for low-Mach-number flow at end of time step
 
   */
-  void SetTimeLomaFields(RCP<const Epetra_Vector> scalarnp,
+  void SetTimeLomaFields(Teuchos::RCP<const Epetra_Vector> scalarnp,
                          const double             thermpressnp,
-                         RCP<const Epetra_Vector> scatraresidual,
+                         Teuchos::RCP<const Epetra_Vector> scatraresidual,
                          Teuchos::RCP<DRT::Discretization> scatradis,
                          const int                whichscalar = -1);
 
@@ -757,116 +763,116 @@ protected:
   double  dtsolve_;
 
   /// (standard) system matrix
-  RCP<LINALG::SparseOperator> sysmat_;
+  Teuchos::RCP<LINALG::SparseOperator> sysmat_;
 
   /// linearization with respect to mesh motion
-  RCP<LINALG::BlockSparseMatrixBase> shapederivatives_;
+  Teuchos::RCP<LINALG::BlockSparseMatrixBase> shapederivatives_;
 
   /// maps for extracting Dirichlet and free DOF sets
-  RCP<LINALG::MapExtractor> dbcmaps_;
+  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
 
   /// maps for extracting Dirichlet and free DOF sets
-  RCP<FLD::UTILS::MapExtractor> vol_flow_rates_bc_extractor_;
+  Teuchos::RCP<FLD::UTILS::MapExtractor> vol_flow_rates_bc_extractor_;
 
   /// a vector of zeros to be used to enforce zero dirichlet boundary conditions
-  RCP<Epetra_Vector>    zeros_;
+  Teuchos::RCP<Epetra_Vector>    zeros_;
 
   /// the vector containing body and surface forces
-  RCP<Epetra_Vector>    neumann_loads_;
+  Teuchos::RCP<Epetra_Vector>    neumann_loads_;
 
   /// the vector containing potential Neumann-type outflow terms
-//  RCP<Epetra_Vector>    outflow_;
+//  Teuchos::RCP<Epetra_Vector>    outflow_;
 
   /// (standard) residual vector (rhs for the incremental form),
-  RCP<Epetra_Vector>    residual_;
-  RCP<Epetra_Vector>    trac_residual_;
+  Teuchos::RCP<Epetra_Vector>    residual_;
+  Teuchos::RCP<Epetra_Vector>    trac_residual_;
 
   /// rhs: right hand side vector for linearised flow solution
-//  RCP<Epetra_Vector>    rhs_;
+//  Teuchos::RCP<Epetra_Vector>    rhs_;
 
   /// robinrhs_: additional rhs when using robin-BC
-  RCP<Epetra_Vector>    robinrhs_;
+  Teuchos::RCP<Epetra_Vector>    robinrhs_;
 
   /// true (rescaled) residual vector without zeros at dirichlet positions (Unit: Newton [N])
-  RCP<Epetra_Vector>    trueresidual_;
+  Teuchos::RCP<Epetra_Vector>    trueresidual_;
 
   /// Nonlinear iteration increment vector
-  RCP<Epetra_Vector>    incvel_;
+  Teuchos::RCP<Epetra_Vector>    incvel_;
 
   //! @name acceleration/(scalar time derivative) at time n+1, n and n+alpha_M/(n+alpha_M/n)
-  RCP<Epetra_Vector>    accnp_;
-  RCP<Epetra_Vector>    accn_;
-  RCP<Epetra_Vector>    accam_;
+  Teuchos::RCP<Epetra_Vector>    accnp_;
+  Teuchos::RCP<Epetra_Vector>    accn_;
+  Teuchos::RCP<Epetra_Vector>    accam_;
   //@}
 
   //! @name velocity and pressure at time n+1, n, n-1 and n+alpha_F
-  RCP<Epetra_Vector>    velnp_;
-  RCP<Epetra_Vector>    veln_;
-  RCP<Epetra_Vector>    velnm_;
-  RCP<Epetra_Vector>    velaf_;
+  Teuchos::RCP<Epetra_Vector>    velnp_;
+  Teuchos::RCP<Epetra_Vector>    veln_;
+  Teuchos::RCP<Epetra_Vector>    velnm_;
+  Teuchos::RCP<Epetra_Vector>    velaf_;
   //@}
 
   //! @name scalar at time n+alpha_F/n+1 and n+alpha_M/n
-  RCP<Epetra_Vector>    scaaf_;
-  RCP<Epetra_Vector>    scaam_;
+  Teuchos::RCP<Epetra_Vector>    scaaf_;
+  Teuchos::RCP<Epetra_Vector>    scaam_;
   //@}
 
   //! @name displacements at time n+1, n and n-1
-  RCP<Epetra_Vector>    dispnp_;
-  RCP<Epetra_Vector>    dispn_;
-  RCP<Epetra_Vector>    dispnm_;
+  Teuchos::RCP<Epetra_Vector>    dispnp_;
+  Teuchos::RCP<Epetra_Vector>    dispn_;
+  Teuchos::RCP<Epetra_Vector>    dispnm_;
   //@}
 
   //! @name optimization data
 
   /// density in topology optimization
-  RCP<const Epetra_Vector>    topopt_porosity_;
+  Teuchos::RCP<const Epetra_Vector>    topopt_porosity_;
 
   /// optimizer for topology optimization
-  RCP<TOPOPT::Optimizer> optimizer_;
+  Teuchos::RCP<TOPOPT::Optimizer> optimizer_;
   //@}
 
   /// only necessary for AVM3: scale-separation matrix
-  RCP<LINALG::SparseMatrix> Sep_;
+  Teuchos::RCP<LINALG::SparseMatrix> Sep_;
 
   /// only necessary for AVM3: fine-scale solution vector
-  RCP<Epetra_Vector>    fsvelaf_;
+  Teuchos::RCP<Epetra_Vector>    fsvelaf_;
 
   /// only necessary for Scale Similarity Model: filtered velocity
-  RCP<Epetra_MultiVector>    filteredvel_;
+  Teuchos::RCP<Epetra_MultiVector>    filteredvel_;
 
   /// only necessary for Scale Similarity Model: filtered reynolds stress
-  RCP<Epetra_MultiVector>    filteredreystr_;
+  Teuchos::RCP<Epetra_MultiVector>    filteredreystr_;
 
   /// only necessary for Scale Similarity Model: fine scale velocity
-  RCP<Epetra_MultiVector>    finescalevel_;
+  Teuchos::RCP<Epetra_MultiVector>    finescalevel_;
 
   /// only necessary for LES models including filtered quantities: filter type
   enum INPAR::FLUID::ScaleSeparation scale_sep_;
 
   /// fine-scale scalar: only necessary for multifractal subgrid-scale modeling in loma
-  RCP<Epetra_Vector>    fsscaaf_;
+  Teuchos::RCP<Epetra_Vector>    fsscaaf_;
 
   /// grid velocity (set from the adapter!)
-  RCP<Epetra_Vector>    gridv_;
+  Teuchos::RCP<Epetra_Vector>    gridv_;
 
   /// initial porosity (poroelasticity)
-  RCP<Epetra_Vector>    initporosityfield_;
+  Teuchos::RCP<Epetra_Vector>    initporosityfield_;
 
   /// histvector --- a linear combination of velnm, veln (BDF)
   ///                or veln, accn (One-Step-Theta)
-  RCP<Epetra_Vector>    hist_;
+  Teuchos::RCP<Epetra_Vector>    hist_;
 
 
   //! manager for turbulence statistics
-  RCP<FLD::TurbulenceStatisticManager> statisticsmanager_;
+  Teuchos::RCP<FLD::TurbulenceStatisticManager> statisticsmanager_;
 
   //! @name Dynamic Smagorinsky model: methods and variables
   //        -------------------------
 
   //! one instance of the filter object
-  RCP<FLD::DynSmagFilter> DynSmag_;
-  RCP<LESScaleSeparation> ScaleSepGMO_;
+  Teuchos::RCP<FLD::DynSmagFilter> DynSmag_;
+  Teuchos::RCP<LESScaleSeparation> ScaleSepGMO_;
 
   //@}
 
@@ -874,7 +880,7 @@ protected:
   //        --------------------------------
   //
   //! object for a redistributed evaluation of the mixed-hybrid Dirichlet condition
-  RCP<FLD::FluidMHDEvaluate> MHD_evaluator_;
+  Teuchos::RCP<FLD::FluidMHDEvaluate> MHD_evaluator_;
   //@}
 
   //! Extractor to split velnp_ into velocities and pressure DOFs
@@ -893,35 +899,35 @@ protected:
   FLD::UTILS::KSPMapExtractor kspsplitter_;
 
   /// connection between master and slave nodes on this proc (based on row map!!!!)
-  RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave_;
+  Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave_;
 
   /// a manager doing the transfer of boundary data for
   /// turbulent inflow profiles from a separate (periodic) domain
   Teuchos::RCP<TransferTurbulentInflowCondition> turbulent_inflow_condition_;
 
   /// bio related special (outflow) boundaries
-  RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
+  Teuchos::RCP<UTILS::FluidImpedanceWrapper> impedancebc_;
 
   /// bio related special (outflow) optimization of boundaries
-  RCP<UTILS::FluidWkOptimizationWrapper> Wk_optimization_;
+  Teuchos::RCP<UTILS::FluidWkOptimizationWrapper> Wk_optimization_;
 
   /// bio related special (in/outflow) boundaries
-  RCP<UTILS::FluidVolumetricSurfaceFlowWrapper> vol_surf_flow_bc_;
+  Teuchos::RCP<UTILS::FluidVolumetricSurfaceFlowWrapper> vol_surf_flow_bc_;
 
   /// bio related special (in/outflow) traction velocity component adder
-  RCP<UTILS::TotalTractionCorrector> traction_vel_comp_adder_bc_;
+  Teuchos::RCP<UTILS::TotalTractionCorrector> traction_vel_comp_adder_bc_;
 
   /// bio related, 3D to reduced-D coupling
-  RCP<UTILS::Fluid_couplingWrapperBase> coupled3D_redDbc_art_;
+  Teuchos::RCP<UTILS::Fluid_couplingWrapperBase> coupled3D_redDbc_art_;
 
   /// 1D arterial network time integration
-  RCP<ART::ArtNetExplicitTimeInt>   ART_exp_timeInt_;
+  Teuchos::RCP<ART::ArtNetExplicitTimeInt>   ART_exp_timeInt_;
 
   /// bio related, 3D to reduced-D coupling
-  RCP<UTILS::Fluid_couplingWrapperBase> coupled3D_redDbc_airways_;
+  Teuchos::RCP<UTILS::Fluid_couplingWrapperBase> coupled3D_redDbc_airways_;
 
   /// 1D arterial network time integration
-  RCP<AIRWAY::RedAirwayImplicitTimeInt>   airway_imp_timeInt_;
+  Teuchos::RCP<AIRWAY::RedAirwayImplicitTimeInt>   airway_imp_timeInt_;
 
   /// @name special relaxation state
 
@@ -932,10 +938,10 @@ protected:
   Teuchos::RCP<LINALG::SparseMatrix> meshmatrix_;
 
   /// maps for womersley flow profile which is applied as a Dirichlet condition
-  RCP<Epetra_Map>                    vol_surf_flow_bcmaps_;
+  Teuchos::RCP<Epetra_Map>                    vol_surf_flow_bcmaps_;
 
   /// coupling of fluid-fluid at an internal interface
-  RCP<FLD::Meshtying>   meshtying_;
+  Teuchos::RCP<FLD::Meshtying>   meshtying_;
 
   /// flag for mesh-tying
   int msht_;
@@ -943,7 +949,7 @@ protected:
   //@}
 
   // possible inf-norm scaling of linear system / fluid matrix
-  RCP<FLD::UTILS::FluidInfNormScaling> fluid_infnormscaling_;
+  Teuchos::RCP<FLD::UTILS::FluidInfNormScaling> fluid_infnormscaling_;
 
   //! @name Biofilm specific stuff
   //@{
@@ -953,7 +959,7 @@ protected:
 
 private:
 
-  void SplitMatrixAndVector(RCP<Epetra_Vector>    incvel_);
+  void SplitMatrixAndVector(Teuchos::RCP<Epetra_Vector>    incvel_);
 
   //@}
 

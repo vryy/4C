@@ -2,10 +2,10 @@
 \file  linalg_projected_operator.cpp
 
 <pre>
-Maintainer: Peter Gamnitzer
-            gamnitzer@lnm.mw.tum.de
+Maintainer: Keijo Nissen
+            nissen@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15235
+            089 - 289-15253
 </pre>
 
 *----------------------------------------------------------------------*/

@@ -4,10 +4,10 @@
 \brief
 
 <pre>
-Maintainer: Peter Gamnitzer
-            gamnitzer@lnm.mw.tum.de
+Maintainer: Keijo Nissen
+            nissen@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15235
+            089 - 289-15253
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -35,7 +35,7 @@ namespace LINALG
 
   Only the Apply method is modified. All other calls are 'pass-through'.
   The modification of the apply call is such that for singular matrices
-  the result after the apply call is orthogonal to the matrix kernel c.
+  the result after the apply call is krylov to the matrix kernel c.
 
   System of equations to solve:
 
@@ -61,7 +61,7 @@ namespace LINALG
                              x = P * M  * xi     |
                                                 -+
 
-  P^T makes resulting Krylov vectors orthogonal to the kernel c of A.
+  P^T makes resulting Krylov vectors krylov to the kernel c of A.
   P ensures A * P * c = 0 even if for numerical errors A * c != 0 and
   defines a solution x with zero mean.
 

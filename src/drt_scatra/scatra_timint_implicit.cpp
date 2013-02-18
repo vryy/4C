@@ -612,6 +612,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     const std::string* name = KSPCond[icond]->Get<std::string>("discretization");
     if (*name == "scatra") nummodes++;
   }
+
   if (nummodes > 0)
   {
     project_ = true;
@@ -705,7 +706,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareLinearSolve()
   // special preparations for multifractal subgrid-scale model
   if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales)
     RecomputeMeanCsgsB();
-  
+
   // call elements to calculate system matrix and rhs and assemble
   AssembleMatAndRHS();
 
@@ -1979,121 +1980,110 @@ void SCATRA::ScaTraTimIntImpl::UpdateIter(const Teuchos::RCP<const Epetra_Vector
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
 {
-  if (project_)
+  vector<DRT::Condition*> KSPcond;
+  discret_->GetCondition("KrylovSpaceProjection",KSPcond);
+  int nummodes = KSPcond.size();
+
+  if (w_==Teuchos::null and c_==Teuchos::null)
   {
-    vector<DRT::Condition*> KSPcond;
-    discret_->GetCondition("KrylovSpaceProjection",KSPcond);
-    int nummodes = KSPcond.size();
-
-    bool justcreated(false);
-    // create vectors if not existing yet
-    if (w_ == Teuchos::null)
-    {
-      w_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),nummodes,true));
-      justcreated = true;
-    }
-    if (c_ == Teuchos::null)
-    {
-      c_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),nummodes,true));
-      justcreated = true;
-    }
-
-    if (isale_ or justcreated) // fixed grid: compute w_,c_ only once at beginning!
-    {
-      for (int imode = 0; imode < nummodes; ++imode)
-      {
-        // zero w and c completely
-        if (imode == 0)
-        {
-          w_->PutScalar(0.0);
-          c_->PutScalar(0.0);
-        }
-
-        // in this case, we want to project out some zero pressure modes
-        const string* definition = KSPcond[imode]->Get<string>("weight vector definition");
-
-        // get rigid body modes
-        const std::vector<double>* mode = KSPcond[imode]->Get<std::vector<double> >("mode");
-
-        int numdof = 0;
-        Epetra_IntSerialDenseVector dofids(6);
-        for(int rr=0;rr<6;rr++)
-        {
-          if(abs((*mode)[rr])>1e-14)
-          {
-            numdof++;
-            dofids(rr)=rr;
-          }
-          else
-            dofids(rr)=-1;
-        }
-
-        if(*definition == "pointvalues")
-        {
-          dserror("option pointvalues not implemented");
-        }
-        else if(*definition == "integration")
-        {
-          Teuchos::ParameterList mode_params;
-
-          // set parameters for elements
-          mode_params.set<int>("action",SCATRA::integrate_shape_functions);
-          mode_params.set<int>("scatratype",scatratype_);
-          mode_params.set("dofids",dofids);
-
-          mode_params.set("isale",isale_);
-          if (isale_)
-            AddMultiVectorToParameterList(mode_params,"dispnp",dispnp_);
-
-          /* evaluate KrylovSpaceProjection condition in order to get
-    // integrated nodal basis functions w_
-    // Note that in the case of definition integration based,
-    // the average pressure will vanish in an integral sense
-    //
-    //                    /              /                      /
-    //   /    \          |              |  /          \        |  /    \
-    //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
-    //   \    /          |              |  \          /        |  \    /
-    //                   /              /                      /
-           */
-
-          // get an RCP of the current column Epetra_Vector of the MultiVector
-          Teuchos::RCP<Epetra_Vector> wi = Teuchos::rcp((*w_)(imode),false);
-
-          // compute integral of shape functions
-          discret_->EvaluateCondition
-              (mode_params           ,
-              Teuchos::null      ,
-              Teuchos::null      ,
-              wi                 ,
-              Teuchos::null      ,
-              Teuchos::null      ,
-              "KrylovSpaceProjection");
-
-        }
-        else
-        {
-          dserror("unknown definition of weight vector w for restriction of Krylov space");
-        }
-
-        // set the current kernel basis vector
-        for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
-        {
-          DRT::Node* node = discret_->lRowNode(inode);
-          vector<int> gdof = discret_->Dof(node);
-          int numdof = gdof.size();
-          if (numdof > 6) dserror("only up to 6 dof per node supported");
-          for(int rr=0;rr<numdof;++rr)
-          {
-            const double val = (*mode)[rr];
-            int err = c_->ReplaceGlobalValue(gdof[rr],imode,val);
-            if (err != 0) dserror("error while inserting value into c_");
-          }
-        }
-
-      } // loop over nummodes
-    }
+    // allocate storage for vectors
+    w_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),nummodes,true));
+    c_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),nummodes,true));
   }
+  else
+  {
+    // zero w and c in case they already existed (in case of ALE)
+    w_->PutScalar(0.0);
+    c_->PutScalar(0.0);
+  }
+
+  // loop over modes to create vectors within multi-vector
+  for (int imode = 0; imode < nummodes; ++imode)
+  {
+    // in this case, we want to project out some zero pressure modes
+    const string* definition = KSPcond[imode]->Get<string>("weight vector definition");
+
+    // get rigid body modes
+    const std::vector<double>* mode = KSPcond[imode]->Get<std::vector<double> >("mode");
+
+    int numdof = 0;
+    Epetra_IntSerialDenseVector dofids(6);
+    for(int rr=0;rr<6;rr++)
+    {
+      if(abs((*mode)[rr])>1e-14)
+      {
+        numdof++;
+        dofids(rr)=rr;
+      }
+      else
+        dofids(rr)=-1;
+    }
+
+    if(*definition == "pointvalues")
+    {
+      dserror("option pointvalues not implemented");
+    }
+    else if(*definition == "integration")
+    {
+      Teuchos::ParameterList mode_params;
+
+      // set parameters for elements
+      mode_params.set<int>("action",SCATRA::integrate_shape_functions);
+      mode_params.set<int>("scatratype",scatratype_);
+      mode_params.set("dofids",dofids);
+
+      mode_params.set("isale",isale_);
+      if (isale_)
+        AddMultiVectorToParameterList(mode_params,"dispnp",dispnp_);
+
+      /*
+      // evaluate KrylovSpaceProjection condition in order to get
+      // integrated nodal basis functions w_
+      // Note that in the case of definition integration based,
+      // the average pressure will vanish in an integral sense
+      //
+      //                    /              /                      /
+      //   /    \          |              |  /          \        |  /    \
+      //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
+      //   \    /          |              |  \          /        |  \    /
+      //                   /              /                      /
+      */
+
+      // get an RCP of the current column Epetra_Vector of the MultiVector
+      Teuchos::RCP<Epetra_Vector> wi = Teuchos::rcp((*w_)(imode),false);
+
+      // compute integral of shape functions
+      discret_->EvaluateCondition
+          (mode_params           ,
+          Teuchos::null      ,
+          Teuchos::null      ,
+          wi                 ,
+          Teuchos::null      ,
+          Teuchos::null      ,
+          "KrylovSpaceProjection");
+
+    }
+    else
+    {
+      dserror("unknown definition of weight vector w for restriction of Krylov space");
+    }
+
+    // set the current kernel basis vector
+    for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
+    {
+      DRT::Node* node = discret_->lRowNode(inode);
+      vector<int> gdof = discret_->Dof(node);
+      int numdof = gdof.size();
+      if (numdof > 6) dserror("only up to 6 dof per node supported");
+      for(int rr=0;rr<numdof;++rr)
+      {
+        const double val = (*mode)[rr];
+        int err = c_->ReplaceGlobalValue(gdof[rr],imode,val);
+        if (err != 0) dserror("error while inserting value into c_");
+      }
+    }
+
+  } // loop over nummodes
 
   return;
 
@@ -2677,7 +2667,11 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       */
       // ScaleLinearSystem();  // still experimental (gjb 04/10)
 
-      PrepareKrylovSpaceProjection();
+      // reprepare Krylov projection only if ale and projection required
+      if (isale_ and project_)
+      {
+        PrepareKrylovSpaceProjection();
+      }
 
       if (msht_!=INPAR::FLUID::no_meshtying)
         meshtying_->SolveMeshtying(*solver_, sysmat_, increment_, residual_, itnum, w_, c_, project_);

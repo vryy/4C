@@ -22,6 +22,8 @@ namespace EpetraExt {
 
 namespace LINALG
 {
+  class KrylovProjector;
+
   namespace SOLVER
   {
     /// direct linear solver (using amesos)
@@ -74,6 +76,12 @@ namespace LINALG
 
       //! reindex linear problem for amesos
       Teuchos::RCP<EpetraExt::LinearProblem_Reindex> reindexer_;
+
+      //! bool for Krylov projection
+      bool project_;
+      //! Krylov projector if necessary
+      Teuchos::RCP<LINALG::KrylovProjector> projector_;
+
     };
   }
 }

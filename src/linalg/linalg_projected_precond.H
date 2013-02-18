@@ -4,14 +4,14 @@
 \brief A common interface for ifpack, ml and simpler preconditioners.
        This interface allows a modification of the vector returned
        by the ApplyInverse call, which is necessary to do a solution on
-       a Krylov space orthogonalized to certain (for example rigid body
+       a Krylov space krylovized to certain (for example rigid body
        or zero pressure) modes.
 
 <pre>
-Maintainer: Peter Gamnitzer
-            gamnitzer@lnm.mw.tum.de
+Maintainer: Keijo Nissen
+            nissen@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15235
+            089 - 289-15253
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -36,7 +36,7 @@ namespace LINALG
   A common interface for ifpack, ml and simpler preconditioners.
   This interface allows a modification of the vector returned
   by the ApplyInverse call, which is necessary to do a solution on
-  a Krylov space orthogonalized to certain (for example rigid body)
+  a Krylov space krylovized to certain (for example rigid body)
   modes.
 
   The linalg preconditioner interface class holds a pointer (rcp)
@@ -131,7 +131,7 @@ public:
     (Modified) ApplyInverse call
 
     This method calls ApplyInverse on the actual preconditioner and, the
-    solution is orthogonalized against a set of weight vectors provided in a
+    solution is krylovized against a set of weight vectors provided in a
     multivector.
 
     This is done using a projector P defined by
@@ -179,7 +179,7 @@ public:
                           T
                          w * c
 
-    2) The space spanned by P x is orthogonal to the weight vector
+    2) The space spanned by P x is krylov to the weight vector
 
                        /      T      \              T
      T   /   \     T  |      x * w    |    T       x * w     T       T       T
