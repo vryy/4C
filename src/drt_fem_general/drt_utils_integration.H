@@ -148,6 +148,7 @@ enum GaussRule2D
     intrule_quad_49point,
     intrule_quad_64point,
     //intrule_quad_81point,
+    intrule_quad_400point,
     intrule_tri_1point,              ///< degree of precision: 1  (open)
     intrule_tri_3point,              ///< degree of precision: 2  (open)   (Hughes, The Finite Element Method)
     intrule_tri_3point_gauss_radau,  ///< degree of precision: 2  (closed) (Hughes, The Finite Element Method)
@@ -288,7 +289,7 @@ struct IntegrationPoints2D
       const GaussRule2D intrule       ///< 2d rule
       );
 private:
-  static const int max_nquad = 64;    ///< size of c array
+  static const int max_nquad = 400;    ///< size of c array
   DRT::UTILS::GaussRule2D intrule_;   ///< associated integration rule name
 public:
   int           nquad;                ///< number of gausspoints
