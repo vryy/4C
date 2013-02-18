@@ -372,11 +372,14 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     //PFact->SetParameter("NearZeroDiagMapName", Teuchos::ParameterEntry(std::string("")));
     PFact->SetFactory("NearZeroDiagMapFactory", MueLu::NoFactory::getRCP());
 
+    PFact->SetFactory("A",segregatedAFact);
+
     RFact  = Teuchos::rcp( new GenericRFactory() );
   } else {
     // Petrov Galerkin PG-AMG smoothed aggregation (energy minimization in ML)
     PFact  = Teuchos::rcp( new PgPFactory() );
     PFact->SetFactory("P",PtentFact);
+    PFact->SetFactory("A",segregatedAFact);
     //PFact->SetFactory("A",singleNodeAFact);
     //PFact->SetFactory("A",slaveTransferAFactory);  // produces nans
     RFact  = Teuchos::rcp( new GenericRFactory() );
