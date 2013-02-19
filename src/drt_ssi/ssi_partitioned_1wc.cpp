@@ -19,12 +19,18 @@ SSI::SSI_Part1WC::SSI_Part1WC(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams)
   : SSI_Part(comm, timeparams)
 {
-  // build a proxy of the structure discretization for the temperature field
+  // build a proxy of the structure discretization for the scatra field
   Teuchos::RCP<DRT::DofSet> structdofset
     = structure_->Discretization()->GetDofSetProxy();
+  // build a proxy of the temperature discretization for the structure field
+  Teuchos::RCP<DRT::DofSet> scatradofset
+    = scatra_->ScaTraField().Discretization()->GetDofSetProxy();
+
   // check if scatra field has 2 discretizations, so that coupling is possible
   if (scatra_->ScaTraField().Discretization()->AddDofSet(structdofset)!=1)
     dserror("unexpected dof sets in scatra field");
+  if (structure_->Discretization()->AddDofSet(scatradofset)!=1)
+    dserror("unexpected dof sets in structure field");
 }
 
 /*----------------------------------------------------------------------*/

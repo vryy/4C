@@ -21,7 +21,7 @@ SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
     scaincnp_(Teuchos::rcp(new Epetra_Vector(*(scatra_->ScaTraField().Phinp())))),
     dispincnp_(Teuchos::rcp(new Epetra_Vector(*(structure_()->Dispnp()))))
 {
-    // build a proxy of the structure discretization for the temperature field
+    // build a proxy of the structure discretization for the scatra field
     Teuchos::RCP<DRT::DofSet> structdofset
       = structure_->Discretization()->GetDofSetProxy();
     // build a proxy of the temperature discretization for the structure field
