@@ -598,7 +598,7 @@ void PARTICLE::Algorithm::TransferParticles()
       int ijk[3] = {-1,-1,-1};
       // get the first gid of a node and convert it into a LID
       int gid = particledis_->Dof(currnode, 0);
-      int lid = particles_->ExtractDispnp()->Map().LID(gid);
+      int lid = disnp->Map().LID(gid);
       for(int dim=0; dim < 3; dim++)
       {
         ijk[dim] = (int)(((*disnp)[lid+dim]-XAABB_(dim,0)) / bin_size_[dim]);

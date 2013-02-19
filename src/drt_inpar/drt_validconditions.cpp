@@ -3185,6 +3185,42 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(poropresint_line);
 
   /*--------------------------------------------------------------------*/
+  // particle inflow condition
+
+  std::vector<Teuchos::RCP<ConditionComponent> > particleinflowcomponents;
+  // two vertices describing the bounding box for the inflow
+  particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("vertex1")));
+  particleinflowcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("vertex1",3)));
+  particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("vertex2")));
+  particleinflowcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("vertex2",3)));
+  // number of particles to inflow in each direction in bounding box
+  particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("num_per_dir")));
+  particleinflowcomponents.push_back(Teuchos::rcp(new IntVectorConditionComponent("num_per_dir",3)));
+  // particle inflow velocity
+  particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("inflow_vel")));
+  particleinflowcomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("inflow_vel",3)));
+  // inflow frequency of particles
+  particleinflowcomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("inflow_freq")));
+  particleinflowcomponents.push_back(Teuchos::rcp(new RealConditionComponent("inflow_freq")));
+
+
+  Teuchos::RCP<ConditionDefinition> particlecond =
+    Teuchos::rcp(new ConditionDefinition("DESIGN PARTICLE INFLOW CONDITION",
+                                         "ParticleInflow",
+                                         "Particle Inflow Condition",
+                                         DRT::Condition::ParticleInflow,
+                                         false,
+                                         DRT::Condition::Point));
+
+
+  for (unsigned i=0; i<particleinflowcomponents.size(); ++i)
+  {
+    particlecond->AddComponent(particleinflowcomponents[i]);
+  }
+
+  condlist.push_back(particlecond);
+
+  /*--------------------------------------------------------------------*/
   return vc;
 
 }

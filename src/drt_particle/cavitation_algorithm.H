@@ -42,6 +42,8 @@ namespace ADAPTER
 /// CAVITATION: Cavitation problem
 namespace CAVITATION
 {
+  // forward declaration
+  class BubbleSource;
 
   class Algorithm : public PARTICLE::Algorithm
   {
@@ -85,6 +87,9 @@ namespace CAVITATION
     /// force on particles is calculated and applied
     virtual void CalculateAndApplyFluidForcesToParticles();
 
+    /// insert particles into domain
+    void ParticleInflow();
+
     /// update the current time step
     virtual void Update();
 
@@ -98,6 +103,9 @@ namespace CAVITATION
     virtual Teuchos::RCP<Epetra_Map> DistributeBinsToProcs(
       std::map<int, std::set<int> >& fluideles  ///< map from bin id to fluid elements in this bin
       );
+
+    /// setup of bubble sources in each bin
+    virtual void BuildBubbleInflowCondition();
 
     /// setup ghosting of bins, particles & underlying fluid
     virtual void SetupGhosting(
@@ -123,9 +131,31 @@ namespace CAVITATION
     //! Future: Dynamical registering of fluid elements in bins when they are moving
     std::map<int, std::set<int> > extendedfluidghosting_;   ///< map that contains all fluid element ids of each bin
 
+    std::map<int, std::list<Teuchos::RCP<BubbleSource> > > bubble_source_;   ///< store particle sources for each bin
+
     //@}
 
   }; // Algorithm
+
+
+  class BubbleSource
+  {
+  public:
+
+    BubbleSource(
+      std::vector<double> inflow_position,  ///< position of particle source
+      std::vector<double> inflow_vel,   ///< inflow velocity
+      double inflow_radius,   ///< initial radius of particle
+      double inflow_freq   ///< frequency of entering particles
+      );
+
+    // internal variables
+    std::vector<double> inflow_position_;
+    std::vector<double> inflow_vel_;
+    double inflow_radius_;
+    double inflow_freq_;
+
+  }; // BubbleSource
 
 } // namespace CAVITATION
 

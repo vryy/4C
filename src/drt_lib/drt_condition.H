@@ -224,7 +224,8 @@ public:
     RedAirwayVentilatorCond,
     RedAirwayTissue,
     RedAirwayNodeTissue,
-    ArtPrescribedScatraCond
+    ArtPrescribedScatraCond,
+    ParticleInflow
   };
 
   /*!
