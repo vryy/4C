@@ -68,6 +68,7 @@ LINALG::SOLVER::KrylovSolver::KrylovSolver( const Epetra_Comm & comm,
     ,
     bAllowPermutation_( false ),
     bPermuteLinearSystem_( false ),
+    diagDominanceRatio_( 1.0 ),
     PermFact_( Teuchos:: null )
 #endif
 #endif
@@ -642,7 +643,7 @@ bool LINALG::SOLVER::KrylovSolver::DecideAboutPermutation(const Teuchos::RCP<Epe
   Teuchos::RCP<Matrix> xPermA = data_->Get<Teuchos::RCP<Matrix> >("permA", PermFact_.get());
 
   // find problematic rows/columns in permuted and original matrix
-  Teuchos::RCP<Map> PermutedNonDiagMap    = FindNonDiagonalDominantRows(xPermA,1.0 /*0.5*/); // introduce solver parameter for this??
+  Teuchos::RCP<Map> PermutedNonDiagMap    = FindNonDiagonalDominantRows(xPermA,diagDominanceRatio_);
   Teuchos::RCP<Map> NonPermutedNonDiagMap = FindNonDiagonalDominantRows(A,1.0);
 
   double tolerance = 1e-5;

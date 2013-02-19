@@ -5276,7 +5276,9 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
   DoubleParameter("BGS2X2_BLOCK1_DAMPING",1.,"damping parameter for BGS2X2 preconditioner block1",&list);
   DoubleParameter("BGS2X2_BLOCK2_DAMPING",1.,"damping parameter for BGS2X2 preconditioner block2",&list);
 
+  // parameters for permutation of linear systems
   BoolParameter("PERMUTE_SYSTEM","No","allow linear solver to permute linear system to improve properties of linear system for iterative methods",&list);
+  DoubleParameter("NON_DIAGDOMINANCE_RATIO",1.,"matrix rows with diagEntry/maxEntry<nonDiagDominanceRatio are marked to be significantly non-diagonal dominant (default: 1.0 = mark all non-diagonal dominant rows)",&list);
   
   // verbosity flag (for Belos)
   IntParameter("VERBOSITY",0,"verbosity level (0=no output,... 10=extreme), for Belos only",&list);

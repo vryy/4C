@@ -1127,6 +1127,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(const Teuchos:
   //beloslist.set("allow permutation", DRT::INPUT::IntegralValue<int>(inparams,"PERMUTE_SYSTEM"));
   bool bAllowPermutation = DRT::INPUT::IntegralValue<bool>(inparams,"PERMUTE_SYSTEM");
   beloslist.set("allow permutation", bAllowPermutation);
+  double nonDiagDominance = inparams.get<double>("NON_DIAGDOMINANCE_RATIO");
+  beloslist.set("diagonal dominance ratio", nonDiagDominance);
   beloslist.set("Output Style",Belos::Brief);
   beloslist.set("Convergence Tolerance",inparams.get<double>("AZTOL"));
   //-------------------------------- set parameters for Ifpack if used
@@ -1422,6 +1424,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
     azlist.set("reuse",inparams.get<int>("AZREUSE"));            // reuse info for n solver calls
     bool bAllowPermutation = DRT::INPUT::IntegralValue<bool>(inparams,"PERMUTE_SYSTEM");
     azlist.set("allow permutation", bAllowPermutation);
+    double nonDiagDominance = inparams.get<double>("NON_DIAGDOMINANCE_RATIO");
+    azlist.set("diagonal dominance ratio", nonDiagDominance);
     azlist.set("verbosity",inparams.get<int>("VERBOSITY"));  // this is not an official Aztec flag
     //-------------------------------- set parameters for Ifpack if used
     if (azprectyp == INPAR::SOLVER::azprec_ILU  ||

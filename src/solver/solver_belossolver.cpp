@@ -96,6 +96,7 @@ void LINALG::SOLVER::BelosSolver::Setup(  Teuchos::RCP<Epetra_Operator>     matr
 #ifdef HAVE_MueLu
 #ifdef HAVE_EXPERIMENTAL_MueLu
   bAllowPermutation_ = belist.get<bool>("allow permutation",false);
+  diagDominanceRatio_ = belist.get<double>("diagonal dominance ratio", 1.0);
 #endif
 #endif
 

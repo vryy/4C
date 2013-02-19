@@ -155,7 +155,16 @@ namespace LINALG
           /*! @brief Returns map with global row ids of rows with absolute value < tolerance on the diagonal of matrix A */
           Teuchos::RCP<Map> FindZeroDiagonalEntries(const Teuchos::RCP<Matrix>& xA, double tolerance = 1e-5);
 
-          /*! @brief Returns map with non-diagonal dominant rows of matrix A. */
+          /*! @brief Returns map with non-diagonal dominant rows of matrix A.
+           *
+           *  check the ratio nof the diagonal entry and the entry with
+           *  maximal absolute value in the current row (diagEntry / maxEntry ) < diagDominance (=1.0 default).
+           *
+           *  - if the row is diagonal dominant the ratio is 1.0
+           *  - if the row is not diagonal dominant, the ratio is < 1.0
+           *  - if the row has a zero on the diagonal the ratio is zero
+           *  - if the row is a zero row (-> singular matrix) we divide zero by zero
+           * */
           Teuchos::RCP<Map> FindNonDiagonalDominantRows(const Teuchos::RCP<Epetra_CrsMatrix>& A, double diagDominanceRatio = 1.0);
           Teuchos::RCP<Map> FindNonDiagonalDominantRows(const Teuchos::RCP<Matrix>& xA, double diagDominanceRatio = 1.0);
 
@@ -164,6 +173,9 @@ namespace LINALG
 
           /*! @brief internal variable whether to solve permuted linear system or original linear system (after algorithmic decision)*/
           bool bPermuteLinearSystem_;
+
+          /*! @brief maximum allowed diagonal dominance ratio. All row GIDs with diagonalEntry/maxEntry < diagDominanceRatio are considered to be significantly non-diagonal dominant.*/
+          double diagDominanceRatio_;
 
           /*! @brief internal flexible data container for storing permutation specific data (permutation operators...) */
           Teuchos::RCP<MueLu::Level> data_; // data container
