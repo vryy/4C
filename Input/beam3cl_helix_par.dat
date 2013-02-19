@@ -109,7 +109,7 @@ K_ON_end            90                    // chemical dissociation-rate after kt
 K_ON_SELF           0                     // chemical association-rate in case of linker with both ends on the same filament
 K_OFF_start         3                     // in analogy to k_on
 K_OFF_end           3                     // in analogy to k_on
-OSCILLDIR           0                     // direction of oscillation after starttimeact_ (x==0, y==1, z==2)
+DBCDISPDIR          1                     // direction of oscillation after starttimeact_ (x==0, y==1, z==2)
 CURVENUMBER         1                     // applied time curve after starttimeact_
 //============== FILAMENT MODEL =============
 NUM_EVAL_ELEMENTS   200                  // number of (initial) beam elements
@@ -964,8 +964,8 @@ MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 2.56e+06 NUE 0.5 DENS 1.384e-09 
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC sin(2*pi*5*(t-10000)) t1 10000 t2 10000
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 51 QUANTITY dispx VALUE 2.903159887211e-04 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 51 QUANTITY dispx VALUE 2.70941083156913071e-04 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 51 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 51 QUANTITY dispz VALUE -6.932868453265e-03 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 51 QUANTITY dispz VALUE 3.11115085340053880e-02 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END
