@@ -440,7 +440,7 @@ DSURF                           0
 DSURF                           0
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            1
-E 1 - fluid 0.0 0.0 0.0 1.0 0.0 0.0 integration
+E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
 --------------------------------------------SCATRA FLUX CALC SURF CONDITIONS
 DSURF                           1
 E 7 - //flux calculation at inner cylinder

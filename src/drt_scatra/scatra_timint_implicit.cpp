@@ -91,7 +91,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   isale_    (extraparams->get<bool>("isale")),
   solvtype_ (DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(*params,"SOLVERTYPE")),
   // incremental_, // not initialized
-  project_(false),
   initialvelset_(false),
   fssgd_    (DRT::INPUT::IntegralValue<INPAR::SCATRA::FSSUGRDIFF>(*params,"FSSUGRDIFF")),
   // turbmodel_, // not initialized
@@ -130,8 +129,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   DynSmag_(Teuchos::null),
   turbinflow_(DRT::INPUT::IntegralValue<int>(extraparams->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
   reinitswitch_(extraparams->get<bool>("REINITSWITCH",false)),
-  w_(Teuchos::null),
-  c_(Teuchos::null),
   upres_    (params->get<int>("UPRES")),
   uprestart_(params->get<int>("RESTARTEVRY")),
   neumanninflow_(DRT::INPUT::IntegralValue<int>(*params,"NEUMANNINFLOW")),
@@ -601,26 +598,51 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     }
   }
 
+  // -------------------------------------------------------------------
+  // create vectors for Krylov projection if necessary
+  // -------------------------------------------------------------------
+
   // sysmat might be singular (some modes are defined only up to a constant)
   // in this case, we need basis vectors for the nullspace/kernel
+
+  // get condition "KrylovSpaceProjection" from discretization
   vector<DRT::Condition*> KSPCond;
   discret_->GetCondition("KrylovSpaceProjection",KSPCond);
   int numcond = KSPCond.size();
-  int nummodes = 0;
+  int numscatra = 0;
+
+  // check if for scatra Krylov projection is required
   for(int icond = 0; icond < numcond; icond++)
   {
     const std::string* name = KSPCond[icond]->Get<std::string>("discretization");
-    if (*name == "scatra") nummodes++;
+    if (*name == "scatra")
+    {
+      numscatra++;
+      kspcond_ = KSPCond[icond];
+    }
   }
 
-  if (nummodes > 0)
+  // initialize variables for Krylov projection if necessary
+  w_ = Teuchos::null;
+  c_ = Teuchos::null;
+  if (numscatra == 1)
   {
+    // set flag that triggers all computations for Krylov projection
     project_ = true;
+    // compute w_ and c_ vectors - only done once here if not alefluid_
     PrepareKrylovSpaceProjection();
     if (myrank_ == 0)
-      cout<<"\nSetup of KrylovSpaceProjection:\n"<<
-      "    => number of kernel basis vectors: "<<nummodes<<endl<<endl;
+      cout << "\nSetup of KrylovSpaceProjection in scatra field\n" << endl;
+    // kspcond_ is set in previous for-loop
   }
+  else if (numscatra == 0)
+  {
+    project_ = false;
+    kspcond_ = NULL;
+  }
+  else
+    dserror("Received more than one KrylovSpaceCondition for scatra field");
+
 
   return;
 
@@ -1980,15 +2002,46 @@ void SCATRA::ScaTraTimIntImpl::UpdateIter(const Teuchos::RCP<const Epetra_Vector
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
 {
-  vector<DRT::Condition*> KSPcond;
-  discret_->GetCondition("KrylovSpaceProjection",KSPcond);
-  int nummodes = KSPcond.size();
+  // previously, scatra was able to define actual modes that formed a
+  // nullspace. factors when assigned to scalars in the dat file. it could
+  // take several scatra Krylov conditions each forming one mode like:
+  // 3.0*c_1 + 2.0*c_2 = const
+  // since this was never used, not even in ELCH-problems, and for the sake of
+  // consistency, now only a singel scatra Krylov condition can be given, with
+  // flags that triggers the scalars that are to be levelled by a projection
+  // (like the pressure in a pure Dirichlet fluid problem).
+  // furthermore, this is a step towards the ability to have projection on
+  // more than one field.
+  // to see the handling of different modes, the ability that is now lost, see
+  // revision 17615.
 
+  // confirm that mode flags are number of nodal dofs/scalars
+  const int nummodes = kspcond_->GetInt("NUMMODES");
+  const int numdofpernode = numscal_ + IsElch(scatratype_);
+  if (nummodes!=numdofpernode)
+    dserror("Expecting as many mode flags as nodal dofs in Krylov projection definition. Check dat-file!");
+
+  // get vector of mode flags as given in dat-file
+  const std::vector<int>* modeflags = kspcond_->Get<std::vector<int> >("ONOFF");
+
+  // count actual active modes selected in dat-file
+  int activemodes = 0;
+  std::vector<int> activemodeids;
+  for(int rr=0;rr<numdofpernode;++rr)
+  {
+    if(((*modeflags)[rr])!=0)
+    {
+      activemodeids.push_back(rr);
+      activemodes++;
+    }
+  }
+
+  // check if vectors w_ and c_ already exist as objects
   if (w_==Teuchos::null and c_==Teuchos::null)
   {
     // allocate storage for vectors
-    w_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),nummodes,true));
-    c_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),nummodes,true));
+    w_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),activemodes,true));
+    c_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),activemodes,true));
   }
   else
   {
@@ -1997,54 +2050,52 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
     c_->PutScalar(0.0);
   }
 
+  // get from dat-file definition how weights are to be computed
+  const string* definition = kspcond_->Get<string>("weight vector definition");
+
   // loop over modes to create vectors within multi-vector
-  for (int imode = 0; imode < nummodes; ++imode)
+  // one could tailor a MapExtractor to extract necessary dofs, however this
+  // seems to be an overkill, since normally only a single scalar is
+  // projected. for only a second projected scalar it seems worthwhile. feel
+  // free! :)
+  if(*definition == "pointvalues")
   {
-    // in this case, we want to project out some zero pressure modes
-    const string* definition = KSPcond[imode]->Get<string>("weight vector definition");
-
-    // get rigid body modes
-    const std::vector<double>* mode = KSPcond[imode]->Get<std::vector<double> >("mode");
-
-    int numdof = 0;
-    Epetra_IntSerialDenseVector dofids(6);
-    for(int rr=0;rr<6;rr++)
+    dserror("option pointvalues not implemented");
+  }
+  else if(*definition == "integration")
+  {
+    // initialize dofid vector to -1
+    Epetra_IntSerialDenseVector dofids(numdofpernode);
+    for (int rr=0;rr<numdofpernode;++rr)
     {
-      if(abs((*mode)[rr])>1e-14)
-      {
-        numdof++;
-        dofids(rr)=rr;
-      }
-      else
-        dofids(rr)=-1;
+      dofids[rr] = -1;
     }
 
-    if(*definition == "pointvalues")
-    {
-      dserror("option pointvalues not implemented");
-    }
-    else if(*definition == "integration")
-    {
-      Teuchos::ParameterList mode_params;
+    Teuchos::ParameterList mode_params;
 
-      // set parameters for elements
-      mode_params.set<int>("action",SCATRA::integrate_shape_functions);
-      mode_params.set<int>("scatratype",scatratype_);
+    // set parameters for elements that do not change over mode
+    mode_params.set<int>("action",SCATRA::integrate_shape_functions);
+    mode_params.set<int>("scatratype",scatratype_);
+    mode_params.set("isale",isale_);
+    if (isale_)
+      AddMultiVectorToParameterList(mode_params,"dispnp",dispnp_);
+
+    // loop over all activemodes
+    for (int imode = 0; imode < activemodes; ++imode)
+    {
+      // activate dof of current mode and add dofids to parameter list
+      dofids[activemodeids[imode]] = 1;
       mode_params.set("dofids",dofids);
-
-      mode_params.set("isale",isale_);
-      if (isale_)
-        AddMultiVectorToParameterList(mode_params,"dispnp",dispnp_);
 
       /*
       // evaluate KrylovSpaceProjection condition in order to get
       // integrated nodal basis functions w_
-      // Note that in the case of definition integration based,
-      // the average pressure will vanish in an integral sense
+      // Note that in the case of definition integration based, the average
+      // increment of the scalar quantity c will vanish in an integral sense
       //
       //                    /              /                      /
       //   /    \          |              |  /          \        |  /    \
-      //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
+      //  | w_*c | = c_i * | N_i(x) dx =  | | N_i(x)*c_i | dx =  | | c(x) | dx = 0
       //   \    /          |              |  \          /        |  \    /
       //                   /              /                      /
       */
@@ -2062,28 +2113,28 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
           Teuchos::null      ,
           "KrylovSpaceProjection");
 
-    }
-    else
-    {
-      dserror("unknown definition of weight vector w for restriction of Krylov space");
-    }
+      // deactivate dof of current mode
+      dofids[activemodeids[imode]] = -1;
 
-    // set the current kernel basis vector
-    for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
-    {
-      DRT::Node* node = discret_->lRowNode(inode);
-      vector<int> gdof = discret_->Dof(node);
-      int numdof = gdof.size();
-      if (numdof > 6) dserror("only up to 6 dof per node supported");
-      for(int rr=0;rr<numdof;++rr)
+      // set the current kernel basis vector - not very nice
+      for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
       {
-        const double val = (*mode)[rr];
-        int err = c_->ReplaceGlobalValue(gdof[rr],imode,val);
-        if (err != 0) dserror("error while inserting value into c_");
+        DRT::Node* node = discret_->lRowNode(inode);
+        vector<int> gdof = discret_->Dof(node);
+        for(int rr=0;rr<activemodes;++rr)
+        {
+          int err = c_->ReplaceGlobalValue(gdof[activemodeids[rr]],imode,1);
+          if (err != 0) dserror("error while inserting value into c_");
+        }
       }
-    }
 
-  } // loop over nummodes
+    } // loop over activemodes
+
+  } // endif integration
+  else
+  {
+    dserror("unknown definition of weight vector w for restriction of Krylov space");
+  }
 
   return;
 

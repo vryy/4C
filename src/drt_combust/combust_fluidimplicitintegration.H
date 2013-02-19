@@ -40,6 +40,7 @@ namespace DRT
 {
   class Discretization;
   class IndependentPBCDofSet;
+  class Condition;
 }
 
 namespace LINALG
@@ -202,6 +203,12 @@ public:
   void NonlinearSolve();
 
   Teuchos::RCP<LINALG::Solver>  LinearSolver() { return solver_; };
+
+  /*!
+  \brief preparations for Krylov space projection
+
+  */
+  void PrepareKrylovSpaceProjection();
 
   /*!
   \brief Update the solution after convergence of the nonlinear
@@ -595,6 +602,9 @@ protected:
   Teuchos::RCP<Epetra_Vector>   w_;
   //! basis vector for nullspace (vector of ones in the pressure component)
   Teuchos::RCP<Epetra_Vector>   c_;
+  //! pointer to Krylov projection condition of scatra field
+  DRT::Condition* kspcond_;
+
 
   //! @name parameters for sampling/dumping period
   int samstart_;

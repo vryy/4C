@@ -149,7 +149,7 @@ E 2 - 1 structure conforming
 -----------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL   1
 // fluid_volume
-E 1 - fluid 0.0 0.0 0.0 1.0 0.0 0.0 integration
+E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 2537 QUANTITY velx VALUE 1.0 TOLERANCE 1e-12
 FLUID DIS fluid NODE 2537 QUANTITY vely VALUE 1.0 TOLERANCE 1e-12

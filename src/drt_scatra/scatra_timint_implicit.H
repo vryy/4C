@@ -848,9 +848,6 @@ protected:
   //! incremental or linear full solving ? rename -> is_incremental_
   bool incremental_;
 
-  //! flag for Krylov space projection
-  bool project_;
-
   //! flag indicating if initial velocity field has been set
   bool initialvelset_;
 
@@ -1100,13 +1097,23 @@ protected:
   bool reinitswitch_;
 
   /*========================================================================*/
-  //! @name not classified variables - to be kept clean!!!
+  //! @name variables for orthogonal space projection aka Krylov projection
   /*========================================================================*/
+
+  //! flag for Krylov space projection
+  bool project_;
 
   //! integrated basis vector (for each undetermined component)
   Teuchos::RCP<Epetra_MultiVector> w_;
   //! basis vector for nullspace (vector of ones for each undetermined component)
   Teuchos::RCP<Epetra_MultiVector> c_;
+
+  //! pointer to Krylov projection condition of scatra field
+  DRT::Condition* kspcond_;
+
+  /*========================================================================*/
+  //! @name not classified variables - to be kept clean!!!
+  /*========================================================================*/
 
   //! write results every upres_ steps ? writesolutionevery_
   int upres_;

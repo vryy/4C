@@ -245,7 +245,7 @@ E 6 - 1 Master PLANE xy LAYER 1 ANGLE 0.0 ABSTREETOL 1e-9
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            1
 //                              volume
-E 1 - fluid 0.0 0.0 0.0 1.0 0.0 0.0 integration
+E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
 -------------------------------------DESIGN SURF TRANSPORT DIRICH CONDITIONS
 DSURF                           2
 // wall top

@@ -102,7 +102,7 @@ NDSURF                          6
 NDVOL                           1
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            1
-E 1 - fluid 0.0 0.0 0.0 1.0 0.0 0.0 integration
+E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DPOINT                          0

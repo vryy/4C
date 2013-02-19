@@ -250,7 +250,7 @@ DVOL   0
 -----------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL   1
 // fluid_volume
-E 1 - fluid 0.0 0.0 0.0 1.0 0.0 0.0 integration
+E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE  169 QUANTITY     velx VALUE 1.50094222395886279e+00 TOLERANCE 1e-11
 FLUID DIS fluid NODE  169 QUANTITY     vely VALUE                     0.0 TOLERANCE 1e-11

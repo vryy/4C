@@ -52,7 +52,7 @@ namespace DRT
   class Discretization;
   class ResultTest;
  // class DofSet;
- // class Condition;
+ class Condition;
 }
 namespace IO
 {
@@ -670,12 +670,16 @@ protected:
   void PredictTangVelConsistAcc();
 
   //! @name general algorithm parameters
+
   //! project nullspace (useful for completely Dirichlet bounded problems)
   bool                          project_;
   //! integrated basis vector (pressure component)
   Teuchos::RCP<Epetra_Vector>   w_;
   //! basis vector for nullspace (vector of ones in the pressure component)
   Teuchos::RCP<Epetra_Vector>   c_;
+  //! pointer to Krylov projection condition of scatra field
+  DRT::Condition* kspcond_;
+
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
   bool                          alefluid_;
   //! do we have a turbulence model?

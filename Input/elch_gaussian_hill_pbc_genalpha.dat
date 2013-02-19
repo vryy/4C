@@ -275,7 +275,7 @@ DLINE                           0
 ---------------------------------DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION
 DVOL                            1
 // ensure that integral of electric potential in domain is equal the initial integral value of 0.5
-E 1 - scatra 0.0 0.0 0.0 1.0 0.0 0.0 integration
+E 1 - scatra NUMMODES 4 ONOFF 0 0 0 1 integration
 -----------------------------------------DESIGN VOL INITIAL FIELD CONDITIONS
 DVOL                            1
 E 1 - ScaTra 2 // set initial fields as defined by FUNCT 2

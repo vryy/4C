@@ -44,6 +44,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_dserror.H"
+#include "../drt_lib/drt_condition.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_comm/comm_utils.H"
@@ -219,7 +220,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       dserror("the option 'coupling_iontransport_laplace' is only available in Elch!!");
 
     // define parameter list for meshtying
-    ParameterList mshtparams;
+    Teuchos::ParameterList mshtparams;
     mshtparams.set("theta",theta_);
     mshtparams.set<int>("mshtoption", msht_);
 
@@ -236,7 +237,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   }
 
   // -------------------------------------------------------------------
-  // create empty vectors for Krylov projection if necessary
+  // create vectors for Krylov projection if necessary
   // -------------------------------------------------------------------
 
   // sysmat might be singular (if we have a purely Dirichlet constrained
@@ -253,22 +254,30 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   for(int icond = 0; icond < numcond; icond++)
   {
     const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
-    if (*name == "fluid") numfluid++;
+    if (*name == "fluid")
+    {
+      numfluid++;
+      kspcond_ = KSPcond[icond];
+    }
   }
 
   // initialize variables for Krylov projection if necessary
+  w_ = Teuchos::null;
+  c_ = Teuchos::null;
   if (numfluid == 1)
   {
     // set flag that triggers all computations for Krylov projection
     project_ = true;
     // compute w_ and c_ vectors - only done once here if not alefluid_
     PrepareKrylovSpaceProjection();
+    if (myrank_ == 0)
+      cout << "\nSetup of KrylovSpaceProjection in fluid field\n" << endl;
+    // kspcond_ is set in previous for-loop
   }
   else if (numfluid == 0)
   {
     project_ = false;
-    w_       = Teuchos::null;
-    c_       = Teuchos::null;
+    kspcond_ = NULL;
   }
   else
     dserror("Received more than one KrylovSpaceCondition for fluid field");
@@ -335,7 +344,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   // object holds maps/subsets for DOFs subjected to Dirichlet BCs and otherwise
   dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
   {
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     // other parameters needed by the elements
     eleparams.set("total time",time_);
     discret_->EvaluateDirichlet(eleparams, zeros_, Teuchos::null, Teuchos::null,
@@ -474,7 +483,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
         turbmodel_ = INPAR::FLUID::scale_similarity;
       else
         turbmodel_ = INPAR::FLUID::scale_similarity_basic;
-      ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
+      Teuchos::ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
       const std::string scale_sep = modelparams->get<std::string>("SCALE_SEPARATION");
       if (scale_sep == "box_filter")
       {
@@ -510,7 +519,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
 
       fsvelaf_  = LINALG::CreateVector(*dofrowmap,true);
 
-      ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
+      Teuchos::ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
 
       const std::string scale_sep = modelparams->get<std::string>("SCALE_SEPARATION");
       if (scale_sep == "box_filter")
@@ -697,7 +706,7 @@ void FLD::FluidImplicitTimeInt::Integrate()
   // output of stabilization details
   if ((myrank_==0) and (params_->get<bool>("DISPLAY_STAB")))
   {
-    ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
+    Teuchos::ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
 
     cout << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
     cout << "                             " << stabparams->get<string>("TDS")<< "\n";
@@ -954,7 +963,7 @@ void FLD::FluidImplicitTimeInt::PrepareTimeStep()
   //  evaluate Dirichlet and Neumann boundary conditions
   // -------------------------------------------------------------------
   {
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // total time required for Dirichlet conditions
     eleparams.set("total time",time_);
@@ -1112,7 +1121,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       sysmat_->Zero();
 
       // create the parameters for the discretization
-      ParameterList eleparams;
+      Teuchos::ParameterList eleparams;
 
       // add Neumann loads
       residual_->Update(1.0,*neumann_loads_,0.0);
@@ -1318,7 +1327,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           // select free surface elements
           std::string condname = "FREESURFCoupling";
 
-          ParameterList eleparams;
+          Teuchos::ParameterList eleparams;
 
           // set action for elements
           eleparams.set<int>("action",FLD::calc_surface_tension);
@@ -1338,7 +1347,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
           RCP<Epetra_Vector> wdbcloads = LINALG::CreateVector(*(discret_->DofRowMap()),true);
 
-          ParameterList weakdbcparams;
+          Teuchos::ParameterList weakdbcparams;
 
           // set action for elements
           weakdbcparams.set<int>("action"    ,FLD::enforce_weak_dbc);
@@ -1398,7 +1407,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
         if(MHDcndSurf.size()!=0 or MHDcndLine.size()!=0)
         {
-          ParameterList mhdbcparams;
+          Teuchos::ParameterList mhdbcparams;
 
           // set action for elements
           mhdbcparams.set<int>("action"    ,FLD::mixed_hybrid_dbc);
@@ -1456,7 +1465,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         if (neumanninflow_)
         {
           // create parameter list
-          ParameterList condparams;
+          Teuchos::ParameterList condparams;
 
           // action for elements
           condparams.set<int>("action",FLD::calc_Neumann_inflow);
@@ -1749,7 +1758,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
       if (hfconds.size()>0)
       {
-        ParameterList eleparams;
+        Teuchos::ParameterList eleparams;
         // set action for elements
         eleparams.set<int>("action",FLD::calc_node_normal);
 
@@ -2056,14 +2065,24 @@ void FLD::FluidImplicitTimeInt::PrepareSolve()
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::FluidImplicitTimeInt::PrepareKrylovSpaceProjection()
 {
-  vector<DRT::Condition*> KSPconds;
-  discret_->GetCondition("KrylovSpaceProjection",KSPconds);
-  int nummodes = KSPconds.size();
+  // confirm that mode flags are number of nodal dofs
+  const int nummodes = kspcond_->GetInt("NUMMODES");
+  if (nummodes!=(numdim_+1))
+    dserror("Expecting numdim_+1 modes in Krylov projection definition. Check dat-file!");
 
-  if (nummodes!=1)
-    dserror("Krylov projection for fluid not implemented for more than one condition");
+  // get vector of mode flags as given in dat-file
+  const std::vector<int>* modeflags = kspcond_->Get<std::vector<int> >("ONOFF");
 
-  DRT::Condition* KSPcond = KSPconds[0];
+  // confirm that only the pressure mode is selected for Krylov projection in dat-file
+  for(int rr=0;rr<numdim_;++rr)
+  {
+    if(((*modeflags)[rr])!=0)
+    {
+      dserror("Expecting only an undetermined pressure. Check dat-file!");
+    }
+  }
+  if(((*modeflags)[numdim_])!=1)
+    dserror("Expecting an undetermined pressure. Check dat-file!");
 
   // check if vectors w_ and c_ already exist as objects
   if (w_==Teuchos::null and c_==Teuchos::null)
@@ -2081,29 +2100,17 @@ void FLD::FluidImplicitTimeInt::PrepareKrylovSpaceProjection()
     c_->PutScalar(0.0);
   }
 
-  // get vector of modes selected in dat-file
-  const std::vector<double>* mode = KSPcond->Get<std::vector<double> >("mode");
-
-  // confirm that no velocity mode is selected for Krylov projection in dat-filename
-  for(int rr=0;rr<numdim_;++rr)
-  {
-    if(abs((*mode)[rr])>1e-14)
-    {
-      dserror("expecting only an undetermined pressure");
-    }
-  }
+  // get from dat-file definition how weights are to be computed
+  const string* definition = kspcond_->Get<string>("weight vector definition");
 
   // extract vector of pressure-dofs
   Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
 
-  // get from dat-file definition how weights are to be computed
-  const string* definition = KSPcond->Get<string>("weight vector definition");
-
   // compute w_ as defined in dat-file
   if(*definition == "pointvalues")
   {
-    // put scalar in pressure mode as given in dat-file (usually 1.0)
-    presmode->PutScalar((*mode)[numdim_]);
+    // put 1.0 in pressure mode
+    presmode->PutScalar(1.0);
 
     /*
     // export to vector to normalize against
@@ -2126,7 +2133,7 @@ void FLD::FluidImplicitTimeInt::PrepareKrylovSpaceProjection()
   else if(*definition == "integration")
   {
     // create parameter list for condition evaluate and ...
-    ParameterList mode_params;
+    Teuchos::ParameterList mode_params;
     // ... set action for elements to integration of shape functions
     mode_params.set<int>("action",FLD::integrate_shape);
 
@@ -2206,7 +2213,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   sysmat_->Zero();
 
   // create the parameters for the discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // add Neumann loads
   residual_->Update(1.0,*neumann_loads_,0.0);
@@ -2336,7 +2343,7 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
   if (neumanninflow_)
   {
     // create parameter list
-    ParameterList condparams;
+    Teuchos::ParameterList condparams;
 
     // action for elements
     condparams.set<int>("action",FLD::calc_Neumann_inflow);
@@ -2765,7 +2772,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
   discret_->ClearState();
 
   // create the parameters for the discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // set action type
   eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
@@ -2843,7 +2850,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     discret_->GetCondition(condname,poroPartInt);
     if(poroPartInt.size())
     {
-      ParameterList eleparams;
+      Teuchos::ParameterList eleparams;
 
       // set action for elements
       eleparams.set<int>("action",FLD::poro_boundary);
@@ -2864,7 +2871,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
     discret_->GetCondition(condname,poroPresInt);
     if(poroPresInt.size())
     {
-      ParameterList eleparams;
+      Teuchos::ParameterList eleparams;
 
       // set action for elements
       eleparams.set<int>("action",FLD::poro_prescoupl);
@@ -2951,7 +2958,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 void FLD::FluidImplicitTimeInt::TimeUpdate()
 {
 
-  ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
+  Teuchos::ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
 
   if(stabparams->get<string>("TDS") == "time_dependent")
   {
@@ -2969,7 +2976,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
     AssembleMatAndRHS();
 
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
     // action for elements
     eleparams.set<int>("action",FLD::calc_fluid_genalpha_update_for_subscales);
 
@@ -3079,7 +3086,7 @@ void FLD::FluidImplicitTimeInt::TimeUpdate()
   impedancebc_->OutflowBoundary(time_,dta_,theta_);
 
   // get the parameters needed to be optimized
-  ParameterList WkOpt_params;
+  Teuchos::ParameterList WkOpt_params;
   WkOpt_params.set<double> ("total time", time_);
   WkOpt_params.set<double> ("time step size", dta_);
   impedancebc_->getResultsOfAPeriod(WkOpt_params);
@@ -3787,7 +3794,7 @@ void FLD::FluidImplicitTimeInt::AVM3Preparation()
   impedancebc_->UpdateResidual(residual_);
 
   // create the parameters for the discretization
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   // set action type
   eleparams.set<int>("action",FLD::calc_fluid_systemmat_and_residual);
@@ -4617,7 +4624,7 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
   case INPAR::FLUID::shear_flow:
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set<int>("action",FLD::calc_fluid_error);
@@ -4752,7 +4759,7 @@ void FLD::FluidImplicitTimeInt::EvaluateDivU()
   if (params_->get<bool>("COMPUTE_DIVU"))
   {
     // create the parameters for the discretization
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // action for elements
     eleparams.set<int>("action",FLD::calc_div_u);
@@ -4860,7 +4867,7 @@ void FLD::FluidImplicitTimeInt::SolveStationaryProblem()
     //         evaluate Dirichlet and Neumann boundary conditions
     // -------------------------------------------------------------------
     {
-      ParameterList eleparams;
+      Teuchos::ParameterList eleparams;
 
       // other parameters needed by the elements
       eleparams.set("total time",time_);
@@ -5402,7 +5409,7 @@ void FLD::FluidImplicitTimeInt::OutputofFilteredVel(
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::IntegrateInterfaceShape(std::string condname)
 {
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   // set action for elements
   eleparams.set<int>("action",FLD::integrate_Shapefunction);
 
@@ -5513,7 +5520,7 @@ void FLD::FluidImplicitTimeInt::LinearRelaxationSolve(Teuchos::RCP<Epetra_Vector
     }
 
     // general fluid and time parameter are set in PrepareTimeStep()
-    ParameterList eleparams;
+    Teuchos::ParameterList eleparams;
 
     // parameters for stabilization
     eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
@@ -5688,7 +5695,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcWallShearStresses()
   // first evaluate the normals at the nodes
   // -------------------------------------------------------------------
 
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   // set action for elements
   eleparams.set<int>("action",FLD::ba_calc_node_normal);
 
@@ -5796,7 +5803,7 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcSFS(
 
 void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
 {
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_general_fluid_parameter);
 
@@ -5823,7 +5830,7 @@ void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
 
 void FLD::FluidImplicitTimeInt::SetElementTimeParameter()
 {
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_time_parameter);
 
@@ -5867,7 +5874,7 @@ void FLD::FluidImplicitTimeInt::SetElementTimeParameter()
 // -------------------------------------------------------------------
 void FLD::FluidImplicitTimeInt::SetElementTurbulenceParameter()
 {
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_turbulence_parameter);
 
@@ -5889,7 +5896,7 @@ void FLD::FluidImplicitTimeInt::SetElementTurbulenceParameter()
 // -------------------------------------------------------------------
 void FLD::FluidImplicitTimeInt::SetElementLomaParameter()
 {
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_loma_parameter);
 
@@ -5909,7 +5916,7 @@ void FLD::FluidImplicitTimeInt::SetElementLomaParameter()
 // -------------------------------------------------------------------
 void FLD::FluidImplicitTimeInt::SetElementPoroParameter()
 {
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
 
   eleparams.set<int>("action",FLD::set_poro_parameter);
 
@@ -6139,7 +6146,7 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
         }
         else if(turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
         {
-          ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
+          Teuchos::ParameterList *  modelparams =&(params_->sublist("MULTIFRACTAL SUBGRID SCALES"));
           cout << "                             "      ;
           cout << "\n";
           cout << "- Csgs:              " << modelparams->get<double>("CSGS") << "\n";
@@ -6191,7 +6198,7 @@ void FLD::FluidImplicitTimeInt::RecomputeMeanCsgsB()
     Epetra_SerialDenseVector evec3;
 
     // generate a parameterlist for communication and control
-    ParameterList myparams;
+    Teuchos::ParameterList myparams;
     // action for elements
     myparams.set<int>("action",FLD::calc_mean_Cai);
     myparams.set<int>("physical type",physicaltype_);
@@ -6329,7 +6336,7 @@ Teuchos::RCP<const Epetra_Vector> FLD::FluidImplicitTimeInt::ConvectiveVel()
 Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::CalcDivOp()
 {
   // set action in order to calculate the integrated divergence operator
-  ParameterList params;
+  Teuchos::ParameterList params;
   params.set<int>("action",FLD::calc_divop);
 
   // integrated divergence operator B in vector form
@@ -6424,7 +6431,7 @@ void FLD::FluidImplicitTimeInt::PredictTangVelConsistAcc()
   }
 
   // total time required for evaluation of Dirichlet conditions
-  ParameterList eleparams;
+  Teuchos::ParameterList eleparams;
   eleparams.set("total time",time_);
 
   // initialize

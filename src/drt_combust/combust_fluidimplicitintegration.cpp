@@ -45,6 +45,7 @@ Maintainer: Florian Henke
 #include "../drt_lib/drt_dofset_independent_pbc.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret_xfem.H"
+#include "../drt_lib/drt_condition.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/matlist.H"
@@ -205,7 +206,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // special option for two-phase flows
   // select enrichments for one or both fields or suppress enrichments completely, i.e., do usual FEM with intersected elements
   xparams_.set<int>("SELECTED_ENRICHMENT",DRT::INPUT::IntegralValue<INPAR::COMBUST::SelectedEnrichment>(params_->sublist("COMBUSTION FLUID"),"SELECTED_ENRICHMENT"));
-  
+
   physprob_.xfemfieldset_.clear();
   // declare physical fields of the problem (continuous fields and discontinuous XFEM fields)
   physprob_.xfemfieldset_.insert(XFEM::PHYSICS::Velx);
@@ -745,41 +746,51 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
     GenAlphaIntermediateValues();
   }
 
+  // -------------------------------------------------------------------
+  // create vectors for Krylov projection if necessary
+  // -------------------------------------------------------------------
+
   // sysmat might be singular (if we have a purely Dirichlet constrained
   // problem, the pressure mode is defined only up to a constant)
   // in this case, we need a basis vector for the nullspace/kernel
+
+  // get condition "KrylovSpaceProjection" from discretization
+  vector<DRT::Condition*> KSPcond;
+  discret_->GetCondition("KrylovSpaceProjection",KSPcond);
+  int numcond = KSPcond.size();
+  int numfluid = 0;
+
+  // check if for fluid Krylov projection is required
+  for(int icond = 0; icond < numcond; icond++)
   {
-    vector<DRT::Condition*> KSPcond;
-    discret_->GetCondition("KrylovSpaceProjection",KSPcond);
-    int numcond = KSPcond.size();
-
-    int numfluid = 0;
-
-    for(int icond = 0; icond < numcond; icond++)
+    const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
+    if (*name == "fluid")
     {
-      const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
-      if (*name == "fluid")
-        numfluid++;
+      numfluid++;
+      kspcond_ = KSPcond[icond];
     }
-
-    if (numfluid == 1)
-    {
-      project_ = true;
-      w_       = LINALG::CreateVector(*discret_->DofRowMap(),true);
-      c_       = LINALG::CreateVector(*discret_->DofRowMap(),true);
-
-      kspsplitter_ = Teuchos::rcp(new FLD::UTILS::KSPMapExtractor());
-      kspsplitter_->Setup(*discret_);
-    }
-    else if (numfluid == 0)
-    {
-      project_ = false;
-      w_       = Teuchos::null;
-      c_       = Teuchos::null;
-    }
-    else
-      dserror("Received more than one KrylovSpaceCondition for fluid field");
   }
+
+  // initialize variables for Krylov projection if necessary
+  w_ = Teuchos::null;
+  c_ = Teuchos::null;
+  if (numfluid == 1)
+  {
+    // set flag that triggers all computations for Krylov projection
+    project_ = true;
+    // compute w_ and c_ vectors - only done once here if not alefluid_
+    PrepareKrylovSpaceProjection();
+    if (myrank_ == 0)
+      cout << "\nSetup of KrylovSpaceProjection in fluid field\n" << endl;
+    // kspcond_ is set in previous for-loop
+  }
+  else if (numfluid == 0)
+  {
+    project_ = false;
+    kspcond_ = NULL;
+  }
+  else
+    dserror("Received more than one KrylovSpaceCondition for fluid field");
 
 }
 
@@ -1596,111 +1607,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       // Krylov projection for solver already required in convergence check
       if (project_)
       {
-        DRT::Condition* KSPcond=discret_->GetCondition("KrylovSpaceProjection");
-
-        // in this case, we want to project out some zero pressure modes
-        const string* definition = KSPcond->Get<string>("weight vector definition");
-
-        if(*definition == "pointvalues")
-        {
-          // zero w and c
-          w_->PutScalar(0.0);
-          c_->PutScalar(0.0);
-
-          // get pressure
-          const std::vector<double>* mode = KSPcond->Get<std::vector<double> >("mode");
-
-          // make sure the dat file specified a pressure mode
-          for(int rr=0;rr<numdim_;++rr)
-          {
-            if(abs((*mode)[rr])>1e-14)
-              dserror("expecting only an undetermined pressure");
-          }
-
-          int predof = numdim_;
-
-          /* export to vector to normalize against
-        //
-        // Note that in the case of definition pointvalue based,
-        // the average pressure will vanish in a pointwise sense
-        //
-        //    +---+
-        //     \
-        //      +   p_i  = 0
-        //     /
-        //    +---+
-           */
-
-          // write the value specified in the .dat-file to every std. pressure dof
-          // (regardless of whether this node also uses enriched pressure)
-          dofmanagerForOutput_->overwritePhysicalField(w_, state_.nodalDofDistributionMap_, XFEM::PHYSICS::Pres,
-              XFEM::Enrichment::typeStandard, (*mode)[predof], false);
-
-          // select only a certain volume to be affected by this projection
-          Teuchos::RCP<Epetra_Vector> tmpkspw = kspsplitter_->ExtractKSPCondVector(*w_);
-          w_->PutScalar(0.0);
-          LINALG::Export(*tmpkspw,*w_);
-
-          // c_ = w_ except we use 1.0 instead of the .dat-file provided value
-          dofmanagerForOutput_->overwritePhysicalField(c_, state_.nodalDofDistributionMap_, XFEM::PHYSICS::Pres,
-              XFEM::Enrichment::typeStandard, 1.0, false);
-
-          Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->ExtractKSPCondVector(*c_);
-          c_->PutScalar(0.0);
-          LINALG::Export(*tmpkspc,*c_);
-        }
-        else if(*definition == "integration")
-        {
-          // zero w and c
-          w_->PutScalar(0.0);
-          c_->PutScalar(0.0);
-
-          //---------------------------------------------------------
-          // fill w_
-          //---------------------------------------------------------
-          Teuchos::ParameterList eleparams;
-          // set action for elements
-          eleparams.set("action","integrate_Shapefunction");
-
-          /* evaluate KrylovSpaceProjection condition in order to get
-        // integrated nodal basis functions w_
-        // Note that in the case of definition integration based,
-        // the average pressure will vanish in an integral sense
-        //
-        //                    /              /                      /
-        //   /    \          |              |  /          \        |  /    \
-        //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
-        //   \    /          |              |  \          /        |  \    /
-        //                   /              /                      /
-           */
-
-          // call loop over elements
-          discret_->ClearState();
-          discret_->EvaluateCondition(eleparams, w_, "KrylovSpaceProjection");
-          discret_->ClearState();
-          //----------------------------------------------------------
-          // fill c_
-          //----------------------------------------------------------
-          // same as for pointwise
-          dofmanagerForOutput_->overwritePhysicalField(c_, state_.nodalDofDistributionMap_, XFEM::PHYSICS::Pres,
-              XFEM::Enrichment::typeStandard, 1.0, false);
-
-          Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->ExtractKSPCondVector(*c_);
-          c_->PutScalar(0.0);
-          LINALG::Export(*tmpkspc,*c_);
-        }
-        else
-        {
-          dserror("unknown definition of weight vector w for restriction of Krylov space");
-        }
-
-        double cTw;
-        c_->Dot(*w_,&cTw);
-
-        double cTres;
-        c_->Dot(*residual_,&cTres);
-
-        residual_->Update(-cTres/cTw,*w_,1.0);
+        PrepareKrylovSpaceProjection();
       }
 
       double incvelnorm_L2 = 0.0;
@@ -2139,6 +2046,129 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   zeros_ = Teuchos::null;
   sysmat_ = Teuchos::null;
 }
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*----------------------------------------------------------------------*
+ | computes vectors w_ and c_ for Krylov projection           nis Feb13 |
+ *----------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::CombustFluidImplicitTimeInt::PrepareKrylovSpaceProjection()
+{
+  // confirm that mode flags are number of nodal dofs
+  const int nummodes = kspcond_->GetInt("NUMMODES");
+  if (nummodes!=(numdim_+1))
+    dserror("Expecting numdim_+1 modes in Krylov projection definition. Check dat-file!");
+
+  // get vector of mode flags as given in dat-file
+  const std::vector<int>* modeflags = kspcond_->Get<std::vector<int> >("ONOFF");
+
+  // confirm that only the pressure mode is selected for Krylov projection in dat-file
+  for(int rr=0;rr<numdim_;++rr)
+  {
+    if(((*modeflags)[rr])!=0)
+    {
+      dserror("Expecting only an undetermined pressure. Check dat-file!");
+    }
+  }
+  if(((*modeflags)[numdim_])!=1)
+    dserror("Expecting an undetermined pressure. Check dat-file!");
+
+  // check if vectors w_ and c_ already exist as objects
+  if (w_==Teuchos::null and c_==Teuchos::null)
+  {
+    // allocate storage for vectors
+    w_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
+    c_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
+
+    // allocate kspsplitter_
+    kspsplitter_ = Teuchos::rcp(new FLD::UTILS::KSPMapExtractor());
+    // create map of nodes involved in Krylov projection
+    kspsplitter_->Setup(*discret_);
+  }
+  else
+  {
+    // zero w and c in case they already existed (in case of ALE)
+    w_->PutScalar(0.0);
+    c_->PutScalar(0.0);
+  }
+
+  // get from dat-file definition how weights are to be computed
+  const string* definition = kspcond_->Get<string>("weight vector definition");
+
+  // extract vector of pressure-dofs
+  Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_->ExtractCondVector(*w_);
+
+  // compute w_ as defined in dat-file
+  if(*definition == "pointvalues")
+  {
+    // put 1.0 in pressure mode
+    presmode->PutScalar(1.0);
+
+    /*
+    // export to vector to normalize against
+    // Note that in the case of definition pointvalue based,
+    // the average pressure will vanish in a pointwise sense
+    //
+    //    +---+
+    //     \
+    //      +   p_i  = 0
+    //     /
+    //    +---+
+    */
+
+    // export pressure values to w_
+    Teuchos::RCP<Epetra_Vector> tmpw = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+    LINALG::Export(*presmode,*tmpw);
+    Teuchos::RCP<Epetra_Vector> tmpkspw = kspsplitter_->ExtractKSPCondVector(*tmpw);
+    LINALG::Export(*tmpkspw,*w_);
+  }
+  else if(*definition == "integration")
+  {
+    // create parameter list for condition evaluate and ...
+    Teuchos::ParameterList mode_params;
+    // ... set action for elements to integration of shape functions
+    mode_params.set("action","integrate_Shapefunction");
+
+    /*
+    // evaluate KrylovSpaceProjection condition in order to get
+    // integrated nodal basis functions w_
+    // Note that in the case of definition integration based,
+    // the average pressure will vanish in an integral sense
+    //
+    //                    /              /                      /
+    //   /    \          |              |  /          \        |  /    \
+    //  | w_*p | = p_i * | N_i(x) dx =  | | N_i(x)*p_i | dx =  | | p(x) | dx = 0
+    //   \    /          |              |  \          /        |  \    /
+    //                   /              /                      /
+    */
+
+    // compute w_ by evaluating the integrals of all pressure basis functions
+    discret_->EvaluateCondition
+      (mode_params        ,
+       Teuchos::null      ,
+       Teuchos::null      ,
+       w_                 ,
+       Teuchos::null      ,
+       Teuchos::null      ,
+       "KrylovSpaceProjection");
+  }
+  else
+  {
+    dserror("unknown definition of weight vector w for restriction of Krylov space");
+  }
+
+  // construct c_ by setting all pressure values to 1.0 and export to c_
+  presmode->PutScalar(1.0);
+  Teuchos::RCP<Epetra_Vector> tmpc = LINALG::CreateVector(*(discret_->DofRowMap()),true);
+  LINALG::Export(*presmode,*tmpc);
+  Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->ExtractKSPCondVector(*tmpc);
+  LINALG::Export(*tmpkspc,*c_);
+
+} // CombustFluidImplicitTimeInt::PrepareKrylovSpaceProjection
 
 
 /*------------------------------------------------------------------------------------------------*

@@ -2299,51 +2299,51 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   std::vector<Teuchos::RCP<ConditionComponent> > linescatracoupcomp;
 
-     linescatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPID")));
-     linescatracoupcomp.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
-     linescatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("FIELDNUM")));
-     linescatracoupcomp.push_back(Teuchos::rcp(new IntConditionComponent("field number")));
-     linescatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("PERMCOEF")));
-     linescatracoupcomp.push_back(Teuchos::rcp(new RealConditionComponent("permeability coefficient")));
+  linescatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPID")));
+  linescatracoupcomp.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+  linescatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("FIELDNUM")));
+  linescatracoupcomp.push_back(Teuchos::rcp(new IntConditionComponent("field number")));
+  linescatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("PERMCOEF")));
+  linescatracoupcomp.push_back(Teuchos::rcp(new RealConditionComponent("permeability coefficient")));
 
-     Teuchos::RCP<ConditionDefinition> linescatracoup =
-       Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA COUPLING LINE CONDITIONS",
-                                            "ScaTraCoupling",
-                                            "ScaTra Coupling",
-                                            DRT::Condition::ScaTraCoupling,
-                                            true,
-                                            DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> linescatracoup =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA COUPLING LINE CONDITIONS",
+                                         "ScaTraCoupling",
+                                         "ScaTra Coupling",
+                                         DRT::Condition::ScaTraCoupling,
+                                         true,
+                                         DRT::Condition::Line));
 
-     for (unsigned i=0; i<linescatracoupcomp.size(); ++i)
-     {
-       linescatracoup->AddComponent(linescatracoupcomp[i]);
-     }
+  for (unsigned i=0; i<linescatracoupcomp.size(); ++i)
+  {
+    linescatracoup->AddComponent(linescatracoupcomp[i]);
+  }
 
-     condlist.push_back(linescatracoup);
+  condlist.push_back(linescatracoup);
 
-     std::vector<Teuchos::RCP<ConditionComponent> > pointscatracoupcomp;
+  std::vector<Teuchos::RCP<ConditionComponent> > pointscatracoupcomp;
 
-     pointscatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPID")));
-     pointscatracoupcomp.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
-     pointscatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("FIELDNUM")));
-     pointscatracoupcomp.push_back(Teuchos::rcp(new IntConditionComponent("field number")));
-     pointscatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("PERMCOEF")));
-     pointscatracoupcomp.push_back(Teuchos::rcp(new RealConditionComponent("permeability coefficient")));
+  pointscatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("COUPID")));
+  pointscatracoupcomp.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+  pointscatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("FIELDNUM")));
+  pointscatracoupcomp.push_back(Teuchos::rcp(new IntConditionComponent("field number")));
+  pointscatracoupcomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("PERMCOEF")));
+  pointscatracoupcomp.push_back(Teuchos::rcp(new RealConditionComponent("permeability coefficient")));
 
-     Teuchos::RCP<ConditionDefinition> pointscatracoup =
-       Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA COUPLING POINT CONDITIONS",
-                                            "ScaTraCoupling",
-                                            "ScaTra Coupling",
-                                            DRT::Condition::ScaTraCoupling,
-                                            true,
-                                            DRT::Condition::Point));
+  Teuchos::RCP<ConditionDefinition> pointscatracoup =
+    Teuchos::rcp(new ConditionDefinition("DESIGN SCATRA COUPLING POINT CONDITIONS",
+                                         "ScaTraCoupling",
+                                         "ScaTra Coupling",
+                                         DRT::Condition::ScaTraCoupling,
+                                         true,
+                                         DRT::Condition::Point));
 
-     for (unsigned i=0; i<pointscatracoupcomp.size(); ++i)
-     {
-       pointscatracoup->AddComponent(pointscatracoupcomp[i]);
-     }
+  for (unsigned i=0; i<pointscatracoupcomp.size(); ++i)
+  {
+    pointscatracoup->AddComponent(pointscatracoupcomp[i]);
+  }
 
-     condlist.push_back(pointscatracoup);
+  condlist.push_back(pointscatracoup);
 
   /*--------------------------------------------------------------------*/
   // flow rate through line
@@ -2405,57 +2405,92 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   }
   condlist.push_back(surfimpulsrate);
 
-  /*--------------------------------------------------------------------*/
-  // specify a (rigid body) mode orthogonal to the Krylov space
-  //
-  // this option could be used for purely Dirichlet constrained fluid
-  // problems or insufficiently supported static structural problems
-  // (i.e. for the linear iterative solution of singular matrix-systems
-  //  using reduced solution spaces)
-
-  std::vector<Teuchos::RCP<ConditionComponent> > rigidbodymodecomponents;
-
-  rigidbodymodecomponents.push_back(
-    Teuchos::rcp(
-      new StringConditionComponent(
-        "discretization",
-        "fluid",
-        Teuchos::tuple<std::string>("fluid","scatra"),
-        Teuchos::tuple<std::string>("fluid","scatra"))));
-
-  rigidbodymodecomponents.push_back(Teuchos::rcp(new RealVectorConditionComponent("mode",6)));
-
-  rigidbodymodecomponents.push_back(
-    Teuchos::rcp(
-      new StringConditionComponent(
-        "weight vector definition",
-        "integration",
-        Teuchos::tuple<std::string>("integration","pointvalues"),
-        Teuchos::tuple<std::string>("integration","pointvalues"))));
-
-  Teuchos::RCP<ConditionDefinition> surfrigidbodymode =
-    Teuchos::rcp(new ConditionDefinition("DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION",
-                                         "KrylovSpaceProjection",
-                                         "Surface mode for Krylov space projection",
-                                         DRT::Condition::SurfaceModeKrylovProjection,
-                                         true,
-                                         DRT::Condition::Surface));
-
-  Teuchos::RCP<ConditionDefinition> volrigidbodymode =
-    Teuchos::rcp(new ConditionDefinition("DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION",
-                                         "KrylovSpaceProjection",
-                                         "Volume mode for Krylov space projection",
-                                         DRT::Condition::VolumeModeKrylovProjection,
-                                         true,
-                                         DRT::Condition::Volume));
-
-  for (unsigned i=0; i<rigidbodymodecomponents.size(); ++i)
   {
-    surfrigidbodymode->AddComponent(rigidbodymodecomponents[i]);
-    volrigidbodymode ->AddComponent(rigidbodymodecomponents[i]);
+    /*--------------------------------------------------------------------*/
+    // Krylov Space Projection:
+    // ========================
+    // specify an unsupported (i.e. rigid body or zero energy) mode orthogonal
+    // that is not excited by the body force
+    //
+    // examples are:
+    // fluid:  pure Dirichlet (i.e. velocity) boundary conditions - pressure
+    //         level is undetermined
+    // scatra: pure Neumann boundary condition - level of scalar quantity is
+    //         undetermined
+    // solid:  insufficient support of translational or rotational rigid body
+    //         modes
+    //
+    // for fluid and scatra, NUMDOF needs to be the number of dofs per node. the
+    // following ONOFF values trigger the fixation of the quantity level (for
+    // fluid, only pressure is allowed).
+    // for solid NUMDOF is the number of potential rigid body modes (e.g. 6 for
+    // 3-D solid, 3 for 2-D solid), where ONOFF triggers first the
+    // translational followed by the rotational modes, each in/around x to z
+
+
+    std::vector<Teuchos::RCP<ConditionComponent> > rigidbodymodecomponents;
+
+    rigidbodymodecomponents.push_back(
+      Teuchos::rcp(
+        new StringConditionComponent(
+          "discretization",
+          "fluid",
+          Teuchos::tuple<std::string>("fluid","scatra","solid"),
+          Teuchos::tuple<std::string>("fluid","scatra","solid"))));
+
+    // input: trigger as int-vector using an IntRealBundle
+    // definition separator for int vectors
+    std::vector<Teuchos::RCP<SeparatorConditionComponent> > intsepveccomp;
+    intsepveccomp.push_back(Teuchos::rcp(new SeparatorConditionComponent("ONOFF")));
+    // definition int vectors
+    std::vector<Teuchos::RCP<IntVectorConditionComponent> > intveccomp;
+    intveccomp.push_back(Teuchos::rcp(new IntVectorConditionComponent("ONOFF",1)));
+    // definition separator for real vectors: length of the real vector is zero -> nothing is read
+    std::vector<Teuchos::RCP<SeparatorConditionComponent> > realsepveccomp;
+    // definition real vectors: length of the real vector is zero -> nothing is read
+    std::vector<Teuchos::RCP<RealVectorConditionComponent> > realveccomp;
+
+    rigidbodymodecomponents.push_back(Teuchos::rcp(new SeparatorConditionComponent("NUMMODES")));
+    rigidbodymodecomponents.push_back(Teuchos::rcp(new IntRealBundle(
+        "intreal bundle",
+        Teuchos::rcp(new IntConditionComponent("NUMMODES")),
+        intsepveccomp,
+        intveccomp,
+        realsepveccomp,
+        realveccomp)));
+
+    rigidbodymodecomponents.push_back(
+      Teuchos::rcp(
+        new StringConditionComponent(
+          "weight vector definition",
+          "integration",
+          Teuchos::tuple<std::string>("integration","pointvalues"),
+          Teuchos::tuple<std::string>("integration","pointvalues"))));
+
+    Teuchos::RCP<ConditionDefinition> surfrigidbodymode =
+      Teuchos::rcp(new ConditionDefinition("DESIGN SURF MODE FOR KRYLOV SPACE PROJECTION",
+                                           "KrylovSpaceProjection",
+                                           "Surface mode for Krylov space projection",
+                                           DRT::Condition::SurfaceModeKrylovProjection,
+                                           true,
+                                           DRT::Condition::Surface));
+
+    Teuchos::RCP<ConditionDefinition> volrigidbodymode =
+      Teuchos::rcp(new ConditionDefinition("DESIGN VOL MODE FOR KRYLOV SPACE PROJECTION",
+                                           "KrylovSpaceProjection",
+                                           "Volume mode for Krylov space projection",
+                                           DRT::Condition::VolumeModeKrylovProjection,
+                                           true,
+                                           DRT::Condition::Volume));
+
+    for (unsigned i=0; i<rigidbodymodecomponents.size(); ++i)
+    {
+      surfrigidbodymode->AddComponent(rigidbodymodecomponents[i]);
+      volrigidbodymode ->AddComponent(rigidbodymodecomponents[i]);
+    }
+    condlist.push_back(surfrigidbodymode);
+    condlist.push_back(volrigidbodymode);
   }
-  condlist.push_back(surfrigidbodymode);
-  condlist.push_back(volrigidbodymode);
 
   /*--------------------------------------------------------------------*/
   // inverse analysis fitted surface
@@ -2616,7 +2651,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
 
   condlist.push_back(art_scatra_bc);
 
-  
+
   /*--------------------------------------------------------------------*/
   // 3-D/reduced-D coupling boundary condition
   Teuchos::RCP<ConditionDefinition> art_red_to_3d_bc =
