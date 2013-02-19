@@ -336,9 +336,10 @@ void FS3I::UTILS::AeroCouplingUtils::ProjectForceOnStruct
   std::map<int,LINALG::Matrix<3,1> > currentpositions = CurrentInterfacePos(interf, redudisp);
 
   //projection of the aero forces onto the closest element of each structural interface
-  std::map<int, LINALG::Matrix<3,1> >::iterator forcesiter;
-  for(forcesiter = aerocoords.begin(); forcesiter != aerocoords.end(); ++forcesiter)
+  std::map<int, LINALG::Matrix<4,1> >::iterator forcesiter;
+  for(forcesiter = aeroforces.begin(); forcesiter != aeroforces.end(); ++forcesiter)
   {
+    LINALG::Matrix<3,1> forcecoords = aerocoords[forcesiter->first];
     //init of 3D search tree
     Teuchos::RCP<GEO::SearchTree> searchTree = Teuchos::rcp(new GEO::SearchTree(8));
     const LINALG::Matrix<3,2> rootBox = GEO::getXAABBofEles(structreduelements_[interf], currentpositions);
@@ -346,13 +347,13 @@ void FS3I::UTILS::AeroCouplingUtils::ProjectForceOnStruct
 
     //search for near elements to the aero coords
     std::map<int,std::set<int> >  closeeles =
-        searchTree->searchElementsInRadius(*istructdis_[interf],currentpositions,forcesiter->second,maxmindist_,0);
+        searchTree->searchElementsInRadius(*istructdis_[interf],currentpositions,forcecoords,maxmindist_,0);
 
     //if no close elements could be found, try with a much larger radius and print a warning
     if (closeeles.empty())
     {
       cout<<"WARNING: no elements found in radius r="<<maxmindist_<<". Will try once with a bigger radius!"<<endl;
-      closeeles = searchTree->searchElementsInRadius(*istructdis_[interf],currentpositions,forcesiter->second,100.0*maxmindist_,0);
+      closeeles = searchTree->searchElementsInRadius(*istructdis_[interf],currentpositions,forcecoords,100.0*maxmindist_,0);
       maxmindist_ *= 10.0;
 
       // if still no element is found, complain about it!
@@ -363,12 +364,12 @@ void FS3I::UTILS::AeroCouplingUtils::ProjectForceOnStruct
     //search for the closest object, more exactly it's coordinates and the corresponding surface id
     LINALG::Matrix<3,1> minDistCoords;
     int eleid = GEO::nearest3DObjectInNode(istructdis_[interf], structreduelements_[interf], currentpositions,
-        closeeles, forcesiter->second, minDistCoords);
+        closeeles, forcecoords, minDistCoords);
     if(eleid == -1)
       dserror("Surface id couldn't be found. Weird! Hence, a distribution of the aero force is not performed!");
 
     //corresponding forces (from the aero code) to the coords that are about to be distributed
-    LINALG::Matrix<4,1> force = aeroforces[forcesiter->first];
+    LINALG::Matrix<4,1> force = forcesiter->second;
 
     //distribution of forces takes place in here
     DistributeForceToNodes(eleid, interf, currentpositions, minDistCoords, force, iforce, ithermoload);
@@ -651,7 +652,7 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
     interface.Initialize();
     interface.Evaluate();
 
-    // restrict mortar treatment to actual meshtying zone (drop untied slave nodes)
+    // restrict mortar treatment to actual meshtying zone (drop untied slave nodes in the additional boundary layer)
     {
       // Step 1: detect tied slave nodes on all interfaces
       int globalfounduntied = 0; // Note: MPI_COMM_SELF
@@ -767,13 +768,27 @@ void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStructDual
   Teuchos::RCP<Epetra_Vector> ithermoload
 )
 {
-  Teuchos::RCP<Epetra_Vector> slavevalues = LINALG::CreateVector(DinvM_[interf]->RowMap(),false);
+
+  Teuchos::RCP<Epetra_Vector> slavevalues = LINALG::CreateVector(DinvM_[interf]->RowMap(),true);
+  // version with fluxes for the additional boundary layer (which is not conservative)
+  /*
   if(slavevalues->MyLength() > (int)aeroforces.size())
     dserror("size of slavevalues (%i) is larger than incoming data (%i)", slavevalues->MyLength(), (aeroforces.size()));
 
-  // so far only thermo fluxes need to be transferred
+  // so far only thermo fluxes need to be transferred (4th entry in aeroforces)
   for(int i=0; i<slavevalues->MyLength(); i++)
     (*slavevalues)[i] = aeroforces[serialslrownoderestr_[interf]->GID(i)](3);
+  */
+
+  // so far only thermo fluxes need to be transferred (4th entry in aeroforces)
+  // NOTE: There is no dofset available for artificially created fluid nodes
+  // Assumption: Meshtying restriction is only needed for additional boundary layer
+  // Hence: Here in serial (LID=GID), values from aeroforces can directly be inserted into slavevalues vector
+  map<int, LINALG::Matrix<4,1> >::const_iterator iter;
+  for(iter=aeroforces.begin(); iter!=aeroforces.end(); ++iter)
+  {
+    (*slavevalues)[iter->first] = iter->second(3);
+  }
 
   // currently the interface only lives within MPI_COMM_SELF --> not parallel
   Teuchos::RCP<Epetra_Vector> tmpmastervalues = FluidToStruct(interf, slavevalues);
@@ -800,13 +815,25 @@ void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStructStd
   Teuchos::RCP<Epetra_Vector> ithermoload
 )
 {
-  Teuchos::RCP<Epetra_Vector> slavevalues = LINALG::CreateVector(D_[interf]->RowMap(),false);
+  Teuchos::RCP<Epetra_Vector> slavevalues = LINALG::CreateVector(D_[interf]->RowMap(),true);
+  /*
   if(slavevalues->MyLength() > (int)aeroforces.size())
     dserror("size of slavevalues (%i) is larger than incoming data (%i)", slavevalues->MyLength(), (aeroforces.size()));
 
   // so far only thermo fluxes need to be transferred (4th entry in aeroforces)
   for(int i=0; i<slavevalues->MyLength(); i++)
     (*slavevalues)[i] = aeroforces[serialslrownoderestr_[interf]->GID(i)](3);
+  */
+
+  // so far only thermo fluxes need to be transferred (4th entry in aeroforces)
+  // NOTE: There is no dofset available for artificially created fluid nodes
+  // Assumption: Meshtying restriction is only needed for additional boundary layer
+  // Hence: Here in serial (LID=GID), values from aeroforces can directly be inserted into slavevalues vector
+  map<int, LINALG::Matrix<4,1> >::const_iterator iter;
+  for(iter=aeroforces.begin(); iter!=aeroforces.end(); ++iter)
+  {
+    (*slavevalues)[iter->first] = iter->second(3);
+  }
 
   const int linsolvernumber = 9;
   // get solver parameter list of linear solver

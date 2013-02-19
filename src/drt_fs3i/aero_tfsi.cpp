@@ -241,6 +241,7 @@ void FS3I::AeroTFSI::Timeloop()
       SplitData(aerodata, aerocoords, aeroforces, 0);
 
       // receive data from INCA for boundary layer around physical domain
+      // only geometry is important, forces are dropped
       if(tfsi_coupling_ == INPAR::TSI::mortar_mortar_std or
           tfsi_coupling_ == INPAR::TSI::mortar_mortar_dual or
           tfsi_coupling_ == INPAR::TSI::proj_mortar_std)
@@ -602,16 +603,20 @@ void FS3I::AeroTFSI::SplitData(
     {
       tmp1(in)=aerodata[in*lengthquarter + out - startingvalue];
     }
-    // note: currently heat fluxes are transferred but forces not yet --> zeros
-    for(size_t in=0; in<3; in++)
-    {
-      tmp2(in)=0.0;
-    }
-    tmp2(3)=aerodata[3*lengthquarter + out - startingvalue];
-
     aerocoords[out] = tmp1;
-    aeroforces[out] = tmp2;
 
+    // only geometry is important in case of the additional boundary layer --> no forces
+    if(startingvalue == 0)
+    {
+      // note: currently heat fluxes are transferred but forces not yet --> zeros
+      for(size_t in=0; in<3; in++)
+      {
+        tmp2(in)=0.0;
+      }
+      tmp2(3)=aerodata[3*lengthquarter + out - startingvalue];
+
+      aeroforces[out] = tmp2;
+    }
   }
 
   return;
