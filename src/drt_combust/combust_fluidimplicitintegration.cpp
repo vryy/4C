@@ -1898,7 +1898,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
                    << std::setw(10) << std::setprecision(3) << std::scientific << incprenorm_L2/prenorm_L2 << "   | (ts="
                    << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve << ",te_min="
                    << std::setw(10) << std::setprecision(3) << std::scientific << min << ",te_max="
-                   << std::setw(10) << std::setprecision(3) << std::scientific << max << ")\n" << IO::endl;
+                   << std::setw(10) << std::setprecision(3) << std::scientific << max << ")" << IO::endl;
         }
       }
     }
