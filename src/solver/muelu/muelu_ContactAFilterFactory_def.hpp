@@ -116,7 +116,8 @@ namespace MueLu {
         bool isBlock1 = DofMap1->isNodeGlobalElement(grid);
         bool isBlock2 = DofMap2->isNodeGlobalElement(grid);
 
-        TEUCHOS_TEST_FOR_EXCEPTION(isBlock1 && isBlock2 == true, Exceptions::RuntimeError, "MueLu::ContactAFilterFactory::Build: row is in subblock 1 and subblock 2? Error.");
+	// this can happen due to the stupid permutation strategy which mixes up slave and master dofs or interface and inner dofs
+        //TEUCHOS_TEST_FOR_EXCEPTION(isBlock1 && isBlock2 == true, Exceptions::RuntimeError, "MueLu::ContactAFilterFactory::Build: row is in subblock 1 and subblock 2? Error.");
 
         size_t nnz = Ain->getNumEntriesInLocalRow(row);
 
@@ -141,6 +142,7 @@ namespace MueLu {
             //   1: indices[i] is in DofMap1
             //   2: indices[i] is in DofMap2
             bool bCopy = false;
+	    if(isBlock1 == true  && isBlock2 == true)  isBlock1 = false; // avoid mixup and overlapping aggregates
             if(isBlock1 == false && isBlock2 == false) bCopy = true; // row is neither in block 1 or block 2 -> copy
             if(isBlock1 == true  && colBlockId == 1)   bCopy = true; // row is block 1 and column is block 1 -> copy
             if(isBlock1 == true  && colBlockId ==-1)   bCopy = true; // row is block 1 and column is block -1-> copy
