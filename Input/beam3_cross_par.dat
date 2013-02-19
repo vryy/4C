@@ -59,7 +59,7 @@ ITERNORM               L2
 THETA        1 //header_01 end
 ----------------------------------------------CONTACT DYNAMIC
 LINEAR_SOLVER       2
-APPLICATION         BeamContact
+APPLICATION         none
 STRATEGY            Augmented //Penalty
 PENALTYPARAM        25
 UZAWACONSTRTOL      0.25
@@ -75,7 +75,6 @@ BEAMS_BOXESINOCT    7
 //==== GENERAL STATMECH SIMULATION FLAGS ====
 THERMALBATH         uniform
 FRICTION_MODEL      anisotropicconsistent // isotropicconsistent isotropiclumped
-BEAMCONTACT         No                     // (de)activate beam contact
 DBCTYPE             std                    // none shearfixed sheartrans pinnodes,  choose DBC type
 DYN_CROSSLINKERS    Yes                   // (de)activate crosslinking
 HELICALBINDINGSTRUCT No                   // (de)activate helical binding spot structure
@@ -110,7 +109,7 @@ K_ON_end            90                    // chemical dissociation-rate after kt
 K_ON_SELF           0                     // chemical association-rate in case of linker with both ends on the same filament
 K_OFF_start         3                     // in analogy to k_on
 K_OFF_end           3                     // in analogy to k_on
-OSCILLDIR           0                     // direction of oscillation after starttimeact_ (x==0, y==1, z==2)
+DBCDISPDIR          1                     // direction of oscillation after starttimeact_ (x==0, y==1, z==2)
 CURVENUMBER         1                     // applied time curve after starttimeact_
 //============== FILAMENT MODEL =============
 NUM_EVAL_ELEMENTS   200                  // number of (initial) beam elements
@@ -965,8 +964,8 @@ MAT       2 MAT_Struct_StVenantKirchhoff  YOUNG 2.56e+06 NUE 0.5 DENS 1.384e-09 
 ------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC sin(2*pi*5*(t-10000)) t1 10000 t2 10000
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 51 QUANTITY dispx VALUE -1.643928000124e-03 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 51 QUANTITY dispx VALUE 1.48919201502896773e-03 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 51 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 51 QUANTITY dispz VALUE -4.078799611284e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 51 QUANTITY dispz VALUE 1.36348068847531090e-01 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END
