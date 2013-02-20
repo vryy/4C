@@ -2078,7 +2078,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareKrylovSpaceProjection()
     dserror("Expecting an undetermined pressure. Check dat-file!");
 
   // check if vectors w_ and c_ already exist as objects
-  if (w_==Teuchos::null and c_==Teuchos::null)
+  if (w_==Teuchos::null or c_==Teuchos::null)
   {
     // allocate storage for vectors
     w_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));

@@ -679,6 +679,9 @@ protected:
   Teuchos::RCP<Epetra_Vector>   c_;
   //! pointer to Krylov projection condition of scatra field
   DRT::Condition* kspcond_;
+  /// Krylov space projection map extractor
+  Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
+
 
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
   bool                          alefluid_;
@@ -898,9 +901,6 @@ protected:
 
   /// row dof map extractor
   const UTILS::MapExtractor* surfacesplitter_;
-
-  /// Krylov space projection map extractor
-  FLD::UTILS::KSPMapExtractor kspsplitter_;
 
   /// connection between master and slave nodes on this proc (based on row map!!!!)
   Teuchos::RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave_;

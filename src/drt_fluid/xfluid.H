@@ -345,8 +345,8 @@ namespace FLD
     /// solve linearised fluid
     void LinearSolve();
 
-    /// perform the KrylovSpaceProjection
-    void KrylovSpaceProjection();
+    /// create vectors for KrylovSpaceProjection
+    void PrepareKrylovSpaceProjection();
 
     /// update interface fields
     void UpdateInterfaceFields();
@@ -672,6 +672,9 @@ namespace FLD
     Teuchos::RCP<Epetra_Vector>   w_;
     //! basis vector for nullspace (vector of ones in the pressure component)
     Teuchos::RCP<Epetra_Vector>   c_;
+    /// pointer to Krylov projection condition of scatra field
+    DRT::Condition* kspcond_;
+
     //! do we move the fluid mesh and calculate the fluid on this moving mesh?
     bool                          alefluid_;
     //! do we have a turblence model?

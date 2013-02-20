@@ -237,7 +237,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   }
 
   // -------------------------------------------------------------------
-  // create vectors for Krylov projection if necessary
+  // setup Krylov space projection if necessary
   // -------------------------------------------------------------------
 
   // sysmat might be singular (if we have a purely Dirichlet constrained
@@ -272,7 +272,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     PrepareKrylovSpaceProjection();
     if (myrank_ == 0)
       cout << "\nSetup of KrylovSpaceProjection in fluid field\n" << endl;
-    // kspcond_ is set in previous for-loop
+    // kspcond_ was already set in previous for-loop
   }
   else if (numfluid == 0)
   {
@@ -2085,13 +2085,14 @@ void FLD::FluidImplicitTimeInt::PrepareKrylovSpaceProjection()
     dserror("Expecting an undetermined pressure. Check dat-file!");
 
   // check if vectors w_ and c_ already exist as objects
-  if (w_==Teuchos::null and c_==Teuchos::null)
+  if (w_==Teuchos::null or c_==Teuchos::null)
   {
     // allocate storage for vectors
     w_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
     c_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
     // create map of nodes involved in Krylov projection
-    kspsplitter_.Setup(*discret_);
+    kspsplitter_ = Teuchos::rcp(new FLD::UTILS::KSPMapExtractor());
+    kspsplitter_->Setup(*discret_);
   }
   else
   {
@@ -2127,7 +2128,7 @@ void FLD::FluidImplicitTimeInt::PrepareKrylovSpaceProjection()
     // export pressure values to w_
     Teuchos::RCP<Epetra_Vector> tmpw = LINALG::CreateVector(*(discret_->DofRowMap()),true);
     LINALG::Export(*presmode,*tmpw);
-    Teuchos::RCP<Epetra_Vector> tmpkspw = kspsplitter_.ExtractKSPCondVector(*tmpw);
+    Teuchos::RCP<Epetra_Vector> tmpkspw = kspsplitter_->ExtractKSPCondVector(*tmpw);
     LINALG::Export(*tmpkspw,*w_);
   }
   else if(*definition == "integration")
@@ -2174,7 +2175,7 @@ void FLD::FluidImplicitTimeInt::PrepareKrylovSpaceProjection()
   presmode->PutScalar(1.0);
   Teuchos::RCP<Epetra_Vector> tmpc = LINALG::CreateVector(*(discret_->DofRowMap()),true);
   LINALG::Export(*presmode,*tmpc);
-  Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_.ExtractKSPCondVector(*tmpc);
+  Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->ExtractKSPCondVector(*tmpc);
   LINALG::Export(*tmpkspc,*c_);
 
   // in case of meshtying...

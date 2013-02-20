@@ -2037,7 +2037,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
   }
 
   // check if vectors w_ and c_ already exist as objects
-  if (w_==Teuchos::null and c_==Teuchos::null)
+  if (w_==Teuchos::null or c_==Teuchos::null)
   {
     // allocate storage for vectors
     w_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),activemodes,true));
