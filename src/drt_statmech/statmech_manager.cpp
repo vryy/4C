@@ -422,11 +422,11 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
     }
   }
 
-  // increase the vector position if time values are equal
-  double tol = 1e-10;
-  for(int i=0; i<(int)actiontime_->size()-1; i++)
-    if(fabs(actiontime_->at(i)-actiontime_->at(i+1))<tol)
-      timeintervalstep_ = i+1;
+//  // increase the vector position if time values are equal
+//  double tol = 1e-10;
+//  for(int i=0; i<(int)actiontime_->size()-1; i++)
+//    if(fabs(actiontime_->at(i)-actiontime_->at(i+1))<tol)
+//      timeintervalstep_ = i+1;
 
   // set dbctimeindex_ (position in actiontime_ where DBCs start being applied
   dbctimeindex_ = statmechparams_.get<int>("DBCTIMEINDEX", -1);
@@ -595,20 +595,23 @@ void STATMECH::StatMechManager::UpdateTimeAndStepSize(double& dt,
                                                       double& timeconverged,
                                                       bool    initialset)
 {
+  double eps = 1.0e-9;
   if(initialset)
   {
     Teuchos::ParameterList sdynparams = DRT::Problem::Instance()->StructuralDynamicParams();
     double maxtime = sdynparams.get<double>("MAXTIME",-1.0);
     timeintervalstep_ = -1;
     for(int i=0; i<(int)actiontime_->size(); i++)
-      if(timeconverged>=actiontime_->at(i))
+    {
+      if(timeconverged>=actiontime_->at(i) || fabs(timeconverged-actiontime_->at(i))<eps)
         timeintervalstep_++;
       else
       {
         if(actiontime_->at(i)==maxtime)
-          timeintervalstep_ = 0;
+          timeintervalstep_ = i;
         break;
       }
+    }
     dt = timestepsizes_->at(timeintervalstep_);
     // "++" needed so that after initialization, no additional update occurs
     timeintervalstep_++;
@@ -617,17 +620,21 @@ void STATMECH::StatMechManager::UpdateTimeAndStepSize(double& dt,
   {
     if(timeintervalstep_<(int)timestepsizes_->size())
     {
-      
-      // update time step
-      double dtnew = timestepsizes_->at(timeintervalstep_);
-      // update step size
       double nexttimethreshold = actiontime_->at(timeintervalstep_);
-      double eps = 1.0e-9;
-      if((timeconverged>=nexttimethreshold || fabs(timeconverged-nexttimethreshold)<eps) && dtnew>0.0)
+      double dtnew = timestepsizes_->at(timeintervalstep_);
+      do
       {
-        dt = dtnew;
-        timeintervalstep_++;
+        // update time step
+        double dtnew = timestepsizes_->at(timeintervalstep_);
+        // update step size
+        nexttimethreshold = actiontime_->at(timeintervalstep_);
+        if((timeconverged>=nexttimethreshold || fabs(timeconverged-nexttimethreshold)<eps) && dtnew>0.0)
+        {
+          dt = dtnew;
+          timeintervalstep_++;
+        }
       }
+      while((timeconverged>=nexttimethreshold || fabs(timeconverged-nexttimethreshold)<eps) && dtnew>0.0 && timeintervalstep_<(int)actiontime_->size());
     }
   }
   return;
@@ -3088,7 +3095,6 @@ void STATMECH::StatMechManager::GenerateGaussianRandomNumbers(Teuchos::RCP<Epetr
 void STATMECH::StatMechManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWriter> output, double& dt)
 {
   output->WriteInt("istart", istart_);
-  output->WriteInt("timeintervalstep", timeintervalstep_);
   output->WriteInt("unconvergedsteps", unconvergedsteps_);
   output->WriteDouble("starttimeoutput", starttimeoutput_);
   output->WriteDouble("endtoendref", endtoendref_);
@@ -3159,7 +3165,6 @@ void STATMECH::StatMechManager::ReadRestart(IO::DiscretizationReader& reader, do
 
   // read restart information for statistical mechanics
   istart_ = reader.ReadInt("istart");
-  timeintervalstep_ = reader.ReadInt("timeintervalstep");
   unconvergedsteps_ = reader.ReadInt("unconvergedsteps");
   starttimeoutput_ = reader.ReadDouble("starttimeoutput");
   endtoendref_ = reader.ReadDouble("endtoendref");

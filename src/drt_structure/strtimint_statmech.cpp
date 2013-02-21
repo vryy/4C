@@ -43,7 +43,7 @@ Maintainer: Kei Müller
 //#define MEASURETIME
 
 /*----------------------------------------------------------------------*
- |  ctor (public)                                             cyron 08/08|
+ |  ctor (public)                                           ueller 03/12|
  *----------------------------------------------------------------------*/
 STR::TimIntStatMech::TimIntStatMech(const Teuchos::ParameterList& params,
                                     const Teuchos::ParameterList& sdynparams,
@@ -88,7 +88,7 @@ isconverged_(false)
 } // STR::TimIntStatMech::TimIntStatMech()
 
 /*----------------------------------------------------------------------*
- |  print Dirichlet type to screen (public) mueller 03/12 |
+ |  print Dirichlet type to screen               (public) mueller 03/12 |
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::StatMechPrintDBCType()
 {
@@ -224,30 +224,19 @@ void STR::TimIntStatMech::InitializeBeamContact()
 {
   if(HaveBeamContact())
   {
-    //check wheter appropriate parameters are set in the parameter list "CONTACT & MESHTYING"
+    //check wheter appropriate parameters are set in the parameter list "CONTACT DYNAMIC"
+    // initialize beam contact detection strategy (for network simulations, octree is the choice)
     const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->ContactDynamicParams();
-    if (!DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION") == INPAR::CONTACT::app_beamcontact)
-      dserror("beam contact switched on in parameter list STATISTICAL MECHANICS, but not in in parameter list CONTACT DYNAMIC!!!");
-    else
-    {
-      // initialize beam contact solution strategy
+    if (DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION") == INPAR::CONTACT::app_beamcontact)
       buildoctree_ = true;
-//        // store integration parameter alphaf into beamcman_ as well
-//      double alphaf = 1.0-theta_; // = 0.0 in statmech case
-//      beamcman_ = Teuchos::rcp(new CONTACT::Beam3cmanager(*discret_,alphaf));
-      // decide wether the tangent field should be smoothed or not
-      if (DRT::INPUT::IntegralValue<INPAR::CONTACT::Smoothing>(DRT::Problem::Instance()->ContactDynamicParams(),"BEAMS_SMOOTHING") == INPAR::CONTACT::bsm_none)
-      {
-        //cout << "Test BEAMS_SMOOTHING" << INPAR::CONTACT::bsm_none << endl;
-      }
-    }
-    // Note: the beam contact manager object (beamcmanager_) is built in Integrate(), not here due to reasons decribed below!
+    else
+      dserror("Check your input parameters in CONTACT DYNAMIC!");
   }
   return;
 }
 
 /*----------------------------------------------------------------------*
- |  integrate in time          (static/public)               cyron 08/08|
+ |  integrate in time          (static/public)             mueller 03/12|
  *----------------------------------------------------------------------*/
 void STR::TimIntStatMech::Integrate()
 {
