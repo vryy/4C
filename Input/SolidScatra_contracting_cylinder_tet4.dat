@@ -158,7 +158,8 @@ THETA                           0.5
 MAT 1 MAT_ElastHyper NUMMAT 3 MATIDS 10 11 20 DENS 0.001
 MAT 10 ELAST_IsoMooneyRivlin C1 2.0E4 C2 40
 MAT 11 ELAST_VolPenalty EPSILON 1.0E7 GAMMA 1.0
-MAT 20 ELAST_CoupAnisoNeoHooke_VarProp C 100000
+MAT 20 ELAST_CoupAnisoNeoHooke_VarProp C 100000 SOURCE_ACTIVATION 1
+
 ----------------------------------------------------------------------CURVE1
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3

@@ -52,6 +52,12 @@ namespace ELASTIC
       double sigma_;
       /// initial condition
       double tauc0_;
+      /// Maximal value for rescaling the activation curve
+      double maxactiv_;
+      /// Minimal value for rescaling the activation curve
+      double minactiv_;
+      /// Where the activation comes from: 0=scatra , >0 Id for FUNCT
+      int sourceactiv_;
       /// azimute angle of spherical coordinates
       double gamma_;
       /// polar angle of spherical coordinates

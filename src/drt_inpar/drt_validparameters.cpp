@@ -2290,14 +2290,16 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // Coupling strategy for SSI solvers
   setStringToIntegralParameter<int>(
-                              "COUPALGO","one_way",
+                              "COUPALGO","two_way",
                               "Coupling strategies for SSI solvers",
                               tuple<std::string>(
-                                "one_way",
+                                "scatra_to_solid",
+                                "solid_to_scatra",
                                 "two_way"
                                 ),
                               tuple<int>(
-                                INPAR::SSI::Part_OneWay,
+                                INPAR::SSI::Part_ScatraToSolid,
+                                INPAR::SSI::Part_SolidToScatra,
                                 INPAR::SSI::Part_TwoWay
                                 ),
                               &ssidyn);

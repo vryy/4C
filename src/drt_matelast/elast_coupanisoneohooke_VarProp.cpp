@@ -20,6 +20,7 @@ Maintainer: Cristobal Bertoglio
 #include "../drt_mat/matpar_material.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -29,6 +30,7 @@ MAT::ELASTIC::PAR::CoupAnisoNeoHooke_VarProp::CoupAnisoNeoHooke_VarProp(
   )
 : Parameter(matdata),
   c_(matdata->GetDouble("C")),
+  sourceactiv_(matdata->GetInt("SOURCE_ACTIVATION")),
   gamma_(matdata->GetDouble("GAMMA")),
   theta_(matdata->GetDouble("THETA")),
   init_(matdata->GetInt("INIT")),
@@ -206,7 +208,13 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_VarProp::AddStressAnisoPrincipal(
     Teuchos::ParameterList& params
 )
 {
-   double stressFact_=params.get<double>("scalar");
+  double time_ = params.get<double>("total time",0.0);
+  Teuchos::RCP<std::vector<double> >  pos_ = params.get<Teuchos::RCP<std::vector<double> > >("position");
+  const double* coordgpref_ = &(*pos_)[0];
+  double stressFact_ = DRT::Problem::Instance()->Funct(params_->sourceactiv_-1).Evaluate(0,coordgpref_,time_,NULL);
+
+
+  //double stressFact_=params.get<double>("scalar");
    stress.Update(2*(params_->c_)*stressFact_, A_, 1.0);
 
    // no contribution to cmat

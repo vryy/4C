@@ -50,6 +50,8 @@ namespace ELASTIC
 
       /// fiber params
       double c_;
+      /// Where the activation comes from: 0=scatra , >0 Id for FUNCT
+      int sourceactiv_;
       /// azimute angle of spherical coordinates
       double gamma_;
       /// polar angle of spherical coordinates

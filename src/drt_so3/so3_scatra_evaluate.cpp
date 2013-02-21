@@ -37,6 +37,9 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
                                         DRT::Discretization&      discretization,
                                         DRT::Element::LocationArray& la)
 {
+
+
+
   if(la.Size()>1)
   {
     //  dofs per node of second dofset
@@ -58,36 +61,25 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::PreEvaluate(Teuchos::ParameterL
       Teuchos::RCP<std::vector<double> >mytemp = Teuchos::rcp(new std::vector<double>(la[1].lm_.size()) );
       DRT::UTILS::ExtractMyValues(*tempnp,*mytemp,la[1].lm_);
 
-      params.set<Teuchos::RCP<std::vector<double> > >("scalar",mytemp);
+      double meantemp = 0.0;
+      for (int i=0; i<numnod_; ++i){
+          meantemp +=  (*mytemp)[i]/numnod_;
+      }
+       params.set<double>("scalar",meantemp);
+
     }
-  }else{
-
-
-    const double time = params.get("total time",0.0);
-  // find out whether we will use a time curve and get the factor
-    int num = 0; // TO BE READ FROM INPUTFILE AT EACH ELEMENT!!!
-    std::vector<double> xrefe; xrefe.resize(3);
-//    std::vector<double> xcurr; xcurr.resize(3);
-    DRT::Node** nodes = Nodes();
-    // get displacements of this element
-    //vector<double> mydisp(lm.size());
-  //  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-   for (int i=0; i<numnod_; ++i){
+  }
+  Teuchos::RCP<std::vector<double> >xrefe = Teuchos::rcp(new std::vector<double>(3));
+  DRT::Node** nodes = Nodes();
+  for (int i=0; i<numnod_; ++i){
       const double* x = nodes[i]->X();
-      xrefe [0] +=  x[0]/numnod_;
-      xrefe [1] +=  x[1]/numnod_;
-      xrefe [2] +=  x[2]/numnod_;
-      /*xcurr[0] += (x[0]+mydisp[i*noddof_+0])/numnod_;
-      xcurr[1] += (x[1]+mydisp[i*noddof_+1])/numnod_;
-      xcurr[2] += (x[2]+mydisp[i*noddof_+2])/numnod_; */
+      (*xrefe)[0] +=  x[0]/numnod_;
+      (*xrefe)[1] +=  x[1]/numnod_;
+      (*xrefe)[2] +=  x[2]/numnod_;
 
-    }
-    const double* coordgpref = &xrefe[0];
-   //const double* coordgpref = &xcurr[0];
-    double functfac = DRT::Problem::Instance()->Funct(num).Evaluate(0,coordgpref,time,NULL);
-    params.set<double>("scalar",functfac);
-    }
-  return;
+   }
+   params.set<Teuchos::RCP<std::vector<double> > >("position",xrefe);
+   return;
 }
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
