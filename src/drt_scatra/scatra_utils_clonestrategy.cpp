@@ -81,7 +81,8 @@ if ((mtype != INPAR::MAT::m_scatra) &&
     (mtype != INPAR::MAT::m_th_fourier_iso) &&
     (mtype != INPAR::MAT::m_thermostvenant) &&
     (mtype != INPAR::MAT::m_yoghurt) &&
-    (mtype != INPAR::MAT::m_matlist))
+    (mtype != INPAR::MAT::m_matlist) &&
+    (mtype != INPAR::MAT::m_myocard))
   dserror("Material with ID %d is not admissible for scalar transport elements",matid);
 }
 
