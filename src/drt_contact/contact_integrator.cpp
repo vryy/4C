@@ -1395,7 +1395,7 @@ void CONTACT::CoIntegrator::IntegrateDerivSegment2D(
 
 
 /*----------------------------------------------------------------------*
- |  Integrate and linearize                                  farah 01/13|
+ |  Integrate and linearize for lin and quad elements        farah 01/13|
  *----------------------------------------------------------------------*/
 void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
      MORTAR::MortarElement& sele, std::vector<MORTAR::MortarElement*> meles,
