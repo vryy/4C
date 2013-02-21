@@ -232,6 +232,16 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
             mygaussrule = DRT::UTILS::intrule_tri_64point;
             break;
           }
+          case 9:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_64point;
+            break;
+          }
+          case 10:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_64point;
+            break;
+          }
           case 20:
           {
             mygaussrule = DRT::UTILS::intrule_tri_64point;
@@ -306,6 +316,16 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
           case 8:
           {
             mygaussrule = DRT::UTILS::intrule_quad_64point;
+            break;
+          }
+          case 9:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_81point;
+            break;
+          }
+          case 10:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_100point;
             break;
           }
           case 20:

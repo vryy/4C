@@ -148,6 +148,8 @@ enum GaussRule2D
     intrule_quad_49point,            ///< degree of precision: 13 (open)
     intrule_quad_64point,            ///< degree of precision: 15 (open)
     //intrule_quad_81point,          ///< degree of precision: 17 (open)
+    intrule_quad_81point,            ///< degree of precision: 17 (open)
+    intrule_quad_100point,           ///< degree of precision: 19 (open)
     intrule_quad_400point,           ///< degree of precision: 39 (open)
     intrule_tri_1point,              ///< degree of precision: 1  (open)
     intrule_tri_3point,              ///< degree of precision: 2  (open)   (Hughes, The Finite Element Method)
