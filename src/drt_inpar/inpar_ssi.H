@@ -23,7 +23,8 @@ namespace SSI
   /// Type of coupling strategy for SSI problems
   enum SolutionSchemeOverFields
   {
-    Part_OneWay,
+    Part_ScatraToSolid,
+    Part_SolidToScatra,
     Part_TwoWay
  //   SequStagg,
  //   IterStagg,

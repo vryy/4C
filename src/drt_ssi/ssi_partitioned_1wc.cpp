@@ -19,34 +19,7 @@ SSI::SSI_Part1WC::SSI_Part1WC(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams)
   : SSI_Part(comm, timeparams)
 {
-  // build a proxy of the structure discretization for the scatra field
-  Teuchos::RCP<DRT::DofSet> structdofset
-    = structure_->Discretization()->GetDofSetProxy();
-  // build a proxy of the temperature discretization for the structure field
-  Teuchos::RCP<DRT::DofSet> scatradofset
-    = scatra_->ScaTraField().Discretization()->GetDofSetProxy();
 
-  // check if scatra field has 2 discretizations, so that coupling is possible
-  if (scatra_->ScaTraField().Discretization()->AddDofSet(structdofset)!=1)
-    dserror("unexpected dof sets in scatra field");
-  if (structure_->Discretization()->AddDofSet(scatradofset)!=1)
-    dserror("unexpected dof sets in structure field");
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void SSI::SSI_Part1WC::Timeloop()
-{
-  //InitialCalculations();
-
-  while (NotFinished())
-  {
-    PrepareTimeStep();
-
-    DoStructStep(); // It has its own time and timestep variables, and it increments them by itself.
-    SetStructSolution();
-    DoScatraStep(); // It has its own time and timestep variables, and it increments them by itself.
-  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -60,7 +33,7 @@ void SSI::SSI_Part1WC::DoStructStep()
         << "\n***********************\n STRUCTURE SOLVER \n***********************\n";
   }
 
-  // solve the step problem. Methods obtained from poroelast->TimeLoop(sdynparams); --> sdynparams
+  // solve the step problem
   structure_-> PrepareTimeStep();
   // Newton-Raphson iteration
   structure_-> Solve();
@@ -119,4 +92,66 @@ void SSI::SSI_Part1WC::PrepareTimeStep()
   PrintHeader();
 
   //PrepareTimeStep of single fields is called in DoStructStep and DoScatraStep
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+SSI::SSI_Part1WC_SolidToScatra::SSI_Part1WC_SolidToScatra(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& timeparams)
+  : SSI_Part1WC(comm, timeparams)
+{
+  // build a proxy of the structure discretization for the scatra field
+  Teuchos::RCP<DRT::DofSet> structdofset
+    = structure_->Discretization()->GetDofSetProxy();
+
+  // check if scatra field has 2 discretizations, so that coupling is possible
+  if (scatra_->ScaTraField().Discretization()->AddDofSet(structdofset)!=1)
+    dserror("unexpected dof sets in scatra field");
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSI_Part1WC_SolidToScatra::Timeloop()
+{
+  //InitialCalculations();
+
+  while (NotFinished())
+  {
+    PrepareTimeStep();
+
+    DoStructStep(); // It has its own time and timestep variables, and it increments them by itself.
+    SetStructSolution();
+    DoScatraStep(); // It has its own time and timestep variables, and it increments them by itself.
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+SSI::SSI_Part1WC_ScatraToSolid::SSI_Part1WC_ScatraToSolid(const Epetra_Comm& comm,
+    const Teuchos::ParameterList& timeparams)
+  : SSI_Part1WC(comm, timeparams)
+{
+  // build a proxy of the scatra discretization for the structure field
+  Teuchos::RCP<DRT::DofSet> scatradofset
+    = scatra_->ScaTraField().Discretization()->GetDofSetProxy();
+
+  // check if structure field has 2 discretizations, so that coupling is possible
+  if (structure_->Discretization()->AddDofSet(scatradofset)!=1)
+    dserror("unexpected dof sets in structure field");
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void SSI::SSI_Part1WC_ScatraToSolid::Timeloop()
+{
+  //InitialCalculations();
+
+  while (NotFinished())
+  {
+    PrepareTimeStep();
+
+    DoScatraStep(); // It has its own time and timestep variables, and it increments them by itself.
+    SetScatraSolution();
+    DoStructStep(); // It has its own time and timestep variables, and it increments them by itself.
+  }
 }

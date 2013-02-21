@@ -27,7 +27,7 @@ namespace SSI
 
     virtual ~SSI_Part1WC(){};
 
-    virtual void Timeloop();
+    virtual void Timeloop()=0;
 
   protected:
     void PrepareTimeStep();
@@ -35,6 +35,32 @@ namespace SSI
     void DoStructStep();
 
     void DoScatraStep();
+  };
+
+  class SSI_Part1WC_SolidToScatra : public SSI_Part1WC
+  {
+  public:
+
+    explicit SSI_Part1WC_SolidToScatra(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& timeparams);
+
+    virtual ~SSI_Part1WC_SolidToScatra(){};
+
+    virtual void Timeloop();
+
+  };
+
+  class SSI_Part1WC_ScatraToSolid : public SSI_Part1WC
+  {
+  public:
+
+    explicit SSI_Part1WC_ScatraToSolid(const Epetra_Comm& comm,
+        const Teuchos::ParameterList& timeparams);
+
+    virtual ~SSI_Part1WC_ScatraToSolid(){};
+
+    virtual void Timeloop();
+
   };
 
 }

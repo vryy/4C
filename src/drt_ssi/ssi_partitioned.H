@@ -51,6 +51,8 @@ protected:
 
   virtual void SetStructSolution() ;
 
+  virtual void SetScatraSolution() ;
+
   virtual void SetMeshDisp() ;
 
   virtual void SetVelocityFields() ;

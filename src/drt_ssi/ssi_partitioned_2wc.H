@@ -37,8 +37,6 @@ namespace SSI
 
     void DoScatraStep();
 
-    void SetScatraSolution();
-
     void OuterLoop();
 
     void UpdateAndOutput();

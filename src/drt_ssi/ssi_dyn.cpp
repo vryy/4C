@@ -42,8 +42,11 @@ void ssi_drt()
   // choose algorithm depending on solution type
   switch(coupling)
   {
-  case INPAR::SSI::Part_OneWay:
-    ssi = Teuchos::rcp(new SSI::SSI_Part1WC(comm, ssiparams));
+  case INPAR::SSI::Part_SolidToScatra:
+    ssi = Teuchos::rcp(new SSI::SSI_Part1WC_SolidToScatra(comm, ssiparams));
+    break;
+  case INPAR::SSI::Part_ScatraToSolid:
+    ssi = Teuchos::rcp(new SSI::SSI_Part1WC_ScatraToSolid(comm, ssiparams));
     break;
   case INPAR::SSI::Part_TwoWay:
     ssi = Teuchos::rcp(new SSI::SSI_Part2WC(comm, ssiparams));
