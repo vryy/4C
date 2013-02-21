@@ -1247,7 +1247,7 @@ bool CONTACT::CoInterface::IntegrateCoupling(MORTAR::MortarElement* sele,
     if (!quadratic)
     {
       // create CoCoupling3dManager
-      CONTACT::CoCoupling3dManager coup(shapefcn_,Discret(),Dim(),false,auxplane,inttype,sele,mele);
+      CONTACT::CoCoupling3dManager coup(shapefcn_,Discret(),Dim(),false,auxplane,inttype,sele,mele,lmtype);
 
       // increase counter of slave/master integration pairs and intcells
       smintpairs_ += (int)mele.size();

@@ -170,6 +170,7 @@ public:
       Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
       Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
       Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+      INPAR::MORTAR::LagMultQuad lmtype,
       bool *boundary_ele,
       bool *proj_);
 

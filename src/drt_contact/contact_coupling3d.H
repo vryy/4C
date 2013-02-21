@@ -353,7 +353,8 @@ public:
   CoCoupling3dManager(DRT::Discretization& idiscret,
                       int dim, bool quad, bool auxplane,
                       INPAR::MORTAR::IntType inttype,
-                      MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
+                      MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele,
+                      INPAR::MORTAR::LagMultQuad lmtype);
 
   /*!
   \brief Constructor with shape function specification
@@ -367,7 +368,8 @@ public:
                       DRT::Discretization& idiscret,
                       int dim, bool quad, bool auxplane,
                       INPAR::MORTAR::IntType inttype,
-                      MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele);
+                      MORTAR::MortarElement* sele, std::vector<MORTAR::MortarElement*> mele,
+                      INPAR::MORTAR::LagMultQuad lmtype);
 
   /*!
   \brief Destructor
@@ -447,8 +449,8 @@ protected:
     MORTAR::MortarElement*                    sele_;        // slave element
     std::vector<MORTAR::MortarElement*>       mele_;        // master elements
     std::vector<Teuchos::RCP<CoCoupling3d> >  coup_;        // coupling pairs
+    INPAR::MORTAR::LagMultQuad                lmtype_;
     int                                       ncells_;      // total number of integration cells
-
 }; // class CoCoupling3dManager
 
 class CoCoupling3dQuadManager : public MORTAR::Coupling3dQuadManager{

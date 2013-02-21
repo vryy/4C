@@ -318,7 +318,7 @@ bool MORTAR::MortarProjector::ProjectGaussPoint(MORTAR::MortarElement& gpele,
 }
 
 /*----------------------------------------------------------------------*
- | Check projection for warped elements                      farah 01/13|
+ | Check projection for warped elements quad4 elements       farah 01/13|
  *----------------------------------------------------------------------*/
 bool MORTAR::MortarProjector::CheckProjection4AUXPLANE(MORTAR::MortarElement& ele,
                                              double* ngp, double* globgp )
@@ -326,6 +326,11 @@ bool MORTAR::MortarProjector::CheckProjection4AUXPLANE(MORTAR::MortarElement& el
   if (ele.Shape()==DRT::Element::tri3)
     dserror("ELEMENT SHAPE TRI3 -- NO WARPING");
 
+  if (ele.Shape()!=DRT::Element::quad4)
+  {
+    return true;
+  }
+  
   int nnode = ele.NumNode();
   DRT::Node** mynodes = ele.Nodes();
   if (!mynodes) dserror("ERROR: Project: Null pointer!");

@@ -1402,6 +1402,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
      Teuchos::RCP<Epetra_SerialDenseMatrix> dseg,
      Teuchos::RCP<Epetra_SerialDenseMatrix> mseg,
      Teuchos::RCP<Epetra_SerialDenseVector> gseg,
+     INPAR::MORTAR::LagMultQuad lmtype,
      bool *boundary_ele,
      bool *proj_)
 {
@@ -1436,7 +1437,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
   LINALG::SerialDenseMatrix mderiv(nmnode,2,true);
   LINALG::SerialDenseVector lmval(nrow);
   LINALG::SerialDenseMatrix lmderiv(nrow,2,true);
-
+  LINALG::SerialDenseVector svalmod(nrow);
+  LINALG::SerialDenseMatrix sderivmod(nrow,2,true);
+  
   // create empty vectors for shape fct. evaluation
   LINALG::SerialDenseMatrix ssecderiv(nrow,3);
 
@@ -1461,9 +1464,20 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
     sele.DerivShapeDual(dualmap);
   }
 
-  //************************************************
+  // decide whether displacement shape fct. modification has to be considered or not
+  // this is the case for dual quadratic Lagrange multipliers on quad8 and tri6 elements
+  bool dualquad3d = false;
+  if ( (shapefcn_ == INPAR::MORTAR::shape_dual || shapefcn_ == INPAR::MORTAR::shape_petrovgalerkin) &&
+       (lmtype == INPAR::MORTAR::lagmult_quad_quad) &&
+       (sele.Shape() == DRT::Element::quad8 || sele.Shape() == DRT::Element::tri6) )
+  {
+    dualquad3d = true;
+  }
+  //********************************************************************
   //  Boundary_segmentation test -- HasProj() check
-  //************************************************
+  //  if a slave-node has no projection onto each master element
+  //  --> Boundary_ele==true
+  //********************************************************************
   const Teuchos::ParameterList& smortar  = DRT::Problem::Instance()->MortarCouplingParams();
 
   INPAR::MORTAR::IntType integrationtype =
@@ -1830,7 +1844,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
     dserror("Non valid element type for slave discretization!");
   }
 
-
+  // Start integration if fast integration should be used or if there is no boundary element
+  // for the fast_BS integration
   if (*boundary_ele==false || integrationtype==INPAR::MORTAR::inttype_fast)
   {
     //**********************************************************************
@@ -1889,6 +1904,7 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
 
         // evaluate trace space shape functions (on both elements)
         sele.EvaluateShape(sxi,sval,sderiv,nrow);
+        if (dualquad3d) sele.EvaluateShape(sxi,svalmod,sderivmod,nrow,true);
         meles[nummaster]->EvaluateShape(mxi,mval,mderiv,nmnode);
 
         // evaluate the two Jacobians (int. cell and slave element)
@@ -1900,7 +1916,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
           iter_proj+=1;
           // compute cell D/M matrix *******************************************
           // standard shape functions
-          if (shapefcn_ == INPAR::MORTAR::shape_standard)
+          if (shapefcn_ == INPAR::MORTAR::shape_standard &&
+              (lmtype == INPAR::MORTAR::lagmult_quad_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3 ||
+               (lmtype ==INPAR::MORTAR::lagmult_lin_lin && dt_s==DRT::Element::quad9) ))
           {
             // loop over all mseg matrix entries
             // !!! nrow represents the slave Lagrange multipliers !!!
@@ -1942,7 +1960,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
           }
 
           // dual shape functions
-          else if (shapefcn_ == INPAR::MORTAR::shape_dual)
+          else if (shapefcn_ == INPAR::MORTAR::shape_dual  &&
+              (lmtype == INPAR::MORTAR::lagmult_quad_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3) )
           {
             // loop over all mseg matrix entries
             // !!! nrow represents the slave Lagrange multipliers !!!
@@ -2178,7 +2197,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
             int sgid = mymrtrnode->Id();
 
             // standard shape functions
-            if (shapefcn_ == INPAR::MORTAR::shape_standard)
+            if (shapefcn_ == INPAR::MORTAR::shape_standard &&
+                (lmtype == INPAR::MORTAR::lagmult_quad_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3 ||
+                 (lmtype ==INPAR::MORTAR::lagmult_lin_lin && dt_s==DRT::Element::quad9) ) )
             {
               // integrate LinM
               for (int k=0; k<nmnode; ++k)
@@ -2245,7 +2266,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
             //************************************
             // dual shape functions
             //************************************
-            else if (shapefcn_ == INPAR::MORTAR::shape_dual)
+            else if (shapefcn_ == INPAR::MORTAR::shape_dual &&
+                (lmtype == INPAR::MORTAR::lagmult_quad_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3))
             {
               // get the D-map as a reference
               std::map<int,double>& ddmap_jj = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivD()[sgid];
@@ -2264,7 +2286,8 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
                 if (duallin)
                   for (int m=0; m<nrow; ++m)
                   {
-                    fac = wgt*sval[m]*mval[k]*jacslave;
+                    if (dualquad3d) fac = wgt*svalmod[m]*mval[k]*jacslave;
+                    else            fac = wgt*sval[m]*mval[k]*jacslave;
                     for (CI p=dualmap[j][m].begin(); p!=dualmap[j][m].end(); ++p)
                     {
                       dmmap_jk[p->first] += fac*(p->second);
@@ -2301,6 +2324,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
                 // (6) Lin(dxdsxi) - slave GP coordinates --> 0
               } // loop over master nodes
             } // shapefcn_ switch
+            else
+            {
+              dserror("ERROR: Invalid integration case for 3D contact!");
+            }
           } // loop over slave nodes
           // compute cell D/M linearization ************************************
 
@@ -2316,7 +2343,9 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
             std::map<int,double>& dgmap = static_cast<CONTACT::CoNode*>(mymrtrnode)->CoData().GetDerivG();
 
             // standard shape functions
-            if( shapefcn_ == INPAR::MORTAR::shape_standard )
+            if( shapefcn_ == INPAR::MORTAR::shape_standard &&
+                (lmtype == INPAR::MORTAR::lagmult_quad_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3 ||
+                 (lmtype ==INPAR::MORTAR::lagmult_lin_lin && dt_s==DRT::Element::quad9) ))
             {
               // (1) Lin(Phi) - dual shape functions --> 0
               // this vanishes here since there are no deformation-dependent dual functions
@@ -2339,13 +2368,15 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
             }
 
             // dual shape functions
-            else if( shapefcn_ == INPAR::MORTAR::shape_dual )
+            else if( shapefcn_ == INPAR::MORTAR::shape_dual &&
+                (lmtype == INPAR::MORTAR::lagmult_quad_quad || dt_s==DRT::Element::quad4 || dt_s==DRT::Element::tri3) )
             {
               // (1) Lin(Phi) - dual shape functions
               if (duallin)
                 for (int m=0; m<nrow; ++m)
                 {
-                  fac = wgt*sval[m]*gap*jacslave;
+                  if (dualquad3d) fac = wgt*svalmod[m]*gap*jacslave;
+                  else fac = wgt*sval[m]*gap*jacslave;
                   for (CI p=dualmap[j][m].begin(); p!=dualmap[j][m].end(); ++p)
                     dgmap[p->first] += fac*(p->second);
                 }
@@ -2365,6 +2396,10 @@ void CONTACT::CoIntegrator::IntegrateDerivCell3D_Fast(
                 dgmap[p->first] += fac*(p->second);
 
               // (6) Lin(dxdsxi) - slave GP coordinates --> 0
+            }
+            else
+            {
+              dserror("ERROR: Invalid integration case for 3D contact!");
             }
           }
           // compute cell gap linearization ************************************
@@ -6665,6 +6700,9 @@ void CONTACT::CoIntegrator::DerivXiGP3D(MORTAR::MortarElement& sele,
     }
 
   // get inverse of the 3x3 matrix L (in place)
+  if (abs(lmatrix.Determinant())<1e-12)
+    dserror("ERROR: Singular lmatrix for derivgp3d");
+    
   lmatrix.Invert();
 
   // build directional derivative of slave GP normal

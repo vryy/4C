@@ -1383,7 +1383,8 @@ const Epetra_Comm& CONTACT::CoCoupling3dManager::Comm() const
 CONTACT::CoCoupling3dManager::CoCoupling3dManager(DRT::Discretization& idiscret, int dim, bool quad,
                                                   bool auxplane, INPAR::MORTAR::IntType inttype,
                                                   MORTAR::MortarElement* sele,
-                                                  std::vector<MORTAR::MortarElement*> mele) :
+                                                  std::vector<MORTAR::MortarElement*> mele,
+                                                  INPAR::MORTAR::LagMultQuad lmtype) :
 shapefcn_(INPAR::MORTAR::shape_undefined),
 idiscret_(idiscret),
 dim_(dim),
@@ -1391,7 +1392,8 @@ quad_(quad),
 auxplane_(auxplane),
 inttype_(inttype),
 sele_(sele),
-mele_(mele)
+mele_(mele),
+lmtype_(lmtype)
 {
   // evaluate coupling
   EvaluateCoupling();
@@ -1406,7 +1408,8 @@ CONTACT::CoCoupling3dManager::CoCoupling3dManager(const INPAR::MORTAR::ShapeFcn 
                                                   DRT::Discretization& idiscret, int dim, bool quad,
                                                   bool auxplane, INPAR::MORTAR::IntType inttype,
                                                   MORTAR::MortarElement* sele,
-                                                  std::vector<MORTAR::MortarElement*> mele) :
+                                                  std::vector<MORTAR::MortarElement*> mele,
+                                                  INPAR::MORTAR::LagMultQuad lmtype) :
 shapefcn_(shapefcn),
 idiscret_(idiscret),
 dim_(dim),
@@ -1415,6 +1418,7 @@ auxplane_(auxplane),
 inttype_(inttype),
 sele_(sele),
 mele_(mele),
+lmtype_(lmtype),
 ncells_(0)
 {
   // evaluate coupling
@@ -1496,7 +1500,7 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
       bool proj=false;
 
       //Perform integration and linearization
-      integrator.IntegrateDerivCell3D_Fast(SlaveElement(),MasterElements(),dseg,mseg,gseg,&boundary_ele, &proj);
+      integrator.IntegrateDerivCell3D_Fast(SlaveElement(),MasterElements(),dseg,mseg,gseg,lmtype_,&boundary_ele, &proj);
 
       if (IntType()==INPAR::MORTAR::inttype_fast_BS)
       {
@@ -1517,7 +1521,13 @@ bool CONTACT::CoCoupling3dManager::EvaluateCoupling()
         }
       }
 
-      if (boundary_ele==false && proj==true) //do not assemble entries when a master-element has no GP
+      if (IntType()==INPAR::MORTAR::inttype_fast_BS && boundary_ele==false && proj==true) //do not assemble entries when a master-element has no GP
+      {
+        integrator.AssembleD(Comm(),SlaveElement(),*dseg);
+        integrator.AssembleM_Fast(Comm(),SlaveElement(),MasterElements(),*mseg);
+        integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+      }
+      else if(proj==true)
       {
         integrator.AssembleD(Comm(),SlaveElement(),*dseg);
         integrator.AssembleM_Fast(Comm(),SlaveElement(),MasterElements(),*mseg);
@@ -1584,6 +1594,11 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
   //**********************************************************************
   else if (IntType()==INPAR::MORTAR::inttype_fast || IntType()==INPAR::MORTAR::inttype_fast_BS)
   {
+    // check for standard shape functions and quadratic LM interpolation
+    if (shapefcn_ == INPAR::MORTAR::shape_standard && lmtype_==INPAR::MORTAR::lagmult_quad_quad
+        && (SlaveElement().Shape()==DRT::Element::quad8 || SlaveElement().Shape()==DRT::Element::tri6))
+      dserror("ERROR: Quad. LM interpolation for STANDARD 3D quadratic contact only feasible for quad9");
+      
     if ((int)MasterElements().size()==0)
       return false;
 
@@ -1607,7 +1622,7 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
     bool proj=false;
 
     //Perform integration and linearization
-    integrator.IntegrateDerivCell3D_Fast(SlaveElement(),MasterElements(),dseg,mseg,gseg,&boundary_ele, &proj);
+    integrator.IntegrateDerivCell3D_Fast(SlaveElement(),MasterElements(),dseg,mseg,gseg,lmtype_,&boundary_ele, &proj);
 
     if (IntType()==INPAR::MORTAR::inttype_fast_BS)
     {
@@ -1640,13 +1655,22 @@ bool CONTACT::CoCoupling3dQuadManager::EvaluateCoupling()
           } // for saux
         } // for m
       }
+    	else if (boundary_ele==false && proj==true) //do not assemble entries when a master-element has no GP
+    	{
+      	integrator.AssembleD(Comm(),SlaveElement(),*dseg);
+      	integrator.AssembleM_Fast(Comm(),SlaveElement(),MasterElements(),*mseg);
+      	integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+    	}
     }
-
-    if (boundary_ele==false && proj==true) //do not assemble entries when a master-element has no GP
+		else if (proj==true && IntType()==INPAR::MORTAR::inttype_fast) //do not assemble entries when a master-element has no GP
     {
       integrator.AssembleD(Comm(),SlaveElement(),*dseg);
       integrator.AssembleM_Fast(Comm(),SlaveElement(),MasterElements(),*mseg);
       integrator.AssembleG(Comm(),SlaveElement(),*gseg);
+    }
+    else if (proj==false)
+    {
+      //do nothing
     }
   }
   //**********************************************************************
