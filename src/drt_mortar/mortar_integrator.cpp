@@ -232,6 +232,11 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
             mygaussrule = DRT::UTILS::intrule_tri_64point;
             break;
           }
+          case 20:
+          {
+            mygaussrule = DRT::UTILS::intrule_tri_64point;
+            break;
+          }
           default:
           {
             dserror("Requested GP-Number is not implemented!");
@@ -301,6 +306,11 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
           case 8:
           {
             mygaussrule = DRT::UTILS::intrule_quad_64point;
+            break;
+          }
+          case 20:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_400point;
             break;
           }
           default:
