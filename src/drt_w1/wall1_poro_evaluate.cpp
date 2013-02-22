@@ -991,7 +991,15 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
     double dphi_dpp=0.0;
     double porosity=0.0;
 
-    structmat->ComputePorosity(params,press, J, gp,porosity,dphi_dp,dphi_dJ,dphi_dJdp,dphi_dJJ,dphi_dpp);
+    structmat->ComputePorosity( press,
+                                J,
+                                gp,
+                                porosity,
+                                dphi_dp,
+                                dphi_dJ,
+                                dphi_dJdp,
+                                dphi_dJJ,
+                                dphi_dpp);
 
     porosity_gp[gp] = porosity;
 
@@ -1533,10 +1541,6 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
   }/* ==================================================== end of Loop over GP */
   /* =========================================================================*/
 
-  //write porosity gradient at GP into material (for scatra coupling only)
-  structmat->SetGradPorosityAtGP(gradporosity_gp);
-  structmat->SetGradJAtGP(gradJ_gp);
-
   return;
 }  // nlnstiff_poroelast()
 
@@ -1786,7 +1790,16 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::coupling_poroelast(
     double dphi_dpp=0.0;
     double porosity=0.0;
 
-    structmat->ComputePorosity(params,press, J, gp,porosity,dphi_dp,dphi_dJ,dphi_dJdp,dphi_dJJ,dphi_dpp);
+    structmat->ComputePorosity( //params,
+                                press,
+                                J,
+                                gp,
+                                porosity,
+                                dphi_dp,
+                                dphi_dJ,
+                                dphi_dJdp,
+                                dphi_dJJ,
+                                dphi_dpp);
 
     //-----------material porosity gradient
     LINALG::Matrix<1,numdim_> grad_porosity;

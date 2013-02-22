@@ -2247,7 +2247,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                        INPAR::POROELAST::bop_or),
                                &poroelastdyn);
 
-  setStringToIntegralParameter<int>("SECONDORDER","No",
+  setStringToIntegralParameter<int>("SECONDORDER","Yes",
                                "Second order coupling at the interface.",
                                yesnotuple,yesnovalue,&poroelastdyn);
 

@@ -717,14 +717,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
     nodalvel(i,0) = vel[i];
   }
 
-  //vector of porosity at gp (for output only)
-  std::vector<double> porosity_gp(numgpt_,0.0);
-
-  std::vector<LINALG::Matrix<numdim_,1> > gradporosity_gp (numgpt_);
-  for(int i = 0 ; i < numgpt_ ; i++)
-    for(int j=0; j<numdim_;j++)
-      gradporosity_gp.at(i)(j) = 0.0;
-
   //******************* FAD ************************
 
 /*
@@ -1070,9 +1062,16 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
     double dphi_dpp=0.0;
     double porosity=0.0;
 
-    structmat->ComputePorosity(params,press, J, gp,porosity,dphi_dp,dphi_dJ,dphi_dJdp,dphi_dJJ,dphi_dpp);
-
-    porosity_gp[gp] = porosity;
+    structmat->ComputePorosity( //params,
+                                press,
+                                J,
+                                gp,
+                                porosity,
+                                dphi_dp,
+                                dphi_dJ,
+                                dphi_dJdp,
+                                dphi_dJJ,
+                                dphi_dpp);
 
     //linearization of porosity w.r.t structure displacement d\phi/d(us) = d\phi/dJ*dJ/d(us)
     LINALG::Matrix<1,numdof_> dphi_dus;
@@ -1089,10 +1088,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
     dgradphi_dus.MultiplyTN(dphi_dJJ, GradJ ,dJ_dus);
     dgradphi_dus.Update(dphi_dJ, dgradJ_dus, 1.0);
     dgradphi_dus.Multiply(dphi_dJdp, Gradp, dJ_dus, 1.0);
-
-    //for saving
-    gradporosity_gp[gp] = grad_porosity;    // trial urrecha.
-
 
     //F^-T * Grad\phi
     //LINALG::Matrix<numdim_,1> Finvgradphi;
@@ -1650,10 +1645,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
   }/* ==================================================== end of Loop over GP */
   /* =========================================================================*/
 
-  //write porosity gradient at GP into material (for scatra coupling only)
-  structmat->SetGradPorosityAtGP(gradporosity_gp);
-  structmat->SetGradJAtGP(gradJ_gp);
-
   return;
 }  // nlnstiff_poroelast()
 
@@ -1918,7 +1909,16 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
     double dphi_dpp=0.0;
     double porosity=0.0;
 
-    structmat->ComputePorosity(params,press, J, gp,porosity,dphi_dp,dphi_dJ,dphi_dJdp,dphi_dJJ,dphi_dpp);
+    structmat->ComputePorosity( //params,
+                                press,
+                                J,
+                                gp,
+                                porosity,
+                                dphi_dp,
+                                dphi_dJ,
+                                dphi_dJdp,
+                                dphi_dJJ,
+                                dphi_dpp);
 
     //-----------material porosity gradient
     LINALG::Matrix<1,numdim_> grad_porosity;

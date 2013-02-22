@@ -187,8 +187,8 @@ CURVE2 on EXPR FUNC -4.0*0.5*pi/1.0*(sin((t*pi/1.0))) t1 0.0 t2 2.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 124 QUANTITY velx VALUE 1.88376840142943003e+00 TOLERANCE 1e-8
-FLUID DIS fluid NODE 124 QUANTITY pressure VALUE 6.12398646652124725e+01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 124 QUANTITY velx VALUE 1.88376107172279750e+00 TOLERANCE 1e-8
+FLUID DIS fluid NODE 124 QUANTITY pressure VALUE 6.12397282476600182e+01 TOLERANCE 1e-6
 STRUCTURE DIS structure NODE 62 QUANTITY dispx VALUE 0 TOLERANCE 1e-14
 STRUCTURE DIS structure NODE 71 QUANTITY dispy VALUE 0 TOLERANCE 1e-14
 STRUCTURE DIS structure NODE 212 QUANTITY dispx VALUE -2.16765238361673294e-03 TOLERANCE 1e-8

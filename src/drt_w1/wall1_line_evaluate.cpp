@@ -612,8 +612,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       if(structmat->MaterialType() != INPAR::MAT::m_structporo)
         dserror("invalid structure material for poroelasticity");
       double porosity=0.0;
-      structmat->ComputeSurfPorosity( params,
-                                      press,
+      structmat->ComputeSurfPorosity( press,
                                       J,
                                       LLineNumber(),
                                       gp,

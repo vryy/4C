@@ -1870,6 +1870,11 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
     if(structmat->MaterialType() != INPAR::MAT::m_structporo)
       dserror("invalid structure material for poroelasticity");
     double porosity=0.0;
-    structmat->ComputeSurfPorosity(params,press, J,LSurfNumber(),gp,porosity);
+    structmat->ComputeSurfPorosity(//params,
+                                    press,
+                                    J,
+                                    LSurfNumber(),
+                                    gp,
+                                    porosity);
   }
 }

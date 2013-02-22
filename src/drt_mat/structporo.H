@@ -211,7 +211,21 @@ namespace MAT
       }
 
       /// compute current porosity and save it
-      void ComputePorosity(  Teuchos::ParameterList& params, ///< (i) element parameter list
+      void ComputePorosity(  //Teuchos::ParameterList& params, ///< (i) element parameter list
+                             double press,                  ///< (i) pressure at gauss point
+                             double J,                      ///< (i) determinant of jacobian at gauss point
+                             int gp,                        ///< (i) number of current gauss point
+                             double& porosity,              ///< (o) porosity at gauss point
+                             double& dphi_dp,               ///< (o) first derivative of porosity w.r.t. pressure at gauss point
+                             double& dphi_dJ,               ///< (o) first derivative of porosity w.r.t. jacobian at gauss point
+                             double& dphi_dJdp,             ///< (o) derivative of porosity w.r.t. pressure and jacobian at gauss point
+                             double& dphi_dJJ,              ///< (o) second derivative of porosity w.r.t. jacobian at gauss point
+                             double& dphi_dpp,               ///< (o) second derivative of porosity w.r.t. pressure at gauss point
+                             bool save = true
+                             ) ;
+
+      /// compute current porosity and save it
+      void ComputeReactivePorosity(  Teuchos::ParameterList& params, ///< (i) element parameter list
                              double press,                  ///< (i) pressure at gauss point
                              double J,                      ///< (i) determinant of jacobian at gauss point
                              int gp,                        ///< (i) number of current gauss point
@@ -221,19 +235,21 @@ namespace MAT
                              double& dphi_dJdp,             ///< (o) derivative of porosity w.r.t. pressure and jacobian at gauss point
                              double& dphi_dJJ,              ///< (o) second derivative of porosity w.r.t. jacobian at gauss point
                              double& dphi_dpp,              ///< (o) second derivative of porosity w.r.t. pressure at gauss point
-                             double cnp = 0.0
+                             double cnp,
+                             bool save = true
                              ) ;
 
       /// compute current porosity and save it
-      void ComputePorosity(  Teuchos::ParameterList& params, ///< (i) element parameter list
+      void ComputePorosity(  //Teuchos::ParameterList& params, ///< (i) element parameter list
                              double press,       ///< (i) pressure at gauss point
                              double J,           ///< (i) determinant of jacobian at gauss point
                              int gp,             ///< (i) number of current gauss point
-                             double& porosity    ///< (o) porosity at gauss point
+                             double& porosity,    ///< (o) porosity at gauss point
+                             bool save = true
                              ) ;
 
       /// compute current surface porosity and save it
-      void ComputeSurfPorosity( Teuchos::ParameterList& params, ///< (i) element parameter list
+      void ComputeSurfPorosity( //Teuchos::ParameterList& params, ///< (i) element parameter list
                                 double press,       ///< (i) pressure at gauss point
                                 double J,           ///< (i) determinant of jacobian at gauss point
                                 const int surfnum,  ///< (i) number of surface
@@ -243,16 +259,18 @@ namespace MAT
                                 double& dphi_dJ,    ///< (o) first derivative of porosity w.r.t. jacobian at gauss point
                                 double& dphi_dJdp,  ///< (o) derivative of porosity w.r.t. pressure and jacobian at gauss point
                                 double& dphi_dJJ,   ///< (o) second derivative of porosity w.r.t. jacobian at gauss point
-                                double& dphi_dpp    ///< (o) second derivative of porosity w.r.t. pressure at gauss point
+                                double& dphi_dpp,    ///< (o) second derivative of porosity w.r.t. pressure at gauss point
+                                bool save = true
                                 ) ;
 
       /// compute current surface porosity and save it
-      void ComputeSurfPorosity( Teuchos::ParameterList& params, ///< (i) element parameter list
+      void ComputeSurfPorosity(// Teuchos::ParameterList& params, ///< (i) element parameter list
                                 double press,       ///< (i) pressure at gauss point
                                 double J,           ///< (i) determinant of jacobian at gauss point
                                 const int surfnum,  ///< (i) number of surface
                                 int gp,             ///< (i) number of current gauss point
-                                double& porosity    ///< (o) porosity at gauss point
+                                double& porosity,    ///< (o) porosity at gauss point
+                                bool save = true
                                 ) ;
 
       /// return copy of this material object
@@ -293,6 +311,7 @@ namespace MAT
         return porosity_->at(gp);
       }
 
+      /*
       void SetDPoroDtAtGP(std::vector<double> dporodt_gp);
 
       /// Return derivative of porosity wrt time evaluated at some gauss point.           %urrecha 04/12
@@ -316,6 +335,7 @@ namespace MAT
       /// Return gradient of jacobian evaluated at some gauss point
       void GetGradJAtGP(LINALG::Matrix<1,3>& gradJ, int gp) const;
       void GetGradJAtGP(LINALG::Matrix<1,2>& gradJ, int gp) const;
+      */
 
 
     private:
@@ -347,13 +367,13 @@ namespace MAT
       Teuchos::RCP<std::map<int, std::vector< double > > > surfporosity_;
 
       /// porosity time derivative at gauss points
-      Teuchos::RCP<std::vector<double> > dporodt_;
+      //Teuchos::RCP<std::vector<double> > dporodt_;
 
       /// porosity gradient at gauss points
-      Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > gradporosity_;
+     // Teuchos::RCP<std::vector<LINALG::Matrix<3,1> > > gradporosity_;
 
       /// gradient of jacobian at gauss points
-      Teuchos::RCP<std::vector<LINALG::Matrix<1,3> > > gradJ_;
+      //Teuchos::RCP<std::vector<LINALG::Matrix<1,3> > > gradJ_;
 
       /// flag indicating initialization of attributes
       bool isinitialized_;

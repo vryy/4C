@@ -4625,7 +4625,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
     double dphi_dpp=0.0;
     double porosity_gp=0.0;
 
-    structmat->ComputeSurfPorosity(params,
+    structmat->ComputeSurfPorosity(//params,
                                    press,
                                    J,
                                    ele->SurfaceNumber(),

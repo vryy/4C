@@ -3,6 +3,13 @@
 
 #include "fluid_ele_calc.H"
 
+// forward declarations
+namespace MAT
+{
+  class StructPoro;
+}
+
+
 namespace DRT
 {
 namespace ELEMENTS
@@ -96,9 +103,9 @@ private:
                   const LINALG::Matrix<my::nen_,1>    &                           epreaf,
                   const LINALG::Matrix<my::nsd_,my::nen_> &                       evelnp,
                   const LINALG::Matrix<my::nen_,1>    &                           eprenp,
-                  const LINALG::Matrix<my::nsd_,my::nen_> &                       emhist,
                   const LINALG::Matrix<my::nen_,1>    &                           epren,
-                  const LINALG::Matrix<my::nen_,1>    &                           epressn_timederiv,
+                  const LINALG::Matrix<my::nsd_,my::nen_> &                       emhist,
+                  const LINALG::Matrix<my::nen_,1>&                               echist,
                   const LINALG::Matrix<my::nen_,1>    &                           epressnp_timederiv,
                   const LINALG::Matrix<my::nsd_,my::nen_> &                       eaccam,
                   const LINALG::Matrix<my::nsd_,my::nen_> &                       edispnp,
@@ -140,8 +147,9 @@ private:
     \param eprenp           (i) nodal pressure at n+alpha_F/n+1
     \param eaccam           (i) nodal accelerations at n+alpha_M
     \param emhist           (i) time rhs for momentum equation
-    \param edispnp          (i) nodal displacements (on moving mesh)
-    \param egridv           (i) grid velocity (on moving mesh)
+    \param edispnp          (i) nodal displacements at n+1 (on moving mesh)
+    \param edispn           (i) nodal displacements at n (on moving mesh)
+    \param egridv           (i) grid velocity at n+1
     \param estif            (o) element matrix to calculate
     \param emesh            (o) linearization wrt mesh motion
     \param eforce           (o) element rhs to calculate
@@ -157,10 +165,10 @@ private:
       const LINALG::Matrix<my::nsd_,my::nen_>&                      evelnp,
       const LINALG::Matrix<my::nen_,1>&                             epreaf,
       const LINALG::Matrix<my::nen_,1>&                             eprenp,
+      const LINALG::Matrix<my::nen_,1>&                             epren,
       const LINALG::Matrix<my::nsd_,my::nen_>&                      eaccam,
       const LINALG::Matrix<my::nsd_,my::nen_>&                      emhist,
-      const LINALG::Matrix<my::nen_,1>    &                         epren,
-      const LINALG::Matrix<my::nen_,1>    &                         epressn_timederiv,
+      const LINALG::Matrix<my::nen_,1>&                             echist,
       const LINALG::Matrix<my::nen_,1>    &                         epressnp_timederiv,
       const LINALG::Matrix<my::nsd_,my::nen_>&                      edispnp,
       const LINALG::Matrix<my::nsd_,my::nen_>&                      edispn,
@@ -199,7 +207,8 @@ private:
       const double &                                                    dphi_dp,
       const double &                                                    dphi_dJ,
       const double &                                                    J,
-      LINALG::Matrix<1, my::nsd_>&                                      gradJ,
+      const double &                                                    refporositydot,
+      LINALG::Matrix<my::nsd_, 1>&                                      gradJ,
       const double & timefac, const double &                            timefacfac
       );
 
@@ -215,7 +224,7 @@ private:
       const double &                                                    dphi_dJ,
       const double &                                                    J,
       const double &                                                    refporositydot,
-      LINALG::Matrix<1, my::nsd_>&                                      gradJ,
+      LINALG::Matrix<my::nsd_, 1>&                                      gradJ,
       const double & timefac, const double &                            timefacfac
       );
 
@@ -227,18 +236,76 @@ private:
       LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> &   lin_resM_Du,    ///< linearisation of the stabilization residual
       const double &                                 fac3,           ///< factor for residual in current subgrid velocities
       const double &                                 timefacfac,     ///< = timefac x fac
-      const double &                                 timefacfacpre,
+      const double &                                 timefacfacpre, ///< = timefacpre x fac
       const double &                                 rhsfac       ///< right-hand-side factor for residuals
       );
 
-  void CalcAuxiliaryDerivatives(const LINALG::Matrix<my::nsd_, my::nen_>& edispnp,
-                                const LINALG::Matrix<my::nsd_,my::nsd_>& defgrd,
-                                const LINALG::Matrix<my::nsd_,my::nsd_>& defgrd_inv,
-                                LINALG::Matrix<my::nsd_*my::nsd_,my::nen_>& N_X_x,
+  void ComputeFDerivative(const LINALG::Matrix<my::nsd_, my::nen_>&         edispnp,
+                          const LINALG::Matrix<my::nsd_,my::nsd_>&          defgrd_inv,
                                 LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>& F_x,
-                                LINALG::Matrix<my::nsd_,my::nsd_*my::nen_>& Finv_N_X_x);
+                                LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>& F_X);
 
+  void ComputeContiTimeRHS(const LINALG::Matrix<my::nen_, 1>&        epren,
+                           const LINALG::Matrix<my::nsd_, my::nen_>& edispn,
+                           LINALG::Matrix<my::nen_,1>&               preforce,
+                           const double&                             rhsfac
+                          );
+
+  void ComputeGradients(const double&                                      J,
+                        const double&                                      dphidp,
+                        const double&                                      dphidJ,
+                        const LINALG::Matrix<my::nsd_*my::nsd_,1>&         defgrd_IT_vec,
+                        const LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>&  F_x,
+                        LINALG::Matrix<my::nsd_,1>&                        gradJ,
+                        LINALG::Matrix<my::nsd_,1>&                        grad_porosity);
+
+  void ComputeLinearization(
+                              const double&                                      dphi_dp,
+                              const double&                                      dphi_dpp,
+                              const double&                                      dphi_dJp,
+                              const LINALG::Matrix<my::nsd_,1>&                  gradJ,
+                              LINALG::Matrix<my::nsd_,my::nen_>&               dgradphi_dp);
+
+  void ComputeLinearizationOD(const double&                                      J,
+                              const double&                                      dphi_dJ,
+                              const double&                                      dphi_dJJ,
+                              const double&                                      dphi_dJp,
+                              const LINALG::Matrix<my::nsd_,my::nsd_>&           defgrd_inv,
+                              const LINALG::Matrix<my::nsd_*my::nsd_,1>&         defgrd_IT_vec,
+                              const LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>&  F_x,
+                              const LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>&  F_X,
+                              const LINALG::Matrix<my::nsd_,1>&                  gradJ,
+                              LINALG::Matrix<1,my::nsd_*my::nen_>&               dJ_dus,
+                              LINALG::Matrix<1,my::nsd_*my::nen_>&               dphi_dus,
+                              LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&        dgradphi_dus);
+
+  /// computation of material derivatives
+  double SetupMaterialDerivatives();
+
+  /// access structure material of corresponding solid (poro) element
+  void GetStructMaterial();
+
+  ///effective viscosity (zero for Darcy flow )
   double visceff_;
+
+  ///first derivatives of shape functions w.r.t. material coordinates
+  LINALG::Matrix<my::nsd_,my::nen_> N_XYZ_;
+  /*!
+  \brief second derivatives of shape functions w.r.t. material coordinates XYZ
+    3D: (N,XX ; N,YZ ; N,ZZ ; N,XY ; N,XZ ; N,YX ; N,YZ;  N,ZX ; N,ZY)
+    2D: (N,XX ; N,YZ ; N,XY ; N,YX )
+   */
+  LINALG::Matrix<my::numderiv2_,my::nen_> N_XYZ2_;
+  ///second derivatives of shape functions w.r.t. material coordinates XYZ (ordered in symmetric matrix)
+  LINALG::Matrix<my::nsd_*my::nsd_,my::nen_> N_XYZ2full_;
+  /// material coordinates
+  LINALG::Matrix<my::nsd_,my::nen_> xyze0_;
+
+  //! vector containing all values from previous timelevel n for continuity equation
+  double histcon_;
+
+  //! material of corresponding solid element
+  Teuchos::RCP<MAT::StructPoro> structmat_;
 
 };
 }
