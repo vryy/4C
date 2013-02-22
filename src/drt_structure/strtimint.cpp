@@ -22,7 +22,7 @@ Maintainer: Alexander Popp
 
 #include "strtimint_mstep.H"
 #include "strtimint.H"
-#include "stru_resulttest.cpp"
+#include "stru_resulttest.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_control.H"
