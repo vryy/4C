@@ -384,7 +384,7 @@ void LINALG::SparseMatrix::Assemble(
   {
 #ifdef DEBUG
     // There is the case of nodes without dofs (XFEM).
-    // If no row dofs are present on this proc, their is nothing to assemble.
+    // If no row dofs are present on this proc, there is nothing to assemble.
     // However, the subsequent check for coldofs (in DEBUG mode) would incorrectly fail.
     bool doit = false;
     for (int lrow=0; lrow<lrowdim; ++lrow)
@@ -435,13 +435,18 @@ void LINALG::SparseMatrix::Assemble(
 #endif
       const int numnode = (int)lmstride.size();
       int dofcount=0;
+      int pos = 0;
       for (int node=0; node<numnode; ++node)
       {
-        int* loc = std::lower_bound(indices,indices+length,localcol[dofcount]);
+        // check if 'pos' already points to the correct location before the binary search
+        if (pos >= length || indices[pos] != localcol[dofcount])
+        {
+          int* loc = std::lower_bound(indices,indices+length,localcol[dofcount]);
 #ifdef DEBUG
-        if (*loc != localcol[dofcount]) dserror("Cannot find local column entry %d",localcol[dofcount]);
+          if (*loc != localcol[dofcount]) dserror("Cannot find local column entry %d",localcol[dofcount]);
 #endif
-        int pos = loc-indices;
+          pos = loc-indices;
+        }
         const int stride = lmstride[node];
         // test continuity of data in sparsematrix
         bool reachedlength=false;
