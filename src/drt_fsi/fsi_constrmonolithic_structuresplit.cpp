@@ -24,6 +24,45 @@ FSI::ConstrMonolithicStructureSplit::ConstrMonolithicStructureSplit(const Epetra
                                                                     const Teuchos::ParameterList& timeparams)
   : ConstrMonolithic(comm,timeparams)
 {
+  // ---------------------------------------------------------------------------
+  // FSI specific check of Dirichlet boundary conditions
+  // ---------------------------------------------------------------------------
+  // Create intersection of slave DOFs that hold a Dirichlet boundary condition
+  // and are located at the FSI interface
+  std::vector<Teuchos::RCP<const Epetra_Map> > intersectionmaps;
+  intersectionmaps.push_back(StructureField()->GetDBCMapExtractor()->CondMap());
+  intersectionmaps.push_back(StructureField()->Interface()->FSICondMap());
+  Teuchos::RCP<Epetra_Map> intersectionmap = LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
+
+  // Check whether the intersection is empty
+  if (intersectionmap->NumGlobalElements() != 0)
+  {
+    // It is not allowed, that slave DOFs at the interface hold a Dirichlet
+    // boundary condition. Thus --> ToDo: Error message
+
+    // We do not have to care whether ALE interface DOFs carry DBCs in the
+    // input file since they do not occur in the monolithic system and, hence,
+    // do not cause a conflict.
+
+    std::stringstream errormsg;
+    errormsg  << "  +---------------------------------------------------------------------------------------------+" << std::endl
+              << "  |                DIRICHLET BOUNDARY CONDITIONS ON SLAVE SIDE OF FSI INTERFACE                 |" << std::endl
+              << "  +---------------------------------------------------------------------------------------------+" << std::endl
+              << "  | NOTE: The slave side of the interface is not allowed to carry Dirichlet boundary conditions.|" << std::endl
+              << "  |                                                                                             |" << std::endl
+              << "  | This is a structure split scheme. Hence, master and slave field are chosen as follows:      |" << std::endl
+              << "  |     MASTER  = FLUID                                                                         |" << std::endl
+              << "  |     SLAVE   = STRUCTURE                                                                     |" << std::endl
+              << "  |                                                                                             |" << std::endl
+              << "  | Dirichlet boundary conditions were detected on slave interface degrees of freedom. Please   |" << std::endl
+              << "  | remove Dirichlet boundary conditions from the slave side of the FSI interface.              |" << std::endl
+              << "  | Only the master side of the FSI interface is allowed to carry Dirichlet boundary conditions.|" << std::endl
+              << "  +---------------------------------------------------------------------------------------------+" << std::endl;
+
+    std::cout << errormsg.str();
+  }
+  // ---------------------------------------------------------------------------
+
   sggtransform_ = Teuchos::rcp(new UTILS::MatrixRowColTransform);
   sgitransform_ = Teuchos::rcp(new UTILS::MatrixRowTransform);
   sigtransform_ = Teuchos::rcp(new UTILS::MatrixColTransform);
