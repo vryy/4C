@@ -1228,8 +1228,8 @@ private:
       xrefe[i]=0;
 
     for (int node=0; node<4; node++)
-      for(int dof= 0; dof < 3; dof++)
-        rxrefe[node*3 + dof] = Nodes()[node]->X()[dof];
+      for(int d= 0; d < 3; d++)
+        rxrefe[node*3 + d] = Nodes()[node]->X()[d];
 
     std::vector<LINALG::Matrix<1,2> > Ibp(2);
     const DiscretizationType dtype = this->Shape();

@@ -718,7 +718,7 @@ namespace GEO
 
         bool SurfaceWithinLimits()
         {
-          return SurfaceWithinLimits<sidetype>( LocalCoordinates() );
+          return GEO::CUT::KERNEL::SurfaceWithinLimits<sidetype>( LocalCoordinates() );
         }
       };
 
@@ -1018,7 +1018,7 @@ namespace GEO
 
         bool SurfaceWithinLimits()
         {
-          return SurfaceWithinLimits<sidetype>( LocalCoordinates() );
+          return GEO::CUT::KERNEL::SurfaceWithinLimits<sidetype>( LocalCoordinates() );
         }
 
         bool LineWithinLimits()
