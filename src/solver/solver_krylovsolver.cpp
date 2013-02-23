@@ -309,11 +309,20 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(const Teuchos::RCP<E
     data_->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xSlaveDofMap));  // set map with active dofs
 
     // define permutation factory for permuting the full matrix A
-    PermFact_ = Teuchos::rcp(new PermutationFactory("SlaveDofMap", MueLu::NoFactory::getRCP()));
+    PermFact_ = Teuchos::rcp(new PermutationFactory());
+    PermFact_->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("SlaveDofMap")));
+    PermFact_->SetFactory("PermutationRowMapFactory", MueLu::NoFactory::getRCP());
+    PermFact_->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Algebraic")));
+    //PermFact_->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Local")));
   }
-  else
+  else {
     // permute full matrix
-    PermFact_ = Teuchos::rcp(new PermutationFactory("",Teuchos::null));
+    PermFact_ = Teuchos::rcp(new PermutationFactory());
+    PermFact_->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("")));
+    PermFact_->SetFactory("PermutationRowMapFactory", Teuchos::null);
+    PermFact_->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Algebraic")));
+    //PermFact_->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Local")));
+  }
 
   ///////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////
@@ -659,6 +668,7 @@ bool LINALG::SOLVER::KrylovSolver::DecideAboutPermutation(const Teuchos::RCP<Epe
   Teuchos::RCP<Teuchos::FancyOStream> fos = Teuchos::getFancyOStream(Teuchos::rcpFromRef(std::cout));
   fos->setOutputToRootOnly( 0 );
   *fos << "---------------------------- MATRIX analysis -----------------------" << std::endl;
+  *fos << "| permutation strategy: " << std::setw(25) << PermFact_->GetParameter("PermutationStrategy") << "                  |" << std::endl;
   *fos << "| non-permuted matrix A              | permuted matrix A           |" << std::endl;
   *fos << "| zeros on diagonal: " << std::setw(8) << std::right << NonPermutedZeros << "        ";
   *fos << "| zeros on diagonal: " << std::setw(8) << std::right << PermutedZeros << " |" << std::endl;
