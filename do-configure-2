@@ -136,7 +136,7 @@ $CMAKE_COMMAND \
     -D HAVE_TEKO:BOOL=$BUILD_Teko \
     -D HAVE_MueLu:BOOL=$BUILD_MueLu \
     -D HAVE_EXPERIMENTAL_MueLu:BOOL=$BUILD_MueLuExperimental \
-    -D HAVE_Stratimikos:BOOL=OFF \
+    -D HAVE_Stratimikos:BOOL=ON \
     -D TRILINOS_DEV:BOOL=$TRILINOSDEV \
     -D D_ARTNET:BOOL=ON \
     -D D_RED_AIRWAYS:BOOL=ON \
