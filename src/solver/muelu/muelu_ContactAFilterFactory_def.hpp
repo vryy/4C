@@ -142,7 +142,7 @@ namespace MueLu {
             //   1: indices[i] is in DofMap1
             //   2: indices[i] is in DofMap2
             bool bCopy = false;
-	    if(isBlock1 == true  && isBlock2 == true)  isBlock1 = false; // avoid mixup and overlapping aggregates
+            if(isBlock1 == true  && isBlock2 == true)  isBlock1 = false; // if a row is in both submaps put it to the master side here
             if(isBlock1 == false && isBlock2 == false) bCopy = true; // row is neither in block 1 or block 2 -> copy
             if(isBlock1 == true  && colBlockId == 1)   bCopy = true; // row is block 1 and column is block 1 -> copy
             if(isBlock1 == true  && colBlockId ==-1)   bCopy = true; // row is block 1 and column is block -1-> copy
