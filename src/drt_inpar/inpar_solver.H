@@ -110,6 +110,17 @@ namespace INPAR
         PG_AMG,         ///< PG-AMG (Petrov Galerkin energy minimization)
         PG2_AMG         ///< PG-AMG (Petrov Galerkin energy minimization), same as MATLAB variant
     };
+
+    /// permutation strategies for linear solvers
+    ///
+    /// \author tw
+    /// \date 02/13
+    enum PermutationStrategy
+    {
+        Permutation_none,       /// < no permutation, use original linear system
+        Permutation_algebraic,  /// < use algebraic permutation strategy
+        Permutation_local       /// < use local permutations
+    };
   }  // namespace SOLVER
 
 }  // namespace INPAR

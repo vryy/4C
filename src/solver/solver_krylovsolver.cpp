@@ -68,6 +68,7 @@ LINALG::SOLVER::KrylovSolver::KrylovSolver( const Epetra_Comm & comm,
     ,
     bAllowPermutation_( false ),
     bPermuteLinearSystem_( false ),
+    permutationStrategy_( "none" ),
     diagDominanceRatio_( 1.0 ),
     PermFact_( Teuchos:: null )
 #endif
@@ -300,6 +301,7 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(const Teuchos::RCP<E
   data_->setDefaultVerbLevel(Teuchos::VERB_NONE);
   data_->Set("A",xOp);
 
+
   ///////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////
   ///////////////////////////////////////////////////////////////////////
@@ -312,16 +314,14 @@ void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(const Teuchos::RCP<E
     PermFact_ = Teuchos::rcp(new PermutationFactory());
     PermFact_->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("SlaveDofMap")));
     PermFact_->SetFactory("PermutationRowMapFactory", MueLu::NoFactory::getRCP());
-    PermFact_->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Algebraic")));
-    //PermFact_->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Local")));
+    PermFact_->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(permutationStrategy_));
   }
   else {
     // permute full matrix
     PermFact_ = Teuchos::rcp(new PermutationFactory());
     PermFact_->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("")));
     PermFact_->SetFactory("PermutationRowMapFactory", Teuchos::null);
-    PermFact_->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Algebraic")));
-    //PermFact_->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Local")));
+    PermFact_->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(permutationStrategy_));
   }
 
   ///////////////////////////////////////////////////////////////////////

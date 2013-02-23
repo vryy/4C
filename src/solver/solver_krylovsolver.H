@@ -174,6 +174,9 @@ namespace LINALG
           /*! @brief internal variable whether to solve permuted linear system or original linear system (after algorithmic decision)*/
           bool bPermuteLinearSystem_;
 
+          /*! @brief internal variable with the permutation strategy */
+          std::string permutationStrategy_;
+
           /*! @brief maximum allowed diagonal dominance ratio. All row GIDs with diagonalEntry/maxEntry < diagDominanceRatio are considered to be significantly non-diagonal dominant.*/
           double diagDominanceRatio_;
 

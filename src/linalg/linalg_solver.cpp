@@ -1125,8 +1125,22 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToBelos(const Teuchos:
   else if (verbosity > 2) beloslist.set("Verbosity", Belos::Errors + Belos::Warnings);
   else if (verbosity > 0) beloslist.set("Verbosity", Belos::Errors);
   //beloslist.set("allow permutation", DRT::INPUT::IntegralValue<int>(inparams,"PERMUTE_SYSTEM"));
-  bool bAllowPermutation = DRT::INPUT::IntegralValue<bool>(inparams,"PERMUTE_SYSTEM");
-  beloslist.set("allow permutation", bAllowPermutation);
+  const int PermutationStrategy = DRT::INPUT::IntegralValue<INPAR::SOLVER::PermutationStrategy>(inparams,"PERMUTE_SYSTEM");
+
+    switch (PermutationStrategy)
+    {
+    case INPAR::SOLVER::Permutation_algebraic:
+      beloslist.set("permutation strategy", "Algebraic");
+      break;
+    case INPAR::SOLVER::Permutation_local:
+      beloslist.set("permutation strategy", "Local");
+      break;
+    case INPAR::SOLVER::Permutation_none:
+    default:
+      beloslist.set("permutation strategy", "none");
+      break;
+    }
+  //beloslist.set("allow permutation", bAllowPermutation);
   double nonDiagDominance = inparams.get<double>("NON_DIAGDOMINANCE_RATIO");
   beloslist.set("diagonal dominance ratio", nonDiagDominance);
   beloslist.set("Output Style",Belos::Brief);
@@ -1422,8 +1436,23 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
     // set reuse parameters
     azlist.set("ncall",0);                         // counting number of solver calls
     azlist.set("reuse",inparams.get<int>("AZREUSE"));            // reuse info for n solver calls
-    bool bAllowPermutation = DRT::INPUT::IntegralValue<bool>(inparams,"PERMUTE_SYSTEM");
-    azlist.set("allow permutation", bAllowPermutation);
+    //bool bAllowPermutation = DRT::INPUT::IntegralValue<bool>(inparams,"PERMUTE_SYSTEM");
+    //azlist.set("allow permutation", bAllowPermutation);
+    const int PermutationStrategy = DRT::INPUT::IntegralValue<INPAR::SOLVER::PermutationStrategy>(inparams,"PERMUTE_SYSTEM");
+
+      switch (PermutationStrategy)
+      {
+      case INPAR::SOLVER::Permutation_algebraic:
+        azlist.set("permutation strategy", "Algebraic");
+        break;
+      case INPAR::SOLVER::Permutation_local:
+        azlist.set("permutation strategy", "Local");
+        break;
+      case INPAR::SOLVER::Permutation_none:
+      default:
+        azlist.set("permutation strategy", "none");
+        break;
+      }
     double nonDiagDominance = inparams.get<double>("NON_DIAGDOMINANCE_RATIO");
     azlist.set("diagonal dominance ratio", nonDiagDominance);
     azlist.set("verbosity",inparams.get<int>("VERBOSITY"));  // this is not an official Aztec flag

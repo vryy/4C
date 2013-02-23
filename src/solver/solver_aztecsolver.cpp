@@ -84,8 +84,10 @@ void LINALG::SOLVER::AztecSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
 
 #ifdef HAVE_MueLu
 #ifdef HAVE_EXPERIMENTAL_MueLu
-  bAllowPermutation_  = azlist.get<bool>("allow permutation",false);
+  permutationStrategy_ = azlist.get<std::string>("permutation strategy","none");
   diagDominanceRatio_ = azlist.get<double>("diagonal dominance ratio", 1.0);
+  if (permutationStrategy_ == "none") bAllowPermutation_  = false;
+  else bAllowPermutation_ = true;
 #endif
 #endif
 
