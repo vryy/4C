@@ -2220,6 +2220,14 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
   std::vector<double> llmn, glmn;
   std::vector<double> lgap, ggap;
 
+  std::vector<double> Xposl, Xposg;
+  std::vector<double> Yposl, Yposg;
+  std::vector<double> Zposl, Zposg;
+
+  std::vector<double> xposl, xposg;
+  std::vector<double> yposl, yposg;
+  std::vector<double> zposl, zposg;
+  
   // introduce integer variable status
   // (0=inactive, 1=active, 2=slip, 3=stick)
   // (this is necessary as all data will be written by proc 0, but
@@ -2258,6 +2266,14 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         // compute weighted gap
         double wgap = (*g_)[g_->Map().LID(gid)];
 
+        double Xpos=cnode->X()[0];
+        double Ypos=cnode->X()[1];
+        double Zpos=cnode->X()[2];
+
+        double xpos=cnode->xspatial()[0];
+        double ypos=cnode->xspatial()[1];
+        double zpos=cnode->xspatial()[2];
+        
         // compute normal part of Lagrange multiplier
         double nz = 0.0;
         for (int k=0;k<3;++k)
@@ -2269,7 +2285,13 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         // store relevant data
         llmn.push_back(nz);
         lgap.push_back(wgap);
-
+        Xposl.push_back(Xpos);
+        Yposl.push_back(Ypos);
+        Zposl.push_back(Zpos);
+        xposl.push_back(xpos);
+        yposl.push_back(ypos);
+        zposl.push_back(zpos);
+        
         // store status (0=inactive, 1=active, 2=slip, 3=stick)
         if (cnode->Active()) lsta.push_back(1);
         else                 lsta.push_back(0);
@@ -2352,6 +2374,14 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
   LINALG::Gather<double>(lgap,ggap,(int)allproc.size(),&allproc[0],Comm());
   LINALG::Gather<int>(lsta,gsta,(int)allproc.size(),&allproc[0],Comm());
 
+  LINALG::Gather<double>(Xposl,Xposg,(int)allproc.size(),&allproc[0],Comm());
+  LINALG::Gather<double>(Yposl,Yposg,(int)allproc.size(),&allproc[0],Comm());
+  LINALG::Gather<double>(Zposl,Zposg,(int)allproc.size(),&allproc[0],Comm());
+
+  LINALG::Gather<double>(xposl,xposg,(int)allproc.size(),&allproc[0],Comm());
+  LINALG::Gather<double>(yposl,yposg,(int)allproc.size(),&allproc[0],Comm());
+  LINALG::Gather<double>(zposl,zposg,(int)allproc.size(),&allproc[0],Comm());
+  
   // communicate some more data to proc 0 for friction
   if (friction_)
   {
@@ -2375,14 +2405,14 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         // print nodes of inactive set *************************************
         if (gsta[k]==0)
         {
-          printf("INACTIVE: %d \t wgap: % e \t lm: % e \n",gnid[k],ggap[k],glmn[k]);
+          printf("INACTIVE: %d \t wgap: % e \t lm: % e \t Xref: % e \t Yref: % e \t Zref: % e \n",gnid[k],ggap[k],glmn[k],Xposg[k],Yposg[k],Zposg[k]);
           fflush(stdout);
         }
 
         // print nodes of active set ***************************************
         else if (gsta[k]==1)
         {
-          printf("ACTIVE:   %d \t wgap: % e \t lm: % e \n",gnid[k],ggap[k],glmn[k]);
+          printf("ACTIVE:   %d \t wgap: % e \t lm: % e \t Xref: % e \t Yref: % e \t Zref: % e \n",gnid[k],ggap[k],glmn[k],Xposg[k],Yposg[k],Zposg[k]);
           fflush(stdout);
         }
 
