@@ -377,6 +377,21 @@ namespace FLD
     /// perform time integration and set new Vectors
     void CutAndSetStateVectors();
 
+    void TransferDofsBetweenSteps(
+        const Teuchos::RCP<DRT::Discretization>          dis,                      /// discretization
+        const Epetra_Map&                                olddofrowmap,             /// dof row map w.r.t old interface position
+        const Epetra_Map&                                olddofcolmap,             /// dof col map w.r.t old interface position
+        std::vector<Teuchos::RCP<const Epetra_Vector> >& oldRowStateVectors,       /// row map based vectors w.r.t old interface position
+        std::vector<Teuchos::RCP<Epetra_Vector> >&       newRowStateVectors,       /// row map based vectors w.r.t new interface position
+        const Teuchos::RCP<XFEM::FluidWizard>            wizard_old,               /// fluid wizard w.r.t old interface position
+        const Teuchos::RCP<XFEM::FluidWizard>            wizard_new,               /// fluid wizard w.r.t new interface position
+        const Teuchos::RCP<XFEM::FluidDofSet>            dofset_old,               /// dofset w.r.t old interface position
+        const Teuchos::RCP<XFEM::FluidDofSet>            dofset_new,               /// dofset w.r.t new interface position
+        const Teuchos::ParameterList&                    params,                   /// parameter list
+        std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  /// reconstruction map for nodes and its dofsets
+        Teuchos::RCP<std::set<int> >                     dbcgids                   /// set of dof gids that must not be changed by ghost penalty reconstruction
+    );
+
     /// lift'n'drag forces, statistics time sample and output of solution and
     /// statistics
     void StatisticsAndOutput();
@@ -495,7 +510,11 @@ namespace FLD
     /// create field test
     Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
+    /// read restart data for fluid discretization
     void ReadRestart(int step);
+
+    /// read restart data for boundary discretization
+    void ReadRestartBound(int step);
 
 
   private:
@@ -568,7 +587,7 @@ namespace FLD
 
 
     //-------------------------------------------------------------------------------
-    // possible inf-norm scaling of linear system / fluid matrix
+    //! possible inf-norm scaling of linear system / fluid matrix
     Teuchos::RCP<FLD::UTILS::FluidInfNormScaling> fluid_infnormscaling_;
 
     //--------------- discretization and general algorithm parameters----------------
@@ -726,10 +745,11 @@ namespace FLD
 
     //--------------------------------------------------------------------
 
-    /// state object at old time step
-    Teuchos::RCP<XFluidState> staten_;
     /// state object at current new time step
     Teuchos::RCP<XFluidState> state_;
+
+    /// counter how often an state class has been created during one timestep
+    int state_it_;
 
 
     //---------------------------------dofsets----------------------------
@@ -760,6 +780,16 @@ namespace FLD
     //! @name solid-dis state vectors
     Teuchos::RCP<Epetra_Vector>    solidvelnp_;
     Teuchos::RCP<Epetra_Vector>    soliddispnp_;
+    //@}
+
+    //! @name old timestep state data used for xfem time-integration
+    Teuchos::RCP<Epetra_Vector>    veln_Intn_;
+    Teuchos::RCP<Epetra_Vector>    accn_Intn_;
+    Teuchos::RCP<XFEM::FluidWizard> wizard_Intn_;
+    Teuchos::RCP<XFEM::FluidDofSet> dofset_Intn_;
+
+    Teuchos::RCP<Epetra_Map> dofrowmap_Intn_;
+    Teuchos::RCP<Epetra_Map> dofcolmap_Intn_;
     //@}
 
 

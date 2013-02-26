@@ -48,7 +48,7 @@ Maintainer: Benedikt Schott
 #include <iostream>
 
 
-#define DEBUG_TIMINT
+//#define DEBUG_TIMINT
 
 
 // -------------------------------------------------------------------
@@ -56,24 +56,22 @@ Maintainer: Benedikt Schott
 // -------------------------------------------------------------------
 XFEM::XFluidTimeInt::XFluidTimeInt(
     const Teuchos::RCP<DRT::Discretization> dis,                               /// discretization
-    const Teuchos::RCP<DRT::Discretization> boundarydis,                       /// boundary discretization
     const Teuchos::RCP<XFEM::FluidWizard>   wizard_old,                        /// fluid wizard at t^n
     const Teuchos::RCP<XFEM::FluidWizard>   wizard_new,                        /// fluid wizard at t^(n+1)
     const Teuchos::RCP<XFEM::FluidDofSet>   dofset_old,                        /// dofset at t^n
     const Teuchos::RCP<XFEM::FluidDofSet>   dofset_new,                        /// dofset at t^(n+1)
-    const int                               step,                              /// timestep
     const Teuchos::ParameterList&           params,                            /// parameter list
-    std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method   /// reconstruction map for nodes and its dofsets
+    std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method,  /// reconstruction map for nodes and its dofsets
+    int                                     step                               /// global time step
   ) :
   dis_(dis),
-  boundarydis_(boundarydis),
   wizard_old_(wizard_old),
   wizard_new_(wizard_new),
   dofset_old_(dofset_old),
   dofset_new_(dofset_new),
-  step_(step),
   params_ (params),
-  reconstr_method_(reconstr_method)
+  reconstr_method_(reconstr_method),
+  step_(step)
   {
 
     myrank_  = dis->Comm().MyPID();
@@ -149,6 +147,8 @@ std::string XFEM::XFluidTimeInt::MapMethodEnumToString
     return "";
     break;
   }
+
+  return "";
 } // ScaTraTimIntImpl::MapTimIntEnumToString
 
 
@@ -158,8 +158,8 @@ std::string XFEM::XFluidTimeInt::MapMethodEnumToString
 void XFEM::XFluidTimeInt::TransferDofsToNewMap(
     const Epetra_Map&                       olddofrowmap,                     /// dof row map w.r.t old interface position
     const Epetra_Map&                       olddofcolmap,                     /// dof col map w.r.t old interface position
-    vector<RCP<const Epetra_Vector> >&      oldRowStateVectors,               /// row map based vectors w.r.t old interface position
-    vector<RCP<Epetra_Vector> >&            newRowStateVectors,               /// row map based vectors w.r.t new interface position
+    std::vector<RCP<const Epetra_Vector> >& oldRowStateVectors,               /// row map based vectors w.r.t old interface position
+    std::vector<RCP<Epetra_Vector> >&       newRowStateVectors,               /// row map based vectors w.r.t new interface position
     std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >& reconstr_method, /// reconstruction map for nodes and its dofsets
     Teuchos::RCP<std::set<int> >            dbcgids                           /// set of dof gids that must not be changed by ghost penalty reconstruction
     )
@@ -620,12 +620,12 @@ bool XFEM::XFluidTimeInt::UncutEles(GEO::CUT::Node* n)
 // -------------------------------------------------------------------
 // copy dofs from old vectors to new vector for all row vectors
 // -------------------------------------------------------------------
-void XFEM::XFluidTimeInt::CopyDofs(DRT::Node*                         node,               /// drt node
-                                   const int                          nds_new,            /// nodal dofset at w.r.t new interface
-                                   const int                          nds_old,            /// the corresponding nodal dofset at w.r.t old interface
-                                   vector<RCP<Epetra_Vector> >&       newRowStateVectors, /// row map based state vectors at new interface
-                                   vector<RCP<const Epetra_Vector> >& oldRowStateVectors, /// row map based state vectors at old interface
-                                   Teuchos::RCP<std::set<int> >       dbcgids
+void XFEM::XFluidTimeInt::CopyDofs(DRT::Node*                              node,               /// drt node
+                                   const int                               nds_new,            /// nodal dofset at w.r.t new interface
+                                   const int                               nds_old,            /// the corresponding nodal dofset at w.r.t old interface
+                                   std::vector<RCP<Epetra_Vector> >&       newRowStateVectors, /// row map based state vectors at new interface
+                                   std::vector<RCP<const Epetra_Vector> >& oldRowStateVectors, /// row map based state vectors at old interface
+                                   Teuchos::RCP<std::set<int> >            dbcgids
 )
 {
 
@@ -645,7 +645,7 @@ void XFEM::XFluidTimeInt::CopyDofs(DRT::Node*                         node,     
   int vec_count = 0;
 
   // copy values for all vectors
-  for(vector<RCP<const Epetra_Vector> >::iterator it=oldRowStateVectors.begin(); it!=oldRowStateVectors.end(); it++)
+  for(std::vector<RCP<const Epetra_Vector> >::iterator it=oldRowStateVectors.begin(); it!=oldRowStateVectors.end(); it++)
   {
 
     RCP<Epetra_Vector>       vec_new = newRowStateVectors[vec_count];
@@ -690,11 +690,11 @@ void XFEM::XFluidTimeInt::CopyDofs(DRT::Node*                         node,     
 // mark nodal dofs of vector w.r.t new interface position for reconstruction
 // -------------------------------------------------------------------
 void XFEM::XFluidTimeInt::MarkDofs(
-    DRT::Node*                     node,                 /// drt node
-    const int                      nds_new,              /// nodal dofset at t^(n+1)
-    vector<RCP<Epetra_Vector> >&   newRowStateVectors,   /// row map based state vectors at t^(n+1)
-    INPAR::XFEM::XFluidTimeInt     method,               /// reconstruction method
-    Teuchos::RCP<std::set<int> >   dbcgids               /// set of dof gids that must not be changed by ghost penalty reconstruction
+    DRT::Node*                          node,                 /// drt node
+    const int                           nds_new,              /// nodal dofset at t^(n+1)
+    std::vector<RCP<Epetra_Vector> >&   newRowStateVectors,   /// row map based state vectors at t^(n+1)
+    INPAR::XFEM::XFluidTimeInt          method,               /// reconstruction method
+    Teuchos::RCP<std::set<int> >        dbcgids               /// set of dof gids that must not be changed by ghost penalty reconstruction
 )
 {
   // get nodal dofs for current dofset w.r.t new interface position
@@ -702,7 +702,7 @@ void XFEM::XFluidTimeInt::MarkDofs(
   dofset_new_->Dof(*node, nds_new, dofs_new );
 
   // loop vectors
-  for(vector<RCP<Epetra_Vector> >::iterator it=newRowStateVectors.begin(); it!=newRowStateVectors.end(); it++)
+  for(std::vector<RCP<Epetra_Vector> >::iterator it=newRowStateVectors.begin(); it!=newRowStateVectors.end(); it++)
   {
 
     RCP<Epetra_Vector> vec_new = *it;
@@ -1139,7 +1139,7 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
         successful_check = WithinSpaceTimeSide<DRT::Element::quad4,DRT::Element::hex8>(node_within_Space_Time_Side,side_old, side_new, n_coord);
         break;
       }
-      default: dserror("side-distype %s not handled", DRT::DistypeToString(side_distype).c_str());
+      default: dserror("side-distype %s not handled", DRT::DistypeToString(side_distype).c_str()); break;
     }
 
     if(!successful_check) return false; // return non-successful check
@@ -1361,3 +1361,48 @@ bool XFEM::XFluidTimeInt::CheckSTSideVolume( LINALG::Matrix<3,numnode_space_time
 
   return successful;
 }
+
+
+/// timint output for reconstruction methods
+void XFEM::XFluidTimeInt::Output()
+{
+
+  int step_diff = 500;
+
+  // output for all dofsets of nodes
+  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("TIMINT_Method", step_, step_diff, true, dis_->Comm().MyPID());
+  std::ofstream gmshfilecontent(filename.c_str());
+  gmshfilecontent.setf(std::ios::scientific,std::ios::floatfield);
+  gmshfilecontent.precision(16);
+  {
+    gmshfilecontent << "View \" " << "Reconstr-Method \" {\n";
+
+    std::map<int,std::vector<int> >& reconstr_method = this->Get_Output_Reconstr();
+
+    for (int i=0; i<dis_->NumMyRowNodes(); ++i)
+    {
+      const DRT::Node* actnode = dis_->lRowNode(i);
+      const LINALG::Matrix<3,1> pos(actnode->X());
+
+      std::map<int,std::vector<int> >::iterator it = reconstr_method.find(actnode->Id());
+
+      if(it == reconstr_method.end()) dserror("node not found in output map");
+
+      std::vector<int>& nds = it->second;
+
+      for(size_t j=0; j<nds.size(); j++ )
+      {
+        IO::GMSH::cellWithScalarToStream(DRT::Element::point1, nds[j], pos, gmshfilecontent);
+      }
+    }
+    gmshfilecontent << "};\n";
+  }
+
+  gmshfilecontent.close();
+
+  if(myrank_==0) std::cout << endl;
+
+}
+
+
+

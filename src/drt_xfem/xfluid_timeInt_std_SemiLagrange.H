@@ -144,7 +144,7 @@ private:
   void computeNodalGradient(
       vector<RCP<Epetra_Vector> >& newColVectors,
       const Epetra_Map& newdofcolmap,
-      map<XFEM::DofKey,XFEM::DofGID>& newNodalDofColDistrib,
+      std::map<XFEM::DofKey,XFEM::DofGID>& newNodalDofColDistrib,
       const DRT::Element* ele,
       DRT::Node* node,
       vector<LINALG::Matrix<3,3> >& velnpDeriv1,

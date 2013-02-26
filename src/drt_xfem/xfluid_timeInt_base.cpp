@@ -32,7 +32,7 @@ Maintainer: Martin Winklmaier
 #include "xfluid_timeInt_base.H"
 
 
-#define DEBUG_TIMINT_STD
+//#define DEBUG_TIMINT_STD
 
 /*------------------------------------------------------------------------------------------------*
  * basic XFEM time-integration constructor                                       winklmaier 11/11 *
@@ -605,7 +605,7 @@ void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(
   case DRT::Element::tet4:
     XToXiCoords<DRT::Element::tet4>(nodecoords,x,xi,pointInDomain);
     break;
-  default: dserror("add your 3D distype and the according transformation!");
+  default: dserror("add your 3D distype and the according transformation!"); break;
   } // end switch
 
   return;
@@ -1054,7 +1054,7 @@ void XFEM::XFLUID_STD::getGPValues(
   case DRT::Element::tet4:
     getGPValuesT<DRT::Element::tet4>(ele,xi,nds,step_np,vel,vel_deriv,compute_deriv);
     break;
-  default: dserror("add your 3D distype here!");
+  default: dserror("add your 3D distype here!"); break;
   } // end switch
 
   return;
@@ -1638,7 +1638,7 @@ void XFEM::XFLUID_STD::callgetNormalSide_tn(
 //        break;
 //      }
     default:
-      dserror( "unsupported side shape %d", side->Shape() );
+      dserror( "unsupported side shape %d", side->Shape() ); break;
     }
   }
   else if (side->ElementType() == DRT::ELEMENTS::Bele3_4Type::Instance()) // four dofs per node, for standard Dirichlet coupling
@@ -1673,7 +1673,7 @@ void XFEM::XFLUID_STD::callgetNormalSide_tn(
 //        break;
 //      }
     default:
-      dserror( "unsupported side shape %d", side->Shape() );
+      dserror( "unsupported side shape %d", side->Shape() ); break;
     }
   }
 }
@@ -1779,7 +1779,7 @@ void XFEM::XFLUID_STD::call_get_projxn_Line(
       break;
     }
     default:
-      dserror( "unsupported line shape %d", line->Shape() );
+      dserror( "unsupported line shape %d", line->Shape() ); break;
     }
   }
   else if (side->ElementType() == DRT::ELEMENTS::Bele3_4Type::Instance()) // four dofs per node, for standard Dirichlet coupling
@@ -1794,7 +1794,7 @@ void XFEM::XFLUID_STD::call_get_projxn_Line(
       break;
     }
     default:
-      dserror( "unsupported line shape %d", line->Shape() );
+      dserror( "unsupported line shape %d", line->Shape() ); break;
     }
   }
 }
@@ -1947,7 +1947,7 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
 //        break;
 //      }
     default:
-      dserror( "unsupported side shape %d", side->Shape() );
+      dserror( "unsupported side shape %d", side->Shape() ); break;
     }
   }
   else if (side->ElementType() == DRT::ELEMENTS::Bele3_4Type::Instance()) // four dofs per node, for standard Dirichlet coupling
@@ -1982,7 +1982,7 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
 //        break;
 //      }
     default:
-      dserror( "unsupported side shape %d", side->Shape() );
+      dserror( "unsupported side shape %d", side->Shape() ); break;
     }
   }
 
@@ -2083,7 +2083,7 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
       break;
     }
     default:
-      dserror( "unsupported line shape %d", line->Shape() );
+      dserror( "unsupported line shape %d", line->Shape() ); break;
     }
   }
   else if (side->ElementType() == DRT::ELEMENTS::Bele3_4Type::Instance()) // four dofs per node, for standard Dirichlet coupling
@@ -2098,7 +2098,7 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
       break;
     }
     default:
-      dserror( "unsupported line shape %d", line->Shape() );
+      dserror( "unsupported line shape %d", line->Shape() ); break;
     }
   }
 
