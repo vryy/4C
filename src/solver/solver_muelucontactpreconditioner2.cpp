@@ -61,7 +61,6 @@
 #include "muelu/muelu_ContactTransferFactory_decl.hpp"
 #include "muelu/MueLu_MyTrilinosSmoother_decl.hpp"
 #include "muelu/MueLu_IterationAFactory_decl.hpp"
-#include "muelu/MueLu_SelectiveAFactory_decl.hpp"
 #include "muelu/MueLu_SelectiveSaPFactory_decl.hpp"
 
 #include "solver_muelucontactpreconditioner2.H"
@@ -305,11 +304,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
 
   ///////////////////////////////////////////////////////////////////////
   // keep factories
-
-  // note: the slaveTransferAFactory is only needed/used for the setup
-  //       we don't have to keep it over all multigrid levels
-  /*Teuchos::RCP<FactoryBase> slaveTransferAFactory =
-       Teuchos::rcp(new MueLu::SelectiveAFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap",MueLu::NoFactory::getRCP()));*/
 
   // keep singleNodeAFact since it's needed in the solution phase by MyTrilinosSmoother
   if(xSingleNodeAggMap != Teuchos::null)
