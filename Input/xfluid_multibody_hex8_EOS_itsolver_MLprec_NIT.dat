@@ -64,13 +64,13 @@ ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        edge_based
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            no_pspg
 SUPG                            no_supg//yes_supg
 VSTAB                           no_vstab
-CSTAB no_cstab //cstab_qs
+CSTAB                           no_cstab //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------------------XFEM GENERAL
@@ -90,7 +90,7 @@ VISC_STAB_FAC                   50.0                            // in [10;100]
 VISC_STAB_SCALING               visc_div_by_hk                  // inv_hk // const
 VISC_STAB_HK                    vol_equivalent                  // vol_div_by_surf // longest_ele_length
 CONV_STAB_FAC                   1.0
-CONV_STAB_SCALING abs_normal_vel //abs_normal_vel // inflow // const // none
+CONV_STAB_SCALING               abs_normal_vel //abs_normal_vel // inflow // const // none
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.1                             // in [0.1;0.5]
 EOS_GP_PATTERN                  u-v-w-p-diagonal-block          // u-p-block // full
@@ -104,7 +104,7 @@ AZREUSE                         1                               // how often to 
 AZDROP                          0.0                             // drop tolerance for ILUT
 IFPACKFILL                      1.0                             // fill-in for ILUT
 IFPACKGFILL                     3                               // (3 for edgebased stabilization pattern) graph fill for ILU
-AZTOL                           1.0E-08                         // tolerance in unscaled residual
+AZTOL                           1.0E-013                         // tolerance in unscaled residual
 AZCONV                          AZ_r0                           // scale residual for convergence check by AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                            // max iterations
 //AZSUB                         150                             // size of krylov space for gmres

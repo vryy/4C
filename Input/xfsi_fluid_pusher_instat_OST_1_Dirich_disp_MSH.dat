@@ -3,7 +3,6 @@
 //
 // necessary defines: D_FLUID3 D_SOLID3 CCADISCRET BINIO QHULL
 //
-// Volumecell Gauss points by DirectDivergence
 ==================================================================
 General Data File CCARAT
 ==================================================================
@@ -51,10 +50,10 @@ RELAX                           1.0
 ITEMAX                          100
 CONVTOL                         1.0E-8
 COUPMETHOD                      conforming
-SECONDORDER Yes //No
-COUPVARIABLE Force //Displacement
+SECONDORDER                     Yes //No
+COUPVARIABLE                    Force //Displacement
 ---------------------------------------------------------------FLUID DYNAMIC
-INITIALFIELD field_by_function //zero_field
+INITIALFIELD                    field_by_function
 STARTFUNCNO                     1
 TIMEINTEGR                      One_Step_Theta
 NONLINITER                      Newton
@@ -66,8 +65,8 @@ RESTARTEVRY                     5
 NUMSTEP                         8
 NUMSTASTEPS                     0
 MAXTIME                         0.8
-TIMESTEP                        0.1//0.1
-THETA 0.5 //0.5 //0.67
+TIMESTEP                        0.1
+THETA                           0.5
 START_THETA                     1.0
 ALPHA_F                         1.00
 ALPHA_M                         1.00
@@ -80,31 +79,32 @@ LINEAR_SOLVER                   1
 LINEAR_SOLVER                   2
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes_pspg
 SUPG                            yes_supg//yes_supg
 VSTAB                           no_vstab
-CSTAB cstab_qs //cstab_qs
+CSTAB                           cstab_qs //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------------------------------------SOLVER 1
 NAME Fluid Solver
-SOLVER                          UMFPACK                         // Aztec_MSR vm3 SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 --------------------------------------------------------------------SOLVER 2
 NAME Struct Solver
-SOLVER                          UMFPACK                         // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
+SOLVER                          UMFPACK
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT_SCREEN           No
 GMSH_DEBUG_OUT                  No
+GMSH_EOS_OUT                    No
 GMSH_SOL_OUT                    No
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
-VOLUME_GAUSS_POINTS_BY          DirectDivergence
+VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
-XFLUID_BOUNDARY xfsi_moving_boundary //stationary_boundary
+XFLUID_BOUNDARY                 xfsi_moving_boundary
 INTERFACE_VEL_INITIAL           interface_vel_init_by_funct
 VEL_INIT_FUNCT_NO               2
 INTERFACE_VEL                   interface_vel_by_disp
@@ -124,20 +124,20 @@ CURVE1 on EXPR FUNC -0.1*t t1 0.0 t2 1.0
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION -0.1 //5.0+30.0*y+60.0*z
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0 //0.01*x // 0.0100051*x
+FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION -0.1
+FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION -1+10.0*x// pressure
 --------------------------------------------FUNCT2 // initial solid velocity
-FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION -0.1 //5.0+30.0*y+60.0*z
+FUNCT2 COMPONENT 0 EXPR 0 0.0 0 FUNCTION -0.1
 FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
+FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
 ---------------------------------------------FUNCT3 // displacement function
 FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
 FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
-FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
+FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
