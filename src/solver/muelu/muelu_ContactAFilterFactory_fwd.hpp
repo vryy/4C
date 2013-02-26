@@ -2,7 +2,7 @@
 #define MUELU_CONTACTAFILTERFACTORY_FWD_HPP
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
 
 namespace MueLu {       
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
@@ -13,7 +13,7 @@ namespace MueLu {
 #define MUELU_CONTACTAFILTERFACTORY_SHORT
 #endif
 
-#endif // #ifdef HAVE_EXPERIMENTAL_MueLu
+#endif // #ifdef HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 #endif // MUELU_CONTACTAFILTERFACTORY_FWD_HPP

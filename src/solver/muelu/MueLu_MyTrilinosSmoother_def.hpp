@@ -54,7 +54,7 @@
 #define MUELU_MYTRILINOSSMOOTHER_DEF_HPP_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
 
 #include "MueLu_MyTrilinosSmoother_decl.hpp"
 
@@ -181,7 +181,7 @@ namespace MueLu {
 
 } // namespace MueLu
 
-#endif // #ifdef HAVE_EXPERIMENTAL_MueLu
+#endif // #ifdef HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 #endif /* MUELU_MYTRILINOSSMOOTHER_DEF_HPP_ */

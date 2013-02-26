@@ -54,7 +54,7 @@
 #define MUELU_MYTRILINOSSMOOTHER_DECL_HPP_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -169,7 +169,7 @@ namespace MueLu {
 
 } // namespace MueLu
 
-#endif //#ifdef HAVE_EXPERIMENTAL_MueLu
+#endif //#ifdef HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 #define MUELU_MYTRILINOSSMOOTHER_SHORT

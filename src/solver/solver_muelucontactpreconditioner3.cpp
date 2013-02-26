@@ -7,7 +7,7 @@
 
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
 
 #include "../drt_lib/drt_dserror.H"
 
@@ -138,6 +138,6 @@ void LINALG::SOLVER::MueLuContactPreconditioner3::Setup( bool create,
   }
 }
 
-#endif // HAVE_EXPERIMENTAL_MueLu
+#endif // HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 

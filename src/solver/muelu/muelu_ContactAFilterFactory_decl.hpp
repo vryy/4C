@@ -9,7 +9,7 @@
 #define MUELU_CONTACTAFILTERFACTORY_DECL_HPP_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
 
 #include <Teuchos_ParameterList.hpp>
 
@@ -143,6 +143,6 @@ private:
 
 #define MUELU_CONTACTAFILTERFACTORY_SHORT
 
-#endif // #ifdef HAVE_EXPERIMENTAL_MueLu
+#endif // #ifdef HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 #endif /* MUELU_CONTACTAFILTERFACTORY_DECL_HPP_ */

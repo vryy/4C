@@ -6,7 +6,7 @@
  */
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
 
 #include <MueLu_ConfigDefs.hpp>
 
@@ -24,7 +24,7 @@
 #include <MueLu_HierarchyHelpers.hpp>
 #include <MueLu_VerboseObject.hpp>
 
-#endif // HAVE_EXPERIMENTAL_MueLu
+#endif // HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 #include <Epetra_Comm.h>
@@ -64,7 +64,7 @@ LINALG::SOLVER::KrylovSolver::KrylovSolver( const Epetra_Comm & comm,
     outfile_( outfile ),
     ncall_( 0 )
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
     ,
     bAllowPermutation_( false ),
     bPermuteLinearSystem_( false ),
@@ -75,7 +75,7 @@ LINALG::SOLVER::KrylovSolver::KrylovSolver( const Epetra_Comm & comm,
 #endif
 {
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
   data_ = Teuchos::rcp(new Level());
 #endif
 #endif
@@ -90,7 +90,7 @@ LINALG::SOLVER::KrylovSolver::~KrylovSolver()
   x_              = Teuchos::null;
   b_              = Teuchos::null;
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
   data_           = Teuchos::null;
 #endif
 #endif
@@ -140,51 +140,51 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
     else if ( Params().isSublist("MueLu (Contact) Parameters") )
     {
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
       ////////////////////////////// EXPERIMENTAL
       //Params().sublist("MueLu (Contact) Parameters").set("time-step",Params().get<int>("time-step"));
       //Params().sublist("MueLu (Contact) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
       ////////////////////////////// EXPERIMENTAL
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPreconditioner( outfile_, Params().sublist("MueLu (Contact) Parameters") ) );
 #else
-      dserror("MueLu (Contact) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer. needs the HAVE_EXPERIMENTAL_MueLu flag.");
+      dserror("MueLu (Contact) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer. needs the HAVE_Trilinos_Q1_2013 flag.");
 #endif
 #else
-      dserror("MueLu (Contact) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer. needs the HAVE_EXPERIMENTAL_MueLu flag.");
+      dserror("MueLu (Contact) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer. needs the HAVE_Trilinos_Q1_2013 flag.");
 #endif
     }
     else if ( Params().isSublist("MueLu (Contact2) Parameters") )
     {
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
       ////////////////////////////// EXPERIMENTAL
       //Params().sublist("MueLu (Contact2) Parameters").set("time-step",Params().get<int>("time-step"));
       //Params().sublist("MueLu (Contact2) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
       ////////////////////////////// EXPERIMENTAL
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPreconditioner2( outfile_, Params().sublist("MueLu (Contact2) Parameters") ) );
 #else
-      dserror("MueLu (Contact2) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer. needs the HAVE_EXPERIMENTAL_MueLu flag.");
+      dserror("MueLu (Contact2) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer. needs the HAVE_Trilinos_Q1_2013 flag.");
 #endif
 #endif
     }
     else if ( Params().isSublist("MueLu (Contact3) Parameters") )
     {
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
       ////////////////////////////// EXPERIMENTAL
       //Params().sublist("MueLu (Contact2) Parameters").set("time-step",Params().get<int>("time-step"));
       //Params().sublist("MueLu (Contact2) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
       ////////////////////////////// EXPERIMENTAL
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPreconditioner3( outfile_, Params().sublist("MueLu (Contact3) Parameters") ) );
 #else
-      dserror("MueLu (Contact3) preconditioner only available in DEV version of BACI with Trilinos Q4/2012 or newer. needs the HAVE_EXPERIMENTAL_MueLu flag.");
+      dserror("MueLu (Contact3) preconditioner only available in DEV version of BACI with Trilinos Q4/2012 or newer. needs the HAVE_Trilinos_Q1_2013 flag.");
 #endif
 #endif
     }
     else if ( Params().isSublist("MueLu (PenaltyContact) Parameters") )
     {
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::MueLuContactPenaltyPreconditioner( outfile_, Params().sublist("MueLu (PenaltyContact) Parameters") ) );
 #else
       dserror("MueLu (PenaltyContact) preconditioner only available in DEV version of BACI with Trilinos Q3/2012 or newer.");
@@ -262,7 +262,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
     else if ( Params().isSublist("MueLu (Contact) Parameters") )
     {
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
       ////////////////////////////// EXPERIMENTAL
       //Params().sublist("MueLu (Contact) Parameters").set("time-step",Params().get<int>("time-step"));
       //Params().sublist("MueLu (Contact) Parameters").set("newton-iter",Params().get<int>("newton-iter"));
@@ -287,7 +287,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
 }
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
 void LINALG::SOLVER::KrylovSolver::BuildPermutationOperator(const Teuchos::RCP<Epetra_CrsMatrix>& A, const Teuchos::RCP<Epetra_Map> & epSlaveDofMap)
@@ -769,7 +769,7 @@ Teuchos::RCP<Epetra_CrsMatrix> LINALG::SOLVER::KrylovSolver::GetOperatorNonConst
   return xEpPermScalCrsMat->getEpetra_CrsMatrixNonConst();
 }
 
-#endif // HAVE_EXPERIMENTAL_MueLu
+#endif // HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 

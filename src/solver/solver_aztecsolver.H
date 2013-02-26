@@ -13,7 +13,7 @@ Created on: Jul 4, 2011
 #define SOLVER_AZTECSOLVER_H_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
 
 //#include <Xpetra_Matrix.hpp>
 //#include <Xpetra_MapFactory.hpp>
@@ -25,7 +25,7 @@ Created on: Jul 4, 2011
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 #include <MueLu_UseShortNames.hpp>
-#endif // HAVE_EXPERIMENTAL_MueLu
+#endif // HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 #include "solver_krylovsolver.H"

@@ -14,7 +14,7 @@ Created on: Jan 11, 2012
 #define SOLVER_MUELUCONTACTPENALTYPRECONDITIONER_H_
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
 
 #include "solver_preconditionertype.H"
 
@@ -80,7 +80,7 @@ namespace LINALG
   }
 }
 
-#endif // #ifdef HAVE_EXPERIMENTAL_MueLu
+#endif // #ifdef HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 

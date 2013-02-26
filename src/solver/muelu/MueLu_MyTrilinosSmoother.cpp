@@ -51,7 +51,7 @@
  */
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
 
 #include "MueLu_ExplicitInstantiation.hpp"
 
@@ -85,5 +85,5 @@ typedef Sacado::PCE::OrthogPoly<double,Storage> pce_type;
 template class MueLu::MyTrilinosSmoother<pce_type, int, int, Kokkos::DefaultNode::DefaultNodeType, Kokkos::DefaultKernels<void, int, Kokkos::DefaultNode::DefaultNodeType>::SparseOps>;
 #endif
 
-#endif // #ifdef HAVE_EXPERIMENTAL_MueLu
+#endif // #ifdef HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu

@@ -17,7 +17,7 @@ Created on: Jul 4, 2011
 #include "Teuchos_ParameterList.hpp"
 
 #ifdef HAVE_MueLu  // TODO remove this as soon as all use Q1/2013 MueLu or newer
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
 #include <Xpetra_Matrix.hpp>
 #include <Xpetra_MapFactory.hpp>
 
@@ -28,7 +28,7 @@ Created on: Jul 4, 2011
 // header files for default types, must be included after all other MueLu/Xpetra headers
 #include <MueLu_UseDefaultTypes.hpp> // => Scalar=double, LocalOrdinal=GlobalOrdinal=int
 #include <MueLu_UseShortNames.hpp>
-#endif // HAVE_EXPERIMENTAL_MueLu
+#endif // HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 #include "solver_solvertype.H"
@@ -105,7 +105,7 @@ namespace LINALG
           Teuchos::RCP<PreconditionerType> preconditioner_;
 
 #ifdef HAVE_MueLu
-#ifdef HAVE_EXPERIMENTAL_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
 
           //! @name Permutation methods.
           //@{
@@ -186,7 +186,7 @@ namespace LINALG
           /*! @brief factory class which generates permutation data using input matrix A */
           Teuchos::RCP<PermutationFactory> PermFact_; // permutation factory
           //@}
-#endif // HAVE_EXPERIMENTAL_MueLu
+#endif // HAVE_Trilinos_Q1_2013
 #endif // HAVE_MueLu
 
 #ifdef WRITEOUTSTATISTICS

@@ -102,12 +102,12 @@ if (HAVE_MueLu)
   add_definitions("-DHAVE_MueLu")
 endif (HAVE_MueLu)
 
-option (HAVE_MueLu "Turn on experimental code in MueLu (needs MueLu to be compiled within Trilinos" OFF)
-if (HAVE_EXPERIMENTAL_MueLu)
+option (HAVE_Trilinos_Q1_2013 "Turn on experimental code which is available with Q1/2013 or later" OFF)
+if (HAVE_Trilinos_Q1_2013)
   MESSAGE("II Turn on support for MueLu (experimental code)")
   add_definitions("-DHAVE_MueLu")
-  add_definitions("-DHAVE_EXPERIMENTAL_MueLu")
-endif (HAVE_EXPERIMENTAL_MueLu)
+  add_definitions("-DHAVE_Trilinos_Q1_2013")
+endif (HAVE_Trilinos_Q1_2013)
 
 option (HAVE_Stratimikos "Turn on Stratimikos support (needs Stratimikos to be compiled within Trilinos" ON)
 if (HAVE_Stratimikos)
@@ -1747,6 +1747,7 @@ include(CTest)
 ###------------------------------------------------------------------ Unit Tests
 
 if(NOT TRILINOS_DEV)
+message("Trilinos_DEV not set ")
   if (NOT ACML_FOUND )  ## cut_test not available on kaiser
     add_executable(cut_test ${OBJS_CUT_TEST})
     target_link_libraries(cut_test drt_lib_cut ${QHULL_LIBRARIES} shards epetra teuchos ${LAPACK_LIBRARIES}
