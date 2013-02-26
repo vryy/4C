@@ -1993,6 +1993,9 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name, bool include_inner )
   std::ofstream file( name.c_str() );
   int count = 0;
 
+  file.setf(std::ios::scientific,std::ios::floatfield);
+  file.precision(16);
+
   file << "View \"VolumeCells\" {\n";
   for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
         i!=cells_.end();
@@ -2076,6 +2079,36 @@ void GEO::CUT::Mesh::DumpGmshVolumeCells( std::string name, bool include_inner )
   }
   file << "};\n";
 
+#if(0)
+  RCP<PointPool> points = Points();
+
+  file << "View \"Points\" {\n";
+  for ( std::list<Teuchos::RCP<VolumeCell> >::iterator i=cells_.begin();
+        i!=cells_.end();
+        ++i )
+  {
+    VolumeCell * vc = &**i;
+
+//    if ( true  ) // cout all volumecells - inside and outside
+    if ( include_inner or vc->Position()!=Point::inside )
+    {
+      PointSet points;
+      vc->GetAllPoints(*this, points);
+
+      for ( PointSet::iterator i=points.begin();
+            i!=points.end();
+            ++i )
+      {
+        Point * p = *i;
+        const double * x = p->X();
+
+        file << "VP(" << x[0] << "," << x[1] << "," << x[2] << "){" << x[0] << "," << x[1] << "," << x[2] << "};\n";
+      }
+    }
+
+  }
+  file << "};\n";
+#endif
 
   file << "View \"Node-Positions\" {\n";
   for ( std::map<int, Teuchos::RCP<Node> >::iterator i=nodes_.begin(); i!=nodes_.end(); ++i )

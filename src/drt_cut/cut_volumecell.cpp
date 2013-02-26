@@ -1,3 +1,4 @@
+#include "cut_point.H"
 #include "cut_volumecell.H"
 #include "cut_boundarycell.H"
 #include "cut_integrationcell.H"
@@ -794,7 +795,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
     // this may happen for very very sliver triangle
     CUT::KERNEL::DeleteInlinePts( corners );
     if( corners.size()==0 )
-      return;
+      continue;
 
     eqnfac = KERNEL::EqnPlanePolygon( corners );
     bool rever = ToReverse( posi, eqnpar, eqnfac );
@@ -816,7 +817,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
     {
       if(BCellgausstype=="Tessellation")//generate boundarycell gausspoints by triangulation
       {
-#if 0 // create only triangles - result in large number of Gauss points
+#if 1 // create only triangles - result in large number of Gauss points
         if(!fac->IsTriangulated())
           fac->DoTriangulation( mesh, corners );
         const std::vector<std::vector<Point*> > & triangulation = fac->Triangulation();
@@ -1044,7 +1045,7 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
 
   //if the volumecell is inside and includeinner is false, no need to compute the Gaussian points
   //as this vc will never be computed in xfem algorithm
-  if(posi==-2 && include_inner==false)
+  if(posi == Point::inside && include_inner==false)
     return;
 
   DirectDivergence dd(this,elem,posi,mesh);

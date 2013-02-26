@@ -98,6 +98,8 @@ void GEO::CUT::Quad4BoundaryCell::CollectCoordinates( const std::vector<Point*> 
 
 void GEO::CUT::Tri3BoundaryCell::DumpGmsh( std::ofstream & file, int * value )
 {
+  file.precision(16);
+
   file << "ST(";
   for ( int i=0; i<3; ++i )
   {
@@ -122,6 +124,8 @@ void GEO::CUT::Tri3BoundaryCell::DumpGmsh( std::ofstream & file, int * value )
 
 void GEO::CUT::Quad4BoundaryCell::DumpGmsh( std::ofstream & file, int * value )
 {
+  file.precision(16);
+
   file << "SQ(";
   for ( int i=0; i<4; ++i )
   {
