@@ -1125,6 +1125,14 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
   std::vector<double> llmy, glmy;
   std::vector<double> llmz, glmz;
 
+  std::vector<double> Xposl, Xposg;
+  std::vector<double> Yposl, Yposg;
+  std::vector<double> Zposl, Zposg;
+
+  std::vector<double> xposl, xposg;
+  std::vector<double> yposl, yposg;
+  std::vector<double> zposl, zposg;
+
   // loop over all interfaces
   for (int i=0; i<(int)interface_.size(); ++i)
   {
@@ -1149,6 +1157,21 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
       llmx.push_back(mtnode->MoData().lm()[0]);
       llmy.push_back(mtnode->MoData().lm()[1]);
       llmz.push_back(mtnode->MoData().lm()[2]);
+
+      double Xpos=mtnode->X()[0];
+      double Ypos=mtnode->X()[1];
+      double Zpos=mtnode->X()[2];
+
+      double xpos=mtnode->xspatial()[0];
+      double ypos=mtnode->xspatial()[1];
+      double zpos=mtnode->xspatial()[2];
+
+      Xposl.push_back(Xpos);
+      Yposl.push_back(Ypos);
+      Zposl.push_back(Zpos);
+      xposl.push_back(xpos);
+      yposl.push_back(ypos);
+      zposl.push_back(zpos);
     }
   }
 
@@ -1162,6 +1185,14 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
   LINALG::Gather<double>(llmy,glmy,(int)allproc.size(),&allproc[0],Comm());
   LINALG::Gather<double>(llmz,glmz,(int)allproc.size(),&allproc[0],Comm());
 
+  LINALG::Gather<double>(Xposl,Xposg,(int)allproc.size(),&allproc[0],Comm());
+  LINALG::Gather<double>(Yposl,Yposg,(int)allproc.size(),&allproc[0],Comm());
+  LINALG::Gather<double>(Zposl,Zposg,(int)allproc.size(),&allproc[0],Comm());
+
+  LINALG::Gather<double>(xposl,xposg,(int)allproc.size(),&allproc[0],Comm());
+  LINALG::Gather<double>(yposl,yposg,(int)allproc.size(),&allproc[0],Comm());
+  LINALG::Gather<double>(zposl,zposg,(int)allproc.size(),&allproc[0],Comm());
+
   // output is solely done by proc 0
   if (Comm().MyPID()==0)
   {
@@ -1170,6 +1201,9 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
     {
       // print nodes of active set *************************************
       printf("ACTIVE: %d \t lm[0]: % e \t lm[1]: % e \t lm[2]: % e \n",gnid[k],glmx[k],glmy[k],glmz[k]);
+
+      // alternative output: with additional slave node coordinates in reference configuration
+      //printf("ACTIVE: %d \t lm[0]: % e \t lm[1]: % e \t lm[2]: % e \t Xref: % e \t Yref: % e \t Zref: % e \n",gnid[k],glmx[k],glmy[k],glmz[k],Xposg[k],Yposg[k],Zposg[k]);
     }
     fflush(stdout);
   }
