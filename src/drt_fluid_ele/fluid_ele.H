@@ -192,11 +192,14 @@ public:
   /*!
   \brief Get RCP to the internal face adjacent to this element as master element and the parent_slave element
   */
-  virtual Teuchos::RCP<DRT::Element> CreateInternalFaces(DRT::Element* parent_slave,   //!< parent slave fluid3 element
-                                                int nnode,                    //!< number of surface nodes
-                                                const int* nodeids,           //!< node ids of surface element
-                                                DRT::Node** nodes,            //!< nodes of surface element
-                                                const int lsurface_master     //!< local surface number w.r.t master parent element
+  virtual Teuchos::RCP<DRT::Element> CreateInternalFaces(
+                                                DRT::Element* parent_slave,          //!< parent slave fluid3 element
+                                                int nnode,                           //!< number of surface nodes
+                                                const int* nodeids,                  //!< node ids of surface element
+                                                DRT::Node** nodes,                   //!< nodes of surface element
+                                                const int lsurface_master,           //!< local surface number w.r.t master parent element
+                                                const int lsurface_slave,            //!< local surface number w.r.t slave parent element
+                                                const std::vector<int> localtrafomap //! local trafo map
       );
 
   /*!
@@ -821,9 +824,20 @@ public:
   \param master_parent: The master parent fluid element of this surface
   \param slave_parent: The slave parent fluid element of this surface
   \param lsurface_master: the local surface number of this surface w.r.t. the master parent element
+  \param lsurface_slave: the local surface number of this surface w.r.t. the slave parent element
+  \param localtrafomap: transformation map between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system and the slave element's face's coordinate system
   */
-  FluidIntFace(int id, int owner, int nnode, const int* nodeids,
-             DRT::Node** nodes, DRT::ELEMENTS::Fluid* parent_master, DRT::ELEMENTS::Fluid* parent_slave, const int lsurface_master);
+  FluidIntFace( int id,
+                int owner,
+                int nnode,
+                const int* nodeids,
+                DRT::Node** nodes,
+                DRT::ELEMENTS::Fluid* parent_master,
+                DRT::ELEMENTS::Fluid* parent_slave,
+                const int lsurface_master,
+                const int lsurface_slave,
+                const std::vector<int> localtrafomap
+                );
 
   /*!
   \brief Copy Constructor
@@ -1059,6 +1073,23 @@ public:
     return lsurface_master_;
   }
 
+  /*!
+  \brief return the local surface number w.r.t. the slave parent fluid element
+  */
+  virtual int SurfaceSlaveNumber()
+  {
+    return lsurface_slave_;
+  }
+
+
+  /*!
+  \brief return the local trafo map between the face's master numbering and the face's slave numbering
+  */
+  virtual std::vector<int> GetLocalTrafoMap()
+  {
+    return localtrafomap_;
+  }
+
   //@}
 
 private:
@@ -1075,6 +1106,14 @@ private:
   //! The local surface number of this surface w.r.t to the parent_master_ element
   int lsurface_master_;
 
+  //! The local surface number of this surface w.r.t to the parent_slave_ element
+  int lsurface_slave_;
+
+  /*!
+   \brief map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
+          and the slave element's face's coordinate system
+   */
+  std::vector<int> localtrafomap_;
 
 }; // class FluidIntFace
 

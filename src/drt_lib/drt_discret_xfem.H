@@ -96,6 +96,7 @@ public:
       master_peid_ = master_peid;
       slave_peid_ = -1;
       lsurface_master_ = lsurface_master;
+      lsurface_slave_ = -1;
       nodes_ = nodes;
     }
 
@@ -114,6 +115,15 @@ public:
     //! set the parent element id for slave parent element
     void SetSlavePeid(int eid){slave_peid_ = eid;}
 
+    //! set the local surface number w.r.t slave parent element
+    void SetLSurfaceSlave(int lsurface_slave){lsurface_slave_ = lsurface_slave;}
+
+    /*!
+    \brief set the map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
+           and the slave element's face's coordinate system
+    */
+    void SetLocalNumberingMap(std::vector<int> localtrafomap){localtrafomap_ = localtrafomap;}
+
 
     /*--- get ------------------------------------------*/
 
@@ -123,8 +133,15 @@ public:
     //! get the slave parent element id
     int GetSlavePeid(){return slave_peid_;}
 
-    //! get the local surface number w.r.t master parent element id
+    //! get the local surface number w.r.t master parent element
     int GetLSurfaceMaster(){return lsurface_master_;}
+
+    //! get the local surface number w.r.t slave parent element
+    int GetLSurfaceSlave(){return lsurface_slave_;}
+
+    //! get the transformation map between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
+    //! and the slave element's face's coordinate system
+    std::vector<int> GetLocalNumberingMap(){return localtrafomap_;}
 
     //! get surface's nodes (unsorted, original)
     std::vector<DRT::Node*> GetNodes(){return nodes_;}
@@ -135,8 +152,15 @@ public:
     int slave_peid_;           //!< slave parent element id
 
     int lsurface_master_;      //!< local surface number w.r.t master parent element
+    int lsurface_slave_;       //!< local surface number w.r.t slave parent element
 
     std::vector<DRT::Node*> nodes_; //!< vector of surface nodes, order w.r.t master parent element
+
+    /*!
+     \brief map for the face's nodes between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system
+            and the slave element's face's coordinate system
+     */
+    std::vector<int> localtrafomap_;
 
   };
 

@@ -833,13 +833,13 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
                           Teuchos::RCP<Epetra_Vector> toggle,
                           Teuchos::RCP<std::set<int> > dbcgids)
 {
-  const vector<int>* nodeids = cond.Nodes();
+  const std::vector<int>* nodeids = cond.Nodes();
   if (!nodeids) dserror("Dirichlet condition does not have nodal cloud");
   const int nnode = (*nodeids).size();
-  const vector<int>*    curve  = cond.Get<vector<int> >("curve");
-  const vector<int>*    funct  = cond.Get<vector<int> >("funct");
-  const vector<int>*    onoff  = cond.Get<vector<int> >("onoff");
-  const vector<double>* val    = cond.Get<vector<double> >("val");
+  const std::vector<int>*    curve  = cond.Get<std::vector<int> >("curve");
+  const std::vector<int>*    funct  = cond.Get<std::vector<int> >("funct");
+  const std::vector<int>*    onoff  = cond.Get<std::vector<int> >("onoff");
+  const std::vector<double>* val    = cond.Get<std::vector<double> >("val");
 
   //-------------------------------------------------------------------//
   // for COMBUST the following Dirichlet conditions are used
@@ -885,7 +885,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
     // get the node, his dofs and the number of dofs
     DRT::Node* actnode = dis.gNode((*nodeids)[i]);
     if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
-    vector<int> dofs = dis.Dof(actnode);
+    std::vector<int> dofs = dis.Dof(actnode);
     const unsigned numdf = dofs.size();
 
     //------------------------------------------------------------------------------------//
@@ -950,7 +950,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
          }
 
          const int gid = dofs[j];
-         vector<double> value(deg+1,(*val)[inputIndex]);
+         std::vector<double> value(deg+1,(*val)[inputIndex]);
 
          //-----------------------------------------------------------//
          // factor given by time curve
@@ -1039,7 +1039,7 @@ void DRT::DiscretizationXFEM::EvaluateDirichletCombust(Teuchos::ParameterList& p
   Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
   if (dbcmapextractor != Teuchos::null) dbcgids = Teuchos::rcp(new std::set<int>());
 
-  multimap<string,RCP<Condition> >::iterator fool;
+  std::multimap<string,RCP<Condition> >::iterator fool;
   //--------------------------------------------------------
   // loop through Dirichlet conditions and evaluate them
   //--------------------------------------------------------
@@ -1387,7 +1387,7 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBased(
   (systemmatrix1)->Add(*sysmat_linalg, false, 1.0, 1.0);
 
   //------------------------------------------------------------
-  // need to export ale_residual_col to systemvector1 (aleresidual_)
+  // need to export residual_col to systemvector1 (residual_)
   Epetra_Vector res_tmp(systemvector1->Map(),false);
   Epetra_Export exporter(residual_col->Map(),res_tmp.Map());
   int err2 = res_tmp.Export(*residual_col,exporter,Add);
@@ -1408,14 +1408,14 @@ void DRT::DiscretizationXFEM::BuildInternalFaces()
   /* First: Create the surface objects between to elements . */
 
   // map of surfaces in this cloud: (sorted node_ids) -> (surface)
-  map< vector<int>, InternalFacesData > surfmapdata;
+  std::map< std::vector<int>, InternalFacesData > surfmapdata;
 
   // loop col elements and find all surfaces attached to them
   //
   // REMARK: in a first step: find all surfaces and adjacent elements and fill InternalFacesData
   //         without creating the internal faces elements
 
-  vector<DRT::Element*>::iterator fool;
+  std::vector<DRT::Element*>::iterator fool;
   for(fool=elecolptr_.begin(); fool != elecolptr_.end(); ++fool)
   {
     DRT::Element * ele = *fool;
@@ -1431,7 +1431,7 @@ void DRT::DiscretizationXFEM::BuildInternalFaces()
     {
       buildtype = DRT::UTILS::buildSurfaces;
     }
-    else if (ele->NumSurface() == 1) // 2D boundary element and 2D parent element
+    else if (ele->NumSurface() == 1) // 1D boundary element and 2D parent element
     {
       buildtype = DRT::UTILS::buildLines;
     }
@@ -1441,7 +1441,7 @@ void DRT::DiscretizationXFEM::BuildInternalFaces()
     // get node connectivity for specific distype of parent element
     unsigned int nele=0;
     const DRT::Element::DiscretizationType distype = ele->Shape();
-    vector< std::vector<int> > connectivity;
+    std::vector< std::vector<int> > connectivity;
     switch (buildtype)
     {
     case DRT::UTILS::buildSurfaces:
@@ -1469,10 +1469,10 @@ void DRT::DiscretizationXFEM::BuildInternalFaces()
     {
       // allocate node vectors
       unsigned int nnode = connectivity[iele].size(); // this number changes for pyramids or wedges
-      vector<int> nodeids(nnode);
-      vector<DRT::Node*> nodes(nnode);
+      std::vector<int> nodeids(nnode);
+      std::vector<DRT::Node*> nodes(nnode);
 
-      // get connectivity infos
+      // get connectivity info
       for (unsigned int inode=0;inode<nnode;inode++)
       {
         nodeids[inode] = ele->NodeIds()[connectivity[iele][inode]];
@@ -1480,21 +1480,44 @@ void DRT::DiscretizationXFEM::BuildInternalFaces()
       }
 
       // sort the nodes. Used to identify surfaces that are created multiple
-      sort( nodeids.begin(), nodeids.end() );
+      std::sort( nodeids.begin(), nodeids.end() );
 
       // find existing InternalFacesData
-      map<vector<int>, InternalFacesData>::iterator surf_it = surfmapdata.find( nodeids );
+      std::map<std::vector<int>, InternalFacesData>::iterator surf_it = surfmapdata.find( nodeids );
       if ( surf_it == surfmapdata.end() )
       {
         // not found -> generate new Data
         // add the faces information to the map (key is the sorted vector of nodeids)
-        surfmapdata.insert(std::pair<vector<int>, InternalFacesData >(nodeids, InternalFacesData(ele->Id(),nodes, iele)));
+        surfmapdata.insert(std::pair<std::vector<int>, InternalFacesData >(nodeids, InternalFacesData(ele->Id(),nodes, iele)));
       }
       else
       {
         if(surf_it->second.GetSlavePeid()!= -1) dserror("slave peid should not be set!!!");
         // if found -> add second neighbor data to existing data
         surf_it->second.SetSlavePeid(ele->Id());
+        surf_it->second.SetLSurfaceSlave(iele);
+
+        std::vector<int> localtrafomap;
+
+        // get the face's nodes sorted w.r.t local coordinate system of the parent's face element
+        const std::vector<DRT::Node* > nodes_face_master = surf_it->second.GetNodes();
+        if(nodes_face_master.size() != nnode) dserror("the number of the face w.r.t parent element and slave element are not the same. That is wrong!");
+
+        // find the nodes given with the master element node numbering also for the slave element
+        // to define a connectivity map between the local face's coordinate systems
+        for (unsigned int inode=0;inode<nnode;inode++) // master face nodes
+        {
+          std::vector<DRT::Node*>::iterator node_it;
+          node_it = std::find(nodes.begin(), nodes.end(), nodes_face_master[inode]);
+
+          if(node_it!=nodes.end())
+          {
+            localtrafomap.push_back(node_it-nodes.begin());
+          }
+          else dserror("face's node from master's face element not found in slave's face element!");
+        }
+
+        surf_it->second.SetLocalNumberingMap(localtrafomap);
       }
 
     } // loop iele
@@ -1516,9 +1539,9 @@ void DRT::DiscretizationXFEM::BuildInternalFaces()
   //    -> the owner of this node will be the owner for the face
   //       (this criterion is working in the same way on all procs holding this face)
 
-  map< vector<int>, RCP<DRT::Element> >  faces;
+  std::map< std::vector<int>, RCP<DRT::Element> >  faces;
 
-  map<vector<int>, InternalFacesData >::iterator face_it;
+  std::map<std::vector<int>, InternalFacesData >::iterator face_it;
   for (face_it=surfmapdata.begin(); face_it != surfmapdata.end(); ++face_it)
   {
     int master_peid = face_it->second.GetMasterPeid();
@@ -1532,18 +1555,21 @@ void DRT::DiscretizationXFEM::BuildInternalFaces()
       DRT::Element* parent_slave  = gElement(slave_peid);
 
       // get the unsorted nodes
-      vector<DRT::Node*> nodes = face_it->second.GetNodes();
+      std::vector<DRT::Node*> nodes = face_it->second.GetNodes();
 
       // get corresponding nodeids
-      vector<int> nodeids(nodes.size());
-      transform( nodes.begin(), nodes.end(), nodeids.begin(), std::mem_fun( &DRT::Node::Id ) );
+      std::vector<int> nodeids(nodes.size());
+      std::transform( nodes.begin(), nodes.end(), nodeids.begin(), std::mem_fun( &DRT::Node::Id ) );
 
       // create the internal face element
       RCP<DRT::Element> surf = parent_master->CreateInternalFaces(parent_slave,
                                                                   nodeids.size(),
                                                                   &nodeids[0],
                                                                   &nodes[0],
-                                                                  face_it->second.GetLSurfaceMaster() );
+                                                                  face_it->second.GetLSurfaceMaster(),
+                                                                  face_it->second.GetLSurfaceSlave(),
+                                                                  face_it->second.GetLocalNumberingMap()
+      );
 
       // create a clone (the internally created element does not exist anymore when all RCP's finished)
       RCP<DRT::Element> surf_clone = Teuchos::rcp( surf->Clone() );
@@ -1557,7 +1583,7 @@ void DRT::DiscretizationXFEM::BuildInternalFaces()
       surf_clone->SetOwner( owner );
 
       // insert the newly created element
-      faces.insert(std::pair<vector<int>, RCP<DRT::Element> >(face_it->first, surf_clone));
+      faces.insert(std::pair<std::vector<int>, RCP<DRT::Element> >(face_it->first, surf_clone));
 
     }
   }
@@ -1576,11 +1602,11 @@ void DRT::DiscretizationXFEM::BuildIntFaceRowMap()
 {
   const int myrank = Comm().MyPID();
   int nummyeles = 0;
-  map<int,RCP<DRT::Element> >::iterator curr;
+  std::map<int,RCP<DRT::Element> >::iterator curr;
   for (curr=faces_.begin(); curr != faces_.end(); ++curr)
     if (curr->second->Owner()==myrank)
       nummyeles++;
-  vector<int> eleids(nummyeles);
+  std::vector<int> eleids(nummyeles);
   intfacerowptr_.resize(nummyeles);
   int count=0;
   for (curr=faces_.begin(); curr != faces_.end(); ++curr)
@@ -1602,9 +1628,9 @@ void DRT::DiscretizationXFEM::BuildIntFaceRowMap()
 void DRT::DiscretizationXFEM::BuildIntFaceColMap()
 {
   int nummyeles = (int)faces_.size();
-  vector<int> eleids(nummyeles);
+  std::vector<int> eleids(nummyeles);
   intfacecolptr_.resize(nummyeles);
-  map<int,RCP<DRT::Element> >::iterator curr;
+  std::map<int,RCP<DRT::Element> >::iterator curr;
   int count=0;
   for (curr=faces_.begin(); curr != faces_.end(); ++curr)
   {
@@ -1716,7 +1742,7 @@ void DRT::DiscretizationXFEM::PrintIntFaces(ostream& os) const
   else
   {
     int nummyfaces   = 0;
-    map<int,RCP<DRT::Element> >::const_iterator ecurr;
+    std::map<int,RCP<DRT::Element> >::const_iterator ecurr;
     for (ecurr=faces_.begin(); ecurr != faces_.end(); ++ecurr)
       if (ecurr->second->Owner() == Comm().MyPID()) nummyfaces++;
 
@@ -1744,7 +1770,7 @@ void DRT::DiscretizationXFEM::PrintIntFaces(ostream& os) const
     {
       if ((int)faces_.size())
         os << "-------------------------- Proc " << proc << " :\n";
-      map<int,RCP<DRT::Element> >:: const_iterator curr;
+      std::map<int,RCP<DRT::Element> >:: const_iterator curr;
       for (curr = faces_.begin(); curr != faces_.end(); ++curr)
       {
         os << *(curr->second);

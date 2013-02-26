@@ -51,10 +51,11 @@ class FluidIntFaceImplInterface : DRT::SingletonDestruction
 public:
   /// Empty constructor
     FluidIntFaceImplInterface() {}
+
   /// Empty destructor
   virtual ~FluidIntFaceImplInterface() {}
 
-
+  //! Assemble internal faces integrals using data from both parent elements
   virtual void AssembleInternalFacesUsingNeighborData(
                        DRT::ELEMENTS::FluidIntFace*         intface,         ///< internal face element
                        std::vector<int>&                    nds_master,      ///< nodal dofset w.r.t. master element
@@ -65,16 +66,17 @@ public:
                        Teuchos::RCP<Epetra_Vector>          systemvector     ///< systemvector
                        ) = 0;
 
+  //! Evaluate internal faces
   virtual int EvaluateInternalFaces(
-      DRT::ELEMENTS::FluidIntFace*       intface,              ///< internal face element
-      Teuchos::ParameterList&            params,               ///< parameter list
-      DRT::Discretization&               discretization,       ///< discretization
-      std::vector<int>&                  patchlm,              ///< patch local map
-      std::vector<int>&                  lm_masterToPatch,     ///< local map between master dofs and patchlm
-      std::vector<int>&                  lm_slaveToPatch,      ///< local map between slave dofs and patchlm
-      std::vector<int>&                  lm_faceToPatch,       ///< local map between face dofs and patchlm
-      std::vector<int>&                  lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
-      std::vector<int>&                  lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
+      DRT::ELEMENTS::FluidIntFace*       intface,                   ///< internal face element
+      Teuchos::ParameterList&            params,                    ///< parameter list
+      DRT::Discretization&               discretization,            ///< discretization
+      std::vector<int>&                  patchlm,                   ///< patch local map
+      std::vector<int>&                  lm_masterToPatch,          ///< local map between master dofs and patchlm
+      std::vector<int>&                  lm_slaveToPatch,           ///< local map between slave dofs and patchlm
+      std::vector<int>&                  lm_faceToPatch,            ///< local map between face dofs and patchlm
+      std::vector<int>&                  lm_masterNodeToPatch,      ///< local map between master nodes and nodes in patch
+      std::vector<int>&                  lm_slaveNodeToPatch,       ///< local map between slave nodes and nodes in patch
       std::vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
       std::vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
   )= 0;
@@ -137,15 +139,15 @@ public:
 
   //! Evaluate internal faces
   virtual int EvaluateInternalFaces(
-      DRT::ELEMENTS::FluidIntFace*       intface,              ///< internal face element
-      Teuchos::ParameterList&            params,               ///< parameter list
-      DRT::Discretization&               discretization,       ///< discretization
-      std::vector<int>&                  patchlm,              ///< patch local map
-      std::vector<int>&                  lm_masterToPatch,     ///< local map between master dofs and patchlm
-      std::vector<int>&                  lm_slaveToPatch,      ///< local map between slave dofs and patchlm
-      std::vector<int>&                  lm_faceToPatch,       ///< local map between face dofs and patchlm
-      std::vector<int>&                  lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
-      std::vector<int>&                  lm_slaveNodeToPatch,  ///< local map between slave nodes and nodes in patch
+      DRT::ELEMENTS::FluidIntFace*       intface,                   ///< internal face element
+      Teuchos::ParameterList&            params,                    ///< parameter list
+      DRT::Discretization&               discretization,            ///< discretization
+      std::vector<int>&                  patchlm,                   ///< patch local map
+      std::vector<int>&                  lm_masterToPatch,          ///< local map between master dofs and patchlm
+      std::vector<int>&                  lm_slaveToPatch,           ///< local map between slave dofs and patchlm
+      std::vector<int>&                  lm_faceToPatch,            ///< local map between face dofs and patchlm
+      std::vector<int>&                  lm_masterNodeToPatch,      ///< local map between master nodes and nodes in patch
+      std::vector<int>&                  lm_slaveNodeToPatch,       ///< local map between slave nodes and nodes in patch
       std::vector<Epetra_SerialDenseMatrix>&  elemat_blocks,        ///< element matrix blocks
       std::vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
   );

@@ -203,7 +203,9 @@ namespace UTILS
       DRT::Node** nodes,                       ///< nodes of surface
       ParentEle*  master_ele,                  ///< pointer on the master parent element
       ParentEle*  slave_ele,                   ///< pointer on the slave parent element
-      const int   lsurface_master              ///< local surface index with respect to master parent element
+      const int   lsurface_master,             ///< local surface index with respect to master parent element
+      const int   lsurface_slave,              ///< local surface index with respect to slave parent element
+      const std::vector<int> localtrafomap     ///< local trafo map
       )
   {
 
@@ -215,7 +217,9 @@ namespace UTILS
                               nodes,
                               master_ele,
                               slave_ele,
-                              lsurface_master) );
+                              lsurface_master,
+                              lsurface_slave,
+                              localtrafomap) );
   }
 
 

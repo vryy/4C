@@ -73,6 +73,7 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
     {
       dserror("expected combination quad4/hex8/hex8 for surface/parent/neighbor pair");
     }
+    break;
   }
   // 3D:
   case DRT::Element::quad8:
@@ -87,6 +88,7 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
     {
       dserror("expected combination quad4/hex8/hex8 for surface/parent/neighbor pair");
     }
+    break;
   }
   // 2D:
   case DRT::Element::line2:
@@ -105,6 +107,7 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
     {
       dserror("expected combination quad4/hex8/hex8 for surface/parent/neighbor pair");
     }
+    break;
   }
   case DRT::Element::line3:
   {
@@ -122,9 +125,10 @@ DRT::ELEMENTS::FluidIntFaceStab* DRT::ELEMENTS::FluidIntFaceStab::Impl(
     {
       dserror("expected combination quad4/hex8/hex8 for surface/parent/neighbor pair");
     }
+    break;
   }
   default:
-    dserror("shape %d (%d nodes) not supported by internalfaces stabilization", surfele->Shape(), surfele->NumNode());
+    dserror("shape %d (%d nodes) not supported by internalfaces stabilization", surfele->Shape(), surfele->NumNode()); break;
   }
 
   return NULL;
@@ -215,8 +219,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 {
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: evaluate" );
 
-  Fluid*                    pele = intface->ParentMasterElement();
-  Fluid*                    nele = intface->ParentSlaveElement();
+  Fluid* pele = intface->ParentMasterElement();
+  Fluid* nele = intface->ParentSlaveElement();
 
   if (pele == NULL) dserror("pele is NULL");
   if (nele == NULL) dserror("nele is NULL");
@@ -461,6 +465,118 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     }
   }
 
+  //--------------------------------------------------
+
+  // transform the face's Gaussian points to both parent elements
+
+  int numgp = intpoints_.NumPoints();
+
+  // local coordinates of the face's gausspoints w.r.t parent and neighbor element
+  Epetra_SerialDenseMatrix p_xi_points(numgp,nsd_);
+  Epetra_SerialDenseMatrix n_xi_points(numgp,nsd_);
+  Epetra_SerialDenseMatrix face_xi_points_master(numgp,facensd_);
+  Epetra_SerialDenseMatrix face_xi_points_slave(numgp,facensd_);
+
+  //------------------------
+  // local coordinates of the face nodes w.r.t slave side
+  LINALG::Matrix<facensd_, iel> local_slave_coordiantes_trafo(true);
+
+  std::vector<int> localtrafomap = intface->GetLocalTrafoMap();
+
+
+  for(int i=0; i< iel; i++)
+  {
+    for(int isd= 0; isd< facensd_; isd++)
+    {
+      switch(distype)
+      {
+      case DRT::Element::line2:
+      case DRT::Element::line3:
+      {
+        local_slave_coordiantes_trafo(isd,localtrafomap[i]) = DRT::UTILS::eleNodeNumbering_line3_nodes_reference[i][isd];
+        break;
+      }
+      case DRT::Element::tri3:
+      case DRT::Element::tri6:
+      {
+        local_slave_coordiantes_trafo(isd,localtrafomap[i]) = DRT::UTILS::eleNodeNumbering_tri6_nodes_reference[i][isd];
+        break;
+      }
+      case DRT::Element::quad4:
+      case DRT::Element::quad8:
+      case DRT::Element::quad9:
+      {
+        local_slave_coordiantes_trafo(isd,localtrafomap[i]) = DRT::UTILS::eleNodeNumbering_quad9_nodes_reference[i][isd];
+        break;
+      }
+      default: dserror("intface type not supported %d", distype); break;
+      }
+    }
+  }
+
+  //------------------------
+  // coordinates of all integration points as wirth local coordinates w.r.t the respective local side
+  // of the respective parent element
+  for(DRT::UTILS::GaussIntegration::iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
+  {
+    LINALG::Matrix<facensd_,1> face_xi_points_master_linalg(true);
+    LINALG::Matrix<facensd_,1> face_xi_points_slave_linalg(true);
+
+
+    // Gaussian point in face's element's local coordinates w.r.t master element
+    const double* gpcoord = iquad.Point();
+    for (int idim=0;idim<facensd_;idim++)
+    {
+      face_xi_points_master(*iquad,idim) = gpcoord[idim];
+      face_xi_points_master_linalg(idim) = gpcoord[idim];
+    }
+
+    // transform the local coordinates from the local coordinate system of the face w.r.t master face
+    // to the local coordinate system of the face w.r.t slave face
+    DRT::UTILS::shape_function<distype>(face_xi_points_master_linalg,funct_);
+
+    face_xi_points_slave_linalg.Multiply(local_slave_coordiantes_trafo,funct_);
+
+    for (int idim=0;idim<facensd_;idim++)
+    {
+      face_xi_points_slave(*iquad,idim) = face_xi_points_slave_linalg(idim);
+    }
+  }
+
+  //------------------------
+  // transform the 2D gaussian point coordinates on the parent element's face to local coordinates of the parent element
+  if(nsd_==2)
+  {
+    // get the local gp coordinates w.r.t parent (master) element
+    DRT::UTILS::BoundaryGPToParentGP2(p_xi_points,
+        face_xi_points_master,
+        pdistype,
+        distype,
+        intface->SurfaceMasterNumber());
+
+    // get the local gp coordinates w.r.t neighbor (slave) element
+    DRT::UTILS::BoundaryGPToParentGP2(n_xi_points,
+        face_xi_points_slave,
+        ndistype,
+        distype,
+        intface->SurfaceSlaveNumber());
+  }
+  else if(nsd_==3)
+  {
+    // get the local gp coordinates w.r.t parent (master) element
+    DRT::UTILS::BoundaryGPToParentGP3(p_xi_points,
+        face_xi_points_master,
+        pdistype,
+        distype,
+        intface->SurfaceMasterNumber());
+
+    // get the local gp coordinates w.r.t parent (master) element
+    DRT::UTILS::BoundaryGPToParentGP3(n_xi_points,
+        face_xi_points_slave,
+        ndistype,
+        distype,
+        intface->SurfaceSlaveNumber());
+  }
 
 
   //------------------------------------------------------------------
@@ -481,15 +597,29 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 //    if(ghost_penalty and
 //        (pdistype != DRT::Element::tet4 or ndistype != DRT::Element::tet4)) use2ndderiv=true;
 
+
+    LINALG::Matrix<facensd_,1> face_xi_gp(true);
+    LINALG::Matrix<nsd_,1> p_xi_gp(true);
+    LINALG::Matrix<nsd_,1> n_xi_gp(true);
+
+    for (int idim=0;idim<facensd_ ;idim++)
+    {
+      face_xi_gp(idim) = face_xi_points_master(*iquad,idim);
+    }
+    for (int idim=0;idim<nsd_ ;idim++)
+    {
+      p_xi_gp(idim) = p_xi_points(*iquad,idim);
+      n_xi_gp(idim) = n_xi_points(*iquad,idim);
+    }
+
     if( use2ndderiv )
     {
-      fac = EvalShapeFuncAndDerivsAtIntPoint(iquad, pele->Id(), nele->Id(), true);
+      fac = EvalShapeFuncAndDerivsAtIntPoint(iquad.Weight(), face_xi_gp, p_xi_gp, n_xi_gp, pele->Id(), nele->Id(), true);
     }
     else
     {
-      fac = EvalShapeFuncAndDerivsAtIntPoint(iquad, pele->Id(), nele->Id());
+      fac = EvalShapeFuncAndDerivsAtIntPoint(iquad.Weight(), face_xi_gp, p_xi_gp, n_xi_gp, pele->Id(), nele->Id(), false);
     }
-
 
     //-----------------------------------------------------
     // get velocities (n+1,i) at integration point
@@ -641,8 +771,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
 
     //-----------------------------------------------------
-
-
+    // get the stabilization parameters
 
     double tau_u   = 0.0;
     double tau_div = 0.0;
@@ -664,25 +793,17 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
 
     // assemble ghost penalty terms for xfluid application
-    GhostPenalty(
-        elematrix_mm,
-        elematrix_ms,
-        elematrix_sm,
-        elematrix_ss,
-        elevector_m,
-        elevector_s,
-        timefacfac,
-        tau_grad,
-        ghost_penalty,
-        ghost_penalty_reconstruct,
-        use2ndderiv);
-
 
 #if(1)
 
     // EOS stabilization terms for whole Reynolds number regime
-    if(edge_based_stab or ghost_penalty_reconstruct)
+    if(edge_based_stab or ghost_penalty or ghost_penalty_reconstruct)
     {
+
+      if( ghost_penalty_reconstruct )
+      {
+        tau_p = 1.0; // no need for stabilization parameter in ghost penalty reconstruction
+      }
 
       // assemble pressure (EOS) stabilization terms for fluid
       pressureEOS(    elematrix_mm,
@@ -703,6 +824,14 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
       // with additional CROSSWIND stabilization
 //      double div_streamline_tau = tau_div + tau_u * 1.0;
 
+      if(ghost_penalty)
+      {
+        div_streamline_tau += tau_grad; // add the ghost penalty contribution
+      }
+      else if( ghost_penalty_reconstruct )
+      {
+        div_streamline_tau = 1.0; // no need for stabilization parameter in ghost penalty reconstruction
+      }
 
       div_streamline_EOS(   elematrix_mm,
                             elematrix_ms,
@@ -889,13 +1018,13 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::ReassembleMATBlock(
-     int                                                          row_block,     ///< row block
-     int                                                          col_block,     ///< column block
-     Epetra_SerialDenseMatrix&                                    mat_block,     ///< matrix block
-     LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&    elematrix_mm,  ///< element matrix master-master block
-     LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&    elematrix_ms,  ///< element matrix master-slave block
-     LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&    elematrix_sm,  ///< element matrix slave-master block
-     LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&    elematrix_ss,  ///< element matrix slave-slave block
+     int                                                          row_block,            ///< row block
+     int                                                          col_block,            ///< column block
+     Epetra_SerialDenseMatrix&                                    mat_block,            ///< matrix block
+     LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&    elematrix_mm,         ///< element matrix master-master block
+     LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&    elematrix_ms,         ///< element matrix master-slave block
+     LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&    elematrix_sm,         ///< element matrix slave-master block
+     LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&    elematrix_ss,         ///< element matrix slave-slave block
      std::vector<int>&                                            lm_masterNodeToPatch, ///< local map between master nodes and nodes in patch
      std::vector<int>&                                            lm_slaveNodeToPatch   ///< local map between slave nodes and nodes in patch
     )
@@ -1230,6 +1359,177 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GetEle
 }
 
 
+/*----------------------------------------------------------------------*
+ | evaluate shape functions and derivatives at integr. point            |
+ |                                                          schott 02/13|
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype,
+          DRT::Element::DiscretizationType pdistype,
+          DRT::Element::DiscretizationType ndistype>
+double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::EvalShapeFuncAndDerivsAtIntPoint(
+    const double                             wquad,                ///< Gaussian weight
+    const LINALG::Matrix<facensd_,1> &       xi_gp,                ///< local coordinates of gaussian point w.r.t the master's face
+    const LINALG::Matrix<nsd_,1> &           p_xi_gp,              ///< local coordinates of gaussian point w.r.t master element
+    const LINALG::Matrix<nsd_,1> &           n_xi_gp,              ///< local coordinates of gaussian point w.r.t slave element
+    int                                      master_eid,           ///< master parent element
+    int                                      slave_eid,            ///< slave parent element
+    bool                                     use2ndderiv           ///< flag to use 2nd order derivatives
+)
+{
+
+  TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: EvalShapeFuncAndDerivsAtIntPoint" );
+
+  if(!(distype == DRT::Element::nurbs9))
+  {
+    // ------------------------------------------------
+    // shape function derivs of boundary element at gausspoint
+    DRT::UTILS::shape_function<distype>(xi_gp,funct_);
+    DRT::UTILS::shape_function_deriv1<distype>(xi_gp,deriv_);
+  }
+  else
+  {
+    dserror("not implemented for nurbs");
+  }
+
+  // ------------------------------------------------
+  // compute measure tensor for surface element and the infinitesimal
+  // area element drs for the integration
+  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>( xyze_,deriv_, metrictensor_, drs_, &n_ );
+
+
+  // total integration factor
+  const double fac = drs_*wquad;
+
+
+  // ------------------------------------------------
+  // shape functions and derivs of corresponding parent at gausspoint
+  if(!(pdistype == DRT::Element::nurbs27))
+  {
+    DRT::UTILS::shape_function<pdistype>       (p_xi_gp, pfunct_);
+    DRT::UTILS::shape_function_deriv1<pdistype>(p_xi_gp, pderiv_);
+  }
+  else dserror("not implemented for nurbs");
+
+   // ------------------------------------------------
+  // shape functions and derivs of corresponding parent at gausspoint
+  if(!(ndistype == DRT::Element::nurbs27))
+  {
+    DRT::UTILS::shape_function<ndistype>       (n_xi_gp, nfunct_);
+    DRT::UTILS::shape_function_deriv1<ndistype>(n_xi_gp, nderiv_);
+  }
+  else dserror("not implemented for nurbs");
+
+  //-----------------------------------------------------
+
+  if( use2ndderiv )
+  {
+    DRT::UTILS::shape_function_deriv2<pdistype>(p_xi_gp, pderiv2_);
+    DRT::UTILS::shape_function_deriv2<ndistype>(n_xi_gp, nderiv2_);
+  }
+
+  //-----------------------------------------------------
+  // get Jacobian matrix and determinant for master element
+  pxjm_=0;
+
+  for(int i=0;i<piel;++i)
+  {
+    for(int rr=0;rr<nsd_;++rr)
+    {
+      for(int mm=0;mm<nsd_;++mm)
+      {
+        pxjm_(rr,mm)+=pderiv_(rr,i)*pxyze_(mm,i);
+      }
+    }
+  }
+
+  const double pdet = pxji_.Invert(pxjm_);
+
+  // check for degenerated elements
+  if (pdet < 0.0)
+  {
+    dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", master_eid, pdet);
+  }
+
+  //-----------------------------------------------------
+  // get Jacobian matrix and determinant for slave element
+  nxjm_=0;
+
+  for(int i=0;i<niel;++i)
+  {
+    for(int rr=0;rr<nsd_;++rr)
+    {
+      for(int mm=0;mm<nsd_;++mm)
+      {
+        nxjm_(rr,mm)+=nderiv_(rr,i)*nxyze_(mm,i);
+      }
+    }
+  }
+
+  const double ndet = nxji_.Invert(nxjm_);
+
+
+  // check for degenerated elements
+  if (ndet < 0.0)
+  {
+    dserror("GLOBAL ELEMENT NO.%i\nNEGATIVE JACOBIAN DETERMINANT: %f", slave_eid, ndet);
+  }
+
+  //-----------------------------------------------------
+  // compute global derivates at integration point
+  //
+  //   dN    +-----  dN (xi)    dxi
+  //     i    \        i           k
+  //   --- =   +     ------- * -----
+  //   dx     /        dxi      dx
+  //     j   +-----       k       j
+  //         node k
+  //
+  // j : direction of derivative x/y/z
+  //
+
+  // master element
+  for(int nn=0;nn<piel;++nn)
+  {
+    for(int rr=0;rr<nsd_;++rr)
+    {
+      pderxy_(rr,nn)=pxji_(rr,0)*pderiv_(0,nn);
+
+      for(int mm=1;mm<nsd_;++mm)
+      {
+        pderxy_(rr,nn)+=pxji_(rr,mm)*pderiv_(mm,nn);
+      }
+    }
+  }
+
+  // slave element
+  for(int nn=0;nn<niel;++nn)
+  {
+    for(int rr=0;rr<nsd_;++rr)
+    {
+      nderxy_(rr,nn)=nxji_(rr,0)*nderiv_(0,nn);
+
+      for(int mm=1;mm<nsd_;++mm)
+      {
+        nderxy_(rr,nn)+=nxji_(rr,mm)*nderiv_(mm,nn);
+      }
+    }
+  }
+
+  if(use2ndderiv)
+  {
+    DRT::UTILS::gder2<pdistype>(pxjm_,pderxy_,pderiv2_,pxyze_,pderxy2_);
+    DRT::UTILS::gder2<ndistype>(nxjm_,nderxy_,nderiv2_,nxyze_,nderxy2_);
+  }
+  else
+  {
+    pderxy2_.Clear();
+    nderxy2_.Clear();
+  }
+
+
+  return fac;
+}
+
 
 
 /*----------------------------------------------------------------------*
@@ -1440,17 +1740,17 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostPenalty(
-            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&     elematrix_mm,  ///< element matrix master-master block
-            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&     elematrix_ms,  ///< element matrix master-slave block
-            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&     elematrix_sm,  ///< element matrix slave-master block
-            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&     elematrix_ss,  ///< element matrix slave-slave block
-            LINALG::Matrix<numdofpernode_*piel, 1>&                       elevector_m,   ///< element vector master block
-            LINALG::Matrix<numdofpernode_*niel, 1>&                       elevector_s,   ///< element vector slave block
-            const double &                                                timefacfac,
-            double &                                                      tau_grad,
-            bool &                                                        ghost_penalty,
-            bool &                                                        ghost_penalty_reconstruct,
-            bool &                                                        use2ndderiv
+    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&     elematrix_mm,              ///< element matrix master-master block
+    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&     elematrix_ms,              ///< element matrix master-slave block
+    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&     elematrix_sm,              ///< element matrix slave-master block
+    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&     elematrix_ss,              ///< element matrix slave-slave block
+    LINALG::Matrix<numdofpernode_*piel, 1>&                       elevector_m,               ///< element vector master block
+    LINALG::Matrix<numdofpernode_*niel, 1>&                       elevector_s,               ///< element vector slave block
+    const double &                                                timefacfac,                ///< timefac x integration factor
+    double &                                                      tau_grad,                  ///< stabilization parameter
+    bool &                                                        ghost_penalty,             ///< ghost penalty stabilization?
+    bool &                                                        ghost_penalty_reconstruct, ///< ghost penalty reconstruction?
+    bool &                                                        use2ndderiv                ///< use 2nd order derivatives
 )
 {
 
@@ -1736,15 +2036,16 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_streamline_EOS(
-            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
-            LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
-            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
-            LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
-            LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
-            LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
-            const double &                                                 timefacfac,
-            double &                                                       tau_div_streamline,
-            LINALG::Matrix<nsd_,nsd_>&                                     vderxyaf_diff
+    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,        ///< element matrix master-master block
+    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,        ///< element matrix master-slave block
+    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,        ///< element matrix slave-master block
+    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,        ///< element matrix slave-slave block
+    LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,         ///< element vector master block
+    LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,         ///< element vector slave block
+    const double &                                                 timefacfac,          ///< timefac x integration factor
+    double &                                                       tau_div_streamline,  ///< streamline stabilization parameter
+    LINALG::Matrix<nsd_,nsd_>&                                     vderxyaf_diff        ///< difference of velocity gradients
+
 )
 {
 
@@ -2301,7 +2602,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
          diameter2D<8>(true, m_connectivity[p_surf], h_e);
          break;
        default:
-         dserror("unknown number of nodes for surface of parent element");
+         dserror("unknown number of nodes for surface of parent element"); break;
        };
 
        // take the longest surface diameter
@@ -2330,7 +2631,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
         diameter2D<8>(false, s_connectivity[p_surf], h_e);
         break;
       default:
-        dserror("unknown number of nodes for surface of parent element");
+        dserror("unknown number of nodes for surface of parent element"); break;
       };
 
       // take the longest surface diameter
@@ -2357,7 +2658,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
           diameter1D<3>(true, m_connectivity[p_line], h_e);
           break;
         default:
-          dserror("unknown number of nodes for line of parent element");
+          dserror("unknown number of nodes for line of parent element"); break;
         };
 
         // take the longest line diameter
@@ -2384,7 +2685,7 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
          break;
 
        default:
-         dserror("unknown number of nodes for line of parent element");
+         dserror("unknown number of nodes for line of parent element"); break;
        };
 
        // take the longest line diameter
@@ -2646,7 +2947,7 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     tau_div = gamma_div  * p_hk_* p_hk_ * max_vel_L2_norm * density; // * min(1.0, Re_K);
   }
   break;
-  default: dserror("unknown definition for tau\n %i  ", tautype);
+  default: dserror("unknown definition for tau\n %i  ", tautype); break;
   }
 
 
@@ -2654,10 +2955,7 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
   //                                               ghost penalty
   //--------------------------------------------------------------------------------------------------------------
 
-//  tau_grad = gamma_grad*kinvisc * density * p_hk_;
-//  gamma_grad = 0.1;
   tau_grad = gamma_ghost_penalty*kinvisc*density*p_hk_;
-//  tau_grad = 0.0;
 
 
   return;

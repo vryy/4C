@@ -428,12 +428,14 @@ public:
 
   \author schott 03/12
   */
-  virtual Teuchos::RCP<DRT::Element> CreateInternalFaces( DRT::Element* parent_slave, //!< parent slave element
-                                                 int nnode,                  //!< number of nodes
-                                                 const int* nodeids,         //!< node ids
-                                                 DRT::Node** nodes,          //!< nodeids
-                                                 const int lsurface_master   //!< local index of surface w.r.t master element
-                                                 )
+  virtual Teuchos::RCP<DRT::Element> CreateInternalFaces( DRT::Element* parent_slave,          //!< parent slave element
+                                                          int nnode,                           //!< number of nodes
+                                                          const int* nodeids,                  //!< node ids
+                                                          DRT::Node** nodes,                   //!< nodeids
+                                                          const int lsurface_master,           //!< local index of surface w.r.t master element
+                                                          const int lsurface_slave,            //!< local index of surface w.r.t slave element
+                                                          const std::vector<int> localtrafomap //!< local trafo map
+  )
   {
    Teuchos::RCP<DRT::Element> intface;
    return intface;

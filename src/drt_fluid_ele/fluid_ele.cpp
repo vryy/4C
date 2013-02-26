@@ -555,26 +555,30 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Fluid::Volumes()
 /*----------------------------------------------------------------------*
  |  get internal faces element (public)                     schott 03/12|
  *----------------------------------------------------------------------*/
-RCP<DRT::Element> DRT::ELEMENTS::Fluid::CreateInternalFaces( DRT::Element* parent_slave,   //!< parent slave fluid3 element
-                                                              int nnode,                    //!< number of surface nodes
-                                                              const int* nodeids,           //!< node ids of surface element
-                                                              DRT::Node** nodes,            //!< nodes of surface element
-                                                              const int lsurface_master     //!< local surface number w.r.t master parent element
-                                                             )
+RCP<DRT::Element> DRT::ELEMENTS::Fluid::CreateInternalFaces( DRT::Element* parent_slave,           //!< parent slave fluid3 element
+                                                              int nnode,                           //!< number of surface nodes
+                                                              const int* nodeids,                  //!< node ids of surface element
+                                                              DRT::Node** nodes,                   //!< nodes of surface element
+                                                              const int lsurface_master,           //!< local surface number w.r.t master parent element
+                                                              const int lsurface_slave,            //!< local surface number w.r.t slave parent element
+                                                              const std::vector<int> localtrafomap //! local trafo map
+)
 {
   // dynamic cast for slave parent element
   DRT::ELEMENTS::Fluid * slave_pele = dynamic_cast<DRT::ELEMENTS::Fluid *>( parent_slave );
 
 
   // insert both parent elements
-  return DRT::UTILS::ElementIntFaceFactory<FluidIntFace,Fluid>(-1,             // internal face element id
-                                                                -1,             // owner of internal face element
-                                                                nnode,
-                                                                nodeids,
-                                                                nodes,
-                                                                this,           // master parent element
-                                                                slave_pele,     // slave parent element
-                                                                lsurface_master // local surface number w.r.t master parent element
+  return DRT::UTILS::ElementIntFaceFactory<FluidIntFace,Fluid>( -1,             //!< internal face element id
+                                                                -1,             //!< owner of internal face element
+                                                                nnode,          //!< number of surface nodes
+                                                                nodeids,        //!< node ids of surface element
+                                                                nodes,          //!< nodes of surface element
+                                                                this,           //!< master parent element
+                                                                slave_pele,     //!< slave parent element
+                                                                lsurface_master,//!< local surface number w.r.t master parent element
+                                                                lsurface_slave, //!< local surface number w.r.t slave parent element
+                                                                localtrafomap   //!< local trafo map
                                                                 );
 
 }

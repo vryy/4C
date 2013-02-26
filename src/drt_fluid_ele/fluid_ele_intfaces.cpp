@@ -37,14 +37,18 @@ DRT::ELEMENTS::FluidIntFace::FluidIntFace(int id,                               
                                           int nnode,                             ///< number of nodes
                                           const int* nodeids,                    ///< node ids
                                           DRT::Node** nodes,                     ///< nodes of surface
-                                          DRT::ELEMENTS::Fluid* parent_master,  ///< master parent element
-                                          DRT::ELEMENTS::Fluid* parent_slave,   ///< slave parent element
-                                          const int lsurface_master              ///< local surface index with respect to master parent element
-                                          ) :
+                                          DRT::ELEMENTS::Fluid* parent_master,   ///< master parent element
+                                          DRT::ELEMENTS::Fluid* parent_slave,    ///< slave parent element
+                                          const int lsurface_master,             ///< local surface index with respect to master parent element
+                                          const int lsurface_slave,              ///< local surface index with respect to slave parent element
+                                          const std::vector<int> localtrafomap   ///< get the transformation map between the local coordinate systems of the face w.r.t the master parent element's face's coordinate system and the slave element's face's coordinate system
+):
 DRT::Element(id,owner),
 parent_master_(parent_master),
 parent_slave_(parent_slave),
-lsurface_master_(lsurface_master)
+lsurface_master_(lsurface_master),
+lsurface_slave_(lsurface_slave),
+localtrafomap_(localtrafomap)
 {
   SetNodeIds(nnode,nodeids);
   BuildNodalPointers(nodes);
@@ -58,7 +62,9 @@ DRT::ELEMENTS::FluidIntFace::FluidIntFace(const DRT::ELEMENTS::FluidIntFace& old
 DRT::Element(old),
 parent_master_(old.parent_master_),
 parent_slave_(old.parent_slave_),
-lsurface_master_(old.lsurface_master_)
+lsurface_master_(old.lsurface_master_),
+lsurface_slave_(old.lsurface_slave_),
+localtrafomap_(old.localtrafomap_)
 {
   return;
 }

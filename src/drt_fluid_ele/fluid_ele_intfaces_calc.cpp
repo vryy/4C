@@ -252,14 +252,18 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
 
   for(int b=0; b<numblocks; b++)
   {
-    elemat_blocks[b].Shape(numnodeinpatch,numnodeinpatch); // new shape and init values to zero
+    int err = elemat_blocks[b].Shape(numnodeinpatch,numnodeinpatch); // new shape and init values to zero
+
+    if(err != 0) dserror("element matrix Shape not successful");
   }
 
   elevec_blocks.resize(numdofpernode); // 3D: 4 vectors for u,v,w,p components, 2D: 3 vectors for u,v,p
 
   for(int b=0; b<numdofpernode; b++)
   {
-    elevec_blocks[b].Size(numnodeinpatch); // new size and init values to zero
+    int err = elevec_blocks[b].Size(numnodeinpatch); // new size and init values to zero
+
+    if(err != 0) dserror("element matrix Shape not successful");
   }
 
 
