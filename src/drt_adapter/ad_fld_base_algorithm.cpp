@@ -134,9 +134,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   RCP<IO::DiscretizationWriter> output =
     Teuchos::rcp(new IO::DiscretizationWriter(actdis));
-  if (probtype != prb_fsi_xfem and
-      probtype != prb_fluid_xfem and
-      //probtype != prb_fluid_xfem2 and
+  if (probtype != prb_fluid_xfem and
       probtype != prb_combust and
       probtype != prb_fluid_fluid and
       probtype != prb_fluid_fluid_ale and

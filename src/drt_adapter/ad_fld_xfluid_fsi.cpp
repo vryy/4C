@@ -1,4 +1,20 @@
 /*----------------------------------------------------------------------*/
+/*!
+\file ad_fld_fluid_fsi.cpp
+
+\brief Fluid field adapter for fsi
+
+Can only be used in conjunction with XFluid!
+
+<pre>
+Maintainer:  Benedikt Schott
+             schott@lnm.mw.tum.de
+             http://www.lnm.mw.tum.de
+             089 - 289-15241
+</pre>
+*/
+/*----------------------------------------------------------------------*/
+
 #include "ad_fld_xfluid_fsi.H"
 
 #include "../drt_adapter/ad_fld_fluid.H"
@@ -52,7 +68,6 @@ ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP< Fluid> fluid,
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractInterfaceForces()
 {
-
   cout << "ExtractInterfaceForces (itrueresnp)" << endl;
 
   // the trueresidual vector has to match the solid dis
@@ -81,6 +96,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractInterfaceVeln()
 void ADAPTER::XFluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
   cout << "ApplyInterfaceVelocities" << endl;
+
   interface_->InsertFSICondVector(ivel,xfluid_->IVelnp());
 }
 
@@ -90,6 +106,7 @@ void ADAPTER::XFluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> iv
 void ADAPTER::XFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> idisp)
 {
   cout << "ApplyMeshDisplacement" << endl;
+
   interface_->InsertFSICondVector(idisp,xfluid_->IDispnp());
 
 }

@@ -2,7 +2,7 @@
 /*!
 \file ad_fld_fluid_xfem.cpp
 
-\brief
+\brief Fluid field adapter for xfem-fluids with moving boundaries
 
 <pre>
 Maintainer:  Benedikt Schott
@@ -114,7 +114,9 @@ void ADAPTER::FluidXFEM::NonlinearSolve(Teuchos::RCP<Epetra_Vector> idisp,
 Teuchos::RCP<Epetra_Vector> ADAPTER::FluidXFEM::RelaxationSolve(Teuchos::RCP<Epetra_Vector> idisp,
                                                                       double dt)
 {
-  dserror("RelaxationSolve for XFEM useful?");
+
+  std::cout << "WARNING: RelaxationSolve for XFEM useful?" << endl;
+
   // the displacement -> velocity conversion at the interface
   idisp->Scale(1./dt);
 
