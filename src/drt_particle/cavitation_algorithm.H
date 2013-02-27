@@ -118,6 +118,12 @@ namespace CAVITATION
       int* ijk   ///< ijk is 1st octant
       );
 
+    /// get all bin ids for given range of ijk
+    void GidsInijkRange(
+      std::set<int>& binIds,
+      int* ijk_bound
+      );
+
 
   private:
     //! @name fluid related stuff

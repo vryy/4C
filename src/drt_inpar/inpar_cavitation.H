@@ -1,0 +1,41 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file inpar_cavitation.H
+
+\brief Input parameters for cavitation
+
+<pre>
+Maintainer: Georg Hammerl
+            hammerl@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-152537
+</pre>
+*----------------------------------------------------------------------*/
+#ifndef INPAR_CAVITATION_H
+#define INPAR_CAVITATION_H
+
+#include "inpar_parameterlist_utils.H"
+
+/*----------------------------------------------------------------------*/
+
+namespace INPAR
+{
+
+  /// Input parameters for cavitation
+  namespace CAVITATION
+  {
+
+    /// Strategy for assigning fluid elements to bins
+    enum AssignFluidElesToBins
+    {
+      AssignFluidEleToBinFast,
+      AssignFluidEleToBinExact
+    };
+
+
+  }  // namespace CAVITATION
+
+}  // namespace INPAR
+
+/*----------------------------------------------------------------------*/
+#endif  // #ifndef INPAR_CAVITATION_H

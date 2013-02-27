@@ -139,6 +139,12 @@ namespace PARTICLE
       const double* pos   ///< position of which the corresponding bin id is asked for
       );
 
+    ///convert position into i,j,k
+    void ConvertPosToijk(
+      const double* pos,   ///< position to be converted into i,j,k
+      int* ijk   ///< resulting i,j,k
+      );
+
     ///convert bin id into i,j,k
     virtual void ConvertGidToijk(
       int gid,  ///< bin id to be converted into i,j,k

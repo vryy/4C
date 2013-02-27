@@ -721,6 +721,18 @@ int PARTICLE::Algorithm::ConvertPosToGid(const double* pos)
   return ConvertijkToGid(&ijk[0]);
 }
 
+/*----------------------------------------------------------------------*
+| convert position first to i,j,k, then into bin id         ghamm 02/13 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::ConvertPosToijk(const double* pos, int* ijk)
+{
+  for(int dim=0; dim < 3; dim++)
+  {
+    ijk[dim] = (int)((pos[dim]-XAABB_(dim,0)) / bin_size_[dim]);
+  }
+  return;
+}
+
 
 /*----------------------------------------------------------------------*
 | convert i,j,k into bin id                                 ghamm 09/12 |

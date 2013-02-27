@@ -35,12 +35,13 @@ LIMIT_OUTP_TO_PROC              0
 CUTOFF_RADIUS                   0.2 //0.2 // 0.4
 BOUNDINGBOX                     -1.000001 -1.000001 -1.100001 1.100001 1.100001 1.00012999
 ----------------------------------------------------------CAVITATION DYNAMIC
-UPRES                           5
+ASSIGNFLUIDELETOBIN             Exact //Fast
+GRAVITY_ACCELERATION            0.0 0.0 -9.81
+MAXTIME                         0.5 
+NUMSTEP                         5   
 RESTARTEVRY                     1
 TIMESTEP                        5.0e-3
-NUMSTEP                         5
-MAXTIME                         0.5
-GRAVITY_ACCELERATION            0.0 0.0 -9.81
+UPRES                           5
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      ParticleCentrDiff
 RESULTSEVRY                     1
