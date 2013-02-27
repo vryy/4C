@@ -51,7 +51,7 @@ FSI::ConstrMonolithicFluidSplit::ConstrMonolithicFluidSplit(const Epetra_Comm& c
               << "  +---------------------------------------------------------------------------------------------+" << std::endl
               << "  | NOTE: The slave side of the interface is not allowed to carry Dirichlet boundary conditions.|" << std::endl
               << "  |                                                                                             |" << std::endl
-              << "  | This is a structure split scheme. Hence, master and slave field are chosen as follows:      |" << std::endl
+              << "  | This is a fluid split scheme. Hence, master and slave field are chosen as follows:          |" << std::endl
               << "  |     MASTER  = STRUCTURE                                                                     |" << std::endl
               << "  |     SLAVE   = FLUID                                                                         |" << std::endl
               << "  |                                                                                             |" << std::endl
