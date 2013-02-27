@@ -59,9 +59,9 @@ namespace internal
     {
       nquad = 0;
       DRT::UTILS::IntegrationPoints1D rule1d(gaussrule);
-      for (unsigned int i=0; i<rule1d.nquad; ++i)
-        for (unsigned int j=0; j<rule1d.nquad; ++j)
-          for (unsigned int k=0; k<rule1d.nquad; ++k, ++nquad)
+      for (int i=0; i<rule1d.nquad; ++i)
+        for (int j=0; j<rule1d.nquad; ++j)
+          for (int k=0; k<rule1d.nquad; ++k, ++nquad)
           {
             qxg[nquad][0] = rule1d.qxg[k][0];
             qxg[nquad][1] = rule1d.qxg[j][0];
@@ -79,8 +79,8 @@ namespace internal
     {
       nquad = 0;
       DRT::UTILS::IntegrationPoints1D rule1d(gaussrule);
-      for (unsigned int j=0; j<rule1d.nquad; ++j)
-        for (unsigned int k=0; k<rule1d.nquad; ++k, ++nquad)
+      for (int j=0; j<rule1d.nquad; ++j)
+        for (int k=0; k<rule1d.nquad; ++k, ++nquad)
         {
           qxg[nquad][0] = rule1d.qxg[k][0];
           qxg[nquad][1] = rule1d.qxg[j][0];
