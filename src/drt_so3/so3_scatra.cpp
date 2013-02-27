@@ -23,7 +23,8 @@
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::So3_Scatra(int id, int owner):
 so3_ele(id,owner),
-intpoints_(distype)
+intpoints_(distype),
+fiber1_(3)
 {
   numgpt_ = intpoints_.NumPoints();
   return;
@@ -37,7 +38,8 @@ intpoints_(distype)
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::So3_Scatra(const DRT::ELEMENTS::So3_Scatra<so3_ele,distype>& old):
 so3_ele(old),
-intpoints_(distype)
+intpoints_(distype),
+fiber1_(3)
 {
   numgpt_ = intpoints_.NumPoints();
   return;
@@ -80,8 +82,13 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Pack(DRT::PackBuffer& data) con
   //for (int i=0; i<size; ++i)
   //  so3_ele::AddtoPack(data,invJ_[i]);
 
+  // fiber1
+  so3_ele::AddtoPack(data,fiber1_);
+
   // add base class Element
   so3_ele::Pack(data);
+
+
 
   return;
 }
@@ -112,9 +119,12 @@ void DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::Unpack(const std::vector<char>&
   //for (int i=0; i<size; ++i)
   //  so3_ele::ExtractfromPack(position,data,invJ_[i]);
 
+  so3_ele::ExtractfromPack(position,data,fiber1_);
+
   // extract base class Element
   std::vector<char> basedata(0);
   so3_ele::ExtractfromPack(position,data,basedata);
+
   so3_ele::Unpack(basedata);
 
   if (position != data.size())
@@ -139,6 +149,7 @@ bool DRT::ELEMENTS::So3_Scatra<so3_ele,distype>::ReadElement(const std::string& 
                                              const std::string& eledistype,
                                              DRT::INPUT::LineDefinition* linedef)
 {
+  linedef->ExtractDoubleVector("FIBER1",fiber1_);
   so3_ele::ReadElement(eletype,eledistype,linedef );
 
   return true;

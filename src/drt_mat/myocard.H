@@ -174,12 +174,13 @@ namespace MAT
 	/// material call from DRT::ELEMENTS::Transport::ReadElement function
         /// to setup conductivity tensor for each element
 	void Setup(DRT::INPUT::LineDefinition* linedef);
-
+  void Setup(const std::vector<double> &fiber1);
 
 	/// diffusivity
 	void ComputeDiffusivity(LINALG::Matrix<1,1>& diffus3) const;
 	void ComputeDiffusivity(LINALG::Matrix<2,2>& diffus3) const;
 	void ComputeDiffusivity(LINALG::Matrix<3,3>& diffus3) const;
+	void SetupDiffusionTensor(const std::vector<double> &fiber1);
 
 	/// compute reaction coefficient
 	double ComputeReactionCoeff(const double phi, const double dt) const;

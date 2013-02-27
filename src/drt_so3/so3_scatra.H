@@ -18,6 +18,8 @@
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
+#include "../drt_lib/drt_linedefinition.H"
+
 #include "so3_scatra_eletypes.H"
 
 namespace DRT
@@ -264,6 +266,8 @@ public:
 
   //@}
 
+  std::vector<double> GetFiber1() {return fiber1_;};
+
 protected:
 
   //! don't want = operator
@@ -323,6 +327,8 @@ private:
   RCP<MAT::Material> Material() const;
 
   int Id() const;
+
+  std::vector<double> fiber1_;
 }; // class So3_Poro
 
 

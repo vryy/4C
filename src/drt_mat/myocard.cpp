@@ -166,177 +166,22 @@ void MAT::Myocard::Unpack(const std::vector<char>& data)
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 }
 
-/*----------------------------------------------------------------------*
- |  Setup conductivity tensor                                ljag 06/12 |
- *----------------------------------------------------------------------*/
-
-/*void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
-    {
-    // get conductivity values of main fibre direction and
-    const double maindirdiffusivity = params_->maindirdiffusivity;
-    const double offdirdiffusivity  = params_->offdirdiffusivity;
-
-    // read local eigenvectors of diffusion tensor at current element
-    std::vector<double> rad;
-    std::vector<double> axi;
-    std::vector<double> cir;
-    linedef->ExtractDoubleVector("RAD",rad);
-    linedef->ExtractDoubleVector("AXI",axi);
-    linedef->ExtractDoubleVector("CIR",cir);
-
-    // eigenvector matrix
-    double radnorm=0.; double axinorm=0.; double cirnorm=0.;
-    LINALG::Matrix<3,3> evmat(true);
-    LINALG::Matrix<3,3> evmatinv(true);
-    for (int i = 0; i < 3; ++i) {
-	radnorm += rad[i]*rad[i]; axinorm += axi[i]*axi[i]; cirnorm += cir[i]*cir[i];
-    }
-    radnorm = sqrt(radnorm); axinorm = sqrt(axinorm); cirnorm = sqrt(cirnorm);
-    for (int i=0; i<3; ++i){
-	evmat(i,0) = rad[i]/radnorm;
-	evmat(i,1) = axi[i]/axinorm;
-	evmat(i,2) = cir[i]/cirnorm;
-    }
-
-    // determinant of eigenvector matrix
-    double const evmatdet = evmat(0,0)*evmat(1,1)*evmat(2,2)
-				    + evmat(0,1)*evmat(1,2)*evmat(2,0)
-				    + evmat(0,2)*evmat(1,0)*evmat(2,1)
-				    - evmat(0,2)*evmat(1,1)*evmat(2,0)
-				    - evmat(0,1)*evmat(1,0)*evmat(2,2)
-				    - evmat(0,0)*evmat(1,2)*evmat(2,1);
-    // double const evmatdet = evmat.Determinant();
-
-    // inverse of eigenvector matrix
-    evmatinv(0,0) = evmat(1,1)*evmat(2,2)-evmat(1,2)*evmat(2,1);
-    evmatinv(0,1) = evmat(0,2)*evmat(2,1)-evmat(0,1)*evmat(2,2);
-    evmatinv(0,2) = evmat(0,1)*evmat(1,2)-evmat(0,2)*evmat(1,1);
-    evmatinv(1,0) = evmat(1,2)*evmat(2,0)-evmat(1,0)*evmat(2,2);
-    evmatinv(1,1) = evmat(0,0)*evmat(2,2)-evmat(0,2)*evmat(2,0);
-    evmatinv(1,2) = evmat(0,2)*evmat(1,0)-evmat(0,0)*evmat(1,2);
-    evmatinv(2,0) = evmat(1,0)*evmat(2,1)-evmat(1,1)*evmat(2,0);
-    evmatinv(2,1) = evmat(0,1)*evmat(2,0)-evmat(0,0)*evmat(2,1);
-    evmatinv(2,2) = evmat(0,0)*evmat(1,1)-evmat(0,1)*evmat(1,0);
-    evmatinv.Scale(1/evmatdet);
-    //const LINALG::Matrix<3,3> ematinv;
-    //evmat.Invert(ematinv);
-    //cout << "EVMAT: " << evmat << "   EVMATinv: " << evmatinv << endl;
-    // Conductivity matrix D = EVmat*DiagonalConductivityMatrix*EVmatinv
-    for (int i = 0; i<3; i++){
-	evmatinv(0,i) *= maindirdiffusivity;
-	evmatinv(1,i) *= offdirdiffusivity;
-	evmatinv(2,i) *= offdirdiffusivity;
-    }
-
-    difftensor_.Multiply(evmat, evmatinv);
-
-    // done
-  return;
-}*/
-
-
 
 /*----------------------------------------------------------------------*
- |  Setup conductivity tensor                                ljag 02/13 |
+ |  Setup conductivity tensor                                cbert 02/13 |
  *----------------------------------------------------------------------*/
+
+void MAT::Myocard::Setup(const std::vector<double> &fiber1)
+{
+    SetupDiffusionTensor(fiber1);
+}
 
 void MAT::Myocard::Setup(DRT::INPUT::LineDefinition* linedef)
-  {
-    // get conductivity values of main fiber direction and perpendicular to fiber direction (rot symmetry)
-    const double maindirdiffusivity = params_->maindirdiffusivity;
-    const double offdirdiffusivity  = params_->offdirdiffusivity;
-
-    // read local eigenvectors of diffusion tensor at current element
+{
     std::vector<double> fiber1(3);
-    std::vector<double> fiber2(3);
-    std::vector<double> fiber3(3);
-
     linedef->ExtractDoubleVector("FIBER1",fiber1);
-
-    // eigenvector matrix
-    double fiber1norm=0.;
-    double fiber2norm=0.;
-    double fiber3norm=0.;
-    LINALG::Matrix<3,3> evmat(true);
-    LINALG::Matrix<3,3> evmatinv(true);
-
-    // construction of ONB for fibers
-    fiber2[0] = -fiber1[1];
-    fiber2[1] = fiber1[0];
-    fiber2[2] = 0;
-
-    fiber3[0] = -fiber1[2]*fiber2[1];
-    fiber3[1] = fiber1[2]*fiber2[0];
-    fiber3[2] = fiber1[0]*fiber2[1]-fiber1[1]*fiber2[0];
-    for (int i = 0; i < 3; ++i)
-      {
-        fiber1norm += fiber1[i]*fiber1[i];
-        fiber2norm += fiber2[i]*fiber2[i];
-        fiber3norm += fiber3[i]*fiber3[i];
-      }
-    fiber1norm = sqrt(fiber1norm);
-    fiber2norm = sqrt(fiber2norm);
-    fiber3norm = sqrt(fiber3norm);
-    for (int i=0; i<3; ++i)
-      {
-        evmat(i,0) = fiber1[i]/fiber1norm;
-        evmat(i,1) = fiber2[i]/fiber2norm;
-        evmat(i,2) = fiber3[i]/fiber3norm;
-      }
-
-    //paranoia check if we really computed an ONB
-    double test1 = 0.0;
-    double test2 = 0.0;
-    double test3 = 0.0;
-    for (int i = 0; i < 3; ++i)
-      {
-        test1 += fiber1[i]*fiber2[i];
-        test2 += fiber1[i]*fiber3[i];
-        test3 += fiber2[i]*fiber3[i];
-      }
-    if (test1>1e-10 or test2>1e-10 or test3>1e-10)
-      {
-        dserror("ONB Calculation in Myocard Material failed");
-      }
-
-    // determinant of eigenvector matrix
-    double const evmatdet = evmat(0,0)*evmat(1,1)*evmat(2,2)
-                    + evmat(0,1)*evmat(1,2)*evmat(2,0)
-                    + evmat(0,2)*evmat(1,0)*evmat(2,1)
-                    - evmat(0,2)*evmat(1,1)*evmat(2,0)
-                    - evmat(0,1)*evmat(1,0)*evmat(2,2)
-                    - evmat(0,0)*evmat(1,2)*evmat(2,1);
-    // double const evmatdet = evmat.Determinant();
-
-    // inverse of eigenvector matrix
-    evmatinv(0,0) = evmat(1,1)*evmat(2,2)-evmat(1,2)*evmat(2,1);
-    evmatinv(0,1) = evmat(0,2)*evmat(2,1)-evmat(0,1)*evmat(2,2);
-    evmatinv(0,2) = evmat(0,1)*evmat(1,2)-evmat(0,2)*evmat(1,1);
-    evmatinv(1,0) = evmat(1,2)*evmat(2,0)-evmat(1,0)*evmat(2,2);
-    evmatinv(1,1) = evmat(0,0)*evmat(2,2)-evmat(0,2)*evmat(2,0);
-    evmatinv(1,2) = evmat(0,2)*evmat(1,0)-evmat(0,0)*evmat(1,2);
-    evmatinv(2,0) = evmat(1,0)*evmat(2,1)-evmat(1,1)*evmat(2,0);
-    evmatinv(2,1) = evmat(0,1)*evmat(2,0)-evmat(0,0)*evmat(2,1);
-    evmatinv(2,2) = evmat(0,0)*evmat(1,1)-evmat(0,1)*evmat(1,0);
-    evmatinv.Scale(1/evmatdet);
-    //const LINALG::Matrix<3,3> ematinv;
-    //evmat.Invert(ematinv);
-    //cout << "EVMAT: " << evmat << "   EVMATinv: " << evmatinv << endl;
-    // Conductivity matrix D = EVmat*DiagonalConductivityMatrix*EVmatinv
-    for (int i = 0; i<3; i++)
-      {
-        evmatinv(0,i) *= maindirdiffusivity;
-        evmatinv(1,i) *= offdirdiffusivity;
-        evmatinv(2,i) *= offdirdiffusivity;
-      }
-
-    difftensor_.Multiply(evmat, evmatinv);
-
-
-    // done
-    return;
-
-  }
+    SetupDiffusionTensor(fiber1);
+}
 
 
 void MAT::Myocard::ComputeDiffusivity(LINALG::Matrix<1,1>& diffus3) const
@@ -404,6 +249,7 @@ double MAT::Myocard::ComputeReactionCoeffDeriv(const double phi, const double dt
     const double ReaCoeffDeriv = (ReaCoeff_t2 - ReaCoeff_t1)/(params_->dt_deriv);
 
     return ReaCoeffDeriv;
+
 }
 
 /*----------------------------------------------------------------------*
@@ -455,3 +301,99 @@ void MAT::Myocard::Update(const double phi, const double dt)
     return;
 }
 
+void MAT::Myocard::SetupDiffusionTensor(const std::vector<double> &fiber1)
+  {
+  // get conductivity values of main fiber direction and perpendicular to fiber direction (rot symmetry)
+   const double maindirdiffusivity = params_->maindirdiffusivity;
+   const double offdirdiffusivity  = params_->offdirdiffusivity;
+
+   // read local eigenvectors of diffusion tensor at current element
+   std::vector<double> fiber2(3);
+   std::vector<double> fiber3(3);
+
+   // eigenvector matrix
+   double fiber1norm=0.;
+   double fiber2norm=0.;
+   double fiber3norm=0.;
+   LINALG::Matrix<3,3> evmat(true);
+   LINALG::Matrix<3,3> evmatinv(true);
+
+   // construction of ONB for fibers
+   fiber2[0] = -fiber1[1];
+   fiber2[1] = fiber1[0];
+   fiber2[2] = 0;
+   fiber3[0] = -fiber1[2]*fiber2[1];
+   fiber3[1] = fiber1[2]*fiber2[0];
+   fiber3[2] = fiber1[0]*fiber2[1]-fiber1[1]*fiber2[0];
+
+   for (int i = 0; i < 3; ++i)
+     {
+       fiber1norm += fiber1[i]*fiber1[i];
+       fiber2norm += fiber2[i]*fiber2[i];
+       fiber3norm += fiber3[i]*fiber3[i];
+     }
+   fiber1norm = sqrt(fiber1norm);
+   fiber2norm = sqrt(fiber2norm);
+   fiber3norm = sqrt(fiber3norm);
+   for (int i=0; i<3; ++i)
+     {
+       evmat(i,0) = fiber1[i]/fiber1norm;
+       evmat(i,1) = fiber2[i]/fiber2norm;
+       evmat(i,2) = fiber3[i]/fiber3norm;
+     }
+
+   //paranoia check if we really computed an ONB
+   double test1 = 0.0;
+   double test2 = 0.0;
+   double test3 = 0.0;
+   for (int i = 0; i < 3; ++i)
+     {
+       test1 += fiber1[i]*fiber2[i];
+       test2 += fiber1[i]*fiber3[i];
+       test3 += fiber2[i]*fiber3[i];
+     }
+   if (test1>1e-10 or test2>1e-10 or test3>1e-10)
+     {
+       dserror("ONB Calculation in Myocard Material failed");
+     }
+
+   // determinant of eigenvector matrix
+   double const evmatdet = evmat(0,0)*evmat(1,1)*evmat(2,2)
+                   + evmat(0,1)*evmat(1,2)*evmat(2,0)
+                   + evmat(0,2)*evmat(1,0)*evmat(2,1)
+                   - evmat(0,2)*evmat(1,1)*evmat(2,0)
+                   - evmat(0,1)*evmat(1,0)*evmat(2,2)
+                   - evmat(0,0)*evmat(1,2)*evmat(2,1);
+   // double const evmatdet = evmat.Determinant();
+
+   // inverse of eigenvector matrix
+   evmatinv(0,0) = evmat(1,1)*evmat(2,2)-evmat(1,2)*evmat(2,1);
+   evmatinv(0,1) = evmat(0,2)*evmat(2,1)-evmat(0,1)*evmat(2,2);
+   evmatinv(0,2) = evmat(0,1)*evmat(1,2)-evmat(0,2)*evmat(1,1);
+   evmatinv(1,0) = evmat(1,2)*evmat(2,0)-evmat(1,0)*evmat(2,2);
+   evmatinv(1,1) = evmat(0,0)*evmat(2,2)-evmat(0,2)*evmat(2,0);
+   evmatinv(1,2) = evmat(0,2)*evmat(1,0)-evmat(0,0)*evmat(1,2);
+   evmatinv(2,0) = evmat(1,0)*evmat(2,1)-evmat(1,1)*evmat(2,0);
+   evmatinv(2,1) = evmat(0,1)*evmat(2,0)-evmat(0,0)*evmat(2,1);
+   evmatinv(2,2) = evmat(0,0)*evmat(1,1)-evmat(0,1)*evmat(1,0);
+   evmatinv.Scale(1/evmatdet);
+   //const LINALG::Matrix<3,3> ematinv;
+   //evmat.Invert(ematinv);
+   //cout << "EVMAT: " << evmat << "   EVMATinv: " << evmatinv << endl;
+   // Conductivity matrix D = EVmat*DiagonalConductivityMatrix*EVmatinv
+   for (int i = 0; i<3; i++)
+     {
+       evmatinv(0,i) *= maindirdiffusivity;
+       evmatinv(1,i) *= offdirdiffusivity;
+       evmatinv(2,i) *= offdirdiffusivity;
+     }
+
+   difftensor_.Multiply(evmat, evmatinv);
+  // cout << "Diffusion tensor" << endl;
+   // cout << difftensor_ << endl;
+
+
+   // done
+   return;
+
+  }

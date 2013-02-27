@@ -104,7 +104,7 @@ void SCATRA::ScatraFluidCloneStrategy::SetElementData(
       DRT::ELEMENTS::Transport* trans = dynamic_cast<DRT::ELEMENTS::Transport*>(newele.get());
       if (trans!=NULL)
       {
-        trans->SetMaterial(matid);
+        trans->SetMaterial(matid,oldele);
         trans->SetDisType(oldele->Shape()); // set distype as well!
       }
       else

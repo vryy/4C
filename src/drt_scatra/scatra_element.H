@@ -113,6 +113,8 @@ public:
    */
   virtual void SetMaterial(int matnum);
 
+  virtual void SetMaterial(int matnum,DRT::Element* oldele);
+
   /*!
   \brief Get shape type of element
   */

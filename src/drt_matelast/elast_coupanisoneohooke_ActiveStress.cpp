@@ -232,7 +232,6 @@ void MAT::ELASTIC::CoupAnisoNeoHooke_ActiveStress::AddStressAnisoPrincipal(
    double abs_u_ = abs(activationFunction_);
    double absplus_u_ = abs_u_*(activationFunction_>0.0);
    tauc_ =  (tauc_last_/dt + params_->sigma_*absplus_u_)/(1/dt + abs_u_);
-
    stress.Update(tauc_, A_, 1.0);
 
    // no contribution to cmat

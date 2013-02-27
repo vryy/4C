@@ -18,10 +18,12 @@ Maintainer: Georg Bauer
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_mat/matlist.H"
 #include "../drt_mat/elchmat.H"
+#include "../drt_mat/myocard.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_fem_general/drt_utils_local_connectivity_matrices.H"
 
+#include "../drt_so3/so3_scatra.H"
 
 DRT::ELEMENTS::TransportType DRT::ELEMENTS::TransportType::instance_;
 
@@ -350,6 +352,31 @@ void DRT::ELEMENTS::Transport::SetMaterial(int matnum)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ |  create material class (public)                            gjb 07/08 |
+ *----------------------------------------------------------------------*/
+void DRT::ELEMENTS::Transport::SetMaterial(int matnum,DRT::Element* oldele)
+{
+  SetMaterial(matnum);
+
+  RCP<MAT::Material> mat = Material();
+
+  if(mat->MaterialType() == INPAR::MAT::m_myocard)
+  {
+    MAT::Myocard* actmat = static_cast<MAT::Myocard*>(mat.get());
+
+    DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4,DRT::Element::tet4>* actele =
+        dynamic_cast<DRT::ELEMENTS::So3_Scatra<DRT::ELEMENTS::So_tet4,DRT::Element::tet4>*>(oldele);
+
+    if(actele == NULL)
+      dserror("cast to So3_Scatra failed");
+
+    actmat->Setup(actele->GetFiber1());
+
+  }
+
+  return;
+}
 
 /*----------------------------------------------------------------------*
  |  Return the shape of a Transport element                      (public) |
