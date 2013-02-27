@@ -44,8 +44,10 @@ MAT::PAR::ViscoGenMax::ViscoGenMax(
   beta_isot_princ_(matdata->GetDouble("BETA_ISOT_PRINC")),
   relax_isot_mod_vol_(matdata->GetDouble("RELAX_ISOT_MOD_VOL")),
   beta_isot_mod_vol_(matdata->GetDouble("BETA_ISOT_MOD_VOL")),
-  relax_isot_mod_isoc_(matdata->GetDouble("RELAX_ISOT_MOD_ISOC")),
-  beta_isot_mod_isoc_(matdata->GetDouble("BETA_ISOT_MOD_ISOC")),
+//  relax_isot_mod_isoc_(matdata->GetDouble("RELAX_ISOT_MOD_ISOC")),
+//  beta_isot_mod_isoc_(matdata->GetDouble("BETA_ISOT_MOD_ISOC")),
+  relax_isot_mod_isoc_(matdata->GetDouble("RELAX_ISOT_MOD_VOL")),
+  beta_isot_mod_isoc_(matdata->GetDouble("BETA_ISOT_MOD_VOL")),
   relax_anisot_princ_(matdata->GetDouble("RELAX_ANISOT_PRINC")),
   beta_anisot_princ_(matdata->GetDouble("BETA_ANISOT_PRINC"))
 
@@ -617,8 +619,10 @@ void MAT::ViscoGenMax::Evaluate(
     //-----------------------------------------------------------------------
     if (vis_isomod_iso_)
       {
-        const double  tau_isomod_iso  = viscoparams_->relax_isot_mod_isoc_;
-        const double  beta_isomod_iso = viscoparams_->beta_isot_mod_isoc_;
+//        const double  tau_isomod_iso  = viscoparams_->relax_isot_mod_isoc_;
+//        const double  beta_isomod_iso = viscoparams_->beta_isot_mod_isoc_;
+        const double  tau_isomod_iso  = viscoparams_->relax_isot_mod_vol_;
+        const double  beta_isomod_iso = viscoparams_->beta_isot_mod_vol_;
         //initialize scalars
         double artscalar1(true);
         double artscalar2(true);
@@ -645,7 +649,7 @@ void MAT::ViscoGenMax::Evaluate(
         Siso_n.Scale(-beta_isomod_iso);
         LINALG::Matrix<NUM_STRESS_3D,1> Qiso_n (artstressisomodisolast_->at(gp));
 
-//        // artificial visco stresses
+        // artificial visco stresses
         LINALG::Matrix<NUM_STRESS_3D,1> Qiso(Qiso_n);
         Qiso.Scale(artscalar1);
         stressisomodiso.Scale(beta_isomod_iso);
@@ -698,16 +702,13 @@ void MAT::ViscoGenMax::Evaluate(
         Svol_n.Scale(-beta_isomod_vol);
         LINALG::Matrix<NUM_STRESS_3D,1> Qvol_n (artstressisomodvollast_->at(gp));
 
-        // with holzapfel formula with Hn
-
-        double xsi(true);
-        xsi = -dt/(2*tau_isomod_vol);
+        // artificial visco stresses
         LINALG::Matrix<NUM_STRESS_3D,1> Qvol(Qvol_n);
-        Qvol.Scale(exp(xsi));
-        stressisomodvol.Scale(beta_isomod_vol*exp(xsi));
+        Qvol.Scale(artscalar1);
+        stressisomodvol.Scale(beta_isomod_vol);
+        Qvol += stressisomodvol;
         Qvol += Svol_n;
-        Qvol.Scale(exp(xsi));  // Q^(n+1) = artscalar2* [artscalar1* Q + beta*(S^(n+1) - S^n)]
-        Qvol += stressisomodvol ;
+        Qvol.Scale(artscalar2);  // Q^(n+1) = artscalar2* [artscalar1* Q + beta*(S^(n+1) - S^n)]
 
         // update history
         histstressisomodvolcurr_->at(gp) = stressisomodvol;
