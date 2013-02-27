@@ -505,3 +505,12 @@ void ADAPTER::FluidFSI::Reset(bool completeReset, bool newFiles, int iter)
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ADAPTER::FluidFSI::CalculateError()
+
+{
+  fluidimpl_->EvaluateErrorComparedToAnalyticalSol();
+  return;
+}
+

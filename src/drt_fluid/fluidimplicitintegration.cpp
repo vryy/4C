@@ -4623,6 +4623,7 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
   case INPAR::FLUID::channel2D:
   case INPAR::FLUID::gravitation:
   case INPAR::FLUID::shear_flow:
+  case INPAR::FLUID::fsi_fluid_pusher:
   {
     // create the parameters for the discretization
     Teuchos::ParameterList eleparams;
@@ -4639,6 +4640,11 @@ void FLD::FluidImplicitTimeInt::EvaluateErrorComparedToAnalyticalSol()
         discret_->SetState("velnp",velnp_);
     }
     else discret_->SetState("velaf",velnp_);
+
+    if (alefluid_)
+    {
+      discret_->SetState("dispnp", dispnp_);
+    }
 
     // get (squared) error values
     // 0: vel_mag

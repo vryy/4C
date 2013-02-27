@@ -259,6 +259,9 @@ namespace ADAPTER
     virtual void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp)
     { return fluid_->SetFldGrDisp(fluid_growth_disp); }
 
+    /// calculate error in comparison to analytical solution
+    virtual void CalculateError()
+    { dserror("Not implemented in the base class, may be overridden by a subclass."); }
 
   protected:
 

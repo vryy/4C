@@ -164,7 +164,8 @@ namespace INPAR
       kimmoin_stat_stokes,
       kimmoin_stat_navier_stokes,
       kimmoin_instat_stokes,
-      kimmoin_instat_navier_stokes
+      kimmoin_instat_navier_stokes,
+      fsi_fluid_pusher  ///< pseudo 1D FSI fluid pusher
     };
 
     /// initial field

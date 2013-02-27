@@ -165,6 +165,9 @@ namespace ADAPTER {
         bool newFiles = false,
         int iter = -1);
 
+    /// calculate error in comparison to analytical solution
+    virtual void CalculateError();
+
   protected:
     /// A casted pointer to the fluid itself
     Teuchos::RCP<FLD::FluidImplicitTimeInt> fluidimpl_;

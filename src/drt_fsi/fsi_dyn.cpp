@@ -939,6 +939,9 @@ void fsi_ale_drt()
     // here we go...
     fsi->Timeloop(fsi);
 
+    // calculate errors in comparison to analytical solution
+    fsi->FluidField().CalculateError();
+
     // create result tests for single fields
     DRT::Problem::Instance()->AddFieldTest(fsi->AleField().CreateFieldTest());
     DRT::Problem::Instance()->AddFieldTest(fsi->FluidField().CreateFieldTest());

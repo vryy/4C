@@ -2494,42 +2494,33 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                       INPAR::FLUID::coupling_iontransport_laplace),
                                   &fdyn);
 
-  setStringToIntegralParameter<int>("CALCERROR",
-                               "no",
-                               "Flag to (de)activate error calculation",
-                               tuple<std::string>(
-                                 "no",
-                                 "beltrami_flow",
-                                 "channel2D",
-                                 "gravitation",
-                                 "shear_flow",
-                                 "jeffery_hamel_flow",
-                                 "byfunct1",
-                                 "beltrami_stat_stokes",
-                                 "beltrami_stat_navier_stokes",
-                                 "beltrami_instat_stokes",
-                                 "beltrami_instat_navier_stokes",
-                                 "kimmoin_stat_stokes",
-                                 "kimmoin_stat_navier_stokes",
-                                 "kimmoin_instat_stokes",
-                                 "kimmoin_instat_navier_stokes"),
-                               tuple<int>(
-                                   INPAR::FLUID::no_error_calculation,
-                                   INPAR::FLUID::beltrami_flow,
-                                   INPAR::FLUID::channel2D,
-                                   INPAR::FLUID::gravitation,
-                                   INPAR::FLUID::shear_flow,
-                                   INPAR::FLUID::jeffery_hamel_flow,
-                                   INPAR::FLUID::byfunct1,
-                                   INPAR::FLUID::beltrami_stat_stokes,
-                                   INPAR::FLUID::beltrami_stat_navier_stokes,
-                                   INPAR::FLUID::beltrami_instat_stokes,
-                                   INPAR::FLUID::beltrami_instat_navier_stokes,
-                                   INPAR::FLUID::kimmoin_stat_stokes,
-                                   INPAR::FLUID::kimmoin_stat_navier_stokes,
-                                   INPAR::FLUID::kimmoin_instat_stokes,
-                                   INPAR::FLUID::kimmoin_instat_navier_stokes),
-                               &fdyn);
+  {
+   Teuchos::Tuple<std::string,16> name;
+   Teuchos::Tuple<int,16> label;
+
+   name[ 0] = "no";                             label[ 0] = INPAR::FLUID::no_error_calculation;
+   name[ 1] = "beltrami_flow";                  label[ 1] = INPAR::FLUID::beltrami_flow;
+   name[ 2] = "channel2D";                      label[ 2] = INPAR::FLUID::channel2D;
+   name[ 3] = "gravitation";                    label[ 3] = INPAR::FLUID::gravitation;
+   name[ 4] = "shear_flow";                     label[ 4] = INPAR::FLUID::shear_flow;
+   name[ 5] = "jeffery_hamel_flow";             label[ 5] = INPAR::FLUID::jeffery_hamel_flow;
+   name[ 6] = "byfunct1";                       label[ 6] = INPAR::FLUID::byfunct1;
+   name[ 7] = "beltrami_stat_stokes";           label[ 7] = INPAR::FLUID::beltrami_stat_stokes;
+   name[ 8] = "beltrami_stat_navier_stokes";    label[ 8] = INPAR::FLUID::beltrami_stat_navier_stokes;
+   name[ 9] = "beltrami_instat_stokes";         label[ 9] = INPAR::FLUID::beltrami_instat_stokes;
+   name[10] = "beltrami_instat_navier_stokes";  label[10] = INPAR::FLUID::beltrami_instat_navier_stokes;
+   name[11] = "kimmoin_stat_stokes";            label[11] = INPAR::FLUID::kimmoin_stat_stokes;
+   name[12] = "kimmoin_stat_navier_stokes";     label[12] = INPAR::FLUID::kimmoin_stat_navier_stokes;
+   name[13] = "kimmoin_instat_stokes";          label[13] = INPAR::FLUID::kimmoin_instat_stokes;
+   name[14] = "kimmoin_instat_navier_stokes";   label[14] = INPAR::FLUID::kimmoin_instat_navier_stokes;
+   name[15] = "fsi_fluid_pusher";               label[15] = INPAR::FLUID::fsi_fluid_pusher;
+
+   setStringToIntegralParameter<int>("CALCERROR","no",
+                                     "Flag to (de)activate error calculations",
+                                     name,
+                                     label,
+                                     &fdyn);
+  }
 
   setStringToIntegralParameter<int>("SIMPLER","no",
                                "Switch on SIMPLE family of solvers, needs additional FLUID PRESSURE SOLVER block!",

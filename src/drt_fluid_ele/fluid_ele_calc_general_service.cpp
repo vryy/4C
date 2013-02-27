@@ -395,7 +395,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
     ExtractValuesFromGlobalVector(discretization,lm, *rotsymmpbc_, &edispnp, NULL,"dispnp");
 
     // get new node positions for isale
-     xyze_ += edispnp;
+    xyze_ += edispnp;
   }
 
 //------------------------------------------------------------------
@@ -599,6 +599,34 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
       }
       else dserror("invalid dimension");
 
+    }
+    break;
+    case INPAR::FLUID::fsi_fluid_pusher:
+    {
+      // get pointer to material in order to access density
+      if (mat->MaterialType() == INPAR::MAT::m_fluid)
+      {
+        const MAT::NewtonianFluid* actmat = static_cast<const MAT::NewtonianFluid*>(mat.get());
+
+        // compute analytical velocities and pressure for
+        // Note: consider offset of coordinate system
+        // d(t) = -t^2
+        {
+          u(0) = -2.0 * t;
+          u(1) = 0.0;
+          u(2) = 0.0;
+          p = actmat->Density() * 2.0 * (xyzint(0) + 1.5);
+        }
+
+//        // d(t) = -t^3
+//        {
+//          u(0) = -3*t^2;
+//          u(1) = 0.0;
+//          u(2) = 0.0;
+//          p = actmat->Density() * 6 * t * (xyzint(0) + 1.5);
+//        }
+      }
+      else dserror("Material is not a Newtonian Fluid");
     }
     break;
     default:

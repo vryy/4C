@@ -526,6 +526,9 @@ namespace ADAPTER {
 
     /// create result test for encapulated fluid algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest() = 0;
+
+    /// calculate error in comparison to analytical solution
+    virtual void CalculateError() = 0;
   };
 }
 

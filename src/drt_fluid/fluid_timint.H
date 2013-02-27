@@ -276,6 +276,8 @@ public:
   // set fluid displacement vector due to biofilm growth
   virtual void SetFldGrDisp(Teuchos::RCP<Epetra_Vector> fluid_growth_disp){ dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
 
+  virtual void CalculateError(){ dserror("Not implemented in the base class, may be overridden by a subclass."); return; }
+
 protected:
   //! fluid discretization
   Teuchos::RCP<DRT::Discretization>      discret_;
