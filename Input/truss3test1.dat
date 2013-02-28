@@ -67,7 +67,7 @@ ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 MAXITER                         10
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          ImrLike
+GENAVG                          TrLike
 BETA                            0.5
 GAMMA                           1
 ALPHA_M                         0

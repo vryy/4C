@@ -60,7 +60,7 @@ TOLRES                          1.0E-06
 TOLDISP                         1.0E-06
 MAXITER                         500
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          ImrLike
+GENAVG                          TrLike
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 BETA                            0.25

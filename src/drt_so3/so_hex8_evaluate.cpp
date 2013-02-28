@@ -84,7 +84,6 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
   else if (action=="calc_struct_eleload")                         act = So_hex8::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")                         act = So_hex8::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")                    act = So_hex8::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike")                  act = So_hex8::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")                     act = So_hex8::calc_struct_reset_istep;
   else if (action=="calc_struct_reset_discretization")            act = So_hex8::calc_struct_reset_discretization;
   else if (action=="calc_struct_energy")                          act = So_hex8::calc_struct_energy;
@@ -475,124 +474,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       else if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
       {
         MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
-        bool imrlike = false;
-        robinson->Update(imrlike, 0.0);
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_elpldamage)
-      {
-        MAT::Damage* damage = static_cast <MAT::Damage*>(mat.get());
-        damage->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_growth)
-      {
-        MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
-        grow->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
-      {
-        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
-        comix->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-      {
-        MAT::MicroMaterial* micro = static_cast<MAT::MicroMaterial*>(mat.get());
-        micro->Update();
-      }
-    }
-    break;
-
-    //==================================================================================
-    case calc_struct_update_imrlike:
-    {
-      // determine new fiber directions
-      RCP<MAT::Material> mat = Material();
-      bool remodel;
-      const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
-      remodel = DRT::INPUT::IntegralValue<int>(patspec,"REMODEL");
-      if (remodel &&
-          ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
-           (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular) ||
-           (mat->MaterialType() == INPAR::MAT::m_constraintmixture) ||
-           (mat->MaterialType() == INPAR::MAT::m_elasthyper)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
-      {
-        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        soh8_remodel(lm,mydisp,params,mat);
-      }
-      // do something with internal EAS, etc parameters
-      // this depends on the applied solution technique (static, generalised-alpha,
-      // or other time integrators)
-      if (eastype_ != soh8_easnone)
-      {
-        double alphaf = params.get<double>("alpha f", 0.0);  // generalised-alpha TIS parameter alpha_f
-        Epetra_SerialDenseMatrix* alpha = data_.GetMutable<Epetra_SerialDenseMatrix>("alpha");  // Alpha_{n+1-alphaf}
-        Epetra_SerialDenseMatrix* alphao = data_.GetMutable<Epetra_SerialDenseMatrix>("alphao");  // Alpha_n
-        switch(eastype_) {
-        case DRT::ELEMENTS::So_hex8::soh8_easfull:
-          // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
-          LINALG::DENSEFUNCTIONS::update<double,soh8_easfull,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
-          LINALG::DENSEFUNCTIONS::update<double,soh8_easfull,1>(*alpha,*alphao); // alpha := alphao
-          break;
-        case DRT::ELEMENTS::So_hex8::soh8_easmild:
-          // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
-          LINALG::DENSEFUNCTIONS::update<double,soh8_easmild,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
-          LINALG::DENSEFUNCTIONS::update<double,soh8_easmild,1>(*alpha,*alphao); // alpha := alphao
-          break;
-        case DRT::ELEMENTS::So_hex8::soh8_eassosh8:
-          // alphao = (-alphaf/(1.0-alphaf))*alphao  + 1.0/(1.0-alphaf) * alpha
-          LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(-alphaf/(1.0-alphaf),*alphao,1.0/(1.0-alphaf),*alpha);
-          LINALG::DENSEFUNCTIONS::update<double,soh8_eassosh8,1>(*alpha,*alphao); // alpha := alphao
-          break;
-        case DRT::ELEMENTS::So_hex8::soh8_easnone: break;
-        default: dserror("Don't know what to do with EAS type %d", eastype_); break;
-        }
-      }
-      // Update of history for visco material
-      if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
-      {
-        MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
-        visco->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_viscoanisotropic)
-      {
-        MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
-        visco->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_viscogenmax)
-      {
-       MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(mat.get());
-       viscogenmax->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_aaaraghavanvorp_damage)
-      {
-        MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(mat.get());
-        aaadamage->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
-      {
-        MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
-        plastic->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_pllinelast)
-      {
-        MAT::PlasticLinElast* pllinelast = static_cast <MAT::PlasticLinElast*>(mat.get());
-        pllinelast->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_thermopllinelast)
-      {
-        MAT::ThermoPlasticLinElast* thrpllinelast = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
-        thrpllinelast->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
-      {
-        MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
-        // in case of generalise alphat time integration we have to interpolate
-        // from midpoint n+1-alphaf to end of old time step n for
-        bool imrlike = true;
-        double alphaf = params.get<double>("alpha f", 0.0);  // generalised-alpha TIS parameter alpha_f
-        robinson->Update(imrlike,alphaf);
+        robinson->Update();
       }
       else if (mat->MaterialType() == INPAR::MAT::m_elpldamage)
       {

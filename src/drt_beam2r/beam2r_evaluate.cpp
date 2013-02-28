@@ -46,7 +46,6 @@ int DRT::ELEMENTS::Beam2r::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_eleload")       act = Beam2r::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = Beam2r::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = Beam2r::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike") act = Beam2r::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = Beam2r::calc_struct_reset_istep;
   else if (action=="calc_struct_ptcstiff")        act = Beam2r::calc_struct_ptcstiff;
   else dserror("Unknown type of action for Beam2r");
@@ -323,7 +322,6 @@ int DRT::ELEMENTS::Beam2r::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     case calc_struct_update_istep:
-    case calc_struct_update_imrlike:
     case calc_struct_reset_istep:
     break;
     case calc_struct_stress:

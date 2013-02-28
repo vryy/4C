@@ -187,10 +187,7 @@ private:
       );
 
     //! update internal stress variables
-    void Update(
-      bool imrlike,  //!< if a generalised-alpha time integration scheme is used: true
-      double alphaf  //!< generalised-alpha tis parameter alpha_f
-      );
+    void Update();
 
     //! reset internal stress variables
     void Reset();

@@ -62,7 +62,7 @@ MAXITER                         80
 LOADLIN                         Yes
 DIVERCONT                       No
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          ImrLike
+GENAVG                          TrLike
 BETA                            0.5
 GAMMA                           1.0
 ALPHA_M                         0.5

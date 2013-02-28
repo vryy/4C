@@ -54,7 +54,6 @@ int DRT::ELEMENTS::SoDisp::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_eleload")       act = SoDisp::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = SoDisp::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = SoDisp::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike") act = SoDisp::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = SoDisp::calc_struct_reset_istep;
   else if (action=="calc_struct_errornorms")    act = SoDisp::calc_struct_errornorms;
   else if (action=="calc_init_vol")             act = SoDisp::calc_init_vol;
@@ -137,16 +136,6 @@ int DRT::ELEMENTS::SoDisp::Evaluate(Teuchos::ParameterList& params,
     break;
 
     case calc_struct_update_istep: {
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-      {
-        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
-        micro->Update();
-      }
-    }
-    break;
-
-    case calc_struct_update_imrlike: {
       RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
       {

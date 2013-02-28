@@ -60,7 +60,6 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
   else if (action=="calc_struct_eleload")       act = Shell8::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = Shell8::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = Shell8::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike") act = Shell8::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = Shell8::calc_struct_reset_istep;
   else dserror("Unknown type of action for Shell8");
 
@@ -190,23 +189,6 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
         for (int i=0; i<nhyb_; ++i)
         {
           (*alfao)[i] = (*alfa)[i];
-        }
-      }
-    }
-    break;
-    case calc_struct_update_imrlike:
-    {
-      // EAS
-      if (nhyb_)
-      {
-        vector<double>* alfa = data_.GetMutable<vector<double> >("alfa");  // Alpha_{n+1}
-        vector<double>* alfao = data_.GetMutable<vector<double> >("alfao");  // Alpha_n
-        double alphaf = params.get<double>("alpha f", 0.0);  // alpha_f
-        for (int i=0; i<nhyb_; ++i)
-        {
-          (*alfao)[i] *= -alphaf/(1.0-alphaf);
-          (*alfao)[i] += 1.0/(1.0-alphaf) * (*alfa)[i];
-          (*alfa)[i] = (*alfao)[i];
         }
       }
     }

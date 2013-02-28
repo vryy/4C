@@ -112,7 +112,7 @@ ML_DAMPFINE                     0.89                            // damping fine 
 ML_DAMPMED                      0.89                            // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          ImrLike
+GENAVG                          TrLike
 BETA                            0.25
 GAMMA                           0.5
 ALPHA_M                         0.0

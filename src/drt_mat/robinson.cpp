@@ -319,37 +319,13 @@ void MAT::Robinson::Setup(
 /*---------------------------------------------------------------------*
  | update after time step                          (public) dano 11/11 |
  *---------------------------------------------------------------------*/
-void MAT::Robinson::Update(
-  bool imrlike,
-  double alphaf
-  )
+void MAT::Robinson::Update()
 {
-  // x_n := x_{n+1}
-  if (imrlike == true) // in case of generalised alpha update to generalised midpoint {n+1-alphaf}
-  {
-    // x_{n+1-alphaf} = (1.0-alphaf) . x_{n+1} + alphaf . x_n
-    // x_{n+1} = (-alphaf/(1.0-alphaf))*x_n + 1.0/(1.0-alphaf) * x_{n+1-alphaf}
-    // x_n := x_{n+1}
-    // make current values at time step t_{n+1} to values of last step t_n
-    // x_n            strainpllast_
-    // x_{n+1-alphaf} strainplcurr_
-    const int numgp = strainpllast_->size();
-    for (int i=0; i<numgp; i++)
-    {
-      (strainpllast_->at(numgp)).Scale(-alphaf/(1.0-alphaf));
-      (strainpllast_->at(numgp)).Update((1.0/(1.0-alphaf)),strainplcurr_->at(numgp),1.0);
-      (backstresslast_->at(numgp)).Scale(-alphaf/(1.0-alphaf));
-      (backstresslast_->at(numgp)).Update((1.0/(1.0-alphaf)),backstresscurr_->at(numgp),1.0);
-    }
-  }
-  else // for all time integration schemes update to {n+1}
-  {
-    // make current values at time step t_n+1 to values of last step t_n
-    // x_n := x_n+1
-    strainpllast_ = strainplcurr_;
-    backstresslast_ = backstresscurr_;
-    // the matrices do not have to be updated. They are reset after each time step
-  }
+  // make current values at time step t_n+1 to values of last step t_n
+  // x_n := x_n+1
+  strainpllast_ = strainplcurr_;
+  backstresslast_ = backstresscurr_;
+  // the matrices do not have to be updated. They are reset after each time step
 
   // empty vectors of current data
   strainplcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);

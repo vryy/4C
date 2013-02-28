@@ -62,7 +62,6 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
   else if (action=="calc_struct_eleload")         act = So_hex8::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")         act = So_hex8::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")    act = So_hex8::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike")  act = So_hex8::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")     act = So_hex8::calc_struct_reset_istep;
   else if (action=="postprocess_stress")          act = So_hex8::postprocess_stress;
   else if (action=="multi_eas_init")              act = So_hex8::multi_eas_init;
@@ -240,27 +239,6 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
     {
       p_o_(0,0)= p_(0,0);
       t_o_(0,0)= t_(0,0);
-
-      // Update of history for plastic material
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
-      {
-        MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
-        plastic->Update();
-      }
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-      {
-        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
-        micro->Update();
-      }
-    }
-    break;
-
-    case calc_struct_update_imrlike:
-    {
-      double alphaf = params.get<double>("alpha f", 0.0);  // generalised-alpha TIS parameter alpha_f
-      p_o_(0,0) = (1.0 - alphaf) * p_(0,0) + alphaf * p_o_(0,0);
-      t_o_(0,0) = (1.0 - alphaf) * t_(0,0) + alphaf * t_o_(0,0);
 
       // Update of history for plastic material
       RCP<MAT::Material> mat = Material();

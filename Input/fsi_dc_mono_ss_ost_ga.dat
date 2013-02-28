@@ -25,7 +25,7 @@ DYNAMICTYP                      GenAlpha
 PREDICT                         ConstDisVelAcc
 LINEAR_SOLVER                   1
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          ImrLike
+GENAVG                          TrLike
 BETA                            0.5
 GAMMA                           1.0
 ALPHA_M                         0.0

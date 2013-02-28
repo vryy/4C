@@ -57,7 +57,7 @@ ITWANT                          4
 MAXDT                           0.07
 RESULTDT                        0.05
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          ImrLike
+GENAVG                          TrLike
 ALPHA_F                         0.5
 ALPHA_M                         0.5
 BETA                            0.25

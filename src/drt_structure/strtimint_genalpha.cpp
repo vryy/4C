@@ -46,6 +46,20 @@ void STR::TimIntGenAlpha::VerifyCoeff()
   else
     std::cout << "   alpha_m = " << alpham_ << std::endl;
 
+  // mid-averaging type
+  // In principle, there exist two mid-averaging possibilities, TR-like and IMR-like,
+  // where TR-like means trapezoidal rule and IMR-like means implicit mid-point rule.
+  // We used to maintain implementations of both variants, but due to its significantly
+  // higher complexity, the IMR-like version has been deleted (popp 02/2013). The nice
+  // thing about TR-like mid-averaging is that all element (and thus also material) calls
+  // are exclusively(!) carried out at the end-point t_{n+1} of each time interval, but
+  // never explicitly at some generalized midpoint, such as t_{n+1-\alpha_f}. Thus, any
+  // cumbersome extrapolation of history variables, etc. becomes obsolete.
+  if (midavg_ != INPAR::STR::midavg_trlike)
+    dserror("mid-averaging of internal forces only implemented TR-like");
+  else
+    std::cout << "   midavg = " << INPAR::STR::MidAverageString(midavg_)<<std::endl;
+
   // done
   return;
 }
@@ -96,8 +110,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha
     std::cout << "with generalised-alpha" << std::endl;
     VerifyCoeff();
 
-    std::cout << "   midavg = " << INPAR::STR::MidAverageString(midavg_)<<std::endl
-              << "   p_dis = " << MethodOrderOfAccuracyDis() << std::endl
+    std::cout << "   p_dis = " << MethodOrderOfAccuracyDis() << std::endl
               << "   p_vel = " << MethodOrderOfAccuracyVel() << std::endl
               << std::endl;
   }
@@ -116,22 +129,14 @@ STR::TimIntGenAlpha::TimIntGenAlpha
 
   // create force vectors
 
-  // internal forces
-  if (midavg_ == INPAR::STR::midavg_trlike)
-  {
-    // internal force vector F_{int;n} at last time
-    fint_ = LINALG::CreateVector(*dofrowmap_, true);
-    // internal force vector F_{int;n+1} at new time
-    fintn_ = LINALG::CreateVector(*dofrowmap_, true);
-    // set initial internal force vector
-    ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0),
-                            fint_, stiff_);
-  }
-  else if (midavg_ == INPAR::STR::midavg_imrlike)
-  {
-    // internal force vector F_{int;m} at mid-time
-    fintm_ = LINALG::CreateVector(*dofrowmap_, true);
-  }
+  // internal force vector F_{int;n} at last time
+  fint_ = LINALG::CreateVector(*dofrowmap_, true);
+  // internal mid-force vector F_{int;n+1-alpha_f}
+  fintm_ = LINALG::CreateVector(*dofrowmap_, true);
+  // internal force vector F_{int;n+1} at new time
+  fintn_ = LINALG::CreateVector(*dofrowmap_, true);
+  // set initial internal force vector
+  ApplyForceStiffInternal((*time_)[0], (*dt_)[0], (*dis_)(0), zeros_, (*vel_)(0), fint_, stiff_);
 
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -229,9 +234,10 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
   // initialise stiffness matrix to zero
   stiff_->Zero();
 
-  // build by last converged state and predicted target state
-  // the predicted mid-state
+  // build predicted mid-state by last converged state and predicted target state
   EvaluateMidState();
+
+  // ************************** (1) EXTERNAL FORCES ***************************
 
   // build new external forces
   fextn_->PutScalar(0.0);
@@ -240,86 +246,44 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
   // additional external forces are added (e.g. interface forces)
   fextn_->Update(1.0, *fifc_, 1.0);
 
-  // external mid-forces F_{ext;n+1-alpha_f} (fextm)
-  //    F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1}
-  //                         + alpha_f * F_{ext;n}
+  // external mid-forces F_{ext;n+1-alpha_f} ----> TR-like
+  // F_{ext;n+1-alpha_f} := (1.-alphaf) * F_{ext;n+1} + alpha_f * F_{ext;n}
   fextm_->Update(1.-alphaf_, *fextn_, alphaf_, *fext_, 0.0);
 
-  // initialise internal forces
-  if (midavg_ == INPAR::STR::midavg_trlike)
-  {
-    fintn_->PutScalar(0.0);
-  }
-  else if (midavg_ == INPAR::STR::midavg_imrlike)
-  {
-    fintm_->PutScalar(0.0);
-  }
+  // ************************** (2) INTERNAL FORCES ***************************
 
-  // ordinary internal force and stiffness
-  if (midavg_ == INPAR::STR::midavg_trlike)
-  {
-    ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_,  veln_,
-                            fintn_, stiff_);
-  }
-  else if (midavg_ == INPAR::STR::midavg_imrlike)
-  {
-    disi_->Scale(1.-alphaf_);
-    ApplyForceStiffInternal(timen_, (*dt_)[0], dism_, disi_, velm_,
-                            fintm_, stiff_);
-  }
+  // build new internal forces and stiffness
+  fintn_->PutScalar(0.0);
+  ApplyForceStiffInternal(timen_, (*dt_)[0], disn_, disi_, veln_, fintn_, stiff_);
 
-  // apply forces and stiffness due to constraints
-  if (midavg_ == INPAR::STR::midavg_trlike)
-  {
-    ParameterList pcon;
-    // for TR scale constraint matrix with the same value fintn_ is scaled with
-    pcon.set("scaleConstrMat", (1.0-alphaf_));
-    ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
-  }
-  else if (midavg_ == INPAR::STR::midavg_imrlike)
-  {
-    ParameterList pcon;
-    // for IMR scale stiffness matrix, since constraint is always evaluated at the end of time step
-    pcon.set("scaleStiffEntries",1.0/(1.0-alphaf_));
-    ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintm_, stiff_, pcon);
-  }
+  // add forces and stiffness due to constraints
+  // (for TR scale constraint matrix with the same value fintn_ is scaled with)
+  ParameterList pcon;
+  pcon.set("scaleConstrMat", (1.0-alphaf_));
+  ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
 
-  // surface stress force
-  if (midavg_ == INPAR::STR::midavg_trlike)
-  {
-    ApplyForceStiffSurfstress(timen_, (*dt_)[0], disn_, disn_, fintn_, stiff_);
-  }
-  else if (midavg_ == INPAR::STR::midavg_imrlike)
-  {
-    ApplyForceStiffSurfstress(timen_, (*dt_)[0], dism_, disn_, fintm_, stiff_);
-  }
+  // add surface stress force
+  ApplyForceStiffSurfstress(timen_, (*dt_)[0], disn_, disn_, fintn_, stiff_);
 
-  // potential forces
-  if (midavg_ == INPAR::STR::midavg_trlike)
-  {
-    ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);
-    TestForceStiffPotential(timen_, disn_, step_);
-  }
-  else if (midavg_ == INPAR::STR::midavg_imrlike)
-  {
-    ApplyForceStiffPotential(timen_, dism_, fintm_, stiff_);
-    TestForceStiffPotential(timen_, dism_, step_);
-  }
+  // add potential forces
+  ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);
+  TestForceStiffPotential(timen_, disn_, step_);
 
-  // apply forces and stiffness due to embedding tissue condition
-  if (midavg_ == INPAR::STR::midavg_trlike)
-  {
+  // add forces and stiffness due to embedding tissue condition
 	ApplyForceStiffEmbedTissue(stiff_,fintn_,disn_,predict);
-  }
-  else if (midavg_ == INPAR::STR::midavg_imrlike)
-  {
-    ApplyForceStiffEmbedTissue(stiff_,fintm_,dism_,predict);
-  }
+
+  // total internal mid-forces F_{int;n+1-alpha_f} ----> TR-like
+  // F_{int;n+1-alpha_f} := (1.-alphaf) * F_{int;n+1} + alpha_f * F_{int;n}
+  fintm_->Update(1.-alphaf_, *fintn_, alphaf_, *fint_, 0.0);
+
+  // ************************** (3) INERTIAL FORCES ***************************
 
   // inertial forces #finertm_
   mass_->Multiply(false, *accm_, *finertm_);
 
-  // viscous forces due Rayleigh damping
+  // ************************** (4) DAMPING FORCES ****************************
+
+  // viscous forces due to Rayleigh damping
   if (damping_ == INPAR::STR::damp_rayleigh)
   {
     damp_->Multiply(false, *velm_, *fviscm_);
@@ -328,22 +292,15 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
   // build residual
   //    Res = M . A_{n+1-alpha_m}
   //        + C . V_{n+1-alpha_f}
-  //        + F_{int;m}
+  //        + F_{int;n+1-alpha_f}
   //        - F_{ext;n+1-alpha_f}
   fres_->Update(-1.0, *fextm_, 0.0);
-  if (midavg_ == INPAR::STR::midavg_trlike)
-  {
-    fres_->Update((1.-alphaf_), *fintn_, alphaf_, *fint_, 1.0);
-  }
-  else if (midavg_ == INPAR::STR::midavg_imrlike)
-  {
-    fres_->Update(1.0, *fintm_, 1.0);
-  }
+  fres_->Update( 1.0, *fintm_, 1.0);
+  fres_->Update( 1.0, *finertm_, 1.0);
   if (damping_ == INPAR::STR::damp_rayleigh)
   {
     fres_->Update(1.0, *fviscm_, 1.0);
   }
-  fres_->Update(1.0, *finertm_, 1.0);
 
   // build tangent matrix : effective dynamic stiffness matrix
   //    K_{Teffdyn} = (1 - alpha_m)/(beta*dt^2) M
@@ -355,15 +312,12 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
     stiff_->Add(*damp_, false, (1.-alphaf_)*gamma_/(beta_*(*dt_)[0]), 1.0);
   }
 
-  // apply forces and stiffness due to contact / meshtying
-  // Note that we ALWAYS use a TR-like approach to compute the interface
-  // forces. This means we never explicitly compute fc at the generalized
-  // mid-point n+1-alphaf, but use a linear combination of the old end-
-  // point n and the new end-point n+1 instead:
-  // F_{c;n+1-alpha_f} := (1-alphaf) * F_{c;n+1} +  alpha_f * F_{c;n}
+  // apply forces and stiffness due to contact / meshtying ----> TR-like
+  // F_{c;n+1-alpha_f} := (1.-alphaf) * F_{c;n+1} + alpha_f * F_{c;n}
   ApplyForceStiffContactMeshtying(stiff_,fres_,disn_,predict);
 
-  // apply forces and stiffness due to beam contact
+  // apply forces and stiffness due to beam contact ----> TR-like
+  // F_{c;n+1-alpha_f} := (1.-alphaf) * F_{c;n+1} + alpha_f * F_{c;n}
   ApplyForceStiffBeamContact(stiff_,fres_,disn_,predict);
 
   // close stiffness matrix
@@ -445,14 +399,7 @@ double STR::TimIntGenAlpha::CalcRefNormForce()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-  if (midavg_ == INPAR::STR::midavg_trlike)
-  {
-    fintnorm = STR::AUX::CalculateVectorNorm(iternorm_, fintn_);
-  }
-  else if (midavg_ == INPAR::STR::midavg_imrlike)
-  {
-    fintnorm = STR::AUX::CalculateVectorNorm(iternorm_, fintm_);
-  }
+  fintnorm = STR::AUX::CalculateVectorNorm(iternorm_, fintm_);
 
   // norm of the external forces
   double fextnorm = 0.0;
@@ -555,10 +502,7 @@ void STR::TimIntGenAlpha::UpdateStepState()
 
   // update new internal force
   //    F_{int;n} := F_{int;n+1}
-  if (midavg_ == INPAR::STR::midavg_trlike)
-  {
-    fint_->Update(1.0, *fintn_, 0.0);
-  }
+  fint_->Update(1.0, *fintn_, 0.0);
 
   // update surface stress
   UpdateStepSurfstress();
@@ -587,15 +531,8 @@ void STR::TimIntGenAlpha::UpdateStepElement()
   p.set("total time", timen_);
   p.set("delta time", (*dt_)[0]);
   // action for elements
-  if (midavg_ == INPAR::STR::midavg_trlike)
-  {
-    p.set("action", "calc_struct_update_istep");
-  }
-  else if (midavg_ == INPAR::STR::midavg_imrlike)
-  {
-    p.set("alpha f", alphaf_);
-    p.set("action", "calc_struct_update_imrlike");
-  }
+  p.set("action", "calc_struct_update_istep");
+
   // go to elements
   discret_->ClearState();
   discret_->SetState("displacement",(*dis_)(0));
@@ -612,17 +549,14 @@ void STR::TimIntGenAlpha::ReadRestartForce()
   // external force
   reader.ReadVector(fext_, "fexternal");
   // determine internal force
-  if (midavg_ == INPAR::STR::midavg_trlike)
-  {
-    fint_->PutScalar(0.0);
-    // Set dt to 0, since we do not propagate in time.
-    // No time integration on material level
-    ApplyForceInternal((*time_)[0], 0.0, (*dis_)(0), zeros_, (*vel_)(0), fint_);
-    // for TR scale constraint matrix with the same value fintn_ is scaled with
-    ParameterList pcon;
-    pcon.set("scaleConstrMat", (1.0-alphaf_));
-    ApplyForceStiffConstraint((*time_)[0], (*dis_)(0), (*dis_)(0), fint_, stiff_, pcon);
-  }
+  fint_->PutScalar(0.0);
+  // Set dt to 0, since we do not propagate in time.
+  // No time integration on material level
+  ApplyForceInternal((*time_)[0], 0.0, (*dis_)(0), zeros_, (*vel_)(0), fint_);
+  // for TR scale constraint matrix with the same value fintn_ is scaled with
+  ParameterList pcon;
+  pcon.set("scaleConstrMat", (1.0-alphaf_));
+  ApplyForceStiffConstraint((*time_)[0], (*dis_)(0), (*dis_)(0), fint_, stiff_, pcon);
 
   // bye
   return;

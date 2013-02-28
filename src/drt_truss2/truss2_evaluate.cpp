@@ -44,7 +44,6 @@ int DRT::ELEMENTS::Truss2::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_eleload") act = Truss2::calc_struct_eleload;
   else if (action=="calc_struct_fsiload") act = Truss2::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep") act = Truss2::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike") act = Truss2::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep") act = Truss2::calc_struct_reset_istep;
   else if (action=="postprocess_stress") act = Truss2::postprocess_stress;
   else if (action=="calc_struct_ptcstiff") act = Truss2::calc_struct_ptcstiff;
@@ -121,7 +120,6 @@ int DRT::ELEMENTS::Truss2::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     case calc_struct_update_istep:
-    case calc_struct_update_imrlike:
     {
       //nothing to do
     }

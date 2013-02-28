@@ -620,8 +620,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
     else if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
     {
       MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
-      bool imrlike = false;
-      robinson->Update(imrlike, 0.0);
+      robinson->Update();
     }
   }  // calc_struct_update_istep
   break;

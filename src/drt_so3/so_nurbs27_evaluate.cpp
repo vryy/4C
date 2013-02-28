@@ -61,7 +61,6 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
   else if (action=="calc_struct_eleload"       ) act = So_nurbs27::calc_struct_eleload       ;
   else if (action=="calc_struct_fsiload"       ) act = So_nurbs27::calc_struct_fsiload       ;
   else if (action=="calc_struct_update_istep"  ) act = So_nurbs27::calc_struct_update_istep  ;
-  else if (action=="calc_struct_update_imrlike") act = So_nurbs27::calc_struct_update_imrlike;
   else if (action=="calc_stc_matrix"           ) act = So_nurbs27::calc_stc_matrix           ;
   else if (action=="calc_stc_matrix_inverse"   ) act = So_nurbs27::calc_stc_matrix_inverse   ;
   else if (action=="calc_struct_reset_istep"   ) act = So_nurbs27::calc_struct_reset_istep   ;
@@ -169,28 +168,6 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
     break;
 
     case calc_struct_update_istep:
-    {
-      // Update of history for visco material
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
-      {
-        MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
-        visco->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_viscoanisotropic)
-      {
-        MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
-        visco->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_viscogenmax)
-      {
-        MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(mat.get());
-        viscogenmax->Update();
-      }
-    }
-    break;
-
-    case calc_struct_update_imrlike:
     {
       // Update of history for visco material
       RCP<MAT::Material> mat = Material();

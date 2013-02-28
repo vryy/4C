@@ -180,7 +180,6 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_eleload")                 act = NStet5::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")                 act = NStet5::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")            act = NStet5::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike")          act = NStet5::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")             act = NStet5::calc_struct_reset_istep;
   else if (action=="multi_calc_dens")                     act = NStet5::multi_calc_dens;
   else if (action=="multi_readrestart")                   act = NStet5::multi_readrestart;
@@ -371,18 +370,6 @@ int DRT::ELEMENTS::NStet5::Evaluate(Teuchos::ParameterList& params,
 
     //==================================================================================
     case calc_struct_update_istep:
-    {
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-      {
-        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
-        micro->Update();
-      }
-    }
-    break;
-
-    //==================================================================================
-    case calc_struct_update_imrlike:
     {
       RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)

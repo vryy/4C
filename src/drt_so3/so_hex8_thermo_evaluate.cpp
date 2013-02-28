@@ -382,8 +382,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
     if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
     {
       MAT::Robinson* robinson = static_cast<MAT::Robinson*>(mat.get());
-      bool imrlike = false;
-      robinson->Update(imrlike, 0.0);
+      robinson->Update();
     }
   }
   break;
@@ -834,8 +833,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
     else if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
     {
       MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
-      bool imrlike = false;
-      robinson->Update(imrlike, 0.0);
+      robinson->Update();
     }
   }
   break;

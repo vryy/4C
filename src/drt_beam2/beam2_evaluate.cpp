@@ -47,7 +47,6 @@ int DRT::ELEMENTS::Beam2::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_eleload")       act = Beam2::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = Beam2::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = Beam2::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike") act = Beam2::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = Beam2::calc_struct_reset_istep;
   else if (action=="calc_struct_ptcstiff")        act = Beam2::calc_struct_ptcstiff;
   else dserror("Unknown type of action for Beam2");
@@ -201,7 +200,6 @@ int DRT::ELEMENTS::Beam2::Evaluate(Teuchos::ParameterList& params,
     }
     break;
     case calc_struct_update_istep:
-    case calc_struct_update_imrlike:
     {
       /*the action calc_struct_update_istep is called in the very end of a time step when the new dynamic
        * equilibrium has finally been found; this is the point where the variable representing the geomatric

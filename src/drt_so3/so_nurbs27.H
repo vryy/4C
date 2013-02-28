@@ -326,7 +326,6 @@ protected:
     calc_struct_eleload       ,
     calc_struct_fsiload       ,
     calc_struct_update_istep  ,
-    calc_struct_update_imrlike,
     calc_stc_matrix           , //! calculate scaled director matrix for thin shell-like structures
     calc_stc_matrix_inverse   , //! calculate inverse scaled director matrix for thin shell-like structures
     calc_struct_reset_istep

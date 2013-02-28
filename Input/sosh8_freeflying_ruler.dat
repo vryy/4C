@@ -77,7 +77,7 @@ UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          ImrLike
+GENAVG                          TrLike
 ALPHA_F                         0.4737
 ALPHA_M                         0.4211
 BETA                            0.2770

@@ -56,7 +56,6 @@ int DRT::ELEMENTS::BeamCL::Evaluate(Teuchos::ParameterList&   params,
   else if (action=="calc_struct_eleload") act = BeamCL::calc_struct_eleload;
   else if (action=="calc_struct_fsiload") act = BeamCL::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep") act = BeamCL::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike") act = BeamCL::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep") act = BeamCL::calc_struct_reset_istep;
   else if (action=="calc_struct_ptcstiff")        act = BeamCL::calc_struct_ptcstiff;
   else if (action=="calc_struct_energy")        act = BeamCL::calc_struct_energy;
@@ -355,7 +354,6 @@ int DRT::ELEMENTS::BeamCL::Evaluate(Teuchos::ParameterList&   params,
     }
     break;
     case calc_struct_update_istep:
-    case calc_struct_update_imrlike:
     {
       /*the action calc_struct_update_istep is called in the very end of a time step when the new dynamic
        * equilibrium has finally been found; this is the point where the variable representing the geometric

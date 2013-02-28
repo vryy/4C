@@ -58,7 +58,6 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_eleload") 		act = Beam3ebtor::calc_struct_eleload;
   else if (action=="calc_struct_fsiload") 		act = Beam3ebtor::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = Beam3ebtor::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike")act = Beam3ebtor::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = Beam3ebtor::calc_struct_reset_istep;
   else if (action=="calc_struct_ptcstiff")		act = Beam3ebtor::calc_struct_ptcstiff;
   else 	  dserror("Unknown type of action for Beam3ebtor");
@@ -138,10 +137,6 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
     break;
 
     case calc_struct_update_istep:
-    	//not necessary since no class variables are modified in predicting steps
-    break;
-
-    case calc_struct_update_imrlike:
     	//not necessary since no class variables are modified in predicting steps
     break;
 

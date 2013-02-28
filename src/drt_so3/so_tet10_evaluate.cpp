@@ -61,7 +61,6 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_eleload")       act = So_tet10::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")       act = So_tet10::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")  act = So_tet10::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike") act = So_tet10::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")   act = So_tet10::calc_struct_reset_istep;
   else if (action=="calc_struct_errornorms")    act = So_tet10::calc_struct_errornorms;
   else if (action=="calc_struct_prestress_update")     act = So_tet10::prestress_update;
@@ -281,17 +280,6 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 
       // push-forward invJ for every gaussian point
       UpdateJacobianMapping(mydisp,*prestress_);
-    }
-    break;
-
-    case calc_struct_update_imrlike:
-    {
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-      {
-        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
-        micro->Update();
-      }
     }
     break;
 

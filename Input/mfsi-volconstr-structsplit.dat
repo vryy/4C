@@ -149,7 +149,7 @@ TOLDISP                         1e-08
 TOLRES                          1e-06
 LINEAR_SOLVER                   4
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
-GENAVG                          ImrLike
+GENAVG                          TrLike
 BETA                            0.5
 GAMMA                           1.0
 ALPHA_M                         0.0

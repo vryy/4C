@@ -99,7 +99,6 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
   else if (action=="calc_struct_eleload")              act = So_tet4::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")              act = So_tet4::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")         act = So_tet4::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike")       act = So_tet4::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")          act = So_tet4::calc_struct_reset_istep;
   else if (action=="calc_struct_reset_discretization") act = So_tet4::calc_struct_reset_discretization;
   else if (action=="calc_struct_errornorms")           act = So_tet4::calc_struct_errornorms;
@@ -423,45 +422,6 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
         elasthyper->Update();
       }
 
-    }
-    break;
-
-    //==================================================================================
-    case calc_struct_update_imrlike:
-    {
-      // determine new fiber directions
-      RCP<MAT::Material> mat = Material();
-      bool remodel;
-      const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
-      remodel = DRT::INPUT::IntegralValue<int>(patspec,"REMODEL");
-      if (remodel &&
-          ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
-           (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular) ||
-           (mat->MaterialType() == INPAR::MAT::m_constraintmixture) ||
-           (mat->MaterialType() == INPAR::MAT::m_elasthyper)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
-      {
-        RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
-        if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
-        std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        so_tet4_remodel(lm,mydisp,params,mat);
-      }
-      // Update of history for visco material
-      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
-      {
-        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
-        comix->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-      {
-        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
-        micro->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
-      {
-        MAT::ElastHyper* elasthyper = static_cast <MAT::ElastHyper*>(mat.get());
-        elasthyper->Update();
-      }
     }
     break;
 

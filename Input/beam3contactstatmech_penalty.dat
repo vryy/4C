@@ -66,7 +66,7 @@ ADAPTCONV_BETTER                0.1
 MAXITER                         25
 RESEVRYERGY                     1
 //-------------------------------------------------STRUCTURAL  DYNAMIC/GENALPHA
-//GENAVG                        ImrLike
+//GENAVG                        TrLike
 //ALPHA_F                       0
 //ALPHA_M                       0
 //BETA                          0.5

@@ -1199,7 +1199,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /* parameters for generalised-alpha structural integrator */
   Teuchos::ParameterList& genalpha = sdyn.sublist("GENALPHA",false,"");
 
-  setStringToIntegralParameter<int>("GENAVG","ImrLike",
+  setStringToIntegralParameter<int>("GENAVG","TrLike",
                                "mid-average type of internal forces",
                                tuple<std::string>(
                                  "Vague",
@@ -2046,7 +2046,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /* parameters for generalised-alpha thermal integrator */
   Teuchos::ParameterList& tgenalpha = tdyn.sublist("GENALPHA",false,"");
 
-  setStringToIntegralParameter<int>("GENAVG","ImrLike",
+  setStringToIntegralParameter<int>("GENAVG","TrLike",
                               "mid-average type of internal forces",
                               tuple<std::string>(
                                 "Vague",

@@ -63,7 +63,6 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_eleload")                         act = So_hex8fbar::calc_struct_eleload;
   else if (action=="calc_struct_fsiload")                         act = So_hex8fbar::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")                    act = So_hex8fbar::calc_struct_update_istep;
-  else if (action=="calc_struct_update_imrlike")                  act = So_hex8fbar::calc_struct_update_imrlike;
   else if (action=="calc_struct_reset_istep")                     act = So_hex8fbar::calc_struct_reset_istep;
   else if (action=="calc_struct_reset_discretization")            act = So_hex8fbar::calc_struct_reset_discretization;
   else if (action=="postprocess_stress")                          act = So_hex8fbar::postprocess_stress;
@@ -271,41 +270,14 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
     }
     break;
 
-    case calc_struct_update_imrlike:
-    {
-      // Update of history for plastic material
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
-      {
-        MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
-        plastic->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_growth)
-      {
-        MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
-        grow->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
-      {
-        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
-        comix->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-      {
-        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
-        micro->Update();
-      }
-    }
-    break;
-
     case calc_struct_reset_istep:
     {
       // Update of history for plastic material
       RCP<MAT::Material> mat = Material();
       if (mat->MaterialType() == INPAR::MAT::m_plneohooke)
       {
-	MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
-	plastic->Update();
+        MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(mat.get());
+        plastic->Reset();
       }
     }
     break;

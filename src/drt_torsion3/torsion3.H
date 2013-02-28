@@ -282,7 +282,6 @@ private:
     calc_struct_eleload,
     calc_struct_fsiload,
     calc_struct_update_istep,
-    calc_struct_update_imrlike,
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                              //!< during iteration to last converged state
     postprocess_stress,

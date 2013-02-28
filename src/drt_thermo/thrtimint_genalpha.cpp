@@ -42,6 +42,19 @@ void THR::TimIntGenAlpha::VerifyCoeff()
   else
     std::cout << "   alpha_m = " << alpham_ << std::endl;
 
+  // mid-averaging type
+  // In principle, there exits two common possibilities, namely TR-like and IMR-like,
+  // where TR-like means trapezoidal rule and IMR-like means implicit mid-point rule.
+  // We use to maintain implementations of both variants, but due to its significantly
+  // higher complexity, the IMR-like version has been deleted (popp 02/2013). The nice
+  // thing about TR-like mid-averaging is that all element (and thus also material) calls
+  // are exclusively(!) carried out at the end-point t_{n+1} of each time interval, but
+  // never explicitly at some generalized midpoint, such as t_{n+1-\alpha_f}.
+  if (midavg_ != INPAR::THR::midavg_trlike)
+    dserror("mid-averaging of internal forces only implemented TR-like");
+  else
+    std::cout << "   midavg = " << INPAR::THR::MidAverageString(midavg_)<<std::endl;
+
   // done
   return;
 }
@@ -111,21 +124,14 @@ THR::TimIntGenAlpha::TimIntGenAlpha
 
   // create force vectors
 
-  // internal forces
-  if (midavg_ == INPAR::THR::midavg_trlike)
-  {
-    // internal force vector F_{int;n} at last time
-    fint_ = LINALG::CreateVector(*dofrowmap_, true);
-    // internal force vector F_{int;n+1} at new time
-    fintn_ = LINALG::CreateVector(*dofrowmap_, true);
-    // set initial internal force vector
-    ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_,fint_, tang_);
-  }
-  else if (midavg_ == INPAR::THR::midavg_imrlike)
-  {
-    // internal force vector F_{int;m} at mid-time
-    fintm_ = LINALG::CreateVector(*dofrowmap_, true);
-  }
+  // internal force vector F_{int;n} at last time
+  fint_ = LINALG::CreateVector(*dofrowmap_, true);
+  // internal mid-force vector F_{int;n+1-alpha_f}
+  fintm_ = LINALG::CreateVector(*dofrowmap_, true);
+  // internal force vector F_{int;n+1} at new time
+  fintn_ = LINALG::CreateVector(*dofrowmap_, true);
+  // set initial internal force vector
+  ApplyForceTangInternal((*time_)[0], (*dt_)[0], (*temp_)(0), zeros_,fint_, tang_);
 
   // external force vector F_ext at last times
   fext_ = LINALG::CreateVector(*dofrowmap_, true);
@@ -184,49 +190,25 @@ void THR::TimIntGenAlpha::EvaluateRhsTangResidual()
   fextm_->Update(1.-alphaf_, *fextn_, alphaf_, *fext_, 0.0);
 
   // initialise internal forces
-  if (midavg_ == INPAR::THR::midavg_trlike)
-  {
-    fintn_->PutScalar(0.0);
-  }
-  else if (midavg_ == INPAR::THR::midavg_imrlike)
-  {
-    fintm_->PutScalar(0.0);
-  }
+  fintn_->PutScalar(0.0);
 
   // initialise tangent matrix to zero
   tang_->Zero();
 
   // ordinary internal force and tangent
-  if (midavg_ == INPAR::THR::midavg_trlike)
-  {
 
 ////    ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_,  raten_,
 ////                            fintn_, tang_);
 
   // 02.10.09 nach dem Vorbild von thrtimint_ost.cpp
     ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fintn_, tang_);
-  }
-  else if (midavg_ == INPAR::THR::midavg_imrlike)
-  {
-    tempi_->Scale(1.-alphaf_);
-//    ApplyForceTangInternal(timen_, (*dt_)[0], tempm_, tempi_, ratem_,
-//                            fintm_, tang_);
-    ApplyForceTangInternal(timen_, (*dt_)[0], tempn_, tempi_, fintn_, tang_);
-  }
 
   // build residual
   //    Res = C . R_{n+1-alpha_f}
   //        + F_{int;m}
   //        - F_{ext;n+1-alpha_f}
   fres_->Update(-1.0, *fextm_, 0.0);
-  if (midavg_ == INPAR::THR::midavg_trlike)
-  {
-    fres_->Update((1.-alphaf_), *fintn_, alphaf_, *fint_, 1.0);
-  }
-  else if (midavg_ == INPAR::THR::midavg_imrlike)
-  {
-    fres_->Update(1.0, *fintm_, 1.0);
-  }
+  fres_->Update((1.-alphaf_), *fintn_, alphaf_, *fint_, 1.0);
 
   // build tangent matrix : effective dynamic tangent matrix
   //    K_{Teffdyn} = (1 - alpha_m)/(beta*dt^2) M
@@ -293,14 +275,7 @@ double THR::TimIntGenAlpha::CalcRefNormForce()
 
   // norm of the internal forces
   double fintnorm = 0.0;
-//  if (midavg_ == INPAR::THR::midavg_trlike)
-//  {
-//    fintnorm = THR::AUX::CalculateVectorNorm(iternorm_, fintn_);
-//  }
-//  else if (midavg_ == INPAR::THR::midavg_imrlike)
-//  {
-    fintnorm = THR::AUX::CalculateVectorNorm(iternorm_, fintm_);
-//  }
+  fintnorm = THR::AUX::CalculateVectorNorm(iternorm_, fintn_);
 
   // norm of the external forces
   double fextnorm = 0.0;
@@ -380,10 +355,7 @@ void THR::TimIntGenAlpha::UpdateStepState()
 
   // update new internal force
   //    F_{int;n} := F_{int;n+1}
-//  if (midavg_ == INPAR::THR::midavg_trlike)
-  {
-    fint_->Update(1.0, *fintn_, 0.0);
-  }
+  fint_->Update(1.0, *fintn_, 0.0);
 
   // update anything that needs to be updated at the element level
   {
@@ -392,17 +364,10 @@ void THR::TimIntGenAlpha::UpdateStepState()
     // other parameters that might be needed by the elements
     p.set("total time", timen_);
     p.set("delta time", (*dt_)[0]);
-//    // action for elements
-//    if (midavg_ == INPAR::THR::midavg_trlike)
-//    {
-//      p.set("action", "calc_therm_update_istep");
-//    }
-//    else if (midavg_ == INPAR::THR::midavg_imrlike)
-//    {
-//      // Ueberpruefe ob diese action auch bei thermo!!!! 1.10.2009
-//      p.set("alpha f", alphaf_);
-//      p.set("action", "calc_struct_update_imrlike");
-//    }
+
+//  // action for elements
+//  p.set("action", "calc_therm_update_istep");
+
     // go to elements
     discret_->Evaluate(p, Teuchos::null, Teuchos::null,
                        Teuchos::null, Teuchos::null, Teuchos::null);
@@ -421,13 +386,10 @@ void THR::TimIntGenAlpha::ReadRestartForce()
   // external force
   reader.ReadVector(fext_, "fexternal");
   // determine internal force
-//  if (midavg_ == INPAR::THR::midavg_trlike)
-  {
-    fint_->PutScalar(0.0);
-    // Set dt to 0, since we do not propagate in time.
-    // No time integration on material level
-    ApplyForceInternal((*time_)[0], 0.0, (*temp_)(0), zeros_, fint_);
-  }
+  fint_->PutScalar(0.0);
+  // Set dt to 0, since we do not propagate in time.
+  // No time integration on material level
+  ApplyForceInternal((*time_)[0], 0.0, (*temp_)(0), zeros_, fint_);
 
   // bye
   return;
