@@ -156,6 +156,7 @@ class StrategyBase
     virtual bool ActiveSetConverged() = 0;
     virtual bool ActiveSetSemiSmoothConverged() = 0;
     virtual void ApplyForceStiffCmt(Teuchos::RCP<Epetra_Vector> dis, Teuchos::RCP<LINALG::SparseOperator>& kt, Teuchos::RCP<Epetra_Vector>& f, bool predictor = false) = 0;
+    virtual void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap ) = 0;
     virtual double ConstraintNorm() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactNorStress() = 0;
     virtual Teuchos::RCP<Epetra_Vector> ContactTanStress() = 0;

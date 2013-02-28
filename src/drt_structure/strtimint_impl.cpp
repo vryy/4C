@@ -26,6 +26,7 @@ Maintainer: Alexander Popp
 #include "../drt_contact/meshtying_manager.H"
 #include "../drt_contact/contact_manager.H"
 #include "../drt_contact/contact_defines.H"
+#include "../drt_contact/meshtying_abstract_strategy.H"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "../drt_contact/contact_abstract_strategy.H"  // needed in CmtLinearSolve (for feeding the contact solver with latest information about the contact status)
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_beamcontact/beam3contact_manager.H"
@@ -1596,56 +1597,6 @@ void STR::TimIntImpl::CmtLinearSolve()
   // feed solver/preconditioner with additional information about the contact/meshtying problem
   //**********************************************************************
   {
-    // TODO remove this
-    if (contactsolver_->Params().isSublist("MueLu (Contact3) Parameters"))
-    {
-      Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("MueLu (Contact3) Parameters");
-      RCP<Epetra_Map> masterDofMap;
-      RCP<Epetra_Map> slaveDofMap;
-      RCP<Epetra_Map> innerDofMap;
-      RCP<Epetra_Map> activeDofMap;
-      // transform cmtman_ to CoAbstractStrategy object, since this code is only meant to work with contact/meshtying)
-      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
-      Teuchos::RCP<CONTACT::CoAbstractStrategy> cstrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
-      //if(cstrat == Teuchos::null) dserror("STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem?");
-      if(cstrat != Teuchos::null) {
-        cstrat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
-        mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap",masterDofMap);
-        mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap",slaveDofMap);
-        mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap",innerDofMap);
-        mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap",activeDofMap);
-        Teuchos::ParameterList & linSystemProps = mueluParams.sublist("Linear System properties");
-        linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact masterDofMap",masterDofMap);
-        linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact slaveDofMap",slaveDofMap);
-        linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact innerDofMap",innerDofMap);
-        linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact activeDofMap",activeDofMap);
-      }
-    }
-
-    // TODO remove this
-    if (contactsolver_->Params().isSublist("MueLu (PenaltyContact) Parameters"))
-    {
-      Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("MueLu (PenaltyContact) Parameters");
-      RCP<Epetra_Map> masterDofMap;
-      RCP<Epetra_Map> slaveDofMap;
-      RCP<Epetra_Map> innerDofMap;
-      RCP<Epetra_Map> activeDofMap;
-      // transform cmtman_ to CoAbstractStrategy object, since this code is only meant to work with contact/meshtying)
-      Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
-      Teuchos::RCP<CONTACT::CoAbstractStrategy> cstrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
-      if(cstrat == Teuchos::null) dserror("STR::TimInt::PrepareContactMeshtying: dynamic cast to CONTACT::CoAbstractStrategy failed. Are you running a contact/meshtying problem?");
-      cstrat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
-      mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap",masterDofMap);
-      mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap",slaveDofMap);
-      mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::InnerDofMap",innerDofMap);
-      mueluParams.set<RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap",activeDofMap);
-      Teuchos::ParameterList & linSystemProps = mueluParams.sublist("Linear System properties");
-      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact masterDofMap",masterDofMap);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact slaveDofMap",slaveDofMap);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact innerDofMap",innerDofMap);
-      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact activeDofMap",activeDofMap);
-    }
-
     // feed Aztec based solvers with contact information
     if (contactsolver_->Params().isSublist("Aztec Parameters"))
     {
@@ -1654,17 +1605,14 @@ void STR::TimIntImpl::CmtLinearSolve()
       RCP<Epetra_Map> slaveDofMap;
       RCP<Epetra_Map> innerDofMap;
       RCP<Epetra_Map> activeDofMap;
-      // transform cmtman_ to CoAbstractStrategy object, since this code is only meant to work with contact/meshtying)
       Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
-      Teuchos::RCP<CONTACT::CoAbstractStrategy> cstrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
-      if(cstrat != Teuchos::null) {
-        cstrat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
-        Teuchos::ParameterList & linSystemProps = mueluParams.sublist("Linear System properties");
-        linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact masterDofMap",masterDofMap);
-        linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact slaveDofMap",slaveDofMap);
-        linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact innerDofMap",innerDofMap);
-        linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact activeDofMap",activeDofMap);
-      }
+      strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
+      Teuchos::ParameterList & linSystemProps = mueluParams.sublist("Linear System properties");
+      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact masterDofMap",masterDofMap);
+      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact slaveDofMap",slaveDofMap);
+      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact innerDofMap",innerDofMap);
+      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact activeDofMap",activeDofMap);
+
     }
     // feed Belos based solvers with contact information
     if (contactsolver_->Params().isSublist("Belos Parameters"))
@@ -1674,18 +1622,13 @@ void STR::TimIntImpl::CmtLinearSolve()
       RCP<Epetra_Map> slaveDofMap;
       RCP<Epetra_Map> innerDofMap;
       RCP<Epetra_Map> activeDofMap;
-      // transform cmtman_ to CoAbstractStrategy object, since this code is only meant to work with contact/meshtying)
       Teuchos::RCP<MORTAR::StrategyBase> strat = Teuchos::rcpFromRef(cmtman_->GetStrategy());
-      Teuchos::RCP<CONTACT::CoAbstractStrategy> cstrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
-      if(cstrat != Teuchos::null) {
-        cstrat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
-        Teuchos::ParameterList & linSystemProps = mueluParams.sublist("Linear System properties");
-        linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact masterDofMap",masterDofMap);
-        linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact slaveDofMap",slaveDofMap);
-        linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact innerDofMap",innerDofMap);
-        linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact activeDofMap",activeDofMap);
-      }
-      // note: some Aztec based solvers might need this information?? check this.
+      strat->CollectMapsForPreconditioner(masterDofMap, slaveDofMap, innerDofMap, activeDofMap);
+      Teuchos::ParameterList & linSystemProps = mueluParams.sublist("Linear System properties");
+      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact masterDofMap",masterDofMap);
+      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact slaveDofMap",slaveDofMap);
+      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact innerDofMap",innerDofMap);
+      linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact activeDofMap",activeDofMap);
     }
 
   } // end: feed solver with contact/meshtying information

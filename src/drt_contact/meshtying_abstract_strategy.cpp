@@ -1292,3 +1292,21 @@ void CONTACT::MtAbstractStrategy::AssembleCoords(const std::string& sidename, bo
   return;
 }
 
+/*----------------------------------------------------------------------*
+ | collect maps for preconditioner (AMG)                   wiesner 01/12|
+ *----------------------------------------------------------------------*/
+void CONTACT::MtAbstractStrategy::CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap )
+{
+  InnerDofMap = gndofrowmap_;   // global internal dof row map
+
+  if(pgsdofrowmap_!=Teuchos::null) ActiveDofMap = pgsdofrowmap_;
+  else ActiveDofMap = gsdofrowmap_;  // global active slave dof row map ( all slave dofs are active )
+
+  // check if parallel redistribution is used
+  // if parallel redistribution is activated, then use (original) maps before redistribution
+  // otherwise we use just the standard master/slave maps
+  if(pgsdofrowmap_!=Teuchos::null) SlaveDofMap = pgsdofrowmap_;
+  else SlaveDofMap = gsdofrowmap_;
+  if(pgmdofrowmap_!=Teuchos::null) MasterDofMap = pgmdofrowmap_;
+  else MasterDofMap = gmdofrowmap_;
+}

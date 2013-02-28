@@ -124,7 +124,13 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
      
     */
     Teuchos::RCP<Epetra_Vector> LagrMultUzawa() { return zuzawa_; }
-    
+
+    /*!
+    \brief provides maps needed for contact/meshtying specific multigrid preconditioners
+
+    */
+    void CollectMapsForPreconditioner(Teuchos::RCP<Epetra_Map>& MasterDofMap, Teuchos::RCP<Epetra_Map>& SlaveDofMap, Teuchos::RCP<Epetra_Map>& InnerDofMap, Teuchos::RCP<Epetra_Map>& ActiveDofMap );
+
     /*!
     \brief Return mortar matrix D
 
