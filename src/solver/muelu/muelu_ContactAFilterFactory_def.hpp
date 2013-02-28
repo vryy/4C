@@ -27,8 +27,7 @@
 namespace MueLu {
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
-  ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::ContactAFilterFactory(/*const std::string& ename, const FactoryBase* fac*/)
-    /*: varName_(ename), factory_(fac)*/
+  ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::ContactAFilterFactory()
   {
 
   }
@@ -46,16 +45,14 @@ namespace MueLu {
     validParamList->set< std::string >           ("Map block 1 name", "SlaveDofMap", "Name of part 1 of map to be splitted.");
     validParamList->set< RCP<const FactoryBase> >("Map block 1 factory", MueLu::NoFactory::getRCP(), "Generating factory of part 1 of map to be segregated.");
 
-    validParamList->set< std::string >           ("Map block 2 name", "SlaveDofMap", "Name of part 2 of map to be splitted.");
-    validParamList->set< RCP<const FactoryBase> >("Map block 2 factory", MueLu::NoFactory::getRCP(), "Generating factory of part 1 of map to be segregated.");
+    validParamList->set< std::string >           ("Map block 2 name", "MasterDofMap", "Name of part 2 of map to be splitted.");
+    validParamList->set< RCP<const FactoryBase> >("Map block 2 factory", MueLu::NoFactory::getRCP(), "Generating factory of part 2 of map to be segregated.");
 
     return validParamList;
   }
 
   template <class Scalar, class LocalOrdinal, class GlobalOrdinal, class Node, class LocalMatOps>
   void ContactAFilterFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>::DeclareInput(Level &currentLevel) const {
-    //currentLevel.DeclareInput("SlaveDofMap", MueLu::NoFactory::get(), this);
-
     const ParameterList & pL = GetParameterList();
     std::string inputName                        = pL.get<std::string> ("Input matrix name");
     Teuchos::RCP<const FactoryBase> inputFactory = GetFactory          ("Input matrix factory");
@@ -88,7 +85,6 @@ namespace MueLu {
     RCP<const Map> DofMap2 = currentLevel.Get< RCP<const Map> >(blockName2,blockFactory2.get());
 
     RCP<Matrix> Ain = currentLevel.Get< RCP<Matrix> >(inputName, inputFactory.get());
-
 
     RCP<Vector> blockVectorRowMap = VectorFactory::Build(Ain->getRowMap());
     blockVectorRowMap->putScalar(-1.0);         // -1.0 denotes that this Dof is not slave DOF
