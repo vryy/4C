@@ -817,8 +817,6 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
     // new column layout
     Discret().ExportColumnNodes(*newnodecolmap);
     Discret().ExportColumnElements(*newelecolmap);
-
-    return;
   }
 
   //*****ONLY REDUNDANT MASTER STORAGE*****
@@ -929,6 +927,65 @@ void MORTAR::MortarInterface::CreateInterfaceGhosting()
   else if (Redundant()==INPAR::MORTAR::redundant_none)
   {
     dserror("ERROR: Non-redundant interface storage not yet implemented.");
+
+    // nothing to do here, we work with the given non-redundant distribution
+    // of both slave and master nodes to the individual processsors. However
+    // we want ALL procs to be part of the interface discretization, not only
+    // the ones that do own or ghost any nodes in the natural distribution of
+    // idiscret_. This makes dynamic redistribution easier!
+
+    //**********************************************************************
+    // IMPORTANT NOTE:
+    // In an older code version, we only did ghosting on procs that own or ghost
+    // any of the interface nodes or elements  in the natural distr. of idiscret_.
+    // The corresponding code lines for creating this proc list are:
+    //
+    // std::vector<int> stproc(0);
+    // if (oldnodecolmap_->NumMyElements() || oldelecolmap_->NumMyElements())
+    //   stproc.push_back(Comm().MyPID());
+    // std::vector<int> rtproc(0);
+    // LINALG::Gather<int>(stproc,rtproc,Comm().NumProc(),&allproc[0],Comm());
+    //
+    // In this case, we use "rtproc" instead of "allproc" afterwards, i.e. when
+    // the node gids and element gids are gathered among procs.
+    //**********************************************************************
+
+    // we keep the current ghosting, but we want to (formally) include
+    // all processors, even if they do not own or ghost a single node or
+    // element in the natural distribution of idiscret_
+    std::vector<int> allproc(Comm().NumProc());
+    for (int i=0; i<Comm().NumProc(); ++i) allproc[i] = i;
+    std::vector<int> rdata;
+
+    // fill my own slave and master column node ids (non-redundant)
+    const Epetra_Map* nodecolmap = Discret().NodeColMap();
+    for (int i=0; i<nodecolmap->NumMyElements(); ++i)
+    {
+      int gid = nodecolmap->GID(i);
+      rdata.push_back(gid);
+    }
+
+    // re-build node column map (now formally on ALL processors)
+    Teuchos::RCP<Epetra_Map> newnodecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,Comm()));
+    rdata.clear();
+
+    // fill my own slave and master column element ids (non-redundant)
+    const Epetra_Map* elecolmap  = Discret().ElementColMap();
+    for (int i=0; i<elecolmap->NumMyElements(); ++i)
+    {
+      int gid = elecolmap->GID(i);
+      rdata.push_back(gid);
+    }
+
+    // re-build element column map (now formally on ALL processors)
+    Teuchos::RCP<Epetra_Map> newelecolmap = Teuchos::rcp(new Epetra_Map(-1,(int)rdata.size(),&rdata[0],0,Comm()));
+    rdata.clear();
+    allproc.clear();
+
+    // redistribute the discretization of the interface according to the
+    // new (=old) node / element column layout
+    Discret().ExportColumnNodes(*newnodecolmap);
+    Discret().ExportColumnElements(*newelecolmap);
   }
 
   //*****INVALID CASES*****
