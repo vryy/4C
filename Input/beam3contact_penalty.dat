@@ -227,8 +227,8 @@ MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 100000 NUE 0 DENS 0.001 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 1.0 FACTOR 0.0 1.0
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -2.3533418376751000e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 8.0346938659293196e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.6414779651044675e+00 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE -2.35320636690075330e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE 8.03793046908387043e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE -1.64147761604003972e+00 TOLERANCE 1e-6
 -------------------------------------------------------------------------END
 //                              END
