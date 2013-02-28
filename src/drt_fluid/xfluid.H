@@ -38,6 +38,7 @@ namespace LINALG
   class MapExtractor;
   class BlockSparseMatrixBase;
   class SparseOperator;
+  class KrylovProjector;
 }
 namespace GEO
 {
@@ -129,7 +130,8 @@ namespace FLD
       /// integrate the shape function and assemble into a vector for KrylovSpaceProjection
       void IntegrateShapeFunction(
           Teuchos::ParameterList & eleparams, ///< element parameters
-          DRT::Discretization & discret      ///< background fluid discretization
+          DRT::Discretization & discret,       ///< background fluid discretization
+          Teuchos::RCP<Epetra_Vector> vec     ///< vector into which we assemble
           );
 
       /// GmshOutput for background mesh and cut mesh
@@ -346,7 +348,8 @@ namespace FLD
     void LinearSolve();
 
     /// create vectors for KrylovSpaceProjection
-    void PrepareKrylovSpaceProjection();
+    void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
+    void UpdateKrylovSpaceProjection();
 
     /// update interface fields
     void UpdateInterfaceFields();
@@ -684,13 +687,10 @@ namespace FLD
 
     //--------------------------------------------------------------------
 
-    //! @name general algorithm parameters
-    //! project nullspace (useful for completely Dirichlet bounded problems)
-    bool                          project_;
-    //! integrated basis vector (pressure component)
-    Teuchos::RCP<Epetra_Vector>   w_;
-    //! basis vector for nullspace (vector of ones in the pressure component)
-    Teuchos::RCP<Epetra_Vector>   c_;
+    //! flag setting whether Krylov projection needs to be updated or not
+    bool                                  updateprojection_;
+    //! Krylov projector himself
+    Teuchos::RCP<LINALG::KrylovProjector> projector_;
     /// pointer to Krylov projection condition of scatra field
     DRT::Condition* kspcond_;
 

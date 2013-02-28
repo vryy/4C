@@ -41,6 +41,7 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "../linalg/linalg_ana.H"
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_krylov_projector.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_dserror.H"
@@ -250,6 +251,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   int numcond = KSPcond.size();
   int numfluid = 0;
 
+  DRT::Condition* kspcond;
   // check if for fluid Krylov projection is required
   for(int icond = 0; icond < numcond; icond++)
   {
@@ -257,27 +259,21 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
     if (*name == "fluid")
     {
       numfluid++;
-      kspcond_ = KSPcond[icond];
+      kspcond = KSPcond[icond];
     }
   }
 
   // initialize variables for Krylov projection if necessary
-  w_ = Teuchos::null;
-  c_ = Teuchos::null;
   if (numfluid == 1)
   {
-    // set flag that triggers all computations for Krylov projection
-    project_ = true;
-    // compute w_ and c_ vectors - only done once here if not alefluid_
-    PrepareKrylovSpaceProjection();
+    SetupKrylovSpaceProjection(kspcond);
     if (myrank_ == 0)
       cout << "\nSetup of KrylovSpaceProjection in fluid field\n" << endl;
-    // kspcond_ was already set in previous for-loop
   }
   else if (numfluid == 0)
   {
-    project_ = false;
-    kspcond_ = NULL;
+    updateprojection_ = false;
+    projector_ = Teuchos::null;
   }
   else
     dserror("Received more than one KrylovSpaceCondition for fluid field");
@@ -1519,13 +1515,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(zeros_),
       residual_);
 
-
-    // Krylov projection for solver already required in convergence check
-    if (alefluid_ and project_)
-    {
-      PrepareKrylovSpaceProjection();
-    }
-
     Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
     onlyvel->Norm2(&vresnorm_);
 
@@ -1672,16 +1661,21 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       }
 
 #ifdef WRITEOUTSTATISTICS
-    FILE* errfile = params_->get<FILE*>("err file",NULL);
-    if(errfile!=NULL)
-    {
-      fprintf(errfile, "TOBI: Proc %i/%i\tTimeStep %i\tNonlinIter %i\t",myrank_,discret_->Comm().NumProc(),step_,itnum);
-    }
+      FILE* errfile = params_->get<FILE*>("err file",NULL);
+      if(errfile!=NULL)
+      {
+        fprintf(errfile, "TOBI: Proc %i/%i\tTimeStep %i\tNonlinIter %i\t",myrank_,discret_->Comm().NumProc(),step_,itnum);
+      }
 #endif
 
+      // Krylov projection for solver already required in convergence check
+      if (updateprojection_)
+      {
+        UpdateKrylovSpaceProjection();
+      }
 
       if (msht_!= INPAR::FLUID::no_meshtying)
-        meshtying_->SolveMeshtying(*solver_, sysmat_, incvel_, residual_, itnum, w_, c_, project_);
+        meshtying_->SolveMeshtying(*solver_, sysmat_, incvel_, residual_, itnum, projector_);
       else
       {
         // scale system prior to solver call
@@ -1689,7 +1683,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
           fluid_infnormscaling_->ScaleSystem(sysmat_, *residual_);
 
         // solve the system
-        solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
+        solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, projector_);
 
         // unscale solution
         if (fluid_infnormscaling_!= Teuchos::null)
@@ -2007,12 +2001,12 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
         solver_->AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
-      if (alefluid_ and project_)
+      if (updateprojection_)
       {
-        PrepareKrylovSpaceProjection();
+        UpdateKrylovSpaceProjection();
       }
 
-      solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, w_, c_, project_);
+      solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, projector_);
 
       solver_->ResetTolerance();
 
@@ -2054,24 +2048,24 @@ void FLD::FluidImplicitTimeInt::PrepareSolve()
 
 } // FluidImplicitTimeInt::PrepareSolve
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-/*----------------------------------------------------------------------*
- | computes vectors w_ and c_ for Krylov projection           nis Feb13 |
- *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::FluidImplicitTimeInt::PrepareKrylovSpaceProjection()
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*--------------------------------------------------------------------------*
+ | setup Krylov projector including first fill                    nis Feb13 |
+ *--------------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidImplicitTimeInt::SetupKrylovSpaceProjection(DRT::Condition* kspcond)
 {
   // confirm that mode flags are number of nodal dofs
-  const int nummodes = kspcond_->GetInt("NUMMODES");
+  const int nummodes = kspcond->GetInt("NUMMODES");
   if (nummodes!=(numdim_+1))
     dserror("Expecting numdim_+1 modes in Krylov projection definition. Check dat-file!");
 
   // get vector of mode flags as given in dat-file
-  const std::vector<int>* modeflags = kspcond_->Get<std::vector<int> >("ONOFF");
+  const std::vector<int>* modeflags = kspcond->Get<std::vector<int> >("ONOFF");
 
   // confirm that only the pressure mode is selected for Krylov projection in dat-file
   for(int rr=0;rr<numdim_;++rr)
@@ -2083,36 +2077,50 @@ void FLD::FluidImplicitTimeInt::PrepareKrylovSpaceProjection()
   }
   if(((*modeflags)[numdim_])!=1)
     dserror("Expecting an undetermined pressure. Check dat-file!");
+  std::vector<int> activemodeids(1,numdim_);
 
-  // check if vectors w_ and c_ already exist as objects
-  if (w_==Teuchos::null or c_==Teuchos::null)
-  {
-    // allocate storage for vectors
-    w_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
-    c_ = Teuchos::rcp(new Epetra_Vector(*(discret_->DofRowMap()),true));
-    // create map of nodes involved in Krylov projection
-    kspsplitter_ = Teuchos::rcp(new FLD::UTILS::KSPMapExtractor());
-    kspsplitter_->Setup(*discret_);
-  }
-  else
-  {
-    // zero w and c in case they already existed (in case of ALE)
-    w_->PutScalar(0.0);
-    c_->PutScalar(0.0);
-  }
+  // allocate kspsplitter_
+  kspsplitter_ = Teuchos::rcp(new FLD::UTILS::KSPMapExtractor());
+  // create map of nodes involved in Krylov projection
+  kspsplitter_->Setup(*discret_);
 
   // get from dat-file definition how weights are to be computed
-  const string* definition = kspcond_->Get<string>("weight vector definition");
+  const string* weighttype = kspcond->Get<string>("weight vector definition");
+
+  // set flag for projection update true only if ALE and integral weights
+  if (alefluid_ and (*weighttype=="integration"))
+    updateprojection_ = true;
+
+  // create the projector
+  projector_ = Teuchos::rcp(new LINALG::KrylovProjector(activemodeids,weighttype,discret_->DofRowMap()));
+
+  // update the projector
+  UpdateKrylovSpaceProjection();
+} // FLD::CombustFluidImplicitTimeInt::SetupKrylovSpaceProjection
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*--------------------------------------------------------------------------*
+ | update projection vectors w_ and c_ for Krylov projection      nis Feb13 |
+ *--------------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidImplicitTimeInt::UpdateKrylovSpaceProjection()
+{
+  // get RCP to kernel vector of projector
+  Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
+  Teuchos::RCP<Epetra_Vector> c0 = Teuchos::rcp((*c)(0),false);
+  c0->PutScalar(0.0);
 
   // extract vector of pressure-dofs
-  Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*w_);
+  Teuchos::RCP<Epetra_Vector> presmode = velpressplitter_.ExtractCondVector(*c0);
 
+  const std::string* weighttype = projector_->WeightType();
   // compute w_ as defined in dat-file
-  if(*definition == "pointvalues")
+  if(*weighttype == "pointvalues")
   {
-    // put 1.0 in pressure mode
-    presmode->PutScalar(1.0);
-
     /*
     // export to vector to normalize against
     // Note that in the case of definition pointvalue based,
@@ -2123,16 +2131,17 @@ void FLD::FluidImplicitTimeInt::PrepareKrylovSpaceProjection()
     //      +   p_i  = 0
     //     /
     //    +---+
+    //
+    // (everything is done below)
     */
-
-    // export pressure values to w_
-    Teuchos::RCP<Epetra_Vector> tmpw = LINALG::CreateVector(*(discret_->DofRowMap()),true);
-    LINALG::Export(*presmode,*tmpw);
-    Teuchos::RCP<Epetra_Vector> tmpkspw = kspsplitter_->ExtractKSPCondVector(*tmpw);
-    LINALG::Export(*tmpkspw,*w_);
   }
-  else if(*definition == "integration")
+  else if(*weighttype == "integration")
   {
+    // get RCP to weight vector of projector
+    Teuchos::RCP<Epetra_MultiVector> w = projector_->GetNonConstWeights();
+    Teuchos::RCP<Epetra_Vector> w0 = Teuchos::rcp((*w)(0),false);
+    w0->PutScalar(0.0);
+
     // create parameter list for condition evaluate and ...
     Teuchos::ParameterList mode_params;
     // ... set action for elements to integration of shape functions
@@ -2161,35 +2170,36 @@ void FLD::FluidImplicitTimeInt::PrepareKrylovSpaceProjection()
       (mode_params        ,
        Teuchos::null      ,
        Teuchos::null      ,
-       w_                 ,
+       w0                 ,
        Teuchos::null      ,
        Teuchos::null      ,
        "KrylovSpaceProjection");
+
+    // adapt weight vector according to meshtying case
+    if (msht_ != INPAR::FLUID::no_meshtying)
+      meshtying_->AdaptKrylovProjector(w0);
+
   }
   else
   {
     dserror("unknown definition of weight vector w for restriction of Krylov space");
   }
 
-  // construct c_ by setting all pressure values to 1.0 and export to c_
+  // construct c by setting all pressure values to 1.0 and export to c
   presmode->PutScalar(1.0);
   Teuchos::RCP<Epetra_Vector> tmpc = LINALG::CreateVector(*(discret_->DofRowMap()),true);
   LINALG::Export(*presmode,*tmpc);
   Teuchos::RCP<Epetra_Vector> tmpkspc = kspsplitter_->ExtractKSPCondVector(*tmpc);
-  LINALG::Export(*tmpkspc,*c_);
+  LINALG::Export(*tmpkspc,*c0);
 
-  // in case of meshtying...
-  if(msht_!= INPAR::FLUID::no_meshtying)
-  {
-    // ... remove slave nodes from c_
-    meshtying_->KrylovProjection(c_);
-    // ...  remove slave nodes from w_
-    meshtying_->KrylovProjection(w_);
-  }
+  // adapt kernel vector according to meshtying case
+  if (msht_ != INPAR::FLUID::no_meshtying)
+    meshtying_->AdaptKrylovProjector(c0);
 
-} // FluidImplicitTimeInt::PrepareKrylovSpaceProjection
+  // fillcomplete the projector to compute (w^T c)^(-1)
+  projector_->FillComplete();
 
-
+} // FluidImplicitTimeInt::UpdateKrylovSpaceProjection
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//

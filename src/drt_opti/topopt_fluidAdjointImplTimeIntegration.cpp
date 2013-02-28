@@ -624,10 +624,8 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
           incvel_,
           residual_,
           true,
-          itnum==1,
-          Teuchos::null,
-          Teuchos::null,
-          false);
+          itnum==1
+        );
 
       solver_->ResetTolerance();
 

@@ -38,6 +38,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../linalg/linalg_solver.H"
+#include "../linalg/linalg_krylov_projector.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_patspec/patspec.H"
 
@@ -91,6 +92,7 @@ STR::TimIntImpl::TimIntImpl
   disi_(Teuchos::null),
   fres_(Teuchos::null),
   freact_(Teuchos::null),
+  updateprojection_(false),
   stcscale_(DRT::INPUT::IntegralValue<INPAR::STR::STC_Scale>(sdynparams,"STC_SCALING")),
   stclayer_(sdynparams.get<int>("STC_LAYER")),
   ptcdt_(sdynparams.get<double>("PTCDT")),
@@ -134,6 +136,45 @@ STR::TimIntImpl::TimIntImpl
     NoxSetup();
   else if (itertype_ == INPAR::STR::soltech_noxgeneral)
     NoxSetup(xparams.sublist("NOX"));
+
+  // -------------------------------------------------------------------
+  // setup Krylov projection if necessary
+  // -------------------------------------------------------------------
+  //
+  // sysmat might be singular, e.g. when solid is not fully supported
+  // in this case, we need a basis vector for the nullspace/kernel
+
+  // get condition "KrylovSpaceProjection" from discretization
+  vector<DRT::Condition*> KSPcond;
+  discret_->GetCondition("KrylovSpaceProjection",KSPcond);
+  int numcond = KSPcond.size();
+  int numsolid = 0;
+
+  DRT::Condition* kspcond;
+  // check if for solid Krylov projection is required
+  for(int icond = 0; icond < numcond; icond++)
+  {
+    const std::string* name = KSPcond[icond]->Get<std::string>("discretization");
+    if (*name == "solid")
+    {
+      numsolid++;
+      kspcond = KSPcond[icond];
+    }
+  }
+
+  if (numsolid == 1)
+  {
+    SetupKrylovSpaceProjection(kspcond);
+    if (myrank_ == 0)
+      cout << "\nSetup of KrylovSpaceProjection in solid field\n" << endl;
+  }
+  else  if (numsolid == 0)
+  {
+    projector_ = Teuchos::null;
+  }
+  else
+    dserror("Received more than one KrylovSpaceCondition for solid field");
+
 
   // done so far
   return;
@@ -466,6 +507,95 @@ void STR::TimIntImpl::PredictTangDisConsistVelAcc()
 
   // shalom
   return;
+}
+
+/*--------------------------------------------------------------------------*
+ | setup Krylov projector including first fill                    nis Feb13 |
+ *--------------------------------------------------------------------------*/
+void STR::TimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcond)
+{
+  // get number of mode flags in dat-file
+  const int nummodes = kspcond->GetInt("NUMMODES");
+
+  // get rigid body mode flags - number and order as in ComputeNullspace
+  // e.g. for a 3-D solid: [transx transy transz rotx roty rotz]
+  const std::vector<int>* modeflags = kspcond->Get<std::vector<int> >("ONOFF");
+
+  // get actual active mode ids given in dat-file
+  std::vector<int> activemodeids;
+  for(int rr=0;rr<nummodes;++rr)
+  {
+    if(((*modeflags)[rr])!=0)
+    {
+      activemodeids.push_back(rr);
+    }
+  }
+
+  // get from dat-file definition how weights are to be computed
+  const string* weighttype = kspcond->Get<string>("weight vector definition");
+
+  // set flag for projection update true only if ALE and inetgral weights
+  // (not optimal, since for non-rotational modes with pointvalue weights,
+  // nothing changes.)
+  updateprojection_ = true;
+
+  // create the projector
+  projector_ = Teuchos::rcp(new LINALG::KrylovProjector(activemodeids,weighttype,discret_->DofRowMap()));
+
+  // update the projector
+  UpdateKrylovSpaceProjection();
+}
+
+/*--------------------------------------------------------------------------*
+ | update projection vectors w_ and c_ for Krylov projection      nis Feb13 |
+ *--------------------------------------------------------------------------*/
+void STR::TimIntImpl::UpdateKrylovSpaceProjection()
+{
+  const std::string* weighttype = projector_->WeightType();
+  // only pointvalues are permissible for now - feel free to extend to integration!
+  if(*weighttype == "integration")
+  {
+    dserror("option integration not implemented");
+  }
+
+  // get RCP to kernel vector of projector
+  // since we are in 'pointvalue' mode, weights are changed implicitely
+  Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
+  c->PutScalar(0.0);
+
+  // We recompute the entire nullspace no matter what.
+  // This is not nice yet since:
+  // - translations are constant throughout the entire cmputation
+  // - SAME nullspace is sometimes recomputed AGAIN for some iterative solvers
+  // So here is space for optimization.
+
+  // get number of modes and their ids
+  std::vector<int> modeids = projector_->Modes();
+
+  // RCP on vector of size 0 holding the nullspace data - resized within ComputeNullspace
+  Teuchos::RCP<std::vector<double> > nullspace = Teuchos::rcp(new std::vector<double>(0));
+  discret_->ComputeNullSpace(nullspace);
+
+  //check if everything went fine
+  if (nullspace->size()==0)
+    dserror("nullspace not successfully computed");
+
+  // pointer on first element of nullspace data
+  double* nsdata = nullspace->data();
+
+  // sort vector of nullspace data into kernel vector c_
+  for ( size_t i=0; i < Teuchos::as<size_t>(modeids.size()); i++)
+  {
+    Epetra_Vector* ci = (*c)(i);
+    const size_t myLength = ci->MyLength();
+    for(size_t j=0; j<myLength; j++)
+    {
+      (*ci)[j] = nsdata[modeids[i]*myLength+j];
+    }
+  }
+
+  // fillcomplete the projector to compute (w^T c)^(-1)
+  projector_->FillComplete();
 }
 
 /*----------------------------------------------------------------------*/
@@ -889,7 +1019,6 @@ void STR::TimIntImpl::NewtonFull()
   // equilibrium iteration loop
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
   {
-
     // make negative residual
     fres_->Scale(-1.0);
 
@@ -917,11 +1046,12 @@ void STR::TimIntImpl::NewtonFull()
       double wanted = tolfres_;
       solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
     }
+
     // linear solver call (contact / meshtying case or default)
     if (HaveContactMeshtying())
       CmtLinearSolve();
     else
-      solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_==1);
+      solver_->Solve(stiff_->EpetraOperator(), disi_, fres_, true, iter_==1, projector_);
     solver_->ResetTolerance();
 
     // recover standard displacements
@@ -960,6 +1090,14 @@ void STR::TimIntImpl::NewtonFull()
     // rotate back to global co-ordinate system
     if (locsysman_ != Teuchos::null)
       locsysman_->RotateLocalToGlobal(fres_);
+
+    // cancel in residual those forces that would excite rigid body modes and
+    // that thus vanish in the Krylov space projection
+    if (updateprojection_)
+    {
+      UpdateKrylovSpaceProjection();
+      projector_->ApplyPT(*fres_);
+    }
 
     // (trivial)
     if (pressure_ != Teuchos::null)
@@ -1554,10 +1692,10 @@ void STR::TimIntImpl::CmtLinearSolve()
 
   // analysis of eigenvalues and condition number
 #ifdef CONTACTEIG
-    // global counter 
+    // global counter
     static int globindex = 0;
     ++globindex;
-    
+
     // print to file in matlab format
     std::ostringstream filename;
     const std::string filebase = "sparsematrix";
@@ -1567,7 +1705,7 @@ void STR::TimIntImpl::CmtLinearSolve()
     // print sparsity pattern to file
     LINALG::PrintSparsityToPostscript( *(SystemMatrix()->EpetraMatrix()) );
 #endif // #ifdef CONTACTEIG
-    
+
   //**********************************************************************
   // Solving a saddle point system
   // (1) Standard / Dual Lagrange multipliers -> SaddlePointCoupled
@@ -1724,7 +1862,7 @@ void STR::TimIntImpl::PTC()
   normfres_ = CalcRefNormForce();
   // normdisi_ was already set in predictor; this is strictly >0
   timer_->ResetStartTime();
-  
+
   double ptcdt     = ptcdt_;
   double nc; fres_->NormInf(&nc);
   double dti = 1/ptcdt;
@@ -1761,7 +1899,7 @@ void STR::TimIntImpl::PTC()
     // STC preconditioning
     STCPreconditioning();
 
-    
+
     // solve for disi_
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
     if (solveradapttol_ and (iter_ > 1))
@@ -1984,9 +2122,9 @@ void STR::TimIntImpl::PrintNewtonIter()
   if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0) and  printiter_ )
   {
     if (iter_== 1)
-      PrintNewtonIterHeader(stdout); 
-    PrintNewtonIterText(stdout); 
-    
+      PrintNewtonIterHeader(stdout);
+    PrintNewtonIterText(stdout);
+
   }
 
   // print to error file
@@ -2078,7 +2216,7 @@ void STR::TimIntImpl::PrintNewtonIterHeader
   {
     oss << std::setw(16)<< "abs-constr-norm";
   }
-  
+
   if (itertype_==INPAR::STR::soltech_ptc)
   {
     oss << std::setw(16)<< "        PTC-dti";
@@ -2361,7 +2499,7 @@ void STR::TimIntImpl::PrepareSystemForNewtonSolve()
 
   // make the residual negative
   fres_->Scale(-1.0);
-  
+
   // transform stiff_ and fres_ to local coordinate system
   if (locsysman_ != Teuchos::null)
     locsysman_->RotateGlobalToLocal(SystemMatrix(),fres_);

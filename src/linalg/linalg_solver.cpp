@@ -233,9 +233,7 @@ void LINALG::Solver::Setup(
     Teuchos::RCP<Epetra_MultiVector>       b             ,
     bool                              refactor           ,
     bool                              reset              ,
-    Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,
-    Teuchos::RCP<Epetra_MultiVector>  kernel_c           ,
-    bool                              project            )
+    Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  1)   Setup");
 
@@ -279,7 +277,7 @@ void LINALG::Solver::Setup(
       dserror("Unknown type of solver");
   }
 
-  solver_->Setup( matrix, x, b, refactor, reset, weighted_basis_mean, kernel_c, project );
+  solver_->Setup( matrix, x, b, refactor, reset, projector);
 }
 
 /*----------------------------------------------------------------------*
@@ -305,11 +303,9 @@ void LINALG::Solver::Solve(
     Teuchos::RCP<Epetra_MultiVector>       b             ,
     bool                              refactor           ,
     bool                              reset              ,
-    Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,
-    Teuchos::RCP<Epetra_MultiVector>  kernel_c           ,
-    bool                              project            )
+    Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
-  Setup( matrix, x, b, refactor, reset, weighted_basis_mean, kernel_c, project );
+  Setup( matrix, x, b, refactor, reset, projector);
   Solve();
 }
 

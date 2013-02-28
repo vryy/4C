@@ -82,9 +82,7 @@ void LINALG::SOLVER::BelosSolver::Setup(  Teuchos::RCP<Epetra_Operator>     matr
                                           Teuchos::RCP<Epetra_MultiVector>       b            ,
                                           bool                             refactor           ,
                                           bool                             reset              ,
-                                          Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,
-                                          Teuchos::RCP<Epetra_MultiVector>  kernel_c           ,
-                                          bool                             project)
+                                          Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
   // see whether operator is a Epetra_CrsMatrix
   Teuchos::RCP<Epetra_CrsMatrix> A = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>( matrix );
@@ -107,7 +105,7 @@ void LINALG::SOLVER::BelosSolver::Setup(  Teuchos::RCP<Epetra_Operator>     matr
   if (create)
   {
     ncall_ = 0;
-    CreatePreconditioner(belist, A!=Teuchos::null, weighted_basis_mean, kernel_c, project );
+    CreatePreconditioner(belist, A!=Teuchos::null, projector );
   }
 
   // feed preconditioner with more information about linear system using

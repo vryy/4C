@@ -28,105 +28,118 @@ Maintainer: Keijo Nissen
                           Constructor
    -------------------------------------------------------------------- */
 LINALG::KrylovProjector::KrylovProjector(
-  const bool                       project          ,
-  Teuchos::RCP<Epetra_MultiVector> w                ,
-  Teuchos::RCP<Epetra_MultiVector> c                ,
-  Teuchos::RCP<Epetra_Operator>    A
+  const std::vector<int> modeids,
+  const std::string* weighttype,
+  const Epetra_BlockMap* map
   ) :
-  project_(project),
-  w_(w),
-  c_(c)
+  modeids_(modeids),
+  weighttype_(weighttype)
 {
-  if(project_)
+  nsdim_ = modeids_.size();
+  c_ = Teuchos::rcp(new Epetra_MultiVector(*map,nsdim_,false));
+  if (*weighttype_=="integration")
+    w_ = Teuchos::rcp(new Epetra_MultiVector(*map,nsdim_,false));
+  else if (*weighttype_=="pointvalues")
+    w_ = c_;
+  else
+    dserror("No permissible weight type.");
+
+  invwTc_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(nsdim_,nsdim_));
+}// LINALG::KrylovProjector::KrylovProjector
+
+
+/* --------------------------------------------------------------------
+                  Give out RCP to c_ for change
+   -------------------------------------------------------------------- */
+Teuchos::RCP<Epetra_MultiVector> LINALG::KrylovProjector::GetNonConstKernel()
+{
+  // since c_ will be changed, need to call FillComplete() to recompute invwTc_
+  complete_ = false;
+
+  return c_;
+}
+
+/* --------------------------------------------------------------------
+                  Give out RCP to w_ for change
+   -------------------------------------------------------------------- */
+Teuchos::RCP<Epetra_MultiVector> LINALG::KrylovProjector::GetNonConstWeights()
+{
+  if ((*weighttype_) == "pointvalues")
+    dserror("For weight type 'pointvalues' weight vector equals kernel vector and can thus only be changed implicitely by changing the kernel.");
+
+  // since w_ will be changed, need to call FillComplete() to recompute invwTc_
+  complete_ = false;
+
+  return w_;
+}
+
+/* --------------------------------------------------------------------
+            Compute (w_^T c_)^(-1) and set complete flag
+   -------------------------------------------------------------------- */
+void LINALG::KrylovProjector::FillComplete()
+{
+  if(c_==Teuchos::null)
   {
-    if(w_==Teuchos::null || c_==Teuchos::null)
-    {
-      dserror("no kernel supplied for projection (but projection flag was set)");
-    }
-
-    nsdim_ = c_->NumVectors();
-    if(w_->NumVectors() != nsdim_)
-    {
-      dserror("number of basis and weight vectors are not the same");
-    }
-    invwTc_ = Teuchos::rcp(new LINALG::SerialDenseMatrix(nsdim_,nsdim_));
-
-    // loop all kernel basis vectors
-    for(int mm=0;mm<nsdim_;++mm)
-    {
-
-      // for each kernel vector provided check A*c=0
-      if(A!=Teuchos::null)
-      {
-        Epetra_Vector result(((*c_)(mm))->Map(),false);
-
-        A->Apply(*((*c_)(mm)),result);
-
-        double norm;
-
-        result.Norm2(&norm);
-
-        if(norm>1e-9)
-        {
-          std::cout << "########################################################" << std::endl;
-          std::cout << "Krylov projection failed!                               " << std::endl;
-          std::cout << "This might be caused by:                                " << std::endl;
-          std::cout << " - you don't have pure Dirichlet boundary conditions    " << std::endl;
-          std::cout << "   or pbcs -> check your inputfile                      " << std::endl;
-          std::cout << " - you don't integrate the pressure exactly and the     " << std::endl;
-          std::cout << "   given kernel is not a kernel of your system -> to    " << std::endl;
-          std::cout << "   check this, use more gauss points (often problem     " << std::endl;
-          std::cout << "   with nurbs)                                          " << std::endl;
-          std::cout << "   in the XFEM: there can be a inconsistency between    " << std::endl;
-          std::cout << "   the volume integration and surface integration       " << std::endl;
-          std::cout << "   on cut elements: change the integration rule to      " << std::endl;
-          std::cout << "   DirectDivergence, change the cut tolerance for       " << std::endl;
-          std::cout << "   discarding volumes or check your transformations, or " << std::endl;
-          std::cout << "   check inconsistencies between tri3, quad4 surfaces   " << std::endl;
-          std::cout << "   and integrationcells, tet4, hex8                     " << std::endl;
-          std::cout << " - there is indeed a problem with the Krylov projection " << std::endl;
-          std::cout << "#####################################################" << std::endl;
-          dserror("krylov projection failed, Ac returned %12.5e for kernel basis vector %d",norm,mm);
-        }
-      }
-
-      // loop all weight vectors
-      for(int rr=0;rr<nsdim_;++rr)
-      {
-        /*
-          Compute dot product of all different combinations of c_ and w_ and
-          put result in dense matrix. In case that all <w_i,c_j>=0 for all
-          i!=j, wTc_ is diagonal.
-
-                 T
-                w * c
-         */
-        double wTc;
-        ((*w_)(mm))->Dot(*((*c_)(rr)),&wTc);
-
-        // make sure c_i and w_i must not be krylov.
-        if ((rr==mm) and (abs(wTc)<1e-14))
-        {
-          // not sure whether c_i and w_i must not be krylov.
-          // delete dserror in case you are sure what you are doing!
-          dserror("weight vector w_%i must not be orthogonal to c_%i",rr,mm);
-        }
-        // fill matrix (w_^T * c_) - not yet inverted!
-        (*invwTc_)(mm,rr) = wTc;
-      }
-    }
-
-    // invert wTc-matrix (also done if it's only a scalar - check with Micheal
-    // Gee before changingthis)
-    Epetra_SerialDenseSolver densesolver;
-    densesolver.SetMatrix(*invwTc_);
-    int err = densesolver.Invert();
-    if (err)
-      dserror("Error inverting dot-product matrix of kernels and weights for orthogonal (\"krylov\") projection.");
+    dserror("No kernel vector supplied for projection");
   }
+
+  if(w_==Teuchos::null)
+  {
+    dserror("No weight vector supplied for projection");
+  }
+
+  if(c_->NumVectors() != nsdim_)
+  {
+    dserror("Number of kernel vectors has been changed.");
+  }
+
+  if(w_->NumVectors() != nsdim_)
+  {
+    dserror("Number of weight vectors has been changed.");
+  }
+
+  // loop all kernel basis vectors
+  for(int mm=0;mm<nsdim_;++mm)
+  {
+    // loop all weight vectors
+    for(int rr=0;rr<nsdim_;++rr)
+    {
+      /*
+        Compute dot product of all different combinations of c_ and w_ and
+        put result in dense matrix. In case that all <w_i,c_j>=0 for all
+        i!=j, wTc_ is diagonal.
+
+               T
+              w * c
+       */
+      double wTc;
+      ((*w_)(mm))->Dot(*((*c_)(rr)),&wTc);
+
+      // make sure c_i and w_i must not be krylov.
+      if ((rr==mm) and (abs(wTc)<1e-14))
+      {
+        // not sure whether c_i and w_i must not be krylov.
+        // delete dserror in case you are sure what you are doing!
+        dserror("weight vector w_%i must not be orthogonal to c_%i",rr,mm);
+      }
+      // fill matrix (w_^T * c_) - not yet inverted!
+      (*invwTc_)(mm,rr) = wTc;
+    }
+  }
+
+  // invert wTc-matrix (also done if it's only a scalar - check with Micheal
+  // Gee before changing this)
+  Epetra_SerialDenseSolver densesolver;
+  densesolver.SetMatrix(*invwTc_);
+  int err = densesolver.Invert();
+  if (err)
+    dserror("Error inverting dot-product matrix of kernels and weights for orthogonal (\"krylov\") projection.");
+
+  complete_ = true;
+
   return;
 }
-// LINALG::KrylovProjector::KrylovProjector
+// LINALG::KrylovProjector::FillComplete
 
 /* --------------------------------------------------------------------
                           Destructor
@@ -141,6 +154,9 @@ LINALG::KrylovProjector::~KrylovProjector()
    -------------------------------------------------------------------- */
 Teuchos::RCP<LINALG::SparseMatrix> LINALG::KrylovProjector::CreateP() const
 {
+  if (!complete_)
+    dserror("Krylov space projector is not complete. Call FillComplete().");
+
   /*
    *               / T   \ -1   T
    * P = I - c_ * | w_ c_ |  * w_
@@ -289,49 +305,47 @@ int LINALG::KrylovProjector::ApplyProjector(
   const Teuchos::RCP<LINALG::SerialDenseMatrix>& inv_v1Tv2
   ) const
 {
+  if (!complete_)
+    dserror("Krylov space projector is not complete. Call FillComplete().");
 
   int ierr=0;
 
   // if necessary, project out matrix kernel to maintain well-posedness
   // of problem
-  if(project_)
+  // there is only one solution vector --- so solution
+  // vector index is zero
+  if(Y.NumVectors()!=1)
   {
-    // there is only one solution vector --- so solution
-    // vector index is zero
-    if(Y.NumVectors()!=1)
-    {
-      dserror("expecting only one solution vector during AZTEC Apply call\n");
-    }
+    dserror("expecting only one solution vector during AZTEC Apply call\n");
+  }
 
-    /*
-     *  (T)                /  T  \ -1    T
-     * P   (x) = x - v2 * | v1 v2 |  * v1 * x
-     *                     \     /
-     *                                `---v---´
-     *                                 =:temp1
-     *                   `----------v----------´
-     *                           =:temp2
-     */
+  /*
+   *  (T)                /  T  \ -1    T
+   * P   (x) = x - v2 * | v1 v2 |  * v1 * x
+   *                     \     /
+   *                                `---v---´
+   *                                 =:temp1
+   *                   `----------v----------´
+   *                           =:temp2
+   */
 
-    // compute dot product of solution vector with all projection vectors
-    // temp1(rr) = v1(rr)^T * Y
-    LINALG::SerialDenseVector temp1(nsdim_);
-    for(int rr=0;rr<nsdim_;++rr)
-    {
-      (Y(0))->Dot(*((*v1)(rr)),&(temp1(rr)));
-    }
+  // compute dot product of solution vector with all projection vectors
+  // temp1(rr) = v1(rr)^T * Y
+  LINALG::SerialDenseVector temp1(nsdim_);
+  for(int rr=0;rr<nsdim_;++rr)
+  {
+    (Y(0))->Dot(*((*v1)(rr)),&(temp1(rr)));
+  }
 
-    // compute temp2 from matrix-vector-product:
-    // temp2 = (v1^T v2)^(-1) * temp1
-    LINALG::SerialDenseVector temp2(nsdim_);
-    inv_v1Tv2->Apply(temp1,temp2);
+  // compute temp2 from matrix-vector-product:
+  // temp2 = (v1^T v2)^(-1) * temp1
+  LINALG::SerialDenseVector temp2(nsdim_);
+  inv_v1Tv2->Apply(temp1,temp2);
 
-    // loop
-    for(int rr=0;rr<nsdim_;++rr)
-    {
-      (Y(0))->Update(-temp2(rr),*((*v2)(rr)),1.0);
-    }
-
+  // loop
+  for(int rr=0;rr<nsdim_;++rr)
+  {
+    (Y(0))->Update(-temp2(rr),*((*v2)(rr)),1.0);
   }
 
   return(ierr);

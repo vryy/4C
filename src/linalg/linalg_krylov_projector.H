@@ -24,68 +24,79 @@ Maintainer: Keijo Nissen
 //!@name forward decarations
 class Epetra_MultiVector;
 class Epetra_Operator;
+class Epetra_BlockMap;
 
 namespace LINALG
 {
   class SerialDenseMatrix;
   class SerialDenseVector;
   class SparseMatrix;
+
   /*!
+  A class providing a Krylov projectors. Used for projected preconditioner,
+  projected operator, and directly in direct solver.
 
-  A class providing Krylov projectors. Used for projected preconditioner
-  and projected operator.
-
-  \author gammi
-  \date 07/09
+  \author Keijo Nissen
+  \date Feb13
   */
+
 class KrylovProjector
 {
 public:
 
   /*!
-  \brief Standard Constructor, sets kernel basis and weight vectors.
-
-  The projectors P, P^T are completely defined by w and c.
-  Scalar products c_i o w_i are computed once after setting c_ and w_
-  and stored.
-
-  If A is provided, A*c_i=0 is checked for all kernel basis vectors.
-
-  \param project explicit flag if projection is desired
-  \param w vector(s) of weights
-  \param c kernel basis vector(s)
-  \param A operator (optional) for checking Ac=0 (kernel OK)
-
+  \brief Standard Constructor, sets mode-ids and weighttype. kernel and weight
+         vector as well as their inner product matrix are allocated, but still
+         have to be set. Use GetNonConstKernel() and GetNonConstWeights() to
+         get pointer and set the vectors and call FillComplete() tobe able to
+         use projector.
   */
   KrylovProjector(
-      const bool                       project,
-      Teuchos::RCP<Epetra_MultiVector> w,
-      Teuchos::RCP<Epetra_MultiVector> c,
-      Teuchos::RCP<Epetra_Operator>    A = Teuchos::null
+    const std::vector<int> modeids, //! ids of to-be-projected modes according element nullspace
+    const std::string* weighttype,  //! type of weights: integration or pointvalues
+    const Epetra_BlockMap* map      //! map for kernel and weight vectors
     );
 
-
-  /*!
-  \brief Destructor
-
-  */
+  //! destructor
   ~KrylovProjector();
 
+  //! give out RCP to c_ for change
+  Teuchos::RCP<Epetra_MultiVector> GetNonConstKernel();
+
+  //! give out RCP to w_ for change
+  Teuchos::RCP<Epetra_MultiVector> GetNonConstWeights();
+
+  //! compute (w^T c)^(-1) and completes projector for use
+  void FillComplete();
+
+  //! create actual matrix P for use in direct solver
   Teuchos::RCP<LINALG::SparseMatrix> CreateP() const;
 
+  //! wrapper for applying projector to vector for iterative solver
   int ApplyP(Epetra_MultiVector &Y) const;
 
+  //! wrapper for applying transpose of projector to vector for iterative solver
   int ApplyPT(Epetra_MultiVector &Y) const;
 
+  //! return dimension of nullspace
+  int Nsdim(){return nsdim_;}
+
+  //! return mode-ids corresponding to element nullspace
+  std::vector<int> Modes(){return modeids_;}
+
+  //! return type of projection weights: integration or pointvalues
+  const std::string * WeightType(){return weighttype_;}
+
+private:
+
+  //! applies projector (or its transpose) to vector for iterative solver
   int ApplyProjector(
     Epetra_MultiVector& Y,
     const Teuchos::RCP<Epetra_MultiVector>& v1,
     const Teuchos::RCP<Epetra_MultiVector>& v2,
     const Teuchos::RCP<LINALG::SerialDenseMatrix>& v2Tv1
     ) const;
-//! @}
 
-  //! @name Mathematical functions required to support the Epetra_Operator interface (modified)
   /*
     (Modified) ApplyInverse call
 
@@ -175,16 +186,18 @@ public:
 
   */
 
-  //! return dimension of nullspace
-  int Nsdim(){return nsdim_;}
-
-
-private:
-  //! flag whether to do a projection or just pass through
-  bool project_;
+  //! flag whether inverse of (w_^T c_) was computed after w_ or c_ have been
+  //given out for change with GetNonConstW() or GetNonConstC(). This is not
+  //fool proof since w and c can also be changed after having called
+  //FillComplete().
+  bool complete_;
 
   //! dimension of nullspace
   int  nsdim_;
+
+  const std::vector<int> modeids_;
+
+  const std::string* weighttype_;
 
   //! a set of vectors defining weighted (basis integral) vector for the projector
   Teuchos::RCP<Epetra_MultiVector> w_;

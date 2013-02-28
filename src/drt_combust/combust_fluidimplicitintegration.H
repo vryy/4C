@@ -51,6 +51,7 @@ namespace LINALG
   class SparseMatrix;
   class SparseOperator;
   class Solver;
+  class KrylovProjector;
 }
 
 namespace IO
@@ -206,9 +207,9 @@ public:
 
   /*!
   \brief preparations for Krylov space projection
-
   */
-  void PrepareKrylovSpaceProjection();
+  void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
+  void UpdateKrylovSpaceProjection();
 
   /*!
   \brief Update the solution after convergence of the nonlinear
@@ -596,15 +597,12 @@ protected:
   /// pointer to manager for turbulent inflow transfer condition
   Teuchos::RCP<TransferTurbulentInflowCondition> turbulent_inflow_condition_;
 
-  //! project nullspace (useful for completely Dirichlet bounded problems)
-  bool                          project_;
-  //! integrated basis vector (pressure component)
-  Teuchos::RCP<Epetra_Vector>   w_;
-  //! basis vector for nullspace (vector of ones in the pressure component)
-  Teuchos::RCP<Epetra_Vector>   c_;
-  //! pointer to Krylov projection condition of scatra field
-  DRT::Condition* kspcond_;
-
+  //! flag setting whether Krylov projection needs to be updated or not
+  bool                                  updateprojection_;
+  //! Krylov projector himself
+  Teuchos::RCP<LINALG::KrylovProjector> projector_;
+  /// Krylov space projection map extractor
+  Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
 
   //! @name parameters for sampling/dumping period
   int samstart_;
@@ -688,9 +686,6 @@ protected:
 
   //! Extractor used for convergence check
   Teuchos::RCP<LINALG::MapExtractor>      velpressplitter_;
-
-  //! Krylov space projection map extractor
-  Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
 
   //! Extractor used for output
   Teuchos::RCP<LINALG::MapExtractor>      velpressplitterForOutput_;

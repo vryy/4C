@@ -34,9 +34,7 @@ namespace LINALG
           Teuchos::RCP<Epetra_MultiVector>       b            ,
           bool                             refactor           ,
           bool                             reset              ,
-          Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,
-          Teuchos::RCP<Epetra_MultiVector>  kernel_c           ,
-          bool                             project);
+          Teuchos::RCP<LINALG::KrylovProjector> projector);
 
       virtual void Solve();
 

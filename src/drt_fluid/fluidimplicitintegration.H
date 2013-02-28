@@ -66,6 +66,7 @@ namespace LINALG
   class MapExtractor;
   class BlockSparseMatrixBase;
   class SparseOperator;
+  class KrylovProjector;
 }
 
 namespace TOPOPT
@@ -199,7 +200,8 @@ public:
   \brief preparations for Krylov space projection
 
   */
-  void PrepareKrylovSpaceProjection();
+  void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
+  void UpdateKrylovSpaceProjection();
 
   /*!
   \brief update within iteration
@@ -671,18 +673,6 @@ protected:
 
   //! @name general algorithm parameters
 
-  //! project nullspace (useful for completely Dirichlet bounded problems)
-  bool                          project_;
-  //! integrated basis vector (pressure component)
-  Teuchos::RCP<Epetra_Vector>   w_;
-  //! basis vector for nullspace (vector of ones in the pressure component)
-  Teuchos::RCP<Epetra_Vector>   c_;
-  //! pointer to Krylov projection condition of scatra field
-  DRT::Condition* kspcond_;
-  /// Krylov space projection map extractor
-  Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
-
-
   //! do we move the fluid mesh and calculate the fluid on this moving mesh?
   bool                          alefluid_;
   //! do we have a turbulence model?
@@ -958,6 +948,16 @@ protected:
   //! @name Biofilm specific stuff
   //@{
   Teuchos::RCP<Epetra_Vector> fldgrdisp_;
+  //@}
+
+  //! @name variables for Krylov Space projection
+  //@{
+  //! flag setting whether Krylov projection needs to be updated or not
+  bool                                  updateprojection_;
+  //! Krylov projector himself
+  Teuchos::RCP<LINALG::KrylovProjector> projector_;
+  /// Krylov space projection map extractor
+  Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
   //@}
 
 

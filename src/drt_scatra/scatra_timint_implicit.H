@@ -73,6 +73,7 @@ namespace LINALG
   class MapExtractor;
   class BlockSparseMatrixBase;
   class SparseOperator;
+  class KrylovProjector;
 }
 
 namespace FLD
@@ -533,8 +534,10 @@ protected:
   //! set time for evaluation of Neumann boundary conditions
   virtual void SetTimeForNeumannEvaluation(Teuchos::ParameterList& params) = 0;
 
-  //! prepare Krylov space projection
-  void PrepareKrylovSpaceProjection();
+  //! create Krylov space projector
+  void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
+  //! update Krylov space projector
+  void UpdateKrylovSpaceProjection();
 
   //! export node-based multivector to column map and add it to a parameter list
   void AddMultiVectorToParameterList(
@@ -1100,16 +1103,8 @@ protected:
   //! @name variables for orthogonal space projection aka Krylov projection
   /*========================================================================*/
 
-  //! flag for Krylov space projection
-  bool project_;
-
-  //! integrated basis vector (for each undetermined component)
-  Teuchos::RCP<Epetra_MultiVector> w_;
-  //! basis vector for nullspace (vector of ones for each undetermined component)
-  Teuchos::RCP<Epetra_MultiVector> c_;
-
-  //! pointer to Krylov projection condition of scatra field
-  DRT::Condition* kspcond_;
+  bool updateprojection_;                             //!< bool triggering update of Krylov projection
+  Teuchos::RCP<LINALG::KrylovProjector>   projector_; //!< Krylov projector himself
 
   /*========================================================================*/
   //! @name not classified variables - to be kept clean!!!

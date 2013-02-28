@@ -62,6 +62,7 @@ namespace LINALG
 class SparseMatrix;
 class SparseOperator;
 class DownwindMatrix;
+class KrylovProjector;
 
 
 /*!
@@ -138,23 +139,16 @@ public:
   /*!
   \brief Setup system of equations
 
-  \param matrix                (in/out): system of equations
-  \param x                     (in/out): initial guess on input, solution on output
-  \param b                     (in/out): right hand side vector
-                                         if project!=false it might be modified if not orthognal
-                                         to matrix kernel.
-  \param refactor              (in)    : flag indicating whether system should be refactorized
-  \param reset                 (in)    : flag indicating whether all data from previous solves
-                                         should be recalculated including preconditioners
-  \param weighted_basis_mean_w (in)    : weight vector defining projector for iterative solution
-                                         of singluar problems using iterative solvers. Required
-                                         if project!=false. (Aztec only option)
-                                         x will be orthogonalized to these weights on output.
-  \param kernel_c              (in)    : Vector of ones in the respective components. Necessary
-                                         if project!=false. (Aztec only option)
-                                         Krylov space will be orthogonalized to this basis!
-  \param project               (in)    : flag indicating whether several modes will be projected
-                                         out of the Krylov space (Aztec only option)
+  \param matrix    (in/out): system of equations
+  \param x         (in/out): initial guess on input, solution on output
+  \param b         (in/out): right hand side vector
+                             if project!=false it might be modified if not orthognal
+                             to matrix kernel.
+  \param refactor  (in)    : flag indicating whether system should be refactorized
+  \param reset     (in)    : flag indicating whether all data from previous solves
+                             should be recalculated including preconditioners
+  \param projector (in)    : Krylov space projector - Teuchos::null is no
+                             projection desired
   */
   void Setup(
     Teuchos::RCP<Epetra_Operator>     matrix                     ,
@@ -162,9 +156,7 @@ public:
     Teuchos::RCP<Epetra_MultiVector>       b                     ,
     bool                     refactor                            ,
     bool                     reset   = false                     ,
-    Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean_w= Teuchos::null,
-    Teuchos::RCP<Epetra_MultiVector>  kernel_c= Teuchos::null             ,
-    bool                     project = false                          );
+    Teuchos::RCP<LINALG::KrylovProjector> projector = Teuchos::null);
 
   /// solve linear system after setup has been done
   void Solve();
@@ -182,33 +174,24 @@ public:
   This includes setup. Reuse of preconditioners and factorized systems is
   provided.
 
-  \param matrix                (in/out): system of equations
-  \param x                     (in/out): initial guess on input, solution on output
-  \param b                     (in/out): right hand side vector
-                                         if project!=false it might be modified if not orthognal
-                                         to matrix kernel.
-  \param refactor              (in)    : flag indicating whether system should be refactorized
-  \param reset                 (in)    : flag indicating whether all data from previous solves
-                                         should be recalculated including preconditioners
-  \param weighted_basis_mean_w (in)    : weight vector defining projector for iterative solution
-                                         of singluar problems using iterative solvers. Required
-                                         if project!=false. (Aztec only option)
-                                         x will be orthogonalized to these weights on output.
-  \param kernel_c              (in)    : Vector of ones in the respective components. Necessary
-                                         if project!=false. (Aztec only option)
-                                         Krylov space will be orthogonalized to this basis!
-  \param project               (in)    : flag indicating whether several modes will be projected
-                                         out of the Krylov space (Aztec only option)
+  \param matrix    (in/out): system of equations
+  \param x         (in/out): initial guess on input, solution on output
+  \param b         (in/out): right hand side vector
+                             if project!=false it might be modified if not orthognal
+                             to matrix kernel.
+  \param refactor  (in)    : flag indicating whether system should be refactorized
+  \param reset     (in)    : flag indicating whether all data from previous solves
+                             should be recalculated including preconditioners
+  \param projector (in)    : Krylov space projector - Teuchos::null is no
+                             projection desired
   */
   void Solve(
-      Teuchos::RCP<Epetra_Operator>     matrix                     ,
-      Teuchos::RCP<Epetra_MultiVector>       x                     ,
-      Teuchos::RCP<Epetra_MultiVector>       b                     ,
-      bool                     refactor                            ,
-      bool                     reset   = false                     ,
-      Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean_w= Teuchos::null,
-      Teuchos::RCP<Epetra_MultiVector>  kernel_c= Teuchos::null             ,
-      bool                     project = false                     );
+    Teuchos::RCP<Epetra_Operator>     matrix                     ,
+    Teuchos::RCP<Epetra_MultiVector>       x                     ,
+    Teuchos::RCP<Epetra_MultiVector>       b                     ,
+    bool                     refactor                            ,
+    bool                     reset   = false                     ,
+    Teuchos::RCP<LINALG::KrylovProjector> projector = Teuchos::null);
 
   /*!
   \brief Reset the solver and clear data

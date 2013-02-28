@@ -25,9 +25,15 @@ Maintainer: Alexander Popp
 #include "strtimint.H"
 
 // forward declarations
+namespace DRT
+{
+  class Condition;
+}
+
 namespace LINALG
 {
   class MultiMapExtractor;
+  class KrylovProjector;
 }
 
 /*----------------------------------------------------------------------*/
@@ -134,6 +140,11 @@ namespace STR
     //!
     //! This is an implicit predictor, i.e. it calls the solver once.
     void PredictTangDisConsistVelAcc();
+
+    //!
+    void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
+    //!
+    void UpdateKrylovSpaceProjection();
 
     //@}
 
@@ -775,8 +786,6 @@ namespace STR
     double normpres_; //!< norm of residual pressures
     Teuchos::RCP<Epetra_Vector> disi_;  //!< residual displacements (and pressure)
                                         //!< \f$\Delta{D}^{<k>}_{n+1}\f$
-    //@}
-
     //! @name Various global forces
     //@{
     Teuchos::RCP<Epetra_Vector> fres_;  //!< force residual used for solution
@@ -790,6 +799,10 @@ namespace STR
     Teuchos::RCP<NOX::Utils> noxutils_;
     //@}
 
+    //! @name Krylov projection variables
+    bool updateprojection_;                             //!< bool triggering update of Krylov projection
+    Teuchos::RCP<LINALG::KrylovProjector>   projector_; //!< Krylov projector himself
+    //@}
 
     //! @name SDC Scaling for thin shell structures
     //@{

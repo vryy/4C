@@ -105,11 +105,11 @@ int LINALG::SOLVER::KrylovSolver::ApplyInverse(const Epetra_MultiVector& X, Epet
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList & azlist,
-                                                         bool isCrsMatrix,
-                                                         Teuchos::RCP<Epetra_MultiVector> weighted_basis_mean,
-                                                         Teuchos::RCP<Epetra_MultiVector> kernel_c,
-                                                         bool project )
+void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
+  Teuchos::ParameterList & azlist,
+  bool isCrsMatrix,
+  Teuchos::RCP<LINALG::KrylovProjector> projector
+  )
 {
   TEUCHOS_FUNC_TIME_MONITOR("LINALG::Solver:  1.1)   CreatePreconditioner");
 
@@ -225,9 +225,9 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner( Teuchos::ParameterList 
       preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::DWindPreconditioner( outfile_, preconditioner_, azlist ) );
     }
 
-    if ( project )
+    if ( projector!=Teuchos::null)
     {
-      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::KrylovProjectionPreconditioner( outfile_, preconditioner_, weighted_basis_mean, kernel_c ) );
+      preconditioner_ = Teuchos::rcp( new LINALG::SOLVER::KrylovProjectionPreconditioner( outfile_, preconditioner_, projector) );
     }
   }
   else

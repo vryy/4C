@@ -65,14 +65,13 @@ LINALG::SOLVER::AztecSolver::~AztecSolver()
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-void LINALG::SOLVER::AztecSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
-                                          Teuchos::RCP<Epetra_MultiVector> x,
-                                          Teuchos::RCP<Epetra_MultiVector> b,
-                                          bool refactor,
-                                          bool reset,
-                                          Teuchos::RCP<Epetra_MultiVector> weighted_basis_mean,
-                                          Teuchos::RCP<Epetra_MultiVector> kernel_c,
-                                          bool project)
+void LINALG::SOLVER::AztecSolver::Setup(
+  Teuchos::RCP<Epetra_Operator> matrix,
+  Teuchos::RCP<Epetra_MultiVector> x,
+  Teuchos::RCP<Epetra_MultiVector> b,
+  bool refactor,
+  bool reset,
+  Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
   if (!Params().isSublist("Aztec Parameters"))
     dserror("Do not have aztec parameter list");
@@ -99,7 +98,7 @@ void LINALG::SOLVER::AztecSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
   if ( create )
   {
     ncall_ = 0;
-    CreatePreconditioner( azlist, A!=Teuchos::null, weighted_basis_mean, kernel_c, project );
+    CreatePreconditioner( azlist, A!=Teuchos::null, projector);
   }
 
   // feed preconditioner with more information about linear system using

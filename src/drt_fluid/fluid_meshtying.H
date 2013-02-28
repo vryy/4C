@@ -44,6 +44,7 @@ namespace LINALG
   class MapExtractor;
   class BlockSparseMatrixBase;
   class SparseOperator;
+  class KrylovProjector;
 }
 
 
@@ -87,18 +88,17 @@ class Meshtying
                       Teuchos::RCP<Epetra_Vector>&                     residual);  ///> residual established by the element routine
 
     //! Solve mesh-tying problem
-    void SolveMeshtying(LINALG::Solver&                 solver,
-                        Teuchos::RCP<LINALG::SparseOperator>     sysmat,
-                        Teuchos::RCP<Epetra_Vector>&              incvel,
-                        Teuchos::RCP<Epetra_Vector>              residual,
-                        int                             itnum,
-                        Teuchos::RCP<Epetra_MultiVector>         w,
-                        Teuchos::RCP<Epetra_MultiVector>         c,
-                        bool                            project
-                        );
+    void SolveMeshtying(
+      LINALG::Solver&                       solver,
+      Teuchos::RCP<LINALG::SparseOperator>  sysmat,
+      Teuchos::RCP<Epetra_Vector>&          incvel,
+      Teuchos::RCP<Epetra_Vector>           residual,
+      int                                   itnum,
+      Teuchos::RCP<LINALG::KrylovProjector> projector
+      );
 
     //! Adjust null-space for Krylov projector (slave node are in-active)
-    void KrylovProjection(Teuchos::RCP<Epetra_Vector>   c);
+    void AdaptKrylovProjector(Teuchos::RCP<Epetra_Vector> vec);
 
     //! Time update for Lagrange multiplier
     void UpdateLag();

@@ -16,6 +16,7 @@ Created on: Jul 4, 2011
 
 namespace LINALG
 {
+  class KrylovProjector;
   namespace SOLVER
   {
     class PreconditionerType;
@@ -33,9 +34,7 @@ namespace LINALG
                           Teuchos::RCP<Epetra_MultiVector>       b             ,
                           bool                             refactor            ,
                           bool                             reset               ,
-                          Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,
-                          Teuchos::RCP<Epetra_MultiVector>  kernel_c           ,
-                          bool                             project) = 0;
+                          Teuchos::RCP<LINALG::KrylovProjector> projector) = 0;
 
       virtual void Solve() = 0;
 

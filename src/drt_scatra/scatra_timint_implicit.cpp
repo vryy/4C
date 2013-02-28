@@ -30,6 +30,7 @@ Maintainer: Georg Bauer
 #include "scatra_ele_action.H"
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
+#include "../linalg/linalg_krylov_projector.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_sparseoperator.H"
 #include "../drt_fluid/drt_periodicbc.H"
@@ -611,6 +612,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   int numcond = KSPCond.size();
   int numscatra = 0;
 
+  DRT::Condition* kspcond = NULL;
   // check if for scatra Krylov projection is required
   for(int icond = 0; icond < numcond; icond++)
   {
@@ -618,27 +620,21 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     if (*name == "scatra")
     {
       numscatra++;
-      kspcond_ = KSPCond[icond];
+      kspcond = KSPCond[icond];
     }
   }
 
   // initialize variables for Krylov projection if necessary
-  w_ = Teuchos::null;
-  c_ = Teuchos::null;
   if (numscatra == 1)
   {
-    // set flag that triggers all computations for Krylov projection
-    project_ = true;
-    // compute w_ and c_ vectors - only done once here if not alefluid_
-    PrepareKrylovSpaceProjection();
+    SetupKrylovSpaceProjection(kspcond);
     if (myrank_ == 0)
       cout << "\nSetup of KrylovSpaceProjection in scatra field\n" << endl;
-    // kspcond_ is set in previous for-loop
   }
   else if (numscatra == 0)
   {
-    project_ = false;
-    kspcond_ = NULL;
+    updateprojection_ = false;
+    projector_ = Teuchos::null;
   }
   else
     dserror("Received more than one KrylovSpaceCondition for scatra field");
@@ -1997,10 +1993,10 @@ void SCATRA::ScaTraTimIntImpl::UpdateIter(const Teuchos::RCP<const Epetra_Vector
 // general framework
 /*==========================================================================*/
 
-/*----------------------------------------------------------------------*
- | prepare Krylov space projection                            gjb 07/09 |
- *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
+/*--------------------------------------------------------------------------*
+ | setup Krylov projector including first fill                    nis Feb13 |
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcond)
 {
   // previously, scatra was able to define actual modes that formed a
   // nullspace. factors when assigned to scalars in the dat file. it could
@@ -2016,55 +2012,72 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
   // revision 17615.
 
   // confirm that mode flags are number of nodal dofs/scalars
-  const int nummodes = kspcond_->GetInt("NUMMODES");
+  const int nummodes = kspcond->GetInt("NUMMODES");
   const int numdofpernode = numscal_ + IsElch(scatratype_);
   if (nummodes!=numdofpernode)
     dserror("Expecting as many mode flags as nodal dofs in Krylov projection definition. Check dat-file!");
 
   // get vector of mode flags as given in dat-file
-  const std::vector<int>* modeflags = kspcond_->Get<std::vector<int> >("ONOFF");
+  const std::vector<int>* modeflags = kspcond->Get<std::vector<int> >("ONOFF");
 
   // count actual active modes selected in dat-file
-  int activemodes = 0;
   std::vector<int> activemodeids;
   for(int rr=0;rr<numdofpernode;++rr)
   {
     if(((*modeflags)[rr])!=0)
     {
       activemodeids.push_back(rr);
-      activemodes++;
     }
   }
 
-  // check if vectors w_ and c_ already exist as objects
-  if (w_==Teuchos::null or c_==Teuchos::null)
-  {
-    // allocate storage for vectors
-    w_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),activemodes,true));
-    c_ = Teuchos::rcp(new Epetra_MultiVector(*(discret_->DofRowMap()),activemodes,true));
-  }
-  else
-  {
-    // zero w and c in case they already existed (in case of ALE)
-    w_->PutScalar(0.0);
-    c_->PutScalar(0.0);
-  }
-
   // get from dat-file definition how weights are to be computed
-  const string* definition = kspcond_->Get<string>("weight vector definition");
+  const string* weighttype = kspcond->Get<string>("weight vector definition");
 
+  // set flag for projection update true only if ALE and integral weights
+  if (isale_ and (*weighttype=="integration"))
+    updateprojection_ = true;
+
+  // create the projector
+  projector_ = Teuchos::rcp(new LINALG::KrylovProjector(activemodeids,weighttype,discret_->DofRowMap()));
+
+  // update the projector
+  UpdateKrylovSpaceProjection();
+} // SCATRA::ScaTraTimIntImpl::SetupKrylovSpaceProjection
+
+
+/*--------------------------------------------------------------------------*
+ | update projection vectors w_ and c_ for Krylov projection      nis Feb13 |
+ *--------------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
+{
   // loop over modes to create vectors within multi-vector
   // one could tailor a MapExtractor to extract necessary dofs, however this
   // seems to be an overkill, since normally only a single scalar is
   // projected. for only a second projected scalar it seems worthwhile. feel
   // free! :)
-  if(*definition == "pointvalues")
+
+  // get RCP to kernel vector of projector
+  Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
+  c->PutScalar(0.0);
+
+  const std::string* weighttype = projector_->WeightType();
+  // compute w_ as defined in dat-file
+  if(*weighttype == "pointvalues")
   {
     dserror("option pointvalues not implemented");
   }
-  else if(*definition == "integration")
+  else if(*weighttype == "integration")
   {
+    // get RCP to weight vector of projector
+    Teuchos::RCP<Epetra_MultiVector> w = projector_->GetNonConstWeights();
+    w->PutScalar(0.0);
+
+    // get number of modes and their ids
+    int nummodes = projector_->Nsdim();
+    std::vector<int> modeids = projector_->Modes();
+
     // initialize dofid vector to -1
+    const int numdofpernode = numscal_ + IsElch(scatratype_);
     Epetra_IntSerialDenseVector dofids(numdofpernode);
     for (int rr=0;rr<numdofpernode;++rr)
     {
@@ -2081,10 +2094,10 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
       AddMultiVectorToParameterList(mode_params,"dispnp",dispnp_);
 
     // loop over all activemodes
-    for (int imode = 0; imode < activemodes; ++imode)
+    for (int imode = 0; imode < nummodes; ++imode)
     {
       // activate dof of current mode and add dofids to parameter list
-      dofids[activemodeids[imode]] = 1;
+      dofids[modeids[imode]] = 1;
       mode_params.set("dofids",dofids);
 
       /*
@@ -2101,7 +2114,7 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
       */
 
       // get an RCP of the current column Epetra_Vector of the MultiVector
-      Teuchos::RCP<Epetra_Vector> wi = Teuchos::rcp((*w_)(imode),false);
+      Teuchos::RCP<Epetra_Vector> wi = Teuchos::rcp((*w)(imode),false);
 
       // compute integral of shape functions
       discret_->EvaluateCondition
@@ -2114,21 +2127,28 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
           "KrylovSpaceProjection");
 
       // deactivate dof of current mode
-      dofids[activemodeids[imode]] = -1;
+      dofids[modeids[imode]] = -1;
 
       // set the current kernel basis vector - not very nice
       for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
       {
         DRT::Node* node = discret_->lRowNode(inode);
         vector<int> gdof = discret_->Dof(node);
-        for(int rr=0;rr<activemodes;++rr)
+        for(int rr=0;rr<nummodes;++rr)
         {
-          int err = c_->ReplaceGlobalValue(gdof[activemodeids[rr]],imode,1);
-          if (err != 0) dserror("error while inserting value into c_");
+          int err = c->ReplaceGlobalValue(gdof[modeids[rr]],imode,1);
+          if (err != 0) dserror("error while inserting value into c");
         }
       }
 
-    } // loop over activemodes
+    } // loop over modes
+
+    // adapt weight vector according to meshtying case
+    if (msht_ != INPAR::FLUID::no_meshtying)
+    {
+      dserror("Since meshtying for scatra is not tested under Krylov projection dserror is introduced. Remove at own responsibility.");
+      //meshtying_->AdaptKrylovProjector(w);
+    }
 
   } // endif integration
   else
@@ -2136,9 +2156,19 @@ void SCATRA::ScaTraTimIntImpl::PrepareKrylovSpaceProjection()
     dserror("unknown definition of weight vector w for restriction of Krylov space");
   }
 
+  // adapt kernel vector according to meshtying case
+  if (msht_ != INPAR::FLUID::no_meshtying)
+  {
+    dserror("Since meshtying for scatra is not tested under Krylov projection dserror is introduced. Remove at own responsibility.");
+    //meshtying_->AdaptKrylovProjector(c);
+  }
+
+  // fillcomplete the projector to compute (w^T c)^(-1)
+  projector_->FillComplete();
+
   return;
 
-} // ScaTraTimIntImpl::PrepareKrylovSpaceProjection
+} // ScaTraTimIntImpl::UpdateKrylovSpaceProjection
 
 /*----------------------------------------------------------------------*
  | export multivector to column map & add it to parameter list gjb 06/09|
@@ -2719,15 +2749,15 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
       // ScaleLinearSystem();  // still experimental (gjb 04/10)
 
       // reprepare Krylov projection only if ale and projection required
-      if (isale_ and project_)
+      if (updateprojection_)
       {
-        PrepareKrylovSpaceProjection();
+        UpdateKrylovSpaceProjection();
       }
 
       if (msht_!=INPAR::FLUID::no_meshtying)
-        meshtying_->SolveMeshtying(*solver_, sysmat_, increment_, residual_, itnum, w_, c_, project_);
+        meshtying_->SolveMeshtying(*solver_, sysmat_, increment_, residual_, itnum, projector_);
       else
-        solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itnum==1,w_,c_,project_);
+        solver_->Solve(sysmat_->EpetraOperator(),increment_,residual_,true,itnum==1, projector_);
 
       solver_->ResetTolerance();
 

@@ -58,9 +58,7 @@ void LINALG::SOLVER::StratimikosSolver::Setup( Teuchos::RCP<Epetra_Operator> mat
                                                Teuchos::RCP<Epetra_MultiVector> b,
                                                bool refactor,
                                                bool reset,
-                                               Teuchos::RCP<Epetra_MultiVector> weighted_basis_mean,
-                                               Teuchos::RCP<Epetra_MultiVector> kernel_c,
-                                               bool project)
+                                               Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
   if (!Params().isSublist("Stratimikos Parameters"))
     dserror("Do not have stratimikos parameter list");

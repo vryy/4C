@@ -35,10 +35,11 @@ namespace LINALG
     {
     public:
 
-      KrylovProjectionPreconditioner( FILE * outfile,
-                                      Teuchos::RCP<PreconditionerType>  preconditioner,
-                                      Teuchos::RCP<Epetra_MultiVector>  weighted_basis_mean,
-                                      Teuchos::RCP<Epetra_MultiVector>  kernel_c );
+      KrylovProjectionPreconditioner(
+        FILE * outfile,
+        Teuchos::RCP<PreconditionerType>  preconditioner,
+        Teuchos::RCP<LINALG::KrylovProjector> projector
+        );
 
       //virtual Epetra_LinearProblem & LinearProblem() { return preconditioner_->LinearProblem(); }
 
@@ -68,8 +69,6 @@ namespace LINALG
 
       /// Peter's projector object that does the actual work
       Teuchos::RCP<LINALG::KrylovProjector> projector_;
-      Teuchos::RCP<Epetra_MultiVector> weighted_basis_mean_;
-      Teuchos::RCP<Epetra_MultiVector> kernel_c_;
 
       /// linear operator that calls a "real" preconditioning operator and does
       /// a projection afterwards.

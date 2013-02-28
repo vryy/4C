@@ -13,14 +13,13 @@
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-LINALG::SOLVER::KrylovProjectionPreconditioner::KrylovProjectionPreconditioner( FILE * outfile,
-                                                                                Teuchos::RCP<LINALG::SOLVER::PreconditionerType> preconditioner,
-                                                                                Teuchos::RCP<Epetra_MultiVector> weighted_basis_mean,
-                                                                                Teuchos::RCP<Epetra_MultiVector> kernel_c )
+LINALG::SOLVER::KrylovProjectionPreconditioner::KrylovProjectionPreconditioner(
+  FILE * outfile,
+  Teuchos::RCP<LINALG::SOLVER::PreconditionerType> preconditioner,
+  Teuchos::RCP<LINALG::KrylovProjector> projector)
   : LINALG::SOLVER::PreconditionerType( outfile ),
     preconditioner_( preconditioner ),
-    weighted_basis_mean_( weighted_basis_mean ),
-    kernel_c_( kernel_c )
+    projector_(projector)
 {
 }
 
@@ -31,7 +30,6 @@ void LINALG::SOLVER::KrylovProjectionPreconditioner::Setup( bool create,
                                                             Epetra_MultiVector * x,
                                                             Epetra_MultiVector * b )
 {
-  projector_ = Teuchos::rcp(new LINALG::KrylovProjector(true,weighted_basis_mean_,kernel_c_,Teuchos::rcp( matrix, false )));
   projector_->ApplyPT( *b );
 
   // setup wrapped preconditioner

@@ -21,6 +21,7 @@
 // BACI headers
 #include "solver_directsolver.H"
 
+#include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_krylov_projector.H"
 #include <Epetra_CrsMatrix.h>
@@ -30,10 +31,9 @@
 LINALG::SOLVER::DirectSolver::DirectSolver( std::string solvertype )
   : solvertype_( solvertype ),
     factored_( false ),
-    project_( false)
+    projector_(Teuchos::null)
 {
   lp_ = Teuchos::rcp( new Epetra_LinearProblem() );
-  projector_ = Teuchos::null;
 }
 
 //----------------------------------------------------------------------------------
@@ -52,15 +52,20 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
                                           Teuchos::RCP<Epetra_MultiVector> b,
                                           bool refactor,
                                           bool reset,
-                                          Teuchos::RCP<Epetra_MultiVector> weighted_basis_mean,
-                                          Teuchos::RCP<Epetra_MultiVector> kernel_c,
-                                          bool project)
+                                          Teuchos::RCP<LINALG::KrylovProjector> projector)
 {
-  if ( project )
+  projector_ = projector;
+
+  if ( projector_!=Teuchos::null)
   {
-    project_ = true;
-    // create projector from weights and kernels
-    projector_ = Teuchos::rcp(new LINALG::KrylovProjector(project_, weighted_basis_mean, kernel_c, matrix));
+    // instead of
+    //
+    // A x = b
+    //
+    // solve
+    //
+    // P^T A P x_tilda = P^T b
+    //
 
     // cast system matrix to LINALG::SparseMatrix
     Teuchos::RCP<Epetra_CrsMatrix> A_Crs = Teuchos::rcp_dynamic_cast<Epetra_CrsMatrix>(matrix);
@@ -82,12 +87,11 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
     // hand over to b_ and project to (P^T b)
     b_ = b;
     projector_->ApplyPT(*b_);
-    // hand over x_
+    // hand over x_ as x_tilda (only zeros yet, )
     x_ = x;
   }
   else
   {
-    project_ = false;
     x_ = x;
     b_ = b;
     A_ = matrix;
@@ -166,9 +170,9 @@ void LINALG::SOLVER::DirectSolver::Solve()
   int err = amesos_->Solve();
   if (err) dserror("Amesos::Solve returned an err");
 
-  // retransform x
-  if (project_)
+  if (projector_ != Teuchos::null)
   {
+    // get x from x = P x_tilda
     projector_->ApplyP(*x_);
   }
 }
