@@ -61,6 +61,7 @@ NORM_RESF                       Abs
 NORM_DISP                       Abs
 NORMCOMBI_RESFDISP              And
 MAXITER                         50
+PREDICT                         TangDis
 -------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 GENAVG                          TrLike
 BETA                            0.25
@@ -1345,7 +1346,7 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1.0 6.0 FACTOR 1.2 1.2
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 280 QUANTITY dispx VALUE 5.9962506250481051e-01 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 280 QUANTITY dispy VALUE -1.0848660574056643e+00 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 280 QUANTITY dispx VALUE  5.99621795166637828e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 280 QUANTITY dispy VALUE -1.08501918022983368e+00 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END
