@@ -75,6 +75,7 @@ VSTAB                           no_vstab
 CSTAB cstab_qs //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
+EOS_GP_PATTERN                  u-v-w-p-diagonal-block          // u-p-block // full
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    No
@@ -98,7 +99,6 @@ CONV_STAB_FAC                   1.0
 CONV_STAB_SCALING               abs_normal_vel
 GHOST_PENALTY_STAB              No
 GHOST_PENALTY_FAC               0.001
-EOS_GP_PATTERN                  u-v-w-p-diagonal-block          // u-p-block // full
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Aztec_MSR

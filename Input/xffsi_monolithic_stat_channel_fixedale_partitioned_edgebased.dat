@@ -74,6 +74,8 @@ VSTAB                           no_vstab
 CSTAB no_cstab //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
+EOS_GP_PATTERN                  u-v-w-p-diagonal-block          // u-p-block // full
+EOS_H_DEFINITION           EOS_he_surf_with_max_diameter//  EOS_he_max_dist_to_opp_surf//
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  Yes
 VOLUME_GAUSS_POINTS_BY          Tessellation
@@ -93,7 +95,6 @@ CONV_STAB_SCALING               none                            // abs_normal_ve
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.1
 MSH_L2_PROJ part_ele_proj //full_ele_proj (K_ss whole element or just partial)
-EOS_GP_PATTERN                  u-v-w-p-diagonal-block          // u-p-block // full
 -----------------------------------------------------------------ALE DYNAMIC
 ALE_TYPE                        incr_lin                        // classic_lin
 TIMESTEP                        0.005

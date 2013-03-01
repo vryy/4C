@@ -119,6 +119,7 @@ GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
+EOS_GP_PATTERN                  u-v-w-p-diagonal-block
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_BOUNDARY                 xfsi_moving_boundary
 INTERFACE_VEL_INITIAL           interface_vel_init_by_funct
@@ -132,7 +133,6 @@ CONV_STAB_FAC                   1.0
 CONV_STAB_SCALING               abs_normal_vel
 GHOST_PENALTY_STAB              Yes
 GHOST_PENALTY_FAC               0.001
-EOS_GP_PATTERN                  u-v-w-p-diagonal-block
 -------------------------------------------------------------------MATERIALS
 //                              MAT_fluid
 MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0

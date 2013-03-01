@@ -68,6 +68,7 @@ VSTAB                           no_vstab
 CSTAB                           no_cstab
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
+EOS_GP_PATTERN                  u-v-w-p-diagonal-block // u-p-block // full
 -----------------------------------------------------------------FSI DYNAMIC
 SECONDORDER                     No
 ----------------------------------------------------------------XFEM GENERAL
@@ -90,7 +91,6 @@ CONV_STAB_FAC                   1.0
 CONV_STAB_SCALING               max_abs_normal_vel //abs_normal_vel // inflow // const // none
 GHOST_PENALTY_STAB              yes
 GHOST_PENALTY_FAC               0.05 // in [0.1;0.5]
-EOS_GP_PATTERN                  u-v-w-p-diagonal-block // u-p-block // full
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK

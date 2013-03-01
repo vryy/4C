@@ -41,6 +41,9 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  No
+WRITE_TO_SCREEN                 yes 
+WRITE_TO_FILE                   No
+LIMIT_OUTP_TO_PROC              0
 ---------------------------------------------------------------FLUID DYNAMIC
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                1
@@ -149,6 +152,11 @@ ML_DAMPFINE                     1.0                             // damping fine 
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 ----------------------------------------------------------------XFEM GENERAL
+GMSH_SOL_OUT                   no
+GMSH_EOS_OUT                   no
+GMSH_CUT_OUT                   no
+GMSH_DEBUG_OUT  no
+//GMSH_EOS_OUT                   no
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY               BoundaryTypeSigma               // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 CONV_STAB_FAC                   0.0

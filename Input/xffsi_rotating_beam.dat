@@ -132,7 +132,7 @@ LINEAR_SOLVER   1
 --------------------------------------------------------FSI DYNAMIC
 MAXTIME      10000.0
 TIMESTEP     0.03
-NUMSTEP     10 
+NUMSTEP     7
 RESTARTEVRY  5
 COUPALGO      iter_fluidfluid_monolithicstructuresplit
 SECONDORDER  no

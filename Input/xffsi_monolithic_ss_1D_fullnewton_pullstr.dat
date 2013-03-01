@@ -41,6 +41,9 @@ STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  No
 THERM_TEMPERATURE               No
 THERM_TEMPGRAD                  No
+WRITE_TO_SCREEN                 yes
+WRITE_TO_FILE                   No
+LIMIT_OUTP_TO_PROC              0
 ---------------------------------------------------------------FLUID DYNAMIC
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                1
