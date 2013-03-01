@@ -334,8 +334,10 @@ namespace DRT
 
       //! compute h_k w.r.t master and slave element
       void compute_patch_hk ( double &   patch_hk,   ///< patch h_k
-                              Fluid*     master,     ///< master fluid element
-                              Fluid*     slave       ///< slave fluid element
+                              Fluid*    master,     ///< master fluid element
+                              Fluid*    slave,       ///< slave fluid element
+                              DRT::ELEMENTS::FluidIntFace*       intface,
+                              INPAR::FLUID::EOS_ElementLength    eos_element_length
       );
 
       //! compute surface diameter w.r.t to parent master element or parent slave element (flag master=true/false)
@@ -514,7 +516,365 @@ namespace DRT
         return;
        }
 
+      template <int numnode>
+      void distance2D( bool                              master,           ///< master or slave parent element
+    		           std::map< int,std::vector<int> >  p_lines_nodes,
+                       double &                          h_e               ///< element length w.r.t parent element
+      )
+      {
+    	  LINALG::Matrix<nsd_ ,iel*2> xyze_distance_lines;
 
+    	  if (master == true) // is parent element the master element?
+    	  {
+    		  //find the distance
+    		  int count = 0;
+    		  for(std::map<int,std::vector<int> >::iterator iter = p_lines_nodes.begin(); iter!= p_lines_nodes.end();
+    				  iter++)
+    		  {
+    			  std::vector<int> nodesofline = iter->second;
+    			  for(int isd=0; isd<nsd_; isd++)
+    			  {
+    				  xyze_distance_lines(isd,count) = pxyze_(isd, nodesofline.at(0));
+    				  xyze_distance_lines(isd,count+1) = pxyze_(isd, nodesofline.at(1));
+    			  }
+    			  count=count+2;
+    		  }
+    	  }
+    	  else
+    	  {
+    		  //find the distance
+    		  int count = 0;
+    		  for(std::map<int,std::vector<int> >::iterator iter = p_lines_nodes.begin(); iter!= p_lines_nodes.end();
+    				  iter++)
+    		  {
+    			  std::vector<int> nodesofline = iter->second;
+    			  for(int isd=0; isd<nsd_; isd++)
+    			  {
+    				  xyze_distance_lines(isd,count) = nxyze_(isd, nodesofline.at(0));
+    				  xyze_distance_lines(isd,count+1) = nxyze_(isd, nodesofline.at(1));
+    			  }
+    			  count=count+2;
+    		  }
+
+       	  }
+          if (numnode == 4 or numnode == 8)
+          {
+        	  double line1 = 0.0;
+        	  double line2 = 0.0;
+        	  double line3 = 0.0;
+        	  double line0 = 0.0;
+
+        	  for(int i=0; i<nsd_; i++)
+        	  {
+        		  line0 += (xyze_distance_lines(i,0) - xyze_distance_lines(i,1))*(xyze_distance_lines(i,0) - xyze_distance_lines(i,1));
+        		  line1 += (xyze_distance_lines(i,2) - xyze_distance_lines(i,3))*(xyze_distance_lines(i,2) - xyze_distance_lines(i,3));
+        		  line2 += (xyze_distance_lines(i,4) - xyze_distance_lines(i,5))*(xyze_distance_lines(i,4) - xyze_distance_lines(i,5));
+        		  line3 += (xyze_distance_lines(i,6) - xyze_distance_lines(i,7))*(xyze_distance_lines(i,6) - xyze_distance_lines(i,7));
+        	  }
+
+        	  line0 = sqrt(line0);
+        	  line1 = sqrt(line1);
+        	  line2 = sqrt(line2);
+        	  line3 = sqrt(line3);
+
+        	  h_e = std::max(line0, std::max(line1, std::max(line2, line3)));
+          }
+          if (numnode == 3)
+          {
+        	  double line0 = 0.0;
+
+        	  for(int i=0; i<nsd_; i++)
+        	  {
+        		  line0 += (xyze_distance_lines(i,0) - xyze_distance_lines(i,1))*(xyze_distance_lines(i,0) - xyze_distance_lines(i,1));
+        	  }
+        	  line0 = sqrt(line0);
+
+        	  h_e = line0;
+          }
+      }
+
+      template <int numnode>
+      void distance1D( bool                              master,           ///< master or slave parent element
+    		           std::map< int,std::vector<int> >  p_lines_nodes,
+                       double &                          h_e               ///< element length w.r.t parent element
+      )
+      {
+    	  dserror("The implementation of distance1D is not tested 2D elements!");
+    	  LINALG::Matrix<nsd_ ,iel*2> xyze_distance_lines;
+
+    	  if (master == true) // is parent element the master element?
+    	  {
+    		  //find the distance
+    		  int count = 0;
+    		  for(std::map<int,std::vector<int> >::iterator iter = p_lines_nodes.begin(); iter!= p_lines_nodes.end();
+    				  iter++)
+    		  {
+    			  std::vector<int> nodesofline = iter->second;
+    			  for(int isd=0; isd<nsd_; isd++)
+    			  {
+    				  xyze_distance_lines(isd,count) = pxyze_(isd, nodesofline.at(0));
+    				  xyze_distance_lines(isd,count+1) = pxyze_(isd, nodesofline.at(1));
+    			  }
+    			  count=count+2;
+    		  }
+    	  }
+    	  else
+    	  {
+    		  //find the distance
+    		  int count = 0;
+    		  for(std::map<int,std::vector<int> >::iterator iter = p_lines_nodes.begin(); iter!= p_lines_nodes.end();
+    				  iter++)
+    		  {
+    			  std::vector<int> nodesofline = iter->second;
+    			  for(int isd=0; isd<nsd_; isd++)
+    			  {
+    				  xyze_distance_lines(isd,count) = nxyze_(isd, nodesofline.at(0));
+    				  xyze_distance_lines(isd,count+1) = nxyze_(isd, nodesofline.at(1));
+    			  }
+    			  count=count+2;
+    		  }
+
+       	  }
+          if (numnode == 4) // quad4 parent element
+          {
+        	  double line0 = 0.0;
+        	  double line1 = 0.0;
+
+        	  for(int i=0; i<nsd_; i++)
+        	  {
+        		  line0 += (xyze_distance_lines(i,0) - xyze_distance_lines(i,1))*(xyze_distance_lines(i,0) - xyze_distance_lines(i,1));
+        		  line1 += (xyze_distance_lines(i,2) - xyze_distance_lines(i,3))*(xyze_distance_lines(i,2) - xyze_distance_lines(i,3));
+        	  }
+
+        	  line0 = sqrt(line0);
+        	  line1 = sqrt(line1);
+        	  h_e = std::max(line0, line1);
+          }
+          if (numnode == 3) //tri3 parent element
+          {
+        	  double line0 = 0.0;
+
+        	  for(int i=0; i<nsd_; i++)
+        	  {
+        		  line0 += (xyze_distance_lines(i,0) - xyze_distance_lines(i,1))*(xyze_distance_lines(i,0) - xyze_distance_lines(i,1));
+        	  }
+        	  line0 = sqrt(line0);
+
+        	  h_e = line0;
+          }
+      }
+      //! find the surface at the opposite side
+      template <int numnode>
+      void FindOppositeSurface2D(int surfacelocalid,int & surf_neighbor)
+      {
+	  if ((numnode == 4) or (numnode == 8))
+	  {
+	    switch (surfacelocalid)
+	    {
+            case 0:
+    	        surf_neighbor = 5;
+    	    break;
+            case 1:
+             	surf_neighbor = 3;
+    	    break;
+            case 2:
+    	        surf_neighbor = 4;
+    	    break;
+            case 3:
+    	        surf_neighbor = 1;
+    	    break;
+            case 4:
+    	        surf_neighbor = 2;
+    	    break;
+            case 5:
+    	        surf_neighbor = 0;
+    	    break;
+            default:
+    	        dserror("wrong number!!");
+    	    break;
+           }
+	 }
+	 else if (numnode == 3) 
+	 {
+	    switch (surfacelocalid)
+	    {
+	    	case 0:
+	    		surf_neighbor = 3;
+	    		break;
+	    	case 1:
+	    		surf_neighbor = 3;
+	    		break;
+            case 2:
+            	surf_neighbor = 1;
+            	break;
+            case 3:
+            	surf_neighbor = 0;
+            	break;
+            default:
+            	dserror("wrong number!!");
+            break;
+	    } 
+	 }
+     }
+
+     //! find the surface at the opposite side
+     template <int numnodeparentele>
+     void FindOppositeSurface1D(int surfacelocalid,int & surf_neighbor)
+     {
+    	 dserror("The implementation of FindOppositeSurface1D is not tested 2D elements!");
+    	 if ((numnodeparentele == 4) or (numnodeparentele == 8))
+    	  {
+    	    switch (surfacelocalid)
+    	    {
+                case 0:
+        	        surf_neighbor = 2;
+        	    break;
+                case 1:
+                 	surf_neighbor = 3;
+        	    break;
+                case 2:
+        	        surf_neighbor = 0;
+        	    break;
+                case 3:
+        	        surf_neighbor = 1;
+        	    break;
+                default:
+        	        dserror("wrong number!!");
+        	    break;
+               }
+    	  }
+    	  if ((numnodeparentele == 3) or (numnodeparentele == 6))
+    	  {
+    	    switch (surfacelocalid)
+    	    {
+                case 0:
+        	        surf_neighbor = 1;
+        	    break;
+                case 1:
+                 	surf_neighbor = 0;
+        	    break;
+                case 2:
+        	        surf_neighbor = 0;
+        	    break;
+                default:
+        	        dserror("wrong number!!");
+        	    break;
+            }
+    	  }
+      }
+
+      //! find the lines which connect this surface to the surface at the other side
+      template <int numnode>
+      void FindConnectingLines2D(std::vector< std::vector<int> > connectivity_line_surf,
+    		                     int                             masterlocalid,
+    		                     int                             slavelocalid,
+    		                     std::set<int>                &  p_lines_m,
+    		                     std::set<int>                &  p_lines_s,
+    		                     int                             p_surf_neighbor_m,
+    		                     int                             p_surf_neighbor_s)
+      {
+    	  if ((numnode == 4) or (numnode == 8))
+          {
+    		    for (size_t i_line=0; i_line< connectivity_line_surf.size(); i_line++)
+    		    {
+    		    	//find all adjacent surfaces to this line
+    		 	    std::vector<int> line_surfs = connectivity_line_surf.at(i_line);
+
+    		 	    int countsurf_m = 0;
+    		 	    int countsurf_s = 0;
+    		 	    for (size_t i_surf=0; i_surf<line_surfs.size(); i_surf++)
+    		 	    {
+    		 		    if ((line_surfs.at(i_surf) != masterlocalid) and (line_surfs.at(i_surf) != p_surf_neighbor_m))
+    		 		    {
+    		 			    countsurf_m++;
+    		 			    // insert the line, where the two surfaces does not belong to it
+    		 			    if (countsurf_m == 2)
+    		 			      p_lines_m.insert(i_line);
+
+    		 		   }
+    		 		   if ((line_surfs.at(i_surf) != slavelocalid) and (line_surfs.at(i_surf) != p_surf_neighbor_s))
+    		 		   {
+    		 			   countsurf_s++;
+    		 			   // insert the line, where the two surfaces does not belong to it
+    		 			   if (countsurf_s == 2)
+    		 			     p_lines_s.insert(i_line);
+
+    		 		   }
+    		 	   }
+    		    }
+          }
+    	  else if (numnode ==3)
+    	  {
+    		  dserror("The implementation of FindConnectingLines is not tested for Tet4 elements!");
+
+    		  for (size_t i_line=0; i_line< connectivity_line_surf.size(); i_line++)
+    		  {
+    			  //find all adjacent surfaces to this line
+    			  std::vector<int> line_surfs = connectivity_line_surf.at(i_line);
+
+    			  int countsurf_m = 0;
+    			  int countsurf_s = 0;
+    			  for (size_t i_surf=0; i_surf<line_surfs.size(); i_surf++)
+    			  {
+    				  // take the line if it belongs to both surfaces (original surface and neighbor)
+    				  if ((line_surfs.at(i_surf) == masterlocalid) and (line_surfs.at(i_surf) == p_surf_neighbor_m))
+    				  {
+    					  countsurf_m++;
+    					  // insert the line, where the two surfaces belong to it
+    					  if (countsurf_m == 2)
+    						  p_lines_m.insert(i_line);
+    				  }
+    				  if ((line_surfs.at(i_surf) == slavelocalid) and (line_surfs.at(i_surf) == p_surf_neighbor_s))
+    				  {
+    					  countsurf_s++;
+    					  // insert the line, where the two surfaces belong to it
+    					  if (countsurf_s == 2)
+    						  p_lines_s.insert(i_line);
+    				  }
+    			  }
+    		  }
+    	  }
+      }
+      //! find the lines which connect this line (masterlocalid) to the neighboring line (slavelocalid) at the other side
+       template <int numnode>
+       void FindConnectingLines1D(//std::vector< std::vector<int> > connectivity_line_surf,
+     		                     int                              masterlocalid,
+     		                     int                              slavelocalid,
+     		                     std::set<int>                 &  p_lines_m,
+     		                     std::set<int>                 &  p_lines_s,
+     		                     int                              p_surf_neighbor_m,
+     		                     int                              p_surf_neighbor_s)
+       {
+    	  dserror("The implementation of FindConnectingLines is not 2D elements!");
+     	  if (numnode == 4)
+           {
+     		  if (((masterlocalid == 3) and (p_surf_neighbor_m == 1)) or
+     				  ((masterlocalid == 1) and (p_surf_neighbor_m == 3)))
+     		  {
+     			p_lines_m.insert(6);
+     			p_lines_m.insert(4);
+     		  }
+     		  else if (((slavelocalid == 0) and (p_surf_neighbor_s == 2)) or
+     				 ((slavelocalid == 2) and (p_surf_neighbor_s == 0)))
+     		  {
+       			p_lines_s.insert(3);
+       			p_lines_s.insert(1);
+     		  }
+           }
+     	  if (numnode == 3)
+           {
+     		  if (((masterlocalid == 0) and (p_surf_neighbor_m == 1)) or
+     				  ((masterlocalid == 1) and (p_surf_neighbor_m == 0)))
+     		  {
+     			p_lines_m.insert(2);
+     		  }
+     		  else if (((slavelocalid == 0) and (p_surf_neighbor_s == 2)) or
+     				 ((slavelocalid == 2) and (p_surf_neighbor_s == 0)))
+     		  {
+       			p_lines_s.insert(1);
+     		  }
+           }
+       }
 
       //! pointer to parameter list
       Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara_;

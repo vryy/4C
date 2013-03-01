@@ -125,6 +125,21 @@ namespace INPAR
       tau_EOS_not_defined
     };
 
+    /// Element length for edge-oriented / continuous interior penalty stabilization
+    enum EOS_ElementLength
+    {
+      EOS_he_max_dist_to_opp_surf,
+      EOS_he_surf_with_max_diameter
+    };
+
+    /// EdgeBased (EOS) and Ghost Penalty matrix pattern
+    enum EOS_GP_Pattern
+    {
+      EOS_GP_Pattern_uvwp,
+      EOS_GP_Pattern_up,
+      EOS_GP_Pattern_full
+    };
+
     /// time integration scheme
     enum TimeIntegrationScheme
     {

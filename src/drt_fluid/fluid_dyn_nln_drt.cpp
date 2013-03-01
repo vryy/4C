@@ -129,24 +129,6 @@ void fluid_fluid_drt(const int restart)
   embfluiddis->FillComplete();
 
   // -------------------------------------------------------------------
-  // --------------- copy  bgfluid to embfluid
-  const int numcolele = bgfluiddis->NumMyColElements();
-  for (int i=0; i<numcolele; ++i)
-  {
-    DRT::Element* ele = bgfluiddis->lColElement(i);
-    const DRT::Node*const* elenodes = ele->Nodes();
-    RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
-    embfluiddis->AddElement(newele);
-    for (int inode=0; inode < ele->NumNode(); ++inode)
-    {
-      RCP<DRT::Node> newnode = Teuchos::rcp(elenodes[inode]->Clone());
-      embfluiddis->AddNode(newnode);
-    }
-  }
-
-  embfluiddis->FillComplete();
-
-  // -------------------------------------------------------------------
   // ---------------- find MovingFluid's elements and nodes
   map<int, DRT::Node*> MovingFluidNodemap;
   map<int, RCP< DRT::Element> > MovingFluidelemap;
@@ -247,7 +229,9 @@ void fluid_fluid_drt(const int restart)
   RCP<Epetra_Map> bgrownodes = Teuchos::null;
   RCP<Epetra_Map> bgcolnodes = Teuchos::null;
 
+#if defined(PARALLEL) && defined(PARMETIS)
   DRT::UTILS::PartUsingParMetis(bgfluiddis,bgroweles,bgrownodes,bgcolnodes,comm,false);
+#endif
 
   RCP<Epetra_Map> bgnewroweles  = Teuchos::null;
   RCP<Epetra_Map> bgnewcoleles  = Teuchos::null;
@@ -295,7 +279,9 @@ void fluid_fluid_drt(const int restart)
   RCP<Epetra_Map> embrownodes = Teuchos::null;
   RCP<Epetra_Map> embcolnodes = Teuchos::null;
 
+#if defined(PARALLEL) && defined(PARMETIS)
   DRT::UTILS::PartUsingParMetis(embfluiddis,embroweles,embrownodes,embcolnodes,comm,false);
+#endif
 
   RCP<Epetra_Map> embnewroweles  = Teuchos::null;
   RCP<Epetra_Map> embnewcoleles  = Teuchos::null;
@@ -313,7 +299,6 @@ void fluid_fluid_drt(const int restart)
   //------------------------------------------------------------------------------
 
   // access to some parameter lists
-  //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
   const Teuchos::ParameterList& fdyn     = DRT::Problem::Instance()->FluidDynamicParams();
 
   // create instance of fluid basis algorithm

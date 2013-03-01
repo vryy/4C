@@ -1002,3 +1002,17 @@ void GEO::CUT::ConcreteSide<DRT::Element::quad4>::Normal( const LINALG::Matrix<2
   double norm = normal.Norm2();
   normal.Scale( 1./norm );
 }
+
+std::ostream & operator<<( std::ostream & stream, GEO::CUT::Side & s )
+{
+  stream << "side: {";
+  const std::vector<GEO::CUT::Node*> & nodes = s.Nodes();
+  for ( std::vector<GEO::CUT::Node*>::const_iterator i=nodes.begin(); i!=nodes.end(); ++i )
+  {
+	GEO::CUT::Node * n = *i;
+    n->point()->Print( stream );
+    stream << ",";
+  }
+  stream << "}";
+  return stream;
+}

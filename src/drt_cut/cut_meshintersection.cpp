@@ -14,6 +14,7 @@ Maintainer: Benedikt Schott
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io_pstream.H"
 
 #include "cut_integrationcell.H"
 #include "cut_volumecell.H"
@@ -158,7 +159,7 @@ void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner)
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 1/3 --- Cut_Mesh" );
 
 
-  if(myrank_==0) std::cout << "\n\t ... 1/3 Cut_Mesh" << std::flush;
+  if(myrank_==0) IO::cout << "\n\t ... 1/3 Cut_Mesh";
 
   const double t_start = Teuchos::Time::wallTime();
 
@@ -187,7 +188,7 @@ void GEO::CUT::MeshIntersection::Cut_Mesh( bool include_inner)
   const double t_diff = Teuchos::Time::wallTime()-t_start;
   if ( myrank_ == 0 )
   {
-    std::cout << " ... Success (" << t_diff  <<  " secs)\n";
+    IO::cout << " ... Success (" << t_diff  <<  " secs)\n";
   }
 
 }
@@ -200,7 +201,7 @@ void GEO::CUT::MeshIntersection::Cut_Positions_Dofsets( bool include_inner )
 {
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets (serial)" );
 
-  if(myrank_==0) std::cout << "\n\t ... 2/3 Cut_Positions_Dofsets" << std::flush;
+  if(myrank_==0) IO::cout << "\n\t ... 2/3 Cut_Positions_Dofsets";
 
   const double t_start = Teuchos::Time::wallTime();
 
@@ -229,7 +230,7 @@ void GEO::CUT::MeshIntersection::Cut_Positions_Dofsets( bool include_inner )
    const double t_diff = Teuchos::Time::wallTime()-t_start;
    if ( myrank_ == 0 )
    {
-     std::cout << " ... Success (" << t_diff  <<  " secs)";
+     IO::cout << " ... Success (" << t_diff  <<  " secs)";
    }
 }
 
@@ -243,7 +244,7 @@ void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner, std::string V
 {
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 3/3 --- Cut_Finalize" );
 
-  if(myrank_==0) std::cout << "\n\t ... 3/3 Cut_Finalize" << std::flush;
+  if(myrank_==0) IO::cout << "\n\t ... 3/3 Cut_Finalize";
 
   const double t_start = Teuchos::Time::wallTime();
 
@@ -286,7 +287,7 @@ void GEO::CUT::MeshIntersection::Cut_Finalize( bool include_inner, std::string V
   const double t_diff = Teuchos::Time::wallTime()-t_start;
   if ( myrank_ == 0 )
   {
-    std::cout << " ... Success (" << t_diff  <<  " secs)\n";
+    IO::cout << " ... Success (" << t_diff  <<  " secs)\n";
   }
 
 #if(0)

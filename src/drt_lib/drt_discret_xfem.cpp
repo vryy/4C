@@ -1370,7 +1370,7 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBased(
     edgebasedparams.set("ghost_penalty", false);
     edgebasedparams.set("ghost_penalty_reconstruct", false);
     edgebasedparams.set("ghost_penalty_fac", 0.0);
-    edgebasedparams.set("eos_gp_pattern",INPAR::XFEM::EOS_GP_Pattern_full);
+    edgebasedparams.set("eos_gp_pattern",INPAR::FLUID::EOS_GP_Pattern_full);
 
     // call the egde-based assemble and evaluate routine
     DRT::ELEMENTS::FluidIntFaceImplInterface::Impl(ele)->AssembleInternalFacesUsingNeighborData(ele,

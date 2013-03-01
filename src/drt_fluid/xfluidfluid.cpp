@@ -55,6 +55,7 @@ Maintainer:  Shadan Shahmiri
 #include "../drt_io/io.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io_pstream.H"
 
 #include "../drt_xfem/xfem_edgestab.H"
 #include "../drt_xfem/xfem_neumann.H"
@@ -849,6 +850,8 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     eleparams.set("GHOST_PENALTY_FAC", xfluid_.ghost_penalty_fac_);
     eleparams.set("EOS_GP_PATTERN", xfluid_.eos_gp_pattern_);
 
+    eleparams.set("EOS_H_DEFINITION", xfluid_.definition_eos_h_);
+
     //------------------------------------------------------------
     // loop over row faces
 
@@ -977,6 +980,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
     eleparams.set("GHOST_PENALTY_FAC", xfluid_.ghost_penalty_fac_);
     eleparams.set("EOS_GP_PATTERN", xfluid_.eos_gp_pattern_);
 
+    eleparams.set("EOS_H_DEFINITION", xfluid_.definition_eos_h_);
     //------------------------------------------------------------
     RCP<Epetra_Vector> ale_residual_col = LINALG::CreateVector(*alediscret.DofColMap(),true);
 
@@ -1080,7 +1084,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
   if(countiter > -1) filename_base_vel << filename_base << "_" << countiter << "_"<< step << "_vel";
   else           filename_base_vel << filename_base << "_"<< step << "_vel";
   const std::string filename_vel = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_vel.str(), step, step_diff, screen_out, discret.Comm().MyPID());
-  cout << endl;
+  IO::cout << IO::endl;
   std::ofstream gmshfilecontent_vel(filename_vel.c_str());
   gmshfilecontent_vel.setf(std::ios::scientific,std::ios::floatfield);
   gmshfilecontent_vel.precision(16);
@@ -1089,7 +1093,7 @@ void FLD::XFluidFluid::XFluidFluidState::GmshOutput( DRT::Discretization & discr
   if(countiter > -1) filename_base_press << filename_base << "_" << countiter << "_" << step << "_press";
   else           filename_base_press << filename_base << "_"<< step << "_press";
   const std::string filename_press = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filename_base_press.str(), step, step_diff, screen_out, discret.Comm().MyPID());
-  cout << endl;
+  IO::cout << IO::endl;
   std::ofstream gmshfilecontent_press(filename_press.c_str());
   gmshfilecontent_press.setf(std::ios::scientific,std::ios::floatfield);
   gmshfilecontent_press.precision(16);
@@ -1800,7 +1804,8 @@ FLD::XFluidFluid::XFluidFluid(
   edge_based_        = (params_->sublist("STABILIZATION").get<string>("STABTYPE")=="edge_based");
   ghost_penalty_     = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB");
   ghost_penalty_fac_ = params_xf_stab.get<double>("GHOST_PENALTY_FAC", 0.0);
-  eos_gp_pattern_    = DRT::INPUT::IntegralValue<INPAR::XFEM::EOS_GP_Pattern>(params_xf_stab,"EOS_GP_PATTERN");
+  eos_gp_pattern_    = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_GP_Pattern>(params_->sublist("STABILIZATION"),"EOS_GP_PATTERN");
+  definition_eos_h_ =  DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_ElementLength>(params_->sublist("STABILIZATION"),"EOS_H_DEFINITION");
 
   velgrad_interface_stab_ =  (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"VELGRAD_INTERFACE_STAB");
 
@@ -1834,30 +1839,30 @@ FLD::XFluidFluid::XFluidFluid(
   {
   case INPAR::XFEM::BoundaryTypeSigma:
     element_name = "BELE3"; // use 3 dofs, (REMARK: also BELE3_4 with Xfluid-Mortaring possible, but more expensive!)
-    std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeSigma" << END_COLOR << endl;
+    IO::cout << "XFEM interface method: BoundaryTypeSigma" << IO::endl;
     if(coupling_strategy_ != INPAR::XFEM::Xfluid_Sided_Mortaring)
       dserror("choose Xfluid_Sided_Mortaring for BoundaryTypeSigma");
     action_ = "coupling stress based";
     break;
   case INPAR::XFEM::BoundaryTypeNitsche:
     element_name = "BELE3_4"; // use 4 dofs
-    std::cout << YELLOW_LIGHT << "XFEM interface method: BoundaryTypeNitsche, ";
+    IO::cout << "XFEM interface method: BoundaryTypeNitsche, ";
     if(coupling_strategy_ == INPAR::XFEM::Two_Sided_Mortaring)
-      std::cout << RED_LIGHT << "ATTENTION: choose reasonable weights (k1,k2) for mortaring" << END_COLOR << endl;
+      IO::cout << "ATTENTION: choose reasonable weights (k1,k2) for mortaring" << IO::endl;
     if(coupling_strategy_ == INPAR::XFEM::Two_Sided_Mortaring)
     {
       action_ = "coupling nitsche two sided";
-      std::cout << YELLOW_LIGHT << "Coupling Nitsche Two-Sided" << END_COLOR << endl;
+      IO::cout << "Coupling Nitsche Two-Sided" << IO::endl;
     }
     if(coupling_strategy_ == INPAR::XFEM::Xfluid_Sided_Mortaring)
     {
       action_ = "coupling nitsche xfluid sided";
-      std::cout << YELLOW_LIGHT << "Coupling Nitsche Xfluid-Sided" << END_COLOR << endl;
+      IO::cout << "Coupling Nitsche Xfluid-Sided" << IO::endl;
     }
     if(coupling_strategy_ == INPAR::XFEM::Embedded_Sided_Mortaring)
     {
       action_ = "coupling nitsche embedded sided";
-      std::cout << YELLOW_LIGHT << "Coupling Nitsche Embedded-Sided" << END_COLOR << endl;
+      IO::cout << "Coupling Nitsche Embedded-Sided" << IO::endl;
     }
     break;
   case INPAR::XFEM::BoundaryTypeNeumann:
@@ -1960,7 +1965,7 @@ FLD::XFluidFluid::XFluidFluid(
   boundarydis_->ReplaceDofSet(newdofset); // do not call this with true!!
   boundarydis_->FillComplete();
 
-  DRT::UTILS::PrintParallelDistribution(*boundarydis_);
+  //DRT::UTILS::PrintParallelDistribution(*boundarydis_);
 
   // prepare embedded dis for Nitsche-Coupling-Type Ale-Sided
   // this also needed for error calculation method
@@ -2274,22 +2279,22 @@ void FLD::XFluidFluid::IntegrateFluidFluid()
   {
     Teuchos::ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
 
-    cout << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
-    cout << "                             " << stabparams->get<string>("TDS")<< "\n";
-    cout << "\n";
+    IO::cout << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << IO::endl;
+    IO::cout << "                             " << stabparams->get<string>("TDS")<< IO::endl;
+    IO::cout << "\n";
 
     if (timealgo_!=INPAR::FLUID::timeint_stationary)
-      cout <<  "                             " << "Tau Type        = " << stabparams->get<string>("DEFINITION_TAU") <<"\n";
+      IO::cout <<  "                             " << "Tau Type        = " << stabparams->get<string>("DEFINITION_TAU") <<IO::endl;
     else
     {
       if(stabparams->get<string>("DEFINITION_TAU") == "Barrenechea_Franca_Valentin_Wall" or
           stabparams->get<string>("DEFINITION_TAU") == "Barrenechea_Franca_Valentin_Wall_wo_dt")
-        cout <<  "                             " << "Tau             = " << "Barrenechea_Franca_Valentin_Wall_wo_dt" << "\n";
+        IO::cout <<  "                             " << "Tau             = " << "Barrenechea_Franca_Valentin_Wall_wo_dt" << IO::endl;
       else if (stabparams->get<string>("DEFINITION_TAU") == "Bazilevs_wo_dt" or
           stabparams->get<string>("DEFINITION_TAU") == "Bazilevs")
-        cout <<  "                             " << "Tau             = " << "Bazilevs_wo_dt" << "\n";
+        IO::cout <<  "                             " << "Tau             = " << "Bazilevs_wo_dt" << IO::endl;
     }
-    cout << "\n";
+    IO::cout << IO::endl;
 
     if(stabparams->get<string>("TDS") == "quasistatic")
     {
@@ -2298,14 +2303,14 @@ void FLD::XFluidFluid::IntegrateFluidFluid()
         dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
       }
     }
-    cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
-    cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
-    cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
-    cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
-    cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
-    cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
-    cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
-    cout << "\n";
+    IO::cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<IO::endl;
+    IO::cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<IO::endl;
+    IO::cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<IO::endl;
+    IO::cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<IO::endl;
+    IO::cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<IO::endl;
+    IO::cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<IO::endl;
+    IO::cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<IO::endl;
+    IO::cout << IO::endl;
 
     if(stabparams->get<string>("VSTAB") != "no_vstab")              dserror("check VSTAB for XFEM");
     if(stabparams->get<string>("CROSS-STRESS") != "no_cross")       dserror("check CROSS-STRESS for XFEM");
@@ -2342,16 +2347,16 @@ void FLD::XFluidFluid::TimeLoop()
       switch (timealgo_)
       {
       case INPAR::FLUID::timeint_one_step_theta:
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E   One-Step-Theta    STEP = %4d/%4d \n",
-              time_,maxtime_,dta_,step_,stepmax_);
+        IO::cout << "TIME: " << time_ << "/"<< maxtime_ << " " << "DT =  " << dta_ << "   One-Step-Theta    STEP =  "
+        		 << step_<< "/"<< stepmax_ << IO::endl;
         break;
       case INPAR::FLUID::timeint_afgenalpha:
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E  Generalized-Alpha  STEP = %4d/%4d \n",
-               time_,maxtime_,dta_,step_,stepmax_);
+          IO::cout << "TIME: " << time_ << "/"<< maxtime_ << " " << "DT =  " << dta_ << "   Generalized-Alpha    STEP =  "
+          		 << step_<< "/"<< stepmax_ << IO::endl;
         break;
       case INPAR::FLUID::timeint_bdf2:
-        printf("TIME: %11.4E/%11.4E  DT = %11.4E       BDF2          STEP = %4d/%4d \n",
-               time_,maxtime_,dta_,step_,stepmax_);
+          IO::cout << "TIME: " << time_ << "/"<< maxtime_ << " " << "DT =  " << dta_ << "   BDF2      STEP =  "
+          		 << step_<< "/"<< stepmax_ << IO::endl;
         break;
       default:
         dserror("parameter out of range: IOP\n"); break;
@@ -2423,7 +2428,7 @@ void FLD::XFluidFluid::SolveStationaryProblemFluidFluid()
     // -------------------------------------------------------------------
     if (myrank_==0)
     {
-      printf("Stationary Fluid Solver - STEP = %4d/%4d \n",step_,stepmax_);
+    	IO::cout <<  "Stationary Fluid Solver - STEP = " << step_ << "/" << stepmax_ << IO::endl;
     }
 
     SetElementTimeParameter();
@@ -2488,7 +2493,7 @@ void FLD::XFluidFluid::CheckXFluidFluidParams( Teuchos::ParameterList& params_xf
 
     // convective stabilization parameter (scaling factor and stabilization factor)
     if (conv_stab_fac_ != 0.0 and conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_none)
-      std::cout << RED_LIGHT << "/!\\ WARNING: CONV_STAB_FAC != 0.0 has no effect for CONV_STAB_SCALING == none" << END_COLOR << endl;
+      IO::cout << "/!\\ WARNING: CONV_STAB_FAC != 0.0 has no effect for CONV_STAB_SCALING == none" << IO::endl;
 
     if (conv_stab_scaling_ == INPAR::XFEM::ConvStabScaling_none and conv_stab_fac_ != 0.0)
       dserror("For ConvStabScaling_none the conv_stab_fac should be zero!");
@@ -2502,19 +2507,19 @@ void FLD::XFluidFluid::CheckXFluidFluidParams( Teuchos::ParameterList& params_xf
     if (presscoupling_interface_stab_ and action_ != "coupling nitsche embedded sided")
       dserror("PRESSCOUPLING_INTERFACE_STAB just for embedded sided Nitsche-Coupling!");
 
-    cout << endl;
-    cout << "XFEM Stabilization parameters: " << endl;
-    cout << "                               " << endl;
-    cout << "                                 GHOST_PENALTY               : " << params_xf_stab.get<string>("GHOST_PENALTY_STAB")    << endl;
-    cout << "                                 GHOST_PENALTY_FAC           : " << ghost_penalty_fac_ << endl;
-    cout << "                                 INFLOW_CONV_STAB_STRATEGY   : " << params_xf_stab.get<string>("CONV_STAB_SCALING") << endl;
-    cout << "                                 INFLOW_CONV_STAB_FAC        : " << conv_stab_fac_ << endl;
-    cout << "                                 VELGRAD_INTERFACE_STAB      : " << params_xf_stab.get<string>("VELGRAD_INTERFACE_STAB")<< endl;
-    cout << "                                 PRESSCOUPLING_INTERFACE_STAB: " << params_xf_stab.get<string>("PRESSCOUPLING_INTERFACE_STAB")<< endl;
-    cout << "                                 PRESSCOUPLING_INTERFACE_FAC : " << presscoupling_interface_fac_ << endl;
-    cout << "                                 NITSCHE_STAB_FAC            : " << visc_stab_fac_ << endl;
-    cout << "                                 VISC_STAB_HK                : " << params_xf_stab.get<string>("VISC_STAB_HK")  << endl;
-    cout << endl;
+    IO::cout << IO::endl;
+    IO::cout << "XFEM Stabilization parameters: " << IO::endl;
+    IO::cout << "                               " << IO::endl;
+    IO::cout << "                                 GHOST_PENALTY               : " << params_xf_stab.get<string>("GHOST_PENALTY_STAB")    << IO::endl;
+    IO::cout << "                                 GHOST_PENALTY_FAC           : " << ghost_penalty_fac_ << IO::endl;
+    IO::cout << "                                 INFLOW_CONV_STAB_STRATEGY   : " << params_xf_stab.get<string>("CONV_STAB_SCALING") << IO::endl;
+    IO::cout << "                                 INFLOW_CONV_STAB_FAC        : " << conv_stab_fac_ << IO::endl;
+    IO::cout << "                                 VELGRAD_INTERFACE_STAB      : " << params_xf_stab.get<string>("VELGRAD_INTERFACE_STAB")<< IO::endl;
+    IO::cout << "                                 PRESSCOUPLING_INTERFACE_STAB: " << params_xf_stab.get<string>("PRESSCOUPLING_INTERFACE_STAB")<< IO::endl;
+    IO::cout << "                                 PRESSCOUPLING_INTERFACE_FAC : " << presscoupling_interface_fac_ << IO::endl;
+    IO::cout << "                                 NITSCHE_STAB_FAC            : " << visc_stab_fac_ << IO::endl;
+    IO::cout << "                                 VISC_STAB_HK                : " << params_xf_stab.get<string>("VISC_STAB_HK")  << IO::endl;
+    IO::cout << IO::endl;
 
   return;
   }
@@ -2584,7 +2589,7 @@ void FLD::XFluidFluid::PrepareNonlinearSolve()
 void FLD::XFluidFluid::PrepareMonolithicFixedAle()
 {
   if (bgdis_->Comm().MyPID() == 0)
-    cout << "Update monolithic fluid solution.. " << endl;
+    IO::cout << "Update monolithic fluid solution.. " << IO::endl;
 
   // for BDF2, theta is set by the time-step sizes, 2/3 for const. dtp_
   if (timealgo_==INPAR::FLUID::timeint_bdf2) theta_ = (dta_+dtp_)/(2.0*dta_ + dtp_);
@@ -2626,8 +2631,8 @@ void FLD::XFluidFluid::NonlinearSolve()
 
   if (myrank_ == 0)
   {
-    printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
-    printf("|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc ---|\n");
+    IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+" << IO::endl
+             << "|- step/max -|- tol      [norm] -|-- vel-res ---|-- pre-res ---|-- vel-inc ---|-- pre-inc ---|" << IO::endl;
   }
 
 //    const int numcolele = bgdis_->NumMyColElements();
@@ -2769,16 +2774,19 @@ void FLD::XFluidFluid::NonlinearSolve()
         - convergence check is not required (we solve at least once!)    */
     if (itnum == 1)
     {
+      double min = 1.0e19;
+      double max = 0.0;
+      bgdis_->Comm().MinAll(&dtele_,&min,1);
+      bgdis_->Comm().MaxAll(&dtele_,&max,1);
       if (myrank_ == 0)
       {
-        printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   |      --      |      --      |",
-               itnum,itemax,ittol,vresnorm,presnorm);
-        printf(" (      --     ,te=%10.3E",dtele_);
-        if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
-        {
-          printf(",tf=%10.3E",dtfilter_);
-        }
-        printf(")\n");
+        IO::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax_ << "   | "
+        		 << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
+                 << std::setw(10) << std::setprecision(3) << std::scientific << vresnorm << "   | "
+                 << std::setw(10) << std::setprecision(3) << std::scientific << presnorm << "   |      --      |      --      | (      --     ,te_min="
+                 << std::setw(10) << std::setprecision(3) << std::scientific << min << ",te_max="
+                 << std::setw(10) << std::setprecision(3) << std::scientific << max << ")";
+        IO::cout << IO::endl;
       }
     }
     /* ordinary case later iteration steps:
@@ -2793,18 +2801,20 @@ void FLD::XFluidFluid::NonlinearSolve()
           incvelnorm_L2/velnorm_L2 <= ittol and incprenorm_L2/prenorm_L2 <= ittol)
       {
         stopnonliniter=true;
+        double min = 1.0e19;
+        double max = 0.0;
         if (myrank_ == 0)
         {
-          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-                 itnum,itemax,ittol,vresnorm,presnorm,
-                 incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-          if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
-          {
-            printf(",tf=%10.3E",dtfilter_);
-          }
-          printf(")\n");
-          printf("+------------+-------------------+--------------+--------------+--------------+--------------+\n");
+          IO::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax_ << "   | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << vresnorm << "   | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << presnorm << "   | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << incvelnorm_L2/velnorm_L2 << "   | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << incprenorm_L2/prenorm_L2 << "   | (ts="
+                   << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve_ << ",te_min="
+                   << std::setw(10) << std::setprecision(3) << std::scientific << min << ",te_max="
+                   << std::setw(10) << std::setprecision(3) << std::scientific << max << ")" << IO::endl;
+          IO::cout << "+------------+-------------------+--------------+--------------+--------------+--------------+" << IO::endl;
 
           FILE* errfile = params_->get<FILE*>("err file",NULL);
           if (errfile!=NULL)
@@ -2817,19 +2827,25 @@ void FLD::XFluidFluid::NonlinearSolve()
         break;
       }
       else // if not yet converged
+      {
+    	double min = 1.0e19;
+        double max = 0.0;
+        bgdis_->Comm().MinAll(&dtele_,&min,1);
+        bgdis_->Comm().MaxAll(&dtele_,&max,1);
+
         if (myrank_ == 0)
         {
-          printf("|  %3d/%3d   | %10.3E[L_2 ]  | %10.3E   | %10.3E   | %10.3E   | %10.3E   |",
-              itnum,itemax,ittol,vresnorm,presnorm,
-              incvelnorm_L2/velnorm_L2,incprenorm_L2/prenorm_L2);
-          printf(" (ts=%10.3E,te=%10.3E",dtsolve_,dtele_);
-          if (turbmodel_==INPAR::FLUID::dynamic_smagorinsky or turbmodel_ == INPAR::FLUID::scale_similarity)
-          {
-            printf(",tf=%10.3E",dtfilter_);
-          }
-          printf(")");
-          cout << endl;
+          IO::cout << "|  " << std::setw(3) << itnum << "/" << std::setw(3) << itemax_ << "   | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << ittol << "[L_2 ]  | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << vresnorm << "   | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << presnorm << "   | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << incvelnorm_L2/velnorm_L2 << "   | "
+                   << std::setw(10) << std::setprecision(3) << std::scientific << incprenorm_L2/prenorm_L2 << "   | (ts="
+                   << std::setw(10) << std::setprecision(3) << std::scientific << dtsolve_ << ",te_min="
+                   << std::setw(10) << std::setprecision(3) << std::scientific << min << ",te_max="
+                   << std::setw(10) << std::setprecision(3) << std::scientific << max << ")" << IO::endl;
         }
+      }
     }
 
     // warn if itemax is reached without convergence, but proceed to
@@ -3254,7 +3270,7 @@ void FLD::XFluidFluid::TimeUpdate()
 
     if(myrank_==0)
     {
-      cout << "time update for subscales";
+      IO::cout << "time update for subscales";
     }
 
     // call elements to calculate system matrix and rhs and assemble
@@ -3292,7 +3308,7 @@ void FLD::XFluidFluid::TimeUpdate()
 
     if(myrank_==0)
     {
-      cout << "("<<Teuchos::Time::wallTime()-tcpu<<")\n";
+      IO::cout << "("<<Teuchos::Time::wallTime()-tcpu<<")\n";
     }
   }
 
@@ -3467,7 +3483,7 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
     else if(xfem_timeintapproach_ == INPAR::XFEM::Xff_TimeInt_ProjIfMoved and samemaps_)
     {
       // we use the old velocity as start value
-      cout << "samemaps ..." << endl;
+      IO::cout << "samemaps ..." << IO::endl;
       state_->velnp_->Update(1.0,*staten_->velnp_,0.0);
       state_->veln_->Update(1.0,*staten_->veln_,0.0);
       state_->velnm_->Update(1.0,*staten_->velnm_,0.0);
@@ -3483,7 +3499,7 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
   {
     // set the embedded state vectors to the new ale displacement
     // before updating the vectors of the old time step
-    cout << "Interpolate the embedded state vectors ... " << endl;
+    IO::cout << "Interpolate the embedded state vectors ... " << IO::endl;
     xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->velnp_, alevelnp_, alevelnp_, aledispnp_, disp);
     xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_,staten_->veln_ , aleveln_ , aleveln_ , aledispnp_, disp);
     xfluidfluid_timeint_->SetNewEmbStatevector(bgdis_, staten_->accnp_, aleaccnp_, aleaccnp_, aledispnp_, disp);
@@ -3833,7 +3849,7 @@ void FLD::XFluidFluid::Output()
       if(gdofs_current.size() == 0); // cout << "no dofs available->hole" << endl;
       else if(gdofs_current.size() == gdofs_original.size()); //cout << "same number of dofs available" << endl;
       else if(gdofs_current.size() > gdofs_original.size());  //cout << "more dofs available->decide" << endl;
-      else cout << "decide which dofs can be copied and which have to be set to zero" << endl;
+      else IO::cout << "decide which dofs can be copied and which have to be set to zero" << IO::endl;
 
 
       if(gdofs_current.size() == 0) //void
@@ -3970,7 +3986,7 @@ void FLD::XFluidFluid::Output()
   // write restart
   if (write_restart_data)
   {
-    cout << "---  write restart... " << endl;
+    IO::cout << "---  write restart... " << IO::endl;
 
     // velocity/pressure vector
     output_->WriteVector("velnp_bg",state_->velnp_);
@@ -4911,34 +4927,34 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
     {
       {
         cout.precision(8);
-        cout << endl << "---- error norm for analytical solution Nr. "
+        IO::cout << IO::endl << "---- error norm for analytical solution Nr. "
              <<  DRT::INPUT::get<INPAR::FLUID::CalcError>(*params_,"calculate error")
-             <<  " ----------" << endl;
-        cout << "-------------- domain error norms (background)------------"       << endl;
-        cout << "|| u - u_b ||_L2(Omega)                        =  " << dom_bg_err_vel_L2                    << endl;
-        cout << "|| grad( u - u_b ) ||_L2(Omega)                =  " << dom_bg_err_vel_H1_semi               << endl;
-        cout << "|| u - u_b ||_H1(Omega)                        =  " << dom_bg_err_vel_H1                    << endl;
-        cout << "|| p - p_b ||_L2(Omega)                        =  " << dom_bg_err_pre_L2                    << endl;
-        cout << "-------------- domain error norms (embedded)  ------------"       << endl;
-        cout << "|| u - u_e ||_L2(Omega)                        =  " << dom_emb_err_vel_L2                   << endl;
-        cout << "|| grad( u_ - u_h ) ||_L2(Omega)               =  " << dom_emb_err_vel_H1_semi              << endl;
-        cout << "|| u - u_e ||_H1(Omega)                        =  " << dom_emb_err_vel_H1                   << endl;
-        cout << "|| p - p_e ||_L2(Omega)                        =  " << dom_emb_err_pre_L2                   << endl;
-        cout << "----viscosity-scaled domain error norms (background)------"       << endl;
-        cout << "|| nu^(+1/2) grad( u - u_b ) ||_L2(Omega)      =  " << dom_bg_err_vel_H1_semi_nu_scaled     << endl;
-        cout << "|| nu^(-1/2) (p - p_b) ||_L2(Omega)            =  " << dom_bg_err_pre_L2_nu_scaled          << endl;
-        cout << "----viscosity-scaled domain error norms (embedded) ------"       << endl;
-        cout << "|| nu^(+1/2) grad( u - u_e ) ||_L2(Omega)      =  " << dom_emb_err_vel_H1_semi_nu_scaled     << endl;
-        cout << "|| nu^(-1/2) (p - p_e) ||_L2(Omega)            =  " << dom_emb_err_pre_L2_nu_scaled          << endl;
-        cout << "---------------------------------------------------------"       << endl;
-        cout << "-------------- interface/boundary error norms -----------"       << endl;
-        cout << "|| nu^(+1/2) (u_b - u_e) ||_H1/2(Gamma)            =  " << interf_err_Honehalf                << endl;
-        cout << "|| nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)   =  " << interf_err_Hmonehalf_u             << endl;
-        cout << "|| nu^(-1/2) (p_b - p_e)*n ||_H-1/2(Gamma)         =  " << interf_err_Hmonehalf_p             << endl;
-        cout << "---------------------------------------------------------"       << endl;
-        cout << "-------------- Error on Functionals from solution  ------------"       << endl;
-        cout << " | sin(x) ( u,x - u,x exact ) | (background)        = " << (*glob_dom_norms_bg)[6]             <<endl;
-        cout << " | sin(x) ( u,x - u,x exact ) | (embedded)          = " << (*glob_dom_norms_emb)[6]            <<endl;
+             <<  " ----------" << IO::endl;
+        IO::cout << "-------------- domain error norms (background)------------"        << IO::endl;
+        IO::cout << "|| u - u_b ||_L2(Omega)                        =  " << dom_bg_err_vel_L2                << IO::endl;
+        IO::cout << "|| grad( u - u_b ) ||_L2(Omega)                =  " << dom_bg_err_vel_H1_semi           << IO::endl;
+        IO::cout << "|| u - u_b ||_H1(Omega)                        =  " << dom_bg_err_vel_H1                << IO::endl;
+        IO::cout << "|| p - p_b ||_L2(Omega)                        =  " << dom_bg_err_pre_L2                << IO::endl;
+        IO::cout << "-------------- domain error norms (embedded)  ------------"       << IO::endl;
+        IO::cout << "|| u - u_e ||_L2(Omega)                        =  " << dom_emb_err_vel_L2               << IO::endl;
+        IO::cout << "|| grad( u_ - u_h ) ||_L2(Omega)               =  " << dom_emb_err_vel_H1_semi          << IO::endl;
+        IO::cout << "|| u - u_e ||_H1(Omega)                        =  " << dom_emb_err_vel_H1               << IO::endl;
+        IO::cout << "|| p - p_e ||_L2(Omega)                        =  " << dom_emb_err_pre_L2               << IO::endl;
+        IO::cout << "----viscosity-scaled domain error norms (background)------"       << IO::endl;
+        IO::cout << "|| nu^(+1/2) grad( u - u_b ) ||_L2(Omega)      =  " << dom_bg_err_vel_H1_semi_nu_scaled << IO::endl;
+        IO::cout << "|| nu^(-1/2) (p - p_b) ||_L2(Omega)            =  " << dom_bg_err_pre_L2_nu_scaled      << IO::endl;
+        IO::cout << "----viscosity-scaled domain error norms (embedded) ------"       << IO::endl;
+        IO::cout << "|| nu^(+1/2) grad( u - u_e ) ||_L2(Omega)      =  " << dom_emb_err_vel_H1_semi_nu_scaled<< IO::endl;
+        IO::cout << "|| nu^(-1/2) (p - p_e) ||_L2(Omega)            =  " << dom_emb_err_pre_L2_nu_scaled     << IO::endl;
+        IO::cout << "---------------------------------------------------------"       << IO::endl;
+        IO::cout << "-------------- interface/boundary error norms -----------"       << IO::endl;
+        IO::cout << "|| nu^(+1/2) (u_b - u_e) ||_H1/2(Gamma)            =  " << interf_err_Honehalf          << IO::endl;
+        IO::cout << "|| nu^(+1/2) grad( u_b - u_e )*n ||_H-1/2(Gamma)   =  " << interf_err_Hmonehalf_u       << IO::endl;
+        IO::cout << "|| nu^(-1/2) (p_b - p_e)*n ||_H-1/2(Gamma)         =  " << interf_err_Hmonehalf_p       << IO::endl;
+        IO::cout << "---------------------------------------------------------"       << IO::endl;
+        IO::cout << "-------------- Error on Functionals from solution  ------------"       << IO::endl;
+        IO::cout << " | sin(x) ( u,x - u,x exact ) | (background)        = " << (*glob_dom_norms_bg)[6]      << IO::endl;
+        IO::cout << " | sin(x) ( u,x - u,x exact ) | (embedded)          = " << (*glob_dom_norms_emb)[6]     << IO::endl;
       }
 
       // append error of the last time step to the error file

@@ -43,7 +43,7 @@ Maintainer: Georg Hammerl
 #include "../drt_io/io.H"
 #include "../linalg/linalg_solver.H"
 
-
+#include "../drt_io/io_pstream.H"
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 ADAPTER::Structure::~Structure()
@@ -326,7 +326,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
       const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
 
-      if ((actdis->Comm()).MyPID()==0) cout << "Using StructureNOXCorrectionWrapper()..." << endl;
+      if ((actdis->Comm()).MyPID()==0) IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
 
       if (tmpstr->HaveConstraint())
       {

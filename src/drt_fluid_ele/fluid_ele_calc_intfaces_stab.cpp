@@ -36,6 +36,8 @@ Maintainer: Benedikt Schott
 
 #include "../drt_lib/drt_globalproblem.H"
 
+#include "../drt_inpar/inpar_fluid.H"
+
 #include "../drt_cut/cut_position.H"
 
 #include "../drt_mat/newtonianfluid.H"
@@ -233,6 +235,8 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   {
     dserror("do not call EvaluateEdgeBasedStabilization if no stab is required!");
   }
+
+  INPAR::FLUID::EOS_ElementLength eos_element_length = params.get<INPAR::FLUID::EOS_ElementLength>("eos_he_definition");
 
   if (fldpara_->TimeAlgo()!=INPAR::FLUID::timeint_one_step_theta and fldpara_->TimeAlgo()!=INPAR::FLUID::timeint_stationary)
       dserror("Other time integration schemes than OST and Stationary currently not supported for edge-based stabilization!");
@@ -441,7 +445,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   double patch_hk = 0.0;
 
   // compute the element length w.r.t master and slave element
-  compute_patch_hk(patch_hk, pele, nele);
+  compute_patch_hk(patch_hk, pele, nele, intface, eos_element_length);
 
   // create object for computing Gaussian point dependent stabilization parameters
   FluidEdgeBasedStab EdgeBasedStabilization(patch_hk);
@@ -2563,7 +2567,9 @@ template <DRT::Element::DiscretizationType distype,
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::compute_patch_hk(
             double &   patch_hk,
             Fluid*     master,
-            Fluid*     slave   )
+            Fluid*     slave,
+            DRT::ELEMENTS::FluidIntFace*       intface,
+            INPAR::FLUID::EOS_ElementLength    eos_element_length)
 {
 
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: element length" );
@@ -2580,122 +2586,291 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
   // numbering of slave's surfaces/lines w.r.t parent element
   std::vector< std::vector<int> > s_connectivity;
 
+  // convvectivty of lines to surfaces
+  std::vector< std::vector<int> > connectivity_line_surf;
+
+  // convvectivty of lines to nodes
+  std::vector< std::vector<int> > connectivity_line_nodes;
+
   if(nsd_ == 3)
   {
     m_connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(pdistype);
+    s_connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(pdistype);
+    connectivity_line_surf = DRT::UTILS::getEleNodeNumbering_lines_surfaces(pdistype);
+    connectivity_line_nodes = DRT::UTILS::getEleNodeNumberingLines(pdistype);
 
-    for(int p_surf=0; p_surf<master->NumSurface(); p_surf++)
+    // Max distance to oppositve surface
+    if(eos_element_length == INPAR::FLUID::EOS_he_max_dist_to_opp_surf)
     {
-       unsigned int nnode_psurf = m_connectivity[p_surf].size(); // this number changes for pyramids or wedges
+    	int masterlocalid = intface->SurfaceMasterNumber();
+    	int slavelocalid = intface->SurfaceSlaveNumber();
 
-       double h_e = 0.0;
+    	unsigned int nnode_psurf_m = m_connectivity[masterlocalid].size();
 
-       switch (nnode_psurf)
-       {
-       case 3: //tri3 surface
-         diameter2D<3>(true, m_connectivity[p_surf], h_e);
-         break;
-       case 4: // quad4 surface
-         diameter2D<4>(true, m_connectivity[p_surf], h_e);
-         break;
-       case 8: // quad8 surface
-         diameter2D<8>(true, m_connectivity[p_surf], h_e);
-         break;
-       default:
-         dserror("unknown number of nodes for surface of parent element"); break;
-       };
+    	// find the neighboring surfaces
+    	int p_surf_neighbor_m = 0;
+    	int p_surf_neighbor_s = 0;
+    	// find the connecting lines
+    	std::set<int> p_lines_m;
+    	std::set<int> p_lines_s;
+    	switch (nnode_psurf_m)
+    	{
+    	case 3: // tri3 surface
+    		FindOppositeSurface2D<3>(masterlocalid, p_surf_neighbor_m);
+    		FindOppositeSurface2D<3>(slavelocalid, p_surf_neighbor_s);
+    		FindConnectingLines2D<3>(connectivity_line_surf, masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
+    		break;
+    	case 4: // quad4 surface
+    		FindOppositeSurface2D<4>(masterlocalid, p_surf_neighbor_m);
+    		FindOppositeSurface2D<4>(slavelocalid, p_surf_neighbor_s);
+    		FindConnectingLines2D<4>(connectivity_line_surf, masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
+    		break;
+    	case 8: // quad8 surface
+    		FindOppositeSurface2D<8>(masterlocalid, p_surf_neighbor_m);
+    		FindOppositeSurface2D<8>(slavelocalid, p_surf_neighbor_s);
+    		FindConnectingLines2D<8>(connectivity_line_surf, masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
+    		break;
+    	default:
+    		dserror("unknown number of nodes for surface of parent element"); break;
+    	};
+    
+    	// map of the connecting lines to nodes
+    	std::map< int,std::vector<int> > p_lines_nodes_m;
+    	std::map< int,std::vector<int> > p_lines_nodes_s;
 
-       // take the longest surface diameter
-       patch_hk = std::max(patch_hk, h_e);
+    	for(std::set<int>::iterator iter = p_lines_m.begin(); iter!= p_lines_m.end(); iter++)
+    		p_lines_nodes_m[*iter] = connectivity_line_nodes.at(*iter);
 
+    	for(std::set<int>::iterator iter = p_lines_s.begin(); iter!= p_lines_s.end(); iter++)
+    		p_lines_nodes_s[*iter] = connectivity_line_nodes.at(*iter);
+
+    	// find the distance for master element
+    	double h_e = 0.0;
+    	switch (nnode_psurf_m)
+    	{
+    	case 3: //tri3 surface
+    		distance2D<3>(true, p_lines_nodes_m, h_e);
+    		break;
+    	case 4: // quad4 surface
+    		distance2D<4>(true, p_lines_nodes_m, h_e);
+    		break;
+    	case 8: // quad8 surface
+    		distance2D<4>(true, p_lines_nodes_m, h_e);
+    		break;
+    	default:
+    		dserror("unknown number of nodes for surface of parent element"); break;
+    	};
+    	patch_hk = std::max(patch_hk, h_e);
+
+    	h_e = 0.0;
+
+    	// find the distance for slave element
+    	unsigned int nnode_psurf_s = s_connectivity[slavelocalid].size();
+    	switch (nnode_psurf_s)
+    	{
+    	case 3: //tri3 surface
+    		distance2D<3>(false, p_lines_nodes_s, h_e);
+    		break;
+    	case 4: // quad4 surface
+    		distance2D<4>(false, p_lines_nodes_s, h_e);
+    		break;
+    	case 8: // quad8 surface (coming from hex20 element)
+    		distance2D<4>(false, p_lines_nodes_s, h_e);
+    		break;
+    	default:
+    		dserror("unknown number of nodes for surface of parent element"); break;
+    	};
+    	// take the longest distance to the other surface
+    	patch_hk = std::max(patch_hk, h_e);
     }
-
-    s_connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(ndistype);
-
-    for(int p_surf=0; p_surf<slave->NumSurface(); p_surf++)
+    // biggest surface
+    else if(eos_element_length == INPAR::FLUID::EOS_he_surf_with_max_diameter)
     {
-      unsigned int nnode_psurf = s_connectivity[p_surf].size(); // this number changes for pyramids or wedges
+    	for(int p_surf=0; p_surf<master->NumSurface(); p_surf++)
+    	{
+    		unsigned int nnode_psurf = m_connectivity[p_surf].size(); // this number changes for pyramids or wedges
 
-      double h_e = 0.0;
+    		double h_e = 0.0;
 
+    		switch (nnode_psurf)
+    		{
+    		case 3: //tri3 surface
+    			diameter2D<3>(true, m_connectivity[p_surf], h_e);
+    			break;
+    		case 4: // quad4 surface
+    			diameter2D<4>(true, m_connectivity[p_surf], h_e);
+    			break;
+    		case 8: // quad8 surface
+    			diameter2D<8>(true, m_connectivity[p_surf], h_e);
+    			break;
+    		default:
+    			dserror("unknown number of nodes for surface of parent element"); break;
+    		};
 
-      switch (nnode_psurf)
-      {
-      case 3: // tri3 surface
-        diameter2D<3>(false, s_connectivity[p_surf], h_e);
-        break;
-      case 4: // quad4 surface
-        diameter2D<4>(false, s_connectivity[p_surf], h_e);
-        break;
-      case 8: // quad8 surface
-        diameter2D<8>(false, s_connectivity[p_surf], h_e);
-        break;
-      default:
-        dserror("unknown number of nodes for surface of parent element"); break;
-      };
+    		// take the longest surface diameter
+    		patch_hk = std::max(patch_hk, h_e);
 
-      // take the longest surface diameter
-      patch_hk = std::max(patch_hk, h_e);
+    	}
+
+    	s_connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(ndistype);
+
+    	for(int p_surf=0; p_surf<slave->NumSurface(); p_surf++)
+    	{
+    		unsigned int nnode_psurf = s_connectivity[p_surf].size(); // this number changes for pyramids or wedges
+
+    		double h_e = 0.0;
+
+    		switch (nnode_psurf)
+    		{
+    		case 3: // tri3 surface
+    			diameter2D<3>(false, s_connectivity[p_surf], h_e);
+    			break;
+    		case 4: // quad4 surface
+    			diameter2D<4>(false, s_connectivity[p_surf], h_e);
+    			break;
+    		case 8: // quad8 surface
+    			diameter2D<8>(false, s_connectivity[p_surf], h_e);
+    			break;
+    		default:
+    			dserror("unknown number of nodes for surface of parent element"); break;
+    		};
+
+    		// take the longest surface diameter
+    		patch_hk = std::max(patch_hk, h_e);
+    	}
     }
 
   }
   else if(nsd_==2)
   {
-     m_connectivity = DRT::UTILS::getEleNodeNumberingLines(pdistype);
+	  m_connectivity = DRT::UTILS::getEleNodeNumberingLines(pdistype);
+	  connectivity_line_nodes = DRT::UTILS::getEleNodeNumberingLines(pdistype);
 
-     for(int p_line=0; p_line<master->NumLine(); p_line++)
-     {
-        unsigned int nnode_pline = m_connectivity[p_line].size(); // this number changes for pyramids or wedges
+	  if(eos_element_length == INPAR::FLUID::EOS_he_max_dist_to_opp_surf)
+	  {
 
-        double h_e = 0.0;
+		  int masterlocalid = intface->SurfaceMasterNumber();
+		  int slavelocalid = intface->SurfaceSlaveNumber();
 
-        switch (nnode_pline)
-        {
-        case 2: //line2 face
-          diameter1D<2>(true, m_connectivity[p_line], h_e);
-          break;
-        case 3: //line3 face
-          diameter1D<3>(true, m_connectivity[p_line], h_e);
-          break;
-        default:
-          dserror("unknown number of nodes for line of parent element"); break;
-        };
+		  // find the neighboring surfaces
+		  int p_surf_neighbor_m = 0;
+		  int p_surf_neighbor_s = 0;
+		  // find the connecting lines
+		  std::set<int> p_lines_m;
+		  std::set<int> p_lines_s;
 
-        // take the longest line diameter
-        patch_hk = std::max(patch_hk, h_e);
+		  switch(pdistype)
+		  {
+		  case DRT::Element::quad4:
+		  {
+			  FindOppositeSurface1D<4>(masterlocalid, p_surf_neighbor_m);
+			  FindOppositeSurface1D<4>(slavelocalid, p_surf_neighbor_s);
+			  FindConnectingLines1D<4>(masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
+			  break;
+		  }
+		  case DRT::Element::tri3:
+		  {
+			  FindOppositeSurface1D<3>(masterlocalid, p_surf_neighbor_m);
+			  FindOppositeSurface1D<3>(slavelocalid, p_surf_neighbor_s);
+			  FindConnectingLines1D<3>(masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
+			  break;
+		  }
+		  default:
+			  dserror("discretization type unknown!");
+		  }
 
-     }
+		  // map of the connecting lines to nodes
+		  std::map< int,std::vector<int> > p_lines_nodes_m;
+		  std::map< int,std::vector<int> > p_lines_nodes_s;
 
-     s_connectivity = DRT::UTILS::getEleNodeNumberingLines(ndistype);
+		  for(std::set<int>::iterator iter = p_lines_m.begin(); iter!= p_lines_m.end(); iter++)
+			  p_lines_nodes_m[*iter] = connectivity_line_nodes.at(*iter);
 
-     for(int p_line=0; p_line<slave->NumLine(); p_line++)
-     {
-       unsigned int nnode_pline = s_connectivity[p_line].size(); // this number changes for pyramids or wedges
+		  for(std::set<int>::iterator iter = p_lines_s.begin(); iter!= p_lines_s.end(); iter++)
+			  p_lines_nodes_s[*iter] = connectivity_line_nodes.at(*iter);
 
-       double h_e = 0.0;
+		  double h_e = 0.0;
 
+		  switch (pdistype)
+		  {
+		  case DRT::Element::quad4:
+			  distance1D<3>(true, p_lines_nodes_m, h_e);
+			  break;
+		  case DRT::Element::tri3:
+			  distance1D<4>(true, p_lines_nodes_m, h_e);
+			  break;
+		  default:
+			  dserror("unknown number of nodes for surface of parent element"); break;
+		  }
+		  patch_hk = std::max(patch_hk, h_e);
 
-       switch (nnode_pline)
-       {
-       case 2: // line2 face
-         diameter1D<2>(false, s_connectivity[p_line], h_e);
-         break;
-       case 3: // line3 face
-         diameter1D<3>(false, s_connectivity[p_line], h_e);
-         break;
+		  h_e = 0.0;
 
-       default:
-         dserror("unknown number of nodes for line of parent element"); break;
-       };
+		  switch (pdistype)
+		  {
+		  case DRT::Element::quad4:
+			  distance1D<3>(false, p_lines_nodes_s, h_e);
+			  break;
+		  case DRT::Element::tri3:
+			  distance1D<4>(false, p_lines_nodes_s, h_e);
+			  break;
+		  default:
+			  dserror("unknown number of nodes for surface of parent element"); break;
+		  }
+		  patch_hk = std::max(patch_hk, h_e);
+	  }
+	  else if(eos_element_length == INPAR::FLUID::EOS_he_surf_with_max_diameter)
+	  {
 
-       // take the longest line diameter
-       patch_hk = std::max(patch_hk, h_e);
-     }
+		  for(int p_line=0; p_line<master->NumLine(); p_line++)
+		  {
+			  unsigned int nnode_pline = m_connectivity[p_line].size(); // this number changes for pyramids or wedges
+
+			  double h_e = 0.0;
+
+			  switch (nnode_pline)
+			  {
+			  case 2: //line2 face
+				  diameter1D<2>(true, m_connectivity[p_line], h_e);
+				  break;
+			  case 3: //line3 face
+				  diameter1D<3>(true, m_connectivity[p_line], h_e);
+				  break;
+			  default:
+				  dserror("unknown number of nodes for line of parent element"); break;
+			  };
+
+			  // take the longest line diameter
+			  patch_hk = std::max(patch_hk, h_e);
+		   }
+		  s_connectivity = DRT::UTILS::getEleNodeNumberingLines(ndistype);
+
+		  for(int p_line=0; p_line<slave->NumLine(); p_line++)
+		  {
+			  unsigned int nnode_pline = s_connectivity[p_line].size(); // this number changes for pyramids or wedges
+
+			  double h_e = 0.0;
+
+			  switch (nnode_pline)
+			  {
+			  case 2: // line2 face
+				  diameter1D<2>(false, s_connectivity[p_line], h_e);
+				  break;
+			  case 3: // line3 face
+				  diameter1D<3>(false, s_connectivity[p_line], h_e);
+				  break;
+
+			  default:
+				  dserror("unknown number of nodes for line of parent element"); break;
+			  };
+
+			  // take the longest line diameter
+			  patch_hk = std::max(patch_hk, h_e);
+		  }
+	  }
   }
 
-
 }
-
 
 //-----------------------------------------------------------------
 //                          constructor

@@ -48,6 +48,8 @@ Maintainer: Ulrrich Kuettler
 #include "drt_discret.H"
 #include "drt_utils.H"
 
+#include "../drt_io/io_pstream.H"
+
 #include "../linalg/linalg_utils.H"
 
 // list of all dof sets
@@ -230,38 +232,38 @@ void DRT::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
       availspace = 0;
     }
 
-    cout << "All registered dofsets:" << endl;
+    IO::cout << "All registered dofsets:" << IO::endl;
 
     if (min[0] > 0)
-      cout << "| ";
+      IO::cout << "| ";
     for (unsigned int i = 0; i < min.size(); ++i)
     {
       // left bar
       if (i > 0 and max[i-1] > min[i])
-        cout << "X";
+    	IO::cout << "X";
       else
-        cout << "|";
+    	IO::cout << "|";
 
       // number
-      cout << left << std::setw(6) << min[i];
+      IO::cout << left << std::setw(6) << min[i];
       for (int j = 0; j < (int)(max[i]-min[i])*1.0*availspace/allmax; ++j)
-        cout << " ";
-      cout << right << std::setw(6) << max[i];
+    	 IO::cout << " ";
+      IO::cout << right << std::setw(6) << max[i];
 
       //right bar
       if (i+1 < min.size())
       {
         if (max[i]+1 < min[i+1])
-          cout << "| ";
+         IO::cout << "| ";
       }
       else
-        cout << "|";
+    	IO::cout << "|";
     }
 
-    cout << endl << "+";
+    IO::cout << IO::endl << "+";
     for (int i = 0; i < arrowlen; ++i)
-      cout << "-";
-    cout << "> DofGID" << endl;
+      IO::cout << "-";
+    IO::cout << "> DofGID" << IO::endl;
   }
   return;
 }

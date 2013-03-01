@@ -380,3 +380,14 @@ GEO::CUT::Edge * GEO::CUT::Point::CommonCutEdge( Side * side )
   return NULL;
 }
 
+std::ostream & operator<<( std::ostream & stream, GEO::CUT::Point & point )
+{
+  point.Print( stream );
+  return stream;
+}
+
+std::ostream & operator<<( std::ostream & stream, GEO::CUT::Point * point )
+{
+  point->Print( stream );
+  return stream;
+}

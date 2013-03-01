@@ -5,6 +5,8 @@
 
 #include "cut_line.H"
 
+#include "../drt_io/io_pstream.H"
+
 namespace GEO
 {
 
@@ -273,50 +275,6 @@ private:
   plain_volumecell_set cells_;
 };
 
-  inline std::ostream & operator<<( std::ostream & stream, Facet & f )
-  {
-    stream << "facet: {";
-    if ( f.IsTriangulated() )
-    {
-      const std::vector<std::vector<Point*> > & triangulation = f.Triangulation();
-      for ( std::vector<std::vector<Point*> >::const_iterator i=triangulation.begin();
-            i!=triangulation.end();
-            ++i )
-      {
-        const std::vector<Point*> & tri = *i;
-        stream << "{";
-        for ( std::vector<Point*>::const_iterator i=tri.begin(); i!=tri.end(); ++i )
-        {
-          Point * p = *i;
-          p->Print( stream );
-          stream << ",";
-        }
-        stream << "},";
-      }
-    }
-    else
-    {
-      const std::vector<Point*> & points = f.Points();
-      for ( std::vector<Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
-      {
-        Point * p = *i;
-        p->Print( stream );
-        stream << ",";
-      }
-      if ( f.HasHoles() )
-      {
-        const plain_facet_set & holes = f.Holes();
-        for ( plain_facet_set::const_iterator i=holes.begin(); i!=holes.end(); ++i )
-        {
-          Facet & h = **i;
-          stream << h;
-        }
-      }
-    }
-    stream << "}";
-    return stream;
-  }
-
   inline Facet * FindFacet( const plain_facet_set & facets, const std::vector<Point*> & side )
   {
     Facet * found = NULL;
@@ -406,5 +364,7 @@ inline void FindCommonFacets( Point * p1, Point * p2, Point * p3, Point * p4, pl
 
 }
 }
+
+std::ostream & operator<<( std::ostream & stream, GEO::CUT::Facet & f );
 
 #endif

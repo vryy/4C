@@ -25,6 +25,7 @@ Maintainer: Shadan Shahmiri
 #include "../drt_lib/drt_utils.H"
 #include "../drt_lib/drt_dofset_transparent_independent.H"
 #include "../drt_io/io_gmsh.H"
+#include "../drt_io/io_pstream.H"
 #include "../drt_cut/cut_boundingbox.H"
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_position.H"
@@ -152,7 +153,7 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
       }
       else
       {
-        cout << "  here ?! " <<  pos << " " <<  node->Id() <<  " numdof: " << bgdis->NumDof(node) << endl;
+        IO::cout << "  here ?! " <<  pos << " " <<  node->Id() <<  " numdof: " << bgdis->NumDof(node) << IO::endl;
       }
     }
     else if( bgdis->NumDof(node) != 0) // no xfem node
@@ -161,7 +162,7 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
       stdnodenp_[gid] = gdofs;
     }
     else
-      cout << " why here? " << "node "<<  node->Id()<< " " <<  bgdis->NumDof(node) <<  endl;
+      IO::cout << " why here? " << "node "<<  node->Id()<< " " <<  bgdis->NumDof(node) <<  IO::endl;
   }
 
 #ifdef PARALLEL
@@ -323,10 +324,11 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const R
     {
       vector<int> gdofsn = iterstn->second;
 
-      // Information
+#ifdef DEBUG
       if (iterstn->second.size()>4)
-        cout << RED_LIGHT << "INFO: more standard sets!!!!"<< "Node GID " << bgnode->Id() <<" size " <<
-          iterstn->second.size()  << END_COLOR << endl;
+        IO::cout << "INFO: more standard sets!!!!"<< "Node GID " << bgnode->Id() <<" size " <<
+          iterstn->second.size()  << IO::endl;
+#endif
 
 //      int numsets = bgdis->NumDof(bgnode)/4;
 //      if (numsets > 1)
@@ -375,10 +377,10 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const R
     {
 
       if( bgdis->NumDof(bgnode) > 0 )
-        cout << RED_LIGHT <<  "BUG:: in do nothig!!" << " Node GID " << bgnode->Id() <<  END_COLOR<< endl;
+        IO::cout << "BUG:: in do nothig!!" << " Node GID " << bgnode->Id() << IO::endl;
     }
     else
-      cout << "warum bin ich da?! " <<  bgdis->NumDof(bgnode)   << " " <<    bgnode->Id() <<  endl;
+      IO::cout << "warum bin ich da?! " <<  bgdis->NumDof(bgnode)   << " " <<    bgnode->Id() <<  IO::endl;
   }
 
 
@@ -515,22 +517,22 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(const RCP<DRT::Discretiz
       if ((iteren != enrichednoden_.end() and iterenp != enrichednodenp_.end())
           or ((iteren != enrichednoden_.end() and iterstnp != stdnodenp_.end())))
       {
-        cout << RED_LIGHT <<  "CHECK: Took enriched values !!" << " Node GID " << bgnode->Id() << END_COLOR<< endl;
+        IO::cout << "CHECK: Took enriched values !!" << " Node GID " << bgnode->Id() << IO::endl;
         vector<int> gdofsn = iteren->second;
 
         WriteValuestoBgStateVector(bgdis,bgnode,gdofsn,bgstatevnp,bgstatevn);
       }
       else
       {
-        cout << YELLOW_LIGHT << " Warning: No patch element found for the node " << bgnode->Id() ;
+        IO::cout << " Warning: No patch element found for the node " << bgnode->Id();
         if ((iterstn == stdnoden_.end() and iteren == enrichednoden_.end()) and iterstnp != stdnodenp_.end())
-          cout << YELLOW_LIGHT << " n:void -> n+1:std  " << END_COLOR<< endl;
+          IO::cout << " n:void -> n+1:std  " << IO::endl;
         else if (iteren != enrichednoden_.end() and iterenp != enrichednodenp_.end())
-          cout << YELLOW_LIGHT << " n:enriched -> n+1:enriched " << END_COLOR<< endl;
+          IO::cout << " n:enriched -> n+1:enriched " << IO::endl;
         else if (iteren != enrichednoden_.end() and iterstnp != stdnodenp_.end())
-          cout << YELLOW_LIGHT << " n:enriched -> n+1: std " << END_COLOR<< endl;
+          IO::cout << " n:enriched -> n+1: std " << IO::endl;
         else if ((iterstn == stdnoden_.end() and iteren == enrichednoden_.end()) and iterenp != enrichednodenp_.end())
-          cout << YELLOW_LIGHT << " n:void ->  n+1:enriched " << END_COLOR<< endl;
+          IO::cout << " n:void ->  n+1:enriched " << IO::endl;
       }
     }
   }// end of loop over bgnodes without history
@@ -557,9 +559,9 @@ void XFEM::XFluidFluidTimeIntegration::ReceiveBlock(vector<char>   & rblock,
   // receive from predecessor
   exporter.ReceiveAny(frompid,tag,rblock,length);
 
-// #ifdef DEBUG
-//   cout << "----receiving " << rblock.size() <<  " bytes: to proc " << myrank << " from proc " << frompid << endl;
-// #endif
+#ifdef DEBUG
+  IO::cout << "----receiving " << rblock.size() <<  " bytes: to proc " << myrank << " from proc " << frompid << IO::endl;
+#endif
 
   if(tag!=(myrank+numproc-1)%numproc)
   {
@@ -590,9 +592,9 @@ void XFEM::XFluidFluidTimeIntegration::SendBlock(vector<char>  & sblock  ,
   int         frompid=myrank;
   int         topid  =(myrank+1)%numproc;
 
-// #ifdef DEBUG
-//   cout << "----sending " << sblock.size() <<  " bytes: from proc " << myrank << " to proc " << topid << endl;
-// #endif
+#ifdef DEBUG
+   IO::cout << "----sending " << sblock.size() <<  " bytes: from proc " << myrank << " to proc " << topid << IO::endl;
+#endif
 
   exporter.ISend(frompid,topid,
                  &(sblock[0]),sblock.size(),
@@ -708,11 +710,10 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
       //dofsets vorhanden sind
 
       // Information
+#ifdef DEBUG
       if (iterstn->second.size()>4)
-        cout << RED_LIGHT << " INFO: more standard sets!!!! "<< "Node GID " << bgnode->Id() << END_COLOR << endl;
-
-//       if (numsets > 1)
-//         cout << GREEN_LIGHT << "Info: more dofsets in transfer.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
+    	  IO::cout << " INFO: more standard sets!!!! "<< "Node GID " << bgnode->Id() << IO::endl;
+#endif
 
       WriteValuestoBgStateVector(bgdis,bgnode,gdofsn,bgstatevnp,bgstatevn);
 
@@ -755,7 +756,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
 #ifdef DOFSETS_NEW
       int numsets = bgdis->NumDof(bgnode)/4;
       if (numsets > 1)
-        cout << RED_LIGHT << "ghost-fluid-approach just available for one dofset!" << endl;
+        IO::cout << "ghost-fluid-approach just available for one dofset!" << IO::endl;
 
       vector<int> gdofsn = iteren->second;
       WriteValuestoBgStateVector(bgdis,bgnode,gdofsn,bgstatevnp,bgstatevn);
@@ -774,11 +775,11 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
     {
 
       if( bgdis->NumDof(bgnode) > 0 )
-        cout << RED_LIGHT <<  "BUG:: in do nothig!!" << " Node GID " << bgnode->Id() <<  END_COLOR<< endl;
+        IO::cout  <<  "BUG:: in do nothig!!" << " Node GID " << bgnode->Id() <<  IO::endl;
       //cout << "do nothing" << bgnode->Id() << endl; ;
     }
     else
-      cout << "warum bin ich da?! " <<  bgdis->NumDof(bgnode)   << " " <<    bgnode->Id() <<  endl;
+      IO::cout << "warum bin ich da?! " <<  bgdis->NumDof(bgnode)   << " " <<    bgnode->Id() <<  IO::endl;
   }
 
   // call the Round Robin Communicator
@@ -799,7 +800,7 @@ void XFEM::XFluidFluidTimeIntegration::WriteValuestoBgStateVector(const RCP<DRT:
   int numsets = bgdis->NumDof(bgnode)/4;
 
   if (numsets > 1)
-    cout << GREEN_LIGHT << "Info: more dofsets in transfer.. " <<  "Node GID " << bgnode->Id() << END_COLOR << endl;
+    IO::cout << "Info: more dofsets in transfer.. " <<  "Node GID " << bgnode->Id() << IO::endl;
 
   int offset = 0;
   for (int set=0; set<numsets; set++)
@@ -1215,7 +1216,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(const RCP<DRT::Discr
       }
       if (count == embdis_->NumMyColElements()) //if no embedded elements found
       {
-        cout << "no embedded element found for: " <<  embnode->Id() << endl;
+        IO::cout << "no embedded element found for: " <<  embnode->Id() << IO::endl;
          count = 0;
 //         // check all background elements to find the right one
          for (int e=0; e<bgdis->NumMyColElements(); e++)
@@ -1354,7 +1355,7 @@ void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RC
 
     if (iterpatchnodes == incompnodeids_set_.end())
     {
-      cout << "STOP!! Nodes found which were in projected set but not in incompressibility patch! " << *iter << endl;
+    	IO::cout << "STOP!! Nodes found which were in projected set but not in incompressibility patch! " << *iter << IO::endl;
 
       //get all adjacent elements of this node
       int numberOfElements = bgdis->gNode(*iter)->NumElement();
@@ -1383,7 +1384,7 @@ void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RC
         if (numnodeswithdofs == numberOfNodes )
         {
           incompelementids_set_.insert(ele_adj->Id());
-          cout << "element found " << ele_adj->Id() << endl;
+          IO::cout << "element found " << ele_adj->Id() << IO::endl;
 
           //get the nodes of this element
           const int* nodeids = ele_adj->NodeIds();
@@ -1653,8 +1654,8 @@ void XFEM::XFluidFluidTimeIntegration::EvaluateIncompressibility(const RCP<DRT::
 
       if (cell_sets.size() == 0)
       {
-        cout << "Warning: Element " << actele->Id() << " has all it's volume-cells in void. Check if all nodes are "<<
-          "included in other elements." << endl;
+    	  IO::cout << "Warning: Element " << actele->Id() << " has all it's volume-cells in void. Check if all nodes are "<<
+          "included in other elements." << IO::endl;
         continue;
       }
 
@@ -2005,8 +2006,8 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
 
   if (myrank_ == 0)
   {
-    cout << " Incompressibility Check.. " << endl;
-    cout << " Original:  "  << sum << ",  After solving optimization problem: "  << sum_opt << endl;
+	  IO::cout << " Incompressibility Check.. " << IO::endl;
+	  IO::cout << " Original:  "  << sum << ",  After solving optimization problem: "  << sum_opt << IO::endl;
   }
 
   LINALG::Export(*(u_incomp),*(initialvel));

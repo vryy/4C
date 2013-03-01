@@ -22,6 +22,8 @@ Maintainers: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_parameter.H"
 #include "../drt_lib/drt_dserror.H"
 
+#include "../drt_io/io_pstream.H"
+
 //----------------------------------------------------------------------*/
 //    definition of the instance
 //----------------------------------------------------------------------*/
@@ -244,9 +246,9 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
   {
     if (myrank==0)
     {
-      std::cout << "+----------------------------------------------------------------------------------+" << std::endl;
-      std::cout << " Edge-based stabilization: all residual-based stabilization terms are switched off!" << std::endl;
-      std::cout << "+----------------------------------------------------------------------------------+" << std::endl;
+      IO::cout << "+----------------------------------------------------------------------------------+" << IO::endl;
+      IO::cout << " Edge-based stabilization: all residual-based stabilization terms are switched off!"  << IO::endl;
+      IO::cout << "+----------------------------------------------------------------------------------+" << IO::endl;
     }
     pspg_ = INPAR::FLUID::pstab_assume_inf_sup_stable;
     supg_ = INPAR::FLUID::convective_stab_none;

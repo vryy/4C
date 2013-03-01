@@ -34,6 +34,7 @@ Maintainer:  Shadan Shahmiri
 #include "../drt_io/io_control.H"
 #include "../drt_io/io.H"
 #include "../drt_constraint/constraint_manager.H"
+#include "../drt_io/io_pstream.H"
 
 #include "../drt_inpar/inpar_ale.H"
 
@@ -59,13 +60,13 @@ FSI::FluidFluidMonolithicStructureSplitNoNOX::FluidFluidMonolithicStructureSplit
 
    if (comm.MyPID() == 0)
     {
-      cout << "  +---------------------------------------------------------------------------------------------+" << endl;
-      cout << "  |                                        PLEASE NOTE:                                         |" << endl;
-      cout << "  +---------------------------------------------------------------------------------------------+" << endl;
-      cout << "  | You run a monolithic structure split scheme. Hence, there are no structural interface DOFs. |" << endl;
-      cout << "  | Structure Dirichlet boundary conditions on the interface will be neglected.                 |" << endl;
-      cout << "  | Check whether you have prescribed appropriate DBCs on structural interface DOFs.            |" << endl;
-      cout << "  +---------------------------------------------------------------------------------------------+" << endl;
+      IO::cout << "  +---------------------------------------------------------------------------------------------+" << IO::endl;
+      IO::cout << "  |                                        PLEASE NOTE:                                         |" << IO::endl;
+      IO::cout << "  +---------------------------------------------------------------------------------------------+" << IO::endl;
+      IO::cout << "  | You run a monolithic structure split scheme. Hence, there are no structural interface DOFs. |" << IO::endl;
+      IO::cout << "  | Structure Dirichlet boundary conditions on the interface will be neglected.                 |" << IO::endl;
+      IO::cout << "  | Check whether you have prescribed appropriate DBCs on structural interface DOFs.            |" << IO::endl;
+      IO::cout << "  +---------------------------------------------------------------------------------------------+" << IO::endl;
     }
   }
 
@@ -959,7 +960,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Update()
 {
   TEUCHOS_FUNC_TIME_MONITOR("FSI::MonolithicStructureSplit::Update");
 
-  //  cout <<"currentstep_" <<  currentstep_ <<" " << currentstep_%relaxing_ale_every_<< endl;
+  //  IO::cout <<"currentstep_" <<  currentstep_ <<" " << currentstep_%relaxing_ale_every_<< IO::endl;
 
   bool aleupdate = false;
   if (relaxing_ale_ == true)
@@ -980,7 +981,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Update()
   if (monolithic_approach_!= INPAR::XFEM::XFFSI_Full_Newton and aleupdate)
   {
     if (Comm().MyPID() == 0)
-      cout << "Relaxing Ale.." << endl;
+      IO::cout << "Relaxing Ale.." << IO::endl;
     AleField().SolveAleXFluidFluidFSI();
     FluidField().ApplyMeshDisplacement(AleToFluid(AleField().ExtractDispnp()));
   }
@@ -1124,7 +1125,7 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Newton()
 
     if (not FluidField().DofRowMap()->SameAs(Extractor().ExtractVector(iterinc_,1)->Map()))
     {
-      cout << GREEN_LIGHT << " New Map!! " <<  END_COLOR <<  endl;
+      IO::cout << " New Map!! " << IO::endl;
       // save the old x_sum
       Teuchos::RCP<Epetra_Vector> x_sum_n =  LINALG::CreateVector(*DofRowMap(), true);
       *x_sum_n = *x_sum_;
@@ -1182,20 +1183,15 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::Newton()
   // correct iteration counter
   iter_ -= 1;
 
-  // test whether max iterations was hit
-  if ( (Converged()) and (Comm().MyPID()==0) )
+  if ((Converged()) and (Comm().MyPID()  == 0))
   {
-    cout << endl;
-    cout << endl;
-    cout << BLUE_LIGHT << "  Newton Converged! " <<  END_COLOR<<  endl;
-
+	IO::cout << IO::endl;
+    IO::cout << "  Newton Converged! " << IO::endl;
   }
   else if (iter_ >= itermax_)
   {
-    cout << endl;
-    cout << endl;
-    cout << RED_LIGHT << " Newton unconverged in "<< iter_ << " iterations " << END_COLOR<<  endl;
-
+	IO::cout << IO::endl;
+    IO::cout << " Newton unconverged in "<< iter_ << " iterations " <<  IO::endl;
   }
 }
 

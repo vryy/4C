@@ -29,6 +29,7 @@ Maintainer: Benedikt Schott
 #include "../drt_fluid/xfluid_defines.H"
 
 #include "../drt_inpar/inpar_xfem.H"
+#include "../drt_inpar/inpar_fluid.H"
 
 #include "xfem_fluidwizard.H"
 
@@ -455,9 +456,11 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &
 
   edgebasedparams.set("ghost_penalty_fac", eleparams.get<double>("GHOST_PENALTY_FAC"));
 
-  INPAR::XFEM::EOS_GP_Pattern eos_gp_pattern = eleparams.get<INPAR::XFEM::EOS_GP_Pattern>("EOS_GP_PATTERN");
+  INPAR::FLUID::EOS_GP_Pattern eos_gp_pattern = eleparams.get<INPAR::FLUID::EOS_GP_Pattern>("EOS_GP_PATTERN");
   edgebasedparams.set("eos_gp_pattern",eos_gp_pattern);
 
+  INPAR::FLUID::EOS_ElementLength eos_he_definition = eleparams.get<INPAR::FLUID::EOS_ElementLength>("EOS_H_DEFINITION");
+  edgebasedparams.set("eos_he_definition",eos_he_definition);
 
   // call the egde-based assemble and evaluate routine
   if(final_edge_stab or final_ghost_pen or final_ghost_pen_reconstruct)

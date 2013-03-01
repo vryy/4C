@@ -1,6 +1,7 @@
 #include "cut_kernel.H"
 #include "cut_point.H"
 #include "cut_position2d.H"
+#include "../drt_io/io_pstream.H"
 #include <iostream>
 
 unsigned GEO::CUT::KERNEL::FindNextCornerPoint( const std::vector<Point*> & points,
@@ -188,13 +189,13 @@ std::vector<int> GEO::CUT::KERNEL::CheckConvexity( const std::vector<Point*>& pt
     bool isline = IsOnLine( pt1, pt2, pt3 );
     if( isline )
     {
-      std::cout<<"the points are\n";
+      IO::cout<<"the points are\n";
       for( unsigned i=0;i<ptlist.size();i++ )
       {
         Point* ptx = ptlist[i];
         double coox[3];
         ptx->Coordinates(coox);
-        std::cout<<coox[0]<<"\t"<<coox[1]<<"\t"<<coox[2]<<"\n";
+        IO::cout<<coox[0]<<"\t"<<coox[1]<<"\t"<<coox[2]<<"\n";
       }
       dserror( "Inline checking for facets not done before calling this" );
     }
@@ -433,13 +434,13 @@ bool GEO::CUT::KERNEL::PtInsideQuad( std::vector<Point*> quad, Point* check )
   int concsize = concavePts.size();
   if( concsize > 1 )
   {
-    std::cout<<"The points of the failing Quad are\n";
+    IO::cout<<"The points of the failing Quad are\n";
     for( unsigned i=0;i<4;i++ )
     {
       Point* pt = quad[i];
       double x[3];
       pt->Coordinates(x);
-      std::cout<<x[0]<<"\t"<<x[1]<<"\t"<<x[2]<<"\n";
+      IO::cout<<x[0]<<"\t"<<x[1]<<"\t"<<x[2]<<"\n";
     }
     dserror( "Quad has more than 1 concave pt --> Selfcut" );
   }

@@ -24,6 +24,7 @@ Maintainer: Benedikt Schott
 #include "xfem_fluiddofset.H"
 
 #include "../drt_io/io_control.H"
+#include "../drt_io/io_pstream.H"
 
 /*-------------------------------------------------------------*
 * Cut routine for the new XFEM framework (XFSI and XFLUIDFLUID)*
@@ -41,7 +42,7 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut" );
 
   if ( backdis_.Comm().MyPID() == 0 )
-    std::cout << "\nXFEM::FluidWizard::Cut:" << std::flush;
+    IO::cout << "\nXFEM::FluidWizard::Cut:" << IO::endl;
 
   const double t_start = Teuchos::Time::wallTime();
 
@@ -137,13 +138,14 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
   const double t_end = Teuchos::Time::wallTime()-t_start;
   if ( backdis_.Comm().MyPID() == 0 )
   {
-    std::cout << "\n XFEM::FluidWizard::Cut: Success (" << t_end  <<  " secs)\n";
+    IO::cout << "\n XFEM::FluidWizard::Cut: Success (" << t_end  <<  " secs)\n";
   }
 
   if(gmsh_output) cw.DumpGmshNumDOFSets(include_inner);
 
-
+#ifdef DEBUG
   cw.PrintCellStats();
+#endif
 
   if(gmsh_output)
   {

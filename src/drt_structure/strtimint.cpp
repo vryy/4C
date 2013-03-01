@@ -61,6 +61,8 @@ Maintainer: Alexander Popp
 
 #include "../drt_so3/so_sh8p8.H"
 
+#include "../drt_io/io_pstream.H"
+
 /*----------------------------------------------------------------------*/
 /* print tea time logo */
 void STR::TimInt::Logo()
@@ -1183,8 +1185,7 @@ void STR::TimInt::OutputRestart
   // info dedicated to user's eyes staring at standard out
   if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
   {
-    printf("====== Restart written in step %d\n", step_);
-    fflush(stdout);
+	 IO::cout <<"====== Restart written in step " << step_ << IO::endl;
   }
 
   // info dedicated to processor error file

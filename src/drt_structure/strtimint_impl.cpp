@@ -42,6 +42,7 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_krylov_projector.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_patspec/patspec.H"
+#include "../drt_io/io_pstream.H"
 
 /*----------------------------------------------------------------------*/
 /* constructor */
@@ -2024,31 +2025,29 @@ void STR::TimIntImpl::PrintPredictor()
     // relative check of force residual
     if ( normtypefres_ == INPAR::STR::convnorm_rel )
     {
-      std::cout << "Predictor scaled res-norm "
-                << normfres_/normcharforce_
-                << std::endl;
+      IO::cout << "Predictor scaled res-norm "
+               << normfres_/normcharforce_
+               << IO::endl;
     }
     // absolute check of force residual
     else if ( normtypefres_ == INPAR::STR::convnorm_abs )
     {
-      std::cout << "Predictor absolute res-norm "
-                << normfres_
-                << std::endl;
+      IO::cout << "Predictor absolute res-norm "
+               << normfres_
+               << IO::endl;
     }
     // mixed absolute-relative check of force residual
     else if ( normtypefres_ == INPAR::STR::convnorm_mix )
     {
-      std::cout << "Predictor mixed res-norm "
-                << min(normfres_, normfres_/normcharforce_)
-                << std::endl;
+      IO::cout << "Predictor mixed res-norm "
+               << min(normfres_, normfres_/normcharforce_)
+               << IO::endl;
     }
     // default
     else
     {
       dserror("You should not turn up here.");
     }
-    // print it, now
-    fflush(stdout);
   }
 
   // leave your hat on

@@ -21,6 +21,7 @@ Maintainer: Alexander Popp
 #include "../drt_io/io.H"
 #include "../drt_lib/drt_locsys.H"
 #include "../linalg/linalg_utils.H"
+#include "../drt_io/io_pstream.H"
 
 /*----------------------------------------------------------------------*/
 void STR::TimIntGenAlpha::VerifyCoeff()
@@ -107,7 +108,7 @@ STR::TimIntGenAlpha::TimIntGenAlpha
   // info to userxs
   if (myrank_ == 0)
   {
-    std::cout << "with generalised-alpha" << std::endl;
+    IO::cout << "with generalised-alpha" << IO::endl;
     VerifyCoeff();
 
     std::cout << "   p_dis = " << MethodOrderOfAccuracyDis() << std::endl

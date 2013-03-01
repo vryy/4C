@@ -2,6 +2,12 @@
 #include "cut_edge.H"
 
 
+std::ostream & operator<<( std::ostream & stream, const GEO::CUT::Cycle & cycle )
+{
+  std::copy( cycle.points_.begin(), cycle.points_.end(), std::ostream_iterator<GEO::CUT::Point*>( stream, " " ) );
+  return stream << "\n";
+}
+
 bool GEO::CUT::Cycle::MakeCycle( const point_line_set & lines, Cycle & cycle )
 {
   cycle.clear();
@@ -210,18 +216,6 @@ void GEO::CUT::Cycle::TestUnique()
   c_copy.insert( points_.begin(), points_.end() );
   if ( points_.size()!=c_copy.size() )
     throw std::runtime_error( "double point in cycle" );
-}
-
-namespace GEO
-{
-  namespace CUT
-  {
-    std::ostream & operator<<( std::ostream & stream, const Cycle & cycle )
-    {
-      std::copy( cycle.points_.begin(), cycle.points_.end(), std::ostream_iterator<Point*>( stream, " " ) );
-      return stream << "\n";
-    }
-  }
 }
 
 void GEO::CUT::Cycle::GnuplotDump( std::ostream & stream ) const

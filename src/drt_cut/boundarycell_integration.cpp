@@ -2,6 +2,8 @@
 #include "least_squares.H"
 #include "base_vol.H"
 
+#include "../drt_io/io_pstream.H"
+
 /*--------------------------------------------------------------------------------------------*
   Generate quadrature rule for boundarycells
   Unlike volume integration the facets whose normal-x if zero, cannot be eliminated
@@ -28,7 +30,7 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
   while(1)
   {
 #ifdef DEBUGCUTLIBRARY
-    std::cout<<"pts on each line = "<<ptsEachLine<<"\n";
+    IO::cout<<"pts on each line = "<<ptsEachLine<<"\n";
 #endif
 
     std::vector<double> eqn = faee1.get_equation();
@@ -114,7 +116,7 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
 
     double maxerr = err.InfNorm();
 #ifdef DEBUGCUTLIBRARY
-    std::cout<<"numpts = "<<ptsEachLine<<"\tmax error = "<<maxerr<<"\n";
+    IO::cout<<"numpts = "<<ptsEachLine<<"\tmax error = "<<maxerr<<"\n";
 #endif
 
     if(maxerr<1e-10 || ptsEachLine>25)

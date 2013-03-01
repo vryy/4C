@@ -223,18 +223,6 @@ private:
   plain_facet_set facets_;
 };
 
-inline std::ostream & operator<<( std::ostream & stream, Point & point )
-{
-  point.Print( stream );
-  return stream;
-}
-
-inline std::ostream & operator<<( std::ostream & stream, Point * point )
-{
-  point->Print( stream );
-  return stream;
-}
-
 inline int EntityId( const Point & p ) { return p.Pid(); }
 
 /// id based comparison for sorting and searching
@@ -407,5 +395,10 @@ inline void FindCommonSides( Point * p1, Point * p2, Point * p3, Point * p4, pla
 
 }
 }
+
+
+std::ostream & operator<<( std::ostream & stream, GEO::CUT::Point & point );
+
+std::ostream & operator<<( std::ostream & stream, GEO::CUT::Point * point );
 
 #endif

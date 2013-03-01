@@ -221,24 +221,24 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
   // pattern = "u-p-block matrix pattern";                 // assembles u-block and p-block separated
   // pattern = "full matrix pattern";                      // assembles the whole u-p matrix
 
-  INPAR::XFEM::EOS_GP_Pattern eos_gp_pattern = params.get<INPAR::XFEM::EOS_GP_Pattern>("eos_gp_pattern");
+  INPAR::FLUID::EOS_GP_Pattern eos_gp_pattern = params.get<INPAR::FLUID::EOS_GP_Pattern>("eos_gp_pattern");
 
 
   int numblocks = 0;
 
-  if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_uvwp)
+  if(eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_uvwp)
   {
     // 3D: 4 blocks =  u-u block, v-v block, w-w block and p-p block
     // 2D: 3 blocks =  u-u block, v-v block and p-p block
     numblocks=numdofpernode;
   }
-  else if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_up)
+  else if(eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_up)
   {
     // 3D: 10 blocks = 3x3 u-u blocks + 1x1 p-p block
     // 3D: 5 blocks  = 2x2 u-u blocks + 1x1 p-p block
     numblocks=nsd*nsd+1; // 10 blocks = 3x3 u-u blocks + 1x1 p-p block
   }
-  else if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_full)
+  else if(eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_full)
   {
     // 3D: 16 blocks = 4x4 uvwp blocks
     // 2D: 9  blocks = 3x3 uvp blocks
@@ -286,7 +286,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
     // calls the Assemble function for EpetraFECrs matrices including communication of non-row entries
     if (assemblemat)
     {
-      if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_uvwp)
+      if(eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_uvwp)
       {
 #if(1)
         for(int ij=0; ij<numdofpernode; ij++)
@@ -298,7 +298,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
           systemmatrix->FEAssemble(-1, elemat_blocks[ij], patch_components_lm[ij], patch_components_lmowner[ij], patch_components_lm[ij]);
 #endif
       }
-      else if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_up)
+      else if(eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_up)
       {
         for(int i=0; i<nsd; i++)
         {
@@ -309,7 +309,7 @@ void DRT::ELEMENTS::FluidIntFaceImpl<distype>::AssembleInternalFacesUsingNeighbo
         }
         systemmatrix->FEAssemble(-1, elemat_blocks[nsd*nsd], patch_components_lm[nsd], patch_components_lmowner[nsd], patch_components_lm[nsd]);
       }
-      else if(eos_gp_pattern == INPAR::XFEM::EOS_GP_Pattern_full)
+      else if(eos_gp_pattern == INPAR::FLUID::EOS_GP_Pattern_full)
       {
         for(int i=0; i<numdofpernode; i++)
         {

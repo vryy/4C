@@ -14,6 +14,7 @@
 #include "../linalg/linalg_solver.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_io/io_control.H"
+#include "../drt_io/io_pstream.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 
@@ -132,15 +133,13 @@ void FSI::MonolithicNoNOX::Newton()
   // test whether max iterations was hit
   if ( (Converged()) and (Comm().MyPID()==0) )
   {
-    cout << std::endl;
-    cout << std::endl;
-    cout << BLUE_LIGHT << "  Newton Converged! " <<  END_COLOR<<  std::endl;
+	IO::cout << IO::endl;
+    IO::cout << "  Newton Converged! " <<  IO::endl;
   }
   else if (iter_ >= itermax_)
   {
-    cout << std::endl;
-    cout << std::endl;
-    cout << RED_LIGHT << " Newton unconverged in "<< iter_ << " iterations " << END_COLOR<<  std::endl;
+	IO::cout << IO::endl;
+    IO::cout << " Newton unconverged in "<< iter_ << " iterations " <<  IO::endl;
   }
 }
 
@@ -375,44 +374,36 @@ void FSI::MonolithicNoNOX::PrintNewtonIter()
   if ( Comm().MyPID()==0 )
   {
     if (iter_== 1)
-      PrintNewtonIterHeader(std::cout);
-    PrintNewtonIterText(std::cout);
+    	PrintNewtonIterHeader();
+    PrintNewtonIterText();
   }
-
-//   // print to error file
-//   if ( printerrfile_ and printiter_ )
-//   {
-//     if (iter_== 1)
-//       PrintNewtonIterHeader(errfile_);
-//     PrintNewtonIterText(errfile_);
-//   }
 }
 /*----------------------------------------------------------------------*/
 /* print Newton-Raphson iteration to screen and error file              */
 /*----------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::PrintNewtonIterHeader(std::ostream & oss)
+void FSI::MonolithicNoNOX::PrintNewtonIterHeader()
 {
-  oss << "CONVTOL: " << tolfres_ << std::endl;
+  IO::cout << "CONVTOL: " << tolfres_ << IO::endl;
 
   // open outstringstream
   //std::ostringstream oss;
 
   // enter converged state etc
-  oss << std::setw(6)<< "numiter  |";
+  IO::cout << "| numiter |";
 
   // different style due relative or absolute error checking
   // displacement
   switch ( normtypefres_ )
   {
   case INPAR::FSI::convnorm_abs :
-    oss <<std::setw(12)<< "abs-res-norm  |";
+    IO::cout <<"            "<< "abs-res-norm  |";
     break;
   case INPAR::FSI::convnorm_rel :
-    oss <<std::setw(12)<< "str-res  |"  <<std::setw(7)<< "intrf-res  |" <<std::setw(12)<< "flv-res  |"
-        <<std::setw(12)<< "flp-res  |"  <<std::setw(12)<< "ale-res  |";
+   IO::cout <<"   "<< "str-res  |"  <<"  "<< "intrf-res  |" <<"  "<< "flv-res  |"
+            <<"   "<< "flp-res  |"  <<"   "<< "ale-res  |";
     break;
   case INPAR::FSI::convnorm_mix :
-    oss <<std::setw(18)<< "mix-res-norm";
+    IO::cout <<"                  "<< "mix-res-norm";
     break;
   default:
     dserror("You should not turn up here.");
@@ -421,52 +412,52 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader(std::ostream & oss)
   switch ( normtypeinc_ )
   {
   case INPAR::FSI::convnorm_abs :
-    oss <<std::setw(18)<< "abs-inc-norm |";
+    IO::cout <<"                  "<< "abs-inc-norm";
     break;
   case INPAR::FSI::convnorm_rel :
-    oss  <<std::setw(12)<< "str-inc  |"  <<std::setw(10)<< "intrf-inc  |" <<std::setw(12)<< "flv-inc  |"
-         <<std::setw(12)<< "flp-inc  |"  <<std::setw(12)<< "ale-inc  |";
+    IO::cout <<"   "<< "str-inc  |"  <<"   "<< "intrf-inc  |" <<"   "<< "flv-inc  |"
+             <<"   "<< "flp-inc  |"  <<"   "<< "ale-inc  |";
     break;
   case INPAR::FSI::convnorm_mix :
-    oss <<std::setw(18)<< "mix-inc-norm";
+    IO::cout <<"              "<< "mix-inc-norm";
     break;
   default:
     dserror("You should not turn up here.");
   }
 
   // add solution time
-  oss << std::setw(12)<< "wct    |" << endl;
-  oss << "==========================================================================================================================================="<< std::endl;
+  IO::cout << "   "<< "wct    |" << IO::endl;
+  IO::cout << "============================================================================================================================================================="<< IO::endl;
 }
 
 /*---------------------------------------------------------------------*/
 /*  print Newton-Raphson iteration to screen                           */
 /*---------------------------------------------------------------------*/
-void FSI::MonolithicNoNOX::PrintNewtonIterText(std::ostream & oss)
+void FSI::MonolithicNoNOX::PrintNewtonIterText()
 {
   // enter converged state etc
-  oss << std::setw(3)<< iter_ << "/" << itermax_;
+  IO::cout << "   " << iter_ << "/" << itermax_;
 
   // different style due relative or absolute error checking
   // displacement
   switch ( normtypefres_ )
   {
   case INPAR::FSI::convnorm_abs :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << (normrhs_) << std::endl;
+	  IO::cout << "             " << (normrhs_) << IO::endl;
     break;
   case INPAR::FSI::convnorm_rel :
-    oss << std::setw(14) << std::setprecision(3) << std::scientific << (normstrrhs_/ns_)
-        << std::setw(12) << std::setprecision(3) << std::scientific << (norminterfacerhs_/ni_)
-        << std::setw(12) << std::setprecision(3) << std::scientific << (normflvelrhs_/nfv_)
-        << std::setw(12) << std::setprecision(3) << std::scientific << (normflpresrhs_/nfp_)
-        << std::setw(12) << std::setprecision(3) << std::scientific << (normalerhs_/na_);
+	  IO::cout << "      "<< (normstrrhs_/ns_)
+	           << "     "<< (norminterfacerhs_/ni_)
+	           << "    "<< (normflvelrhs_/nfv_)
+	           << "    "<< (normflpresrhs_/nfp_)
+	           << "    "<< (normalerhs_/na_);
     break;
-  case INPAR::FSI::convnorm_mix :
-    oss << std::setw(12) << std::setprecision(3) << std::scientific << (normstrrhs_/ns_)
-        << std::setw(12) << std::setprecision(3) << std::scientific << (norminterfacerhs_/ni_)
-        << std::setw(12) << std::setprecision(3) << std::scientific << (normflvelrhs_/nfv_)
-        << std::setw(12) << std::setprecision(3) << std::scientific << (normflpresrhs_/nfp_)
-        << std::setw(12) << std::setprecision(3) << std::scientific << (normalerhs_/na_);
+  case INPAR::FSI::convnorm_mix : //TODO_ check why this is the same like above
+	  IO::cout << "      "<< (normstrrhs_/ns_)
+	           << "     "<< (norminterfacerhs_/ni_)
+	           << "    "<< (normflvelrhs_/nfv_)
+	           << "    "<< (normflpresrhs_/nfp_)
+	           << "    "<< (normalerhs_/na_);
     break;
   default:
     dserror("You should not turn up here.");
@@ -475,28 +466,24 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText(std::ostream & oss)
   switch ( normtypeinc_ )
   {
   case INPAR::FSI::convnorm_abs :
-    oss << std::setw(18) << std::setprecision(3) << std::scientific << norminc_ << std::endl;
-    //   printf("\n");
+	  IO::cout << "             " << (norminc_) << IO::endl;
     break;
   case INPAR::FSI::convnorm_rel :
-    oss << std::setw(12) << std::setprecision(3) << std::scientific <<  (normstrinc_/ns_)
-        << std::setw(12) << std::setprecision(3) << std::scientific <<  (norminterfaceinc_/ni_)
-        << std::setw(12) << std::setprecision(3) << std::scientific <<  (normflvelinc_/nfv_)
-        << std::setw(12) << std::setprecision(3) << std::scientific << (normflpresinc_/nfp_)
-        << std::setw(12) << std::setprecision(3) << std::scientific << (normaleinc_/na_) << "\n";
-    // printf("\n");
+	  IO::cout << "    "<< (normstrinc_/ns_)
+	           << "     "<< (norminterfaceinc_/ni_)
+	           << "     "<< (normflvelinc_/nfv_)
+	           << "    "<< (normflpresinc_/nfp_)
+	           << "    "<< (normaleinc_/na_) << IO::endl;
     break;
-  case INPAR::FSI::convnorm_mix :
-    oss << std::setw(12) << std::setprecision(3) << std::scientific << (normstrinc_/ns_)
-        << std::setw(12) << std::setprecision(3) << std::scientific << (norminterfaceinc_/ni_)
-        << std::setw(12) << std::setprecision(3) << std::scientific << (normflvelinc_/nfv_)
-        << std::setw(12) << std::setprecision(3) << std::scientific << (normflpresinc_/nfp_)
-        << std::setw(12) << std::setprecision(3) << std::scientific << (normaleinc_/na_) << "\n";
-    //  printf("\n");
+  case INPAR::FSI::convnorm_mix ://TODO_ check why this is the same like above
+	  IO::cout << "    "<< (normstrinc_/ns_)
+	           << "     "<< (norminterfaceinc_/ni_)
+	           << "     "<< (normflvelinc_/nfv_)
+	           << "    "<< (normflpresinc_/nfp_)
+	           << "    "<< (normaleinc_/na_) << IO::endl;
     break;
   default:
     dserror("You should not turn up here.");
   }
 }
-
 

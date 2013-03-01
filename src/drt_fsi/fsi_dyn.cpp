@@ -208,24 +208,6 @@ void fluid_fluid_ale_drt()
   embfluiddis->FillComplete();
 
   // -------------------------------------------------------------------
-  // --------------- copy  bgfluid to embfluid
-  const int numcolele = bgfluiddis->NumMyColElements();
-  for (int i=0; i<numcolele; ++i)
-  {
-    DRT::Element* ele = bgfluiddis->lColElement(i);
-    const DRT::Node*const* elenodes = ele->Nodes();
-    Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
-    embfluiddis->AddElement(newele);
-    for (int inode=0; inode < ele->NumNode(); ++inode)
-    {
-      Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(elenodes[inode]->Clone());
-      embfluiddis->AddNode(newnode);
-    }
-  }
-
-  embfluiddis->FillComplete();
-
-  // -------------------------------------------------------------------
   // ---------------- find MovingFluid's elements and nodes
   std::map<int, DRT::Node*> MovingFluidNodemap;
   std::map<int, Teuchos::RCP< DRT::Element> > MovingFluidelemap;
@@ -450,24 +432,6 @@ void fluid_fluid_fsi_drt()
   embfluiddis->FillComplete();
 
   // -------------------------------------------------------------------
-  // --------------- copy  bgfluid to embfluid
-  const int numcolele = bgfluiddis->NumMyColElements();
-  for (int i=0; i<numcolele; ++i)
-  {
-    DRT::Element* ele = bgfluiddis->lColElement(i);
-    const DRT::Node*const* elenodes = ele->Nodes();
-    Teuchos::RCP<DRT::Element> newele = Teuchos::rcp(ele->Clone());
-    embfluiddis->AddElement(newele);
-    for (int inode=0; inode < ele->NumNode(); ++inode)
-    {
-      Teuchos::RCP<DRT::Node> newnode = Teuchos::rcp(elenodes[inode]->Clone());
-      embfluiddis->AddNode(newnode);
-    }
-  }
-
-  embfluiddis->FillComplete();
-
-  // -------------------------------------------------------------------
   // ---------------- find MovingFluid's elements and nodes
   std::map<int, DRT::Node*> MovingFluidNodemap;
   std::map<int, Teuchos::RCP< DRT::Element> > MovingFluidelemap;
@@ -550,7 +514,7 @@ void fluid_fluid_fsi_drt()
   int numglobalnodes = bgfluiddis->NumGlobalNodes();
   int maxNumMyReservedDofs = numglobalnodes*(xdyn.get<int>("MAX_NUM_DOFSETS"))*4;
   Teuchos::RCP<DRT::FixedSizeDofSet> maxdofset = Teuchos::rcp(new DRT::FixedSizeDofSet(maxNumMyReservedDofs));
-  std::cout << " maxNumMyReservedDofs " << maxNumMyReservedDofs << endl;
+  IO::cout << " maxNumMyReservedDofs " << maxNumMyReservedDofs << IO::endl;
   bgfluiddis->ReplaceDofSet(maxdofset,true);
   bgfluiddis->FillComplete();
 

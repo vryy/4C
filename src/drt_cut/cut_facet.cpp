@@ -1111,3 +1111,50 @@ const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal(Eleme
    tf.SplitFacet();
    splitCells_ = tf.GetSplitCells();
  }
+
+ /*-----------------------------------------------------------------------*
+
+ *------------------------------------------------------------------------*/
+ std::ostream & operator<<( std::ostream & stream, GEO::CUT::Facet & f )
+ {
+   stream << "facet: {";
+   if ( f.IsTriangulated() )
+   {
+     const std::vector<std::vector<GEO::CUT::Point*> > & triangulation = f.Triangulation();
+     for ( std::vector<std::vector<GEO::CUT::Point*> >::const_iterator i=triangulation.begin();
+           i!=triangulation.end();
+           ++i )
+     {
+       const std::vector<GEO::CUT::Point*> & tri = *i;
+       stream << "{";
+       for ( std::vector<GEO::CUT::Point*>::const_iterator i=tri.begin(); i!=tri.end(); ++i )
+       {
+    	 GEO::CUT::Point * p = *i;
+         p->Print( stream );
+         stream << ",";
+       }
+       stream << "},";
+     }
+   }
+   else
+   {
+     const std::vector<GEO::CUT::Point*> & points = f.Points();
+     for ( std::vector<GEO::CUT::Point*>::const_iterator i=points.begin(); i!=points.end(); ++i )
+     {
+       GEO::CUT::Point * p = *i;
+       p->Print( stream );
+       stream << ",";
+     }
+     if ( f.HasHoles() )
+     {
+       const GEO::CUT::plain_facet_set & holes = f.Holes();
+       for ( GEO::CUT::plain_facet_set::const_iterator i=holes.begin(); i!=holes.end(); ++i )
+       {
+    	 GEO::CUT::Facet & h = **i;
+         stream << h;
+       }
+     }
+   }
+   stream << "}";
+   return stream;
+ }

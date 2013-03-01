@@ -105,14 +105,6 @@ namespace INPAR
       ConvStabScaling_none
     };
 
-    /// EdgeBased (EOS) and Ghost Penalty matrix pattern
-    enum EOS_GP_Pattern
-    {
-      EOS_GP_Pattern_uvwp,
-      EOS_GP_Pattern_up,
-      EOS_GP_Pattern_full
-    };
-
     /// xfluidfluid-fsi-monolithic approach
     enum Monolithic_xffsi_Approach
     {

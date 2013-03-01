@@ -1980,7 +1980,8 @@ FLD::XFluid::XFluid(
   edge_based_        = (params_->sublist("STABILIZATION").get<string>("STABTYPE")=="edge_based");
   ghost_penalty_     = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB");
   ghost_penalty_fac_ = params_xf_stab.get<double>("GHOST_PENALTY_FAC", 0.0);
-  eos_gp_pattern_    = DRT::INPUT::IntegralValue<INPAR::XFEM::EOS_GP_Pattern>(params_xf_stab,"EOS_GP_PATTERN");
+  eos_gp_pattern_    = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_GP_Pattern>(params_->sublist("STABILIZATION"),"EOS_GP_PATTERN");
+  definition_eos_h_ =  DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_ElementLength>(params_->sublist("STABILIZATION"),"EOS_H_DEFINITION");
 
   // get general XFEM specific parameters
   VolumeCellGaussPointBy_ = params_xfem.get<std::string>("VOLUME_GAUSS_POINTS_BY");
@@ -2778,7 +2779,7 @@ void FLD::XFluid::PrintStabilizationParams()
       cout << "GHOST_PENALTY_STAB:      " << "no" << "\n";
 
     if(edge_based_ or ghost_penalty_)
-      cout << "EOS_GP_PATTERN:          " << interfstabparams->get<string>("EOS_GP_PATTERN") << "\n";
+      cout << "EOS_GP_PATTERN:          " << stabparams->get<string>("EOS_GP_PATTERN") << "\n";
 
     cout << "+------------------------------------------------------------------------------------+" << endl;
     cout << "\n";

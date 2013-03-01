@@ -2817,6 +2817,27 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 tuple<int>(0,1),
                                &fdyn_stab);
 
+  // this parameter selects how the element length of Edge-based stabilization is defined
+  setStringToIntegralParameter<int>("EOS_H_DEFINITION",
+                               "EOS_he_max_dist_to_opp_surf",
+                               "Definition of element length for edge-based stabilization",
+                               tuple<std::string>(
+                                "EOS_he_max_dist_to_opp_surf",
+                                "EOS_he_surf_with_max_diameter"),
+                               tuple<int>(
+                                 INPAR::FLUID::EOS_he_max_dist_to_opp_surf,
+                                 INPAR::FLUID::EOS_he_surf_with_max_diameter) ,
+                               &fdyn_stab);
+
+  setStringToIntegralParameter<int>("EOS_GP_PATTERN","u-v-w-p-diagonal-block","which matrix pattern shall be assembled for 'Edgebased' fluid stabilization and 'GhostPenalty' stabilization?",
+                               tuple<std::string>("u-v-w-p-diagonal-block", "u-p-block", "full"),
+                               tuple<int>(
+                                   INPAR::FLUID::EOS_GP_Pattern_uvwp,    // u-v-w-p-diagonal-block matrix pattern
+                                   INPAR::FLUID::EOS_GP_Pattern_up,      // u-p-block matrix pattern
+                                   INPAR::FLUID::EOS_GP_Pattern_full     // full matrix pattern
+                                   ),
+                               &fdyn_stab);
+
   // this parameter selects the location where the material law is evaluated
   // (does not fit here very well, but parameter transfer is easier)
   setStringToIntegralParameter<int>("EVALUATION_MAT",
@@ -4889,16 +4910,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   BoolParameter("PRESSCOUPLING_INTERFACE_STAB","no","switch on/off pressure coupling interface stabilization",&xfluid_stab);
 
   DoubleParameter("PRESSCOUPLING_INTERFACE_FAC",  10, "define stabilization parameter for pressure coupling interface stabilization",&xfluid_stab);
-
-  setStringToIntegralParameter<int>("EOS_GP_PATTERN","u-v-w-p-diagonal-block","which matrix pattern shall be assembled for 'Edgebased' fluid stabilization and 'GhostPenalty' stabilization?",
-                               tuple<std::string>("u-v-w-p-diagonal-block", "u-p-block", "full"),
-                               tuple<int>(
-                                   INPAR::XFEM::EOS_GP_Pattern_uvwp,    // u-v-w-p-diagonal-block matrix pattern
-                                   INPAR::XFEM::EOS_GP_Pattern_up,      // u-p-block matrix pattern
-                                   INPAR::XFEM::EOS_GP_Pattern_full     // full matrix pattern
-                                   ),
-                               &xfluid_stab);
-
 
   setStringToIntegralParameter<int>("DLM_CONDENSATION","Yes","Do you want to condense the discontinuous stress field?",
                                yesnotuple,yesnovalue,&xfluid_stab);

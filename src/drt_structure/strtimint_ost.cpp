@@ -21,6 +21,7 @@ Maintainer: Alexander Popp
 #include "../drt_io/io.H"
 #include "../linalg/linalg_utils.H"
 #include "../drt_lib/drt_globalproblem.H"
+#include "../drt_io/io_pstream.H"
 
 /*----------------------------------------------------------------------*/
 void STR::TimIntOneStepTheta::VerifyCoeff()
@@ -70,9 +71,9 @@ STR::TimIntOneStepTheta::TimIntOneStepTheta
   if (myrank_ == 0)
   {
     VerifyCoeff();
-    std::cout << "with one-step-theta" << std::endl
-              << "   theta = " << theta_ << std::endl
-              << std::endl;
+    IO::cout << "with one-step-theta" << IO::endl
+             << "   theta = " << theta_ << IO::endl
+             << IO::endl;
   }
 
   // determine mass, damping and initial accelerations

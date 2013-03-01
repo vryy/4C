@@ -3,6 +3,18 @@
 
 #include "cut_utils.H"
 
+// forward declaration for the operator
+namespace GEO
+{
+  namespace CUT
+  {
+    class Cycle;
+  }
+}
+
+// must be here, as it is supposed to be a friend of the Cycle-class
+std::ostream & operator<<( std::ostream & stream, const GEO::CUT::Cycle & cycle );
+
 namespace GEO
 {
   namespace CUT
@@ -111,7 +123,7 @@ namespace GEO
 
       void swap( Cycle & other ) { std::swap( points_, other.points_ ); }
 
-      friend std::ostream & operator<<( std::ostream & stream, const Cycle & cycle );
+      friend std::ostream & ::operator<<( std::ostream & stream, const Cycle & cycle );
 
       void GnuplotDump( std::ostream & stream ) const;
 

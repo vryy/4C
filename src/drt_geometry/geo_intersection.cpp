@@ -17,6 +17,8 @@ Maintainer: Benedikt Schott
 
 #include "../drt_fluid/xfluid_defines.H"
 
+#include "../drt_io/io_pstream.H"
+
 #include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_io/io_control.H"
@@ -142,7 +144,7 @@ void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool co
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets (parallel)" );
 
 
-  if(myrank_==0) std::cout << "\n\t ... 2/3 Cut_Positions_Dofsets (parallel)" << std::flush;
+  if(myrank_==0) IO::cout << "\n\t ... 2/3 Cut_Positions_Dofsets (parallel)" << IO::endl;
 
   const double t_start = Teuchos::Time::wallTime();
 
@@ -189,7 +191,7 @@ void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool co
   const double t_diff = Teuchos::Time::wallTime()-t_start;
   if ( myrank_ == 0 )
   {
-    std::cout << " ... Success (" << t_diff  <<  " secs)";
+    IO::cout << " ... Success (" << t_diff  <<  " secs)";
   }
 
 }

@@ -101,14 +101,10 @@ namespace FSI
     void PrintNewtonIter();
 
     //! contains text to PrintNewtonIter
-    void PrintNewtonIterText(
-      std::ostream & oss
-      );
+    void PrintNewtonIterText();
 
     //! contains header to PrintNewtonIter
-    void PrintNewtonIterHeader(
-      std::ostream & oss
-      );
+    void PrintNewtonIterHeader();
 
     //! print statistics of converged Newton-Raphson iteration
     //void PrintNewtonConv();
