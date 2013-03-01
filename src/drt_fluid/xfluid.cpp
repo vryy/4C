@@ -717,6 +717,8 @@ void FLD::XFluid::XFluidState::Evaluate( Teuchos::ParameterList & eleparams,
       eleparams.set("GHOST_PENALTY_FAC", xfluid_.ghost_penalty_fac_);
       eleparams.set("EOS_GP_PATTERN", xfluid_.eos_gp_pattern_);
 
+      eleparams.set("EOS_H_DEFINITION", xfluid_.definition_eos_h_);
+
       //------------------------------------------------------------
       // loop over row faces
 
@@ -1859,6 +1861,8 @@ void FLD::XFluid::XFluidState::GradientPenalty( Teuchos::ParameterList & elepara
 
       eleparams.set("GHOST_PENALTY_FAC", xfluid_.ghost_penalty_fac_);
       eleparams.set("EOS_GP_PATTERN", xfluid_.eos_gp_pattern_);
+
+      eleparams.set("EOS_H_DEFINITION", xfluid_.definition_eos_h_);
 
       //------------------------------------------------------------
       // loop over row faces
