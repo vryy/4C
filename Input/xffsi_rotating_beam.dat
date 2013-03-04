@@ -16473,7 +16473,7 @@ NODE 6196  	COORD	1.4782488366652613e+00	1.8269875983440189e+00	0.00000000000000
 ------------------------------------------------TRANSPORT ELEMENTS
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 8 QUANTITY velx VALUE -3.98538004144416258e-01 TOLERANCE 1e-6
-FLUID DIS fluid NODE 8 QUANTITY pressure VALUE -5.23430538147550917e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 8 QUANTITY velx VALUE -3.88354661339175455e-01 TOLERANCE 1e-6
+FLUID DIS fluid NODE 8 QUANTITY pressure VALUE -5.06610508290164629e-01 TOLERANCE 1e-6
 ---------------------------------------------------------------END
 // END

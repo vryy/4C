@@ -107,6 +107,7 @@ VSTAB                           no_vstab
 CSTAB                           cstab_qs //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
+EOS_GP_PATTERN                  u-v-w-p-diagonal-block
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK
@@ -119,7 +120,6 @@ GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation
 BOUNDARY_GAUSS_POINTS_BY        Tessellation
-EOS_GP_PATTERN                  u-v-w-p-diagonal-block
 ------------------------------------------------------XFLUID DYNAMIC/GENERAL
 XFLUID_BOUNDARY                 xfsi_moving_boundary
 INTERFACE_VEL_INITIAL           interface_vel_init_by_funct

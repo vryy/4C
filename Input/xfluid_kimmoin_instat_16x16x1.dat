@@ -75,7 +75,7 @@ EOS_GP_PATTERN                  u-v-w-p-diagonal-block  //u-v-w-p-diagonal-block
 SECONDORDER                     No
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
-GMSH_SOL_OUT                    No
+GMSH_SOL_OUT                    yes
 GMSH_DISCRET_OUT                No
 GMSH_CUT_OUT                    No
 VOLUME_GAUSS_POINTS_BY          Tessellation //Tessellation //Tessellation //MomentFitting //Tessellation //MomentFitting //Tessellation
@@ -123,14 +123,14 @@ FUNCT2 KIMMOIN-UP MAT 1 ISSTAT 0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 1664 QUANTITY velx VALUE -2.22089216359717651e-01 TOLERANCE 1e-12
-FLUID DIS fluid NODE 1664 QUANTITY vely VALUE -5.94361311537403458e-01 TOLERANCE 1e-12
+FLUID DIS fluid NODE 1664 QUANTITY velx VALUE -2.21559406548934856e-01 TOLERANCE 1e-12
+FLUID DIS fluid NODE 1664 QUANTITY vely VALUE -5.94458200396448477e-01 TOLERANCE 1e-12
 FLUID DIS fluid NODE 1664 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-12
-FLUID DIS fluid NODE 1664 QUANTITY pressure VALUE -3.04434687276565918e-01 TOLERANCE 1e-10
-FLUID DIS fluid NODE 1451 QUANTITY velx VALUE -3.32343765350543496e-01 TOLERANCE 1e-12
-FLUID DIS fluid NODE 1451 QUANTITY vely VALUE 3.56221982769279688e-01 TOLERANCE 1e-12
+FLUID DIS fluid NODE 1664 QUANTITY pressure VALUE  -3.03957182339928633e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 1451 QUANTITY velx VALUE  -3.36775853363478650e-01 TOLERANCE 1e-12
+FLUID DIS fluid NODE 1451 QUANTITY vely VALUE 3.54314035470961297e-01 TOLERANCE 1e-12
 FLUID DIS fluid NODE 1451 QUANTITY velz VALUE 0.0e00 TOLERANCE 1e-12
-FLUID DIS fluid NODE 1451 QUANTITY pressure VALUE 3.45415608739992275e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 1451 QUANTITY pressure VALUE 3.50775119419565073e-01 TOLERANCE 1e-10
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 1
 NDLINE  0
