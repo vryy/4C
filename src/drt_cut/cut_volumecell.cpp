@@ -765,23 +765,23 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
                                                   int BaseNos,
                                                   std::string BCellgausstype )
 {
-	const plain_facet_set & facete = Facets();
-	for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
-	{
-		Facet *fac = *i;
+  const plain_facet_set & facete = Facets();
+  for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
+  {
+    Facet *fac = *i;
 
-		if( fac->OnCutSide() == false )             //we need boundary cells only for the cut facets
+    if( fac->OnCutSide() == false )             //we need boundary cells only for the cut facets
       continue;
 
-		//--------------------------------------------------------------------
-		// Normal vector from parent side is used to identify whether normals
-		// from facet is in appropriate direction or not
-		//--------------------------------------------------------------------
-		const Side* parside = fac->ParentSide();
-		const std::vector<Node*> &par_nodes = parside->Nodes();
-		std::vector<Point*> parpts(3);
+    //--------------------------------------------------------------------
+    // Normal vector from parent side is used to identify whether normals
+    // from facet is in appropriate direction or not
+    //--------------------------------------------------------------------
+    const Side* parside = fac->ParentSide();
+    const std::vector<Node*> &par_nodes = parside->Nodes();
+    std::vector<Point*> parpts(3);
 
-		parpts[0] = par_nodes[0]->point();
+    parpts[0] = par_nodes[0]->point();
     parpts[1] = par_nodes[1]->point();
     parpts[2] = par_nodes[2]->point();
 
@@ -790,41 +790,49 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
     eqnpar = KERNEL::EqnPlane( parpts[0], parpts[1], parpts[2] );
 
     std::vector<Point*> corners = fac->CornerPoints();
+    std::vector<Point*> cornersTemp (corners);
 
-    // all points are on a line
-    // this may happen for very very sliver triangle
-    CUT::KERNEL::DeleteInlinePts( corners );
-    if( corners.size()==0 )
-      continue;
+    // when finding eqn of plane for the facet, inline points should not be taken
+   CUT::KERNEL::DeleteInlinePts( cornersTemp );
 
-    eqnfac = KERNEL::EqnPlanePolygon( corners );
-    bool rever = ToReverse( posi, eqnpar, eqnfac );
+   bool rever = false;
+   if( cornersTemp.size()!=0 )
+   {
+     eqnfac = KERNEL::EqnPlanePolygon( cornersTemp );
+     rever = ToReverse( posi, eqnpar, eqnfac );
+   }
 
-    if(rever)                                       // normal from facet is in wrong direction
-      std::reverse(corners.begin(),corners.end());  // change ordering to correct this
+   if(rever)                                       // normal from facet is in wrong direction
+   {
+     std::reverse(corners.begin(),corners.end());  // change ordering to correct this
+     std::reverse(cornersTemp.begin(),cornersTemp.end());
+   }
 
-    //if no of corners are 3 or 4, just add them as boundary integrationcells directly
-    if(corners.size()==3)
-    {
-
-      NewTri3Cell( mesh, fac, corners );
-    }
-    else if(corners.size()==4)
-    {
-      NewQuad4Cell(mesh,fac,corners);
-    }
-    else
-    {
+   //if no of corners are 3 or 4, just add them as boundary integrationcells directly
+   if(corners.size()==3)
+   {
+     NewTri3Cell( mesh, fac, corners );
+   }
+   else if(corners.size()==4)
+   {
+     NewQuad4Cell(mesh,fac,corners);
+   }
+   else
+   {
       if(BCellgausstype=="Tessellation")//generate boundarycell gausspoints by triangulation
       {
-#if 1 // create only triangles - result in large number of Gauss points
+#if 1 // create only triangles - result in more number of Gauss points
+        // Use "corners" for triangulation - no points are deleted
         if(!fac->IsTriangulated())
           fac->DoTriangulation( mesh, corners );
         const std::vector<std::vector<Point*> > & triangulation = fac->Triangulation();
-#else  // creates both tri and quad. less no of Gauss points
+#else  // creates both tri and quad. less no of Gauss points - but deleted some points leads to error
 
+        if( cornersTemp.size()==0 )
+              continue;
+        // Use "cornersTemp" for triangulation - deleted some points results in error
         if( !fac->IsFacetSplit() )
-          fac->SplitFacet(  corners );
+          fac->SplitFacet(  cornersTemp );
 
         const std::vector<std::vector<Point*> > triangulation = fac->GetSplitCells();
 #endif
@@ -841,10 +849,10 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
           else
             dserror("Triangulation created neither tri3 or quad4");
         }
-      }
+     }
 
-      else if(BCellgausstype=="MomentFitting")//generate boundarycell gausspoints by solving moment fitting equations
-      {
+     else if(BCellgausstype=="MomentFitting")//generate boundarycell gausspoints by solving moment fitting equations
+     {
         BoundarycellIntegration bcell_inte(elem,fac,posi,BaseNos);
         Bcellweights_ = bcell_inte.GenerateBoundaryCellIntegrationRule();
         BcellgausPts_ = bcell_inte.getBcellGaussPointLocation();
@@ -897,7 +905,7 @@ void GEO::CUT::VolumeCell::GenerateBoundaryCells( Mesh &mesh,
         NewArbitraryCell(mesh, fac, corners, gi, normal);
       }
     }
-	}
+  }
 }
 
 /*--------------------------------------------------------------------------------------------------------*
