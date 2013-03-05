@@ -114,7 +114,7 @@ void PARTICLE::TimIntCentrDiff::IntegrateStep()
   // it is necessary to evaluate also ghost bubbles.
   // in short: correct col layout is available but only row layout is needed
   // --> LINALG::Export(col->row) from bubbleforces to fextn_
-  Teuchos::RCP<const Epetra_Vector> bubbleforces = discret_->GetState("bubbleforces");
+  Teuchos::RCP<const Epetra_Vector> bubbleforces = discret_->GetState("particleforces");
   fextn_->PutScalar(0.0);
   LINALG::Export(*bubbleforces, *fextn_);
 
@@ -128,7 +128,8 @@ void PARTICLE::TimIntCentrDiff::IntegrateStep()
   if(radiusn_->MyLength() != 0)
   {
     // as long as it is valid, mass can be calculated just once
-    double mass = density_ * 4.0/3.0 * M_PI * pow((*radiusn_)[0], 3.0);
+    double radius = (*radiusn_)[0];
+    double mass = density_ * 4.0/3.0 * M_PI * radius * radius * radius;
     accn_->Update(1/mass, *fextn_, 0.0);
   }
   else
@@ -200,6 +201,32 @@ void PARTICLE::TimIntCentrDiff::UpdateStatesAfterParticleTransfer()
   {
     fextn_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
   }
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* State vectors are updated according to the new distribution of particles */
+void PARTICLE::TimIntCentrDiff::DetermineMassDampConsistAccel()
+{
+  // build new external forces (This is too much work here because an assembled row vector
+  // for the forces would be enough. But in later applications with particle contact
+  // it is necessary to evaluate also ghost bubbles.
+  // in short: correct col layout is available but only row layout is needed
+  // --> LINALG::Export(col->row) from bubbleforces to fextn_
+  Teuchos::RCP<const Epetra_Vector> bubbleforces = discret_->GetState("particleforces");
+  fextn_->PutScalar(0.0);
+  LINALG::Export(*bubbleforces, *fextn_);
+
+  if(radiusn_->MyLength() != 0)
+  {
+    // as long as it is valid, mass can be calculated just once
+    double radius = (*radiusn_)[0];
+    double mass = density_ * 4.0/3.0 * M_PI * radius * radius * radius;
+    (*acc_)(0)->Update(1/mass, *fextn_, 0.0);
+  }
+  else
+    (*acc_)(0)->PutScalar(0.0);
 
   return;
 }

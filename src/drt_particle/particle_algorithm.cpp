@@ -24,6 +24,8 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_lib/drt_utils_parallel.H"
 #include "../drt_lib/drt_dofset_independent.H"
+#include "../drt_lib/drt_dofset_transparent.H"
+#include "../drt_lib/drt_condition_utils.H"
 #include "../drt_meshfree_discret/drt_meshfree_bin.H"
 
 #include "../drt_geometry/searchtree_geometry_service.H"
@@ -45,6 +47,7 @@ PARTICLE::Algorithm::Algorithm(
   particledis_(Teuchos::null),
   particles_(Teuchos::null),
   bincolmap_(Teuchos::null),
+  particlewalldis_(Teuchos::null),
   myrank_(comm.MyPID())
 {
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
@@ -154,8 +157,17 @@ void PARTICLE::Algorithm::Init()
   // ghost bins and particles according to the bins
   SetupGhosting(binrowmap);
 
+  // add fully redundant discret for particle walls
+
+  // set degrees of freedom in the discretization
+  // access the structural discretization
+  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+  if (not structdis->Filled() or not structdis->HaveDofs())
+    structdis->FillComplete();
+  SetupParticleWalls(structdis);
+
   // some output
-  IO::cout << "after ghosting" << IO::endl;
+  IO::cout << "after ghosting of particles" << IO::endl;
   DRT::UTILS::PrintParallelDistribution(*particledis_);
 
   // access structural dynamic params list which will be possibly modified while creating the time integrator
@@ -165,6 +177,10 @@ void PARTICLE::Algorithm::Init()
   Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> particles =
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(), const_cast<Teuchos::ParameterList&>(sdyn), particledis_));
   particles_ = particles->StructureFieldrcp();
+
+  // determine consistent initial acceleration for the particles
+  CalculateAndApplyForcesToParticles();
+  Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->DetermineMassDampConsistAccel();
 
   return;
 }
@@ -188,10 +204,76 @@ void PARTICLE::Algorithm::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::Integrate()
 {
-  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("PARTICLE::Algorithm::Integrate");
+  CalculateAndApplyForcesToParticles();
+
+  {
+    Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("PARTICLE::Algorithm::Integrate");
+    Teuchos::TimeMonitor monitor(*t);
+    particles_->Solve();
+  }
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | calculate forces on particle and apply it               ghamm 02/13  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::CalculateAndApplyForcesToParticles()
+{
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("PARTICLE::Algorithm::CalculateAndApplyForcesToParticles");
   Teuchos::TimeMonitor monitor(*t);
 
-  particles_->Solve();
+  particledis_->ClearState();
+
+  // particle radius of layout nodal col map --> SetState not possible
+  Teuchos::RCP<Epetra_Vector> particleradius = LINALG::CreateVector(*particledis_->NodeColMap(),false);
+  LINALG::Export(*Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadiusnp(),*particleradius);
+
+  // vector to be filled with forces
+  Teuchos::RCP<Epetra_Vector> particleforces = LINALG::CreateVector(*particledis_->DofColMap(),true);
+
+  double particledensity = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ParticleDensity();
+
+  // all particles (incl ghost) are evaluated
+  const int numcolbin = particledis_->NumMyColElements();
+  for (int ibin=0; ibin<numcolbin; ibin++)
+  {
+    DRT::Element* actbin = particledis_->lColElement(ibin);
+    DRT::Node** particlesinbin = actbin->Nodes();
+
+    // calculate forces for all particles in this bin
+    for(int iparticle=0; iparticle<actbin->NumNode(); iparticle++)
+    {
+      const DRT::Node* currparticle = particlesinbin[iparticle];
+      std::vector<int> lm_b = particledis_->Dof(currparticle);
+
+      // get particle radius
+      double r_p = (*particleradius)[ particledis_->NodeColMap()->LID(currparticle->Id()) ];
+
+      // variable to sum forces for the current particle under observation
+      Epetra_SerialDenseVector forcecurrparticle(3);
+
+      /*------------------------------------------------------------------*/
+      //// gravity forces = volume_p * rho_p * g
+      double vol_bub = 4.0 / 3.0 * M_PI * r_p * r_p* r_p;
+      double mass = vol_bub * particledensity;
+      LINALG::Matrix<3,1> gravityforce(true);
+      gravityforce.Update(mass, gravity_acc_);
+      //assemble
+      for(int dim=0; dim<3; dim++)
+        forcecurrparticle[dim] += gravityforce(dim);
+      /*------------------------------------------------------------------*/
+      // assemble of particle forces can be done without further need of LINALG::Export (ghost particles also evaluated)
+      std::vector<int> lmowner_b(lm_b.size(), myrank_);
+      LINALG::Assemble(*particleforces,forcecurrparticle,lm_b,lmowner_b);
+    } // end iparticle
+  } // end ibin
+
+
+  // apply forces to particles
+  particledis_->SetState("particleforces", particleforces);
+
   return;
 }
 
@@ -693,6 +775,227 @@ void PARTICLE::Algorithm::TransferParticles()
 
 
 /*----------------------------------------------------------------------*
+| particle walls are added from the structural discret      ghamm 03/13 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> structdis)
+{
+  //--------------------------------------------------------------------
+  // 1st step: build fully redundant discretization with wall elements
+  //--------------------------------------------------------------------
+
+  // declare struct objects in wall condition
+  std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > > structgelements; // col map of structure elements
+  std::map<int, std::map<int, DRT::Node*> > dummy2;  // dummy map
+  std::map<int, std::map<int, DRT::Node*> > structgnodes; // col map of structure nodes
+
+  //initialize struct objects in wall condition
+  DRT::UTILS::FindConditionObjects(*structdis, dummy2, structgnodes, structgelements,"ParticleWall");
+
+  std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > >::iterator meit;
+
+  // initialize new particle wall discretizations
+  Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(structdis->Comm().Clone());
+  const string discret_name = "particlewalls";
+  Teuchos::RCP<DRT::Discretization> particlewalldis = Teuchos::rcp(new DRT::Discretization(discret_name,com));
+
+  std::vector<int> nodeids;
+  std::vector<int> eleids;
+  // loop over all particle wall nodes and elements and fill new discretization
+  for(std::map<int, std::map<int, Teuchos::RCP<DRT::Element> > >::iterator meit=structgelements.begin(); meit!=structgelements.end(); ++meit)
+  {
+    // care about particle wall nodes
+    std::map<int, DRT::Node*> wallgnodes = structgnodes[meit->first];
+    for (std::map<int, DRT::Node* >::iterator nit=wallgnodes.begin(); nit != wallgnodes.end(); ++nit)
+    {
+      DRT::Node* currnode = (*nit).second;
+      if (currnode->Owner() == myrank_)
+      {
+        nodeids.push_back(currnode->Id());
+        particlewalldis->AddNode(Teuchos::rcp(new DRT::Node(currnode->Id(), currnode->X(), currnode->Owner())));
+      }
+    }
+
+    // care about particle wall eles
+    std::map<int, Teuchos::RCP<DRT::Element> > structelementsinterf = structgelements[meit->first];
+    for (std::map<int, Teuchos::RCP<DRT::Element> >::iterator eit=structelementsinterf.begin(); eit != structelementsinterf.end(); ++eit)
+    {
+      Teuchos::RCP<DRT::Element> currele = eit->second;
+      if (currele->Owner() == myrank_)
+      {
+        eleids.push_back(currele->Id() );
+        // structural surface elements cannot be distributed --> Bele3 element is used
+        Teuchos::RCP<DRT::Element> wallele = DRT::UTILS::Factory("BELE3","Polynomial", currele->Id(), currele->Owner());
+        wallele->SetNodeIds(currele->NumNode(), currele->NodeIds());
+        particlewalldis->AddElement( wallele );
+      }
+    }
+  }
+
+  // row node map of walls
+  Teuchos::RCP<Epetra_Map> wallnoderowmap = Teuchos::rcp(new Epetra_Map(-1,nodeids.size(),&nodeids[0],0,particlewalldis->Comm()));
+  // fully overlapping node map
+  Teuchos::RCP<Epetra_Map> wallrednodecolmap = LINALG::AllreduceEMap(*wallnoderowmap);
+
+  // row ele map of walls
+  Teuchos::RCP<Epetra_Map> wallelerowmap = Teuchos::rcp(new Epetra_Map(-1,eleids.size(),&eleids[0],0,particlewalldis->Comm()));
+  // fully overlapping ele map
+  Teuchos::RCP<Epetra_Map> wallredelecolmap = LINALG::AllreduceEMap(*wallelerowmap);
+
+  // do the fully overlapping ghosting of the wall elements to have everything redundant
+  particlewalldis->ExportColumnNodes(*wallrednodecolmap);
+  particlewalldis->ExportColumnElements(*wallredelecolmap);
+
+  // find out if we are in parallel; needed for TransparentDofSet
+  bool parallel = (particlewalldis->Comm().NumProc() == 1) ? false : true;
+
+  // dofs of the original discretization are used to set same dofs for the new particle wall discretization
+  Teuchos::RCP<DRT::DofSet> newdofset = Teuchos::rcp(new DRT::TransparentDofSet(structdis,parallel));
+  particlewalldis->ReplaceDofSet(newdofset);
+  newdofset=Teuchos::null;
+
+  // final fill complete to reorganize everything in the discretization
+  particlewalldis->FillComplete(true, false, false);
+  particlewalldis_ = particlewalldis;
+
+  // some output
+  IO::cout << "after adding particle walls" << IO::endl;
+  DRT::UTILS::PrintParallelDistribution(*particlewalldis_);
+
+
+  //--------------------------------------------------------------------
+  // 2nd step: assign wall elements to bins
+  //--------------------------------------------------------------------
+
+  // so far we have only fixed walls
+  std::map<int,LINALG::Matrix<3,1> > currentpositions;
+  for (int lid = 0; lid < particlewalldis_->NumMyColNodes(); ++lid)
+  {
+    const DRT::Node* node = particlewalldis_->lColNode(lid);
+    LINALG::Matrix<3,1> currpos;
+    currpos(0) = node->X()[0];
+    currpos(1) = node->X()[1];
+    currpos(2) = node->X()[2];
+    currentpositions[node->Id()] = currpos;
+  }
+
+  // find bins for all wall elements
+  for (int lid = 0; lid < particlewalldis_->NumMyColElements(); ++lid)
+  {
+    DRT::Element* wallele = particlewalldis_->lColElement(lid);
+    DRT::Node** wallnodes = wallele->Nodes();
+    const int numnode = wallele->NumNode();
+    // variable to store bin ids in which this wall element is located
+    std::set<int> binIds;
+
+    //// 2.1) do a positive search and get all bins enclosed in the bounding box of each wall element
+    {
+      // initialize ijk_range with ijk of first node of wall element
+      int ijk[3];
+      {
+        const DRT::Node* node = wallnodes[0];
+        const double* coords = node->X();
+        ConvertPosToijk(coords, ijk);
+      }
+
+      // ijk_range contains: i_min i_max j_min j_max k_min k_max
+      int ijk_range[] = {ijk[0], ijk[0], ijk[1], ijk[1], ijk[2], ijk[2]};
+
+      // fill in remaining nodes
+      for (int j=1; j<numnode; j++)
+      {
+        const DRT::Node* node = wallnodes[j];
+        const double* coords = node->X();
+        int ijk[3];
+        ConvertPosToijk(coords, ijk);
+
+        for(int dim=0; dim<3; dim++)
+        {
+          if(ijk[dim]<ijk_range[dim*2])
+            ijk_range[dim*2]=ijk[dim];
+          if(ijk[dim]>ijk_range[dim*2+1])
+            ijk_range[dim*2+1]=ijk[dim];
+        }
+      }
+
+      // get corresponding bin ids in ijk range and fill them into binIds
+      GidsInijkRange(binIds, &ijk_range[0]);
+    }
+
+    //// 2.2) do a first negative search and remove bins that are not on this processor
+    {
+      std::set<int> binnotfound;
+      for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
+      {
+        if(not particledis_->HaveGlobalElement(*biniter))
+          binnotfound.insert(*biniter);
+      }
+      for(std::set<int>::const_iterator biniter=binnotfound.begin(); biniter!=binnotfound.end(); ++biniter)
+        binIds.erase(*biniter);
+    }
+
+    // if already all bins have been removed, next wall element can be processed
+    if(binIds.empty())
+      break;
+
+    //// 2.3) do a second negative search and remove bins that are too far away from the wall element
+    // all corners of the close bin are projected onto the wall element: if at least one projection
+    // point is inside the bin, it won't be removed from the list
+    {
+      Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("PARTICLE::Algorithm::SetupParticleWalls::step2.3_check");
+      Teuchos::TimeMonitor monitor(*t);
+
+      std::map<int, Teuchos::RCP<DRT::Element> > elements;
+      elements[wallele->Id()] = Teuchos::rcp(wallele, false);
+      std::map<int, std::set<int> > elementList;
+      elementList[-1].insert(wallele->Id());
+      std::set<int> binfaraway;
+
+      for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
+      {
+        std::vector<LINALG::Matrix<3,1> > bincorners;
+        GetBinCorners(*biniter, bincorners);
+        bool projpointinsidebin = false;
+        // loop over all corners of one bin and project them onto the wall element
+        for(int corner=0; corner<8; corner++)
+        {
+          //search for the closest object, more exactly it's coordinates
+          LINALG::Matrix<3,1> minDistCoords;
+          int eleid = GEO::nearest3DObjectInNode(particlewalldis_, elements, currentpositions,
+            elementList, bincorners[corner], minDistCoords);
+          if(eleid == -1)
+            dserror("Closest surface not found. This should be the neighborhood of the element already!?!");
+
+          int gid = ConvertPosToGid(minDistCoords);
+          if(gid == *biniter)
+          {
+            projpointinsidebin = true;
+            break;
+          }
+        }
+        if(projpointinsidebin == false)
+          binfaraway.insert(*biniter);
+      }
+
+      for(std::set<int>::const_iterator biniter=binfaraway.begin(); biniter!=binfaraway.end(); ++biniter)
+      {
+        dserror("This has not yet been checked. But should be fine. Just remove this line in the code.");
+        binIds.erase(*biniter);
+      }
+    }
+
+    //// 2.3) assign fluid element to remaining bins
+    {
+      for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
+        particlewalls_[*biniter].insert(wallele->Id());
+    }
+
+  } // end lid
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | convert position first to i,j,k, then into bin id         ghamm 01/13 |
  *----------------------------------------------------------------------*/
 int PARTICLE::Algorithm::ConvertPosToGid(const std::vector<double>& pos)
@@ -735,6 +1038,33 @@ void PARTICLE::Algorithm::ConvertPosToijk(const double* pos, int* ijk)
 
 
 /*----------------------------------------------------------------------*
+| convert position first to i,j,k, then into bin id         ghamm 03/13 |
+ *----------------------------------------------------------------------*/
+int PARTICLE::Algorithm::ConvertPosToGid(const LINALG::Matrix<3,1> pos)
+{
+  int ijk[3] = {0,0,0};
+  for(int dim=0; dim < 3; dim++)
+  {
+    ijk[dim] = (int)((pos(dim)-XAABB_(dim,0)) / bin_size_[dim]);
+  }
+
+  return ConvertijkToGid(&ijk[0]);
+}
+
+/*----------------------------------------------------------------------*
+| convert position first to i,j,k, then into bin id         ghamm 03/13 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::ConvertPosToijk(const LINALG::Matrix<3,1> pos, int* ijk)
+{
+  for(int dim=0; dim < 3; dim++)
+  {
+    ijk[dim] = (int)((pos(dim)-XAABB_(dim,0)) / bin_size_[dim]);
+  }
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
 | convert i,j,k into bin id                                 ghamm 09/12 |
  *----------------------------------------------------------------------*/
 int PARTICLE::Algorithm::ConvertijkToGid(int* ijk)
@@ -763,6 +1093,65 @@ void PARTICLE::Algorithm::ConvertGidToijk(int gid, int* ijk)
   // found ijk is outside of XAABB
   if( ijk[0]<0 || ijk[1]<0 || ijk[2]<0 || ijk[0]>=bin_per_dir_[0] || ijk[1]>=bin_per_dir_[1] || ijk[2]>=bin_per_dir_[2] )
     ijk[0] = -1;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ | get all bins in ijk range                               ghamm 02/13  |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::GidsInijkRange(std::set<int>& binIds, int* ijk_range)
+{
+  for(int i=ijk_range[0]; i<=ijk_range[1]; i++)
+  {
+    for(int j=ijk_range[2]; j<=ijk_range[3]; j++)
+    {
+      for(int k=ijk_range[4]; k<=ijk_range[5]; k++)
+      {
+        int ijk[3] = {i,j,k};
+
+        int gid = ConvertijkToGid(&ijk[0]);
+        if(gid != -1)
+        {
+          binIds.insert(gid);
+        }
+      } // end for int k
+    } // end for int j
+  } // end for int i
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+| corner position for given bin id                          ghamm 03/13 |
+ *----------------------------------------------------------------------*/
+void PARTICLE::Algorithm::GetBinCorners(int binId, std::vector<LINALG::Matrix<3,1> >& bincorners)
+{
+  bincorners.clear();
+  bincorners.reserve(8);
+  int ijk_base[3];
+  ConvertGidToijk(binId, &ijk_base[0]);
+
+  // order in bincorners is identical to ordering of i,j and k
+  for(int k=ijk_base[2]; k<(ijk_base[2]+2); k++)
+  {
+    for(int j=ijk_base[1]; j<(ijk_base[1]+2); j++)
+    {
+      for(int i=ijk_base[0]; i<(ijk_base[0]+2); i++)
+      {
+        int ijk_curr[] = {i,j,k};
+        LINALG::Matrix<3,1> curr_corner;
+        for(int dim=0; dim<3; dim++)
+        {
+          curr_corner(dim) = XAABB_(dim,0) + bin_size_[dim]*ijk_curr[dim];
+        }
+        bincorners.push_back(curr_corner);
+
+      } // end for int k
+    } // end for int j
+  } // end for int i
 
   return;
 }

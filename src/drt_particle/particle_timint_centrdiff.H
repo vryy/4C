@@ -77,7 +77,7 @@ namespace PARTICLE
     //! Equilibrate the initial state by identifying the consistent
     //! initial accelerations and (if applicable) internal variables
     //! Make damping and mass matrix --> not yet needed
-    virtual void DetermineMassDampConsistAccel() {/*do nothing*/ ; }
+    virtual void DetermineMassDampConsistAccel();
 
     //! State vectors are updated according to the new distribution of particles
     void UpdateStatesAfterParticleTransfer();
@@ -104,7 +104,7 @@ namespace PARTICLE
 
     Teuchos::RCP<Epetra_Vector> radiusn_;  //!< radius of each particle at \f$t_{n+1}\f$
 
-    double density_; //!< density of each particle$
+    double density_; //!< density of each particle at \f$t_{n+1}\f$
 
     //@}
 

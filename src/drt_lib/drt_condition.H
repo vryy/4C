@@ -225,7 +225,8 @@ public:
     RedAirwayTissue,
     RedAirwayNodeTissue,
     ArtPrescribedScatraCond,
-    ParticleInflow
+    ParticleInflow,
+    ParticleWall
   };
 
   /*!

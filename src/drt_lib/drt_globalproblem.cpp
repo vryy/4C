@@ -1246,9 +1246,12 @@ void DRT::Problem::ReadFields(DRT::INPUT::DatFileReader& reader, const bool read
     {
       dserror("particle simulations must be distype=Meshfree");
     }
+    structdis = Teuchos::rcp(new DRT::Discretization("structure",reader.Comm()));
 
+    AddDis("structure", structdis);
     AddDis("particle", particledis);
 
+    nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ElementReader(structdis, reader, "--STRUCTURE ELEMENTS")));
     // there are no elements available for particle simulations
     // section with --DUMMY ELEMENTS in dat file must not be filled
     nodereader.AddElementReader(Teuchos::rcp(new DRT::INPUT::ParticleReader(particledis, reader)));

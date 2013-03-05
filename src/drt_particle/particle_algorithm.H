@@ -74,7 +74,7 @@ namespace PARTICLE
     /// setup of the system
     virtual void SetupSystem();
 
-    /// outer level TFSI time loop
+    /// outer time loop for particle problem
     virtual void Timeloop();
 
     /// test results (if necessary)
@@ -90,6 +90,9 @@ namespace PARTICLE
 
     /// solve the current particle time step
     virtual void Integrate();
+
+    /// force on particles is calculated and applied
+    virtual void CalculateAndApplyForcesToParticles();
 
     /// update the current time step
     virtual void Update();
@@ -124,6 +127,11 @@ namespace PARTICLE
     /// and transferred if necessary
     virtual void TransferParticles();
 
+    /// particle walls are set up and assigned to bins
+    virtual void SetupParticleWalls(
+      Teuchos::RCP<DRT::Discretization> structdis
+      );
+
     /// convert i,j,k into bin id
     virtual int ConvertijkToGid(
       int* ijk  ///< i,j,k to be converted into a bin id
@@ -145,10 +153,33 @@ namespace PARTICLE
       int* ijk   ///< resulting i,j,k
       );
 
+    /// convert position into bin id
+    int ConvertPosToGid(
+      const LINALG::Matrix<3,1> pos   ///< position of which the corresponding bin id is asked for
+      );
+
+    ///convert position into i,j,k
+    void ConvertPosToijk(
+      const LINALG::Matrix<3,1> pos,   ///< position to be converted into i,j,k
+      int* ijk  ///< resulting i,j,k
+      );
+
     ///convert bin id into i,j,k
     virtual void ConvertGidToijk(
       int gid,  ///< bin id to be converted into i,j,k
       int* ijk  ///< resulting i,j,k
+      );
+
+    /// get all bin ids for given range of ijk
+    void GidsInijkRange(
+      std::set<int>& binIds,
+      int* ijk_bound
+      );
+
+    /// get nodal coordinates of bin with given id
+    void GetBinCorners(
+      int binId,
+      std::vector<LINALG::Matrix<3,1> >& bincorners
       );
 
 
@@ -157,7 +188,7 @@ namespace PARTICLE
 
     Teuchos::RCP<DRT::Discretization> particledis_;     ///< particle discretization
 
-    Teuchos::RCP<ADAPTER::Structure> particles_;     ///< particle discretization
+    Teuchos::RCP<ADAPTER::Structure> particles_;     ///< particle time integration
 
     Teuchos::RCP<Epetra_Map> bincolmap_;     ///< colmap of bins
 
@@ -170,6 +201,12 @@ namespace PARTICLE
     int bin_per_dir_[3];    ///< number of bins per direction
 
     LINALG::Matrix<3,1> gravity_acc_;   ///< acceleration due to gravity
+
+    Teuchos::RCP<DRT::Discretization> particlewalldis_;     ///< fully redundant particle wall discretization
+
+    //! Info: Currently it is assumed that bins and wall elements are fixed in space (initial content is stored here)
+    //! Future: Dynamical registering of wall elements in bins when they are moving
+    std::map<int, std::set<int> > particlewalls_;   ///< map that contains all wall element ids of each bin
 
     //@}
 

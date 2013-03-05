@@ -158,6 +158,10 @@ void CAVITATION::Algorithm::Init()
       Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->CavitationParams(), const_cast<Teuchos::ParameterList&>(sdyn), particledis_));
   particles_ = particles->StructureFieldrcp();
 
+  // determine consistent initial acceleration for the particles
+  CalculateAndApplyForcesToParticles();
+  Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->DetermineMassDampConsistAccel();
+
   return;
 }
 
@@ -178,12 +182,15 @@ void CAVITATION::Algorithm::PrepareTimeStep()
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::Integrate()
 {
-  CalculateAndApplyFluidForcesToParticles();
+  // apply forces and solve particle time step
   PARTICLE::Algorithm::Integrate();
-//  fluid_->NonlinearSolve(); // after discussion with Ursula
-  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("CAVITATION::Algorithm::__fluid_->MultiCorrector()");
-  Teuchos::TimeMonitor monitor(*t);
-  fluid_->MultiCorrector();
+
+  {
+    Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("CAVITATION::Algorithm::IntegrateFluid");
+    Teuchos::TimeMonitor monitor(*t);
+    fluid_->MultiCorrector();
+  }
+
   return;
 }
 
@@ -191,9 +198,9 @@ void CAVITATION::Algorithm::Integrate()
 /*----------------------------------------------------------------------*
  | calculate fluid forces on particle and apply it         ghamm 01/13  |
  *----------------------------------------------------------------------*/
-void CAVITATION::Algorithm::CalculateAndApplyFluidForcesToParticles()
+void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
 {
-  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("CAVITATION::Algorithm::CalculateAndApplyFluidForcesToParticles");
+  Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("CAVITATION::Algorithm::CalculateAndApplyForcesToParticles");
   Teuchos::TimeMonitor monitor(*t);
 
   fluiddis_->ClearState();
@@ -258,7 +265,9 @@ void CAVITATION::Algorithm::CalculateAndApplyFluidForcesToParticles()
       }
 
 
+      //--------------------------------------------------------------------
       // 1st step: element coordinates of particle position in fluid element
+      //--------------------------------------------------------------------
 
       // variables to store information about element in which the particle is located
       DRT::Element* targetfluidele = NULL;
@@ -299,7 +308,10 @@ void CAVITATION::Algorithm::CalculateAndApplyFluidForcesToParticles()
       }
 
 
+      //--------------------------------------------------------------------
       // 2nd step: forces on this bubble are calculated
+      //--------------------------------------------------------------------
+
       if(targetfluidele == NULL)
       {
         std::cout << "INFO: currparticle with Id: " << currparticle->Id() << " and position: " << particleposition(0) << " "
@@ -445,7 +457,9 @@ void CAVITATION::Algorithm::CalculateAndApplyFluidForcesToParticles()
       /*------------------------------------------------------------------*/
 
 
+      //--------------------------------------------------------------------
       // 3rd step: assemble bubble forces
+      //--------------------------------------------------------------------
 
       // assemble of bubble forces can be done without further need of LINALG::Export (ghost bubbles also evaluated)
       std::vector<int> lmowner_b(lm_b.size(), myrank_);
@@ -473,8 +487,10 @@ void CAVITATION::Algorithm::CalculateAndApplyFluidForcesToParticles()
   } // end ibin
 
 
+  //--------------------------------------------------------------------
   // 4th step: apply forces to bubbles and fluid field
-  particledis_->SetState("bubbleforces", bubbleforces);
+  //--------------------------------------------------------------------
+  particledis_->SetState("particleforces", bubbleforces);
 
   return;
 }
@@ -651,7 +667,9 @@ Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs(std::map<i
   {
   case INPAR::CAVITATION::AssignFluidEleToBinFast:
   {
+    //--------------------------------------------------------------------
     // 1st and 2nd step combined due to exploiting bounding box idea for fluid elements and bins
+    //--------------------------------------------------------------------
 
     Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("CAVITATION::Algorithm::DistributeBinsToProcs_step1+2_fast");
     Teuchos::TimeMonitor monitor(*t);
@@ -701,7 +719,9 @@ Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs(std::map<i
   }
   case INPAR::CAVITATION::AssignFluidEleToBinExact:
   {
+    //--------------------------------------------------------------------
     // 1st step: loop over all fluid nodes and fill adjacent elements into corresponding bin
+    //--------------------------------------------------------------------
 
     {
       Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("CAVITATION::Algorithm::DistributeBinsToProcs_step1");
@@ -721,7 +741,9 @@ Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs(std::map<i
       }
     }
 
+    //--------------------------------------------------------------------
     // 2nd step: loop over all corners of bins and find corresponding fluid element
+    //--------------------------------------------------------------------
 
     {
       Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("CAVITATION::Algorithm::DistributeBinsToProcs_step2");
@@ -819,7 +841,9 @@ Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs(std::map<i
   }
 
 
+  //--------------------------------------------------------------------
   // 3rd step: decide which proc will be owner of each bin
+  //--------------------------------------------------------------------
 
   std::vector<int> rowbins;
   {
@@ -883,10 +907,17 @@ Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs(std::map<i
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap, std::map<int, std::set<int> >& fluideles)
 {
+  //--------------------------------------------------------------------
   // 1st and 2nd step
+  //--------------------------------------------------------------------
+
   PARTICLE::Algorithm::SetupGhosting(binrowmap);
 
+
+  //--------------------------------------------------------------------
   // 3st step: extend ghosting of underlying fluid discretization according to bin distribution
+  //--------------------------------------------------------------------
+
   {
     // do communication to gather all elements for extended ghosting
     const int numproc = fluiddis_->Comm().NumProc();
@@ -1071,32 +1102,6 @@ std::vector<int> CAVITATION::Algorithm::AdjacentBinstoCorner(int* ijk)
   } // end for int i
 
   return adjbins;
-}
-
-
-/*----------------------------------------------------------------------*
- | get all bins in ijk range                               ghamm 02/13  |
- *----------------------------------------------------------------------*/
-void CAVITATION::Algorithm::GidsInijkRange(std::set<int>& binIds, int* ijk_range)
-{
-  for(int i=ijk_range[0]; i<=ijk_range[1]; i++)
-  {
-    for(int j=ijk_range[2]; j<=ijk_range[3];j++)
-    {
-      for(int k=ijk_range[4]; k<=ijk_range[5];k++)
-      {
-        int ijk[3] = {i,j,k};
-
-        int gid = ConvertijkToGid(&ijk[0]);
-        if(gid != -1)
-        {
-          binIds.insert(gid);
-        }
-      } // end for int k
-    } // end for int j
-  } // end for int i
-
-  return;
 }
 
 

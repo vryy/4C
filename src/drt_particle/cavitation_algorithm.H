@@ -67,7 +67,7 @@ namespace CAVITATION
     /// setup of the system
     virtual void SetupSystem();
 
-    /// outer level TFSI time loop
+    /// outer time loop for cavitation problem
     virtual void Timeloop();
 
     /// test results (if necessary)
@@ -85,7 +85,7 @@ namespace CAVITATION
     virtual void Integrate();
 
     /// force on particles is calculated and applied
-    virtual void CalculateAndApplyFluidForcesToParticles();
+    virtual void CalculateAndApplyForcesToParticles();
 
     /// insert particles into domain
     void ParticleInflow();
@@ -116,12 +116,6 @@ namespace CAVITATION
     /// get adjacent bins to corner, where ijk is in 1st octant
     std::vector<int> AdjacentBinstoCorner(
       int* ijk   ///< ijk is 1st octant
-      );
-
-    /// get all bin ids for given range of ijk
-    void GidsInijkRange(
-      std::set<int>& binIds,
-      int* ijk_bound
       );
 
 
