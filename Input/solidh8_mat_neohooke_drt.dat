@@ -330,7 +330,7 @@ CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 2.0 c2 1.0
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 1.5002325258e-01 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 8 QUANTITY dispx VALUE 1.50023237931761838e-01 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 8 QUANTITY dispy VALUE -1.296593242983814389e-14 TOLERANCE 1e-12
 STRUCTURE DIS structure NODE 8 QUANTITY dispz VALUE 3.008829487932236096e-14 TOLERANCE 1e-12
 -------------------------------------------------------------------------END

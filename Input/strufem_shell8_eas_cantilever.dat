@@ -1586,7 +1586,7 @@ NODE 404 COORD 1.000000000000000e+02 0.000000000000000e+00 1.000000000000000e+01
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1000000 NUE 0.45 DENS 0.001
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 404 QUANTITY dispy VALUE -4.0549378721628827e+01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 404 QUANTITY dispy VALUE -4.05497518623201358e+01 TOLERANCE 1e-6
 ----------------------------------------------------------------------CURVE1
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.1 FACTOR 0.0 2.0
 CURVE1 on Polygonal T 0.0 BYABSTIME Yes 0.1 0.11 FACTOR 2.0 0.0

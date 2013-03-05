@@ -145,9 +145,9 @@ CURVE1 on EXPR FUNC 1.0 t1 0.1 t2 10000.0
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 100 QUANTITY dispx VALUE -2.210807256e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 100 QUANTITY dispy VALUE 1.141964388e-04 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 100 QUANTITY dispz VALUE 7.728680197e-03 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 100 QUANTITY dispx VALUE -1.97182013192809480e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 100 QUANTITY dispy VALUE 1.34762633161334311e-04 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 100 QUANTITY dispz VALUE 6.93985787756886286e-03 TOLERANCE 1e-6
 
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0

@@ -182,8 +182,8 @@ FUNCT2 EXPR 0 0 0 FUNCTION 0.3
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 200 QUANTITY dispx VALUE 2.273665966e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 200 QUANTITY dispy VALUE -1.039579092e-03 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 200 QUANTITY dispx VALUE 2.29719763916065613e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 200 QUANTITY dispy VALUE -1.18752187892427296e-03 TOLERANCE 1e-6
 
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
