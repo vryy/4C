@@ -76,16 +76,9 @@ PARTICLE::TimIntCentrDiff::TimIntCentrDiff(
 
     // initialize radii of particles
     (*radiusn_)[n] = initial_radius;
-
-    double mass = density_ * 4.0/3.0 * M_PI * initial_radius * initial_radius * initial_radius ;
-    for (int dim=2; dim<3; dim++)
-    {
-      double force = 0.0;
-      (*(*acc_)(0))[lid+dim] = force / mass;
-    }
-    // end: for testing reasons
-
   }
+
+  // DetermineMassDampConsistAccel() is called at the end of Algorithm::Init() after proper setup of the problem
 
   return;
 }
