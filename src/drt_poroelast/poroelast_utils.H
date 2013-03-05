@@ -36,6 +36,7 @@ namespace DRT
 namespace POROELAST
 {
   class PoroBase;
+  class PORO_SCATRA_Base;
 
   //! coupling types of porous media problem
   enum coupltype
@@ -82,9 +83,15 @@ namespace POROELAST
     /// setup poro discretization,i.e. clone the structural discretization
     void SetupPoro();
 
-    /// setup poro discretization,i.e. clone the structural discretization
+    /// create solution algorithm depending on input file
     Teuchos::RCP<POROELAST::PoroBase> CreatePoroAlgorithm(
-                             const Teuchos::ParameterList& timeparams, //!< coupling scheme (i)
+                             const Teuchos::ParameterList& timeparams, //!< problem parameters (i)
+                             const Epetra_Comm& comm //!< communicator(i)
+                             );
+
+    /// create solution algorithm depending on input file
+    Teuchos::RCP<POROELAST::PORO_SCATRA_Base> CreatePoroScatraAlgorithm(
+                             const Teuchos::ParameterList& timeparams, //!< problem parameters (i)
                              const Epetra_Comm& comm //!< communicator(i)
                              );
 

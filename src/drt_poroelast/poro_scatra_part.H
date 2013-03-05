@@ -11,12 +11,14 @@
 
  *----------------------------------------------------------------------*/
 
-#ifndef PORO_SCATRA_H
-#define PORO_SCATRA_H
+#ifndef PORO_SCATRA_PART_H
+#define PORO_SCATRA_PART_H
 
 /*----------------------------------------------------------------------*
  | header inclusions                                                     |
  *----------------------------------------------------------------------*/
+#include "poro_scatra_base.H"
+
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
@@ -37,19 +39,19 @@ namespace POROELAST
 /*----------------------------------------------------------------------*
  |                                                                       |
  *----------------------------------------------------------------------*/
-namespace PORO_SCATRA
+namespace POROELAST
 {
   /// partitioned algorithm for scalar transport in porous media
-  class PartPORO_SCATRA
+  class PORO_SCATRA_Part: public PORO_SCATRA_Base
   {
   public:
 
     ///Constructor
-    explicit PartPORO_SCATRA(const Epetra_Comm& comm,
+    explicit PORO_SCATRA_Part(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams);
 
     ///destructor
-    virtual ~PartPORO_SCATRA()
+    virtual ~PORO_SCATRA_Part()
     {
     }
     ;
@@ -60,54 +62,16 @@ namespace PORO_SCATRA
     void DoPoroStep();
     //! solve one time step of scalar transport problem
     void DoScatraStep();
-    //! update current time and time step
-    void IncrementTimeAndStep();
-
-    //! flag whether time loop should be finished
-    bool NotFinished()
-    {
-      return step_ < numstep_ and time_ <= timemax_;
-    }
-    ;
 
     //! apply solution of poro-problem to scatra
     void SetPoroSolution();
     //! apply displacement fields to scatra
     void SetMeshDisp();
-    //! setup discretization, includes cloning the structure discretization
-    void SetupDiscretizations(const Epetra_Comm& comm);
     //! apply velocity fields to scatra
     void SetVelocityFields();
+
     //! Main time loop.
-    void Timeloop();
-
-    //! setup for single fields
-    virtual void SetupSystem();
-    //! read and set fields needed for restart
-    virtual void ReadRestart();
-
-    //! perform result test
-    virtual void TestResults(const Epetra_Comm& comm);
-
-  protected:
-    //Members
-
-    //! Pointer to the poroelastic problem. (drt_poroelastic)
-    Teuchos::RCP<POROELAST::PoroBase> poroelast_subproblem_;
-    //! Pointer to the ScaTra problem.     (drt_scatra)
-    Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_subproblem_;
-
-    //! current time step number
-    int step_;
-    //! total number of time steps
-    int numstep_;
-
-    //! time step length
-    double dt_;
-    //! current time
-    double time_;
-    //! total simulation time
-    double timemax_;
+    virtual void Timeloop()=0;
   };
 }
 

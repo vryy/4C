@@ -17,7 +17,7 @@
  *----------------------------------------------------------------------*/
 #include "poro_dyn.H"
 #include "poro_base.H"
-#include "poro_scatra.H"
+#include "poro_scatra_base.H"
 #include "poroelast_utils.H"
 #include "../drt_inpar/inpar_poroelast.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -80,11 +80,11 @@ void poro_scatra_drt()
   const Teuchos::ParameterList& poroscatradynparams = problem->PoroScatraControlParams();
 
   //3.- Creation of Poroelastic + Scalar_Transport problem. (Discretization called inside)
-  Teuchos::RCP<PORO_SCATRA::PartPORO_SCATRA> poro_scatra = Teuchos::rcp(
-      new PORO_SCATRA::PartPORO_SCATRA(comm, poroscatradynparams));
+  Teuchos::RCP<POROELAST::PORO_SCATRA_Base> poro_scatra = POROELAST::UTILS::CreatePoroScatraAlgorithm(poroscatradynparams, comm);
 
   //3.1- Read restart if needed. (Discretization called inside)
-  poro_scatra->ReadRestart();
+  const int restart = problem->Restart();
+  poro_scatra->ReadRestart(restart);
 
   //4.- Run of the actual problem.
 

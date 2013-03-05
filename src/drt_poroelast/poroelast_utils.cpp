@@ -15,8 +15,19 @@
 /*----------------------------------------------------------------------*
  | headers                                                              |
  *----------------------------------------------------------------------*/
-#include "poroelast_utils.H"
+
 #include "poro_base.H"
+
+#include "poro_partitioned.H"
+#include "poroelast_monolithic.H"
+#include "poro_monolithicstructuresplit.H"
+#include "poro_monolithicfluidsplit.H"
+#include "poroelast_utils.H"
+
+#include "poro_scatra_base.H"
+
+#include "poro_scatra_part_1wc.H"
+
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_utils_createdis.H"
@@ -24,11 +35,6 @@
 
 #include <Epetra_Time.h>
 #include <Epetra_MpiComm.h>
-
-#include "poro_partitioned.H"
-#include "poroelast_monolithic.H"
-#include "poro_monolithicstructuresplit.H"
-#include "poro_monolithicfluidsplit.H"
 
 #include "../drt_fluid_ele/fluid_ele.H"
 #include "../drt_so3/so3_poro.H"
@@ -203,7 +209,6 @@ void POROELAST::UTILS::SetupPoro()
     dserror("Structure AND Fluid discretization present. This is not supported.");
 }
 
-
 /*----------------------------------------------------------------------*
  | setup Poro algorithm                                            |
  *----------------------------------------------------------------------*/
@@ -268,6 +273,21 @@ Teuchos::RCP<POROELAST::PoroBase> POROELAST::UTILS::CreatePoroAlgorithm(
   poroalgo->SetupSolver();
 
   return poroalgo;
+}
+
+/*----------------------------------------------------------------------*
+ | setup PoroScatra algorithm                                            |
+ *----------------------------------------------------------------------*/
+Teuchos::RCP<POROELAST::PORO_SCATRA_Base> POROELAST::UTILS::CreatePoroScatraAlgorithm(
+    const Teuchos::ParameterList& timeparams,
+    const Epetra_Comm& comm)
+{
+  // create an empty PORO_SCATRA_Base instance
+  Teuchos::RCP<POROELAST::PORO_SCATRA_Base> algo = Teuchos::null;
+
+  algo = Teuchos::rcp(new POROELAST::PORO_SCATRA_Part_1WC(comm, timeparams));
+
+  return algo;
 }
 
 /*----------------------------------------------------------------------*
