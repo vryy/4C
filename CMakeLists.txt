@@ -1280,15 +1280,6 @@ set(OBJS_DRT_FLUID_ELE_LIB
   src/drt_opti/topopt_fluidAdjoint3_impl.cpp
   src/drt_opti/topopt_fluidAdjoint3_impl_parameter.cpp
 )
-set(OBJS_DRT_MESHFREE_FLUID_CELL_LIB
-  src/drt_meshfree_discret/meshfree_fluid_cell.cpp
-  src/drt_meshfree_discret/meshfree_fluid_cell_calc.cpp
-  src/drt_meshfree_discret/meshfree_fluid_cell_calc_utils.cpp
-#  src/drt_meshfree_discret/meshfree_fluid_cell_evaluate.cpp
-  src/drt_meshfree_discret/meshfree_fluid_cell_boundary.cpp 
-#  src/drt_meshfree_discret/meshfree_fluid_impl.cpp
-#  src/drt_meshfree_discret/meshfree_scatra_boundary_impl.cpp
-)
 set(OBJS_DRT_T3_LIB
   src/drt_truss3/truss3.cpp
   src/drt_truss3/truss3_evaluate.cpp
@@ -1517,7 +1508,6 @@ endif (NOT CMAKE_ARCHIVE_OUTPUT_DIRECTORY)
 
 # Compile element libraries first. There are files that take time to compile.
 add_library(ele_fluid ${OBJS_DRT_FLUID_ELE_LIB})
-add_library(ele_meshfree_fluid ${OBJS_DRT_MESHFREE_FLUID_CELL_LIB})
 add_library(ele_ale ${OBJS_DRT_ALE_LIB})
 add_library(ele_b2 ${OBJS_DRT_B2_LIB})
 add_library(ele_b2r ${OBJS_DRT_B2R_LIB})
@@ -1553,7 +1543,6 @@ set(ELEMENT_LIBRARIES
   ele_bele3
   ele_combust3
   ele_fluid
-  ele_meshfree_fluid
   ele_opti
   ele_s8
   ele_scatra
