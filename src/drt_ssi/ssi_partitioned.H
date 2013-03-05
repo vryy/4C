@@ -15,12 +15,8 @@
 #define SSI_PARTITIONED_H_
 
 #include "ssi_base.H"
-#include "../drt_adapter/ad_str_wrapper.H"
-#include "../drt_adapter/adapter_scatra_base_algorithm.H"
 
 namespace SSI {
-
-
 
 class SSI_Part : public SSI_Base
 {
@@ -33,29 +29,35 @@ public:
   /// virtual destructor
   virtual ~SSI_Part(){};
 
-  /// setup
+  /// setup of single fields (if needed)
   virtual void SetupSystem();
 
-  /// timeloop of coupled problem
+  /// time loop of coupled problem
   virtual void Timeloop() = 0;
 
 protected:
 
+  ///prepare time step of single fields
   virtual void PrepareTimeStep() = 0 ;
 
-  //one time step or one inner iteration loop step, depending on coupling algorithm
+  ///do one time step (one way coupled) or one inner iteration loop step (two way coupled), depending on coupling algorithm
   virtual void DoStructStep() = 0 ;
 
-  //one time step or one inner iteration loop step, depending on coupling algorithm
+  ///do one time step (one way coupled) or one inner iteration loop step (two way coupled), depending on coupling algorithm
   virtual void DoScatraStep() = 0 ;
 
-  virtual void SetStructSolution() ;
+  /// set structure solution on scatra field
+  void SetStructSolution() ;
 
-  virtual void SetScatraSolution() ;
+  /// set scatra solution on structure field
+  void SetScatraSolution() ;
 
-  virtual void SetMeshDisp() ;
+private:
+  /// set structure mesh displacement on scatra field
+  void SetMeshDisp() ;
 
-  virtual void SetVelocityFields() ;
+  /// set structure velocity fields on scatra field
+  void SetVelocityFields() ;
 
 private:
 

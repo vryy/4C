@@ -39,7 +39,7 @@ void ssi_drt()
   //3.- Creation of Poroelastic + Scalar_Transport problem. (Discretization called inside)
   Teuchos::RCP<SSI::SSI_Base> ssi = Teuchos::null;
 
-  // choose algorithm depending on solution type
+  //3.1 choose algorithm depending on solution type
   switch(coupling)
   {
   case INPAR::SSI::Part_SolidToScatra:
@@ -53,9 +53,10 @@ void ssi_drt()
     break;
   default:
     dserror("unknown coupling algorithm for SSI!");
+    break;
   }
 
-  //3.1- Read restart if needed. (Discretization called inside)
+  //3.2- Read restart if needed. (Discretization called inside)
   const int restart = problem->Restart();
   ssi->ReadRestart(restart);
 

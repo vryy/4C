@@ -15,6 +15,9 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_adapter/ad_str_wrapper.H"
+#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+
 SSI::SSI_Part1WC::SSI_Part1WC(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams)
   : SSI_Part(comm, timeparams)

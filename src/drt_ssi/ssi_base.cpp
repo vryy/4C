@@ -15,6 +15,9 @@
 #include "ssi_base.H"
 #include "ssi_partitioned.H"
 
+#include "../drt_adapter/ad_str_wrapper.H"
+#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+
 //for cloning
 #include "../drt_lib/drt_utils_createdis.H"
 #include "../drt_scatra/scatra_utils_clonestrategy.H"
@@ -101,5 +104,5 @@ void SSI::SSI_Base::SetupDiscretizations(const Epetra_Comm& comm)
     DRT::UTILS::CloneDiscretization<SCATRA::ScatraFluidCloneStrategy>(structdis,scatradis);
   }
   else
-  dserror("Structure AND ScaTra discretization present. This is not supported.");
+    dserror("Structure AND ScaTra discretization present. This is not supported.");
 }

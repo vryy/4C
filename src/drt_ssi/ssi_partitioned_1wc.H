@@ -21,45 +21,54 @@ namespace SSI
   class SSI_Part1WC : public SSI_Part
   {
   public:
-
+    //! constructor
     explicit SSI_Part1WC(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams);
 
+    //! virtual destructor
     virtual ~SSI_Part1WC(){};
 
+    //! actual time loop (implemented by derived class)
     virtual void Timeloop()=0;
 
   protected:
+    //! prepare time step for single fields
     void PrepareTimeStep();
 
+    //! perform one time step of structure field
     void DoStructStep();
 
+    //! perform one time step of scatra field
     void DoScatraStep();
   };
 
   class SSI_Part1WC_SolidToScatra : public SSI_Part1WC
   {
   public:
-
+    //! constructor
     explicit SSI_Part1WC_SolidToScatra(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams);
 
+    //! virtual destructor
     virtual ~SSI_Part1WC_SolidToScatra(){};
 
-    virtual void Timeloop();
+    //! actual time loop
+    void Timeloop();
 
   };
 
   class SSI_Part1WC_ScatraToSolid : public SSI_Part1WC
   {
   public:
-
+    //! constructor
     explicit SSI_Part1WC_ScatraToSolid(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams);
 
+    //! virtual destructor
     virtual ~SSI_Part1WC_ScatraToSolid(){};
 
-    virtual void Timeloop();
+    //! actual time loop
+    void Timeloop();
 
   };
 

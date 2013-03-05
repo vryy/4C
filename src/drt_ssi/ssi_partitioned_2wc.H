@@ -22,25 +22,33 @@ namespace SSI
   {
   public:
 
+    //!explicit constructor
     explicit SSI_Part2WC(const Epetra_Comm& comm,
         const Teuchos::ParameterList& timeparams);
 
+    //!virtual destructor
     virtual ~SSI_Part2WC(){};
 
-    //full time loop
+    //!full time loop
     virtual void Timeloop();
 
   protected:
+    //! prepare time step for single fields
     void PrepareTimeStep();
 
+    //! perform iteration step of structure field
     void DoStructStep();
 
+    //! perform iteration step of scatra field
     void DoScatraStep();
 
+    //! perform iteration loop between fields
     void OuterLoop();
 
+    //! update time step and print to screen
     void UpdateAndOutput();
 
+    //! convergence check of outer loop
     bool ConvergenceCheck(int itnum);
 
     //! scalar increment of the outer loop

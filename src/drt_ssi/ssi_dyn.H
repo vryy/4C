@@ -14,6 +14,7 @@
 #ifndef SSI_DYN_H_
 #define SSI_DYN_H_
 
-void ssi_drt(); // global control routine for Structure - Scatra -Interaction problem.
+//! global control routine for Structure - Scatra -Interaction problem.
+void ssi_drt();
 
 #endif /* SSI_DYN_H_ */

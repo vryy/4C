@@ -15,6 +15,11 @@
 #include "../drt_lib/drt_globalproblem.H"
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_adapter/ad_str_wrapper.H"
+#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 SSI::SSI_Part2WC::SSI_Part2WC(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams)
   : SSI_Part(comm, timeparams),
@@ -130,9 +135,6 @@ void SSI::SSI_Part2WC::OuterLoop()
     cout<<"\n****************************************\n          OUTER ITERATION LOOP\n****************************************\n";
   }
 
-  // initially solve coupled scalar transport equation system
-  //DoScatraStep();
-
   while (stopnonliniter==false)
   {
     itnum++;
@@ -142,7 +144,7 @@ void SSI::SSI_Part2WC::OuterLoop()
     scaincnp_->Update(1.0,*scatra_->ScaTraField().Phinp(),0.0);
     dispincnp_->Update(1.0,*structure_->Dispnp(),0.0);
 
-    // set fluid- and structure-based scalar transport values required in FSI
+    // set structure-based scalar transport values
     SetScatraSolution();
 
     if(itnum!=1)
@@ -166,46 +168,42 @@ void SSI::SSI_Part2WC::OuterLoop()
 }
 
 /*----------------------------------------------------------------------*
- | convergence check for both fields (scatra & structure)
+ | convergence check for both fields (scatra & structure) (copied form tsi)
  *----------------------------------------------------------------------*/
-bool SSI::SSI_Part2WC::ConvergenceCheck(
-  int itnum
-  )
+bool SSI::SSI_Part2WC::ConvergenceCheck(int itnum)
 {
 
-  // convergence check based on the temperature increment
+  // convergence check based on the scalar increment
   bool stopnonliniter = false;
 
-  //    | temperature increment |_2
+  //    | scalar increment |_2
   //  -------------------------------- < Tolerance
-  //     | temperature_n+1 |_2
+  //     | scalar+1 |_2
 
   // variables to save different L2 - Norms
-  // define L2-norm of incremental temperature and temperature
-  // here: only the temperature field is checked for convergence!!!
+  // define L2-norm of incremental scalar and scalar
   double scaincnorm_L2(0.0);
   double scanorm_L2(0.0);
   double dispincnorm_L2(0.0);
   double dispnorm_L2(0.0);
 
-  // build the current temperature increment Inc T^{i+1}
+  // build the current scalar increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
   scaincnp_->Update(1.0,*(scatra_->ScaTraField().Phinp()),-1.0);
   dispincnp_->Update(1.0,*(structure_->Dispnp()),-1.0);
 
-  // build the L2-norm of the temperature increment and the temperature
+  // build the L2-norm of the scalar increment and the scalar
   scaincnp_->Norm2(&scaincnorm_L2);
   scatra_->ScaTraField().Phinp()->Norm2(&scanorm_L2);
   dispincnp_->Norm2(&dispincnorm_L2);
   structure_->Dispnp()->Norm2(&dispnorm_L2);
 
-  // care for the case that there is (almost) zero temperature
-  // (usually not required for temperature)
+  // care for the case that there is (almost) zero scalar
   if (scanorm_L2 < 1e-6) scanorm_L2 = 1.0;
   if (dispnorm_L2 < 1e-6) dispnorm_L2 = 1.0;
 
   // print the incremental based convergence check to the screen
-  if (Comm().MyPID()==0 )//and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+  if (Comm().MyPID()==0 )
   {
     cout<<"\n";
     cout<<"***********************************************************************************\n";
@@ -224,7 +222,7 @@ bool SSI::SSI_Part2WC::ConvergenceCheck(
       (dispincnorm_L2/dispnorm_L2 <= ittol_))
   {
     stopnonliniter = true;
-    if (Comm().MyPID()==0 ) //and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+    if (Comm().MyPID()==0 )
     {
       printf("\n");
       printf("|  Outer Iteration loop converged after iteration %3d/%3d !                       |\n", itnum,itmax_);
@@ -239,7 +237,7 @@ bool SSI::SSI_Part2WC::ConvergenceCheck(
      )
   {
     stopnonliniter = true;
-    if ((Comm().MyPID()==0) )//and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+    if ((Comm().MyPID()==0) )
     {
       printf("|     >>>>>> not converged in itemax steps!                                       |\n");
       printf("+--------------+------------------------+--------------------+--------------------+\n");

@@ -46,10 +46,10 @@ namespace SSI
     virtual void Timeloop() = 0;
 
     /// test results (if necessary)
-    virtual void TestResults(const Epetra_Comm& comm);
+    void TestResults(const Epetra_Comm& comm);
 
     /// read restart
-    virtual void ReadRestart(int step);
+    void ReadRestart(int step);
 
     //! access to structural field
     //const Teuchos::RCP<ADAPTER::Structure>& StructureField(){return structure_;}
@@ -65,12 +65,12 @@ namespace SSI
     /// underlying scatra problem of the SSI problem
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra_;
 
-    // a zero vector of full length
+    /// a zero vector of full length
     Teuchos::RCP<Epetra_Vector> zeros_;
 
   private:
     /// clone scatra discretization form structure discretization
-    virtual void SetupDiscretizations(const Epetra_Comm& comm);
+    void SetupDiscretizations(const Epetra_Comm& comm);
   };
 }
 

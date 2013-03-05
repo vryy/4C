@@ -14,6 +14,11 @@
 #include "ssi_partitioned.H"
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_adapter/ad_str_wrapper.H"
+#include "../drt_adapter/adapter_scatra_base_algorithm.H"
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 SSI::SSI_Part::SSI_Part(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams)
   : SSI_Base(comm, timeparams)
