@@ -4,13 +4,14 @@
 // http://www.lnm.mw.tum.de
 // 089 - 289-15236
 //
-// necessary defines: D_FLUID3 DEBUG CCADISCRET BINIO
+// necessary defines: D_COMBUST3 DEBUG CCADISCRET BINIO
 //
 ==================================================================
 General Data File CCARAT
 ==================================================================
 -----------------------------------------------------------------------TITLE
-DRT_Channel_Flow_Initial_Field_GenAlpha_PBC_and_Volume_Force
+test for Krylov projection in combustion fluid with out interface
+should provide same result as corresponding fluid test case
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        64
 NODES                           125
@@ -18,7 +19,7 @@ DIM                             3
 MATERIALS                       1
 NUMDF                           4
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid
+PROBLEMTYP                      Combustion
 NUMFIELD                        1
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
@@ -26,17 +27,44 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     0
 NUMALEDIS                       0
 NUMTHERMDIS                     0
---------------------------------------------------------------------------IO
-OUTPUT_BIN                      Yes
-FLUID_SOL                       Yes
-FLUID_STRESS                    Yes
-FILESTEPS                       1000
+----------------------------------------------------------COMBUSTION CONTROL
+CONVTOL                         1e-09
+ITEMAX                          1
+MAXTIME                         1000.0
+NUMSTEP                         5
+RESTARTEVRY                     10
+TIMEINT                         One_Step_Theta
+TIMESTEP                        0.1
+UPRES                           20
+-----------------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
+COMBUSTTYPE                     Two_Phase_Flow
+VELOCITY_JUMP_TYPE              vel_jump_none
+FLUX_JUMP_TYPE                  flux_jump_const
+LAMINAR_FLAMESPEED              0.0
+MARKSTEIN_LENGTH                0.0
+NITSCHE_VELOCITY                0
+NITSCHE_PRESSURE                0
+CONNECTED_INTERFACE             No
+SMOOTHGRADPHI                   smooth_grad_phi_meanvalue
+SMOOTHED_BOUNDARY_INTEGRATION   Yes
+XFEMTIMEINT                     DoNothing
+XFEMTIMEINT_ENR                 DoNothing
+INITIALFIELD                    field_by_function
+INITFUNCNO                      1
+INITSTATSOL                     No
+-------------------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
+REFINEMENT                      No
+REINITFUNCNO                    2
+REINITIALIZATION                None
+REINITINTERVAL                  -1
 ---------------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 INITIALFIELD                    field_by_function
 STARTFUNCNO                     1
 TIMEINTEGR                      One_Step_Theta
 STARTINGALGO                    One_Step_Theta
+START_THETA                     0.66
+THETA                           0.66
 ITEMAX                          10
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-9
@@ -51,16 +79,51 @@ GAMMA                           0.666666666666667
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                1.0
 SIMPLER                         no
+NONLINITER                      Newton
+CONVFORM                        convective
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic
 TRANSIENT                       no_transient
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 SUPG                            yes_supg
 PSPG                            yes_pspg
-VSTAB                           vstab_usfem
 CSTAB                           cstab_qs
-CROSS-STRESS                    yes_cross
-REYNOLDS-STRESS                 yes_reynolds
+EVALUATION_MAT                  integration_point
+EVALUATION_TAU                  integration_point
+----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+LINEAR_SOLVER                   1
+SCATRATYPE                      Undefined
+SOLVERTYPE                      nonlinear
+INITFUNCNO                      2
+INITIALFIELD                    field_by_function
+MAXTIME                         1.0
+NUMSTEP                         5
+RESTARTEVRY                     20
+THETA                           0.5
+TIMEINTEGR                      One_Step_Theta
+TIMESTEP                        0.1
+VELFUNCNO                       -1
+VELOCITYFIELD                   Navier_Stokes
+NEUMANNINFLOW                   no
+WRITEFLUX                       totalflux_domain
+UPRES                           1
+ALPHA_F                         0.5
+ALPHA_M                         0.5
+BLOCKPRECOND                    no
+CALCERROR                       No
+CONVFORM                        convective
+GAMMA                           0.5
+MATID                           2
+------------------------------------------SCALAR TRANSPORT DYNAMIC/NONLINEAR
+CONVTOL                         1e-5
+ITEMAX                          20
+ADAPTCONV                       yes
+ADAPTCONV_BETTER                0.1
+EXPLPREDICT no //sonst Probleme
+--------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+STABTYPE                        SUPG
+DEFINITION_TAU                  Taylor_Hughes_Zarins
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 //SOLVER                        Aztec_MSR                       // Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
@@ -88,13 +151,39 @@ ML_COARSEN                      UC                              // UC MIS METIS 
 ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
 ML_PROLONG_SMO                  1.33                            // damping factor for prolongator smoother (usually 1.33 or 0.0)
 ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 ILU                             // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERFINE                 SGS                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERMED                  ILU                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               KLU                             // SGS Jacobi Chebychev MLS KLU Superlu
 ML_SMOTIMES 2 0 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
 ML_DAMPFINE                     0.89                            // damping fine grid
 ML_DAMPMED                      1.0                             // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
+-------------------------------------------------------------------MATERIALS
+//MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0 GAMMA 1.0
+MAT 1 MAT_matlist LOCAL No NUMMAT 2 MATIDS 3 4
+MAT 2 MAT_scatra DIFFUSIVITY 0.0
+MAT 3 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0 GAMMA 1.0 // plus side
+MAT 4 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0 GAMMA 1.0 // minus side
+--------------------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
+----------------------------------------------------------------------CURVE1
+CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 1.0 c2 1.0
+----------------------------------------------------------------------CURVE2
+----------------------------------------------------------------------CURVE3
+----------------------------------------------------------------------CURVE4
+----------------------------------------------------------------------CURVE5
+----------------------------------------------------------------------FUNCT1
+FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION y*(1-y)/2
+FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0
+FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0
+FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0
+----------------------------------------------------------------------FUNCT2
+// initial G-function outside of domain -> no cut, no interface, no XFEM dofs
+FUNCT2 EXPR 0 0.0 0 FUNCTION x+100
+----------------------------------------------------------------------FUNCT3
+----------------------------------------------------------------------FUNCT4
+----------------------------------------------------------------------FUNCT5
+----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          12
@@ -105,7 +194,8 @@ DVOL                            1
 E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
-DPOINT                          0
+//DPOINT                          1
+//E 1 - NUMDOF 4 ONOFF 1 1 1 1 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 // DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
 DLINE                           8
@@ -661,99 +751,75 @@ NODE 124 COORD 1.000000000000000e+00 1.000000000000000e+00 7.500000000000000e-01
 NODE 125 COORD 1.000000000000000e+00 1.000000000000000e+00 1.000000000000000e+00
 ----------------------------------------------------------STRUCTURE ELEMENTS
 --------------------------------------------------------------FLUID ELEMENTS
-1 FLUID3 HEX8 70 101 115 97 67 92 110 91 MAT 1 NA Euler
-2 FLUID3 HEX8 46 70 97 79 42 67 91 73 MAT 1 NA Euler
-3 FLUID3 HEX8 36 46 79 64 32 42 73 55 MAT 1 NA Euler
-4 FLUID3 HEX8 34 36 64 59 24 32 55 52 MAT 1 NA Euler
-5 FLUID3 HEX8 47 83 101 70 43 74 92 67 MAT 1 NA Euler
-6 FLUID3 HEX8 27 47 70 46 22 43 67 42 MAT 1 NA Euler
-7 FLUID3 HEX8 18 27 46 36 14 22 42 32 MAT 1 NA Euler
-8 FLUID3 HEX8 16 18 36 34 9 14 32 24 MAT 1 NA Euler
-9 FLUID3 HEX8 37 68 83 47 33 56 74 43 MAT 1 NA Euler
-10 FLUID3 HEX8 19 37 47 27 15 33 43 22 MAT 1 NA Euler
-11 FLUID3 HEX8 8 19 27 18 6 15 22 14 MAT 1 NA Euler
-12 FLUID3 HEX8 7 8 18 16 2 6 14 9 MAT 1 NA Euler
-13 FLUID3 HEX8 30 60 68 37 25 53 56 33 MAT 1 NA Euler
-14 FLUID3 HEX8 12 30 37 19 10 25 33 15 MAT 1 NA Euler
-15 FLUID3 HEX8 5 12 19 8 3 10 15 6 MAT 1 NA Euler
-16 FLUID3 HEX8 4 5 8 7 1 3 6 2 MAT 1 NA Euler
-17 FLUID3 HEX8 85 108 121 104 70 101 115 97 MAT 1 NA Euler
-18 FLUID3 HEX8 61 85 104 88 46 70 97 79 MAT 1 NA Euler
-19 FLUID3 HEX8 48 61 88 80 36 46 79 64 MAT 1 NA Euler
-20 FLUID3 HEX8 44 48 80 77 34 36 64 59 MAT 1 NA Euler
-21 FLUID3 HEX8 62 90 108 85 47 83 101 70 MAT 1 NA Euler
-22 FLUID3 HEX8 39 62 85 61 27 47 70 46 MAT 1 NA Euler
-23 FLUID3 HEX8 28 39 61 48 18 27 46 36 MAT 1 NA Euler
-24 FLUID3 HEX8 23 28 48 44 16 18 36 34 MAT 1 NA Euler
-25 FLUID3 HEX8 49 84 90 62 37 68 83 47 MAT 1 NA Euler
-26 FLUID3 HEX8 29 49 62 39 19 37 47 27 MAT 1 NA Euler
-27 FLUID3 HEX8 20 29 39 28 8 19 27 18 MAT 1 NA Euler
-28 FLUID3 HEX8 17 20 28 23 7 8 18 16 MAT 1 NA Euler
-29 FLUID3 HEX8 40 78 84 49 30 60 68 37 MAT 1 NA Euler
-30 FLUID3 HEX8 21 40 49 29 12 30 37 19 MAT 1 NA Euler
-31 FLUID3 HEX8 13 21 29 20 5 12 19 8 MAT 1 NA Euler
-32 FLUID3 HEX8 11 13 20 17 4 5 8 7 MAT 1 NA Euler
-33 FLUID3 HEX8 103 118 124 116 85 108 121 104 MAT 1 NA Euler
-34 FLUID3 HEX8 86 103 116 105 61 85 104 88 MAT 1 NA Euler
-35 FLUID3 HEX8 71 86 105 98 48 61 88 80 MAT 1 NA Euler
-36 FLUID3 HEX8 69 71 98 95 44 48 80 77 MAT 1 NA Euler
-37 FLUID3 HEX8 87 109 118 103 62 90 108 85 MAT 1 NA Euler
-38 FLUID3 HEX8 63 87 103 86 39 62 85 61 MAT 1 NA Euler
-39 FLUID3 HEX8 50 63 86 71 28 39 61 48 MAT 1 NA Euler
-40 FLUID3 HEX8 45 50 71 69 23 28 48 44 MAT 1 NA Euler
-41 FLUID3 HEX8 72 102 109 87 49 84 90 62 MAT 1 NA Euler
-42 FLUID3 HEX8 51 72 87 63 29 49 62 39 MAT 1 NA Euler
-43 FLUID3 HEX8 38 51 63 50 20 29 39 28 MAT 1 NA Euler
-44 FLUID3 HEX8 35 38 50 45 17 20 28 23 MAT 1 NA Euler
-45 FLUID3 HEX8 66 96 102 72 40 78 84 49 MAT 1 NA Euler
-46 FLUID3 HEX8 41 66 72 51 21 40 49 29 MAT 1 NA Euler
-47 FLUID3 HEX8 31 41 51 38 13 21 29 20 MAT 1 NA Euler
-48 FLUID3 HEX8 26 31 38 35 11 13 20 17 MAT 1 NA Euler
-49 FLUID3 HEX8 117 123 125 122 103 118 124 116 MAT 1 NA Euler
-50 FLUID3 HEX8 106 117 122 119 86 103 116 105 MAT 1 NA Euler
-51 FLUID3 HEX8 99 106 119 113 71 86 105 98 MAT 1 NA Euler
-52 FLUID3 HEX8 93 99 113 111 69 71 98 95 MAT 1 NA Euler
-53 FLUID3 HEX8 107 120 123 117 87 109 118 103 MAT 1 NA Euler
-54 FLUID3 HEX8 89 107 117 106 63 87 103 86 MAT 1 NA Euler
-55 FLUID3 HEX8 81 89 106 99 50 63 86 71 MAT 1 NA Euler
-56 FLUID3 HEX8 75 81 99 93 45 50 71 69 MAT 1 NA Euler
-57 FLUID3 HEX8 100 114 120 107 72 102 109 87 MAT 1 NA Euler
-58 FLUID3 HEX8 82 100 107 89 51 72 87 63 MAT 1 NA Euler
-59 FLUID3 HEX8 65 82 89 81 38 51 63 50 MAT 1 NA Euler
-60 FLUID3 HEX8 57 65 81 75 35 38 50 45 MAT 1 NA Euler
-61 FLUID3 HEX8 94 112 114 100 66 96 102 72 MAT 1 NA Euler
-62 FLUID3 HEX8 76 94 100 82 41 66 72 51 MAT 1 NA Euler
-63 FLUID3 HEX8 58 76 82 65 31 41 51 38 MAT 1 NA Euler
-64 FLUID3 HEX8 54 58 65 57 26 31 38 35 MAT 1 NA Euler
+1 COMBUST3 HEX8 70 101 115 97 67 92 110 91 MAT 1 NA Euler
+2 COMBUST3 HEX8 46 70 97 79 42 67 91 73 MAT 1 NA Euler
+3 COMBUST3 HEX8 36 46 79 64 32 42 73 55 MAT 1 NA Euler
+4 COMBUST3 HEX8 34 36 64 59 24 32 55 52 MAT 1 NA Euler
+5 COMBUST3 HEX8 47 83 101 70 43 74 92 67 MAT 1 NA Euler
+6 COMBUST3 HEX8 27 47 70 46 22 43 67 42 MAT 1 NA Euler
+7 COMBUST3 HEX8 18 27 46 36 14 22 42 32 MAT 1 NA Euler
+8 COMBUST3 HEX8 16 18 36 34 9 14 32 24 MAT 1 NA Euler
+9 COMBUST3 HEX8 37 68 83 47 33 56 74 43 MAT 1 NA Euler
+10 COMBUST3 HEX8 19 37 47 27 15 33 43 22 MAT 1 NA Euler
+11 COMBUST3 HEX8 8 19 27 18 6 15 22 14 MAT 1 NA Euler
+12 COMBUST3 HEX8 7 8 18 16 2 6 14 9 MAT 1 NA Euler
+13 COMBUST3 HEX8 30 60 68 37 25 53 56 33 MAT 1 NA Euler
+14 COMBUST3 HEX8 12 30 37 19 10 25 33 15 MAT 1 NA Euler
+15 COMBUST3 HEX8 5 12 19 8 3 10 15 6 MAT 1 NA Euler
+16 COMBUST3 HEX8 4 5 8 7 1 3 6 2 MAT 1 NA Euler
+17 COMBUST3 HEX8 85 108 121 104 70 101 115 97 MAT 1 NA Euler
+18 COMBUST3 HEX8 61 85 104 88 46 70 97 79 MAT 1 NA Euler
+19 COMBUST3 HEX8 48 61 88 80 36 46 79 64 MAT 1 NA Euler
+20 COMBUST3 HEX8 44 48 80 77 34 36 64 59 MAT 1 NA Euler
+21 COMBUST3 HEX8 62 90 108 85 47 83 101 70 MAT 1 NA Euler
+22 COMBUST3 HEX8 39 62 85 61 27 47 70 46 MAT 1 NA Euler
+23 COMBUST3 HEX8 28 39 61 48 18 27 46 36 MAT 1 NA Euler
+24 COMBUST3 HEX8 23 28 48 44 16 18 36 34 MAT 1 NA Euler
+25 COMBUST3 HEX8 49 84 90 62 37 68 83 47 MAT 1 NA Euler
+26 COMBUST3 HEX8 29 49 62 39 19 37 47 27 MAT 1 NA Euler
+27 COMBUST3 HEX8 20 29 39 28 8 19 27 18 MAT 1 NA Euler
+28 COMBUST3 HEX8 17 20 28 23 7 8 18 16 MAT 1 NA Euler
+29 COMBUST3 HEX8 40 78 84 49 30 60 68 37 MAT 1 NA Euler
+30 COMBUST3 HEX8 21 40 49 29 12 30 37 19 MAT 1 NA Euler
+31 COMBUST3 HEX8 13 21 29 20 5 12 19 8 MAT 1 NA Euler
+32 COMBUST3 HEX8 11 13 20 17 4 5 8 7 MAT 1 NA Euler
+33 COMBUST3 HEX8 103 118 124 116 85 108 121 104 MAT 1 NA Euler
+34 COMBUST3 HEX8 86 103 116 105 61 85 104 88 MAT 1 NA Euler
+35 COMBUST3 HEX8 71 86 105 98 48 61 88 80 MAT 1 NA Euler
+36 COMBUST3 HEX8 69 71 98 95 44 48 80 77 MAT 1 NA Euler
+37 COMBUST3 HEX8 87 109 118 103 62 90 108 85 MAT 1 NA Euler
+38 COMBUST3 HEX8 63 87 103 86 39 62 85 61 MAT 1 NA Euler
+39 COMBUST3 HEX8 50 63 86 71 28 39 61 48 MAT 1 NA Euler
+40 COMBUST3 HEX8 45 50 71 69 23 28 48 44 MAT 1 NA Euler
+41 COMBUST3 HEX8 72 102 109 87 49 84 90 62 MAT 1 NA Euler
+42 COMBUST3 HEX8 51 72 87 63 29 49 62 39 MAT 1 NA Euler
+43 COMBUST3 HEX8 38 51 63 50 20 29 39 28 MAT 1 NA Euler
+44 COMBUST3 HEX8 35 38 50 45 17 20 28 23 MAT 1 NA Euler
+45 COMBUST3 HEX8 66 96 102 72 40 78 84 49 MAT 1 NA Euler
+46 COMBUST3 HEX8 41 66 72 51 21 40 49 29 MAT 1 NA Euler
+47 COMBUST3 HEX8 31 41 51 38 13 21 29 20 MAT 1 NA Euler
+48 COMBUST3 HEX8 26 31 38 35 11 13 20 17 MAT 1 NA Euler
+49 COMBUST3 HEX8 117 123 125 122 103 118 124 116 MAT 1 NA Euler
+50 COMBUST3 HEX8 106 117 122 119 86 103 116 105 MAT 1 NA Euler
+51 COMBUST3 HEX8 99 106 119 113 71 86 105 98 MAT 1 NA Euler
+52 COMBUST3 HEX8 93 99 113 111 69 71 98 95 MAT 1 NA Euler
+53 COMBUST3 HEX8 107 120 123 117 87 109 118 103 MAT 1 NA Euler
+54 COMBUST3 HEX8 89 107 117 106 63 87 103 86 MAT 1 NA Euler
+55 COMBUST3 HEX8 81 89 106 99 50 63 86 71 MAT 1 NA Euler
+56 COMBUST3 HEX8 75 81 99 93 45 50 71 69 MAT 1 NA Euler
+57 COMBUST3 HEX8 100 114 120 107 72 102 109 87 MAT 1 NA Euler
+58 COMBUST3 HEX8 82 100 107 89 51 72 87 63 MAT 1 NA Euler
+59 COMBUST3 HEX8 65 82 89 81 38 51 63 50 MAT 1 NA Euler
+60 COMBUST3 HEX8 57 65 81 75 35 38 50 45 MAT 1 NA Euler
+61 COMBUST3 HEX8 94 112 114 100 66 96 102 72 MAT 1 NA Euler
+62 COMBUST3 HEX8 76 94 100 82 41 66 72 51 MAT 1 NA Euler
+63 COMBUST3 HEX8 58 76 82 65 31 41 51 38 MAT 1 NA Euler
+64 COMBUST3 HEX8 54 58 65 57 26 31 38 35 MAT 1 NA Euler
 ----------------------------------------------------------------ALE ELEMENTS
--------------------------------------------------------------------MATERIALS
-MAT 1 MAT_fluid DYNVISCOSITY 0.01 DENSITY 1.0 GAMMA 1.0
-----------------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 1.0 c2 1.0
-----------------------------------------------------------------------CURVE2
-----------------------------------------------------------------------CURVE3
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
-----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION y*(1-y)/2
-FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0
-FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0
-FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
 FLUID DIS fluid NODE 85 QUANTITY velx VALUE 6.354463810e-01 TOLERANCE 1e-9
 FLUID DIS fluid NODE 85 QUANTITY vely VALUE -1.728868715e-14 TOLERANCE 1e-9
 FLUID DIS fluid NODE 85 QUANTITY velz VALUE 1.056063200e-13 TOLERANCE 1e-9
 FLUID DIS fluid NODE 85 QUANTITY pressure VALUE 3.995208594e-13 TOLERANCE 1e-9
-FLUID DIS fluid NODE 90 QUANTITY tractionx VALUE 1.053750510e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 90 QUANTITY tractiony VALUE -6.346485837e-15 TOLERANCE 1e-9
-FLUID DIS fluid NODE 90 QUANTITY tractionz VALUE -1.071191746e-16 TOLERANCE 1e-9
-FLUID DIS fluid NODE 1 QUANTITY velx VALUE 0.0 TOLERANCE 1e-20
-FLUID DIS fluid NODE 1 QUANTITY vely VALUE 0.0 TOLERANCE 1e-20
-FLUID DIS fluid NODE 1 QUANTITY velz VALUE 0.0 TOLERANCE 1e-20
 -------------------------------------------------------------------------END
 //                              END

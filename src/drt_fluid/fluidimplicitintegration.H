@@ -51,8 +51,6 @@ namespace DRT
 {
   class Discretization;
   class ResultTest;
- // class DofSet;
- class Condition;
 }
 namespace IO
 {
@@ -66,7 +64,6 @@ namespace LINALG
   class MapExtractor;
   class BlockSparseMatrixBase;
   class SparseOperator;
-  class KrylovProjector;
 }
 
 namespace TOPOPT
@@ -100,7 +97,6 @@ class FluidMHDEvaluate;
 namespace UTILS
 {
   class MapExtractor;
-  class KSPMapExtractor;
   class FluidImpedanceWrapper;
   class FluidWkOptimizationWrapper;
   class FluidVolumetricSurfaceFlowWrapper;
@@ -202,6 +198,7 @@ public:
   */
   void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
   void UpdateKrylovSpaceProjection();
+  void CheckKrylovSpaceProjection();
 
   /*!
   \brief update within iteration
@@ -223,34 +220,6 @@ public:
   void Evaluate(
       Teuchos::RCP<const Epetra_Vector> stepinc  ///< solution increment between time step n and n+1
       );
-
-// XFEM edgebased stuff
-//  void EdgeBasedStabilization(Teuchos::ParameterList & eleparams,
-//      DRT::Discretization& discret,
-//      int& itnum );
-//
-//
-//
-//  void findNeighborElement(DRT::ELEMENTS::Fluid * actele,
-//                           Teuchos::RCP<DRT::Element> surface,
-//                           bool & neighbor_found,
-//                           int & neighbor_id);
-//
-//
-//  void stabilizeStandardElement     ( DRT::AssembleStrategy& strategy,
-//                                      DRT::ELEMENTS::Fluid *actele,
-//                                      DRT::Discretization & discret);
-//
-//
-//  void callEdgeStabandGhostPenalty(                           bool & edge_based_stab,
-//                                                              bool & ghost_penalty,
-//                                                              Teuchos::RCP<DRT::Element>       surface,
-//                                                              DRT::Element * fele_1,
-//                                                              DRT::Element * fele_2,
-//                                                              std::vector<int> & nds_1,
-//                                                              std::vector<int> & nds_2,
-//                                                              DRT::Discretization &   discret,
-//                                                              DRT::AssembleStrategy&  strategy);
 
 
   /*!
@@ -944,21 +913,6 @@ protected:
 
   // possible inf-norm scaling of linear system / fluid matrix
   Teuchos::RCP<FLD::UTILS::FluidInfNormScaling> fluid_infnormscaling_;
-
-  //! @name Biofilm specific stuff
-  //@{
-  Teuchos::RCP<Epetra_Vector> fldgrdisp_;
-  //@}
-
-  //! @name variables for Krylov Space projection
-  //@{
-  //! flag setting whether Krylov projection needs to be updated or not
-  bool                                  updateprojection_;
-  //! Krylov projector himself
-  Teuchos::RCP<LINALG::KrylovProjector> projector_;
-  /// Krylov space projection map extractor
-  Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
-  //@}
 
 
 private:

@@ -3390,7 +3390,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
   }
 
 //----------------------------------------------------------------
-// standard Galerkin bodyforce term
+// standard Galerkin transient, old part of rhs and bodyforce term
 //----------------------------------------------------------------
   double vrhs = fac*rhsint;
   for (int vi=0; vi<nen_; ++vi)
@@ -3510,7 +3510,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
 // advanced turbulence models
 //---------------------------------------------------------------
 // multifractal subgrid-scale modeling
-  if (turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
+  if (is_incremental_ and turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
   {
     if (nsd_<3) dserror("Turbulence is 3D!");
     // fixed-point iteration only (i.e. beta=0.0 assumed), cf

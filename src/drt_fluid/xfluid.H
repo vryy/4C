@@ -38,7 +38,6 @@ namespace LINALG
   class MapExtractor;
   class BlockSparseMatrixBase;
   class SparseOperator;
-  class KrylovProjector;
 }
 namespace GEO
 {
@@ -68,7 +67,6 @@ namespace FLD
   namespace UTILS
   {
     class FluidInfNormScaling;
-    class KSPMapExtractor;
   }
 
   class XFluid;
@@ -350,6 +348,7 @@ namespace FLD
     /// create vectors for KrylovSpaceProjection
     void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
     void UpdateKrylovSpaceProjection();
+    void CheckKrylovSpaceProjection();
 
     /// update interface fields
     void UpdateInterfaceFields();
@@ -687,13 +686,6 @@ namespace FLD
 
 
     //--------------------------------------------------------------------
-
-    //! flag setting whether Krylov projection needs to be updated or not
-    bool                                  updateprojection_;
-    //! Krylov projector himself
-    Teuchos::RCP<LINALG::KrylovProjector> projector_;
-    /// pointer to Krylov projection condition of scatra field
-    DRT::Condition* kspcond_;
 
     //! do we move the fluid mesh and calculate the fluid on this moving mesh?
     bool                          alefluid_;

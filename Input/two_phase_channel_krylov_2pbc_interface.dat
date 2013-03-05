@@ -1,8 +1,17 @@
+//
+// Maintainer: Ursula Rasthofer
+// rasthofer@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15236
+//
+// necessary defines: D_COMBUST3 DEBUG CCADISCRET BINIO
+//
 ==================================================================
-                  General Data File BACI
+General Data File CCARAT
 ==================================================================
--------------------------------------------------------------TITLE
-created by pre_exodus 
+-----------------------------------------------------------------------TITLE
+test for Krylov projection in combustion fluid with interface
+but without enrichment / velocity only
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    2592
 //NODES       3211
@@ -32,7 +41,7 @@ TIMEINT                         One_Step_Theta
 TIMESTEP                        0.06
 UPRES                           3
 PARALLEL_REDIST_RATIO_FAC       1.2
-RESTART_SCATRA_INPUT		No
+RESTART_SCATRA_INPUT            No
 --------------------------------COMBUSTION CONTROL/COMBUSTION FLUID
 COMBUSTTYPE                     Two_Phase_Flow
 CONNECTED_INTERFACE             No
@@ -52,6 +61,7 @@ VELOCITY_JUMP_TYPE              vel_jump_none
 XFEMINTEGRATION                 Cut
 XFEMTIMEINT_ENR                 QuasiStatic
 XFEMTIMEINT                     DoNothing
+SELECTED_ENRICHMENT             velocity //none
 ----------------------------COMBUSTION CONTROL/COMBUSTION GFUNCTION
 REFINEMENT                      No
 REINITFUNCNO                    -1
@@ -96,7 +106,7 @@ SUGRVEL                         No
 -----------------------------------------------------------SOLVER 9
 SOLVER                          Aztec_MSR
 -------------------------------------------------------XFEM GENERAL
-GMSH_DEBUG_OUT                  No
+GMSH_DEBUG_OUT                  yes
 ------------------------------------------------------FLUID DYNAMIC
 LINEAR_SOLVER                   1
 PHYSICAL_TYPE                   Incompressible
@@ -115,12 +125,11 @@ CONVCHECK                       L_2_norm
 CONVFORM                        convective
 CONVTOL                         1e-14
 UPRES                           1
+GMSH_OUTPUT                     yes
 ----------------------------------------FLUID DYNAMIC/STABILIZATION
 CROSS-STRESS                    no_cross
 CSTAB                           cstab_qs
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
-EVALUATION_MAT                  element_center
-EVALUATION_TAU                  element_center
 PSPG                            yes_pspg
 REYNOLDS-STRESS                 no_reynolds
 STABTYPE                        residual_based
@@ -141,7 +150,7 @@ TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
 SOLVER            Aztec_MSR // vm3 Aztec_MSR SPOOLES_nonsym Superlu Colsol UMFPACK Amesos_KLU_sym Amesos_KLU_nonsym LAPACK_sym LAPACK_nonsym
 AZOUTPUT          0         // output every so often, 0 no output
 AZSOLVE           GMRES     // CG GMRES CGS BiCGSTAB LU TFQMR
-AZPREC            ML        // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
+AZPREC            ILU //ML        // none ML MLFLUID MLFLUID2 LU ILU ILUT LU ICC Jacobi SymmGaussSeidel Least_Squares Neumann
 AZREUSE           5         // how often to recompute some preconditioners
 AZDROP            0.0       // drop tolerance for ILUT
 AZTOL             1.0E-12    // tolerance in unscaled residual
@@ -174,6 +183,7 @@ ML_DAMPCOARSE     1.0       // damping coarse grid
 MAT 1 MAT_matlist  LOCAL        No            NUMMAT  2       MATIDS 3 4
 MAT 2 MAT_scatra   DIFFUSIVITY  0.0000000001
 MAT 3 MAT_fluid    DYNVISCOSITY 3.6574e-4     DENSITY 1.0     GAMMA  0.033602574 //+
+//MAT 4 MAT_fluid    DYNVISCOSITY 3.6574e-4     DENSITY 1.0     GAMMA  0.033602574
 MAT 4 MAT_fluid    DYNVISCOSITY 1.84699e-4    DENSITY 0.5005  GAMMA  0.033602574 //-
 --------------------------------------------------------CLONING MATERIAL MAP
 SRC_FIELD fluid SRC_MAT 1 TAR_FIELD scatra TAR_MAT 2
@@ -183,7 +193,8 @@ FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0
 FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0
 FUNCT1 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0
 ----------------------------------------------------------------------FUNCT2
-FUNCT2 EXPR 0 0.0 0 FUNCTION z+5.0
+//FUNCT2 EXPR 0 0.0 0 FUNCTION z+5.0
+FUNCT2 EXPR 0 0.0 0 FUNCTION y+0.083333333333333333333333333333333
 ------------------------------------------------DESIGN DESCRIPTION
 NDPOINT 8
 NDLINE  8
@@ -252,11 +263,11 @@ DVOL   1
 // fluid_volume
 E 1 - fluid NUMMODES 4 ONOFF 0 0 0 1 integration
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE  169 QUANTITY     velx VALUE 1.50094222395886279e+00 TOLERANCE 1e-11
+FLUID DIS fluid NODE  169 QUANTITY     velx VALUE 1.50058501070466566e+00 TOLERANCE 1e-11
 FLUID DIS fluid NODE  169 QUANTITY     vely VALUE                     0.0 TOLERANCE 1e-11
 FLUID DIS fluid NODE  169 QUANTITY     velz VALUE                     0.0 TOLERANCE 1e-11
 FLUID DIS fluid NODE  169 QUANTITY pressure VALUE                     0.0 TOLERANCE 1e-10
-FLUID DIS fluid NODE 2502 QUANTITY     velx VALUE 8.34211405272460516e-01 TOLERANCE 1e-11
+FLUID DIS fluid NODE 2502 QUANTITY     velx VALUE 8.34209728972543307e-01 TOLERANCE 1e-11
 FLUID DIS fluid NODE 2502 QUANTITY     vely VALUE                     0.0 TOLERANCE 1e-11
 FLUID DIS fluid NODE 2502 QUANTITY     velz VALUE                     0.0 TOLERANCE 1e-11
 FLUID DIS fluid NODE 2502 QUANTITY pressure VALUE                     0.0 TOLERANCE 1e-10

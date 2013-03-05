@@ -28,12 +28,14 @@ namespace LINALG
   class Sparsematrix;
   class BlockSparseMatrixBase;
   class MapExtractor;
+  class KrylovProjector;
 }
 
 namespace DRT
 {
   class Discretization;
   class DofSet;
+  class Condition;
 }
 
 namespace IO
@@ -48,6 +50,7 @@ namespace FLD
   namespace UTILS
   {
     class FluidXFluidMapExtractor;
+    class KSPMapExtractor;
   }
 
 class TimInt : public ADAPTER::Fluid
@@ -129,6 +132,11 @@ public:
   virtual Teuchos::RCP<const Epetra_Map> InnerVelocityRowMap() {dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; } // only used for FSI
   virtual Teuchos::RCP<const Epetra_Map> VelocityRowMap(){dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
   virtual Teuchos::RCP<const Epetra_Map> PressureRowMap(){dserror("Not implemented in the base class, may be overridden by a subclass."); return Teuchos::null; }
+
+  /// preparations for Krylov space projection
+  virtual void SetupKrylovSpaceProjection(DRT::Condition* kspcond) { dserror("Not implemented in the base class, may be overridden by a subclass."); }
+  virtual void UpdateKrylovSpaceProjection() { dserror("Not implemented in the base class, may be overridden by a subclass."); }
+  virtual void CheckKrylovSpaceProjection() { dserror("Not implemented in the base class, may be overridden by a subclass."); }
 
 
   /// the mesh map contains all velocity dofs that are covered by an ALE node
@@ -300,6 +308,16 @@ protected:
   INPAR::FLUID::PhysicalType          physicaltype_; ///< flag for physical type of fluid flow (standard: incompressible)
 
   int     myrank_;      ///< the processor ID from the communicator
+
+  //! @name variables for Krylov Space projection
+  //@{
+  //! flag setting whether Krylov projection needs to be updated or not
+  bool                                  updateprojection_;
+  //! Krylov projector himself
+  Teuchos::RCP<LINALG::KrylovProjector> projector_;
+  /// Krylov space projection map extractor
+  Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
+  //@}
 
   //! @name Biofilm specific stuff
   //@{

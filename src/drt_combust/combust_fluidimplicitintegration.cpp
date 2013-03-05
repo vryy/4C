@@ -776,8 +776,27 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
   if (numfluid == 1)
   {
     SetupKrylovSpaceProjection(kspcond);
-    if (myrank_ == 0)
-      cout << "\nSetup of KrylovSpaceProjection in fluid field\n" << endl;
+    if (myrank_ == 0 and step_ == 1)
+    {
+      IO::cout << "\nSetup of KrylovSpaceProjection in fluid field\n";
+      IO::cout << "#################################################\n";
+      IO::cout << "#        WARNING !!!                            #\n";
+      IO::cout << "# Krylov-Projection for combustion problems not #\n";
+      IO::cout << "# carefully checked!                            #\n";
+      IO::cout << "# Read remark!                                  #\n";
+      IO::cout << "#################################################" << IO::endl;
+      // remark:
+      // before using this option, the following points should be carefully checked!
+      // 1.) for single-phase flows, combust and fluid should provide the same (!) results, see beltrami test
+      //     -> ensured by two nightly tests
+      // 2.) for two-phase flows, the krylov projection should also work:
+      //     - currently, it does not: this might be traced back to the under-integration of intersected elements,
+      //       since this alters the system matrix and hence its kernel
+      //     - an appropriate test to check this issue would be the two-phase couette flow with hexahedral integration cells,
+      //       since, for this test case, we can ensure an exact integration also in intersected elements
+      //     - or channel flow with interface: this is already considered by one of the tests and works fine if the pressure is
+      //       not enriched
+    }
   }
   else if (numfluid == 0)
   {
@@ -1604,6 +1623,10 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       {
         UpdateKrylovSpaceProjection();
       }
+      // remove contributions of pressure mode
+      // that would not vanish due to the projection
+      if (projector_ != Teuchos::null)
+        projector_->ApplyP(*residual_);
 
       double incvelnorm_L2 = 0.0;
       double velnorm_L2 = 0.0;
@@ -1976,6 +1999,8 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 //      IO::cout << " ...done" << IO::endl;
 //      dserror("Fertig");
 
+      // perform check if Krylov projection is used
+      CheckKrylovSpaceProjection();
       solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1,projector_); // defaults: projector_ = Teuchos::null
       solver_->ResetTolerance();
 
@@ -2042,15 +2067,10 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
   sysmat_ = Teuchos::null;
 }
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+
 /*--------------------------------------------------------------------------*
  | setup Krylov projector including first fill                    nis Feb13 |
  *--------------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::CombustFluidImplicitTimeInt::SetupKrylovSpaceProjection(DRT::Condition* kspcond)
 {
   // the Krylov space projection for a combust fluid is questionable for more
@@ -2094,17 +2114,14 @@ void FLD::CombustFluidImplicitTimeInt::SetupKrylovSpaceProjection(DRT::Condition
 
   // update the projector
   UpdateKrylovSpaceProjection();
+
+  return;
 } // FLD::CombustFluidImplicitTimeInt::SetupKrylovSpaceProjection
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+
 /*--------------------------------------------------------------------------*
  | update projection vectors w_ and c_ for Krylov projection      nis Feb13 |
  *--------------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::CombustFluidImplicitTimeInt::UpdateKrylovSpaceProjection()
 {
   // get RCP to kernel vector of projector
@@ -2167,6 +2184,7 @@ void FLD::CombustFluidImplicitTimeInt::UpdateKrylovSpaceProjection()
        Teuchos::null      ,
        Teuchos::null      ,
        "KrylovSpaceProjection");
+    //w0->Print(std::cout);
 
   }
   else
@@ -2183,8 +2201,54 @@ void FLD::CombustFluidImplicitTimeInt::UpdateKrylovSpaceProjection()
 
   // fillcomplete the projector to compute (w^T c)^(-1)
   projector_->FillComplete();
+  //c0->Print(std::cout);
 
+  return;
 } // CombustFluidImplicitTimeInt::UpdateKrylovSpaceProjection
+
+
+/*--------------------------------------------------------------------------*
+ | check if c is kernel of sysmat                            rasthofer 03/12 |
+ *--------------------------------------------------------------------------*/
+void FLD::CombustFluidImplicitTimeInt::CheckKrylovSpaceProjection()
+{
+  //Note: this check should be included until krylov projection is fixed
+  if (projector_ != Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
+    projector_->FillComplete();
+    int nsdim = c->NumVectors();
+    if (nsdim != 1)
+        dserror("One mode expected");
+
+    Epetra_Vector result(c->Map(),false);
+
+    sysmat_->Apply(*c,result);
+
+    double norm=1e9;
+
+    result.Norm2(&norm);
+    //std::cout << norm << std::endl;
+
+    if(norm>1e-12)
+    {
+      std::cout << "#####################################################" << std::endl;
+      std::cout << "Krylov projection failed!                            " << std::endl;
+      std::cout << "This might be caused by:                             " << std::endl;
+      std::cout << " - you don't have pure Dirichlet boundary conditions " << std::endl;
+      std::cout << "   or pbcs -> check your inputfile                   " << std::endl;
+      std::cout << " - you don't integrate the pressure exactly and the  " << std::endl;
+      std::cout << "   given kernel is not a kernel of your system -> to " << std::endl;
+      std::cout << "   check this, use more gauss points (often problem  " << std::endl;
+      std::cout << "   with nurbs)                                       " << std::endl;
+      std::cout << " - there is indeed a problem with the Krylov projection " << std::endl;
+      std::cout << "#####################################################" << std::endl;
+      dserror("krylov projection failed, Ac returned %12.5e",norm);
+      }
+  }
+
+  return;
+}
 
 
 /*------------------------------------------------------------------------------------------------*

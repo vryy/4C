@@ -3187,6 +3187,10 @@ void FLD::XFluid::NonlinearSolve()
       // even if not ALE, we always need to update projection vectors due to changed cuts
       UpdateKrylovSpaceProjection();
     }
+    // remove contributions of pressure mode
+    // that would not vanish due to the projection
+    if (projector_ != Teuchos::null)
+      projector_->ApplyP(*state_->residual_);
 
     double incvelnorm_L2 = 0.0;
     double incprenorm_L2 = 0.0;
@@ -3375,7 +3379,8 @@ void FLD::XFluid::NonlinearSolve()
      if (fluid_infnormscaling_!= Teuchos::null)
        fluid_infnormscaling_->ScaleSystem(state_->sysmat_, *(state_->residual_));
 
-      solver_->Solve(state_->sysmat_->EpetraOperator(),state_->incvel_,state_->residual_,true,itnum==1, projector_);
+     CheckKrylovSpaceProjection();
+     solver_->Solve(state_->sysmat_->EpetraOperator(),state_->incvel_,state_->residual_,true,itnum==1, projector_);
 
       if(gmsh_debug_out_)
       {
@@ -3625,6 +3630,49 @@ void FLD::XFluid::UpdateKrylovSpaceProjection()
   projector_->FillComplete();
 
 } // XFluid::UpdateKrylovSpaceProjection
+
+
+/*--------------------------------------------------------------------------*
+ | check if c is kernel of sysmat                            rasthofer 03/12 |
+ *--------------------------------------------------------------------------*/
+void FLD::XFluid::CheckKrylovSpaceProjection()
+{
+  //Note: this check is expensive and should only be used in the debug mode
+  if (projector_ != Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
+    projector_->FillComplete();
+    int nsdim = c->NumVectors();
+    if (nsdim != 1)
+        dserror("One mode expected");
+
+    Epetra_Vector result(c->Map(),false);
+
+    state_->sysmat_->Apply(*c,result);
+
+    double norm=1e9;
+
+    result.Norm2(&norm);
+
+    if(norm>1e-12)
+    {
+      std::cout << "#####################################################" << std::endl;
+      std::cout << "Krylov projection failed!                            " << std::endl;
+      std::cout << "This might be caused by:                             " << std::endl;
+      std::cout << " - you don't have pure Dirichlet boundary conditions " << std::endl;
+      std::cout << "   or pbcs -> check your inputfile                   " << std::endl;
+      std::cout << " - you don't integrate the pressure exactly and the  " << std::endl;
+      std::cout << "   given kernel is not a kernel of your system -> to " << std::endl;
+      std::cout << "   check this, use more gauss points (often problem  " << std::endl;
+      std::cout << "   with nurbs)                                       " << std::endl;
+      std::cout << " - there is indeed a problem with the Krylov projection " << std::endl;
+      std::cout << "#####################################################" << std::endl;
+      dserror("krylov projection failed, Ac returned %12.5e",norm);
+      }
+  }
+
+  return;
+}
 
 
 

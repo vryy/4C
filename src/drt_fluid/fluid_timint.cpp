@@ -42,7 +42,11 @@ FLD::TimInt::TimInt(
   upres_       (params_->get("write solution every", -1)),
   timealgo_    (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo")),
   physicaltype_(DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type")),
-  myrank_      (discret_->Comm().MyPID())
+  myrank_      (discret_->Comm().MyPID()),
+  updateprojection_(false),
+  projector_(Teuchos::null),
+  kspsplitter_(Teuchos::null),
+  fldgrdisp_(Teuchos::null)
 
 {}
 

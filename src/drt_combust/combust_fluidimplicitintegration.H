@@ -40,7 +40,6 @@ namespace DRT
 {
   class Discretization;
   class IndependentPBCDofSet;
-  class Condition;
 }
 
 namespace LINALG
@@ -51,7 +50,6 @@ namespace LINALG
   class SparseMatrix;
   class SparseOperator;
   class Solver;
-  class KrylovProjector;
 }
 
 namespace IO
@@ -71,11 +69,6 @@ namespace XFEM
 namespace FLD
 {
   class TransferTurbulentInflowCondition;
-
-  namespace UTILS
-  {
-    class KSPMapExtractor;
-  }
 
 /*!
 \brief implicit time integration for combustion problems
@@ -210,6 +203,7 @@ public:
   */
   void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
   void UpdateKrylovSpaceProjection();
+  void CheckKrylovSpaceProjection();
 
   /*!
   \brief Update the solution after convergence of the nonlinear
@@ -596,13 +590,6 @@ protected:
 
   /// pointer to manager for turbulent inflow transfer condition
   Teuchos::RCP<TransferTurbulentInflowCondition> turbulent_inflow_condition_;
-
-  //! flag setting whether Krylov projection needs to be updated or not
-  bool                                  updateprojection_;
-  //! Krylov projector himself
-  Teuchos::RCP<LINALG::KrylovProjector> projector_;
-  /// Krylov space projection map extractor
-  Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
 
   //! @name parameters for sampling/dumping period
   int samstart_;

@@ -106,8 +106,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   dtsolve_(0.0),
   surfacesplitter_(NULL),
   inrelaxation_(false),
-  msht_(INPAR::FLUID::no_meshtying),
-  fldgrdisp_(Teuchos::null)
+  msht_(INPAR::FLUID::no_meshtying)
 {
   // time measurement: initialization
   TEUCHOS_FUNC_TIME_MONITOR(" + initialization");
@@ -1515,6 +1514,11 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       vol_flow_rates_bc_extractor_->ExtractVolumetricSurfaceFlowCondVector(zeros_),
       residual_);
 
+    // remove contributions of pressure mode
+    // that would not vanish due to the projection
+    if (projector_ != Teuchos::null)
+      projector_->ApplyP(*residual_);
+
     Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
     onlyvel->Norm2(&vresnorm_);
 
@@ -1673,6 +1677,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       {
         UpdateKrylovSpaceProjection();
       }
+#ifdef DEBUG
+      CheckKrylovSpaceProjection();
+#endif
 
       if (msht_!= INPAR::FLUID::no_meshtying)
         meshtying_->SolveMeshtying(*solver_, sysmat_, incvel_, residual_, itnum, projector_);
@@ -1699,8 +1706,16 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     // -------------------------------------------------------------------
     // update velocity and pressure values by increments
     // -------------------------------------------------------------------
-    // set increment at dirichlet boundary to zero
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),incvel_);
+    // this is a temporary correction for the dynamic Smagorinsky model
+    // will be removed as soon as the solver settings are clarified
+    if (projector_ != Teuchos::null and turbmodel_==INPAR::FLUID::dynamic_smagorinsky)
+    {
+      // note: Krylov projection also affects Dirichet boundary conditions
+      //       depending on solver tolerances, increment is unequal to zero
+      //       this affects filtering at wall
+      // therefore: set increment at dirichlet boundary to zero
+      dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),incvel_);
+    }
     velnp_->Update(1.0,*incvel_,1.0);
 
     // -------------------------------------------------------------------
@@ -2005,6 +2020,9 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
       {
         UpdateKrylovSpaceProjection();
       }
+#ifdef DEBUG
+      CheckKrylovSpaceProjection();
+#endif
 
       solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, projector_);
 
@@ -2016,8 +2034,16 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
     // -------------------------------------------------------------------
     // update within iteration
     // -------------------------------------------------------------------
-    // set increment at dirichlet boundary to zero
-    dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),incvel_);
+    // this is a temporary correction for the dynamic Smagorinsky model
+    // will be removed as soon as the solver settings are clarified
+    if (projector_ != Teuchos::null and turbmodel_==INPAR::FLUID::dynamic_smagorinsky)
+    {
+      // note: Krylov projection also affects Dirichet boundary conditions
+      //       depending on solver tolerances, increment is unequal to zero
+      //       this affects filtering at wall
+      // therefore: set increment at dirichlet boundary to zero
+      dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),incvel_);
+    }
     IterUpdate(incvel_);
 
     // -------------------------------------------------------------------
@@ -2096,6 +2122,9 @@ void FLD::FluidImplicitTimeInt::SetupKrylovSpaceProjection(DRT::Condition* kspco
 
   // update the projector
   UpdateKrylovSpaceProjection();
+
+  return;
+
 } // FLD::CombustFluidImplicitTimeInt::SetupKrylovSpaceProjection
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
@@ -2199,7 +2228,59 @@ void FLD::FluidImplicitTimeInt::UpdateKrylovSpaceProjection()
   // fillcomplete the projector to compute (w^T c)^(-1)
   projector_->FillComplete();
 
+  return;
+
 } // FluidImplicitTimeInt::UpdateKrylovSpaceProjection
+
+
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+/*--------------------------------------------------------------------------*
+ | check if c is kernel of sysmat                            rasthofer 03/12 |
+ *--------------------------------------------------------------------------*/
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
+void FLD::FluidImplicitTimeInt::CheckKrylovSpaceProjection()
+{
+  //Note: this check is expensive and should only be used in the debug mode
+  if (projector_ != Teuchos::null)
+  {
+    Teuchos::RCP<Epetra_MultiVector> c = projector_->GetNonConstKernel();
+    projector_->FillComplete();
+    int nsdim = c->NumVectors();
+    if (nsdim != 1)
+        dserror("One mode expected");
+
+    Epetra_Vector result(c->Map(),false);
+
+    sysmat_->Apply(*c,result);
+
+    double norm=1e9;
+
+    result.Norm2(&norm);
+
+    if(norm>1e-12)
+    {
+      std::cout << "#####################################################" << std::endl;
+      std::cout << "Krylov projection failed!                            " << std::endl;
+      std::cout << "This might be caused by:                             " << std::endl;
+      std::cout << " - you don't have pure Dirichlet boundary conditions " << std::endl;
+      std::cout << "   or pbcs -> check your inputfile                   " << std::endl;
+      std::cout << " - you don't integrate the pressure exactly and the  " << std::endl;
+      std::cout << "   given kernel is not a kernel of your system -> to " << std::endl;
+      std::cout << "   check this, use more gauss points (often problem  " << std::endl;
+      std::cout << "   with nurbs)                                       " << std::endl;
+      std::cout << " - there is indeed a problem with the Krylov projection " << std::endl;
+      std::cout << "#####################################################" << std::endl;
+      dserror("krylov projection failed, Ac returned %12.5e",norm);
+      }
+  }
+
+  return;
+}
+
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
