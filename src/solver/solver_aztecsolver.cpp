@@ -36,6 +36,8 @@
 // BACI headers
 #include "../drt_lib/drt_dserror.H"
 #include "solver_aztecsolver.H"
+#include "solver_aztecsolver_projectedresidual.H"
+#include "../linalg/linalg_krylov_projector.H"
 
 // Read a parameter value from a paraeter list and copy it into a new parameter list (with another parameter name)
 #define LINALG_COPY_PARAM(paramList, paramStr, varType, defaultValue, outParamList, outParamStr) \
@@ -98,7 +100,8 @@ void LINALG::SOLVER::AztecSolver::Setup(
   if ( create )
   {
     ncall_ = 0;
-    CreatePreconditioner( azlist, A!=Teuchos::null, projector);
+    projector_ = projector;
+    CreatePreconditioner( azlist, A!=Teuchos::null, projector_);
   }
 
   // feed preconditioner with more information about linear system using
@@ -232,6 +235,26 @@ void LINALG::SOLVER::AztecSolver::Solve()
   double tol = azlist.get("AZ_tol",1.0e-6);
 
   // This hurts! It supresses error messages. This needs to be fixed.
+  if (projector_!=Teuchos::null)
+  {
+    Epetra_Operator* op  = aztec.GetProblem()->GetOperator();
+    Epetra_Vector*   rhs = static_cast<Epetra_Vector*>(aztec.GetProblem()->GetRHS());
+    Epetra_Vector*   lhs = static_cast<Epetra_Vector*>(aztec.GetProblem()->GetLHS());
+    // max iterations
+    aztest_maxiter_ = Teuchos::rcp(new AztecOO_StatusTestMaxIters(iter));
+    // L2 norm of projected residual
+    aztest_norm2_ = Teuchos::rcp(new AztecOO_StatusTestProjResNorm(*op,*lhs,*rhs,projector_,tol));
+    aztest_norm2_->DefineResForm(AztecOO_StatusTestResNorm::Explicit,
+                                 AztecOO_StatusTestResNorm::TwoNorm);
+    aztest_norm2_->DefineScaleForm(AztecOO_StatusTestResNorm::NormOfInitRes,
+                                   AztecOO_StatusTestResNorm::TwoNorm);
+    // maxiters OR L2 norm of projected residual
+    aztest_combo_ = Teuchos::rcp(new AztecOO_StatusTestCombo(AztecOO_StatusTestCombo::OR));
+    aztest_combo_->AddStatusTest(*aztest_maxiter_);
+    aztest_combo_->AddStatusTest(*aztest_norm2_);
+    // set status test
+    aztec.SetStatusTest(aztest_combo_.get());
+  }
 #if 0
   // create an aztec convergence test as combination of
   // L2-norm and Inf-Norm to be both satisfied where we demand

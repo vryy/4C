@@ -69,8 +69,11 @@ public:
   //! compute (w^T c)^(-1) and completes projector for use
   void FillComplete();
 
-  //! create actual matrix P for use in direct solver
-  Teuchos::RCP<LINALG::SparseMatrix> CreateP() const;
+  //! give out projector matrix - build it if not yet built (thus not const)
+  const LINALG::SparseMatrix GetP();
+
+  //! give out transposed projector matrix - build it if not yet built (thus not const)
+  const LINALG::SparseMatrix GetPT();
 
   //! wrapper for applying projector to vector for iterative solver
   int ApplyP(Epetra_MultiVector &Y) const;
@@ -78,23 +81,48 @@ public:
   //! wrapper for applying transpose of projector to vector for iterative solver
   int ApplyPT(Epetra_MultiVector &Y) const;
 
+  //! give out projection P^T A P
+  Teuchos::RCP<LINALG::SparseMatrix> Project(const LINALG::SparseMatrix& A) const;
+
   //! return dimension of nullspace
-  int Nsdim(){return nsdim_;}
+  int Nsdim() const {return nsdim_;}
 
   //! return mode-ids corresponding to element nullspace
-  std::vector<int> Modes(){return modeids_;}
+  std::vector<int> Modes() const {return modeids_;}
 
   //! return type of projection weights: integration or pointvalues
-  const std::string * WeightType(){return weighttype_;}
+  const std::string * WeightType() const {return weighttype_;}
 
 private:
+
+  //! creates actual projector matrix P (or its transpose) for use in direct solver
+  void CreateProjector(
+    Teuchos::RCP<LINALG::SparseMatrix>& P,
+    const Teuchos::RCP<Epetra_MultiVector>& v1,
+    const Teuchos::RCP<Epetra_MultiVector>& v2,
+    const Teuchos::RCP<LINALG::SerialDenseMatrix>& inv_v1Tv2
+    );
 
   //! applies projector (or its transpose) to vector for iterative solver
   int ApplyProjector(
     Epetra_MultiVector& Y,
     const Teuchos::RCP<Epetra_MultiVector>& v1,
     const Teuchos::RCP<Epetra_MultiVector>& v2,
-    const Teuchos::RCP<LINALG::SerialDenseMatrix>& v2Tv1
+    const Teuchos::RCP<LINALG::SerialDenseMatrix>& inv_v1Tv2
+    ) const;
+
+  //! multiplies Epetra_MultiVector times Epetra_SerialDenseMatrix
+  Teuchos::RCP<Epetra_MultiVector> MultiplyMultiVecterDenseMatrix(
+    const Teuchos::RCP<Epetra_MultiVector>& mv,
+    const Teuchos::RCP<LINALG::SerialDenseMatrix>& dm
+    ) const;
+
+  //! outer product of two Epetra_MultiVectors
+  Teuchos::RCP<LINALG::SparseMatrix> MultiplyMultiVecterMultiVector(
+    const Teuchos::RCP<Epetra_MultiVector>& mv1, //! first MultiVector
+    const Teuchos::RCP<Epetra_MultiVector>& mv2, //! second MultiVector
+    const int id=1, //! id of MultiVector form which sparsity of output matrix is estimated
+    const bool fill=true //! bool for completing matrix after computation
     ) const;
 
   /*
@@ -198,6 +226,12 @@ private:
   const std::vector<int> modeids_;
 
   const std::string* weighttype_;
+
+  //! projector matrix - only built if necessary (e.g. for direct solvers)
+  Teuchos::RCP<LINALG::SparseMatrix> P_;
+
+  //! transposed projector matrix - only built if necessary (e.g. for direct solvers)
+  Teuchos::RCP<LINALG::SparseMatrix> PT_;
 
   //! a set of vectors defining weighted (basis integral) vector for the projector
   Teuchos::RCP<Epetra_MultiVector> w_;

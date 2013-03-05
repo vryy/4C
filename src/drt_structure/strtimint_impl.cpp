@@ -536,10 +536,8 @@ void STR::TimIntImpl::SetupKrylovSpaceProjection(DRT::Condition* kspcond)
   // get from dat-file definition how weights are to be computed
   const string* weighttype = kspcond->Get<string>("weight vector definition");
 
-  // set flag for projection update true only if ALE and inetgral weights
-  // (not optimal, since for non-rotational modes with pointvalue weights,
-  // nothing changes.)
-  updateprojection_ = true;
+  // since we only use total Lagrange, no update necessary.
+  updateprojection_ = false;
 
   // create the projector
   projector_ = Teuchos::rcp(new LINALG::KrylovProjector(activemodeids,weighttype,discret_->DofRowMap()));
@@ -1095,11 +1093,8 @@ void STR::TimIntImpl::NewtonFull()
 
     // cancel in residual those forces that would excite rigid body modes and
     // that thus vanish in the Krylov space projection
-    if (updateprojection_)
-    {
-      UpdateKrylovSpaceProjection();
+    if (projector_!=Teuchos::null)
       projector_->ApplyPT(*fres_);
-    }
 
     // (trivial)
     if (pressure_ != Teuchos::null)

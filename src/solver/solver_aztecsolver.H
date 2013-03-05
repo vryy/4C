@@ -32,6 +32,7 @@ Created on: Jul 4, 2011
 
 // Aztec forward declarations
 class AztecOO_StatusTestResNorm;
+class AztecOO_StatusTestProjResNorm;
 class AztecOO_StatusTestCombo;
 class AztecOO_StatusTestMaxIters;
 
@@ -63,6 +64,17 @@ namespace LINALG
 
       private:
 
+      //! the Krylov projector
+      Teuchos::RCP<LINALG::KrylovProjector> projector_;
+      //! an aztex maxiter status test
+      Teuchos::RCP<AztecOO_StatusTestMaxIters>       aztest_maxiter_;
+      //! an aztec projected residual 2-norm convergence test
+      Teuchos::RCP<AztecOO_StatusTestProjResNorm>    aztest_norm2_;
+      // ! a test combination (for norm2 and maxiter)
+      Teuchos::RCP<AztecOO_StatusTestCombo>          aztest_combo_;
+
+
+#if 0
       //! an aztex maxiter status test
       Teuchos::RCP<AztecOO_StatusTestMaxIters>       aztest_maxiter_;
       //! an aztec 2-norm convergence test
@@ -72,6 +84,7 @@ namespace LINALG
       // ! combination of the above tests
       Teuchos::RCP<AztecOO_StatusTestCombo>          aztest_combo1_;
       Teuchos::RCP<AztecOO_StatusTestCombo>          aztest_combo2_;
+#endif
 
     };
   }

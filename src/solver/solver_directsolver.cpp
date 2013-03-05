@@ -25,6 +25,7 @@
 #include "../linalg/linalg_sparsematrix.H"
 #include "../linalg/linalg_krylov_projector.H"
 #include <Epetra_CrsMatrix.h>
+#include <Teuchos_Time.hpp>
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
@@ -74,13 +75,9 @@ void LINALG::SOLVER::DirectSolver::Setup( Teuchos::RCP<Epetra_Operator> matrix,
     // get view on systemmatrix as LINALG::SparseMatrix - this is no copy!
     LINALG::SparseMatrix A_view(A_Crs);
 
-    // create projector matrix
-    Teuchos::RCP<LINALG::SparseMatrix> P  = projector_->CreateP();
-    // compute (A P)
-    Teuchos::RCP<LINALG::SparseMatrix> A1 = MLMultiply(A_view,*P);
-    // compute (P^T (A P)) - here, one could think about creating a P^T
-    // directly, similar to the ApplyP/ApplyPT implementation
-    Teuchos::RCP<LINALG::SparseMatrix> A2 = MLMultiply(*P,true,*A1,false,true,false,true);
+    // apply projection to A without computing projection matrix thus avoiding
+    // matrix-matrix multiplication
+    Teuchos::RCP<LINALG::SparseMatrix> A2 = projector_->Project(A_view);
 
     // hand matrix over to A_
     A_ = A2->EpetraMatrix();
@@ -168,6 +165,7 @@ void LINALG::SOLVER::DirectSolver::Solve()
   }
 
   int err = amesos_->Solve();
+
   if (err) dserror("Amesos::Solve returned an err");
 
   if (projector_ != Teuchos::null)
