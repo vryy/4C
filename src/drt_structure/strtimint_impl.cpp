@@ -1608,7 +1608,9 @@ void STR::TimIntImpl::CmtLinearSolve()
       linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact slaveDofMap",slaveDofMap);
       linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact innerDofMap",innerDofMap);
       linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact activeDofMap",activeDofMap);
-
+      Teuchos::RCP<CONTACT::CoAbstractStrategy> costrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
+      if (costrat != Teuchos::null) linSystemProps.set<std::string>("ProblemType", "contact");
+      else                          linSystemProps.set<std::string>("ProblemType", "meshtying");
     }
     // feed Belos based solvers with contact information
     if (contactsolver_->Params().isSublist("Belos Parameters"))
@@ -1625,6 +1627,9 @@ void STR::TimIntImpl::CmtLinearSolve()
       linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact slaveDofMap",slaveDofMap);
       linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact innerDofMap",innerDofMap);
       linSystemProps.set<Teuchos::RCP<Epetra_Map> >("contact activeDofMap",activeDofMap);
+      Teuchos::RCP<CONTACT::CoAbstractStrategy> costrat = Teuchos::rcp_dynamic_cast<CONTACT::CoAbstractStrategy>(strat);
+      if (costrat != Teuchos::null) linSystemProps.set<std::string>("ProblemType", "contact");
+      else                          linSystemProps.set<std::string>("ProblemType", "meshtying");
     }
 
   } // end: feed solver with contact/meshtying information

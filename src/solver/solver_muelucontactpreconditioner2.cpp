@@ -139,8 +139,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
 {
   //Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
 
-  //Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
-
   // read in common parameters
   int maxLevels = 10;       // multigrid prameters
   int verbosityLevel = 10;  // verbosity level
@@ -152,7 +150,8 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   int    minPerAgg = 3;       // optimal for 2d
   int    maxNbrAlreadySelected = 0;
   std::string agg_type = "Uncoupled";
-  //bool   bEnergyMinimization = false; // PGAMG
+  bool bSegregateAggregates = true; // segregate aggregates (to enforce non-overlapping aggregates between master and slave side)
+
   if(params.isParameter("max levels")) maxLevels = params.get<int>("max levels");
   if(params.isParameter("ML output"))  verbosityLevel = params.get<int>("ML output");
   if(params.isParameter("coarse: max size")) maxCoarseSize = params.get<int>("coarse: max size");
@@ -196,22 +195,17 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
       xSingleNodeAggMap = linSystemProps.get<Teuchos::RCP<Map> > ("non diagonal-dominant row map");
     if(linSystemProps.isParameter("near-zero diagonal row map"))
       xNearZeroDiagMap  = linSystemProps.get<Teuchos::RCP<Map> > ("near-zero diagonal row map");
-  }
 
-  std::cout << "masterDofMap" << std::endl;
-  std::cout << *epMasterDofMap << std::endl;
-  std::cout << "slaveDofMap" << std::endl;
-  std::cout << *epSlaveDofMap << std::endl;
-  std::cout << "activeDofMap" << std::endl;
-  std::cout << *epActiveDofMap << std::endl;
+    std::cout << linSystemProps << std::endl;
+
+    if(linSystemProps.isParameter("ProblemType") && linSystemProps.get<std::string>("ProblemType") == "meshtying")
+      bSegregateAggregates = false;
+  }
 
   // transform Epetra maps to Xpetra maps (if necessary)
   Teuchos::RCP<const Map> xfullmap = A->getRowMap(); // full map (MasterDofMap + SalveDofMap + InnerDofMap)
   Teuchos::RCP<Xpetra::EpetraMap> xMasterDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epMasterDofMap ));
   Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
-  //Teuchos::RCP<Xpetra::EpetraMap> xActiveDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epActiveDofMap ));
-  //Teuchos::RCP<Xpetra::EpetraMap> xInnerDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epInnerDofMap  )); // TODO check me
-
 
   ///////////////////////////////////////////////////////////
 
@@ -293,12 +287,15 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   if(xMasterDofMap != Teuchos::null)
     Finest->Set("MasterDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xMasterDofMap));
 
-  // for the Jacobi/SGS smoother we wanna change the input matrix A and set Dirichlet bcs for the (active?) slave dofs
-  Teuchos::RCP<Factory> segregatedAFact =
-       Teuchos::rcp(new MueLu::ContactAFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>());
-  segregatedAFact->SetParameter("Input matrix name",Teuchos::ParameterEntry(std::string("A")));
-  segregatedAFact->SetParameter("Map block 1 name",Teuchos::ParameterEntry(std::string("SlaveDofMap")));
-  segregatedAFact->SetParameter("Map block 2 name",Teuchos::ParameterEntry(std::string("MasterDofMap")));
+  // for segregating aggregates (slave and master)
+  Teuchos::RCP<Factory> segregatedAFact = Teuchos::null;
+  if(bSegregateAggregates) {
+    segregatedAFact =
+         Teuchos::rcp(new MueLu::ContactAFilterFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>());
+    segregatedAFact->SetParameter("Input matrix name",Teuchos::ParameterEntry(std::string("A")));
+    segregatedAFact->SetParameter("Map block 1 name",Teuchos::ParameterEntry(std::string("SlaveDofMap")));
+    segregatedAFact->SetParameter("Map block 2 name",Teuchos::ParameterEntry(std::string("MasterDofMap")));
+  }
 
   ///////////////////////////////////////////////////////////////////////
   // declare "NearZeroDiagMap" on finest level
@@ -320,7 +317,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   // Coalesce and drop factory with constant number of Dofs per freedom
   // note: coalescing based on original matrix A
   Teuchos::RCP<CoalesceDropFactory> dropFact = Teuchos::rcp(new CoalesceDropFactory());
-  dropFact->SetFactory("A",segregatedAFact);
+  if(bSegregateAggregates) dropFact->SetFactory("A",segregatedAFact); // if segregated aggregates are wished, set A factory here
 
   // aggregation factory
   Teuchos::RCP<UncoupledAggregationFactory> UCAggFact = Teuchos::rcp(new UncoupledAggregationFactory(/*dropFact*/));
@@ -332,7 +329,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
 
   if(xSingleNodeAggMap != Teuchos::null) { // declare single node aggregates
     //UCAggFact->SetOnePtMapName("SingleNodeAggDofMap", MueLu::NoFactory::getRCP());
-    UCAggFact->SetParameter("OnePt aggregate map name", Teuchos::ParameterEntry("SingleNodeAggDofMap"));
+    UCAggFact->SetParameter("OnePt aggregate map name", Teuchos::ParameterEntry(std::string("SingleNodeAggDofMap")));
     UCAggFact->SetFactory("OnePt aggregate map factory", MueLu::NoFactory::getRCP());
   }
 
@@ -380,14 +377,14 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
     //PFact->SetParameter("NearZeroDiagMapName", Teuchos::ParameterEntry(std::string("")));
     PFact->SetFactory("NearZeroDiagMapFactory", MueLu::NoFactory::getRCP());
 
-    PFact->SetFactory("A",segregatedAFact);
+    if(bSegregateAggregates) PFact->SetFactory("A",segregatedAFact); // make sure that prolongator smoothing does not disturb segregation of transfer operators
 
     RFact  = Teuchos::rcp( new GenericRFactory() );
   } else {
     // Petrov Galerkin PG-AMG smoothed aggregation (energy minimization in ML)
     PFact  = Teuchos::rcp( new PgPFactory() );
     PFact->SetFactory("P",PtentFact);
-    PFact->SetFactory("A",segregatedAFact);
+    if(bSegregateAggregates) PFact->SetFactory("A",segregatedAFact);// make sure that prolongator smoothing does not disturb segregation of transfer operators
     //PFact->SetFactory("A",singleNodeAFact);
     //PFact->SetFactory("A",slaveTransferAFactory);  // produces nans
     RFact  = Teuchos::rcp( new GenericRFactory() );

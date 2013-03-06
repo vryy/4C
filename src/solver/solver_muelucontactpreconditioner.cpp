@@ -298,10 +298,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner::SetupHierarc
   UCAggFact->SetParameter("MaxNeighAlreadySelected",Teuchos::ParameterEntry(maxNbrAlreadySelected));
   UCAggFact->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(minPerAgg));
   UCAggFact->SetParameter("Ordering",Teuchos::ParameterEntry(MueLu::AggOptions::GRAPH));
-  /*UCAggFact->SetMinNodesPerAggregate(minPerAgg);
-  UCAggFact->SetMaxNeighAlreadySelected(maxNbrAlreadySelected);
-  UCAggFact->SetOrdering(MueLu::AggOptions::GRAPH);*/
-  //UCAggFact->SetOrdering(MueLu::AggOptions::NATURAL);
 
   UCAggFact->SetOnePtMapName("SlaveDofMap", MueLu::NoFactory::getRCP());
   //UCAggFact->SetSmallAggMapName("SlaveDofMap", MueLu::NoFactory::getRCP());

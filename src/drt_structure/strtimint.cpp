@@ -533,7 +533,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
     // feed solver/preconditioner with additional information about the contact/meshtying problem
     //**********************************************************************
     {
-#if 1 // do we need this? feed solvers with latest information. why not using Aztec parameters?
+#if 0 // do we need this? feed solvers with latest information. why not using Aztec parameters?
       if (contactsolver_->Params().isSublist("MueLu (Contact) Parameters"))
       {
         Teuchos::ParameterList& mueluParams = contactsolver_->Params().sublist("MueLu (Contact) Parameters");
