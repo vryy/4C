@@ -198,6 +198,13 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
       xNearZeroDiagMap  = linSystemProps.get<Teuchos::RCP<Map> > ("near-zero diagonal row map");
   }
 
+  std::cout << "masterDofMap" << std::endl;
+  std::cout << *epMasterDofMap << std::endl;
+  std::cout << "slaveDofMap" << std::endl;
+  std::cout << *epSlaveDofMap << std::endl;
+  std::cout << "activeDofMap" << std::endl;
+  std::cout << *epActiveDofMap << std::endl;
+
   // transform Epetra maps to Xpetra maps (if necessary)
   Teuchos::RCP<const Map> xfullmap = A->getRowMap(); // full map (MasterDofMap + SalveDofMap + InnerDofMap)
   Teuchos::RCP<Xpetra::EpetraMap> xMasterDofMap  = Teuchos::rcp(new Xpetra::EpetraMap( epMasterDofMap ));
@@ -265,6 +272,7 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
    Finest->Set("SingleNodeAggDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xSingleNodeAggMap));
 
   // for the Jacobi/SGS smoother we wanna change the input matrix A and set Dirichlet bcs for the (active?) slave dofs
+  // TODO what if xSingleNodeAggMap == Teuchos::null?
   Teuchos::RCP<FactoryBase> singleNodeAFact =
        Teuchos::rcp(new MueLu::IterationAFactory<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SingleNodeAggDofMap",MueLu::NoFactory::getRCP()));
 
@@ -315,12 +323,18 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
   dropFact->SetFactory("A",segregatedAFact);
 
   // aggregation factory
-  Teuchos::RCP<UncoupledAggregationFactory> UCAggFact = Teuchos::rcp(new UncoupledAggregationFactory(dropFact));
-  UCAggFact->SetMinNodesPerAggregate(minPerAgg);
-  UCAggFact->SetMaxNeighAlreadySelected(maxNbrAlreadySelected);
-  UCAggFact->SetOrdering(MueLu::AggOptions::GRAPH);
-  if(xSingleNodeAggMap != Teuchos::null) // declare single node aggregates
-    UCAggFact->SetOnePtMapName("SingleNodeAggDofMap", MueLu::NoFactory::getRCP());
+  Teuchos::RCP<UncoupledAggregationFactory> UCAggFact = Teuchos::rcp(new UncoupledAggregationFactory(/*dropFact*/));
+  UCAggFact->SetFactory("Graph", dropFact);
+  UCAggFact->SetFactory("DofsPerNode", dropFact);
+  UCAggFact->SetParameter("MaxNeighAlreadySelected",Teuchos::ParameterEntry(maxNbrAlreadySelected));
+  UCAggFact->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(minPerAgg));
+  UCAggFact->SetParameter("Ordering",Teuchos::ParameterEntry(MueLu::AggOptions::GRAPH));
+
+  if(xSingleNodeAggMap != Teuchos::null) { // declare single node aggregates
+    //UCAggFact->SetOnePtMapName("SingleNodeAggDofMap", MueLu::NoFactory::getRCP());
+    UCAggFact->SetParameter("OnePt aggregate map name", Teuchos::ParameterEntry("SingleNodeAggDofMap"));
+    UCAggFact->SetFactory("OnePt aggregate map factory", MueLu::NoFactory::getRCP());
+  }
 
   Teuchos::RCP<PFactory> PFact;
   Teuchos::RCP<TwoLevelFactoryBase> RFact;
