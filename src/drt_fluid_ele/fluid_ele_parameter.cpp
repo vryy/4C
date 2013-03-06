@@ -229,26 +229,34 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
 //----------------------------------------------------------------------
   Teuchos::ParameterList& stablist = params.sublist("STABILIZATION");
 
-  // no safety check necessary since all options are used
-  tds_      = DRT::INPUT::IntegralValue<INPAR::FLUID::SubscalesTD>(stablist,"TDS");
-  transient_= DRT::INPUT::IntegralValue<INPAR::FLUID::Transient>(stablist,"TRANSIENT");
-  pspg_     = DRT::INPUT::IntegralValue<INPAR::FLUID::PSPG>(stablist,"PSPG");
-  supg_     = DRT::INPUT::IntegralValue<INPAR::FLUID::SUPG>(stablist,"SUPG");
-  vstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
-  rstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::RStab>(stablist,"RSTAB");
-  cstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CStab>(stablist,"CSTAB");
-  cross_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
-  reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
 
   // if edge-based stabilization is selected, all residual-based stabilization terms
   // are switched off
-  if (stablist.get<std::string>("STABTYPE") == "edge_based")
+  if (stablist.get<std::string>("STABTYPE") == "residual_based")
+  {
+    // no safety check necessary since all options are used
+    tds_      = DRT::INPUT::IntegralValue<INPAR::FLUID::SubscalesTD>(stablist,"TDS");
+    transient_= DRT::INPUT::IntegralValue<INPAR::FLUID::Transient>(stablist,"TRANSIENT");
+    pspg_     = DRT::INPUT::IntegralValue<INPAR::FLUID::PSPG>(stablist,"PSPG");
+    supg_     = DRT::INPUT::IntegralValue<INPAR::FLUID::SUPG>(stablist,"SUPG");
+    vstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
+    rstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::RStab>(stablist,"RSTAB");
+    cstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CStab>(stablist,"CSTAB");
+    cross_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
+    reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
+
+    // overrule higher_order_ele if input-parameter is set
+    // this might be interesting for fast (but slightly
+    // less accurate) computations
+    is_inconsistent_ = DRT::INPUT::IntegralValue<int>(stablist,"INCONSISTENT");
+  }
+  else if (stablist.get<std::string>("STABTYPE") == "edge_based")
   {
     if (myrank==0)
     {
-      IO::cout << "+----------------------------------------------------------------------------------+" << IO::endl;
-      IO::cout << " Edge-based stabilization: all residual-based stabilization terms are switched off!"  << IO::endl;
-      IO::cout << "+----------------------------------------------------------------------------------+" << IO::endl;
+      IO::cout << "+----------------------------------------------------------------------------------+\n";
+      IO::cout << " Edge-based stabilization: all residual-based stabilization terms are switched off!\n";
+      IO::cout << "+----------------------------------------------------------------------------------+\n" << IO::endl;
     }
     pspg_ = INPAR::FLUID::pstab_assume_inf_sup_stable;
     supg_ = INPAR::FLUID::convective_stab_none;
@@ -257,7 +265,32 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
     cstab_ = INPAR::FLUID::continuity_stab_none;
     cross_ = INPAR::FLUID::cross_stress_stab_none;
     reynolds_ = INPAR::FLUID::reynolds_stress_stab_none;
+    tds_ = INPAR::FLUID::subscales_none;
+    transient_ = INPAR::FLUID::inertia_stab_drop;
+    is_inconsistent_ = false;
   }
+  else if (stablist.get<std::string>("STABTYPE") == "no_stabilization")
+  {
+    if (myrank==0)
+    {
+      IO::cout << "+----------------------------------------------------------------------------------+\n";
+      IO::cout << "+                                   WARNING\n";
+      IO::cout << " No stabilization selected: all stabilization terms are switched off!\n";
+      IO::cout << "+----------------------------------------------------------------------------------+\n" << IO::endl;
+    }
+    pspg_ = INPAR::FLUID::pstab_assume_inf_sup_stable;
+    supg_ = INPAR::FLUID::convective_stab_none;
+    vstab_ = INPAR::FLUID::viscous_stab_none;
+    rstab_ = INPAR::FLUID::reactive_stab_none;
+    cstab_ = INPAR::FLUID::continuity_stab_none;
+    cross_ = INPAR::FLUID::cross_stress_stab_none;
+    reynolds_ = INPAR::FLUID::reynolds_stress_stab_none;
+    tds_ = INPAR::FLUID::subscales_none;
+    transient_ = INPAR::FLUID::inertia_stab_drop;
+    is_inconsistent_ = false;
+  }
+  else
+   dserror("Unknown stabilization type");
 
   // safety checks for time-dependent subgrid scales
   if ((tds_ == INPAR::FLUID::subscales_time_dependent) or (transient_ != INPAR::FLUID::inertia_stab_drop))
@@ -306,11 +339,6 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
     else if (whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
       whichtau_ = INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt;
   }
-
-  // overrule higher_order_ele if input-parameter is set
-  // this might be interesting for fast (but slightly
-  // less accurate) computations
-  if (stablist.get<std::string>("STABTYPE") == "inconsistent") is_inconsistent_ = true;
 
   // in case of viscous and/or reactive stabilization, decide whether to use
   // GLS or USFEM and ensure compatibility of respective definitions

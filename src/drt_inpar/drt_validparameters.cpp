@@ -2578,22 +2578,22 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_stab = fdyn.sublist("STABILIZATION",false,"");
 
-  // this parameter seperates stabilized from unstabilized methods
+  // this parameter defines various stabilized methods
   setStringToIntegralParameter<int>("STABTYPE",
                                "residual_based",
                                "Apply (un)stabilized fluid formulation",
                                tuple<std::string>(
                                  "no_stabilization",
-                                 "inconsistent",
                                  "residual_based",
                                  "edge_based"),
                                tuple<std::string>(
                                  "Do not use any stabilization -> inf-sup stable elements required!",
-                                 "Similar to residual based without second derivatives (i.e. only consistent for tau->0, but faster)",
                                  "Use a residual-based stabilization or, more generally, a stabilization \nbased on the concept of the residual-based variational multiscale method...\nExpecting additional input",
                                  "Use an edge-based stabilization, especially for XFEM")  ,
-                               tuple<int>(0,1,2,3),
+                               tuple<int>(0,1,2),
                                &fdyn_stab);
+
+  BoolParameter("INCONSISTENT","No","residual based without second derivatives (i.e. only consistent for tau->0, but faster)",&fdyn_stab);
 
   // the following parameters are necessary only if a residual based stabilized method is applied
   setStringToIntegralParameter<int>("TDS",

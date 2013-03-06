@@ -97,7 +97,8 @@ EVALUATION_MAT                  element_center
 EVALUATION_TAU                  element_center
 PSPG                            yes_pspg
 REYNOLDS-STRESS                 no_reynolds
-STABTYPE                        inconsistent
+STABTYPE                        residual_based
+INCONSISTENT                    yes
 SUPG                            yes_supg
 TDS                             quasistatic
 TRANSIENT                       no_transient
