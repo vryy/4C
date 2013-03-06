@@ -59,4 +59,3 @@ Teuchos::RCP<const Epetra_Map> FLD::TimInt::DofRowMap(unsigned nds)
   return Teuchos::rcp(Discretization()->DofRowMap(nds), false);
 }
 
-

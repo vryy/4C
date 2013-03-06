@@ -130,6 +130,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   DynSmag_(Teuchos::null),
   turbinflow_(DRT::INPUT::IntegralValue<int>(extraparams->sublist("TURBULENT INFLOW"),"TURBULENTINFLOW")),
   reinitswitch_(extraparams->get<bool>("REINITSWITCH",false)),
+  updateprojection_(false),
   upres_    (params->get<int>("UPRES")),
   uprestart_(params->get<int>("RESTARTEVRY")),
   neumanninflow_(DRT::INPUT::IntegralValue<int>(*params,"NEUMANNINFLOW")),
@@ -633,7 +634,6 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   }
   else if (numscatra == 0)
   {
-    updateprojection_ = false;
     projector_ = Teuchos::null;
   }
   else
@@ -2690,6 +2690,10 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
     // We could avoid this though, if the dofrowmap would not include
     // the Dirichlet values as well. But it is expensive to avoid that.
     dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_), residual_);
+
+    // project residual such that only part orthogonal to nullspace is considered
+    if (projector_!=Teuchos::null)
+      projector_->ApplyPT(*residual_);
 
     // abort nonlinear iteration if desired
     if (AbortNonlinIter(itnum,itemax,ittol,abstolres,actresidual))

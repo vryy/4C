@@ -203,7 +203,7 @@ public:
   */
   void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
   void UpdateKrylovSpaceProjection();
-  void CheckKrylovSpaceProjection();
+  void CheckMatrixNullspace();
 
   /*!
   \brief Update the solution after convergence of the nonlinear

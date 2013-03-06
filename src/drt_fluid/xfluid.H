@@ -348,7 +348,7 @@ namespace FLD
     /// create vectors for KrylovSpaceProjection
     void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
     void UpdateKrylovSpaceProjection();
-    void CheckKrylovSpaceProjection();
+    void CheckMatrixNullspace();
 
     /// update interface fields
     void UpdateInterfaceFields();

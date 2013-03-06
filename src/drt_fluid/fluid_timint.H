@@ -29,6 +29,7 @@ namespace LINALG
   class BlockSparseMatrixBase;
   class MapExtractor;
   class KrylovProjector;
+
 }
 
 namespace DRT
@@ -136,7 +137,7 @@ public:
   /// preparations for Krylov space projection
   virtual void SetupKrylovSpaceProjection(DRT::Condition* kspcond) { dserror("Not implemented in the base class, may be overridden by a subclass."); }
   virtual void UpdateKrylovSpaceProjection() { dserror("Not implemented in the base class, may be overridden by a subclass."); }
-  virtual void CheckKrylovSpaceProjection() { dserror("Not implemented in the base class, may be overridden by a subclass."); }
+  virtual void CheckMatrixNullspace() { dserror("Not implemented in the base class, may be overridden by a subclass."); }
 
 
   /// the mesh map contains all velocity dofs that are covered by an ALE node

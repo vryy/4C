@@ -198,7 +198,7 @@ public:
   */
   void SetupKrylovSpaceProjection(DRT::Condition* kspcond);
   void UpdateKrylovSpaceProjection();
-  void CheckKrylovSpaceProjection();
+  void CheckMatrixNullspace();
 
   /*!
   \brief update within iteration

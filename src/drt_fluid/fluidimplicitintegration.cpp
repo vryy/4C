@@ -1678,7 +1678,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
         UpdateKrylovSpaceProjection();
       }
 #ifdef DEBUG
-      CheckKrylovSpaceProjection();
+      // if Krylov space projection is used, check whether constant pressure
+      // is in nullspace of sysmat_
+      CheckMatrixNullspace();
 #endif
 
       if (msht_!= INPAR::FLUID::no_meshtying)
@@ -2021,7 +2023,9 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
         UpdateKrylovSpaceProjection();
       }
 #ifdef DEBUG
-      CheckKrylovSpaceProjection();
+      // if Krylov space projection is used, check whether constant pressure
+      // is in nullspace of sysmat_
+      CheckMatrixNullspace();
 #endif
 
       solver_->Solve(sysmat_->EpetraOperator(),incvel_,residual_,true,itnum==1, projector_);
@@ -2232,17 +2236,16 @@ void FLD::FluidImplicitTimeInt::UpdateKrylovSpaceProjection()
 
 } // FluidImplicitTimeInt::UpdateKrylovSpaceProjection
 
-
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*--------------------------------------------------------------------------*
- | check if c is kernel of sysmat                            rasthofer 03/12 |
+ | check if constant pressure mode is in kernel of sysmat_     nissen Jan13 |
  *--------------------------------------------------------------------------*/
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-void FLD::FluidImplicitTimeInt::CheckKrylovSpaceProjection()
+void FLD::FluidImplicitTimeInt::CheckMatrixNullspace()
 {
   //Note: this check is expensive and should only be used in the debug mode
   if (projector_ != Teuchos::null)
@@ -2251,7 +2254,7 @@ void FLD::FluidImplicitTimeInt::CheckKrylovSpaceProjection()
     projector_->FillComplete();
     int nsdim = c->NumVectors();
     if (nsdim != 1)
-        dserror("One mode expected");
+      dserror("Only one mode, namely the constant pressure mode, expected.");
 
     Epetra_Vector result(c->Map(),false);
 
@@ -2264,23 +2267,25 @@ void FLD::FluidImplicitTimeInt::CheckKrylovSpaceProjection()
     if(norm>1e-12)
     {
       std::cout << "#####################################################" << std::endl;
-      std::cout << "Krylov projection failed!                            " << std::endl;
+      std::cout << "Nullspace check for sysmat_ failed!                  " << std::endl;
       std::cout << "This might be caused by:                             " << std::endl;
       std::cout << " - you don't have pure Dirichlet boundary conditions " << std::endl;
-      std::cout << "   or pbcs -> check your inputfile                   " << std::endl;
-      std::cout << " - you don't integrate the pressure exactly and the  " << std::endl;
-      std::cout << "   given kernel is not a kernel of your system -> to " << std::endl;
-      std::cout << "   check this, use more gauss points (often problem  " << std::endl;
-      std::cout << "   with nurbs)                                       " << std::endl;
-      std::cout << " - there is indeed a problem with the Krylov projection " << std::endl;
+      std::cout << "   or pbcs. pressure level is fixed. -> check datfile" << std::endl;
+      std::cout << " - you don't integrate pressure dofs accurately      " << std::endl;
+      std::cout << "   enough for sysmat_. constant pressure is not in   " << std::endl;
+      std::cout << "   kernel of sysmat_. -> use more gauss points (often" << std::endl;
+      std::cout << "   problem with nurbs)                               " << std::endl;
+      std::cout << " - unlikely but not impossible: nullspace vector is  " << std::endl;
+      std::cout << "   not the constant pressure mode (not totally clear " << std::endl;
+      std::cout << "   for xfem, yet). In this case sysmat_ could be     " << std::endl;
+      std::cout << "   correct. -> adapt nullspace vector                " << std::endl;
       std::cout << "#####################################################" << std::endl;
-      dserror("krylov projection failed, Ac returned %12.5e",norm);
-      }
+      dserror("Nullspace check for sysmat_ failed, Ac returned %12.5e",norm);
+    }
   }
 
   return;
 }
-
 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
