@@ -57,7 +57,7 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
   darcy_(false),
   reaction_topopt_(false),
   physicaltype_(INPAR::FLUID::incompressible),
-  tds_(INPAR::FLUID::subscales_none),
+  tds_(INPAR::FLUID::subscales_quasistatic),
   transient_(INPAR::FLUID::inertia_stab_drop),
   pspg_(INPAR::FLUID::pstab_use_pspg),
   supg_(INPAR::FLUID::convective_stab_supg),
@@ -265,7 +265,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
     cstab_ = INPAR::FLUID::continuity_stab_none;
     cross_ = INPAR::FLUID::cross_stress_stab_none;
     reynolds_ = INPAR::FLUID::reynolds_stress_stab_none;
-    tds_ = INPAR::FLUID::subscales_none;
+    tds_ = INPAR::FLUID::subscales_quasistatic;
     transient_ = INPAR::FLUID::inertia_stab_drop;
     is_inconsistent_ = false;
   }
@@ -285,7 +285,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
     cstab_ = INPAR::FLUID::continuity_stab_none;
     cross_ = INPAR::FLUID::cross_stress_stab_none;
     reynolds_ = INPAR::FLUID::reynolds_stress_stab_none;
-    tds_ = INPAR::FLUID::subscales_none;
+    tds_ = INPAR::FLUID::subscales_quasistatic;
     transient_ = INPAR::FLUID::inertia_stab_drop;
     is_inconsistent_ = false;
   }

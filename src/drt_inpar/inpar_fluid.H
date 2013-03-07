@@ -84,7 +84,6 @@ namespace INPAR
 
     enum SubscalesTD
     {
-      subscales_none,
       subscales_quasistatic,
       subscales_time_dependent
     };
