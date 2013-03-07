@@ -140,7 +140,10 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
   //-------------------------------------------------------------------------
   {
     Epetra_Time ltime(A_->Comm());
-    S_ = LINALG::Multiply(*diagAinv_,false,(*A_)(0,1),false,true);
+    // with Trilinos Q1/2013 there are some improvements in EpetraExt MM.
+    // However, they lead to a crash here -> use MLMultiply instead.
+    //S_ = LINALG::Multiply(*diagAinv_,false,(*A_)(0,1),false,true);
+    S_ = LINALG::MLMultiply(*diagAinv_,(*A_)(0,1),true);
     if (!myrank && SIMPLER_TIMING) printf("*** S = diagAinv * A(0,1) %10.3E\n",ltime.ElapsedTime());
     ltime.ResetStartTime();
     S_ = LINALG::MLMultiply((*A_)(1,0),*S_,false);
@@ -156,12 +159,9 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
     S_->Complete((*A_)(1,1).DomainMap(),(*A_)(1,1).RangeMap());
     if (!myrank && SIMPLER_TIMING) printf("*** S complete            %10.3E\n",ltime.ElapsedTime());
     ltime.ResetStartTime();
-
-
   }
   if (!myrank && SIMPLER_TIMING) printf("--- Time to do S            %10.3E\n",time.ElapsedTime());
   time.ResetStartTime();
-
 
 #if CHEAPSIMPLE_ALGORITHM
   {
