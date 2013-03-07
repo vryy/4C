@@ -1517,7 +1517,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     // remove contributions of pressure mode
     // that would not vanish due to the projection
     if (projector_ != Teuchos::null)
-      projector_->ApplyP(*residual_);
+      projector_->ApplyPT(*residual_);
 
     Teuchos::RCP<Epetra_Vector> onlyvel = velpressplitter_.ExtractOtherVector(residual_);
     onlyvel->Norm2(&vresnorm_);

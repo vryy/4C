@@ -1626,7 +1626,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       // remove contributions of pressure mode
       // that would not vanish due to the projection
       if (projector_ != Teuchos::null)
-        projector_->ApplyP(*residual_);
+        projector_->ApplyPT(*residual_);
 
       double incvelnorm_L2 = 0.0;
       double velnorm_L2 = 0.0;

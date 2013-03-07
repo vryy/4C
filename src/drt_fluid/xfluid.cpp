@@ -3190,7 +3190,7 @@ void FLD::XFluid::NonlinearSolve()
     // remove contributions of pressure mode
     // that would not vanish due to the projection
     if (projector_ != Teuchos::null)
-      projector_->ApplyP(*state_->residual_);
+      projector_->ApplyPT(*state_->residual_);
 
     double incvelnorm_L2 = 0.0;
     double incprenorm_L2 = 0.0;
