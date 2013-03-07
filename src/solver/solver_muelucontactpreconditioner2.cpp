@@ -195,9 +195,6 @@ Teuchos::RCP<Hierarchy> LINALG::SOLVER::MueLuContactPreconditioner2::SetupHierar
       xSingleNodeAggMap = linSystemProps.get<Teuchos::RCP<Map> > ("non diagonal-dominant row map");
     if(linSystemProps.isParameter("near-zero diagonal row map"))
       xNearZeroDiagMap  = linSystemProps.get<Teuchos::RCP<Map> > ("near-zero diagonal row map");
-
-    std::cout << linSystemProps << std::endl;
-
     if(linSystemProps.isParameter("ProblemType") && linSystemProps.get<std::string>("ProblemType") == "meshtying")
       bSegregateAggregates = false;
   }

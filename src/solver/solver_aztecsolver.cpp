@@ -126,7 +126,9 @@ void LINALG::SOLVER::AztecSolver::Setup(
       LINALG_COPY_PARAM(Params().sublist("Aztec Parameters").sublist("Linear System properties"),
           "contact activeDofMap", Teuchos::RCP<Epetra_Map>, Teuchos::null,
           linSystemProps, "contact activeDofMap");
-
+      LINALG_COPY_PARAM(Params().sublist("Aztec Parameters").sublist("Linear System properties"),
+          "ProblemType", std::string, "contact",
+          linSystemProps, "ProblemType");
     }
   }
 
