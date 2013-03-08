@@ -426,8 +426,6 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Thermo::Volumes()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Thermo::VisNames(std::map<std::string,int>& names)
 {
-  // Put the owner of this element into the file (use base class method for this)
-  DRT::Element::VisNames(names);
 
   // see whether we have additional data for visualization in our container
   for (int k=0 ;k<numdofpernode_; k++)

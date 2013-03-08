@@ -420,10 +420,7 @@ void DRT::ELEMENTS::MeshfreeTransport::Unpack(const std::vector<char>& data)
  *--------------------------------------------------------------------------*/
 void DRT::ELEMENTS::MeshfreeTransport::VisNames(std::map<string,int>& names)
 {
-  // Put the owner of this element into the file (use base class method for this)
-  DRT::Element::VisNames(names);
-
-  // see whether we have additional data for visualization in our container
+   // see whether we have additional data for visualization in our container
   for (int k = 0 ;k<numdofpernode_; k++)
   {
     std::ostringstream temp;

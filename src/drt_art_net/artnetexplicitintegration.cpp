@@ -891,7 +891,7 @@ void ART::ArtNetExplicitTimeInt::Output(bool               CoupledTo3D,
 
 
     // write domain decomposition for visualization (only once!)
-    if (step_==upres_) output_.WriteElementData();
+    if (step_==upres_) output_.WriteElementData(true);
 
     if (uprestart_ != 0 && step_%uprestart_ == 0)
     {

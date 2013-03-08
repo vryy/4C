@@ -194,7 +194,6 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::ReadElement(const std::string& eletype,
 template<DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::Wall1_Poro<distype>::VisNames(std::map<string,int>& names)
 {
-  Wall1::VisNames(names);
 
   if (Material()->MaterialType() == INPAR::MAT::m_structporo)
   {

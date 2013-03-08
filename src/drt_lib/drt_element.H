@@ -545,8 +545,6 @@ public:
   \brief Query names of element data to be visualized using BINIO
 
   This method is to be overloaded by a derived class.
-  The derived method is supposed to call this base method to visuzalize the owner of
-  the element.
   The element is supposed to fill the provided map with key names of
   visualization data the element wants to visualize AT THE CENTER
   of the element geometry. The values is supposed to be dimension of the
@@ -564,6 +562,14 @@ public:
                       of that data.
   */
   virtual void VisNames(std::map<string,int>& names)
+  { return; }
+
+  /*!
+  \brief Visuzalize the owner of the element using BINIO
+
+  \param names (out): Owner is added to the key names
+  */
+  virtual void VisOwner(std::map<string,int>& names)
   {
     names.insert(std::pair<string,int>("Owner",1));
     //names.insert(std::pair<string,int>("EleGId",1));

@@ -2102,6 +2102,9 @@ FLD::XFluid::XFluid(
   boundary_output_ = Teuchos::rcp(new IO::DiscretizationWriter(boundarydis_));
   boundary_output_->WriteMesh(0,0.0);
 
+  // used to write out owner of elements just once
+  firstoutputofrun_ = true;
+
 
   //--------------------------------------------------------
   // create interface fields
@@ -4959,7 +4962,7 @@ void FLD::XFluid::Output()
     fluid_output_->WriteVector("velnp", outvec_fluid_);
     fluid_output_->WriteVector("pressure", pressure);
 
-    fluid_output_->WriteElementData();
+    fluid_output_->WriteElementData(firstoutputofrun_);
 
     // write restart
     if (write_restart_data)
@@ -4984,7 +4987,8 @@ void FLD::XFluid::Output()
     boundary_output_->WriteVector("idispnp", idispnp_);
     boundary_output_->WriteVector("itrueresnp", itrueresidual_);
 
-    boundary_output_->WriteElementData();
+    boundary_output_->WriteElementData(firstoutputofrun_);
+    firstoutputofrun_ = false;
 
     // write restart
     if (write_restart_data)

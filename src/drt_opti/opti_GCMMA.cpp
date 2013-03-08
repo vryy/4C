@@ -2274,7 +2274,7 @@ void OPTI::GCMMA::Output()
 
   // write domain decomposition for visualization (only once!)
   if (total_iter_==upres_)
-    output_->WriteElementData();
+    output_->WriteElementData(true);
 
   output_->WriteVector("x", x_);
   output_->WriteVector("x_old", x_old_);

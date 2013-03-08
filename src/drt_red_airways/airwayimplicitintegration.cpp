@@ -1047,7 +1047,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
     //    output_.WriteVector("qcnp",qcnp_);
 
     // write domain decomposition for visualization
-    //    output_.WriteElementData();
+    //    output_.WriteElementData(true);
 
     // write the flow values
     LINALG::Export(*qin_nm_,*qexp_);
@@ -1117,7 +1117,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Output(bool               CoupledTo3D,
       output_.WriteVector("generations",qexp_);
       LINALG::Export(*acini_bc_,*qexp_);
       output_.WriteVector("acin_bc",qexp_);
-      output_.WriteElementData();
+      output_.WriteElementData(true);
     }
 
     // write mesh in each restart step --- the elements are required since

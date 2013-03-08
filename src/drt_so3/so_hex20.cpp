@@ -396,8 +396,6 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_hex20::Lines()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex20::VisNames(std::map<string,int>& names)
 {
-  // Put the owner of this element into the file (use base class method for this)
-  DRT::Element::VisNames(names);
 
   if (Material()->MaterialType() == INPAR::MAT::m_contchainnetw){
     string fiber = "Fiber1";

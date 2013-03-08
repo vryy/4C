@@ -895,6 +895,7 @@ namespace STR
                              //!< if 0, restart is not written
     int writereducedrestart_; // Write reduced Restart Data i.e no mesh for mlmc purposes
     bool writestate_;  //!< write state on/off
+    bool writevelacc_;  //!< write velocity and acceleration on/off
     int writeresultsevery_;  //!< write state/stress/strain every given step
     INPAR::STR::StressType writestress_;  //!< stress output type
     INPAR::STR::StressType writecouplstress_;  //!< output type of coupling stress
@@ -964,6 +965,7 @@ namespace STR
     int stepmax_;  //!< final step \f$N\f$
     int step_;  //!< time step index \f$n\f$
     int stepn_;  //!< time step index \f$n+1\f$
+    bool firstoutputofrun_;  //!< flag whether this output step is the first one (restarted or not)
     bool lumpmass_;  //!< flag for lumping the mass matrix, default: false
     bool young_temp_;  //!< flag deciding if young's modulus is temperature-dependent, default: false
     //@}

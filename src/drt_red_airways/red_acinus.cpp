@@ -216,8 +216,6 @@ void DRT::ELEMENTS::RedAcinus::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::RedAcinus::VisNames(std::map<string,int>& names)
 {
-  // Put the owner of this element into the file (use base class method for this)
-  DRT::Element::VisNames(names);
 
 #if 0
   // see whether we have additional data for visualization in our container

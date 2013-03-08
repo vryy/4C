@@ -107,6 +107,7 @@ STR::TimInt::TimInt
   writerestartevery_(sdynparams.get<int>("RESTARTEVRY")),
   writereducedrestart_(xparams.get<int>("REDUCED_OUTPUT")),
   writestate_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_DISP")),
+  writevelacc_((bool) DRT::INPUT::IntegralValue<int>(ioparams,"STRUCT_VEL_ACC")),
   writeresultsevery_(sdynparams.get<int>("RESULTSEVRY")),
   writestress_(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_STRESS")),
   writecouplstress_(DRT::INPUT::IntegralValue<INPAR::STR::StressType>(ioparams,"STRUCT_COUPLING_STRESS")),
@@ -134,6 +135,7 @@ STR::TimInt::TimInt
   stepmax_(sdynparams.get<int>("NUMSTEP")),
   step_(0),
   stepn_(0),
+  firstoutputofrun_(true),
   lumpmass_(DRT::INPUT::IntegralValue<int>(sdynparams,"LUMPMASS")==1),
   young_temp_(DRT::INPUT::IntegralValue<int>(sdynparams,"YOUNG_IS_TEMP_DEPENDENT")==1),
   zeros_(Teuchos::null),
@@ -1129,7 +1131,7 @@ void STR::TimInt::OutputRestart
     //output_->WriteMesh(step_, (*time_)[0]);
     output_->NewStep(step_, (*time_)[0]);
     output_->WriteVector("displacement", (*dis_)(0));
-    output_->WriteElementData();
+    output_->WriteElementData(firstoutputofrun_);
   }
   else
   {
@@ -1142,7 +1144,7 @@ void STR::TimInt::OutputRestart
     output_->WriteVector("acceleration", (*acc_)(0));
     output_->WriteVector("fexternal", Fext());
     if(!HaveStatMech())
-      output_->WriteElementData();
+      output_->WriteElementData(firstoutputofrun_);
 
     //biofilm growth
     if (strgrdisp_!=Teuchos::null)
@@ -1150,6 +1152,8 @@ void STR::TimInt::OutputRestart
       output_->WriteVector("str_growth_displ", strgrdisp_);
     }
   }
+  // owner of elements is just written once because it does not change during simulation (so far)
+  firstoutputofrun_ = false;
 
 
   // surface stress
@@ -1213,9 +1217,12 @@ void STR::TimInt::OutputState
   // write now
   output_->NewStep(step_, (*time_)[0]);
   output_->WriteVector("displacement", (*dis_)(0));
-  output_->WriteVector("velocity", (*vel_)(0));
-  output_->WriteVector("acceleration", (*acc_)(0));
-  output_->WriteVector("fexternal", Fext());
+  // for visualization of vel and acc do not forget to comment in corresponding lines in StructureEnsightWriter
+  if(writevelacc_)
+  {
+    output_->WriteVector("velocity", (*vel_)(0));
+    output_->WriteVector("acceleration", (*acc_)(0));
+  }
 
   //biofilm growth
   if (strgrdisp_!=Teuchos::null)
@@ -1223,7 +1230,9 @@ void STR::TimInt::OutputState
     output_->WriteVector("str_growth_displ", strgrdisp_);
   }
 
-  output_->WriteElementData();
+  // owner of elements is just written once because it does not change during simulation (so far)
+  output_->WriteElementData(firstoutputofrun_);
+  firstoutputofrun_ = false;
 
   if (surfstressman_->HaveSurfStress() && writesurfactant_)
     surfstressman_->WriteResults(step_, (*time_)[0]);

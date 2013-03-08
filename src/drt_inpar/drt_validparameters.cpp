@@ -762,6 +762,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   setStringToIntegralParameter<int>("OUTPUT_BIN","yes","",yesnotuple,yesnovalue,&io);
 
   setStringToIntegralParameter<int>("STRUCT_DISP","Yes","",yesnotuple,yesnovalue,&io);
+  setStringToIntegralParameter<int>("STRUCT_VEL_ACC","No","",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("STRUCT_SE","No","output of strain energy",yesnotuple,yesnovalue,&io);
   setStringToIntegralParameter<int>("STRUCT_STRESS","No","",
                                tuple<std::string>("No","no","NO",

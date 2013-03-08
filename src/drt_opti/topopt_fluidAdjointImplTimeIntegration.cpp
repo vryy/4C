@@ -682,7 +682,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::Output() const
       OutputToGmsh(step_, time_,false);
 
     // write domain decomposition for visualization (only once!)
-    if (step_==upres_) output_->WriteElementData();
+    if (step_==upres_) output_->WriteElementData(true);
 
     if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
     {

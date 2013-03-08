@@ -78,6 +78,7 @@ THR::TimInt::TimInt(
   stepmax_(tdynparams.get<int>("NUMSTEP")),
   step_(0),
   stepn_(0),
+  firstoutputofrun_(true),
   lumpcapa_(DRT::INPUT::IntegralValue<int>(tdynparams,"LUMPCAPA")==1),
   young_temp_(DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StructuralDynamicParams(),"YOUNG_IS_TEMP_DEPENDENT")==1),
   zeros_(Teuchos::null),
@@ -429,6 +430,10 @@ void THR::TimInt::OutputRestart(bool& datawritten)
   output_->WriteVector("rate", (*rate_)(0));
   output_->WriteVector("fexternal", Fext());
 
+  // owner of elements is just written once because it does not change during simulation (so far)
+  output_->WriteElementData(firstoutputofrun_);
+  firstoutputofrun_ = false;
+
   // info dedicated to user's eyes staring at standard out
   if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
   {
@@ -466,8 +471,9 @@ void THR::TimInt::OutputState(bool& datawritten)
   output_->NewStep(step_, (*time_)[0]);
   output_->WriteVector("temperature", (*temp_)(0));
   output_->WriteVector("rate", (*rate_)(0));
-  output_->WriteVector("fexternal", Fext());
-  output_->WriteElementData();
+  // owner of elements is just written once because it does not change during simulation (so far)
+  output_->WriteElementData(firstoutputofrun_);
+  firstoutputofrun_ = false;
 
   // leave for good
   return;

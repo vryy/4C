@@ -1129,7 +1129,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time, std:
 }
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteElementData()
+void IO::DiscretizationWriter::WriteElementData(bool writeowner)
 {
   if(binio_)
   {
@@ -1138,6 +1138,14 @@ void IO::DiscretizationWriter::WriteElementData()
 
     // loop all elements and build map of data names and dimensions
     const Epetra_Map* elerowmap = dis_->ElementRowMap();
+    if(writeowner == true)
+    {
+      for (int i=0; i<elerowmap->NumMyElements(); ++i)
+      {
+        // write owner of every element
+        dis_->lRowElement(i)->VisOwner(names);
+      }
+    }
     for (int i=0; i<elerowmap->NumMyElements(); ++i)
     {
       // get names and dimensions from every element

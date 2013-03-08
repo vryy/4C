@@ -101,7 +101,8 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   curritnumFRS_(0),
   writestresses_(params_->get<int>("write stresses", 0)),
   samstart_(-1),
-  samstop_(-1)
+  samstop_(-1),
+  redist_this_step_(true)
 {
   //------------------------------------------------------------------------------------------------
   // time measurement: initialization
@@ -2442,7 +2443,7 @@ void FLD::CombustFluidImplicitTimeInt::Output()
       }
 
       // write domain decomposition for visualization
-      output_->WriteElementData();
+      output_->WriteElementData(redist_this_step_);
 
 #if 0
     for (int lnodeid=0; lnodeid < discret_->NumMyRowNodes(); ++lnodeid)
@@ -2753,6 +2754,9 @@ void FLD::CombustFluidImplicitTimeInt::Output()
 //  {
 //    OutputToGmsh(step_, time_);
 //  }
+
+  redist_this_step_ = false;
+
   return;
 }
 
@@ -5266,6 +5270,9 @@ void FLD::CombustFluidImplicitTimeInt::Redistribute(const Teuchos::RCP<Epetra_Cr
 
   // split based on complete fluid field
   FLD::UTILS::SetupFluidSplit(*discret_,*standarddofset_,3,*velpressplitterForOutput_);
+
+  // remember that we did a redist
+  redist_this_step_ = true;
 
   return;
 }

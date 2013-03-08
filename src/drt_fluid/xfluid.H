@@ -684,6 +684,9 @@ namespace FLD
     // output vector for fluid field (velocity and pressure)
     Teuchos::RCP<Epetra_Vector> outvec_fluid_;
 
+    // flag whether this output step is the first one (restarted or not)
+    bool firstoutputofrun_;
+
 
     //--------------------------------------------------------------------
 

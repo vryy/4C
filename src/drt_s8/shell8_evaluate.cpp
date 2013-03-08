@@ -559,8 +559,6 @@ void DRT::ELEMENTS::Shell8::s8stress(struct _MATERIAL* material,
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::Shell8::VisNames(std::map<string,int>& names)
 {
-  // Put the owner of this element into the file (use base class method for this)
-  DRT::Element::VisNames(names);
 
   // see whether we have Forces and Moments
   const Epetra_SerialDenseMatrix* gp_stress = data_.Get<Epetra_SerialDenseMatrix>("Forces");

@@ -406,8 +406,7 @@ std::vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_weg6::VisNames(std::map<string,int>& names)
 {
-  // Put the owner of this element into the file (use base class method for this)
-  DRT::Element::VisNames(names);
+
   if ((Material()->MaterialType() == INPAR::MAT::m_artwallremod) ||
 	  (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular))
   {

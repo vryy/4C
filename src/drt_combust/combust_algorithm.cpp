@@ -220,7 +220,8 @@ COMBUST::Algorithm::Algorithm(const Epetra_Comm& comm, const Teuchos::ParameterL
   // update fluid interface with flamefront
   FluidField().ImportFlameFront(flamefront_,true);
   // output fluid initial state
-  if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary)
+  if (DRT::INPUT::IntegralValue<INPAR::FLUID::TimeIntegrationScheme>(combustdyn_,"TIMEINT") != INPAR::FLUID::timeint_stationary
+      and DRT::INPUT::IntegralValue<int>(combustdyn_.sublist("COMBUSTION FLUID"),"INITSTATSOL") == false)
     FluidField().Output();
   // clear fluid's memory to flamefront
   FluidField().ImportFlameFront(Teuchos::null,true);

@@ -3978,7 +3978,7 @@ void FLD::XFluidFluid::Output()
     output_->WriteVector("pressure", pressure);
 
     // write domain decomposition for visualization (only once!)
-    if (step_==upres_) output_->WriteElementData();
+    if (step_==upres_) output_->WriteElementData(true);
 
   }
 
@@ -4015,7 +4015,7 @@ void FLD::XFluidFluid::Output()
 
     if (alefluid_) emboutput_->WriteVector("dispnp", aledispnp_);
 
-    if (step_==upres_) emboutput_->WriteElementData();
+    if (step_==upres_) emboutput_->WriteElementData(true);
 
   }
 

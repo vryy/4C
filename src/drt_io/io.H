@@ -265,7 +265,7 @@ public:
   virtual void WriteNodesOnly(const int step, const double time);
 
   //! write element data to file
-  virtual void WriteElementData();
+  virtual void WriteElementData(bool writeowner);
 
   //! write a non discretisation based vector of doubles
   /*!

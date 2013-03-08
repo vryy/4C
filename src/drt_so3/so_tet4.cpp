@@ -439,8 +439,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Lines()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4::VisNames(std::map<string,int>& names)
 {
-  // Put the owner of this element into the file (use base class method for this)
-  DRT::Element::VisNames(names);
+
   if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular)
   {
     string fiber = "Fiber1";

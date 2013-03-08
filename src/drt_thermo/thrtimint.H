@@ -562,6 +562,7 @@ namespace THR
     int stepmax_;  //!< final step \f$N\f$
     int step_;  //!< time step index \f$n\f$
     int stepn_;  //!< time step index \f$n+1\f$
+    bool firstoutputofrun_;  //!< flag whether this output step is the first one (restarted or not)
     bool lumpcapa_;  //!< flag for lumping the capacity matrix, default: false
     bool young_temp_;  //!< flag deciding if young's modulus is temperature-dependent, default: false
 

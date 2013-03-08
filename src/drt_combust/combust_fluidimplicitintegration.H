@@ -681,6 +681,9 @@ protected:
   Teuchos::RCP<XFEM::STD> timeIntStd_; //! Standard reference values
   Teuchos::RCP<XFEM::ENR> timeIntEnr_; //! Enriched reference values
 
+  //! did we do a redistribution in this TS
+  bool redist_this_step_;
+
 }; // class CombustFluidImplicitTimeInt
 
 } // namespace FLD
