@@ -188,22 +188,9 @@ namespace ELEMENTS
       double& detA,  //!< area at GP
       LINALG::Matrix<nsd_+1,1>& normal,  //!< (o) normal at gaussian point, length is detA!
       const LINALG::Matrix<nen_,nsd_+1>& xcurr  //!< (i)current coordinates of nodes
-                                                //!< nodal coords in either material or spatial frame
+                                                //!< nodal coords in either material
+                                                //!< or spatial frame
       );
-
-    /*!
-    \brief Submethod to compute interfacial area and its first and second
-           derivatives w.r.t. the displacements (this is needed for surface energy problems)
-    */
-    void ComputeAreaDeriv
-    (
-      const LINALG::Matrix<nen_,nsd_>& x, ///< spatial configuration
-      const int numnode, ///< number of nodes
-      const int ndof,  ///< number of degrees of freedom
-      double& A,  ///< area
-      Teuchos::RCP<Epetra_SerialDenseVector> Adiff, ///< first derivative
-      Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2 ///< second derivative
-    );
 
     //! evaluate a heat convection boundary condition
     //!
@@ -215,7 +202,7 @@ namespace ELEMENTS
       LINALG::Matrix<nen_,nen_>* econd,  // view only!
                                          //!< tangent of the thermal problem
       LINALG::Matrix<nen_,1>* efext,  // view only!
-                                     //!< heat flux to be applied
+                                      //!< heat flux to be applied
       const double coeff,  //!< heat transfer coefficient
       const double surtemp,  //!< surrounding temperature
       const std::string tempstate  //!< desired temperature state
@@ -236,7 +223,7 @@ namespace ELEMENTS
       LINALG::Matrix<nen_,(nsd_+1)*nen_>* etangcoupl,  // view only!
                                                    //!< coupling tangent k_Td
       LINALG::Matrix<nen_,1>* efext,  // view only!
-                                     //!< heat flux to be applied
+                                      //!< heat flux to be applied
       const double coeff,  //!< heat transfer coefficient
       const double surtemp,  //!< surrounding temperature
       const std::string tempstate  //!< desired temperature state

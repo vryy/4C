@@ -287,7 +287,7 @@ namespace ELEMENTS
 
     //! calculate thermal-mechanical system matrix k_Td needed in monolithic TSI
     void CalculateNlnCouplCond(
-      DRT::Element* ele,  //!< the element whose matrix is calculated
+      DRT::Element* ele,  //!< current element whose terms are calculated
       std::vector<double>& disp,  //!< current displacements
       std::vector<double>& vel,  //!< current velocities
       Teuchos::ParameterList& params,  //!< parameter list, containing e.g., dt,theta
@@ -296,26 +296,26 @@ namespace ELEMENTS
 
     //! build nonlinear B-operator
     void CalculateBoplin(
-      LINALG::Matrix<6,nsd_*nen_*numdofpernode_>* boplin,
-      LINALG::Matrix<nsd_,nen_>* N_XYZ
+      LINALG::Matrix<6,nsd_*nen_*numdofpernode_>* boplin,  //!< linear B-operator
+      LINALG::Matrix<nsd_,nen_>* N_XYZ  //!< gradient-operator
       );
 
     //! build nonlinear B-operator
     void CalculateBop(
-      LINALG::Matrix<6,nsd_*nen_*numdofpernode_>* bop,
-      LINALG::Matrix<nsd_,nsd_>* defgrd,
-      LINALG::Matrix<nsd_,nen_>* N_XYZ
+      LINALG::Matrix<6,nsd_*nen_*numdofpernode_>* bop,  //!< nonlinear B-operator
+      LINALG::Matrix<nsd_,nsd_>* defgrd,  //!< deformation gradient
+      LINALG::Matrix<nsd_,nen_>* N_XYZ  //!< gradient-operator
       );
 
     //! build derivatives of right Cauchy-Green deformation tensor C
     //! build the inverse of C^{-1} and the time derivative C'
     void CalculateCauchyGreens(
-      LINALG::Matrix<6,1>& Cratevct,
-      LINALG::Matrix<6,1>& invCvct,
-      LINALG::Matrix<nsd_,nsd_>& invC,
-      LINALG::Matrix<nsd_,nsd_>* defgrd,
-      LINALG::Matrix<nsd_,nsd_>* defgrdrate,
-      LINALG::Matrix<nsd_,nsd_>* invdefgrd
+      LINALG::Matrix<6,1>& Cratevct,  //!< right Cauchy-Green rate vector
+      LINALG::Matrix<6,1>& invCvct,  //!< inverse of right Cauchy-Green vector
+      LINALG::Matrix<nsd_,nsd_>& invC,  //!< inverse right Cauchy-Green tensor
+      LINALG::Matrix<nsd_,nsd_>* defgrd,  //!< deformation gradient tensor
+      LINALG::Matrix<nsd_,nsd_>* defgrdrate,  //!< velocity gradient tensor
+      LINALG::Matrix<nsd_,nsd_>* invdefgrd  //!< inverse deformation gradient tensor
       );
 
     //! get corresponding structural material
@@ -324,13 +324,13 @@ namespace ELEMENTS
       LINALG::Matrix<6,1>* ctemp,  //!< (io) temperature-dependent material tangent
       double* thetainit,  //!< (io) constant initial temperature
       Teuchos::RCP<MAT::Material> structmat,  //!< temperature-dependent solid material
-      Teuchos::ParameterList& params
+      Teuchos::ParameterList& params  //!< parameter list
       );
 
     //! calculate reactive term
     void CalculateReactiveTerm(
-      LINALG::Matrix<6,1>* ctemp,  // temperature-dependent material tangent
-      LINALG::Matrix<6,1>* strainvel  // strain rate
+      LINALG::Matrix<6,1>* ctemp,  //!< temperature-dependent material tangent
+      LINALG::Matrix<6,1>* strainvel  //!< strain rate
       );
     //@}
 

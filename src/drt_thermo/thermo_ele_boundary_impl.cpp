@@ -137,11 +137,10 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
   )
 {
   // what actions are available
-  // (action == "calc_thermo_fextconvection")
-  // (action == "calc_thermo_fextconvection_coupltang")
-  // (action == "calc_normal_vectors")
-  // (action == "integrate_shape_functions")
-
+  // ( action=="calc_thermo_fextconvection" )
+  // ( action=="calc_thermo_fextconvection_coupltang" )
+  // ( action=="calc_normal_vectors" )
+  // ( action=="integrate_shape_functions" )
 
   // First, do the things that are needed for all actions:
   // get the material (of the parent element)
@@ -193,7 +192,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
   // surface heat transfer boundary condition q^_c = h (T - T_infty)
   else if (action == "calc_thermo_fextconvection")
   {
-    // get node coordinates (nsd_+1: domain, nsd_: boundary)
+    // get node coordinates ( (nsd_+1): domain, nsd_: boundary )
     GEO::fillInitialPositionArray<distype,nsd_+1,LINALG::Matrix<nsd_+1,nen_> >(ele,xyze_);
 
     // set views, here we assemble on the boundary dofs only!
@@ -388,9 +387,10 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     }  // end of switch(timint)
   }  // calc_thermo_fextconvection
 
-  // geometrically nonlinear analysis
+  // only contribution in case of geometrically nonlinear analysis
   // evaluate coupling matrix k_Td for surface heat transfer boundary condition
-  // q^_c = h (T - T_infty)
+  // q^_c da = h (T - T_infty) da with da(u)
+  // --> k_Td: d(da(u))/du
   else if (action == "calc_thermo_fextconvection_coupltang")
   {
     // -------------------------- geometrically nonlinear TSI problem
@@ -475,7 +475,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
           } // discretization.HasState("temperature")
           else
             dserror("No old temperature T_n+1 available");
-        }
+        }  // Tempnp
         // use temperature T_n of last known time step t_n
         else if (*tempstate == "Tempn")
         {
@@ -494,7 +494,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
           } // discretization.HasState("old temperature")
           else
             dserror("No old temperature T_n available");
-        }
+        }  // Tempn
         else
           dserror("Unknown type of convection boundary condition");
 
@@ -811,22 +811,16 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
 
   // overall number of surface dofs
   // --> (nsd_+1)*nen_ == ndof== numdofperelement
+  // with dimension of parent element nsd_+1
   int numdofperelement = (nsd_+1)*nen_;
 
   // interfacial area, i.e. current element area
   double A = 0.0;
   // first partial derivatives VECTOR
   LINALG::Matrix<(nsd_+1)*nen_,1> Adiff(true);  // (12x1)
-  // second partial derivatives MATRIX, so far not required for BC
-  Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2
-    = Teuchos::rcp(new Epetra_SerialDenseMatrix);
-
-  // initialisation
-  // here we require a rectangular matrix!
-  if (Adiff2!=Teuchos::null)
-    Adiff2->Shape(numdofperelement, numdofperelement);  // 12x12
 
   // ----------------------------------------- loop over Gauss Points
+  // with ngp = intpoints.IP().nquad
   for (int iquad=0; iquad<intpoints.IP().nquad; iquad++)
   {
     // output of function: fac_ = detJ * w(gp)
@@ -835,9 +829,13 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
     EvalShapeFuncAndIntFac(intpoints,iquad,ele->Id());
     // fac_ = Gauss weight * det(J) is calculated in EvalShapeFuncAndIntFac()
 
+    // calculate the current normal vector normal and the area
     LINALG::Matrix<nsd_+1,1> normal;  // (3x1)
     double detA = 0.0;
     SurfaceIntegration(detA,normal,xcurr);
+    // the total surface corresponds to the sum over all GPs.
+    // fext and k_ii is calculated by assembling over all nodes
+    // --> multiply the corresponding sub-area to the terms
     A = detA*intpoints.IP().qwgt[iquad];  // here is the current area included
 
     // initialise the matrices
@@ -855,6 +853,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
 
     // derivation of minor determiants of the Jacobian with respect to the
     // displacements
+    // loop over surface nodes
     for (int i=0; i<nen_; ++i) // nen_=4, i:1--3
     {
       // deriv == deriv_: (2x8), dxyzdrs: (2x3)
@@ -893,74 +892,13 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
       Adiff(i,0) += jacobi_deriv(i) * intpoints.IP().qwgt[iquad];
     }
 
-    if (Adiff2!=Teuchos::null)
-    {
-      // ------ second derivates of minor determiants of the Jacobian
-      // -------------------------- with respect to the displacements
-      for (int n=0; n<nen_;++n)  // boundary node
-      {
-        for (int o=0;o<nen_;++o)  // boundary node
-        {
-          ddet2(n*3+1,o*3+2) = deriv_(0,n) * deriv_(1,o) -
-                               deriv_(1,n) * deriv_(0,o);
-          ddet2(n*3+2,o*3+1) = - ddet2(n*3+1,o*3+2);
-
-          ddet2((nsd_*nen_)+n*3  ,o*3+2) = deriv_(1,n)*deriv_(0,o) -
-                                           deriv_(0,n)*deriv_(1,o);
-          ddet2((nsd_*nen_)+n*3+2,o*3  ) = - ddet2((nsd_*nen_)+n*3,o*3+2);
-
-          ddet2(2*(nsd_*nen_)+n*3  ,o*3+1) = ddet2(n*3+1,o*3+2);
-          ddet2(2*(nsd_*nen_)+n*3+1,o*3  ) = - ddet2(2*(nsd_*nen_)+n*3,o*3+1);
-        }
-      }
-
-      // - calculation of second derivatives of current interfacial
-      // ------------------ areas with respect to the displacements
-      for (int i=0; i<numdofperelement; ++i)
-      {
-        int var1 = 0;
-        int var2 = 0;
-
-        if (i%3==0)           // displacement in x-direction
-        {
-          var1 = 1;
-          var2 = 2;
-        }
-        else if ((i-1)%3==0)  // displacement in y-direction
-        {
-          var1 = 0;
-          var2 = 2;
-        }
-        else if ((i-2)%3==0)  // displacement in z-direction
-        {
-          var1 = 0;
-          var2 = 1;
-        }
-        else
-        {
-          dserror("calculation of second derivatives of interfacial area failed");
-          exit(1);
-        }
-
-        for (int j=0;j<numdofperelement;++j)
-        {
-          (*Adiff2)(i,j) += ( -1/detA * jacobi_deriv(j) * jacobi_deriv(i)
-                              + 1/detA * ( ddet(var1,i) * ddet(var1,j)
-                              + normal(var1) * ddet2(var1*numdofperelement+i,j)
-                              + ddet(var2,i) * ddet(var2,j)
-                              + normal(var2) * ddet2(var2*numdofperelement+i,j))
-                             ) * intpoints.IP().qwgt[iquad];
-        }
-      }
-    }  // Adiff2!=Teuchos::null
-
     // ------------right-hand-side
     // AK: q . n da = q^_c da = h ( T - T_sur ) da
     // RK: q . n da = h ( T - T_sur ) da = =: Q^_c dA
     //      da  = J sqrt(N^T . C^{-1} . N) dA
     // here we use an alternative approach for the implementation
     // do not map the term to RK--> coordinate space,
-    // BUT: directly form AK --> coord space
+    // BUT: directly form AK --> coordinate space
 
     // multiply fac_ * coeff
     // --> must be insert in balance equation as positive term,
@@ -968,7 +906,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
     // compared to linear case here we use the mapping from coordinate space to AK
     // --> for jacobi determinant use A instead of fac_ which is build with
     // material coordinates
-    double coefffac_ = A * coeff;
+    double coeffA = A * coeff;
 
     // get the current temperature
     // Theta = Ntemp = N . T
@@ -999,7 +937,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
       // in energy balance: q_c positive, but fext = r + q^bar  q_c^bar
       // we want to define q_c = - q . n
       // q_c^bar = k . Grad T = h (T - T_oo), vgl. Farhat(1992)
-      efext->Multiply(coefffac_,funct_,Ntemp,1.0);
+      efext->Multiply(coeffA,funct_,Ntemp,1.0);
     }  // efext != NULL
 
     // ------------------------------------------------------ tangent
@@ -1014,12 +952,12 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
       {
         // ke = ke + (N^T . coeff . N) * detJ * w(gp)
         // (nsd_xnsd_) = (4x4)
-        econd->MultiplyNT((-1.0)*coefffac_,funct_,funct_,1.0);
+        econd->MultiplyNT((-1.0)*coeffA,funct_,funct_,1.0);
       }  // etang != NULL
 
     }  // Tempnp
 
-    // ke_Td = ke_Td + N^T . coeff . h . (N . T - T_oo) * dA/ddisp * detJ * w(gp)
+    // ke_Td = ke_Td + N^T . coeff . h . (N . T - T_oo) * dA/dd * detJ * w(gp)
     // (4x12)         (4X1)                  (1x1)        (1X12)
     // ke_Td = ke_Td + N^T . coeff . h . (N . T - T_oo) * Adiff * detJ * w(gp)
     if (etangcoupl != NULL)
@@ -1030,7 +968,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
 
       LINALG::Matrix<nen_,1> NNtemp;
       NNtemp.Multiply(funct_,Ntemp);
-      etangcoupl->MultiplyNT((-1.0)*coefffac_,NNtemp,Adiff,1.0);
+      etangcoupl->MultiplyNT((-1.0)*coeffA,NNtemp,Adiff,1.0);
     }
 
   }  // ---------------------------------- end loop over Gauss Points
@@ -1194,6 +1132,33 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::SurfaceIntegration(
   LINALG::Matrix<nsd_,(nsd_+1)> dxyzdrs(true);
   dxyzdrs.MultiplyNN(1.0,deriv_,xcurr,0.0);
 
+  /* compute covariant metric tensor G for surface element
+  **                        | g11   g12 |
+  **                    G = |           |
+  **                        | g12   g22 |
+  ** where (o denotes the inner product, xyz a vector)
+  **
+  **       dXYZ   dXYZ          dXYZ   dXYZ          dXYZ   dXYZ
+  ** g11 = ---- o ----    g12 = ---- o ----    g22 = ---- o ----
+  **        dr     dr            dr     ds            ds     ds
+  */
+
+  LINALG::Matrix<(nsd_+1),nen_> xcurr_T;
+  xcurr_T.UpdateT(1.0,xcurr,0.0);
+
+  // the metric tensor and the area of an infinitesimal surface/line element
+  // compute dXYZ / drs is included in ComputeMetricTensorForBoundaryEle
+  // dxyzdrs = deriv . xyze
+  // dxyzdrs.MultiplyNT(1.0,deriv,xyze,0.0) = (LENA)dxyzdrs
+  // be careful: normal
+  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(
+    xcurr_T,
+    deriv_,
+    metrictensor_,  // metric tensor between coordinate space and AK
+    detA
+    // normalvector==NULL // we don't need the unit normal vector, but the
+    );
+
   // be aware: nsd_ corresponds to dimension of the boundary not of the simulation
   // simulation is 3D --> boundary is a surface, i.e. nsd_ = 2
   //               2D -->                             nsd_ = 1
@@ -1219,38 +1184,6 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::SurfaceIntegration(
       dserror("Illegal number of space dimensions: %d",nsd_);
   }  // switch(nsd)
 
-  LINALG::Matrix<(nsd_+1),nen_> xcurr_T;
-  xcurr_T.UpdateT(1.0,xcurr,0.0);
-
-  // the metric tensor and the area of an infinitesimal surface/line element
-  // compute dXYZ / drs is included in ComputeMetricTensorForBoundaryEle
-  // dxyzdrs = deriv . xyze
-  // dxyzdrs.MultiplyNT(1.0,deriv,xyze,0.0) = (LENA)dxyzdrs
-  // be careful: normal
-  DRT::UTILS::ComputeMetricTensorForBoundaryEle<distype>(
-    xcurr_T,
-    deriv_,
-    metrictensor_,  // metric tensor between coordinate space and AK
-    detA
-    );
-
-  return;
-}
-
-
-/*----------------------------------------------------------------------*
- | evaluate sqrt of determinant of metric at gp (private)    dano 12/12 |
- *----------------------------------------------------------------------*/
-template <DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::TemperBoundaryImpl<distype>::ComputeAreaDeriv(
-  const LINALG::Matrix<nen_,nsd_>& x,  // LINALG::SerialDenseMatrix& x
-  const int numnode,  // numnode
-  const int ndof,  // ndof
-  double& A,  // A
-  Teuchos::RCP<Epetra_SerialDenseVector> Adiff,  // Adiff
-  Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2  // Adiff2
-  )
-{
   return;
 }
 
