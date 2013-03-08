@@ -80,9 +80,9 @@ RESTARTEVRY                     1
 RESULTDT                        0
 TIMEADAPT                       0
 TIMESTEP                        0.05
-TOLCONSTR                       1e-06
-TOLDISP                         1e-06
-TOLRES                          1e-06
+TOLCONSTR                       1e-08
+TOLDISP                         1e-08
+TOLRES                          1e-08
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
@@ -2075,7 +2075,7 @@ NODE 988 COORD 5.00000000e-01 3.00000012e-01 -3.00000012e-01
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-15
-STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE 0.0 TOLERANCE 1e-15
+STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 0.0 TOLERANCE 2e-15
+STRUCTURE DIS structure NODE 2 QUANTITY dispy VALUE 0.0 TOLERANCE 2e-15
 -------------------------------------------------------------------------END
 //                              END
