@@ -377,6 +377,45 @@ void ThermoEnsightWriter::WriteAllResults(PostField* field)
 
 } // ThermoEnsightWriter::WriteAllResults
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void ParticleEnsightWriter::WriteAllResultsOneTimeStep(PostResult& result, bool laststep)
+{
+  EnsightWriter::WriteResultOneTimeStep(result, "velocity", "velocity", dofbased, result.field()->problem()->num_dim(), laststep);
+  EnsightWriter::WriteResultOneTimeStep(result, "acceleration", "acceleration", dofbased, result.field()->problem()->num_dim(), laststep);
+  EnsightWriter::WriteResultOneTimeStep(result, "radius", "radius", nodebased, 1, laststep);
+}
+
+
+/*----------------------------------------------------------------------*
+  | write particles as points                               ghamm 02/13 |
+  *----------------------------------------------------------------------*/
+void ParticleEnsightWriter::WriteCells(
+  std::ofstream& geofile,
+  const Teuchos::RCP<DRT::Discretization> dis,
+  const Teuchos::RCP<Epetra_Map>& proc0map
+  ) const
+{
+    const int npoint = proc0map->NumMyElements();
+
+    if (myrank_ == 0)
+    {
+      std::cout << "writing particle(s) as " << npoint << " ensight point(s)..." << std::endl;
+      Write(geofile, "point");
+      Write(geofile,npoint);
+
+      // standard case with direct support
+      for (int inode=0; inode<npoint; ++inode)
+      {
+        // write local ids of nodes which are equivalent to local ids of particles
+        Write(geofile, inode+1);
+      }
+    }
+
+  return;
+}
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void AnyEnsightWriter::WriteAllResults(PostField* field)

@@ -32,6 +32,7 @@ WRITE_TO_SCREEN                 Yes
 WRITE_TO_FILE                   No
 LIMIT_OUTP_TO_PROC              0
 ------------------------------------------------------------MESHFREE
+TYPE                            Particle
 CUTOFF_RADIUS                   0.2 //0.2 // 0.4
 BOUNDINGBOX                     -1.000001 -1.000001 -1.100001 1.100001 1.100001 1.00012999
 ----------------------------------------------------------CAVITATION DYNAMIC
@@ -41,7 +42,7 @@ MAXTIME                         0.5
 NUMSTEP                         5   
 RESTARTEVRY                     1
 TIMESTEP                        5.0e-3
-UPRES                           5
+UPRES                           1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      ParticleCentrDiff
 RESULTSEVRY                     1

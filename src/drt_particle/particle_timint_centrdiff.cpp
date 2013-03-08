@@ -226,3 +226,42 @@ void PARTICLE::TimIntCentrDiff::DetermineMassDampConsistAccel()
 
 
 /*----------------------------------------------------------------------*/
+/* Write restart which is equivalent to standard output for particles */
+void PARTICLE::TimIntCentrDiff::OutputRestart
+(
+  bool& datawritten
+)
+{
+  // Yes, we are going to write...
+   datawritten = true;
+
+   // write restart output, please
+
+   output_->WriteNodesOnly(step_, (*time_)[0]);
+   output_->NewStep(step_, (*time_)[0]);
+   // eventually for restart helpful
+//   output_->WriteVector("displacement", (*dis_)(0));
+   output_->WriteVector("velocity", (*vel_)(0));
+   output_->WriteVector("acceleration", (*acc_)(0));
+   output_->WriteVector("fexternal", Fext());
+   output_->WriteVector("radius", radiusn_, output_->nodevector);
+
+   // info dedicated to user's eyes staring at standard out
+   if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
+   {
+     printf("====== Restart written in step %d\n", step_);
+     fflush(stdout);
+   }
+
+   // info dedicated to processor error file
+   if (printerrfile_)
+   {
+     fprintf(errfile_, "====== Restart written in step %d\n", step_);
+     fflush(errfile_);
+   }
+
+   // we will say what we did
+   return;
+
+}
+/*----------------------------------------------------------------------*/

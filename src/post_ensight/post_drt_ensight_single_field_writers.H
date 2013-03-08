@@ -251,6 +251,39 @@ protected:
 };
 
 
+/*!
+ \brief Writer for particle problems
+
+ \author ghamm
+ \date 02/13
+ */
+class ParticleEnsightWriter : public EnsightWriter
+{
+public:
+  ParticleEnsightWriter(
+            PostField* field,
+            std::string filename) :
+  EnsightWriter(field, filename)
+  {
+  }
+
+protected:
+
+  virtual void WriteAllResults(
+          PostField* field){ dserror("not needed due to changing geometry"); }
+
+  virtual void WriteAllResultsOneTimeStep(
+          PostResult& result,
+          bool laststep);
+
+  virtual void WriteCells(
+    std::ofstream& geofile,
+    const Teuchos::RCP<DRT::Discretization> dis,
+    const Teuchos::RCP<Epetra_Map>& proc0map
+    ) const;
+};
+
+
 /// Writer for undefined problem types
 /*
   Just write all the vectors we have.

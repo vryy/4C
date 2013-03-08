@@ -348,7 +348,7 @@ namespace STR
 
     //! Write restart
     //! \author mwgee (originally) \date 03/07
-    void OutputRestart
+    virtual void OutputRestart
     (
       bool& datawritten  //!< (in/out) read and append if
                          //!< it was written at this time step

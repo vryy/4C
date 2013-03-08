@@ -30,7 +30,7 @@ namespace MESHFREE
   *                                                                nis Mar12 *
   *--------------------------------------------------------------------------*/
   //! type of meshfree discretisation
-  enum meshfreetype {maxent};
+  enum meshfreetype {maxent, particle};
   //! type of prior
   enum priortype {p_gauss};
   //! skewness type of prior

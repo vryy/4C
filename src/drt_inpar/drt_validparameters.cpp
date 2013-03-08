@@ -697,8 +697,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& meshfree = list->sublist("MESHFREE",false,"");
   setStringToIntegralParameter<int>("TYPE","MaxEnt","Type of meshfree discretisation.",
-                                    tuple<std::string>("MaxEnt"),
-                                    tuple<int>(INPAR::MESHFREE::maxent),
+                                    tuple<std::string>("MaxEnt","Particle"),
+                                    tuple<int>(INPAR::MESHFREE::maxent,
+                                               INPAR::MESHFREE::particle),
                                     &meshfree);
   setStringToIntegralParameter<int>("NODEKNOTASSIGNMENT","procwise","Type of assignment of nodes to cells/knots.",
                                     tuple<std::string>("procwise","blockwise"),

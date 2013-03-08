@@ -45,13 +45,13 @@ namespace PARTICLE
     //! Constructor
     TimIntCentrDiff
     (
-        const Teuchos::ParameterList& ioparams,  //!< ioflags
-        const Teuchos::ParameterList& sdynparams,  //!< input parameters
-        const Teuchos::ParameterList& xparams,  //!< extra flags
-        Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
-        Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
-        Teuchos::RCP<LINALG::Solver> contactsolver,  //!< the solver for contact meshtying
-        Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
+      const Teuchos::ParameterList& ioparams,  //!< ioflags
+      const Teuchos::ParameterList& sdynparams,  //!< input parameters
+      const Teuchos::ParameterList& xparams,  //!< extra flags
+      Teuchos::RCP<DRT::Discretization> actdis,  //!< current discretisation
+      Teuchos::RCP<LINALG::Solver> solver,  //!< the solver
+      Teuchos::RCP<LINALG::Solver> contactsolver,  //!< the solver for contact meshtying
+      Teuchos::RCP<IO::DiscretizationWriter> output  //!< the output
     );
 
     //! Destructor
@@ -81,6 +81,9 @@ namespace PARTICLE
 
     //! State vectors are updated according to the new distribution of particles
     void UpdateStatesAfterParticleTransfer();
+
+    //! Write restart which is equivalent to standard output for particles
+    virtual void OutputRestart(bool& datawritten);
 
     //@}
 

@@ -173,11 +173,22 @@ int main(
         }
         break;
     }
+    case prb_particle:
+    {
+      PostField* particlefield = problem.get_discretization(0);
+      ParticleEnsightWriter  particlewriter(particlefield, problem.outname());
+      particlewriter.WriteFiles();
+      break;
+    }
     case prb_cavitation:
     {
-      PostField* field = problem.get_discretization(0);
-      FluidEnsightWriter writer(field, problem.outname());
-      writer.WriteFiles();
+      PostField* fluidfield = problem.get_discretization(0);
+      FluidEnsightWriter fluidwriter(fluidfield, problem.outname());
+      fluidwriter.WriteFiles();
+
+      PostField* particlefield = problem.get_discretization(1);
+      ParticleEnsightWriter  particlewriter(particlefield, problem.outname());
+      particlewriter.WriteFilesChangingGeom();
       break;
     }
     case prb_redairways_tissue:

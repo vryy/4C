@@ -990,6 +990,89 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
   }
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationWriter::WriteNodesOnly(const int step, const double time)
+{
+
+  if(binio_)
+  {
+    if (step - meshfile_changed_ >= output_->FileSteps() or
+        meshfile_changed_ == -1)
+    {
+      CreateMeshFile(step);
+    }
+    std::ostringstream name;
+    name << "step" << step;
+    meshgroup_ = H5Gcreate(meshfile_,name.str().c_str(),0);
+    if (meshgroup_ < 0)
+      dserror("Failed to write group in HDF-meshfile");
+
+    // only procs with row nodes need to write data
+    Teuchos::RCP<std::vector<char> > nodedata = dis_->PackMyNodes();
+    hsize_t dim = static_cast<hsize_t>(nodedata->size());
+    if (dim != 0)
+    {
+      const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",1,&dim,&((*nodedata)[0]));
+      if (node_status < 0)
+        dserror("Failed to create dataset in HDF-meshfile");
+    }
+    else
+    {
+      const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",0,&dim,&((*nodedata)[0]));
+      if (node_status < 0)
+        dserror("Failed to create dataset in HDF-meshfile on proc %d which does not have row nodes", dis_->Comm().MyPID());
+    }
+
+    // ... write other mesh informations
+    if (dis_->Comm().MyPID() == 0)
+    {
+      // number of elements is set to zero
+      output_->ControlFile()
+        << "field:\n"
+        << "    field = \"" << dis_->Name() << "\"\n"
+        << "    time = " << time << "\n"
+        << "    step = " << step << "\n\n"
+        << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
+        << "    num_ele = " << 0 << "\n"
+        << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements() << "\n\n"
+        ;
+
+//      WriteCondition("SurfacePeriodic");
+//      WriteCondition("LinePeriodic");
+
+      // name of the output file must be specified for changing geometries in each time step
+      if (dis_->Comm().NumProc() > 1)
+      {
+        output_->ControlFile()
+          << "    num_output_proc = " << dis_->Comm().NumProc() << "\n";
+      }
+      std::string filename;
+      std::string::size_type pos = meshfilename_.find_last_of('/');
+      if (pos==std::string::npos)
+        filename = meshfilename_;
+      else
+        filename = meshfilename_.substr(pos+1);
+      output_->ControlFile()
+        << "    mesh_file = \"" << filename << "\"\n\n";
+
+      output_->ControlFile() << std::flush;
+    }
+    const herr_t flush_status = H5Fflush(meshgroup_,H5F_SCOPE_LOCAL);
+    if (flush_status < 0)
+    {
+      dserror("Failed to flush HDF file %s", meshfilename_.c_str());
+    }
+    const herr_t close_status = H5Gclose(meshgroup_);
+    if (close_status < 0)
+    {
+      dserror("Failed to close HDF group in file %s", meshfilename_.c_str());
+    }
+  }
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationWriter::WriteMesh(const int step, const double time, std::string name_base_file )

@@ -149,6 +149,9 @@ public:
 
   //@}
 
+  //! read in new mesh for given step and field
+  void re_read_mesh(int fieldpos, std::string fieldname, int step);
+
 private:
 
   //! initializes all the data a filter needs.
@@ -318,6 +321,11 @@ public:
   //
   // \returns vector with timesteps when the specific solution was written
   std::vector<double> get_result_times(const std::string& fieldname, const std::string& groupname);
+
+  //! get result times and steps for a given fieldname
+  //
+  // fills vector with times and steps when the solution was written
+  void get_result_timesandsteps(const std::string& fieldname, std::vector<double>& times, std::vector<int>& steps);
 
   //! goes to the next result block in the slice
   //

@@ -27,6 +27,7 @@ Maintainer: Georg Hammerl
 #include "../drt_lib/drt_dofset_transparent.H"
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_meshfree_discret/drt_meshfree_bin.H"
+#include "../drt_inpar/inpar_meshfree.H"
 
 #include "../drt_geometry/searchtree_geometry_service.H"
 #include "../drt_geometry/intersection_math.H"
@@ -50,7 +51,20 @@ PARTICLE::Algorithm::Algorithm(
   particlewalldis_(Teuchos::null),
   myrank_(comm.MyPID())
 {
+  // INFO regarding output: Bins are not written to file because they cannot be post-processed
+  // anyway (no nodes and connectivity available)
+  // check whether output frequency is written correctly
+  if(params.getEntryPtr("UPRES") != NULL and params.get<int>("UPRES") != params.get<int>("RESTARTEVRY"))
+    dserror("For particle output RESTARTEVRY must be equal UPRES (=normal output frequency)!");
+  if(params.getEntryPtr("RESULTSEVRY") != NULL and params.get<int>("RESULTSEVRY") != params.get<int>("RESTARTEVRY"))
+    dserror("For particle output RESTARTEVRY must be equal to RESTARTEVRY (=normal output frequency)!");
+
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
+  // safety check
+  INPAR::MESHFREE::meshfreetype meshfreetype = DRT::INPUT::IntegralValue<INPAR::MESHFREE::meshfreetype>(meshfreeparams,"TYPE");
+  if (meshfreetype!=INPAR::MESHFREE::particle)
+    dserror("MESHFREE -> TYPE must be Particle in input file.");
+
   cutoff_radius_ = meshfreeparams.get<double>("CUTOFF_RADIUS");
 
   XAABB_.PutScalar(1.0e12);
@@ -1173,91 +1187,91 @@ void PARTICLE::Algorithm::TestResults(const Epetra_Comm& comm)
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::Output()
 {
-//  particles_->Output();
+  particles_->Output();
 
-  const std::string filename = IO::GMSH::GetFileName("particle_data", Step(), true, Comm().MyPID());
-  std::ofstream gmshfilecontent(filename.c_str());
-
-  // velocity
-  {
-    gmshfilecontent << "View \" " << "velocity" << " \" {\n";
-    LINALG::Matrix<3,1> vectorvalue(true);
-
-    for(int n=0; n<particledis_->NumMyRowNodes(); n++)
-    {
-      DRT::Node* actnode = particledis_->lRowNode(n);
-      // get the first gid of a node and convert it into a LID
-      int gid = particledis_->Dof(actnode, 0);
-      int lid = particles_->ExtractDispnp()->Map().LID(gid);
-      Teuchos::RCP<Epetra_Vector> disnp = particles_->ExtractDispnp();
-      Teuchos::RCP<Epetra_Vector> velnp = particles_->ExtractVelnp();
-      LINALG::Matrix<3,1> posXYZDomain(true);
-      for(int dim=0; dim < 3; dim++)
-      {
-        posXYZDomain(dim) = (*disnp)[lid+dim];
-        vectorvalue(dim) = (*velnp)[lid+dim];
-      }
-
-      // write data to Gmsh file
-      IO::GMSH::VectorToStream(posXYZDomain, vectorvalue, gmshfilecontent);
-    }
-
-    gmshfilecontent << "};\n";
-  }
-
-  // density
-  {
-    gmshfilecontent << "View \" " << "density" << " \" {\n";
-
-    for(int n=0; n<particledis_->NumMyRowNodes(); n++)
-    {
-      DRT::Node* actnode = particledis_->lRowNode(n);
-      // get the first gid of a node and convert it into a LID
-      int gid = particledis_->Dof(actnode, 0);
-      int lid = particles_->ExtractDispnp()->Map().LID(gid);
-      Teuchos::RCP<Epetra_Vector> disnp = particles_->ExtractDispnp();
-      LINALG::Matrix<3,1> posXYZDomain(true);
-      for (int dim=0; dim<3; dim++)
-      {
-        posXYZDomain(dim) = (*disnp)[lid+dim];
-      }
-
-      double density = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ParticleDensity();
-
-      // write data to Gmsh file
-      IO::GMSH::ScalarToStream(posXYZDomain, density, gmshfilecontent);
-    }
-
-    gmshfilecontent << "};\n";
-  }
-
-  // radius
-  {
-    gmshfilecontent << "View \" " << "radius" << " \" {\n";
-
-    for(int n=0; n<particledis_->NumMyRowNodes(); n++)
-    {
-      DRT::Node* actnode = particledis_->lRowNode(n);
-      // get the first gid of a node and convert it into a LID
-      int gid = particledis_->Dof(actnode, 0);
-      int lid = particles_->ExtractDispnp()->Map().LID(gid);
-      Teuchos::RCP<Epetra_Vector> disnp = particles_->ExtractDispnp();
-      LINALG::Matrix<3,1> posXYZDomain(true);
-      for (int dim=0; dim<3; dim++)
-      {
-        posXYZDomain(dim) = (*disnp)[lid+dim];
-      }
-
-      double radius = (*Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadiusnp())[n];
-
-      // write data to Gmsh file
-      IO::GMSH::ScalarToStream(posXYZDomain, radius, gmshfilecontent);
-    }
-
-    gmshfilecontent << "};\n";
-  }
-
-  gmshfilecontent.close();
+//  const std::string filename = IO::GMSH::GetFileName("particle_data", Step(), true, Comm().MyPID());
+//  std::ofstream gmshfilecontent(filename.c_str());
+//
+//  // velocity
+//  {
+//    gmshfilecontent << "View \" " << "velocity" << " \" {\n";
+//    LINALG::Matrix<3,1> vectorvalue(true);
+//
+//    for(int n=0; n<particledis_->NumMyRowNodes(); n++)
+//    {
+//      DRT::Node* actnode = particledis_->lRowNode(n);
+//      // get the first gid of a node and convert it into a LID
+//      int gid = particledis_->Dof(actnode, 0);
+//      int lid = particles_->ExtractDispnp()->Map().LID(gid);
+//      Teuchos::RCP<Epetra_Vector> disnp = particles_->ExtractDispnp();
+//      Teuchos::RCP<Epetra_Vector> velnp = particles_->ExtractVelnp();
+//      LINALG::Matrix<3,1> posXYZDomain(true);
+//      for(int dim=0; dim < 3; dim++)
+//      {
+//        posXYZDomain(dim) = (*disnp)[lid+dim];
+//        vectorvalue(dim) = (*velnp)[lid+dim];
+//      }
+//
+//      // write data to Gmsh file
+//      IO::GMSH::VectorToStream(posXYZDomain, vectorvalue, gmshfilecontent);
+//    }
+//
+//    gmshfilecontent << "};\n";
+//  }
+//
+//  // density
+//  {
+//    gmshfilecontent << "View \" " << "density" << " \" {\n";
+//
+//    for(int n=0; n<particledis_->NumMyRowNodes(); n++)
+//    {
+//      DRT::Node* actnode = particledis_->lRowNode(n);
+//      // get the first gid of a node and convert it into a LID
+//      int gid = particledis_->Dof(actnode, 0);
+//      int lid = particles_->ExtractDispnp()->Map().LID(gid);
+//      Teuchos::RCP<Epetra_Vector> disnp = particles_->ExtractDispnp();
+//      LINALG::Matrix<3,1> posXYZDomain(true);
+//      for (int dim=0; dim<3; dim++)
+//      {
+//        posXYZDomain(dim) = (*disnp)[lid+dim];
+//      }
+//
+//      double density = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ParticleDensity();
+//
+//      // write data to Gmsh file
+//      IO::GMSH::ScalarToStream(posXYZDomain, density, gmshfilecontent);
+//    }
+//
+//    gmshfilecontent << "};\n";
+//  }
+//
+//  // radius
+//  {
+//    gmshfilecontent << "View \" " << "radius" << " \" {\n";
+//
+//    for(int n=0; n<particledis_->NumMyRowNodes(); n++)
+//    {
+//      DRT::Node* actnode = particledis_->lRowNode(n);
+//      // get the first gid of a node and convert it into a LID
+//      int gid = particledis_->Dof(actnode, 0);
+//      int lid = particles_->ExtractDispnp()->Map().LID(gid);
+//      Teuchos::RCP<Epetra_Vector> disnp = particles_->ExtractDispnp();
+//      LINALG::Matrix<3,1> posXYZDomain(true);
+//      for (int dim=0; dim<3; dim++)
+//      {
+//        posXYZDomain(dim) = (*disnp)[lid+dim];
+//      }
+//
+//      double radius = (*Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadiusnp())[n];
+//
+//      // write data to Gmsh file
+//      IO::GMSH::ScalarToStream(posXYZDomain, radius, gmshfilecontent);
+//    }
+//
+//    gmshfilecontent << "};\n";
+//  }
+//
+//  gmshfilecontent.close();
 
   return;
 }

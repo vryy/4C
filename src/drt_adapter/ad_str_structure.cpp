@@ -33,6 +33,7 @@ Maintainer: Georg Hammerl
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_statmech.H"
 #include "../drt_inpar/inpar_poroelast.H"
+#include "../drt_inpar/inpar_meshfree.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
@@ -112,8 +113,10 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     = Teuchos::TimeMonitor::getNewTimer("ADAPTER::StructureTimIntBaseAlgorithm::SetupStructure");
   Teuchos::TimeMonitor monitor(*t);
 
+  // get the problem instance
+  DRT::Problem* problem = DRT::Problem::Instance();
   // what's the current problem type?
-  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  PROBLEM_TYP probtype = problem->ProblemType();
 
   // set degrees of freedom in the discretization
   if (not actdis->Filled() || not actdis->HaveDofs()) actdis->FillComplete();
@@ -123,21 +126,25 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     = Teuchos::rcp(new IO::DiscretizationWriter(actdis));
   // for multilevel monte carlo we do not need to write mesh in every run
   Teuchos::RCP<Teuchos::ParameterList> mlmcp
-      = Teuchos::rcp(new Teuchos::ParameterList (DRT::Problem::Instance()->MultiLevelMonteCarloParams()));
+      = Teuchos::rcp(new Teuchos::ParameterList (problem->MultiLevelMonteCarloParams()));
   bool perform_mlmc = Teuchos::getIntegralValue<int>((*mlmcp),"MLMC");
-  if (perform_mlmc!=true)
+  Teuchos::RCP<Teuchos::ParameterList> meshfreep
+      = Teuchos::rcp(new Teuchos::ParameterList (problem->MeshfreeParams()));
+  INPAR::MESHFREE::meshfreetype meshfreetype
+      = DRT::INPUT::IntegralValue<INPAR::MESHFREE::meshfreetype>(*meshfreep,"TYPE");
+  if (perform_mlmc!=true and meshfreetype!=INPAR::MESHFREE::particle)
   {
     output->WriteMesh(0, 0.0);
   }
   // get input parameter lists and copy them, because a few parameters are overwritten
   //const Teuchos::ParameterList& probtype
-  //  = DRT::Problem::Instance()->ProblemTypeParams();
+  //  = problem->ProblemTypeParams();
   Teuchos::RCP<Teuchos::ParameterList> ioflags
-    = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->IOParams()));
+    = Teuchos::rcp(new Teuchos::ParameterList(problem->IOParams()));
   Teuchos::RCP<Teuchos::ParameterList> tap
     = Teuchos::rcp(new Teuchos::ParameterList(sdyn.sublist("TIMEADAPTIVITY")));
   Teuchos::RCP<Teuchos::ParameterList> snox
-    = Teuchos::rcp(new Teuchos::ParameterList(DRT::Problem::Instance()->StructuralNoxParams()));
+    = Teuchos::rcp(new Teuchos::ParameterList(problem->StructuralNoxParams()));
 
   // show default parameters
   if ((actdis->Comm()).MyPID()==0)
@@ -146,7 +153,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   // add extra parameters (a kind of work-around)
   Teuchos::RCP<Teuchos::ParameterList> xparams
     = Teuchos::rcp(new Teuchos::ParameterList());
-  xparams->set<FILE*>("err file", DRT::Problem::Instance()->ErrorFile()->Handle());
+  xparams->set<FILE*>("err file", problem->ErrorFile()->Handle());
   Teuchos::ParameterList& nox = xparams->sublist("NOX");
   nox = *snox;
   // Parameter to determine if MLMC is on/off
@@ -154,7 +161,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   xparams->set<int>("REDUCED_OUTPUT",Teuchos::getIntegralValue<int>((*mlmcp),"REDUCED_OUTPUT"));
 
   //dual problems need the primal results which need to be stored therefore
-  const Teuchos::ParameterList& ivap = DRT::Problem::Instance()->StatInverseAnalysisParams();
+  const Teuchos::ParameterList& ivap = problem->StatInverseAnalysisParams();
   xparams->set<int>("MSTEPEVRY",Teuchos::getIntegralValue<int>(ivap,"MSTEPS"));
 
 
@@ -176,7 +183,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
 
   // create contact/meshtying solver only if contact/meshtying problem.
   Teuchos::RCP<LINALG::Solver> contactsolver = Teuchos::null;
-  const Teuchos::ParameterList& scontact = DRT::Problem::Instance()->ContactDynamicParams();
+  const Teuchos::ParameterList& scontact = problem->ContactDynamicParams();
   INPAR::CONTACT::ApplicationType bContact = DRT::INPUT::IntegralValue<INPAR::CONTACT::ApplicationType>(scontact,"APPLICATION");
   switch (bContact)
   {
@@ -280,7 +287,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
   {
     // make sure we IMR-like generalised-alpha requested for multi-scale
     // simulations
-    Teuchos::RCP<MAT::PAR::Bundle> materials = DRT::Problem::Instance()->Materials();
+    Teuchos::RCP<MAT::PAR::Bundle> materials = problem->Materials();
     for (std::map<int,Teuchos::RCP<MAT::PAR::Material> >::const_iterator i=materials->Map()->begin();
          i!=materials->Map()->end();
          ++i)
@@ -323,7 +330,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     case prb_fsi_xfem:
     case prb_fluid_fluid_fsi:
     {
-      const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
+      const Teuchos::ParameterList& fsidyn = problem->FSIDynamicParams();
       const int coupling = DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO");
 
       if ((actdis->Comm()).MyPID()==0) IO::cout << "Using StructureNOXCorrectionWrapper()..." << IO::endl;
@@ -354,7 +361,7 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
     case prb_poroelast:
     case prb_poroscatra:
     {
-      const Teuchos::ParameterList& porodyn = DRT::Problem::Instance()->PoroelastDynamicParams();
+      const Teuchos::ParameterList& porodyn = problem->PoroelastDynamicParams();
       const INPAR::POROELAST::SolutionSchemeOverFields coupling =
             DRT::INPUT::IntegralValue<INPAR::POROELAST::SolutionSchemeOverFields>(porodyn, "COUPALGO");
       if (tmpstr->HaveConstraint())
