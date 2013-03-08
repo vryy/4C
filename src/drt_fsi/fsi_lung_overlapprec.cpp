@@ -13,9 +13,6 @@ Maintainer: Lena Yoshihara
 /*----------------------------------------------------------------------*/
 
 
-
-#include <EpetraExt_MatrixMatrix.h>
-
 #include "fsi_lung_overlapprec.H"
 #include "../drt_io/io_control.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
@@ -413,21 +410,8 @@ Teuchos::RCP<LINALG::SparseMatrix> FSI::LungSchurComplement::CalculateSchur(cons
   if (!B.Filled()) dserror("B has to be FillComplete");
   if (!C.Filled()) dserror("C has to be FillComplete");
 
-  if (temp_ == Teuchos::null)
-  {
-    const int npr = max(A.MaxNumEntries(),B.MaxNumEntries());
-    temp_ = Teuchos::rcp(new LINALG::SparseMatrix(A.RangeMap(),npr,false,true));
-  }
-  int err = EpetraExt::MatrixMatrix::Multiply(*A.EpetraMatrix(),false,*B.EpetraMatrix(),false,*(temp_->EpetraMatrix()),true);
-  if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = %d",err);
-
-  if (res_ == Teuchos::null)
-  {
-    const int npr = max(temp_->MaxNumEntries(),C.MaxNumEntries());
-    res_ = Teuchos::rcp(new LINALG::SparseMatrix(temp_->RangeMap(),npr,false,true));
-  }
-  err = EpetraExt::MatrixMatrix::Multiply(*temp_->EpetraMatrix(),false,*C.EpetraMatrix(),false,*(res_->EpetraMatrix()),true);
-  if (err) dserror("EpetraExt::MatrixMatrix::Multiply returned err = %d",err);
+  temp_ = LINALG::MLMultiply(A, B, true);
+  res_  = LINALG::MLMultiply(*temp_,C,true);
 
   return res_;
 }
