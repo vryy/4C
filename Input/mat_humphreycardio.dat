@@ -76,14 +76,14 @@ NORM_DISP                       Abs
 NORM_INCO                       Abs
 NORM_PRES                       Abs
 NORM_RESF                       Abs
-NUMSTEP                         10
+NUMSTEP                         20
 PREDICT                         ConstDis
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     0
 RESULTDT                        0
 TIMEADAPT                       0
-TIMESTEP                        0.5
+TIMESTEP                        0.25
 TOLCONSTR                       1e-08
 TOLDISP                         1e-10
 TOLINCO                         1e-08
@@ -148,10 +148,10 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1 150000 FACTOR 1 1
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 63 QUANTITY dispx VALUE 4.2505649132063873e-03 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 63 QUANTITY dispy VALUE -1.1189501700430699e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 63 QUANTITY dispz VALUE 1.7087672386138172e-01 TOLERANCE 1e-5
-STRUCTURE DIS structure NODE 482 QUANTITY dispz VALUE 1.0641472149035176e-01 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 63 QUANTITY dispx VALUE 1.89454311500628914e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 63 QUANTITY dispy VALUE -1.17332120696572017e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 63 QUANTITY dispz VALUE 1.51593477194972681e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 482 QUANTITY dispz VALUE 9.72708846198889060e-02 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          8
