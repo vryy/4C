@@ -92,13 +92,15 @@ namespace MueLu {
     const std::string NearZeroDiagRowMapName = pL.get<std::string >("NearZeroDiagMapName");
     Teuchos::RCP<const FactoryBase> NearZeroDiagRowMapFact = GetFactory("NearZeroDiagMapFactory");
     if(NearZeroDiagRowMapName != "") {
-      Teuchos::RCP<const Map> NearZeroDiagRowMap = fineLevel.Get< Teuchos::RCP<const Map> >(NearZeroDiagRowMapName, NearZeroDiagRowMapFact.get());
-      // switch off transfer operator smoothing completely on current level
-      // if there are some significant nearly zero entries on diagonal of matrix A
-      // determined by solver object (e.g. PermutingAztecSolver)
-      if(NearZeroDiagRowMap->getGlobalNumElements() != 0){
-        bPerformSmoothing = false;
-        std::cout << "               switch off transfer operator smoothing" << std::endl;
+      if(fineLevel.IsAvailable(NearZeroDiagRowMapName, NearZeroDiagRowMapFact.get())) {
+        Teuchos::RCP<const Map> NearZeroDiagRowMap = fineLevel.Get< Teuchos::RCP<const Map> >(NearZeroDiagRowMapName, NearZeroDiagRowMapFact.get());
+        // switch off transfer operator smoothing completely on current level
+        // if there are some significant nearly zero entries on diagonal of matrix A
+        // determined by solver object (e.g. PermutingAztecSolver)
+        if(NearZeroDiagRowMap->getGlobalNumElements() != 0){
+          bPerformSmoothing = false;
+          std::cout << "               switch off transfer operator smoothing" << std::endl;
+        }
       }
     }
 
