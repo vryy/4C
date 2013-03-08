@@ -137,7 +137,8 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   convheatrans_(DRT::INPUT::IntegralValue<int>(*params,"CONV_HEAT_TRANS")),
   skipinitder_(DRT::INPUT::IntegralValue<int>(*params,"SKIPINITDER")),
   scfldgrdisp_(Teuchos::null),
-  scstrgrdisp_(Teuchos::null)
+  scstrgrdisp_(Teuchos::null),
+  outintegrreac_(DRT::INPUT::IntegralValue<int>(*params,"OUTINTEGRREAC"))
 {
   // what kind of equations do we actually want to solve?
   // (For the moment, we directly conclude from the problem type, Only ELCH applications
@@ -1443,7 +1444,7 @@ Teuchos::RCP<LINALG::BlockSparseMatrixBase> SCATRA::ScaTraTimIntImpl::BlockSyste
 /*----------------------------------------------------------------------*
  | output of solution vector to BINIO                          gjb 08/08|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::Output()
+void SCATRA::ScaTraTimIntImpl::Output(const int num)
 {
   // time measurement: output of solution
   TEUCHOS_FUNC_TIME_MONITOR("SCATRA:    + output of solution");
@@ -1477,7 +1478,10 @@ void SCATRA::ScaTraTimIntImpl::Output()
     }
 
     // write mean values of scalar(s)
-    OutputMeanScalars();
+    OutputMeanScalars(num);
+
+    // write integral values of reaction(s)
+    OutputIntegrReac(num);
 
     // output of electrode status to screen and file (only if existing)
     OutputElectrodeInfo();

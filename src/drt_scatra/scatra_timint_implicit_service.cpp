@@ -181,7 +181,8 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
  *----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     std::vector<string>& condnames,
-    const bool writetofile)
+    const bool writetofile,
+    bool biogrowth)
 {
   // The normal flux calculation is based on the idea proposed in
   // GRESHO ET AL.,
@@ -191,6 +192,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
   // For the moment, we are lumping the 'boundary mass matrix' instead of solving
   // a small linear system!
 
+  if (biogrowth ==1) writeflux_= INPAR::SCATRA::flux_total_boundary;
 
   // get a vector layout from the discretization to construct matching
   // vectors and matrices
@@ -863,7 +865,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtSolve()
 /*----------------------------------------------------------------------*
  |  output of some mean values                               gjb   01/09|
  *----------------------------------------------------------------------*/
-void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
+void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
 {
   if (outmean_)
   {
@@ -908,8 +910,10 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
     // print out results to file as well
     if (myrank_ == 0)
     {
+      std::stringstream number;
+      number << num;
       const std::string fname
-      = DRT::Problem::Instance()->OutputControlFile()->FileName()+".meanvalues.txt";
+      = DRT::Problem::Instance()->OutputControlFile()->FileName()+number.str()+".meanvalues.txt";
 
       std::ofstream f;
       if (Step() <= 1)
@@ -922,7 +926,7 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
           f << "#| Step | Time | Domain integral ";
           for (int k = 0; k < numscal_; k++)
           {
-            f << "| Mean concentration (c_"<<k+1<<") ";
+            f << "Total concentration (c_"<<k+1<<")| Mean concentration (c_"<<k+1<<") ";
           }
           f << "\n";
         }
@@ -935,10 +939,11 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars()
         f << (*scalars)[0]/domint << "\n";
       else
       {
-        f << domint << " ";
+        f << setprecision (9) << domint << " ";
         for (int k = 0; k < numscal_; k++)
         {
-          f << (*scalars)[k]/domint << " ";
+          f << setprecision (9) << (*scalars)[k] << " ";
+          f << setprecision (9) << (*scalars)[k]/domint << " ";
         }
         f << "\n";
       }
@@ -1953,6 +1958,84 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
   return;
 } // ScaTraTimIntImpl::OutputFlux
 
+/*----------------------------------------------------------------------*
+ |  output of integral reaction                               mc   03/13|
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
+{
+  if (outintegrreac_)
+  {
+    if (!discret_->Filled()) dserror("FillComplete() was not called");
+    if (!discret_->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
+
+    // set scalar values needed by elements
+    discret_->ClearState();
+    discret_->SetState("phinp",phinp_);
+    // set action for elements
+    Teuchos::ParameterList eleparams;
+    eleparams.set<int>("action",SCATRA::calc_integr_reaction);
+    eleparams.set<int>("scatratype",scatratype_);
+    eleparams.set("time-step length",dta_);
+    Teuchos::RCP<std::vector<double> > myreacnp = Teuchos::rcp(new std::vector<double>(numscal_,0.0));
+    eleparams.set<Teuchos::RCP<std::vector<double> > >("local reaction integral",myreacnp);
+
+    discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
+
+    myreacnp = eleparams.get<Teuchos::RCP<std::vector<double> > >("local reaction integral");
+    // global integral of reaction terms
+    std::vector<double> intreacterm(numscal_,0.0);
+    for (int k=0; k<numscal_; ++k)
+      phinp_->Map().Comm().SumAll(&((*myreacnp)[k]),&intreacterm[k],1);
+    discret_->ClearState();   // clean up
+
+    // print out values
+    if (myrank_ == 0)
+    {
+      for (int k = 0; k < numscal_; k++)
+      {
+        cout << "Total reaction (r_"<<k<<"): "<< std::setprecision (9) << intreacterm[k] << endl;
+      }
+    }
+
+    // print out results to file as well
+    if (myrank_ == 0)
+    {
+      std::stringstream number;
+      number << num;
+      const std::string fname
+      = DRT::Problem::Instance()->OutputControlFile()->FileName()+number.str()+".integrreacvalues.txt";
+
+      std::ofstream f;
+      if (Step() <= 1)
+      {
+        f.open(fname.c_str(),std::fstream::trunc);
+        f << "#| Step | Time ";
+        for (int k = 0; k < numscal_; k++)
+        {
+          f << "| Total reaction (r_"<<k<<") ";
+        }
+        f << "\n";
+
+      }
+      else
+        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+
+      f << Step() << " " << Time() << " ";
+      for (int k = 0; k < numscal_; k++)
+      {
+        f << setprecision (9) << intreacterm[k] << " ";
+      }
+      f << "\n";
+      f.flush();
+      f.close();
+    }
+
+  } // if(outintegrreac_)
+
+  return;
+} // SCATRA::ScaTraTimIntImpl::OutputIntegrReac
+
+
 /*==========================================================================*/
 // ELCH
 /*==========================================================================*/
@@ -2866,6 +2949,10 @@ void SCATRA::ScaTraTimIntImpl::RecomputeMeanCsgsB()
 
   return;
 }
+
+/*==========================================================================*/
+// Biofilm related
+/*==========================================================================*/
 
 /*----------------------------------------------------------------------*/
 /* set scatra-fluid displacement vector due to biofilm growth          */

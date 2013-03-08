@@ -71,6 +71,9 @@ namespace FS3I
     /// solve structure-ale
     virtual void StructAleSolve(Teuchos::RCP<Epetra_Vector> idisp);
 
+    /// setup Dirichlet boundary condition map extractor
+    void SetupDBCMapEx(bool dirichletcond, Teuchos::RCP<DRT::Discretization> discret_);
+
     void UpdateAndOutput();
 
     const Epetra_Comm& Comm() { return comm_; }
@@ -185,6 +188,18 @@ namespace FS3I
 
     /// structure velocity at interface (always zero!)
     Teuchos::RCP<Epetra_Vector> struiveln_;
+
+    /// total structure displacement due to growth
+    Teuchos::RCP<Epetra_Vector> struct_growth_disp;
+
+    /// total fluid displacement due to growth
+    Teuchos::RCP<Epetra_Vector> fluid_growth_disp;
+
+    /// total scatra structure displacement due to growth
+    Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp;
+
+    /// total scatra fluid displacement due to growth
+    Teuchos::RCP<Epetra_MultiVector> scatra_fluid_growth_disp;
 
   };
 

@@ -1556,6 +1556,39 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
                     lm);
     break;
   }
+  case SCATRA::calc_integr_reaction:
+  {
+    // NOTE: add integral values only for elements which are NOT ghosted!
+    // non reactive element actually not removed
+    if (ele->Owner() == discretization.Comm().MyPID())
+    {
+      const double dt = params.get<double>("time-step length");
+      Teuchos::RCP<std::vector<double> > myreacnp =
+          params.get<Teuchos::RCP<std::vector<double> > >("local reaction integral");
+
+      // integrations points and weights
+      const DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+      // integration loop
+      for (int iquad=0; iquad<intpoints.IP().nquad; ++iquad)
+      {
+        for (int k = 0; k< numscal_; ++k)
+        {
+          GetMaterialParams(ele,scatratype,dt);
+
+          const double fac = EvalShapeFuncAndDerivsAtIntPoint(intpoints,iquad,ele->Id());
+
+          // scalar at integration point
+          const double phi = funct_.Dot(ephinp_[k]);
+
+          (*myreacnp)[k] += reacoeff_[k]*phi*fac;
+        }
+      } // loop over integration points
+
+      params.set<Teuchos::RCP<std::vector<double> > >("local reaction integral", myreacnp);
+    }
+    break;
+  }
   default:
   {
     dserror("Not acting on this action. Forgot implementation?");

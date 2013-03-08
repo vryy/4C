@@ -751,7 +751,7 @@ void FS3I::PartFS3I::ScatraOutput()
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField().Output();
+    scatra->ScaTraField().Output(i);
   }
 }
 

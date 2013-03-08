@@ -190,7 +190,8 @@ public:
   //! calculate mass/heat normal flux at specified boundaries
   Teuchos::RCP<Epetra_MultiVector> CalcFluxAtBoundary(
     std::vector<string>& condnames,  //!< ?
-    const bool           writetofile //!< ?
+    const bool           writetofile, //!< ?
+    bool                 biogrowth=0
   );
 
   //! calculate error compared to analytical solution
@@ -237,6 +238,12 @@ public:
   //! return flux vector
   Teuchos::RCP<Epetra_MultiVector> Flux() { return flux_; };
 
+  //! return scatra structure growth vector
+  Teuchos::RCP<Epetra_MultiVector> StrGrowth() { return scstrgrdisp_; };
+
+  //! return scatra fluid growth vector
+  Teuchos::RCP<Epetra_MultiVector> FldGrowth() { return scfldgrdisp_; };
+
   //! return Dirichlet map
   const Teuchos::RCP<const LINALG::MapExtractor> DirichMaps() { return dbcmaps_; }
 
@@ -261,7 +268,7 @@ public:
   Teuchos::RCP<LINALG::MapExtractor> Splitter() { return splitter_; }
 
   //! output solution and restart data to file
-  void Output();
+  void Output(const int num =0);
 
   /*========================================================================*/
   //! @name Time, time-step and related methods
@@ -349,7 +356,10 @@ public:
   virtual Teuchos::RCP<Epetra_Vector> FsPhi() = 0;
 
   //! output of mean values of scalar(s)
-  void OutputMeanScalars();
+  void OutputMeanScalars(const int num=0);
+
+  //! output of reaction(s) integral
+  void OutputIntegrReac(const int num=0);
 
   /*========================================================================*/
   //! @name ELCH
@@ -487,7 +497,6 @@ public:
 
   //! set scatra structure displacement vector due to biofilm growth
   void SetScStrGrDisp(Teuchos::RCP<Epetra_MultiVector> scatra_struct_growth_disp);
-
 
   /*========================================================================*/
   //! @name  not classified method - to be kept clean!!!
@@ -1140,6 +1149,11 @@ protected:
 
   //! scatra structure displacement due to growth
   Teuchos::RCP<Epetra_MultiVector> scstrgrdisp_;
+
+  //! flag for printing out integral values of reaction
+  const bool outintegrreac_;
+
+//  std::vector<double> reacintegral_;
 
 
 }; // class ScaTraTimIntImpl

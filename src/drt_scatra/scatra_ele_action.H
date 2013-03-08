@@ -44,7 +44,8 @@ enum Action {
   reinitialize_levelset,           // reinitialize_levelset,
   calc_error_reinit,               // calc_error_reinit,
   calc_mean_Cai,                   // calc_mean_Cai (multifractal subgrid-scales)
-  calc_dissipation                 // calculate dissipation introduced by stabilization and turbulence models
+  calc_dissipation,                // calculate dissipation introduced by stabilization and turbulence models
+  calc_integr_reaction             // calculate integral reaction
 }; // enum Action
 
 /*--------------------------------------------------------------------------*/

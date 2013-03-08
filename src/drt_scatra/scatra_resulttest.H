@@ -62,6 +62,10 @@ private:
   Teuchos::RCP<Epetra_Vector>       mysol_;
   /// RCP to mass/heat flux vector
   Teuchos::RCP<Epetra_MultiVector>  myflux_;
+  /// RCP to scatra structure biofilm growth vector
+  Teuchos::RCP<Epetra_MultiVector>  mystrgrowth_;
+  /// RCP to scatra fluid biofilm growth vector
+  Teuchos::RCP<Epetra_MultiVector>  myfldgrowth_;
 };
 
 } // namespace SCATRA

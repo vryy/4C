@@ -3526,6 +3526,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       &scatradyn);
 
   BoolParameter("OUTMEAN","No","Output of mean values for scalars and density",&scatradyn);
+  BoolParameter("OUTINTEGRREAC","No","Output of integral reaction values",&scatradyn);
   BoolParameter("OUTPUT_GMSH","No","Do you want to write Gmsh postprocessing files?",&scatradyn);
 
   setStringToIntegralParameter<int>("CONVFORM","convective","form of convective term",
@@ -3927,8 +3928,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("FLUXCOEF",0.0,"Coefficient for growth due to scalar flux",&biofilmcontrol);
   DoubleParameter("NORMFORCECOEF",0.0,"Coefficient for erosion due to normal surface forces",&biofilmcontrol);
   DoubleParameter("TANGFORCECOEF",0.0,"Coefficient for erosion due to tangential surface forces",&biofilmcontrol);
-  DoubleParameter("BIOTIMESTEP",0.05,"Time step size for surface grown",&biofilmcontrol);
-  IntParameter("BIONUMSTEP",0,"Maximum number of steps for surface grown",&biofilmcontrol);
+  DoubleParameter("BIOTIMESTEP",0.05,"Time step size for biofilm growth",&biofilmcontrol);
+  IntParameter("BIONUMSTEP",0,"Maximum number of steps for biofilm growth",&biofilmcontrol);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& topoptcontrol = list->sublist("TOPOLOGY OPTIMIZATION CONTROL",false,
