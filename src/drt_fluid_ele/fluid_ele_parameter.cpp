@@ -57,6 +57,7 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
   darcy_(false),
   reaction_topopt_(false),
   physicaltype_(INPAR::FLUID::incompressible),
+  stabtype_(INPAR::FLUID::stabtype_nostab),
   tds_(INPAR::FLUID::subscales_quasistatic),
   transient_(INPAR::FLUID::inertia_stab_drop),
   pspg_(INPAR::FLUID::pstab_use_pspg),
@@ -67,9 +68,15 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
   reynolds_(INPAR::FLUID::reynolds_stress_stab_none),
   whichtau_(INPAR::FLUID::tau_not_defined),
   fssgv_(INPAR::FLUID::no_fssgv),
+  viscreastabfac_(0.0),
+  EOS_pres_(INPAR::FLUID::EOS_PRES_none),
+  EOS_conv_stream_(INPAR::FLUID::EOS_CONV_STREAM_none),
+  EOS_conv_cross_(INPAR::FLUID::EOS_CONV_CROSS_none),
+  EOS_div_(INPAR::FLUID::EOS_DIV_none),
+  EOS_whichtau_(INPAR::FLUID::EOS_tau_burman_fernandez),
+  EOS_element_lenght_(INPAR::FLUID::EOS_he_max_dist_to_opp_surf),
   mat_gp_(false),     // standard evaluation of the material at the element center
   tau_gp_(false),     // standard evaluation of tau at the element center
-  viscreastabfac_(0.0),
   time_(-1.0),
   dt_(0.0),
   timefac_(0.0),
@@ -136,9 +143,9 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
         "Otherwise: Check, why you enter this function a second time!!!") << std::endl << std::endl;
   }
 
-//----------------------------------------------------------------------
-// get flags to switch on/off different fluid formulations
-//----------------------------------------------------------------------
+  //----------------------------------------------------------------------
+  // get flags to switch on/off different fluid formulations
+  //----------------------------------------------------------------------
 
   // set flag, time integration scheme
   timealgo_ = DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(params, "TimeIntegrationScheme");
@@ -224,12 +231,31 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
     darcy_= true;
   }
 
-// ---------------------------------------------------------------------
-// get control parameters for stabilization and higher-order elements
-//----------------------------------------------------------------------
-  Teuchos::ParameterList& stablist = params.sublist("STABILIZATION");
+
+  // ---------------------------------------------------------------------
+  // get control parameters for stabilization and higher-order elements
+  //----------------------------------------------------------------------
+  Teuchos::ParameterList& stablist               = params.sublist("STABILIZATION");
+  //Teuchos::ParameterList& stablist_residualbased = params.sublist("RESIDUAL-BASED-STABILIZATION");
+  Teuchos::ParameterList& stablist_edgebased     = params.sublist("EDGE-BASED-STABILIZATION");
+
+  stabtype_ = DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(stablist, "STABTYPE");
 
 
+  // --------------------------------
+  // edge-based fluid stabilization can be used as standard fluid stabilization or
+  // as ghost-penalty stabilization in addition to residual-based stabilizations in the XFEM
+
+  // set parameters if single stabilization terms are switched on/off or which type of stabilization is chosen
+  EOS_pres_         = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Pres>(stablist_edgebased,"EOS_PRES");
+  EOS_conv_stream_  = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Stream>(stablist_edgebased,"EOS_CONV_STREAM");
+  EOS_conv_cross_   = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Cross>(stablist_edgebased,"EOS_CONV_CROSS");
+  EOS_div_          = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Div>(stablist_edgebased,"EOS_DIV");
+
+  EOS_element_lenght_ = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_ElementLength>(stablist_edgebased, "EOS_H_DEFINITION");
+  EOS_whichtau_       = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_TauType>(stablist_edgebased, "EOS_DEFINITION_TAU");
+
+  //---------------------------------
   // if edge-based stabilization is selected, all residual-based stabilization terms
   // are switched off
   if (stablist.get<std::string>("STABTYPE") == "residual_based")
@@ -249,6 +275,68 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
     // this might be interesting for fast (but slightly
     // less accurate) computations
     is_inconsistent_ = DRT::INPUT::IntegralValue<int>(stablist,"INCONSISTENT");
+    //-------------------------------
+    // get tau definition
+    //-------------------------------
+
+    whichtau_ =  DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(stablist,"DEFINITION_TAU");
+    // check if tau can be handled
+    if (not(whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
+                         INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
+                         INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
+                         INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
+                         INPAR::FLUID::tau_shakib_hughes_codina or
+                         INPAR::FLUID::tau_shakib_hughes_codina_wo_dt or
+                         INPAR::FLUID::tau_codina or
+                         INPAR::FLUID::tau_codina_wo_dt or
+                         INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
+                         INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
+          dserror("Definition of Tau cannot be handled by the element");
+
+    // set correct stationary definition of stabilization parameter automatically
+    if (is_stationary_)
+    {
+      if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins)
+        whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt;
+      else if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen)
+        whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt;
+      else if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_scaled)
+        whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt;
+      else if (whichtau_ == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall)
+        whichtau_ = INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt;
+      else if (whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina)
+        whichtau_ = INPAR::FLUID::tau_shakib_hughes_codina_wo_dt;
+      else if (whichtau_ == INPAR::FLUID::tau_codina)
+        whichtau_ = INPAR::FLUID::tau_codina_wo_dt;
+      else if (whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
+        whichtau_ = INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt;
+    }
+
+    // in case of viscous and/or reactive stabilization, decide whether to use
+    // GLS or USFEM and ensure compatibility of respective definitions
+    if (vstab_ == INPAR::FLUID::viscous_stab_usfem or
+        vstab_ == INPAR::FLUID::viscous_stab_usfem_only_rhs)
+    {
+      viscreastabfac_ = -1.0;
+      if (rstab_ == INPAR::FLUID::reactive_stab_gls)
+        dserror("inconsistent reactive and viscous stabilization!");
+    }
+    else if (vstab_ == INPAR::FLUID::viscous_stab_gls or
+        vstab_ == INPAR::FLUID::viscous_stab_gls_only_rhs)
+    {
+      viscreastabfac_ = 1.0;
+      if (rstab_ == INPAR::FLUID::reactive_stab_usfem)
+        dserror("inconsistent reactive and viscous stabilization!");
+    }
+    else if (vstab_ == INPAR::FLUID::viscous_stab_none)
+    {
+      if (rstab_ == INPAR::FLUID::reactive_stab_usfem)    viscreastabfac_ = -1.0;
+      else if (rstab_ == INPAR::FLUID::reactive_stab_gls) viscreastabfac_ =  1.0;
+    }
   }
   else if (stablist.get<std::string>("STABTYPE") == "edge_based")
   {
@@ -258,16 +346,17 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
       IO::cout << " Edge-based stabilization: all residual-based stabilization terms are switched off!\n";
       IO::cout << "+----------------------------------------------------------------------------------+\n" << IO::endl;
     }
-    pspg_ = INPAR::FLUID::pstab_assume_inf_sup_stable;
-    supg_ = INPAR::FLUID::convective_stab_none;
-    vstab_ = INPAR::FLUID::viscous_stab_none;
-    rstab_ = INPAR::FLUID::reactive_stab_none;
-    cstab_ = INPAR::FLUID::continuity_stab_none;
-    cross_ = INPAR::FLUID::cross_stress_stab_none;
-    reynolds_ = INPAR::FLUID::reynolds_stress_stab_none;
-    tds_ = INPAR::FLUID::subscales_quasistatic;
+    pspg_      = INPAR::FLUID::pstab_assume_inf_sup_stable;
+    supg_      = INPAR::FLUID::convective_stab_none;
+    vstab_     = INPAR::FLUID::viscous_stab_none;
+    rstab_     = INPAR::FLUID::reactive_stab_none;
+    cstab_     = INPAR::FLUID::continuity_stab_none;
+    cross_     = INPAR::FLUID::cross_stress_stab_none;
+    reynolds_  = INPAR::FLUID::reynolds_stress_stab_none;
+    tds_       = INPAR::FLUID::subscales_quasistatic;
     transient_ = INPAR::FLUID::inertia_stab_drop;
     is_inconsistent_ = false;
+
   }
   else if (stablist.get<std::string>("STABTYPE") == "no_stabilization")
   {
@@ -278,20 +367,22 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
       IO::cout << " No stabilization selected: all stabilization terms are switched off!\n";
       IO::cout << "+----------------------------------------------------------------------------------+\n" << IO::endl;
     }
-    pspg_ = INPAR::FLUID::pstab_assume_inf_sup_stable;
-    supg_ = INPAR::FLUID::convective_stab_none;
-    vstab_ = INPAR::FLUID::viscous_stab_none;
-    rstab_ = INPAR::FLUID::reactive_stab_none;
-    cstab_ = INPAR::FLUID::continuity_stab_none;
-    cross_ = INPAR::FLUID::cross_stress_stab_none;
-    reynolds_ = INPAR::FLUID::reynolds_stress_stab_none;
-    tds_ = INPAR::FLUID::subscales_quasistatic;
+    pspg_      = INPAR::FLUID::pstab_assume_inf_sup_stable;
+    supg_      = INPAR::FLUID::convective_stab_none;
+    vstab_     = INPAR::FLUID::viscous_stab_none;
+    rstab_     = INPAR::FLUID::reactive_stab_none;
+    cstab_     = INPAR::FLUID::continuity_stab_none;
+    cross_     = INPAR::FLUID::cross_stress_stab_none;
+    reynolds_  = INPAR::FLUID::reynolds_stress_stab_none;
+    tds_       = INPAR::FLUID::subscales_quasistatic;
     transient_ = INPAR::FLUID::inertia_stab_drop;
     is_inconsistent_ = false;
   }
   else
    dserror("Unknown stabilization type");
 
+
+  //---------------------------------
   // safety checks for time-dependent subgrid scales
   if ((tds_ == INPAR::FLUID::subscales_time_dependent) or (transient_ != INPAR::FLUID::inertia_stab_drop))
   {
@@ -299,69 +390,8 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
       dserror("time dependent subscales does not work for OST/AfGenAlpha/BDF2/Stationary. \nOne need to look for bugs");
   }
 
-//-------------------------------
-// get tau definition
-//-------------------------------
 
-  whichtau_ =  DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(stablist,"DEFINITION_TAU");
-  // check if tau can be handled
-  if (not(whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins or
-                       INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
-                       INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen or
-                       INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt or
-                       INPAR::FLUID::tau_taylor_hughes_zarins_scaled or
-                       INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt or
-                       INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall or
-                       INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt or
-                       INPAR::FLUID::tau_shakib_hughes_codina or
-                       INPAR::FLUID::tau_shakib_hughes_codina_wo_dt or
-                       INPAR::FLUID::tau_codina or
-                       INPAR::FLUID::tau_codina_wo_dt or
-                       INPAR::FLUID::tau_franca_madureira_valentin_badia_codina or
-                       INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt))
-    dserror("Definition of Tau cannot be handled by the element");
-
-  // set correct stationary definition of stabilization parameter automatically
-  if (is_stationary_)
-  {
-    if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins)
-      whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt;
-    else if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen)
-      whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_whiting_jansen_wo_dt;
-    else if (whichtau_ == INPAR::FLUID::tau_taylor_hughes_zarins_scaled)
-      whichtau_ = INPAR::FLUID::tau_taylor_hughes_zarins_scaled_wo_dt;
-    else if (whichtau_ == INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall)
-      whichtau_ = INPAR::FLUID::tau_franca_barrenechea_valentin_frey_wall_wo_dt;
-    else if (whichtau_ == INPAR::FLUID::tau_shakib_hughes_codina)
-      whichtau_ = INPAR::FLUID::tau_shakib_hughes_codina_wo_dt;
-    else if (whichtau_ == INPAR::FLUID::tau_codina)
-      whichtau_ = INPAR::FLUID::tau_codina_wo_dt;
-    else if (whichtau_ == INPAR::FLUID::tau_franca_madureira_valentin_badia_codina)
-      whichtau_ = INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt;
-  }
-
-  // in case of viscous and/or reactive stabilization, decide whether to use
-  // GLS or USFEM and ensure compatibility of respective definitions
-  if (vstab_ == INPAR::FLUID::viscous_stab_usfem or
-      vstab_ == INPAR::FLUID::viscous_stab_usfem_only_rhs)
-  {
-    viscreastabfac_ = -1.0;
-    if (rstab_ == INPAR::FLUID::reactive_stab_gls)
-      dserror("inconsistent reactive and viscous stabilization!");
-  }
-  else if (vstab_ == INPAR::FLUID::viscous_stab_gls or
-           vstab_ == INPAR::FLUID::viscous_stab_gls_only_rhs)
-  {
-    viscreastabfac_ = 1.0;
-    if (rstab_ == INPAR::FLUID::reactive_stab_usfem)
-      dserror("inconsistent reactive and viscous stabilization!");
-  }
-  else if (vstab_ == INPAR::FLUID::viscous_stab_none)
-  {
-    if (rstab_ == INPAR::FLUID::reactive_stab_usfem)    viscreastabfac_ = -1.0;
-    else if (rstab_ == INPAR::FLUID::reactive_stab_gls) viscreastabfac_ =  1.0;
-  }
-
+  //---------------------------------
   // set flags for potential evaluation of tau and material law at int. point
   // default value: evaluation at element center
   const std::string tauloc = stablist.get<std::string>("EVALUATION_TAU");
@@ -370,6 +400,8 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
   const std::string matloc = stablist.get<std::string>("EVALUATION_MAT");
   if (matloc == "integration_point") mat_gp_ = true;
   else                               mat_gp_ = false;
+
+
 }
 
 void DRT::ELEMENTS::FluidEleParameter::SetElementTimeParameter( Teuchos::ParameterList& params )

@@ -192,9 +192,6 @@ template <DRT::Element::DiscretizationType distype,
 DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype,ndistype>::FluidInternalSurfaceStab()
 : intpoints_(distype)
 {
-  // pointer to class FluidImplParameter (access to the general parameter)
-  fldpara_ = DRT::ELEMENTS::FluidEleParameter::Instance();
-
   return;
 }
 
@@ -207,6 +204,7 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType ndistype>
 int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::EvaluateEdgeBasedStabilization(
     DRT::ELEMENTS::FluidIntFace*       intface,              ///< internal face element
+    DRT::ELEMENTS::FluidEleParameter&  fldpara,              ///< fluid parameter
     Teuchos::ParameterList&            params,               ///< parameter list
     DRT::Discretization&               discretization,       ///< discretization
     std::vector<int>&                  patchlm,              ///< patch local map
@@ -227,20 +225,41 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   if (pele == NULL) dserror("pele is NULL");
   if (nele == NULL) dserror("nele is NULL");
 
-  bool ghost_penalty   = params.get<bool>("ghost_penalty");
-  bool edge_based_stab = params.get<bool>("edge_based_stab");
+  //---------------------------------------------------
+
+  // boolean for ghost penalty reconstruction in velocity and pressure used for XFEM-time-integration
   bool ghost_penalty_reconstruct = params.get<bool>("ghost_penalty_reconstruct");
 
-  if( (!ghost_penalty) and (!edge_based_stab) and (!ghost_penalty_reconstruct))
+
+  // flags to integrate pressure gradient jump based stabilization terms
+  bool EOS_pres        = params.get<bool>("EOS_Pres");  // eos/gp pressure stabilization
+
+  // flags to integrate velocity gradient jump based stabilization terms
+  bool EOS_conv_stream = params.get<bool>("EOS_Conv_Stream");      // eos/gp convective streamline stabilization
+  bool EOS_conv_cross  = params.get<bool>("EOS_Conv_Cross");       // eos/gp convective crosswind stabilization
+  bool EOS_div_vel_jump= params.get<bool>("EOS_Div_vel_jump");     // eos/gp divergence stabilization based on velocity jump
+  bool GP_visc         = params.get<bool>("GP_visc");              // ghost penalty stabilization according to Nitsche's method
+  double GP_visc_fac   = params.get<double>("ghost_penalty_fac");  // ghost penalty stabilization factor according to Nitsche's method
+
+  // flags to integrate velocity gradient jump based stabilization terms
+  bool EOS_div_div_jump= params.get<bool>("EOS_Div_div_jump");  // eos/gp divergence stabilization based on divergence jump
+
+  bool EOS_vel         = false;
+  // decide if velocity gradient based term has to be assembled
+  if(EOS_conv_stream or EOS_conv_cross or EOS_div_vel_jump or GP_visc) EOS_vel=true;
+
+
+  if( (!EOS_vel) and (!EOS_pres) and (!EOS_div_div_jump))
   {
     dserror("do not call EvaluateEdgeBasedStabilization if no stab is required!");
   }
 
-  INPAR::FLUID::EOS_ElementLength eos_element_length = params.get<INPAR::FLUID::EOS_ElementLength>("eos_he_definition");
+  //---------------------------------------------------
 
-  if (fldpara_->TimeAlgo()!=INPAR::FLUID::timeint_one_step_theta and fldpara_->TimeAlgo()!=INPAR::FLUID::timeint_stationary)
+
+  if (fldpara.TimeAlgo()!=INPAR::FLUID::timeint_one_step_theta and fldpara.TimeAlgo()!=INPAR::FLUID::timeint_stationary)
       dserror("Other time integration schemes than OST and Stationary currently not supported for edge-based stabilization!");
-  if (fldpara_->TimeAlgo()==INPAR::FLUID::timeint_one_step_theta and fldpara_->Theta()!=1.0)
+  if (fldpara.TimeAlgo()==INPAR::FLUID::timeint_one_step_theta and fldpara.Theta()!=1.0)
       dserror("Read remark!");
   // Remark:
   // in the following Paper a fully implicit integration of the stabilization terms is proposed
@@ -261,12 +280,18 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   double timefacpre = 0.0;
 
   // full matrix pattern (implicit) for streamline and div-stab
-  if(not fldpara_->IsStationary())
+  if(not fldpara.IsStationary())
   {
-    timefac    = fldpara_->Dt(); // set theta = 1.0
-    timefacpre = fldpara_->Dt(); // set theta = 1.0
+    timefac    = fldpara.Dt(); // set theta = 1.0
+    timefacpre = fldpara.Dt(); // set theta = 1.0
   }
   else
+  {
+    timefac    = 1.0;
+    timefacpre = 1.0;
+  }
+
+  if(ghost_penalty_reconstruct)
   {
     timefac    = 1.0;
     timefacpre = 1.0;
@@ -338,7 +363,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
 
 
 
-  if(fldpara_->TimeAlgo()==INPAR::FLUID::timeint_npgenalpha)
+  if(fldpara.TimeAlgo()==INPAR::FLUID::timeint_npgenalpha)
   {
     // velocities (intermediate time step, n+1)
     RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
@@ -445,7 +470,7 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   double patch_hk = 0.0;
 
   // compute the element length w.r.t master and slave element
-  compute_patch_hk(patch_hk, pele, nele, intface, eos_element_length);
+  compute_patch_hk(patch_hk, pele, nele, intface, fldpara.EOS_element_length());
 
   // create object for computing Gaussian point dependent stabilization parameters
   FluidEdgeBasedStab EdgeBasedStabilization(patch_hk);
@@ -777,37 +802,24 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
     //-----------------------------------------------------
     // get the stabilization parameters
 
-    double tau_u   = 0.0;
-    double tau_div = 0.0;
-    double tau_p   = 0.0;
+    double tau_u   = 0.0;   // streamline stabilization parameter
+    double tau_div = 0.0;   // divergence stabilization parameter
+    double tau_p   = 0.0;   // pressure stabilization parameter
 
-    double tau_grad = 0.0;
-
-    double tau_u_lin   = 0.0;
-    double tau_p_lin   = 0.0;
-    double tau_div_lin = 0.0;
+    double tau_grad = 0.0;  // ghost-penalty stabilization parameter due to Nitsche's method in the XFEM
 
 
     double timefacfac     = fac*timefac;
     double timefacfac_pre = fac*timefacpre;
 
-    double gamma_ghost_penalty = params.get<double>("ghost_penalty_fac");
-
-    EdgeBasedStabilization.ComputeStabilizationParams(tau_grad, tau_u, tau_div, tau_p, tau_u_lin, tau_div_lin, tau_p_lin, kinvisc, dens, max_vel_L2_norm, timefac, gamma_ghost_penalty);
+    EdgeBasedStabilization.ComputeStabilizationParams(fldpara.EOS_WhichTau(), tau_grad, tau_u, tau_div, tau_p, kinvisc, dens, max_vel_L2_norm, timefac, GP_visc_fac);
 
 
-    // assemble ghost penalty terms for xfluid application
-
-#if(1)
-
-    // EOS stabilization terms for whole Reynolds number regime
-    if(edge_based_stab or ghost_penalty or ghost_penalty_reconstruct)
+    // EOS stabilization term for pressure
+    if(EOS_pres)
     {
-
-      if( ghost_penalty_reconstruct )
-      {
-        tau_p = 1.0; // no need for stabilization parameter in ghost penalty reconstruction
-      }
+      // no need for stabilization parameter in ghost penalty reconstruction
+      if( ghost_penalty_reconstruct ) tau_p = 1.0;
 
       // assemble pressure (EOS) stabilization terms for fluid
       pressureEOS(    elematrix_mm,
@@ -819,24 +831,26 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
                       timefacfac_pre,
                       tau_p
       );
+    }
 
-
+    // EOS stabilization term for velocity
+    if(EOS_vel)
+    {
       // assemble combined divergence and streamline(EOS) stabilization terms for fluid
       double normal_vel_lin_space = fabs(velintaf_.Dot(n_));
-      // STREAMLINE stabilization
-      double div_streamline_tau = tau_div + tau_u * normal_vel_lin_space;
-      // with additional CROSSWIND stabilization
-//      double div_streamline_tau = tau_div + tau_u * 1.0;
 
-      if(ghost_penalty)
+      double tau_vel = 0.0;
+
+      if( ghost_penalty_reconstruct ) tau_vel=1.0;
+      else
       {
-        div_streamline_tau += tau_grad; // add the ghost penalty contribution
-      }
-      else if( ghost_penalty_reconstruct )
-      {
-        div_streamline_tau = 1.0; // no need for stabilization parameter in ghost penalty reconstruction
+        if(EOS_conv_stream) tau_vel += tau_u*normal_vel_lin_space;
+        if(EOS_conv_cross)  tau_vel += tau_u * 1.0; // that's still wrong
+        if(EOS_div_vel_jump)tau_vel += tau_div;
+        if(GP_visc)         tau_vel += tau_grad;
       }
 
+      // assemble velocity (EOS) stabilization terms for fluid
       div_streamline_EOS(   elematrix_mm,
                             elematrix_ms,
                             elematrix_sm,
@@ -844,62 +858,31 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
                             elevector_m,
                             elevector_s,
                             timefacfac,
-                            div_streamline_tau,
+                            tau_vel,
                             vderxyaf_diff);
 
     }
 
-#else
-    // first version of Burman's EOS stabilization
-    if(edge_based_stab or ghost_penalty_reconstruct,
-)
+    if(EOS_div_div_jump)
     {
-
-      LINALG::Matrix<nsd_,1> conv_diff(true);
-      conv_diff.Multiply(vderxyaf_diff,velintaf_);
-
-
-      // assemble pressure (EOS) stabilization terms for fluid (gradients in normal direction)
-      pressureEOSnormal(  elematrix_mm,
-                          elematrix_ms,
-                          elematrix_sm,
-                          elematrix_ss,
-                          elevector_m,
-                          elevector_s,
-                          timefacfac_pre,
-                          tau_p);
 
       if(elemat_blocks.size() < 10) dserror("do not choose diagonal pattern for div_EOS stabilization!");
 
-      // assemble divergence (EOS) stabilization terms for fluid
-      div_EOS(  elematrix_mm,
-                elematrix_ms,
-                elematrix_sm,
-                elematrix_ss,
-                elevector_m,
-                elevector_s,
-                timefacfac,
-                tau_div,
-                vderxyaf_diff);
-
-
-      // assemble streamline (EOS) stabilization terms for fluid
-      streamline_EOS(  elematrix_mm,
-                       elematrix_ms,
-                       elematrix_sm,
-                       elematrix_ss,
-                       elevector_m,
-                       elevector_s,
-                       timefacfac,
-                       tau_u,
-                       vderxyaf_diff,
-                       conv_diff);
+      if(!ghost_penalty_reconstruct)
+      {
+        // assemble divergence (EOS) stabilization terms for fluid
+        div_EOS(  elematrix_mm,
+                  elematrix_ms,
+                  elematrix_sm,
+                  elematrix_ss,
+                  elevector_m,
+                  elevector_s,
+                  timefacfac,
+                  tau_div,
+                  vderxyaf_diff);
+      }
 
     }
-#endif
-
-
-
   } // end gaussloop
 
 
@@ -1737,202 +1720,6 @@ double DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Eval
 }
 
 
-
-
-
-template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType pdistype,
-          DRT::Element::DiscretizationType ndistype>
-void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::GhostPenalty(
-    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&     elematrix_mm,              ///< element matrix master-master block
-    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&     elematrix_ms,              ///< element matrix master-slave block
-    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&     elematrix_sm,              ///< element matrix slave-master block
-    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&     elematrix_ss,              ///< element matrix slave-slave block
-    LINALG::Matrix<numdofpernode_*piel, 1>&                       elevector_m,               ///< element vector master block
-    LINALG::Matrix<numdofpernode_*niel, 1>&                       elevector_s,               ///< element vector slave block
-    const double &                                                timefacfac,                ///< timefac x integration factor
-    double &                                                      tau_grad,                  ///< stabilization parameter
-    bool &                                                        ghost_penalty,             ///< ghost penalty stabilization?
-    bool &                                                        ghost_penalty_reconstruct, ///< ghost penalty reconstruction?
-    bool &                                                        use2ndderiv                ///< use 2nd order derivatives
-)
-{
-
-  TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: terms: GhostPenalty" );
-
-
-  if(ghost_penalty or ghost_penalty_reconstruct)
-  {
-    double tau_timefacfac = tau_grad * timefacfac;
-
-    // get grad(u)*n
-    LINALG::Matrix<piel,1> p_normal_deriv(true);
-    p_normal_deriv.MultiplyTN(pderxy_,n_);
-
-    LINALG::Matrix<niel,1> n_normal_deriv(true);
-    n_normal_deriv.MultiplyTN(nderxy_,n_);
-
-    // additional stability of gradients
-    // parent column
-    for (int ui=0; ui<piel; ++ui)
-    {
-      for (int ijdim = 0; ijdim <nsd_; ++ijdim) // combined components of u and v
-      {
-        int col = ui*numdofpernode_+ijdim;
-
-        // v_parent * u_parent
-        //parent row
-        for (int vi=0; vi<piel; ++vi)
-        {
-          elematrix_mm(vi*numdofpernode_+ijdim, col) += tau_timefacfac*p_normal_deriv(vi)*p_normal_deriv(ui);
-        }
-
-        // neighbor row
-        for (int vi=0; vi<niel; ++vi)
-        {
-          elematrix_sm(vi*numdofpernode_+ijdim, col) -= tau_timefacfac*n_normal_deriv(vi)*p_normal_deriv(ui);
-        }
-      }
-    }
-
-    for (int ui=0; ui<niel; ++ui)
-    {
-      for (int ijdim = 0; ijdim <nsd_; ++ijdim) // combined components of u and v
-      {
-        int col = ui*numdofpernode_+ijdim;
-
-        // v_parent * u_parent
-        //parent row
-        for (int vi=0; vi<piel; ++vi)
-        {
-          elematrix_ms(vi*numdofpernode_+ijdim, col) -= tau_timefacfac*p_normal_deriv(vi)*n_normal_deriv(ui);
-        }
-
-        //neighbor row
-        for (int vi=0; vi<niel; ++vi)
-        {
-          elematrix_ss(vi*numdofpernode_+ijdim, col) += tau_timefacfac*n_normal_deriv(vi)*n_normal_deriv(ui);
-        }
-      }
-
-    }
-
-    LINALG::Matrix<nsd_,1> p_grad_u_n(true);
-    p_grad_u_n.Multiply(pvderxyaf_,n_);
-    LINALG::Matrix<nsd_,1> n_grad_u_n(true);
-    n_grad_u_n.Multiply(nvderxyaf_,n_);
-
-
-    for(int idim = 0; idim <nsd_; ++idim)
-    {
-
-      double diff_grad_u_n = tau_timefacfac * (n_grad_u_n(idim)-p_grad_u_n(idim));
-
-      // v_parent (u_neighbor-u_parent)
-      for (int vi=0; vi<piel; ++vi)
-      {
-        elevector_m(vi*numdofpernode_+idim,0) +=  p_normal_deriv(vi)*diff_grad_u_n;
-      }
-
-      // v_neighbor (u_neighbor-u_parent)
-      for (int vi=0; vi<niel; ++vi)
-      {
-        elevector_s(vi*numdofpernode_+idim,0) -=  n_normal_deriv(vi)*diff_grad_u_n;
-      }
-    }
-
-
-
-  }// end if ghost_penalty
-
-
-  if(numderiv2_n != numderiv2_p) dserror("different dimensions for parent and master element");
-
-//  if(ghost_penalty && use2ndderiv)
-//  {
-//    double tau_timefacfac = 0.0001 * tau_grad * timefacfac;
-//
-//    // additional stability of gradients
-//    // parent column
-//    for (int ui=0; ui<piel; ++ui)
-//    {
-//      for (int ijdim = 0; ijdim <nsd_; ++ijdim) // combined components of u and v
-//      {
-//        int col = ui*numdofpernode_+ijdim;
-//
-//        for(int k=0; k<numderiv2_p; k++) // 2nd order derivatives
-//        {
-//          // v_parent * u_parent
-//          //parent row
-//          for (int vi=0; vi<piel; ++vi)
-//          {
-//            elematrix_mm(vi*numdofpernode_+ijdim, col) += tau_timefacfac*pderxy2_(k,vi)*pderxy2_(k,ui);
-//          }
-//
-//          // neighbor row
-//          for (int vi=0; vi<niel; ++vi)
-//          {
-//            elematrix_sm(vi*numdofpernode_+ijdim, col) -= tau_timefacfac*nderxy2_(k,vi)*pderxy2_(k,ui);
-//          }
-//
-//        }
-//      }
-//    }
-//
-//    for (int ui=0; ui<niel; ++ui)
-//    {
-//      for (int ijdim = 0; ijdim <nsd_; ++ijdim) // combined components of u and v
-//      {
-//        int col = ui*numdofpernode_+ijdim;
-//
-//
-//        for(int k=0; k<numderiv2_p; k++) // 2nd order derivatives
-//        {
-//          // v_parent * u_parent
-//          //parent row
-//          for (int vi=0; vi<piel; ++vi)
-//          {
-//            elematrix_ms(vi*numdofpernode_+ijdim, col) -= tau_timefacfac*pderxy2_(k,vi)*nderxy2_(k,ui);
-//          }
-//
-//          //neighbor row
-//          for (int vi=0; vi<niel; ++vi)
-//          {
-//            elematrix_ss(vi*numdofpernode_+ijdim, col) += tau_timefacfac*nderxy2_(k,vi)*nderxy2_(k,ui);
-//          }
-//        }
-//
-//      }
-//
-//    }
-//
-//
-//    for(int idim = 0; idim <nsd_; ++idim)
-//    {
-//
-//      for(int k=0; k<numderiv2_p; k++) // 2nd order derivatives pvderxy2af_
-//      {
-//        double diff_2nderiv_u = tau_timefacfac * (nvderxy2af_(idim,k)-pvderxy2af_(idim,k));
-//
-//        // v_parent (u_neighbor-u_parent)
-//        for (int vi=0; vi<piel; ++vi)
-//        {
-//          elevector_m(vi*numdofpernode_+idim,0) +=  pderxy2_(k,vi)*diff_2nderiv_u;
-//        }
-//
-//        // v_neighbor (u_neighbor-u_parent)
-//        for (int vi=0; vi<niel; ++vi)
-//        {
-//          elevector_s(vi*numdofpernode_+idim,0) -=  nderxy2_(k,vi)*diff_2nderiv_u;
-//        }
-//      }
-//    }
-//  }
-
-  return;
-}
-
-
 template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
@@ -2139,107 +1926,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_st
 template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
-void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::pressureEOSnormal(
-    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
-    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
-    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
-    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
-    LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
-    LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
-    const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
-    double &                                                       tau_p          ///< penalty parameter for pressure stabilization terms
-)
-{
-
-  //--------------------------------------------------
-  // edge stabilization: pressure in normal direction
-  /*
-          //
-          //
-          //             /                                 \
-          //            |                                   |
-          //  + tau_p * |  |[ grad q ]|*n , |[ grad p ]|*n  |
-          //            |                                   |
-          //             \                                 / surface
-          //
-   */
-
-  LINALG::Matrix<piel,piel> pderiv_dyad_pderiv(true);
-  pderiv_dyad_pderiv.MultiplyTN(pderxy_, pderxy_);
-
-  LINALG::Matrix<piel,niel> pderiv_dyad_nderiv(true);
-  pderiv_dyad_nderiv.MultiplyTN(pderxy_, nderxy_);
-
-  LINALG::Matrix<niel,niel> nderiv_dyad_nderiv(true);
-  nderiv_dyad_nderiv.MultiplyTN(nderxy_, nderxy_);
-
-  for(int idim=0; idim<nsd_; idim++)
-  {
-    for(int jdim=0; jdim<nsd_; jdim++)
-    {
-      for (int ui=0; ui<piel; ++ui)
-      {
-        for (int vi=0; vi<piel; ++vi)
-        {
-          elematrix_mm(vi*numdofpernode_+nsd_  ,ui*numdofpernode_+nsd_) += timefacfacpre*pderxy_(idim,vi)*n_(idim)*n_(jdim)*pderxy_(idim,ui);
-        }
-
-        for (int vi=0; vi<niel; ++vi)
-        {
-          elematrix_sm(vi*numdofpernode_+nsd_  ,ui*numdofpernode_+nsd_) -= timefacfacpre*nderxy_(idim,vi)*n_(idim)*n_(jdim)*pderxy_(idim,ui);
-        }
-      }
-      for (int ui=0; ui<niel; ++ui)
-      {
-        for (int vi=0; vi<piel; ++vi)
-        {
-          elematrix_ms(vi*numdofpernode_+nsd_  ,ui*numdofpernode_+nsd_) -= timefacfacpre*pderxy_(idim,vi)*n_(idim)*n_(jdim)*nderxy_(idim,ui);
-        }
-
-        for (int vi=0; vi<niel; ++vi)
-        {
-          elematrix_ss(vi*numdofpernode_+nsd_  ,ui*numdofpernode_+nsd_) += timefacfacpre*nderxy_(idim,vi)*n_(idim)*n_(jdim)*nderxy_(idim,ui);
-        }
-      }
-    }
-  }
-
-
-
-  // grad(p_neighbor) - grad(p_parent)
-  LINALG::Matrix<nsd_,1> prederxy_jump(true);
-  prederxy_jump.Update(1.0, nprederxy_, -1.0, pprederxy_);
-
-  double prederxy_jump_normal_fac = timefacfacpre*prederxy_jump.Dot(n_);
-
-  // q_parent (p_neighbor-p_parent)
-  for (int vi=0; vi<piel; ++vi)
-  {
-
-    for(int isd=0; isd<nsd_; isd++)
-      elevector_m(vi*numdofpernode_+nsd_,0) += prederxy_jump_normal_fac*pderxy_(isd,vi)*n_(isd);
-
-  }
-
-  // -q_neighbor (p_neighbor-p_parent)
-  for (int vi=0; vi<niel; ++vi)
-  {
-    for(int isd=0; isd<nsd_; isd++)
-      elevector_s(vi*numdofpernode_+nsd_,0) -= prederxy_jump_normal_fac*nderxy_(isd,vi)*n_(isd);
-
-  }
-
-
-
-  return;
-}
-
-
-
-
-template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType pdistype,
-          DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_EOS(
     LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
     LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
@@ -2339,224 +2025,6 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::div_EO
 }
 
 
-template <DRT::Element::DiscretizationType distype,
-          DRT::Element::DiscretizationType pdistype,
-          DRT::Element::DiscretizationType ndistype>
-void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::streamline_EOS(
-    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&       elematrix_mm,  ///< element matrix master-master block
-    LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&       elematrix_ms,  ///< element matrix master-slave block
-    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&       elematrix_sm,  ///< element matrix slave-master block
-    LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&       elematrix_ss,  ///< element matrix slave-slave block
-    LINALG::Matrix<numdofpernode_*piel, 1>&                         elevector_m,   ///< element vector master block
-    LINALG::Matrix<numdofpernode_*niel, 1>&                         elevector_s,   ///< element vector slave block
-    const double &                                                  timefacfac,    ///< (time factor ) x (integration factor)
-    double &                                                        tau_streamline,///< combined penalty parameter for streamline stabilization terms
-    LINALG::Matrix<nsd_,nsd_>&                                      vderxyaf_diff, ///< velocity derivatives (neighbor-parent) element
-    LINALG::Matrix<nsd_,1>&                                         conv_diff      ///< convective velocity (neighbor-parent) element
-)
-{
-  // newton flag, if convective stabilization shall be linearized
-  // TODO: add input parameter
-  bool newton = false;
-
-  double tau_timefacfac = tau_streamline * timefacfac;
-
-
-  // edge stabilization: velocity (Oseen-part, Linearization part I)
-  /*
-         //
-         //
-         //             /                                      \
-         //            |   i                   i                |
-         //  + tau_u * |  u * |[ grad Du ]| , u * |[ grad v ]|  |
-         //            |                                        |
-         //             \                                      / surface
-         //
-   */
-
-  for (int ijdim = 0; ijdim <nsd_; ++ijdim) // combined components of u and v
-  {
-    // parent column
-    for (int ui=0; ui<piel; ++ui)
-    {
-
-      // v_parent * u_parent
-      //parent row
-      for (int vi=0; vi<piel; ++vi)
-      {
-          elematrix_mm(vi*numdofpernode_+ijdim  ,ui*numdofpernode_+ijdim) += tau_timefacfac*p_conv_c(vi)*p_conv_c(ui);
-      }
-
-      // v_neighbor * u_parent
-      //parent row
-      for (int vi=0; vi<niel; ++vi)
-      {
-          elematrix_sm(vi*numdofpernode_+ijdim  ,ui*numdofpernode_+ijdim) -= tau_timefacfac*n_conv_c(vi)*p_conv_c(ui);
-      }
-    }
-
-    for (int ui=0; ui<niel; ++ui)
-    {
-      // v_parent * u_neighbor
-      //parent row
-      for (int vi=0; vi<piel; ++vi)
-      {
-          elematrix_ms(vi*numdofpernode_+ijdim  ,ui*numdofpernode_+ijdim) -= tau_timefacfac*p_conv_c(vi)*n_conv_c(ui);
-      }
-
-      // v_neighbor * u_neighbor
-      //parent row
-      for (int vi=0; vi<niel; ++vi)
-      {
-          elematrix_ss(vi*numdofpernode_+ijdim  ,ui*numdofpernode_+ijdim) += tau_timefacfac*n_conv_c(vi)*n_conv_c(ui);
-      }
-    }
-
-
-    // v_parent (u_neighbor-u_parent)
-    for (int vi=0; vi<piel; ++vi)
-    {
-        elevector_m(vi*numdofpernode_+ijdim,0) += tau_timefacfac * (p_conv_c(vi)* (conv_diff(ijdim)));
-    }
-
-    // v_neighbor (u_neighbor-u_parent)
-    for (int vi=0; vi<niel; ++vi)
-    {
-        elevector_s(vi*numdofpernode_+ijdim,0) -= tau_timefacfac * (n_conv_c(vi)* (conv_diff(ijdim)));
-    }
-  }
-
-
-
-  if(newton)
-  {
-
-    // edge stabilization: velocity ( Linearization part II)
-    /*
-       //
-       //
-       //             /                                      \
-       //            |                i      i                |
-       //  + tau_u * |  Du * |[ grad u ]| , u * |[ grad v ]|  |
-       //            |                                        |
-       //             \                                      / surface
-       //
-     */
-
-    // |[ grad u ]| = derxyaf_diff
-
-
-    for(int idim=0; idim<nsd_; ++idim) // dimensions of Du
-    {
-      for (int jdim = 0; jdim <nsd_; ++jdim) // combined components of u and v
-      {
-        // just parent column because of Du := Du_parent
-        for (int ui=0; ui<piel; ++ui)
-        {
-          // v_parent * u_parent
-          //parent row
-          for (int vi=0; vi<piel; ++vi)
-          {
-            elematrix_mm(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) -= tau_timefacfac*  p_conv_c(vi) * vderxyaf_diff(jdim,idim) * pfunct_(ui);
-          }
-
-          // v_neighbor * u_parent
-          //neighbor row
-          for (int vi=0; vi<niel; ++vi)
-          {
-            elematrix_sm(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) += tau_timefacfac*  n_conv_c(vi) * vderxyaf_diff(jdim,idim) * pfunct_(ui);
-          }
-        }
-
-      }
-    }
-
-
-
-
-
-    // edge stabilization: velocity ( Linearization part III)
-    /*
-        //
-        //
-        //             /                                       \
-        //            |    i           i                        |
-        //  + tau_u * |   u * |[ grad u ]| , Du * |[ grad v ]|  |
-        //            |                                         |
-        //             \                                       / surface
-        //
-     */
-
-    for(int idim=0; idim<nsd_; ++idim) // dimensions of Du
-    {
-      for (int jdim = 0; jdim <nsd_; ++jdim) // combined components of u and v
-      {
-        // just parent column because of Du := Du_parent
-        for (int ui=0; ui<piel; ++ui)
-        {
-          // v_parent * u_parent
-          //parent row
-          for (int vi=0; vi<piel; ++vi)
-          {
-            elematrix_mm(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) -= tau_timefacfac * conv_diff(jdim) * pderxy_(idim,vi) * pfunct_(ui);
-          }
-
-          // v_neighbor * u_parent
-          //neighbor row
-          for (int vi=0; vi<niel; ++vi)
-          {
-            elematrix_sm(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) += tau_timefacfac * conv_diff(jdim) * nderxy_(idim,vi) * pfunct_(ui);
-          }
-        }
-
-      }
-    }
-
-  }// end if newton
-
-
-
-
-//                  // edge stabilization: velocity ( Linearization of stabilization parameter)
-//                  /*
-//                           //
-//                           //
-//                   */
-//                  if(u_lin)
-//                  {
-//                    // just parent column because of Du := Du_parent
-//                    for (int ui=0; ui<piel; ++ui)
-//                    {
-//
-//                      for(int idim=0; idim<nsd_; ++idim) // dimensions of Du
-//                      {
-//                        // v_parent * u_parent
-//                        //parent row
-//                        for (int vi=0; vi<piel; ++vi)
-//                        {
-//                          for (int jdim = 0; jdim <nsd_; ++jdim) // combined components of u and v
-//                          {
-//                            elemat(vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) += tau_u_lin*fac*timefac*  conv_diff(jdim) * pderxy_(jdim,vi) * velintaf_(idim) * pfunct_(ui);
-//                          }
-//                        }
-//
-//                        // v_neighbor * u_parent
-//                        //neighbor row
-//                        for (int vi=0; vi<niel; ++vi)
-//                        {
-//                          for (int jdim = 0; jdim <nsd_; ++jdim) // combined components of u and v
-//                          {
-//                            elemat(noffset + vi*numdofpernode_+jdim  ,ui*numdofpernode_+idim) -= tau_u_lin*fac*timefac*  conv_diff(jdim) * nderxy_(jdim,vi) * velintaf_(idim) * pfunct_(ui);
-//                          }
-//                        }
-//                      }
-//
-//                    }
-//                  }
-
-  return;
-}
-
 
 //------------------------------------------------------------------------------------------------
 // compute h_k w.r.t master and slave element                                         schott 04/12
@@ -2565,12 +2033,12 @@ template <DRT::Element::DiscretizationType distype,
           DRT::Element::DiscretizationType pdistype,
           DRT::Element::DiscretizationType ndistype>
 void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::compute_patch_hk(
-            double &   patch_hk,
-            Fluid*     master,
-            Fluid*     slave,
-            DRT::ELEMENTS::FluidIntFace*       intface,
-            INPAR::FLUID::EOS_ElementLength    eos_element_length)
-{
+    double &   patch_hk,
+    Fluid*     master,
+    Fluid*     slave,
+    DRT::ELEMENTS::FluidIntFace*       intface,
+    const INPAR::FLUID::EOS_ElementLength&   eos_element_length)
+    {
 
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: element length" );
 
@@ -2602,275 +2070,275 @@ void DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::comput
     // Max distance to oppositve surface
     if(eos_element_length == INPAR::FLUID::EOS_he_max_dist_to_opp_surf)
     {
-    	int masterlocalid = intface->SurfaceMasterNumber();
-    	int slavelocalid = intface->SurfaceSlaveNumber();
+      int masterlocalid = intface->SurfaceMasterNumber();
+      int slavelocalid = intface->SurfaceSlaveNumber();
 
-    	unsigned int nnode_psurf_m = m_connectivity[masterlocalid].size();
+      unsigned int nnode_psurf_m = m_connectivity[masterlocalid].size();
 
-    	// find the neighboring surfaces
-    	int p_surf_neighbor_m = 0;
-    	int p_surf_neighbor_s = 0;
-    	// find the connecting lines
-    	std::set<int> p_lines_m;
-    	std::set<int> p_lines_s;
-    	switch (nnode_psurf_m)
-    	{
-    	case 3: // tri3 surface
-    		FindOppositeSurface2D<3>(masterlocalid, p_surf_neighbor_m);
-    		FindOppositeSurface2D<3>(slavelocalid, p_surf_neighbor_s);
-    		FindConnectingLines2D<3>(connectivity_line_surf, masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
-    		break;
-    	case 4: // quad4 surface
-    		FindOppositeSurface2D<4>(masterlocalid, p_surf_neighbor_m);
-    		FindOppositeSurface2D<4>(slavelocalid, p_surf_neighbor_s);
-    		FindConnectingLines2D<4>(connectivity_line_surf, masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
-    		break;
-    	case 8: // quad8 surface
-    		FindOppositeSurface2D<8>(masterlocalid, p_surf_neighbor_m);
-    		FindOppositeSurface2D<8>(slavelocalid, p_surf_neighbor_s);
-    		FindConnectingLines2D<8>(connectivity_line_surf, masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
-    		break;
-    	default:
-    		dserror("unknown number of nodes for surface of parent element"); break;
-    	};
-    
-    	// map of the connecting lines to nodes
-    	std::map< int,std::vector<int> > p_lines_nodes_m;
-    	std::map< int,std::vector<int> > p_lines_nodes_s;
+      // find the neighboring surfaces
+      int p_surf_neighbor_m = 0;
+      int p_surf_neighbor_s = 0;
+      // find the connecting lines
+      std::set<int> p_lines_m;
+      std::set<int> p_lines_s;
+      switch (nnode_psurf_m)
+      {
+      case 3: // tri3 surface
+        FindOppositeSurface2D<3>(masterlocalid, p_surf_neighbor_m);
+        FindOppositeSurface2D<3>(slavelocalid, p_surf_neighbor_s);
+        FindConnectingLines2D<3>(connectivity_line_surf, masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
+        break;
+      case 4: // quad4 surface
+        FindOppositeSurface2D<4>(masterlocalid, p_surf_neighbor_m);
+        FindOppositeSurface2D<4>(slavelocalid, p_surf_neighbor_s);
+        FindConnectingLines2D<4>(connectivity_line_surf, masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
+        break;
+      case 8: // quad8 surface
+        FindOppositeSurface2D<8>(masterlocalid, p_surf_neighbor_m);
+        FindOppositeSurface2D<8>(slavelocalid, p_surf_neighbor_s);
+        FindConnectingLines2D<8>(connectivity_line_surf, masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
+        break;
+      default:
+        dserror("unknown number of nodes for surface of parent element"); break;
+      };
 
-    	for(std::set<int>::iterator iter = p_lines_m.begin(); iter!= p_lines_m.end(); iter++)
-    		p_lines_nodes_m[*iter] = connectivity_line_nodes.at(*iter);
+      // map of the connecting lines to nodes
+      std::map< int,std::vector<int> > p_lines_nodes_m;
+      std::map< int,std::vector<int> > p_lines_nodes_s;
 
-    	for(std::set<int>::iterator iter = p_lines_s.begin(); iter!= p_lines_s.end(); iter++)
-    		p_lines_nodes_s[*iter] = connectivity_line_nodes.at(*iter);
+      for(std::set<int>::iterator iter = p_lines_m.begin(); iter!= p_lines_m.end(); iter++)
+        p_lines_nodes_m[*iter] = connectivity_line_nodes.at(*iter);
 
-    	// find the distance for master element
-    	double h_e = 0.0;
-    	switch (nnode_psurf_m)
-    	{
-    	case 3: //tri3 surface
-    		distance2D<3>(true, p_lines_nodes_m, h_e);
-    		break;
-    	case 4: // quad4 surface
-    		distance2D<4>(true, p_lines_nodes_m, h_e);
-    		break;
-    	case 8: // quad8 surface
-    		distance2D<4>(true, p_lines_nodes_m, h_e);
-    		break;
-    	default:
-    		dserror("unknown number of nodes for surface of parent element"); break;
-    	};
-    	patch_hk = std::max(patch_hk, h_e);
+      for(std::set<int>::iterator iter = p_lines_s.begin(); iter!= p_lines_s.end(); iter++)
+        p_lines_nodes_s[*iter] = connectivity_line_nodes.at(*iter);
 
-    	h_e = 0.0;
+      // find the distance for master element
+      double h_e = 0.0;
+      switch (nnode_psurf_m)
+      {
+      case 3: //tri3 surface
+        distance2D<3>(true, p_lines_nodes_m, h_e);
+        break;
+      case 4: // quad4 surface
+        distance2D<4>(true, p_lines_nodes_m, h_e);
+        break;
+      case 8: // quad8 surface
+        distance2D<4>(true, p_lines_nodes_m, h_e);
+        break;
+      default:
+        dserror("unknown number of nodes for surface of parent element"); break;
+      };
+      patch_hk = std::max(patch_hk, h_e);
 
-    	// find the distance for slave element
-    	unsigned int nnode_psurf_s = s_connectivity[slavelocalid].size();
-    	switch (nnode_psurf_s)
-    	{
-    	case 3: //tri3 surface
-    		distance2D<3>(false, p_lines_nodes_s, h_e);
-    		break;
-    	case 4: // quad4 surface
-    		distance2D<4>(false, p_lines_nodes_s, h_e);
-    		break;
-    	case 8: // quad8 surface (coming from hex20 element)
-    		distance2D<4>(false, p_lines_nodes_s, h_e);
-    		break;
-    	default:
-    		dserror("unknown number of nodes for surface of parent element"); break;
-    	};
-    	// take the longest distance to the other surface
-    	patch_hk = std::max(patch_hk, h_e);
+      h_e = 0.0;
+
+      // find the distance for slave element
+      unsigned int nnode_psurf_s = s_connectivity[slavelocalid].size();
+      switch (nnode_psurf_s)
+      {
+      case 3: //tri3 surface
+        distance2D<3>(false, p_lines_nodes_s, h_e);
+        break;
+      case 4: // quad4 surface
+        distance2D<4>(false, p_lines_nodes_s, h_e);
+        break;
+      case 8: // quad8 surface (coming from hex20 element)
+        distance2D<4>(false, p_lines_nodes_s, h_e);
+        break;
+      default:
+        dserror("unknown number of nodes for surface of parent element"); break;
+      };
+      // take the longest distance to the other surface
+      patch_hk = std::max(patch_hk, h_e);
     }
     // biggest surface
     else if(eos_element_length == INPAR::FLUID::EOS_he_surf_with_max_diameter)
     {
-    	for(int p_surf=0; p_surf<master->NumSurface(); p_surf++)
-    	{
-    		unsigned int nnode_psurf = m_connectivity[p_surf].size(); // this number changes for pyramids or wedges
+      for(int p_surf=0; p_surf<master->NumSurface(); p_surf++)
+      {
+        unsigned int nnode_psurf = m_connectivity[p_surf].size(); // this number changes for pyramids or wedges
 
-    		double h_e = 0.0;
+        double h_e = 0.0;
 
-    		switch (nnode_psurf)
-    		{
-    		case 3: //tri3 surface
-    			diameter2D<3>(true, m_connectivity[p_surf], h_e);
-    			break;
-    		case 4: // quad4 surface
-    			diameter2D<4>(true, m_connectivity[p_surf], h_e);
-    			break;
-    		case 8: // quad8 surface
-    			diameter2D<8>(true, m_connectivity[p_surf], h_e);
-    			break;
-    		default:
-    			dserror("unknown number of nodes for surface of parent element"); break;
-    		};
+        switch (nnode_psurf)
+        {
+        case 3: //tri3 surface
+          diameter2D<3>(true, m_connectivity[p_surf], h_e);
+          break;
+        case 4: // quad4 surface
+          diameter2D<4>(true, m_connectivity[p_surf], h_e);
+          break;
+        case 8: // quad8 surface
+          diameter2D<8>(true, m_connectivity[p_surf], h_e);
+          break;
+        default:
+          dserror("unknown number of nodes for surface of parent element"); break;
+        };
 
-    		// take the longest surface diameter
-    		patch_hk = std::max(patch_hk, h_e);
+        // take the longest surface diameter
+        patch_hk = std::max(patch_hk, h_e);
 
-    	}
+      }
 
-    	s_connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(ndistype);
+      s_connectivity = DRT::UTILS::getEleNodeNumberingSurfaces(ndistype);
 
-    	for(int p_surf=0; p_surf<slave->NumSurface(); p_surf++)
-    	{
-    		unsigned int nnode_psurf = s_connectivity[p_surf].size(); // this number changes for pyramids or wedges
+      for(int p_surf=0; p_surf<slave->NumSurface(); p_surf++)
+      {
+        unsigned int nnode_psurf = s_connectivity[p_surf].size(); // this number changes for pyramids or wedges
 
-    		double h_e = 0.0;
+        double h_e = 0.0;
 
-    		switch (nnode_psurf)
-    		{
-    		case 3: // tri3 surface
-    			diameter2D<3>(false, s_connectivity[p_surf], h_e);
-    			break;
-    		case 4: // quad4 surface
-    			diameter2D<4>(false, s_connectivity[p_surf], h_e);
-    			break;
-    		case 8: // quad8 surface
-    			diameter2D<8>(false, s_connectivity[p_surf], h_e);
-    			break;
-    		default:
-    			dserror("unknown number of nodes for surface of parent element"); break;
-    		};
+        switch (nnode_psurf)
+        {
+        case 3: // tri3 surface
+          diameter2D<3>(false, s_connectivity[p_surf], h_e);
+          break;
+        case 4: // quad4 surface
+          diameter2D<4>(false, s_connectivity[p_surf], h_e);
+          break;
+        case 8: // quad8 surface
+          diameter2D<8>(false, s_connectivity[p_surf], h_e);
+          break;
+        default:
+          dserror("unknown number of nodes for surface of parent element"); break;
+        };
 
-    		// take the longest surface diameter
-    		patch_hk = std::max(patch_hk, h_e);
-    	}
+        // take the longest surface diameter
+        patch_hk = std::max(patch_hk, h_e);
+      }
     }
 
   }
   else if(nsd_==2)
   {
-	  m_connectivity = DRT::UTILS::getEleNodeNumberingLines(pdistype);
-	  connectivity_line_nodes = DRT::UTILS::getEleNodeNumberingLines(pdistype);
+    m_connectivity = DRT::UTILS::getEleNodeNumberingLines(pdistype);
+    connectivity_line_nodes = DRT::UTILS::getEleNodeNumberingLines(pdistype);
 
-	  if(eos_element_length == INPAR::FLUID::EOS_he_max_dist_to_opp_surf)
-	  {
+    if(eos_element_length == INPAR::FLUID::EOS_he_max_dist_to_opp_surf)
+    {
 
-		  int masterlocalid = intface->SurfaceMasterNumber();
-		  int slavelocalid = intface->SurfaceSlaveNumber();
+      int masterlocalid = intface->SurfaceMasterNumber();
+      int slavelocalid = intface->SurfaceSlaveNumber();
 
-		  // find the neighboring surfaces
-		  int p_surf_neighbor_m = 0;
-		  int p_surf_neighbor_s = 0;
-		  // find the connecting lines
-		  std::set<int> p_lines_m;
-		  std::set<int> p_lines_s;
+      // find the neighboring surfaces
+      int p_surf_neighbor_m = 0;
+      int p_surf_neighbor_s = 0;
+      // find the connecting lines
+      std::set<int> p_lines_m;
+      std::set<int> p_lines_s;
 
-		  switch(pdistype)
-		  {
-		  case DRT::Element::quad4:
-		  {
-			  FindOppositeSurface1D<4>(masterlocalid, p_surf_neighbor_m);
-			  FindOppositeSurface1D<4>(slavelocalid, p_surf_neighbor_s);
-			  FindConnectingLines1D<4>(masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
-			  break;
-		  }
-		  case DRT::Element::tri3:
-		  {
-			  FindOppositeSurface1D<3>(masterlocalid, p_surf_neighbor_m);
-			  FindOppositeSurface1D<3>(slavelocalid, p_surf_neighbor_s);
-			  FindConnectingLines1D<3>(masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
-			  break;
-		  }
-		  default:
-			  dserror("discretization type unknown!");
-		  }
+      switch(pdistype)
+      {
+      case DRT::Element::quad4:
+      {
+        FindOppositeSurface1D<4>(masterlocalid, p_surf_neighbor_m);
+        FindOppositeSurface1D<4>(slavelocalid, p_surf_neighbor_s);
+        FindConnectingLines1D<4>(masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
+        break;
+      }
+      case DRT::Element::tri3:
+      {
+        FindOppositeSurface1D<3>(masterlocalid, p_surf_neighbor_m);
+        FindOppositeSurface1D<3>(slavelocalid, p_surf_neighbor_s);
+        FindConnectingLines1D<3>(masterlocalid, slavelocalid, p_lines_m, p_lines_s,p_surf_neighbor_m, p_surf_neighbor_s);
+        break;
+      }
+      default:
+        dserror("discretization type unknown!"); break;
+      }
 
-		  // map of the connecting lines to nodes
-		  std::map< int,std::vector<int> > p_lines_nodes_m;
-		  std::map< int,std::vector<int> > p_lines_nodes_s;
+      // map of the connecting lines to nodes
+      std::map< int,std::vector<int> > p_lines_nodes_m;
+      std::map< int,std::vector<int> > p_lines_nodes_s;
 
-		  for(std::set<int>::iterator iter = p_lines_m.begin(); iter!= p_lines_m.end(); iter++)
-			  p_lines_nodes_m[*iter] = connectivity_line_nodes.at(*iter);
+      for(std::set<int>::iterator iter = p_lines_m.begin(); iter!= p_lines_m.end(); iter++)
+        p_lines_nodes_m[*iter] = connectivity_line_nodes.at(*iter);
 
-		  for(std::set<int>::iterator iter = p_lines_s.begin(); iter!= p_lines_s.end(); iter++)
-			  p_lines_nodes_s[*iter] = connectivity_line_nodes.at(*iter);
+      for(std::set<int>::iterator iter = p_lines_s.begin(); iter!= p_lines_s.end(); iter++)
+        p_lines_nodes_s[*iter] = connectivity_line_nodes.at(*iter);
 
-		  double h_e = 0.0;
+      double h_e = 0.0;
 
-		  switch (pdistype)
-		  {
-		  case DRT::Element::quad4:
-			  distance1D<3>(true, p_lines_nodes_m, h_e);
-			  break;
-		  case DRT::Element::tri3:
-			  distance1D<4>(true, p_lines_nodes_m, h_e);
-			  break;
-		  default:
-			  dserror("unknown number of nodes for surface of parent element"); break;
-		  }
-		  patch_hk = std::max(patch_hk, h_e);
+      switch (pdistype)
+      {
+      case DRT::Element::quad4:
+        distance1D<3>(true, p_lines_nodes_m, h_e);
+        break;
+      case DRT::Element::tri3:
+        distance1D<4>(true, p_lines_nodes_m, h_e);
+        break;
+      default:
+        dserror("unknown number of nodes for surface of parent element"); break;
+      }
+      patch_hk = std::max(patch_hk, h_e);
 
-		  h_e = 0.0;
+      h_e = 0.0;
 
-		  switch (pdistype)
-		  {
-		  case DRT::Element::quad4:
-			  distance1D<3>(false, p_lines_nodes_s, h_e);
-			  break;
-		  case DRT::Element::tri3:
-			  distance1D<4>(false, p_lines_nodes_s, h_e);
-			  break;
-		  default:
-			  dserror("unknown number of nodes for surface of parent element"); break;
-		  }
-		  patch_hk = std::max(patch_hk, h_e);
-	  }
-	  else if(eos_element_length == INPAR::FLUID::EOS_he_surf_with_max_diameter)
-	  {
+      switch (pdistype)
+      {
+      case DRT::Element::quad4:
+        distance1D<3>(false, p_lines_nodes_s, h_e);
+        break;
+      case DRT::Element::tri3:
+        distance1D<4>(false, p_lines_nodes_s, h_e);
+        break;
+      default:
+        dserror("unknown number of nodes for surface of parent element"); break;
+      }
+      patch_hk = std::max(patch_hk, h_e);
+    }
+    else if(eos_element_length == INPAR::FLUID::EOS_he_surf_with_max_diameter)
+    {
 
-		  for(int p_line=0; p_line<master->NumLine(); p_line++)
-		  {
-			  unsigned int nnode_pline = m_connectivity[p_line].size(); // this number changes for pyramids or wedges
+      for(int p_line=0; p_line<master->NumLine(); p_line++)
+      {
+        unsigned int nnode_pline = m_connectivity[p_line].size(); // this number changes for pyramids or wedges
 
-			  double h_e = 0.0;
+        double h_e = 0.0;
 
-			  switch (nnode_pline)
-			  {
-			  case 2: //line2 face
-				  diameter1D<2>(true, m_connectivity[p_line], h_e);
-				  break;
-			  case 3: //line3 face
-				  diameter1D<3>(true, m_connectivity[p_line], h_e);
-				  break;
-			  default:
-				  dserror("unknown number of nodes for line of parent element"); break;
-			  };
+        switch (nnode_pline)
+        {
+        case 2: //line2 face
+          diameter1D<2>(true, m_connectivity[p_line], h_e);
+          break;
+        case 3: //line3 face
+          diameter1D<3>(true, m_connectivity[p_line], h_e);
+          break;
+        default:
+          dserror("unknown number of nodes for line of parent element"); break;
+        };
 
-			  // take the longest line diameter
-			  patch_hk = std::max(patch_hk, h_e);
-		   }
-		  s_connectivity = DRT::UTILS::getEleNodeNumberingLines(ndistype);
+        // take the longest line diameter
+        patch_hk = std::max(patch_hk, h_e);
+      }
+      s_connectivity = DRT::UTILS::getEleNodeNumberingLines(ndistype);
 
-		  for(int p_line=0; p_line<slave->NumLine(); p_line++)
-		  {
-			  unsigned int nnode_pline = s_connectivity[p_line].size(); // this number changes for pyramids or wedges
+      for(int p_line=0; p_line<slave->NumLine(); p_line++)
+      {
+        unsigned int nnode_pline = s_connectivity[p_line].size(); // this number changes for pyramids or wedges
 
-			  double h_e = 0.0;
+        double h_e = 0.0;
 
-			  switch (nnode_pline)
-			  {
-			  case 2: // line2 face
-				  diameter1D<2>(false, s_connectivity[p_line], h_e);
-				  break;
-			  case 3: // line3 face
-				  diameter1D<3>(false, s_connectivity[p_line], h_e);
-				  break;
+        switch (nnode_pline)
+        {
+        case 2: // line2 face
+          diameter1D<2>(false, s_connectivity[p_line], h_e);
+          break;
+        case 3: // line3 face
+          diameter1D<3>(false, s_connectivity[p_line], h_e);
+          break;
 
-			  default:
-				  dserror("unknown number of nodes for line of parent element"); break;
-			  };
+        default:
+          dserror("unknown number of nodes for line of parent element"); break;
+        };
 
-			  // take the longest line diameter
-			  patch_hk = std::max(patch_hk, h_e);
-		  }
-	  }
+        // take the longest line diameter
+        patch_hk = std::max(patch_hk, h_e);
+      }
+    }
   }
 
-}
+    }
 
 //-----------------------------------------------------------------
 //                          constructor
@@ -2889,13 +2357,11 @@ DRT::ELEMENTS::FluidEdgeBasedStab::FluidEdgeBasedStab( double patch_hk )
 // computation of edge-oriented/ghost-penalty stabilization parameter                 schott 12/02
 //------------------------------------------------------------------------------------------------
 void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
+  const INPAR::FLUID::EOS_TauType tautype,
   double&       tau_grad,
   double&       tau_u,
   double&       tau_div,
   double&       tau_p,
-  double&       tau_u_lin,
-  double&       tau_div_lin,
-  double&       tau_p_lin,
   double&       kinvisc, // kinematic viscosity (nu = mu/rho ~ m^2/2)
   double&       density,
   double&       max_vel_L2_norm,
@@ -2910,24 +2376,13 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
   double gamma_div = 0.0; //scaling factor for divergence stabilization
   double gamma_p   = 0.0; //scaling factor for pressure stabilization
 
-
-  bool tau_lin = false; // boolian for linearization of tau parameter
-
-
   //--------------------------------------------------------------------------------------------------------------
   //                       edge-oriented stabilization (EOS), continuous interior penalty (CIP)
   //--------------------------------------------------------------------------------------------------------------
 
-  //TODO: get the tau-definition via input parameters
-//  INPAR::FLUID::TauType_EOS_CIP tautype = INPAR::FLUID::tau_EOS_franca_barrenechea_valentin_wall;
-//  INPAR::FLUID::TauType_EOS_CIP tautype = INPAR::FLUID::tau_EOS_braack_burman_2007;
-//  INPAR::FLUID::TauType_EOS_CIP tautype = INPAR::FLUID::tau_EOS_burman_fernandez_hansbo_2006;
-  INPAR::FLUID::TauType_EOS_CIP tautype = INPAR::FLUID::tau_EOS_burman_fernandez;
-
-
   switch(tautype)
   {
-  case INPAR::FLUID::tau_EOS_burman_fernandez_hansbo_2006:
+  case INPAR::FLUID::EOS_tau_burman_fernandez_hansbo_2006:
   {
     // E.Burman, M.A.Fernandez and P.Hansbo 2006
     // "Edge stabilization for the incompressible Navier-Stokes equations: a continuous interior penalty finite element method"
@@ -2955,24 +2410,20 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     if(Re_K < 1.0)
     {
       tau_u   = gamma_u * p_hk_*p_hk_*p_hk_ / kinvisc * density;
-      tau_u_lin = 0.0;
     }
     else
     {
       tau_u   = gamma_u * p_hk_*p_hk_ / max_vel_L2_norm * density;
-      if(tau_lin) tau_u_lin = gamma_u * p_hk_*p_hk_ * density;
     }
 
     // divergence:
     if(max_vel_L2_norm > 1.0e-14)
     {
       tau_div = gamma_div  * p_hk_* p_hk_ * max_vel_L2_norm * density;
-      if(tau_lin) tau_div_lin = gamma_div  * p_hk_* p_hk_ / max_vel_L2_norm * density;
     }
     else
     {
       tau_div = 0.0;
-      tau_div_lin = 0.0;
     }
 
     // pressure stabilization
@@ -2980,16 +2431,14 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
     if(Re_K < 1.0)
     {
       tau_p   = gamma_p    * p_hk_* p_hk_* p_hk_/ (kinvisc * density);
-      if(tau_lin) tau_p_lin = 0.0;
     }
     else
     {
       tau_p   = gamma_p    *        p_hk_* p_hk_/ (max_vel_L2_norm * density);
-      if(tau_lin) tau_p_lin = gamma_p    *        p_hk_* p_hk_/ (max_vel_L2_norm*max_vel_L2_norm*max_vel_L2_norm * density);
     }
   }
   break;
-  case INPAR::FLUID::tau_EOS_burman_fernandez:
+  case INPAR::FLUID::EOS_tau_burman_fernandez:
   {
     // E.Burman, M.A.Fernandez 2009
     // "Finite element methods with symmetric stabilization for the transient convection-diffusion-reaction equation"
@@ -3083,12 +2532,12 @@ void DRT::ELEMENTS::FluidEdgeBasedStab::ComputeStabilizationParams(
 
   }
   break;
-  case INPAR::FLUID::tau_EOS_braack_burman_2007:
+  case INPAR::FLUID::EOS_tau_braack_burman_2007:
   {
     dserror("Braack_Burman_2007 tau-def not implemented yet");
   }
   break;
-  case INPAR::FLUID::tau_EOS_franca_barrenechea_valentin_wall:
+  case INPAR::FLUID::EOS_tau_franca_barrenechea_valentin_wall:
   {
     // stationary definition of stabilization parameters
 

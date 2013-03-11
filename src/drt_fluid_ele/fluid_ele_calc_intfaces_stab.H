@@ -76,6 +76,7 @@ namespace DRT
       */
       virtual int EvaluateEdgeBasedStabilization(
           DRT::ELEMENTS::FluidIntFace*       intface,                   ///< internal face element
+          DRT::ELEMENTS::FluidEleParameter&  fldpara_,
           Teuchos::ParameterList&            params,                    ///< parameter list
           DRT::Discretization&               discretization,            ///< discretization
           std::vector<int>&                  patchlm,                   ///< patch local map
@@ -178,6 +179,7 @@ namespace DRT
       */
       virtual int EvaluateEdgeBasedStabilization(
           DRT::ELEMENTS::FluidIntFace*       intface,                   ///< internal face element
+          DRT::ELEMENTS::FluidEleParameter&  fldpara,                   ///< fluid parameter
           Teuchos::ParameterList&            params,                    ///< parameter list
           DRT::Discretization&               discretization,            ///< discretization
           std::vector<int>&                  patchlm,                   ///< patch local map
@@ -249,21 +251,6 @@ namespace DRT
           bool                                     use2ndderiv = false    ///< flag to use 2nd order derivatives
       );
 
-      //! Provide ghost penalty assembly for xfluid case
-      void GhostPenalty(
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&     elematrix_mm,              ///< element matrix master-master block
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&     elematrix_ms,              ///< element matrix master-slave block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&     elematrix_sm,              ///< element matrix slave-master block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&     elematrix_ss,              ///< element matrix slave-slave block
-          LINALG::Matrix<numdofpernode_*piel, 1>&                       elevector_m,               ///< element vector master block
-          LINALG::Matrix<numdofpernode_*niel, 1>&                       elevector_s,               ///< element vector slave block
-          const double &                                                timefacfac,                ///< timefac x integration factor
-          double &                                                      tau_grad,                  ///< stabilization parameter
-          bool &                                                        ghost_penalty,             ///< ghost penalty stabilization?
-          bool &                                                        ghost_penalty_reconstruct, ///< ghost penalty reconstruction?
-          bool &                                                        use2ndderiv                ///< use 2nd order derivatives
-      );
-
       //! Provide pressure (EOS) stabilization assembly for fluid
       void pressureEOS(
           LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
@@ -289,20 +276,6 @@ namespace DRT
           LINALG::Matrix<nsd_,nsd_>&                                     vderxyaf_diff        ///< difference of velocity gradients
       );
 
-
-      //! Provide pressure (EOS) stabilization assembly for fluid (gradients in normal direction)
-      void pressureEOSnormal(
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&      elematrix_ms,  ///< element matrix master-slave block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&      elematrix_sm,  ///< element matrix slave-master block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&      elematrix_ss,  ///< element matrix slave-slave block
-          LINALG::Matrix<numdofpernode_*piel, 1>&                        elevector_m,   ///< element vector master block
-          LINALG::Matrix<numdofpernode_*niel, 1>&                        elevector_s,   ///< element vector slave block
-          const double &                                                 timefacfacpre, ///< (time factor pressure) x (integration factor)
-          double &                                                       tau_p          ///< penalty parameter for pressure stabilization terms
-      );
-
-
       //! Provide divergence (EOS) stabilization assembly for fluid
       void div_EOS(
           LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&      elematrix_mm,  ///< element matrix master-master block
@@ -317,27 +290,12 @@ namespace DRT
       );
 
 
-      //! Provide streamline (EOS) stabilization assembly for fluid
-      void streamline_EOS(
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*piel>&       elematrix_mm,  ///< element matrix master-master block
-          LINALG::Matrix<numdofpernode_*piel, numdofpernode_*niel>&       elematrix_ms,  ///< element matrix master-slave block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*piel>&       elematrix_sm,  ///< element matrix slave-master block
-          LINALG::Matrix<numdofpernode_*niel, numdofpernode_*niel>&       elematrix_ss,  ///< element matrix slave-slave block
-          LINALG::Matrix<numdofpernode_*piel, 1>&                         elevector_m,   ///< element vector master block
-          LINALG::Matrix<numdofpernode_*niel, 1>&                         elevector_s,   ///< element vector slave block
-          const double &                                                  timefacfac,    ///< (time factor ) x (integration factor)
-          double &                                                        tau_streamline,///< combined penalty parameter for streamline stabilization terms
-          LINALG::Matrix<nsd_,nsd_>&                                      vderxyaf_diff, ///< velocity derivatives (neighbor-parent) element
-          LINALG::Matrix<nsd_,1>&                                         conv_diff      ///< convective velocity (neighbor-parent) element
-      );
-
-
       //! compute h_k w.r.t master and slave element
       void compute_patch_hk ( double &   patch_hk,   ///< patch h_k
                               Fluid*    master,     ///< master fluid element
                               Fluid*    slave,       ///< slave fluid element
                               DRT::ELEMENTS::FluidIntFace*       intface,
-                              INPAR::FLUID::EOS_ElementLength    eos_element_length
+                              const INPAR::FLUID::EOS_ElementLength&    eos_element_length
       );
 
       //! compute surface diameter w.r.t to parent master element or parent slave element (flag master=true/false)
@@ -876,8 +834,8 @@ namespace DRT
            }
        }
 
-      //! pointer to parameter list
-      Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara_;
+//      //! pointer to parameter list
+//      Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara_;
 
       // nodal arrays
       // ------------
@@ -1029,13 +987,11 @@ namespace DRT
        \brief computation of the EOS-stabilization parameter and ghost penalty parameter
       */
       void ComputeStabilizationParams(
+          const INPAR::FLUID::EOS_TauType tautype,
           double&       tau_grad,
           double&       tau_u,
           double&       tau_div,
           double&       tau_p,
-          double&       tau_u_lin,
-          double&       tau_div_lin,
-          double&       tau_p_lin,
           double&       kinvisc,
           double&       density,
           double&       max_pevelnp,

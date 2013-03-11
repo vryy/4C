@@ -226,6 +226,8 @@ void DRT::Problem::ReadParameter(DRT::INPUT::DatFileReader& reader)
   reader.ReadGidSection("--SSI CONTROL", *list);
   reader.ReadGidSection("--FLUID DYNAMIC", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/STABILIZATION", *list);
+  reader.ReadGidSection("--FLUID DYNAMIC/EDGE-BASED-STABILIZATION", *list);
+  reader.ReadGidSection("--FLUID DYNAMIC/RESIDUAL-BASED-STABILIZATION", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/TURBULENCE MODEL", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/SUBGRID VISCOSITY", *list);
   reader.ReadGidSection("--FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES", *list);

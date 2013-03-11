@@ -84,8 +84,10 @@ public:
   bool ReactionTopopt(){return reaction_topopt_;};
   //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
   INPAR::FLUID::PhysicalType PhysicalType(){return physicaltype_;};
+  //! get the stabtype
+  INPAR::FLUID::StabType StabType(){return stabtype_;};
 
-  /// parameter for stabilization
+  /// parameter for residual stabilization
   //! Flag to (de)activate time-dependent subgrid stabilization
   INPAR::FLUID::SubscalesTD Tds(){return tds_;};
   //! Flag to (de)activate time-dependent term in large-scale momentum equation
@@ -108,12 +110,30 @@ public:
   INPAR::FLUID::TauType WhichTau(){return whichtau_;};
   //! flag to (de)activate fine-scale subgrid viscosity
   INPAR::FLUID::FineSubgridVisc Fssgv(){return fssgv_;};
+  //! (sign) factor for viscous and reactive stabilization terms
+  double ViscReaStabFac(){return viscreastabfac_;};
+
+
+  /// parameter for edge-based stabilizations
+  //! Flag to (de)activate pressure stabilization
+  INPAR::FLUID::EOS_Pres EOS_Pres(){return EOS_pres_;};
+  //! Flag to (de)activate convective streamline stabilization
+  INPAR::FLUID::EOS_Conv_Stream EOS_Conv_Stream(){return EOS_conv_stream_;};
+  //! Flag to (de)activate convective crosswind stabilization
+  INPAR::FLUID::EOS_Conv_Cross EOS_Conv_Cross(){return EOS_conv_cross_;};
+  //! Flag to (de)activate divergence stabilization
+  INPAR::FLUID::EOS_Div EOS_Div(){return EOS_div_;};
+  //! Flag to define element length
+  INPAR::FLUID::EOS_ElementLength EOS_element_length(){return EOS_element_lenght_;};
+  //! Flag to define tau for edge-based stabilization
+  INPAR::FLUID::EOS_TauType EOS_WhichTau(){return EOS_whichtau_;};
+
+
   //! flag for material evaluation at Gaussian integration points
   bool MatGp(){return mat_gp_;};
   //! flag for stabilization parameter evaluation at Gaussian integration points
   bool TauGp(){return tau_gp_;};
-  //! (sign) factor for viscous and reactive stabilization terms
-  double ViscReaStabFac(){return viscreastabfac_;};
+
 
   /// parameters for the time integration
   //! time algorithm
@@ -216,7 +236,10 @@ private:
   //! Flag for physical type of the fluid flow (incompressible, loma, varying_density, Boussinesq)
   INPAR::FLUID::PhysicalType physicaltype_;
 
-  /// parameter for stabilization
+  /// parameter to switch the stabilization
+  INPAR::FLUID::StabType stabtype_;
+
+  /// parameter for residual based stabilizations
   //! Flag to (de)activate time-dependent subgrid stabilization
   INPAR::FLUID::SubscalesTD tds_;
   //! Flag to (de)activate time-dependent term in large-scale momentum equation
@@ -239,12 +262,29 @@ private:
   INPAR::FLUID::TauType whichtau_;
   //! flag to (de)activate fine-scale subgrid viscosity
   INPAR::FLUID::FineSubgridVisc fssgv_;
+  //! (sign) factor for viscous and reactive stabilization terms
+  double viscreastabfac_;
+
+  /// parameter for edge-based (EOS,CIP) stabilizations
+  //! Flag to (de)activate pressure stabilization
+  INPAR::FLUID::EOS_Pres EOS_pres_;
+  //! Flag to (de)activate convective streamline stabilization
+  INPAR::FLUID::EOS_Conv_Stream EOS_conv_stream_;
+  //! Flag to (de)activate convective crosswind stabilization
+  INPAR::FLUID::EOS_Conv_Cross EOS_conv_cross_;
+  //! Flag to (de)activate divergence stabilization
+  INPAR::FLUID::EOS_Div EOS_div_;
+  //! Flag to define tau
+  INPAR::FLUID::EOS_TauType EOS_whichtau_;
+  //! element length definition for edge-base stabilization
+  INPAR::FLUID::EOS_ElementLength EOS_element_lenght_;
+
+
+  /// parameter for evaluation of material and stabilization parameter
   //! flag for material evaluation at Gaussian integration points
   bool mat_gp_;
   //! flag for stabilization parameter evaluation at Gaussian integration points
   bool tau_gp_;
-  //! (sign) factor for viscous and reactive stabilization terms
-  double viscreastabfac_;
 
   /// parameters for the time integration
   //! time algorithm

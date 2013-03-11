@@ -152,8 +152,15 @@ public:
       std::vector<Epetra_SerialDenseVector>&  elevec_blocks         ///< element vector blocks
   );
 
+  //! decide which terms have to be assembled and decide the assembly pattern, return if no assembly required
+  bool PrepareAssemble(
+      Teuchos::ParameterList &   stabparams,
+      Teuchos::ParameterList &   faceparams);
+
 private:
 
+  //! pointer to parameter list
+  Teuchos::RCP<DRT::ELEMENTS::FluidEleParameter> fldpara_;
 
   };  // end class FluidIntFaceImpl
 

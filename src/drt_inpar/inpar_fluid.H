@@ -33,6 +33,15 @@ namespace INPAR
       poro,
       topopt
     };
+
+    //! flag to switch the stabilization type
+    enum StabType
+    {
+      stabtype_nostab,
+      stabtype_residualbased,
+      stabtype_edgebased
+    };
+
     //! flag to (de)activate PSPG stabilization
     enum PSPG
     {
@@ -95,6 +104,7 @@ namespace INPAR
       inertia_stab_keep_complete
     };
 
+    /// tau type for residual based fluid stabilizations
     enum TauType
     {
       tau_taylor_hughes_zarins,
@@ -114,14 +124,48 @@ namespace INPAR
       tau_not_defined
     };
 
-    /// tau type for edge-oriented / continuous interior penalty stabilization
-    enum TauType_EOS_CIP
+    //! flag to select the type of pressure edge-based (EOS) stabilization
+    enum EOS_Pres
     {
-      tau_EOS_burman_fernandez_hansbo_2006,
-      tau_EOS_braack_burman_2007,
-      tau_EOS_franca_barrenechea_valentin_wall,
-      tau_EOS_burman_fernandez,
-      tau_EOS_not_defined
+      EOS_PRES_none,
+      EOS_PRES_std_eos,
+      EOS_PRES_xfem_gp
+    };
+
+    //! flag to select the type of convective streamline edge-based (EOS) stabilization
+    enum EOS_Conv_Stream
+    {
+      EOS_CONV_STREAM_none,
+      EOS_CONV_STREAM_std_eos,
+      EOS_CONV_STREAM_xfem_gp
+    };
+
+    //! flag to select the type of convective crosswind edge-based (EOS) stabilization
+    enum EOS_Conv_Cross
+    {
+      EOS_CONV_CROSS_none,
+      EOS_CONV_CROSS_std_eos,
+      EOS_CONV_CROSS_xfem_gp
+    };
+
+    //! flag to select the type of divergence EOS stabilization
+    enum EOS_Div
+    {
+      EOS_DIV_none,
+      EOS_DIV_vel_jump_std_eos,
+      EOS_DIV_vel_jump_xfem_gp,
+      EOS_DIV_div_jump_std_eos,
+      EOS_DIV_div_jump_xfem_gp
+    };
+
+    /// tau type for edge-oriented / continuous interior penalty stabilization
+    enum EOS_TauType
+    {
+      EOS_tau_burman_fernandez_hansbo_2006,
+      EOS_tau_braack_burman_2007,
+      EOS_tau_franca_barrenechea_valentin_wall,
+      EOS_tau_burman_fernandez,
+      EOS_tau_not_defined
     };
 
     /// Element length for edge-oriented / continuous interior penalty stabilization

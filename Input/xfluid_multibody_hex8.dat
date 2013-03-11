@@ -66,13 +66,13 @@ ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes_pspg
 SUPG                            yes_supg//yes_supg
 VSTAB                           no_vstab
-CSTAB cstab_qs //cstab_qs
+CSTAB                           cstab_qs //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------------------XFEM GENERAL

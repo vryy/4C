@@ -267,6 +267,9 @@ namespace FLD
                                 Teuchos::ParameterList& params_xf_gen,
                                 Teuchos::ParameterList& params_xf_stab);
 
+    /// print stabilization params to screen
+    void PrintStabilizationParams();
+
     /// setup the variables to do a new time step
     void PrepareTimeStep();
 
@@ -635,8 +638,6 @@ namespace FLD
     /// ghost penalty stabilization
     bool ghost_penalty_;
     double ghost_penalty_fac_;
-    enum INPAR::FLUID::EOS_GP_Pattern eos_gp_pattern_;
-    enum INPAR::FLUID::EOS_ElementLength definition_eos_h_;
 
     /// penalty term for pressure coupling at the interface
     bool presscoupling_interface_stab_;

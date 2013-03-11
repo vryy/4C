@@ -76,7 +76,6 @@ CSTAB no_cstab// cstab_qs//
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen//Franca_Barrenechea_Valentin_Frey_Wall
-EOS_H_DEFINITION          EOS_he_surf_with_max_diameter//  EOS_he_max_dist_to_opp_surf// 
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      GenAlpha//OneStepTheta
 EIGEN                           0

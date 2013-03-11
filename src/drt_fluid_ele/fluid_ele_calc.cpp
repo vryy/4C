@@ -658,7 +658,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
 
   // calculate stabilization parameter at element center
-  if (not fldpara_->TauGp())
+  if (not fldpara_->TauGp() and fldpara_->StabType()==INPAR::FLUID::stabtype_residualbased)
   {
     // get convective velocity at element center for evaluation of
     // stabilization parameter
@@ -873,7 +873,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
       reacoeff_ = funct_.Dot(eporo);
 
     // calculate stabilization parameter at integration point
-    if (fldpara_->TauGp())
+    if (fldpara_->TauGp() and fldpara_->StabType()==INPAR::FLUID::stabtype_residualbased)
       CalcStabParameter(vol);
 
     // potential evaluation of coefficient of multifractal subgrid-scales at integration point

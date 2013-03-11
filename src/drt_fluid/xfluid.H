@@ -646,11 +646,9 @@ namespace FLD
     /// edgebased stabilization
     bool edge_based_;
 
-    /// ghost penalty stabilization
+    /// ghost penalty stabilization due to Nitsche's method
     bool ghost_penalty_;
     double ghost_penalty_fac_;
-    enum INPAR::FLUID::EOS_GP_Pattern eos_gp_pattern_;
-    enum INPAR::FLUID::EOS_ElementLength definition_eos_h_;
 
     //! @name flags for gmsh output
     bool gmsh_debug_out_;

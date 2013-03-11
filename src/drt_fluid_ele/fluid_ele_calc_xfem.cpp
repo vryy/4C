@@ -104,20 +104,33 @@ int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*               
 {
   int err=0;
 
-  if( VCellGaussPts!="DirectDivergence" ) // standard "Tessellation" or "MomentFitting" method
+  if( VCellGaussPts=="Tessellation" ) // standard "Tessellation" or "MomentFitting" method
   {
     for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
     {
-      const DRT::UTILS::GaussIntegration intcell = *i;
+      const DRT::UTILS::GaussIntegration intpoints_cell = *i;
       err = my::Evaluate( ele, discretization, lm, params, mat,
                      elemat1_epetra, elemat2_epetra,
                      elevec1_epetra, elevec2_epetra, elevec3_epetra,
-                     intcell, offdiag );
+                     intpoints_cell, offdiag);
       if(err)
         return err;
     }
   }
-  else  // DirectDivergence approach
+  else if( VCellGaussPts=="MomentFitting" ) // standard "MomentFitting" method
+  {
+    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
+    {
+      const DRT::UTILS::GaussIntegration intpoints_cell = *i;
+      err = my::Evaluate( ele, discretization, lm, params, mat,
+                     elemat1_epetra, elemat2_epetra,
+                     elevec1_epetra, elevec2_epetra, elevec3_epetra,
+                     intpoints_cell, offdiag);
+      if(err)
+        return err;
+    }
+  }
+  else if( VCellGaussPts=="DirectDivergence")  // DirectDivergence approach
   {
 
     LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_> elemat1(elemat1_epetra,true);
@@ -166,6 +179,7 @@ int FluidEleCalcXFEM<distype>::EvaluateXFEM(DRT::ELEMENTS::Fluid*               
       }
     }
   }
+  else dserror("unsupported type of VCellGaussPts");
 
   return err;
 }
@@ -185,7 +199,7 @@ int FluidEleCalcXFEM<distype>::IntegrateShapeFunctionXFEM(
 {
   int err=0;
 
-  if( VCellGaussPts!="DirectDivergence" ) // standard "Tessellation" or "MomentFitting" method
+  if( VCellGaussPts=="Tessellation" ) // standard "Tessellation" or "MomentFitting" method
   {
     for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
     {
@@ -197,7 +211,19 @@ int FluidEleCalcXFEM<distype>::IntegrateShapeFunctionXFEM(
         return err;
     }
   }
-  else  // DirectDivergence approach
+  else if( VCellGaussPts=="MomentFitting" ) // standard "Tessellation" or "MomentFitting" method
+  {
+    for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
+    {
+      const DRT::UTILS::GaussIntegration gint = *i;
+      err = my::IntegrateShapeFunction( ele, discretization, lm,
+                     elevec1_epetra,
+                     gint);
+      if(err)
+        return err;
+    }
+  }
+  else if( VCellGaussPts=="DirectDivergence" )  // DirectDivergence approach
   {
 
     LINALG::Matrix<(my::nsd_+1)*my::nen_,            1> elevec1(elevec1_epetra,true);
@@ -235,6 +261,7 @@ int FluidEleCalcXFEM<distype>::IntegrateShapeFunctionXFEM(
       }
     }
   }
+  else dserror("unsupported type of VCellGaussPts");
 
   return err;
 }
@@ -1174,7 +1201,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfacefluidfluidcoupling(
     std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,     ///< side coupling matrices
     Teuchos::ParameterList&                                             params,            ///< parameter list
     const GEO::CUT::plain_volumecell_set&                               vcSet,              ///< volumecell sets in this element,
-    map<int,int> &                                                      boundary_emb_gid_map
+    std::map<int,int> &                                                 boundary_emb_gid_map
 )
 {
 
@@ -2246,7 +2273,7 @@ void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
   }
   else //projection over the volumecells (partial projection)
   {
-    if( VCellGaussPts!="DirectDivergence" ) // standard case for tessellation and momentfitting
+    if( VCellGaussPts=="Tessellation" ) // standard case for tessellation and momentfitting
     {
       for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
       {
@@ -2259,7 +2286,20 @@ void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
         }
       }
     }
-    else  // DirectDivergence method
+    else if( VCellGaussPts=="MomentFitting" ) // standard case for momentfitting
+    {
+      for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
+      {
+        const DRT::UTILS::GaussIntegration intcell = *i;
+        for ( DRT::UTILS::GaussIntegration::iterator iquad=intcell.begin(); iquad!=intcell.end(); ++iquad )
+        {
+          // evaluate shape functions and derivatives at integration point
+          my::EvalShapeFuncAndDerivsAtIntPoint(iquad);
+          MSH_EvaluateMatrices(evelaf,epreaf,bK_ss,invbK_ss,K_su,rhs);
+        }
+      }
+    }
+    else if( VCellGaussPts=="DirectDivergence" )  // DirectDivergence method
     {
       for( std::vector<DRT::UTILS::GaussIntegration>::const_iterator i=intpoints.begin();i!=intpoints.end();++i )
       {
@@ -2331,6 +2371,8 @@ void FluidEleCalcXFEM<distype>::MSH_Build_K_Matrices(
         }
       }
     }
+    else dserror("unsupported type of VCellGaussPts");
+    
   }
 
   return;
@@ -2979,7 +3021,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
     std::map<int, std::vector<Epetra_SerialDenseMatrix> > &             side_coupling,
     Teuchos::ParameterList&                                             params,
     DRT::Discretization &                                               alediscret,
-    map<int,int> &                                                      boundary_emb_gid_map,
+    std::map<int,int> &                                                 boundary_emb_gid_map,
     Epetra_SerialDenseMatrix&                                           elemat1_epetra,
     Epetra_SerialDenseVector&                                           elevec1_epetra,
     Epetra_SerialDenseMatrix&                                           Cuiui,
@@ -3718,9 +3760,9 @@ void FluidEleCalcXFEM<distype>::PatchLocationVector(
   for (std::set<int>::const_iterator bgid=begids.begin(); bgid!=begids.end(); ++bgid)
   {
     DRT::Element * side = cutdis.gElement(*bgid); // for each boundary element there is one corresponding side
-    vector<int> patchlm;
-    vector<int> patchlmowner;
-    vector<int> patchlmstride;
+    std::vector<int> patchlm;
+    std::vector<int> patchlmowner;
+    std::vector<int> patchlmstride;
     side->LocationVector(cutdis, patchlm, patchlmowner, patchlmstride);
 
     patchelementslmv.reserve( patchelementslmv.size() + patchlm.size());
@@ -3762,7 +3804,7 @@ void FluidEleCalcXFEM<distype>::PatchLocationVector(
     std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
     std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
     std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
-    map<int,int> &                                          boundary_emb_gid_map,    ///< map between boundary sid and corresponding embedded element id
+    std::map<int,int> &                                     boundary_emb_gid_map,    ///< map between boundary sid and corresponding embedded element id
     string                                                  coupl_method             ///< coupling method
 )
 {
@@ -3771,9 +3813,9 @@ void FluidEleCalcXFEM<distype>::PatchLocationVector(
   {
     DRT::Element * emb_ele = alediscret.gElement(boundary_emb_gid_map.find(*bgid)->second);
 
-    vector<int> patchlm;
-    vector<int> patchlmowner;
-    vector<int> patchlmstride;
+    std::vector<int> patchlm;
+    std::vector<int> patchlmowner;
+    std::vector<int> patchlmstride;
     emb_ele->LocationVector(alediscret, patchlm, patchlmowner, patchlmstride);
 
     patchelementslmv.reserve( patchelementslmv.size() + patchlm.size());

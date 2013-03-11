@@ -130,6 +130,14 @@ namespace INPAR
       Xf_TimeInt_Copy
     };
 
+    /// type of face
+    enum FaceType
+    {
+      face_type_std,
+      face_type_ghost_penalty,
+      face_type_ghost
+    };
+
   }  // namespace XFEM
 
 }  // namespace INPAR

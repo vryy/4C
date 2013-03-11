@@ -64,13 +64,13 @@ UPRES                           1
 LINEAR_SOLVER                   1
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        residual_based                  // edge_based //
-DEFINITION_TAU Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG yes_pspg //no_pspg /
-SUPG yes_supg //no_supg//yes_supg
+PSPG                            yes_pspg //no_pspg /
+SUPG                            yes_supg //no_supg//yes_supg
 VSTAB                           no_vstab
-CSTAB no_cstab //cstab_qs
+CSTAB                           no_cstab //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 -----------------------------------------------------------------ALE DYNAMIC
@@ -121,7 +121,6 @@ CONV_STAB_SCALING               none                            // abs_normal_ve
 //GHOST_PENALTY_STAB            Yes
 //GHOST_PENALTY_FAC             0.001
 //MSH_L2_PROJ part_ele_proj //full_ele_proj (K_ss whole element or just partial)
-//EOS_GP_PATTERN                u-v-w-p-diagonal-block          // u-p-block // full
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------CURVE1

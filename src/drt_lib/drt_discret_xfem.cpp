@@ -1323,8 +1323,6 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBased(
 
   Teuchos::RCP<LINALG::SparseMatrix> sysmat_linalg = Teuchos::rcp(new LINALG::SparseMatrix(sysmat_FE,true,false,LINALG::SparseMatrix::FE_MATRIX));
 
-
-  //TODO: parallel: col oder row
   const int numrowintfaces = NumMyRowIntFaces();
 
   for (int i=0; i<numrowintfaces; ++i)
@@ -1365,12 +1363,7 @@ void DRT::DiscretizationXFEM::EvaluateEdgeBased(
 
     // set action for elements
     edgebasedparams.set<int>("action",FLD::EOS_and_GhostPenalty_stabilization);
-
-    edgebasedparams.set("edge_based_stab", true);
-    edgebasedparams.set("ghost_penalty", false);
-    edgebasedparams.set("ghost_penalty_reconstruct", false);
-    edgebasedparams.set("ghost_penalty_fac", 0.0);
-    edgebasedparams.set("eos_gp_pattern",INPAR::FLUID::EOS_GP_Pattern_full);
+    edgebasedparams.set("facetype", INPAR::XFEM::face_type_std);
 
     // call the egde-based assemble and evaluate routine
     DRT::ELEMENTS::FluidIntFaceImplInterface::Impl(ele)->AssembleInternalFacesUsingNeighborData(ele,

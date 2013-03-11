@@ -914,7 +914,9 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
       Teuchos::getIntegralValue<int>(fdyn,"CALCERROR"));
 
   // -----------------------sublist containing stabilization parameters
-  fluidtimeparams->sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
+  fluidtimeparams->sublist("STABILIZATION")                =fdyn.sublist("STABILIZATION");
+  fluidtimeparams->sublist("RESIDUAL-BASED-STABILIZATION") =fdyn.sublist("RESIDUAL-BASED-STABILIZATION");
+  fluidtimeparams->sublist("EDGE-BASED-STABILIZATION")     =fdyn.sublist("EDGE-BASED-STABILIZATION");
 
   // -----------------------------get also scatra stabilization sublist
   const Teuchos::ParameterList& scatradyn =

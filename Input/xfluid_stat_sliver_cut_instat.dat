@@ -75,7 +75,6 @@ VSTAB                           no_vstab
 CSTAB cstab_qs //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
-EOS_GP_PATTERN                  u-v-w-p-diagonal-block          // u-p-block // full
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT_SCREEN           No
 GMSH_DEBUG_OUT                  No

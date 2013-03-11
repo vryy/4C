@@ -66,7 +66,7 @@ ADAPTCONV_BETTER                0.1
 SIMPLER                         No
 -------------------------------------------------FLUID DYNAMIC/STABILIZATION
 STABTYPE                        residual_based
-DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Taylor_Hughes_Zarins //Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall //Barrenechea_Franca_Valentin_Wall
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen //Taylor_Hughes_Zarins //Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
 PSPG                            yes_pspg
@@ -75,7 +75,6 @@ VSTAB                           no_vstab
 CSTAB cstab_qs //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
-EOS_GP_PATTERN                  u-v-w-p-diagonal-block          // u-p-block // full
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    No

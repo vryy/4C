@@ -439,8 +439,8 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
             begids.insert(sid);
           }
 
-          vector<int> patchelementslm;
-          vector<int> patchelementslmowner;
+          std::vector<int> patchelementslm;
+          std::vector<int> patchelementslmowner;
 
           // initialize the coupling matrices for each side and the current element
           for ( std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
@@ -449,9 +449,9 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
             int sid = bc->first; // all boundary cells within the current iterator belong to the same side
             DRT::Element * side = cutdiscret.gElement( sid );
 
-            vector<int> patchlm;
-            vector<int> patchlmowner;
-            vector<int> patchlmstride;
+            std::vector<int> patchlm;
+            std::vector<int> patchlmowner;
+            std::vector<int> patchlmstride;
             // for nitsche embedded and two-sided we couple with the whole embedded element not only with its side
             if (xfluid_.action_ == "coupling stress based" or xfluid_.action_ == "coupling nitsche xfluid sided")
               side->LocationVector(cutdiscret, patchlm, patchlmowner, patchlmstride);
@@ -545,9 +545,9 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
 
             if ( cutdiscret.HaveGlobalElement(sid) )
             {
-              vector<int> patchlm;
-              vector<int> patchlmowner;
-              vector<int> patchlmstride;
+              std::vector<int> patchlm;
+              std::vector<int> patchlmowner;
+              std::vector<int> patchlmstride;
               if (xfluid_.action_ == "coupling stress based" or xfluid_.action_ == "coupling nitsche xfluid sided")
               {
                 DRT::Element * side = cutdiscret.gElement( sid );
@@ -838,19 +838,14 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   } // end of loop over bgdis
 
   // call edge stabilization
-  // REMARK: the current implementation of internal edges integration belongs to the elements
-  // at the moment each side is integrated twice
   if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ )
   {
     TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
 
-    eleparams.set("edge_based",xfluid_.edge_based_);
-    eleparams.set("ghost_penalty",xfluid_.ghost_penalty_);
+    Teuchos::ParameterList faceparams;
 
-    eleparams.set("GHOST_PENALTY_FAC", xfluid_.ghost_penalty_fac_);
-    eleparams.set("EOS_GP_PATTERN", xfluid_.eos_gp_pattern_);
-
-    eleparams.set("EOS_H_DEFINITION", xfluid_.definition_eos_h_);
+    faceparams.set("visc_ghost_penalty",xfluid_.ghost_penalty_);
+    faceparams.set("GHOST_PENALTY_FAC", xfluid_.ghost_penalty_fac_);
 
     //------------------------------------------------------------
     // loop over row faces
@@ -870,7 +865,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
       if ( ele==NULL ) dserror( "expect FluidIntFace element" );
 
-      edgestab_->EvaluateEdgeStabGhostPenalty(eleparams, xfluid_.bgdis_, ele, sysmat_, strategy.Systemvector1(), xfluid_.gmsh_EOS_out_);
+      edgestab_->EvaluateEdgeStabGhostPenalty(faceparams, xfluid_.bgdis_, ele, sysmat_, strategy.Systemvector1(), xfluid_.gmsh_EOS_out_);
     }
   }
 
@@ -968,19 +963,15 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
   } // end of loop over embedded discretization
 
   // call edge stabilization
-  // REMARK: the current implementation of internal edges integration belongs to the elements
-  // at the moment each side is integrated twice
   if( xfluid_.edge_based_ or xfluid_.ghost_penalty_ )
   {
     TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::Evaluate 4) EOS" );
 
-    eleparams.set("edge_based",xfluid_.edge_based_);
-    eleparams.set("ghost_penalty",xfluid_.ghost_penalty_);
+    Teuchos::ParameterList faceparams;
 
-    eleparams.set("GHOST_PENALTY_FAC", xfluid_.ghost_penalty_fac_);
-    eleparams.set("EOS_GP_PATTERN", xfluid_.eos_gp_pattern_);
+    faceparams.set("visc_ghost_penalty",xfluid_.ghost_penalty_);
+    faceparams.set("GHOST_PENALTY_FAC", xfluid_.ghost_penalty_fac_);
 
-    eleparams.set("EOS_H_DEFINITION", xfluid_.definition_eos_h_);
     //------------------------------------------------------------
     RCP<Epetra_Vector> ale_residual_col = LINALG::CreateVector(*alediscret.DofColMap(),true);
 
@@ -1014,7 +1005,7 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
       DRT::Element* actface = xdiscret->lRowIntFace(i);
       DRT::ELEMENTS::FluidIntFace * ele = dynamic_cast<DRT::ELEMENTS::FluidIntFace *>( actface );
       if ( ele==NULL ) dserror( "expect FluidIntFace element" );
-      edgestab_->EvaluateEdgeStabStd(eleparams, xfluid_.embdis_, ele, sysmat_linalg, ale_residual_col);
+      edgestab_->EvaluateEdgeStabStd(faceparams, xfluid_.embdis_, ele, sysmat_linalg, ale_residual_col);
     }
 
     //------------------------------------------------------------
@@ -1801,11 +1792,15 @@ FLD::XFluidFluid::XFluidFluid(
   conv_stab_scaling_ = DRT::INPUT::IntegralValue<INPAR::XFEM::ConvStabScaling>(params_xf_stab,"CONV_STAB_SCALING");
   visc_stab_hk_      = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab,"VISC_STAB_HK");
 
-  edge_based_        = (params_->sublist("STABILIZATION").get<string>("STABTYPE")=="edge_based");
+  // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
+  edge_based_        = (params_->sublist("STABILIZATION").get<string>("STABTYPE")=="edge_based"
+                        or params_->sublist("EDGE-BASED-STABILIZATION").get<string>("EOS_PRES")        != "none"
+                        or params_->sublist("EDGE-BASED-STABILIZATION").get<string>("EOS_CONV_STREAM") != "none"
+                        or params_->sublist("EDGE-BASED-STABILIZATION").get<string>("EOS_CONV_CROSS")  != "none"
+                        or params_->sublist("EDGE-BASED-STABILIZATION").get<string>("EOS_DIV")         != "none");
+
   ghost_penalty_     = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB");
   ghost_penalty_fac_ = params_xf_stab.get<double>("GHOST_PENALTY_FAC", 0.0);
-  eos_gp_pattern_    = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_GP_Pattern>(params_->sublist("STABILIZATION"),"EOS_GP_PATTERN");
-  definition_eos_h_ =  DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_ElementLength>(params_->sublist("STABILIZATION"),"EOS_H_DEFINITION");
 
   velgrad_interface_stab_ =  (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"VELGRAD_INTERFACE_STAB");
 
@@ -1914,6 +1909,8 @@ FLD::XFluidFluid::XFluidFluid(
 
   // check xfluid input params
   CheckXFluidFluidParams(params_xfem,params_xf_gen,params_xf_stab);
+
+  PrintStabilizationParams();
 
   // compute or set 1.0 - theta for time-integration schemes
   if (timealgo_ == INPAR::FLUID::timeint_one_step_theta)  omtheta_ = 1.0 - theta_;
@@ -2139,8 +2136,8 @@ void FLD::XFluidFluid::PrepareEmbeddedDistribution()
 #ifdef PARALLEL
 
   DRT::UTILS::ConditionSelector conds(*embdis_, "XFEMCoupling");
-  vector<int> embnode_outer;
-  vector<int> embele_outer;
+  std::vector<int> embnode_outer;
+  std::vector<int> embele_outer;
 
   // select all outer embedded nodes and elements
   for (int  inode=0; inode<embdis_->NumMyRowNodes(); inode++)
@@ -2167,11 +2164,11 @@ void FLD::XFluidFluid::PrepareEmbeddedDistribution()
   }
 
   // embnode_outer and embele_outer on all processors
-  vector<int> embnode_outer_all;
-  vector<int> embele_outer_all;
+  std::vector<int> embnode_outer_all;
+  std::vector<int> embele_outer_all;
 
   // information how many processors work at all
-  vector<int> allproc(embdis_->Comm().NumProc());
+  std::vector<int> allproc(embdis_->Comm().NumProc());
 
   // in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
   for (int i=0; i<embdis_->Comm().NumProc(); ++i) allproc[i] = i;
@@ -2274,49 +2271,6 @@ void FLD::XFluidFluid::CreateBoundaryEmbeddedMap()
 // -------------------------------------------------------------------
 void FLD::XFluidFluid::IntegrateFluidFluid()
 {
-  // output of stabilization details
-  if (myrank_==0)
-  {
-    Teuchos::ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
-
-    IO::cout << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << IO::endl;
-    IO::cout << "                             " << stabparams->get<string>("TDS")<< IO::endl;
-    IO::cout << "\n";
-
-    if (timealgo_!=INPAR::FLUID::timeint_stationary)
-      IO::cout <<  "                             " << "Tau Type        = " << stabparams->get<string>("DEFINITION_TAU") <<IO::endl;
-    else
-    {
-      if(stabparams->get<string>("DEFINITION_TAU") == "Barrenechea_Franca_Valentin_Wall" or
-          stabparams->get<string>("DEFINITION_TAU") == "Barrenechea_Franca_Valentin_Wall_wo_dt")
-        IO::cout <<  "                             " << "Tau             = " << "Barrenechea_Franca_Valentin_Wall_wo_dt" << IO::endl;
-      else if (stabparams->get<string>("DEFINITION_TAU") == "Bazilevs_wo_dt" or
-          stabparams->get<string>("DEFINITION_TAU") == "Bazilevs")
-        IO::cout <<  "                             " << "Tau             = " << "Bazilevs_wo_dt" << IO::endl;
-    }
-    IO::cout << IO::endl;
-
-    if(stabparams->get<string>("TDS") == "quasistatic")
-    {
-      if(stabparams->get<string>("TRANSIENT")=="yes_transient")
-      {
-        dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
-      }
-    }
-    IO::cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<IO::endl;
-    IO::cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<IO::endl;
-    IO::cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<IO::endl;
-    IO::cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<IO::endl;
-    IO::cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<IO::endl;
-    IO::cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<IO::endl;
-    IO::cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<IO::endl;
-    IO::cout << IO::endl;
-
-    if(stabparams->get<string>("VSTAB") != "no_vstab")              dserror("check VSTAB for XFEM");
-    if(stabparams->get<string>("CROSS-STRESS") != "no_cross")       dserror("check CROSS-STRESS for XFEM");
-    if(stabparams->get<string>("REYNOLDS-STRESS") != "no_reynolds") dserror("check REYNOLDS-STRESS for XFEM");
-
-  }
 
   // distinguish stationary and instationary case
   if (timealgo_==INPAR::FLUID::timeint_stationary)
@@ -2507,22 +2461,163 @@ void FLD::XFluidFluid::CheckXFluidFluidParams( Teuchos::ParameterList& params_xf
     if (presscoupling_interface_stab_ and action_ != "coupling nitsche embedded sided")
       dserror("PRESSCOUPLING_INTERFACE_STAB just for embedded sided Nitsche-Coupling!");
 
-    IO::cout << IO::endl;
-    IO::cout << "XFEM Stabilization parameters: " << IO::endl;
-    IO::cout << "                               " << IO::endl;
-    IO::cout << "                                 GHOST_PENALTY               : " << params_xf_stab.get<string>("GHOST_PENALTY_STAB")    << IO::endl;
-    IO::cout << "                                 GHOST_PENALTY_FAC           : " << ghost_penalty_fac_ << IO::endl;
-    IO::cout << "                                 INFLOW_CONV_STAB_STRATEGY   : " << params_xf_stab.get<string>("CONV_STAB_SCALING") << IO::endl;
-    IO::cout << "                                 INFLOW_CONV_STAB_FAC        : " << conv_stab_fac_ << IO::endl;
-    IO::cout << "                                 VELGRAD_INTERFACE_STAB      : " << params_xf_stab.get<string>("VELGRAD_INTERFACE_STAB")<< IO::endl;
-    IO::cout << "                                 PRESSCOUPLING_INTERFACE_STAB: " << params_xf_stab.get<string>("PRESSCOUPLING_INTERFACE_STAB")<< IO::endl;
-    IO::cout << "                                 PRESSCOUPLING_INTERFACE_FAC : " << presscoupling_interface_fac_ << IO::endl;
-    IO::cout << "                                 NITSCHE_STAB_FAC            : " << visc_stab_fac_ << IO::endl;
-    IO::cout << "                                 VISC_STAB_HK                : " << params_xf_stab.get<string>("VISC_STAB_HK")  << IO::endl;
-    IO::cout << IO::endl;
 
   return;
   }
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Print fluid stabilization parameters                   schott 03/12 |
+ *----------------------------------------------------------------------*/
+void FLD::XFluidFluid::PrintStabilizationParams()
+{
+  // output of stabilization details
+  if (myrank_==0)
+  {
+    Teuchos::ParameterList *  stabparams                =&(params_->sublist("STABILIZATION"));
+    //Teuchos::ParameterList *  stabparams_residualbased  =&(params_->sublist("RESIDUAL-BASED-STABILIZATION"));
+    Teuchos::ParameterList *  stabparams_edgebased      =&(params_->sublist("EDGE-BASED-STABILIZATION"));
+    Teuchos::ParameterList *  interfstabparams          =&(params_->sublist("XFLUID DYNAMIC/STABILIZATION"));
+
+
+    IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
+    IO::cout << "                              FLUID-STABILIZATION                      \n " << IO::endl;
+
+    IO::cout << "Stabilization type: " << stabparams->get<string>("STABTYPE") << "\n\n";
+
+    //---------------------------------------------------------------------------------------------
+    // output for residual-based fluid stabilization
+    if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_residualbased)
+    {
+      IO::cout << "RESIDUAL-BASED fluid stabilization " << "\n";
+      IO::cout << "                    " << stabparams->get<string>("TDS")<< "\n";
+      IO::cout << "\n";
+
+      string def_tau = stabparams->get<string>("DEFINITION_TAU");
+
+//      if(    def_tau == "Franca_Barrenechea_Valentin_Frey_Wall"
+//          or def_tau == "Franca_Barrenechea_Valentin_Frey_Wall_wo_dt") dserror("do not use Franca_Barrenechea_Valentin_Frey_Wall stabilization for XFEM -no stable results!");
+
+
+      // instationary case
+      if (timealgo_!=INPAR::FLUID::timeint_stationary)
+      {
+        IO::cout <<  "                    " << "Tau Type        = " << def_tau <<"\n";
+
+
+        // check for instationary version of tau definitions
+        if(def_tau != "Taylor_Hughes_Zarins" and
+            def_tau != "Taylor_Hughes_Zarins_Whiting_Jansen" and
+            def_tau != "Taylor_Hughes_Zarins_scaled" and
+            def_tau != "Franca_Barrenechea_Valentin_Frey_Wall" and
+            def_tau != "Shakib_Hughes_Codina" and
+            def_tau != "Codina" and
+            def_tau != "Franca_Madureira_Valentin_Badia_Codina" and
+            def_tau != "Smoothed_FBVW")
+        {
+          IO::cout << RED_LIGHT
+              << "Are you sure that you want to use stationary version of stabilization parameters "
+              << "for instationary computations (just reasonable for small time steps dt)"
+              << END_COLOR << IO::endl;
+        }
+      }
+      else // stationary case
+      {
+        if(def_tau != "Taylor_Hughes_Zarins_wo_dt" and
+            def_tau != "Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt" and
+            def_tau != "Taylor_Hughes_Zarins_scaled_wo_dt" and
+            def_tau != "Franca_Barrenechea_Valentin_Frey_Wall_wo_dt" and
+            def_tau != "Shakib_Hughes_Codina_wo_dt" and
+            def_tau != "Codina_wo_dt" and
+            def_tau != "Franca_Madureira_Valentin_Badia_Codina_wo_dt")
+        {
+//          dserror("not a valid tau definition (DEFINITION_TAU) for stationary problems");
+        }
+      }
+      IO::cout << "\n";
+
+      if(stabparams->get<string>("TDS") == "quasistatic")
+      {
+        if(stabparams->get<string>("TRANSIENT")=="yes_transient")
+        {
+          dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
+        }
+      }
+      IO::cout <<  "                    " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
+      IO::cout <<  "                    " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
+      IO::cout <<  "                    " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
+      IO::cout <<  "                    " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
+      IO::cout <<  "                    " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
+      IO::cout <<  "                    " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
+      IO::cout <<  "                    " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
+
+      if(stabparams->get<string>("VSTAB")           != "no_vstab")    dserror("check VSTAB for XFEM");
+      if(stabparams->get<string>("CROSS-STRESS")    != "no_cross")    dserror("check CROSS-STRESS for XFEM");
+      if(stabparams->get<string>("REYNOLDS-STRESS") != "no_reynolds") dserror("check REYNOLDS-STRESS for XFEM");
+
+    }
+    else if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
+    {
+      // safety check for combinations of edge-based and residual-based stabilizations
+      if((stabparams->get<string>("PSPG")           != "no_pspg")     or
+         (stabparams->get<string>("SUPG")           != "no_supg")     or
+         (stabparams->get<string>("CSTAB")          != "no_cstab")    or
+         (stabparams->get<string>("VSTAB")          != "no_vstab")    or
+         (stabparams->get<string>("CROSS-STRESS")   != "no_cross")    or
+         (stabparams->get<string>("REYNOLDS-STRESS")!= "no_reynolds"))
+         {
+           dserror("if you want to combine residual-based stabilizations with edgebased-ghost-penalty stabilizations, please choose STABTYPE = residualbased");
+         }
+    }
+
+    // check for non-valid combinations of residual-based and edge-based fluid stabilizations in the XFEM
+    if( (stabparams->get<string>("PSPG") != "no_pspg") and (stabparams_edgebased->get<string>("EOS_PRES") == "std_eos") )
+      dserror("combine PSPG only with ghost-penalty variant of EOS_PRES ! ");
+    if( (stabparams->get<string>("SUPG") != "no_supg") and (stabparams_edgebased->get<string>("EOS_CONV_STREAM") == "std_eos") )
+      dserror("combine SUPG only with ghost-penalty variant of EOS_CONV_STREAM ! ");
+    if( (stabparams->get<string>("SUPG") != "no_supg") and (stabparams_edgebased->get<string>("EOS_CONV_CROSS") == "std_eos") )
+      dserror("combine SUPG only with ghost-penalty variant of EOS_CONV_CROSS ! ");
+
+    //---------------------------------------------------------------------------------------------
+    IO::cout << "\n\nEDGE-BASED (EOS) fluid stabilizations " << "\n";
+
+    IO::cout <<  "                    " << "EOS_PRES             = " << stabparams_edgebased->get<string>("EOS_PRES")      <<"\n";
+    IO::cout <<  "                    " << "EOS_CONV_STREAM      = " << stabparams_edgebased->get<string>("EOS_CONV_STREAM")      <<"\n";
+    IO::cout <<  "                    " << "EOS_CONV_CROSS       = " << stabparams_edgebased->get<string>("EOS_CONV_CROSS")      <<"\n";
+    IO::cout <<  "                    " << "EOS_DIV              = " << stabparams_edgebased->get<string>("EOS_DIV")      <<"\n";
+    IO::cout <<  "                    " << "EOS_DEFINITION_TAU   = " << stabparams_edgebased->get<string>("EOS_DEFINITION_TAU")      <<"\n";
+    IO::cout <<  "                    " << "EOS_H_DEFINITION     = " << stabparams_edgebased->get<string>("EOS_H_DEFINITION")      <<"\n";
+    IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
+    IO::cout << "\n";
+
+
+    //---------------------------------------------------------------------------------------------
+
+    IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
+    IO::cout << "                              INTERFACE-STABILIZATION                       \n" << IO::endl;
+    IO::cout << "Stabilization type          : " << interfstabparams->get<string>("EMBEDDED_BOUNDARY") << "\n";
+    IO::cout << "Coupling strategy           : " << interfstabparams->get<string>("COUPLING_STRATEGY") << "\n";
+
+    if(boundIntType_ == INPAR::XFEM::BoundaryTypeSigma)
+      IO::cout << "MSH_L2_PROJ                 : " << interfstabparams->get<string>("MSH_L2_PROJ") << "\n";
+
+    IO::cout << "GHOST_PENALTY               : " << interfstabparams->get<string>("GHOST_PENALTY_STAB")    << IO::endl;
+    IO::cout << "GHOST_PENALTY_FAC           : " << ghost_penalty_fac_ << IO::endl;
+    IO::cout << "INFLOW_CONV_STAB_STRATEGY   : " << interfstabparams->get<string>("CONV_STAB_SCALING") << IO::endl;
+    IO::cout << "INFLOW_CONV_STAB_FAC        : " << conv_stab_fac_ << IO::endl;
+    IO::cout << "VELGRAD_INTERFACE_STAB      : " << interfstabparams->get<string>("VELGRAD_INTERFACE_STAB")<< IO::endl;
+    IO::cout << "PRESSCOUPLING_INTERFACE_STAB: " << interfstabparams->get<string>("PRESSCOUPLING_INTERFACE_STAB")<< IO::endl;
+    IO::cout << "PRESSCOUPLING_INTERFACE_FAC : " << presscoupling_interface_fac_ << IO::endl;
+    IO::cout << "NITSCHE_STAB_FAC            : " << visc_stab_fac_ << IO::endl;
+    IO::cout << "VISC_STAB_HK                : " << interfstabparams->get<string>("VISC_STAB_HK")  << IO::endl;
+    IO::cout << IO::endl;
+
+    IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
+    IO::cout << "\n";
+
+  }
+
 }
 
 
@@ -2910,9 +3005,9 @@ void FLD::XFluidFluid::NonlinearSolve()
       // do adaptive linear solver tolerance (not in first solve)
       if (isadapttol && itnum>1)
       {
-        double currresidual = max(vresnorm,presnorm);
-        currresidual = max(currresidual,incvelnorm_L2/velnorm_L2);
-        currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
+        double currresidual = std::max(vresnorm,presnorm);
+        currresidual = std::max(currresidual,incvelnorm_L2/velnorm_L2);
+        currresidual = std::max(currresidual,incprenorm_L2/prenorm_L2);
         solver_->AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
@@ -4243,6 +4338,8 @@ void FLD::XFluidFluid::SetElementGeneralFluidParameter()
 
   // parameter for stabilization
   eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+  eleparams.sublist("RESIDUAL-BASED-STABILIZATION") = params_->sublist("RESIDUAL-BASED-STABILIZATION");
+  eleparams.sublist("EDGE-BASED-STABILIZATION") = params_->sublist("EDGE-BASED-STABILIZATION");
 
   //set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
@@ -4372,7 +4469,7 @@ double FLD::XFluidFluid::TimIntParam() const
 void FLD::XFluidFluid::LiftDrag() const
 {
   // in this map, the results of the lift drag calculation are stored
-  RCP<map<int,std::vector<double> > > liftdragvals;
+  Teuchos::RCP<std::map<int,std::vector<double> > > liftdragvals;
 
   FLD::UTILS::LiftDrag(*embdis_,*aletrueresidual_,*params_,liftdragvals);
 
@@ -4687,8 +4784,8 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
                 e->BoundaryCellGaussPointsLin( state_->wizard_->CutWizard().Mesh(), 0, bcells, bintpoints );
 #endif
 
-                vector<int> patchelementslm;
-                vector<int> patchelementslmowner;
+                std::vector<int> patchelementslm;
+                std::vector<int> patchelementslmowner;
 
                 // initialize the coupling matrices for each side and the current element
                 for ( std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
@@ -4697,9 +4794,9 @@ void FLD::XFluidFluid::EvaluateErrorComparedToAnalyticalSol()
                   int sid = bc->first; // all boundary cells within the current iterator belong to the same side
                   DRT::Element * side = boundarydis_->gElement( sid );
 
-                  vector<int> patchlm;
-                  vector<int> patchlmowner;
-                  vector<int> patchlmstride;
+                  std::vector<int> patchlm;
+                  std::vector<int> patchlmowner;
+                  std::vector<int> patchlmstride;
                   // for nitsche embedded and two-sided we couple with the whole embedded element not only with its side
                   if (action_ == "coupling stress based" or action_ == "coupling nitsche xfluid sided")
                     side->LocationVector(*boundarydis_, patchlm, patchlmowner, patchlmstride);
@@ -5180,7 +5277,7 @@ void FLD::XFluidFluid::SetInitialFlowField(
       DRT::Node*  lnode      = bgdis_->lRowNode(lnodeid);
 
       // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = bgdis_->Dof(lnode);
+      std::vector<int> nodedofset = bgdis_->Dof(lnode);
 
       //there wont be any dof for nodes which are inside the structure
       //the cut algorithm erases these dofs
@@ -5250,7 +5347,7 @@ void FLD::XFluidFluid::SetInitialFlowField(
       DRT::Node*  lnode      = embdis_->lRowNode(lnodeid);
 
       // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = embdis_->Dof(lnode);
+      std::vector<int> nodedofset = embdis_->Dof(lnode);
 
       //there wont be any dof for nodes which are inside the structure
       //the cut algorithm erases these dofs

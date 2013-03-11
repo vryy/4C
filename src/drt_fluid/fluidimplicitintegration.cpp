@@ -702,31 +702,54 @@ void FLD::FluidImplicitTimeInt::Integrate()
   if ((myrank_==0) and (params_->get<bool>("DISPLAY_STAB")))
   {
     Teuchos::ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
+    //Teuchos::ParameterList *  stabparams_residualbased  =&(params_->sublist("RESIDUAL-BASED-STABILIZATION"));
+    Teuchos::ParameterList *  stabparams_edgebased      =&(params_->sublist("EDGE-BASED-STABILIZATION"));
 
     cout << "Stabilization type         : " << stabparams->get<string>("STABTYPE") << "\n";
-    cout << "                             " << stabparams->get<string>("TDS")<< "\n";
-    cout << "\n";
-    cout << "                             " << "Tau Type        = " << stabparams->get<string>("DEFINITION_TAU") <<"\n";
     cout << "                             " << "Evaluation Tau  = " << stabparams->get<string>("EVALUATION_TAU") <<"\n";
-    cout << "\n";
-
-    if(stabparams->get<string>("TDS") == "quasistatic")
-    {
-      if(stabparams->get<string>("TRANSIENT")=="yes_transient")
-      {
-        dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
-      }
-    }
-    cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
-    cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
-    cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
-    cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
-    cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
-    cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
-    cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
-    cout << endl;
     cout << "                             " << "Evaluation Mat  = " << stabparams->get<string>("EVALUATION_MAT") <<"\n";
     cout << "\n";
+
+    if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_residualbased)
+    {
+      cout << "RESIDUAL-BASED fluid stabilization " << "\n";
+
+      cout << "                             " << stabparams->get<string>("TDS")<< "\n";
+      cout << "\n";
+      cout << "                             " << "Tau Type        = " << stabparams->get<string>("DEFINITION_TAU") <<"\n";
+
+      if(stabparams->get<string>("TDS") == "quasistatic")
+      {
+        if(stabparams->get<string>("TRANSIENT")=="yes_transient")
+        {
+          dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
+        }
+      }
+      cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
+      cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
+      cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
+      cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
+      cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
+      cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
+      cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
+      cout << endl;
+      cout << "\n";
+    }
+    else if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
+    {
+      //---------------------------------------------------------------------------------------------
+      cout << "\n\nEDGE-BASED (EOS) fluid stabilizations " << "\n";
+
+      cout <<  "                    " << "EOS_PRES             = " << stabparams_edgebased->get<string>("EOS_PRES")      <<"\n";
+      cout <<  "                    " << "EOS_CONV_STREAM      = " << stabparams_edgebased->get<string>("EOS_CONV_STREAM")      <<"\n";
+      cout <<  "                    " << "EOS_CONV_CROSS       = " << stabparams_edgebased->get<string>("EOS_CONV_CROSS")      <<"\n";
+      cout <<  "                    " << "EOS_DIV              = " << stabparams_edgebased->get<string>("EOS_DIV")      <<"\n";
+      cout <<  "                    " << "EOS_DEFINITION_TAU   = " << stabparams_edgebased->get<string>("EOS_DEFINITION_TAU")      <<"\n";
+      cout <<  "                    " << "EOS_H_DEFINITION     = " << stabparams_edgebased->get<string>("EOS_H_DEFINITION")      <<"\n";
+      cout << "+------------------------------------------------------------------------------------+" << endl;
+      cout << "\n";
+    }
+
   }
 
   // distinguish stationary and instationary case
@@ -5917,6 +5940,8 @@ void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
 
   // parameter for stabilization
   eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+  eleparams.sublist("RESIDUAL-BASED-STABILIZATION") = params_->sublist("RESIDUAL-BASED-STABILIZATION");
+  eleparams.sublist("EDGE-BASED-STABILIZATION") = params_->sublist("EDGE-BASED-STABILIZATION");
 
   //set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);

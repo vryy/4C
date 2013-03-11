@@ -92,7 +92,6 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   //                                                                         NO  (if both parent elements are uncut)
 
 
-
   RCP<DRT::DiscretizationXFEM> xdiscret = Teuchos::rcp_dynamic_cast<DRT::DiscretizationXFEM>(discret);
   if (xdiscret == Teuchos::null)
     dserror("Failed to cast DRT::Discretization to DRT::DiscretizationXFEM.");
@@ -119,8 +118,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   std::vector<int> nds_slave;
   nds_slave.reserve(p_slave_numnode);
 
-  bool edge_based_stab = false;
-  bool ghost_penalty   = false;
+  INPAR::XFEM::FaceType face_type;
 
   int num_edgestab = 0;      // how often to stabilize this face for edgebased stabilizations
   int num_ghostpenalty = 0;  // how often to stabilize this face for ghost penalty stabilizations
@@ -131,10 +129,9 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   //------------------------------------------------------------------------------
   if( p_master_handle == NULL and p_slave_handle == NULL)
   {
-    edge_based_stab = true;
     num_edgestab++;
 
-    ghost_penalty   = false;
+    face_type = INPAR::XFEM::face_type_std;
 
     {
       TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: create nds" );
@@ -147,15 +144,14 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
     //--------------------------------------------------------------------------------------------
 
     // call evaluate and assemble routine
-    if(edge_based_stab or ghost_penalty) AssembleEdgeStabGhostPenalty( eleparams,
-                                                                       edge_based_stab,
-                                                                       ghost_penalty,
-                                                                       faceele,
-                                                                       nds_master,
-                                                                       nds_slave,
-                                                                       *xdiscret,
-                                                                       systemmatrix,
-                                                                       systemvector);
+    AssembleEdgeStabGhostPenalty( eleparams,
+                                  face_type,
+                                  faceele,
+                                  nds_master,
+                                  nds_slave,
+                                  *xdiscret,
+                                  systemmatrix,
+                                  systemvector);
 
     //--------------------------------------------------------------------------------------------
 
@@ -166,7 +162,6 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
   //------------------------------------------------------------------------------
   else if( p_master_handle != NULL and p_slave_handle != NULL)
   {
-
     // linear elements
     if(    p_master->Shape() == DRT::Element::hex8
         or p_master->Shape() == DRT::Element::tet4
@@ -227,28 +222,29 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             }
             //------------------------
 
-            edge_based_stab = true;
             num_edgestab++;
 
             // at least one element has to be cut
             if(p_master_handle->IsCut() or p_slave_handle->IsCut())
             {
-              ghost_penalty   = true;
               num_ghostpenalty++;
+
+              face_type = INPAR::XFEM::face_type_ghost_penalty;
             }
+            else face_type = INPAR::XFEM::face_type_std;
+
 
             //--------------------------------------------------------------------------------------------
 
             // call evaluate and assemble routine
-            if(edge_based_stab or ghost_penalty) AssembleEdgeStabGhostPenalty( eleparams,
-                                                                               edge_based_stab,
-                                                                               ghost_penalty,
-                                                                               faceele,
-                                                                               nds_master,
-                                                                               nds_slave,
-                                                                               *xdiscret,
-                                                                               systemmatrix,
-                                                                               systemvector);
+            AssembleEdgeStabGhostPenalty( eleparams,
+                                          face_type,
+                                          faceele,
+                                          nds_master,
+                                          nds_slave,
+                                          *xdiscret,
+                                          systemmatrix,
+                                          systemvector);
 
             //--------------------------------------------------------------------------------------------
 
@@ -274,6 +270,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
         else
         {
           // facet is inside!
+          face_type = INPAR::XFEM::face_type_ghost;
         }
 
       } // loop facets
@@ -346,39 +343,40 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
             }
             //------------------------
 
-            edge_based_stab = true;
             num_edgestab++;
 
-            // at least one element has to be cut
+            // at most one element can be a cut one
             if(p_master_handle != NULL)
             {
               if(p_master_handle->IsCut())
               {
-                ghost_penalty   = true;
                 num_ghostpenalty++;
+                face_type = INPAR::XFEM::face_type_ghost_penalty;
               }
+              else face_type = INPAR::XFEM::face_type_std;
             }
-            if(p_slave_handle != NULL)
+            else if(p_slave_handle != NULL)
             {
               if(p_slave_handle->IsCut())
               {
-                ghost_penalty   = true;
                 num_ghostpenalty++;
+                face_type = INPAR::XFEM::face_type_ghost_penalty;
               }
+              else face_type = INPAR::XFEM::face_type_std;
             }
+            else face_type = INPAR::XFEM::face_type_std;
 
             //--------------------------------------------------------------------------------------------
 
             // call evaluate and assemble routine
-            if(edge_based_stab or ghost_penalty) AssembleEdgeStabGhostPenalty( eleparams,
-                                                                               edge_based_stab,
-                                                                               ghost_penalty,
-                                                                               faceele,
-                                                                               nds_master,
-                                                                               nds_slave,
-                                                                               *xdiscret,
-                                                                               systemmatrix,
-                                                                               systemvector);
+            AssembleEdgeStabGhostPenalty( eleparams,
+                                          face_type,
+                                          faceele,
+                                          nds_master,
+                                          nds_slave,
+                                          *xdiscret,
+                                          systemmatrix,
+                                          systemvector);
 
             //--------------------------------------------------------------------------------------------
 
@@ -408,8 +406,7 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabGhostPenalty(
  | and ghost penaly in the XFEM                            schott 03/12 |
  *----------------------------------------------------------------------*/
 void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &               eleparams,        ///< element parameter list
-                                                        const bool                             edge_based_stab,  ///< boolian for edge based fluid stabilization
-                                                        const bool                             ghost_penalty,    ///< boolian for XFEM ghost penalty stabilization
+                                                        const INPAR::XFEM::FaceType &          face_type,        ///< which type of face std, ghost, ghost-penalty
                                                         DRT::ELEMENTS::FluidIntFace*           intface,          ///< internal face element
                                                         std::vector<int> &                     nds_master,       ///< nodal dofset vector w.r.t. master element
                                                         std::vector<int> &                     nds_slave,        ///< nodal dofset vector w.r.t. slave element
@@ -424,50 +421,15 @@ void XFEM::XFEM_EdgeStab::AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &
   // call the internal faces stabilization routine for the current side/surface
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: AssembleEdgeStabGhostPenalty" );
 
-
-  // call edge-based stabilization and ghost penalty
-  Teuchos::ParameterList edgebasedparams;
-
-  // set action for elements
-  edgebasedparams.set<int>("action",FLD::EOS_and_GhostPenalty_stabilization);
-
-  // decide if the element has to be stabilized
-  bool stabilize_edge_based_fluid             = eleparams.get<bool>("edge_based");
-  bool stabilize_ghost_penalty                = eleparams.get<bool>("ghost_penalty");
-  bool stabilize_ghost_penalty_reconstruct    = eleparams.get<bool>("ghost_penalty_reconstruct", false);
-
-  bool final_edge_stab = false;
-  bool final_ghost_pen = false;
-  bool final_ghost_pen_reconstruct = false;
-
-  if (stabilize_edge_based_fluid == false) final_edge_stab = false;
-  else                                     final_edge_stab = edge_based_stab;
-
-  if (stabilize_ghost_penalty == false)    final_ghost_pen = false;
-  else                                     final_ghost_pen = ghost_penalty;
-
-  if(stabilize_ghost_penalty_reconstruct == false)   final_ghost_pen_reconstruct = false;
-  else                                               final_ghost_pen_reconstruct = ghost_penalty;
-
-
-  edgebasedparams.set("edge_based_stab", final_edge_stab);
-  edgebasedparams.set("ghost_penalty", final_ghost_pen);
-  edgebasedparams.set("ghost_penalty_reconstruct", final_ghost_pen_reconstruct);
-
-  edgebasedparams.set("ghost_penalty_fac", eleparams.get<double>("GHOST_PENALTY_FAC"));
-
-  INPAR::FLUID::EOS_GP_Pattern eos_gp_pattern = eleparams.get<INPAR::FLUID::EOS_GP_Pattern>("EOS_GP_PATTERN");
-  edgebasedparams.set("eos_gp_pattern",eos_gp_pattern);
-
-  INPAR::FLUID::EOS_ElementLength eos_he_definition = eleparams.get<INPAR::FLUID::EOS_ElementLength>("EOS_H_DEFINITION");
-  edgebasedparams.set("eos_he_definition",eos_he_definition);
+  // set action and facetype for elements
+  eleparams.set<int>("action", FLD::EOS_and_GhostPenalty_stabilization);
+  eleparams.set("facetype", face_type);
 
   // call the egde-based assemble and evaluate routine
-  if(final_edge_stab or final_ghost_pen or final_ghost_pen_reconstruct)
   DRT::ELEMENTS::FluidIntFaceImplInterface::Impl(intface)->AssembleInternalFacesUsingNeighborData(     intface,
                                                                                                        nds_master,
                                                                                                        nds_slave,
-                                                                                                       edgebasedparams,
+                                                                                                       eleparams,
                                                                                                        xdiscret,
                                                                                                        systemmatrix,
                                                                                                        systemvector);
@@ -530,16 +492,10 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabStd(
   std::vector<int> nds_slave;
   nds_slave.reserve(p_slave_numnode);
 
-  bool edge_based_stab = false;
-  bool ghost_penalty   = false;
-
   //------------------------------------------------------------------------------
   // simplest case: no element handles for both parent elements
   // two uncut elements / standard fluid case
   //------------------------------------------------------------------------------
-
-  edge_based_stab = true;
-  ghost_penalty   = false;
 
   {
     TEUCHOS_FUNC_TIME_MONITOR( "XFEM::Edgestab EOS: create nds" );
@@ -549,21 +505,19 @@ void XFEM::XFEM_EdgeStab::EvaluateEdgeStabStd(
     for(size_t i=0; i< p_slave_numnode; i++)   nds_slave.push_back(0);
   }
 
-    //--------------------------------------------------------------------------------------------
+  //--------------------------------------------------------------------------------------------
 
-    // call evaluate and assemble routine
-    if(edge_based_stab or ghost_penalty) AssembleEdgeStabGhostPenalty( eleparams,
-                                                                       edge_based_stab,
-                                                                       ghost_penalty,
-                                                                       faceele,
-                                                                       nds_master,
-                                                                       nds_slave,
-                                                                       *xdiscret,
-                                                                       systemmatrix,
-                                                                       systemvector);
+  // call evaluate and assemble routine
+   AssembleEdgeStabGhostPenalty( eleparams,
+                                 INPAR::XFEM::face_type_std,
+                                 faceele,
+                                 nds_master,
+                                 nds_slave,
+                                 *xdiscret,
+                                 systemmatrix,
+                                 systemvector);
 
-    //--------------------------------------------------------------------------------------------
-
+  //--------------------------------------------------------------------------------------------
 
   return;
 }

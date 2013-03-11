@@ -107,7 +107,6 @@ VSTAB                           no_vstab
 CSTAB                           cstab_qs //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
-EOS_GP_PATTERN                  u-v-w-p-diagonal-block
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          UMFPACK

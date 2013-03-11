@@ -19,6 +19,8 @@ Maintainer: Benedikt Schott
 #include <vector>
 #include <Teuchos_RCP.hpp>
 
+#include "../drt_inpar/inpar_xfem.H"
+
 #include <Epetra_Vector.h>
 
 
@@ -84,8 +86,7 @@ public:
 
   //! calls the evaluate and assemble routine for edge based stabilization and ghost penaly in the XFEM
   void AssembleEdgeStabGhostPenalty( Teuchos::ParameterList &               eleparams,        ///< element parameter list
-                                     const bool                             edge_based_stab,  ///< boolian for edge based fluid stabilization
-                                     const bool                             ghost_penalty,    ///< boolian for XFEM ghost penalty stabilization
+                                     const INPAR::XFEM::FaceType &          face_type,        ///< which type of face std, ghost, ghost-penalty
                                      DRT::ELEMENTS::FluidIntFace*           intface,          ///< internal face element
                                      std::vector<int> &                     nds_master,       ///< nodal dofset vector w.r.t. master element
                                      std::vector<int> &                     nds_slave,        ///< nodal dofset vector w.r.t. slave element

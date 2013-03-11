@@ -124,7 +124,6 @@ CONV_STAB_SCALING inflow //none // abs_normal_vel //abs_normal_vel // inflow // 
 //GHOST_PENALTY_STAB            Yes
 //GHOST_PENALTY_FAC             0.001
 //MSH_L2_PROJ part_ele_proj //full_ele_proj (K_ss whole element or just partial)
-//EOS_GP_PATTERN                u-v-w-p-diagonal-block          // u-p-block // full
 -------------------------------------------------------------------MATERIALS
 MAT 1 MAT_fluid DYNVISCOSITY 1.0 DENSITY 1.0 GAMMA 1.0
 ----------------------------------------------------------------------CURVE1

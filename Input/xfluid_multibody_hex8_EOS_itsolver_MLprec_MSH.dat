@@ -73,7 +73,13 @@ VSTAB                           no_vstab
 CSTAB no_cstab //cstab_qs
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
-EOS_GP_PATTERN                  u-v-w-p-diagonal-block          // u-p-block // full
+--------------------------------------FLUID DYNAMIC/EDGE-BASED-STABILIZATION
+EOS_PRES                        std_eos // none, std_eos, xfem_gp
+EOS_CONV_STREAM                 std_eos // none, std_eos, xfem_gp
+EOS_CONV_CROSS                  none // none, std_eos, xfem_gp
+EOS_DIV                         vel_jump_std_eos // none, vel_jump_std_eos, vel_jump_xfem_gp, div_jump_std_eos, div_jump_xfem_gp
+EOS_DEFINITION_TAU              Burman_Fernandez
+EOS_H_DEFINITION                EOS_he_max_dist_to_opp_surf // EOS_he_surf_with_max_diameter
 ----------------------------------------------------------------XFEM GENERAL
 GMSH_DEBUG_OUT                  No
 GMSH_SOL_OUT                    No

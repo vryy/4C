@@ -2592,7 +2592,10 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Do not use any stabilization -> inf-sup stable elements required!",
                                  "Use a residual-based stabilization or, more generally, a stabilization \nbased on the concept of the residual-based variational multiscale method...\nExpecting additional input",
                                  "Use an edge-based stabilization, especially for XFEM")  ,
-                               tuple<int>(0,1,2),
+                               tuple<int>(
+                                   INPAR::FLUID::stabtype_nostab,
+                                   INPAR::FLUID::stabtype_residualbased,
+                                   INPAR::FLUID::stabtype_edgebased),
                                &fdyn_stab);
 
   BoolParameter("INCONSISTENT","No","residual based without second derivatives (i.e. only consistent for tau->0, but faster)",&fdyn_stab);
@@ -2819,27 +2822,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                 tuple<int>(0,1),
                                &fdyn_stab);
 
-  // this parameter selects how the element length of Edge-based stabilization is defined
-  setStringToIntegralParameter<int>("EOS_H_DEFINITION",
-                               "EOS_he_max_dist_to_opp_surf",
-                               "Definition of element length for edge-based stabilization",
-                               tuple<std::string>(
-                                "EOS_he_max_dist_to_opp_surf",
-                                "EOS_he_surf_with_max_diameter"),
-                               tuple<int>(
-                                 INPAR::FLUID::EOS_he_max_dist_to_opp_surf,
-                                 INPAR::FLUID::EOS_he_surf_with_max_diameter) ,
-                               &fdyn_stab);
-
-  setStringToIntegralParameter<int>("EOS_GP_PATTERN","u-v-w-p-diagonal-block","which matrix pattern shall be assembled for 'Edgebased' fluid stabilization and 'GhostPenalty' stabilization?",
-                               tuple<std::string>("u-v-w-p-diagonal-block", "u-p-block", "full"),
-                               tuple<int>(
-                                   INPAR::FLUID::EOS_GP_Pattern_uvwp,    // u-v-w-p-diagonal-block matrix pattern
-                                   INPAR::FLUID::EOS_GP_Pattern_up,      // u-p-block matrix pattern
-                                   INPAR::FLUID::EOS_GP_Pattern_full     // full matrix pattern
-                                   ),
-                               &fdyn_stab);
-
   // this parameter selects the location where the material law is evaluated
   // (does not fit here very well, but parameter transfer is easier)
   setStringToIntegralParameter<int>("EVALUATION_MAT",
@@ -2913,6 +2895,141 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::FLUID::reynolds_stress_stab_only_rhs
                                ),
                                &fdyn_stab);
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& fdyn_residual_based_stab = fdyn.sublist("RESIDUAL-BASED-STABILIZATION",false,"");
+
+  // TODO: @Ursula: prepared list to be filled!
+
+
+
+  /*----------------------------------------------------------------------*/
+  Teuchos::ParameterList& fdyn_edge_based_stab = fdyn.sublist("EDGE-BASED-STABILIZATION",false,"");
+
+  //! Flag to (de)activate edge-based (EOS) pressure stabilization
+  setStringToIntegralParameter<int>("EOS_PRES",
+                               "none",
+                               "Flag to (de)activate pressure edge-based stabilization.",
+                               tuple<std::string>(
+                                 "none",
+                                 "std_eos",
+                                 "xfem_gp"),
+                               tuple<std::string>(
+                                 "do not use pressure edge-based stabilization",
+                                 "use pressure edge-based stabilization as standard edge-based stabilization on the entire domain",
+                                 "use pressure edge-based stabilization as xfem ghost-penalty stabilization just around cut elements"),
+                               tuple<int>(
+                                 INPAR::FLUID::EOS_PRES_none,       // no pressure edge-based stabilization
+                                 INPAR::FLUID::EOS_PRES_std_eos,    // pressure edge-based stabilization on the entire domain
+                                 INPAR::FLUID::EOS_PRES_xfem_gp     // pressure edge-based stabilization as ghost penalty around cut elements
+                               ),
+                               &fdyn_edge_based_stab);
+
+  //! Flag to (de)activate edge-based (EOS) convective streamline stabilization
+  setStringToIntegralParameter<int>("EOS_CONV_STREAM",
+                               "none",
+                               "Flag to (de)activate convective streamline edge-based stabilization.",
+                               tuple<std::string>(
+                                 "none",
+                                 "std_eos",
+                                 "xfem_gp"),
+                               tuple<std::string>(
+                                 "do not use convective streamline edge-based stabilization",
+                                 "use convective streamline edge-based stabilization as standard edge-based stabilization on the entire domain",
+                                 "use convective streamline edge-based stabilization as xfem ghost-penalty stabilization just around cut elements"),
+                               tuple<int>(
+                                 INPAR::FLUID::EOS_CONV_STREAM_none,       // no convective streamline edge-based stabilization
+                                 INPAR::FLUID::EOS_CONV_STREAM_std_eos,    // convective streamline edge-based stabilization on the entire domain
+                                 INPAR::FLUID::EOS_CONV_STREAM_xfem_gp     // pressure edge-based stabilization as ghost penalty around cut elements
+                               ),
+                               &fdyn_edge_based_stab);
+
+  //! Flag to (de)activate edge-based (EOS) convective crosswind stabilization
+  setStringToIntegralParameter<int>("EOS_CONV_CROSS",
+                               "none",
+                               "Flag to (de)activate convective crosswind edge-based stabilization.",
+                               tuple<std::string>(
+                                 "none",
+                                 "std_eos",
+                                 "xfem_gp"),
+                               tuple<std::string>(
+                                 "do not use convective crosswind edge-based stabilization",
+                                 "use convective crosswind edge-based stabilization as standard edge-based stabilization on the entire domain",
+                                 "use convective crosswind edge-based stabilization as xfem ghost-penalty stabilization just around cut elements"),
+                               tuple<int>(
+                                 INPAR::FLUID::EOS_CONV_CROSS_none,       // no convective crosswind edge-based stabilization
+                                 INPAR::FLUID::EOS_CONV_CROSS_std_eos,    // convective crosswind edge-based stabilization on the entire domain
+                                 INPAR::FLUID::EOS_CONV_CROSS_xfem_gp     // convective crosswind edge-based stabilization as ghost penalty around cut elements
+                               ),
+                               &fdyn_edge_based_stab);
+
+  //! Flag to (de)activate edge-based (EOS) divergence stabilization
+  setStringToIntegralParameter<int>("EOS_DIV",
+                               "none",
+                               "Flag to (de)activate divergence edge-based stabilization.",
+                               tuple<std::string>(
+                                 "none",
+                                 "vel_jump_std_eos",
+                                 "vel_jump_xfem_gp",
+                                 "div_jump_std_eos",
+                                 "div_jump_xfem_gp"),
+                               tuple<std::string>(
+                                 "do not use divergence edge-based stabilization",
+                                 "divergence edge-based stabilization based on velocity jump on the entire domain",
+                                 "divergence edge-based stabilization based on divergence jump just around cut elements",
+                                 "divergence edge-based stabilization based on velocity jump on the entire domain",
+                                 "divergence edge-based stabilization based on divergence jump just around cut elements"),
+                               tuple<int>(
+                                 INPAR::FLUID::EOS_DIV_none,                       // no convective edge-based stabilization
+                                 INPAR::FLUID::EOS_DIV_vel_jump_std_eos,           // streamline convective edge-based stabilization
+                                 INPAR::FLUID::EOS_DIV_vel_jump_xfem_gp,           // streamline convective edge-based stabilization
+                                 INPAR::FLUID::EOS_DIV_div_jump_std_eos,           // crosswind convective edge-based stabilization
+                                 INPAR::FLUID::EOS_DIV_div_jump_xfem_gp            // crosswind convective edge-based stabilization
+                               ),
+                               &fdyn_edge_based_stab);
+
+  //! this parameter selects the definition of Edge-based stabilization parameter
+  setStringToIntegralParameter<int>("EOS_DEFINITION_TAU",
+                                    "Burman_Fernandez",
+                                    "Definition of stabilization parameter for edge-based stabilization",
+                                    tuple<std::string>(
+                                    "Burman_Fernandez_Hansbo_2006",
+                                    "Braack_Burman_2007",
+                                    "Franca_Barrenechea_Valentin_Wall",
+                                    "Burman_Fernandez",
+                                    "tau_not_defined"
+                                    ),
+                                    tuple<std::string>(
+                                      "definition of burman_fernandez_hansbo_2006",
+                                      "definition of braack_burman_2007",
+                                      "definition of tau_franca_barrenechea_valentin_wall",
+                                      "definition of EOS_tau_burman_fernandez",
+                                      "no chosen definition"
+                                      ),
+                                    tuple<int>(
+                                      INPAR::FLUID::EOS_tau_burman_fernandez_hansbo_2006,
+                                      INPAR::FLUID::EOS_tau_braack_burman_2007,
+                                      INPAR::FLUID::EOS_tau_franca_barrenechea_valentin_wall,
+                                      INPAR::FLUID::EOS_tau_burman_fernandez,
+                                      INPAR::FLUID::EOS_tau_not_defined) ,
+                                    &fdyn_edge_based_stab);
+
+  //! this parameter selects how the element length of Edge-based stabilization is defined
+  setStringToIntegralParameter<int>("EOS_H_DEFINITION",
+                                    "EOS_he_max_dist_to_opp_surf",
+                                    "Definition of element length for edge-based stabilization",
+                                    tuple<std::string>(
+                                    "EOS_he_max_dist_to_opp_surf",
+                                    "EOS_he_surf_with_max_diameter"),
+                                    tuple<std::string>(
+                                      "take the maximal distance along 1D edge to opposite surface for both parent elements",
+                                      "take the maximal (nsd-1)D face diameter of all faces for both parent elements"
+                                      ),
+                                    tuple<int>(
+                                    INPAR::FLUID::EOS_he_max_dist_to_opp_surf,
+                                    INPAR::FLUID::EOS_he_surf_with_max_diameter) ,
+                                    &fdyn_edge_based_stab);
+
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& fdyn_turbu = fdyn.sublist("TURBULENCE MODEL",false,"");
@@ -4733,17 +4850,17 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
 
   // OUTPUT options
-  setStringToIntegralParameter<int>("GMSH_DEBUG_OUT","Yes","Do you want to write extended Gmsh output for each timestep?",
+  setStringToIntegralParameter<int>("GMSH_DEBUG_OUT","No","Do you want to write extended Gmsh output for each timestep?",
                                yesnotuple,yesnovalue,&xfem_general);
   setStringToIntegralParameter<int>("GMSH_DEBUG_OUT_SCREEN","No","Do you want to be informed, if Gmsh output is written?",
                                  yesnotuple,yesnovalue,&xfem_general);
-  setStringToIntegralParameter<int>("GMSH_SOL_OUT","Yes","Do you want to write extended Gmsh output for each timestep?",
+  setStringToIntegralParameter<int>("GMSH_SOL_OUT","No","Do you want to write extended Gmsh output for each timestep?",
                                yesnotuple,yesnovalue,&xfem_general);
-  setStringToIntegralParameter<int>("GMSH_EOS_OUT","Yes","Do you want to write extended Gmsh output for each timestep?",
+  setStringToIntegralParameter<int>("GMSH_EOS_OUT","No","Do you want to write extended Gmsh output for each timestep?",
                                yesnotuple,yesnovalue,&xfem_general);
-  setStringToIntegralParameter<int>("GMSH_DISCRET_OUT","Yes","Do you want to write extended Gmsh output for each timestep?",
+  setStringToIntegralParameter<int>("GMSH_DISCRET_OUT","No","Do you want to write extended Gmsh output for each timestep?",
                                yesnotuple,yesnovalue,&xfem_general);
-  setStringToIntegralParameter<int>("GMSH_CUT_OUT","Yes","Do you want to write extended Gmsh output for each timestep?",
+  setStringToIntegralParameter<int>("GMSH_CUT_OUT","No","Do you want to write extended Gmsh output for each timestep?",
                                yesnotuple,yesnovalue,&xfem_general);
 
 
