@@ -487,13 +487,8 @@ void PARTICLE::Algorithm::FillParticlesIntoBins(std::set<Teuchos::RCP<DRT::Node>
 bool PARTICLE::Algorithm::PlaceNodeCorrectly(Teuchos::RCP<DRT::Node> node, const double* currpos, std::set<Teuchos::RCP<DRT::Node>,Less>& homelessparticles)
 {
 //  cout << "node with ID: " << node->Id() << " and owner: " << node->Owner() << " arrived in PlaceNodeCorrectly" << endl;
-  int ijk[3] = {0,0,0};
-  for(int dim=0; dim < 3; dim++)
-  {
-    ijk[dim] = (int)((currpos[dim]-XAABB_(dim,0)) / bin_size_[dim]);
-  }
+  int binId = ConvertPosToGid(currpos);
 
-  int binId = ConvertijkToGid(&ijk[0]);
   // check whether the current node belongs into a bin on this proc
   bool found = particledis_->HaveGlobalElement(binId);
 
@@ -527,14 +522,12 @@ bool PARTICLE::Algorithm::PlaceNodeCorrectly(Teuchos::RCP<DRT::Node> node, const
           // change owner of the node to this proc
           existingnode->SetOwner(myrank_);
 
-          // received node is no longer needed, careful, X() does not have to be updated for the former ghost node
-          // NOTE: here it is done only for output of correct discret with discret->Print(cout)
+          // received node is no longer needed, X() of former ghost node has to be updated for output reasons
           {
             std::vector<double> update(3,0.0);
-            for(int dim=0; dim < 3; dim++)
-            {
-              update[dim] = node->X()[dim] - existingnode->X()[dim];
-            }
+            const double* refposparticle = existingnode->X();
+            for(int dim=0; dim<3; dim++)
+              update[dim] = currpos[dim] - refposparticle[dim];
             // change X() of existing node
             existingnode->ChangePos(update);
           }
@@ -691,51 +684,36 @@ void PARTICLE::Algorithm::TransferParticles()
     for(int iparticle=0; iparticle<currbin->NumNode(); iparticle++)
     {
       DRT::Node* currnode = particles[iparticle];
-      int ijk[3] = {-1,-1,-1};
       // get the first gid of a node and convert it into a LID
       int gid = particledis_->Dof(currnode, 0);
       int lid = disnp->Map().LID(gid);
-      for(int dim=0; dim < 3; dim++)
+
+      double currpos[3];
+      for(int dim=0; dim<3; dim++)
+        currpos[dim] = (*disnp)[lid+dim];
+
+      // update reference configuration of particle for correct output and correct placement via MPI
       {
-        ijk[dim] = (int)(((*disnp)[lid+dim]-XAABB_(dim,0)) / bin_size_[dim]);
+        std::vector<double> update(3,0.0);
+        const double* refposparticle = currnode->X();
+        for(int dim=0; dim<3; dim++)
+        {
+          update[dim] = currpos[dim] - refposparticle[dim];
+        }
+        // change X() of current particle
+        currnode->ChangePos(update);
+//        std::cout << "particle (Id: " << currnode->Id() << " ) position is updated to" << currnode->X()[0] << "  "<< currnode->X()[1] << "  "<< currnode->X()[2] << "  " << std::endl;
       }
 
-      int gidofbin = ConvertijkToGid(&ijk[0]);
+      int gidofbin = ConvertPosToGid(currpos);
       if(gidofbin != binId) // particle has left current bin
       {
         // gather all node Ids that will be removed and remove them afterwards
         // (looping over nodes and deleting at the same time is detrimental)
         tobemoved.push_back(currnode->Id());
         // find new bin for particle
-        double currpos[3];
-        for(int dim=0; dim < 3; dim++)
-        {
-          currpos[dim] = (*disnp)[lid+dim];
-        }
         /*bool placed = */PlaceNodeCorrectly(Teuchos::rcp(currnode,false), currpos, homelessparticles);
-
-
-      } // end if(gidofbin != binId)
-
-      double currpos[3];
-      for(int dim=0; dim < 3; dim++)
-      {
-        currpos[dim] = (*disnp)[lid+dim];
       }
-      // update reference configuration of homeless particles for more efficient round robin loop
-      // TO BE ADDED AGAIN; JUST FOR BETTER TESTING, SHOULD BE IN INNERST LOOP if(gidofbin != binId)
-//        if(placed == false)
-      {
-        std::vector<double> update(3,0.0);
-        for(int dim=0; dim < 3; dim++)
-        {
-          update[dim] = currpos[dim] - currnode->X()[dim];
-        }
-        // change X() of current node
-        currnode->ChangePos(update);
-//        std::cout << "particle (Id: " << currnode->Id() << " ) position is updated to" << currnode->X()[0] << "  "<< currnode->X()[1] << "  "<< currnode->X()[2] << "  " << std::endl;
-      }
-
 
     } // end for inode
 
