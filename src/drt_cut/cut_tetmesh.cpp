@@ -8,7 +8,7 @@
 
 #ifdef QHULL
 extern "C" {
-#include <libqhull/qhull_a.h>
+#include <qhull/qhull_a.h>
 }
 #endif
 
