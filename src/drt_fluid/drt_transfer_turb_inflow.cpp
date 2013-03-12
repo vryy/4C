@@ -56,15 +56,15 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
     std::set<int> slaveset;
 
     // global master node Ids and global slave node Ids
-    vector <int> masternodeids;
-    vector <int> slavenodeids;
+    std::vector <int> masternodeids;
+    std::vector <int> slavenodeids;
 
     // the (at the moment) one and only direction to couple
     int dir=-1;
 
     // loop all conditions and check whether they are of master or slave
     // type
-    for(vector<DRT::Condition*>::iterator cond=nodecloudstocouple.begin();
+    for(std::vector<DRT::Condition*>::iterator cond=nodecloudstocouple.begin();
         cond!=nodecloudstocouple.end();
         ++cond)
     {
@@ -98,11 +98,11 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
       {
         //--------------------------------------------------
         // get global master node Ids
-        const vector <int>* masteridstoadd;
+        const std::vector <int>* masteridstoadd;
 
         masteridstoadd = (*cond)->Nodes();
 
-        for(vector<int>::const_iterator idtoadd =(*masteridstoadd).begin();
+        for(std::vector<int>::const_iterator idtoadd =(*masteridstoadd).begin();
             idtoadd!=(*masteridstoadd).end();
             ++idtoadd)
         {
@@ -115,11 +115,11 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
       {
         //--------------------------------------------------
         // get global slave node Ids
-        const vector <int>* slaveidstoadd;
+        const std::vector <int>* slaveidstoadd;
 
         slaveidstoadd = (*cond)->Nodes();
 
-        for(vector<int>::const_iterator idtoadd =(*slaveidstoadd).begin();
+        for(std::vector<int>::const_iterator idtoadd =(*slaveidstoadd).begin();
             idtoadd!=(*slaveidstoadd).end();
             ++idtoadd)
         {
@@ -158,7 +158,7 @@ FLD::TransferTurbulentInflowCondition::TransferTurbulentInflowCondition(
     int    maxnodeperleaf = 250;
     double rotangle       = 0.0;
 
-    vector<int> dofsforpbcplane(2);
+    std::vector<int> dofsforpbcplane(2);
     {
       int mm=0;
       for(int rr=0;rr<3;++rr)
@@ -218,8 +218,8 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
 {
   const Epetra_Map* dofrowmap = dis_->DofRowMap();
 
-  vector<int>             mymasters;
-  vector<std::vector<double> > mymasters_vel(3);
+  std::vector<int>             mymasters;
+  std::vector<std::vector<double> > mymasters_vel(3);
 
   if(active_)
   {
@@ -258,7 +258,7 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
 
         DRT::Node* master=dis_->gNode(gid);
 
-        vector<int> masterdofs=dis_->Dof(master);
+        std::vector<int> masterdofs=dis_->Dof(master);
 
         for(int rr=0;rr<3;++rr)
         {
@@ -282,8 +282,8 @@ void FLD::TransferTurbulentInflowCondition::Transfer(
 #endif
 
     // define send and receive blocks
-    vector<char> sblock;
-    vector<char> rblock;
+    std::vector<char> sblock;
+    std::vector<char> rblock;
 
     // get number of processors and the current processors id
     int numproc=dis_->Comm().NumProc();
@@ -419,7 +419,7 @@ void FLD::TransferTurbulentInflowCondition::GetData(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::ReceiveBlock(
-    vector<char>   & rblock,
+    std::vector<char>   & rblock,
     DRT::Exporter  & exporter,
     MPI_Request    & request)
 {
@@ -471,7 +471,7 @@ void FLD::TransferTurbulentInflowCondition::ReceiveBlock(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::SendBlock(
-    vector<char>  & sblock  ,
+    std::vector<char>  & sblock  ,
     DRT::Exporter & exporter,
     MPI_Request   & request )
 {
@@ -509,9 +509,9 @@ void FLD::TransferTurbulentInflowCondition::SendBlock(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(
-  vector<int>             & mymasters    ,
-  vector<std::vector<double> > & mymasters_vel,
-  vector<char>            & rblock
+    std::vector<int>             & mymasters    ,
+    std::vector<std::vector<double> > & mymasters_vel,
+    std::vector<char>            & rblock
   )
 {
   mymasters.clear();
@@ -543,7 +543,7 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(
     DRT::ParObject::ExtractfromPack(position,rblock,id);
     mymasters.push_back(id);
 
-    map<int,std::vector<int> >::iterator iter=midtosid_.find(id);
+    std::map<int,std::vector<int> >::iterator iter=midtosid_.find(id);
 
     if(iter!=midtosid_.end())
     {
@@ -567,7 +567,7 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(
       int sid;
       DRT::ParObject::ExtractfromPack(position,rblock,sid);
 
-      map<int,std::vector<int> >::iterator iter=midtosid_.find(mymasters[rr]);
+      std::map<int,std::vector<int> >::iterator iter=midtosid_.find(mymasters[rr]);
 
       if(iter!=midtosid_.end())
       {
@@ -615,8 +615,8 @@ void FLD::TransferTurbulentInflowCondition::UnpackLocalMasterValues(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(
-    vector<int>             & mymasters    ,
-    vector<std::vector<double> > & mymasters_vel,
+    std::vector<int>             & mymasters    ,
+    std::vector<std::vector<double> > & mymasters_vel,
     DRT::PackBuffer         & sblock
     )
 {
@@ -647,7 +647,7 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(
   // add slave ids
   for(int rr=0;rr<size;++rr)
   {
-    map<int,std::vector<int> >::iterator iter=midtosid_.find(mymasters[rr]);
+    std::map<int,std::vector<int> >::iterator iter=midtosid_.find(mymasters[rr]);
 
     if(iter==midtosid_.end())
     {
@@ -655,7 +655,7 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(
     }
     else
     {
-      vector<int> slaves=iter->second;
+      std::vector<int> slaves=iter->second;
 
       int slavesize=(int)slaves.size();
 
@@ -692,21 +692,21 @@ void FLD::TransferTurbulentInflowCondition::PackLocalMasterValues(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::TransferTurbulentInflowCondition::SetValuesAvailableOnThisProc(
-    vector<int>                 & mymasters,
-    vector<std::vector<double> >     & mymasters_vel,
+    std::vector<int>                 & mymasters,
+    std::vector<std::vector<double> >     & mymasters_vel,
     Teuchos::RCP<Epetra_Vector>   velnp)
 {
   const Teuchos::RCP<const Epetra_Map> activedbcdofs=dbcmaps_->CondMap();
 
   for(unsigned nn=0;nn<mymasters.size();++nn)
   {
-    map<int,std::vector<int> >::iterator iter=midtosid_.find(mymasters[nn]);
+    std::map<int,std::vector<int> >::iterator iter=midtosid_.find(mymasters[nn]);
 
     if(iter!=midtosid_.end())
     {
-      vector<int> myslaves(iter->second);
+      std::vector<int> myslaves(iter->second);
 
-      for(vector<int>::iterator sid=myslaves.begin();sid!=myslaves.end();++sid)
+      for(std::vector<int>::iterator sid=myslaves.begin();sid!=myslaves.end();++sid)
       {
         // is this slave id on this proc?
         if(dis_->NodeRowMap()->MyGID(*sid))
@@ -714,7 +714,7 @@ void FLD::TransferTurbulentInflowCondition::SetValuesAvailableOnThisProc(
           DRT::Node* slave=dis_->gNode(*sid);
 
           // get dofs
-          vector<int> slavedofs=dis_->Dof(slave);
+          std::vector<int> slavedofs=dis_->Dof(slave);
 
 	  for(int rr=0;rr<3;++rr)
           {

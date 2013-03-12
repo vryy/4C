@@ -49,11 +49,11 @@ LOMA::Algorithm::Algorithm(
   itmaxbs_ = prbdyn.get<int>("ITEMAX_BEFORE_SAMPLING");
 
   // flag for constant thermodynamic pressure
-  consthermpress_ = prbdyn.get<string>("CONSTHERMPRESS");
+  consthermpress_ = prbdyn.get<std::string>("CONSTHERMPRESS");
 
   // flag for special flow and start of sampling period from fluid parameter list
   const Teuchos::ParameterList& fluiddyn = DRT::Problem::Instance()->FluidDynamicParams();
-  special_flow_ = fluiddyn.sublist("TURBULENCE MODEL").get<string>("CANONICAL_FLOW");
+  special_flow_ = fluiddyn.sublist("TURBULENCE MODEL").get<std::string>("CANONICAL_FLOW");
   samstart_     = fluiddyn.sublist("TURBULENCE MODEL").get<int>("SAMPLING_START");
 
   // check scatra solver type, which should be incremental, for the time being

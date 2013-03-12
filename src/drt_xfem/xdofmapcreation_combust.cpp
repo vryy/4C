@@ -378,7 +378,7 @@ void XFEM::createDofMapCombust(
 
 #ifdef COMBUST_STRESS_BASED
     // create an empty element ansatz map
-    map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
+    std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz;
 
     // add discontinuous stress unknowns for this element, if DLM condensation is turned off
     if (not params.get<bool>("DLM_condensation"))

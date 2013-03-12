@@ -67,7 +67,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux(const bool w
   case INPAR::SCATRA::flux_convective_boundary:
   {
     // calculate normal flux vector field only for the user-defined boundary conditions:
-    vector<std::string> condnames;
+    std::vector<std::string> condnames;
     condnames.push_back("ScaTraFluxCalc");
 
     return CalcFluxAtBoundary(condnames, writetofile);
@@ -311,7 +311,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     // now we evaluate the conditions and separate via ConditionID
     for (unsigned int i=0; i < condnames.size(); i++)
     {
-      vector<DRT::Condition*> cond;
+      std::vector<DRT::Condition*> cond;
       discret_->GetCondition(condnames[i],cond);
 
       discret_->ClearState();
@@ -338,11 +338,11 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     }
   }
 
-  vector<double> normfluxsum(numscal_);
+  std::vector<double> normfluxsum(numscal_);
 
   for (unsigned int i=0; i < condnames.size(); i++)
   {
-    vector<DRT::Condition*> cond;
+    std::vector<DRT::Condition*> cond;
     discret_->GetCondition(condnames[i],cond);
 
     // go to the next condition type, if there's nothing to do!
@@ -939,11 +939,11 @@ void SCATRA::ScaTraTimIntImpl::OutputMeanScalars(const int num)
         f << (*scalars)[0]/domint << "\n";
       else
       {
-        f << setprecision (9) << domint << " ";
+        f << std::setprecision (9) << domint << " ";
         for (int k = 0; k < numscal_; k++)
         {
-          f << setprecision (9) << (*scalars)[k] << " ";
-          f << setprecision (9) << (*scalars)[k]/domint << " ";
+          f << std::setprecision (9) << (*scalars)[k] << " ";
+          f << std::setprecision (9) << (*scalars)[k]/domint << " ";
         }
         f << "\n";
       }
@@ -976,7 +976,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeDensity()
     DRT::Node* lnode = discret_->lRowNode(lnodeid);
 
     // get the degrees of freedom associated with this node
-    vector<int> nodedofs;
+    std::vector<int> nodedofs;
     nodedofs = discret_->Dof(lnode);
     int numdof = nodedofs.size();
 
@@ -1027,7 +1027,7 @@ void SCATRA::ScaTraTimIntImpl::OutputElectrodeInfo(
 {
   // evaluate the following type of boundary conditions:
   std::string condname("ElectrodeKinetics");
-  vector<DRT::Condition*> cond;
+  std::vector<DRT::Condition*> cond;
   discret_->GetCondition(condname,cond);
 
   // leave method, if there's nothing to do!
@@ -1427,7 +1427,7 @@ void SCATRA::ScaTraTimIntImpl::ComputeInitialThermPressureDeriv()
   // evaluate velocity-divergence and diffusive (minus sign!) flux on boundaries
   // We may use the flux-calculation condition for calculation of fluxes for
   // thermodynamic pressure, since it is usually at the same boundary.
-  vector<std::string> condnames;
+  std::vector<std::string> condnames;
   condnames.push_back("ScaTraFluxCalc");
   for (unsigned int i=0; i < condnames.size(); i++)
   {
@@ -1695,7 +1695,7 @@ void SCATRA::ScaTraTimIntImpl::AddFluxApproxToParameterList(
   {
     std::ostringstream temp;
     temp << k;
-    string name = "flux_phi_"+temp.str();
+    std::string name = "flux_phi_"+temp.str();
     for (int i = 0;i<fluxk->MyLength();++i)
     {
       DRT::Node* actnode = discret_->lRowNode(i);
@@ -1918,13 +1918,13 @@ void SCATRA::ScaTraTimIntImpl::OutputFlux(RCP<Epetra_MultiVector> flux)
   // get the noderowmap
   const Epetra_Map* noderowmap = discret_->NodeRowMap();
   Teuchos::RCP<Epetra_MultiVector> fluxk = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
-  for (vector<int>::iterator it = writefluxids_.begin(); it!=writefluxids_.end(); ++it)
+  for (std::vector<int>::iterator it = writefluxids_.begin(); it!=writefluxids_.end(); ++it)
   {
     int k=(*it);
 
     std::ostringstream temp;
     temp << k;
-    string name = "flux_phi_"+temp.str();
+    std::string name = "flux_phi_"+temp.str();
     for (int i = 0;i<fluxk->MyLength();++i)
     {
       DRT::Node* actnode = discret_->lRowNode(i);
@@ -2023,7 +2023,7 @@ void SCATRA::ScaTraTimIntImpl::OutputIntegrReac(const int num)
       f << Step() << " " << Time() << " ";
       for (int k = 0; k < numscal_; k++)
       {
-        f << setprecision (9) << intreacterm[k] << " ";
+        f << std::setprecision (9) << intreacterm[k] << " ";
       }
       f << "\n";
       f.flush();
@@ -2331,7 +2331,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
 
   if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
   {
-    vector<DRT::Condition*> cond;
+    std::vector<DRT::Condition*> cond;
     discret_->GetCondition("ElectrodeKinetics",cond);
     if (!cond.empty())
     {
@@ -2426,7 +2426,7 @@ bool SCATRA::ScaTraTimIntImpl::ApplyGalvanostaticControl()
           {
             cout<<"\nGALVANOSTATIC MODE:\n";
             cout<<"iteration "<<gstatnumite_<<" / "<<gstatitemax<<endl;
-            cout<<"  actual reaction current = "<<scientific<<actualcurrent<<endl;
+            cout<<"  actual reaction current = "<<std::scientific<<actualcurrent<<endl;
             cout<<"  required total current  = "<<targetcurrent<<endl;
             cout<<"  negative residual (rhs) = "<<newtonrhs<<endl<<endl;
           }
@@ -2596,14 +2596,14 @@ void SCATRA::ScaTraTimIntImpl::CheckConcentrationValues(RCP<Epetra_Vector> vec)
     // this option can be helpful in some rare situations
     bool makepositive(false);
 
-    vector<int> numfound(numscal_,0);
+    std::vector<int> numfound(numscal_,0);
 #if 0
     std::stringstream myerrormessage;
 #endif
     for (int i = 0; i < discret_->NumMyRowNodes(); i++)
     {
       DRT::Node* lnode = discret_->lRowNode(i);
-      vector<int> dofs;
+      std::vector<int> dofs;
       dofs = discret_->Dof(lnode);
 
       for (int k = 0; k < numscal_; k++)

@@ -80,7 +80,7 @@ void LINALG::AMG_Operator::SetupNonSymStab()
   if (!nullspace) dserror("No nullspace supplied in parameter list");
   int nsdim            = Params().get<int>("null space: dimension",1);
   double damping       = Params().get<double>("aggregation: damping factor",1.33);
-  string eigenanalysis = Params().get("eigen-analysis: type", "cg");
+  std::string eigenanalysis = Params().get("eigen-analysis: type", "cg");
 
   //--------------------------------------------- get input matrix wrapped
   MLAPI::Space space(A()->RowMatrixRowMap());
@@ -127,7 +127,7 @@ void LINALG::AMG_Operator::SetupNonSymStab()
     Teuchos::ParameterList p;
     char levelstr[11];
     sprintf(levelstr,"(level %d)",level);
-    string type = Params().get("smoother: type "+(string)levelstr,"symmetric Gauss-Seidel");
+    std::string type = Params().get("smoother: type "+(string)levelstr,"symmetric Gauss-Seidel");
     if (type=="Jacobi" || type=="symmetric Gauss-Seidel")
     {
       int sweeps = Params().get("smoother: sweeps "+(string)levelstr,1);

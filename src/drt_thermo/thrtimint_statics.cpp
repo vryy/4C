@@ -187,7 +187,7 @@ double THR::TimIntStatics::CalcRefNormForce()
   freactnorm = THR::AUX::CalculateVectorNorm(iternorm_, freact_);
 
   //! return char norm
-  return max(fintnorm, max(fextnorm, freactnorm));
+  return std::max(fintnorm, std::max(fextnorm, freactnorm));
 }  // CalcRefNormForce()
 
 

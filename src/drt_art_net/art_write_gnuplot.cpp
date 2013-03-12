@@ -62,7 +62,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( Teuchos::RCP<DRT::Di
   // -------------------------------------------------------------------
   // Get all gnuplot export conditions
   // -------------------------------------------------------------------
-  vector<DRT::Condition*> myConditions;
+  std::vector<DRT::Condition*> myConditions;
   discret_->GetCondition("ArtWriteGnuplotCond",myConditions);
   int numofcond = myConditions.size();
 
@@ -97,7 +97,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( Teuchos::RCP<DRT::Di
         DRT::Node* nd = actdis->gNode((*nodes)[n]);
         if (nd->GetCondition("ArtInOutCond"))
         {
-          string TerminalType = *(nd->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
+          std::string TerminalType = *(nd->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
           if(TerminalType == "inlet")
             ndi = nd;
           else
@@ -112,7 +112,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( Teuchos::RCP<DRT::Di
 
 
       // loop over all nodes
-      vector<int> * sorted_nodes = new vector<int>;
+      std::vector<int> * sorted_nodes = new std::vector<int>;
       DRT::Element ** Elements = ndi->Elements();
 
       DRT::Element * Elem_i;
@@ -155,7 +155,7 @@ ART::UTILS::ArtWriteGnuplotWrapper::ArtWriteGnuplotWrapper( Teuchos::RCP<DRT::Di
       // Sort the export ondition in a map and check whether the
       // condition exists more than once, which shouldn't be allowed
       // ---------------------------------------------------------------
-      bool inserted  = agmap_.insert( make_pair( Artery_Number, artgnu_c ) ).second;
+      bool inserted  = agmap_.insert(std::make_pair( Artery_Number, artgnu_c ) ).second;
       bool inserted2 = agnode_map_.insert(std::make_pair(Artery_Number, sorted_nodes)).second;
 
       if(!inserted || !inserted2)
@@ -197,7 +197,7 @@ void ART::UTILS::ArtWriteGnuplotWrapper::Write(Teuchos::ParameterList & params)
     // -------------------------------------------------------------------
     // loop over all conditions and export the arteries values
     // -------------------------------------------------------------------
-    map<const int, RCP<class ArtWriteGnuplot> >::iterator mapiter;
+    std::map<const int, RCP<class ArtWriteGnuplot> >::iterator mapiter;
 
     // defining a constant that will have the artery number
     int art_num;
@@ -228,7 +228,7 @@ ART::UTILS::ArtWriteGnuplot:: ArtWriteGnuplot(int ArteryNum):
   // artery[ArteryNum]_.art
   // -------------------------------------------------------------------
   std::stringstream out;
-  string str, Numb_str;
+  std::string str, Numb_str;
   char *cstr;
   out << ArteryNum;
   Numb_str = out.str();
@@ -239,7 +239,7 @@ ART::UTILS::ArtWriteGnuplot:: ArtWriteGnuplot(int ArteryNum):
   str+= ".art";
   cstr  = new char [str.size()+1];
   strcpy (cstr, str.c_str());
-  fout_ = Teuchos::rcp(new ofstream(cstr));
+  fout_ = Teuchos::rcp(new std::ofstream(cstr));
   delete [] cstr;
 
 }
@@ -346,9 +346,9 @@ void ART::UTILS::ArtWriteGnuplot::Write(RCP<DRT::Discretization>  discret,
       {
         (*fout_)<<myqanp[j]<<"\t";
       }
-      (*fout_)<<nd->Id()<<endl;
+      (*fout_)<<nd->Id()<<std::endl;
     }
   }
-  (*fout_)<<endl;
+  (*fout_)<<std::endl;
 }
 

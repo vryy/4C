@@ -90,7 +90,7 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
  |  setup of constant EAS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex8::soh8_eassetup(
-          vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
+          std::vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
           double& detJ0,                      // det of Jacobian at origin
           LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8>& T0invT,   // maps M(origin) local to global
           const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe)    // material element coords
@@ -174,7 +174,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
     // fill up M at each gp
   if (eastype_ == soh8_easmild) {
     //static Epetra_SerialDenseMatrix M_mild(NUMSTR_SOH8*NUMGPT_SOH8,neas_);
-    static vector<Epetra_SerialDenseMatrix> M_mild(NUMGPT_SOH8);
+    static std::vector<Epetra_SerialDenseMatrix> M_mild(NUMGPT_SOH8);
     static bool M_mild_eval;
     /* easmild is the EAS interpolation of 9 modes, based on
     **            r 0 0   0 0 0 0 0 0
@@ -207,7 +207,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
     // return adress of just evaluated matrix
     *M_GP = &M_mild;       // return adress of static object to target of pointer
   } else if (eastype_ == soh8_easfull) {
-    static vector<Epetra_SerialDenseMatrix> M_full(NUMGPT_SOH8);
+    static std::vector<Epetra_SerialDenseMatrix> M_full(NUMGPT_SOH8);
     static bool M_full_eval;
     /* easfull is the EAS interpolation of 21 modes, based on
     **            r 0 0   0 0 0 0 0 0   0  0  0  0  0  0   rs rt 0  0  0  0
@@ -239,7 +239,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       // return adress of just evaluated matrix
       *M_GP = &M_full;            // return adress of static object to target of pointer
     } else if (eastype_ == soh8_eassosh8) {
-      static vector<Epetra_SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
+      static std::vector<Epetra_SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
       static bool M_sosh8_eval;
       /* eassosh8 is the EAS interpolation for the Solid-Shell with t=thickness dir.
       ** consisting of 7 modes, based on
@@ -270,7 +270,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       // return adress of just evaluated matrix
       *M_GP = &M_sosh8;            // return adress of static object to target of pointer
     } else if (eastype_ == soh8_easa) {
-      static vector<Epetra_SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
+      static std::vector<Epetra_SerialDenseMatrix> M_sosh8(NUMGPT_SOH8);
       static bool M_sosh8_eval;
       /* eassosh8 is the EAS interpolation for the Solid-Shell with t=thickness dir.
       ** consisting of 7 modes, based on

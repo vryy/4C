@@ -296,13 +296,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMeanPrtOfHomogenousDirection(
   if(nsd_ != 3)
     dserror("turbulence and 3D flow !");
 
-  if (turbmodelparams.get<string>("HOMDIR","not_specified") !=  "not_specified")
+  if (turbmodelparams.get<std::string>("HOMDIR","not_specified") !=  "not_specified")
   {
     RCP<std::vector<double> > averaged_LkMk = turbmodelparams.get<RCP<std::vector<double> > >("averaged_LkMk_");
     RCP<std::vector<double> > averaged_MkMk = turbmodelparams.get<RCP<std::vector<double> > >("averaged_MkMk_");
 
     // get homogeneous direction
-    string homdir = turbmodelparams.get<string>("HOMDIR","not_specified");
+    std::string homdir = turbmodelparams.get<std::string>("HOMDIR","not_specified");
 
     // here, the layer is determined via the element center in order to get the correct
     // averaged value from the vector of averaged (M/L)kMk
@@ -1038,16 +1038,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcBAndDForMultifracSubgridScales(
   }
 
 //  if (eid_ == 100){
-////    std::cout << "sqrt(kappa_phi)  " << setprecision(10) << sqrt(kappa_phi) << std::endl;
-////    std::cout << "pow(2.0,-gamma*Nphi/2.0)  " << setprecision(10) << pow(2.0,-gamma*Nphi/2.0) << std::endl;
-////    std::cout << "sqrt((pow(2.0,gamma*Nphi)-1))  " << setprecision(10) << sqrt((pow(2.0,gamma*Nphi)-1)) << std::endl;
-//    std::cout << "D  " << setprecision(10) << D_mfs << std::endl;
-//    std::cout << "B  " << setprecision(10) << B_mfs(0,0) << "  " << B_mfs(1,0) << "  " << B_mfs(2,0) << "  " << std::endl;
+////    std::cout << "sqrt(kappa_phi)  " << std::setprecision(10) << sqrt(kappa_phi) << std::endl;
+////    std::cout << "pow(2.0,-gamma*Nphi/2.0)  " << std::setprecision(10) << pow(2.0,-gamma*Nphi/2.0) << std::endl;
+////    std::cout << "sqrt((pow(2.0,gamma*Nphi)-1))  " << std::setprecision(10) << sqrt((pow(2.0,gamma*Nphi)-1)) << std::endl;
+//    std::cout << "D  " << std::setprecision(10) << D_mfs << std::endl;
+//    std::cout << "B  " << std::setprecision(10) << B_mfs(0,0) << "  " << B_mfs(1,0) << "  " << B_mfs(2,0) << "  " << std::endl;
 //    if (nwl_scatra and nwl)
-//     std::cout << "CsgsD  " << setprecision(10) << Csgs_sgphi*Cai_phi << std::endl;
+//     std::cout << "CsgsD  " << std::setprecision(10) << Csgs_sgphi*Cai_phi << std::endl;
 //    else
-//     std::cout << "CsgsD  " << setprecision(10) << Csgs_sgphi << std::endl;
-//    std::cout << "CsgsB  " << setprecision(10) << Csgs_vel_nw << "  " << Csgs_sgvel << " " << Cai_phi << std::endl;
+//     std::cout << "CsgsD  " << std::setprecision(10) << Csgs_sgphi << std::endl;
+//    std::cout << "CsgsB  " << std::setprecision(10) << Csgs_vel_nw << "  " << Csgs_sgvel << " " << Cai_phi << std::endl;
 //  }
 
   return;
@@ -1216,13 +1216,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::StoreModelParametersForOutput(
   {
     if (turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
     {
-      if (turbulencelist.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+      if (turbulencelist.get<std::string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
       {
-        if (turbulencelist.get<string>("CANONICAL_FLOW","no")
+        if (turbulencelist.get<std::string>("CANONICAL_FLOW","no")
             =="channel_flow_of_height_2" or
-            turbulencelist.get<string>("CANONICAL_FLOW","no")
+            turbulencelist.get<std::string>("CANONICAL_FLOW","no")
             =="scatra_channel_flow_of_height_2" or
-            turbulencelist.get<string>("CANONICAL_FLOW","no")
+            turbulencelist.get<std::string>("CANONICAL_FLOW","no")
             =="loma_channel_flow_of_height_2")
         {
            // calculate Prt form (Cs*h)^2/Prt

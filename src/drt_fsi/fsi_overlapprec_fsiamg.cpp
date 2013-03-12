@@ -170,11 +170,11 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
   if (strategy_==INPAR::FSI::FSIAMG)
   {
     // min of number of grids over fields
-    minnlevel_ = min(snlevel_,fnlevel_);
-    minnlevel_ = min(minnlevel_,anlevel_);
+    minnlevel_ = std::min(snlevel_,fnlevel_);
+    minnlevel_ = std::min(minnlevel_,anlevel_);
     // max of number of grids over fields
-    maxnlevel_ = max(snlevel_,fnlevel_);
-    maxnlevel_ = max(maxnlevel_,anlevel_);
+    maxnlevel_ = std::max(snlevel_,fnlevel_);
+    maxnlevel_ = std::max(maxnlevel_,anlevel_);
   }
   else
   {
@@ -234,21 +234,21 @@ void FSI::OverlappingBlockMatrixFSIAMG::SetupPreconditioner()
     if (blocksmoother_[0]=="Schur") dserror("Schur(AMG) not implemented");
   }
 
-  Ass_.resize(max(maxnlevel_,snlevel_));
-  Pss_.resize(max(maxnlevel_,snlevel_)-1);
-  Rss_.resize(max(maxnlevel_,snlevel_)-1);
-  Sss_.resize(max(maxnlevel_,snlevel_));
+  Ass_.resize(std::max(maxnlevel_,snlevel_));
+  Pss_.resize(std::max(maxnlevel_,snlevel_)-1);
+  Rss_.resize(std::max(maxnlevel_,snlevel_)-1);
+  Sss_.resize(std::max(maxnlevel_,snlevel_));
 
-  Aff_.resize(max(maxnlevel_,fnlevel_));
-  Pff_.resize(max(maxnlevel_,fnlevel_)-1);
-  Rff_.resize(max(maxnlevel_,fnlevel_)-1);
-  Sff_.resize(max(maxnlevel_,fnlevel_));
-  Schurff_.resize(max(maxnlevel_,fnlevel_));
+  Aff_.resize(std::max(maxnlevel_,fnlevel_));
+  Pff_.resize(std::max(maxnlevel_,fnlevel_)-1);
+  Rff_.resize(std::max(maxnlevel_,fnlevel_)-1);
+  Sff_.resize(std::max(maxnlevel_,fnlevel_));
+  Schurff_.resize(std::max(maxnlevel_,fnlevel_));
 
-  Aaa_.resize(max(maxnlevel_,anlevel_));
-  Paa_.resize(max(maxnlevel_,anlevel_)-1);
-  Raa_.resize(max(maxnlevel_,anlevel_)-1);
-  Saa_.resize(max(maxnlevel_,anlevel_));
+  Aaa_.resize(std::max(maxnlevel_,anlevel_));
+  Paa_.resize(std::max(maxnlevel_,anlevel_)-1);
+  Raa_.resize(std::max(maxnlevel_,anlevel_)-1);
+  Saa_.resize(std::max(maxnlevel_,anlevel_));
 
   ASF_.resize(maxnlevel_);
   AFS_.resize(maxnlevel_);
@@ -1361,16 +1361,16 @@ void FSI::OverlappingBlockMatrixFSIAMG::SGS(
     if (SisAMG() && FisAMG() && AisAMG())
       RichardsonBGS_V(myrank,1,1.0,Vsweeps,Vdamps,
                        shierachy,fhierachy,ahierachy,mlsy,mlfy,mlay,mlsx,mlfx,mlax,
-                       Ass_,const_cast<vector<MLAPI::Operator>& >(Pss_),const_cast<vector<MLAPI::Operator>& >(Rss_),
-                       Aff_,const_cast<vector<MLAPI::Operator>& >(Pff_),const_cast<vector<MLAPI::Operator>& >(Rff_),
-                       Aaa_,const_cast<vector<MLAPI::Operator>& >(Paa_),const_cast<vector<MLAPI::Operator>& >(Raa_),
+                       Ass_,const_cast<std::vector<MLAPI::Operator>& >(Pss_),const_cast<std::vector<MLAPI::Operator>& >(Rss_),
+                       Aff_,const_cast<std::vector<MLAPI::Operator>& >(Pff_),const_cast<std::vector<MLAPI::Operator>& >(Rff_),
+                       Aaa_,const_cast<std::vector<MLAPI::Operator>& >(Paa_),const_cast<std::vector<MLAPI::Operator>& >(Raa_),
                        ASF_,AFS_,AFA_,AAF_,true,false,true);
     else
       RichardsonBGS_Mixed(myrank,1,1.0,Vsweeps,Vdamps,SisAMG(),FisAMG(),AisAMG(),
                        shierachy,fhierachy,ahierachy,mlsy,mlfy,mlay,mlsx,mlfx,mlax,
-                       Ass_,const_cast<vector<MLAPI::Operator>& >(Pss_),const_cast<vector<MLAPI::Operator>& >(Rss_),
-                       Aff_,const_cast<vector<MLAPI::Operator>& >(Pff_),const_cast<vector<MLAPI::Operator>& >(Rff_),
-                       Aaa_,const_cast<vector<MLAPI::Operator>& >(Paa_),const_cast<vector<MLAPI::Operator>& >(Raa_),
+                       Ass_,const_cast<std::vector<MLAPI::Operator>& >(Pss_),const_cast<std::vector<MLAPI::Operator>& >(Rss_),
+                       Aff_,const_cast<std::vector<MLAPI::Operator>& >(Pff_),const_cast<std::vector<MLAPI::Operator>& >(Rff_),
+                       Aaa_,const_cast<std::vector<MLAPI::Operator>& >(Paa_),const_cast<std::vector<MLAPI::Operator>& >(Raa_),
                        ASF_,AFS_,AFA_,AAF_,true,false,true);
 
 

@@ -447,17 +447,17 @@ void DRT::Problem::ReadCloningMaterialMap(DRT::INPUT::DatFileReader& reader)
   for (size_t i =0 ; i < input.size(); i++)
   {
     // extract what was read from the input file
-    string src_field;
+    std::string src_field;
     (input[i])->ExtractString("SRC_FIELD",src_field);
     int src_matid(-1);
     (input[i])->ExtractInt("SRC_MAT",src_matid);
-    string tar_field;
+    std::string tar_field;
     (input[i])->ExtractString("TAR_FIELD",tar_field);
     int tar_matid(-1);
     (input[i])->ExtractInt("TAR_MAT",tar_matid);
 
     // create the key pair
-    std::pair<string,string> fields(src_field,tar_field);
+    std::pair<std::string,std::string> fields(src_field,tar_field);
 
     // enter the material pairing into the map
     std::pair<int,int> matmap(src_matid,tar_matid);
@@ -1484,7 +1484,7 @@ void DRT::Problem::ReadMicroFields(DRT::INPUT::DatFileReader& reader)
           string::size_type pos = filename.rfind('/');
           if (pos!=string::npos)
           {
-            string path = filename.substr(0,pos+1);
+            std::string path = filename.substr(0,pos+1);
             micro_inputfile_name.insert(micro_inputfile_name.begin(), path.begin(), path.end());
           }
         }
@@ -1600,7 +1600,7 @@ void DRT::Problem::ReadMicrofields_NPsupport()
 
     // broadcast micro input file name
     int length = -1;
-    string micro_inputfile_name;
+    std::string micro_inputfile_name;
     subgroupcomm->Broadcast(&length, 1, 0);
     micro_inputfile_name.resize(length);
     subgroupcomm->Broadcast((const_cast<char *>(micro_inputfile_name.c_str())), length, 0);
@@ -1661,7 +1661,7 @@ void DRT::Problem::ReadMultiLevelDiscretization(DRT::INPUT::DatFileReader& reade
    if(Teuchos::getIntegralValue<int>(mlmcp,"MLMC")!= false && Teuchos::getIntegralValue<int>(mlmcp,"PROLONGATERES")!=false)
   //if(Teuchos::getIntegralValue<int>(mlmcp,"MLMC")!= false)
   {
-    string second_input_file = mlmcp.get<std::string>("DISCRETIZATION_FOR_PROLONGATION");
+    std::string second_input_file = mlmcp.get<std::string>("DISCRETIZATION_FOR_PROLONGATION");
 
     DRT::Problem* multilevel_problem = DRT::Problem::Instance(1);
 
@@ -1749,7 +1749,7 @@ void DRT::Problem::AddDis(const std::string name, RCP<Discretization> dis)
   }
   // For debug: what's currently in the map:
   /*
-  map<std::string,RCP<Discretization> >::iterator iter;
+  std::map<std::string,RCP<Discretization> >::iterator iter;
   for (iter = discretizationmap_.begin(); iter != discretizationmap_.end(); ++iter)
   {
     cout<<"key : "<<iter->first<<"    "<<"discret.name = "<<iter->second->Name()<<endl<<endl;

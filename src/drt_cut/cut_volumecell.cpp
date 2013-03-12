@@ -706,7 +706,7 @@ void GEO::CUT::VolumeCell::integrateSpecificFunctionsTessellation()
 
     intVal += (pow(xx,6)+xx*pow(yy,4)*zz+xx*xx*yy*yy*zz*zz+pow(zz,6))*weight;
   }
-  std::cout<<setprecision(20)<<"TESSELLATION Integration = "<<intVal<<"\n";
+  std::cout<<std::setprecision(20)<<"TESSELLATION Integration = "<<intVal<<"\n";
 
 }
 

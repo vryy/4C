@@ -490,7 +490,7 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
     int k=numscal_-1;     // temperature is always last degree of freedom!!
     std::ostringstream temp;
     temp << k;
-    string name = "flux_phi_"+temp.str();
+    std::string name = "flux_phi_"+temp.str();
     // try to get the pointer to the entry (and check if type is RCP<Epetra_MultiVector>)
     RCP<Epetra_MultiVector>* f = params.getPtr< RCP<Epetra_MultiVector> >(name);
     // check: field has been set and is not of type Teuchos::null

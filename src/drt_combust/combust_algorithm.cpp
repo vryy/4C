@@ -656,7 +656,7 @@ const Teuchos::RCP<Epetra_Vector> COMBUST::Algorithm::OverwriteFluidVel()
     // get the processor local node
     DRT::Node*  lnode = FluidField().Discretization()->lRowNode(lnodeid);
     // get standard dofset from fluid time integration
-    vector<int> fluidnodedofs = (*(FluidField().DofSet())).Dof(lnode);
+    std::vector<int> fluidnodedofs = (*(FluidField().DofSet())).Dof(lnode);
     // determine number of space dimensions (numdof - pressure dof)
     const int numdim = ((int) fluidnodedofs.size()) -1;
     if (numdim != 3) dserror("3 components expected for velocity");
@@ -1777,23 +1777,23 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
     // - planenormaldirection e.g. (1,0,0)
     // - minimum in planenormaldirection
     // - maximum in planenormaldirection
-    vector<DRT::Condition*>* surfacepbcs = pbc->ReturnSurfacePBCs();
-    vector<int>    planenormal(0);
+    std::vector<DRT::Condition*>* surfacepbcs = pbc->ReturnSurfacePBCs();
+    std::vector<int>    planenormal(0);
     std::vector<double> globalmins (0);
     std::vector<double> globalmaxs (0);
     for (size_t i = 0; i < surfacepbcs->size(); ++i)
     {
-      const string* ismaster = (*surfacepbcs)[i]->Get<string>("Is slave periodic boundary condition");
+      const std::string* ismaster = (*surfacepbcs)[i]->Get<std::string>("Is slave periodic boundary condition");
       if (*ismaster == "Master")
       {
         const int masterid = (*surfacepbcs)[i]->GetInt("Id of periodic boundary condition");
-        vector<int> nodeids(*((*surfacepbcs)[i]->Nodes()));
+        std::vector<int> nodeids(*((*surfacepbcs)[i]->Nodes()));
         for (size_t j = 0; j < surfacepbcs->size(); ++j)
         {
           const int slaveid = (*surfacepbcs)[j]->GetInt("Id of periodic boundary condition");
           if (masterid == slaveid)
           {
-            const string* isslave = (*surfacepbcs)[j]->Get<string>("Is slave periodic boundary condition");
+            const std::string* isslave = (*surfacepbcs)[j]->Get<std::string>("Is slave periodic boundary condition");
             if (*isslave == "Slave")
             {
               const std::vector<int>* slavenodeids = (*surfacepbcs)[j]->Nodes();
@@ -1805,7 +1805,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
         }
 
         // Get normal direction of pbc plane
-        const string* pbcplane = (*surfacepbcs)[i]->Get<string>("degrees of freedom for the pbc plane");
+        const std::string* pbcplane = (*surfacepbcs)[i]->Get<std::string>("degrees of freedom for the pbc plane");
         if (*pbcplane == "yz")
           planenormal.push_back(0);
         else if (*pbcplane == "xz")
@@ -1840,8 +1840,8 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
 
 
     // these sets contain the element/node GIDs that have been collected
-    Teuchos::RCP<std::set<int> > allcollectednodes    = Teuchos::rcp(new set<int>);
-    Teuchos::RCP<std::set<int> > allcollectedelements = Teuchos::rcp(new set<int>);
+    Teuchos::RCP<std::set<int> > allcollectednodes    = Teuchos::rcp(new std::set<int>);
+    Teuchos::RCP<std::set<int> > allcollectedelements = Teuchos::rcp(new std::set<int>);
 
     // this loop determines how many layers around the cut elements will be collected
     for (int loopcounter = 0; loopcounter < convel_layers_; ++loopcounter)
@@ -1910,7 +1910,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
           DRT::Node* node = nodes[inode];
 
           // now check whether we have a pbc condition on this node
-          vector<DRT::Condition*> mypbc;
+          std::vector<DRT::Condition*> mypbc;
           node->GetCondition("SurfacePeriodic",mypbc);
 
           if (mypbc.size() == 0)
@@ -1921,7 +1921,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
           {
             // obtain a vector of master and slaves
             const int nodeid = node->Id();
-            vector<int> pbcnodes;
+            std::vector<int> pbcnodes;
             for (size_t numcond=0; numcond<mypbc.size(); ++numcond)
             {
               Teuchos::RCP<std::map<int,std::vector<int> > > pbcmastertoslave = ScaTraField().PBCmap();
@@ -1957,7 +1957,7 @@ const Teuchos::RCP<const Epetra_Vector> COMBUST::Algorithm::ManipulateFluidField
       // with all nodes collected it is time to communicate them to all other procs
       // which then eliminate all but their row nodes
       {
-        Teuchos::RCP<std::set<int> > globalcollectednodes = Teuchos::rcp(new set<int>);
+        Teuchos::RCP<std::set<int> > globalcollectednodes = Teuchos::rcp(new std::set<int>);
         //TODO Ursula: patch gfunctionConvelManipulation
         //             linalg_utils.H, drt_exporter.H
         LINALG::Gather<int>(*allcollectednodes,*globalcollectednodes,numproc,allproc,fluiddis->Comm());
@@ -2485,7 +2485,7 @@ void COMBUST::Algorithm::Redistribute()
             continue;
 
           // loop slavenodes associated with master
-          for(vector<int>::iterator iter=masterslavepair->second.begin();
+          for(std::vector<int>::iterator iter=masterslavepair->second.begin();
               iter!=masterslavepair->second.end();++iter)
           {
             int gid       =*iter;
@@ -2572,7 +2572,7 @@ void COMBUST::Algorithm::Redistribute()
               {
                 // add connection to all slaves
 
-                for(vector<int>::iterator iter = othermasterslavepair->second.begin();
+                for(std::vector<int>::iterator iter = othermasterslavepair->second.begin();
                     iter != othermasterslavepair->second.end(); ++iter)
                 {
                   int othermastersslaveindex = *iter;
@@ -2624,7 +2624,7 @@ void COMBUST::Algorithm::Redistribute()
       // build.
 
       // rowrecv is a fully redundant vector (size of number of nodes)
-      vector<int> rowrecv(rowmap.NumGlobalElements());
+      std::vector<int> rowrecv(rowmap.NumGlobalElements());
 
       // after AllreduceEMap rowrecv contains
       //
@@ -2665,15 +2665,15 @@ void COMBUST::Algorithm::Redistribute()
 
       // metis requests indexes. So we need a reverse lookup from gids
       // to indexes.
-      map<int,int> idxmap;
+      std::map<int,int> idxmap;
       // xadj points from index i to the index of the
       // first adjacent node
-      vector<int> xadj  (rowmap.NumGlobalElements()+1);
+      std::vector<int> xadj  (rowmap.NumGlobalElements()+1);
       // a list of adjacent nodes, adressed using xadj
-      vector<int> adjncy(tgraph.NumGlobalNonzeros()); // the size is an upper bound
+      std::vector<int> adjncy(tgraph.NumGlobalNonzeros()); // the size is an upper bound
 
       // This is a vector of size n that upon successful completion stores the partition vector of the graph
-      vector<int> part(tmap.NumMyElements());
+      std::vector<int> part(tmap.NumMyElements());
 
       // construct reverse lookup for all procs
       for (size_t i = 0; i < rowrecv.size(); ++i)
@@ -2738,10 +2738,10 @@ void COMBUST::Algorithm::Redistribute()
 
       // -------------------------------------------------------------
       // set a fully redundant vector of weights for edges
-      vector<int> ladjwgt(adjncy.size(),0);
-      vector<int>  adjwgt(adjncy.size(),0);
+      std::vector<int> ladjwgt(adjncy.size(),0);
+      std::vector<int>  adjwgt(adjncy.size(),0);
 
-      for(vector<int>::iterator iter =ladjwgt.begin();
+      for(std::vector<int>::iterator iter =ladjwgt.begin();
           iter!=ladjwgt.end();
           ++iter)
       {
@@ -2772,7 +2772,7 @@ void COMBUST::Algorithm::Redistribute()
           int masterindex = idxmap[master->Id()];
 
           // loop slavenodes
-          for(vector<int>::iterator iter = masterslavepair->second.begin();
+          for(std::vector<int>::iterator iter = masterslavepair->second.begin();
               iter != masterslavepair->second.end(); ++iter)
           {
             DRT::Node*  slave = fluiddis->gNode(*iter);
@@ -2812,7 +2812,7 @@ void COMBUST::Algorithm::Redistribute()
       tmap.Comm().SumAll(&ladjwgt[0], &adjwgt[0], adjwgt.size());
 
       // the standard edge weight is one
-      for(vector<int>::iterator iter =adjwgt.begin();
+      for(std::vector<int>::iterator iter =adjwgt.begin();
           iter!=adjwgt.end();
           ++iter)
       {
@@ -2828,7 +2828,7 @@ void COMBUST::Algorithm::Redistribute()
       if (myrank == workrank)
       {
         // the vertex weights
-        vector<int> vwgt(tweights.MyLength());
+        std::vector<int> vwgt(tweights.MyLength());
         for (int i=0; i<tweights.MyLength(); ++i) vwgt[i] = (int)tweights[i];
 
         // 0 No weights (vwgts and adjwgt are NULL)

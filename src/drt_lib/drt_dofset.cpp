@@ -241,8 +241,8 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     // that do not overlap with the node gids
     const Epetra_Map& elerowmap = *dis.ElementRowMap();
     RCP<Epetra_IntVector> elerowgids = Teuchos::rcp(new Epetra_IntVector(elerowmap));
-    vector<int> ssizeelerowgids(elerowmap.Comm().NumProc(),0);
-    vector<int> rsizeelerowgids(elerowmap.Comm().NumProc(),0);
+    std::vector<int> ssizeelerowgids(elerowmap.Comm().NumProc(),0);
+    std::vector<int> rsizeelerowgids(elerowmap.Comm().NumProc(),0);
     ssizeelerowgids[elerowmap.Comm().MyPID()] = elerowmap.NumMyElements();
     elerowmap.Comm().SumAll(&ssizeelerowgids[0],&rsizeelerowgids[0],(int)ssizeelerowgids.size());
     for (unsigned i=0; i<rsizeelerowgids.size(); ++i)
@@ -265,7 +265,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     
     // Build a rowmap that contains node and element gids
     // Consider only elements that have dofs
-    vector<int> mygids(0,0);
+    std::vector<int> mygids(0,0);
     for (int i=0; i<dis.NodeRowMap()->NumMyElements(); ++i)
       mygids.push_back(dis.NodeRowMap()->GID(i));
     for (int i=0; i<elerowgids->Map().NumMyElements(); ++i)
@@ -325,7 +325,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
     Ifpack_RCMReordering reorderer;
 //    Ifpack_AMDReordering reorderer;
     reorderer.Compute(ifgraph);
-    vector<int> permute(rowmapcombo.NumMyElements(),-1);
+    std::vector<int> permute(rowmapcombo.NumMyElements(),-1);
     for (int i=0; i<rowmapcombo.NumMyElements(); ++i)
     {
       permute[i] = rowmapcombo.GID(reorderer.Reorder(i));
@@ -416,7 +416,7 @@ int DRT::DofSet::AssignDegreesOfFreedom(const Discretization& dis, const unsigne
   // Since we have not increased count, we refer to the lowest gid in town
   const int minelementgid = minnodegid;
   maxelementnumdf = numdfrowelements.MaxValue();
-  maxelementnumdf = max(maxelementnumdf,maxnodenumdf);
+  maxelementnumdf = std::max(maxelementnumdf,maxnodenumdf);
 
   for (int i=0; i<numrowelements; ++i)
   {

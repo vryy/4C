@@ -27,7 +27,7 @@ Maintainer: Ursula Rasthofer
 //----------------------------------------------------------------------
 FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
   RCP<DRT::Discretization> discret        ,
-  string                   homdir         ,
+  std::string                   homdir         ,
   LINALG::MapExtractor&    velpressplitter,
   const bool               withscatra
   )
@@ -85,7 +85,7 @@ FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
 FLD::TurbulenceStatisticsGeneralMean::TurbulenceStatisticsGeneralMean(
   Teuchos::RCP<DRT::Discretization> discret,
   Teuchos::RCP<const DRT::DofSet>   standarddofset,
-  string                            homdir,
+  std::string                            homdir,
   LINALG::MapExtractor&             velpressplitter,
   const bool                        withscatra
   )
@@ -281,8 +281,8 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
   // get a vector of all ((X[odim[0]],X[odim[1]]),X[dim) pairs on
   // this proc
 
-  vector<double> x;
-  vector<double> y;
+  std::vector<double> x;
+  std::vector<double> y;
   {
 
     double xdim    ;
@@ -294,7 +294,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       DRT::Node*  lnode      = discret_->lRowNode(nn);
 
       // check for slave nodes  to skip them
-      vector<DRT::Condition*> mypbcs;
+      std::vector<DRT::Condition*> mypbcs;
       lnode->GetCondition("SurfacePeriodic",mypbcs);
 
       // check whether a periodic boundary condition is active on this node
@@ -400,7 +400,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
   std::vector<double> avg_w(x.size(),0.0);
   std::vector<double> avg_p(x.size(),0.0);
 
-  vector<int>    count(x.size(),0  );
+  std::vector<int>    count(x.size(),0  );
 
   //----------------------------------------------------------------------
   // do a round robin loop
@@ -416,16 +416,16 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
   const int myrank  =avgcomm.MyPID();
   const int numprocs=avgcomm.NumProc();
 
-  vector<char> sblock;
-  vector<char> rblock;
+  std::vector<char> sblock;
+  std::vector<char> rblock;
 
   sblock.clear();
   rblock.clear();
 
   // stl map to construct
-  map<double,map<double,int,doublecomp>,doublecomp>           xtoy;
-  map<double,map<double,int,doublecomp>,doublecomp>::iterator x_and_y;
-  map<double,int,doublecomp>::iterator                        y_and_i;
+  std::map<double,std::map<double,int,doublecomp>,doublecomp>           xtoy;
+  std::map<double,std::map<double,int,doublecomp>,doublecomp>::iterator x_and_y;
+  std::map<double,int,doublecomp>::iterator                        y_and_i;
 
 #ifdef PARALLEL
   // create an exporter for point to point comunication
@@ -541,10 +541,10 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
         {
           // it's not in the map yet. construct second map with
           // one initial connection
-          map<double,int,doublecomp> y_to_i_map;
+          std::map<double,int,doublecomp> y_to_i_map;
           y_to_i_map.insert(std::pair<double,int>(y[i],i));
 
-          xtoy.insert(std::pair<double,map<double,int,doublecomp> >(x[i],y_to_i_map));
+          xtoy.insert(std::pair<double,std::map<double,int,doublecomp> >(x[i],y_to_i_map));
         }
       }
 
@@ -556,7 +556,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
         DRT::Node*  lnode      = discret_->lRowNode(nn);
 
         // check for slave nodes  to skip them
-        vector<DRT::Condition*> mypbcs;
+        std::vector<DRT::Condition*> mypbcs;
         lnode->GetCondition("SurfacePeriodic",mypbcs);
 
         // check whether a periodic boundary condition is active on this node
@@ -641,7 +641,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
             int lid;
 
             // the set of degrees of freedom associated with the node
-            vector<int> nodedofset = discret_->Dof(lnode);
+            std::vector<int> nodedofset = discret_->Dof(lnode);
 
             // u velocity
             gid = nodedofset[0];
@@ -851,10 +851,10 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       {
         // it's not in the map yet. construct second map with
         // one initial connection
-        map<double,int,doublecomp> y_to_i_map;
+        std::map<double,int,doublecomp> y_to_i_map;
         y_to_i_map.insert(std::pair<double,int>(y[i],i));
 
-        xtoy.insert(std::pair<double,map<double,int,doublecomp> >(x[i],y_to_i_map));
+        xtoy.insert(std::pair<double,std::map<double,int,doublecomp> >(x[i],y_to_i_map));
       }
     }
 
@@ -866,7 +866,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
       DRT::Node*  lnode      = discret_->lRowNode(nn);
 
       // check for slave nodes  to skip them
-      vector<DRT::Condition*> mypbcs;
+      std::vector<DRT::Condition*> mypbcs;
       lnode->GetCondition("SurfacePeriodic",mypbcs);
 
       // check whether a periodic boundary condition is active on this node
@@ -951,7 +951,7 @@ void FLD::TurbulenceStatisticsGeneralMean::SpaceAverageInOneDirection(
 	  int lid;
 
 	  // the set of degrees of freedom associated with the node
-	  vector<int> nodedofset = discret_->Dof(lnode);
+	  std::vector<int> nodedofset = discret_->Dof(lnode);
 
 	  int err=0;
 

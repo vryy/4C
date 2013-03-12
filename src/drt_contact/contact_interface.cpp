@@ -41,6 +41,7 @@ Maintainer: Alexander Popp
 #include "Epetra_SerialComm.h"
 #endif
 #include <Epetra_CrsMatrix.h>
+#include <Epetra_Time.h>
 #include "contact_interface.H"
 #include "contact_node.H"
 #include "contact_element.H"
@@ -1398,7 +1399,7 @@ void CONTACT::CoInterface::EvaluateRelMov(const Teuchos::RCP<Epetra_Vector> xsmo
     for (int k=0;k<3;++k)
       nz += cnode->MoData().n()[k] * cnode->MoData().lm()[k];
 
-    vector <double> jump(dim);
+    std::vector <double> jump(dim);
     for(int dim=0;dim<Dim();dim++)
       jump[dim] = 0;
 
@@ -2253,7 +2254,7 @@ void CONTACT::CoInterface::AssembleRegTangentForcesPenalty()
 
       /******************** tanplane.jump.maxtantrac/deriv(magnitude) ***/
       // vector double temp
-      vector <double> temp(cnode->NumDof());
+      std::vector <double> temp(cnode->NumDof());
       for (int dim=0;dim<cnode->NumDof();++dim)
         temp[dim] = -maxtantrac/(magnitude*magnitude)*trailtraction[dim];
 
@@ -2610,9 +2611,9 @@ void CONTACT::CoInterface::AssembleRegTangentForcesAugmented()
 
       /******************** tanplane.jump.maxtantrac/deriv(magnitude) ***/
       // vector double temp
-      vector <double> temp(cnode->NumDof());
-        for (int dim=0;dim<cnode->NumDof();++dim)
-          temp[dim] = -maxtantrac/(magnitude*magnitude)*trailtraction[dim];
+      std::vector <double> temp(cnode->NumDof());
+      for (int dim=0;dim<cnode->NumDof();++dim)
+        temp[dim] = -maxtantrac/(magnitude*magnitude)*trailtraction[dim];
 
       // loop over dimensions
       for (int dimout=0;dimout<cnode->NumDof();++dimout)
@@ -4074,7 +4075,7 @@ void CONTACT::CoInterface::AssembleLinSlip(LINALG::SparseMatrix& linslipLMglobal
       // iterator
       std::map<int,double>::iterator colcurr;
 
-      vector <std::map<int,double> > dtmap(Dim());
+      std::vector <std::map<int,double> > dtmap(Dim());
 
       for (colcurr=dnmap[0].begin(); colcurr!=dnmap[0].end(); colcurr++)
         dtmap[1].insert(std::pair<int,double>(colcurr->first,colcurr->second));

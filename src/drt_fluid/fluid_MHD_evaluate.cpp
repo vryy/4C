@@ -52,10 +52,10 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
   :
   pdiscret_(actdis)
 {
-  vector<DRT::Condition*> MHDcnd;
+  std::vector<DRT::Condition*> MHDcnd;
   pdiscret_->GetCondition("SurfaceMixHybDirichlet",MHDcnd);
   
-  vector <int> allcnd_MHDnodeids;
+  std::vector <int> allcnd_MHDnodeids;
 
   if(MHDcnd.size()!=0)
   {
@@ -89,13 +89,13 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 
       for (unsigned numcond=0;numcond<MHDcnd.size();++numcond)
       {
-        const vector <int>* MHDnodeids = (*MHDcnd[numcond]).Nodes();
+        const std::vector <int>* MHDnodeids = (*MHDcnd[numcond]).Nodes();
 
         allcnd_MHDnodeids.reserve( allcnd_MHDnodeids.size() + MHDnodeids->size());
         allcnd_MHDnodeids.insert ( allcnd_MHDnodeids.end(), MHDnodeids->begin(), MHDnodeids->end());
       }
 
-      for(vector<int>::iterator id =allcnd_MHDnodeids.begin();
+      for(std::vector<int>::iterator id =allcnd_MHDnodeids.begin();
           id!=allcnd_MHDnodeids.end();
           ++id)
       {
@@ -197,7 +197,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
 
     {
 
-      vector<int> rownodes;
+      std::vector<int> rownodes;
       
       // all row nodes next to a MHD node are now contained in the bndydis
       for(std::set<int>::iterator id = adjacent_row.begin();
@@ -214,7 +214,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
                                          0,
                                          bnd_discret_->Comm()));
 
-      vector<int> colnodes;
+      std::vector<int> colnodes;
 
       for(std::set<int>::iterator id = adjacent_col.begin();
           id!=adjacent_col.end();
@@ -260,12 +260,12 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
       {
         // We use the same nodal ids --- nevertheless, we just use a subset 
         // of the node ids and thus cannot copy the conditions completely. 
-        vector<int> reduced_ids;
+        std::vector<int> reduced_ids;
 
         const std::vector<int>* candidates = (*mysurfpbcs[numcond]).Nodes();
       
-        vector<int> mytoggle(candidates->size(),0);
-        vector<int> toggle(candidates->size(),0);
+        std::vector<int> mytoggle(candidates->size(),0);
+        std::vector<int> toggle(candidates->size(),0);
 
         for(unsigned rr=0;rr<candidates->size();++rr)
         {
@@ -344,8 +344,8 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
       cout << "| the new maps\n";
     }
 
-    vector<int> bndnids;
-    vector<int> bndnidslocal(bnd_discret_->NodeRowMap()->NumMyElements());
+    std::vector<int> bndnids;
+    std::vector<int> bndnidslocal(bnd_discret_->NodeRowMap()->NumMyElements());
 
     for (int i=0; i<bnd_discret_->NodeRowMap()->NumMyElements(); ++i)
     bndnidslocal[i] = bnd_discret_->NodeRowMap()->GID(i);
@@ -353,7 +353,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     const int numproc = pdiscret_->Comm().NumProc();
 
     // vector containing all proc ids
-    vector<int> allproc(numproc);
+    std::vector<int> allproc(numproc);
     for (int i=0; i<numproc; ++i) allproc[i] = i;
 
     LINALG::Gather<int>(bndnidslocal,bndnids,numproc,&allproc[0],pdiscret_->Comm());
@@ -428,14 +428,14 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
     }
     
     {
-      vector<int> my_n_nodes   (numproc,0);
-      vector<int>    n_nodes   (numproc,0);
-      vector<int> my_n_elements(numproc,0);
-      vector<int>    n_elements(numproc,0);
-      vector<int> my_n_ghostele(numproc,0);
-      vector<int>    n_ghostele(numproc,0);
-      vector<int> my_n_dof     (numproc,0);
-      vector<int>    n_dof     (numproc,0);
+      std::vector<int> my_n_nodes   (numproc,0);
+      std::vector<int>    n_nodes   (numproc,0);
+      std::vector<int> my_n_elements(numproc,0);
+      std::vector<int>    n_elements(numproc,0);
+      std::vector<int> my_n_ghostele(numproc,0);
+      std::vector<int>    n_ghostele(numproc,0);
+      std::vector<int> my_n_dof     (numproc,0);
+      std::vector<int>    n_dof     (numproc,0);
 
       int myrank=bnd_discret_->Comm().MyPID();
 
@@ -483,7 +483,7 @@ FLD::FluidMHDEvaluate::FluidMHDEvaluate(
       for(int rr=0;rr<numnode;++rr)
       {
         DRT::Node*  node = bnd_discret_->gNode(nodeids[rr]);
-        vector<int> nodedofset = bnd_discret_->Dof(node);
+        std::vector<int> nodedofset = bnd_discret_->Dof(node);
 
         for(unsigned index=0;index<nodedofset.size();++index)
         {
@@ -560,7 +560,7 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
 
     RCP<Epetra_Vector> bndres = LINALG::CreateVector(*bnd_discret_->DofRowMap(),true); 
 
-    vector<DRT::Condition*> bndMHDcnd;
+    std::vector<DRT::Condition*> bndMHDcnd;
     const std::string condstring = "SurfaceMixHybDirichlet";
     bnd_discret_->GetCondition(condstring,bndMHDcnd);
 
@@ -584,7 +584,7 @@ void FLD::FluidMHDEvaluate::BoundaryElementLoop(
         // element matrices and vectors will be reshaped
         // during the element call!
 
-        for (map<int,RCP<DRT::Element> >::iterator curr=geom.begin(); curr!=geom.end(); ++curr)
+        for (std::map<int,RCP<DRT::Element> >::iterator curr=geom.begin(); curr!=geom.end(); ++curr)
         {
           // get element location vector and ownerships
           // the LocationVector method will return the the location vector

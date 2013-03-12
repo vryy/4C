@@ -36,8 +36,8 @@ DRT::ParObject* DRT::ELEMENTS::NStetType::Create( const std::vector<char> & data
 
 //-----------------------------------------------------------------------
 //-----------------------------------------------------------------------
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStetType::Create( const string eletype,
-                                                            const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStetType::Create( const std::string eletype,
+                                                            const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {
@@ -736,7 +736,7 @@ void DRT::ELEMENTS::NStetType::InitMISpatchesGreedyIII(
   dis.Comm().Barrier();
 
   // key is leftover elecid
-  // vector<int> is patches this element is (multiple times) connected to
+  // std::vector<int> is patches this element is (multiple times) connected to
   std::map<int,std::vector<int> >  eleonpatches;
   // key is leftover elecids
   // value is number of patches (mutliple times) interested in this element

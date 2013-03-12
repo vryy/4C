@@ -1130,7 +1130,7 @@ void CONTACT::SelfBinaryTree::InitializeTreeBottomUp(std::map<Teuchos::RCP<SelfD
   {
     // get the edge with lowest costs (= the first edge in the dual graph as
     // the map is automatically sorted by the costs)  to contract it
-    map <Teuchos::RCP<SelfDualEdge>,vector <Teuchos::RCP<SelfDualEdge> > > ::iterator iter = (*dualGraph).begin();
+    std::map <Teuchos::RCP<SelfDualEdge>,std::vector <Teuchos::RCP<SelfDualEdge> > > ::iterator iter = (*dualGraph).begin();
     Teuchos::RCP<SelfDualEdge> contractedEdge = (*iter).first;
     Teuchos::RCP<SelfBinaryTreeNode> node1 = contractedEdge->GetNode1();
     Teuchos::RCP<SelfBinaryTreeNode> node2 = contractedEdge->GetNode2();

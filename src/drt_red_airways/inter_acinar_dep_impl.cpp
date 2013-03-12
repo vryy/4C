@@ -107,7 +107,7 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
         }
         cout<<"Element ("<<actele->Id()<<") rank("<<myrank<<") and HasGlobalElement("<<discretization.HaveGlobalElement(actele->Id())<<")"<<endl;
 
-        vector<int> la;
+        std::vector<int> la;
         // get element location vector, dirichlet flags and ownerships
         discretization.Dof(elems[j],la);
         //        elems[j]->LocationVector(discretization,la,false);
@@ -144,9 +144,9 @@ int DRT::ELEMENTS::InterAcinarDepImpl<distype>::Evaluate(
   RCP<const Epetra_Vector> pn  = discretization.GetState("pn");
 
   // extract local values from the global vectors
-  vector<double> my_sysmat_iad(lm.size());
+  std::vector<double> my_sysmat_iad(lm.size());
   DRT::UTILS::ExtractMyValues(*sysmat_iad,my_sysmat_iad,lm);
-  vector<double> my_pn(lm.size());
+  std::vector<double> my_pn(lm.size());
   DRT::UTILS::ExtractMyValues(*pn,my_pn,lm);
 
 

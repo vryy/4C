@@ -30,7 +30,7 @@ Maintainer: Ursula Rasthofer
  *----------------------------------------------------------------------*/
 FLD::DynSmagFilter::DynSmagFilter(
   RCP<DRT::Discretization>     actdis             ,
-  RCP<map<int,std::vector<int> > >  pbcmapmastertoslave,
+  RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
   Teuchos::ParameterList&      params)
   :
   // call constructor for "nontrivial" objects
@@ -51,11 +51,11 @@ FLD::DynSmagFilter::DynSmagFilter(
   // -------------------------------------------------------------------
   Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
 
-  if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+  if (modelparams->get<std::string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
       ==
       "CLASSICAL_LES")
   {
-    if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
+    if(modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
        ==
        "Dynamic_Smagorinsky"
       )
@@ -81,12 +81,12 @@ FLD::DynSmagFilter::DynSmagFilter(
           std::cout << "------->  Caution: works only for cartesian meshes!" << std::endl;
         }
         // for homogeneous directions we can perform an averaging
-        if (modelparams->get<string>("HOMDIR","not_specified")
+        if (modelparams->get<std::string>("HOMDIR","not_specified")
            !=
            "not_specified")
         {
           homdir_ = true;
-          special_flow_homdir_ = modelparams->get<string>("HOMDIR","not_specified");
+          special_flow_homdir_ = modelparams->get<std::string>("HOMDIR","not_specified");
         }
         else
           dserror("Expected homogeneous direction!");
@@ -139,13 +139,13 @@ FLD::DynSmagFilter::DynSmagFilter(
       }
     }
 
-    if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
+    if(modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
        ==
        "Scale_Similarity" or
-       modelparams->get<string>("PHYSICAL_MODEL","no_model")
+       modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
        ==
        "Scale_Similarity_basic" or
-       modelparams->get<string>("PHYSICAL_MODEL","no_model")
+       modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
        ==
        "Multifractal_Subgrid_Scales"
       )
@@ -184,7 +184,7 @@ FLD::DynSmagFilter::~DynSmagFilter()
 void FLD::DynSmagFilter::AddScatra(
   RCP<DRT::Discretization>     scatradis,
   INPAR::SCATRA::ScaTraType    scatratype,
-  RCP<map<int,std::vector<int> > >  scatra_pbcmapmastertoslave)
+  RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave)
 {
   scatradiscret_ = scatradis;
   scatratype_ = scatratype;
@@ -217,9 +217,9 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfCs(
   // reset to zero
   // turbulent channel flow only
   Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
-  if (modelparams->get<string>("CANONICAL_FLOW","no")=="channel_flow_of_height_2"
-      or modelparams->get<string>("CANONICAL_FLOW","no")=="loma_channel_flow_of_height_2"
-      or modelparams->get<string>("CANONICAL_FLOW","no")=="scatra_channel_flow_of_height_2")
+  if (modelparams->get<std::string>("CANONICAL_FLOW","no")=="channel_flow_of_height_2"
+      or modelparams->get<std::string>("CANONICAL_FLOW","no")=="loma_channel_flow_of_height_2"
+      or modelparams->get<std::string>("CANONICAL_FLOW","no")=="scatra_channel_flow_of_height_2")
   {
     size_t nlayer = (*modelparams->get<RCP<std::vector<double> > >("local_Cs_sum")).size();
     for (size_t rr=0; rr<nlayer; rr++)
@@ -266,9 +266,9 @@ void FLD::DynSmagFilter::ApplyFilterForDynamicComputationOfPrt(
   // add pointer to variables of statistics manager
   // output of mean dynamic Samgorinsky parameters
   // reset to zero first
-  if (modelparams->get<string>("CANONICAL_FLOW","no")=="channel_flow_of_height_2"
-      or modelparams->get<string>("CANONICAL_FLOW","no")=="loma_channel_flow_of_height_2"
-      or modelparams->get<string>("CANONICAL_FLOW","no")=="scatra_channel_flow_of_height_2")
+  if (modelparams->get<std::string>("CANONICAL_FLOW","no")=="channel_flow_of_height_2"
+      or modelparams->get<std::string>("CANONICAL_FLOW","no")=="loma_channel_flow_of_height_2"
+      or modelparams->get<std::string>("CANONICAL_FLOW","no")=="scatra_channel_flow_of_height_2")
   {
     size_t nlayer = (*modelparams->get<RCP<std::vector<double> > >("local_Prt_sum")).size();
     for (size_t rr=0; rr<nlayer; rr++)
@@ -339,13 +339,13 @@ void FLD::DynSmagFilter::DynSmagComputeCs()
   RCP<std::vector<double> > averaged_CI_numerator   = Teuchos::rcp(new std::vector<double>);
   RCP<std::vector<double> > averaged_CI_denominator = Teuchos::rcp(new std::vector<double>);
 
-  vector<int>          count_for_average      ;
-  vector<int>          local_count_for_average;
+  std::vector<int>          count_for_average      ;
+  std::vector<int>          local_count_for_average;
 
-  vector <double>      local_ele_sum_LijMij   ;
-  vector <double>      local_ele_sum_MijMij   ;
-  vector <double>      local_ele_sum_CI_numerator;
-  vector <double>      local_ele_sum_CI_denominator;
+  std::vector <double>      local_ele_sum_LijMij   ;
+  std::vector <double>      local_ele_sum_MijMij   ;
+  std::vector <double>      local_ele_sum_CI_numerator;
+  std::vector <double>      local_ele_sum_CI_denominator;
 
   // final constants (Cs*delta)^2 and (Ci*delta)^2 (loma only)
   const Epetra_Map* elerowmap = discret_->ElementRowMap();
@@ -713,11 +713,11 @@ void FLD::DynSmagFilter::DynSmagComputePrt(
   RCP<std::vector<double> > averaged_LkMk        = Teuchos::rcp(new std::vector<double>);
   RCP<std::vector<double> > averaged_MkMk        = Teuchos::rcp(new std::vector<double>);
 
-  vector<int>          count_for_average      ;
-  vector<int>          local_count_for_average;
+  std::vector<int>          count_for_average      ;
+  std::vector<int>          local_count_for_average;
 
-  vector <double>      local_ele_sum_LkMk;
-  vector <double>      local_ele_sum_MkMk;
+  std::vector <double>      local_ele_sum_LkMk;
+  std::vector <double>      local_ele_sum_MkMk;
 
   if(homdir_)
   {
@@ -1196,15 +1196,15 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
   // ---------------------------------------------------------------
   // send add values from masters and slaves
   {
-    map<int, vector<int> >::iterator masternode;
+    std::map<int, std::vector<int> >::iterator masternode;
 
     double val;
     std::vector<double> vel_val(3);
-    vector<std::vector<double> > reystress_val;
+    std::vector<std::vector<double> > reystress_val;
     reystress_val.resize(3);
     for(int rr=0;rr<3;rr++)
       (reystress_val[rr]).resize(3);
-    vector<std::vector<double> > modeled_subgrid_stress_val;
+    std::vector<std::vector<double> > modeled_subgrid_stress_val;
     modeled_subgrid_stress_val.resize(3);
     for(int rr=0;rr<3;rr++)
       (modeled_subgrid_stress_val[rr]).resize(3);
@@ -1220,7 +1220,7 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
         ++masternode)
     {
       // add all slave values to master value
-      vector<int>::iterator slavenode;
+      std::vector<int>::iterator slavenode;
 
       int lid = noderowmap->LID(masternode->first);
       if (lid < 0) dserror("nodelid < 0 ?");
@@ -1362,7 +1362,7 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
       DRT::Node*  lnode       = discret_->lRowNode(lnodeid);
 
       // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(lnode);
 
       // check whether the node is on a wall, i.e. all velocity dofs
       // are Dirichlet constrained
@@ -1551,7 +1551,7 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
       // get the node
       DRT::Node* node = discret_->lRowNode(nid);
       // get global ids of all dofs of the node
-      vector<int> dofs= discret_->Dof(node);
+      std::vector<int> dofs= discret_->Dof(node);
       //we only loop over all velocity dofs
       for(int d=0;d<discret_->NumDof(node)-1;++d)
       {
@@ -1776,7 +1776,7 @@ void FLD::DynSmagFilter::ApplyBoxFilterScatra(
   // ---------------------------------------------------------------
   // send add values from masters and slaves
   {
-    map<int, vector<int> >::iterator masternode;
+    std::map<int, std::vector<int> >::iterator masternode;
 
     double val = 0.0;
     std::vector<double> vel_val(3);
@@ -1793,7 +1793,7 @@ void FLD::DynSmagFilter::ApplyBoxFilterScatra(
         ++masternode)
     {
       // add all slave values to master value
-      vector<int>::iterator slavenode;
+      std::vector<int>::iterator slavenode;
 
       int lid = noderowmap->LID(masternode->first);
       if (lid < 0) dserror("nodelid < 0 ?");
@@ -1924,7 +1924,7 @@ void FLD::DynSmagFilter::ApplyBoxFilterScatra(
         {
           // do we also have a temperature dirichlet boundary condition
           // get the set of temperature degrees of freedom associated with the node
-          vector<int> nodedofset = scatradiscret_->Dof(lnode);
+          std::vector<int> nodedofset = scatradiscret_->Dof(lnode);
           if (nodedofset.size()>1)
             dserror("Dynamic Smagorinsky currently only implemented for one scalar field!");
 

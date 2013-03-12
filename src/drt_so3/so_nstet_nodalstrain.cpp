@@ -85,7 +85,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
 
   // nodal integration for nlnstiff and internal forces only
   // (this method does not compute stresses/strains/element updates/mass matrix)
-  string& action = p.get<string>("action","none");
+  string& action = p.get<std::string>("action","none");
   if (action != "calc_struct_nlnstiffmass"  &&
       action != "calc_struct_nlnstifflmass" &&
       action != "calc_struct_nlnstiff"      &&
@@ -171,17 +171,17 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
     bool mis = (pstab_adjele_.find(nodeLid) != pstab_adjele_.end());
 
     // standard quantities for all nodes
-    vector<DRT::ELEMENTS::NStet*>& adjele = adjele_[nodeLid];
-    map<int,DRT::Node*>& adjnode = adjnode_[nodeLid];
-    vector<int>& lm = adjlm_[nodeLid];
+    std::vector<DRT::ELEMENTS::NStet*>& adjele = adjele_[nodeLid];
+    std::map<int,DRT::Node*>& adjnode = adjnode_[nodeLid];
+    std::vector<int>& lm = adjlm_[nodeLid];
     const int ndofperpatch = (int)lm.size();
 
     // quantities for mis nodes
     int mis_ndofperpatch = 0;
-    vector<DRT::ELEMENTS::NStet*>* mis_adjele = NULL;
-    map<int,DRT::Node*>* mis_adjnode = NULL;
-    vector<double>* mis_weight = NULL;
-    vector<int>* mis_lm = NULL;
+    std::vector<DRT::ELEMENTS::NStet*>* mis_adjele = NULL;
+    std::map<int,DRT::Node*>* mis_adjnode = NULL;
+    std::vector<double>* mis_weight = NULL;
+    std::vector<int>* mis_lm = NULL;
     if (mis)
     {
       mis_adjele = &pstab_adjele_[nodeLid];
@@ -263,8 +263,8 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
     if (assemblemat1)
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStetType::PreEvaluate Assembly");
-      vector<int> lrlm;
-      vector<int> lclm;
+      std::vector<int> lrlm;
+      std::vector<int> lclm;
 
       const Epetra_Map& dofrowmap = systemmatrix1->OperatorRangeMap();
       lrlm.resize(ndofperpatch);
@@ -572,7 +572,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
 
   //-----------------------------------------------------------------------
   // get displacements of this patch
-  vector<FAD> patchdisp(ndofinpatch);
+  std::vector<FAD> patchdisp(ndofinpatch);
   for (int i=0; i<ndofinpatch; ++i)
   {
     int lid = disp.Map().LID(lm[i]);
@@ -585,14 +585,14 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   // build averaged F and volume of node (using sacado)
   double VnodeL = 0.0;
   LINALG::TMatrix<FAD,3,3> fad_FnodeL(true);
-  vector<std::vector<int> > lmlm(neleinpatch);
+  std::vector<std::vector<int> > lmlm(neleinpatch);
   for (int i=0; i<neleinpatch; ++i)
   {
     const double V = adjele[i]->Vol()/4;
     VnodeL += V;
 
     // get the element's displacements out of the patch' displacements
-    vector<int> elelm;
+    std::vector<int> elelm;
     std::vector<int> lmowner;
     std::vector<int> lmstride;
     adjele[i]->LocationVector(dis,elelm,lmowner,lmstride);
@@ -602,7 +602,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
     lmlm[i].resize(12);
     for (int j=0; j<12; ++j)
     {
-      vector<int>::iterator k = find(lm.begin(),lm.end(),elelm[j]);
+      std::vector<int>::iterator k = find(lm.begin(),lm.end(),elelm[j]);
       lmlm[i][j] = k-lm.begin(); // the position of elelm[j] in lm
     }
 
@@ -686,7 +686,7 @@ void DRT::ELEMENTS::NStetType::NodalIntegration(Epetra_SerialDenseMatrix*       
   // right cauchy green
   LINALG::TMatrix<FAD,3,3> CG(false);
   CG.MultiplyTN(fad_FnodeL,fad_FnodeL);
-  vector<FAD> Ebar(6);
+  std::vector<FAD> Ebar(6);
   Ebar[0] = 0.5 * (CG(0,0) - 1.0);
   Ebar[1] = 0.5 * (CG(1,1) - 1.0);
   Ebar[2] = 0.5 * (CG(2,2) - 1.0);
@@ -957,7 +957,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
 
   //-----------------------------------------------------------------------
   // get displacements of this patch
-  vector<FAD> patchdisp(ndofinpatch);
+  std::vector<FAD> patchdisp(ndofinpatch);
   for (int i=0; i<ndofinpatch; ++i)
   {
     int lid = disp.Map().LID(lm[i]);
@@ -969,7 +969,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
   //-----------------------------------------------------------------------
   // build averaged F, det(F) and volume of node (using sacado)
   double VnodeL = 0.0;
-  vector<std::vector<int> > lmlm(neleinpatch);
+  std::vector<std::vector<int> > lmlm(neleinpatch);
   FAD fad_Jnode = 0.0;
   for (int i=0; i<neleinpatch; ++i)
   {
@@ -977,7 +977,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
     VnodeL += V;
 
     // get the element's displacements out of the patch' displacements
-    vector<int> elelm;
+    std::vector<int> elelm;
     std::vector<int> lmowner;
     std::vector<int> lmstride;
     adjele[i]->LocationVector(dis,elelm,lmowner,lmstride);
@@ -986,7 +986,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
     lmlm[i].resize(12);
     for (int j=0; j<12; ++j)
     {
-      vector<int>::iterator k = find(lm.begin(),lm.end(),elelm[j]);
+      std::vector<int>::iterator k = find(lm.begin(),lm.end(),elelm[j]);
       lmlm[i][j] = k-lm.begin(); // the position of elelm[j] in lm
     }
 
@@ -1076,7 +1076,7 @@ void DRT::ELEMENTS::NStetType::MISNodalIntegration(
   // green-lagrange strains based on averaged volumetric F
   LINALG::TMatrix<FAD,3,3> CG(false);
   CG.MultiplyTN(fad_FnodeL,fad_FnodeL);
-  vector<FAD> Ebar(6);
+  std::vector<FAD> Ebar(6);
   Ebar[0] = 0.5 * (CG(0,0) - 1.0);
   Ebar[1] = 0.5 * (CG(1,1) - 1.0);
   Ebar[2] = 0.5 * (CG(2,2) - 1.0);

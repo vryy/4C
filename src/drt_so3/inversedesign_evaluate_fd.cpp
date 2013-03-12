@@ -693,7 +693,7 @@ void DRT::ELEMENTS::InvDesign::FD_djdX(Epetra_SerialDenseMatrix& djdX,
 
   const double eps = 1.0e-8;
 
-  vector<double> dispperm(NUMDOF_SOH8);
+  std::vector<double> dispperm(NUMDOF_SOH8);
   for (int j=0; j<NUMDOF_SOH8; ++j)
   {
     // permuted the displacement in direction j

@@ -681,17 +681,17 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
             }
 
 
-            vector<int> patchelementslm;
-            vector<int> patchelementslmowner;
+            std::vector<int> patchelementslm;
+            std::vector<int> patchelementslmowner;
             for ( std::map<int,  std::vector<GEO::CUT::BoundaryCell*> >::const_iterator bc=bcells.begin();
                   bc!=bcells.end(); ++bc )
             {
               int sid = bc->first;
               DRT::Element * side = cutdiscret.gElement( sid );
 
-              vector<int> patchlm;
-              vector<int> patchlmowner;
-              vector<int> patchlmstride;
+              std::vector<int> patchlm;
+              std::vector<int> patchlmowner;
+              std::vector<int> patchlmstride;
               side->LocationVector(cutdiscret, patchlm, patchlmowner, patchlmstride);
 
               patchelementslm.reserve( patchelementslm.size() + patchlm.size());
@@ -743,9 +743,9 @@ void FLD::XFluidFluid::XFluidFluidState::EvaluateFluidFluid( Teuchos::ParameterL
               if ( cutdiscret.HaveGlobalElement(sid) )
               {
                 DRT::Element * side = cutdiscret.gElement( sid );
-                vector<int> patchlm;
-                vector<int> patchlmowner;
-                vector<int> patchlmstride;
+                std::vector<int> patchlm;
+                std::vector<int> patchlmowner;
+                std::vector<int> patchlmstride;
                 side->LocationVector(cutdiscret, patchlm, patchlmowner, patchlmstride);
 
                 // assemble Cuiu
@@ -2739,7 +2739,7 @@ void FLD::XFluidFluid::NonlinearSolve()
 //      for (int inode=0; inode<actele->NumNode(); ++inode)
 //      {
 //        cout << " node ids: " << elenodes[inode]->Id()  ;
-//        vector<int> gdofs = bgdis_->Dof(elenodes[inode]);
+//        std::vector<int> gdofs = bgdis_->Dof(elenodes[inode]);
 //        cout << " dofs: " ;
 //        for (int d=0; d<gdofs.size();++d)
 //          cout << " " << gdofs.at(d) << " ";

@@ -38,7 +38,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
   // get the plane normal direction from the parameterlist
   {
-    string planestring = params_.sublist("TURBULENCE MODEL").get<string>("HOMDIR","not_specified");
+    std::string planestring = params_.sublist("TURBULENCE MODEL").get<std::string>("HOMDIR","not_specified");
 
     if(planestring == "xz")
     {
@@ -127,7 +127,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
   {
     // the criterion allows differences in coordinates by 1e-9
-    set<double,PlaneSortCriterion> availablecoords;
+    std::set<double,PlaneSortCriterion> availablecoords;
 
     // loop nodes, build set of planes accessible on this proc and
     // calculate bounding box
@@ -176,8 +176,8 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 #endif
       int numprocs=discret_->Comm().NumProc();
 
-      vector<char> sblock;
-      vector<char> rblock;
+      std::vector<char> sblock;
+      std::vector<char> rblock;
 
 
 #ifdef PARALLEL
@@ -246,7 +246,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
           coordsvec.clear();
 
-          vector<char>::size_type index = 0;
+          std::vector<char>::size_type index = 0;
           while (index < rblock.size())
           {
             double onecoord;
@@ -373,7 +373,7 @@ COMBUST::TurbulenceStatisticsBcf::TurbulenceStatisticsBcf(
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
 
     {
       s.append(".flow_statistics");
@@ -483,7 +483,7 @@ void COMBUST::TurbulenceStatisticsBcf::DoTimeSample(
   // Compute forces on top and bottom plate for normalization purposes.
   // We do not differentiate between the fluids in this part.
 
-  for(vector<double>::iterator plane=nodeplanes_->begin();
+  for(std::vector<double>::iterator plane=nodeplanes_->begin();
       plane!=nodeplanes_->end();
       ++plane)
   {
@@ -506,7 +506,7 @@ void COMBUST::TurbulenceStatisticsBcf::DoTimeSample(
          // this node belongs to the plane under consideration
          if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
          {
-           vector<int> dof = stddofset_->Dof(node);
+           std::vector<int> dof = stddofset_->Dof(node);
            double      one = 1.0;
 
            toggleu_[0]->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -608,8 +608,8 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
   const int size = sumvol_[0]->size();
 
   // generate processor local result vectors
-  vector<RCP<std::vector<double> > > locvol( numphase_);
-  vector<RCP<std::vector<double> > > globvol(numphase_);
+  std::vector<RCP<std::vector<double> > > locvol( numphase_);
+  std::vector<RCP<std::vector<double> > > globvol(numphase_);
 
   for (size_t i = 0; i < numphase_; i++)
   {
@@ -643,7 +643,7 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluateIntegralMeanValuesInPlanes()
 
   //----------------------------------------------------------------------
   // add contributions from all processors
-  // it looks a bit messy due to the vector<RCP<std::vector<double> > > construct
+  // it looks a bit messy due to the std::vector<RCP<std::vector<double> > > construct
   for (size_t i = 0; i < numphase_; i++)
   {
     discret_->Comm().SumAll(&((*(locvol[i]))[0]), &((*(globvol[i]))[0]), size);
@@ -685,12 +685,12 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluatePointwiseMeanValuesInPlanes()
   //----------------------------------------------------------------------
   // loop planes and calculate pointwise means in each plane
 
-  for(vector<double>::iterator plane=nodeplanes_->begin();
+  for(std::vector<double>::iterator plane=nodeplanes_->begin();
       plane!=nodeplanes_->end();
       ++plane)
   {
     // holds the nodes per phase in this plane on this proc
-    vector<int> countnodesinplane(numphase_, 0);
+    std::vector<int> countnodesinplane(numphase_, 0);
 
     // toggle vectors are one in the position of a dof in this plane,
     // else 0
@@ -712,7 +712,7 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluatePointwiseMeanValuesInPlanes()
       // this node belongs to the plane under consideration
       if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
       {
-         vector<int> dof = stddofset_->Dof(node);
+         std::vector<int> dof = stddofset_->Dof(node);
          double      one = 1.0;
          int  index = -1;
 
@@ -736,7 +736,7 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluatePointwiseMeanValuesInPlanes()
          togglep_[index]->ReplaceGlobalValues(1,&one,&(dof[3]));
 
          // now check whether we have a pbc condition on this node
-         vector<DRT::Condition*> mypbc;
+         std::vector<DRT::Condition*> mypbc;
 
          node->GetCondition("SurfacePeriodic",mypbc);
 
@@ -769,7 +769,7 @@ void COMBUST::TurbulenceStatisticsBcf::EvaluatePointwiseMeanValuesInPlanes()
       }
     }
 
-    vector<int> countnodesinplaneonallprocs(numphase_, 0);
+    std::vector<int> countnodesinplaneonallprocs(numphase_, 0);
 
     discret_->Comm().SumAll(&(countnodesinplane[0]), &(countnodesinplaneonallprocs[0]), numphase_);
 
@@ -973,7 +973,7 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
   // we expect nonzero forces (tractions) only in flow direction
 
   // ltau is used to compute y+
-  vector<double> ltau(numphase_);
+  std::vector<double> ltau(numphase_);
   if	  (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
   {
     if(abs(sumforceu_)< 1.0e-12)
@@ -1004,7 +1004,7 @@ void COMBUST::TurbulenceStatisticsBcf::TimeAverageMeansAndOutputOfStatistics(int
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
     s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::app));
@@ -1113,7 +1113,7 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
   // we expect nonzero forces (tractions) only in flow direction
 
   // ltau is used to compute y+
-  vector<double> ltau(numphase_);
+  std::vector<double> ltau(numphase_);
   if	  (sumforceu_>sumforcev_ && sumforceu_>sumforcew_)
   {
     for (size_t i = 0; i < numphase_; i++)
@@ -1139,7 +1139,7 @@ void COMBUST::TurbulenceStatisticsBcf::DumpStatistics(int step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
     s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));

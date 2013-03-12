@@ -1054,7 +1054,7 @@ private:
   std::vector<DRT::Node*> node_;
 
   //! \brief Some conditions e.g. BCs
-  std::multimap<string,Teuchos::RCP<Condition> > condition_;
+  std::multimap<std::string,Teuchos::RCP<Condition> > condition_;
 
   //! material object of element
   Teuchos::RCP<MAT::Material> mat_;

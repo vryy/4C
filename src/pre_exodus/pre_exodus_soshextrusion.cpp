@@ -80,7 +80,7 @@ EXODUS::Mesh EXODUS::SolidShellExtrusion(EXODUS::Mesh& basemesh, double thicknes
     if (toextrude){
       std::map<int,std::vector<int> > sidesetconn = basemesh.GetSideSetConn(i_sss->second,true);
       extrusion_conns.insert(std::pair<int,std::map<int,std::vector<int> > >(extrusioncounter,sidesetconn));
-      //extrusion_conns.insert(std::pair<int,map<int,std::vector<int> > >(extrusioncounter,basemesh.GetSideSetConn(i_sss->second)));
+      //extrusion_conns.insert(std::pair<int,std::map<int,std::vector<int> > >(extrusioncounter,basemesh.GetSideSetConn(i_sss->second)));
       extrusion_types.insert(std::pair<int,ExtrusionType>(extrusioncounter,sideset));
       extrusioncounter ++;
       // create NodeSet from SideSet to apply bc e.g. pressure on extruded surface
@@ -1142,7 +1142,7 @@ const std::map<int,std::vector<int> > EXODUS::EleNeighbors(const std::map<int,st
     int acteleid = i_ele->first;
     std::vector<int> actelenodes = i_ele->second;
     std::vector<int>::iterator i_node;
-    std:: map<int,std::set<int> > elepatch; // consists of all elements connected by shared nodes
+    std::map<int,std::set<int> > elepatch; // consists of all elements connected by shared nodes
     // loop all nodes within element
     for (i_node = actelenodes.begin(); i_node < actelenodes.end(); ++i_node){
       int nodeid = *i_node;

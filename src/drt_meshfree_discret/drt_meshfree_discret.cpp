@@ -25,7 +25,7 @@
  |  ctor                                                 (public) nis Oct11 |
  *--------------------------------------------------------------------------*/
 DRT::MESHFREE::MeshfreeDiscretization::MeshfreeDiscretization(
-  const string             name,
+  const std::string             name,
   RCP<Epetra_Comm> comm,
   const Teuchos::ParameterList & params)
   : DRT::Discretization::Discretization(name,comm),
@@ -624,7 +624,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(ostream& os) const
       if (numcond)
       {
         os << numcond << " Conditions:\n";
-        std::map<string,RCP<Condition> >::const_iterator curr;
+        std::map<std::string,RCP<Condition> >::const_iterator curr;
         for (curr=condition_.begin(); curr != condition_.end(); ++curr)
         {
           os << curr->first << " ";
@@ -646,7 +646,7 @@ void DRT::MESHFREE::MeshfreeDiscretization::Print(ostream& os) const
 //  return;
 //}
 //
-//void DRT::MeshfreeDiscretization::MakeNear(vector<DRT::Element*> ele)
+//void DRT::MeshfreeDiscretization::MakeNear(std::vector<DRT::Element*> ele)
 //{
 //  return;
 //}

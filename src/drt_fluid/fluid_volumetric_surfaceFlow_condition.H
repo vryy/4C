@@ -105,7 +105,7 @@ private:
   /*!
   \brief all single fluid volumetric surface flow conditions
   */
-  map<const int, RCP<class FluidVolumetricSurfaceFlowBc> > fvsf_map_;
+  std::map<const int, RCP<class FluidVolumetricSurfaceFlowBc> > fvsf_map_;
 
   //! fluid discretization
   RCP<DRT::Discretization>      discret_;
@@ -181,7 +181,7 @@ private:
   /*!
   \brief all single fluid volumetric surface flow conditions
   */
-  map<const int, RCP<class FluidVolumetricSurfaceFlowBc> > fvsf_map_;
+  std::map<const int, RCP<class FluidVolumetricSurfaceFlowBc> > fvsf_map_;
 
   //! fluid discretization
   RCP<DRT::Discretization>      discret_;

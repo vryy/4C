@@ -52,8 +52,8 @@ Maintainer: Michael Gee
 namespace DRT {
 namespace UTILS {
 
-void PackLocalConnectivity(map<int,std::set<int> >& lcon, DRT::PackBuffer& sblock);
-void UnpackLocalConnectivity(map<int,std::set<int> >& lcon, vector<char>& rblock);
+void PackLocalConnectivity(std::map<int,std::set<int> >& lcon, DRT::PackBuffer& sblock);
+void UnpackLocalConnectivity(std::map<int,std::set<int> >& lcon, std::vector<char>& rblock);
 
 }
 }
@@ -71,11 +71,11 @@ extern "C"
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::PackLocalConnectivity(
-  map<int,std::set<int> > & lcon,
+  std::map<int,std::set<int> > & lcon,
   DRT::PackBuffer    & sblock
   )
 {
-  map<int,std::set<int> >::iterator gidinlcon;
+  std::map<int,std::set<int> >::iterator gidinlcon;
   std::set<int>::iterator           adjacentgid;
 
   // size (number of nodes we have a connectivity for)
@@ -108,8 +108,8 @@ void DRT::UTILS::PackLocalConnectivity(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::UnpackLocalConnectivity(
-  map<int,std::set<int> > & lcon  ,
-  vector<char>       & rblock
+  std::map<int,std::set<int> > & lcon  ,
+  std::vector<char>       & rblock
   )
 {
   if(rblock.empty())
@@ -173,7 +173,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
                                    RCP<Epetra_Map> roweles,
                                    RCP<Epetra_Map>& rownodes,
                                    RCP<Epetra_Map>& colnodes,
-                                   vector<int>& nids,
+                                   std::vector<int>& nids,
                                    int nblock,
                                    int ntarget,
                                    RCP<Epetra_Comm> comm,
@@ -201,7 +201,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     //                      <-------------
     //                           nids
     //
-    map<int,int> gidtoidx;
+    std::map<int,int> gidtoidx;
     int numnodes = static_cast<int>(nids.size());
     for (int i=0;i<numnodes;++i)
     {
@@ -277,7 +277,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     RCP<Epetra_Map> lin_noderowmap = Teuchos::rcp(new Epetra_Map(-1,mynsize,&nids[myrank*nbsize],0,*comm));
 
     // remember my vertex distribution for the later parmetis call
-    vector<int> vtxdist(numproc+1);
+    std::vector<int> vtxdist(numproc+1);
     for(int np=0;np<numproc;++np)
     {
       vtxdist[np]=np*nbsize;
@@ -322,7 +322,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     //                         v
     //    set of all gids of adjacent nodes on this proc
     //
-    map<int,std::set<int> > lcon;
+    std::map<int,std::set<int> > lcon;
 
     // construct empty local map
     std::set<int>::iterator procnode;
@@ -334,7 +334,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
     // loop all eles on this proc and construct the local
     // connectivity information
-    map<int,std::set<int> >::iterator gidinlcon;
+    std::map<int,std::set<int> >::iterator gidinlcon;
 
     for(int lid=0;lid<roweles->NumMyElements();++lid)
     {
@@ -376,7 +376,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     //    set of all gids of adjacent nodes on all procs
 
     // prepare empty map
-    map<int,std::set<int> > gcon;
+    std::map<int,std::set<int> > gcon;
     for(int j=0;j<lin_noderowmap->NumMyElements();++j)
     {
       int gid=lin_noderowmap->GID(j);
@@ -398,8 +398,8 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       int         length =-1;
 
       // define send and receive blocks
-      vector<char> sblock;
-      vector<char> rblock;
+      std::vector<char> sblock;
+      std::vector<char> rblock;
 
 #endif
 
@@ -524,10 +524,10 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
     // xadj points from vertex index i to the index of the
     // first adjacent vertex.
-    vector<int> xadj(lin_noderowmap->NumMyElements()+1);
+    std::vector<int> xadj(lin_noderowmap->NumMyElements()+1);
 
     // a list of adjacent nodes, adressed using xadj
-    vector<int> adjncy;
+    std::vector<int> adjncy;
 
     int count=0;
     xadj[0] = 0;
@@ -537,7 +537,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       // get global node id of rownode
       int  growid =lin_noderowmap->GID(idx);
 
-      map<int,std::set<int> >::iterator gidingcon;
+      std::map<int,std::set<int> >::iterator gidingcon;
       std::set<int>::iterator           nbgid;
 
       gidingcon=gcon.find(growid);
@@ -568,7 +568,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 #if 0
     // define a vector of nodeweights
     // at the moment, we use a constant weight distribution at this point
-    vector<int> vwgt(lin_noderowmap->NumMyElements(),1);
+    std::vector<int> vwgt(lin_noderowmap->NumMyElements(),1);
 
     for (int i=0; i<lin_noderowmap->NumMyElements(); ++i)
     {
@@ -637,7 +637,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       Note that this vector will not be redistributed by metis, it
       will just contain the information how to redistribute.
     */
-    vector<int> part(lin_noderowmap->NumMyElements());
+    std::vector<int> part(lin_noderowmap->NumMyElements());
     /*
       An array of size ncon that is used to specify the imbalance
       tolerance for each vertex weight, with 1 being perfect balance
@@ -657,7 +657,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       that the sum of all of the tpwgts for a give vertex weight
       should be one.
     */
-    vector<float> tpwgts(npart,1.0/(double)npart);
+    std::vector<float> tpwgts(npart,1.0/(double)npart);
     /*
       This is a pointer to the MPI communicator of the processes that
       call PARMETIS.
@@ -704,13 +704,13 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     // construct epetra graph on linear noderowmap
     Teuchos::RCP<Epetra_CrsGraph> graph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*lin_noderowmap,108,false));
 
-    for (map<int,std::set<int> >::iterator gid=gcon.begin();
+    for (std::map<int,std::set<int> >::iterator gid=gcon.begin();
          gid!=gcon.end();
          ++gid
       )
     {
       std::set<int>& rowset = gid->second;
-      vector<int> row;
+      std::vector<int> row;
       row.reserve(rowset.size());
       row.assign(rowset.begin(),rowset.end());
       rowset.clear();
@@ -727,8 +727,8 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     graph->OptimizeStorage();
 
     // redundant, global vectors to broadcast partition results
-    vector<int> lglobalpart(numnodes,0);
-    vector<int> globalpart (numnodes,0);
+    std::vector<int> lglobalpart(numnodes,0);
+    std::vector<int> globalpart (numnodes,0);
 
     // insert proc ids to distribute to into global vector
     for (unsigned i=0;i<part.size();++i)
@@ -843,7 +843,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
   for (int proc=0; proc<numproc; ++proc)
   {
     int size = 0;
-    vector<int> recvnodes;
+    std::vector<int> recvnodes;
     if (proc==myrank)
     {
       recvnodes.clear();
@@ -870,7 +870,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
   // copy the set to a vector
   {
-    vector<int> nodes;
+    std::vector<int> nodes;
     std::set<int>::iterator fool;
     for (fool = mynodes.begin(); fool != mynodes.end(); ++fool)
       nodes.push_back(*fool);
@@ -881,8 +881,8 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
 
   // start building the graph object
-  map<int,std::set<int> > locals;
-  map<int,std::set<int> > remotes;
+  std::map<int,std::set<int> > locals;
+  std::map<int,std::set<int> > remotes;
   for (int lid=0;lid<roweles->NumMyElements();++lid)
   {
     DRT::Element* ele=dis->gElement(roweles->GID(lid));
@@ -891,11 +891,11 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     for (int i=0; i<numnode; ++i)
     {
       const int lid = rownodes->LID(nodeids[i]); // am I owner of this gid?
-      map<int,std::set<int> >* insertmap = NULL;
+      std::map<int,std::set<int> >* insertmap = NULL;
       if (lid != -1) insertmap = &locals;
       else           insertmap = &remotes;
       // see whether we already have an entry for nodeids[i]
-      map<int,std::set<int> >::iterator fool = (*insertmap).find(nodeids[i]);
+      std::map<int,std::set<int> >::iterator fool = (*insertmap).find(nodeids[i]);
       if (fool==(*insertmap).end()) // no entry in that row yet
       {
         std::set<int> tmp;
@@ -913,7 +913,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
   int maxband = 0;
   {
     int smaxband = 0;
-    map<int,std::set<int> >::iterator fool;
+    std::map<int,std::set<int> >::iterator fool;
     for (fool = locals.begin(); fool != locals.end(); ++fool)
       if (smaxband < (int)fool->second.size()) smaxband = (int)fool->second.size();
     for (fool = remotes.begin(); fool != remotes.end(); ++fool)
@@ -932,11 +932,11 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
   // fill all local entries into the graph
   {
-    map<int,std::set<int> >::iterator fool = locals.begin();
+    std::map<int,std::set<int> >::iterator fool = locals.begin();
     for (; fool != locals.end(); ++fool)
     {
       const int grid = fool->first;
-      vector<int> cols(0,0);
+      std::vector<int> cols(0,0);
       std::set<int>::iterator setfool = fool->second.begin();
       for (; setfool != fool->second.end(); ++setfool) cols.push_back(*setfool);
       int err = graph->InsertGlobalIndices(grid,(int)cols.size(),&cols[0]);
@@ -951,12 +951,12 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
   // now we need to communicate and add the remote entries
   for (int proc=0; proc<numproc; ++proc)
   {
-    vector<int> recvnodes;
+    std::vector<int> recvnodes;
     int size = 0;
     if (proc==myrank)
     {
       recvnodes.clear();
-      map<int,std::set<int> >::iterator mapfool = remotes.begin();
+      std::map<int,std::set<int> >::iterator mapfool = remotes.begin();
       for (; mapfool != remotes.end(); ++mapfool)
       {
         recvnodes.push_back((int)mapfool->second.size()+1); // length of this entry
@@ -1001,9 +1001,9 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
   comm->Barrier();
 
   // prepare parmetis input and call parmetis to partition the graph
-  vector<int> vtxdist(numproc+1,0);
-  vector<int> xadj(graph->RowMap().NumMyElements()+1);
-  vector<int> adjncy(0,0);
+  std::vector<int> vtxdist(numproc+1,0);
+  std::vector<int> xadj(graph->RowMap().NumMyElements()+1);
+  std::vector<int> adjncy(0,0);
   {
     Epetra_IntVector ridtoidx(graph->RowMap(),false);
     Epetra_IntVector cidtoidx(graph->ColMap(),false);
@@ -1011,7 +1011,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     xadj[0] = 0;
 
     // create vtxdist
-    vector<int> svtxdist(numproc+1,0);
+    std::vector<int> svtxdist(numproc+1,0);
     svtxdist[myrank+1] = graph->RowMap().NumMyElements();
     comm->SumAll(&svtxdist[0],&vtxdist[0],numproc+1);
     for (int i=0; i<numproc; ++i) vtxdist[i+1] += vtxdist[i];
@@ -1031,7 +1031,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
       int err = graph->ExtractMyRowView(lrid,numindices,indices);
       if (err) dserror("Epetra_CrsGraph::GetMyRowView returned %d",err);
       // switch column indices to parmetis indices and add to vector of columns
-      vector<int> metisindices(0);
+      std::vector<int> metisindices(0);
       for (int i=0; i<numindices; ++i)
       {
         if (metisrid == cidtoidx[indices[i]]) continue; // must not contain main diagonal entry
@@ -1054,7 +1054,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     fflush(stdout);
   }
 
-  vector<int> part;              // output
+  std::vector<int> part;              // output
   // make sure there is memory allocated, even for empty processors
   part.reserve(graph->RowMap().NumMyElements()+1);
   part.resize(graph->RowMap().NumMyElements());
@@ -1066,7 +1066,7 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
     int options[4] = { 0,0,15,0 }; // use default metis parameters
     int edgecut = 0;             // output, number of edges cut in partitioning
     float ubvec = (float)1.05;
-    vector<float> tpwgts(npart,static_cast<float>(1.0/(double)npart));
+    std::vector<float> tpwgts(npart,static_cast<float>(1.0/(double)npart));
     MPI_Comm mpicomm=(dynamic_cast<const Epetra_MpiComm*>(&(dis->Comm())))->Comm();
 
     ParMETIS_V3_PartKway(&(vtxdist[0]),&(xadj[0]),&(adjncy[0]),
@@ -1084,12 +1084,12 @@ void DRT::UTILS::PartUsingParMetis(RCP<DRT::Discretization> dis,
 
   // build new row map according to part
   {
-    vector<int> mygids;
+    std::vector<int> mygids;
     for (int proc=0; proc<numproc; ++proc)
     {
       int size = 0;
-      vector<int> sendpart;
-      vector<int> sendgid;
+      std::vector<int> sendpart;
+      std::vector<int> sendgid;
       if (proc==myrank)
       {
         sendpart = part;

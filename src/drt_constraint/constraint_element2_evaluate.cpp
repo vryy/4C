@@ -34,7 +34,7 @@ int DRT::ELEMENTS::ConstraintElement2::Evaluate(Teuchos::ParameterList& params,
   ActionType act = none;
 
   // get the required action and distinguish between 2d and 3d MPC's
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") return 0;
   else if (action=="calc_MPC_stiff")
   {

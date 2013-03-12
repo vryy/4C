@@ -30,8 +30,8 @@ DRT::ParObject* DRT::ELEMENTS::RedAirwayType::Create( const std::vector<char> & 
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirwayType::Create( const string eletype,
-                                                            const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedAirwayType::Create( const std::string eletype,
+                                                            const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {
@@ -137,7 +137,7 @@ void DRT::ELEMENTS::RedAirway::Pack(DRT::PackBuffer& data) const
   AddtoPack(data,elemType_);
   AddtoPack(data,resistance_);
 
-  map<std::string,double>::const_iterator it;
+  std::map<std::string,double>::const_iterator it;
 
   AddtoPack(data,(int)(elemParams_.size()));
   for (it = elemParams_.begin(); it!= elemParams_.end(); it++)
@@ -171,7 +171,7 @@ void DRT::ELEMENTS::RedAirway::Unpack(const std::vector<char>& data)
 
   ExtractfromPack(position,data,elemType_);
   ExtractfromPack(position,data,resistance_);
-  map<std::string,double> it;
+  std::map<std::string,double> it;
   int n = 0;
 
   ExtractfromPack(position,data,n);
@@ -218,7 +218,7 @@ void DRT::ELEMENTS::RedAirway::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  Return names of visualization data                     ismail 01/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedAirway::VisNames(std::map<string,int>& names)
+void DRT::ELEMENTS::RedAirway::VisNames(std::map<std::string,int>& names)
 {
 
 #if 0
@@ -227,12 +227,12 @@ void DRT::ELEMENTS::RedAirway::VisNames(std::map<string,int>& names)
   temp << 1;
 
   // in flow of volumetric flow profile
-  string name = "flow_in";
-  names.insert(std::pair<string,int>(name,1));
+  std::string name = "flow_in";
+  names.insert(std::pair<std::string,int>(name,1));
 
   // out flow of volumetric flow profile
   name = "flow_out";
-  names.insert(std::pair<string,int>(name,1));
+  names.insert(std::pair<std::string,int>(name,1));
 #endif
 
   return;
@@ -258,7 +258,7 @@ bool DRT::ELEMENTS::RedAirway::VisData(const string& name, std::vector<double>& 
 void DRT::ELEMENTS::RedAirway::getParams(std::string name, double & var)
 {
 
-  map<std::string,double>::iterator it;
+  std::map<std::string,double>::iterator it;
   it = elemParams_.find(name);
   if (it == elemParams_.end())
   {

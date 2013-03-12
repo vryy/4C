@@ -273,7 +273,7 @@ void IO::GMSH::SurfaceVectorFieldDofBasedToGmsh(
 void IO::GMSH::VelocityPressureFieldDofBasedToGmsh(
     const Teuchos::RCP<DRT::Discretization> discret,
     const Teuchos::RCP<Epetra_Vector>       vectorfield_row,
-    const string                            field,
+    const std::string                            field,
     std::ostream&                           s
 )
 {
@@ -532,7 +532,7 @@ std::string IO::GMSH::elementAtInitialPositionToString(
 void IO::GMSH::elementAtCurrentPositionToStream(
     const double                            scalar,
     const DRT::Element*                     ele,
-    const map<int,LINALG::Matrix<3,1> >&    currentelepositions,
+    const std::map<int,LINALG::Matrix<3,1> >&    currentelepositions,
     std::ostream&                           s
     )
 {
@@ -547,7 +547,7 @@ void IO::GMSH::elementAtCurrentPositionToStream(
 std::string IO::GMSH::elementAtCurrentPositionToString(
     const double                            scalar,
     const DRT::Element*                     ele,
-    const map<int,LINALG::Matrix<3,1> >&    currentelepositions)
+    const std::map<int,LINALG::Matrix<3,1> >&    currentelepositions)
 {
   std::ostringstream s;
   IO::GMSH::elementAtCurrentPositionToStream(
@@ -652,7 +652,7 @@ std::string IO::GMSH::GetNewFileNameAndDeleteOldFiles(
   filename    << filebase << "." << filename_base << "_" << std::setw(5) << std::setfill('0') << actstep           << pid_stream.str() << ".pos";
   filenamedel << filebase << "." << filename_base << "_" << std::setw(5) << std::setfill('0') << actstep-step_diff << pid_stream.str() << ".pos";
   std::remove(filenamedel.str().c_str());
-  if (screen_out) std::cout << "writing " << left << std::setw(60) <<filename.str()<<"..."<<std::endl;
+  if (screen_out) std::cout << "writing " << std::left << std::setw(60) <<filename.str()<<"..."<<std::endl;
   return filename.str();
 }
 
@@ -673,7 +673,7 @@ std::string IO::GMSH::GetFileName(
 
   filename    << filebase << "." << filename_base << "_" << std::setw(5) << std::setfill('0') << actstep           << pid_stream.str() << ".pos";
 
-  if (screen_out) std::cout << "writing " << left << std::setw(60) <<filename.str()<<"..."<<std::endl;
+  if (screen_out) std::cout << "writing " << std::left << std::setw(60) <<filename.str()<<"..."<<std::endl;
 
   return filename.str();
 }

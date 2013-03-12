@@ -332,7 +332,7 @@ void AIRWAY::RedAirwayTissue::SetupRedAirways()
 
   // ----------------------------------------------- solver parameters
   // solver type
-  airwaystimeparams.set                  ("solver type"             ,rawdyn.get<string>("SOLVERTYPE"));
+  airwaystimeparams.set                  ("solver type"             ,rawdyn.get<std::string>("SOLVERTYPE"));
   // tolerance
   airwaystimeparams.set                  ("tolerance"               ,rawdyn.get<double>("TOLERANCE"));
   // maximum number of iterations

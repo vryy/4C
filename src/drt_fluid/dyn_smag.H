@@ -69,7 +69,7 @@ public:
   */
   DynSmagFilter(
     RCP<DRT::Discretization>     actdis             ,
-    RCP<map<int,std::vector<int> > >  pbcmapmastertoslave,
+    RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave,
     Teuchos::ParameterList&      params             );
 
   /*!
@@ -81,7 +81,7 @@ public:
   void AddScatra(
     RCP<DRT::Discretization>     scatradis,
     INPAR::SCATRA::ScaTraType    scatratype,
-    RCP<map<int,std::vector<int> > >  scatra_pbcmapmastertoslave);
+    RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave);
 
   /*!
   \brief Perform box filter operation, compare filtered quantities
@@ -140,7 +140,7 @@ public:
         // get the node
         DRT::Node* node = discret_->lRowNode(n);
 
-        vector<int> dofs= discret_->Dof(node);
+        std::vector<int> dofs= discret_->Dof(node);
         
         for(int d=0;d<discret_->NumDof(node)-1;++d)
         {
@@ -165,7 +165,7 @@ public:
         // get the node
         DRT::Node* node = discret_->lRowNode(n);
 
-        vector<int> dofs= discret_->Dof(node);
+        std::vector<int> dofs= discret_->Dof(node);
 
         for(int d=0;d<discret_->NumDof(node)-1;++d)
         {
@@ -353,7 +353,7 @@ private:
   //! the discretization
   RCP<DRT::Discretization>     discret_;
   //! connection between master and slave nodes on this proc
-  RCP<map<int,std::vector<int> > >  pbcmapmastertoslave_;
+  RCP<std::map<int,std::vector<int> > >  pbcmapmastertoslave_;
   //! parameterlist including time params, stabilization params and turbulence sublist
   Teuchos::ParameterList&      params_ ;
   //! flag for physical type of fluid flow
@@ -372,7 +372,7 @@ private:
   //! the discretization
   RCP<DRT::Discretization>     scatradiscret_;
   INPAR::SCATRA::ScaTraType    scatratype_;
-  RCP<map<int,std::vector<int> > >  scatra_pbcmapmastertoslave_;
+  RCP<std::map<int,std::vector<int> > >  scatra_pbcmapmastertoslave_;
   //@}
 
   //! @name vectors used for filtering (for dynamic Smagorinsky model)

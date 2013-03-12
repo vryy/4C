@@ -40,7 +40,7 @@ objval_(0)
   //mask_ = Teuchos::rcp(new Epetra_MultiVector(*dofrowmap_,msteps_,true));
   mask_ = Teuchos::rcp(new Epetra_Vector(*dofrowmap_,true));
 
-  ReadMonitor(invap.get<string>("MONITORFILE"));
+  ReadMonitor(invap.get<std::string>("MONITORFILE"));
 
 }
 

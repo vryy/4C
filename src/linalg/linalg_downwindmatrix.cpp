@@ -51,7 +51,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
   // compute a nodal row map
   RCP<Epetra_Map> onoderowmap;
   {
-    vector<int> gnodeids(numnoderows);
+    std::vector<int> gnodeids(numnoderows);
     int count=0;
     int i;
     for (i=0; i<numdofrows; ++i)
@@ -74,7 +74,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
   {
     const int maxnumentries = A.MaxNumEntries();
     RCP<SparseMatrix> tmp = Teuchos::rcp(new SparseMatrix(*onoderowmap,maxnumentries));
-    vector<int> indices(maxnumentries);
+    std::vector<int> indices(maxnumentries);
     std::vector<double> values(maxnumentries);
     for (int i=0; i<numdofrows; ++i)
     {
@@ -247,7 +247,7 @@ void LINALG::DownwindMatrix::Setup(const Epetra_CrsMatrix& A)
   // Also, create a sorted variant which then will be used to build the matrix
   {
     const int mynodelength = nnoderowmap->NumMyElements();
-    vector<int> gindices(mynodelength*bs_);
+    std::vector<int> gindices(mynodelength*bs_);
     for (int i=0; i<mynodelength; ++i)
       for (int j=0; j<bs_; ++j)
         gindices[i*bs_+j] = nnoderowmap->GID(i)*bs_+j;

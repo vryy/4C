@@ -92,7 +92,7 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
 
 
   // rowrecv is a fully redundant vector (size of number of nodes)
-  vector<int> rowrecv(rowmap.NumGlobalElements());
+  std::vector<int> rowrecv(rowmap.NumGlobalElements());
 
   // after Allreduce rowrecv contains
   //
@@ -128,12 +128,12 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
   if (err<0) dserror("Vector export returned err=%d",err);
 
   // do partitioning using metis on workrank
-  vector<int> part(tmap.NumMyElements());
+  std::vector<int> part(tmap.NumMyElements());
   if (myrank==workrank)
   {
     // metis requests indexes. So we need a reverse lookup from gids
     // to indexes.
-    map<int,int> idxmap;
+    std::map<int,int> idxmap;
     for (unsigned i=0; i<rowrecv.size(); ++i)
     {
       idxmap[rowrecv[i]] = i;
@@ -141,10 +141,10 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
 
     // xadj points from index i to the index of the
     // first adjacent node
-    vector<int> xadj(tmap.NumMyElements()+1);
+    std::vector<int> xadj(tmap.NumMyElements()+1);
 
     // a list of adjacent nodes, adressed using xadj
-    vector<int> adjncy(tgraph.NumGlobalNonzeros()); // the size is an upper bound
+    std::vector<int> adjncy(tgraph.NumGlobalNonzeros()); // the size is an upper bound
 
     // rowrecv(i)       rowrecv(i+1)                      node gids
     //     ^                 ^
@@ -165,7 +165,7 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
     //    |    neighbours   |   neighbours           (numbered by equivalent indices)
     //
 
-    vector<int> vwgt(tweights.MyLength());
+    std::vector<int> vwgt(tweights.MyLength());
     for (int i=0; i<tweights.MyLength(); ++i) vwgt[i] = (int)tweights[i];
 
     int count=0;
@@ -292,7 +292,7 @@ Teuchos::RCP<Epetra_CrsGraph> DRT::UTILS::PartGraphUsingMetis(
 /*----------------------------------------------------------------------*/
 void DRT::UTILS::PartUsingMetis(RCP<Epetra_Map>& rownodes,
                                 RCP<Epetra_Map>& colnodes,
-                                list<vector<int> >& elementnodes,
+                                list<std::vector<int> >& elementnodes,
                                 RCP<Epetra_Comm> comm)
 {
 
@@ -300,7 +300,7 @@ void DRT::UTILS::PartUsingMetis(RCP<Epetra_Map>& rownodes,
     if (myrank==0)
     {
       cout << "\n\nelementnodes: size=" << elementnodes.size() << endl;
-      for (list<vector<int> >::iterator i=elementnodes.begin();
+      for (list<std::vector<int> >::iterator i=elementnodes.begin();
            i!=elementnodes.end();
            ++i)
       {
@@ -316,7 +316,7 @@ void DRT::UTILS::PartUsingMetis(RCP<Epetra_Map>& rownodes,
     Teuchos::RCP<Epetra_CrsGraph> graph = Teuchos::rcp(new Epetra_CrsGraph(Copy,*rownodes,81,false));
     if (myrank==0)
     {
-      for (list<vector<int> >::iterator i=elementnodes.begin();
+      for (list<std::vector<int> >::iterator i=elementnodes.begin();
            i!=elementnodes.end();
            ++i)
       {
@@ -338,8 +338,8 @@ void DRT::UTILS::PartUsingMetis(RCP<Epetra_Map>& rownodes,
     // No need to test for myrank==0 as elementnodes is filled on proc 0 only.
 
     // build the graph ourselves
-    vector<std::set<int> > localgraph(rownodes->NumMyElements());
-    for (list<vector<int> >::iterator i=elementnodes.begin();
+    std::vector<std::set<int> > localgraph(rownodes->NumMyElements());
+    for (list<std::vector<int> >::iterator i=elementnodes.begin();
          i!=elementnodes.end();
          ++i)
     {
@@ -362,7 +362,7 @@ void DRT::UTILS::PartUsingMetis(RCP<Epetra_Map>& rownodes,
 
     // fill exact entries per row vector
     // this will really speed things up for long lines
-    vector<int> entriesperrow;
+    std::vector<int> entriesperrow;
     entriesperrow.reserve(rownodes->NumMyElements());
 
     transform(localgraph.begin(),
@@ -378,7 +378,7 @@ void DRT::UTILS::PartUsingMetis(RCP<Epetra_Map>& rownodes,
     for (unsigned i = 0; i<localgraph.size(); ++i)
     {
       std::set<int>& rowset = localgraph[i];
-      vector<int> row;
+      std::vector<int> row;
       row.reserve(rowset.size());
       row.assign(rowset.begin(),rowset.end());
       rowset.clear();

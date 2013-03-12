@@ -1111,7 +1111,7 @@ std::vector<int> CAVITATION::Algorithm::AdjacentBinstoCorner(int* ijk)
 void CAVITATION::Algorithm::BuildBubbleInflowCondition()
 {
   // build inflow boundary condition
-  vector<DRT::Condition*> conds;
+  std::vector<DRT::Condition*> conds;
   particledis_->GetCondition("ParticleInflow", conds);
   for (size_t i=0; i<conds.size(); i++)
   {

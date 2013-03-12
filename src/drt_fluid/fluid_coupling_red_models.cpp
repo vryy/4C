@@ -60,10 +60,10 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RCP<DRT::Discre
   // ---------------------------------------------------------------------
   // Read in all conditions
   // ---------------------------------------------------------------------
-  vector<DRT::Condition*> couplingcond;
+  std::vector<DRT::Condition*> couplingcond;
   discret3D_->GetCondition("Art_3D_redD_CouplingCond",couplingcond);
 
-  vector<DRT::Condition*> couplingcond2;
+  std::vector<DRT::Condition*> couplingcond2;
   discret_redD_->GetCondition("Art_redD_3D_CouplingCond",couplingcond2);
 
   // the number of lines of coupling boundary conditions found in the input
@@ -82,10 +82,10 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RCP<DRT::Discre
 
   if (numcondlines > 0) // if there is at least one coupling bc
   {
-      map3_Dnp_   = Teuchos::rcp(new std::map<string, double >);
-      map3_Dn_    = Teuchos::rcp(new std::map<string, double >);
-      mapRed_Dnp_ = Teuchos::rcp(new std::map<string, double >);
-      mapRed_Dn_  = Teuchos::rcp(new std::map<string, double >);
+      map3_Dnp_   = Teuchos::rcp(new std::map<std::string, double >);
+      map3_Dn_    = Teuchos::rcp(new std::map<std::string, double >);
+      mapRed_Dnp_ = Teuchos::rcp(new std::map<std::string, double >);
+      mapRed_Dn_  = Teuchos::rcp(new std::map<std::string, double >);
     // -------------------------------------------------------------------
     // get the maximum allowable number of iterations at the boundary
     // which should be the same!
@@ -174,9 +174,9 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RCP<DRT::Discre
       int    id       = (couplingcond[i])->GetInt("ConditionID");
 
       // Get returned coupling variable
-      string variable = *((couplingcond[i])->Get<string>("ReturnedVariable"));
+      std::string variable = *((couplingcond[i])->Get<string>("ReturnedVariable"));
 
-      // Build a new string from [coupling Variable name][Condition Id]
+      // Build a new std::string from [coupling Variable name][Condition Id]
       std::stringstream VariableWithId;
       VariableWithId << variable<<"_"<< id;
       double value = 0.0;
@@ -197,9 +197,9 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RCP<DRT::Discre
       int    id       = (couplingcond2[i])->GetInt("ConditionID");
 
       // Get returned coupling variable
-      string variable = *((couplingcond2[i])->Get<string>("ReturnedVariable"));
+      std::string variable = *((couplingcond2[i])->Get<string>("ReturnedVariable"));
 
-      // Build a new string from [coupling Variable name][Condition Id]
+      // Build a new std::string from [coupling Variable name][Condition Id]
       std::stringstream VariableWithId;
       VariableWithId << variable<<"_"<< id;
       double value = 0.0;
@@ -242,7 +242,7 @@ FLD::UTILS::Fluid_couplingWrapperBase::~Fluid_couplingWrapperBase()
 void FLD::UTILS::Fluid_couplingWrapperBase ::FlowRateCalculation(double time, double dta)
 {
   // get an iterator to my map
-  map<const int, RCP< class Fluid_couplingBc > >::iterator mapiter;
+  std::map<const int, RCP< class Fluid_couplingBc > >::iterator mapiter;
 
   for (mapiter = coup_map3D_.begin(); mapiter != coup_map3D_.end(); mapiter++ )
   {
@@ -296,11 +296,11 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
   // ---------------------------------------------------------------------
 
   // Read in the 3D coupling conditions
-  vector<DRT::Condition*> conds3D;
+  std::vector<DRT::Condition*> conds3D;
   discret3D_->GetCondition("Art_3D_redD_CouplingCond",conds3D);
 
   // Read in the reduced-D coupling conditions
-  vector<DRT::Condition*> conds_redD;
+  std::vector<DRT::Condition*> conds_redD;
   discret_redD_->GetCondition("Art_redD_3D_CouplingCond",conds_redD);
 
   int condID;
@@ -318,7 +318,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
       if (conds3D[i]->GetInt("ConditionID") == condID)
       {
         // get returned value name from 3D boundary
-        string variable_str = *(conds3D[i]->Get<string>("ReturnedVariable"));
+        std::string variable_str = *(conds3D[i]->Get<string>("ReturnedVariable"));
 
         // concatenate the variable name with the variable id
         std::stringstream CouplingVariable;
@@ -326,7 +326,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
 
         if (variable_str == "flow")
         {
-          map<string,double>::iterator itr = map3_Dnp_->find(CouplingVariable.str());
+          std::map<std::string,double>::iterator itr = map3_Dnp_->find(CouplingVariable.str());
           if(itr == map3_Dnp_->end())
           {
             dserror("[3D/Reduced-D COUPLING] 3D map has no variable %s for condition [%d]",variable_str.c_str(),condID);
@@ -335,7 +335,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
         }
         else if (variable_str == "pressure")
         {
-          map<string,double>::iterator itr = map3_Dnp_->find(CouplingVariable.str());
+          std::map<std::string,double>::iterator itr = map3_Dnp_->find(CouplingVariable.str());
           if(itr == map3_Dnp_->end())
           {
             dserror("[3D/Reduced-D COUPLING] 3D map has no variable %s for condition [%d]",variable_str.c_str(),condID);
@@ -381,7 +381,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
         if (conds_redD[i]->GetInt("ConditionID") == condID)
         {
           // get returned value name from 3D boundary
-          string variable_str = *(conds_redD[i]->Get<string>("ReturnedVariable"));
+          std::string variable_str = *(conds_redD[i]->Get<string>("ReturnedVariable"));
 
           // concatenate the variable name with the variable id
           std::stringstream CouplingVariable;
@@ -389,7 +389,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
 
           if (variable_str == "pressure")
           {
-            map<string,double>::iterator itr = mapRed_Dnp_->find(CouplingVariable.str());
+            std::map<std::string,double>::iterator itr = mapRed_Dnp_->find(CouplingVariable.str());
             if(itr == mapRed_Dnp_->end())
             {
               dserror("[3D/Reduced-D COUPLING] reduced-D map has no variable %s for condition [%d]",variable_str.c_str(),condID);
@@ -398,7 +398,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
           }
           else if (variable_str == "flow")
           {
-            map<string,double>::iterator itr = mapRed_Dnp_->find(CouplingVariable.str());
+            std::map<std::string,double>::iterator itr = mapRed_Dnp_->find(CouplingVariable.str());
             if(itr == mapRed_Dnp_->end())
             {
               dserror("[3D/Reduced-D COUPLING] reduced-D map has no variable %s for condition [%d]",variable_str.c_str(),condID);
@@ -419,7 +419,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
     // Define a map that will have the interpolated values at the
     // reduced-D time subscale
     // -----------------------------------------------------------------
-    RCP<map<string, double > >  map3D_inter_to_Red = Teuchos::rcp(new std::map<string, double >);
+    RCP<std::map<std::string, double > >  map3D_inter_to_Red = Teuchos::rcp(new std::map<std::string, double >);
     double dstep = 1.0/double(NumOfSteps);
 
     // -----------------------------------------------------------------
@@ -453,10 +453,10 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
     //
     // -----------------------------------------------------------------
 
-    map<string,double>::iterator itr_sub ;
+    std::map<std::string,double>::iterator itr_sub ;
     for (itr_sub = map3_Dnp_->begin(); itr_sub != map3_Dnp_->end(); itr_sub++)
     {
-      string var_str = itr_sub->first;
+      std::string var_str = itr_sub->first;
       double var     = (*map3_Dn_)[var_str];
       double dvar    = itr_sub->second - (*map3_Dn_)[var_str];
       var = var + double(N+1)*dstep*(dvar);
@@ -493,7 +493,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::ApplyBoundaryConditions(double time,
     int ID   = conds_redD[i]->GetInt("ConditionID");
 
     // Concatenate the returned value with the condition ID
-    string ReturnedVariable = *(conds_redD[i]->Get<string>("ReturnedVariable"));
+    std::string ReturnedVariable = *(conds_redD[i]->Get<string>("ReturnedVariable"));
 
     std::stringstream VariableWithId;
     VariableWithId << ReturnedVariable<<"_"<<ID;
@@ -589,7 +589,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::EvaluateDirichlet(RCP<Epetra_Vector>
 void FLD::UTILS::Fluid_couplingWrapperBase::WriteRestart( IO::DiscretizationWriter&  output )
 {
 
-  std::map<string, double >::iterator it;
+  std::map<std::string, double >::iterator it;
   //! map of coupling variables returned by the 3-D model at time step n+1
   for (it=map3_Dnp_->begin();it!=map3_Dnp_->end();it++)
   {
@@ -641,7 +641,7 @@ void FLD::UTILS::Fluid_couplingWrapperBase::WriteRestart( IO::DiscretizationWrit
 void FLD::UTILS::Fluid_couplingWrapperBase::ReadRestart( IO::DiscretizationReader& reader)
 {
 
-  std::map<string, double >::iterator it;
+  std::map<std::string, double >::iterator it;
   //! map of coupling variables returned by the 3-D model at time step n+1
   for (it=map3_Dnp_->begin();it!=map3_Dnp_->end();it++)
   {
@@ -713,7 +713,7 @@ FLD::UTILS::Fluid_couplingBc::Fluid_couplingBc(RCP<DRT::Discretization> dis_3D,
   // ---------------------------------------------------------------------
   // read in all 3D to reducedD boundary conditions
   // ---------------------------------------------------------------------
-  vector<DRT::Condition*> couplingcond;
+  std::vector<DRT::Condition*> couplingcond;
   dis_redD->GetCondition("Art_redD_3D_CouplingCond",couplingcond);
 
 
@@ -889,7 +889,7 @@ double FLD::UTILS::Fluid_couplingBc::Area( double& density, double& viscosity, i
   eleparams.set<double>("viscosity", 0.0);
   eleparams.set<double>("density", 0.0);
 
-  const string condstring("Art_3D_redD_CouplingCond");
+  const std::string condstring("Art_3D_redD_CouplingCond");
 
   discret_3D_->EvaluateCondition(eleparams,condstring,condid);
 
@@ -969,7 +969,7 @@ double FLD::UTILS::Fluid_couplingBc::FlowRateCalculation(double time, double dta
 
   // create vector (+ initialization with zeros)
   Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap,true);
-  const string condstring("Art_3D_redD_CouplingCond");
+  const std::string condstring("Art_3D_redD_CouplingCond");
   discret_3D_->EvaluateCondition(eleparams,flowrates,condstring,condid);
 
   double local_flowrate = 0.0;
@@ -1024,7 +1024,7 @@ double FLD::UTILS::Fluid_couplingBc::PressureCalculation(double time, double dta
 
   // get elemental flowrates ...
   RCP<Epetra_Vector> myStoredPressures=Teuchos::rcp(new Epetra_Vector(*dofrowmap,100));
-  const string condstring("Art_3D_redD_CouplingCond");
+  const std::string condstring("Art_3D_redD_CouplingCond");
   discret_3D_->EvaluateCondition(eleparams,myStoredPressures,condstring,condid);
 
   // ... as well as actual total flowrate on this proc
@@ -1081,7 +1081,7 @@ void FLD::UTILS::Fluid_couplingBc::OutflowBoundary(double pressure, double time,
 
 
   couplingbc_->PutScalar(0.0);
-  const string condstring("Art_3D_redD_CouplingCond");
+  const std::string condstring("Art_3D_redD_CouplingCond");
   discret_3D_->EvaluateCondition(eleparams,couplingbc_,condstring,condid);
 
   //  discret_3D_->ClearState();
@@ -1118,7 +1118,7 @@ void FLD::UTILS::Fluid_couplingBc::InflowBoundary(double flowrate, double time, 
     printf("3D/reduced-D coupling condition Id: %d flowrate = %f\n",condid, flowrate);
 
 
-  vector<DRT::Condition*> cond3D;
+  std::vector<DRT::Condition*> cond3D;
   discret_3D_->GetCondition("Art_3D_redD_CouplingCond",cond3D);
 
   double area      = 0.0;
@@ -1170,7 +1170,7 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(RCP<Epetra_Vector>    velnp
   cout<<"Evaluating Dirich!"<<endl;
   //dserror("Dirichlet coupling is not fixed yet, if you see the message then something is wrong!");
   //  cout<<"3D discretization:"<<endl<<*discret_3D_<<endl;
-  vector<DRT::Condition*> conds_red;
+  std::vector<DRT::Condition*> conds_red;
   discret_redD_->GetCondition("Art_redD_3D_CouplingCond",conds_red);
 
   DRT::Condition* cond_red = NULL;
@@ -1189,7 +1189,7 @@ void FLD::UTILS::Fluid_couplingBc::EvaluateDirichlet(RCP<Epetra_Vector>    velnp
   }
 
   //  residual->Update(1.0,*couplingbc_,1.0);
-  vector<DRT::Condition*> conds;
+  std::vector<DRT::Condition*> conds;
   discret_3D_->GetCondition("Art_3D_redD_CouplingCond",conds);
 
   DRT::Condition* cond ;

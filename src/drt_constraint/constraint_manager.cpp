@@ -185,7 +185,7 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
 
   // create the parameters for the discretization
   ParameterList p;
-  vector<DRT::Condition*> constrcond(0);
+  std::vector<DRT::Condition*> constrcond(0);
   const Epetra_Map* dofrowmap = actdisc_->DofRowMap();
   constrMatrix_->Zero();//=Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,numConstrID_,false,true));
 
@@ -242,7 +242,7 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
   constrainterr_->Update(scConMat,*referencevalues_,-1.0*scConMat,*actvalues_,0.0);
   actdisc_->ClearState();
   // finalize the constraint matrix
-  string label(constrMatrix_->Label());
+  std::string label(constrMatrix_->Label());
   if (label == "LINALG::BlockSparseMatrixBase")
     constrMatrix_->Complete();
   else
@@ -257,7 +257,7 @@ void UTILS::ConstrManager::StiffnessAndInternalForces(
 *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::ComputeError(double time, RCP<Epetra_Vector> disp)
 {
-    vector<DRT::Condition*> constrcond(0);
+    std::vector<DRT::Condition*> constrcond(0);
     ParameterList p;
     p.set("total time",time);
     actdisc_->SetState("displacement",disp);
@@ -311,7 +311,7 @@ void UTILS::ConstrManager::UpdateLagrMult(double factor)
   lagrMultVec_->Update(factor,*constrainterr_,1.0);
   if(volconstr3d_->HaveConstraint())
   {
-    vector<int> volconID = volconstr3d_->GetActiveCondID();
+    std::vector<int> volconID = volconstr3d_->GetActiveCondID();
     for (unsigned int i = 0; i < volconID.size(); i++)
     {
       if (constrmap_->LID(int(i-offsetID_))!=-1)
@@ -352,7 +352,7 @@ void UTILS::ConstrManager::UpdateTotLagrMult(RCP<Epetra_Vector> vect)
 *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
 {
-  vector<DRT::Condition*> monitcond(0);
+  std::vector<DRT::Condition*> monitcond(0);
   monitorvalues_->PutScalar(0.0);
   ParameterList p;
   actdisc_->SetState("displacement",disp);
@@ -376,7 +376,7 @@ void UTILS::ConstrManager::ComputeMonitorValues(RCP<Epetra_Vector> disp)
 *-----------------------------------------------------------------------*/
 void UTILS::ConstrManager::ComputeMonitorValues(RCP<const Epetra_Vector> disp)
 {
-  vector<DRT::Condition*> monitcond(0);
+  std::vector<DRT::Condition*> monitcond(0);
   monitorvalues_->PutScalar(0.0);
   ParameterList p;
   if (not actdisc_->DofRowMap()->SameAs(disp->Map()))

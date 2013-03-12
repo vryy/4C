@@ -55,7 +55,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
   }
 
   // use input parameter HOMDIR to specify sampling
-  homdir_ = params_.sublist("TURBULENCE MODEL").get<string>("HOMDIR","not_specified");
+  homdir_ = params_.sublist("TURBULENCE MODEL").get<std::string>("HOMDIR","not_specified");
 
   // output to screen
   if (discret_->Comm().MyPID()==0)
@@ -100,14 +100,14 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
   ctbcoordinates_ = Teuchos::rcp(new std::vector<double> );
 
   // the criterion allows differences in coordinates by 1e-9
-  set<double,LineSortCriterion> x1cavcoords;
-  set<double,LineSortCriterion> x2cavcoords;
-  set<double,LineSortCriterion> x2wavcoords;
-  set<double,LineSortCriterion> clravcoords;
-  set<double,LineSortCriterion> ctbavcoords;
+  std::set<double,LineSortCriterion> x1cavcoords;
+  std::set<double,LineSortCriterion> x2cavcoords;
+  std::set<double,LineSortCriterion> x2wavcoords;
+  std::set<double,LineSortCriterion> clravcoords;
+  std::set<double,LineSortCriterion> ctbavcoords;
 
   // only necessary for averaging of Samgorinsky constant
-  if (params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+  if (params_.sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL","no_model")
       == "Dynamic_Smagorinsky")
   {
     if (homdir_=="z")
@@ -116,8 +116,8 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       x2coordinates_ = Teuchos::rcp(new std::vector<double> );
     }
   }
-  set<double,LineSortCriterion> x1avcoords;
-  set<double,LineSortCriterion> x2avcoords;
+  std::set<double,LineSortCriterion> x1avcoords;
+  std::set<double,LineSortCriterion> x2avcoords;
 
   // loop nodes and build sets of lines accessible on this proc
   for (int i=0; i<discret_->NumMyRowNodes(); ++i)
@@ -138,7 +138,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
       ctbavcoords.insert(node->X()[0]);
 
     // only necessary for averaging of Samgorinsky constant
-    if (params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+    if (params_.sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL","no_model")
         == "Dynamic_Smagorinsky")
     {
       if (homdir_=="z")
@@ -180,8 +180,8 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 #endif
     int numprocs=discret_->Comm().NumProc();
 
-    vector<char> sblock;
-    vector<char> rblock;
+    std::vector<char> sblock;
+    std::vector<char> rblock;
 
 #ifdef PARALLEL
     // create an exporter for point to point comunication
@@ -252,7 +252,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
         coordsvec.clear();
 
-        vector<char>::size_type index = 0;
+        std::vector<char>::size_type index = 0;
         while (index < rblock.size())
         {
           double onecoord;
@@ -326,7 +326,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
         coordsvec.clear();
 
-        vector<char>::size_type index = 0;
+        std::vector<char>::size_type index = 0;
         while (index < rblock.size())
         {
           double onecoord;
@@ -400,7 +400,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
         coordsvec.clear();
 
-        vector<char>::size_type index = 0;
+        std::vector<char>::size_type index = 0;
         while (index < rblock.size())
         {
           double onecoord;
@@ -473,7 +473,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
         coordsvec.clear();
 
-        vector<char>::size_type index = 0;
+        std::vector<char>::size_type index = 0;
         while (index < rblock.size())
         {
           double onecoord;
@@ -547,7 +547,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
         coordsvec.clear();
 
-        vector<char>::size_type index = 0;
+        std::vector<char>::size_type index = 0;
         while (index < rblock.size())
         {
           double onecoord;
@@ -558,7 +558,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
     }
 
     // only necessary for averaging of Samgorinsky constant
-    if (params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+    if (params_.sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL","no_model")
         == "Dynamic_Smagorinsky")
     {
       if (homdir_=="z")
@@ -627,7 +627,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
             coordsvec.clear();
 
-            vector<char>::size_type index = 0;
+            std::vector<char>::size_type index = 0;
             while (index < rblock.size())
             {
               double onecoord;
@@ -701,7 +701,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
             coordsvec.clear();
 
-            vector<char>::size_type index = 0;
+            std::vector<char>::size_type index = 0;
             while (index < rblock.size())
             {
               double onecoord;
@@ -760,7 +760,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
     }
 
     // only necessary for averaging of Samgorinsky constant
-    if (params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+    if (params_.sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL","no_model")
         == "Dynamic_Smagorinsky")
     {
       if (homdir_=="z")
@@ -988,7 +988,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
   Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
   // check if we want to compute averages of Smagorinsky constant
-  if (modelparams->get<string>("PHYSICAL_MODEL","no_model") == "Dynamic_Smagorinsky")
+  if (modelparams->get<std::string>("PHYSICAL_MODEL","no_model") == "Dynamic_Smagorinsky")
   {
     if (homdir_ == "z")
     {
@@ -1005,7 +1005,7 @@ FLD::TurbulenceStatisticsSqc::TurbulenceStatisticsSqc(
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
     s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
@@ -1068,7 +1068,7 @@ Teuchos::RCP<Epetra_Vector> velnp
   //----------------------------------------------------------------------
   // loop nodes on centerline in x1-direction and calculate pointwise means
   //----------------------------------------------------------------------
-  for (vector<double>::iterator x1cline=x1ccoordinates_->begin();
+  for (std::vector<double>::iterator x1cline=x1ccoordinates_->begin();
        x1cline!=x1ccoordinates_->end();
        ++x1cline)
   {
@@ -1094,7 +1094,7 @@ Teuchos::RCP<Epetra_Vector> velnp
           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))))
       {
 
-        vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -1188,7 +1188,7 @@ Teuchos::RCP<Epetra_Vector> velnp
   // loop nodes on centerline in x2-direction (with respect to cylinder
   // center) and calculate pointwise means
   //----------------------------------------------------------------------
-  for (vector<double>::iterator x2cline=x2ccoordinates_->begin();
+  for (std::vector<double>::iterator x2cline=x2ccoordinates_->begin();
        x2cline!=x2ccoordinates_->end();
        ++x2cline)
   {
@@ -1212,7 +1212,7 @@ Teuchos::RCP<Epetra_Vector> velnp
           ((homdir_=="z") or (homdir_=="not_specified" and (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))))
       {
-        vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -1306,7 +1306,7 @@ Teuchos::RCP<Epetra_Vector> velnp
   // loop nodes on first wakeline in x2-direction (x1=7.5) and calculate
   // pointwise means
   //----------------------------------------------------------------------
-  for (vector<double>::iterator x2wline=x2wcoordinates_->begin();
+  for (std::vector<double>::iterator x2wline=x2wcoordinates_->begin();
        x2wline!=x2wcoordinates_->end();
        ++x2wline)
   {
@@ -1331,7 +1331,7 @@ Teuchos::RCP<Epetra_Vector> velnp
           ((homdir_=="z") or (homdir_=="not_specified" and (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))))
       {
-        vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -1425,7 +1425,7 @@ Teuchos::RCP<Epetra_Vector> velnp
   // loop nodes on second wakeline in x2-direction (x1=11.5) and calculate
   // pointwise means
   //----------------------------------------------------------------------
-  for (vector<double>::iterator x2wline=x2wcoordinates_->begin();
+  for (std::vector<double>::iterator x2wline=x2wcoordinates_->begin();
        x2wline!=x2wcoordinates_->end();
        ++x2wline)
   {
@@ -1450,7 +1450,7 @@ Teuchos::RCP<Epetra_Vector> velnp
           ((homdir_=="z") or (homdir_=="not_specified" and (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))))
       {
-        vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -1543,7 +1543,7 @@ Teuchos::RCP<Epetra_Vector> velnp
   //----------------------------------------------------------------------
   // loop nodes on left cylinder boundary line and calculate pointwise means
   //----------------------------------------------------------------------
-  for (vector<double>::iterator clrline=clrcoordinates_->begin();
+  for (std::vector<double>::iterator clrline=clrcoordinates_->begin();
        clrline!=clrcoordinates_->end();
        ++clrline)
   {
@@ -1568,7 +1568,7 @@ Teuchos::RCP<Epetra_Vector> velnp
           ((homdir_=="z") or (homdir_=="not_specified" and (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))))
       {
-        vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -1661,7 +1661,7 @@ Teuchos::RCP<Epetra_Vector> velnp
   //----------------------------------------------------------------------
   // loop nodes on top cylinder boundary line and calculate pointwise means
   //----------------------------------------------------------------------
-  for (vector<double>::iterator ctbline=ctbcoordinates_->begin();
+  for (std::vector<double>::iterator ctbline=ctbcoordinates_->begin();
        ctbline!=ctbcoordinates_->end();
        ++ctbline)
   {
@@ -1686,7 +1686,7 @@ Teuchos::RCP<Epetra_Vector> velnp
           ((homdir_=="z") or (homdir_=="not_specified" and (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))))
       {
-        vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -1779,7 +1779,7 @@ Teuchos::RCP<Epetra_Vector> velnp
   //----------------------------------------------------------------------
   // loop nodes on right cylinder boundary line and calculate pointwise means
   //----------------------------------------------------------------------
-  for (vector<double>::iterator clrline=clrcoordinates_->begin();
+  for (std::vector<double>::iterator clrline=clrcoordinates_->begin();
        clrline!=clrcoordinates_->end();
        ++clrline)
   {
@@ -1804,7 +1804,7 @@ Teuchos::RCP<Epetra_Vector> velnp
           ((homdir_=="z") or (homdir_=="not_specified" and (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))))
       {
-        vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -1897,7 +1897,7 @@ Teuchos::RCP<Epetra_Vector> velnp
   //----------------------------------------------------------------------
   // loop nodes on bottom cylinder boundary line and calculate pointwise means
   //----------------------------------------------------------------------
-  for (vector<double>::iterator ctbline=ctbcoordinates_->begin();
+  for (std::vector<double>::iterator ctbline=ctbcoordinates_->begin();
        ctbline!=ctbcoordinates_->end();
        ++ctbline)
   {
@@ -1922,7 +1922,7 @@ Teuchos::RCP<Epetra_Vector> velnp
           ((homdir_=="z") or (homdir_=="not_specified" and (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
           node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))))
       {
-        vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -2024,7 +2024,7 @@ void FLD::TurbulenceStatisticsSqc::DumpStatistics(int step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
     s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));

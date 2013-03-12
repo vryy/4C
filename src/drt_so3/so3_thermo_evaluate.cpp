@@ -88,7 +88,7 @@ int DRT::ELEMENTS::So3_Thermo< so3_ele, distype>::Evaluate(
   typename So3_Thermo::ActionType act = So3_Thermo::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_stifftemp")  act = So3_Thermo::calc_struct_stifftemp;
   else if (action=="calc_struct_stress")     act = So3_Thermo::calc_struct_stress;
@@ -185,7 +185,7 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
   ActionType act = none;
 
   // get the required action for coupling with the thermal field
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_internalforce")  act = calc_struct_internalforce;
   else if (action=="calc_struct_nlnstiff")       act = calc_struct_nlnstiff;

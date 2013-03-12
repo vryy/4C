@@ -72,7 +72,7 @@ FS3I::BiofilmFSI::BiofilmFSI(const Epetra_Comm& comm)
   // set up couplings
   //---------------------------------------------------------------------
 
-  const string condname = "FSICoupling";
+  const std::string condname = "FSICoupling";
   const int  ndim = DRT::Problem::Instance()->NDim();
 
   // set up ale-fluid couplings

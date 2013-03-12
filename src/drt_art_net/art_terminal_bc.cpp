@@ -40,10 +40,10 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
                                            ParameterList & params)
 {
 
-  // define BC name string (e.g: BC   = "flow")
-  string BC;
-  // define BC type string (e.g: Type = "forced")
-  string Type;
+  // define BC name std::string (e.g: BC   = "flow")
+  std::string BC;
+  // define BC type std::string (e.g: Type = "forced")
+  std::string Type;
   // Define the reflection cooficient
   double Rf = 0.0;
   // Define bc variable
@@ -63,7 +63,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
   // Check whether the condition is prescribed from the input file
   // or from a 3D fluid simulation
   // -------------------------------------------------------------------
-  if (params.get<string>("Condition Name") == "ArtPrescribedCond")
+  if (params.get<std::string>("Condition Name") == "ArtPrescribedCond")
   {
     // -----------------------------------------------------------------
     // Read in Condition type and name
@@ -74,9 +74,9 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
     // -----------------------------------------------------------------
     // Read in the bc curve information
     // -----------------------------------------------------------------
-    const  vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
+    const  std::vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
     double curvefac = 1.0;
-    const  vector<double>* vals   = condition->Get<std::vector<double> >("val");
+    const  std::vector<double>* vals   = condition->Get<std::vector<double> >("val");
     
     // -----------------------------------------------------------------
     // Check whether the BC is absorbing or forced
@@ -125,7 +125,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
     }
     
   }
-  else if (params.get<string>("Condition Name") == "Art_redD_3D_CouplingCond")
+  else if (params.get<std::string>("Condition Name") == "Art_redD_3D_CouplingCond")
   {
     // -------------------------------------------------------------------
     // Read in the 3D parameters exported to the reduced D problem
@@ -152,7 +152,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
     //
     //     In this case a map called map3D has the following form:
     //     +-----------------------------------------------------------+
-    //     |           map< string               ,  double        >    |
+    //     |           std::map< std::string               ,  double        >    |
     //     |     +------------------------------------------------+    |
     //     |     |  ID  | coupling variable name | variable value |    |
     //     |     +------------------------------------------------+    |
@@ -168,15 +168,15 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
     // -----------------------------------------------------------------
 
     int ID = condition->GetInt("ConditionID");
-    RCP<map<string,double> > map3D;
-    map3D   = CoupledTo3DParams->get<RCP<map<string,double > > >("3D map of values");
+    RCP<std::map<std::string,double> > map3D;
+    map3D   = CoupledTo3DParams->get<RCP<std::map<std::string,double > > >("3D map of values");
 
     // find the applied boundary variable
     std::stringstream stringID;
     stringID<< "_"<<ID;
-    for (map<string,double>::iterator itr = map3D->begin(); itr!=map3D->end(); itr++)
+    for (std::map<std::string,double>::iterator itr = map3D->begin(); itr!=map3D->end(); itr++)
     {
-      string VariableWithId = itr->first;
+      std::string VariableWithId = itr->first;
       size_t found;
       found= VariableWithId.rfind(stringID.str());
       if (found!=string::npos)
@@ -435,7 +435,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
   // -------------------------------------------------------------------
   // return the computed 3D values
   // -------------------------------------------------------------------
-  if (params.get<string>("Condition Name") == "Art_redD_3D_CouplingCond")
+  if (params.get<std::string>("Condition Name") == "Art_redD_3D_CouplingCond")
   {
     // -----------------------------------------------------------------
     // If the parameter list is empty, then something is wrong!
@@ -452,7 +452,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
     //
     //     In this case a map called map1D has the following form:
     //     +-----------------------------------------------------------+
-    //     |              map< string            ,  double        > >  |
+    //     |              std::map< std::string            ,  double        > >  |
     //     |     +------------------------------------------------+    |
     //     |     |  ID  | coupling variable name | variable value |    |
     //     |     +------------------------------------------------+    |
@@ -468,10 +468,10 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
     // -----------------------------------------------------------------
 
     int ID = condition->GetInt("ConditionID");
-    RCP<map<string,double> >  map1D;
-    map1D   = CoupledTo3DParams->get<RCP<map<string,double> > >("reducedD map of values");
+    RCP<std::map<std::string,double> >  map1D;
+    map1D   = CoupledTo3DParams->get<RCP<std::map<std::string,double> > >("reducedD map of values");
 
-    string returnedBC = *(condition->Get<string>("ReturnedVariable"));
+    std::string returnedBC = *(condition->Get<string>("ReturnedVariable"));
 
     double BC3d = 0.0;
     if (returnedBC  == "flow")
@@ -489,7 +489,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
     }
     else
     {
-      string str = (*condition->Get<string>("ReturnedVariable"));
+      std::string str = (*condition->Get<string>("ReturnedVariable"));
       dserror("%s, is an unimplimented type of coupling",str.c_str());
       exit(1);
     }
@@ -504,7 +504,7 @@ void ART::UTILS::SolvePrescribedTerminalBC(RCP<DRT::Discretization> actdis,
     // Thus we can use parallel addition
     // -----------------------------------------------------------------
 
-    map<string,double>::iterator itrMap1D;
+    std::map<std::string,double>::iterator itrMap1D;
     itrMap1D = map1D->find(returnedBCwithId.str());
     if (itrMap1D == map1D->end())
     {
@@ -548,9 +548,9 @@ void ART::UTILS::SolveReflectiveTerminal(RCP<DRT::Discretization> actdis,
   // -------------------------------------------------------------------
   // Read in the bc curve information
   // -------------------------------------------------------------------
-  const  vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
+  const  std::vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
   double curvefac = 1.0;
-  const  vector<double>* vals   = condition->Get<std::vector<double> >("val");
+  const  std::vector<double>* vals   = condition->Get<std::vector<double> >("val");
 
   // if the curve exist => Rf = val*curve(time)
   if ((*curve)[0]>=0)
@@ -619,17 +619,17 @@ void ART::UTILS::SolveExplWindkesselBC(RCP<DRT::Discretization> actdis,
                                        ParameterList & params)
 {
 
-  // define BC windkessel inigration type string (e.g: BC   = "flow")
-  string int_type = *(condition->Get<string>("intigrationType"));
-  // define windkessel BC type string (e.g: Type = "forced")
-  string wk_type  = *(condition->Get<string>("windkesselType"));
+  // define BC windkessel inigration type std::string (e.g: BC   = "flow")
+  std::string int_type = *(condition->Get<string>("intigrationType"));
+  // define windkessel BC type std::string (e.g: Type = "forced")
+  std::string wk_type  = *(condition->Get<string>("windkesselType"));
 
   // -------------------------------------------------------------------
   // Read in the bc curve information
   // -------------------------------------------------------------------
-  const  vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
+  const  std::vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
   double curvefac = 1.0;
-  const  vector<double>* vals   = condition->Get<std::vector<double> >("val");
+  const  std::vector<double>* vals   = condition->Get<std::vector<double> >("val");
 
   double Wb;
   if(int_type == "ExplicitWindkessel")

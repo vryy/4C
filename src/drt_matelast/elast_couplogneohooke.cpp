@@ -33,7 +33,7 @@ MAT::ELASTIC::PAR::CoupLogNeoHooke::CoupLogNeoHooke(
   )
 : Parameter(matdata)
 {
-  string parmode = *(matdata->Get<std::string>("MODE"));
+  std::string parmode = *(matdata->Get<std::string>("MODE"));
   double c1 = matdata->GetDouble("C1");
   double c2 = matdata->GetDouble("C2");
 

@@ -307,7 +307,7 @@ void SCATRA::TimIntOneStepTheta::ComputeThermPressure()
   // evaluate velocity-divergence and diffusive (minus sign!) flux on boundaries
   // We may use the flux-calculation condition for calculation of fluxes for
   // thermodynamic pressure, since it is usually at the same boundary.
-  vector<std::string> condnames;
+  std::vector<std::string> condnames;
   condnames.push_back("ScaTraFluxCalc");
   for (unsigned int i=0; i < condnames.size(); i++)
   {
@@ -492,12 +492,12 @@ void SCATRA::TimIntOneStepTheta::OutputRestart()
     if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
       // define a vector with all electrode kinetics BCs
-      vector<DRT::Condition*> cond;
+      std::vector<DRT::Condition*> cond;
       discret_->GetCondition("ElectrodeKinetics",cond);
 
       int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
 
-       vector<DRT::Condition*>::iterator fool;
+       std::vector<DRT::Condition*>::iterator fool;
        // loop through conditions and find the cathode
        for (fool=cond.begin(); fool!=cond.end(); ++fool)
        {
@@ -578,11 +578,11 @@ void SCATRA::TimIntOneStepTheta::ReadRestart(int step)
     if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
       // define a vector with all electrode kinetics BCs
-      vector<DRT::Condition*> cond;
+      std::vector<DRT::Condition*> cond;
       discret_->GetCondition("ElectrodeKinetics",cond);
 
       int condid_cathode = extraparams_->sublist("ELCH CONTROL").get<int>("GSTATCONDID_CATHODE");
-      vector<DRT::Condition*>::iterator fool;
+      std::vector<DRT::Condition*>::iterator fool;
       bool read_pot=false;
 
       // read desired values from the .control file and add/set the value to
@@ -694,7 +694,7 @@ void SCATRA::TimIntOneStepTheta::ElectrodeKineticsTimeUpdate(const bool init)
   {
     if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
-      vector<DRT::Condition*> cond;
+      std::vector<DRT::Condition*> cond;
       discret_->GetCondition("ElectrodeKinetics",cond);
       for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
       {
@@ -743,7 +743,7 @@ void SCATRA::TimIntOneStepTheta::ElectrodeKineticsSetOldPartOfRHS()
   {
     if (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("ELCH CONTROL"),"GALVANOSTATIC"))
     {
-      vector<DRT::Condition*> cond;
+      std::vector<DRT::Condition*> cond;
       discret_->GetCondition("ElectrodeKinetics",cond);
       for (size_t i=0; i < cond.size(); i++) // we update simply every condition!
       {

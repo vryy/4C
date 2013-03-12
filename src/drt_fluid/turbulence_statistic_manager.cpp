@@ -183,9 +183,9 @@ namespace FLD
       // build statistics manager for inflow channel flow
       if (inflow_)
       {
-        if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2"
-         or params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2"
-         or params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="scatra_channel_flow_of_height_2")
+        if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2"
+         or params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2"
+         or params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="scatra_channel_flow_of_height_2")
         {
           // do not write any dissipation rates for inflow channels
           subgrid_dissipation_ = false;
@@ -215,7 +215,7 @@ namespace FLD
       // build statistics manager for inflow channel flow
       if (inflow_)
       {
-        if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+        if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
         {
           // do not write any dissipation rates for inflow channels
           subgrid_dissipation_ = false;
@@ -302,7 +302,7 @@ namespace FLD
     {
       Teuchos::ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
-      string homdir = modelparams->get<string>("HOMDIR","not_specified");
+      std::string homdir = modelparams->get<std::string>("HOMDIR","not_specified");
 
       if(flow_==rotating_circular_cylinder_nurbs_scatra)
       {
@@ -411,7 +411,7 @@ namespace FLD
       // build statistics manager for inflow channel flow
       if (inflow_)
       {
-        if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+        if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
         {
           // do not write any dissipation rates for inflow channels
           subgrid_dissipation_ = false;
@@ -442,7 +442,7 @@ namespace FLD
     {
       Teuchos::ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
-      string homdir = modelparams->get<string>("HOMDIR","not_specified");
+      std::string homdir = modelparams->get<std::string>("HOMDIR","not_specified");
 
       statistics_general_mean_ = Teuchos::rcp(new TurbulenceStatisticsGeneralMean(
           discret_,
@@ -477,21 +477,21 @@ namespace FLD
 
     Teuchos::ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
-    if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+    if (modelparams->get<std::string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
         ==
         "CLASSICAL_LES")
     {
       // check if we want to compute averages of Smagorinsky
       // constants, effective viscosities etc
-      if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
+      if(modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
          ==
          "Dynamic_Smagorinsky"
          ||
-         modelparams->get<string>("PHYSICAL_MODEL","no_model")
+         modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
          ==
          "Smagorinsky_with_van_Driest_damping"
          ||
-         modelparams->get<string>("PHYSICAL_MODEL","no_model")
+         modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
          ==
          "Smagorinsky"
         )
@@ -500,7 +500,7 @@ namespace FLD
       }
       // check if we want to compute averages of scale similarity
       // quantities (tau_SFS)
-      else if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
+      else if(modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
               ==
               "Scale_Similarity")
       {
@@ -508,7 +508,7 @@ namespace FLD
       }
       // check if we want to compute averages of multifractal
       // quantities (N, B)
-      else if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
+      else if(modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
            ==
            "Multifractal_Subgrid_Scales")
       {
@@ -541,9 +541,9 @@ namespace FLD
           flow_ == scatra_channel_flow_of_height_2 or
           flow_ == bubbly_channel_flow)
       {
-        string homdir
+        std::string homdir
           =
-          modelparams->get<string>("HOMDIR","not_specified");
+          modelparams->get<std::string>("HOMDIR","not_specified");
 
         if(homdir!="xy" && homdir!="xz" && homdir!="yz")
         {
@@ -590,7 +590,7 @@ namespace FLD
         samstop_   = modelparams->get<int>("SAMPLING_STOP", 1000000000);
         dumperiod_ = 0; // used as switch for the multi-record statistic output
 
-        string homdir = modelparams->get<string>("HOMDIR","not_specified");
+        std::string homdir = modelparams->get<std::string>("HOMDIR","not_specified");
         if(homdir!="not_specified")
           dserror("there is no homogeneous direction for the ORACLES problem\n");
 
@@ -764,7 +764,7 @@ namespace FLD
             // do time sample for inflow channel flow
             if (inflow_)
             {
-              if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+              if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
                 statistics_channel_->DoTimeSample(myvelnp_,myforce_);
               else
                dserror("channel_flow_of_height_2 expected!");
@@ -777,7 +777,7 @@ namespace FLD
             // do time sample for inflow channel flow
             if (inflow_)
             {
-              if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="scatra_channel_flow_of_height_2")
+              if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="scatra_channel_flow_of_height_2")
                 statistics_channel_->DoScatraTimeSample(myvelnp_,myscaaf_,myforce_);
               else
                 dserror("scatra_channel_flow_of_height_2 expected!");
@@ -791,7 +791,7 @@ namespace FLD
           // do time sample for inflow channel flow
           if (inflow_)
           {
-            if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
+            if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
             {
               statistics_channel_->DoLomaTimeSample(myvelnp_,myscaaf_,myforce_,eosfac);
             }
@@ -811,7 +811,7 @@ namespace FLD
         // build statistics manager for inflow channel flow
         if (inflow_)
         {
-          if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+          if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
             statistics_channel_->DoTimeSample(myvelnp_,myforce_);
           else
             dserror("loma_channel_flow_of_height_2 expected!");
@@ -827,7 +827,7 @@ namespace FLD
 
         // computation of Lift&Drag statistics
         {
-          RCP<map<int,std::vector<double> > > liftdragvals;
+          RCP<std::map<int,std::vector<double> > > liftdragvals;
 
           FLD::UTILS::LiftDrag(*discret_,*myforce_,*params_,liftdragvals);
 
@@ -893,20 +893,20 @@ namespace FLD
           //dserror("no subgrid dissipation");
 
           // set vector values needed by elements
-          map<string,RCP<Epetra_Vector> > statevecs;
-          map<string,RCP<Epetra_MultiVector> > statetenss;
-          map<string,RCP<Epetra_Vector> > scatrastatevecs;
-          map<string,RCP<Epetra_MultiVector> > scatrafieldvecs;
+          std::map<std::string,RCP<Epetra_Vector> > statevecs;
+          std::map<std::string,RCP<Epetra_MultiVector> > statetenss;
+          std::map<std::string,RCP<Epetra_Vector> > scatrastatevecs;
+          std::map<std::string,RCP<Epetra_MultiVector> > scatrafieldvecs;
 
-          statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("hist",myhist_));
-          statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("accam",myaccam_));
-          statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("scaaf",myscaaf_));
-          statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("scaam",myscaam_));
+          statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("hist",myhist_));
+          statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("accam",myaccam_));
+          statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("scaaf",myscaaf_));
+          statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("scaam",myscaam_));
 
           if (alefluid_)
           {
-            statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("dispnp", mydispnp_   ));
-            statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("gridv" , mygridvelaf_));
+            statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("dispnp", mydispnp_   ));
+            statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("gridv" , mygridvelaf_));
             if (scatradis_!=Teuchos::null)
               dserror("Not supported!");
           }
@@ -914,40 +914,40 @@ namespace FLD
           if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_afgenalpha
             or DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
           {
-            statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("velaf",myvelaf_));
+            statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("velaf",myvelaf_));
             if (DRT::INPUT::get<INPAR::FLUID::TimeIntegrationScheme>(*params_, "time int algo") == INPAR::FLUID::timeint_npgenalpha)
-              statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("velnp",myvelnp_));
+              statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("velnp",myvelnp_));
 
             // additional scatra vectors
-            scatrastatevecs.insert(pair<string,RCP<Epetra_Vector> >("phinp",myphiaf_));
-            scatrastatevecs.insert(pair<string,RCP<Epetra_Vector> >("phiam",myphiam_));
-            scatrastatevecs.insert(pair<string,RCP<Epetra_Vector> >("hist",myphidtam_));
+            scatrastatevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("phinp",myphiaf_));
+            scatrastatevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("phiam",myphiam_));
+            scatrastatevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("hist",myphidtam_));
           }
           else
           {
-            statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("velaf",myvelnp_));
-            statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("velaf",myvelnp_));
+            statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("velaf",myvelnp_));
+            statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("velaf",myvelnp_));
 
             // additional scatra vectors
-            scatrastatevecs.insert(pair<string,RCP<Epetra_Vector> >("phinp",myphinp_));
-            scatrastatevecs.insert(pair<string,RCP<Epetra_Vector> >("hist",myscatrahist_));
+            scatrastatevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("phinp",myphinp_));
+            scatrastatevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("hist",myscatrahist_));
           }
 
           // further scatra fields
-          scatrafieldvecs.insert(pair<string,RCP<Epetra_MultiVector> >("convective velocity field",myscatraconvel_));
-          scatrafieldvecs.insert(pair<string,RCP<Epetra_MultiVector> >("acceleration/pressure field",myscatraaccpre_));
+          scatrafieldvecs.insert(std::pair<std::string,RCP<Epetra_MultiVector> >("convective velocity field",myscatraconvel_));
+          scatrafieldvecs.insert(std::pair<std::string,RCP<Epetra_MultiVector> >("acceleration/pressure field",myscatraaccpre_));
 
-          if (params_->sublist("TURBULENCE MODEL").get<string>("FSSUGRVISC")!= "No"
+          if (params_->sublist("TURBULENCE MODEL").get<std::string>("FSSUGRVISC")!= "No"
               or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
           {
-            statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("fsvelaf",myfsvelaf_));
+            statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("fsvelaf",myfsvelaf_));
             if (myfsvelaf_==Teuchos::null)
               dserror ("Have not got fsvel!");
 
             if (DRT::INPUT::get<INPAR::FLUID::PhysicalType>(*params_, "Physical Type") == INPAR::FLUID::loma and
                 turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
             {
-              statevecs.insert(std::pair<string,RCP<Epetra_Vector> >("fsscaaf",myfsscaaf_));
+              statevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("fsscaaf",myfsscaaf_));
               if (myfsscaaf_==Teuchos::null)
                 dserror ("Have not got fssca!");
             }
@@ -955,16 +955,16 @@ namespace FLD
             // additional scatra vectors
             if (withscatra_)
             {
-              scatrastatevecs.insert(std::pair<string,RCP<Epetra_Vector> >("fsphinp",myfsphi_));
+              scatrastatevecs.insert(std::pair<std::string,RCP<Epetra_Vector> >("fsphinp",myfsphi_));
               if (myfsphi_==Teuchos::null)
                 dserror ("Have not got fsphi!");
-              scatrafieldvecs.insert(std::pair<string,RCP<Epetra_MultiVector> >("fine-scale velocity field",myscatrafsvel_));
+              scatrafieldvecs.insert(std::pair<std::string,RCP<Epetra_MultiVector> >("fine-scale velocity field",myscatrafsvel_));
             }
           }
           if (turbmodel_ == INPAR::FLUID::scale_similarity_basic)
           {
-            statetenss.insert(std::pair<string,RCP<Epetra_MultiVector> >("filtered vel",myfilteredvel_));
-            statetenss.insert(std::pair<string,RCP<Epetra_MultiVector> >("filtered reystr",myfilteredreystr_));
+            statetenss.insert(std::pair<std::string,RCP<Epetra_MultiVector> >("filtered vel",myfilteredvel_));
+            statetenss.insert(std::pair<std::string,RCP<Epetra_MultiVector> >("filtered reystr",myfilteredreystr_));
           }
 
           statistics_channel_->EvaluateResiduals(statevecs,statetenss,
@@ -1082,7 +1082,7 @@ namespace FLD
         // build statistics manager for inflow channel flow
         if (inflow_)
         {
-          if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+          if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
           {
             statistics_channel_->DoTimeSample(velnp,force);
           }
@@ -1246,7 +1246,7 @@ namespace FLD
         //write statistics of inflow channel flow
         if (inflow_)
         {
-          if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+          if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
           {
             if(output_inflow)
             {
@@ -1272,7 +1272,7 @@ namespace FLD
             // write statistics of inflow channel flow
             if (inflow_)
             {
-              if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+              if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
               {
                 if(output_inflow)
                 {
@@ -1290,7 +1290,7 @@ namespace FLD
             // write statistics of inflow channel flow
             if (inflow_)
             {
-              if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="scatra_channel_flow_of_height_2")
+              if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="scatra_channel_flow_of_height_2")
                {
                 if(outputformat == write_single_record)
                   statistics_channel_->DumpScatraStatistics(step);
@@ -1306,7 +1306,7 @@ namespace FLD
           // write statistics of inflow channel flow
           if (inflow_)
           {
-            if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
+            if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="loma_channel_flow_of_height_2")
             {
               if(outputformat == write_single_record)
                 statistics_channel_->DumpLomaStatistics(step);
@@ -1329,7 +1329,7 @@ namespace FLD
         // build statistics manager for inflow channel flow
         if (inflow_)
         {
-          if(params_->sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
+          if(params_->sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW")=="channel_flow_of_height_2")
           {
             if(outputformat == write_multiple_records)
             {

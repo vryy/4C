@@ -85,7 +85,7 @@ int DRT::ELEMENTS::Wall1Line::EvaluateNeumann(Teuchos::ParameterList& params,
   // element geometry update
   RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
-  vector<double> mydisp(lm.size());
+  std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
   LINALG::SerialDenseMatrix xye(Wall1::numdim_,numnod);  // material coord. of element
   LINALG::SerialDenseMatrix xyecurr(Wall1::numdim_,numnod);  // spatial coord. of element
@@ -225,7 +225,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Wall1Line::getOptimalGaussrule(const Disc
 
 double  DRT::ELEMENTS::Wall1Line::w1_substitution(const Epetra_SerialDenseMatrix& xye,
                                                   const Epetra_SerialDenseMatrix& deriv,
-                                                  vector<double>* unrm, // unit normal
+                                                  std::vector<double>* unrm, // unit normal
                                                   const int iel)
 {
 	  /*
@@ -281,7 +281,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
   DRT::ELEMENTS::Wall1Line::ActionType act = Wall1Line::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_constrarea")       act = Wall1Line::calc_struct_constrarea;
   else if (action=="calc_struct_centerdisp")   	   act = Wall1Line::calc_struct_centerdisp;
@@ -498,7 +498,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
   DRT::ELEMENTS::Wall1Line::ActionType act = Wall1Line::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_area_poro")        act = Wall1Line::calc_struct_area_poro;
   else

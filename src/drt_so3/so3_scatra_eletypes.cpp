@@ -29,8 +29,8 @@ DRT::ParObject* DRT::ELEMENTS::So_hex8ScatraType::Create( const std::vector<char
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ScatraType::Create( const string eletype,
-                                                            const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ScatraType::Create( const std::string eletype,
+                                                            const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {
@@ -92,8 +92,8 @@ DRT::ParObject* DRT::ELEMENTS::So_tet4ScatraType::Create( const std::vector<char
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ScatraType::Create( const string eletype,
-                                                            const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ScatraType::Create( const std::string eletype,
+                                                            const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {
@@ -153,8 +153,8 @@ DRT::ParObject* DRT::ELEMENTS::So_tet10ScatraType::Create( const std::vector<cha
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10ScatraType::Create( const string eletype,
-                                                            const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10ScatraType::Create( const std::string eletype,
+                                                            const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {
@@ -214,8 +214,8 @@ DRT::ParObject* DRT::ELEMENTS::So_weg6ScatraType::Create( const std::vector<char
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6ScatraType::Create( const string eletype,
-                                                            const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6ScatraType::Create( const std::string eletype,
+                                                            const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {
@@ -280,8 +280,8 @@ DRT::ParObject* DRT::ELEMENTS::NStet5ScatraType::Create( const std::vector<char>
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5ScatraType::Create( const string eletype,
-                                                            const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::NStet5ScatraType::Create( const std::string eletype,
+                                                            const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {

@@ -48,7 +48,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
   DRT::ELEMENTS::So_weg6::ActionType act = So_weg6::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff")      act = So_weg6::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff")      act = So_weg6::calc_struct_nlnstiff;
@@ -185,7 +185,7 @@ int DRT::ELEMENTS::So_shw6::Evaluate(Teuchos::ParameterList& params,
         params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
       if (gpstressmap==Teuchos::null)
         dserror("no gp stress/strain map available for postprocessing");
-      string stresstype = params.get<string>("stresstype","ndxyz");
+      std::string stresstype = params.get<std::string>("stresstype","ndxyz");
       int gid = Id();
       LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> gpstress(((*gpstressmap)[gid])->A(),true);
 
@@ -316,7 +316,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
   */
   // in any case declare variables, sizes etc. only in eascase
   Epetra_SerialDenseMatrix* alpha = NULL;  // EAS alphas
-  vector<Epetra_SerialDenseMatrix>* M_GP = NULL;  // EAS matrix M at all GPs
+  std::vector<Epetra_SerialDenseMatrix>* M_GP = NULL;  // EAS matrix M at all GPs
   LINALG::Matrix<NUMSTR_WEG6,soshw6_easpoisthick> M; // EAS matrix M at current GP, fixed for sosh8
   Epetra_SerialDenseVector feas;    // EAS portion of internal forces
   Epetra_SerialDenseMatrix Kaa;     // EAS matrix Kaa
@@ -384,11 +384,11 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
   // ANS modified rows of bop in local(parameter) coords
   LINALG::Matrix<num_ans*num_sp,NUMDOF_WEG6> B_ans_loc;
   // Jacobian evaluated at all ANS sampling points
-  vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> > jac_sps(num_sp);
+  std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> > jac_sps(num_sp);
   // CURRENT Jacobian evaluated at all ANS sampling points
-  vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> > jac_cur_sps(num_sp);
+  std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> > jac_cur_sps(num_sp);
   // pointer to derivs evaluated at all sampling points
-  vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> >* deriv_sp = NULL;   //derivs eval. at all sampling points
+  std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> >* deriv_sp = NULL;   //derivs eval. at all sampling points
   // evaluate all necessary variables for ANS
   soshw6_anssetup(xrefe,xcurr,&deriv_sp,jac_sps,jac_cur_sps,B_ans_loc);
   // (r,s) gp-locations of fully integrated linear 6-node wedge
@@ -753,13 +753,13 @@ void DRT::ELEMENTS::So_shw6::soshw6_nlnstiffmass(
 void DRT::ELEMENTS::So_shw6::soshw6_anssetup(
         const LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6>& xrefe, // material element coords
         const LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6>& xcurr, // current element coords
-        vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> >** deriv_sp,   // derivs eval. at all sampling points
-        vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> >& jac_sps,     // jac at all sampling points
-        vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> >& jac_cur_sps, // current jac at all sampling points
+        std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> >** deriv_sp,   // derivs eval. at all sampling points
+        std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> >& jac_sps,     // jac at all sampling points
+        std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMDIM_WEG6> >& jac_cur_sps, // current jac at all sampling points
         LINALG::Matrix<num_ans*num_sp,NUMDOF_WEG6>& B_ans_loc) // modified B
 {
   // static matrix object of derivs at sampling points, kept in memory
-  static vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > df_sp(num_sp);
+  static std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > df_sp(num_sp);
   static bool dfsp_eval;                      // flag for re-evaluate everything
 
   if (dfsp_eval!=0){             // if true f,df already evaluated
@@ -943,7 +943,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_easinit()
  |  setup of constant EAS data (private)                       maf 05/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
-          vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
+          std::vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
           double& detJ0,                      // det of Jacobian at origin
           LINALG::Matrix<NUMSTR_WEG6,NUMSTR_WEG6>& T0invT,   // maps M(origin) local to global
           const LINALG::Matrix<NUMNOD_WEG6,NUMDIM_WEG6>& xrefe)    // material element coords
@@ -964,7 +964,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_eassetup(
   soshw6_evaluateT(jac0,T0invT);
 
   // build EAS interpolation matrix M, evaluated at the GPs of soshw6
-  static vector<Epetra_SerialDenseMatrix> M(NUMGPT_WEG6);
+  static std::vector<Epetra_SerialDenseMatrix> M(NUMGPT_WEG6);
   static bool M_eval;
 
   if (M_eval==true){          // if true M already evaluated
@@ -1080,7 +1080,7 @@ void DRT::ELEMENTS::So_shw6::soshw6_Cauchy(LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG
 int DRT::ELEMENTS::So_shw6::soshw6_findoptparmap()
 {
   // create edge vectors of lower triangle
-  vector<std::vector<double> > edgevecs(3);
+  std::vector<std::vector<double> > edgevecs(3);
   edgevecs.at(0).resize(3); edgevecs.at(1).resize(3); edgevecs.at(2).resize(3);
   for (int i=0; i<3; ++i){
     edgevecs.at(0)[i] = this->Nodes()[1]->X()[i] - this->Nodes()[0]->X()[i]; //a

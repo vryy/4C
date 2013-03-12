@@ -93,8 +93,8 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(
     initfrl2  = ftmpf.DotProduct(ftmpf);
     initfrinf = ftmpf.NormInf();
     initrl2 = sqrt(initsrl2 + initarl2 + initfrl2);
-    initrinf = max(initsrinf,initarinf);
-    initrinf = max(initrinf,initfrinf);
+    initrinf = std::max(initsrinf,initarinf);
+    initrinf = std::max(initrinf,initfrinf);
   }
   Epetra_Time timer(MLAPI::GetEpetra_Comm());
   double t1=0.0;
@@ -291,15 +291,15 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurFluidSplit_S(
     double frinf = ftmpf.NormInf();
 
     rl2 = sqrt(srl2 + arl2 + frl2);
-    rinf = max(srinf,arinf);
-    rinf = max(rinf,frinf);
+    rinf = std::max(srinf,arinf);
+    rinf = std::max(rinf,frinf);
 
     double rl2rate =  Rate(myrank,t,rl2,initrl2,stmpf.GetGlobalLength()+atmpf.GetGlobalLength()+ftmpf.GetGlobalLength());
     double rinfrate = Rate(myrank,t,rinf,initrinf,stmpf.GetGlobalLength()+atmpf.GetGlobalLength()+ftmpf.GetGlobalLength());
 
     if (!myrank && !silent) printf("RichardsonSchurStructureSplit_SV (level %2d) r0 %10.5e rl_2 %10.5e rinf0 %10.5e rinf %10.5e t %10.5e damp %10.5e sweeps %2d l2rate %10.5e rinfrate %10.5e\n",
                                    level,initrl2,rl2,initrinf,rinf,t,damp,sweeps,rl2rate,rinfrate);
-    rl2rate = max(rl2rate,rinfrate);
+    rl2rate = std::max(rl2rate,rinfrate);
 
     MLAPI::GetEpetra_Comm().Broadcast(&rl2rate,1,0);
     return rl2rate;
@@ -381,8 +381,8 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(
     initfrl2  = ftmpf.DotProduct(ftmpf);
     initfrinf = ftmpf.NormInf();
     initrl2 = sqrt(initsrl2 + initarl2 + initfrl2);
-    initrinf = max(initsrinf,initarinf);
-    initrinf = max(initrinf,initfrinf);
+    initrinf = std::max(initsrinf,initarinf);
+    initrinf = std::max(initrinf,initfrinf);
   }
   Epetra_Time timer(MLAPI::GetEpetra_Comm());
   double t1=0.0;
@@ -563,15 +563,15 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonSchurStructureSplit_S(
     double frinf = ftmpf.NormInf();
 
     rl2 = sqrt(srl2 + arl2 + frl2);
-    rinf = max(srinf,arinf);
-    rinf = max(rinf,frinf);
+    rinf = std::max(srinf,arinf);
+    rinf = std::max(rinf,frinf);
 
     double rl2rate =  Rate(myrank,t,rl2,initrl2,stmpf.GetGlobalLength()+atmpf.GetGlobalLength()+ftmpf.GetGlobalLength());
     double rinfrate = Rate(myrank,t,rinf,initrinf,stmpf.GetGlobalLength()+atmpf.GetGlobalLength()+ftmpf.GetGlobalLength());
 
     if (!myrank && !silent) printf("RichardsonSchurStructureSplit_SV (level %2d) r0 %10.5e rl_2 %10.5e rinf0 %10.5e rinf %10.5e t %10.5e damp %10.5e sweeps %2d l2rate %10.5e rinfrate %10.5e\n",
                                    level,initrl2,rl2,initrinf,rinf,t,damp,sweeps,rl2rate,rinfrate);
-    rl2rate = max(rl2rate,rinfrate);
+    rl2rate = std::max(rl2rate,rinfrate);
 
     MLAPI::GetEpetra_Comm().Broadcast(&rl2rate,1,0);
     return rl2rate;
@@ -653,8 +653,8 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_SV(
     initfrl2  = ftmpf.DotProduct(ftmpf);
     initfrinf = ftmpf.NormInf();
     initrl2 = sqrt(initsrl2 + initarl2 + initfrl2);
-    initrinf = max(initsrinf,initarinf);
-    initrinf = max(initrinf,initfrinf);
+    initrinf = std::max(initsrinf,initarinf);
+    initrinf = std::max(initrinf,initfrinf);
   }
   Epetra_Time timer(MLAPI::GetEpetra_Comm());
   double t1=0.0;
@@ -750,15 +750,15 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_SV(
     double frinf = ftmpf.NormInf();
 
     rl2 = sqrt(srl2 + arl2 + frl2);
-    rinf = max(srinf,arinf);
-    rinf = max(rinf,frinf);
+    rinf = std::max(srinf,arinf);
+    rinf = std::max(rinf,frinf);
 
     double rl2rate =  Rate(myrank,t,rl2,initrl2,stmpf.GetGlobalLength()+atmpf.GetGlobalLength()+ftmpf.GetGlobalLength());
     double rinfrate = Rate(myrank,t,rinf,initrinf,stmpf.GetGlobalLength()+atmpf.GetGlobalLength()+ftmpf.GetGlobalLength());
 
     if (!myrank && !silent) printf("RichardsonBGS_SV     (level %2d) r0 %10.5e rl_2 %10.5e rinf0 %10.5e rinf %10.5e t %10.5e damp %10.5e sweeps %2d l2rate %10.5e rinfrate %10.5e\n",
                                    level,initrl2,rl2,initrinf,rinf,t,damp,sweeps,rl2rate,rinfrate);
-    rl2rate = max(rl2rate,rinfrate);
+    rl2rate = std::max(rl2rate,rinfrate);
 
     MLAPI::GetEpetra_Comm().Broadcast(&rl2rate,1,0);
     return rl2rate;
@@ -842,8 +842,8 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(
     initfrl2  = ftmpf.DotProduct(ftmpf);
     initfrinf = ftmpf.NormInf();
     initrl2 = sqrt(initsrl2 + initarl2 + initfrl2);
-    initrinf = max(initsrinf,initarinf);
-    initrinf = max(initrinf,initfrinf);
+    initrinf = std::max(initsrinf,initarinf);
+    initrinf = std::max(initrinf,initfrinf);
   }
   Epetra_Time timer(MLAPI::GetEpetra_Comm());
   double t1=0.0;
@@ -936,15 +936,15 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonBGS_Mixed(
     double frinf = ftmpf.NormInf();
 
     rl2 = sqrt(srl2 + arl2 + frl2);
-    rinf = max(srinf,arinf);
-    rinf = max(rinf,frinf);
+    rinf = std::max(srinf,arinf);
+    rinf = std::max(rinf,frinf);
 
     double rl2rate =  Rate(myrank,t,rl2,initrl2,stmpf.GetGlobalLength()+atmpf.GetGlobalLength()+ftmpf.GetGlobalLength());
     double rinfrate = Rate(myrank,t,rinf,initrinf,stmpf.GetGlobalLength()+atmpf.GetGlobalLength()+ftmpf.GetGlobalLength());
 
     if (!myrank && !silent) printf("RichardsonBGS_Mixed  (level %2d) r0 %10.5e rl_2 %10.5e rinf0 %10.5e rinf %10.5e t %10.5e damp %10.5e sweeps %2d l2rate %10.5e rinfrate %10.5e\n",
                                    0,initrl2,rl2,initrinf,rinf,t,damp,sweeps,rl2rate,rinfrate);
-    rl2rate = max(rl2rate,rinfrate);
+    rl2rate = std::max(rl2rate,rinfrate);
 
     MLAPI::GetEpetra_Comm().Broadcast(&rl2rate,1,0);
     return rl2rate;
@@ -1026,7 +1026,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonMixed(
 
     if (!myrank && !silent) printf("RichardsonMixed %s  (level %2d) r0 %10.5e rl_2 %10.5e t %10.5e damp %10.5e sweeps %2d l2rate %10.5e\n",
                                    field.c_str(),level,initrl2,rl2,t,damp,sweeps,rl2rate);
-    rl2rate = max(rl2rate,rinfrate);
+    rl2rate = std::max(rl2rate,rinfrate);
   
   MLAPI::GetEpetra_Comm().Broadcast(&rl2rate,1,0);
   return rl2rate;
@@ -1091,7 +1091,7 @@ double FSI::OverlappingBlockMatrixFSIAMG::RichardsonS(
     double rinfrate = Rate(myrank,t,rinf,initrinf,r.GetGlobalLength());
     if (!myrank && !silent) printf("RichardsonS %s      (level %2d) r0 %10.5e rl_2 %10.5e t %10.5e damp %10.5e sweeps %2d l2rate %10.5e\n",
                                    field.c_str(),level,initrl2,rl2,t,damp,sweeps,rl2rate);
-    rl2rate = max(rl2rate,rinfrate);
+    rl2rate = std::max(rl2rate,rinfrate);
   
   MLAPI::GetEpetra_Comm().Broadcast(&rl2rate,1,0);
   return rl2rate;

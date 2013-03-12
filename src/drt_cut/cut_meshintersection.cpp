@@ -306,7 +306,7 @@ void GEO::CUT::MeshIntersection::CreateNodalDofSetNEW( bool include_inner, DRT::
 
     Mesh & m = NormalMesh();
 
-    // nodes used for CUT map<node->ID, Node>, shadow nodes have ID<0
+    // nodes used for CUT std::map<node->ID, Node>, shadow nodes have ID<0
     std::map<int, Node* > nodes;
     m.GetNodeMap( nodes );
 
@@ -1143,7 +1143,7 @@ void GEO::CUT::MeshIntersection::DumpGmshNumDOFSets(std::string filename, bool i
 //    }
 //    file << "};\n";
 
-    // nodes used for CUT map<node->ID, Node>, shadow nodes have ID<0
+    // nodes used for CUT std::map<node->ID, Node>, shadow nodes have ID<0
     // print the dofsets just for the row nodes
     std::map<int, Node* > nodes;
     m.GetNodeMap( nodes );

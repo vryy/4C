@@ -252,7 +252,7 @@ double THR::TimIntOneStepTheta::CalcRefNormForce()
   fcapnorm = THR::AUX::CalculateVectorNorm(iternorm_, fcap_);
 
   // return char norm
-  return max(fcapnorm, max(fintnorm, max(fextnorm, freactnorm)));
+  return std::max(fcapnorm, std::max(fintnorm, std::max(fextnorm, freactnorm)));
 }  // CalcRefNormForce()
 
 

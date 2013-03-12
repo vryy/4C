@@ -171,7 +171,7 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   ngf_ = ngf;
 
   // initialize the two element coordinates xi and eta of contact point
-  vector<double> XiContact(2);
+  std::vector<double> XiContact(2);
   XiContact[0]=xicontact_[0];
   XiContact[1]=xicontact_[1];
   
@@ -192,16 +192,16 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   Epetra_SerialDenseMatrix secondderiv2(1,numnode2);  // = N2,etaeta
   
   // coords and derivatives of the two contact points
-  vector<double> x1(NDIM);                            // = x1
-  vector<double> x2(NDIM);                            // = x2
-  vector<double> dx1(NDIM);                            // = x1,xi
-  vector<double> dx2(NDIM);                          // = x2,eta
-  vector<double> ddx1(NDIM);                          // = x1,xixi
-  vector<double> ddx2(NDIM);                          // = x2,etaeta
+  std::vector<double> x1(NDIM);                            // = x1
+  std::vector<double> x2(NDIM);                            // = x2
+  std::vector<double> dx1(NDIM);                            // = x1,xi
+  std::vector<double> dx2(NDIM);                          // = x2,eta
+  std::vector<double> ddx1(NDIM);                          // = x1,xixi
+  std::vector<double> ddx2(NDIM);                          // = x2,etaeta
 
 
   // initialize
-  vector<double> normal(3);
+  std::vector<double> normal(3);
   double gap= 0.0;
   double norm = 0.0;
 
@@ -511,9 +511,9 @@ bool CONTACT::Beam3contact::Evaluate(LINALG::SparseMatrix& stiffmatrix,
 /*----------------------------------------------------------------------*
  |  Evaluate function f in CPP                                popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3contact::EvaluateNewtonF(vector<double>& f, const vector<double>& x1, 
-     const std::vector<double>& x2,  const std::vector<double>& dx1, const vector<double>& dx2,
-     const std::vector<double>& t1, const vector<double>& t2, const double& norm, int beams_smoothing)
+void CONTACT::Beam3contact::EvaluateNewtonF(std::vector<double>& f, const std::vector<double>& x1, 
+     const std::vector<double>& x2,  const std::vector<double>& dx1, const std::vector<double>& dx2,
+     const std::vector<double>& t1, const std::vector<double>& t2, const double& norm, int beams_smoothing)
 {
   // reset f
   f[0]=0;
@@ -554,10 +554,10 @@ void CONTACT::Beam3contact::EvaluateNewtonF(vector<double>& f, const vector<doub
 /*----------------------------------------------------------------------*
  |  Evaluate Jacobian df in CPP                               popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3contact::EvaluateNewtonGradF(LINALG::Matrix<2,2>& df, const vector<double>& x1,
-     const std::vector<double>& x2, const vector<double>& dx1, const vector<double>& dx2,
-     const std::vector<double>& ddx1, const vector<double>& ddx2, const vector<double>& t1, const vector<double>& t2,
-     const std::vector<double>& dt1, const vector<double>& dt2,const double& norm, int beams_smoothing)
+void CONTACT::Beam3contact::EvaluateNewtonGradF(LINALG::Matrix<2,2>& df, const std::vector<double>& x1,
+     const std::vector<double>& x2, const std::vector<double>& dx1, const std::vector<double>& dx2,
+     const std::vector<double>& ddx1, const std::vector<double>& ddx2, const std::vector<double>& t1, const std::vector<double>& t2,
+     const std::vector<double>& dt1, const std::vector<double>& dt2,const double& norm, int beams_smoothing)
 
 {
   // reset df
@@ -619,10 +619,10 @@ void CONTACT::Beam3contact::CheckContactStatus(double& pp)
 vector<int> CONTACT::Beam3contact::GetGlobalDofs(DRT::Node* node)
 {
   // get dofs in beam contact discretization
-  vector<int> cdofs = ContactDiscret().Dof(node);
+  std::vector<int> cdofs = ContactDiscret().Dof(node);
 
   // get dofs in problem discretization via offset
-  vector<int> pdofs((int)(cdofs.size()));
+  std::vector<int> pdofs((int)(cdofs.size()));
   for (int k=0;k<(int)(cdofs.size());++k)
     pdofs[k] = cdofs[k]-DofOffset();
 
@@ -648,10 +648,10 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
   // temporary vectors for contact forces, DOF-GIDs and owning procs
   Epetra_SerialDenseVector fc1(dim1);
   Epetra_SerialDenseVector fc2(dim2);
-  vector<int> lm1(dim1);
-  vector<int> lm2(dim2);
-  vector<int> lmowner1(dim1);
-  vector<int> lmowner2(dim2);
+  std::vector<int> lm1(dim1);
+  std::vector<int> lm2(dim2);
+  std::vector<int> lmowner1(dim1);
+  std::vector<int> lmowner2(dim2);
   
   // flag indicating assembly
   bool DoNotAssemble = false;
@@ -678,7 +678,7 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
     {
       // get node pointer and dof ids
       DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
-      vector<int> NodeDofGIDs = GetGlobalDofs(node);
+      std::vector<int> NodeDofGIDs = GetGlobalDofs(node);
 
       // compute force vector Fc1 and prepare assembly
       for (int j=0;j<NDIM;++j)
@@ -695,7 +695,7 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
     {
       // get node pointer and dof ids
       DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
-      vector<int> NodeDofGIDs =  GetGlobalDofs(node);
+      std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
       
       // compute force vector Fc2 and prepare assembly
       for (int j=0;j<NDIM;++j)
@@ -752,24 +752,24 @@ void CONTACT::Beam3contact::EvaluateFcContact(const double& pp,
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
      const double& gap, const std::vector<double>& normal, const double& norm, 
-     LINALG::SparseMatrix& stiffmatrix,const vector<double>& x1,const vector<double>& x2,
-     const std::vector<double>& dx1, const vector<double>& dx2,
-     const std::vector<double>& ddx1, const vector<double>& ddx2, 
+     LINALG::SparseMatrix& stiffmatrix,const std::vector<double>& x1,const std::vector<double>& x2,
+     const std::vector<double>& dx1, const std::vector<double>& dx2,
+     const std::vector<double>& ddx1, const std::vector<double>& ddx2, 
      const Epetra_SerialDenseVector& funct1, const Epetra_SerialDenseVector& funct2,  
      const Epetra_SerialDenseMatrix& deriv1,  const Epetra_SerialDenseMatrix& deriv2,  
      const Epetra_SerialDenseMatrix& secondderiv1,const Epetra_SerialDenseMatrix& secondderiv2, 
-     const int numnode1, const int numnode2, const vector<double>& XiContact,
+     const int numnode1, const int numnode2, const std::vector<double>& XiContact,
      int beams_smoothing)
 {
   // temporary matrices for stiffness and vectors for DOF-GIDs and owning procs 
   Epetra_SerialDenseMatrix stiffc1(NDIM*numnode1,NDIM*(numnode1+numnode2));
   Epetra_SerialDenseMatrix stiffc2(NDIM*numnode2,NDIM*(numnode1+numnode2));
-  vector<int> lmrow1(NDIM*numnode1);
-  vector<int> lmrow2(NDIM*numnode2);
-  vector<int> lmrowowner1(NDIM*numnode1);
-  vector<int> lmrowowner2(NDIM*numnode2);
-  vector<int> lmcol1(NDIM*(numnode1+numnode2));
-  vector<int> lmcol2(NDIM*(numnode1+numnode2));
+  std::vector<int> lmrow1(NDIM*numnode1);
+  std::vector<int> lmrow2(NDIM*numnode2);
+  std::vector<int> lmrowowner1(NDIM*numnode1);
+  std::vector<int> lmrowowner2(NDIM*numnode2);
+  std::vector<int> lmcol1(NDIM*(numnode1+numnode2));
+  std::vector<int> lmcol2(NDIM*(numnode1+numnode2));
   
   // flag indicating assembly
   bool DoNotAssemble = false;
@@ -826,7 +826,7 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
     {
       // get pointer and dof ids
       DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
-      vector<int> NodeDofGIDs =  GetGlobalDofs(node);
+      std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
       
       for (int j=0;j<NDIM;++j)
       {
@@ -840,7 +840,7 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
     {
       // get pointer and node ids
       DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
-      vector<int> NodeDofGIDs =  GetGlobalDofs(node);
+      std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
       
       for (int j=0;j<NDIM;++j)
       {
@@ -854,7 +854,7 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
     {  
       // get pointer and node ids
       DRT::Node* node = ContactDiscret().gNode(node_ids1[i]);
-      vector<int> NodeDofGIDs =  GetGlobalDofs(node);
+      std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
       
       for (int j=0;j<NDIM;++j)
       {
@@ -868,7 +868,7 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
     {
       // get pointer and node ids
       DRT::Node* node = ContactDiscret().gNode(node_ids2[i]);
-      vector<int> NodeDofGIDs =  GetGlobalDofs(node);
+      std::vector<int> NodeDofGIDs =  GetGlobalDofs(node);
       
       for (int j=0;j<NDIM;++j)
       {
@@ -888,8 +888,8 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
     // --> if (j%NDIM == i): only quasi-diagonal entries are considered
     //********************************************************************
     // intialize index vectors
-    vector<int> index1(NDIM*(numnode1+numnode2));
-    vector<int> index2(NDIM*(numnode1+numnode2));
+    std::vector<int> index1(NDIM*(numnode1+numnode2));
+    std::vector<int> index2(NDIM*(numnode1+numnode2));
     
     // fill the index vectors
     for (int i=0;i<NDIM*numnode1;++i)
@@ -1102,7 +1102,7 @@ void CONTACT::Beam3contact::EvaluateStiffcContact(const double& pp,
  |  Compute normal vector in contact point                    popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3contact::ComputeNormal(std::vector<double>& normal, double& gap,
-    double& norm, const vector<double>& x1, const vector<double>& x2)
+    double& norm, const std::vector<double>& x1, const std::vector<double>& x2)
 {
 
     //cout << "Compute Normal" << endl;
@@ -1253,9 +1253,9 @@ void CONTACT::Beam3contact::GetEleLength(Epetra_SerialDenseMatrix& elepos, int& 
 /*----------------------------------------------------------------------*
  | compute contact point coordinates and their derivatives     popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3contact::ComputeCoordsAndDerivs(vector<double>& x1,
-     vector<double>& x2, std::vector<double>& dx1, std::vector<double>& dx2,
-     vector<double>& ddx1, std::vector<double>& ddx2,
+void CONTACT::Beam3contact::ComputeCoordsAndDerivs(std::vector<double>& x1,
+     std::vector<double>& x2, std::vector<double>& dx1, std::vector<double>& dx2,
+     std::vector<double>& ddx1, std::vector<double>& ddx2,
      const Epetra_SerialDenseVector& funct1, const Epetra_SerialDenseVector& funct2,
      const Epetra_SerialDenseMatrix& deriv1, const Epetra_SerialDenseMatrix& deriv2,
      const Epetra_SerialDenseMatrix& secondderiv1, const Epetra_SerialDenseMatrix& secondderiv2,
@@ -1312,8 +1312,8 @@ void CONTACT::Beam3contact::ComputeCoordsAndDerivs(vector<double>& x1,
  | compute contact point tangents and their derivatives      meier 05/11|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3contact::ComputeTangentsAndDerivs
-   (vector<double>& t1, std::vector<double>& t2,
-    vector<double>& dt1, std::vector<double>& dt2,
+   (std::vector<double>& t1, std::vector<double>& t2,
+    std::vector<double>& dt1, std::vector<double>& dt2,
     const Epetra_SerialDenseVector& funct1,
     const Epetra_SerialDenseVector& funct2,
     const Epetra_SerialDenseMatrix& deriv1,
@@ -1455,13 +1455,13 @@ void CONTACT::Beam3contact::GetShapeFunctions(
  |  Linearizations of contact point                           popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3contact::ComputeLinXiAndLinEta(
-    vector<double>& delta_xi, std::vector<double>& delta_eta, 
-    const std::vector<double>& x1, const vector<double>& x2, const vector<double>& dx1, 
-    const std::vector<double>& dx2, const vector<double>& ddx1, const vector<double>& ddx2,
+    std::vector<double>& delta_xi, std::vector<double>& delta_eta, 
+    const std::vector<double>& x1, const std::vector<double>& x2, const std::vector<double>& dx1, 
+    const std::vector<double>& dx2, const std::vector<double>& ddx1, const std::vector<double>& ddx2,
     const Epetra_SerialDenseVector& funct1, const Epetra_SerialDenseVector& funct2, 
     const Epetra_SerialDenseMatrix& deriv1,  const Epetra_SerialDenseMatrix& deriv2, 
     const std::vector<double>& normal, const double& norm,
-    const int numnode1, const int numnode2, const vector<double>& XiContact, int beams_smoothing)
+    const int numnode1, const int numnode2, const std::vector<double>& XiContact, int beams_smoothing)
 {
   //**********************************************************************
   // we have to solve the following system of equations:
@@ -1501,8 +1501,8 @@ void CONTACT::Beam3contact::ComputeLinXiAndLinEta(
   L_inv(1,1) =  L(0,0) / det_L;
   
   // index vectors for access to shape function vectors and matrices
-  vector<int> index1(NDIM*(numnode1+numnode2));
-  vector<int> index2(NDIM*(numnode1+numnode2));
+  std::vector<int> index1(NDIM*(numnode1+numnode2));
+  std::vector<int> index2(NDIM*(numnode1+numnode2));
   
   // fill the index vectors
   for (int i=0;i<NDIM*numnode1;i++)
@@ -1568,7 +1568,7 @@ void CONTACT::Beam3contact::ComputeLinXiAndLinEta(
 /*----------------------------------------------------------------------*
  |  Compute distance vector                                   popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3contact::ComputeDistance(vector<double>& distance,
+void CONTACT::Beam3contact::ComputeDistance(std::vector<double>& distance,
      double& normdist, const std::vector<double>& normal, const double& norm)
 {
   // compute distance vector
@@ -1588,18 +1588,18 @@ void CONTACT::Beam3contact::ComputeDistance(vector<double>& distance,
 /*----------------------------------------------------------------------*
  | Compute linearization of gap                               popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3contact::ComputeLinGap(vector<double>& delta_gap,
-      vector<double>& delta_xi, std::vector<double>& delta_eta,
-      const std::vector<double>& x1, const vector<double>& x2, 
-      const std::vector<double>& dx1, const vector<double>& dx2,
+void CONTACT::Beam3contact::ComputeLinGap(std::vector<double>& delta_gap,
+      std::vector<double>& delta_xi, std::vector<double>& delta_eta,
+      const std::vector<double>& x1, const std::vector<double>& x2, 
+      const std::vector<double>& dx1, const std::vector<double>& dx2,
       const Epetra_SerialDenseVector& funct1, const Epetra_SerialDenseVector& funct2, 
       const double& normdist, const int& numnode1, const int& numnode2,
       const std::vector<double>& normal, const double& norm, const double& gap,
       Epetra_SerialDenseMatrix& delta_x1_minus_x2, int beams_smoothing)
 {
   // index vectors for access to shape function vectors and matrices
-  vector<int> index1(NDIM*(numnode1+numnode2));
-  vector<int> index2(NDIM*(numnode1+numnode2));
+  std::vector<int> index1(NDIM*(numnode1+numnode2));
+  std::vector<int> index2(NDIM*(numnode1+numnode2));
   
   // fill the index vectors
   for (int i=0;i<NDIM*numnode1;i++)
@@ -1659,7 +1659,7 @@ void CONTACT::Beam3contact::ComputeLinGap(vector<double>& delta_gap,
  |  Compute linearization of normal                           popp 04/10|
  *----------------------------------------------------------------------*/
 void CONTACT::Beam3contact::ComputeLinNormal(Epetra_SerialDenseMatrix& delta_n, 
-     const std::vector<double>& x1, const vector<double>& x2,
+     const std::vector<double>& x1, const std::vector<double>& x2,
      const double& norm,const int& numnode1, const int& numnode2,
      const Epetra_SerialDenseMatrix& delta_x1_minus_x2, const std::vector<double>& normal, 
      const std::vector<double>& XiContact, int beams_smoothing)
@@ -2280,23 +2280,23 @@ void CONTACT::Beam3contact::FDCheckNewtonCPP(const int& numnode1, const int& num
   Epetra_SerialDenseMatrix secondderiv2(1,numnode2);  // = N2,etaeta
 
   // coords and derivatives of the two contacting points
-  vector<double> x1(NDIM);                            // = x1
-  vector<double> x2(NDIM);                            // = x2
-  vector<double> dx1(NDIM);                           // = x1,xi
-  vector<double> dx2(NDIM);                           // = x2,eta
-  vector<double> ddx1(NDIM);                          // = x1,xixi
-  vector<double> ddx2(NDIM);                          // = x2,etaeta
-  vector<double> t1(NDIM);                            // = t1
-  vector<double> t2(NDIM);                            // = t2
-  vector<double> dt1(NDIM);                           // = t1,xi
-  vector<double> dt2(NDIM);                           // = t2,eta
+  std::vector<double> x1(NDIM);                            // = x1
+  std::vector<double> x2(NDIM);                            // = x2
+  std::vector<double> dx1(NDIM);                           // = x1,xi
+  std::vector<double> dx2(NDIM);                           // = x2,eta
+  std::vector<double> ddx1(NDIM);                          // = x1,xixi
+  std::vector<double> ddx2(NDIM);                          // = x2,etaeta
+  std::vector<double> t1(NDIM);                            // = t1
+  std::vector<double> t2(NDIM);                            // = t2
+  std::vector<double> dt1(NDIM);                           // = t1,xi
+  std::vector<double> dt2(NDIM);                           // = t2,eta
 
   // initialize function f and Jacobian df for Newton iteration
-  vector<double> f(2);
-  vector<double> f1(2);
-  vector<double> f2(2);
-  vector<double> eta1(2);
-  vector<double> eta2(2);
+  std::vector<double> f(2);
+  std::vector<double> f1(2);
+  std::vector<double> f2(2);
+  std::vector<double> eta1(2);
+  std::vector<double> eta2(2);
   LINALG::Matrix<2,2> dfFD;
   double delta = 0.01;
 
@@ -2409,8 +2409,8 @@ void CONTACT::Beam3contact::FDCheckCPP(const int& numnode1, const int& numnode2,
   //bool FD_elementscolinear = false;
   
   // local vectors for FD-approximations of delta_xi and delta_eta
-  vector<double> FD_delta_xi(NDIM*(numnode1+numnode2));
-  vector<double> FD_delta_eta(NDIM*(numnode1+numnode2));
+  std::vector<double> FD_delta_xi(NDIM*(numnode1+numnode2));
+  std::vector<double> FD_delta_eta(NDIM*(numnode1+numnode2));
   
   // step width and tolerances for FD-Check
   double eps = 1e-8;
@@ -2534,11 +2534,11 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
      const std::vector<double>& delta_gap, const double& gap, int beams_smoothing)
 {
   // local auxiliary variables for FD-approximations of delta_gap
-  vector<double> FD_delta_gap(NDIM*(numnode1+numnode2));
+  std::vector<double> FD_delta_gap(NDIM*(numnode1+numnode2));
   double FD_gap = 0.0;
-  vector<double> FD_normal(3);
+  std::vector<double> FD_normal(3);
   double FD_norm = 0.0;
-  vector<double> FD_XiContact(2);
+  std::vector<double> FD_XiContact(2);
   //bool FD_elementscolinear = false;
   
   // step width and tolerances for FD-check
@@ -2556,12 +2556,12 @@ void CONTACT::Beam3contact::FDCheckLinGap(const int& numnode1, const int& numnod
   Epetra_SerialDenseMatrix FD_secondderiv2(1,numnode2);
     
   // local coords and derivatives of the two contacting points
-  vector<double> FD_x1(NDIM);    // = x1
-  vector<double> FD_x2(NDIM);    // = x2
-  vector<double> FD_dx1(NDIM);    // = x1,xi
-  vector<double> FD_dx2(NDIM);    // = x2,eta
-  vector<double> FD_ddx1(NDIM);  // = x1,xixi
-  vector<double> FD_ddx2(NDIM);  // = x2,etaeta
+  std::vector<double> FD_x1(NDIM);    // = x1
+  std::vector<double> FD_x2(NDIM);    // = x2
+  std::vector<double> FD_dx1(NDIM);    // = x1,xi
+  std::vector<double> FD_dx2(NDIM);    // = x2,eta
+  std::vector<double> FD_ddx1(NDIM);  // = x1,xixi
+  std::vector<double> FD_ddx2(NDIM);  // = x2,etaeta
   
   // loop over ele1pos_
   for(int i=0;i<numnode1;i++)
@@ -2691,12 +2691,12 @@ void CONTACT::Beam3contact::FDCheckLinNormal(const int& numnode1, const int& num
   Epetra_SerialDenseMatrix FD_secondderiv2(1,numnode2);
     
   // local coords and derivatives of the two contacting points
-  vector<double> FD_x1(NDIM);    // = x1
-  vector<double> FD_x2(NDIM);    // = x2
-  vector<double> FD_dx1(NDIM);    // = x1,xi
-  vector<double> FD_dx2(NDIM);    // = x2,eta
-  vector<double> FD_ddx1(NDIM);  // = x1,xixi
-  vector<double> FD_ddx2(NDIM);  // = x2,etaeta
+  std::vector<double> FD_x1(NDIM);    // = x1
+  std::vector<double> FD_x2(NDIM);    // = x2
+  std::vector<double> FD_dx1(NDIM);    // = x1,xi
+  std::vector<double> FD_dx2(NDIM);    // = x2,eta
+  std::vector<double> FD_ddx1(NDIM);  // = x1,xixi
+  std::vector<double> FD_ddx2(NDIM);  // = x2,etaeta
   
 //  cout<<endl<<"loop over ele1pos_"<<endl<<endl;
   
@@ -2868,11 +2868,11 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
      const Epetra_SerialDenseVector& funct1, const Epetra_SerialDenseVector& funct2, int beams_smoothing)
 {
   // local auxiliary variables for FD-approximations of stiffc1 and stiffc2
-  vector<double> FD_delta_gap(NDIM*(numnode1+numnode2));
+  std::vector<double> FD_delta_gap(NDIM*(numnode1+numnode2));
   double FD_gap = 0.0;
-  vector<double> FD_normal(3);
+  std::vector<double> FD_normal(3);
   double FD_norm = 0.0;
-  vector<double> FD_XiContact(2);
+  std::vector<double> FD_XiContact(2);
   //bool FD_elementscolinear = false;
   
   // local matrices for FD-approximations of stiffc1 and stiffc2
@@ -2894,12 +2894,12 @@ void CONTACT::Beam3contact::FDCheckStiffc(const int& numnode1, const int& numnod
   Epetra_SerialDenseMatrix FD_secondderiv2(1,numnode2);
     
   // local coords and derivatives of the two contacting points
-  vector<double> FD_x1(NDIM);    // = x1
-  vector<double> FD_x2(NDIM);    // = x2
-  vector<double> FD_dx1(NDIM);  // = x1,xi
-  vector<double> FD_dx2(NDIM);  // = x2,eta
-  vector<double> FD_ddx1(NDIM);  // = x1,xixi
-  vector<double> FD_ddx2(NDIM);  // = x2,etaeta
+  std::vector<double> FD_x1(NDIM);    // = x1
+  std::vector<double> FD_x2(NDIM);    // = x2
+  std::vector<double> FD_dx1(NDIM);  // = x1,xi
+  std::vector<double> FD_dx2(NDIM);  // = x2,eta
+  std::vector<double> FD_ddx1(NDIM);  // = x1,xixi
+  std::vector<double> FD_ddx2(NDIM);  // = x2,etaeta
   
   // Compute fc1 and fc2 analytical here explicit and not via the function "EvaluateFcContact"
   // because there may not be a second assembly of fc1 and fc2 

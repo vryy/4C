@@ -77,8 +77,8 @@ void XFEM::TIMEINT::type(
  * algorithms data structure                                                     winklmaier 10/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::TIMEINT::handleVectors(
-    vector<RCP<Epetra_Vector> > newRowVectorsn,
-    vector<RCP<Epetra_Vector> > newRowVectorsnp
+    std::vector<RCP<Epetra_Vector> > newRowVectorsn,
+    std::vector<RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
   if (newRowVectorsn.size()!=newRowVectorsnp.size())
@@ -278,7 +278,7 @@ void XFEM::TIMEINT::callXToXiCoords(
  *------------------------------------------------------------------------------------------------*/
 void XFEM::TIMEINT::addPBCelements(
     const DRT::Node* node,
-    vector<const DRT::Element*>&  eles
+    std::vector<const DRT::Element*>&  eles
 ) const
 {
   const DRT::Element* const* elements = node->Elements(); // element around current node
@@ -316,7 +316,7 @@ void XFEM::TIMEINT::findPBCNode(
   pbcnodefound = false; // boolean indicating whether this node is a pbc node
   int coupnodegid = -1;
   // loop all nodes with periodic boundary conditions (master nodes)
-  for (std::map<int, vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
+  for (std::map<int, std::vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
   {
     if (pbciter->first == nodegid) // node is a pbc master node
     {
@@ -354,7 +354,7 @@ void XFEM::TIMEINT::resetState(
     TimeIntData::state newState
 ) const
 {
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     if (data->state_ == oldState)
@@ -371,7 +371,7 @@ void XFEM::TIMEINT::clearState(
     TimeIntData::state state
 ) const
 {
-  vector<TimeIntData>::iterator data;
+  std::vector<TimeIntData>::iterator data;
   while(true) // while loop over data to be cleared
   {
     for (data=timeIntData_->begin();
@@ -398,10 +398,10 @@ void XFEM::TIMEINT::sendData(
     DRT::PackBuffer& dataSend,
     int& dest,
     int& source,
-    vector<char>& dataRecv
+    std::vector<char>& dataRecv
 ) const
 {
-  vector<int> lengthSend(1,0);
+  std::vector<int> lengthSend(1,0);
   lengthSend[0] = dataSend().size();
   int size_one = 1;
 
@@ -417,7 +417,7 @@ void XFEM::TIMEINT::sendData(
   int length_tag = 0;
   exporter.ISend(myrank_, dest, &(lengthSend[0]) , size_one, length_tag, req_length_data);
   // ... and receive length
-  vector<int> lengthRecv(1,0);
+  std::vector<int> lengthRecv(1,0);
   exporter.Receive(source, length_tag, lengthRecv, size_one);
   exporter.Wait(req_length_data);
 
@@ -460,8 +460,8 @@ void XFEM::TIMEINT::packNode(
  * without an underlying discretization fitting to the node's new prozessor      winklmaier 10/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::TIMEINT::unpackNode(
-    vector<char>::size_type& posinData,
-    vector<char>& dataRecv,
+    std::vector<char>::size_type& posinData,
+    std::vector<char>& dataRecv,
     DRT::Node& node
 ) const
 {
@@ -546,14 +546,14 @@ flamefront_(flamefront)
         timeIntData_->push_back(TimeIntData(
             *currnode,
             LINALG::Matrix<nsd,1>(true),
-            vector<LINALG::Matrix<nsd,nsd> >(oldVectors_.size(),LINALG::Matrix<nsd,nsd>(true)),
-            vector<LINALG::Matrix<1,nsd> >(oldVectors_.size(),LINALG::Matrix<1,nsd>(true)),
+            std::vector<LINALG::Matrix<nsd,nsd> >(oldVectors_.size(),LINALG::Matrix<nsd,nsd>(true)),
+            std::vector<LINALG::Matrix<1,nsd> >(oldVectors_.size(),LINALG::Matrix<1,nsd>(true)),
             dummyStartpoint,
             (*phinp_)[lnodeid],
             1,
             0,
-            vector<int>(1,-1),
-            vector<int>(1,-1),
+            std::vector<int>(1,-1),
+            std::vector<int>(1,-1),
             INFINITY,
             TimeIntData::predictor_)); // data created for the node
       }
@@ -562,7 +562,7 @@ flamefront_(flamefront)
     startpoints();
 
     // test loop if all initial startpoints have been computed
-    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+    for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
         data!=timeIntData_->end(); data++)
     {
       if (data->startpoint_==dummyStartpoint) // startpoint unchanged
@@ -685,7 +685,7 @@ void XFEM::STD::startpoints()
   for (int procid=0; procid<numproc_; procid++)
   {
     // loop over nodes which changed interface side
-    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+    for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
         data!=timeIntData_->end(); data++)
     {
       if (data->state_==TimeIntData::basicStd_) // correct state
@@ -778,13 +778,13 @@ void XFEM::STD::setFinalData(
   double newValue = 0.0; // new value
 
   // loop over data
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     if (data->state_==TimeIntData::doneStd_)
     {
-      vector<LINALG::Matrix<nsd,1> >& velValues(data->velValues_); // velocities of the node
-      vector<double>& presValues(data->presValues_); // pressures of the node
+      std::vector<LINALG::Matrix<nsd,1> >& velValues(data->velValues_); // velocities of the node
+      std::vector<double>& presValues(data->presValues_); // pressures of the node
 
       const int gnodeid = data->node_.Id(); // global node id
 
@@ -871,7 +871,7 @@ void XFEM::STD::exportStartData()
   DRT::PackBuffer dataSend; // data to be sent
 
   // packing the data
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     packNode(dataSend,data->node_);
@@ -890,7 +890,7 @@ void XFEM::STD::exportStartData()
 
   dataSend.StartPacking();
 
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     packNode(dataSend,data->node_);
@@ -907,11 +907,11 @@ void XFEM::STD::exportStartData()
     DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
   }
 
-  vector<char> dataRecv;
+  std::vector<char> dataRecv;
   sendData(dataSend,dest,source,dataRecv);
 
   // pointer to current position of group of cells in global string (counts bytes)
-  vector<char>::size_type posinData = 0;
+  std::vector<char>::size_type posinData = 0;
 
   // clear vector that should be filled
   timeIntData_->clear();
@@ -922,14 +922,14 @@ void XFEM::STD::exportStartData()
     double coords[nsd] = {0.0};
     DRT::Node node(0,(double*)coords,0); // initialize node
     LINALG::Matrix<nsd,1> vel; // velocity at point x
-    vector<LINALG::Matrix<nsd,nsd> > velDeriv; // derivation of velocity at point x
-    vector<LINALG::Matrix<1,nsd> > presDeriv; // derivation of pressure at point x
+    std::vector<LINALG::Matrix<nsd,nsd> > velDeriv; // derivation of velocity at point x
+    std::vector<LINALG::Matrix<1,nsd> > presDeriv; // derivation of pressure at point x
     LINALG::Matrix<nsd,1> startpoint; // startpoint
     double phiValue; // phi-value
     int searchedProcs; // number of searched processors
     int counter; // iteration counter
-    vector<int> startGid; // global id of first startpoint
-    vector<int> startOwner; // owner of first startpoint
+    std::vector<int> startGid; // global id of first startpoint
+    std::vector<int> startOwner; // owner of first startpoint
     double dMin; // minimal distance
     int newtype; // type of the data
 
@@ -975,10 +975,10 @@ void XFEM::STD::exportFinalData()
 
   // array of vectors which stores data for
   // every processor in one vector
-  vector<std::vector<TimeIntData> > dataVec(numproc_);
+  std::vector<std::vector<TimeIntData> > dataVec(numproc_);
 
   // fill vectors with the data
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     if (data->state_==TimeIntData::doneStd_)
@@ -1000,7 +1000,7 @@ void XFEM::STD::exportFinalData()
     DRT::PackBuffer dataSend;
 
     // pack data to be sent
-    for (vector<TimeIntData>::iterator data=dataVec[dest].begin();
+    for (std::vector<TimeIntData>::iterator data=dataVec[dest].begin();
         data!=dataVec[dest].end(); data++)
     {
       DRT::ParObject::AddtoPack(dataSend,data->node_.Id());
@@ -1015,7 +1015,7 @@ void XFEM::STD::exportFinalData()
 
     dataSend.StartPacking();
 
-    for (vector<TimeIntData>::iterator data=dataVec[dest].begin();
+    for (std::vector<TimeIntData>::iterator data=dataVec[dest].begin();
         data!=dataVec[dest].end(); data++)
     {
       DRT::ParObject::AddtoPack(dataSend,data->node_.Id());
@@ -1031,11 +1031,11 @@ void XFEM::STD::exportFinalData()
     // clear the no more needed data
     dataVec[dest].clear();
 
-    vector<char> dataRecv;
+    std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
     // pointer to current position of group of cells in global string (counts bytes)
-    vector<char>::size_type posinData = 0;
+    std::vector<char>::size_type posinData = 0;
 
     // unpack received data
     while (posinData < dataRecv.size())
@@ -1043,9 +1043,9 @@ void XFEM::STD::exportFinalData()
       int gid; // global id of node
       LINALG::Matrix<nsd,1> startpoint; // startpoint
       double phiValue; // phi-value
-      vector<int> startGid; // global id of first startpoint
-      vector<int> startOwner; // owner of first startpoint
-      vector<LINALG::Matrix<nsd,1> > velValues; // velocity values
+      std::vector<int> startGid; // global id of first startpoint
+      std::vector<int> startOwner; // owner of first startpoint
+      std::vector<LINALG::Matrix<nsd,1> > velValues; // velocity values
       std::vector<double> presValues; // pressure values
       int newtype; // type of the data
 
@@ -1112,8 +1112,8 @@ critTol_(1.0e-02)
  * out of order!                                                                 winklmaier 10/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::ENR::compute(
-    vector<RCP<Epetra_Vector> > newRowVectorsn,
-    vector<RCP<Epetra_Vector> > newRowVectorsnp
+    std::vector<RCP<Epetra_Vector> > newRowVectorsn,
+    std::vector<RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
   dserror("Unused function! Use a function of the derived classes");
@@ -1243,7 +1243,7 @@ bool XFEM::ENR::critCut(const DRT::Node* node) const
   // Then the enrichment value is potentially much too high and therefore needs a new value.
   bool critCut = false; // true if intersected ele around and all intersected eles have small support for enr shape fcn
   // vector of elements located around this node
-  vector<const DRT::Element*> eles;
+  std::vector<const DRT::Element*> eles;
   addPBCelements(node,eles);
   const int numeles=eles.size();
 

@@ -249,7 +249,7 @@ void GenRandomField::CreateNewPhaseAngles(unsigned int seed)
   boost::uniform_real<double> random( 0, 2*pi_ );
 
   // set seed of random number generator
-  // same seed produces same string of random numbers // on the same platform :-)
+  // same seed produces same std::string of random numbers // on the same platform :-)
   mt.seed(seed);
   switch (dim_){
 
@@ -288,7 +288,7 @@ void GenRandomField::CreateNewPhaseAngles(unsigned int seed)
     int size = int (Phi_0_.size());
      for(int i=0;i<size;i++)
      {
-       File << setprecision(15) << Phi_0_[i]<< endl;
+       File << std::setprecision(15) << Phi_0_[i]<< endl;
      }
      File.close();
    }
@@ -1700,7 +1700,7 @@ void GenRandomField::WriteRandomFieldToFile()
    int size = int (pow(M_,double(dim_)));
     for(int i=0;i<size;i++)
     {
-      File << setprecision(10) << values_[i]<< endl;
+      File << std::setprecision(10) << values_[i]<< endl;
     }
     File.close();
   }

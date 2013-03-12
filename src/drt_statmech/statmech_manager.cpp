@@ -831,10 +831,10 @@ void STATMECH::StatMechManager::GetInterpolatedBindingSpotPositions(const Epetra
   LINALG::Matrix<1,2>  Ibp;
   LINALG::Matrix<3,1> ThetaXi;
   // Vector containing Nodal Positions. Only translational DOFs are evaluated
-  vector<double> position(6);
+  std::vector<double> position(6);
   //Quaternions at relevant filament nodes
   LINALG::Matrix<4,1>  bQ;
-  vector<LINALG::Matrix<4,1> >  nQ(2);
+  std::vector<LINALG::Matrix<4,1> >  nQ(2);
   DRT::ELEMENTS::Beam3ii* filele = NULL;
 
   // loop over row binding spots CHANGED
@@ -1028,7 +1028,7 @@ void STATMECH::StatMechManager::GetInterpolatedBindingSpotTriads(const Teuchos::
 /*----------------------------------------------------------------------------------------------*
  | Shift vector in accordance to periodic BCs                                    mueller 10/12  |
  *----------------------------------------------------------------------------------------------*/
-void STATMECH::StatMechManager::ShiftPositions(vector<double>& pos, const int& ndim, const int& nnode)
+void STATMECH::StatMechManager::ShiftPositions(std::vector<double>& pos, const int& ndim, const int& nnode)
 {
   return;
 }
@@ -1252,8 +1252,8 @@ void STATMECH::StatMechManager::PeriodicBoundaryBeamCLInit(DRT::Element* element
    * note that rotrefe for beam3ii elements is related to the entry in the global total Lagrange displacement
    * vector related to a certain rotational degree of freedom; as the displacement is initially zero also
    * rotrefe is set to zero here*/
-  vector<double> xrefe(6,0);
-  vector<double> rotrefe(6,0);
+  std::vector<double> xrefe(6,0);
+  std::vector<double> rotrefe(6,0);
 
   xrefe=beam->XRef();
   for(int i=0;i<6;i++)
@@ -3139,7 +3139,7 @@ void STATMECH::StatMechManager::WriteRestart(Teuchos::RCP<IO::DiscretizationWrit
  | (public) write restart information for fully redundant   Epetra_Multivector|
  | with name "name"                                                cyron 11/10|
  *----------------------------------------------------------------------------*/
-void STATMECH::StatMechManager::WriteRestartRedundantMultivector(Teuchos::RCP<IO::DiscretizationWriter> output, const string name, RCP<Epetra_MultiVector> multivector)
+void STATMECH::StatMechManager::WriteRestartRedundantMultivector(Teuchos::RCP<IO::DiscretizationWriter> output, const std::string name, RCP<Epetra_MultiVector> multivector)
 {
   //create stl vector to store information in multivector
   Teuchos::RCP<std::vector<double> > stlvector = Teuchos::rcp(new std::vector<double>);
@@ -3208,7 +3208,7 @@ void STATMECH::StatMechManager::ReadRestart(IO::DiscretizationReader& reader, do
  | (public) read restart information for fully redundant Epetra_Multivector   |
  | with name "name"                                                cyron 11/10|
  *----------------------------------------------------------------------------*/
-void STATMECH::StatMechManager::ReadRestartRedundantMultivector(IO::DiscretizationReader& reader, const string name, Teuchos::RCP<Epetra_MultiVector> multivector)
+void STATMECH::StatMechManager::ReadRestartRedundantMultivector(IO::DiscretizationReader& reader, const std::string name, Teuchos::RCP<Epetra_MultiVector> multivector)
 {
     //we assume that information was stored like for a redundant stl vector
     Teuchos::RCP<std::vector<double> > stlvector = Teuchos::rcp(new std::vector<double>);
@@ -3873,7 +3873,7 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
         // retrieve filament length using first and last node of the current filament
         DRT::Node* node0 = discret_->lColNode(discret_->NodeColMap()->LID((*nodeids)[0]));
         double lfil = 0.0;
-        vector<double> pos(6);
+        std::vector<double> pos(6);
         // loop through all Nodes of the filaments, consider breakage by Periodic Boundary and calculate length of filament i
         for(int j=1;j<(int)nodeids->size();j++)
         {
@@ -4018,12 +4018,12 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
       for(int i=0; i<(int)filaments.size(); i++)
       {
         //get a pointer to nodal cloud covered by the current condition
-        const vector<int>* nodeids = filaments[i]->Nodes();
+        const std::vector<int>* nodeids = filaments[i]->Nodes();
         // retrieve filament length using first and last node of the current filament
         DRT::Node* node0 = discret_->lColNode(discret_->NodeColMap()->LID((*nodeids)[0]));
         //DRT::Node* node1 = discret_->lColNode(discret_->NodeColMap()->LID((*nodeids)[((int)nodeids->size())-1]));
        double lfil= 0.0;
-       vector<double> pos(6);
+       std::vector<double> pos(6);
         // loop through all Nodes of the filaments, consider breakage by Periodic Boundary and calculate length of filament i
         for(int j=1;j<(int)nodeids->size();j++)
         {
@@ -4087,7 +4087,7 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
       double riseperbspot = statmechparams_.get<double>("RISEPERBSPOT",0.00277);
 
       //getting a vector consisting of pointers to all filament number conditions set
-      vector<DRT::Condition*> filaments(0);
+      std::vector<DRT::Condition*> filaments(0);
       discret_->GetCondition("FilamentNumber",filaments);
 
       // value of binding spot in parameter space
@@ -4107,12 +4107,12 @@ void STATMECH::StatMechManager::CrosslinkerMoleculeInit()
         // filament length
         double lfil = 0;
         //get a pointer to nodal cloud covered by the current condition
-        const vector<int>* nodeids = filaments[i]->Nodes();
+        const std::vector<int>* nodeids = filaments[i]->Nodes();
         // retrieve filament length using first and last node of the current filament
         DRT::Node* node0 = discret_->lColNode(discret_->NodeColMap()->LID((*nodeids)[0]));
         //DRT::Node* node1 = discret_->lColNode(discret_->NodeColMap()->LID((*nodeids)[((int)nodeids->size())-1]));
 
-        vector<double> pos(6);
+        std::vector<double> pos(6);
         // loop through all Nodes of the filaments, consider breakage by Periodic Boundary and calculate length of filament i
         for(int j=1;j<(int)nodeids->size();j++)
         {

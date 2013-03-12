@@ -85,7 +85,7 @@ void STRUMULTI::np_support_drt()
       Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1,1,&tag,0,*subcomm));
       // create an exporter object that will figure out the communication pattern
       DRT::Exporter exporter(*oldmap,*newmap,*subcomm);
-      map<int,Teuchos::RCP<DRT::Container> > condnamemap;
+      std::map<int,Teuchos::RCP<DRT::Container> > condnamemap;
       exporter.Export<DRT::Container>(condnamemap);
 
       // extract received data from the container
@@ -131,7 +131,7 @@ void STRUMULTI::np_support_drt()
       Teuchos::RCP<Epetra_Map> newmap = Teuchos::rcp(new Epetra_Map(1,1,&tag,0,*subcomm));
       // create an exporter object that will figure out the communication pattern
       DRT::Exporter exporter(*oldmap,*newmap,*subcomm);
-      map<int,Teuchos::RCP<DRT::Container> > condnamemap;
+      std::map<int,Teuchos::RCP<DRT::Container> > condnamemap;
       exporter.Export<DRT::Container>(condnamemap);
 
       // extract received data from the container

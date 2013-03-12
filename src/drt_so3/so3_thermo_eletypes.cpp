@@ -45,8 +45,8 @@ DRT::ParObject* DRT::ELEMENTS::So_hex8ThermoType::Create(
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_hex8ThermoType::Create(
-  const string eletype,
-  const string eledistype,
+  const std::string eletype,
+  const std::string eledistype,
   const int id,
   const int owner
   )
@@ -169,8 +169,8 @@ DRT::ParObject* DRT::ELEMENTS::So_tet4ThermoType::Create(
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4ThermoType::Create(
-  const string eletype,
-  const string eledistype,
+  const std::string eletype,
+  const std::string eledistype,
   const int id,
   const int owner
   )

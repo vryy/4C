@@ -77,8 +77,8 @@ constrnorm_(0.0)
 
   // build fully overlapping node and element maps
   // fill my own row node ids into vector (e)sdata
-  vector<int> sdata(noderowmap_->NumMyElements());
-  vector<int> esdata(elerowmap_->NumMyElements());
+  std::vector<int> sdata(noderowmap_->NumMyElements());
+  std::vector<int> esdata(elerowmap_->NumMyElements());
   for (int i=0; i<noderowmap_->NumMyElements(); ++i)
     sdata[i] = noderowmap_->GID(i);
   for (int i=0; i<elerowmap_->NumMyElements(); ++i)
@@ -86,20 +86,20 @@ constrnorm_(0.0)
 
 
   // if current proc is participating it writes row IDs into (e)stproc
-  vector<int> stproc(0);
-  vector<int> estproc(0);
+  std::vector<int> stproc(0);
+  std::vector<int> estproc(0);
   if (noderowmap_->NumMyElements())
     stproc.push_back(ContactDiscret().Comm().MyPID());
   if (elerowmap_->NumMyElements())
     estproc.push_back(ContactDiscret().Comm().MyPID());
 
   // information how many processors participate in total
-  vector<int> allproc(ContactDiscret().Comm().NumProc());
+  std::vector<int> allproc(ContactDiscret().Comm().NumProc());
   for (int i=0;i<ContactDiscret().Comm().NumProc();++i) allproc[i] = i;
 
   // declaring new variables into which the info of (e)stproc on all processors is gathered
-  vector<int> rtproc(0);
-  vector<int> ertproc(0);
+  std::vector<int> rtproc(0);
+  std::vector<int> ertproc(0);
 
   // gathers information of (e)stproc and writes it into (e)rtproc; in the end (e)rtproc
   // is a vector which contains the numbers of all processors which own nodes/elements.
@@ -109,8 +109,8 @@ constrnorm_(0.0)
   // in analogy to (e)stproc and (e)rtproc the variables (e)rdata gather all the row ID
   // numbers which are  stored on different processors in their own variables (e)sdata; thus,
   // each processor gets the information about all the row ID numbers existing in the problem
-  vector<int> rdata;
-  vector<int> erdata;
+  std::vector<int> rdata;
+  std::vector<int> erdata;
 
   // gather all gids of nodes redundantly from (e)sdata into (e)rdata
   LINALG::Gather<int>(sdata,rdata,(int)rtproc.size(),&rtproc[0],ContactDiscret().Comm());
@@ -240,7 +240,7 @@ void CONTACT::Beam3cmanager::Evaluate(LINALG::SparseMatrix& stiffmatrix,
   {
     double t_start = Teuchos::Time::wallTime();
 
-    vector<RCP<Beam3contact> > newpairs = tree_->OctTreeSearch(currentpositions);
+    std::vector<RCP<Beam3contact> > newpairs = tree_->OctTreeSearch(currentpositions);
 
     // merge old and new contact pairs
     for (int k=0;k<(int)newpairs.size();++k)
@@ -462,7 +462,7 @@ void CONTACT::Beam3cmanager::SetState(std::map<int,LINALG::Matrix<3,1> >& curren
 /*----------------------------------------------------------------------*
  |  search possible contact element pairs                     popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3,1> >& currentpositions)
+void CONTACT::Beam3cmanager::SearchPossibleContactPairs(std::map<int,LINALG::Matrix<3,1> >& currentpositions)
 { 
   //**********************************************************************
   // Steps of search for element pairs that MIGHT get into contact:
@@ -488,7 +488,7 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
     LINALG::Matrix<3,1> firstpos = currentpositions[firstgid];
          
    // create storage for neighbouring nodes to be excluded.
-   vector<int> neighbournodeids(0);
+   std::vector<int> neighbournodeids(0);
    
    // create storage for near nodes to be identified
    std::vector<int> NearNodesGIDs;
@@ -558,8 +558,8 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
    // beam3contact objects are set up and stored into the vector pairs_.
    //*********************************************************************
    // vectors of element ids
-   vector<int> FirstElesGIDs(0);
-   vector<int> SecondElesGIDs(0);
+   std::vector<int> FirstElesGIDs(0);
+   std::vector<int> SecondElesGIDs(0);
    
    // loop over all elements adjacent to firstnode
    for (int j=0;j<firstnode->NumElement();++j)
@@ -602,7 +602,7 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(map<int,LINALG::Matrix<3
    //*********************************************************************
    
    // initialize reduced vector of close elements
-   vector<int> SecondElesGIDsRej;
+   std::vector<int> SecondElesGIDsRej;
    SecondElesGIDsRej.clear();
    
    // loop over all close elements
@@ -1001,7 +1001,7 @@ void CONTACT::Beam3cmanager::GmshOutput(const Epetra_Vector& disrow, const int& 
         for (int jd=0;jd<element->NumNode();++jd)
         {
           double referenceposition = ((element->Nodes())[jd])->X()[id];
-          vector<int> dofnode = ContactDiscret().Dof((element->Nodes())[jd]);
+          std::vector<int> dofnode = ContactDiscret().Dof((element->Nodes())[jd]);
           double displacement = discol[ContactDiscret().DofColMap()->LID(dofnode[id])];
           coord(id,jd) =  referenceposition + displacement;
         }

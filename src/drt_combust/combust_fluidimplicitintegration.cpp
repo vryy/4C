@@ -199,7 +199,7 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   // Neumann inflow term if required
   //------------------------------------------------------------------------------------------------
   neumanninflow_ = false;
-  if (params_->get<string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
+  if (params_->get<std::string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
 
   //------------------------------------------------------------------------------------------------
   // prepare XFEM (initial degree of freedom management)
@@ -335,12 +335,12 @@ FLD::CombustFluidImplicitTimeInt::CombustFluidImplicitTimeInt(
   Teuchos::ParameterList *  modelparams =&(params_->sublist("TURBULENCE MODEL"));
 
   // read turbulence model
-  string physmodel = modelparams->get<string>("PHYSICAL_MODEL","no_model");
+  std::string physmodel = modelparams->get<std::string>("PHYSICAL_MODEL","no_model");
   if (physmodel != "no_model")
     dserror("XFEM does not support any fancy turbulence models");
 
   // read flag for special flow
-  special_flow_ = modelparams->get<string>("CANONICAL_FLOW","no");
+  special_flow_ = modelparams->get<std::string>("CANONICAL_FLOW","no");
   if ( special_flow_ != "no" and
        special_flow_ != "bubbly_channel_flow" and
        special_flow_ != "combust_oracles" and
@@ -683,11 +683,11 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
     {
       TEUCHOS_FUNC_TIME_MONITOR("   + xfem time integration");
 
-      vector<RCP<Epetra_Vector> > newRowVectorsn; // solution vectors of old time step due to new interface
+      std::vector<RCP<Epetra_Vector> > newRowVectorsn; // solution vectors of old time step due to new interface
       newRowVectorsn.push_back(state_.veln_);
       newRowVectorsn.push_back(state_.accn_);
 
-      vector<RCP<Epetra_Vector> > newRowVectorsnp; // solution vectors at new time step
+      std::vector<RCP<Epetra_Vector> > newRowVectorsnp; // solution vectors at new time step
       newRowVectorsnp.push_back(state_.velnp_);
       newRowVectorsnp.push_back(state_.accnp_);
 
@@ -756,7 +756,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
   // in this case, we need a basis vector for the nullspace/kernel
 
   // get condition "KrylovSpaceProjection" from discretization
-  vector<DRT::Condition*> KSPcond;
+  std::vector<DRT::Condition*> KSPcond;
   discret_->GetCondition("KrylovSpaceProjection",KSPcond);
   int numcond = KSPcond.size();
   int numfluid = 0;
@@ -863,7 +863,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
   // get old dofmaps, compute a new one and get the new one, too
   const Epetra_Map olddofrowmap = *discret_->DofRowMap();
   const Epetra_Map olddofcolmap = *discret_->DofColMap();
-  map<XFEM::DofKey,XFEM::DofGID> oldNodalDofColDistrib;
+  std::map<XFEM::DofKey,XFEM::DofGID> oldNodalDofColDistrib;
   olddofmanager->fillNodalDofColDistributionMap(oldNodalDofColDistrib);
 
   // -------------------------------------------------------------------
@@ -898,7 +898,7 @@ void FLD::CombustFluidImplicitTimeInt::IncorporateInterface(const Teuchos::RCP<C
     //---------------------------------------------------------------
     // extract old enrichment dofkeys and values before they are lost
     //---------------------------------------------------------------
-    vector<RCP<Epetra_Vector> > oldColStateVectors; // same order of vectors as newRowVectorsn combined with newRowVectorsnp
+    std::vector<RCP<Epetra_Vector> > oldColStateVectors; // same order of vectors as newRowVectorsn combined with newRowVectorsnp
     RCP<Epetra_Vector> veln = Teuchos::rcp(new Epetra_Vector(olddofcolmap,true));
     {
       LINALG::Export(*state_.veln_,*veln);
@@ -1537,7 +1537,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
 
         // convergence check at itemax is skipped for speedup if
         // CONVCHECK is set to L_2_norm_without_residual_at_itemax
-        if ((itnum != itemax_) || (params_->get<string>("CONVCHECK") != "L_2_norm_without_residual_at_itemax"))
+        if ((itnum != itemax_) || (params_->get<std::string>("CONVCHECK") != "L_2_norm_without_residual_at_itemax"))
         {
           // call standard loop over elements
           discret_->Evaluate(eleparams,sysmat_,residual_);
@@ -1729,7 +1729,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         if (dim == 2)
         {
           const Epetra_Map* dofcolmap = discret_->DofColMap();
-          map<XFEM::DofKey,XFEM::DofGID> dofColDistrib;
+          std::map<XFEM::DofKey,XFEM::DofGID> dofColDistrib;
           dofmanagerForOutput_->fillNodalDofColDistributionMap(dofColDistrib);
 
           RCP<Epetra_Vector> velnp = Teuchos::rcp(new Epetra_Vector(*dofcolmap,true));
@@ -1858,7 +1858,7 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       if (dim == 2)
       {
         const Epetra_Map* dofcolmap = discret_->DofColMap();
-        map<XFEM::DofKey,XFEM::DofGID> dofColDistrib;
+        std::map<XFEM::DofKey,XFEM::DofGID> dofColDistrib;
         dofmanagerForOutput_->fillNodalDofColDistributionMap(dofColDistrib);
 
         RCP<Epetra_Vector> velnp = Teuchos::rcp(new Epetra_Vector(*dofcolmap,true));
@@ -1969,9 +1969,9 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
       // do adaptive linear solver tolerance (not in first solve)
       if (isadapttol and itnum>1)
       {
-        double currresidual = max(vresnorm,presnorm);
-        currresidual = max(currresidual,incvelnorm_L2/velnorm_L2);
-        currresidual = max(currresidual,incprenorm_L2/prenorm_L2);
+        double currresidual = std::max(vresnorm,presnorm);
+        currresidual = std::max(currresidual,incvelnorm_L2/velnorm_L2);
+        currresidual = std::max(currresidual,incprenorm_L2/prenorm_L2);
         solver_->AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
@@ -3276,7 +3276,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         static LINALG::Matrix<3,27> xyze_xfemElement;
         GEO::fillInitialPositionArray(ele,xyze_xfemElement);
 
-        const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(ele->Shape()));
+        const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz(COMBUST::getElementAnsatz(ele->Shape()));
 
         // create local copy of information about dofs
         const XFEM::ElementDofManager eledofman(*ele,element_ansatz,*dofmanagerForOutput_);
@@ -3677,7 +3677,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputFlameArea(
       const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
 
       tmpfilename << filebase << "." << "flame_area" << ".txt";
-      IO::cout << "writing " << left << std::setw(60) <<tmpfilename.str()<<"...";
+      IO::cout << "writing " << std::left << std::setw(60) <<tmpfilename.str()<<"...";
 
       const std::string filename = tmpfilename.str();
 
@@ -3841,7 +3841,7 @@ void FLD::CombustFluidImplicitTimeInt::OutputInstabAmplitude(
       const std::string filebase(DRT::Problem::Instance()->OutputControlFile()->FileName());
 
       tmpfilename << filebase << "." << "amplitude" << ".txt";
-      IO::cout << "writing " << left << std::setw(60) <<tmpfilename.str()<<"...";
+      IO::cout << "writing " << std::left << std::setw(60) <<tmpfilename.str()<<"...";
 
       const std::string filename = tmpfilename.str();
 
@@ -4375,7 +4375,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
 
       // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(lnode);
 
       // set node coordinates
       for(int dim=0;dim<numdim_;dim++)
@@ -4496,7 +4496,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
         // get the processor local node
         DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
-        vector<int> nodedofset = discret_->Dof(lnode);
+        std::vector<int> nodedofset = discret_->Dof(lnode);
 
         for(int index=0;index<numdim;++index)
         {
@@ -4519,10 +4519,10 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
         // get the processor local node
         DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
         // the set of degrees of freedom associated with the node
-        vector<int> nodedofset = discret_->Dof(lnode);
+        std::vector<int> nodedofset = discret_->Dof(lnode);
 
         // check whether we have a pbc condition on this node
-        vector<DRT::Condition*> mypbc;
+        std::vector<DRT::Condition*> mypbc;
 
         lnode->GetCondition("SurfacePeriodic",mypbc);
 
@@ -4532,7 +4532,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
           // yes, we have one
 
           // get the list of all his slavenodes
-//          std::map<int, vector<int> >::iterator master = pbcmapmastertoslave_->find(lnode->Id());
+//          std::map<int, std::vector<int> >::iterator master = pbcmapmastertoslave_->find(lnode->Id());
 
           // slavenodes are ignored
 //          if(master == pbcmapmastertoslave_->end()) continue;
@@ -4687,7 +4687,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
 
       // access standard FEM dofset (3 x vel + 1 x pressure) to get dof IDs for this node
       const std::vector<int> nodedofs = (*standarddofset_).Dof(lnode);
-      //const vector<int> nodedofs = discret_->Dof(lnode);
+      //const std::vector<int> nodedofs = discret_->Dof(lnode);
       //for (int i=0;i<standardnodedofset.size();i++)
       //{
       //  IO::cout << "component " << i << " standarddofset dofid " << stdnodedofset[i] << IO::endl;
@@ -4823,7 +4823,7 @@ void FLD::CombustFluidImplicitTimeInt::SetInitialFlowField(
 
       // access standard FEM dofset (3 x vel + 1 x pressure) to get dof IDs for this node
       const std::vector<int> nodedofs = (*standarddofset_).Dof(lnode);
-      //const vector<int> nodedofs = discret_->Dof(lnode);
+      //const std::vector<int> nodedofs = discret_->Dof(lnode);
       //for (int i=0;i<standardnodedofset.size();i++)
       //{
       //  IO::cout << "component " << i << " standarddofset dofid " << stdnodedofset[i] << IO::endl;
@@ -5175,8 +5175,8 @@ void FLD::CombustFluidImplicitTimeInt::SetupXFluidSplit(
 
   // Allocate integer vectors which will hold the dof number of the
   // velocity or pressure dofs
-  vector<int> velmapdata;
-  vector<int> premapdata;
+  std::vector<int> velmapdata;
+  std::vector<int> premapdata;
 
   // collect global dofids for velocity and pressure in vectors
   for (int i=0; i<dis.NumMyRowNodes(); ++i) {
@@ -5666,7 +5666,7 @@ double FLD::CombustFluidImplicitTimeInt::TimIntParam() const
 void FLD::CombustFluidImplicitTimeInt::LiftDrag() const
 {
   // in this map, the results of the lift drag calculation are stored
-  RCP<map<int,std::vector<double> > > liftdragvals;
+  RCP<std::map<int,std::vector<double> > > liftdragvals;
 
   FLD::UTILS::LiftDrag(*discret_,*trueresidual_,*params_,liftdragvals);
 
@@ -5687,11 +5687,11 @@ void FLD::CombustFluidImplicitTimeInt::LiftDrag() const
 
 
 /*------------------------------------------------------------------------------------------------*
-| returns matching string for each time integration scheme                              gjb 08/08 |
+| returns matching std::string for each time integration scheme                              gjb 08/08 |
 *-------------------------------------------------------------------------------------------------*/
 std::string FLD::CombustFluidImplicitTimeInt::MapTimIntEnumToString(const enum INPAR::FLUID::TimeIntegrationScheme term)
 {
-  // length of return string is 14 due to usage in formated screen output
+  // length of return std::string is 14 due to usage in formated screen output
   switch (term)
   {
   case INPAR::FLUID::timeint_one_step_theta:

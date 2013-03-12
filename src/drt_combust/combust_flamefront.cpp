@@ -455,7 +455,7 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
         //-------------------------------------------------------------
         // update maxEleDiam
         //-------------------------------------------------------------
-        maxEleDiam = max(hk_current,maxEleDiam);
+        maxEleDiam = std::max(hk_current,maxEleDiam);
 
       } // end loop over adjacent
       //==========================================================================
@@ -605,7 +605,7 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
         //-------------------------------------------------------------
         // update maxEleDiam
         //-------------------------------------------------------------
-        maxEleDiam = max(hk_current,maxEleDiam);
+        maxEleDiam = std::max(hk_current,maxEleDiam);
 
       } // end loop over adjacent
       //==========================================================================
@@ -667,7 +667,7 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
             int ID_param_space = -1;
 
             // get vector of node GIDs of this adjacent element -> needed for ExtractMyValues
-            vector<int> nodeID_adj(numnode);
+            std::vector<int> nodeID_adj(numnode);
             for (size_t node=0; node < numnode; node++){
               nodeID_adj[node] = ptToNodeIds_adj[node];
               // get local number of node actnode in ele_adj
@@ -816,8 +816,8 @@ void COMBUST::FlameFront::ModifyPhiVector(const Teuchos::ParameterList& combustd
             {
               inode_modified_n  = true;
             }
-            minimal_crit_val_np = min(minimal_crit_val_np, fabs(ele_critical_inode_np(ele) - 0.0 ));
-            minimal_crit_val_n = min(minimal_crit_val_n, fabs(ele_critical_inode_n(ele) - 0.0 ));
+            minimal_crit_val_np = std::min(minimal_crit_val_np, fabs(ele_critical_inode_np(ele) - 0.0 ));
+            minimal_crit_val_n = std::min(minimal_crit_val_n, fabs(ele_critical_inode_n(ele) - 0.0 ));
           }
           if(inode_modified_np == true)
             IO::cout << "\t \t    minimal_crit_val_np was: " << minimal_crit_val_np << IO::endl;
@@ -973,7 +973,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     const int nodegid = ptToNode->Id();
 
     // vector of elements located around this node
-    vector<const DRT::Element*> elements;
+    std::vector<const DRT::Element*> elements;
 
     // get adjacent elements for this node
     const DRT::Element*const* adjelements = ptToNode->Elements();
@@ -990,7 +990,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
     bool pbcnode = false;
     std::set<int> coupnodegid;
     // loop all nodes with periodic boundary conditions (master nodes)
-    for (std::map<int, vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
+    for (std::map<int, std::vector<int>  >::const_iterator pbciter= (*pbcmap_).begin(); pbciter != (*pbcmap_).end(); ++pbciter)
     {
       if (pbciter->first == nodegid) // node is a pbc master node
       {
@@ -1096,7 +1096,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         int ID_param_space = -1;
 
         // get vector of node GIDs of this adjacent element -> needed for ExtractMyValues
-        vector<int> nodeID_adj(numnode);
+        std::vector<int> nodeID_adj(numnode);
         for (size_t inode=0; inode < numnode; inode++)
         {
           nodeID_adj[inode] = ptToNodeIds_adj[inode];
@@ -1252,7 +1252,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
         int ID_param_space = -1;
 
         // get vector of node GIDs of this adjacent element -> needed for ExtractMyValues
-        vector<int> nodeID_adj(numnode);
+        std::vector<int> nodeID_adj(numnode);
         for (size_t inode=0; inode < numnode; inode++){
           nodeID_adj[inode] = ptToNodeIds_adj[inode];
           // get local number of node actnode in ele_adj
@@ -1527,7 +1527,7 @@ void COMBUST::FlameFront::ComputeSmoothGradPhi(const Teuchos::ParameterList& com
   //
   ////          IO::cout << "these are all global node Ids of element" << ele_Two_Ring->Id() << IO::endl;
   //          // get vector of node GIDs of this adjacent element -> needed for ExtractMyValues
-  //          vector<int> nodeID_adj(numnode);
+  //          std::vector<int> nodeID_adj(numnode);
   //          for (size_t inode=0; inode < numnode; inode++){
   //            nodeID_adj[inode] = ptToNodeIds_adj[inode];
   ////            IO::cout << nodeID_adj[inode] << IO::endl;
@@ -2216,7 +2216,7 @@ void COMBUST::FlameFront::FindFlameFront(
         // get vector of all dof GIDs of this element
         const std::vector<int> lm = gfuncdis_->Dof(ele);
         // create local vector "myphinp"
-        std::vector<double> myphinp(lm.size()); // vector<double> degeneriert hier zum scalaren double!
+        std::vector<double> myphinp(lm.size()); // std::vector<double> degeneriert hier zum scalaren double!
        */
       //--------------------------------------------------------------------------------------------
       // extract G-function values for all nodes belonging to this fluid element ( == cell!)
@@ -4409,10 +4409,10 @@ void COMBUST::FlameFront::buildFlameFrontSegmentsHex20(
     {
       // find line
       //stores all segmentpoints of one line
-      std::pair<std::multimap<int,int>::const_iterator,multimap<int,int>::const_iterator> range_intersectionpoint = intersectionpointsids.equal_range(surface[surfaceNo][lineNo]);
+      std::pair<std::multimap<int,int>::const_iterator,std::multimap<int,int>::const_iterator> range_intersectionpoint = intersectionpointsids.equal_range(surface[surfaceNo][lineNo]);
 
       //iterates over all segmentpoints of the line
-      multimap<int,int>::const_iterator it_intersectionpoint;
+      std::multimap<int,int>::const_iterator it_intersectionpoint;
       for(it_intersectionpoint = range_intersectionpoint.first; it_intersectionpoint != range_intersectionpoint.second; it_intersectionpoint++)
       {
         //get id of the intersectionpoint and store it in segmentpoints vector
@@ -4854,7 +4854,7 @@ void COMBUST::FlameFront::buildPLC(
   std::multimap<int,int> intersectionpointsids;
 
   // intersection points
-  // map<ID of cut edge in element, coordinates of intersection point>
+  // std::map<ID of cut edge in element, coordinates of intersection point>
   for (std::multimap<int,std::vector<double> >::const_iterator iter = intersectionpoints.begin(); iter != intersectionpoints.end(); ++iter)
   {
     pointlist.push_back(iter->second);
@@ -5846,7 +5846,7 @@ void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>&
   //-----------------------------------------------------------------
   // pack data (my boundary integration cell groups) for initial send
   //-----------------------------------------------------------------
-  vector<char> dataSend;
+  std::vector<char> dataSend;
   swap( dataSend, data() );
 
   //-----------------------------------------------
@@ -5855,7 +5855,7 @@ void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>&
   // loop over processors
   for(int num = 0; num < numproc-1; num++)
   {
-    vector<int> lengthSend(1,0);
+    std::vector<int> lengthSend(1,0);
     lengthSend[0] = dataSend.size();
 
 #ifdef DEBUG
@@ -5867,7 +5867,7 @@ void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>&
     int length_tag = 0;
     exporter.ISend(myrank, dest, &(lengthSend[0]) , size_one, length_tag, req_length_data);
     // ... and receive length
-    vector<int> lengthRecv(1,0);
+    std::vector<int> lengthRecv(1,0);
     exporter.Receive(source, length_tag, lengthRecv, size_one);
     exporter.Wait(req_length_data);
 
@@ -5876,7 +5876,7 @@ void COMBUST::FlameFront::ExportFlameFront(std::map<int, GEO::BoundaryIntCells>&
     MPI_Request req_data;
     exporter.ISend(myrank, dest, &(dataSend[0]), lengthSend[0], data_tag, req_data);
     // ... and receive data
-    vector<char> dataRecv(lengthRecv[0]);
+    std::vector<char> dataRecv(lengthRecv[0]);
     exporter.ReceiveAny(source, data_tag, dataRecv, lengthRecv[0]);
     exporter.Wait(req_data);
 
@@ -5979,8 +5979,8 @@ void COMBUST::FlameFront::unpackBoundaryIntCells(
     const std::vector<char>&                     data,
     std::map<int, GEO::BoundaryIntCells>&   intcellmap)
 {
-  // pointer to current position in a group of cells in local string (counts bytes)
-  vector<char>::size_type posingroup = 0;
+  // pointer to current position in a group of cells in local std::string (counts bytes)
+  std::vector<char>::size_type posingroup = 0;
 
   while (posingroup < data.size())
   {

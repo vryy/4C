@@ -254,7 +254,7 @@ void UTILS::Constraint::EvaluateConstraint(
       // is conditions already labeled as active?
       if(activecons_.find(condID)->second==false)
       {
-        const string action = params.get<string>("action");
+        const std::string action = params.get<std::string>("action");
         RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
         actdisc_->SetState("displacement",displast);
         Initialize(params,systemvector2);
@@ -294,12 +294,12 @@ void UTILS::Constraint::EvaluateConstraint(
       Epetra_SerialDenseVector elevector2;
       Epetra_SerialDenseVector elevector3;
 
-      map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+      std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
       // if (geom.empty()) dserror("evaluation of condition with empty geometry");
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
       // to the condition geometry
-      map<int,RCP<DRT::Element> >::iterator curr;
+      std::map<int,RCP<DRT::Element> >::iterator curr;
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector and ownerships
@@ -334,7 +334,7 @@ void UTILS::Constraint::EvaluateConstraint(
         {
           // assemble to rectangular matrix. The column corresponds to the constraint ID.
           // scale with time integrator dependent value
-          vector<int> colvec(1);
+          std::vector<int> colvec(1);
           colvec[0]=gindex;
           elevector2.Scale(scConMat);
           systemmatrix2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
@@ -346,8 +346,8 @@ void UTILS::Constraint::EvaluateConstraint(
         }
         if (assemblevec3)
         {
-          vector<int> constrlm;
-          vector<int> constrowner;
+          std::vector<int> constrlm;
+          std::vector<int> constrowner;
           constrlm.push_back(gindex);
           constrowner.push_back(curr->second->Owner());
           LINALG::Assemble(*systemvector3,elevector3,constrlm,constrowner);
@@ -393,11 +393,11 @@ void UTILS::Constraint::InitializeConstraint(
       Epetra_SerialDenseVector elevector2;
       Epetra_SerialDenseVector elevector3;
 
-      map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+      std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
       // to the condition geometry
-      map<int,RCP<DRT::Element> >::iterator curr;
+      std::map<int,RCP<DRT::Element> >::iterator curr;
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector and ownerships
@@ -417,8 +417,8 @@ void UTILS::Constraint::InitializeConstraint(
 
         // assembly
 
-        vector<int> constrlm;
-        vector<int> constrowner;
+        std::vector<int> constrlm;
+        std::vector<int> constrowner;
         int offsetID = params.get<int> ("OffsetID");
         constrlm.push_back(condID-offsetID);
         constrowner.push_back(curr->second->Owner());
@@ -441,8 +441,8 @@ void UTILS::Constraint::InitializeConstraint(
  *-----------------------------------------------------------------------*/
 vector<int> UTILS::Constraint::GetActiveCondID()
 {
-  vector<int> condID;
-  map<int,bool>::const_iterator mapit;
+  std::vector<int> condID;
+  std::map<int,bool>::const_iterator mapit;
   for(mapit = activecons_.begin();mapit!=activecons_.end();mapit++)
   {
     if (mapit->second)

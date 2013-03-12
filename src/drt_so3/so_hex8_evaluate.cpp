@@ -71,7 +71,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
   DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff")                        act = So_hex8::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff")                        act = So_hex8::calc_struct_nlnstiff;
@@ -351,11 +351,11 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
     // (depending on what this routine is called for from the post filter)
     case postprocess_stress:
     {
-      const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+      const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+        params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
       if (gpstressmap==Teuchos::null)
         dserror("no gp stress/strain map available for postprocessing");
-      string stresstype = params.get<string>("stresstype","ndxyz");
+      std::string stresstype = params.get<std::string>("stresstype","ndxyz");
       int gid = Id();
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> gpstress(((*gpstressmap)[gid])->A(),true);
       RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
@@ -998,12 +998,12 @@ int DRT::ELEMENTS::So_hex8::Evaluate(Teuchos::ParameterList&  params,
       if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
       if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
       if (plstraindata==Teuchos::null) dserror("Cannot get 'plastic strain' data");
-      const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+      const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+        params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
       if (gpstressmap==Teuchos::null)
         dserror("no gp stress map available for writing gpstresses");
-      const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap=
-        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstrainmap",Teuchos::null);
+      const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap=
+        params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstrainmap",Teuchos::null);
       if (gpstrainmap==Teuchos::null)
         dserror("no gp strain map available for writing gpstrains");
       std::vector<double> mydisp(lm.size());
@@ -1305,7 +1305,7 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
   */
   // in any case declare variables, sizes etc. only in eascase
   Epetra_SerialDenseMatrix* alpha = NULL;  // EAS alphas
-  vector<Epetra_SerialDenseMatrix>* M_GP = NULL;   // EAS matrix M at all GPs
+  std::vector<Epetra_SerialDenseMatrix>* M_GP = NULL;   // EAS matrix M at all GPs
   LINALG::SerialDenseMatrix M;      // EAS matrix M at current GP
   Epetra_SerialDenseVector feas;    // EAS portion of internal forces
   Epetra_SerialDenseMatrix Kaa;     // EAS matrix Kaa
@@ -2223,9 +2223,9 @@ void DRT::ELEMENTS::So_hex8::soh8_lumpmass(LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH
 /*----------------------------------------------------------------------*
  |  Evaluate Hex8 Shape fcts at all 8 Gauss Points             maf 05/08|
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMNOD_SOH8,1> > DRT::ELEMENTS::So_hex8::soh8_shapefcts()
+const std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > DRT::ELEMENTS::So_hex8::soh8_shapefcts()
 {
-  vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts(NUMGPT_SOH8);
+  std::vector<LINALG::Matrix<NUMNOD_SOH8,1> > shapefcts(NUMGPT_SOH8);
   // (r,s,t) gp-locations of fully integrated linear 8-node Hex
   const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
   const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
@@ -2249,9 +2249,9 @@ const vector<LINALG::Matrix<NUMNOD_SOH8,1> > DRT::ELEMENTS::So_hex8::soh8_shapef
 /*----------------------------------------------------------------------*
  |  Evaluate Hex8 Shape fct derivs at all 8 Gauss Points       maf 05/08|
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > DRT::ELEMENTS::So_hex8::soh8_derivs()
+const std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > DRT::ELEMENTS::So_hex8::soh8_derivs()
 {
-  vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs(NUMGPT_SOH8);
+  std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs(NUMGPT_SOH8);
   // (r,s,t) gp-locations of fully integrated linear 8-node Hex
   const double gploc    = 1.0/sqrt(3.0);    // gp sampling point value for linear fct
   const double r[NUMGPT_SOH8] = {-gploc, gploc, gploc,-gploc,-gploc, gploc, gploc,-gploc};
@@ -2295,9 +2295,9 @@ const vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > DRT::ELEMENTS::So_hex8::s
 /*----------------------------------------------------------------------*
  |  Evaluate Hex8 Weights at all 8 Gauss Points                maf 05/08|
  *----------------------------------------------------------------------*/
-const vector<double> DRT::ELEMENTS::So_hex8::soh8_weights()
+const std::vector<double> DRT::ELEMENTS::So_hex8::soh8_weights()
 {
-  vector<double> weights(NUMGPT_SOH8);
+  std::vector<double> weights(NUMGPT_SOH8);
   for (int i = 0; i < NUMGPT_SOH8; ++i) {
     weights[i] = 1.0;
   }

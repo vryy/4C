@@ -164,7 +164,7 @@ void DRT::ParObjectFactory::Done(){
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ParObjectFactory::Create( const vector<char> & data )
+DRT::ParObject* DRT::ParObjectFactory::Create( const std::vector<char> & data )
 {
   FinalizeRegistration();
 
@@ -192,8 +192,8 @@ DRT::ParObject* DRT::ParObjectFactory::Create( const vector<char> & data )
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::ParObjectFactory::Create( const string eletype,
-                                                          const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ParObjectFactory::Create( const std::string eletype,
+                                                          const std::string eledistype,
                                                           const int id,
                                                           const int owner )
 {

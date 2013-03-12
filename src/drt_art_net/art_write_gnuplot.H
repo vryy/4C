@@ -67,8 +67,8 @@ namespace ART
       /*!
       \brief all single artery write conditions
      */
-      map<const int, RCP<class ArtWriteGnuplot> >  agmap_;
-      map<const int, const vector<int> *  >        agnode_map_;
+      std::map<const int, RCP<class ArtWriteGnuplot> >  agmap_;
+      std::map<const int, const std::vector<int> *  >        agnode_map_;
 
 
       //! 1d artery discretization
@@ -122,7 +122,7 @@ namespace ART
     private:
 
       //! An epetra wrapper for Dense matrix solver
-      RCP<ofstream> fout_;
+      RCP<std::ofstream> fout_;
 
       //! the Artery number
       int ArteryNum_;

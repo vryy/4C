@@ -75,7 +75,7 @@ void THR::ResultTest::TestNode(
 
       std::string position;
       res.ExtractString("QUANTITY",position);
-      bool unknownpos = true;  // make sure the result value string can be handled
+      bool unknownpos = true;  // make sure the result value std::string can be handled
       double result = 0.0;  // will hold the actual result of run
 
       // test temperature

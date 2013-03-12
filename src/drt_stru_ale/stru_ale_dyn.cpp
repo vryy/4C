@@ -50,7 +50,7 @@ void stru_ale_dyn_drt(int restart)
 
   //check if quasistatic analysis
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-  if(sdyn.get<string>("DYNAMICTYP")!= "Statics")
+  if(sdyn.get<std::string>("DYNAMICTYP")!= "Statics")
     dserror ("Structure with ale only for quasistatic analysis so in new sti so far.");
   
   // access the structure discretization, make sure it is filled

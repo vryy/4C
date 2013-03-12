@@ -30,8 +30,8 @@ DRT::ParObject* DRT::ELEMENTS::RedInterAcinarDepType::Create( const std::vector<
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedInterAcinarDepType::Create( const string eletype,
-                                                            const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::RedInterAcinarDepType::Create( const std::string eletype,
+                                                            const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {
@@ -127,7 +127,7 @@ void DRT::ELEMENTS::RedInterAcinarDep::Pack(DRT::PackBuffer& data) const
   Element::Pack(data);
 
 
-  map<std::string,double>::const_iterator it;
+  std::map<std::string,double>::const_iterator it;
 
   AddtoPack(data,(int)(elemParams_.size()));
   for (it = elemParams_.begin(); it!= elemParams_.end(); it++)
@@ -159,7 +159,7 @@ void DRT::ELEMENTS::RedInterAcinarDep::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,basedata);
   Element::Unpack(basedata);
 
-  map<std::string,double> it;
+  std::map<std::string,double> it;
   int n = 0;
 
   ExtractfromPack(position,data,n);
@@ -206,7 +206,7 @@ void DRT::ELEMENTS::RedInterAcinarDep::Print(ostream& os) const
 /*----------------------------------------------------------------------*
  |  Return names of visualization data                     ismail 01/10 |
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::RedInterAcinarDep::VisNames(std::map<string,int>& names)
+void DRT::ELEMENTS::RedInterAcinarDep::VisNames(std::map<std::string,int>& names)
 {
 
 #if 0
@@ -215,12 +215,12 @@ void DRT::ELEMENTS::RedInterAcinarDep::VisNames(std::map<string,int>& names)
   temp << 1;
 
   // in flow of volumetric flow profile
-  string name = "flow_in";
-  names.insert(std::pair<string,int>(name,1));
+  std::string name = "flow_in";
+  names.insert(std::pair<std::string,int>(name,1));
 
   // out flow of volumetric flow profile
   name = "flow_out";
-  names.insert(std::pair<string,int>(name,1));
+  names.insert(std::pair<std::string,int>(name,1));
 #endif
 
   return;
@@ -246,7 +246,7 @@ bool DRT::ELEMENTS::RedInterAcinarDep::VisData(const string& name, std::vector<d
 void DRT::ELEMENTS::RedInterAcinarDep::getParams(std::string name, double & var)
 {
 
-  map<std::string,double>::iterator it;
+  std::map<std::string,double>::iterator it;
   it = elemParams_.find(name);
   if (it == elemParams_.end())
   {

@@ -82,7 +82,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
 
     // for homogeneous flow, use averaged quantities
     if (fldpara_->CsAveraged()==true){
-    if (turbmodelparams.get<string>("HOMDIR","not_specified")
+    if (turbmodelparams.get<std::string>("HOMDIR","not_specified")
             !=
             "not_specified")
     {
@@ -97,7 +97,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::GetTurbulenceParams(
       }
 
       // get homogeneous direction
-      string homdir = turbmodelparams.get<string>("HOMDIR","not_specified");
+      std::string homdir = turbmodelparams.get<std::string>("HOMDIR","not_specified");
 
       // here, the layer is determined in order to get the correct
       // averaged value from the vector of averaged (M/L)ijMij
@@ -910,8 +910,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcMultiFracSubgridVelCoef(
 #endif
 
 //  if (eid_ == 100){
-//    std::cout << "B  " << setprecision(10) << B_mfs(0,0) << "  " << B_mfs(1,0) << "  " << B_mfs(2,0) << "  " << std::endl;
-//    std::cout << "CsgsB  " << setprecision(10) << Csgs << std::endl;
+//    std::cout << "B  " << std::setprecision(10) << B_mfs(0,0) << "  " << B_mfs(1,0) << "  " << B_mfs(2,0) << "  " << std::endl;
+//    std::cout << "CsgsB  " << std::setprecision(10) << Csgs << std::endl;
 //  }
 
   return;
@@ -997,8 +997,8 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::CalcMultiFracSubgridScaCoef(
   }
 
 //  if (eid_ == 100){
-//    std::cout << "D  " << setprecision(10) << D_mfs << std::endl;
-//    std::cout << "CsgsD  " << setprecision(10) << Csgs << std::endl;
+//    std::cout << "D  " << std::setprecision(10) << D_mfs << std::endl;
+//    std::cout << "CsgsD  " << std::setprecision(10) << Csgs << std::endl;
 //  }
 
   return;
@@ -1535,11 +1535,11 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::StoreModelParametersForOutput(
     if (fldpara_->TurbModAction() == INPAR::FLUID::dynamic_smagorinsky or
         fldpara_->TurbModAction() == INPAR::FLUID::smagorinsky_with_van_Driest_damping)
     {
-      if (turbmodelparams.get<string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
+      if (turbmodelparams.get<std::string>("TURBULENCE_APPROACH", "none") == "CLASSICAL_LES")
       {
-        if (turbmodelparams.get<string>("CANONICAL_FLOW","no") == "channel_flow_of_height_2" or
-            turbmodelparams.get<string>("CANONICAL_FLOW","no") == "loma_channel_flow_of_height_2" or
-            turbmodelparams.get<string>("CANONICAL_FLOW","no") == "scatra_channel_flow_of_height_2")
+        if (turbmodelparams.get<std::string>("CANONICAL_FLOW","no") == "channel_flow_of_height_2" or
+            turbmodelparams.get<std::string>("CANONICAL_FLOW","no") == "loma_channel_flow_of_height_2" or
+            turbmodelparams.get<std::string>("CANONICAL_FLOW","no") == "scatra_channel_flow_of_height_2")
         {
           // recompute delta = pow((vol),(1.0/3.0))
           // evaluate shape functions and derivatives at element center
@@ -1556,7 +1556,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::StoreModelParametersForOutput(
           (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_Cs_delta_sq_sum")))[nlayer]+=Cs_delta_sq;
           (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_visceff_sum")))    [nlayer]+=visceff_;
 
-          if (turbmodelparams.get<string>("CANONICAL_FLOW","no") == "loma_channel_flow_of_height_2")
+          if (turbmodelparams.get<std::string>("CANONICAL_FLOW","no") == "loma_channel_flow_of_height_2")
           {
             (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_Ci_sum")))         [nlayer]+=sqrt(Ci_delta_sq)/pow((vol),(1.0/3.0));
             (*(turbmodelparams.get<Teuchos::RCP<std::vector<double> > >("local_Ci_delta_sq_sum")))[nlayer]+=Ci_delta_sq;

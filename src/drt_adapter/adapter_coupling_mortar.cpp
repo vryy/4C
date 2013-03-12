@@ -1350,7 +1350,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
 ) const
 {
   Epetra_Vector tmp = Epetra_Vector(M_->RangeMap());
-  copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
+  std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
   Teuchos::RCP<Epetra_Vector> mv = Teuchos::rcp(new Epetra_Vector(*masterdofrowmap_));
   if (M_->Multiply(true, tmp, *mv))
@@ -1390,7 +1390,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::CouplingMortar::SlaveToMaster
 ) const
 {
   Epetra_Vector tmp = Epetra_Vector(M_->RangeMap());
-  copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
+  std::copy(sv->Values(), sv->Values() + sv->MyLength(), tmp.Values());
 
   Teuchos::RCP<Epetra_Vector> mv = Teuchos::rcp(new Epetra_Vector(*masterdofrowmap_));
   if (M_->Multiply(true, tmp, *mv))

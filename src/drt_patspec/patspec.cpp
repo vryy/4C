@@ -21,6 +21,7 @@ Maintainer: Michael Gee
 #include <iostream>
 #include "../drt_io/io_pstream.H" // has to go before io.H
 #include "../drt_io/io.H"
+#include <Epetra_Time.h>
 
 
 using namespace std;
@@ -97,7 +98,7 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
 
 
   //------------test discretization of presence of embedding tissue condition
-  vector<DRT::Condition*> embedcond;
+  std::vector<DRT::Condition*> embedcond;
 
   // this is a copy of the discretization passed in to hand it to the element level. OK??? kehl; 16.03.12
   DRT::Discretization& actdis = *(dis);
@@ -114,8 +115,8 @@ void PATSPEC::PatientSpecificGeometry(Teuchos::RCP<DRT::Discretization> dis,
       Epetra_Vector nodalarea(*dis->NodeRowMap(),true);
 
       //IO::cout << *embedcond[cond];
-      map<int,RCP<DRT::Element> >& geom = embedcond[cond]->Geometry();
-      map<int,RCP<DRT::Element> >::iterator ele;
+      std::map<int,RCP<DRT::Element> >& geom = embedcond[cond]->Geometry();
+      std::map<int,RCP<DRT::Element> >::iterator ele;
       for (ele=geom.begin(); ele != geom.end(); ++ele)
       {
         DRT::Element* element = ele->second.get();
@@ -218,7 +219,7 @@ void PATSPEC::ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis,
 
   RCP<Epetra_Vector> elestrength = LINALG::CreateVector(*(dis->ElementRowMap()),true);
 
-  vector<DRT::Condition*> mypatspeccond;
+  std::vector<DRT::Condition*> mypatspeccond;
   dis->GetCondition("PatientSpecificData", mypatspeccond);
 
   if (!mypatspeccond.size()) dserror("Cannot find the Patient Specific Data Conditions :-(");
@@ -283,9 +284,9 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
 	                                        Teuchos::RCP<Teuchos::ParameterList> params)
 {
   // find out whether we have a orthopressure or FSI condition
-  vector<DRT::Condition*> conds;
-  vector<DRT::Condition*> ortho(0);
-  vector<DRT::Condition*> fsi(0);
+  std::vector<DRT::Condition*> conds;
+  std::vector<DRT::Condition*> ortho(0);
+  std::vector<DRT::Condition*> fsi(0);
   dis->GetCondition("SurfaceNeumann",ortho);
   for (int i=0; i<(int)ortho.size(); ++i)
   {
@@ -321,8 +322,8 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
 
   // create coordinates for all these nodes
   const int nnodes = (int)allnodes.size();
-  vector<double> lcoords(nnodes*3,0.0);
-  vector<double> gcoords(nnodes*3,0.0);
+  std::vector<double> lcoords(nnodes*3,0.0);
+  std::vector<double> gcoords(nnodes*3,0.0);
   std::set<int>::iterator fool;
   int count=0;
   for (fool=allnodes.begin(); fool != allnodes.end(); ++fool)
@@ -419,7 +420,7 @@ void PATSPEC::ComputeEleNormalizedLumenDistance(Teuchos::RCP<DRT::Discretization
 void PATSPEC::ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis)
 {
   const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-  string filename = pslist.get<string>("CENTERLINEFILE");
+  std::string filename = pslist.get<std::string>("CENTERLINEFILE");
 
   if (filename=="name.txt")
   {
@@ -447,7 +448,7 @@ void PATSPEC::ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis)
     return;
   }
 
-  vector<double> clcoords = PATSPEC::GetCenterline(filename);
+  std::vector<double> clcoords = PATSPEC::GetCenterline(filename);
 
   // compute distance of all of my nodes to the clpoints
   // create vector for nodal values of ilt thickness
@@ -522,9 +523,9 @@ vector<double> PATSPEC::GetCenterline(string filename)
 
   ifstream file (filename.c_str());
   if (file == NULL) dserror ("Error opening centerline file");
-  string sLine;
+  std::string sLine;
   char buffer[1000];
-  vector<double> clcoords;
+  std::vector<double> clcoords;
   while (getline(file, sLine))
   {
     if (sLine.size() != 0)
@@ -551,7 +552,7 @@ void PATSPEC::GetILTDistance(const int eleid,
                              Teuchos::ParameterList& params,
                              DRT::Discretization& dis)
 {
-  vector<DRT::Condition*> mypatspeccond;
+  std::vector<DRT::Condition*> mypatspeccond;
   dis.GetCondition("PatientSpecificData", mypatspeccond);
   if (!mypatspeccond.size()) return;
 
@@ -595,7 +596,7 @@ void PATSPEC::GetLocalRadius(const int eleid,
                              Teuchos::ParameterList& params,
                              DRT::Discretization& dis)
 {
-  vector<DRT::Condition*> mypatspeccond;
+  std::vector<DRT::Condition*> mypatspeccond;
   dis.GetCondition("PatientSpecificData", mypatspeccond);
   if (!mypatspeccond.size()) return;
 
@@ -625,7 +626,7 @@ void PATSPEC::PatspecOutput(Teuchos::RCP<IO::DiscretizationWriter> output_,
 	                    Teuchos::RCP<Teuchos::ParameterList> params)
 {
 
-    vector<DRT::Condition*> mypatspeccond;
+    std::vector<DRT::Condition*> mypatspeccond;
     double maxiltthick = params->get<double>("max ilt thick");
     discret_->GetCondition("PatientSpecificData", mypatspeccond);
     IO::DiscretizationWriter::VectorType vt= IO::DiscretizationWriter::elementvector;
@@ -680,7 +681,7 @@ void PATSPEC::CheckEmbeddingTissue(Teuchos::RCP<DRT::Discretization> discret,
   //IO::cout << *(disp) << IO::endl;
   if (disp==Teuchos::null) dserror("Cannot find displacement state in discretization");
 
-  vector<DRT::Condition*> embedcond;
+  std::vector<DRT::Condition*> embedcond;
   discret->GetCondition("EmbeddingTissue",embedcond);
 
   const Epetra_Map* nodemap = discret->NodeRowMap();
@@ -694,7 +695,7 @@ void PATSPEC::CheckEmbeddingTissue(Teuchos::RCP<DRT::Discretization> discret,
     double springstiff = embedcond[i]->GetDouble("stiff");
     //const string* model = embedcond[i]->Get<string>("model");
     //double offset = embedcond[i]->GetDouble("offset");
-    const std::vector<double>* areapernode = embedcond[i]->Get< vector<double> >("areapernode");
+    const std::vector<double>* areapernode = embedcond[i]->Get< std::vector<double> >("areapernode");
 
     //for (int i=0; i<areapernode->size(); i++)
     //{
@@ -727,7 +728,7 @@ void PATSPEC::CheckEmbeddingTissue(Teuchos::RCP<DRT::Discretization> discret,
         }
 
         int numdof = discret->NumDof(node);
-        vector<int> dofs = discret->Dof(node);
+        std::vector<int> dofs = discret->Dof(node);
 
         assert (numdof==3);
 

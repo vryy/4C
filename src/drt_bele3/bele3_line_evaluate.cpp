@@ -37,7 +37,7 @@ int DRT::ELEMENTS::Bele3Line::Evaluate(
     Epetra_SerialDenseVector& elevec3)
 {
     DRT::ELEMENTS::Bele3Line::ActionType act = Bele3Line::none;
-    string action = params.get<string>("action","none");
+    std::string action = params.get<std::string>("action","none");
     if (action == "none") dserror("No action supplied");
     else if (action == "integrate_Shapefunction")
         act = Bele3Line::integrate_Shapefunction;

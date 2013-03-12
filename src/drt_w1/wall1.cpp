@@ -30,8 +30,8 @@ DRT::ParObject* DRT::ELEMENTS::Wall1Type::Create( const std::vector<char> & data
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1Type::Create( const string eletype,
-                                                            const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Wall1Type::Create( const std::string eletype,
+                                                            const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {

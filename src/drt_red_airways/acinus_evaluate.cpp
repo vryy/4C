@@ -46,7 +46,7 @@ int DRT::ELEMENTS::RedAcinus::Evaluate(Teuchos::ParameterList& params,
   DRT::ELEMENTS::RedAcinus::ActionType act = RedAcinus::none;
 
   // get the action required
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action == "calc_sys_matrix_rhs")
     act = RedAcinus::calc_sys_matrix_rhs;

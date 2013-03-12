@@ -65,7 +65,7 @@ ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid,
        outflowfsinodes.push_back(fsinodes[i]);
   }
 
-  vector<int> dofmapvec;
+  std::vector<int> dofmapvec;
 
   for (unsigned int i=0; i<outflowfsinodes.size(); ++i)
   {
@@ -75,7 +75,7 @@ ADAPTER::FluidLung::FluidLung(Teuchos::RCP<Fluid> fluid,
     const int ndim = DRT::Problem::Instance()->NDim();
     if (ndim > static_cast<int>(dof.size()))
       dserror("got just %d dofs but expected %d",dof.size(),ndim);
-    copy(&dof[0], &dof[0]+ndim, back_inserter(dofmapvec));
+    std::copy(&dof[0], &dof[0]+ndim, back_inserter(dofmapvec));
   }
 
   std::vector<int>::const_iterator pos = std::min_element(dofmapvec.begin(), dofmapvec.end());
@@ -148,11 +148,11 @@ void ADAPTER::FluidLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initflowra
     Epetra_SerialDenseVector elevector2;
     Epetra_SerialDenseVector elevector3;
 
-    map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+    std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    map<int,RCP<DRT::Element> >::iterator curr;
+    std::map<int,RCP<DRT::Element> >::iterator curr;
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
       // get element location vector and ownerships
@@ -171,8 +171,8 @@ void ADAPTER::FluidLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initflowra
 
       // assembly
 
-      vector<int> constrlm;
-      vector<int> constrowner;
+      std::vector<int> constrlm;
+      std::vector<int> constrowner;
       constrlm.push_back(condID-offsetID);
       constrowner.push_back(curr->second->Owner());
       LINALG::Assemble(*initflowrate,elevector3,constrlm,constrowner);
@@ -236,11 +236,11 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
     Epetra_SerialDenseVector elevector2;  // dQ/dd
     Epetra_SerialDenseVector elevector3;  // Q
 
-    map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+    std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
     // no check for empty geometry here since in parallel computations
     // there might be processors which do not own a portion of the elements belonging
     // to the condition geometry
-    map<int,RCP<DRT::Element> >::iterator curr;
+    std::map<int,RCP<DRT::Element> >::iterator curr;
 
     // define element action
     params.set<int>("action",FLD::flowratederiv);
@@ -276,7 +276,7 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
       FluidShapeDerivMatrix->Assemble(eid,lmstride,elematrix1,lm,lmowner);
 
       // assemble to rectangular matrix. The column corresponds to the constraint ID.
-      vector<int> colvec(1);
+      std::vector<int> colvec(1);
       colvec[0]=gindex;
 
       elevector1.Scale(-1.0);
@@ -289,8 +289,8 @@ void ADAPTER::FluidLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatrixBa
       elevector1.Scale(-lagraval*invresscale);
       LINALG::Assemble(*FluidRHS,elevector1,lm,lmowner);
 
-      vector<int> constrlm;
-      vector<int> constrowner;
+      std::vector<int> constrlm;
+      std::vector<int> constrowner;
       constrlm.push_back(gindex);
       constrowner.push_back(curr->second->Owner());
       LINALG::Assemble(*CurrFlowRates,elevector3,constrlm,constrowner);

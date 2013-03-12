@@ -86,7 +86,7 @@ void FLD::UTILS::SetOldPartOfRighthandside(
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void FLD::UTILS::ExplicitPredictor(
-    const string                               predictor,
+    const std::string                               predictor,
     const Teuchos::RCP<const Epetra_Vector>    veln,
     const Teuchos::RCP<const Epetra_Vector>    velnm,
     const Teuchos::RCP<const Epetra_Vector>    accn,
@@ -225,7 +225,7 @@ void FLD::UTILS::ExplicitPredictor(
 #if 0
   if(predictor=="default")
   {
-    string message;
+    std::string message;
 
     switch (timealgo)
     {

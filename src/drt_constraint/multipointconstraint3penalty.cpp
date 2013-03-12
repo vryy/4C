@@ -41,7 +41,7 @@ MPConstraint
   if (constrcond_.size())
   {
     // control the constraint by absolute or relative values
-    vector<DRT::Condition*>::iterator conditer;
+    std::vector<DRT::Condition*>::iterator conditer;
     for (conditer=constrcond_.begin();conditer!=constrcond_.end();conditer++)
     {
       const int condID = (*conditer)->GetInt("ConditionID");
@@ -61,7 +61,7 @@ MPConstraint
     constraintdis_=CreateDiscretizationFromCondition
         (actdisc_,constrcond_,"ConstrDisc","CONSTRELE3",startID);
 
-    map<int, RCP<DRT::Discretization> > ::iterator discriter;
+    std::map<int, RCP<DRT::Discretization> > ::iterator discriter;
     for (discriter=constraintdis_.begin(); discriter!=constraintdis_.end(); discriter++)
     {
       RCP<Epetra_Map> newcolnodemap = DRT::UTILS::ComputeNodeColMap(actdisc_, discriter->second);
@@ -190,7 +190,7 @@ void UTILS::MPConstraint3Penalty::Evaluate
   }
   
   acterror_->Scale(0.0);
-  map<int, RCP<DRT::Discretization> > ::iterator discriter;
+  std::map<int, RCP<DRT::Discretization> > ::iterator discriter;
   for (discriter=constraintdis_.begin(); discriter!=constraintdis_.end(); discriter++)
     
     EvaluateError(discriter->second, params, acterror_);
@@ -219,14 +219,14 @@ void UTILS::MPConstraint3Penalty::Evaluate
 map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretizationFromCondition
 (
     RCP<DRT::Discretization> actdisc, 
-    vector<DRT::Condition*> constrcondvec,
+    std::vector<DRT::Condition*> constrcondvec,
     const string& discret_name, 
     const string& element_name,
     int& startID
 )
 {
   // start with empty map
-  map<int, RCP<DRT::Discretization> > newdiscmap;
+  std::map<int, RCP<DRT::Discretization> > newdiscmap;
 
   if (!actdisc->Filled())
   {
@@ -239,7 +239,7 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
     // Loop all conditions in constrcondvec and build discretization for any condition ID
 
     int index=0; // counter for the index of condition in vector
-    vector<DRT::Condition*>::iterator conditer;
+    std::vector<DRT::Condition*>::iterator conditer;
     for (conditer=constrcondvec.begin();conditer!=constrcondvec.end();conditer++)
     {
       // initialize a new discretization
@@ -250,8 +250,8 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
       std::set<int> colnodeset;
       const Epetra_Map* actnoderowmap = actdisc->NodeRowMap();
       //get node IDs, this vector will only contain FREE nodes in the end
-      vector<int> ngid=*((*conditer)->Nodes());
-      vector<int> defnv;
+      std::vector<int> ngid=*((*conditer)->Nodes());
+      std::vector<int> defnv;
       switch (Type())
       {
         case mpcnodeonplane3d:
@@ -273,7 +273,7 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
       std::set<int> defns (defnv.begin(),defnv.end());
       std::set<int>::iterator nsit;
       // safe gids of definition nodes in a vector
-      vector<int> defnodeIDs;
+      std::vector<int> defnodeIDs;
 
       int counter=1;//counter is used to keep track of deleted node ids from the vector, input starts with 1
 
@@ -288,7 +288,7 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
       // loop over all free nodes of condition
       for (nodeiter=0; nodeiter<ngid.size();nodeiter++)
       {
-        vector<int> ngid_ele = defnodeIDs;
+        std::vector<int> ngid_ele = defnodeIDs;
         ngid_ele.push_back(ngid[nodeiter]);
         const int numnodes=ngid_ele.size();
         remove_copy_if(&ngid_ele[0], &ngid_ele[0]+numnodes,
@@ -329,7 +329,7 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
       // So far every processor only knows about his nodes
 
       //build unique node row map
-      vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
+      std::vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
       rownodeset.clear();
       RCP<Epetra_Map> constraintnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
               boundarynoderowvec.size(),
@@ -339,7 +339,7 @@ map<int, RCP<DRT::Discretization> > UTILS::MPConstraint3Penalty::CreateDiscretiz
       boundarynoderowvec.clear();
 
       //build overlapping node column map
-      vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
+      std::vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
       colnodeset.clear();
       RCP<Epetra_Map> constraintnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
               constraintnodecolvec.size(),
@@ -406,7 +406,7 @@ void UTILS::MPConstraint3Penalty::EvaluateConstraint
         // initialize if it is the first time condition is evaluated
         if(activecons_.find(condID)->second==false)
         {
-          const string action = params.get<string>("action");
+          const std::string action = params.get<std::string>("action");
           RCP<Epetra_Vector> displast=params.get<RCP<Epetra_Vector> >("old disp");
           SetConstrState("displacement",displast);
           // last converged step is used reference
@@ -514,8 +514,8 @@ void UTILS::MPConstraint3Penalty::EvaluateError
       }
 
       //assembly
-      vector<int> constrlm;
-      vector<int> constrowner;
+      std::vector<int> constrlm;
+      std::vector<int> constrowner;
       constrlm.push_back(eid);
       constrowner.push_back(actele->Owner());
       LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);

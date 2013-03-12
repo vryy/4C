@@ -79,7 +79,7 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const ParObject* obj)
 }
 
 /*----------------------------------------------------------------------*
- |      a vector<int> specialization                           (public) |
+ |      a std::vector<int> specialization                           (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::ParObject::AddtoPack(PackBuffer& data, const std::vector<int>& stuff)
@@ -90,7 +90,7 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const std::vector<int>& stuff)
   return;
 }
 /*----------------------------------------------------------------------*
- |      a vector<double> specialization                        (public) |
+ |      a std::vector<double> specialization                        (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::ParObject::AddtoPack(PackBuffer& data, const std::vector<double>& stuff)
@@ -101,7 +101,7 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const std::vector<double>& stuf
   return;
 }
 /*----------------------------------------------------------------------*
- |        a vector<char> specialization                        (public) |
+ |        a std::vector<char> specialization                        (public) |
  |                                                            gee 02/07 |
  *----------------------------------------------------------------------*/
 void DRT::ParObject::AddtoPack(PackBuffer& data, const std::vector<char>& stuff)
@@ -194,7 +194,7 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const std::map<std::string,int>
 }
 
 /*----------------------------------------------------------------------*
- |        a map <int,set<int> >    specialization              (public) |
+ |        a map <int,std::set<int> >    specialization              (public) |
  |                                                        ghamm 11/2012 |
  *----------------------------------------------------------------------*/
 void DRT::ParObject::AddtoPack(PackBuffer& data, const std::map<int, std::set<int> > & stuff)
@@ -221,7 +221,7 @@ void DRT::ParObject::AddtoPack(PackBuffer& data, const std::map<int, std::set<in
 }
 
 /*----------------------------------------------------------------------*
- |        a set<int> specialization                            (public) |
+ |        a std::set<int> specialization                            (public) |
  |                                                           mgit 09/10 |
  *----------------------------------------------------------------------*/
 void DRT::ParObject::AddtoPack(PackBuffer& data, const std::set<int> & stuff)

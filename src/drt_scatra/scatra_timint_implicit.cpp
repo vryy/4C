@@ -371,7 +371,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   }
 
   // -------------------------------------------------------------------
-  // ensure that the Transport string was removed from conditions
+  // ensure that the Transport std::string was removed from conditions
   // -------------------------------------------------------------------
   {
     DRT::Condition* cond = discret_->GetCondition("TransportDirichlet");
@@ -470,10 +470,10 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
         scatratype_ == INPAR::SCATRA::scatratype_turbpassivesca)
     {
       if (fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_small
-          and turbparams->get<string>("FSSUGRVISC") != "Smagorinsky_small")
+          and turbparams->get<std::string>("FSSUGRVISC") != "Smagorinsky_small")
         dserror ("Same subgrid-viscosity approach expected!");
       if (fssgd_ == INPAR::SCATRA::fssugrdiff_smagorinsky_all
-          and turbparams->get<string>("FSSUGRVISC") != "Smagorinsky_all")
+          and turbparams->get<std::string>("FSSUGRVISC") != "Smagorinsky_all")
         dserror ("Same subgrid-viscosity approach expected!");
     }
   }
@@ -486,7 +486,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       scatratype_ == INPAR::SCATRA::scatratype_turbpassivesca)
   {
     // set turbulence model
-    if (turbparams->get<string>("PHYSICAL_MODEL") == "Smagorinsky")
+    if (turbparams->get<std::string>("PHYSICAL_MODEL") == "Smagorinsky")
     {
       turbmodel_ = INPAR::FLUID::smagorinsky;
 
@@ -494,17 +494,17 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       if (turbmodel_ and myrank_ == 0)
       {
         cout << "All-scale subgrid-diffusivity model: ";
-        cout << turbparams->get<string>("PHYSICAL_MODEL");
+        cout << turbparams->get<std::string>("PHYSICAL_MODEL");
         cout << &endl << &endl;
       }
     }
-    else if (turbparams->get<string>("PHYSICAL_MODEL") == "Dynamic_Smagorinsky")
+    else if (turbparams->get<std::string>("PHYSICAL_MODEL") == "Dynamic_Smagorinsky")
     {
       turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
       // access to the dynamic Smagorinsky class will provided by the
       // scatra fluid couling algorithm
     }
-    else if (turbparams->get<string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
+    else if (turbparams->get<std::string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
     {
       turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
 
@@ -516,14 +516,14 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
       fsvel_ = Teuchos::rcp(new Epetra_MultiVector(*noderowmap,3,true));
 
       Teuchos::ParameterList * mfsparams =&(extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES"));
-      if (mfsparams->get<string>("SCALE_SEPARATION")!= "algebraic_multigrid_operator")
+      if (mfsparams->get<std::string>("SCALE_SEPARATION")!= "algebraic_multigrid_operator")
        dserror("Only scale separation by plain algebraic multigrid available in scatra!");
 
       // Output
       if (turbmodel_ and myrank_ == 0)
       {
         cout << "Multifractal subgrid-scale model: ";
-        cout << turbparams->get<string>("PHYSICAL_MODEL");
+        cout << turbparams->get<std::string>("PHYSICAL_MODEL");
         cout << &endl << &endl;
       }
     }
@@ -531,10 +531,10 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
     // warning No. 1: if classical (all-scale) turbulence model other than
     // Smagorinsky or multifractal subrgid-scale modeling
     // is intended to be used
-    if (turbparams->get<string>("PHYSICAL_MODEL") != "Smagorinsky" and
-        turbparams->get<string>("PHYSICAL_MODEL") != "Dynamic_Smagorinsky" and
-        turbparams->get<string>("PHYSICAL_MODEL") != "Multifractal_Subgrid_Scales" and
-        turbparams->get<string>("PHYSICAL_MODEL") != "no_model")
+    if (turbparams->get<std::string>("PHYSICAL_MODEL") != "Smagorinsky" and
+        turbparams->get<std::string>("PHYSICAL_MODEL") != "Dynamic_Smagorinsky" and
+        turbparams->get<std::string>("PHYSICAL_MODEL") != "Multifractal_Subgrid_Scales" and
+        turbparams->get<std::string>("PHYSICAL_MODEL") != "no_model")
       dserror("No classical (all-scale) turbulence model other than constant-coefficient Smagorinsky model and multifractal subrgid-scale modeling currently possible!");
 
     // warning No. 2: if classical (all-scale) turbulence model and fine-scale
@@ -609,7 +609,7 @@ SCATRA::ScaTraTimIntImpl::ScaTraTimIntImpl(
   // in this case, we need basis vectors for the nullspace/kernel
 
   // get condition "KrylovSpaceProjection" from discretization
-  vector<DRT::Condition*> KSPCond;
+  std::vector<DRT::Condition*> KSPCond;
   discret_->GetCondition("KrylovSpaceProjection",KSPCond);
   int numcond = KSPCond.size();
   int numscatra = 0;
@@ -856,7 +856,7 @@ Teuchos::RCP<DRT::Discretization> dis)
     // - in non-XFEM case, the first dofset is always considered, allowing for
     //   using multiple dof sets, e.g., for structure-based scalar transport
     // - for XFEM, a different nodeset is required
-    vector<int> nodedofs;
+    std::vector<int> nodedofs;
     if (dofset == Teuchos::null) nodedofs = dis->Dof(0,lnode);
     else                         nodedofs = (*dofset).Dof(lnode);
 
@@ -1358,7 +1358,7 @@ void SCATRA::ScaTraTimIntImpl::ApplyMeshMovement(
       // get degrees of freedom associated with this fluid/structure node
       // (first dofset always considered, allowing for using multiple
       //  dof sets, e.g., for structure-based scalar transport)
-      vector<int> nodedofs = dis->Dof(0,lnode);
+      std::vector<int> nodedofs = dis->Dof(0,lnode);
 
       // determine number of space dimensions
       const int numdim = DRT::Problem::Instance()->NDim();
@@ -1541,7 +1541,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(0,lnode);
+      std::vector<int> nodedofset = discret_->Dof(0,lnode);
 
       int numdofs = nodedofset.size();
       for (int k=0;k< numdofs;++k)
@@ -1613,9 +1613,9 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
   case INPAR::SCATRA::initfield_field_by_condition:
   {
     // set initial field for ALL existing scatra fields
-    const string field = "ScaTra";
+    const std::string field = "ScaTra";
     const int numdofpernode = discret_->NumDof(discret_->lRowNode(0));
-    vector<int> localdofs(numdofpernode);
+    std::vector<int> localdofs(numdofpernode);
 
     for (int i = 0; i < numdofpernode; i++)
     {
@@ -1640,7 +1640,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(lnode);
 
       // get coordinate
       const double x = lnode->X()[0];
@@ -1699,7 +1699,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(lnode);
 
       // get x2-coordinate
       const double x2 = lnode->X()[1];
@@ -1742,7 +1742,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(lnode);
 
       // get x1- and x2-coordinate
       const double x1 = lnode->X()[0];
@@ -1799,7 +1799,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(lnode);
 
       // get x1- and x2-coordinate
       const double x1 = lnode->X()[0];
@@ -1837,7 +1837,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(lnode);
 
       // get x1- and x2-coordinate
       const double x1 = lnode->X()[0];
@@ -1878,7 +1878,7 @@ void SCATRA::ScaTraTimIntImpl::SetInitialField(
       // get the processor local node
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
       // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(lnode);
 
       // get x1, x2 and x3-coordinate
       //const double x1 = lnode->X()[0];
@@ -2137,7 +2137,7 @@ void SCATRA::ScaTraTimIntImpl::UpdateKrylovSpaceProjection()
       for (int inode = 0; inode < discret_->NumMyRowNodes(); inode++)
       {
         DRT::Node* node = discret_->lRowNode(inode);
-        vector<int> gdof = discret_->Dof(node);
+        std::vector<int> gdof = discret_->Dof(node);
         for(int rr=0;rr<nummodes;++rr)
         {
           int err = c->ReplaceGlobalValue(gdof[modeids[rr]],imode,1);
@@ -2648,8 +2648,8 @@ void SCATRA::ScaTraTimIntImpl::NonlinearSolve()
   //create output file name
   std::stringstream temp;
   temp<< DRT::Problem::Instance()->OutputControlFile()->FileName()<<".nonliniter_step"<<step_;
-  string outname = temp.str();
-  string probtype = DRT::Problem::Instance()->ProblemType();
+  std::string outname = temp.str();
+  std::string probtype = DRT::Problem::Instance()->ProblemType();
 
   RCP<IO::OutputControl> myoutputcontrol = Teuchos::rcp(new IO::OutputControl(discret_->Comm(),probtype,"Polynomial","myinput",outname,numdim,0,1000));
   // create discretization writer with my own control settings
@@ -2963,9 +2963,9 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
   }
 
   // return the maximum residual value -> used for adaptivity of linear solver tolerance
-  actresidual = max(conresnorm,potresnorm);
-  actresidual = max(actresidual,incconnorm_L2/connorm_L2);
-  actresidual = max(actresidual,incpotnorm_L2/potnorm_L2);
+  actresidual = std::max(conresnorm,potresnorm);
+  actresidual = std::max(actresidual,incconnorm_L2/connorm_L2);
+  actresidual = std::max(actresidual,incpotnorm_L2/potnorm_L2);
 
   // check for INF's and NaN's before going on...
   if (std::isnan(incconnorm_L2) or
@@ -2988,14 +2988,14 @@ bool SCATRA::ScaTraTimIntImpl::AbortNonlinIter(
 } // ScaTraTimIntImpl::AbortNonlinIter
 
 /*----------------------------------------------------------------------*
-| returns matching string for each time integration scheme   gjb 08/08 |
+| returns matching std::string for each time integration scheme   gjb 08/08 |
 *----------------------------------------------------------------------*/
 std::string SCATRA::ScaTraTimIntImpl::MapTimIntEnumToString
 (
    const enum INPAR::SCATRA::TimeIntegrationScheme term
 )
 {
-  // length of return string is 14 due to usage in formated screen output
+  // length of return std::string is 14 due to usage in formated screen output
   switch (term)
   {
   case INPAR::SCATRA::timeint_one_step_theta :

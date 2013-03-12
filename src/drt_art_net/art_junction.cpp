@@ -92,7 +92,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
     // (1) Get the junction boundary conditions
     //----------------------------------------------------------------------
 
-    vector<DRT::Condition*> myConditions;
+    std::vector<DRT::Condition*> myConditions;
     discret_->GetCondition("ArtJunctionCond",myConditions);
     int numofcond = myConditions.size();
 
@@ -107,7 +107,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
       //     to an outlet(1)
       //----------------------------------------------------------------------
       
-      vector<int> IOart(numofcond);
+      std::vector<int> IOart(numofcond);
       for(int i =0; i<numofcond; i++)
       {
         // get the node number connected to the condition
@@ -122,7 +122,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
         DRT::Node * nd = discret_->lColNode(local_id);        
 
         // find whether the nodes is at the inlet or at the outlet of the element
-        string terminalType = *(nd->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
+        std::string terminalType = *(nd->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
         if(terminalType == "inlet")
           IOart[i] = -1;
         else if (terminalType == "outlet")
@@ -158,11 +158,11 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
       }
       
       // second, group all the similar conditions in one vector
-      vector<std::vector<DRT::Condition*> > SortedConds;
-      vector<DRT::Condition *> grouped_cond;
+      std::vector<std::vector<DRT::Condition*> > SortedConds;
+      std::vector<DRT::Condition *> grouped_cond;
       
-      vector<std::vector<int> > SortedIOarts;
-      vector<int> grouped_IO;
+      std::vector<std::vector<int> > SortedIOarts;
+      std::vector<int> grouped_IO;
 
       for(unsigned int i=0; i<myConditions.size();)
       {
@@ -187,8 +187,8 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
       // (4) Create junction boundary conditions
       // ---------------------------------------------------------------------
       int condid;
-      RCP<map<const int, RCP<JunctionNodeParams> > >  nodalParams;
-      nodalParams = params.get<RCP<map<const int, RCP<JunctionNodeParams> > > >("Junctions Parameters");
+      RCP<std::map<const int, RCP<JunctionNodeParams> > >  nodalParams;
+      nodalParams = params.get<RCP<std::map<const int, RCP<JunctionNodeParams> > > >("Junctions Parameters");
 
       for(unsigned int i=0; i<SortedConds.size(); i++)
       {
@@ -265,7 +265,7 @@ int ART::UTILS::ArtJunctionWrapper::Solve(ParameterList & params)
   if (discret_->Comm().MyPID()!=0)
     return 0;
 
-  map<const int, RCP<class ArtJunctionBc> >::iterator mapiter;
+  std::map<const int, RCP<class ArtJunctionBc> >::iterator mapiter;
 
   for (mapiter = ajunmap_.begin(); mapiter != ajunmap_.end(); mapiter++ )
   {
@@ -285,8 +285,8 @@ int ART::UTILS::ArtJunctionWrapper::Solve(ParameterList & params)
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 ART::UTILS::ArtJunctionBc::ArtJunctionBc( RCP<DRT::Discretization>  actdis,
                                           IO::DiscretizationWriter& output,
-                                          vector<DRT::Condition*> conds,
-                                          vector<int> IOart_flag,
+                                          std::vector<DRT::Condition*> conds,
+                                          std::vector<int> IOart_flag,
                                           double dta,
                                           int condid,
                                           int numcond):
@@ -445,16 +445,16 @@ int ART::UTILS::ArtJunctionBc::Solve(ParameterList & params)
   //----------------------------------------------------------------------
   // Read the element information at the node of the bifurcation
   //----------------------------------------------------------------------
-  vector<double> A(ProbSize_/2,0.0);
-  vector<double> Q(ProbSize_/2,0.0);
-  vector<double> W(ProbSize_/2,0.0);
-  vector<double> Ao(ProbSize_/2,0.0);
-  vector<double> rho(ProbSize_/2,0.0);
-  vector<double> beta(ProbSize_/2,0.0);
-  vector<double> Pext(ProbSize_/2,0.0);
+  std::vector<double> A(ProbSize_/2,0.0);
+  std::vector<double> Q(ProbSize_/2,0.0);
+  std::vector<double> W(ProbSize_/2,0.0);
+  std::vector<double> Ao(ProbSize_/2,0.0);
+  std::vector<double> rho(ProbSize_/2,0.0);
+  std::vector<double> beta(ProbSize_/2,0.0);
+  std::vector<double> Pext(ProbSize_/2,0.0);
 
   // get the map having the junction nodal information from the elements  
-  RCP<map<const int, RCP<JunctionNodeParams> > > nodalMap =  params.get< RCP<map<const int, RCP<JunctionNodeParams> > > >("Junctions Parameters");
+  RCP<std::map<const int, RCP<JunctionNodeParams> > > nodalMap =  params.get< RCP<std::map<const int, RCP<JunctionNodeParams> > > >("Junctions Parameters");
 
   // loop over all the nodes and read in the required parameters
   for(unsigned int i = 0; i< nodes_.size(); i++)

@@ -165,8 +165,8 @@ void TOPOPT::Optimizer::ComputeGradients()
 //    const DRT::Node* node = optidis_->lRowNode(i);
 //    const double* coords = node->X();
 //
-//    vector<int> fluiddofs = fluiddis_->Dof(node);
-//    vector<int> optidof = optidis_->Dof(node);
+//    std::vector<int> fluiddofs = fluiddis_->Dof(node);
+//    std::vector<int> optidof = optidis_->Dof(node);
 //
 //    for (int j=0;j<nsd;j++)
 //    {
@@ -460,7 +460,7 @@ void TOPOPT::Optimizer::TransformFlowFields()
 
   RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*colmap,false));
 
-  for (map<int,RCP<Epetra_Vector> >::iterator i=fluidvel_->begin();
+  for (std::map<int,RCP<Epetra_Vector> >::iterator i=fluidvel_->begin();
       i!=fluidvel_->end();i++)
   {
     // export vector from row to column map
@@ -470,7 +470,7 @@ void TOPOPT::Optimizer::TransformFlowFields()
     i->second = vec;
   }
 
-  for (map<int,RCP<Epetra_Vector> >::iterator i=adjointvel_->begin();
+  for (std::map<int,RCP<Epetra_Vector> >::iterator i=adjointvel_->begin();
       i!=adjointvel_->end();i++)
   {
     // export vector from row to column map

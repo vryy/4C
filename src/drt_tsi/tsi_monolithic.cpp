@@ -21,6 +21,7 @@ Maintainer: Caroline Danowski
 #include "tsi_defines.H"
 
 #include <Teuchos_TimeMonitor.hpp>
+#include <Epetra_Time.h>
 
 #include "../drt_lib/drt_assemblestrategy.H"
 #include "../drt_lib/drt_discret.H"
@@ -1170,13 +1171,13 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
     oss << std::setw(18) << std::setprecision(5) << std::scientific << normrhs_/ntsi_;
     break;
   case INPAR::TSI::convnorm_rel :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << max( (normstrrhs_/ns_), (normthrrhs_/nt_) );
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << std::max( (normstrrhs_/ns_), (normthrrhs_/nt_) );
     break;
   case INPAR::TSI::convnorm_reliter0 :
     oss << std::setw(18) << std::setprecision(5) << std::scientific << (normrhs_/normrhsiter0_);
     break;
   case INPAR::TSI::convnorm_mix :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << max( (normstrrhs_), (normthrrhs_) );
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << std::max( (normstrrhs_), (normthrrhs_) );
     break;
   default:
     dserror("You should not turn up here.");
@@ -1985,14 +1986,14 @@ void TSI::Monolithic::AssembleLinDM(
     double lm = (*thermcontman_->ThermLM())[locid];
 
     // Mortar matrix D and M derivatives
-    map<int,map<int,double> >& dderiv = cnode->CoData().GetDerivD();
-    map<int,map<int,double> >& mderiv = cnode->CoData().GetDerivM();
+    std::map<int,std::map<int,double> >& dderiv = cnode->CoData().GetDerivD();
+    std::map<int,std::map<int,double> >& mderiv = cnode->CoData().GetDerivM();
 
     // get sizes and iterator start
     int slavesize = (int)dderiv.size();
     int mastersize = (int)mderiv.size();
-    map<int,map<int,double> >::iterator scurr = dderiv.begin();
-    map<int,map<int,double> >::iterator mcurr = mderiv.begin();
+    std::map<int,std::map<int,double> >::iterator scurr = dderiv.begin();
+    std::map<int,std::map<int,double> >::iterator mcurr = mderiv.begin();
 
     /********************************************** LinDMatrix **********/
     // loop over all DISP slave nodes in the DerivD-map of the current LM slave node
@@ -2006,12 +2007,12 @@ void TSI::Monolithic::AssembleLinDM(
       if (!snode) dserror("ERROR: Cannot find node with gid %",sgid);
 
       // Mortar matrix D derivatives
-      map<int,double>& thisdderiv = cnode->CoData().GetDerivD()[sgid];
+      std::map<int,double>& thisdderiv = cnode->CoData().GetDerivD()[sgid];
       int mapsize = (int)(thisdderiv.size());
 
       int row = StructureField()->Discretization()->Dof(1,snodeges)[0];
 
-      map<int,double>::iterator scolcurr = thisdderiv.begin();
+      std::map<int,double>::iterator scolcurr = thisdderiv.begin();
 
       // loop over all directional derivative entries
       for (int c=0;c<mapsize;++c)
@@ -2046,11 +2047,11 @@ void TSI::Monolithic::AssembleLinDM(
       if (!mnode) dserror("ERROR: Cannot find node with gid %",mgid);
 
       // Mortar matrix M derivatives
-      map<int,double>&thismderiv = cnode->CoData().GetDerivM()[mgid];
+      std::map<int,double>&thismderiv = cnode->CoData().GetDerivM()[mgid];
       int mapsize = (int)(thismderiv.size());
 
       int row = StructureField()->Discretization()->Dof(1,mnodeges)[0];
-      map<int,double>::iterator mcolcurr = thismderiv.begin();
+      std::map<int,double>::iterator mcolcurr = thismderiv.begin();
 
       // loop over all directional derivative entries
       for (int c=0;c<mapsize;++c)
@@ -2125,14 +2126,14 @@ void TSI::Monolithic::AssembleThermContCondition(
     int row = StructureField()->Discretization()->Dof(1,nodeges)[0];
 
     // Mortar matrix D and M derivatives
-    map<int,map<int,double> >& dderiv = cnode->CoData().GetDerivD();
-    map<int,map<int,double> >& mderiv = cnode->CoData().GetDerivM();
+    std::map<int,std::map<int,double> >& dderiv = cnode->CoData().GetDerivD();
+    std::map<int,std::map<int,double> >& mderiv = cnode->CoData().GetDerivM();
 
     // get sizes and iterator start
     int slavesize = (int)dderiv.size();
     int mastersize = (int)mderiv.size();
-    map<int,map<int,double> >::iterator scurr = dderiv.begin();
-    map<int,map<int,double> >::iterator mcurr = mderiv.begin();
+    std::map<int,std::map<int,double> >::iterator scurr = dderiv.begin();
+    std::map<int,std::map<int,double> >::iterator mcurr = mderiv.begin();
 
     /********************************************** LinDMatrix **********/
     // loop over all DISP slave nodes in the DerivD-map of the current LM slave node
@@ -2154,10 +2155,10 @@ void TSI::Monolithic::AssembleThermContCondition(
       double Ts = (*ThermoField()->Tempnp())[locid1];
 
       // Mortar matrix D derivatives
-      map<int,double>& thisdderiv = cnode->CoData().GetDerivD()[sgid];
+      std::map<int,double>& thisdderiv = cnode->CoData().GetDerivD()[sgid];
       int mapsize = (int)(thisdderiv.size());
 
-      map<int,double>::iterator scolcurr = thisdderiv.begin();
+      std::map<int,double>::iterator scolcurr = thisdderiv.begin();
 
       // loop over all directional derivative entries
       for (int c=0;c<mapsize;++c)
@@ -2199,10 +2200,10 @@ void TSI::Monolithic::AssembleThermContCondition(
       double Tm = (*ThermoField()->Tempnp())[locid];
 
       // Mortar matrix M derivatives
-      map<int,double>&thismderiv = cnode->CoData().GetDerivM()[mgid];
+      std::map<int,double>&thismderiv = cnode->CoData().GetDerivM()[mgid];
       int mapsize = (int)(thismderiv.size());
 
-      map<int,double>::iterator mcolcurr = thismderiv.begin();
+      std::map<int,double>::iterator mcolcurr = thismderiv.begin();
 
       // loop over all directional derivative entries
       for (int c=0;c<mapsize;++c)

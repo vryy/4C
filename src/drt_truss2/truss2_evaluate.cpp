@@ -32,7 +32,7 @@ int DRT::ELEMENTS::Truss2::Evaluate(Teuchos::ParameterList& params,
 { 
   DRT::ELEMENTS::Truss2::ActionType act = Truss2::calc_none;
   // get the action required
-  string action = params.get<string>("action","calc_none");
+  std::string action = params.get<std::string>("action","calc_none");
   if (action == "calc_none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff") act = Truss2::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff") act = Truss2::calc_struct_nlnstiff;
@@ -253,7 +253,7 @@ int DRT::ELEMENTS::Truss2::EvaluatePTC(Teuchos::ParameterList& params,
 /*--------------------------------------------------------------------------------------*
  | switch between kintypes                                                      cyron 02/10|
  *--------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss2::t2_nlnstiffmass( vector<double>& disp,
+void DRT::ELEMENTS::Truss2::t2_nlnstiffmass( std::vector<double>& disp,
     Epetra_SerialDenseMatrix* stiffmatrix,
     Epetra_SerialDenseMatrix* massmatrix,
     Epetra_SerialDenseVector* force)
@@ -277,7 +277,7 @@ void DRT::ELEMENTS::Truss2::t2_nlnstiffmass( vector<double>& disp,
 /*------------------------------------------------------------------------------------------------------------*
  | nonlinear stiffness and mass matrix (private)                                                  cyron 02/10|
  *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss2::t2_nlnstiffmass_totlag( vector<double>& disp,
+void DRT::ELEMENTS::Truss2::t2_nlnstiffmass_totlag( std::vector<double>& disp,
     Epetra_SerialDenseMatrix* stiffmatrix,
     Epetra_SerialDenseMatrix* massmatrix,
     Epetra_SerialDenseVector* force)
@@ -404,7 +404,7 @@ void DRT::ELEMENTS::Truss2::t2_nlnstiffmass_totlag( vector<double>& disp,
  | nonlinear stiffness and mass matrix (private)                                                   cyron 02/10|
  | engineering strain measure, large displacements and rotations                                              |
   *-----------------------------------------------------------------------------------------------------------*/
-void DRT::ELEMENTS::Truss2::t2_nlnstiffmass_engstr( vector<double>& disp,
+void DRT::ELEMENTS::Truss2::t2_nlnstiffmass_engstr( std::vector<double>& disp,
     Epetra_SerialDenseMatrix* stiffmatrix,
     Epetra_SerialDenseMatrix* massmatrix,
     Epetra_SerialDenseVector* force

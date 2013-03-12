@@ -41,7 +41,7 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
   period_(0.0)
 {
 
-  vector<DRT::Condition*> impedancecond;
+  std::vector<DRT::Condition*> impedancecond;
   discret_->GetCondition("ImpedanceCond",impedancecond);
 
   // the number of lines of impedance boundary conditions found in the input
@@ -50,7 +50,7 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
   // The corresponding resorting of result values has to be done later
   int numcondlines = impedancecond.size();
 
-  map<const int, RCP<DRT::Condition> > wkmap;
+  std::map<const int, RCP<DRT::Condition> > wkmap;
 
   if (numcondlines > 0) // if there is at least one impedance condition
   {
@@ -79,7 +79,7 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
       // stack the impedances into a map
       // -----------------------------------------------------------------
       RCP<DRT::Condition> wkCond = Teuchos::rcp(new DRT::Condition(*(impedancecond[i])));
-      bool inserted = wkmap.insert( make_pair( condid, wkCond ) ).second;
+      bool inserted = wkmap.insert( std::make_pair( condid, wkCond ) ).second;
       
       if ( !inserted )
       {
@@ -94,7 +94,7 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
   // Check if there is any optimzation conditions
   // ---------------------------------------------------------------------
   
-  vector<DRT::Condition*> wk_optim_cond;
+  std::vector<DRT::Condition*> wk_optim_cond;
   discret_->GetCondition("Windkessel_Optimization_Cond",wk_optim_cond);
   
   int numOptlines = wk_optim_cond.size();
@@ -130,7 +130,7 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
       // appears more than once. Currently this case is forbidden.
       // -----------------------------------------------------------------
       RCP<DRT::Condition> wkoptCond = Teuchos::rcp(new DRT::Condition(*(wk_optim_cond[i])));
-      bool inserted = optwkmap_.insert( make_pair( optID, wkoptCond ) ).second;
+      bool inserted = optwkmap_.insert( std::make_pair( optID, wkoptCond ) ).second;
       if ( !inserted )
       {
 	dserror("There are more than one impedance condition lines with the same ID. This can not yet be handled.");
@@ -172,10 +172,10 @@ FLD::UTILS::FluidWkOptimizationWrapper::FluidWkOptimizationWrapper(
 int FLD::UTILS::FluidWkOptimizationWrapper::GetObjectiveFunctionSize(RCP<DRT::Condition> cond, int condid)
 {
   // Get name of objective function
-  string ObjFunType = *(cond->Get<string>("ObjectiveFunction"));
+  std::string ObjFunType = *(cond->Get<string>("ObjectiveFunction"));
 
   // Get type of design variables
-  string DesignVars = *(cond->Get<string>("DesignVariables"));
+  std::string DesignVars = *(cond->Get<string>("DesignVariables"));
 
   int ObjDim = 0;
   int VarDim = 0;
@@ -262,7 +262,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::Solve(Teuchos::ParameterList params
   // -------------------------------------------------------------------
   // Read in all of the pressures and evaluate the objective function
   // -------------------------------------------------------------------
-  map<int, RCP<DRT::Condition> >::iterator itr;
+  std::map<int, RCP<DRT::Condition> >::iterator itr;
   
   int index = 0;
   int constrain_num = 0;
@@ -505,7 +505,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::CalcObjFunction(
 {
 
   // Get name of objective function
-  string ObjFunType = *(cond->Get<string>("ObjectiveFunction"));
+  std::string ObjFunType = *(cond->Get<string>("ObjectiveFunction"));
 
   // Get condition Id
   const int condid = cond->GetInt("ConditionID");
@@ -576,7 +576,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_du(
 {
   //  int    VarDim = 0;
   // Get type of design variables
-  string DesignVars = *(cond->Get<string>("DesignVariables"));
+  std::string DesignVars = *(cond->Get<string>("DesignVariables"));
 
 
   // -------------------------------------------------------------------
@@ -670,7 +670,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dN_dphi(
 {
   //  int    VarDim = 0;
   // Get type of design variables
-  string DesignVars = *(cond->Get<string>("DesignVariables"));
+  std::string DesignVars = *(cond->Get<string>("DesignVariables"));
 
 
   // -------------------------------------------------------------------
@@ -786,7 +786,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dL_du(
 
   //  int    ObjDim = 0;
   // Get name of objective function
-  string ObjFunType = *(cond->Get<string>("ObjectiveFunction"));
+  std::string ObjFunType = *(cond->Get<string>("ObjectiveFunction"));
 
   // -------------------------------------------------------------------
   // Get the dimension of the objective functions
@@ -904,10 +904,10 @@ void FLD::UTILS::FluidWkOptimizationWrapper::dJ_dphi(
   double                dt)
 {
   // Get name of objective function
-  string ObjFunType = *(cond->Get<string>("ObjectiveFunction"));
+  std::string ObjFunType = *(cond->Get<string>("ObjectiveFunction"));
 
   // Get type of design variables
-  string DesignVars = *(cond->Get<string>("DesignVariables"));
+  std::string DesignVars = *(cond->Get<string>("DesignVariables"));
 
   //  int ObjDim = 0;
   //  int VarDim = 0;
@@ -1000,7 +1000,7 @@ bool FLD::UTILS::FluidWkOptimizationWrapper::SteadyStateIsObtained(
   // if results are at n*CardiacPeriod, then
   // check if all of the boundaries reached a steady state
   // -------------------------------------------------------------------
-  map<const int, RCP<DRT::Condition> >::iterator itr;
+  std::map<const int, RCP<DRT::Condition> >::iterator itr;
 
   bool converged = false;
   for(itr = optwkmap_.begin(); itr != optwkmap_.end(); itr++)
@@ -1159,7 +1159,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::UpdateResidual()
   
   int index = 0;
   int VarDim= 0;
-  map<const int, RCP<DRT::Condition> >::iterator  itr;
+  std::map<const int, RCP<DRT::Condition> >::iterator  itr;
   for (itr = optwkmap_.begin(); itr != optwkmap_.end();itr++)
   {
     Teuchos::ParameterList params;
@@ -1167,7 +1167,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::UpdateResidual()
     // -----------------------------------------------------------------
     // Get the dimension of the design variables
     // -----------------------------------------------------------------
-    string DesignVars = *(itr->second->Get<string>("DesignVariables"));
+    std::string DesignVars = *(itr->second->Get<string>("DesignVariables"));
 
     if (DesignVars == "R_C")
     {
@@ -1278,7 +1278,7 @@ void FLD::UTILS::FluidWkOptimizationWrapper::GetDesignVariables(
   // -----------------------------------------------------------------
   // Get the dimension of the design variables
   // -----------------------------------------------------------------
-  string DesignVars = *(optwkmap_[condid]->Get<string>("DesignVariables"));
+  std::string DesignVars = *(optwkmap_[condid]->Get<string>("DesignVariables"));
 
   if (DesignVars == "R_C")
   {

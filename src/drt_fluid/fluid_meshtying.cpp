@@ -193,14 +193,14 @@ Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
     if (msht_ ==INPAR::FLUID::condensed_bmat)
     {
       {
-        string inv="Inverse1";
+        std::string inv="Inverse1";
         const Epetra_Map& oldmap = *(dofrowmap_);
         const Epetra_Map& newmap = matsolve->Matrix(0,0).EpetraMatrix()->RowMap();
         solver_.FixMLNullspace(&inv[0],oldmap, newmap, solver_.Params().sublist("Inverse1"));
       }
       // fixing length of Inverse2 nullspace
       {
-        string inv="Inverse2";
+        std::string inv="Inverse2";
         const Epetra_Map& oldmap = *(dofrowmap_);
         const Epetra_Map& newmap = matsolve->Matrix(1,1).EpetraMatrix()->RowMap();
         solver_.FixMLNullspace(&inv[0],oldmap, newmap, solver_.Params().sublist("Inverse2"));
@@ -209,7 +209,7 @@ Teuchos::RCP<LINALG::SparseOperator> FLD::Meshtying::Setup()
 #ifdef BLOCKMATRIX_2x2
     else if(msht_ ==INPAR::FLUID::condensed_bmat_merged)
     {
-      string inv="BMatMerged";
+      std::string inv="BMatMerged";
       const Epetra_Map& oldmap = *(dofrowmap_);
       const Epetra_Map& newmap = *(mergedmap_);
       solver_.FixMLNullspace(&inv[0],oldmap, newmap, solver_.Params());
@@ -1388,7 +1388,7 @@ void FLD::Meshtying::AnalyzeMatrix(
       // max. number of non-zero values
       int maxnumentries = matrix->MaxNumEntries();
       int numOfNonZeros = 0;
-      vector<int> indices(maxnumentries, 0);
+      std::vector<int> indices(maxnumentries, 0);
       std::vector<double> values(maxnumentries, 0.0);
 
       int error = matrix->ExtractMyRowCopy(i, maxnumentries, numOfNonZeros, &values[0], &indices[0]);
@@ -1440,7 +1440,7 @@ void FLD::Meshtying::ReplaceMatrixEntries(
     // max. number of non-zero values
     int maxnumentries = Pmat->MaxNumEntries();
     int numOfNonZeros = 0;
-    vector<int> indices(maxnumentries);
+    std::vector<int> indices(maxnumentries);
     std::vector<double> values(maxnumentries);
 
     int error = Pmat->ExtractMyRowCopy(i, maxnumentries, numOfNonZeros, &values[0], &indices[0]);

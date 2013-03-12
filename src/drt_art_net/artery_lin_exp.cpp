@@ -88,7 +88,7 @@ int DRT::ELEMENTS::ArteryLinExp<distype>::Evaluate(
 
   // the number of nodes
   const int numnode = iel;
-  vector<int>::iterator it_vcr;
+  std::vector<int>::iterator it_vcr;
 
   // construct views
   LINALG::Matrix<2*iel,2*iel> elemat1(elemat1_epetra.A(),true);
@@ -121,7 +121,7 @@ int DRT::ELEMENTS::ArteryLinExp<distype>::Evaluate(
     dserror("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
-  vector<double> myqanp(lm.size());
+  std::vector<double> myqanp(lm.size());
   DRT::UTILS::ExtractMyValues(*qanp,myqanp,lm);
 
   // create objects for element arrays
@@ -166,7 +166,7 @@ int DRT::ELEMENTS::ArteryLinExp<distype>::ScatraEvaluate(
 {
   // the number of nodes
   const int numnode = iel;
-  vector<int>::iterator it_vcr;
+  std::vector<int>::iterator it_vcr;
 
   // construct views
   LINALG::Matrix<2*iel,2*iel> elemat1(elemat1_epetra.A(),true);
@@ -205,9 +205,9 @@ int DRT::ELEMENTS::ArteryLinExp<distype>::ScatraEvaluate(
     dserror("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
-  vector<double> myqanp(lm.size());
-  vector<double> myqan (lm.size());
-  vector<double> myescatran (lm.size());
+  std::vector<double> myqanp(lm.size());
+  std::vector<double> myqan (lm.size());
+  std::vector<double> myescatran (lm.size());
   DRT::UTILS::ExtractMyValues(*scatran,myescatran,lm);
   //  DRT::UTILS::ExtractMyValues(*qan ,myqan ,lm);
 
@@ -292,7 +292,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::Initial(
   if( material->MaterialType() == INPAR::MAT::m_cnst_art)
   {
     const MAT::Cnst_1d_art* actmat = static_cast<const MAT::Cnst_1d_art*>(material.get());
-    //    vector<int>::iterator it = lm.begin();
+    //    std::vector<int>::iterator it = lm.begin();
 
     if(myrank == nodes[0]->Owner())
     {
@@ -1040,7 +1040,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
 
   // the number of nodes
   const int numnode = iel;
-  vector<int>::iterator it_vcr;
+  std::vector<int>::iterator it_vcr;
 
   RCP<const Epetra_Vector> qanp  = discretization.GetState("qanp");
   RCP<Epetra_Vector>   Wfnp  = params.get<RCP<Epetra_Vector> >("Wfnp");
@@ -1050,7 +1050,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
     dserror("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
-  vector<double> myqanp(lm.size());
+  std::vector<double> myqanp(lm.size());
   DRT::UTILS::ExtractMyValues(*qanp,myqanp,lm);
 
   // create objects for element arrays
@@ -1138,7 +1138,7 @@ bool  DRT::ELEMENTS::ArteryLinExp<distype>::SolveRiemann(
     {
       double TermIO  = 0.0;
       // Get the in/out terminal condition
-      string TerminalType = *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
+      std::string TerminalType = *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
       if(TerminalType=="inlet")
         TermIO = -1.0;
       else if (TerminalType=="outlet")
@@ -1297,7 +1297,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
 
   // the number of nodes
   const int numnode = iel;
-  vector<int>::iterator it_vcr;
+  std::vector<int>::iterator it_vcr;
 
   RCP<const Epetra_Vector> qanp  = discretization.GetState("qanp");
 
@@ -1305,7 +1305,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
     dserror("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
-  vector<double> myqanp(lm.size());
+  std::vector<double> myqanp(lm.size());
   DRT::UTILS::ExtractMyValues(*qanp,myqanp,lm);
 
   // create objects for element arrays
@@ -1335,7 +1335,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
     {
       double TermIO  = 0.0;
       // Get the in/out terminal condition
-      string TerminalType = *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
+      std::string TerminalType = *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
       if(TerminalType=="inlet")
         TermIO = -1.0;
       else if (TerminalType=="outlet")
@@ -1492,8 +1492,8 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateTerminalBC(
   {
     if(ele->Nodes()[i]->GetCondition("ArtJunctionCond"))
     {
-      RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > junc_nodal_vals;
-      junc_nodal_vals = params.get<RCP<map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters");
+      RCP<std::map<const int, RCP<ART::UTILS::JunctionNodeParams> > > junc_nodal_vals;
+      junc_nodal_vals = params.get<RCP<std::map<const int, RCP<ART::UTILS::JunctionNodeParams> > > >("Junctions Parameters");
 
       RCP<Epetra_Vector> bcval  = params.get<RCP<Epetra_Vector> >("bcval");
       RCP<Epetra_Vector> dbctog = params.get<RCP<Epetra_Vector> >("dbctog");
@@ -1550,9 +1550,9 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateScatraBC(
       // calculating Q at node i
       const DRT::Condition *condition = ele->Nodes()[i]->GetCondition("ArtPrescribedScatraCond");
 
-      const  vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
+      const  std::vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
       double curvefac = 1.0;
-      const  vector<double>* vals   = condition->Get<std::vector<double> >("val");
+      const  std::vector<double>* vals   = condition->Get<std::vector<double> >("val");
 
       curvefac = (*vals)[0];
       int curvenum = -1;
@@ -1563,7 +1563,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateScatraBC(
       }
 
 
-      string TerminalType = *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
+      std::string TerminalType = *(ele->Nodes()[i]->GetCondition("ArtInOutCond")->Get<string>("terminaltype"));
       int dof = 0;
       if(TerminalType=="inlet")
       {
@@ -1671,13 +1671,13 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
 
   // the number of nodes
   const int numnode = iel;
-  vector<int>::iterator it_vcr;
+  std::vector<int>::iterator it_vcr;
 
   if (qanp==Teuchos::null)
     dserror("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
-  vector<double> myqanp(lm.size());
+  std::vector<double> myqanp(lm.size());
   DRT::UTILS::ExtractMyValues(*qanp,myqanp,lm);
 
   // create objects for element arrays
@@ -1810,13 +1810,13 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcPostprocessingValues(
 
   // the number of nodes
   const int numnode = iel;
-  vector<int>::iterator it_vcr;
+  std::vector<int>::iterator it_vcr;
 
   if (qanp==Teuchos::null)
     dserror("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
-  vector<double> myqanp(lm.size());
+  std::vector<double> myqanp(lm.size());
   DRT::UTILS::ExtractMyValues(*qanp,myqanp,lm);
 
   // create objects for element arrays
@@ -1893,10 +1893,10 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::CalcScatraFromScatraFW(
 
   // the number of nodes
   const int numnode = iel;
-  vector<int>::iterator it_vcr;
+  std::vector<int>::iterator it_vcr;
 
   // extract local values from the global vectors
-  vector<double> myscatra_fb(lm.size());
+  std::vector<double> myscatra_fb(lm.size());
   DRT::UTILS::ExtractMyValues(*scatra_fb,myscatra_fb,lm);
 
   //get all values at the last computed time step
@@ -1983,7 +1983,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateWfAndWb(
 
   // the number of nodes
   const int numnode = iel;
-  vector<int>::iterator it_vcr;
+  std::vector<int>::iterator it_vcr;
 
   RCP<const Epetra_Vector> qanp  = discretization.GetState("qanp");
   RCP<Epetra_Vector>   Wfnp  = params.get<RCP<Epetra_Vector> >("Wfnp");
@@ -1993,7 +1993,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::EvaluateWfAndWb(
     dserror("Cannot get state vectors 'qanp'");
 
   // extract local values from the global vectors
-  vector<double> myqanp(lm.size());
+  std::vector<double> myqanp(lm.size());
   DRT::UTILS::ExtractMyValues(*qanp,myqanp,lm);
 
   // create objects for element arrays
@@ -2064,7 +2064,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::SolveScatraAnalytically(
 {
     // the number of nodes
   const int numnode = iel;
-  vector<int>::iterator it_vcr;
+  std::vector<int>::iterator it_vcr;
 
   //----------------------------------------------------------------------
   // get control parameters for time integration
@@ -2093,7 +2093,7 @@ void DRT::ELEMENTS::ArteryLinExp<distype>::SolveScatraAnalytically(
   RCP<Epetra_Vector> scatranp   = params.get<RCP<Epetra_Vector> >("scatranp");
 
   // extract local values from the global vectors
-  vector<double> myescatran (lm.size());
+  std::vector<double> myescatran (lm.size());
   DRT::UTILS::ExtractMyValues(*scatran,myescatran,lm);
   //  DRT::UTILS::ExtractMyValues(*qan ,myqan ,lm);
 

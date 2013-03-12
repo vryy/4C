@@ -73,7 +73,7 @@ ALE::Ale::Ale(RCP<DRT::Discretization> actdis,
 
   SetupDBCMapEx(dirichletcond);
 
-  // ensure that the ALE string was removed from conditions
+  // ensure that the ALE std::string was removed from conditions
   {
     DRT::Condition* cond = discret_->GetCondition("ALEDirichlet");
     if (cond) dserror("Found a ALE Dirichlet condition. Remove ALE string!");

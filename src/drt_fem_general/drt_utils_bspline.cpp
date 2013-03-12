@@ -1147,7 +1147,7 @@ void DRT::NURBS::UTILS::BsplinePolynomial::EvaluateBsplineFirstAndSecondDeriv(
   return;
 }
 
-void DRT::NURBS::UTILS::BsplinePolynomial::Throwerror(const string errormessage)
+void DRT::NURBS::UTILS::BsplinePolynomial::Throwerror(const std::string errormessage)
 {
   // give some information on bspline
   PrintBspline();

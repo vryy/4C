@@ -367,13 +367,13 @@ void AIRWAY::RedAirwayImplicitTimeInt::OneStepTimeLoop(bool CoupledTo3D,
   // -------------------------------------------------------------------
   //                            SolverParams
   // -------------------------------------------------------------------
-  if(params_.get<string> ("solver type") == "Nonlinear")
+  if(params_.get<std::string> ("solver type") == "Nonlinear")
   {
     NonLin_Solve(CouplingTo3DParams);
     if (!myrank_)
       cout<<endl;
   }
-  else if (params_.get<string> ("solver type") == "Linear")
+  else if (params_.get<std::string> ("solver type") == "Linear")
   {
     Solve(CouplingTo3DParams);
     if (!myrank_)
@@ -381,7 +381,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::OneStepTimeLoop(bool CoupledTo3D,
   }
   else
   {
-    dserror("[%s] is not a defined solver",(params_.get<string> ("solver type")).c_str() );
+    dserror("[%s] is not a defined solver",(params_.get<std::string> ("solver type")).c_str() );
   }
 
   // -------------------------------------------------------------------
@@ -433,13 +433,13 @@ void AIRWAY::RedAirwayImplicitTimeInt::IntegrateStep(RCP<Teuchos::ParameterList>
   // -------------------------------------------------------------------
   //                            SolverParams
   // -------------------------------------------------------------------
-  if(params_.get<string> ("solver type") == "Nonlinear")
+  if(params_.get<std::string> ("solver type") == "Nonlinear")
   {
     NonLin_Solve(CouplingTo3DParams);
     if (!myrank_)
       cout<<endl;
   }
-  else if (params_.get<string> ("solver type") == "Linear")
+  else if (params_.get<std::string> ("solver type") == "Linear")
   {
     Solve(CouplingTo3DParams);
     if (!myrank_)
@@ -447,7 +447,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::IntegrateStep(RCP<Teuchos::ParameterList>
   }
   else
   {
-    dserror("[%s] is not a defined solver",(params_.get<string> ("solver type")).c_str() );
+    dserror("[%s] is not a defined solver",(params_.get<std::string> ("solver type")).c_str() );
   }
 
 } // RedAirwayImplicitTimeInt::IntegrateStep
@@ -854,7 +854,7 @@ void AIRWAY::RedAirwayImplicitTimeInt::Solve(Teuchos::RCP<Teuchos::ParameterList
     eleparams.set("action","calc_flow_rates");
 
     // set solution type
-    eleparams.set("solver type", params_.get<string> ("solver type"));
+    eleparams.set("solver type", params_.get<std::string> ("solver type"));
 
     // set vecotr values needed by elements
     discret_->ClearState();

@@ -925,7 +925,7 @@ void POTENTIAL::Potential::CollectLmcol(
 void POTENTIAL::Potential::CollectLmcol(
     const Teuchos::RCP<DRT::Discretization>                       potentialdis,
     const std::map< int, std::map<int, GEO::NearestObject> >&     potentialObjectsAtGP,
-    vector<int> &                                                 lmcol)
+    std::vector<int> &                                                 lmcol)
 {
   std::set<int> insertedEles;
   for(std::map< int, std::map<int, GEO::NearestObject> >::const_iterator gpIter = potentialObjectsAtGP.begin(); gpIter != potentialObjectsAtGP.end(); gpIter++)
@@ -1006,7 +1006,7 @@ int POTENTIAL::Potential::GetElementId(
 | return local index in stiffness matrix of                          |
 *--------------------------------------------------------------------*/
 int POTENTIAL::Potential::GetLocalIndex(
-    vector<int>&    lmcol,
+    std::vector<int>&    lmcol,
     int             value)
 {
   int localindex = -1;
@@ -1151,12 +1151,12 @@ double POTENTIAL::Potential::GetAtomicDensity(
     const string&                   conditionName,
     const std::map<int,int >&       labelByElements)
 {
-  vector<DRT::Condition*> potentialcond;
+  std::vector<DRT::Condition*> potentialcond;
   discretRCP_->GetCondition(conditionName, potentialcond);
     
   double beta = -1.0;
   const int label = labelByElements.find(elementId)->second;
-  for(vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++condIter)
+  for(std::vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++condIter)
     if((*condIter)->GetInt("label") == label)
       beta = (*condIter)->GetDouble("beta");
 
@@ -1189,11 +1189,11 @@ void POTENTIAL::Potential::computeTestVanDerWaalsSpheres(
   std::vector< LINALG::Matrix<3,1> > cog(2, LINALG::Matrix<3,1>(true));  
 
   // compute local values for the center of gravity and potential force
-  vector<DRT::Condition*> potentialcond;
+  std::vector<DRT::Condition*> potentialcond;
   discretRCP_->GetCondition("Potential", potentialcond);
   
   std::vector<double> vol_sphere_local(2,0.0);
-  for(vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++condIter)
+  for(std::vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++condIter)
   {
     const int label = (*condIter)->GetInt("label"); 
     if( elementsByLabel_Vol.find(label) == elementsByLabel_Vol.end() )
@@ -1290,12 +1290,12 @@ void POTENTIAL::Potential::computeTestVanDerWaalsMembranes(
   std::vector< LINALG::Matrix<3,1> > cog(2, LINALG::Matrix<3,1>(true));  
 
   // compute local values for the center of gravity and potential force
-  vector<DRT::Condition*> potentialcond;
+  std::vector<DRT::Condition*> potentialcond;
   discretRCP_->GetCondition("Potential", potentialcond);
   
   
   std::vector<double> vol_sphere_local(2,0.0);
-  for(vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++condIter)
+  for(std::vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++condIter)
   {
     const int label = (*condIter)->GetInt("label"); 
     if( elementsByLabel_Vol.find(label) == elementsByLabel_Vol.end() )
@@ -1491,7 +1491,7 @@ double POTENTIAL::Potential::computeLocalForceAndCOG(
         continue;
 
       // get dofs
-      vector<int> dofId;
+      std::vector<int> dofId;
       dofId.reserve(3);
       potentialdis->Dof(node, dofId);
 
@@ -1518,7 +1518,7 @@ double POTENTIAL::Potential::computeLocalForceAndCOG(
         continue;
 
       // get dofs
-      vector<int> dofId;
+      std::vector<int> dofId;
       dofId.reserve(3);
       discretRCP_->Dof(node, dofId);
 
@@ -1633,7 +1633,7 @@ void POTENTIAL::Potential::WriteTestOutput(
       file_in.open(fname.c_str());
       
       // create tmp outfile
-      const string tmpoutfile = DRT::Problem::Instance()->OutputControlFile()->FileName() + "tmpoutfile.txt";
+      const std::string tmpoutfile = DRT::Problem::Instance()->OutputControlFile()->FileName() + "tmpoutfile.txt";
       std::ofstream out;
       out.open(tmpoutfile.c_str());
       

@@ -50,8 +50,8 @@ DRT::ParObject* DRT::ELEMENTS::ThermoType::Create( const std::vector<char> & dat
  | is called from ParObjectFactory                                      |
  *----------------------------------------------------------------------*/
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create(
-  const string eletype,
-  const string eledistype,
+  const std::string eletype,
+  const std::string eledistype,
   const int id,
   const int owner
   )

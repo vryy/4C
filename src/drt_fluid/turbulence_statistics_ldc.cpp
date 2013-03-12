@@ -77,9 +77,9 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
   x3coordinates_ = Teuchos::rcp(new std::vector<double> );
 
   // the criterion allows differences in coordinates by 1e-9
-  set<double,LineSortCriterion> x1avcoords;
-  set<double,LineSortCriterion> x2avcoords;
-  set<double,LineSortCriterion> x3avcoords;
+  std::set<double,LineSortCriterion> x1avcoords;
+  std::set<double,LineSortCriterion> x2avcoords;
+  std::set<double,LineSortCriterion> x3avcoords;
 
   // loop nodes, build sets of centerlines accessible on this proc and
   // calculate extension of cavity in x3-direction
@@ -153,8 +153,8 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
 #endif
     int numprocs=discret_->Comm().NumProc();
 
-    vector<char> sblock;
-    vector<char> rblock;
+    std::vector<char> sblock;
+    std::vector<char> rblock;
 
 #ifdef PARALLEL
     // create an exporter for point to point comunication
@@ -224,7 +224,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
 
         coordsvec.clear();
 
-        vector<char>::size_type index = 0;
+        std::vector<char>::size_type index = 0;
         while (index < rblock.size())
         {
           double onecoord;
@@ -296,7 +296,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
 
         coordsvec.clear();
 
-        vector<char>::size_type index = 0;
+        std::vector<char>::size_type index = 0;
         while (index < rblock.size())
         {
           double onecoord;
@@ -369,7 +369,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
 
         coordsvec.clear();
 
-        vector<char>::size_type index = 0;
+        std::vector<char>::size_type index = 0;
         while (index < rblock.size())
         {
           double onecoord;
@@ -555,7 +555,7 @@ FLD::TurbulenceStatisticsLdc::TurbulenceStatisticsLdc(
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
 
     if (physicaltype == INPAR::FLUID::loma)
     {
@@ -606,7 +606,7 @@ Teuchos::RCP<Epetra_Vector> velnp
   //----------------------------------------------------------------------
   // loop nodes on centerline in x1-direction and calculate pointwise means
   //----------------------------------------------------------------------
-  for (vector<double>::iterator x1line=x1coordinates_->begin();
+  for (std::vector<double>::iterator x1line=x1coordinates_->begin();
        x1line!=x1coordinates_->end();
        ++x1line)
   {
@@ -632,7 +632,7 @@ Teuchos::RCP<Epetra_Vector> velnp
           (node->X()[2]<((x3max_+x3min_)/2.0)+2e-9 &&
            node->X()[2]>((x3max_+x3min_)/2.0)-2e-9))
       {
-        vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -696,7 +696,7 @@ Teuchos::RCP<Epetra_Vector> velnp
   //----------------------------------------------------------------------
   // loop nodes on centerline in x2-direction and calculate pointwise means
   //----------------------------------------------------------------------
-  for (vector<double>::iterator x2line=x2coordinates_->begin();
+  for (std::vector<double>::iterator x2line=x2coordinates_->begin();
        x2line!=x2coordinates_->end();
        ++x2line)
   {
@@ -722,7 +722,7 @@ Teuchos::RCP<Epetra_Vector> velnp
          (node->X()[2]<((x3max_+x3min_)/2.0)+2e-9 &&
           node->X()[2]>((x3max_+x3min_)/2.0)-2e-9))
       {
-        vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -786,7 +786,7 @@ Teuchos::RCP<Epetra_Vector> velnp
   //----------------------------------------------------------------------
   // loop nodes on centerline in x3-direction and calculate pointwise means
   //----------------------------------------------------------------------
-  for (vector<double>::iterator x3line=x3coordinates_->begin();
+  for (std::vector<double>::iterator x3line=x3coordinates_->begin();
        x3line!=x3coordinates_->end();
        ++x3line)
   {
@@ -812,7 +812,7 @@ Teuchos::RCP<Epetra_Vector> velnp
           (node->X()[1]<((x2max_+x2min_)/2.0)+2e-9 &&
            node->X()[1]>((x2max_+x2min_)/2.0)-2e-9))
       {
-        vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -893,7 +893,7 @@ const double                        eosfac)
   //----------------------------------------------------------------------
   // loop nodes on centerline in x1-direction and calculate pointwise means
   //----------------------------------------------------------------------
-  for (vector<double>::iterator x1line=x1coordinates_->begin();
+  for (std::vector<double>::iterator x1line=x1coordinates_->begin();
        x1line!=x1coordinates_->end();
        ++x1line)
   {
@@ -918,7 +918,7 @@ const double                        eosfac)
           (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
            node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))
       {
-        vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -997,7 +997,7 @@ const double                        eosfac)
   //----------------------------------------------------------------------
   // loop nodes on centerline in x2-direction and calculate pointwise means
   //----------------------------------------------------------------------
-  for (vector<double>::iterator x2line=x2coordinates_->begin();
+  for (std::vector<double>::iterator x2line=x2coordinates_->begin();
        x2line!=x2coordinates_->end();
        ++x2line)
   {
@@ -1022,7 +1022,7 @@ const double                        eosfac)
           (node->X()[2]<((x3max_-x3min_)/2.0)+2e-9 &&
            node->X()[2]>((x3max_-x3min_)/2.0)-2e-9))
       {
-        vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -1101,7 +1101,7 @@ const double                        eosfac)
   //----------------------------------------------------------------------
   // loop nodes on centerline in x3-direction and calculate pointwise means
   //----------------------------------------------------------------------
-  for (vector<double>::iterator x3line=x3coordinates_->begin();
+  for (std::vector<double>::iterator x3line=x3coordinates_->begin();
        x3line!=x3coordinates_->end();
        ++x3line)
   {
@@ -1125,7 +1125,7 @@ const double                        eosfac)
           (node->X()[0]<(0.5+2e-9) && node->X()[0]>(0.5-2e-9)) &&
           (node->X()[1]<(0.5+2e-9) && node->X()[1]>(0.5-2e-9)))
       {
-        vector<int> dof = discret_->Dof(node);
+        std::vector<int> dof = discret_->Dof(node);
         double      one = 1.0;
 
         toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -1213,7 +1213,7 @@ void FLD::TurbulenceStatisticsLdc::DumpStatistics(int step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
     s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
@@ -1352,7 +1352,7 @@ void FLD::TurbulenceStatisticsLdc::DumpLomaStatistics(int step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
     s.append(".loma_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));

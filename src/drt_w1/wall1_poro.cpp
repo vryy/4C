@@ -192,12 +192,12 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::ReadElement(const std::string& eletype,
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::VisNames(std::map<string,int>& names)
+void DRT::ELEMENTS::Wall1_Poro<distype>::VisNames(std::map<std::string,int>& names)
 {
 
   if (Material()->MaterialType() == INPAR::MAT::m_structporo)
   {
-    string porosity = "porosity";
+    std::string porosity = "porosity";
     names[porosity] = 1; // scalar
   }
 }

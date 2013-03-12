@@ -48,8 +48,8 @@ DRT::ParObject* DRT::ELEMENTS::So_weg6Type::Create( const std::vector<char> & da
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6Type::Create( const string eletype,
-                                                            const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_weg6Type::Create( const std::string eletype,
+                                                            const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {
@@ -404,13 +404,13 @@ std::vector<double> DRT::ELEMENTS::So_weg6::ElementCenterRefeCoords()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                maf 07/08|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_weg6::VisNames(std::map<string,int>& names)
+void DRT::ELEMENTS::So_weg6::VisNames(std::map<std::string,int>& names)
 {
 
   if ((Material()->MaterialType() == INPAR::MAT::m_artwallremod) ||
 	  (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular))
   {
-    string fiber = "Fiber1";
+    std::string fiber = "Fiber1";
     names[fiber] = 3; // 3-dim vector
     fiber = "Fiber2";
     names[fiber] = 3; // 3-dim vector
@@ -423,7 +423,7 @@ void DRT::ELEMENTS::So_weg6::VisNames(std::map<string,int>& names)
       std::vector<LINALG::Matrix<3,1> > fibervecs;
       elahy->GetFiberVecs(fibervecs);
       int vissize = fibervecs.size();
-      string fiber;
+      std::string fiber;
       for (int i = 0; i < vissize; i++)
       {
         std::ostringstream s;
@@ -435,7 +435,7 @@ void DRT::ELEMENTS::So_weg6::VisNames(std::map<string,int>& names)
   }
   if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular)
   {
-    string fiber = "Fiber1";
+    std::string fiber = "Fiber1";
     names[fiber] = 3; // 3-dim vector
     fiber = "Fiber2";
     names[fiber] = 3;
@@ -446,7 +446,7 @@ void DRT::ELEMENTS::So_weg6::VisNames(std::map<string,int>& names)
   }
   if (Material()->MaterialType() == INPAR::MAT::m_growth)
   {
-    string fiber = "Theta";
+    std::string fiber = "Theta";
     names[fiber] = 1;
     fiber = "Mandel";
     names[fiber] = 1;
@@ -477,7 +477,7 @@ void DRT::ELEMENTS::So_weg6::VisNames(std::map<string,int>& names)
         std::vector<LINALG::Matrix<3,1> > fibervecs;
         elahy->GetFiberVecs(fibervecs);
         int vissize = fibervecs.size();
-        string fiber;
+        std::string fiber;
         for (int i = 0; i < vissize; i++)
         {
           std::ostringstream s;
@@ -490,7 +490,7 @@ void DRT::ELEMENTS::So_weg6::VisNames(std::map<string,int>& names)
   }
   if (Material()->MaterialType() == INPAR::MAT::m_constraintmixture)
   {
-    string fiber = "MassStress";
+    std::string fiber = "MassStress";
     names[fiber] = 3;
     fiber = "Fiber1";
     names[fiber] = 3; // 3-dim vector
@@ -507,7 +507,7 @@ void DRT::ELEMENTS::So_weg6::VisNames(std::map<string,int>& names)
   }
   if (Material()->MaterialType() == INPAR::MAT::m_aaaneohooke_stopro)
   {
-    string fiber = "beta";
+    std::string fiber = "beta";
     names[fiber] = 1; // scalar
     fiber = "youngs";
     names[fiber] = 1; // scalar
@@ -597,7 +597,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, std::vector<double>& da
       {
         std::ostringstream s;
         s << "Fiber" << i+1;
-        string fiber;
+        std::string fiber;
         fiber = s.str();
         if (name == fiber)
         {
@@ -757,7 +757,7 @@ bool DRT::ELEMENTS::So_weg6::VisData(const string& name, std::vector<double>& da
         {
           std::ostringstream s;
           s << "Fiber" << i+1;
-          string fiber;
+          std::string fiber;
           fiber = s.str();
           if (name == fiber)
           {

@@ -21,27 +21,27 @@ Maintainer: Martin Winklmaier
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-std::map<string,string> TOPOPT::TopoptFluidCloneStrategy::ConditionsToCopy()
+std::map<std::string,std::string> TOPOPT::TopoptFluidCloneStrategy::ConditionsToCopy()
 {
-  std::map<string,string> conditions_to_copy;
+  std::map<std::string,std::string> conditions_to_copy;
 
   // when the fluid problem is periodic we also expect the optimization to be so:
-  conditions_to_copy.insert(std::pair<string,string>("LinePeriodic","LinePeriodic"));
-  conditions_to_copy.insert(std::pair<string,string>("SurfacePeriodic","SurfacePeriodic"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("LinePeriodic","LinePeriodic"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("SurfacePeriodic","SurfacePeriodic"));
 
   // parts of the objective might use inflow and outflow integrals. Therefore, we
   // save potential inflow and outflow regions as conditions for the optimization
 
   // neumann conditions are supposed to be outflow regions (TODO: handle neumann inflow)
-  conditions_to_copy.insert(std::pair<string,string>("LineNeumann","LineOutflow"));
-  conditions_to_copy.insert(std::pair<string,string>("SurfaceNeumann","SurfaceOutflow"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("LineNeumann","LineOutflow"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("SurfaceNeumann","SurfaceOutflow"));
 
   // dirichlet conditions are supposed to be inflow regions
-  conditions_to_copy.insert(std::pair<string,string>("LineDirichlet","LineInflow"));
-  conditions_to_copy.insert(std::pair<string,string>("SurfaceNeumann","SurfaceInflow"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("LineDirichlet","LineInflow"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("SurfaceNeumann","SurfaceInflow"));
 
   // initial field also in optimization possibly
-  conditions_to_copy.insert(std::pair<string,string>("Initfield","Initfield"));
+  conditions_to_copy.insert(std::pair<std::string,std::string>("Initfield","Initfield"));
 
   return conditions_to_copy;
 }

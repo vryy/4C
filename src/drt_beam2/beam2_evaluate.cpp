@@ -35,7 +35,7 @@ int DRT::ELEMENTS::Beam2::Evaluate(Teuchos::ParameterList& params,
 {
   DRT::ELEMENTS::Beam2::ActionType act = Beam2::calc_none;
   // get the action required
-  string action = params.get<string>("action","calc_none");
+  std::string action = params.get<std::string>("action","calc_none");
   if (action == "calc_none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff")      act = Beam2::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff")      act = Beam2::calc_struct_nlnstiff;
@@ -245,7 +245,7 @@ int DRT::ELEMENTS::Beam2::EvaluateNeumann(Teuchos::ParameterList&    params,
   // element displacements
   RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
-  vector<double> mydisp(lm.size());
+  std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
 
@@ -702,7 +702,7 @@ inline void DRT::ELEMENTS::Beam2::MyTranslationalDamping(Teuchos::ParameterList&
   MyDampingConstants(params,gamma,frictionmodel);
   
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
-  vector<double> jacobi(jacobimass_);
+  std::vector<double> jacobi(jacobimass_);
   
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
@@ -801,7 +801,7 @@ inline void DRT::ELEMENTS::Beam2::MyStochasticForces(Teuchos::ParameterList& par
   
 
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
-  vector<double> jacobi(jacobimass_);
+  std::vector<double> jacobi(jacobimass_);
   
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;

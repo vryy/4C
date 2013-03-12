@@ -40,8 +40,8 @@ veljump_(veljump)
  * call the computation based on an extrapolation                                winklmaier 11/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::ExtrapolationOld::compute(
-    vector<RCP<Epetra_Vector> > newRowVectorsn,
-    vector<RCP<Epetra_Vector> > newRowVectorsnp
+    std::vector<RCP<Epetra_Vector> > newRowVectorsn,
+    std::vector<RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
   if (FGIType_==FRSNot1_)
@@ -51,7 +51,7 @@ void XFEM::ExtrapolationOld::compute(
 
   resetState(TimeIntData::basicStd_,TimeIntData::extrapolateStd_);
 
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
 #ifndef COMBUST_SETJUMP
@@ -67,7 +67,7 @@ void XFEM::ExtrapolationOld::compute(
   setFinalData();
 
   // fill vectors with the data
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     if (data->state_!=TimeIntData::doneStd_)
@@ -80,7 +80,7 @@ void XFEM::ExtrapolationOld::compute(
 /*------------------------------------------------------------------------------------------------*
  * call the computation based on an extrapolation                                winklmaier 11/11 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::ExtrapolationOld::compute(vector<RCP<Epetra_Vector> > newRowVectors)
+void XFEM::ExtrapolationOld::compute(std::vector<RCP<Epetra_Vector> > newRowVectors)
 {
   if (oldVectors_.size() != newRowVectors.size())
   {
@@ -90,7 +90,7 @@ void XFEM::ExtrapolationOld::compute(vector<RCP<Epetra_Vector> > newRowVectors)
 
   newVectors_ = newRowVectors;
 
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
 #ifndef COMBUST_SETJUMP
@@ -106,7 +106,7 @@ void XFEM::ExtrapolationOld::compute(vector<RCP<Epetra_Vector> > newRowVectors)
   setFinalData();
 
   // fill vectors with the data
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     if (data->state_!=TimeIntData::doneStd_)
@@ -165,11 +165,11 @@ void XFEM::ExtrapolationOld::extrapolationMain(
   double c2 = 1.0 + dist2.Norm2()/dist1.Norm2(); // dist2/dist1
 
   // get the velocities and the pressures at the start- and midpoint
-  vector<LINALG::Matrix<nsd,1> > velstartpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
-  vector<LINALG::Matrix<nsd,1> > velmidpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
+  std::vector<LINALG::Matrix<nsd,1> > velstartpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
+  std::vector<LINALG::Matrix<nsd,1> > velmidpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
 
-  vector<double> presstartpoint(oldVectors_.size(),0.0);
-  vector<double> presmidpoint(oldVectors_.size(),0.0);
+  std::vector<double> presstartpoint(oldVectors_.size(),0.0);
+  std::vector<double> presmidpoint(oldVectors_.size(),0.0);
 
   callInterpolation(startele,xistartpoint,velstartpoint,presstartpoint);
   callInterpolation(midele,ximidpoint,velmidpoint,presmidpoint);
@@ -178,8 +178,8 @@ void XFEM::ExtrapolationOld::extrapolationMain(
   //  cout << "pres at midpoint is " << presmidpoint[0];
 
   // compute the final velocities and pressure due to the extrapolation
-  vector<LINALG::Matrix<nsd,1> > velendpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
-  vector<double> presendpoint(oldVectors_.size(),0.0);
+  std::vector<LINALG::Matrix<nsd,1> > velendpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
+  std::vector<double> presendpoint(oldVectors_.size(),0.0);
 
   for (size_t index=0;index<oldVectors_.size();index++)
   {
@@ -192,7 +192,7 @@ void XFEM::ExtrapolationOld::extrapolationMain(
 
   } // loop over vectors to be set
 
-  data->startOwner_ = vector<int>(1,myrank_);
+  data->startOwner_ = std::vector<int>(1,myrank_);
   data->velValues_ = velendpoint;
   data->presValues_ = presendpoint;
   data->state_ = TimeIntData::doneStd_;
@@ -285,9 +285,9 @@ void XFEM::ExtrapolationOld::setJump(
   veljump.Scale(wallfac);
 
   // node velocities of the element nodes for the data that should be changed
-  vector<LINALG::Matrix<3,1> > nodeveldata(oldVectors_.size(),LINALG::Matrix<3,1>(true));
+  std::vector<LINALG::Matrix<3,1> > nodeveldata(oldVectors_.size(),LINALG::Matrix<3,1>(true));
   // node pressures of the element nodes for the data that should be changed
-  vector<double> nodepresdata(oldVectors_.size(),0.0);
+  std::vector<double> nodepresdata(oldVectors_.size(),0.0);
 
   // get nodal velocities and pressures with help of the field set of node
   const std::set<XFEM::FieldEnr>& fieldEnrSet(olddofman_->getNodeDofSet(node.Id()));
@@ -352,7 +352,7 @@ void XFEM::ExtrapolationOld::bisection(
   DRT::Node* node = discret_->gNode(data->startGid_[0]); // startpoint node on current proc
   LINALG::Matrix<nsd,1> nodecoords(node->X());
 
-  vector<const DRT::Element*> eles;
+  std::vector<const DRT::Element*> eles;
   addPBCelements(node,eles);
   const int numele=eles.size();
 
@@ -610,8 +610,8 @@ void XFEM::ExtrapolationOld::bisection(
 void XFEM::ExtrapolationOld::callInterpolation(
     DRT::Element* ele,
     LINALG::Matrix<3,1>& xi,
-    vector<LINALG::Matrix<3,1> >& velValues,
-    vector<double>& presValues
+    std::vector<LINALG::Matrix<3,1> >& velValues,
+    std::vector<double>& presValues
 )
 {
   switch (ele->Shape())
@@ -642,18 +642,18 @@ template<const int numnode, DRT::Element::DiscretizationType DISTYPE>
 void XFEM::ExtrapolationOld::interpolation(
     DRT::Element* ele,
     LINALG::Matrix<3,1>& xi,
-    vector<LINALG::Matrix<3,1> >& velValues,
-    vector<double>& presValues
+    std::vector<LINALG::Matrix<3,1> >& velValues,
+    std::vector<double>& presValues
 )
 {
   const int nsd = 3;
 
   // node velocities of the element nodes for the data that should be changed
-  vector<LINALG::Matrix<nsd,2*numnode> > nodeveldata(oldVectors_.size(),LINALG::Matrix<nsd,2*numnode>(true));
+  std::vector<LINALG::Matrix<nsd,2*numnode> > nodeveldata(oldVectors_.size(),LINALG::Matrix<nsd,2*numnode>(true));
   // node pressures of the element nodes for the data that should be changed
-  vector<LINALG::Matrix<1,2*numnode> > nodepresdata(oldVectors_.size(),LINALG::Matrix<1,2*numnode>(true));
+  std::vector<LINALG::Matrix<1,2*numnode> > nodepresdata(oldVectors_.size(),LINALG::Matrix<1,2*numnode>(true));
 #ifdef COMBUST_NORMAL_ENRICHMENT
-  vector<LINALG::Matrix<1,numnode> > nodevelenrdata(oldVectors_.size(),LINALG::Matrix<1,numnode>(true));
+  std::vector<LINALG::Matrix<1,numnode> > nodevelenrdata(oldVectors_.size(),LINALG::Matrix<1,numnode>(true));
   LINALG::Matrix<1,numnode> nodevelenr(true);
 #endif
 
@@ -815,8 +815,8 @@ XFEM::ExtrapolationNew::ExtrapolationNew(
  * call the computation based on an Extrapol                                winklmaier 11/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::ExtrapolationNew::compute(
-    vector<RCP<Epetra_Vector> > newRowVectorsn,
-    vector<RCP<Epetra_Vector> > newRowVectorsnp
+    std::vector<RCP<Epetra_Vector> > newRowVectorsn,
+    std::vector<RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
   if (FGIType_==FRSNot1_)
@@ -828,7 +828,7 @@ void XFEM::ExtrapolationNew::compute(
 
   exportDataToNodeProc(); // export data of failed nodes
 
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     ExtrapolationMain(&*data);
@@ -840,7 +840,7 @@ void XFEM::ExtrapolationNew::compute(
   setFinalData();
 
   // fill vectors with the data
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     if (data->state_!=TimeIntData::doneStd_)
@@ -853,7 +853,7 @@ void XFEM::ExtrapolationNew::compute(
 /*------------------------------------------------------------------------------------------------*
  * call the computation based on an Extrapol                                winklmaier 11/11 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::ExtrapolationNew::compute(vector<RCP<Epetra_Vector> > newRowVectors)
+void XFEM::ExtrapolationNew::compute(std::vector<RCP<Epetra_Vector> > newRowVectors)
 {
   exportDataToNodeProc(); // export data of failed nodes
 
@@ -865,7 +865,7 @@ void XFEM::ExtrapolationNew::compute(vector<RCP<Epetra_Vector> > newRowVectors)
 
   newVectors_ = newRowVectors;
 
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     ExtrapolationMain(&*data);
@@ -928,8 +928,8 @@ void XFEM::ExtrapolationNew::ExtrapolationMain(
     double c2 = 1.0 + dist2.Norm2()/dist1.Norm2(); // dist2/dist1
 
     // get the velocities and the pressures at the start- and midpoint
-    vector<LINALG::Matrix<nsd,1> > velstartpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
-    vector<LINALG::Matrix<nsd,1> > velmidpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
+    std::vector<LINALG::Matrix<nsd,1> > velstartpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
+    std::vector<LINALG::Matrix<nsd,1> > velmidpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
 
     std::vector<double> presstartpoint(oldVectors_.size(),0.0);
     std::vector<double> presmidpoint(oldVectors_.size(),0.0);
@@ -942,7 +942,7 @@ void XFEM::ExtrapolationNew::ExtrapolationMain(
     //  cout << "pres at midpoint is " << presmidpoint[0];
 
     // compute the final velocities and pressure due to the Extrapol
-    vector<LINALG::Matrix<nsd,1> > velendpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
+    std::vector<LINALG::Matrix<nsd,1> > velendpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
     std::vector<double> presendpoint(oldVectors_.size(),0.0);
 
     for (size_t index=0;index<oldVectors_.size();index++)
@@ -956,7 +956,7 @@ void XFEM::ExtrapolationNew::ExtrapolationMain(
 
     } // loop over vectors to be set
 
-    data->startOwner_ = vector<int>(1,myrank_);
+    data->startOwner_ = std::vector<int>(1,myrank_);
     data->velValues_ = velendpoint;
     data->presValues_ = presendpoint;
     data->state_ = TimeIntData::doneStd_;
@@ -964,13 +964,13 @@ void XFEM::ExtrapolationNew::ExtrapolationMain(
   else if (extrapolcase==project)
   {
     // get the velocities and the pressures at the start- and midpoint
-    vector<LINALG::Matrix<nsd,1> > velmidpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
+    std::vector<LINALG::Matrix<nsd,1> > velmidpoint(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
     std::vector<double> presmidpoint(oldVectors_.size(),0.0);
 
     int side = interfaceSide(data->phiValue_);
     callInterpolation(ele,ximidpoint,velmidpoint,presmidpoint,side);
 
-    data->startOwner_ = vector<int>(1,myrank_);
+    data->startOwner_ = std::vector<int>(1,myrank_);
     data->velValues_ = velmidpoint;
     data->presValues_ = presmidpoint;
     data->state_ = TimeIntData::doneStd_;
@@ -999,7 +999,7 @@ XFEM::ExtrapolationNew::Cases XFEM::ExtrapolationNew::EvalPoints(
 
   LINALG::Matrix<3,1> endpoint(data->node_.X());
 
-  vector<const DRT::Element*> eles;
+  std::vector<const DRT::Element*> eles;
   addPBCelements(&data->node_, eles);
   const int numele = eles.size();
 
@@ -1092,8 +1092,8 @@ XFEM::ExtrapolationNew::Cases XFEM::ExtrapolationNew::EvalPoints(
 void XFEM::ExtrapolationNew::callInterpolation(
     const DRT::Element* ele,
     LINALG::Matrix<3,1>& xi,
-    vector<LINALG::Matrix<3,1> >& velValues,
-    vector<double>& presValues,
+    std::vector<LINALG::Matrix<3,1> >& velValues,
+    std::vector<double>& presValues,
     int side
 )
 {
@@ -1125,19 +1125,19 @@ template<const int numnode, DRT::Element::DiscretizationType DISTYPE>
 void XFEM::ExtrapolationNew::interpolation(
     const DRT::Element* ele,
     LINALG::Matrix<3,1>& xi,
-    vector<LINALG::Matrix<3,1> >& velValues,
-    vector<double>& presValues,
+    std::vector<LINALG::Matrix<3,1> >& velValues,
+    std::vector<double>& presValues,
     int side
 )
 {
   const int nsd = 3;
 
   // node velocities of the element nodes for the data that should be changed
-  vector<LINALG::Matrix<nsd,2*numnode> > nodeveldata(oldVectors_.size(),LINALG::Matrix<nsd,2*numnode>(true));
+  std::vector<LINALG::Matrix<nsd,2*numnode> > nodeveldata(oldVectors_.size(),LINALG::Matrix<nsd,2*numnode>(true));
   // node pressures of the element nodes for the data that should be changed
-  vector<LINALG::Matrix<1,2*numnode> > nodepresdata(oldVectors_.size(),LINALG::Matrix<1,2*numnode>(true));
+  std::vector<LINALG::Matrix<1,2*numnode> > nodepresdata(oldVectors_.size(),LINALG::Matrix<1,2*numnode>(true));
 #ifdef COMBUST_NORMAL_ENRICHMENT
-  vector<LINALG::Matrix<1,numnode> > nodevelenrdata(oldVectors_.size(),LINALG::Matrix<1,numnode>(true));
+  std::vector<LINALG::Matrix<1,numnode> > nodevelenrdata(oldVectors_.size(),LINALG::Matrix<1,numnode>(true));
   LINALG::Matrix<1,numnode> nodevelenr(true);
 #endif
 
@@ -1289,10 +1289,10 @@ void XFEM::ExtrapolationNew::exportDataToNodeProc()
 
   // array of vectors which stores data for
   // every processor in one vector
-  vector<std::vector<TimeIntData> > dataVec(numproc_);
+  std::vector<std::vector<TimeIntData> > dataVec(numproc_);
 
   // fill vectors with the data
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     if (data->state_==TimeIntData::extrapolateStd_)
@@ -1320,7 +1320,7 @@ void XFEM::ExtrapolationNew::exportDataToNodeProc()
       source -=numproc_;
 
     // pack data to be sent
-    for (vector<TimeIntData>::iterator data=dataVec[dest].begin();
+    for (std::vector<TimeIntData>::iterator data=dataVec[dest].begin();
         data!=dataVec[dest].end(); data++)
     {
       if (data->state_==TimeIntData::extrapolateStd_)
@@ -1339,7 +1339,7 @@ void XFEM::ExtrapolationNew::exportDataToNodeProc()
 
     dataSend.StartPacking();
 
-    for (vector<TimeIntData>::iterator data=dataVec[dest].begin();
+    for (std::vector<TimeIntData>::iterator data=dataVec[dest].begin();
         data!=dataVec[dest].end(); data++)
     {
       if (data->state_==TimeIntData::extrapolateStd_)
@@ -1359,11 +1359,11 @@ void XFEM::ExtrapolationNew::exportDataToNodeProc()
     // clear the no more needed data
     dataVec[dest].clear();
 
-    vector<char> dataRecv;
+    std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
     // pointer to current position of group of cells in global string (counts bytes)
-    vector<char>::size_type posinData = 0;
+    std::vector<char>::size_type posinData = 0;
 
     // unpack received data
     while (posinData < dataRecv.size())
@@ -1371,12 +1371,12 @@ void XFEM::ExtrapolationNew::exportDataToNodeProc()
       double coords[nsd] = {0.0};
       DRT::Node node(0,(double*)coords,0);
       LINALG::Matrix<nsd,1> vel;
-      vector<LINALG::Matrix<nsd,nsd> > velDeriv;
-      vector<LINALG::Matrix<1,nsd> > presDeriv;
+      std::vector<LINALG::Matrix<nsd,nsd> > velDeriv;
+      std::vector<LINALG::Matrix<1,nsd> > presDeriv;
       LINALG::Matrix<nsd,1> startpoint;
       double phiValue;
-      vector<int> startGid;
-      vector<int> startOwner;
+      std::vector<int> startGid;
+      std::vector<int> startOwner;
       int newtype;
 
       unpackNode(posinData,dataRecv,node);

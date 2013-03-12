@@ -2328,11 +2328,11 @@ void DRT::ELEMENTS::So_sh8p8::CalcSTCMatrix
     LINALG::Matrix<NUMDOF_,1> adjele(true);
     DRT::Node** nodes = Nodes();
 
-    vector<DRT::Condition*> cond0;
+    std::vector<DRT::Condition*> cond0;
     int condnum0 = 1000; // minimun STCid of layer with nodes 0..3
     bool current0 = false; // layer with nodes 0..4 to be scaled
     (nodes[0])->GetCondition("STC Layer",cond0);
-    vector<DRT::Condition*> cond1;
+    std::vector<DRT::Condition*> cond1;
     int condnum1 = 1000;// minimun STCid of layer with nodes 4..7
     bool current1 = false; // minimun STCid of layer with nodes 4..7
     (nodes[NUMNOD_/2])->GetCondition("STC Layer",cond1);

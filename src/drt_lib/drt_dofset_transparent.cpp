@@ -61,7 +61,7 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
 
     //build dofrowmap
     std::set<int> dofrowset;
-    vector<int> dofrowvec;
+    std::vector<int> dofrowvec;
     dofrowvec.reserve(dofrowmap_->NumMyElements());
     for (int inode = 0; inode != newdis.NumMyRowNodes(); ++inode)
     {
@@ -92,7 +92,7 @@ void DRT::TransparentDofSet::TransferDegreesOfFreedom(
 
     //build dofcolvec
     std::set<int> dofcolset;
-    vector<int> dofcolvec;
+    std::vector<int> dofcolvec;
     dofcolvec.reserve(dofcolmap_->NumMyElements());
     for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
     {
@@ -150,21 +150,21 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
   //
   // we need a mapping
   //
-  // colnode gid -> vector<int> dofs of sourcenode
+  // colnode gid -> std::vector<int> dofs of sourcenode
   //
   // problem: sourcenode not necessarily on this proc -> communicate
   //
   // the idea is to search for the sourcerownode on some proc and to get
   // this unique number
   //
-  map<int,std::vector<int> >  gid_to_dofs;
+  std::map<int,std::vector<int> >  gid_to_dofs;
 
   for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
   {
     const DRT::Node* newnode = newdis.lColNode(inode);
     int gid=newnode->Id();
-    vector<int> emptyvec;
-    gid_to_dofs.insert(std::pair<int, vector<int> >(gid,emptyvec));
+    std::vector<int> emptyvec;
+    gid_to_dofs.insert(std::pair<int, std::vector<int> >(gid,emptyvec));
   }
 
   {
@@ -177,8 +177,8 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
 #endif
 
     // define send and receive blocks
-    vector<char> sblock;
-    vector<char> rblock;
+    std::vector<char> sblock;
+    std::vector<char> rblock;
 
     // get number of processors and the current processors id
     int numproc=sourcedis.Comm().NumProc();
@@ -246,10 +246,10 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
     if(!(*mymasterslavetoggle=="Master"))
     {
 
-      const vector <int>* pbcids;
+      const std::vector <int>* pbcids;
       pbcids = (*thiscond).Nodes();
 
-      for(vector<int>::const_iterator iter=pbcids->begin();iter!=pbcids->end();++iter)
+      for(std::vector<int>::const_iterator iter=pbcids->begin();iter!=pbcids->end();++iter)
       {
         slaveset.insert(*iter);
       }
@@ -258,7 +258,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
 
   //build dofrowmap
   std::set<int> dofrowset;
-  vector<int> dofrowvec;
+  std::vector<int> dofrowvec;
   dofrowvec.reserve(dofrowmap_->NumMyElements());
   for (int inode = 0; inode != newdis.NumMyRowNodes(); ++inode)
   {
@@ -307,7 +307,7 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
 
   //build dofcolvec
   std::set<int> dofcolset;
-  vector<int> dofcolvec;
+  std::vector<int> dofcolvec;
   dofcolvec.reserve(dofcolmap_->NumMyElements());
   for (int inode = 0; inode != newdis.NumMyColNodes(); ++inode)
   {
@@ -354,10 +354,10 @@ void DRT::TransparentDofSet::ParallelTransferDegreesOfFreedom(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
-  map<int,std::vector<int> >   & gid_to_dofs
+  std::map<int,std::vector<int> >   & gid_to_dofs
   )
 {
-  for(map<int,std::vector<int> >::iterator curr=gid_to_dofs.begin();
+  for(std::map<int,std::vector<int> >::iterator curr=gid_to_dofs.begin();
     curr!=gid_to_dofs.end();++curr)
   {
 
@@ -371,7 +371,7 @@ void DRT::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
 
       const std::vector<int> dofs = sourcedis_->Dof(0,sourcenode);
 
-      for (vector<int>::const_iterator iter=dofs.begin();iter!=dofs.end();++iter)
+      for (std::vector<int>::const_iterator iter=dofs.begin();iter!=dofs.end();++iter)
       {
         curr->second.push_back(*iter);
       }
@@ -398,7 +398,7 @@ void DRT::TransparentDofSet::SetSourceDofsAvailableOnThisProc(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::TransparentDofSet::PackLocalSourceDofs(
-  map<int,std::vector<int> >   & gid_to_dofs  ,
+  std::map<int,std::vector<int> >   & gid_to_dofs  ,
   DRT::PackBuffer         & sblock
   )
 {
@@ -407,11 +407,11 @@ void DRT::TransparentDofSet::PackLocalSourceDofs(
   // add size  to sendblock
   DRT::ParObject::AddtoPack(sblock,size);
 
-  for(map<int,std::vector<int> >::iterator curr=gid_to_dofs.begin();
+  for(std::map<int,std::vector<int> >::iterator curr=gid_to_dofs.begin();
     curr!=gid_to_dofs.end();++curr)
   {
     int         gid    = curr->first;
-    vector<int> mydofs = curr->second;
+    std::vector<int> mydofs = curr->second;
     int numdofs = (int)mydofs.size();
 
     DRT::ParObject::AddtoPack(sblock,gid);
@@ -436,8 +436,8 @@ void DRT::TransparentDofSet::PackLocalSourceDofs(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void DRT::TransparentDofSet::UnpackLocalSourceDofs(
-  map<int,std::vector<int> >   & gid_to_dofs  ,
-  vector<char>            & rblock
+  std::map<int,std::vector<int> >   & gid_to_dofs  ,
+  std::vector<char>            & rblock
   )
 {
   gid_to_dofs.clear();
@@ -452,7 +452,7 @@ void DRT::TransparentDofSet::UnpackLocalSourceDofs(
   for(int rr=0;rr<size;++rr)
   {
     int         gid    = -1;
-    vector<int> mydofs ;
+    std::vector<int> mydofs ;
     int numdofs = 0;
 
     DRT::ParObject::ExtractfromPack(position,rblock,gid);
@@ -466,7 +466,7 @@ void DRT::TransparentDofSet::UnpackLocalSourceDofs(
       mydofs.push_back(thisdof);
     }
 
-    gid_to_dofs.insert(std::pair<int, vector<int> >(gid,mydofs));
+    gid_to_dofs.insert(std::pair<int, std::vector<int> >(gid,mydofs));
   }
 
   rblock.clear();
@@ -486,7 +486,7 @@ void DRT::TransparentDofSet::UnpackLocalSourceDofs(
 void DRT::TransparentDofSet::ReceiveBlock(
   int             numproc ,
   int             myrank  ,
-  vector<char>   & rblock,
+  std::vector<char>   & rblock,
   DRT::Exporter  & exporter,
   MPI_Request    & request)
 {
@@ -536,7 +536,7 @@ void DRT::TransparentDofSet::ReceiveBlock(
 void DRT::TransparentDofSet::SendBlock(
   int             numproc ,
   int             myrank  ,
-  vector<char>  & sblock  ,
+  std::vector<char>  & sblock  ,
   DRT::Exporter & exporter,
   MPI_Request   & request )
 {

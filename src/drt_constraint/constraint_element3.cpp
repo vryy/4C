@@ -25,8 +25,8 @@ DRT::ParObject* DRT::ELEMENTS::ConstraintElement3Type::Create( const std::vector
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ConstraintElement3Type::Create( const string eletype,
-                                                            const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ConstraintElement3Type::Create( const std::string eletype,
+                                                            const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {

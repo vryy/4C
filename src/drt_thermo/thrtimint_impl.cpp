@@ -691,7 +691,7 @@ void THR::TimIntImpl::PrintPredictor()
     else if ( normtypefres_ == INPAR::THR::convnorm_mix )
     {
       std::cout << "Predictor thermo mixed res-norm "
-                << min(normfres_, normfres_/normcharforce_)
+                << std::min(normfres_, normfres_/normcharforce_)
                 << std::endl;
     }
     // default
@@ -818,7 +818,7 @@ void THR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
     oss << std::setw(18) << std::setprecision(5) << std::scientific << normfres_;
     break;
   case INPAR::THR::convnorm_mix :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << min(normfres_, normfres_/normcharforce_);
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << std::min(normfres_, normfres_/normcharforce_);
     break;
   default:
     dserror("You should not turn up here.");
@@ -833,7 +833,7 @@ void THR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
     oss << std::setw(18) << std::setprecision(5) << std::scientific << normtempi_;
     break;
   case INPAR::THR::convnorm_mix :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << min(normtempi_, normtempi_/normchartemp_);
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << std::min(normtempi_, normtempi_/normchartemp_);
     break;
   default:
     dserror("You should not turn up here.");

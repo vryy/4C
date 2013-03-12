@@ -89,7 +89,7 @@ int DRT::ResultTest::CompareValues(double actresult, DRT::INPUT::LineDefinition&
             actresult, givenresult, actresult-givenresult);
   }
 
-  // prepare string stream 'msghead' containing general information on the current test
+  // prepare std::string stream 'msghead' containing general information on the current test
   std::stringstream msghead;
   msghead << std::left << std::setw(9) << myname_
           << ": "

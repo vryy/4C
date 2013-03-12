@@ -626,10 +626,10 @@ void MAT::ArtWallRemod::EvaluateFiberVecs(const int gp, const double gamma, cons
   return;
 }
 
-std::string MAT::ArtWallRemod::PrintVec(const vector<double> actvec)
+std::string MAT::ArtWallRemod::PrintVec(const std::vector<double> actvec)
 {
   std::stringstream out;
-  vector<double>::const_iterator i;
+  std::vector<double>::const_iterator i;
   for (i=actvec.begin(); i<actvec.end(); ++i) {
     out << *i << " ";
   }
@@ -654,7 +654,7 @@ void MAT::ArtWallRemodOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
     filename << filebase << "_rem" << ".txt";
     std::ofstream outfile;
-    outfile.open(filename.str().c_str(),ios_base::app);
+    outfile.open(filename.str().c_str(),std::ios_base::app);
     //int nele = dis->NumMyColElements();
     int endele = 200; //nele;
     for (int iele=0; iele<endele; iele+=10) //++iele) iele+=10)
@@ -749,7 +749,7 @@ void MAT::ArtWallRemodOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
     for (int gp = 0; gp < ngp; ++gp){
       std::vector<double> point = MAT::MatPointCoords(actele,mydisp,gp);
 
-      vector<std::vector<double> > fibgp(2);
+      std::vector<std::vector<double> > fibgp(2);
       fibgp.at(0) = a1s->at(gp);
       fibgp.at(1) = a2s->at(gp);
 

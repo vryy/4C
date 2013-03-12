@@ -54,7 +54,7 @@ int DRT::ELEMENTS::TopOpt::Evaluate(
     Epetra_SerialDenseVector& elevec3)
 {
   // get the action required
-  const string action = params.get<string>("action","none");
+  const std::string action = params.get<std::string>("action","none");
   const DRT::ELEMENTS::TopOpt::ActionType act = convertStringToActionType(action);
 
   // get material
@@ -172,7 +172,7 @@ int DRT::ELEMENTS::TopOptBoundary::EvaluateNeumann(
     Epetra_SerialDenseMatrix* elemat1)
 {
   // get the action required
-  const string action = params.get<string>("action","none");
+  const std::string action = params.get<std::string>("action","none");
   const DRT::ELEMENTS::TopOptBoundary::ActionType act = convertStringToActionType(action);
 
   // get material

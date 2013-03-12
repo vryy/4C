@@ -858,7 +858,7 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterface(
 
   bool fluidfluidcoupling = false;
 
-  // side coupling implementation between background element and each cut side (map<sid, side_impl)
+  // side coupling implementation between background element and each cut side (std::map<sid, side_impl)
   std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > > side_impl;
   Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > si;
 
@@ -1238,9 +1238,9 @@ int FluidEleCalcXFEM<distype>::ComputeErrorInterfacefluidfluidcoupling(
 
   bool fluidfluidcoupling = false;
 
-  // embedded element coupling implementation between background element and each cutting embedded element (map<sid, emb_impl)
+  // embedded element coupling implementation between background element and each cutting embedded element (std::map<sid, emb_impl)
   std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::EmbCoupling<distype> > > emb_impl;
-  // side coupling implementation between background element and each cut side (map<sid, side_impl)
+  // side coupling implementation between background element and each cut side (std::map<sid, side_impl)
   std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > > side_impl;
   Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > si;
   Teuchos::RCP<DRT::ELEMENTS::XFLUID::EmbCoupling<distype> > emb;
@@ -1688,7 +1688,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceMSH(
   LINALG::Matrix<3,1> normal(true);
   LINALG::Matrix<3,1> x_side(true);
 
-  // side coupling implementation between background element and each cut side (map<sid, side_impl)
+  // side coupling implementation between background element and each cut side (std::map<sid, side_impl)
   std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > > side_impl;
   Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > si;
 
@@ -2601,7 +2601,7 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT(
   LINALG::Matrix<3,1> normal(true); // normal vector w.r.t the fluid domain, points from the fluid into the structure
   LINALG::Matrix<3,1> x_side(true);
 
-  // side coupling implementation between background element and each cut side (map<sid, side_impl)
+  // side coupling implementation between background element and each cut side (std::map<sid, side_impl)
   std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > > side_impl;
   Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > si;
 
@@ -3104,9 +3104,9 @@ void FluidEleCalcXFEM<distype>::ElementXfemInterfaceNIT2(
 
   bool fluidfluidcoupling = false;
 
-  // embedded element coupling implementation between background element and each cutting embedded element (map<sid, emb_impl)
+  // embedded element coupling implementation between background element and each cutting embedded element (std::map<sid, emb_impl)
   std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::EmbCoupling<distype> > > emb_impl;
-  // side coupling implementation between background element and each cut side (map<sid, side_impl)
+  // side coupling implementation between background element and each cut side (std::map<sid, side_impl)
   std::map<int, Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > > side_impl;
   Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > si;
   Teuchos::RCP<DRT::ELEMENTS::XFLUID::EmbCoupling<distype> > emb;
@@ -3553,12 +3553,12 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
   else if(conv_stab_scaling == INPAR::XFEM::ConvStabScaling_max_abs_normal_vel)
   {
     //      max(1.0,| u*n |)
-    conv_stabfac =  max(1.0, fabs(veln_normal));
+    conv_stabfac =  std::max(1.0, fabs(veln_normal));
   }
   else if(conv_stab_scaling == INPAR::XFEM::ConvStabScaling_inflow)
   {
     //      ( -u*n ) if (u*n)<0 (inflow)
-    conv_stabfac = max(0.0,-veln_normal);
+    conv_stabfac = std::max(0.0,-veln_normal);
   }
   else if(conv_stab_scaling == INPAR::XFEM::ConvStabScaling_const)
   {
@@ -3568,7 +3568,7 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
     else if(conv_stab_scaling == INPAR::XFEM::ConvStabScaling_averaged)
   {
     //      const = conv_stab_fac
-    conv_stabfac = max(0.0,veln_normal);
+    conv_stabfac = std::max(0.0,veln_normal);
   }
   else if(conv_stab_scaling == INPAR::XFEM::ConvStabScaling_none)
   {
@@ -3592,7 +3592,7 @@ void FluidEleCalcXFEM<distype>::NIT_ComputeStabfac(
     */
 
     // final stabilization factors
-    stabfac_visc = max(NIT_stab_fac, nitsche_stab_conv*conv_stabfac*my::densaf_);
+    stabfac_visc = std::max(NIT_stab_fac, nitsche_stab_conv*conv_stabfac*my::densaf_);
     stabfac_conv = 0.0;
     //=================================================================================
   }
@@ -3754,7 +3754,7 @@ void FluidEleCalcXFEM<distype>::PatchLocationVector(
     std::vector<int> &                                      patchelementslmv,        ///< lm vector for patch of boundary elements
     std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
     std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
-    string                                                  coupl_method             ///< coupling method
+    std::string                                             coupl_method             ///< coupling method
 )
 {
   for (std::set<int>::const_iterator bgid=begids.begin(); bgid!=begids.end(); ++bgid)
@@ -3805,7 +3805,7 @@ void FluidEleCalcXFEM<distype>::PatchLocationVector(
     std::vector<int> &                                      patchelementslmowner,    ///< lmowner vector for patch of boundary elements
     std::map<int, std::vector<Epetra_SerialDenseMatrix> > & Cuiui_coupling,          ///< coupling matrices
     std::map<int,int> &                                     boundary_emb_gid_map,    ///< map between boundary sid and corresponding embedded element id
-    string                                                  coupl_method             ///< coupling method
+    std::string                                             coupl_method             ///< coupling method
 )
 {
 

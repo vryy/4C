@@ -224,7 +224,7 @@ void LINALG::SOLVER::AztecSolver::Solve()
     // the scaling ourselves (so we precisely know what happens)
     // Therefore set scaling parameter to none and reset it after aztec has made
     // its internal copy of the parameter list
-    string scaling = azlist.get("scaling","none");
+    std::string scaling = azlist.get("scaling","none");
     azlist.set("scaling","none");
     aztec.SetParameters(azlist,false);
     azlist.set("scaling",scaling);

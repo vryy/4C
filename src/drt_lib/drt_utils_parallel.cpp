@@ -87,14 +87,14 @@ void DRT::UTILS::PrintParallelDistribution(const DRT::Discretization& dis)
   {
     const int myrank=dis.Comm().MyPID();
 
-    vector<int> my_n_nodes     (numproc,0);
-    vector<int>    n_nodes     (numproc,0);
-    vector<int> my_n_ghostnodes(numproc,0);
-    vector<int>    n_ghostnodes(numproc,0);
-    vector<int> my_n_elements  (numproc,0);
-    vector<int>    n_elements  (numproc,0);
-    vector<int> my_n_ghostele  (numproc,0);
-    vector<int>    n_ghostele  (numproc,0);
+    std::vector<int> my_n_nodes     (numproc,0);
+    std::vector<int>    n_nodes     (numproc,0);
+    std::vector<int> my_n_ghostnodes(numproc,0);
+    std::vector<int>    n_ghostnodes(numproc,0);
+    std::vector<int> my_n_elements  (numproc,0);
+    std::vector<int>    n_elements  (numproc,0);
+    std::vector<int> my_n_ghostele  (numproc,0);
+    std::vector<int>    n_ghostele  (numproc,0);
 
     my_n_nodes     [myrank]=dis.NumMyRowNodes();
     my_n_ghostnodes[myrank]=dis.NumMyColNodes()-my_n_nodes[myrank];
@@ -164,7 +164,7 @@ Teuchos::RCP<Epetra_Map> DRT::UTILS::ComputeNodeColMap(
 {
   const Epetra_Map* oldcolnodemap = sourcedis->NodeColMap();
 
-  vector<int> mycolnodes(oldcolnodemap->NumMyElements());
+  std::vector<int> mycolnodes(oldcolnodemap->NumMyElements());
   oldcolnodemap->MyGlobalElements (&mycolnodes[0]);
   for (int inode = 0; inode != subdis->NumMyColNodes(); ++inode)
   {

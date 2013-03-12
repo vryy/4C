@@ -87,8 +87,8 @@ void MAT::Ion::Pack(DRT::PackBuffer& data) const
 */
   /*
   // extract type
-  vector<char>::size_type posit = 0;
-  vector<char> pbtest;
+  std::vector<char>::size_type posit = 0;
+  std::vector<char> pbtest;
   int typio = 0;
   ExtractfromPack(posit,data(),typio);
   cout<<"ION Pack: Type will be "<<typio<<endl;

@@ -318,7 +318,7 @@ void FLD::UTILS::LiftDrag(
         /* get label of present LiftDrag condition  */
         const int label = ldconds[i]->GetInt("label");
 
-        ((*liftdragvals)).insert(std::pair<int,std::vector<double> >(label,vector<double> (6,0.0)));
+        ((*liftdragvals)).insert(std::pair<int,std::vector<double> >(label,std::vector<double> (6,0.0)));
       }
 
       // prepare output
@@ -515,28 +515,28 @@ void FLD::UTILS::LiftDrag(
 void FLD::UTILS::WriteLiftDragToFile(
   const double                     time,
   const int                        step,
-  const map<int,std::vector<double> >&  liftdragvals
+  const std::map<int,std::vector<double> >&  liftdragvals
   )
 {
   // print to file
   std::ostringstream header;
-  header << right << std::setw(16) << "Time"
-         << right << std::setw(10) << "Step"
-         << right << std::setw(10) << "Label"
-         << right << std::setw(16) << "F_x"
-         << right << std::setw(16) << "F_y"
-         << right << std::setw(16) << "F_z";
+  header << std::right << std::setw(16) << "Time"
+         << std::right << std::setw(10) << "Step"
+         << std::right << std::setw(10) << "Label"
+         << std::right << std::setw(16) << "F_x"
+         << std::right << std::setw(16) << "F_y"
+         << std::right << std::setw(16) << "F_z";
 
 
-  for (map<int,std::vector<double> >::const_iterator liftdragval = liftdragvals.begin(); liftdragval != liftdragvals.end(); ++liftdragval)
+  for (std::map<int,std::vector<double> >::const_iterator liftdragval = liftdragvals.begin(); liftdragval != liftdragvals.end(); ++liftdragval)
   {
     std::ostringstream s;
-    s << right << std::setw(16) << std::scientific << time
-      << right << std::setw(10) << std::scientific << step
-      << right << std::setw(10) << std::scientific << liftdragval->first
-      << right << std::setw(16) << std::scientific << liftdragval->second[0]
-      << right << std::setw(16) << std::scientific << liftdragval->second[1]
-      << right << std::setw(16) << std::scientific << liftdragval->second[2];
+    s << std::right << std::setw(16) << std::scientific << time
+      << std::right << std::setw(10) << std::scientific << step
+      << std::right << std::setw(10) << std::scientific << liftdragval->first
+      << std::right << std::setw(16) << std::scientific << liftdragval->second[0]
+      << std::right << std::setw(16) << std::scientific << liftdragval->second[1]
+      << std::right << std::setw(16) << std::scientific << liftdragval->second[2];
 
     std::ostringstream slabel;
     slabel << std::setw(3) << std::setfill('0') << liftdragval->first;
@@ -565,7 +565,7 @@ void FLD::UTILS::WriteLiftDragToFile(
 std::map<int,double> FLD::UTILS::ComputeFlowRates(
     DRT::Discretization&           dis  ,
     const RCP<Epetra_Vector>       velnp,
-    const string                   condstring)
+    const std::string                   condstring)
 {
   Teuchos::ParameterList eleparams;
   // set action for elements
@@ -579,7 +579,7 @@ std::map<int,double> FLD::UTILS::ComputeFlowRates(
   dis.GetCondition (condstring, conds);
 
   // each condition is on every proc , but might not have condition elements there
-  for(vector<DRT::Condition*>::const_iterator conditer = conds.begin(); conditer!=conds.end(); ++conditer)
+  for(std::vector<DRT::Condition*>::const_iterator conditer = conds.begin(); conditer!=conds.end(); ++conditer)
   {
     const DRT::Condition* cond = *conditer;
     const int condID = cond->GetInt("ConditionID");
@@ -635,7 +635,7 @@ std::map<int,LINALG::Matrix<3,1> > FLD::UTILS::ComputeSurfaceImpulsRates(
   dis.GetCondition ("SurfImpulsRate", conds);
 
   // collect elements by xfem coupling label
-  for(vector<DRT::Condition*>::const_iterator conditer = conds.begin(); conditer!=conds.end(); ++conditer)
+  for(std::vector<DRT::Condition*>::const_iterator conditer = conds.begin(); conditer!=conds.end(); ++conditer)
   {
     const DRT::Condition* cond = *conditer;
 
@@ -696,18 +696,18 @@ void FLD::UTILS::WriteFlowRatesToFile(
 
   // print to file
   std::ostringstream header;
-  header << right << std::setw(16) << "Time"
-         << right << std::setw(10) << "Step"
-         << right << std::setw(10) << "ID"
-         << right << std::setw(16) << "Flowrate";
+  header << std::right << std::setw(16) << "Time"
+         << std::right << std::setw(10) << "Step"
+         << std::right << std::setw(10) << "ID"
+         << std::right << std::setw(16) << "Flowrate";
 
-  for(map<int,double >::const_iterator flowrate = flowrates.begin(); flowrate != flowrates.end(); ++flowrate)
+  for(std::map<int,double >::const_iterator flowrate = flowrates.begin(); flowrate != flowrates.end(); ++flowrate)
   {
     std::ostringstream s;
-    s << right << std::setw(16) << std::scientific << time
-      << right << std::setw(10) << std::scientific << step
-      << right << std::setw(10) << std::scientific << flowrate->first
-      << right << std::setw(16) << std::scientific << flowrate->second;
+    s << std::right << std::setw(16) << std::scientific << time
+      << std::right << std::setw(10) << std::scientific << step
+      << std::right << std::setw(10) << std::scientific << flowrate->first
+      << std::right << std::setw(16) << std::scientific << flowrate->second;
 
     std::ostringstream slabel;
     slabel << std::setw(3) << std::setfill('0') << flowrate->first;

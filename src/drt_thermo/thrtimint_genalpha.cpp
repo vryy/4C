@@ -286,7 +286,7 @@ double THR::TimIntGenAlpha::CalcRefNormForce()
   freactnorm = THR::AUX::CalculateVectorNorm(iternorm_, freact_);
 
   // determine worst value ==> charactersitic norm
-  return max(fintnorm, max(fextnorm, freactnorm));
+  return std::max(fintnorm, std::max(fextnorm, freactnorm));
 }
 
 /*----------------------------------------------------------------------*

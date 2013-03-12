@@ -648,7 +648,7 @@ void STR::TimIntStatMech::FullNewton()
 //  double timen     = time + dt;
 //  int    maxiter   = params_.get<int>   ("max iterations"         ,10);
 //  double alphaf    = 1.0-theta;
-//  string convcheck = params_.get<string>("convcheck"              ,"AbsRes_Or_AbsDis");
+//  std::string convcheck = params_.get<std::string>("convcheck"              ,"AbsRes_Or_AbsDis");
 //  double toldisp   = params_.get<double>("tolerance displacements",1.0e-07);
 //  double tolres    = params_.get<double>("tolerance residual"     ,1.0e-07);
 //  bool printscreen = params_.get<bool>  ("print to screen",true);

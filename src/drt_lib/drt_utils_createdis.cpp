@@ -132,10 +132,10 @@ RCP<Epetra_Map> DRT::UTILS::DiscretizationCreatorBase::CreateNodeColMap(
 void DRT::UTILS::DiscretizationCreatorBase::CopyConditions(
     const Teuchos::RCP<DRT::Discretization> sourcedis,
     Teuchos::RCP<DRT::Discretization> targetdis,
-    const std::map<string,string>& conditions_to_copy)
+    const std::map<std::string,std::string>& conditions_to_copy)
 {
   // copy selected conditions to the new discretization (and rename them if desired)
-  for (std::map<string,string>::const_iterator conditername = conditions_to_copy.begin();
+  for (std::map<std::string,std::string>::const_iterator conditername = conditions_to_copy.begin();
   conditername != conditions_to_copy.end();
   ++conditername)
   {

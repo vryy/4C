@@ -44,7 +44,7 @@ int DRT::ELEMENTS::BeamCL::Evaluate(Teuchos::ParameterList&   params,
 {
   DRT::ELEMENTS::BeamCL::ActionType act = BeamCL::calc_none;
   // get the action required
-  string action = params.get<string>("action","calc_none");
+  std::string action = params.get<std::string>("action","calc_none");
   if (action == "calc_none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff") act = BeamCL::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff") act = BeamCL::calc_struct_nlnstiff;
@@ -305,9 +305,9 @@ int DRT::ELEMENTS::BeamCL::Evaluate(Teuchos::ParameterList&   params,
             else if(elemat1(line,col) == 0)
               std::cout<<"     0     ";
             else if(elemat1(line,col) >= 0)
-              std::cout<<"  "<< scientific << setprecision(3)<<elemat1(line,col);
+              std::cout<<"  "<< scientific << std::setprecision(3)<<elemat1(line,col);
             else
-              std::cout<<" "<< scientific << setprecision(3)<<elemat1(line,col);
+              std::cout<<" "<< scientific << std::setprecision(3)<<elemat1(line,col);
           }
           std::cout<<"\n";
         }
@@ -322,9 +322,9 @@ int DRT::ELEMENTS::BeamCL::Evaluate(Teuchos::ParameterList&   params,
             else if(stiff_approx(line,col) == 0)
               std::cout<<"     0     ";
             else if(stiff_approx(line,col) >= 0)
-              std::cout<<"  "<< scientific << setprecision(3)<<stiff_approx(line,col);
+              std::cout<<"  "<< scientific << std::setprecision(3)<<stiff_approx(line,col);
             else
-              std::cout<<" "<< scientific << setprecision(3)<<stiff_approx(line,col);
+              std::cout<<" "<< scientific << std::setprecision(3)<<stiff_approx(line,col);
           }
           std::cout<<"\n";
         }
@@ -339,9 +339,9 @@ int DRT::ELEMENTS::BeamCL::Evaluate(Teuchos::ParameterList&   params,
             else if(stiff_relerr(line,col) == 0)
               std::cout<<"     0     ";
             else if(stiff_relerr(line,col) >= 0)
-              std::cout<<"  "<< scientific << setprecision(3)<<stiff_relerr(line,col);
+              std::cout<<"  "<< scientific << std::setprecision(3)<<stiff_relerr(line,col);
             else
-              std::cout<<" "<< scientific << setprecision(3)<<stiff_relerr(line,col);
+              std::cout<<" "<< scientific << std::setprecision(3)<<stiff_relerr(line,col);
           }
           std::cout<<"\n";
         }
@@ -616,7 +616,7 @@ void DRT::ELEMENTS::BeamCL::b3_energy(Teuchos::ParameterList&   params,
 
   bool calcenergy = false;
   if(params.isParameter("energyoftype")==false) calcenergy = true;
-  else if(params.get<string>("energyoftype")=="beam3cl") calcenergy =true;
+  else if(params.get<std::string>("energyoftype")=="beam3cl") calcenergy =true;
 
   if(calcenergy)
   {
@@ -914,7 +914,7 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
      *between (2.22) and (2.23) and Romero 2004, (3.10)*/
     pushforward(Lambda[numgp],stressN,CN,stressM,CM,stressn,cn,stressm,cm);    
 
-    if((params.get<string>("internalforces","no")=="yes") && (force != NULL))
+    if((params.get<std::string>("internalforces","no")=="yes") && (force != NULL))
       eps_ = gamma(0);
 
     /*computation of internal forces according to Jelenic 1999, eq. (4.3); computation split up with respect
@@ -1078,7 +1078,7 @@ void DRT::ELEMENTS::BeamCL::b3_nlnstiffmass(Teuchos::ParameterList&        param
    }
 
    // Note that we return the internal force vector of the interpolated/fictitious nodes!
-   if(params.get<string>("internalforces","no")=="yes" && force != NULL)
+   if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
      internalforces_ = Teuchos::rcp(new Epetra_SerialDenseVector(fforce));
 
    return;

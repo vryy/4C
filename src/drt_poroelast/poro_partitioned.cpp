@@ -141,7 +141,7 @@ void POROELAST::Partitioned::OuterLoop()
   // use maximum between omeganp_ and 1.0 as start value for omega_n+1^{i=0}
   // in case of doubt use 1.0, meaning that direction of new solution vector
   // dispnp better old one
-  omegan_ = max(omeganp_, 1.0);
+  omegan_ = std::max(omeganp_, 1.0);
 
   return;
 }  // OuterLoop()

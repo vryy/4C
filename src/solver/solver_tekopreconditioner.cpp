@@ -65,7 +65,7 @@ void LINALG::SOLVER::TekoPreconditioner::Setup( bool create,
         Teuchos::rcp(new LINALG::SOLVER::TEKO::Teko_BACIEpetraOperatorWrapper(Pmatrix_));
 
     // extract type of preconditioner
-    type_ = Params().sublist("Teko Parameters").get<string>("Prec Type");
+    type_ = Params().sublist("Teko Parameters").get<std::string>("Prec Type");
 
     Teuchos::RCP<Teko::BlockPreconditionerFactory> precFact = Teuchos::null;
 

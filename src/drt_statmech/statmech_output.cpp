@@ -174,7 +174,7 @@ void STATMECH::StatMechManager::InitOutput(const int& ndim,
         /*in the following we assume that there is only a pulling force point Neumann condition of equal absolute
          *value on either filament length; we get the absolute value of the first one of these two conditions */
         double neumannforce;
-        vector<DRT::Condition*> pointneumannconditions(0);
+        std::vector<DRT::Condition*> pointneumannconditions(0);
         discret_->GetCondition("PointNeumann", pointneumannconditions);
         if (pointneumannconditions.size() > 0)
         {
@@ -563,7 +563,7 @@ void STATMECH::StatMechManager::Output(const int                            ndim
       /*in the following we assume that there is only a pulling force point Neumann condition of equal absolute
        *value on either filament length; we get the absolute value of the first one of these two conditions */
       double neumannforce;
-      vector<DRT::Condition*> pointneumannconditions(0);
+      std::vector<DRT::Condition*> pointneumannconditions(0);
       discret_->GetCondition("PointNeumann", pointneumannconditions);
       if (pointneumannconditions.size() > 0)
       {
@@ -1121,7 +1121,7 @@ void STATMECH::StatMechManager::GmshOutput(const Epetra_Vector& disrow,const std
             for (int jd=0; jd<element->NumNode(); jd++)
             {
               double referenceposition = ((element->Nodes())[jd])->X()[id];
-              vector<int> dofnode = discret_->Dof((element->Nodes())[jd]);
+              std::vector<int> dofnode = discret_->Dof((element->Nodes())[jd]);
               double displacement = discol[discret_->DofColMap()->LID(dofnode[id])];
               coord(id, jd) = referenceposition + displacement;
             }
@@ -3746,7 +3746,7 @@ void STATMECH::StatMechManager::DDCorrIterateVector(const Epetra_Vector& discol,
     dserror("For this analysis, we require a cubic periodic box! In your input file, PERIODLENGTH = [ %4.2f, %4.2f, %4.2f]", periodlength_->at(0), periodlength_->at(1), periodlength_->at(2));
 
   // get filament number conditions
-  vector<DRT::Condition*> filaments(0);
+  std::vector<DRT::Condition*> filaments(0);
   discret_->GetCondition("FilamentNumber", filaments);
   bool vectorconverged = false;
   int iteration = 0;
@@ -4312,7 +4312,7 @@ void STATMECH::StatMechManager::LoomOutputAttraction(const Epetra_Vector& disrow
     if(eot == DRT::ELEMENTS::Truss3Type::Instance())
     {
       // Get information on Boundary Conditions, i.e. the number of spatial dimensions (2D,3D)
-      vector<DRT::Condition*> dirichlet;
+      std::vector<DRT::Condition*> dirichlet;
       discret_->GetCondition("Dirichlet",dirichlet);
       if (!dirichlet.size())
         dserror("No Dirichlet boundary conditions in discretization");
@@ -5209,7 +5209,7 @@ void STATMECH::StatMechManager::FilamentOrientations(const Epetra_Vector& discol
     std::stringstream fileleorientation;
 
     // get filament number conditions
-    vector<DRT::Condition*> filaments(0);
+    std::vector<DRT::Condition*> filaments(0);
     discret_->GetCondition("FilamentNumber", filaments);
 
     for(int fil=0; fil<(int)filaments.size(); fil++)

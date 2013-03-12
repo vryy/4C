@@ -656,7 +656,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToIfpack(const Teuchos
   ifpacklist.set("fact: level-of-fill",inparams.get<int>("IFPACKGFILL"));
   ifpacklist.set("fact: ilut level-of-fill",inparams.get<double>("IFPACKFILL"));
   ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-  ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Zero", "Add", "Insert"
+  ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Zero", "Add", "Insert"
   ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis" or "amd"
   ifpacklist.set("amesos: solver type", "Amesos_Klu"); // can be "Amesos_Klu", "Amesos_Umfpack", "Amesos_Superlu"
 
@@ -854,7 +854,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
       smolevelsublist.set<double>("smoother: ifpack level-of-fill",(double)mlsmotimessteps[i]); // 12.01.2012: TW fixed double->int
       Teuchos::ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
       ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis" or "amd" or "true"
-      ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Zero", "Insert", "Add"
+      ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Zero", "Insert", "Add"
       ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
     }
     break;
@@ -927,7 +927,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
     Teuchos::ParameterList& ifpacklist = mllist.sublist("smoother: ifpack list");
     ifpacklist.set<int>("fact: level-of-fill", (int)mlsmotimessteps[coarse]);
     ifpacklist.set("schwarz: reordering type","rcm");
-    ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Zero", "Insert", "Add"
+    ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Zero", "Insert", "Add"
     ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
   }
   break;
@@ -1278,10 +1278,10 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
   case INPAR::SOLVER::stratimikos_belos:  //===================================== Stratimikos
   {
     outparams.set("solver","stratimikos");
-    std::string xmlfile = inparams.get<string>("STRATIMIKOS_XMLFILE");
+    std::string xmlfile = inparams.get<std::string>("STRATIMIKOS_XMLFILE");
     if (xmlfile != "none")
       outparams.set("xml file",xmlfile);
-    outparams.set("xml file",inparams.get<string>("STRATIMIKOS_XMLFILE"));
+    outparams.set("xml file",inparams.get<std::string>("STRATIMIKOS_XMLFILE"));
     Teuchos::ParameterList& stratimikoslist = outparams.sublist("Stratimikos Parameters");
     stratimikoslist = LINALG::Solver::TranslateToStratimikos(inparams);
   }
@@ -1517,8 +1517,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);         // MueLu reuses the ML parameter list
       muelulist.set("MueLu: Prec Type", "ContactSP"); // not used?
       // append AMGBS information
-      muelulist.set("amgbs: prolongator smoother (vel)",inparams.get<string>("AMGBS_PSMOOTHER_VEL"));
-      muelulist.set("amgbs: prolongator smoother (pre)",inparams.get<string>("AMGBS_PSMOOTHER_PRE"));
+      muelulist.set("amgbs: prolongator smoother (vel)",inparams.get<std::string>("AMGBS_PSMOOTHER_VEL"));
+      muelulist.set("amgbs: prolongator smoother (pre)",inparams.get<std::string>("AMGBS_PSMOOTHER_PRE"));
       std::cout << muelulist << std::endl;
     }
     if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contactPen)
@@ -1532,8 +1532,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       Teuchos::ParameterList& amglist = outparams.sublist("AMGBS Parameters");
       ML_Epetra::SetDefaults("SA",amglist);
       amglist.set("amgbs: smoother: pre or post"    ,"both");
-      amglist.set("amgbs: prolongator smoother (vel)",inparams.get<string>("AMGBS_PSMOOTHER_VEL"));
-      amglist.set("amgbs: prolongator smoother (pre)",inparams.get<string>("AMGBS_PSMOOTHER_PRE"));
+      amglist.set("amgbs: prolongator smoother (vel)",inparams.get<std::string>("AMGBS_PSMOOTHER_VEL"));
+      amglist.set("amgbs: prolongator smoother (pre)",inparams.get<std::string>("AMGBS_PSMOOTHER_PRE"));
 
       amglist.set("output"                          ,inparams.get<int>("ML_PRINT"));
       amglist.set("coarse: max size"                ,inparams.get<int>("ML_MAXCOARSESIZE"));
@@ -1636,7 +1636,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
           ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
           ifpacklist.set("fact: level-of-fill",inparams.get<int>("IFPACKGFILL"));
           ifpacklist.set("fact: ilut level-of-fill",inparams.get<double>("IFPACKFILL"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
           ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
           ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
         }
@@ -1648,7 +1648,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
           Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters coarse");
           ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
           ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
           ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
           ifpacklist.set("relaxation: type","Jacobi");
           ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
@@ -1662,7 +1662,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
           Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters coarse");
           ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
           ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
           ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
           ifpacklist.set("relaxation: type","Gauss-Seidel");
           ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
@@ -1676,7 +1676,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
           Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters coarse");
           ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
           ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
           ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
           ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
           ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
@@ -1706,7 +1706,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
           ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
           ifpacklist.set("fact: level-of-fill",inparams.get<int>("IFPACKGFILL"));
           ifpacklist.set("fact: ilut level-of-fill",inparams.get<double>("IFPACKFILL"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
           ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
           ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
         }
@@ -1718,7 +1718,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
           Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters medium");
           ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
           ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
           ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
           ifpacklist.set("relaxation: type","Jacobi");
           ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
@@ -1732,7 +1732,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
           Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters medium");
           ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
           ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
           ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
           ifpacklist.set("relaxation: type","Gauss-Seidel");
           ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
@@ -1746,7 +1746,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
           Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters medium");
           ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
           ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
           ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
           ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
           ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
@@ -1776,7 +1776,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
           ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
           ifpacklist.set("fact: level-of-fill",inparams.get<int>("IFPACKGFILL"));
           ifpacklist.set("fact: ilut level-of-fill",inparams.get<double>("IFPACKFILL"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
           ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
           ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
         }
@@ -1788,7 +1788,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
           Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters fine");
           ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
           ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
           ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
           ifpacklist.set("relaxation: type","Jacobi");
           ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
@@ -1802,7 +1802,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
           Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters fine");
           ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
           ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
           ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
           ifpacklist.set("relaxation: type","Gauss-Seidel");
           ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
@@ -1816,7 +1816,7 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
           Teuchos::ParameterList& ifpacklist = smolevelsublist.sublist("IFPACK Parameters fine");
           ifpacklist.set("fact: drop tolerance",inparams.get<double>("AZDROP"));
           ifpacklist.set("partitioner: overlap",inparams.get<int>("IFPACKOVERLAP"));
-          ifpacklist.set("schwarz: combine mode",inparams.get<string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
+          ifpacklist.set("schwarz: combine mode",inparams.get<std::string>("IFPACKCOMBINE")); // can be "Add", "Zero", "Insert", "InsertAdd", "Average", "AbsMax"
           ifpacklist.set("schwarz: reordering type","rcm"); // "rcm" or "metis"
           ifpacklist.set("relaxation: type","symmetric Gauss-Seidel");
           ifpacklist.set("relaxation: sweeps",bspcsweeps[i]);
@@ -1985,8 +1985,8 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
   }
   // For some unknown reason, ML likes to have stuff one larger than
   // neccessary...
-  vector<double> dtemp(N_local+N_rcvd+1);
-  vector<int>    cmap(N_local+N_rcvd+1);
+  std::vector<double> dtemp(N_local+N_rcvd+1);
+  std::vector<int>    cmap(N_local+N_rcvd+1);
   for (int i=0; i<N_local; ++i)
   {
     cmap[i] = B.DomainMap().GID(i);
@@ -2033,7 +2033,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
   Teuchos::RCP<Epetra_CrsMatrix> result
   = Teuchos::rcp(new Epetra_CrsMatrix(::Copy,A.RangeMap(),gcmap,educatedguess,false));
 
-  vector<int> gcid(educatedguess);
+  std::vector<int> gcid(educatedguess);
   for (int i=0; i<myrowlength; ++i)
   {
     const int grid = rowmap.GID(i);
@@ -2083,8 +2083,8 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const Epetra_CrsMatrix& Ao
 /*
   static void CopySortDeleteZeros(const Epetra_CrsMatrix& A, Epetra_CrsMatrix& As)
   {
-  vector<int>    scindices(A.MaxNumEntries());
-  vector<double> scvalues(A.MaxNumEntries());
+  std::vector<int>    scindices(A.MaxNumEntries());
+  std::vector<double> scvalues(A.MaxNumEntries());
   for (int i=0; i<A.NumMyRows(); ++i)
   {
   int grid = A.RowMap().GID(i);

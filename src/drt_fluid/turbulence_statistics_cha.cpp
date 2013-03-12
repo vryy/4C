@@ -78,11 +78,11 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
   // get the plane normal direction from the parameterlist
   {
-    string planestring;
+    std::string planestring;
     if (inflowchannel_)
-      planestring = params_.sublist("TURBULENT INFLOW").get<string>("INFLOW_HOMDIR","not_specified");
+      planestring = params_.sublist("TURBULENT INFLOW").get<std::string>("INFLOW_HOMDIR","not_specified");
     else
-      planestring = params_.sublist("TURBULENCE MODEL").get<string>("HOMDIR","not_specified");
+      planestring = params_.sublist("TURBULENCE MODEL").get<std::string>("HOMDIR","not_specified");
 
     if(planestring == "xz")
     {
@@ -108,20 +108,20 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
   scalesimilarity_=false;
   multifractal_=false;
 
-  if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES") == "CLASSICAL_LES"
+  if (modelparams->get<std::string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES") == "CLASSICAL_LES"
       and (!inflowchannel_)) //write model-related output only for pure turbulent channel flow
   {
     // check if we want to compute averages of Smagorinsky
     // constants, effective viscosities etc
-    if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
+    if(modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
        ==
        "Dynamic_Smagorinsky"
        ||
-       params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+       params_.sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL","no_model")
        ==
        "Smagorinsky_with_van_Driest_damping"
        ||
-       params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL","no_model")
+       params_.sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL","no_model")
        ==
        "Smagorinsky"
       )
@@ -136,7 +136,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     }
     // check if we want to compute averages of scale similarity
     // quantities (tau_SFS)
-    else if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
+    else if(modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
             == "Scale_Similarity")
     {
       if(discret_->Comm().MyPID()==0)
@@ -149,11 +149,11 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     }
     // check if we want to compute averages of multifractal
     // quantities (N, B)
-    else if (modelparams->get<string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
+    else if (modelparams->get<std::string>("TURBULENCE_APPROACH","DNS_OR_RESVMM_LES")
              ==
              "CLASSICAL_LES")
     {
-      if(modelparams->get<string>("PHYSICAL_MODEL","no_model")
+      if(modelparams->get<std::string>("PHYSICAL_MODEL","no_model")
          ==
          "Multifractal_Subgrid_Scales")
       {
@@ -263,7 +263,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     planecoordinates_ = Teuchos::rcp(new std::vector<double> );
 
     // the criterion allows differences in coordinates by 1e-9
-    set<double,PlaneSortCriterion> availablecoords;
+    std::set<double,PlaneSortCriterion> availablecoords;
 
     // loop nodes, build set of planes accessible on this proc and
     // calculate bounding box
@@ -316,8 +316,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 #endif
       int numprocs=discret_->Comm().NumProc();
 
-      vector<char> sblock;
-      vector<char> rblock;
+      std::vector<char> sblock;
+      std::vector<char> rblock;
 
 
 #ifdef PARALLEL
@@ -386,7 +386,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
           coordsvec.clear();
 
-          vector<char>::size_type index = 0;
+          std::vector<char>::size_type index = 0;
           while (index < rblock.size())
           {
             double onecoord;
@@ -446,10 +446,10 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     }
 
     // get nurbs dis' knotvector sizes
-    vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(0));
+    std::vector<int> n_x_m_x_l(nurbsdis->Return_n_x_m_x_l(0));
 
     // get nurbs dis' element numbers
-    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
 
     // get the knotvector itself
     RCP<DRT::NURBS::Knotvector> knots=nurbsdis->GetKnotVector();
@@ -459,7 +459,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       (*nodeplanes_      ).resize(nele_x_mele_x_lele[1]+1);
       (*planecoordinates_).resize(nele_x_mele_x_lele[1]*(numsubdivisions-1)+1);
 
-      vector<double>::iterator coord;
+      std::vector<double>::iterator coord;
 
       for (coord  = (*nodeplanes_).begin();
            coord != (*nodeplanes_).end()  ;
@@ -489,7 +489,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
       int patchid=0;
 
-      vector<int> ele_cart_id(3);
+      std::vector<int> ele_cart_id(3);
       knots->ConvertEleGidToKnotIds(gid,patchid,ele_cart_id);
 
       // want to loop all control points of the element,
@@ -660,7 +660,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       (*nodeplanes_      ).resize(nele_x_mele_x_lele[1]+1);
       (*planecoordinates_).resize(nele_x_mele_x_lele[1]*(numsubdivisions-1)+1);
 
-      vector<double>::iterator coord;
+      std::vector<double>::iterator coord;
 
       int nelelayer = (nele_x_mele_x_lele[0])*(nele_x_mele_x_lele[2]);
 
@@ -1234,7 +1234,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
 
     if (physicaltype_ == INPAR::FLUID::loma)
     {
@@ -1251,7 +1251,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       // additional output for dynamic Smagorinsky model
       if (smagorinsky_)
       {
-        std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+        std::string s_smag = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
         s_smag.append(".Cs_statistics");
 
         log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::out));
@@ -1273,7 +1273,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       // additional output for scale similarity model
       if (scalesimilarity_)
       {
-        std::string s_ssm = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+        std::string s_ssm = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
         s_ssm.append(".SSM_statistics");
 
         log_SSM = Teuchos::rcp(new std::ofstream(s_ssm.c_str(),std::ios::out));
@@ -1283,7 +1283,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       // additional output for multifractal subgrid scales
       if (multifractal_)
       {
-        std::string s_mf = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+        std::string s_mf = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
         s_mf.append(".MF_statistics");
 
         log_MF = Teuchos::rcp(new std::ofstream(s_mf.c_str(),std::ios::out));
@@ -1294,7 +1294,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     // additional output of residuals and subscale quantities
     if (subgrid_dissipation_)
     {
-      std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      std::string s_res = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
       s_res.append(".res_statistics");
 
       log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::out));
@@ -1302,10 +1302,10 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       (*log_res) << "# All values are first averaged over the integration points in an element \n";
       (*log_res) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
 
-      std::string s_res_scatra = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      std::string s_res_scatra = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
       s_res_scatra.append(".res_scatra_statistics");
 
-      log_res_scatra = Teuchos::rcp(new std::ofstream(s_res_scatra.c_str(),ios::out));
+      log_res_scatra = Teuchos::rcp(new std::ofstream(s_res_scatra.c_str(),std::ios::out));
       (*log_res_scatra) << "# Statistics for turbulent incompressible channel flow with scalar transport (residuals and subscale quantities)\n";
       (*log_res_scatra) << "# All values are first averaged over the integration points in an element \n";
       (*log_res_scatra) << "# and after that averaged over a whole element layer in the homogeneous plane\n\n";
@@ -1372,7 +1372,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
   //----------------------------------------------------------------------
   // compute forces on top and bottom plate for normalization purposes
 
-  for(vector<double>::iterator plane=planecoordinates_->begin();
+  for(std::vector<double>::iterator plane=planecoordinates_->begin();
       plane!=planecoordinates_->end();
       ++plane)
   {
@@ -1409,7 +1409,7 @@ void FLD::TurbulenceStatisticsCha::DoTimeSample(
           // this node belongs to the plane under consideration
           if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
           {
-            vector<int> dof = discret_->Dof(node);
+            std::vector<int> dof = discret_->Dof(node);
             double      one = 1.0;
 
             toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -1526,7 +1526,7 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
   //----------------------------------------------------------------------
   // compute forces on top and bottom plate for normalization purposes
 
-  for(vector<double>::iterator plane=planecoordinates_->begin();
+  for(std::vector<double>::iterator plane=planecoordinates_->begin();
       plane!=planecoordinates_->end();
       ++plane)
   {
@@ -1558,7 +1558,7 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
           // this node belongs to the plane under consideration
           if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
           {
-            vector<int> dof = discret_->Dof(node);
+            std::vector<int> dof = discret_->Dof(node);
             double      one = 1.0;
 
             toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -1612,7 +1612,7 @@ void FLD::TurbulenceStatisticsCha::DoLomaTimeSample(
           // this node belongs to the plane under consideration
           if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
           {
-            vector<int> dof = discret_->Dof(node);
+            std::vector<int> dof = discret_->Dof(node);
             double      one = 1.0;
 
             toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -1689,7 +1689,7 @@ void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(
   //----------------------------------------------------------------------
   // compute forces on top and bottom plate for normalization purposes
 
-  for(vector<double>::iterator plane=planecoordinates_->begin();
+  for(std::vector<double>::iterator plane=planecoordinates_->begin();
       plane!=planecoordinates_->end();
       ++plane)
   {
@@ -1721,7 +1721,7 @@ void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(
           // this node belongs to the plane under consideration
           if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
           {
-            vector<int> dof = discret_->Dof(node);
+            std::vector<int> dof = discret_->Dof(node);
             double      one = 1.0;
 
             toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -1775,7 +1775,7 @@ void FLD::TurbulenceStatisticsCha::DoScatraTimeSample(
           // this node belongs to the plane under consideration
           if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
           {
-            vector<int> dof = discret_->Dof(node);
+            std::vector<int> dof = discret_->Dof(node);
             double      one = 1.0;
 
             toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -1995,7 +1995,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateIntegralMeanValuesInPlanes()
   else
   {
     // get nurbs dis' element numbers
-    vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
+    std::vector<int> nele_x_mele_x_lele(nurbsdis->Return_nele_x_mele_x_lele(0));
 
     numele_ = nele_x_mele_x_lele[0]*nele_x_mele_x_lele[2];
   }
@@ -2494,7 +2494,7 @@ void FLD::TurbulenceStatisticsCha::EvaluatePointwiseMeanValuesInPlanes()
   //----------------------------------------------------------------------
   // loop planes and calculate pointwise means in each plane
 
-  for(vector<double>::iterator plane=planecoordinates_->begin();
+  for(std::vector<double>::iterator plane=planecoordinates_->begin();
       plane!=planecoordinates_->end();
       ++plane)
   {
@@ -2528,7 +2528,7 @@ void FLD::TurbulenceStatisticsCha::EvaluatePointwiseMeanValuesInPlanes()
         // this node belongs to the plane under consideration
         if (node->X()[dim_]<*plane+2e-9 && node->X()[dim_]>*plane-2e-9)
         {
-          vector<int> dof = discret_->Dof(node);
+          std::vector<int> dof = discret_->Dof(node);
           double      one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
@@ -2537,7 +2537,7 @@ void FLD::TurbulenceStatisticsCha::EvaluatePointwiseMeanValuesInPlanes()
           togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
 
           // now check whether we have a pbc condition on this node
-          vector<DRT::Condition*> mypbc;
+          std::vector<DRT::Condition*> mypbc;
 
           node->GetCondition("SurfacePeriodic",mypbc);
 
@@ -3118,14 +3118,14 @@ void FLD::TurbulenceStatisticsCha::AddModelParamsMultifractal(
 
 
 void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
-  map<string,RCP<Epetra_Vector> >      statevecs,
-  map<string,RCP<Epetra_MultiVector> > statetenss,
+  std::map<std::string,RCP<Epetra_Vector> >      statevecs,
+  std::map<std::string,RCP<Epetra_MultiVector> > statetenss,
   const double                         thermpressaf,
   const double                         thermpressam,
   const double                         thermpressdtaf,
   const double                         thermpressdtam,
-  map<string,RCP<Epetra_Vector> >      scatrastatevecs,
-  map<string,RCP<Epetra_MultiVector> > scatrafieldvecs)
+  std::map<std::string,RCP<Epetra_Vector> >      scatrastatevecs,
+  std::map<std::string,RCP<Epetra_MultiVector> > scatrafieldvecs)
 {
 
   if(subgrid_dissipation_)
@@ -3139,9 +3139,9 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     // parameters for a turbulence model
     {
       eleparams_.sublist("TURBULENCE MODEL") = params_.sublist("TURBULENCE MODEL");
-      if ((params_.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL")=="Scale_Similarity"))
+      if ((params_.sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL")=="Scale_Similarity"))
       {
-        for(map<string,RCP<Epetra_MultiVector> >::iterator state =statetenss.begin();state!=statetenss.end();++state)
+        for(std::map<std::string,RCP<Epetra_MultiVector> >::iterator state =statetenss.begin();state!=statetenss.end();++state)
         {
           eleparams_.set(state->first,state->second);
         }
@@ -3154,7 +3154,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     eleparams_.set<double>("thermpressderiv at n+alpha_M/n+1",thermpressdtam);
 
     // set state vectors for element call
-    for(map<string,RCP<Epetra_Vector> >::iterator state =statevecs.begin();
+    for(std::map<std::string,RCP<Epetra_Vector> >::iterator state =statevecs.begin();
                                                   state!=statevecs.end()  ;
                                                   ++state                 )
     {
@@ -3189,7 +3189,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
      //         however, the error is expected to be small
      scatraeleparams_.set<double>("time derivative of thermodynamic pressure",thermpressdtaf);
      // add convective velocity field
-     for(map<string,RCP<Epetra_MultiVector> >::iterator field =scatrafieldvecs.begin();
+     for(std::map<std::string,RCP<Epetra_MultiVector> >::iterator field =scatrafieldvecs.begin();
                                                         field!=scatrafieldvecs.end()  ;
                                                         ++field                 )
      {
@@ -3197,7 +3197,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
      }
 
      // set state vectors for element call
-     for(map<string,RCP<Epetra_Vector> >::iterator state =scatrastatevecs.begin();
+     for(std::map<std::string,RCP<Epetra_Vector> >::iterator state =scatrastatevecs.begin();
                                                    state!=scatrastatevecs.end()  ;
                                                    ++state                 )
      {
@@ -3932,7 +3932,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
     if (inflowchannel_)
       s.append(".inflow.flow_statistics");
     else
@@ -4005,7 +4005,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       // get the outfile
       Teuchos::RCP<std::ofstream> log_Cs;
 
-      std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      std::string s_smag = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
       s_smag.append(".Cs_statistics");
 
       log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::app));
@@ -4051,7 +4051,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       // get the outfile
       Teuchos::RCP<std::ofstream> log_SSM;
 
-      std::string s_ssm = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      std::string s_ssm = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
       s_ssm.append(".SSM_statistics");
 
       log_SSM = Teuchos::rcp(new std::ofstream(s_ssm.c_str(),std::ios::app));
@@ -4083,7 +4083,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       // get the outfile
       Teuchos::RCP<std::ofstream> log_mf;
 
-      std::string s_mf = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      std::string s_mf = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
       s_mf.append(".MF_statistics");
 
       log_mf = Teuchos::rcp(new std::ofstream(s_mf.c_str(),std::ios::app));
@@ -4127,7 +4127,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       Teuchos::RCP<std::ofstream> log_res;
 
       // output of residuals and subscale quantities
-      std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      std::string s_res = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
       s_res.append(".res_statistics");
 
       log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::app));
@@ -4343,7 +4343,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
     if (inflowchannel_)
       s.append(".inflow.flow_statistics");
     else
@@ -4397,7 +4397,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
       // get the outfile
       Teuchos::RCP<std::ofstream> log_Cs;
 
-      std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      std::string s_smag = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
       s_smag.append(".Cs_statistics");
 
       log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::out));
@@ -4442,7 +4442,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
       Teuchos::RCP<std::ofstream> log_res;
 
       // output of residuals and subscale quantities
-      std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      std::string s_res = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
       s_res.append(".res_statistics");
 
       log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::out));
@@ -4666,7 +4666,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
     if (inflowchannel_)
       s.append(".inflow.loma_statistics");
     else
@@ -4732,7 +4732,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       Teuchos::RCP<std::ofstream> log_res;
 
       // output of residuals and subscale quantities
-      std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      std::string s_res = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
       s_res.append(".res_statistics");
 
       log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::out));
@@ -4888,10 +4888,10 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       Teuchos::RCP<std::ofstream> log_res_scatra;
 
       // output of residuals and subscale quantities
-      std::string s_res_scatra = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      std::string s_res_scatra = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
       s_res_scatra.append(".res_scatra_statistics");
 
-      log_res_scatra = Teuchos::rcp(new std::ofstream(s_res_scatra.c_str(),ios::out));
+      log_res_scatra = Teuchos::rcp(new std::ofstream(s_res_scatra.c_str(),std::ios::out));
 
       (*log_res_scatra) << "# Statistics for turbulent incompressible channel flow with scalar transport (residuals and subscale quantities)\n";
       (*log_res_scatra) << "# All values are first averaged over the integration points in an element \n";
@@ -4922,27 +4922,27 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
 
       (*log_res_scatra) << "\n";
 
-      (*log_res_scatra) << scientific;
+      (*log_res_scatra) << std::scientific;
       for (unsigned rr=0;rr<nodeplanes_->size()-1;++rr)
       {
-        (*log_res_scatra)  << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
 
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sumresS_         )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sumresS_sq_      )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sumtauS_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sumresS_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sumresS_sq_      )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sumtauS_         )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_avm3_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_mfs_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_mfscross_)[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_mfsrey_  )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_avm3_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_mfs_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_mfscross_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_mfsrey_  )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res_scatra)  << &endl;
+        (*log_res_scatra)  << &std::endl;
       }
       log_res_scatra->flush();
 
@@ -4956,7 +4956,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       // get the outfile
       Teuchos::RCP<std::ofstream> log_Cs;
 
-      std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      std::string s_smag = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
       s_smag.append(".Cs_statistics");
 
       log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::out));
@@ -5069,7 +5069,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
     if (inflowchannel_)
       s.append(".inflow.flow_statistics");
     else
@@ -5129,10 +5129,10 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       Teuchos::RCP<std::ofstream> log_res;
 
       // output of residuals and subscale quantities
-      std::string s_res = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      std::string s_res = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
       s_res.append(".res_statistics");
 
-      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),ios::out));
+      log_res = Teuchos::rcp(new std::ofstream(s_res.c_str(),std::ios::out));
 
       (*log_res) << "# Statistics for turbulent incompressible channel flow (residuals and subscale quantities)\n";
       (*log_res) << "# All values are first averaged over the integration points in an element \n";
@@ -5206,78 +5206,78 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       (*log_res) << " tau_rey_31  ";
       (*log_res) << "\n";
 
-      (*log_res) << scientific;
+      (*log_res) << std::scientific;
       for (unsigned rr=0;rr<nodeplanes_->size()-1;++rr)
       {
-        (*log_res)  << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+        (*log_res)  << std::setw(11) << std::setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_      )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_      )[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_      )[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_      )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_   )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_   )[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_   )[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_   )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumres_sq_   )[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_sq_   )[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_sq_   )[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumres_sq_   )[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumsvelaf_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_sq_)[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_sq_)[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumsvelaf_sq_)[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauinvsvel_)[3*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauinvsvel_)[3*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauinvsvel_)[3*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauinvsvel_)[3*rr+2]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumabsres_       )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumabssvelaf_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumabsres_       )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumabssvelaf_    )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumresC_         )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumresC_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumspressnp_     )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumresC_sq_      )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumspressnp_sq_  )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumresC_sq_      )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumspressnp_sq_  )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauM_         )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumtauC_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauM_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumtauC_         )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_pspg_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_cstab_   )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_avm3_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_mfs_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_mfscross_)[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_eps_mfsrey_  )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_pspg_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_cstab_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_avm3_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_mfs_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_mfscross_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_mfsrey_  )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sumhk_           )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumstrle_        )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumgradle_       )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sumhbazilevs_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*nodeplanes_)[rr+1]-(*nodeplanes_)[rr]     << "  " ;
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumhk_           )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumstrle_        )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumgradle_       )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sumhbazilevs_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*nodeplanes_)[rr+1]-(*nodeplanes_)[rr]     << "  " ;
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+2]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+3]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+4]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_crossstress_)[6*rr+5]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+3]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+4]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_crossstress_)[6*rr+5]/(numele_*numsamp_) << "  ";
 
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr  ]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+1]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+2]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+3]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+4]/(numele_*numsamp_) << "  ";
-        (*log_res)  << setw(11) << setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr  ]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+1]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+2]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+3]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+4]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_reystress_  )[6*rr+5]/(numele_*numsamp_) << "  ";
 
 
-        (*log_res)  << &endl;
+        (*log_res)  << &std::endl;
       }
       log_res->flush();
 
@@ -5285,10 +5285,10 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       Teuchos::RCP<std::ofstream> log_res_scatra;
 
       // output of residuals and subscale quantities
-      std::string s_res_scatra = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      std::string s_res_scatra = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
       s_res_scatra.append(".res_scatra_statistics");
 
-      log_res_scatra = Teuchos::rcp(new std::ofstream(s_res_scatra.c_str(),ios::out));
+      log_res_scatra = Teuchos::rcp(new std::ofstream(s_res_scatra.c_str(),std::ios::out));
 
       (*log_res_scatra) << "# Statistics for turbulent incompressible channel flow with scalar transport (residuals and subscale quantities)\n";
       (*log_res_scatra) << "# All values are first averaged over the integration points in an element \n";
@@ -5319,27 +5319,27 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
 
       (*log_res_scatra) << "\n";
 
-      (*log_res_scatra) << scientific;
+      (*log_res_scatra) << std::scientific;
       for (unsigned rr=0;rr<nodeplanes_->size()-1;++rr)
       {
-        (*log_res_scatra)  << setw(11) << setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << 0.5*((*nodeplanes_)[rr+1]+(*nodeplanes_)[rr]) << "  " ;
 
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sumresS_         )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sumresS_sq_      )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sumtauS_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sumresS_         )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sumresS_sq_      )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sumtauS_         )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_avm3_    )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_mfs_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_mfscross_)[rr]/(numele_*numsamp_) << "  ";
-        (*log_res_scatra)  << setw(11) << setprecision(4) << (*sum_scatra_eps_mfsrey_  )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_avm3_    )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_mfs_     )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_mfscross_)[rr]/(numele_*numsamp_) << "  ";
+        (*log_res_scatra)  << std::setw(11) << std::setprecision(4) << (*sum_scatra_eps_mfsrey_  )[rr]/(numele_*numsamp_) << "  ";
 
-        (*log_res_scatra)  << &endl;
+        (*log_res_scatra)  << &std::endl;
       }
       log_res_scatra->flush();
 
@@ -5353,7 +5353,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       // get the outfile
       Teuchos::RCP<std::ofstream> log_mf;
 
-      std::string s_mf = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      std::string s_mf = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
       s_mf.append(".MF_statistics");
 
       log_mf = Teuchos::rcp(new std::ofstream(s_mf.c_str(),std::ios::out));
@@ -5406,7 +5406,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       // get the outfile
       Teuchos::RCP<std::ofstream> log_Cs;
 
-      std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+      std::string s_smag = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
       s_smag.append(".Cs_statistics");
 
       log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::out));

@@ -19,7 +19,7 @@ Maintainer: Peter Gamnitzer
  |  ctor (public)                                            gammi 05/08|
  *----------------------------------------------------------------------*/
 DRT::NURBS::NurbsDiscretization::NurbsDiscretization(
-  const string             name,
+  const std::string             name,
   RCP<Epetra_Comm> comm)
   :
   DRT::Discretization::Discretization(name,comm    ),

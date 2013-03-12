@@ -55,7 +55,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
   DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff")        act = So_hex8::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff")        act = So_hex8::calc_struct_nlnstiff;
@@ -240,7 +240,7 @@ int DRT::ELEMENTS::So_sh8::Evaluate(Teuchos::ParameterList&   params,
         params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
       if (gpstressmap==Teuchos::null)
         dserror("no gp stress/strain map available for postprocessing");
-      string stresstype = params.get<string>("stresstype","ndxyz");
+      std::string stresstype = params.get<std::string>("stresstype","ndxyz");
       int gid = Id();
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> gpstress(((*gpstressmap)[gid])->A(),true);
 
@@ -498,7 +498,7 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
   */
   // in any case declare variables, sizes etc. only in eascase
   Epetra_SerialDenseMatrix* alpha = NULL;         // EAS alphas
-  vector<Epetra_SerialDenseMatrix>* M_GP = NULL;  // EAS matrix M at all GPs
+  std::vector<Epetra_SerialDenseMatrix>* M_GP = NULL;  // EAS matrix M at all GPs
   LINALG::Matrix<NUMSTR_SOH8,soh8_eassosh8> M; // EAS matrix M at current GP, fixed for sosh8
   Epetra_SerialDenseVector feas;                  // EAS portion of internal forces
   Epetra_SerialDenseMatrix Kaa;                   // EAS matrix Kaa
@@ -570,11 +570,11 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
   //LINALG::Matrix<num_ans*num_sp,NUMDOF_SOH8> B_ans_loc(true); //set to 0
   LINALG::Matrix<num_ans*num_sp,NUMDOF_SOH8> B_ans_loc;
   // Jacobian evaluated at all ANS sampling points
-  vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> > jac_sps(num_sp);
+  std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> > jac_sps(num_sp);
   // CURRENT Jacobian evaluated at all ANS sampling points
-  vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> > jac_cur_sps(num_sp);
+  std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> > jac_cur_sps(num_sp);
   // pointer to derivs evaluated at all sampling points
-  vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> >* deriv_sp = NULL;   //derivs eval. at all sampling points
+  std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> >* deriv_sp = NULL;   //derivs eval. at all sampling points
   // evaluate all necessary variables for ANS
   sosh8_anssetup(xrefe,xcurr,&deriv_sp,jac_sps,jac_cur_sps,B_ans_loc);
   // (r,s) gp-locations of fully integrated linear 8-node Hex
@@ -979,13 +979,13 @@ void DRT::ELEMENTS::So_sh8::sosh8_nlnstiffmass(
 void DRT::ELEMENTS::So_sh8::sosh8_anssetup(
           const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe, // material element coords
           const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xcurr, // current element coords
-          vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> >** deriv_sp,   // derivs eval. at all sampling points
-          vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_sps,     // jac at all sampling points
-          vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_cur_sps, // current jac at all sampling points
+          std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> >** deriv_sp,   // derivs eval. at all sampling points
+          std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_sps,     // jac at all sampling points
+          std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> >& jac_cur_sps, // current jac at all sampling points
           LINALG::Matrix<num_ans*num_sp,NUMDOF_SOH8>& B_ans_loc) // modified B
 {
   // static matrix object of derivs at sampling points, kept in memory
-  static vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > df_sp(num_sp);
+  static std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > df_sp(num_sp);
   static bool dfsp_eval;                      // flag for re-evaluate everything
 
   if (dfsp_eval!=0){             // if true f,df already evaluated
@@ -1297,14 +1297,14 @@ void DRT::ELEMENTS::So_sh8::CalcSTCMatrix
     LINALG::Matrix<NUMDOF_SOH8,1> adjele(true);
     DRT::Node** nodes = Nodes();
 
-    vector<DRT::Condition*> cond0;
-    vector<DRT::Condition*> condFSI0;
+    std::vector<DRT::Condition*> cond0;
+    std::vector<DRT::Condition*> condFSI0;
     int condnum0 = 1000; // minimun STCid of layer with nodes 0..3
     bool current0 = false; // layer with nodes 0..4 to be scaled
     (nodes[0])->GetCondition("STC Layer",cond0);
     (nodes[0])->GetCondition("FSICoupling",condFSI0);
-    vector<DRT::Condition*> cond1;
-    vector<DRT::Condition*> condFSI1;
+    std::vector<DRT::Condition*> cond1;
+    std::vector<DRT::Condition*> condFSI1;
     int condnum1 = 1000;// minimun STCid of layer with nodes 4..7
     bool current1 = false; // minimun STCid of layer with nodes 4..7
     (nodes[NUMNOD_SOH8/2])->GetCondition("STC Layer",cond1);
@@ -1477,7 +1477,7 @@ void DRT::ELEMENTS::So_sh8::CalcSTCMatrix
 
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> TotJac(true);
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> TotJacInv(true);
-      vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs_X = sosh8_derivs_sdc();
+      std::vector<LINALG::Matrix<NUMDIM_SOH8,NUMNOD_SOH8> > derivs_X = sosh8_derivs_sdc();
       LINALG::Matrix<NUMDOF_SOH8,1> adjele(true);
       for(int i=0; i<NUMNOD_SOH8; i++)
       {

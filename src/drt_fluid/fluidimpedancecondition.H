@@ -115,7 +115,7 @@ private:
   /*!
   \brief all single impedance conditions
   */
-  map<const int, RCP<class FluidImpedanceBc> > impmap_;
+  std::map<const int, RCP<class FluidImpedanceBc> > impmap_;
 
   //! fluid discretization
   RCP<DRT::Discretization>      discret_;
@@ -231,7 +231,7 @@ private:
 					double termradius,
 					double density,
 					double viscosity,
-					map<const double,complex<double> > zstored);
+					std::map<const double,std::complex<double> > zstored);
 
   /*!
   \brief compute tree and root impedance for zero frequency for artery
@@ -241,7 +241,7 @@ private:
 					  double termradius,
 					  double density,
 					  double viscosity,
-					  map<const double,complex<double> > zstored);
+					  std::map<const double,std::complex<double> > zstored);
 
   /*!
   \brief compute tree and root impedance for given frequency for lung
@@ -252,7 +252,7 @@ private:
 					double termradius,
 					double density,
 					double visosity,
-					map<const double,complex<double> > zstored);
+					std::map<const double,std::complex<double> > zstored);
 
   /*!
   \brief compute tree and root impedance for zero frequency for lung
@@ -262,7 +262,7 @@ private:
   					  double termradius,
   					  double density,
   					  double viscosity,
-  					  map<const double,complex<double> > zstored);
+  					  std::map<const double,std::complex<double> > zstored);
 
 
   /*!
@@ -329,7 +329,7 @@ private:
   int cyclesteps_;
 
   //! Real impedance values in the time domain
-  vector<double> impvalues_;   // real impedance values
+  std::vector<double> impvalues_;   // real impedance values
 
   //! Information associated with requency indipendent windkessel
   //! Flow in at time step n+1

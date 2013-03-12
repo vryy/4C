@@ -68,7 +68,7 @@ std::string XFEM::PHYSICS::physVarToString(const XFEM::PHYSICS::Field var)
   case Velziface:        text = "velziface"; break;
   default:
     std::cout << var << std::endl;
-    dserror("no string defined for Field");
+    dserror("no std::string defined for Field");
   };
   return text;
 }

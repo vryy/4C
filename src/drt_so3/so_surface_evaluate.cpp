@@ -428,12 +428,12 @@ void DRT::ELEMENTS::StructuralSurface::FAD_DFAD_DSurfaceIntegration(
   // this routine holds for all element shapes
 
   //Erstellen eines Vektor des Typs Saccado fuer x und deriv
-  vector<Sacado::Fad::DFad<double> > saccado_x(x.N()*x.M());
-  vector<Sacado::Fad::DFad<double> > saccado_deriv(deriv.N()*deriv.M());
-  vector<Sacado::Fad::DFad<double> > saccado_g1(3);
-  vector<Sacado::Fad::DFad<double> > saccado_g2(3);
+  std::vector<Sacado::Fad::DFad<double> > saccado_x(x.N()*x.M());
+  std::vector<Sacado::Fad::DFad<double> > saccado_deriv(deriv.N()*deriv.M());
+  std::vector<Sacado::Fad::DFad<double> > saccado_g1(3);
+  std::vector<Sacado::Fad::DFad<double> > saccado_g2(3);
 
-  vector<Sacado::Fad::DFad<double> > saccado_normal(3);
+  std::vector<Sacado::Fad::DFad<double> > saccado_normal(3);
 
   //Kopieren der Daten der x_Matrix
   for(int row=0; row < x.M(); row++){
@@ -485,12 +485,12 @@ void DRT::ELEMENTS::StructuralSurface::FAD_SFAD_DSurfaceIntegration(Epetra_Seria
   // this routine holds for quad4 element only
 
   //Erstellen eines Vektor des Typs Saccado fuer x und deriv
-  vector<Sacado::Fad::SFad<double, 12> > saccado_x(x.N()*x.M());
-  vector<Sacado::Fad::SFad<double, 12> > saccado_deriv(deriv.N()*deriv.M());
-  vector<Sacado::Fad::SFad<double, 12> > saccado_g1(3);
-  vector<Sacado::Fad::SFad<double, 12> > saccado_g2(3);
+  std::vector<Sacado::Fad::SFad<double, 12> > saccado_x(x.N()*x.M());
+  std::vector<Sacado::Fad::SFad<double, 12> > saccado_deriv(deriv.N()*deriv.M());
+  std::vector<Sacado::Fad::SFad<double, 12> > saccado_g1(3);
+  std::vector<Sacado::Fad::SFad<double, 12> > saccado_g2(3);
 
-  vector<Sacado::Fad::SFad<double, 12> > saccado_normal(3);
+  std::vector<Sacado::Fad::SFad<double, 12> > saccado_normal(3);
 
   //Kopieren der Daten der x_Matrix
   for(int row=0; row < x.M(); row++){
@@ -602,8 +602,8 @@ void DRT::ELEMENTS::StructuralSurface::	FiniteDiff_DSurfaceIntegration(Epetra_Se
 {
   // this routine holds for all element shapes
 
-  vector<double> Dnormal(3);
-  vector<double> normal(3);
+  std::vector<double> Dnormal(3);
+  std::vector<double> normal(3);
   Epetra_SerialDenseMatrix dxc(x);
 
   double delta = 1e-6;
@@ -643,7 +643,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
   DRT::ELEMENTS::StructuralSurface::ActionType act = StructuralSurface::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_constrvol")        act = StructuralSurface::calc_struct_constrvol;
   else if (action=="calc_struct_volconstrstiff")   act = StructuralSurface::calc_struct_volconstrstiff;
@@ -1387,7 +1387,7 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
   DRT::ELEMENTS::StructuralSurface::ActionType act = StructuralSurface::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_area_poro")        act = StructuralSurface::calc_struct_area_poro;
   else

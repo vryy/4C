@@ -43,7 +43,7 @@ Maintainer: Ulrich Kuettler
 /*!
   \brief remove all leading and trailing whitespaces from a string.
 
-  Note: consecutive whitespaces inside the string will be reduced to a
+  Note: consecutive whitespaces inside the std::string will be reduced to a
   single space.
 
   \author u.kue

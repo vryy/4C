@@ -175,7 +175,7 @@ void DoDirichletConditionCombust(DRT::Condition&             cond,
     if (!dis.NodeRowMap()->MyGID((*nodeids)[i])) continue;
     DRT::Node* actnode = dis.gNode((*nodeids)[i]);
     if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
-    vector<int> dofs = dis.Dof(actnode);
+    std::vector<int> dofs = dis.Dof(actnode);
     const unsigned numdf = dofs.size();
 
     if (numdf==4)//StandardFEM
@@ -1039,7 +1039,7 @@ void DRT::DiscretizationXFEM::EvaluateDirichletCombust(Teuchos::ParameterList& p
   Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
   if (dbcmapextractor != Teuchos::null) dbcgids = Teuchos::rcp(new std::set<int>());
 
-  std::multimap<string,RCP<Condition> >::iterator fool;
+  std::multimap<std::string,RCP<Condition> >::iterator fool;
   //--------------------------------------------------------
   // loop through Dirichlet conditions and evaluate them
   //--------------------------------------------------------
@@ -1156,8 +1156,8 @@ int DRT::DiscretizationXFEM::FillCompleteXFEM(bool assigndegreesoffreedom,
  *  h.kue 09/07
  */
 static void AssignGlobalIDs( const Epetra_Comm& comm,
-                             const map< vector<int>, RCP<DRT::Element> >& elementmap,
-                             map< int, RCP<DRT::Element> >& finalelements )
+                             const std::map< std::vector<int>, RCP<DRT::Element> >& elementmap,
+                             std::map< int, RCP<DRT::Element> >& finalelements )
 {
 
   // The point here is to make sure the element gid are the same on any

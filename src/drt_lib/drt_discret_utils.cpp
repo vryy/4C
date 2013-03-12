@@ -103,7 +103,7 @@ void DRT::Discretization::ComputeNullSpaceIfNecessary(
   if (solveparams.isSublist("Stratimikos Parameters"))
   {
 	// TODO: what about MueLu?
-    if (solveparams.sublist("Stratimikos Parameters").get<string>("Preconditioner Type") != "ML")
+    if (solveparams.sublist("Stratimikos Parameters").get<std::string>("Preconditioner Type") != "ML")
         return;
     else
       mllist_ptr = &(solveparams.sublist("Stratimikos Parameters").sublist("Preconditioner Types").sublist("ML").sublist("ML Settings"));

@@ -1072,7 +1072,7 @@ void PeriodicBoundaryConditions::RedistributeAndCreateDofCoupling(
 
     // append slavenodes to this list of nodes on this proc
     {
-      for(map<int,std::vector<int> >::iterator curr = allcoupledrownodes_->begin();
+      for(std::map<int,std::vector<int> >::iterator curr = allcoupledrownodes_->begin();
           curr != allcoupledrownodes_->end();
           ++curr )
       {

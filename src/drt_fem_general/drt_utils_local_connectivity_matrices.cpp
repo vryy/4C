@@ -311,7 +311,7 @@ int DRT::UTILS::getNumberOfElementVolumes(
 }
 
 /*----------------------------------------------------------------------*
- |  Fills a vector< std::vector<int> > with all nodes for         u.may 08/07|
+ |  Fills a std::vector< std::vector<int> > with all nodes for    u.may 08/07|
  |  every surface for each discretization type                          |
  *----------------------------------------------------------------------*/
 std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
@@ -476,7 +476,7 @@ std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingSurfaces(
 
 
 /*----------------------------------------------------------------------*
- |  Fills a vector< std::vector<int> > with all nodes for         u.may 08/07|
+ |  Fills a std::vector< std::vector<int> > with all nodes for         u.may 08/07|
  |  every line for each discretization type                             |
  *----------------------------------------------------------------------*/
 std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingLines(
@@ -692,7 +692,7 @@ std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumberingLines(
 
 
 /*----------------------------------------------------------------------*
- |  Fills a vector< std::vector<int> > with all surfaces for      u.may 08/07|
+ |  Fills a std::vector< std::vector<int> > with all surfaces for      u.may 08/07|
  |  every line for each discretization type                             |
  *----------------------------------------------------------------------*/
 std::vector< std::vector<int> > DRT::UTILS::getEleNodeNumbering_lines_surfaces(

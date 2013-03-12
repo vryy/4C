@@ -50,6 +50,7 @@ Maintainer: Michael Gee
 #include "EpetraExt_MatrixMatrix.h"
 #include "Epetra_SerialDenseSolver.h"
 #include "Epetra_RowMatrixTransposer.h"
+#include "Ifpack_AdditiveSchwarz.h"
 
 /*----------------------------------------------------------------------*
  |  create a Epetra_CrsMatrix  (public)                      mwgee 12/06|
@@ -336,8 +337,8 @@ void LINALG::Add(const Epetra_CrsMatrix& A,
   //Loop over Aprime's rows and sum into
   int MaxNumEntries = EPETRA_MAX( Aprime->MaxNumEntries(), B.MaxNumEntries() );
   int NumEntries;
-  vector<int>    Indices(MaxNumEntries);
-  vector<double> Values(MaxNumEntries);
+  std::vector<int>    Indices(MaxNumEntries);
+  std::vector<double> Values(MaxNumEntries);
 
   const int NumMyRows = Aprime->NumMyRows();
   int Row, err;
@@ -394,7 +395,7 @@ RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
   // do a very coarse guess of nonzeros per row (horrible memory consumption!)
      // int guessnpr = A.MaxNumEntries()*B.MaxNumEntries();
   // a first guess for the bandwidth of C leading to much less memory allocation:
-  const int guessnpr = max(A.MaxNumEntries(),B.MaxNumEntries());
+  const int guessnpr = std::max(A.MaxNumEntries(),B.MaxNumEntries());
 
   // create resultmatrix with correct rowmap
   Epetra_CrsMatrix* C = NULL;
@@ -469,10 +470,10 @@ double LINALG::DeterminantSVD(const Epetra_SerialDenseMatrix& A)
   Epetra_LAPACK lapack;
   const int n = tmp.N();
   const int m = tmp.M();
-  vector<double> s(min(n,m));
+  std::vector<double> s(std::min(n,m));
   int info;
-  int lwork = max(3*min(m,n)+max(m,n),5*min(m,n));
-  vector<double> work(lwork);
+  int lwork = std::max(3*std::min(m,n)+std::max(m,n),5*std::min(m,n));
+  std::vector<double> work(lwork);
   lapack.GESVD('N','N',m,n,tmp.A(),tmp.LDA(),&s[0],
                NULL,tmp.LDA(),NULL,tmp.LDA(),&work[0],&lwork,&info);
   if (info) dserror("Lapack's dgesvd returned %d",info);
@@ -493,7 +494,7 @@ double LINALG::DeterminantLU(const Epetra_SerialDenseMatrix& A)
   Epetra_LAPACK lapack;
   const int n = tmp.N();
   const int m = tmp.M();
-  vector<int> ipiv(n);
+  std::vector<int> ipiv(n);
   int info;
   lapack.GETRF(m,n,tmp.A(),tmp.LDA(),&ipiv[0],&info);
   if (info<0) dserror("Lapack's dgetrf returned %d",info);
@@ -519,9 +520,9 @@ void LINALG::SymmetricInverse(Epetra_SerialDenseMatrix& A, const int dim)
 
   double* a = A.A();
   char uplo[5]; strncpy(uplo,"L ",2);
-  vector<int> ipiv(dim);
+  std::vector<int> ipiv(dim);
   int lwork = 10*dim;
-  vector<double> work(lwork);
+  std::vector<double> work(lwork);
   int info=0;
   int n = dim;
   int m = dim;
@@ -623,7 +624,7 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
     if      (jobz == 'N') liwork = 1;
     else if (jobz == 'V') liwork = 3+5*dim;
   }
-  vector<int> iwork(liwork);
+  std::vector<int> iwork(liwork);
 
   int lwork = 0;
   if (dim == 1) lwork = 1;
@@ -632,7 +633,7 @@ void LINALG::SymmetricEigen(Epetra_SerialDenseMatrix& A,
     if      (jobz == 'N') lwork = 2*dim+1;
     else if (jobz == 'V') lwork = 2*dim*dim+6*dim+1;
   }
-  vector<double> work(lwork);
+  std::vector<double> work(lwork);
   int info=0;
 
   Epetra_LAPACK lapack;
@@ -671,18 +672,18 @@ void LINALG::SVD(const Epetra_SerialDenseMatrix& A,
   const char jobvt = 'A'; // compute and return all N rows of V^T
   const int n = tmp.N();
   const int m = tmp.M();
-  vector<double> s(min(n,m));
+  std::vector<double> s(std::min(n,m));
   int info;
-  int lwork = max(3*min(m,n)+max(m,n),5*min(m,n));
-  vector<double> work(lwork);
+  int lwork = std::max(3*std::min(m,n)+std::max(m,n),5*std::min(m,n));
+  std::vector<double> work(lwork);
 
   lapack.GESVD(jobu,jobvt,m,n,tmp.A(),tmp.LDA(),&s[0],
                Q.A(),Q.LDA(),VT.A(),VT.LDA(),&work[0],&lwork,&info);
 
   if (info) dserror("Lapack's dgesvd returned %d",info);
 
-  for (int i = 0; i < min(n,m); ++i) {
-    for (int j = 0; j < min(n,m); ++j) {
+  for (int i = 0; i < std::min(n,m); ++i) {
+    for (int j = 0; j < std::min(n,m); ++j) {
       S(i,j) = (i==j) * s[i];   // 0 for off-diagonal, otherwise s
     }
   }
@@ -929,9 +930,9 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   const Epetra_Map&  A11map = *(A11rowmap.get());
 
   //----------------------------- create a parallel redundant map of A22map
-  map<int,int> a22gmap;
+  std::map<int,int> a22gmap;
   {
-    vector<int> a22global(A22map.NumGlobalElements());
+    std::vector<int> a22global(A22map.NumGlobalElements());
     int count=0;
     for (int proc=0; proc<Comm.NumProc(); ++proc)
     {
@@ -960,7 +961,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   //--------------------------------------------------- create matrix A22
   A22 = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A22map,100));
   {
-    vector<int>    a22gcindices(100);
+    std::vector<int>    a22gcindices(100);
     std::vector<double> a22values(100);
     for (int i=0; i<A->NumMyRows(); ++i)
     {
@@ -1008,7 +1009,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   //----------------------------------------------------- create matrix A11
   A11 = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A11map,100));
   {
-    vector<int>    a11gcindices(100);
+    std::vector<int>    a11gcindices(100);
     std::vector<double> a11values(100);
     for (int i=0; i<A->NumMyRows(); ++i)
     {
@@ -1051,7 +1052,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   //---------------------------------------------------- create matrix A12
   A12 = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A11map,100));
   {
-    vector<int>    a12gcindices(100);
+    std::vector<int>    a12gcindices(100);
     std::vector<double> a12values(100);
     for (int i=0; i<A->NumMyRows(); ++i)
     {
@@ -1094,7 +1095,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   //----------------------------------------------------------- create A21
   A21 = Teuchos::rcp(new Epetra_CrsMatrix(Copy,A22map,100));
   {
-    vector<int>    a21gcindices(100);
+    std::vector<int>    a21gcindices(100);
     std::vector<double> a21values(100);
     for (int i=0; i<A->NumMyRows(); ++i)
     {
@@ -1161,7 +1162,7 @@ bool LINALG::SplitMatrix2x2(RCP<Epetra_CrsMatrix> A,
   else if (A11rowmap == Teuchos::null && A22rowmap == Teuchos::null)
     dserror("LINALG::SplitMatrix2x2: Both A11rowmap and A22rowmap == null on entry");
 
-  vector<RCP<const Epetra_Map> > maps(2);
+  std::vector<RCP<const Epetra_Map> > maps(2);
   maps[0] = Teuchos::rcp(new Epetra_Map(*A11rowmap));
   maps[1] = Teuchos::rcp(new Epetra_Map(*A22rowmap));
   LINALG::MultiMapExtractor extractor(A->RowMap(),maps);
@@ -1228,9 +1229,9 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
   const Epetra_Map&  A22dmap = *(A22domainmap.get());
 
   //----------------------------- create a parallel redundant map of A11domainmap
-  map<int,int> a11gmap;
+  std::map<int,int> a11gmap;
   {
-    vector<int> a11global(A11dmap.NumGlobalElements());
+    std::vector<int> a11global(A11dmap.NumGlobalElements());
     int count=0;
     for (int proc=0; proc<Comm.NumProc(); ++proc)
     {
@@ -1261,7 +1262,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
   {
     A11 = Teuchos::rcp(new LINALG::SparseMatrix(A11rmap,100));
     {
-      vector<int>    a11gcindices(100);
+      std::vector<int>    a11gcindices(100);
       std::vector<double> a11values(100);
       for (int i=0; i<A->EpetraMatrix()->NumMyRows(); ++i)
       {
@@ -1306,7 +1307,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
   {
     A22 = Teuchos::rcp(new LINALG::SparseMatrix(A22rmap,100));
     {
-      vector<int>    a22gcindices(100);
+      std::vector<int>    a22gcindices(100);
       std::vector<double> a22values(100);
       for (int i=0; i<A->EpetraMatrix()->NumMyRows(); ++i)
       {
@@ -1351,7 +1352,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
   {
     A12 = Teuchos::rcp(new LINALG::SparseMatrix(A11rmap,100));
     {
-      vector<int>    a12gcindices(100);
+      std::vector<int>    a12gcindices(100);
       std::vector<double> a12values(100);
       for (int i=0; i<A->EpetraMatrix()->NumMyRows(); ++i)
       {
@@ -1396,7 +1397,7 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
   {
     A21 = Teuchos::rcp(new LINALG::SparseMatrix(A22rmap,100));
     {
-      vector<int>    a21gcindices(100);
+      std::vector<int>    a21gcindices(100);
       std::vector<double> a21values(100);
       for (int i=0; i<A->EpetraMatrix()->NumMyRows(); ++i)
       {
@@ -1475,8 +1476,8 @@ bool LINALG::SplitMatrix2x2(RCP<LINALG::SparseMatrix> A,
     dserror("LINALG::SplitMatrix2x2: Both A11domainmap and A22domainmap == null on entry");
 
   // local variables
-  vector<RCP<const Epetra_Map> > rangemaps(2);
-  vector<RCP<const Epetra_Map> > domainmaps(2);
+  std::vector<RCP<const Epetra_Map> > rangemaps(2);
+  std::vector<RCP<const Epetra_Map> > domainmaps(2);
   rangemaps[0] = Teuchos::rcp(new Epetra_Map(*A11rowmap));
   rangemaps[1] = Teuchos::rcp(new Epetra_Map(*A22rowmap));
   domainmaps[0] = Teuchos::rcp(new Epetra_Map(*A11domainmap));
@@ -1520,7 +1521,7 @@ Teuchos::RCP<Epetra_Map> LINALG::SplitMap(const Epetra_Map& Amap,
   const Epetra_Map&  Ag = Agiven;
 
   int count=0;
-  vector<int> myaugids(Amap.NumMyElements());
+  std::vector<int> myaugids(Amap.NumMyElements());
   for (int i=0; i<Amap.NumMyElements(); ++i)
   {
     const int gid = Amap.GID(i);
@@ -1555,7 +1556,7 @@ RCP<Epetra_Map> LINALG::MergeMap(const Epetra_Map& map1,
       return Teuchos::rcp(new Epetra_Map(map1));
   }
 
-  vector<int> mygids(map1.NumMyElements()+map2.NumMyElements());
+  std::vector<int> mygids(map1.NumMyElements()+map2.NumMyElements());
   int count = map1.NumMyElements();
 
   // get GIDs of input map1
@@ -1914,8 +1915,8 @@ int LINALG::FindMyPos(int nummyelements, const Epetra_Comm& comm)
   const int myrank  = comm.MyPID();
   const int numproc = comm.NumProc();
 
-  vector<int> snum(numproc,0);
-  vector<int> rnum(numproc);
+  std::vector<int> snum(numproc,0);
+  std::vector<int> rnum(numproc);
   snum[myrank] = nummyelements;
 
   comm.SumAll(&snum[0],&rnum[0],numproc);
@@ -1949,14 +1950,14 @@ void LINALG::AllreduceVector( const std::vector<int> & src, std::vector<int> & d
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap)
+void LINALG::AllreduceEMap(std::vector<int>& rredundant, const Epetra_Map& emap)
 {
   const int mynodepos = FindMyPos(emap.NumMyElements(), emap.Comm());
 
   std::vector<int> sredundant(emap.NumGlobalElements(),0);
 
   int* gids = emap.MyGlobalElements();
-  copy(gids, gids+emap.NumMyElements(), &sredundant[mynodepos]);
+  std::copy(gids, gids+emap.NumMyElements(), &sredundant[mynodepos]);
 
   rredundant.resize(emap.NumGlobalElements());
   emap.Comm().SumAll(&sredundant[0], &rredundant[0], emap.NumGlobalElements());
@@ -1965,7 +1966,7 @@ void LINALG::AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void LINALG::AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap)
+void LINALG::AllreduceEMap(std::map<int,int>& idxmap, const Epetra_Map& emap)
 {
 #ifdef DEBUG
   if (not emap.UniqueGIDs())
@@ -1974,7 +1975,7 @@ void LINALG::AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap)
 
   idxmap.clear();
 
-  vector<int> rredundant;
+  std::vector<int> rredundant;
   AllreduceEMap(rredundant, emap);
 
   for (std::size_t i=0; i<rredundant.size(); ++i)
@@ -1992,7 +1993,7 @@ RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap, const int pid)
   if (not emap.UniqueGIDs())
     dserror("works only for unique Epetra_Maps");
 #endif
-  vector<int> rv;
+  std::vector<int> rv;
   AllreduceEMap(rv,emap);
   RCP<Epetra_Map> rmap;
 
@@ -2023,7 +2024,7 @@ RCP<Epetra_Map> LINALG::AllreduceEMap(const Epetra_Map& emap)
   if (not emap.UniqueGIDs())
     dserror("works only for unique Epetra_Maps");
 #endif
-  vector<int> rv;
+  std::vector<int> rv;
   AllreduceEMap(rv,emap);
   RCP<Epetra_Map> rmap;
 
@@ -2054,7 +2055,7 @@ RCP<Epetra_Map> LINALG::AllreduceOverlappingEMap(const Epetra_Map& emap)
  *----------------------------------------------------------------------*/
 void LINALG::AllToAllCommunication( const Epetra_Comm& comm,
                                     const std::vector< std::vector<int> >& send,
-                                    vector< std::vector<int> >& recv )
+                                    std::vector< std::vector<int> >& recv )
 {
 #ifndef PARALLEL
 
@@ -2078,15 +2079,15 @@ void LINALG::AllToAllCommunication( const Epetra_Comm& comm,
   {
     const Epetra_MpiComm& mpicomm = dynamic_cast<const Epetra_MpiComm&>(comm);
 
-    vector<int> sendbuf;
-    vector<int> sendcounts;
+    std::vector<int> sendbuf;
+    std::vector<int> sendcounts;
     sendcounts.reserve( comm.NumProc() );
-    vector<int> sdispls;
+    std::vector<int> sdispls;
     sdispls.reserve( comm.NumProc() );
 
     int displacement = 0;
     sdispls.push_back( 0 );
-    for ( vector< std::vector<int> >::const_iterator iter = send.begin();
+    for ( std::vector< std::vector<int> >::const_iterator iter = send.begin();
           iter != send.end(); ++iter )
     {
         sendbuf.insert( sendbuf.end(), iter->begin(), iter->end() );
@@ -2095,7 +2096,7 @@ void LINALG::AllToAllCommunication( const Epetra_Comm& comm,
         sdispls.push_back( displacement );
     }
 
-    vector<int> recvcounts( comm.NumProc() );
+    std::vector<int> recvcounts( comm.NumProc() );
 
     // initial communication: Request. Send and receive the number of
     // ints we communicate with each process.
@@ -2106,19 +2107,19 @@ void LINALG::AllToAllCommunication( const Epetra_Comm& comm,
     if ( status != MPI_SUCCESS )
         dserror( "MPI_Alltoall returned status=%d", status );
 
-    vector<int> rdispls;
+    std::vector<int> rdispls;
     rdispls.reserve( comm.NumProc() );
 
     displacement = 0;
     rdispls.push_back( 0 );
-    for ( vector<int>::const_iterator iter = recvcounts.begin();
+    for ( std::vector<int>::const_iterator iter = recvcounts.begin();
           iter != recvcounts.end(); ++iter )
     {
         displacement += *iter;
         rdispls.push_back( displacement );
     }
 
-    vector<int> recvbuf( rdispls.back() );
+    std::vector<int> recvbuf( rdispls.back() );
 
     // transmit communication: Send and get the data.
 
@@ -2131,7 +2132,7 @@ void LINALG::AllToAllCommunication( const Epetra_Comm& comm,
     recv.clear();
     for ( int proc = 0; proc < comm.NumProc(); ++proc )
     {
-        recv.push_back( vector<int>( &recvbuf[rdispls[proc]], &recvbuf[rdispls[proc+1]] ) );
+        recv.push_back( std::vector<int>( &recvbuf[rdispls[proc]], &recvbuf[rdispls[proc+1]] ) );
     }
   }
 

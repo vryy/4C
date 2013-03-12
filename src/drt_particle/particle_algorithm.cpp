@@ -787,7 +787,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> s
 
   // initialize new particle wall discretizations
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(structdis->Comm().Clone());
-  const string discret_name = "particlewalls";
+  const std::string discret_name = "particlewalls";
   Teuchos::RCP<DRT::Discretization> particlewalldis = Teuchos::rcp(new DRT::Discretization(discret_name,com));
 
   std::vector<int> nodeids;

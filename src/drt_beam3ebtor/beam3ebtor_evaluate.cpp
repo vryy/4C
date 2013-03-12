@@ -45,7 +45,7 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
 
   DRT::ELEMENTS::Beam3ebtor::ActionType act = Beam3ebtor::calc_none;
   // get the action required
-  string action = params.get<string>("action","calc_none");
+  std::string action = params.get<std::string>("action","calc_none");
 
   if 	  (action == "calc_none") 				dserror("No action supplied");
   else if (action=="calc_struct_linstiff") 		act = Beam3ebtor::calc_struct_linstiff;
@@ -62,7 +62,7 @@ int DRT::ELEMENTS::Beam3ebtor::Evaluate(Teuchos::ParameterList& params,
   else if (action=="calc_struct_ptcstiff")		act = Beam3ebtor::calc_struct_ptcstiff;
   else 	  dserror("Unknown type of action for Beam3ebtor");
 
-  string test = params.get<string>("action","calc_none");
+  std::string test = params.get<std::string>("action","calc_none");
 
   switch(act)
   {
@@ -168,7 +168,7 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(Teuchos::ParameterList& params,
   // get element displacements
   RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
-  vector<double> mydisp(lm.size());
+  std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
   for (int i=0; i<14;i++)
   {
@@ -179,7 +179,7 @@ int DRT::ELEMENTS::Beam3ebtor::EvaluateNeumann(Teuchos::ParameterList& params,
   /*
   RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
   if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-  vector<double> myvel(lm.size());
+  std::vector<double> myvel(lm.size());
   DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
   */
 
@@ -374,10 +374,10 @@ void DRT::ELEMENTS::Beam3ebtor::eb_nlnstiffmass(Teuchos::ParameterList& params,
   const int nnode = 2;
 
   //matrix for current nodal positions and nodal tangents
-  vector<double> disp_totlag(nnode*dofpn);
+  std::vector<double> disp_totlag(nnode*dofpn);
 
   //matrix for current nodal twist angle
-  vector<double> twist_totlag(nnode*1);
+  std::vector<double> twist_totlag(nnode*1);
 
   //abbreviated matrices for clearness
   LINALG::Matrix<dofpn*nnode,dofpn*nnode> NTilde;
@@ -897,7 +897,7 @@ void DRT::ELEMENTS::Beam3ebtor::lumpmass(Epetra_SerialDenseMatrix* emass)
   cout << "\n\nWarning: Massmatrix not implemented yet!";
 }
 
-void DRT::ELEMENTS::Beam3ebtor::FADCheckStiffMatrix(vector<double>& disp,
+void DRT::ELEMENTS::Beam3ebtor::FADCheckStiffMatrix(std::vector<double>& disp,
                                                     Epetra_SerialDenseMatrix* stiffmatrix,
                                                     Epetra_SerialDenseVector* force)
 {
@@ -926,10 +926,10 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckStiffMatrix(vector<double>& disp,
   }
 
   //matrix for current nodal positions and nodal tangents
-  vector<FAD> disp_totlag(nnode*dofpn,0.0);
+  std::vector<FAD> disp_totlag(nnode*dofpn,0.0);
 
   //matrix for current nodal twist angle
-  vector<FAD> twist_totlag(nnode*1,0.0);
+  std::vector<FAD> twist_totlag(nnode*1,0.0);
 
   //abbreviated matrices for clearness
   LINALG::TMatrix<FAD,dofpn*nnode,dofpn*nnode> NTilde;
@@ -1437,11 +1437,11 @@ void DRT::ELEMENTS::Beam3ebtor::FADCheckNeumann(Teuchos::ParameterList& params,
   //get element displacements
   RCP<const Epetra_Vector> disp = discretization.GetState("displacement new");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement new'");
-  vector<double> mydisp(lm.size());
+  std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
   //matrix for current positions and tangents
-  vector<FAD> disp_totlag((dofpn+1)*nnode,0.0);
+  std::vector<FAD> disp_totlag((dofpn+1)*nnode,0.0);
 
   for (int i=0; i<(dofpn+1)*nnode; i++)
   {

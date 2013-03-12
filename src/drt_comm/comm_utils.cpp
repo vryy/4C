@@ -62,7 +62,7 @@ void COMM_UTILS::CreateComm(int argc, char** argv)
   bool nptypeisset = false;
   for(int i=0; i<int(conf.size()); i++)
   {
-    // fill string with current argument
+    // fill std::string with current argument
     std::string argument(conf[i]);
     //----------------------------------------------------------------
     // determine number of groups and the proc distribution

@@ -73,7 +73,7 @@ void IO::DiscretizationReader::ReadSerialDenseMatrix(Teuchos::RCP<std::map<int, 
     columns = 1;
   }
   if (columns != 1)
-    dserror("got multivector with name '%s', vector<char> expected", name.c_str());
+    dserror("got multivector with name '%s', std::vector<char> expected", name.c_str());
 
   Teuchos::RCP<Epetra_Map> elemap;
   Teuchos::RCP<std::vector<char> > data = reader_->ReadResultDataVecChar(id_path, value_path, columns,

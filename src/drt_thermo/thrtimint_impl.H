@@ -21,6 +21,7 @@ Maintainer: Burkhard Bornemann
  *----------------------------------------------------------------------*/
 #include "thrtimint.H"
 #include "thr_aux.H"
+#include <Epetra_Time.h>
 
 /*----------------------------------------------------------------------*
  | belongs to thermal dynamics namespace                    bborn 08/09 |

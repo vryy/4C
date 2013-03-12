@@ -33,8 +33,8 @@ DRT::ParObject* DRT::ELEMENTS::SoDispType::Create( const std::vector<char> & dat
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoDispType::Create( const string eletype,
-                                                            const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::SoDispType::Create( const std::string eletype,
+                                                            const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {

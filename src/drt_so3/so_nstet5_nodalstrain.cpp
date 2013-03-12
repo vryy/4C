@@ -93,7 +93,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
 
   // nodal integration for nlnstiff and internal forces only
   // (this method does not compute stresses/strains/element updates/mass matrix)
-  string& action = p.get<string>("action","none");
+  string& action = p.get<std::string>("action","none");
   if (action != "calc_struct_nlnstiffmass"  &&
       action != "calc_struct_nlnstifflmass" &&
       action != "calc_struct_nlnstiff"      &&
@@ -170,11 +170,11 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
     const int  nodeLid = nodeL->Id();
 
     // standard quantities for all nodes
-    vector<DRT::ELEMENTS::NStet5*>&            adjele    = adjele_[nodeLid];
-    map<int,std::vector<int> >&                adjsubele = adjsubele_[nodeLid];
-    map<int,DRT::Node*>&                       adjnode   = adjnode_[nodeLid];
-    std::vector<int>&                          lm        = adjlm_[nodeLid];
-    vector<std::vector<std::vector<int> > >&   lmlm      = lmlm_[nodeLid];
+    std::vector<DRT::ELEMENTS::NStet5*>&            adjele    = adjele_[nodeLid];
+    std::map<int,std::vector<int> >&                adjsubele = adjsubele_[nodeLid];
+    std::map<int,DRT::Node*>&                       adjnode   = adjnode_[nodeLid];
+    std::vector<int>&                               lm        = adjlm_[nodeLid];
+    std::vector<std::vector<std::vector<int> > >&   lmlm      = lmlm_[nodeLid];
     const int ndofperpatch = (int)lm.size();
 
     if (action == "calc_struct_nlnstiffmass" || 
@@ -222,8 +222,8 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
     if (assemblemat1)
     {
       TEUCHOS_FUNC_TIME_MONITOR("DRT::ELEMENTS::NStet5Type::PreEvaluate Assembly");
-      vector<int> lrlm;
-      vector<int> lclm;
+      std::vector<int> lrlm;
+      std::vector<int> lclm;
 
       const Epetra_Map& dofrowmap = systemmatrix1->OperatorRangeMap();
       lrlm.resize(ndofperpatch);
@@ -429,8 +429,8 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
         
   //-----------------------------------------------------------------------
   // get displacements of this patch
-  vector<double> patchdisp(ndofinpatch);
-//  vector<FADFAD> tpatchdisp(ndofinpatch);
+  std::vector<double> patchdisp(ndofinpatch);
+//  std::vector<FADFAD> tpatchdisp(ndofinpatch);
   for (int i=0; i<ndofinpatch; ++i)
   {
     int lid = disp.Map().LID(lm[i]);
@@ -450,7 +450,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
   for (int i=0; i<neleinpatch; ++i)
   {
     DRT::ELEMENTS::NStet5* ele = adjele[i];
-    vector<int>& subele = adjsubele[ele->Id()];
+    std::vector<int>& subele = adjsubele[ele->Id()];
 
     for (unsigned j=0; j<subele.size(); ++j)
     {
@@ -503,7 +503,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
   {
     // current element
     DRT::ELEMENTS::NStet5* actele = adjele[ele];
-    vector<int>& subele = adjsubele[actele->Id()];
+    std::vector<int>& subele = adjsubele[actele->Id()];
     // loop subelements in this element  
     for (unsigned j=0; j<subele.size();++j)
     {

@@ -907,13 +907,13 @@ dt_(dt)
                 *currnode,                                                                             // node
                 i,                                                                                     // nds (nodal dofset) at new timestep
                 LINALG::Matrix<nsd,1>(true),                                                           // velocity
-                vector<LINALG::Matrix<nsd,nsd> >(oldVectors_.size(),LINALG::Matrix<nsd,nsd>(true)),    // vel deriv
-                vector<LINALG::Matrix<1,nsd> >(oldVectors_.size(),LINALG::Matrix<1,nsd>(true)),        // pres deriv
+                std::vector<LINALG::Matrix<nsd,nsd> >(oldVectors_.size(),LINALG::Matrix<nsd,nsd>(true)),    // vel deriv
+                std::vector<LINALG::Matrix<1,nsd> >(oldVectors_.size(),LINALG::Matrix<1,nsd>(true)),        // pres deriv
                 dummyStartpoint,                                                                       // ...
                 1,                                                                                     // searchedProcs
                 0,                                                                                     // counter
-                vector<int>(1,-1),                                                                     // startGid
-                vector<int>(1,-1),                                                                     // startOwner
+                std::vector<int>(1,-1),                                                                     // startGid
+                std::vector<int>(1,-1),                                                                     // startOwner
                 INFINITY,                                                                              // minimal distance
                 TimeIntData::predictor_)); // data created for the node
 
@@ -930,7 +930,7 @@ dt_(dt)
     //--------------------------------------------------------------------------------------
 
     // test loop if all initial startpoints have been computed
-    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+    for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
         data!=timeIntData_->end(); data++)
     {
       if (data->startpoint_==dummyStartpoint) // startpoint unchanged
@@ -948,7 +948,7 @@ dt_(dt)
  * out of order!                                                                     schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::compute(
-    vector<RCP<Epetra_Vector> >& newRowVectorsn
+    std::vector<RCP<Epetra_Vector> >& newRowVectorsn
 )
 {
   dserror("Unused function! Use a function of the derived classes");
@@ -964,7 +964,7 @@ void XFEM::XFLUID_STD::compute(
 //    const RCP<XFEM::DofManager> newdofman,
 //    const RCP<COMBUST::FlameFront> flamefront,
 //    const Epetra_Map& newdofrowmap,
-//    const map<DofKey, DofGID>& newNodalDofRowDistrib)
+//    const std::map<DofKey, DofGID>& newNodalDofRowDistrib)
 //{
 //  discret_ = discret;
 //  newdofman_ = newdofman;
@@ -1079,7 +1079,7 @@ void XFEM::XFLUID_STD::startpoints()
   // structural surface is ghosted on all procs
 
   // loop over nodes which changed interface side
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     if (data->state_==TimeIntData::basicStd_) // correct state
@@ -1140,7 +1140,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
     {
       GEO::CUT::VolumeCell* vc = *vcs;
 
-      // get sides involved in creation boundary cells (map<sideId,bcells>)
+      // get sides involved in creation boundary cells (std::map<sideId,bcells>)
       vc->GetBoundaryCells(bcells_new);
     }
   }
@@ -1185,12 +1185,12 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
   LINALG::Matrix<3,1> proj_x_n(true);                 ///< projected point at t^n (tracked back along structural movement)
   LINALG::Matrix<3,1> start_point(true);              ///< final start point for SemiLagrange algo
   int proj_sid = -1;                                  ///< id of side that contains the projected point
-  std::map<vector<int>, vector<int> >    proj_lineid;         ///< map< sorted nids, global side IDs >
+  std::map<std::vector<int>, std::vector<int> >    proj_lineid;         ///< std::map< sorted nids, global side IDs >
   // smallest distance w.r.t side
   LINALG::Matrix<2,1> proj_xi_side(true);             ///< local coordinates of projected point if projection w.r.t side
   // smallest distance w.r.t line
-  std::map<vector<int>, std::vector<double> > proj_xi_line;        ///< map<sorted nids,local line coordinates w.r.t lines of different sides>
-  std::map<vector<int>, vector<int> >    proj_nid_line;       ///< map<sorted nids, sideids>
+  std::map<std::vector<int>, std::vector<double> > proj_xi_line;        ///< std::map<sorted nids,local line coordinates w.r.t lines of different sides>
+  std::map<std::vector<int>, std::vector<int> >    proj_nid_line;       ///< std::map<sorted nids, sideids>
   // smallest distance w.r.t point
   int proj_nid_np = -1;                               ///< nid of projected point if projection w.r.t point (structural node)
 
@@ -1243,9 +1243,9 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
                         newNodeCoords,        ///< node coordinates of point that has to be projected
                         min_dist,             ///< minimal distance, potentially updated
                         proj_x_np,            ///< projection of point on this side
-                        proj_xi_line,         ///< map<side ID, local coordinates of projection of point w.r.t to this line>
-                        proj_lineid,          ///< map<side ID, local line id>
-                        proj_nid_line,        ///< map<side ID, vec<line Ids>>
+                        proj_xi_line,         ///< std::map<side ID, local coordinates of projection of point w.r.t to this line>
+                        proj_lineid,          ///< std::map<side ID, local line id>
+                        proj_nid_line,        ///< std::map<side ID, vec<line Ids>>
                         proj_sid,             ///< id of side that contains the projected point
                         data                  ///< reference to data
                          );
@@ -1273,9 +1273,9 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
                        proj_nid_np,          ///< nid id of projected point on surface
                        proj_x_np,            ///< projection of point on this side
                        proj_sid,             ///< id of side that contains the projected point
-                       proj_xi_line,         ///< map<side ID, local coordinates of projection of point w.r.t to this line>
-                       proj_lineid,          ///< map<side ID, local line id>
-                       proj_nid_line,        ///< map<side ID, vec<line Ids>>
+                       proj_xi_line,         ///< std::map<side ID, local coordinates of projection of point w.r.t to this line>
+                       proj_lineid,          ///< std::map<side ID, local line id>
+                       proj_nid_line,        ///< std::map<side ID, vec<line Ids>>
                        data                  ///< reference to data
                        );
 
@@ -2038,9 +2038,9 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
     LINALG::Matrix<3,1>&             newNodeCoords,        ///< node coordinates of point that has to be projected
     double &                         min_dist,             ///< minimal distance, potentially updated
     LINALG::Matrix<3,1>&             proj_x_np,            ///< projection of point on this side
-    std::map<vector<int>, std::vector<double> >&  proj_xi_line,         ///< map<sorted nids, local line coordinates of projection of point w.r.t sides >
-    std::map<vector<int>, vector<int> >&     proj_lineid,          ///< map<sorted nids, local line id w.r.t sides>
-    std::map<vector<int>, vector<int> >&     proj_nid_line,        ///< map<sorted nids, side Ids>
+    std::map<std::vector<int>, std::vector<double> >&  proj_xi_line,         ///< std::map<sorted nids, local line coordinates of projection of point w.r.t sides >
+    std::map<std::vector<int>, std::vector<int> >&     proj_lineid,          ///< std::map<sorted nids, local line id w.r.t sides>
+    std::map<std::vector<int>, std::vector<int> >&     proj_nid_line,        ///< std::map<sorted nids, side Ids>
     int &                            proj_sid,             ///< id of side that contains the projected point
     TimeIntData&                     data                  ///< reference to data
     )
@@ -2128,7 +2128,7 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
         // add lines, that have the same distance up to TOL_dist
       }
 
-      vector<int> line_nids;
+      std::vector<int> line_nids;
       for ( int i=0; i<numnodes; ++i )
       {
         line_nids.push_back(nodes[i]->Id());
@@ -2149,7 +2149,7 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
 
 
 
-      std::map<vector<int>, vector<int> >::iterator lines = proj_nid_line.find(line_nids);
+      std::map<std::vector<int>, std::vector<int> >::iterator lines = proj_nid_line.find(line_nids);
 
       // line already inserted via other side
       if(lines != proj_nid_line.end())
@@ -2165,19 +2165,19 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
       else
       {
 
-        vector<int> sideids;
+        std::vector<int> sideids;
         sideids.push_back(side->Id());
-        vector<int> locallineids;
+        std::vector<int> locallineids;
         locallineids.push_back(line_count);
         std::vector<double> locallineXiCoords;
         locallineXiCoords.push_back(xi_line);
 
         // set line id w.r.t side->Id() that contains the projected point
-        proj_nid_line.insert(std::pair<vector<int>,vector<int> >(line_nids, sideids));
+        proj_nid_line.insert(std::pair<std::vector<int>,std::vector<int> >(line_nids, sideids));
         // update local line id w.r.t side
-        proj_lineid.insert(std::pair<vector<int>,vector<int> >(line_nids,locallineids));
+        proj_lineid.insert(std::pair<std::vector<int>,std::vector<int> >(line_nids,locallineids));
         // update local coordinates w.r.t line
-        proj_xi_line.insert(std::pair<vector<int>,vector<double> >(line_nids,locallineXiCoords));
+        proj_xi_line.insert(std::pair<std::vector<int>,std::vector<double> >(line_nids,locallineXiCoords));
       }
 
       //--------------------
@@ -2202,9 +2202,9 @@ void XFEM::XFLUID_STD::CallProjectOnPoint(
     int &                          proj_nid_np,          ///< nid id of projected point on surface
     LINALG::Matrix<3,1>&           proj_x_np,            ///< projection of point on this side
     int &                          proj_sid,             ///< id of side that contains the projected point
-    std::map<vector<int>, std::vector<double> > proj_xi_line,         ///< map<side ID, local coordinates of projection of point w.r.t to this line>
-    std::map<vector<int>, vector<int> >    proj_lineid,          ///< map<side ID, local line id>
-    std::map<vector<int>, vector<int> >    proj_nid_line,        ///< map<side ID, vec<line Ids>>
+    std::map<std::vector<int>, std::vector<double> > proj_xi_line,         ///< std::map<side ID, local coordinates of projection of point w.r.t to this line>
+    std::map<std::vector<int>, std::vector<int> >    proj_lineid,          ///< std::map<side ID, local line id>
+    std::map<std::vector<int>, std::vector<int> >    proj_nid_line,        ///< std::map<side ID, vec<line Ids>>
     TimeIntData&                   data                  ///< reference to data
 )
 {
@@ -2219,7 +2219,7 @@ void XFEM::XFLUID_STD::CallProjectOnPoint(
   const double * x = node->X();
   std::copy( x, x+3, &point_xyze( 0, 0 ) );
 
-  vector<int> lm = boundarydis_->Dof(0,node);
+  std::vector<int> lm = boundarydis_->Dof(0,node);
 
 
   // compute distance between two points
@@ -2714,14 +2714,14 @@ void XFEM::XFLUID_STD::setFinalData(
   const int nsd = 3; // 3 dimensions for a 3d fluid element
 
   // loop over data
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     if (data->state_!=TimeIntData::doneStd_)
       dserror("when data is set, all computation has to be done");
 
-    vector<LINALG::Matrix<nsd,1> >& velValues(data->velValues_); // velocities of the node
-    vector<double>& presValues(data->presValues_); // pressures of the node
+    std::vector<LINALG::Matrix<nsd,1> >& velValues(data->velValues_); // velocities of the node
+    std::vector<double>& presValues(data->presValues_); // pressures of the node
 
     const int gnodeid = data->node_.Id(); // global node id
 
@@ -2770,7 +2770,7 @@ void XFEM::XFLUID_STD::exportStartData()
   DRT::PackBuffer dataSend; // data to be sent
 
   // packing the data
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     packNode(dataSend,data->node_);
@@ -2790,7 +2790,7 @@ void XFEM::XFLUID_STD::exportStartData()
 
   dataSend.StartPacking();
 
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     packNode(dataSend,data->node_);
@@ -2808,11 +2808,11 @@ void XFEM::XFLUID_STD::exportStartData()
     DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
   }
 
-  vector<char> dataRecv;
+  std::vector<char> dataRecv;
   sendData(dataSend,dest,source,dataRecv);
 
   // pointer to current position of group of cells in global string (counts bytes)
-  vector<char>::size_type posinData = 0;
+  std::vector<char>::size_type posinData = 0;
 
   // clear vector that should be filled
   timeIntData_->clear();
@@ -2824,14 +2824,14 @@ void XFEM::XFLUID_STD::exportStartData()
     DRT::Node node(0,(double*)coords,0); // initialize node
     int nds_np = -1;
     LINALG::Matrix<nsd,1> vel; // velocity at point x
-    vector<LINALG::Matrix<nsd,nsd> > velDeriv; // derivation of velocity at point x
-    vector<LINALG::Matrix<1,nsd> > presDeriv; // derivation of pressure at point x
+    std::vector<LINALG::Matrix<nsd,nsd> > velDeriv; // derivation of velocity at point x
+    std::vector<LINALG::Matrix<1,nsd> > presDeriv; // derivation of pressure at point x
     LINALG::Matrix<nsd,1> startpoint; // startpoint
 //    double phiValue; // phi-value
     int searchedProcs; // number of searched processors
     int counter; // iteration counter
-    vector<int> startGid; // global id of first startpoint
-    vector<int> startOwner; // owner of first startpoint
+    std::vector<int> startGid; // global id of first startpoint
+    std::vector<int> startOwner; // owner of first startpoint
     double dMin; // minimal distance
     int newtype; // type of the data
 
@@ -2879,10 +2879,10 @@ void XFEM::XFLUID_STD::exportFinalData()
 
   // array of vectors which stores data for
   // every processor in one vector
-  vector<std::vector<TimeIntData> > dataVec(numproc_);
+  std::vector<std::vector<TimeIntData> > dataVec(numproc_);
 
   // fill vectors with the data
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     if (data->state_!=TimeIntData::doneStd_)
@@ -2905,7 +2905,7 @@ void XFEM::XFLUID_STD::exportFinalData()
     DRT::PackBuffer dataSend;
 
     // pack data to be sent
-    for (vector<TimeIntData>::iterator data=dataVec[dest].begin();
+    for (std::vector<TimeIntData>::iterator data=dataVec[dest].begin();
         data!=dataVec[dest].end(); data++)
     {
       DRT::ParObject::AddtoPack(dataSend,data->node_.Id());
@@ -2920,7 +2920,7 @@ void XFEM::XFLUID_STD::exportFinalData()
 
     dataSend.StartPacking();
 
-    for (vector<TimeIntData>::iterator data=dataVec[dest].begin();
+    for (std::vector<TimeIntData>::iterator data=dataVec[dest].begin();
         data!=dataVec[dest].end(); data++)
     {
       DRT::ParObject::AddtoPack(dataSend,data->node_.Id());
@@ -2936,11 +2936,11 @@ void XFEM::XFLUID_STD::exportFinalData()
     // clear the no more needed data
     dataVec[dest].clear();
 
-    vector<char> dataRecv;
+    std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
     // pointer to current position of group of cells in global string (counts bytes)
-    vector<char>::size_type posinData = 0;
+    std::vector<char>::size_type posinData = 0;
 
     // unpack received data
     while (posinData < dataRecv.size())
@@ -2948,9 +2948,9 @@ void XFEM::XFLUID_STD::exportFinalData()
       int gid; // global id of node
       LINALG::Matrix<nsd,1> startpoint; // startpoint
       double phiValue; // phi-value
-      vector<int> startGid; // global id of first startpoint
-      vector<int> startOwner; // owner of first startpoint
-      vector<LINALG::Matrix<nsd,1> > velValues; // velocity values
+      std::vector<int> startGid; // global id of first startpoint
+      std::vector<int> startOwner; // owner of first startpoint
+      std::vector<LINALG::Matrix<nsd,1> > velValues; // velocity values
       std::vector<double> presValues; // pressure values
       int newtype; // type of the data
 

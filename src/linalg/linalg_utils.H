@@ -53,7 +53,6 @@ Maintainer: Michael Gee
 #include "Epetra_SerialDenseVector.h"
 #include "Epetra_LAPACK.h"
 #include "Teuchos_RCP.hpp"
-#include "Ifpack_AdditiveSchwarz.h"
 #include "../drt_lib/drt_exporter.H"
 #include "linalg_blocksparsematrix.H"
 
@@ -254,7 +253,7 @@ namespace LINALG
     const char jobvt = 'A'; // compute and return all N rows of V^T
     std::vector<double> s(std::min(rows,cols));
     int info;
-    int lwork = max(3*std::min(rows,cols)+std::max(rows,cols),5*std::min(rows,cols));
+    int lwork = std::max(3*std::min(rows,cols)+std::max(rows,cols),5*std::min(rows,cols));
     std::vector<double> work(lwork);
 
     lapack.GESVD(jobu,jobvt,rows,cols,tmp.A(),tmp.M(),&s[0],
@@ -1040,8 +1039,8 @@ namespace LINALG
 
 
   */
-  template<typename T> void Gather(vector<T>&         sdata,
-                                   vector<T>&         rdata,
+  template<typename T> void Gather(std::vector<T>&    sdata,
+                                   std::vector<T>&    rdata,
                                    const int          ntargetprocs,
                                    const int*         tprocs,
                                    const Epetra_Comm& comm)
@@ -1054,7 +1053,7 @@ namespace LINALG
       return; // nothing to do in serial
     }
     // build a map of data
-    map<int,std::vector<T> > datamap;
+    std::map<int,std::vector<T> > datamap;
     datamap[myrank] = sdata;
     // build a source map
     Epetra_Map source(numproc,1,&myrank,0,comm);
@@ -1066,7 +1065,7 @@ namespace LINALG
         iamtarget = true;
         break;
       }
-    vector<int> targetvec(0);
+    std::vector<int> targetvec(0);
     if (iamtarget)
     {
       targetvec.resize(numproc);
@@ -1080,7 +1079,7 @@ namespace LINALG
     // put data from map in rdata
     rdata.clear();
     int count=0;
-    typename map<int,std::vector<T> >::const_iterator curr;
+    typename std::map<int,std::vector<T> >::const_iterator curr;
     for (curr=datamap.begin(); curr != datamap.end(); ++curr)
     {
       const std::vector<T>& current = curr->second;
@@ -1118,8 +1117,8 @@ namespace LINALG
 
 
   */
-  template<typename T> void Gather(std::set<T>&      sdata,
-                                   set<T>&      rdata,
+  template<typename T> void Gather(std::set<T>& sdata,
+                                   std::set<T>& rdata,
                                    const int    ntargetprocs,
                                    const int*   tprocs,
                                    const        Epetra_Comm& comm)
@@ -1132,7 +1131,7 @@ namespace LINALG
       return; // nothing to do in serial
     }
     // build a map of data
-    map<int,std::set<T> > datamap;
+    std::map<int,std::set<T> > datamap;
     datamap[myrank] = sdata;
     // build a source map
     Epetra_Map source(numproc,1,&myrank,0,comm);
@@ -1144,7 +1143,7 @@ namespace LINALG
         iamtarget = true;
         break;
       }
-    vector<int> targetvec(0);
+    std::vector<int> targetvec(0);
     if (iamtarget)
     {
       targetvec.resize(numproc);
@@ -1157,11 +1156,11 @@ namespace LINALG
     exporter.Export(datamap);
     // put data from map in rdata
     rdata.clear();
-    typename map<int,std::set<T> >::const_iterator curr;
+    typename std::map<int,std::set<T> >::const_iterator curr;
     for (curr=datamap.begin(); curr != datamap.end(); ++curr)
     {
-      const set<T>& current = curr->second;
-      typename set<T>::const_iterator setiter;
+      const std::set<T>& current = curr->second;
+      typename std::set<T>::const_iterator setiter;
       for (setiter = current.begin(); setiter != current.end(); ++setiter)
       {
         rdata.insert(*setiter);
@@ -1221,7 +1220,7 @@ namespace LINALG
         iamtarget = true;
         break;
       }
-    vector<int> targetvec(0);
+    std::vector<int> targetvec(0);
     if (iamtarget)
     {
       targetvec.resize(numproc);
@@ -1270,7 +1269,7 @@ namespace LINALG
   */
 
   template<typename T, typename U> void Gather(std::map<T,U>&      sdata,
-  																	           std::map<T,U>&      rdata,
+                                               std::map<T,U>&      rdata,
                                                const int    ntargetprocs,
                                                const int*   tprocs,
                                                const        Epetra_Comm& comm)
@@ -1297,7 +1296,7 @@ namespace LINALG
   	        iamtarget = true;
   	        break;
   	      }
-  	    vector<int> targetvec(0);
+  	    std::vector<int> targetvec(0);
   	    if (iamtarget)
   	    {
   	      targetvec.resize(numproc);
@@ -1310,11 +1309,11 @@ namespace LINALG
   	    exporter.Export(datamap);
   	    // put data from map in rdata
   	    rdata.clear();
-  	    typename map<int,map<T,U> >::const_iterator curr;
+  	    typename std::map<int,std::map<T,U> >::const_iterator curr;
   	    for (curr=datamap.begin(); curr != datamap.end(); ++curr)
   	    {
-  	      const map<T,U>& current = curr->second;
-  	      typename map<T,U>::const_iterator mapiter;
+  	      const std::map<T,U>& current = curr->second;
+  	      typename std::map<T,U>::const_iterator mapiter;
   	      for (mapiter = current.begin(); mapiter != current.end(); ++mapiter)
   	      {
   	        rdata.insert(std::make_pair(mapiter->first, mapiter->second));
@@ -1397,7 +1396,7 @@ namespace LINALG
     \author u.kue
     \date 05/07
    */
-  void AllreduceEMap(vector<int>& rredundant, const Epetra_Map& emap);
+  void AllreduceEMap(std::vector<int>& rredundant, const Epetra_Map& emap);
 
   /// Create an allreduced gid to index map from the given Epetra_Map
   /*!
@@ -1417,7 +1416,7 @@ namespace LINALG
     \author u.kue
     \date 05/07
    */
-  void AllreduceEMap(map<int,int>& idxmap, const Epetra_Map& emap);
+  void AllreduceEMap(std::map<int,int>& idxmap, const Epetra_Map& emap);
 
   /// Create an allreduced gid to index map from the given Epetra_Map
   /// on a distinct processor, all other procs create empty maps instead.
@@ -1506,7 +1505,7 @@ namespace LINALG
     \date 09/07
    */
   void AllToAllCommunication( const Epetra_Comm& comm,
-                              const std::vector< std::vector<int> >& send, vector< std::vector<int> >& recv );
+                              const std::vector< std::vector<int> >& send, std::vector< std::vector<int> >& recv );
 
   /// return the first slot of a pair
   /*!
@@ -1548,7 +1547,7 @@ namespace LINALG
     method instead.
    */
   template <class _Ret, class _Tp>
-  class rcp_fun_t : public unary_function<const _Tp*, _Ret>
+  class rcp_fun_t : public std::unary_function<const _Tp*, _Ret>
   {
   public:
     explicit rcp_fun_t(_Ret (_Tp::*__pf)()) : _M_f(__pf) {}
@@ -1565,7 +1564,7 @@ namespace LINALG
     method instead.
    */
   template <class _Ret, class _Tp>
-  class const_rcp_fun_t : public unary_function<const _Tp*, _Ret>
+  class const_rcp_fun_t : public std::unary_function<const _Tp*, _Ret>
   {
   public:
     explicit const_rcp_fun_t(_Ret (_Tp::*__pf)() const) : _M_f(__pf) {}

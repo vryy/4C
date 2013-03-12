@@ -35,7 +35,7 @@ FS3I::PartFS3I_2WC::PartFS3I_2WC(const Epetra_Comm& comm)
   itmax_ = fs3icontrol.get<int>("ITEMAX");
 
   // flag for constant thermodynamic pressure
-  consthermpress_ = fs3icontrol.get<string>("CONSTHERMPRESS");
+  consthermpress_ = fs3icontrol.get<std::string>("CONSTHERMPRESS");
 
   // define fluid- and structure-based scalar transport problem
   fluidscatra_     = scatravec_[0];

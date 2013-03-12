@@ -318,7 +318,7 @@ namespace UTILS {
   class ExprTimeSlice : public TimeSlice
   {
   public:
-    /// construct syntax tree from string buffer
+    /// construct syntax tree from std::string buffer
     ExprTimeSlice(double begin, double end, std::string buf);
 
     /// explicit destructor that frees the syntax tree
@@ -523,7 +523,7 @@ void DRT::UTILS::TimeCurveManager::ReadInput(DRT::INPUT::DatFileReader& reader)
         else if (string(buffer)=="f(t)=0.5+0.5*cos(PI*(T-C1)/(C2-C1))")
           numex=-13;
         else
-          dserror("Cannot read function of CURVE%d: %s",i,string(buffer).c_str());
+          dserror("Cannot read function of CURVE%d: %s",i,std::string(buffer).c_str());
 
         double c1;
         double c2;

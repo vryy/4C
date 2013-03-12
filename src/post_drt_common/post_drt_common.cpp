@@ -1324,7 +1324,7 @@ PostResult::read_result_serialdensematrix(const std::string name)
     columns = 1;
   }
   if (columns != 1)
-    dserror("got multivector with name '%s', vector<char> expected", name.c_str());
+    dserror("got multivector with name '%s', std::vector<char> expected", name.c_str());
 
   RCP<Epetra_Map> elemap;
   RCP<std::vector<char> > data = file_.ReadResultDataVecChar(id_path, value_path, columns,

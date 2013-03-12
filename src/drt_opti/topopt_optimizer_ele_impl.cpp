@@ -189,17 +189,17 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
 
   RCP<DRT::Discretization> fluiddis = params.get<RCP<DRT::Discretization> >("fluiddis");
 
-  RCP<map<int,RCP<Epetra_Vector> > > fluidvels = params.get<RCP<map<int,RCP<Epetra_Vector> > > >("fluidvel");
+  RCP<std::map<int,RCP<Epetra_Vector> > > fluidvels = params.get<RCP<std::map<int,RCP<Epetra_Vector> > > >("fluidvel");
 
-  map<int,LINALG::Matrix<nsd_,nen_> > efluidvels;
+  std::map<int,LINALG::Matrix<nsd_,nen_> > efluidvels;
 
   LINALG::Matrix<nsd_,nen_> efluidvel;
 
   // extract element data of all time steps from fluid solution
-  vector<int> fluidlm;
+  std::vector<int> fluidlm;
   DRT::UTILS::DisBasedLocationVector(*fluiddis,*ele,fluidlm,nsd_+1);
 
-  for (map<int,RCP<Epetra_Vector> >::iterator i=fluidvels->begin();
+  for (std::map<int,RCP<Epetra_Vector> >::iterator i=fluidvels->begin();
       i!=fluidvels->end();i++)
   {
     ExtractValuesFromGlobalVector(*fluiddis,fluidlm,&efluidvel,NULL,i->second);
@@ -236,7 +236,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TopOptImpl<distype>::Values(
   const int eid,
-  map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
+  std::map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
   LINALG::Matrix<nen_,1>& edens,
   double& objective,
   Teuchos::RCP<Epetra_SerialDenseVector> constraints,
@@ -362,27 +362,27 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
 
   RCP<DRT::Discretization> fluiddis = params.get<RCP<DRT::Discretization> >("fluiddis");
 
-  RCP<map<int,RCP<Epetra_Vector> > > fluidvels = params.get<RCP<map<int,RCP<Epetra_Vector> > > >("fluidvel");
-  RCP<map<int,RCP<Epetra_Vector> > > adjointvels = params.get<RCP<map<int,RCP<Epetra_Vector> > > >("adjointvel");
+  RCP<std::map<int,RCP<Epetra_Vector> > > fluidvels = params.get<RCP<std::map<int,RCP<Epetra_Vector> > > >("fluidvel");
+  RCP<std::map<int,RCP<Epetra_Vector> > > adjointvels = params.get<RCP<std::map<int,RCP<Epetra_Vector> > > >("adjointvel");
 
-  map<int,LINALG::Matrix<nsd_,nen_> > efluidvels;
-  map<int,LINALG::Matrix<nsd_,nen_> > eadjointvels;
+  std::map<int,LINALG::Matrix<nsd_,nen_> > efluidvels;
+  std::map<int,LINALG::Matrix<nsd_,nen_> > eadjointvels;
 
   LINALG::Matrix<nsd_,nen_> efluidvel;
   LINALG::Matrix<nsd_,nen_> eadjointvel;
 
   // extract element data of all time steps from fluid solution
-  vector<int> fluidlm;
+  std::vector<int> fluidlm;
   DRT::UTILS::DisBasedLocationVector(*fluiddis,*ele,fluidlm,nsd_+1);
 
-  for (map<int,RCP<Epetra_Vector> >::iterator i=fluidvels->begin();
+  for (std::map<int,RCP<Epetra_Vector> >::iterator i=fluidvels->begin();
       i!=fluidvels->end();i++)
   {
     ExtractValuesFromGlobalVector(*fluiddis,fluidlm,&efluidvel,NULL,i->second);
     efluidvels.insert(std::pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,efluidvel));
   }
 
-  for (map<int,RCP<Epetra_Vector> >::iterator i=adjointvels->begin();
+  for (std::map<int,RCP<Epetra_Vector> >::iterator i=adjointvels->begin();
       i!=adjointvels->end();i++)
   {
     ExtractValuesFromGlobalVector(*fluiddis,fluidlm,&eadjointvel,NULL,i->second);
@@ -415,9 +415,9 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
   // since it is a MultiVector. Thus it is handled manually here
   RCP<Epetra_MultiVector> constr_der = params.get<RCP<Epetra_MultiVector> >("constraints_derivations");
 
-  vector<int> dummylm; // the same as lm
-  vector<int> dummylmstride; // not required
-  vector<int> lmowner; // owners of the lm-dofs
+  std::vector<int> dummylm; // the same as lm
+  std::vector<int> dummylmstride; // not required
+  std::vector<int> lmowner; // owners of the lm-dofs
   ele->LocationVector(optidis,dummylm,lmowner,dummylmstride);
   if (dummylm!=lm) dserror("non fitting local maps which shall be identical");
 
@@ -432,8 +432,8 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
   const int eid,
-  map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
-  map<int,LINALG::Matrix<nsd_,nen_> >& eadjointvel,
+  std::map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
+  std::map<int,LINALG::Matrix<nsd_,nen_> >& eadjointvel,
   LINALG::Matrix<nen_,1>& edens,
   LINALG::Matrix<nen_,1>& egrad,
   LINALG::Matrix<nen_,1>& econstr_der,

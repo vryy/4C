@@ -44,7 +44,7 @@ int DRT::ELEMENTS::Beam3ii::Evaluate(Teuchos::ParameterList& params,
 {
   DRT::ELEMENTS::Beam3ii::ActionType act = Beam3ii::calc_none;
   // get the action required
-  string action = params.get<string>("action","calc_none");
+  std::string action = params.get<std::string>("action","calc_none");
   if (action == "calc_none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff") act = Beam3ii::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff") act = Beam3ii::calc_struct_nlnstiff;
@@ -403,13 +403,13 @@ int DRT::ELEMENTS::Beam3ii::EvaluateNeumann(Teuchos::ParameterList& params,
   // get element displacements
   RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
-  vector<double> mydisp(lm.size());
+  std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
   // get element velocities (UNCOMMENT IF NEEDED)
   /*
   RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
   if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-  vector<double> myvel(lm.size());
+  std::vector<double> myvel(lm.size());
   DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
   */
 
@@ -602,32 +602,32 @@ void DRT::ELEMENTS::Beam3ii::b3_energy( Teuchos::ParameterList& params,
 
   bool calcenergy = false;
   if(params.isParameter("energyoftype")==false) calcenergy = true;
-  else if(params.get<string>("energyoftype")=="beam3ii") calcenergy =true;
+  else if(params.get<std::string>("energyoftype")=="beam3ii") calcenergy =true;
 
   if(calcenergy)
   {
     //const double t_tot = Teuchos::Time::wallTime();
 
     //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
-    vector<LINALG::Matrix<1,nnode> > I(nnode-1);
+    std::vector<LINALG::Matrix<1,nnode> > I(nnode-1);
 
     //vector whose numgp-th element is a 1xnnode-matrix with the derivatives of all Lagrange polynomial basis functions evaluated at nnode-1 Gauss points for elasticity
-    vector<LINALG::Matrix<1,nnode> > Iprime(nnode-1);
+    std::vector<LINALG::Matrix<1,nnode> > Iprime(nnode-1);
 
     //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at nnode-1 Gauss points for elasticity according to according to (3.18), Jelenic 1999
-    vector<std::vector<LINALG::Matrix<3,3> > > Itilde(nnode-1);
+    std::vector<std::vector<LINALG::Matrix<3,3> > > Itilde(nnode-1);
 
     //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at nnode-1 Gauss points for elasticity according to according to (3.19), Jelenic 1999
-    vector<std::vector<LINALG::Matrix<3,3> > > Itildeprime(nnode-1);
+    std::vector<std::vector<LINALG::Matrix<3,3> > > Itildeprime(nnode-1);
 
     //vector with rotation matrices at nnode-1 Gauss points for elasticity
-    vector<LINALG::Matrix<3,3> > Lambda(nnode-1);
+    std::vector<LINALG::Matrix<3,3> > Lambda(nnode-1);
 
     //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the nnode Gauss points for mass matrix
-    vector<LINALG::Matrix<1,nnode> > Imass(nnode);
+    std::vector<LINALG::Matrix<1,nnode> > Imass(nnode);
 
     //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the nnode Gauss points for mass matrix according to according to (3.18), Jelenic 1999
-    vector<std::vector<LINALG::Matrix<3,3> > > Itildemass(nnode);
+    std::vector<std::vector<LINALG::Matrix<3,3> > > Itildemass(nnode);
 
     //r'(x) from (2.1), Jelenic 1999
     LINALG::Matrix<3,1>  rprime;
@@ -705,25 +705,25 @@ void DRT::ELEMENTS::Beam3ii::b3_nlnstiffmass( Teuchos::ParameterList& params,
   //const double t_tot = Teuchos::Time::wallTime();
 
   //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the numgp-th Gauss point
-  vector<LINALG::Matrix<1,nnode> > I(nnode-1);
+  std::vector<LINALG::Matrix<1,nnode> > I(nnode-1);
 
   //vector whose numgp-th element is a 1xnnode-matrix with the derivatives of all Lagrange polynomial basis functions evaluated at nnode-1 Gauss points for elasticity
-  vector<LINALG::Matrix<1,nnode> > Iprime(nnode-1);
+  std::vector<LINALG::Matrix<1,nnode> > Iprime(nnode-1);
 
   //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at nnode-1 Gauss points for elasticity according to according to (3.18), Jelenic 1999
-  vector<std::vector<LINALG::Matrix<3,3> > > Itilde(nnode-1);
+  std::vector<std::vector<LINALG::Matrix<3,3> > > Itilde(nnode-1);
 
   //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I'}^nnode at nnode-1 Gauss points for elasticity according to according to (3.19), Jelenic 1999
-  vector<std::vector<LINALG::Matrix<3,3> > > Itildeprime(nnode-1);
+  std::vector<std::vector<LINALG::Matrix<3,3> > > Itildeprime(nnode-1);
 
   //vector with rotation matrices at nnode-1 Gauss points for elasticity
-  vector<LINALG::Matrix<3,3> > Lambda(nnode-1);
+  std::vector<LINALG::Matrix<3,3> > Lambda(nnode-1);
 
   //vector whose numgp-th element is a 1xnnode-matrix with all Lagrange polynomial basis functions evaluated at the nnode Gauss points for mass matrix
-  vector<LINALG::Matrix<1,nnode> > Imass(nnode);
+  std::vector<LINALG::Matrix<1,nnode> > Imass(nnode);
 
   //vector whose numgp-th element is a vector with nnode elements, who represent the 3x3-matrix-shaped interpolation function \tilde{I}^nnode at the nnode Gauss points for mass matrix according to according to (3.18), Jelenic 1999
-  vector<std::vector<LINALG::Matrix<3,3> > > Itildemass(nnode);
+  std::vector<std::vector<LINALG::Matrix<3,3> > > Itildemass(nnode);
 
   //r'(x) from (2.1), Jelenic 1999
   LINALG::Matrix<3,1>  rprime;
@@ -1126,7 +1126,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyRotationalDamping(Teuchos::ParameterList& 
   INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
-  vector<double> jacobi(jacobimass_);
+  std::vector<double> jacobi(jacobimass_);
   if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
     jacobi = jacobinode_;
 
@@ -1241,7 +1241,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyTranslationalDamping(Teuchos::ParameterLis
   MyDampingConstants(params,gamma,frictionmodel);
 
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
-  vector<double> jacobi(jacobimass_);
+  std::vector<double> jacobi(jacobimass_);
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
@@ -1346,7 +1346,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticForces(Teuchos::ParameterList& p
 
 
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
-  vector<double> jacobi(jacobimass_);
+  std::vector<double> jacobi(jacobimass_);
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
@@ -1432,7 +1432,7 @@ inline void DRT::ELEMENTS::Beam3ii::MyStochasticMoments(Teuchos::ParameterList& 
   INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
-  vector<double> jacobi(jacobimass_);
+  std::vector<double> jacobi(jacobimass_);
   if(frictionmodel == INPAR::STATMECH::frictionmodel_isotropiclumped)
     jacobi = jacobinode_;
 
@@ -1492,8 +1492,8 @@ inline void DRT::ELEMENTS::Beam3ii::CalcBrownian(Teuchos::ParameterList& params,
                                               const std::vector<double>&       disp, //!< element displacement vector
                                               Epetra_SerialDenseMatrix* stiffmatrix,  //!< element stiffness matrix
                                               Epetra_SerialDenseVector* force,
-                                              vector<LINALG::Matrix<1,nnode> >& Imass,
-                                              vector<std::vector<LINALG::Matrix<3,3> > >& Itildemass) //!< element internal force vector
+                                              std::vector<LINALG::Matrix<1,nnode> >& Imass,
+                                              std::vector<std::vector<LINALG::Matrix<3,3> > >& Itildemass) //!< element internal force vector
 {
   //if no random numbers for generation of stochastic forces are passed to the element no Brownian dynamics calculations are conducted
   if( params.get<  RCP<Epetra_MultiVector> >("RandomNumbers",Teuchos::null) == Teuchos::null)
@@ -1507,10 +1507,10 @@ inline void DRT::ELEMENTS::Beam3ii::CalcBrownian(Teuchos::ParameterList& params,
     dampingintrule = lobattointegration;
 
   DRT::UTILS::IntegrationPoints1D gausspointsdamping(MyGaussRule(nnode,dampingintrule));
-  vector<LINALG::Matrix<1,nnode> > Idamping(Imass);
-  vector<std::vector<LINALG::Matrix<3,3> > > Itildedamping(Itildemass);
-  vector<LINALG::Matrix<4,1> > Qconvdamping(Qconvmass_);
-  vector<LINALG::Matrix<4,1> > Qnewdamping(Qnewmass_);
+  std::vector<LINALG::Matrix<1,nnode> > Idamping(Imass);
+  std::vector<std::vector<LINALG::Matrix<3,3> > > Itildedamping(Itildemass);
+  std::vector<LINALG::Matrix<4,1> > Qconvdamping(Qconvmass_);
+  std::vector<LINALG::Matrix<4,1> > Qnewdamping(Qnewmass_);
 
   if(DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL") == INPAR::STATMECH::frictionmodel_isotropiclumped)
   {
@@ -1602,7 +1602,7 @@ return;
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim> //number of nodes, number of dimensions
 inline void DRT::ELEMENTS::Beam3ii::NodeShift(Teuchos::ParameterList& params,  //!<parameter list
-                                            vector<double>& disp) //!<element disp vector
+                                              std::vector<double>& disp) //!<element disp vector
 {
   /*get number of degrees of freedom per node; note: the following function assumes the same number of degrees
    *of freedom for each element node*/

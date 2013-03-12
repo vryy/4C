@@ -46,7 +46,7 @@ int DRT::ELEMENTS::RedInterAcinarDep::Evaluate(Teuchos::ParameterList& params,
   DRT::ELEMENTS::RedInterAcinarDep::ActionType act = RedInterAcinarDep::none;
 
   // get the action required
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action == "calc_sys_matrix_rhs")
     act = RedInterAcinarDep::calc_sys_matrix_rhs;

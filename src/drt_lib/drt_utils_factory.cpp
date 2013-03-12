@@ -53,8 +53,8 @@ DRT::ParObject* DRT::UTILS::Factory(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  allocate an element of a specific type (public)          mwgee 03|07|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<DRT::Element> DRT::UTILS::Factory(const string eletype,
-                                              const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::UTILS::Factory(const std::string eletype,
+                                              const std::string eledistype,
                                               const int id,
                                               const int owner)
 {

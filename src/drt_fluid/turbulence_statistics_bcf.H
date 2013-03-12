@@ -194,7 +194,7 @@ public:
   turbulent channel flow
 
   */
-  vector<double> ReturnNodePlaneCoords()
+  std::vector<double> ReturnNodePlaneCoords()
   {
     return(*nodeplanes_);
   };
@@ -299,7 +299,7 @@ private:
 
   //! maps the global material ids to the position in
   //  the vectors which belongs to that material
-  RCP<map<int,int> >                 matidtoindex_;
+  RCP<std::map<int,int> >                 matidtoindex_;
 
   //!--------------------------------------------------
   //!         integration based averaging

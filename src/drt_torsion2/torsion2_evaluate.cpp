@@ -31,7 +31,7 @@ int DRT::ELEMENTS::Torsion2::Evaluate(Teuchos::ParameterList& params,
 {
   DRT::ELEMENTS::Torsion2::ActionType act = Torsion2::calc_none;
   // get the action required
-  string action = params.get<string>("action","calc_none");
+  std::string action = params.get<std::string>("action","calc_none");
   if (action == "calc_none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff") act = Torsion2::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff") act = Torsion2::calc_struct_nlnstiff;

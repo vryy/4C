@@ -59,6 +59,7 @@ Maintainer: Alexander Popp
 #include "../drt_lib/drt_utils_parmetis.H"
 #include "../drt_lib/drt_utils.H"
 #include <Teuchos_Time.hpp>
+#include <Epetra_Time.h>
 
 
 /*----------------------------------------------------------------------*

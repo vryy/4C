@@ -75,7 +75,7 @@ DRT::ELEMENTS::Combust3::StabilisationAction DRT::ELEMENTS::Combust3::ConvertStr
 {
   DRT::ELEMENTS::Combust3::StabilisationAction act = stabaction_unspecified;
 
-  map<string,StabilisationAction>::const_iterator iter=stabstrtoact_.find(action);
+  std::map<std::string,StabilisationAction>::const_iterator iter=stabstrtoact_.find(action);
 
   if (iter != stabstrtoact_.end())
   {
@@ -102,7 +102,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
                                      Epetra_SerialDenseVector&)
 {
   // get the action required
-  const string action(params.get<string>("action","none"));
+  const std::string action(params.get<std::string>("action","none"));
   const DRT::ELEMENTS::Combust3::ActionType act = convertStringToActionType(action);
 
   // get the list of materials
@@ -210,9 +210,9 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
 #endif
 #endif
       // create an empty element ansatz map to be filled in the following
-      map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_filled;
+      std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_filled;
       // create an empty element ansatz map
-      const map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty;
+      const std::map<XFEM::PHYSICS::Field, DRT::Element::DiscretizationType> element_ansatz_empty;
 #ifdef COMBUST_STRESS_BASED
       // ask for appropriate element ansatz (shape functions) for this type of element and fill the map
       element_ansatz_filled = elementAnsatz->getElementAnsatz(this->Shape());
@@ -695,13 +695,13 @@ void DRT::ELEMENTS::Combust3::f3_int_beltrami_err(
   visc = mat->Viscosity();
 
   double         preint;
-  vector<double> velint  (3);
-  vector<double> xint    (3);
+  std::vector<double> velint  (3);
+  std::vector<double> xint    (3);
 
-  vector<double> u       (3);
+  std::vector<double> u       (3);
 
   double         deltap;
-  vector<double> deltavel(3);
+  std::vector<double> deltavel(3);
 
   // gaussian points
   const DRT::UTILS::GaussRule3D gaussrule = getOptimalGaussrule(distype);
@@ -859,7 +859,7 @@ void DRT::ELEMENTS::Combust3::calc_volume_fraction(
   RCP<std::vector<double> > planes = params.get<RCP<std::vector<double> > >("coordinate vector for hom. planes");
 
   // a map to link a material to its index in the vectors
-  RCP<map<int,int> > matidtoindex = params.get<RCP<map<int,int> > >("map materialid to index");
+  RCP<std::map<int,int> > matidtoindex = params.get<RCP<std::map<int,int> > >("map materialid to index");
   RCP<const MAT::Material> material = this->Material();
   int matidplus  = -1;
   int matidminus = -1;
@@ -875,7 +875,7 @@ void DRT::ELEMENTS::Combust3::calc_volume_fraction(
 
 
   // get the pointers to the solution vectors
-  vector<RCP<std::vector<double> > >& sumvol = *(params.get<vector<RCP<std::vector<double> > >* >("element volume"));
+  std::vector<RCP<std::vector<double> > >& sumvol = *(params.get<std::vector<RCP<std::vector<double> > >* >("element volume"));
 
   // get node coordinates of element
   LINALG::Matrix<3,8>  xyze;

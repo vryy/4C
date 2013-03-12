@@ -139,7 +139,7 @@ void MAT::AAAneohooke_stopro::Unpack(const std::vector<char>& data)
 
 
 // initialize function to be called from MLMC to get beta from a random field
-void MAT::AAAneohooke_stopro::Init(double value_stopro, string stochpar)
+void MAT::AAAneohooke_stopro::Init(double value_stopro, std::string stochpar)
 {
   if(!stochpar.compare("BETA"))
   {
@@ -240,7 +240,7 @@ void MAT::AAAneohooke_stopro::Evaluate(const LINALG::Matrix<6,1>& glstrain,
   double isochor1 = 0.0;
   double isochor2 = 0.0;
 
-  string deriv = params.get<string>("matparderiv","none");
+  std::string deriv = params.get<std::string>("matparderiv","none");
   if (deriv == "YOUNG")
   {
     //cout << "DERIV YOUNGS" << endl;

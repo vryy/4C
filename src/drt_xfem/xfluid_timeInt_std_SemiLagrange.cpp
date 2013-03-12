@@ -55,7 +55,7 @@ theta_default_(theta)
  * Semi-Lagrangean Back-Tracking main algorithm                                      schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_SemiLagrange::compute(
-    vector<RCP<Epetra_Vector> >& newRowVectorsn
+    std::vector<RCP<Epetra_Vector> >& newRowVectorsn
 )
 {
   const int nsd = 3; // 3 dimensions for a 3d fluid element
@@ -114,7 +114,7 @@ void XFEM::XFLUID_SemiLagrange::compute(
 #endif
 
       // loop over all nodes (their std-dofsets) that have been chosen for SEMI-Lagrangean reconstruction
-      for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+      for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
           data!=timeIntData_->end(); data++)
       {
 #ifdef DEBUG_SEMILAGRANGE
@@ -735,7 +735,7 @@ void XFEM::XFLUID_SemiLagrange::getDataForNotConvergedNodes()
 
     // remark: all data has to be sent to the processor where
     //         the startpoint lies before calling this function
-    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+    for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
         data!=timeIntData_->end(); data++)
     {
       if (data->state_==TimeIntData::failedSL_)
@@ -811,7 +811,7 @@ void XFEM::XFLUID_SemiLagrange::getDataForNotConvergedNodes()
 //    extrapol->timeIntData_ = Teuchos::rcp(new std::vector<TimeIntData>);
 //
 //    // add data for extrapolation
-//    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+//    for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
 //        data!=timeIntData_->end(); data++)
 //    {
 //      if (data->state_==TimeIntData::extrapolateStd_)
@@ -836,7 +836,7 @@ void XFEM::XFLUID_SemiLagrange::getDataForNotConvergedNodes()
 //
 //    // remark: all data has to be sent to the processor where
 //    //         the startpoint lies before calling this function
-//    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+//    for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
 //        data!=timeIntData_->end(); data++)
 //    {
 //      if (data->state_==TimeIntData::failedSL_)
@@ -999,12 +999,12 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
 
   // data for the final back-tracking
   LINALG::Matrix<nsd,1> vel(true);                                                                // velocity data
-  vector<LINALG::Matrix<nsd,nsd> > velnDeriv1(oldVectors_.size(),LINALG::Matrix<nsd,nsd>(true));  // first derivation of velocity data
+  std::vector<LINALG::Matrix<nsd,nsd> > velnDeriv1(oldVectors_.size(),LINALG::Matrix<nsd,nsd>(true));  // first derivation of velocity data
 
   LINALG::Matrix<1,1> pres(true);                                                                 // pressure data
-  vector<LINALG::Matrix<1,nsd> > presnDeriv1(oldVectors_.size(),LINALG::Matrix<1,nsd>(true));     // first derivation of pressure data
+  std::vector<LINALG::Matrix<1,nsd> > presnDeriv1(oldVectors_.size(),LINALG::Matrix<1,nsd>(true));     // first derivation of pressure data
 
-  vector<LINALG::Matrix<nsd,1> > veln(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));            // velocity at t^n
+  std::vector<LINALG::Matrix<nsd,1> > veln(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));            // velocity at t^n
   LINALG::Matrix<nsd,1> transportVeln(true);                                                      // transport velocity at Lagrangian origin (x_Lagr(t^n))
 
 
@@ -1012,7 +1012,7 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
   // check if initial point is a node (case instead of computed lagrangean origin)
 
   int numele; // number of elements, if the initialpoint was a node
-  vector<const DRT::Element*> nodeeles;
+  std::vector<const DRT::Element*> nodeeles;
 
   if ((data->startGid_.size() != 1) and
       (strcmp(backTrackingType,static_cast<const char*>("failing")) == 0))
@@ -1041,14 +1041,14 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
   LINALG::Matrix<numnode,1>   nodepre(true);
 
   // node velocities of the element nodes for the data that should be changed
-  vector<LINALG::Matrix<nsd,numnode> > nodeveldata(oldVectors_.size(),LINALG::Matrix<nsd,numnode>(true));
+  std::vector<LINALG::Matrix<nsd,numnode> > nodeveldata(oldVectors_.size(),LINALG::Matrix<nsd,numnode>(true));
   // node pressures of the element nodes for the data that should be changed
-  vector<LINALG::Matrix<numnode,1> > nodepresdata(oldVectors_.size(),LINALG::Matrix<numnode,1>(true));
+  std::vector<LINALG::Matrix<numnode,1> > nodepresdata(oldVectors_.size(),LINALG::Matrix<numnode,1>(true));
 
   // velocity of the data that shall be changed
-  vector<LINALG::Matrix<nsd,1> > velValues(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
+  std::vector<LINALG::Matrix<nsd,1> > velValues(oldVectors_.size(),LINALG::Matrix<nsd,1>(true));
   // pressures of the data that shall be changed
-  vector<double> presValues(oldVectors_.size(),0);
+  std::vector<double> presValues(oldVectors_.size(),0);
 
   // loop over elements containing the startpoint (usually one)
   // REMARK: in case of initialpoint == node, we have to use averaged derivatives around the node
@@ -1187,7 +1187,7 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
 #endif
   } // loop over vectors to be set
 
-  data->startOwner_ = vector<int>(1,myrank_);
+  data->startOwner_ = std::vector<int>(1,myrank_);
   data->velValues_  = velValues;
   data->presValues_ = presValues;
   data->state_      = TimeIntData::doneStd_;
@@ -1202,10 +1202,10 @@ void XFEM::XFLUID_SemiLagrange::backTracking(
  * rewrite data for new computation                                              winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_SemiLagrange::newIteration_prepare(
-    vector<RCP<Epetra_Vector> > newRowVectors
+    std::vector<RCP<Epetra_Vector> > newRowVectors
 )
 {
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     data->searchedProcs_ = 1;
@@ -1224,17 +1224,17 @@ void XFEM::XFLUID_SemiLagrange::newIteration_prepare(
  * compute Gradients at side-changing nodes                                      winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
-    vector<RCP<Epetra_Vector> > newRowVectors
+    std::vector<RCP<Epetra_Vector> > newRowVectors
 )
 {
   const int nsd = 3;
 
   // data about column vectors required
   const Epetra_Map& newdofcolmap = *discret_->DofColMap();
-  map<XFEM::DofKey,XFEM::DofGID> newNodalDofColDistrib;
+  std::map<XFEM::DofKey,XFEM::DofGID> newNodalDofColDistrib;
   newdofman_->fillNodalDofColDistributionMap(newNodalDofColDistrib);
 
-  vector<RCP<Epetra_Vector> > newColVectors;
+  std::vector<RCP<Epetra_Vector> > newColVectors;
 
   for (size_t index=0;index<newRowVectors.size();index++)
   {
@@ -1244,18 +1244,18 @@ void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
   }
 
   // computed data
-  vector<LINALG::Matrix<nsd,nsd> > velnpDeriv1(static_cast<int>(oldVectors_.size()),LINALG::Matrix<nsd,nsd>(true));
-  vector<LINALG::Matrix<1,nsd> > presnpDeriv1(static_cast<int>(oldVectors_.size()),LINALG::Matrix<1,nsd>(true));
+  std::vector<LINALG::Matrix<nsd,nsd> > velnpDeriv1(static_cast<int>(oldVectors_.size()),LINALG::Matrix<nsd,nsd>(true));
+  std::vector<LINALG::Matrix<1,nsd> > presnpDeriv1(static_cast<int>(oldVectors_.size()),LINALG::Matrix<1,nsd>(true));
 
-  vector<LINALG::Matrix<nsd,nsd> > velnpDeriv1Tmp(static_cast<int>(oldVectors_.size()),LINALG::Matrix<nsd,nsd>(true));
-  vector<LINALG::Matrix<1,nsd> > presnpDeriv1Tmp(static_cast<int>(oldVectors_.size()),LINALG::Matrix<1,nsd>(true));
+  std::vector<LINALG::Matrix<nsd,nsd> > velnpDeriv1Tmp(static_cast<int>(oldVectors_.size()),LINALG::Matrix<nsd,nsd>(true));
+  std::vector<LINALG::Matrix<1,nsd> > presnpDeriv1Tmp(static_cast<int>(oldVectors_.size()),LINALG::Matrix<1,nsd>(true));
 
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     DRT::Node& node = data->node_;
 
-    vector<const DRT::Element*> eles;
+    std::vector<const DRT::Element*> eles;
     addPBCelements(&node,eles);
     const int numeles=eles.size();
 
@@ -1296,7 +1296,7 @@ void XFEM::XFLUID_SemiLagrange::newIteration_nodalData(
 
     // set transport velocity at this node
     const int gid = node.Id();
-    const set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gid));
+    const std::set<XFEM::FieldEnr>& fieldenrset(newdofman_->getNodeDofSet(gid));
     for (std::set<XFEM::FieldEnr>::const_iterator fieldenr = fieldenrset.begin();
         fieldenr != fieldenrset.end();++fieldenr)
     {
@@ -1365,19 +1365,19 @@ void XFEM::XFLUID_SemiLagrange::reinitializeData()
             *currnode,
             nds_np,
             LINALG::Matrix<nsd,1>(true),
-            vector<LINALG::Matrix<nsd,nsd> >(oldVectors_.size(),LINALG::Matrix<nsd,nsd>(true)),
-            vector<LINALG::Matrix<1,nsd> >(oldVectors_.size(),LINALG::Matrix<1,nsd>(true)),
+            std::vector<LINALG::Matrix<nsd,nsd> >(oldVectors_.size(),LINALG::Matrix<nsd,nsd>(true)),
+            std::vector<LINALG::Matrix<1,nsd> >(oldVectors_.size(),LINALG::Matrix<1,nsd>(true)),
             dummyStartpoint,
 //            (*phinp_)[lnodeid],
             1,
             0,
-            vector<int>(1,-1),
-            vector<int>(1,-1),
+            std::vector<int>(1,-1),
+            std::vector<int>(1,-1),
             INFINITY,
             TimeIntData::predictor_));
       else // other side than last FSI, but same side as old solution at last time step
       {
-        for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+        for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
             data!=timeIntData_->end(); data++)
         {
           const int nodeid = currnode->Id();
@@ -1424,7 +1424,7 @@ void XFEM::XFLUID_SemiLagrange::reinitializeData()
   startpoints();
 
   // test loop if all initial startpoints have been computed
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     if (data->startpoint_==dummyStartpoint)
@@ -1440,13 +1440,13 @@ void XFEM::XFLUID_SemiLagrange::reinitializeData()
  *------------------------------------------------------------------------------------------------*/
 template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
 void XFEM::XFLUID_SemiLagrange::computeNodalGradient(
-    vector<RCP<Epetra_Vector> >& newColVectors,
+    std::vector<RCP<Epetra_Vector> >& newColVectors,
     const Epetra_Map& newdofcolmap,
-    map<XFEM::DofKey,XFEM::DofGID>& newNodalDofColDistrib,
+    std::map<XFEM::DofKey,XFEM::DofGID>& newNodalDofColDistrib,
     const DRT::Element* ele,
     DRT::Node* node,
-    vector<LINALG::Matrix<3,3> >& velnpDeriv1,
-    vector<LINALG::Matrix<1,3> >& presnpDeriv1
+    std::vector<LINALG::Matrix<3,3> >& velnpDeriv1,
+    std::vector<LINALG::Matrix<1,3> >& presnpDeriv1
 ) const
 { dserror("fix computeNodalGradient");
 //  const int nsd = 3;
@@ -1630,7 +1630,7 @@ bool XFEM::XFLUID_SemiLagrange::globalNewtonFinished(
 {
   if (counter == newton_max_iter_*numproc_)
     return true; // maximal number of iterations reached
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     if ((data->state_==TimeIntData::currSL_) or
@@ -1655,18 +1655,18 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
 
   // array of vectors which stores data for
   // every processor in one vector
-  vector<std::vector<TimeIntData> > dataVec(numproc_);
+  std::vector<std::vector<TimeIntData> > dataVec(numproc_);
 
   // fill vectors with the data
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     if (data->state_==TimeIntData::failedSL_)
     {
       if (data->startOwner_.size()!=1)
       {
-        vector<int> gids = data->startGid_;
-        vector<int> owners = data->startOwner_;
+        std::vector<int> gids = data->startGid_;
+        std::vector<int> owners = data->startOwner_;
 
         for (size_t i=0;i<owners.size();i++)
         {
@@ -1703,7 +1703,7 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
       source -=numproc_;
 
     // pack data to be sent
-    for (vector<TimeIntData>::iterator data=dataVec[dest].begin();
+    for (std::vector<TimeIntData>::iterator data=dataVec[dest].begin();
         data!=dataVec[dest].end(); data++)
     {
       if (data->state_==TimeIntData::failedSL_)
@@ -1721,7 +1721,7 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
 
     dataSend.StartPacking();
 
-    for (vector<TimeIntData>::iterator data=dataVec[dest].begin();
+    for (std::vector<TimeIntData>::iterator data=dataVec[dest].begin();
         data!=dataVec[dest].end(); data++)
     {
       if (data->state_==TimeIntData::failedSL_)
@@ -1740,11 +1740,11 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
     // clear the no more needed data
     dataVec[dest].clear();
 
-    vector<char> dataRecv;
+    std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
     // pointer to current position of group of cells in global string (counts bytes)
-    vector<char>::size_type posinData = 0;
+    std::vector<char>::size_type posinData = 0;
 
     // unpack received data
     while (posinData < dataRecv.size())
@@ -1752,11 +1752,11 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
       double coords[nsd] = {0.0};
       DRT::Node node(0,(double*)coords,0);
       LINALG::Matrix<nsd,1> vel;
-      vector<LINALG::Matrix<nsd,nsd> > velDeriv;
-      vector<LINALG::Matrix<1,nsd> > presDeriv;
+      std::vector<LINALG::Matrix<nsd,nsd> > velDeriv;
+      std::vector<LINALG::Matrix<1,nsd> > presDeriv;
       LINALG::Matrix<nsd,1> startpoint;
       double phiValue;
-      vector<int> startGid;
+      std::vector<int> startGid;
       int newtype;
 
       unpackNode(posinData,dataRecv,node);
@@ -1776,7 +1776,7 @@ void XFEM::XFLUID_SemiLagrange::exportAlternativAlgoData()
           startpoint,
           phiValue,
           startGid,
-          vector<int>(1,myrank_),
+          std::vector<int>(1,myrank_),
           (TimeIntData::type)newtype)); // startOwner is current proc
     } // end loop over number of nodes to get
 
@@ -1818,7 +1818,7 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(
     dataSend.StartPacking();
     DRT::ParObject::AddtoPack(dataSend,static_cast<int>(procDone));
 
-    vector<char> dataRecv;
+    std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
     // pointer to current position of group of cells in global string (counts bytes)
@@ -1845,7 +1845,7 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(
     DRT::PackBuffer dataSend;
 
     // fill vectors with the data
-    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+    for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
         data!=timeIntData_->end(); data++)
     {
       if (data->state_==TimeIntData::nextSL_)
@@ -1866,7 +1866,7 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(
 
     dataSend.StartPacking();
 
-    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+    for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
         data!=timeIntData_->end(); data++)
     {
       if (data->state_==TimeIntData::nextSL_)
@@ -1887,11 +1887,11 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(
 
     clearState(TimeIntData::nextSL_);
 
-    vector<char> dataRecv;
+    std::vector<char> dataRecv;
     sendData(dataSend,dest,source,dataRecv);
 
     // pointer to current position of group of cells in global string (counts bytes)
-    vector<char>::size_type posinData = 0;
+    std::vector<char>::size_type posinData = 0;
 
     // unpack received data
     while (posinData < dataRecv.size())
@@ -1899,14 +1899,14 @@ void XFEM::XFLUID_SemiLagrange::exportIterData(
       double coords[nsd] = {0.0};
       DRT::Node node(0,(double*)coords,0);
       LINALG::Matrix<nsd,1> vel;
-      vector<LINALG::Matrix<nsd,nsd> > velDeriv;
-      vector<LINALG::Matrix<1,nsd> > presDeriv;
+      std::vector<LINALG::Matrix<nsd,nsd> > velDeriv;
+      std::vector<LINALG::Matrix<1,nsd> > presDeriv;
       LINALG::Matrix<nsd,1> startpoint;
       double phiValue;
       int searchedProcs;
       int iter;
-      vector<int> startGid;
-      vector<int> startOwner;
+      std::vector<int> startGid;
+      std::vector<int> startOwner;
       int newtype;
 
       unpackNode(posinData,dataRecv,node);

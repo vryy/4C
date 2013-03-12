@@ -134,11 +134,11 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::StringConditionComponent::Read(DRT::
       i = std::find(datfilevalues_.begin(),datfilevalues_.end(),defaultvalue_);
     }
     else
-      dserror("unrecognized string '%s' while reading variable '%s' in '%s'",
+      dserror("unrecognized std::string '%s' while reading variable '%s' in '%s'",
               value.c_str(),Name().c_str(),def->SectionName().c_str());
   }
   unsigned pos = &*i - &datfilevalues_[0];
-  // choose, if we have an array based on string or int
+  // choose, if we have an array based on std::string or int
   if(stringtostring_)
     condition->Add(Name(),stringcondvalues_[pos]);
   else
@@ -767,7 +767,7 @@ void DRT::INPUT::CondCompBundleSelector::DefaultLine(std::ostream& stream)
   stringcomp_->DefaultLine(stream);
   stream << " ";
 
-  // compare default string with vector<std::string> of model types
+  // compare default std::string with std::vector<std::string> of model types
   std::ostringstream str;
   stringcomp_->DefaultLine(str);
   std::string defaultvalue = str.str();
@@ -795,7 +795,7 @@ void DRT::INPUT::CondCompBundleSelector::Print(std::ostream& stream, const DRT::
   stringcomp_->Print(stream,cond);
   stream << " ";
 
-  // compare default string with vector<std::string> of model types
+  // compare default std::string with std::vector<std::string> of model types
   std::ostringstream str;
   stringcomp_->DefaultLine(str);
   std::string defaultvalue = str.str();

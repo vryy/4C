@@ -510,7 +510,7 @@ void EXODUS::DatEles(Teuchos::RCP< const EXODUS::ElementBlock> eb, const EXODUS:
   std::map<int,std::vector<int> >::const_iterator i_ele;
   for (i_ele=eles->begin();i_ele!=eles->end();++i_ele)
   {
-    std::stringstream dat; // first build up the string for actual element line
+    std::stringstream dat; // first build up the std::string for actual element line
     const std::vector<int> nodes = i_ele->second;
     std::vector<int>::const_iterator i_n;
     dat << "   " << startele;

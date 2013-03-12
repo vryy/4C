@@ -256,7 +256,7 @@ void STR::InvAnalysis::Integrate()
   return;
 }
 
-void STR::InvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix cmatrix,  vector<double> inc)
+void STR::InvAnalysis::CalcNewParameters(Epetra_SerialDenseMatrix cmatrix,  std::vector<double> inc)
 {
   // initalization of the Jacobi and storage matrix
   Epetra_SerialDenseMatrix J(nmp_, np_);
@@ -375,13 +375,13 @@ Epetra_SerialDenseVector STR::InvAnalysis::GetCalculatedCurve()
   // current displacement vector
   Teuchos::RCP<Epetra_Vector> disp = sti_->DisNew();
 
-  vector<DRT::Condition*> invanacond;
+  std::vector<DRT::Condition*> invanacond;
   discret_->GetCondition("SurfInvAna",  invanacond);
 
   //nodes of the pulling direction
   const std::vector<int>* ia_nd_ps  = invanacond[0]->Nodes();
 
-  for (vector<int>::const_iterator inodegid = ia_nd_ps->begin();
+  for (std::vector<int>::const_iterator inodegid = ia_nd_ps->begin();
        inodegid !=ia_nd_ps->end();
        ++inodegid)
   {
@@ -408,7 +408,7 @@ Epetra_SerialDenseVector STR::InvAnalysis::GetCalculatedCurve()
   const std::vector<int>* ia_nd_fs_p = invanacond[1]->Nodes();
   const std::vector<int>* ia_nd_fs_n = invanacond[2]->Nodes();
 
-  for (vector<int>::const_iterator inodegid = ia_nd_fs_p->begin();
+  for (std::vector<int>::const_iterator inodegid = ia_nd_fs_p->begin();
        inodegid !=ia_nd_fs_p->end();
        ++inodegid)
   {
@@ -424,7 +424,7 @@ Epetra_SerialDenseVector STR::InvAnalysis::GetCalculatedCurve()
     }
   }
 
-  for (vector<int>::const_iterator inodegid = ia_nd_fs_n->begin();
+  for (std::vector<int>::const_iterator inodegid = ia_nd_fs_n->begin();
        inodegid !=ia_nd_fs_n->end();
        ++inodegid)
   {
@@ -548,7 +548,7 @@ void STR::InvAnalysis::PrintFile()
   FILE * cyFile;
   FILE * pFile;
 
-  string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
   name.append(filename_);
 
   if (name.rfind("_run_")!=string::npos)
@@ -559,10 +559,10 @@ void STR::InvAnalysis::PrintFile()
     name = name.substr(0, pos);
   }
 
-  string gp     = name+"_plot.gp";
-  string xcurve = name+"_Curve_x.txt";
-  string ycurve = name+"_Curve_y.txt";
-  string para   = name+"_Para.txt";
+  std::string gp     = name+"_plot.gp";
+  std::string xcurve = name+"_Curve_x.txt";
+  std::string ycurve = name+"_Curve_y.txt";
+  std::string para   = name+"_Para.txt";
 
   cxFile = fopen((xcurve).c_str(), "w");
   for (int i=0; i < nmp_/2.; i++)
@@ -606,8 +606,8 @@ void STR::InvAnalysis::ReadInParameters()
 {
   for (unsigned prob=0; prob<DRT::Problem::NumInstances(); ++prob)
   {
-    const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(prob)->Materials()->Map();
-    map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+    const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(prob)->Materials()->Map();
+    std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
 
     for (curr=mats.begin(); curr != mats.end(); ++curr)
     {
@@ -889,8 +889,8 @@ void STR::InvAnalysis::SetParameters(Epetra_SerialDenseVector p_cur)
 
 void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::set<int>& mymatset, std::set<int>& myehmatset)
 {
-  const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(prob)->Materials()->Map();
-  map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+  const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(prob)->Materials()->Map();
+  std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); ++curr)
   {
     const RCP<MAT::PAR::Material> material = curr->second;

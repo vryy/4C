@@ -46,7 +46,7 @@ ELCH::MovingBoundaryAlgorithm::MovingBoundaryAlgorithm(
   iveln_->PutScalar(0.0);
 
   // calculate normal flux vector field only at FSICoupling boundaries (no output to file)
-  vector<std::string> condnames(1);
+  std::vector<std::string> condnames(1);
   condnames[0] = "FSICoupling";
   if (pseudotransient_ or (theta_<0.999))
   {
@@ -325,7 +325,7 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
     RCP<Epetra_Vector> iveln)
 {
   // calculate normal flux vector field only at FSICoupling boundaries (no output to file)
-  vector<std::string> condnames(1);
+  std::vector<std::string> condnames(1);
   condnames[0] = "FSICoupling";
   fluxnp_ = ScaTraField().CalcFluxAtBoundary(condnames,false);
 
@@ -349,7 +349,7 @@ void ELCH::MovingBoundaryAlgorithm::ComputeInterfaceVectors(
     // get the processor's local fluid node with the same lnodeid
     DRT::Node* fluidlnode = fluiddis->lRowNode(lnodeid);
     // get the degrees of freedom associated with this fluid node
-    vector<int> fluidnodedofs = fluiddis->Dof(fluidlnode);
+    std::vector<int> fluidnodedofs = fluiddis->Dof(fluidlnode);
 
     if (ScaTraField().ScaTraType()== INPAR::SCATRA::scatratype_condif)
     {

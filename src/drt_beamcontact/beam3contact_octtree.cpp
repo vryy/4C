@@ -77,7 +77,7 @@ dofoffset_(dofoffset)
     periodicBC_ = false;
 
   // determine bounding box type
-  string boundingbox = params.get<string>("BEAMS_OCTREE","None");
+  std::string boundingbox = params.get<std::string>("BEAMS_OCTREE","None");
   if(boundingbox == "octree_axisaligned")
   {
     if(!discret_.Comm().MyPID())
@@ -135,7 +135,7 @@ vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINA
   // clear vector for assigning bounding boxes to octants to be on the safe side before (re)assigning bounding boxes
   bool bboxesfound = locateAll();
   // intersection checks
-  vector<RCP<Beam3contact> > contactpairs;
+  std::vector<RCP<Beam3contact> > contactpairs;
   if(bboxesfound)
   {
     BoundingBoxIntersection(currentpositions, &contactpairs);
@@ -426,7 +426,7 @@ void Beam3ContactOctTree::CreateBoundingBoxes(std::map<int, LINALG::Matrix<3,1> 
       LINALG::SerialDenseMatrix coord(3,2,true);
       for(int i=0; i<(int)nodelids.size(); i++)
       {
-        const map<int, LINALG::Matrix<3,1> >::const_iterator nodepos = currentpositions.find(nodelids.at(i));
+        const std::map<int, LINALG::Matrix<3,1> >::const_iterator nodepos = currentpositions.find(nodelids.at(i));
         for(int j=0; j<coord.M(); j++)
           coord(j,i) = (nodepos->second)(j);
       }
@@ -1073,7 +1073,7 @@ bool Beam3ContactOctTree::locateAll()
   // get the root box
   rootbox_ = GetRootBox();
 
-  // Convert Epetra_MultiVector allbboxes_ to vector(vector<double>)
+  // Convert Epetra_MultiVector allbboxes_ to vector(std::vector<double>)
   std::vector<std::vector<double> > allbboxesstdvec(allbboxes_->MyLength(), std::vector<double>(allbboxes_->NumVectors(),0.0));
   for(int i=0; i < allbboxes_->MyLength(); i++)
     for(int j=0; j<allbboxes_->NumVectors(); j++)
@@ -1555,7 +1555,7 @@ LINALG::Matrix<6,1> Beam3ContactOctTree::GetRootBox()
  |  Gives back vector of intersection pairs                                          |
  *----------------------------------------------------------------------------------*/
 void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3,1> >&  currentpositions,
-                                                  vector<RCP<Beam3contact> >* contactpairs)
+                                                  std::vector<RCP<Beam3contact> >* contactpairs)
 {
 #ifdef MEASURETIME
   double t_search = Teuchos::Time::wallTime();
@@ -1626,7 +1626,7 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
           {
             // note: creation of unique "first" entries in map, attention: IDs identical to crosslinker GIDs!!
             int mapfirst = (bboxIDs[0] + 1)*basisnodes_ + bboxIDs[1];
-            contactpairmap.insert ( pair<int, vector<int> > (mapfirst, bboxIDs));
+            contactpairmap.insert ( pair<int, std::vector<int> > (mapfirst, bboxIDs));
           }
         }
       }

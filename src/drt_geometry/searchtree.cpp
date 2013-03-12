@@ -393,7 +393,7 @@ std::vector<int> GEO::SearchTree::searchPointsInRadius(
  | print tree to gmsh file                                 peder   07/08|
  *----------------------------------------------------------------------*/
 void GEO::SearchTree::printTree(
-    const string  prefix,
+    const std::string  prefix,
     const int     step) const
 {
   cout << endl << "writing... ";

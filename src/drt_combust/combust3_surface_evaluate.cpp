@@ -41,7 +41,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
     Epetra_SerialDenseVector& elevec3)
 {
     DRT::ELEMENTS::Combust3Surface::ActionType act = Combust3Surface::none;
-    string action = params.get<string>("action","none");
+    std::string action = params.get<std::string>("action","none");
     if (action == "none") dserror("No action supplied");
     else if (action == "integrate_Shapefunction")
         act = Combust3Surface::integrate_Shapefunction;
@@ -263,7 +263,7 @@ int DRT::ELEMENTS::Combust3Surface::Evaluate(
               std::map<int,int> intersectionpointsids;
 
               // intersection points
-              // map<ID of cut edge in element, coordinates of intersection point>
+              // std::map<ID of cut edge in element, coordinates of intersection point>
               for (std::multimap<int,std::vector<double> >::const_iterator iter = intersectionpoints.begin(); iter != intersectionpoints.end(); ++iter)
               {
                 pointlist.push_back(iter->second);
@@ -1257,7 +1257,7 @@ void DRT::ELEMENTS::Combust3Surface::LocationVector(
     ) const
 {
   DRT::ELEMENTS::Combust3Surface::ActionType act = Combust3Surface::none;
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action == "calc_Neumann_inflow")
       act = Combust3Surface::calc_Neumann_inflow;

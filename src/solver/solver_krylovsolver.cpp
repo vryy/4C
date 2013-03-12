@@ -205,7 +205,7 @@ void LINALG::SOLVER::KrylovSolver::CreatePreconditioner(
     }
 
     // decide whether we do what kind of scaling
-    string scaling = azlist.get("scaling","none");
+    std::string scaling = azlist.get("scaling","none");
     if (scaling=="none")
     {
     }

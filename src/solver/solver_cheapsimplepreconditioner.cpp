@@ -179,7 +179,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
     }
     else
     {
-      string type = predictSolver_list_.sublist("Aztec Parameters").get("Preconditioner Type","ILU");
+      std::string type = predictSolver_list_.sublist("Aztec Parameters").get("Preconditioner Type","ILU");
       Ifpack factory;
       Ifpack_Preconditioner* prec = factory.Create(type,A00,0);
       prec->SetParameters(predictSolver_list_.sublist("IFPACK Parameters"));
@@ -198,7 +198,7 @@ void LINALG::SOLVER::CheapSIMPLE_BlockPreconditioner::Setup(RCP<Epetra_Operator>
     else
     {
       Ifpack factory;
-      string type = schurSolver_list_.sublist("Aztec Parameters").get("Preconditioner Type","ILU");
+      std::string type = schurSolver_list_.sublist("Aztec Parameters").get("Preconditioner Type","ILU");
       Ifpack_Preconditioner* prec = factory.Create(type,A11,0);
       prec->SetParameters(schurSolver_list_.sublist("IFPACK Parameters"));
       prec->Initialize();

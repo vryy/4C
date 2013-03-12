@@ -38,8 +38,8 @@ veljump_(veljump)
  * call computation of the projection approach for enrichment values             winklmaier 08/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::EnrichmentProjection::compute(
-    vector<RCP<Epetra_Vector> > newRowVectorsn,
-    vector<RCP<Epetra_Vector> > newRowVectorsnp
+    std::vector<RCP<Epetra_Vector> > newRowVectorsn,
+    std::vector<RCP<Epetra_Vector> > newRowVectorsnp
 )
 {
   if (FGIType_==FRSNot1_)
@@ -113,8 +113,8 @@ void XFEM::EnrichmentProjection::oldValues(
   const int nsd = 3;
 
   // velocity and pressure enrichment values of the elements nodes
-  vector<LINALG::Matrix<nsd+1,numnode> > jumpEnrValues(oldVectors_.size(),LINALG::Matrix<nsd+1,numnode>(true));
-  vector<LINALG::Matrix<nsd+1,numnode> > kinkEnrValues(oldVectors_.size(),LINALG::Matrix<nsd+1,numnode>(true));
+  std::vector<LINALG::Matrix<nsd+1,numnode> > jumpEnrValues(oldVectors_.size(),LINALG::Matrix<nsd+1,numnode>(true));
+  std::vector<LINALG::Matrix<nsd+1,numnode> > kinkEnrValues(oldVectors_.size(),LINALG::Matrix<nsd+1,numnode>(true));
 
   bool allEleNodesOnProc = true; // true if all nodes of an element are on current proc
   LINALG::Matrix<1,numnode> dmin(true); // distances from node to interface
@@ -144,7 +144,7 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
     const DRT::Element* ele,
     LINALG::Matrix<1,numnode>& dmin,
     LINALG::Matrix<3,1> normal,
-    vector<LINALG::Matrix<4,numnode> >& jumpEnrValues,
+    std::vector<LINALG::Matrix<4,numnode> >& jumpEnrValues,
     int& numnodeused
 )
 {
@@ -161,7 +161,7 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
 
       LINALG::Matrix<2,1> currJumpAndKink(true); // jump and kink value
       LINALG::Matrix<2,nsd+1> currentJumpsAndKinks(true); // jump and kink values for all enrichments of current node
-      vector<LINALG::Matrix<2,nsd+1> > eleJumpAndKinks; // all jump and kink values for a node
+      std::vector<LINALG::Matrix<2,nsd+1> > eleJumpAndKinks; // all jump and kink values for a node
 
       for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
       {
@@ -207,7 +207,7 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
       double rhs = 0; // right hand side
       double currJump = 0; // jump value
       LINALG::Matrix<2,nsd+1> currentJumpsAndKinks(true); // jump and kink values for all enrichments of current node
-      vector<LINALG::Matrix<2,nsd+1> > eleJumpAndKinks; // all jump and kink values for a node
+      std::vector<LINALG::Matrix<2,nsd+1> > eleJumpAndKinks; // all jump and kink values for a node
 
       for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
       {
@@ -249,7 +249,7 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
       LINALG::Matrix<2,1> velJumpAndKink(true); // jump and kink value for the velocity
       LINALG::Matrix<2,1> presJumpAndKink(true); // jump and kink value for the pressure
       LINALG::Matrix<2,nsd+1> currentJumpsAndKinks(true); // jump and kink values for all physical fields of a node
-      vector<LINALG::Matrix<2,nsd+1> > eleJumpAndKinks; // all jump and kink values of a node
+      std::vector<LINALG::Matrix<2,nsd+1> > eleJumpAndKinks; // all jump and kink values of a node
 
       for (size_t field=0;field<oldVectors_.size();field++) // loop over vectors that shall be set
       {
@@ -308,7 +308,7 @@ void XFEM::EnrichmentProjection::oldJumpAndKinkValues(
       double velJump = 0; // velocity jump
       double presJump = 0; // pressure jump
       LINALG::Matrix<2,nsd+1> currentJumpsAndKinks(true); // jump and kink values of the current node
-      vector<LINALG::Matrix<2,nsd+1> > eleJumpAndKinks; // all jump and kink values of the current node
+      std::vector<LINALG::Matrix<2,nsd+1> > eleJumpAndKinks; // all jump and kink values of the current node
 
       for (size_t field=0;field<oldVectors_.size();field++) // lop over vectors that shall be set
       {
@@ -357,7 +357,7 @@ template <const int numnode>
 void XFEM::EnrichmentProjection::oldKinkValues(
     const DRT::Element* ele,
     LINALG::Matrix<1,numnode>& dmin,
-    vector<LINALG::Matrix<4,numnode> >& kinkEnrValues,
+    std::vector<LINALG::Matrix<4,numnode> >& kinkEnrValues,
     int& numnodeused
 )
 {
@@ -369,7 +369,7 @@ void XFEM::EnrichmentProjection::oldKinkValues(
     {
       double enrSum; // sum of enrichment values of element nodes
       LINALG::Matrix<1,nsd+1> currKinks(true); // kink values for all enrichments of current node
-      vector<LINALG::Matrix<1,nsd+1> > eleKinks; // all kink values for a node
+      std::vector<LINALG::Matrix<1,nsd+1> > eleKinks; // all kink values for a node
 
       for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
       {
@@ -392,7 +392,7 @@ void XFEM::EnrichmentProjection::oldKinkValues(
     else
     {
       LINALG::Matrix<1,nsd+1> currKinks(true); // kink values for all enrichments of current node
-      vector<LINALG::Matrix<1,nsd+1> > eleKinks; // all kink values for a node
+      std::vector<LINALG::Matrix<1,nsd+1> > eleKinks; // all kink values for a node
 
       for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
         eleKinks.push_back(currKinks);
@@ -410,7 +410,7 @@ void XFEM::EnrichmentProjection::oldKinkValues(
       LINALG::Matrix<nsd,1> enrVel;
 
       LINALG::Matrix<1,nsd+1> currKinks(true); // kink values for all enrichments of current node
-      vector<LINALG::Matrix<1,nsd+1> > eleKinks; // all kink values for a node
+      std::vector<LINALG::Matrix<1,nsd+1> > eleKinks; // all kink values for a node
 
       for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
       {
@@ -440,7 +440,7 @@ void XFEM::EnrichmentProjection::oldKinkValues(
     else
     {
       LINALG::Matrix<1,nsd+1> currKinks(true); // kink values for all enrichments of current node
-      vector<LINALG::Matrix<1,nsd+1> > eleKinks; // all kink values for a node
+      std::vector<LINALG::Matrix<1,nsd+1> > eleKinks; // all kink values for a node
 
       for (size_t field=0;field<oldVectors_.size();field++) // loop over fields that shall be set
         eleKinks.push_back(currKinks);
@@ -467,16 +467,16 @@ void XFEM::EnrichmentProjection::computeNewEnrichments(
     if (newEnrValueNeeded(currnode)) // current node needs new enrichment value
     {
       // vector of elements located around this node
-      vector<const DRT::Element*> eles;
+      std::vector<const DRT::Element*> eles;
 
       addPBCelements(currnode, eles);
       const int numeles = eles.size(); // number of elements located around this node
 
-      vector<LINALG::Matrix<2,nsd+1> > currJumpsAndKinks(newVectors_.size(),LINALG::Matrix<2,nsd+1>(true)); // currently computed jump and kink value
-      vector<LINALG::Matrix<2,nsd+1> > averageJumpsAndKinks(newVectors_.size(),LINALG::Matrix<2,nsd+1>(true)); // jump and kink values for current node
+      std::vector<LINALG::Matrix<2,nsd+1> > currJumpsAndKinks(newVectors_.size(),LINALG::Matrix<2,nsd+1>(true)); // currently computed jump and kink value
+      std::vector<LINALG::Matrix<2,nsd+1> > averageJumpsAndKinks(newVectors_.size(),LINALG::Matrix<2,nsd+1>(true)); // jump and kink values for current node
 
-      vector<LINALG::Matrix<1,nsd+1> > currKinks(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // currently computed jump and kink value
-      vector<LINALG::Matrix<1,nsd+1> > averageKinks(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // jump and kink values for current node
+      std::vector<LINALG::Matrix<1,nsd+1> > currKinks(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // currently computed jump and kink value
+      std::vector<LINALG::Matrix<1,nsd+1> > averageKinks(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // jump and kink values for current node
 
 #ifndef COMBUST_SETJUMP
       // compute average jump and kink value around node if elements are enriched
@@ -499,7 +499,7 @@ void XFEM::EnrichmentProjection::computeNewEnrichments(
       } // end loop over elements containing the node
       //      cout << "summed jumps and kinks are " << averageJumpsAndKinks[0] << endl;
 
-      vector<LINALG::Matrix<1,nsd+1> > finalEnrichmentValues(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true));
+      std::vector<LINALG::Matrix<1,nsd+1> > finalEnrichmentValues(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true));
       if (numOldIntersectedEle > 0) // >=1 elements around the node where enriched -> computed value can be used
       {
         for (size_t ivector=0;ivector<newVectors_.size();ivector++) // scaling
@@ -516,8 +516,8 @@ void XFEM::EnrichmentProjection::computeNewEnrichments(
             *currnode,
             INFINITY,
             1,
-            vector<LINALG::Matrix<2,4> >(newVectors_.size(),LINALG::Matrix<2,4>(true)),
-            vector<LINALG::Matrix<1,4> >(newVectors_.size(),LINALG::Matrix<1,4>(true)));
+            std::vector<LINALG::Matrix<2,4> >(newVectors_.size(),LINALG::Matrix<2,4>(true)),
+            std::vector<LINALG::Matrix<1,4> >(newVectors_.size(),LINALG::Matrix<1,4>(true)));
         timeIntData_->push_back(data);
       }
 #else
@@ -564,7 +564,7 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
   for (int iproc=0;iproc<numproc_;iproc++) // loop over processors
   {
 #endif // PARALLEL
-    for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+    for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
         data!=timeIntData_->end(); data++)
     {
       for (std::set<int>::const_iterator enrnode=oldEnrNodes.begin();
@@ -586,16 +586,16 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
           const DRT::Node* currOldNode = discret_->gNode(*enrnode);
 
           // vector of elements located around this node
-          vector<const DRT::Element*> eles;
+          std::vector<const DRT::Element*> eles;
           addPBCelements(currOldNode,eles);
 
           const int numeles = eles.size();
 
-          vector<LINALG::Matrix<2,nsd+1> > finalJumpsAndKinks(newVectors_.size(),LINALG::Matrix<2,nsd+1>(true)); // final jump and kink values for node
-          vector<LINALG::Matrix<2,nsd+1> > currJumpsAndKinks(newVectors_.size(),LINALG::Matrix<2,nsd+1>(true)); // jump and kink values of one element around the node
+          std::vector<LINALG::Matrix<2,nsd+1> > finalJumpsAndKinks(newVectors_.size(),LINALG::Matrix<2,nsd+1>(true)); // final jump and kink values for node
+          std::vector<LINALG::Matrix<2,nsd+1> > currJumpsAndKinks(newVectors_.size(),LINALG::Matrix<2,nsd+1>(true)); // jump and kink values of one element around the node
 
-          vector<LINALG::Matrix<1,nsd+1> > finalKinks(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // final jump and kink values for node
-          vector<LINALG::Matrix<1,nsd+1> > currKinks(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // jump and kink values of one element around the node
+          std::vector<LINALG::Matrix<1,nsd+1> > finalKinks(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // final jump and kink values for node
+          std::vector<LINALG::Matrix<1,nsd+1> > currKinks(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // jump and kink values of one element around the node
 
           int numOldIntersectedEle=0; // index how much elements are intersected
           for (int iele=0;iele<numeles;iele++)
@@ -640,16 +640,16 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
           DRT::Node* currOldNode = discret_->gNode(*enrnode);
 
           // vector of elements located around this node
-          vector<const DRT::Element*> eles;
+          std::vector<const DRT::Element*> eles;
           addPBCelements(currOldNode,eles);
 
           const int numeles = eles.size();
 
-          vector<LINALG::Matrix<2,nsd+1> > finalJumpsAndKinks(newVectors_.size(),LINALG::Matrix<2,nsd+1>(true)); // final jump and kink values for node
-          vector<LINALG::Matrix<2,nsd+1> > currJumpsAndKinks(newVectors_.size(),LINALG::Matrix<2,nsd+1>(true)); // jump and kink values of one element around the node
+          std::vector<LINALG::Matrix<2,nsd+1> > finalJumpsAndKinks(newVectors_.size(),LINALG::Matrix<2,nsd+1>(true)); // final jump and kink values for node
+          std::vector<LINALG::Matrix<2,nsd+1> > currJumpsAndKinks(newVectors_.size(),LINALG::Matrix<2,nsd+1>(true)); // jump and kink values of one element around the node
 
-          vector<LINALG::Matrix<1,nsd+1> > finalKinks(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // final jump and kink values for node
-          vector<LINALG::Matrix<1,nsd+1> > currKinks(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // jump and kink values of one element around the node
+          std::vector<LINALG::Matrix<1,nsd+1> > finalKinks(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // final jump and kink values for node
+          std::vector<LINALG::Matrix<1,nsd+1> > currKinks(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // jump and kink values of one element around the node
 
 
           int numOldIntersectedEle=0; // index how much elements are intersected
@@ -700,7 +700,7 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
   // at the old interface position and all required according data at this node
 
   // compute new enrichment values
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     for(size_t ivector=0;ivector<oldVectors_.size();ivector++) // scaling loop
@@ -720,18 +720,18 @@ void XFEM::EnrichmentProjection::handleFailedNodes(
  *------------------------------------------------------------------------------------------------*/
 void XFEM::EnrichmentProjection::computeJumpEnrichmentValues(
     const DRT::Node* node,
-    vector<LINALG::Matrix<2,4> > jumpsAndKinks
+    std::vector<LINALG::Matrix<2,4> > jumpsAndKinks
 )
 {
   const int nsd = 3; // dimension
   int numNewIntersectedEle = 0; // number of intersected elements at new interface position
 
   // vector of elements located around this node
-  vector<const DRT::Element*> eles;
+  std::vector<const DRT::Element*> eles;
   addPBCelements(node,eles);
   const int numeles = eles.size();
 
-  vector<LINALG::Matrix<1,nsd+1> > finalEnrichmentValues(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // enrichment values for the node
+  std::vector<LINALG::Matrix<1,nsd+1> > finalEnrichmentValues(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // enrichment values for the node
 
   for (int iele=0;iele<numeles;iele++) // loop over elements around enriched node
   {
@@ -806,18 +806,18 @@ void XFEM::EnrichmentProjection::computeJumpEnrichmentValues(
  *------------------------------------------------------------------------------------------------*/
 void XFEM::EnrichmentProjection::computeKinkEnrichmentValues(
     const DRT::Node* node,
-    vector<LINALG::Matrix<1,4> > kinks
+    std::vector<LINALG::Matrix<1,4> > kinks
 )
 {
   int numNewIntersectedEle = 0; // number of intersected elements at new interface position
   const int nsd = 3; // dimension
 
   // vector of elements located around this node
-  vector<const DRT::Element*> eles;
+  std::vector<const DRT::Element*> eles;
   addPBCelements(node,eles);
 
   const int numeles=eles.size();
-  vector<LINALG::Matrix<1,nsd+1> > finalEnrichmentValues(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // enrichment values for the node
+  std::vector<LINALG::Matrix<1,nsd+1> > finalEnrichmentValues(newVectors_.size(),LINALG::Matrix<1,nsd+1>(true)); // enrichment values for the node
 
   for (int iele=0;iele<numeles;iele++) // loop over elements around enriched node
   {
@@ -1048,7 +1048,7 @@ void XFEM::EnrichmentProjection::exportEnrichmentData()
   DRT::PackBuffer dataSend;
 
   // packing the data
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     if (data->state_==TimeIntData::failedEnr_)
@@ -1065,7 +1065,7 @@ void XFEM::EnrichmentProjection::exportEnrichmentData()
 
   dataSend.StartPacking();
 
-  for (vector<TimeIntData>::iterator data=timeIntData_->begin();
+  for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
     if (data->state_==TimeIntData::failedEnr_)
@@ -1079,11 +1079,11 @@ void XFEM::EnrichmentProjection::exportEnrichmentData()
   }
 
 
-  vector<char> dataRecv;
+  std::vector<char> dataRecv;
   sendData(dataSend,dest,source,dataRecv);
 
   // pointer to current position of group of cells in global string (counts bytes)
-  vector<char>::size_type posinData = 0;
+  std::vector<char>::size_type posinData = 0;
 
   // clear vector that should be filled
   clearState(TimeIntData::failedEnr_);
@@ -1095,8 +1095,8 @@ void XFEM::EnrichmentProjection::exportEnrichmentData()
     DRT::Node node(0,(double*)coords,0);
     double phiValue;
     int counter;
-    vector<LINALG::Matrix<2,4> > jumpAndKinkValues;
-    vector<LINALG::Matrix<1,4> > kinkValues;
+    std::vector<LINALG::Matrix<2,4> > jumpAndKinkValues;
+    std::vector<LINALG::Matrix<1,4> > kinkValues;
 
     unpackNode(posinData,dataRecv,node);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,phiValue);

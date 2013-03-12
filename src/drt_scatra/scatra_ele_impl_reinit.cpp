@@ -1228,7 +1228,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     std::vector<double> v(1,migepe2);
     std::ostringstream temp;
     temp << k;
-    string name = "Pe_mig_"+temp.str();
+    std::string name = "Pe_mig_"+temp.str();
     actele->AddToData(name,v);
     name = "hk_"+temp.str();
     v[0] = h;
@@ -1266,7 +1266,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     std::vector<double> v(1,epe);
     std::ostringstream temp;
     temp << k;
-    string name = "Pe_"+temp.str();
+    std::string name = "Pe_"+temp.str();
     actele->AddToData(name,v);
 #endif
   }
@@ -1299,7 +1299,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     std::vector<double> v(1,migepe2);
     std::ostringstream temp;
     temp << k;
-    string name = "Pe_mig_"+temp.str();
+    std::string name = "Pe_mig_"+temp.str();
     actele->AddToData(name,v);
     name = "hk_"+temp.str();
     v[0] = h;
@@ -1333,7 +1333,7 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
     std::vector<double> v(1,epe);
     std::ostringstream temp;
     temp << k;
-    string name = "Pe_"+temp.str();
+    std::string name = "Pe_"+temp.str();
     actele->AddToData(name,v);
 #endif
   }
@@ -1536,10 +1536,10 @@ void DRT::ELEMENTS::ReInitImpl<distype>::CalTau(
   // visualize stabilization parameter
   DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
   if (!actele) dserror("cast to Transport* failed");
-  vector<double> v(1,tau_[k]);
+  std::vector<double> v(1,tau_[k]);
   std::ostringstream temp;
   temp << k;
-  string name = "tau_"+ temp.str();
+  std::string name = "tau_"+ temp.str();
   actele->AddToData(name,v);
 #endif
 

@@ -115,7 +115,7 @@ int DRT::ELEMENTS::So3_Scatra< so3_ele, distype>::Evaluate(Teuchos::ParameterLis
   typename So3_Scatra::ActionType act = So3_Scatra::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_multidofsetcoupling")   act = So3_Scatra::calc_struct_multidofsetcoupling;
   else if (action=="postprocess_stress")   act = So3_Scatra::postprocess_stress;

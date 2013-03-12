@@ -55,7 +55,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
   DRT::ELEMENTS::So_hex20::ActionType act = So_hex20::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff")                        act = So_hex20::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff")                        act = So_hex20::calc_struct_nlnstiff;
@@ -242,11 +242,11 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
     // (depending on what this routine is called for from the post filter)
     case postprocess_stress:
     {
-      const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+      const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+        params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
       if (gpstressmap==Teuchos::null)
         dserror("no gp stress/strain map available for postprocessing");
-      string stresstype = params.get<string>("stresstype","ndxyz");
+      std::string stresstype = params.get<std::string>("stresstype","ndxyz");
       int gid = Id();
       LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20> gpstress(((*gpstressmap)[gid])->A(),true);
 
@@ -1325,9 +1325,9 @@ void DRT::ELEMENTS::So_hex20::soh20_lumpmass(LINALG::Matrix<NUMDOF_SOH20,NUMDOF_
 /*----------------------------------------------------------------------*
  |  Evaluate Hex20 Shape fcts at all 20 Gauss Points                     |
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMNOD_SOH20,1> > DRT::ELEMENTS::So_hex20::soh20_shapefcts()
+const std::vector<LINALG::Matrix<NUMNOD_SOH20,1> > DRT::ELEMENTS::So_hex20::soh20_shapefcts()
 {
-  vector<LINALG::Matrix<NUMNOD_SOH20,1> > shapefcts(NUMGPT_SOH20);
+  std::vector<LINALG::Matrix<NUMNOD_SOH20,1> > shapefcts(NUMGPT_SOH20);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 20
   // fill up nodal f at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
@@ -1347,9 +1347,9 @@ const vector<LINALG::Matrix<NUMNOD_SOH20,1> > DRT::ELEMENTS::So_hex20::soh20_sha
 /*----------------------------------------------------------------------*
  |  Evaluate Hex20 Shape fct derivs at all 20 Gauss Points              |
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMDIM_SOH20,NUMNOD_SOH20> > DRT::ELEMENTS::So_hex20::soh20_derivs()
+const std::vector<LINALG::Matrix<NUMDIM_SOH20,NUMNOD_SOH20> > DRT::ELEMENTS::So_hex20::soh20_derivs()
 {
-  vector<LINALG::Matrix<NUMDIM_SOH20,NUMNOD_SOH20> > derivs(NUMGPT_SOH20);
+  std::vector<LINALG::Matrix<NUMDIM_SOH20,NUMNOD_SOH20> > derivs(NUMGPT_SOH20);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 20
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
@@ -1368,9 +1368,9 @@ const vector<LINALG::Matrix<NUMDIM_SOH20,NUMNOD_SOH20> > DRT::ELEMENTS::So_hex20
 /*----------------------------------------------------------------------*
  |  Evaluate Hex20 Weights at all 20 Gauss Points                       |
  *----------------------------------------------------------------------*/
-const vector<double> DRT::ELEMENTS::So_hex20::soh20_weights()
+const std::vector<double> DRT::ELEMENTS::So_hex20::soh20_weights()
 {
-  vector<double> weights(NUMGPT_SOH20);
+  std::vector<double> weights(NUMGPT_SOH20);
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int i = 0; i < NUMGPT_SOH20; ++i)

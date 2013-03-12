@@ -214,7 +214,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==PoroPresInt)                   os << "porous media pressure integration condition";
   else if (Type()==ScaTraCoupling)                os << "scatra coupling condition";
   else if (Type()==ParticleInflow)                os << "particle inflow condition";
-  else dserror("no output string for condition defined in DRT::Condition::Print");
+  else dserror("no output std::string for condition defined in DRT::Condition::Print");
 
   Container::Print(os);
   if ((int)geometry_.size())

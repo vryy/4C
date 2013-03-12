@@ -350,7 +350,7 @@ STR::TimInt::TimInt
 	pslist_->set("haveembedtissue", false);
     // check if patspeccond are already initialized
     // this is of relevance for Montecarlo Simulation
-    vector<DRT::Condition*> pscond;
+    std::vector<DRT::Condition*> pscond;
     discret_->GetCondition("PatientSpecificData", pscond);
     if (!pscond.size())
     {
@@ -372,13 +372,13 @@ void STR::TimInt::SetInitialFields()
 {
   //***************************************************
   // Data that needs to be handed into discretization:
-  // - string field: name of initial field to be set
-  // - vector<int> localdofs: local dof ids affected
+  // - std::string field: name of initial field to be set
+  // - std::vector<int> localdofs: local dof ids affected
   //***************************************************
 
   // set initial velocity field if existing
-  const string field = "Velocity";
-  vector<int> localdofs;
+  const std::string field = "Velocity";
+  std::vector<int> localdofs;
   localdofs.push_back(0);
   localdofs.push_back(1);
   localdofs.push_back(2);
@@ -431,7 +431,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
   bool semismooth = DRT::INPUT::IntegralValue<int>(scontact,"SEMI_SMOOTH_NEWTON");
 
   // check mortar contact or meshtying conditions
-  vector<DRT::Condition*> mortarconditions(0);
+  std::vector<DRT::Condition*> mortarconditions(0);
   discret_->GetCondition("Mortar",mortarconditions);
 
   // only continue if mortar contact / meshtying unmistakably chosen in input file
@@ -475,7 +475,7 @@ void STR::TimInt::PrepareContactMeshtying(const Teuchos::ParameterList& sdynpara
 
     // print messages for multifield problems (e.g FSI)
     const PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
-    const string probname = DRT::Problem::Instance()->ProblemName();
+    const std::string probname = DRT::Problem::Instance()->ProblemName();
     if (probtype != prb_structure && !myrank_)
     {
       // warnings
@@ -1528,7 +1528,7 @@ void STR::TimInt::OutputContact()
       // get current node
       int gid = (discret_->NodeRowMap())->GID(k);
       DRT::Node* mynode = discret_->gNode(gid);
-      vector<int> globaldofs = discret_->Dof(mynode);
+      std::vector<int> globaldofs = discret_->Dof(mynode);
 
       // loop over all DOFs comprised by this node
       for (int i=0;i<dim;i++)
@@ -1766,7 +1766,7 @@ void STR::TimInt::OutputNodalPositions()
     const double * X = node->X();
     // get degrees of freedom of a node
 
-    vector<int> gdofs = discret_->Dof(node);
+    std::vector<int> gdofs = discret_->Dof(node);
     //cout << "for node:" << *node << endl;
     //cout << "this is my gdof vector" << gdofs[0] << " " << gdofs[1] << " " << gdofs[2] << endl;
 

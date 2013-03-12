@@ -243,7 +243,7 @@ IO::HDFReader::ReadCharData(std::string path, int start, int end) const
 
 /*----------------------------------------------------------------------*
  * reads the dataset 'path' in all the files in the range [start,end)
- * and returns all the data in one vector<int> (private)
+ * and returns all the data in one std::vector<int> (private)
  *----------------------------------------------------------------------*/
 Teuchos::RCP<std::vector<int> >
 IO::HDFReader::ReadIntData(std::string path, int start, int end) const
@@ -411,7 +411,7 @@ Teuchos::RCP<std::vector<char> >
 IO::HDFReader::ReadResultDataVecChar(std::string id_path, std::string value_path, int columns, const Epetra_Comm& Comm, Teuchos::RCP<Epetra_Map>& elemap) const
 {
   if (columns!=1)
-    dserror("got multivector, vector<char> expected");
+    dserror("got multivector, std::vector<char> expected");
 
   int new_proc_num = Comm.NumProc();
   int my_id = Comm.MyPID();

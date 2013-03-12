@@ -239,14 +239,14 @@ public:
 
   */
 
-  void EvaluateResiduals(map<string,RCP<Epetra_Vector> >      statevecs,
-                         map<string,RCP<Epetra_MultiVector> > statetenss,
-                         const double                         thermpressaf,
-                         const double                         thermpressam,
-                         const double                         thermpressdtaf,
-                         const double                         thermpressdtam,
-                         map<string,RCP<Epetra_Vector> >      scatrastatevecs,
-                         map<string,RCP<Epetra_MultiVector> > scatrafieldvecs);
+  void EvaluateResiduals(std::map<std::string,RCP<Epetra_Vector> >      statevecs,
+                         std::map<std::string,RCP<Epetra_MultiVector> > statetenss,
+                         const double                                   thermpressaf,
+                         const double                                   thermpressam,
+                         const double                                   thermpressdtaf,
+                         const double                                   thermpressdtam,
+                         std::map<std::string,RCP<Epetra_Vector> >      scatrastatevecs,
+                         std::map<std::string,RCP<Epetra_MultiVector> > scatrafieldvecs);
 
   //@}
 
@@ -301,7 +301,7 @@ public:
   turbulent channel flow
 
   */
-  vector<double> ReturnNodePlaneCoords()
+  std::vector<double> ReturnNodePlaneCoords()
     {
       return(*nodeplanes_);
     };
@@ -710,33 +710,33 @@ private:
   //!--------------------------------------------------
 
   //! sum over all in plane stabilization parameters
-  RefCountPtr<vector<double> >     sumtauS_;
+  RCP<std::vector<double> >     sumtauS_;
 
   //! sum over all in plane residuals of the convection-diffusion equation
-  RefCountPtr<vector<double> >     sumresS_;
+  RCP<std::vector<double> >     sumresS_;
   //! sum over all in plane squared residuals of the convection-diffusion equation
-  RefCountPtr<vector<double> >     sumresS_sq_;
+  RCP<std::vector<double> >     sumresS_sq_;
 
   //! sum over all in plane averaged dissipation rates from supg stabilisation
-  RefCountPtr<vector<double> >     sum_scatra_eps_supg_;
+  RCP<std::vector<double> >     sum_scatra_eps_supg_;
   //! sum over all in plane averaged dissipation rates from cross term
-  RefCountPtr<vector<double> >     sum_scatra_eps_cross_;
+  RCP<std::vector<double> >     sum_scatra_eps_cross_;
   //! sum over all in plane averaged dissipation rates from reynolds term
-  RefCountPtr<vector<double> >     sum_scatra_eps_rey_;
+  RCP<std::vector<double> >     sum_scatra_eps_rey_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (Smagorinsky)
-  RefCountPtr<vector<double> >     sum_scatra_eps_eddyvisc_;
+  RCP<std::vector<double> >     sum_scatra_eps_eddyvisc_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (AVM3)
-  RefCountPtr<vector<double> >     sum_scatra_eps_avm3_;
+  RCP<std::vector<double> >     sum_scatra_eps_avm3_;
   //! sum over all in plane averaged dissipation rates from scale similarity model
-  RefCountPtr<vector<double> >     sum_scatra_eps_mfs_;
+  RCP<std::vector<double> >     sum_scatra_eps_mfs_;
   //! sum over all in plane averaged dissipation rates from scale similarity model (forwardscatter)
-  RefCountPtr<vector<double> >     sum_scatra_eps_mfscross_;
+  RCP<std::vector<double> >     sum_scatra_eps_mfscross_;
   //! sum over all in plane averaged dissipation rates from scale similarity model (backscatter)
-  RefCountPtr<vector<double> >     sum_scatra_eps_mfsrey_;
+  RCP<std::vector<double> >     sum_scatra_eps_mfsrey_;
   //! sum over all in plane averaged dissipation rates from Galerkin viscous term
-  RefCountPtr<vector<double> >     sum_scatra_eps_visc_;
+  RCP<std::vector<double> >     sum_scatra_eps_visc_;
   //! sum over all in plane averaged dissipation rates from Galerkin convective term
-  RefCountPtr<vector<double> >     sum_scatra_eps_conv_;
+  RCP<std::vector<double> >     sum_scatra_eps_conv_;
 
 };
 

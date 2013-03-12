@@ -66,7 +66,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::Evaluate(Teuchos::ParameterList& params,
   typename Wall1_Poro<distype>::ActionType act = Wall1_Poro<distype>::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_multidofsetcoupling")   act = Wall1_Poro<distype>::calc_struct_multidofsetcoupling;
   // what should the element do
@@ -139,7 +139,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
   ActionType act = none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_internalforce")         act = calc_struct_internalforce;
   else if (action=="calc_struct_nlnstiff")              act = calc_struct_nlnstiff;
@@ -690,7 +690,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
    // sacado data type replaces "double" (for first+second derivs)
    typedef Sacado::Fad::DFad<Sacado::Fad::DFad<double> > FADFAD;
 
-   vector<FAD> fad_disp(numdof_);
+   std::vector<FAD> fad_disp(numdof_);
    for (int i=0; i<numdof_; ++i)
    {
    fad_disp[i] = disp[i];

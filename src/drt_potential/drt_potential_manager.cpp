@@ -36,7 +36,7 @@ POTENTIAL::PotentialManager::PotentialManager(
 {
 
   ReadParameter();
-  string pot_type = params_.get<string>("potential type");
+  std::string pot_type = params_.get<std::string>("potential type");
   // construct surface and contact potential
   if( pot_type =="Surface" ||
       pot_type =="Surfacevolume")
@@ -237,7 +237,7 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
     Epetra_SerialDenseMatrix&       K_stiff,
     Epetra_SerialDenseVector&       F_int)
 {
-  if( params_.get<string>("approximation type") == "None" )
+  if( params_.get<std::string>("approximation type") == "None" )
   {	
   	int prob_dim = DRT::Problem::Instance()->NDim();
   	// due to the Gaussrule 2D
@@ -248,9 +248,9 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
   	else
   	 dserror("problem dimension not correct");
   }
-  else if( params_.get<string>("approximation type")== "Surface_approx" )
+  else if( params_.get<std::string>("approximation type")== "Surface_approx" )
     surfacePotential_->StiffnessAndInternalForcesPotentialApprox1(element, gaussrule, eleparams, lm, K_stiff, F_int);
-  else if( params_.get<string>("approximation type")== "Point_approx" )
+  else if( params_.get<std::string>("approximation type")== "Point_approx" )
     surfacePotential_->StiffnessAndInternalForcesPotentialApprox2(element, gaussrule, eleparams, lm, K_stiff, F_int);
   else
     dserror("no approximation type specified");
@@ -275,7 +275,7 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
 { 
   //TODO
   // check in solid hex 8 if elemat and elevec are properly filled !!!
-  if( params_.get<string>("approximation type")== "None" )
+  if( params_.get<std::string>("approximation type")== "None" )
     volumePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
   else
     dserror("no approximation allowed");
@@ -297,7 +297,7 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
     Epetra_SerialDenseMatrix&       K_stiff,
     Epetra_SerialDenseVector&       F_int)
 {
-  //if( params_.get<string>("approximation type")== "none" )
+  //if( params_.get<std::string>("approximation type")== "none" )
   //  surfacePotential_->StiffnessAndInternalForcesPotential(element, gaussrule, eleparams, lm, K_stiff, F_int);
     
   return;
@@ -311,7 +311,7 @@ void POTENTIAL::PotentialManager::StiffnessAndInternalForcesPotential(
 *--------------------------------------------------------------------*/
 bool POTENTIAL::PotentialManager::ComputeAnalyticalSolution() 
 {
-  if( params_.get<string>("solution type") == "None" ) 
+  if( params_.get<std::string>("solution type") == "None" ) 
     return false;
 
   return true;

@@ -115,13 +115,13 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
   const bool assemblevec3 = systemvector3!=Teuchos::null;
 
    // get conditions
-   vector<DRT::Condition*> potentialcond;
+   std::vector<DRT::Condition*> potentialcond;
    discret_.GetCondition(condstring, potentialcond);
 
    int num_local_ele = 0;
-   for(vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++ condIter)
+   for(std::vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++ condIter)
    {
-     map<int,RCP<DRT::Element> >& geom = (*condIter)->Geometry();
+     std::map<int,RCP<DRT::Element> >& geom = (*condIter)->Geometry();
      num_local_ele += (int) geom.size();
    }
 
@@ -132,14 +132,14 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
   //----------------------------------------------------------------------
   // loop through potential conditions and evaluate them
   //----------------------------------------------------------------------
-   for(vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++ condIter)
+   for(std::vector<DRT::Condition*>::iterator condIter = potentialcond.begin() ; condIter != potentialcond.end(); ++ condIter)
    {
-     map<int,RCP<DRT::Element> >& geom = (*condIter)->Geometry();
+     std::map<int,RCP<DRT::Element> >& geom = (*condIter)->Geometry();
      // if (geom.empty()) dserror("evaluation of condition with empty geometry");
      // no check for empty geometry here since in parallel computations
      // can exist processors which do not own a portion of the elements belonging
      // to the condition geometry
-     map<int,RCP<DRT::Element> >::iterator curr;
+     std::map<int,RCP<DRT::Element> >::iterator curr;
 
      // Evaluate Loadcurve if defined. Put current load factor in parameterlist
      const std::vector<int>*    curve  = (*condIter)->Get<std::vector<int> >("curve");
@@ -211,7 +211,7 @@ void POTENTIAL::VolumePotential::EvaluateVolumePotentialCondition(
        if (assemblevec2) LINALG::Assemble(*systemvector2,elevector2,lmrow,lmrowowner);
        if (assemblevec3) LINALG::Assemble(*systemvector3,elevector3,lmrow,lmrowowner);
      }
-   } // for(vector<DRT::Condition*>::iterator condIter = potentialcond->begin() ; condIter != potentialcond->end(); ++ condIter)
+   } // for(std::vector<DRT::Condition*>::iterator condIter = potentialcond->begin() ; condIter != potentialcond->end(); ++ condIter)
 
    // tree search over dummy elements to allow for send_recv
    for(int i_dummy = 0; i_dummy < num_dummy_ele; i_dummy++)
@@ -590,7 +590,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
 {
 
   // determine global row indices (lmrow) and global colum indices (lm)
-  vector<int> lmrow = lm;
+  std::vector<int> lmrow = lm;
   CollectLmcol(discretRCP_, localEleIds_, nonlocalPecs_, lm);
   // resize matrix and vector and zero out
   const int ndofrow    = lmrow.size();
@@ -773,7 +773,7 @@ void POTENTIAL::VolumePotential::ComputeFandK(
     const double                                                curvefac)
 {
   // determine global row indices (lmrow) and global colum indices (lm)
-  vector<int> lmrow = lm;
+  std::vector<int> lmrow = lm;
   CollectLmcol(discretRCP_, localEleIds_, nonlocalPecs_, lm);
 
   // resize matrix and vector and zero out
@@ -1198,10 +1198,10 @@ void POTENTIAL::VolumePotential::TestEvaluatePotential(
   // compute test results
   std::map<int, std::set<int> > empty_set;
 
-  if( p.get<string>("solution type") == "Sphere" )
+  if( p.get<std::string>("solution type") == "Sphere" )
     computeTestVanDerWaalsSpheres(Teuchos::null, elementsByLabel_, empty_set, disp_col, fint,
                                 time, step, p.get("vdw_radius", 0.0), p.get("n_offset", 0.0));
-  else if( p.get<string>("solution type") == "Membrane" )
+  else if( p.get<std::string>("solution type") == "Membrane" )
     computeTestVanDerWaalsMembranes(Teuchos::null, elementsByLabel_, empty_set, disp_col, fint,
                                     time, step, p.get("vdw_radius", 0.0), p.get("n_offset", 0.0),
                                     p.get("thickness", 0.0));

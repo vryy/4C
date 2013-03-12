@@ -42,7 +42,7 @@ int DRT::ELEMENTS::Beam3::Evaluate(Teuchos::ParameterList& params,
 {
   DRT::ELEMENTS::Beam3::ActionType act = Beam3::calc_none;
   // get the action required
-  string action = params.get<string>("action","calc_none");
+  std::string action = params.get<std::string>("action","calc_none");
   if (action == "calc_none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff") act = Beam3::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff") act = Beam3::calc_struct_nlnstiff;
@@ -433,13 +433,13 @@ int DRT::ELEMENTS::Beam3::EvaluateNeumann(Teuchos::ParameterList& params,
   // get element displacements
   RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
-  vector<double> mydisp(lm.size());
+  std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
   // get element velocities (UNCOMMENT IF NEEDED)
   /*
   RCP<const Epetra_Vector> vel  = discretization.GetState("velocity");
   if (vel==Teuchos::null) dserror("Cannot get state vectors 'velocity'");
-  vector<double> myvel(lm.size());
+  std::vector<double> myvel(lm.size());
   DRT::UTILS::ExtractMyValues(*vel,myvel,lm);
   */
 
@@ -816,7 +816,7 @@ void DRT::ELEMENTS::Beam3::b3_energy( Teuchos::ParameterList& params,
   (*intenergy)(0) = 0.0;
   bool calcenergy = false;
   if(params.isParameter("energyoftype")==false) calcenergy = true;
-  else if(params.get<string>("energyoftype")=="beam3") calcenergy =true;
+  else if(params.get<std::string>("energyoftype")=="beam3") calcenergy =true;
 
   if(calcenergy)
   {
@@ -1066,7 +1066,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
 		epsilonn.Scale(1/jacobi_[numgp]);
 		epsilonn(0) -=  1.0;
 
-		if((params.get<string>("internalforces","no")=="yes") && (force != NULL))
+		if((params.get<std::string>("internalforces","no")=="yes") && (force != NULL))
 			eps_ = epsilonn(0);
 
 		epsilonm.Clear();
@@ -1224,7 +1224,7 @@ void DRT::ELEMENTS::Beam3::b3_nlnstiffmass( Teuchos::ParameterList& params,
   CalcBrownian<nnode,3,6,4>(params,vel,disp,stiffmatrix,force);
 
   // in statistical mechanics simulations, a deletion influenced by the values of the internal force vector might occur
-  if(params.get<string>("internalforces","no")=="yes" && force != NULL)
+  if(params.get<std::string>("internalforces","no")=="yes" && force != NULL)
   	internalforces_ = Teuchos::rcp(new Epetra_SerialDenseVector(*force));
 
   return;
@@ -1532,7 +1532,7 @@ inline void DRT::ELEMENTS::Beam3::MyTranslationalDamping(Teuchos::ParameterList&
   MyDampingConstants(params,gamma,frictionmodel);
 
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
-  vector<double> jacobi(jacobimass_);
+  std::vector<double> jacobi(jacobimass_);
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
@@ -1630,7 +1630,7 @@ inline void DRT::ELEMENTS::Beam3::MyStochasticForces(Teuchos::ParameterList& par
 
 
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
-  vector<double> jacobi(jacobimass_);
+  std::vector<double> jacobi(jacobimass_);
 
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
@@ -1806,7 +1806,7 @@ return;
  *----------------------------------------------------------------------------------------------------------*/
 template<int nnode, int ndim> //number of nodes, number of dimensions
 inline void DRT::ELEMENTS::Beam3::NodeShift(Teuchos::ParameterList& params,  //!<parameter list
-                                            vector<double>& disp) //!<element disp vector
+                                            std::vector<double>& disp) //!<element disp vector
 {
   /*get number of degrees of freedom per node; note: the following function assumes the same number of degrees
    *of freedom for each element node*/
@@ -1839,7 +1839,8 @@ inline void DRT::ELEMENTS::Beam3::NodeShift(Teuchos::ParameterList& params,  //!
          * the period length, the respective node has obviously been shifted due to periodic boundary conditions and should be shifted
          * back for evaluation of element matrices and vectors; this way of detecting shifted nodes works as long as the element length
          * is smaller than half the periodic length*/
-        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) + periodlength->at(dof) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
+        if( std::fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) + periodlength->at(dof) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) <
+            std::fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
         {
           disp[numdof*i+dof] += periodlength->at(dof);
 
@@ -1850,7 +1851,8 @@ inline void DRT::ELEMENTS::Beam3::NodeShift(Teuchos::ParameterList& params,  //!
             disp[numdof*i+dbcdispdir] += shearamplitude*DRT::Problem::Instance()->Curve(curvenumber).f(time);
         }
 
-        if( fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - periodlength->at(dof) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) < fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
+        if( std::fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - periodlength->at(dof) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) <
+            std::fabs( (Nodes()[i]->X()[dof]+disp[numdof*i+dof]) - (Nodes()[0]->X()[dof]+disp[numdof*0+dof]) ) )
         {
           disp[numdof*i+dof] -= periodlength->at(dof);
 

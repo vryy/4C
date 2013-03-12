@@ -174,7 +174,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (type_[i] == DRT::UTILS::LocsysManager::functionevaluation)
       {
         // read origin from input file
-        const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
+        const std::vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
         if(o->size() != 3)
           dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
         for (int k=0;k<origins_.N();k++)
@@ -184,7 +184,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (type_[i] == DRT::UTILS::LocsysManager::originradialsliding)
       {
         // read origin from input file
-        const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
+        const std::vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
         if(o->size() != 3)
           dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
         // store locsys position (to identify this locsys type later on)
@@ -296,7 +296,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (type_[i] == DRT::UTILS::LocsysManager::functionevaluation)
       {
         // read origin from input file
-        const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
+        const std::vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
         if(o->size() != 3)
           dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
 
@@ -306,7 +306,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (type_[i] == DRT::UTILS::LocsysManager::originradialsliding)
       {
         // read origin from input file
-        const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
+        const std::vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
         if(o->size() != 3)
           dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
         // store locsys position (to identify this locsys type later on)
@@ -418,7 +418,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (type_[i] == DRT::UTILS::LocsysManager::functionevaluation)
       {
         // read origin from input file
-        const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
+        const std::vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
         if(o->size() != 3)
             dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
         for (int k=0;k<origins_.N();k++)
@@ -427,7 +427,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (type_[i] == DRT::UTILS::LocsysManager::originradialsliding)
       {
         // read origin from input file
-        const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
+        const std::vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
         if(o->size() != 3)
           dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
         // store locsys position (to identify this locsys type later on)
@@ -537,7 +537,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (type_[i] == DRT::UTILS::LocsysManager::functionevaluation)
       {
         // read origin from input file
-        const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
+        const std::vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
         if(o->size() != 3)
           dserror("ERROR: No origin provided for locsys definition of type FunctionEvaluation");
         for (int k=0;k<origins_.N();k++)
@@ -546,7 +546,7 @@ void DRT::UTILS::LocsysManager::Setup()
       if (type_[i] == DRT::UTILS::LocsysManager::originradialsliding)
       {
         // read origin from input file
-        const vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
+        const std::vector<double>* o = currlocsys->Get<std::vector<double> >("origin");
         if(o->size() != 3)
           dserror("ERROR: No origin provided for locsys definition of type OriginRadialSliding");
         // store locsys position (to identify this locsys type later on)

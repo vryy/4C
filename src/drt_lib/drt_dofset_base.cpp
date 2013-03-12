@@ -180,7 +180,7 @@ int DRT::DofSetBase::MaxGIDinList(const Epetra_Comm& comm) const
     // ignore empty (no yet initialized) dof row maps
     if ((*i)->NumGlobalElements()>0)
     {
-      count = max((*i)->MaxAllGID(),count);
+      count = std::max((*i)->MaxAllGID(),count);
     }
   }
   int max;
@@ -192,8 +192,8 @@ void DRT::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
 {
   if (comm.MyPID() == 0)
   {
-    vector<int> min;
-    vector<int> max;
+    std::vector<int> min;
+    std::vector<int> max;
     for (std::list<DofSetBase*>::const_iterator i=static_dofsets_.begin(); i!=static_dofsets_.end(); ++i)
     {
       min.push_back((*i)->MinAllGID());
@@ -245,10 +245,10 @@ void DRT::DofSetBase::PrintAllDofsets(const Epetra_Comm& comm) const
     	IO::cout << "|";
 
       // number
-      IO::cout << left << std::setw(6) << min[i];
+      IO::cout << std::left << std::setw(6) << min[i];
       for (int j = 0; j < (int)(max[i]-min[i])*1.0*availspace/allmax; ++j)
     	 IO::cout << " ";
-      IO::cout << right << std::setw(6) << max[i];
+      IO::cout << std::right << std::setw(6) << max[i];
 
       //right bar
       if (i+1 < min.size())

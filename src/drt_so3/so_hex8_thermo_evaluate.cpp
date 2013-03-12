@@ -76,7 +76,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
   DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_nlnstiff")              act = So_hex8::calc_struct_nlnstiff;
   else if (action=="calc_struct_nlnstiffmass")          act = So_hex8::calc_struct_nlnstiffmass;
@@ -401,7 +401,7 @@ int DRT::ELEMENTS::So_hex8::Evaluate(
       = params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
     if (gpstressmap==Teuchos::null)
       dserror("no gp stress/strain map available for postprocessing");
-    string stresstype = params.get<string>("stresstype","ndxyz");
+    std::string stresstype = params.get<std::string>("stresstype","ndxyz");
     int gid = Id();
     LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> gpstress(((*gpstressmap)[gid])->A(),true);
     Teuchos::RCP<Epetra_MultiVector> poststress
@@ -469,7 +469,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
   DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_internalforce") act = So_hex8::calc_struct_internalforce;
   else if (action=="calc_struct_nlnstiff")      act = So_hex8::calc_struct_nlnstiff;
@@ -852,7 +852,7 @@ int DRT::ELEMENTS::So_hex8::LinEvaluate(
       = params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
     if (gpstressmap==Teuchos::null)
       dserror("no gp stress/strain map available for postprocessing");
-    string stresstype = params.get<string>("stresstype","ndxyz");
+    std::string stresstype = params.get<std::string>("stresstype","ndxyz");
     int gid = Id();
     LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> gpstress(((*gpstressmap)[gid])->A(),true);
     Teuchos::RCP<Epetra_MultiVector> poststress

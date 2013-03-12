@@ -121,7 +121,7 @@ int DRT::ELEMENTS::Ale3::Evaluate(Teuchos::ParameterList& params,
   DRT::ELEMENTS::Ale3::ActionType act = Ale3::none;
 
   // get the action required
-  std::string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none")
     dserror("No action supplied");
   else if (action == "calc_ale_laplace")

@@ -130,18 +130,18 @@ void fluid_fluid_drt(const int restart)
 
   // -------------------------------------------------------------------
   // ---------------- find MovingFluid's elements and nodes
-  map<int, DRT::Node*> MovingFluidNodemap;
-  map<int, RCP< DRT::Element> > MovingFluidelemap;
+  std::map<int, DRT::Node*> MovingFluidNodemap;
+  std::map<int, RCP< DRT::Element> > MovingFluidelemap;
   DRT::UTILS::FindConditionObjects(*bgfluiddis, MovingFluidNodemap, MovingFluidelemap, "MovingFluid");
 
   // local vectors of nodes and elements of moving dis
-  vector<int> MovingFluidNodeGIDs;
-  vector<int> MovingFluideleGIDs;
+  std::vector<int> MovingFluidNodeGIDs;
+  std::vector<int> MovingFluideleGIDs;
 
-  for( map<int, DRT::Node*>::iterator it = MovingFluidNodemap.begin(); it != MovingFluidNodemap.end(); ++it )
+  for( std::map<int, DRT::Node*>::iterator it = MovingFluidNodemap.begin(); it != MovingFluidNodemap.end(); ++it )
     MovingFluidNodeGIDs.push_back( it->first);
 
-  for( map<int, RCP< DRT::Element> >::iterator it = MovingFluidelemap.begin(); it != MovingFluidelemap.end(); ++it )
+  for( std::map<int, RCP< DRT::Element> >::iterator it = MovingFluidelemap.begin(); it != MovingFluidelemap.end(); ++it )
     MovingFluideleGIDs.push_back( it->first);
 
   // --------------------------------------------------------------------------
@@ -149,10 +149,10 @@ void fluid_fluid_drt(const int restart)
 
   // Gather all informations from all processors
   //information how many processors work at all
-  vector<int> allproc(embfluiddis->Comm().NumProc());
+  std::vector<int> allproc(embfluiddis->Comm().NumProc());
 
-  vector<int> MovingFluideleGIDsall;
-  vector<int> MovingFluidNodeGIDsall;
+  std::vector<int> MovingFluideleGIDsall;
+  std::vector<int> MovingFluidNodeGIDsall;
 
   //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
   for (int i=0; i<embfluiddis->Comm().NumProc(); ++i) allproc[i] = i;
@@ -165,12 +165,12 @@ void fluid_fluid_drt(const int restart)
 
   // -------------------------------------------------------------------------------
   // -------------- now build the nonmoving vectors from the gathered moving vectors
-  vector<int> NonMovingFluideleGIDs;
-  vector<int> NonMovingFluidNodeGIDs;
+  std::vector<int> NonMovingFluideleGIDs;
+  std::vector<int> NonMovingFluidNodeGIDs;
   for (int iele=0; iele< bgfluiddis->NumMyColElements(); ++iele)
   {
     DRT::Element* bgele = bgfluiddis->lColElement(iele);
-    vector<int>::iterator eleiter = find(MovingFluideleGIDsall.begin(), MovingFluideleGIDsall.end(),bgele->Id() );
+    std::vector<int>::iterator eleiter = find(MovingFluideleGIDsall.begin(), MovingFluideleGIDsall.end(),bgele->Id() );
     if (eleiter == MovingFluideleGIDsall.end())
     {
       NonMovingFluideleGIDs.push_back(bgele->Id());
@@ -183,10 +183,10 @@ void fluid_fluid_drt(const int restart)
   // --------------------------------------------------------------------------
   // ------------------ gather information for non moving fluid ---------------
   //information how many processors work at all
-  vector<int> allprocbg(bgfluiddis->Comm().NumProc());
+  std::vector<int> allprocbg(bgfluiddis->Comm().NumProc());
 
-  vector<int> NonMovingFluideleGIDsall;
-  vector<int> NonMovingFluidNodeGIDsall;
+  std::vector<int> NonMovingFluideleGIDsall;
+  std::vector<int> NonMovingFluidNodeGIDsall;
 
   //in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
   for (int i=0; i<bgfluiddis->Comm().NumProc(); ++i) allprocbg[i] = i;
@@ -216,7 +216,7 @@ void fluid_fluid_drt(const int restart)
   bgfluiddis->ReplaceDofSet(maxdofset,true);
   bgfluiddis->FillComplete();
 
-  vector<int> bgeleids;          // ele ids
+  std::vector<int> bgeleids;          // ele ids
   for (int i=0; i<bgfluiddis->NumMyRowElements(); ++i)
   {
     DRT::Element* bgele = bgfluiddis->lRowElement(i);
@@ -266,7 +266,7 @@ void fluid_fluid_drt(const int restart)
   embfluiddis->ReplaceDofSet(newdofset,true);
   embfluiddis->FillComplete();
 
-  vector<int> eleids;          // ele ids
+  std::vector<int> eleids;          // ele ids
   for (int i=0; i<embfluiddis->NumMyRowElements(); ++i)
   {
     DRT::Element* ele = embfluiddis->lRowElement(i);

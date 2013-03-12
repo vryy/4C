@@ -50,7 +50,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
   DRT::ELEMENTS::So_hex8::ActionType act = So_hex8::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff")        act = So_hex8::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff")        act = So_hex8::calc_struct_nlnstiff;
@@ -189,7 +189,7 @@ int DRT::ELEMENTS::So_Hex8P1J1::Evaluate(
         params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
       if (gpstressmap==Teuchos::null)
         dserror("no gp stress/strain map available for postprocessing");
-      std::string stresstype = params.get<string>("stresstype","ndxyz");
+      std::string stresstype = params.get<std::string>("stresstype","ndxyz");
       const int gid = Id();
       LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8> gpstress(((*gpstressmap)[gid])->A(),true);
 
@@ -1008,8 +1008,8 @@ void DRT::ELEMENTS::So_Hex8P1J1::test_stiffmat(
   double epsilon = 0.0000001;
   LINALG::Matrix<NUMDOF_SOH8,1> F(true);
   LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8> K(true);
-  vector<double> disturbed_disp(disp);
-  vector<double> disturbed_disi(residual);
+  std::vector<double> disturbed_disp(disp);
+  std::vector<double> disturbed_disi(residual);
 
   LINALG::Matrix<24,24> App_K(true);
 

@@ -193,8 +193,8 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
     // (depending on what this routine is called for from the post filter)
     case postprocess_stress:
     {
-      const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+      const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+        params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
       if (gpstressmap==Teuchos::null)
         dserror("no gp stress/strain map available for postprocessing");
       std::string stresstype = params.get<std::string>("stresstype","ndxyz");
@@ -324,7 +324,7 @@ int DRT::ELEMENTS::So_tet10::Evaluate(Teuchos::ParameterList& params,
 			// get displacements and extract values of this element
 			RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
 			if (disp==Teuchos::null) dserror("Cannot get state displacement vector");
-			vector<double> mydisp(lm.size());
+			std::vector<double> mydisp(lm.size());
 			DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
 			// nodal displacement vector
@@ -986,9 +986,9 @@ void DRT::ELEMENTS::So_tet10::so_tet10_lumpmass(LINALG::Matrix<NUMDOF_SOTET10,NU
 /*----------------------------------------------------------------------*
  |  Evaluate Tet10 Shape fcts at 4 Gauss Points                         |
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMNOD_SOTET10,1> > DRT::ELEMENTS::So_tet10::so_tet10_4gp_shapefcts()
+const std::vector<LINALG::Matrix<NUMNOD_SOTET10,1> > DRT::ELEMENTS::So_tet10::so_tet10_4gp_shapefcts()
 {
-  static vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts(NUMGPT_SOTET10);
+  static std::vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts(NUMGPT_SOTET10);
   static bool shapefcts_done = false;
   if (shapefcts_done) return shapefcts;
 
@@ -1009,9 +1009,9 @@ const vector<LINALG::Matrix<NUMNOD_SOTET10,1> > DRT::ELEMENTS::So_tet10::so_tet1
 /*----------------------------------------------------------------------*
  |  Evaluate Tet10 Shape fct derivs at 4 Gauss Points                   |
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& DRT::ELEMENTS::So_tet10::so_tet10_4gp_derivs()
+const std::vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& DRT::ELEMENTS::So_tet10::so_tet10_4gp_derivs()
 {
-  static vector<LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10> > derivs(NUMGPT_SOTET10);
+  static std::vector<LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10> > derivs(NUMGPT_SOTET10);
   static bool derivs_done = false;
   if (derivs_done) return derivs;
 
@@ -1032,9 +1032,9 @@ const vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& DRT::ELEMENTS::So_
 /*----------------------------------------------------------------------*
  |  Evaluate Tet10 Weights at 4 Gauss Points                            |
  *----------------------------------------------------------------------*/
-const vector<double>& DRT::ELEMENTS::So_tet10::so_tet10_4gp_weights()
+const std::vector<double>& DRT::ELEMENTS::So_tet10::so_tet10_4gp_weights()
 {
-	static vector<double> weights(NUMGPT_SOTET10);
+	static std::vector<double> weights(NUMGPT_SOTET10);
 	static bool weights_done = false;
 	if (weights_done) return weights;
 
@@ -1051,9 +1051,9 @@ const vector<double>& DRT::ELEMENTS::So_tet10::so_tet10_4gp_weights()
 /*----------------------------------------------------------------------*
  |  Evaluate Tet10 Shape fcts at 10 Gauss Points                        |
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& DRT::ELEMENTS::So_tet10::so_tet10_11gp_shapefcts()
+const std::vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& DRT::ELEMENTS::So_tet10::so_tet10_11gp_shapefcts()
 {
-  static vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts(NUMGPT_MASS_SOTET10);
+  static std::vector<LINALG::Matrix<NUMNOD_SOTET10,1> > shapefcts(NUMGPT_MASS_SOTET10);
   static bool shapefcts_done = false;
   if (shapefcts_done) return shapefcts;
 
@@ -1074,9 +1074,9 @@ const vector<LINALG::Matrix<NUMNOD_SOTET10,1> >& DRT::ELEMENTS::So_tet10::so_tet
 /*----------------------------------------------------------------------*
  |  Evaluate Tet10 Shape fct derivs at 10 Gauss Points                  |
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& DRT::ELEMENTS::So_tet10::so_tet10_11gp_derivs()
+const std::vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& DRT::ELEMENTS::So_tet10::so_tet10_11gp_derivs()
 {
-  static vector<LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10> > derivs(NUMGPT_MASS_SOTET10);
+  static std::vector<LINALG::Matrix<NUMDIM_SOTET10, NUMNOD_SOTET10> > derivs(NUMGPT_MASS_SOTET10);
   static bool derivs_done = false;
   if (derivs_done) return derivs;
 
@@ -1097,9 +1097,9 @@ const vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& DRT::ELEMENTS::So_
 /*----------------------------------------------------------------------*
  |  Evaluate Tet10 Weights at 10 Gauss Points                           |
  *----------------------------------------------------------------------*/
-const vector<double>& DRT::ELEMENTS::So_tet10::so_tet10_11gp_weights()
+const std::vector<double>& DRT::ELEMENTS::So_tet10::so_tet10_11gp_weights()
 {
-  static vector<double> weights(NUMGPT_MASS_SOTET10);
+  static std::vector<double> weights(NUMGPT_MASS_SOTET10);
   static bool weights_done = false;
   if (weights_done) return weights;
 

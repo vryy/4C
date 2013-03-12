@@ -25,7 +25,7 @@ void STRUMULTI::MicroStatic::DetermineToggle()
                 // creation of vectors and matrices for homogenization
                 // procedure
 
-  vector<DRT::Condition*> conds;
+  std::vector<DRT::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
   for (unsigned i=0; i<conds.size(); ++i)
   {
@@ -39,7 +39,7 @@ void STRUMULTI::MicroStatic::DetermineToggle()
       if (!discret_->NodeRowMap()->MyGID((*nodeids)[i])) continue;
       DRT::Node* actnode = discret_->gNode((*nodeids)[i]);
       if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
-      vector<int> dofs = discret_->Dof(actnode);
+      std::vector<int> dofs = discret_->Dof(actnode);
       const unsigned numdf = dofs.size();
 
       for (unsigned j=0; j<numdf; ++j)
@@ -103,7 +103,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
   // create vector containing material coordinates of prescribed nodes
   Epetra_Vector Xp_temp(*pdof_);
 
-  vector<DRT::Condition*> conds;
+  std::vector<DRT::Condition*> conds;
   discret_->GetCondition("MicroBoundary", conds);
   for (unsigned i=0; i<conds.size(); ++i)
   {
@@ -121,7 +121,7 @@ void STRUMULTI::MicroStatic::SetUpHomogenization()
       // nodal coordinates
       const double* x = actnode->X();
 
-      vector<int> dofs = discret_->Dof(actnode);
+      std::vector<int> dofs = discret_->Dof(actnode);
 
       for (int k=0; k<3; ++k)
       {
@@ -267,7 +267,7 @@ void STRUMULTI::MicroStatic::CalcRefNorms()
 
   double fintnorm = STR::AUX::CalculateVectorNorm(iternorm_, fintm_);
   double freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freactm_);
-  normcharforce_ = max(fintnorm, freactnorm);
+  normcharforce_ = std::max(fintnorm, freactnorm);
   if (normcharforce_ < tolfres_) normcharforce_ = 1.0;
 }
 

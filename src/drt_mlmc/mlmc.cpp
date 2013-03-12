@@ -14,6 +14,7 @@ Maintainer: Jonas Biehler
 
 #include "../drt_adapter/ad_str_structure.H"
 #include <Teuchos_TimeMonitor.hpp>
+#include <Epetra_Time.h>
 #include "mlmc.H"
 #include <ctime>
 #include <cstdlib>
@@ -137,7 +138,7 @@ STR::MLMC::MLMC(Teuchos::RCP<DRT::Discretization> dis,
 
   // meshfiel name to be written to controlfile in prolongated results
   std::stringstream meshfilename_helper1;
-  string meshfilename_helper2;
+  std::string meshfilename_helper2;
   meshfilename_helper1 << filename_ << "_prolongated_run_" << start_run_ ;
   meshfilename_helper2 = meshfilename_helper1.str();
   // strip path from name
@@ -619,7 +620,7 @@ void STR::MLMC::ProlongateResults()
   // To avoid messing with the timeintegration we read in the results of the coarse discretization here
   // Get coarse Grid problem instance
   std::stringstream name;
-  string filename_helper;
+  std::string filename_helper;
   name << filename_ << "_run_"<< numb_run_;
   filename_helper = name.str();
 
@@ -644,7 +645,7 @@ void STR::MLMC::ProlongateResults()
 
   // create new resultfile for prolongated results
   std::stringstream name_prolong;
-  string filename_helper_prolong;
+  std::string filename_helper_prolong;
   name_prolong << filename_ << "_prolongated";
   filename_helper_prolong = name_prolong.str();
 
@@ -739,10 +740,10 @@ void STR::MLMC::ProlongateResults()
   // Alrigth lets get the nodal stresses
   p.set("action","calc_global_gpstresses_map");
 
-  const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
   p.set("gpstressmap", gpstressmap);
 
-  const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
   p.set("gpstrainmap", gpstrainmap);
 
   actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
@@ -979,7 +980,7 @@ void STR::MLMC::ReadResultsFromLowerLevel()
   //name_helper << "../../level"<<num_level_-1<< "/START_RUN_"<< start_run_ <<"/"<<filename_lower_level_<<"_prolongated"<< "_run_" << numb_run_ ;
 
   name_helper << filename_lower_level_ <<"_prolongated"<< "_run_" << numb_run_ ;
-  string name_ll = name_helper.str();
+  std::string name_ll = name_helper.str();
   // check if bool should be true or false
   RCP<IO::InputControl> inputcontrol = Teuchos::rcp(new IO::InputControl(name_ll, false));
   IO::DiscretizationReader input_coarse(actdis_fine_, inputcontrol,1);
@@ -1016,10 +1017,10 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
   const int myrank = discret_->Comm().MyPID();
 
   // loop all materials in problem
-  const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
+  const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance()->Materials()->Map();
   if (myrank == 0)
     IO::cout << "No. material laws considered: " << (int)mats.size() << IO::endl;
-  map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+  std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); curr++)
   {
     const RCP<MAT::PAR::Material> actmat = curr->second;
@@ -1078,7 +1079,7 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
   //      for (int i =0 ; i<500; i++)
   //      {
   //        random_field_->CreateNewSample(random_seed+i);
-  //        vector<double> ele_center (3,1.0);
+  //        std::vector<double> ele_center (3,1.0);
   //        // calc average psd
   //        //random_field_->GetPSDFromSample3D(sample_psd);
   //        random_field_->GetPSDFromSample(sample_psd);
@@ -1277,7 +1278,7 @@ void STR::MLMC::HelperFunctionOutput(RCP< Epetra_MultiVector> stress,RCP< Epetra
   // assamble name for outputfil
   std::stringstream outputfile;
   outputfile << filename_ << "_statistics_output_" << start_run_ << ".txt";
-  string name = outputfile.str();;
+  std::string name = outputfile.str();;
   /// file to write output
   std::ofstream File;
   if (numb_run_ == 0 || numb_run_ == start_run_)
@@ -1297,7 +1298,7 @@ void STR::MLMC::HelperFunctionOutputTube(RCP< Epetra_MultiVector> stress,RCP< Ep
   // assamble name for outputfil
   std::stringstream outputfile;
   outputfile << filename_ << "_statistics_output_" << start_run_ << ".txt";
-  string name = outputfile.str();;
+  std::string name = outputfile.str();;
   /// file to write output
   // paraview ids of nodes
   int node[5] = {566, 1764, 3402,5194,6510};
@@ -1396,10 +1397,10 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   actdis_coarse_->SetState("velocity",vel_coarse);
   // Alrigth lets get the nodal stresses
   p.set("action","calc_global_gpstresses_map");
-  const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
   p.set("gpstressmap", gpstressmap);
 
-  const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
  p.set("gpstrainmap", gpstrainmap);
 
 
@@ -1459,7 +1460,7 @@ void STR::MLMC::EvalDisAtNodes(Teuchos::RCP<const Epetra_Vector> disp )
   // assamble name for outputfile
   std::stringstream outputfile2;
   outputfile2 << filename_ << "_statistics_output_" << start_run_ << ".txt";
-  string name2 = outputfile2.str();;
+  std::string name2 = outputfile2.str();;
   // file to write output
 
   RCP<Epetra_Vector> output_disp = LINALG::CreateVector(output_dof_map,false);
@@ -1636,10 +1637,10 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
   actdis_coarse_->SetState("velocity",vel_coarse);
   // Alright lets get the nodal stresses
   p.set("action","calc_global_gpstresses_map");
-  const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
   p.set("gpstressmap", gpstressmap);
 
-  const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
+  const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap = Teuchos::rcp(new std::map<int, RCP<Epetra_SerialDenseMatrix> >);
   p.set("gpstrainmap", gpstrainmap);
 
   //actdis_coarse_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
@@ -1685,7 +1686,7 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
 
   // now we need to setup a map
   // set up map <int,DRT::CONTAINER>
-  map<int,Teuchos::RCP <DRT::Container> >my_output_element_map;
+  std::map<int,Teuchos::RCP <DRT::Container> >my_output_element_map;
   for(unsigned int i = 0; i<my_output_elements_.size(); i++)
   {
     // put all the stuff into container
@@ -1703,7 +1704,7 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
 
   if (actdis_coarse_->Comm().MyPID()==0)
   {
-    map<int,Teuchos::RCP <DRT::Container> >::iterator myit;
+    std::map<int,Teuchos::RCP <DRT::Container> >::iterator myit;
     for ( myit=my_output_element_map.begin() ; myit != my_output_element_map.end(); myit++ )
     {
       // get back all the data
@@ -1716,8 +1717,8 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
 
     // assamble name for outputfile
     std::stringstream outputfile2;
-    string stresstype;
-    string straintype;
+    std::string stresstype;
+    std::string straintype;
     if (iostress==INPAR::STR::stress_cauchy)
       stresstype="cauchy";
     else if (iostress==INPAR::STR::stress_2pk)
@@ -1732,7 +1733,7 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
           dserror("unknown straintype");
 
     outputfile2 << filename_ << "_statistics_output_" << start_run_ << "_stress_" << stresstype << "_strain_" << straintype << "_EleId_"<< myit->first << ".txt";
-    string name2 = outputfile2.str();;
+    std::string name2 = outputfile2.str();;
     // file to write output
     std::ofstream File;
     if (numb_run_ == 0 || numb_run_ == start_run_)

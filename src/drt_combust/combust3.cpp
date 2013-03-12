@@ -32,8 +32,8 @@ DRT::ParObject* DRT::ELEMENTS::Combust3Type::Create( const std::vector<char> & d
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3Type::Create( const string eletype,
-                                                            const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3Type::Create( const std::string eletype,
+                                                            const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {
@@ -130,7 +130,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Combust3LineType::Create( const int id
 /*----------------------------------------------------------------------*/
 // map to convert strings to actions (stabilization)
 /*----------------------------------------------------------------------*/
-std::map<string,DRT::ELEMENTS::Combust3::StabilisationAction> DRT::ELEMENTS::Combust3::stabstrtoact_;
+std::map<std::string,DRT::ELEMENTS::Combust3::StabilisationAction> DRT::ELEMENTS::Combust3::stabstrtoact_;
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                            gammi 02/08|

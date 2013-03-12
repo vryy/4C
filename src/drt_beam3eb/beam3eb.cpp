@@ -34,8 +34,8 @@ DRT::ParObject* DRT::ELEMENTS::Beam3ebType::Create( const std::vector<char> & da
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebType::Create(const string eletype,
-																 															const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::Beam3ebType::Create(const std::string eletype,
+																 															const std::string eledistype,
 																 															const int id,
 																 															const int owner )
 {

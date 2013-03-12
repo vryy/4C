@@ -100,9 +100,9 @@ shapefcn_(INPAR::MORTAR::shape_undefined)
   // initialize new discretizations
   Teuchos::RCP<Epetra_Comm> com = Teuchos::rcp(structdis->Comm().Clone());
   // structure
-  const string discret_name1 = "istructdis";
+  const std::string discret_name1 = "istructdis";
   // thermo
-  const string discret_name2 = "ithermodis";
+  const std::string discret_name2 = "ithermodis";
   const int myrank = com->MyPID();
   
   for(int interf=0; interf <= maxid_; interf++)
@@ -763,7 +763,7 @@ void FS3I::UTILS::AeroCouplingUtils::BuildMortarCoupling
 void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStructDual
 (
   int interf,
-  map<int, LINALG::Matrix<4,1> >& aeroforces,
+  std::map<int, LINALG::Matrix<4,1> >& aeroforces,
   Teuchos::RCP<Epetra_Vector> iforce,
   Teuchos::RCP<Epetra_Vector> ithermoload
 )
@@ -784,7 +784,7 @@ void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStructDual
   // NOTE: There is no dofset available for artificially created fluid nodes
   // Assumption: Meshtying restriction is only needed for additional boundary layer
   // Hence: Here in serial (LID=GID), values from aeroforces can directly be inserted into slavevalues vector
-  map<int, LINALG::Matrix<4,1> >::const_iterator iter;
+  std::map<int, LINALG::Matrix<4,1> >::const_iterator iter;
   for(iter=aeroforces.begin(); iter!=aeroforces.end(); ++iter)
   {
     (*slavevalues)[iter->first] = iter->second(3);
@@ -811,7 +811,7 @@ void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStructDual
 void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStructStd
 (
   int interf,
-  map<int, LINALG::Matrix<4,1> >& aeroforces,
+  std::map<int, LINALG::Matrix<4,1> >& aeroforces,
   Teuchos::RCP<Epetra_Vector> ithermoload
 )
 {
@@ -829,7 +829,7 @@ void FS3I::UTILS::AeroCouplingUtils::TransferFluidLoadsToStructStd
   // NOTE: There is no dofset available for artificially created fluid nodes
   // Assumption: Meshtying restriction is only needed for additional boundary layer
   // Hence: Here in serial (LID=GID), values from aeroforces can directly be inserted into slavevalues vector
-  map<int, LINALG::Matrix<4,1> >::const_iterator iter;
+  std::map<int, LINALG::Matrix<4,1> >::const_iterator iter;
   for(iter=aeroforces.begin(); iter!=aeroforces.end(); ++iter)
   {
     (*slavevalues)[iter->first] = iter->second(3);

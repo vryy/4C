@@ -44,7 +44,7 @@ Epetra_SerialDenseVector GEO::CUT::BoundarycellIntegration::GenerateBoundaryCell
 //if all the elements in a row of the moment fitting matrix are zero, then the row has to be deleted
 //this ensures non-zero diagonal elements in the matrix
 //it always occurs when the boundarycell is oriented along any of the coordinate planes
-    vector<int> deleteRowNos;
+    std::vector<int> deleteRowNos;
     for(unsigned row=0;row<moment_matbc.size();row++)
     {
       bool deleteRow=true;
@@ -216,7 +216,7 @@ void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::v
   }
 
   //store the equation of each line in the form of ax+by=c
-  vector<std::vector<double> > eqnLines(co1.size());
+  std::vector<std::vector<double> > eqnLines(co1.size());
   for(unsigned i=0;i<co1.size();i++)
   {
     double x1 = co1[i];
@@ -251,9 +251,9 @@ void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::v
   double min2 = *(std::min_element(co2.begin(), co2.end()));
 
   int gausno=0;//number of gauss points in each line
-  bcGausspts.resize(ptNos*ptNos,vector<double> (3));
+  bcGausspts.resize(ptNos*ptNos,std::vector<double> (3));
   double interval = (max2-min2)/ptNos;
-  map<double,int> intersections;
+  std::map<double,int> intersections;
   for(int i=0;i<ptNos;i++)
   {
     double val2 = min2+(i+0.5)*interval;
@@ -275,7 +275,7 @@ void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::v
     {
       int count=0;
       double x1[2];
-      for(map<double,int>::iterator j=intersections.begin();j!=intersections.end();j++)
+      for(std::map<double,int>::iterator j=intersections.begin();j!=intersections.end();j++)
       {
         x1[count] = j->first;
         count++;
@@ -298,7 +298,7 @@ void GEO::CUT::BoundarycellIntegration::DistributeBoundaryCellGaussPoints(std::v
     {
       int count=0, numcut = intersections.size();;
       std::vector<double> x1(numcut);
-      for(map<double,int>::iterator j=intersections.begin();j!=intersections.end();j++)
+      for(std::map<double,int>::iterator j=intersections.begin();j!=intersections.end();j++)
       {
         x1[count] = j->first;
         count++;

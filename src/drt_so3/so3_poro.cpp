@@ -201,13 +201,13 @@ bool DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ReadElement(const std::string& el
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 template<class so3_ele, DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::VisNames(std::map<string,int>& names)
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::VisNames(std::map<std::string,int>& names)
 {
   so3_ele::VisNames(names);
 
   if (Material()->MaterialType() == INPAR::MAT::m_structporo)
   {
-    string porosity = "porosity";
+    std::string porosity = "porosity";
     names[porosity] = 1; // scalar
   }
 }

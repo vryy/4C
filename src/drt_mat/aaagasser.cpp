@@ -144,7 +144,7 @@ void MAT::AAAgasser::Evaluate(
   //double Cele        = 1./3.*(params_->Clum_ + params_->Cmed_ + params_->) * normdist/normdist;
 
   // material parameters for volumetric part:
-  const string vol = *params_->vol_;
+  const std::string vol = *params_->vol_;
   // kappa = youngs / (3-6*nue); youngs = 24*Cele (see GASSER p.184);
   const double kappa   = 24*Cele / (3 - 6*params_->nue_);      // dilatational modulus
   const double beta    = params_->beta_;      // parameter from Holzapfel

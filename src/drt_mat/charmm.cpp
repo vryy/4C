@@ -148,7 +148,7 @@ void MAT::CHARMM::Unpack(const std::vector<char>& data) {
 void MAT::CHARMM::Setup(DRT::Container& data_) {
 
     // The following needs to come from the parameter in the final version
-    vector<string> strain_type;
+    std::vector<string> strain_type;
     strain_type.push_back("principal");
     strain_type.push_back("vector");
 
@@ -207,7 +207,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
     // How to treat the energy difference from MD
     // energy = store : store energy in element
     // energy = diff : use the difference between current strain and last strain
-    const string energy = "store";
+    const std::string energy = "store";
     // length of the protein in the main pulling direction [A]
     std::vector<double> characteristic_length(2);
     // Integrin length !!!!
@@ -219,10 +219,10 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
     // principal = main strain direction (biggest eigenvalue)
     // vector = using the given vector
     // none = don't use the direction
-    vector<string> strain_type;
+    std::vector<string> strain_type;
     strain_type.push_back(FCDType());
     strain_type.push_back(SCDType());
-    vector<LINALG::SerialDenseVector> d;
+    std::vector<LINALG::SerialDenseVector> d;
     LINALG::SerialDenseVector d_1(3);
     LINALG::SerialDenseVector d_2(3);
     d_1(0) = FCD()[0];
@@ -234,7 +234,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
     d.push_back(d_1);
     d.push_back(d_2);
     // Add the directional space in case of principal direction
-    vector<LINALG::SerialDenseVector> ds;
+    std::vector<LINALG::SerialDenseVector> ds;
     LINALG::SerialDenseVector ds_1(3);
     LINALG::SerialDenseVector ds_2(3);
     ds_1(0) = FCDS()[0];
@@ -298,8 +298,8 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	// Get the strains in the characteristic directions
 	LINALG::Matrix < 3, 3 > V(C);
 	LINALG::SerialDenseVector lambda(3);
-	vector<LINALG::SerialDenseVector> dir_lambdas;
-	vector<LINALG::Matrix < 3, 3 > > dir_eigenv;
+	std::vector<LINALG::SerialDenseVector> dir_lambdas;
+	std::vector<LINALG::Matrix < 3, 3 > > dir_eigenv;
 	// go through number of directions
 	for (int i = 0; i < (int) strain_type.size(); i++) {
 	    if (strain_type[i].compare("principal") == 0) {
@@ -335,8 +335,8 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 
 
 	// Update and reconfigure history
-	vector<double>* his;
-	his = data_.GetMutable<vector<double> >("his_charmm");
+	std::vector<double>* his;
+	his = data_.GetMutable<std::vector<double> >("his_charmm");
 	if ((*his)[0] < time) {
 	    (*his)[1] = (*his)[0]; // time
 	    for (int i = 0; i < (int) strain_type.size(); i++) {
@@ -366,7 +366,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 
 	// Prepare and call CHARMm in its beauty itself
 	// get lambda t-dt information
-	vector<double> lambda_his;
+	std::vector<double> lambda_his;
 	for (int i = 0; i < (int) strain_type.size(); i++) {
 	    lambda_his.push_back((*his)[7 + (i * 10)]);
 	}
@@ -417,7 +417,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	// (Energy STARTD, Energy ENDD, #Atoms STARTD, #Atoms ENDD, Volume STARTD, Volume ENDD)
 	LINALG::SerialDenseVector direction(3);
 	LINALG::SerialDenseVector charmm_result(6);
-	map<string, double> CHARMmPar;
+	std::map<std::string, double> CHARMmPar;
 	CHARMmPar["FCD_STARTD"] = FCD_STARTD;
 	CHARMmPar["FCD_ENDD"] = FCD_ENDD;
 	CHARMmPar["FCD_dir_x"] = FCD_direction(0);
@@ -439,8 +439,8 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
 	    }
 	}
 
-        vector<double>* his_mat;
-        his_mat = data_.GetMutable<vector<double> >("his_mat");
+        std::vector<double>* his_mat;
+        his_mat = data_.GetMutable<std::vector<double> >("his_mat");
         double I1_lastt = (*his)[9];
         if (FCD_STARTD == 0.0) (*his_mat)[1] = charmm_result[0];
         if (energy.compare("diff") == 0) {
@@ -513,7 +513,7 @@ void MAT::CHARMM::Evaluate(const LINALG::Matrix<NUM_STRESS_3D, 1 > * glstrain,
     double nu = NUE(); // intermediate for testing purpose only
     double beta = nu / (1 - 2 * nu);
     if (time > 0.0) {
-	vector<double>* his_mat = data_.GetMutable<vector<double> >("his_mat");
+	std::vector<double>* his_mat = data_.GetMutable<std::vector<double> >("his_mat");
 	if ((*his_mat)[0] != 0.0) c1 = (*his_mat)[0];
 	//cout << time << " " << c1 << endl;
     } else {
@@ -711,19 +711,19 @@ void MAT::CHARMM::EvalAccForce(
 //! File based API to CHARMM
 /*----------------------------------------------------------------------*/
 void MAT::CHARMM::CHARMmfileapi(
-	map<string, double>& CHARMmPar,
+	std::map<std::string, double>& CHARMmPar,
 	LINALG::SerialDenseVector& charmm_result) {
 
     FILE* tty;
-    ios_base::fmtflags flags = cout.flags(); // Save original flags
-    std::ostringstream output(ios_base::out);
+    std::ios_base::fmtflags flags = cout.flags(); // Save original flags
+    std::ostringstream output(std::ios_base::out);
     ////////////////////////////////////////////////////////////////////////////
     // Variables needed for CHARMM and getting the results
     // Decide if parallel or seriell
     const bool use_old_results = Use_old_Results();
-    const string serpar = Serpar(); // ser = seriell; par = mpirun; pbs = PBS Torque
-    const string charmm = CHARMMEXE();
-    const string input = INPUT();
+    const std::string serpar = Serpar(); // ser = seriell; par = mpirun; pbs = PBS Torque
+    const std::string charmm = CHARMMEXE();
+    const std::string input = INPUT();
     // FC6 setup
     //const char* path = "/home/metzke/ccarat.dev/codedev/charmm.fe.codedev/";
     //const char* path = "/home/metzke/projects/water/";
@@ -733,26 +733,26 @@ void MAT::CHARMM::CHARMmfileapi(
     //const char* charmm = "/Users/rmetzke/bin/charmm";
     //const char* mpicharmm = "/Users/rmetzke/bin/mpicharmm";
     //char* input = "1dzi_fem.inp";
-    const string mdnature = "thermal"; // cold = minimization; thermal = fully dynamic with thermal energy; pert = pertubation
+    const std::string mdnature = "thermal"; // cold = minimization; thermal = fully dynamic with thermal energy; pert = pertubation
     output << "output/ACEcold_" << CHARMmPar["FCD_STARTD"] << "_" << CHARMmPar["FCD_ENDD"] << ".out";
     ////////////////////////////////////////////////////////////////////////////
 
     // Assemble all file and path names first
-    std::ostringstream statusfile(ios_base::out);
+    std::ostringstream statusfile(std::ios_base::out);
     statusfile << Path() << "output/status_" << CHARMmPar["FCD_ENDD"] << ".out";
 
     // Print out the beginning of the CHARMM info line
-    cout << std::setw(4) << left << "MD (" << showpoint << CHARMmPar["FCD_STARTD"] << std::setw(2) << "->" << CHARMmPar["FCD_ENDD"] << std::setw(3) << "): " << flush;
+    cout << std::setw(4) << std::left << "MD (" << std::showpoint << CHARMmPar["FCD_STARTD"] << std::setw(2) << "->" << CHARMmPar["FCD_ENDD"] << std::setw(3) << "): " << flush;
 
     // Check if the status file already exists
     // In that case skip the charmm call
     struct stat statusFileInfo;
-    map<string, double> md_status;
+    std::map<std::string, double> md_status;
     md_status.clear();
     if (stat(statusfile.str().c_str() ,&statusFileInfo) == 0) Reader(statusfile, md_status);
     if ( (stat(statusfile.str().c_str(),&statusFileInfo) != 0 && !md_status["CHARMMEND"]) || !use_old_results) {
 	// Assemble the command line for charmm
-	ostringstream command(ios_base::out);
+	std::ostringstream command(std::ios_base::out);
 	if (serpar.compare("ser") == 0) command << "cd " << Path() << " && " << charmm;
 	else if (serpar.compare("par") == 0) command << "cd " << Path() << " && " << "openmpirun -np 2 " << charmm;
 	else dserror("What you want now? Parallel or not!");
@@ -792,34 +792,34 @@ void MAT::CHARMM::CHARMmfileapi(
 //*----------------------------------------------------------------------*/
 //! Read results from thermal CHARMm results files
 /*----------------------------------------------------------------------*/
-void MAT::CHARMM::Readresults(map<string, double>& CHARMmPar,
+void MAT::CHARMM::Readresults(std::map<std::string, double>& CHARMmPar,
 	LINALG::SerialDenseVector& charmm_result) {
 
     // Check the status of CHARMm and if it run through
-    std::ostringstream status(ios_base::out);
+    std::ostringstream status(std::ios_base::out);
     status << Path() << "output/status_" << CHARMmPar["FCD_ENDD"] << ".out";
-    map<string, double> md_status;
+    std::map<std::string, double> md_status;
     md_status.clear();
     Reader(status, md_status);
     if (!md_status["CHARMMEND"]) dserror("CHARMm API: Run not successful till end.");
-    else cout << std::setw(5) << left << "0" << flush;
+    else cout << std::setw(5) << std::left << "0" << std::flush;
 
     // Get the results at STARTD + ENDD
-    std::ostringstream results(ios_base::out);
-    map<string, double> md_STARTD;
+    std::ostringstream results(std::ios_base::out);
+    std::map<std::string, double> md_STARTD;
     md_STARTD.clear();
     results << Path() << "output/results_" << CHARMmPar["FCD_STARTD"] << ".out";
     Reader(results, md_STARTD);
     results.str("");
-    map<string, double> md_ENDD;
+    std::map<std::string, double> md_ENDD;
     md_ENDD.clear();
     results << Path() << "output/results_" << CHARMmPar["FCD_ENDD"] << ".out";
     Reader(results, md_ENDD);
 
     // Print out Information line
-    cout << std::setw(4) << "dV:" << std::setw(15) << left << std::scientific << std::setprecision(6) << (md_ENDD["E"] - md_STARTD["E"]);
-    cout << std::setw(8) << "#Atoms:" << std::setw(10) << left << fixed << std::setprecision(0) << md_ENDD["NUM"];
-    cout << std::setw(8) << "Volume:" << std::setw(12) << left << std::setprecision(3) << md_ENDD["VOL"] << endl;
+    cout << std::setw(4) << "dV:" << std::setw(15) << std::left << std::scientific << std::setprecision(6) << (md_ENDD["E"] - md_STARTD["E"]);
+    cout << std::setw(8) << "#Atoms:" << std::setw(10) << std::left << std::fixed << std::setprecision(0) << md_ENDD["NUM"];
+    cout << std::setw(8) << "Volume:" << std::setw(12) << std::left << std::setprecision(3) << md_ENDD["VOL"] << endl;
 
     ////////////////////////////////////////////////////////////////////////////
     // Results vector: charmm_result
@@ -839,17 +839,17 @@ void MAT::CHARMM::Readresults(map<string, double>& CHARMmPar,
 //! Read status and results files and make results map
 /*----------------------------------------------------------------------*/
 void MAT::CHARMM::Reader(const std::ostringstream& file,
-	std::map<string, double>& content) {
+	std::map<std::string, double>& content) {
 
     std::ifstream filestream(file.str().c_str());
-    string line;
+    std::string line;
     if (filestream.is_open()) {
 	while (!filestream.eof()) {
 	    getline(filestream,line);
 	    if (line.compare(0,1,"R") == 0) {
-		vector<string> token;
+		std::vector<string> token;
 		string buf;
-		stringstream linestream(line);
+		std::stringstream linestream(line);
 		while (linestream >> buf)
 		    token.push_back(buf);
 		content[token[1].c_str()] = atof(token[2].c_str());
@@ -861,7 +861,7 @@ void MAT::CHARMM::Reader(const std::ostringstream& file,
 
 
     //cout << endl << "File Content: " << endl;
-    //for( map<string, double>::iterator ii=content.begin(); ii!=content.end(); ++ii) {
+    //for( std::map<std::string, double>::iterator ii=content.begin(); ii!=content.end(); ++ii) {
     //	cout << (*ii).first << ": " << (*ii).second << endl;
     //}
     //cout << endl;
@@ -909,46 +909,46 @@ void MAT::CHARMM::CHARMmfakeapi(const double STARTD,
 
     // Compute the charmm_result vector
     // (Energy STARTD, Energy ENDD, #Atoms STARTD, #Atoms ENDD, Volume STARTD, Volume ENDD)
-    ios_base::fmtflags flags = cout.flags(); // Save original flags
+    std::ios_base::fmtflags flags = cout.flags(); // Save original flags
 
     for (int i = n - 1; i >= 0; i--) {
 	//cout << ENDD << " " << MD(i,0);
 	if (abs(ENDD) == 0.0) { // start call at the beginning; just to give some information
 	    i = 0;
-	    cout << std::setw(4) << left << "MD (" << showpoint << STARTD << std::setw(2) << "->" << ENDD << std::setw(3) << "): " << flush;
+	    cout << std::setw(4) << std::left << "MD (" << std::showpoint << STARTD << std::setw(2) << "->" << ENDD << std::setw(3) << "): " << flush;
 	    charmm_result[0] = NAN;
 	    charmm_result[1] = MD(i, 1);
 	    charmm_result[2] = NAN;
 	    charmm_result[3] = MD(i, 2);
 	    charmm_result[4] = NAN;
 	    charmm_result[5] = MD(i, 3);
-	    cout << std::setw(4) << "V(0):" << std::setw(15) << left << std::scientific << std::setprecision(6) << (charmm_result[1]);
-	    cout << std::setw(8) << "#Atoms:" << std::setw(10) << left << fixed << std::setprecision(0) << charmm_result[3] << std::setw(8) << "Volume:" << std::setw(12) << left << std::setprecision(2) << charmm_result[5] << endl;
+	    cout << std::setw(4) << "V(0):" << std::setw(15) << std::left << std::scientific << std::setprecision(6) << (charmm_result[1]);
+	    cout << std::setw(8) << "#Atoms:" << std::setw(10) << std::left << std::fixed << std::setprecision(0) << charmm_result[3] << std::setw(8) << "Volume:" << std::setw(12) << std::left << std::setprecision(2) << charmm_result[5] << std::endl;
 	    i = -1; //break loop
 	} else if (abs(ENDD) < (abs(MD(i, 0)) + roundoff) && abs(ENDD) > (abs(MD(i, 0)) - roundoff)) {
 	    // main loop where basically at every step the data is given
-	    cout << std::setw(4) << left << "MD (" << showpoint << STARTD << std::setw(2) << "->" << ENDD << std::setw(3) << "): " << flush;
+	    cout << std::setw(4) << std::left << "MD (" << std::showpoint << STARTD << std::setw(2) << "->" << ENDD << std::setw(3) << "): " << std::flush;
 	    charmm_result[0] = MD(i - 1, 1);
 	    charmm_result[1] = MD(i, 1);
 	    charmm_result[2] = MD(i - 1, 2);
 	    charmm_result[3] = MD(i, 2);
 	    charmm_result[4] = MD(i - 1, 3);
 	    charmm_result[5] = MD(i, 3);
-	    cout << std::setw(4) << "dV:" << std::setw(15) << left << std::scientific << std::setprecision(6) << (charmm_result[1] - charmm_result[0]);
-	    cout << std::setw(8) << "#Atoms:" << std::setw(10) << left << fixed << std::setprecision(0) << charmm_result[3] << std::setw(8) << "Volume:" << std::setw(12) << left << std::setprecision(2) << charmm_result[5] << endl;
+	    cout << std::setw(4) << "dV:" << std::setw(15) << std::left << std::scientific << std::setprecision(6) << (charmm_result[1] - charmm_result[0]);
+	    cout << std::setw(8) << "#Atoms:" << std::setw(10) << std::left << std::fixed << std::setprecision(0) << charmm_result[3] << std::setw(8) << "Volume:" << std::setw(12) << std::left << std::setprecision(2) << charmm_result[5] << std::endl;
 	    i = -1; //break loop
 	} else {
 	    // in case that only one dV is given, use it for all. If more then break.
 	    if (n == 2) {
-		cout << std::setw(4) << left << "MD (" << showpoint << STARTD << std::setw(2) << "->" << ENDD << std::setw(3) << "): " << flush;
+		cout << std::setw(4) << std::left << "MD (" << std::showpoint << STARTD << std::setw(2) << "->" << ENDD << std::setw(3) << "): " << flush;
 		charmm_result[0] = MD(0, 1);
 		charmm_result[1] = MD(1, 1);
 		charmm_result[2] = MD(0, 2);
 		charmm_result[3] = MD(1, 2);
 		charmm_result[4] = MD(0, 3);
 		charmm_result[5] = MD(1, 3);
-		cout << std::setw(4) << "dV:" << std::setw(15) << left << std::scientific << std::setprecision(6) << (charmm_result[1] - charmm_result[0]);
-		cout << std::setw(8) << "#Atoms:" << std::setw(10) << left << fixed << std::setprecision(0) << charmm_result[3] << std::setw(8) << "Volume:" << std::setw(12) << left << std::setprecision(2) << charmm_result[5] << endl;
+		cout << std::setw(4) << "dV:" << std::setw(15) << std::left << std::scientific << std::setprecision(6) << (charmm_result[1] - charmm_result[0]);
+		cout << std::setw(8) << "#Atoms:" << std::setw(10) << std::left << std::fixed << std::setprecision(0) << charmm_result[3] << std::setw(8) << "Volume:" << std::setw(12) << std::left << std::setprecision(2) << charmm_result[5] << std::endl;
 		i = -1; //break loop
 	    } else {
 		dserror("No appropriate MD result found for ENDD");

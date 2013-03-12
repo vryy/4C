@@ -105,7 +105,7 @@ FS3I::PartFS3I::PartFS3I(const Epetra_Comm& comm)
   else
     dserror("Providing an ALE mesh is not supported for problemtype FS3I.");
 
-  std::map<std::pair<string,string>,std::map<int,int> > clonefieldmatmap = problem->CloningMaterialMap();
+  std::map<std::pair<std::string,std::string>,std::map<int,int> > clonefieldmatmap = problem->CloningMaterialMap();
   if (clonefieldmatmap.size() < 2)
     dserror("At least two material lists required for partitioned FS3I!");
 

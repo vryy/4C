@@ -156,7 +156,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
   // in this case, we need a basis vector for the nullspace/kernel
 
   // get condition "KrylovSpaceProjection" from discretization
-  vector<DRT::Condition*> KSPCond;
+  std::vector<DRT::Condition*> KSPCond;
   xfluid.discret_->GetCondition("KrylovSpaceProjection",KSPCond);
   int numcond = KSPCond.size();
   int numfluid = 0;
@@ -4002,7 +4002,7 @@ void FLD::XFluid::CutAndSetStateVectors()
       boundarydis_->SetState("idispn",idispn_);
 
       // Important: export the vectors used for semi-lagrange after the transfer between interface processors above
-      vector<RCP<Epetra_Vector> > oldColStateVectorsn;
+      std::vector<RCP<Epetra_Vector> > oldColStateVectorsn;
       {
         RCP<Epetra_Vector> veln_col = Teuchos::rcp(new Epetra_Vector(*dofcolmap_Intn_,true));
         LINALG::Export(*veln_Intn_,*veln_col);
@@ -4153,7 +4153,7 @@ cout << "after semilagrange " << endl;
       }
 
       // ghost-penalty reconstruction for all vectors
-      for(vector<RCP<Epetra_Vector> >::iterator vecs = newRowStateVectors.begin();
+      for(std::vector<RCP<Epetra_Vector> >::iterator vecs = newRowStateVectors.begin();
           vecs != newRowStateVectors.end();
           vecs++)
       {
@@ -5350,7 +5350,7 @@ void FLD::XFluid::SetInitialFlowField(
       DRT::Node*  lnode      = discret_->lRowNode(lnodeid);
 
       // the set of degrees of freedom associated with the node
-      vector<int> nodedofset = discret_->Dof(lnode);
+      std::vector<int> nodedofset = discret_->Dof(lnode);
 
       // set node coordinates
       for(int dim=0;dim<numdim_;dim++)

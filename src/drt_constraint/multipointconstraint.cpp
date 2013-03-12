@@ -60,7 +60,7 @@ void UTILS::MPConstraint::SetConstrState
 {
   if (constrtype_!=none)
   {
-    map<int,RCP<DRT::Discretization> >::iterator discrit;
+    std::map<int,RCP<DRT::Discretization> >::iterator discrit;
     for(discrit=constraintdis_.begin();discrit!=constraintdis_.end();++discrit)
     {
       RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(discrit->second)->DofColMap(),false);

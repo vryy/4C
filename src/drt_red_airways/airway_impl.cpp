@@ -83,7 +83,7 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
 
   //  const int numnode = iel;
   const int elemVecdim = elevec1_epetra.Length () ;
-  vector<int>::iterator it_vcr;
+  std::vector<int>::iterator it_vcr;
 
   // construct views
   //  LINALG::Matrix<1*iel,1*iel> elemat1(elemat1_epetra.A(),true);
@@ -137,15 +137,15 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
     dserror("Cannot get state vectors 'pnp', 'pn', and/or 'pnm''");
 
   // extract local values from the global vectors
-  vector<double> mypnp(lm.size());
+  std::vector<double> mypnp(lm.size());
   DRT::UTILS::ExtractMyValues(*pnp,mypnp,lm);
 
   // extract local values from the global vectors
-  vector<double> mypn(lm.size());
+  std::vector<double> mypn(lm.size());
   DRT::UTILS::ExtractMyValues(*pn,mypn,lm);
 
   // extract local values from the global vectors
-  vector<double> mypnm(lm.size());
+  std::vector<double> mypnm(lm.size());
   DRT::UTILS::ExtractMyValues(*pnm,mypnm,lm);
 
   // create objects for element arrays
@@ -163,11 +163,11 @@ int DRT::ELEMENTS::AirwayImpl<distype>::Evaluate(
 
 #if 0// REMOVED_FOR_UPGRADE
   // extract local values from the global vectors
-  vector<double> my_acin_vnp(lm.size());
+  std::vector<double> my_acin_vnp(lm.size());
   DRT::UTILS::ExtractMyValues(*acinar_vnp,my_acin_vnp,lm);
 
   // extract local values from the global vectors
-  vector<double> my_acin_vn (lm.size());
+  std::vector<double> my_acin_vn (lm.size());
   DRT::UTILS::ExtractMyValues(*acinar_vn ,my_acin_vn ,lm);
 
   // create objects for element arrays
@@ -260,7 +260,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Initial(
   //vector<int>::iterator it = lm.begin();
 
   //vector<int> lmowner;
-  vector<int> lmstride;
+  std::vector<int> lmstride;
   RCP<std::vector<int> > lmowner = Teuchos::rcp(new std::vector<int>);
   ele->LocationVector(discretization,lm,*lmowner,lmstride);
 
@@ -763,7 +763,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
       double vn = acin_vn;
 
       // evaluate the pleural pressure at (t - dt), (t), and (t + dt)
-      string pleuralPType = *(condition->Get<string>("PlueralPressureType"));
+      std::string pleuralPType = *(condition->Get<string>("PlueralPressureType"));
 
       // find out whether we will use a time curve and get the factor
 
@@ -837,7 +837,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::Sysmat(
         dserror("SMTHG IS WRONG with Node (%d) in elem(%d)",ele->Nodes()[i]->Id(),ele->Id());
         exit(1);
       }
-      string MatType = *(condition->Get<string>("materialType"));
+      std::string MatType = *(condition->Get<string>("materialType"));
 
       if (MatType == "NeoHookean")
       {
@@ -1076,7 +1076,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
 
   // the number of nodes
   const int numnode = lm.size();
-  vector<int>::iterator it_vcr;
+  std::vector<int>::iterator it_vcr;
 
   RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
 
@@ -1084,7 +1084,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
     dserror("Cannot get state vectors 'pnp'");
 
   // extract local values from the global vectors
-  vector<double> mypnp(lm.size());
+  std::vector<double> mypnp(lm.size());
   DRT::UTILS::ExtractMyValues(*pnp,mypnp,lm);
 
   // create objects for element arrays
@@ -1110,7 +1110,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
     {
       if(ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond") || ele->Nodes()[i]->GetCondition("Art_redD_3D_CouplingCond") || ele->Nodes()[i]->GetCondition("RedAirwayVentilatorCond"))
       {
-        string Bc;
+        std::string Bc;
         double BCin = 0.0;
         if (ele->Nodes()[i]->GetCondition("RedAirwayPrescribedCond"))
         {
@@ -1119,9 +1119,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           Bc = *(condition->Get<string>("boundarycond"));
 
 
-          const  vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
+          const  std::vector<int>*    curve  = condition->Get<std::vector<int>    >("curve");
           double curvefac = 1.0;
-          const  vector<double>* vals   = condition->Get<std::vector<double> >("val");
+          const  std::vector<double>* vals   = condition->Get<std::vector<double> >("val");
 
           // -----------------------------------------------------------------
           // Read in the value of the applied BC
@@ -1179,7 +1179,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           //
           //     In this case a map called map3D has the following form:
           //     +-----------------------------------------------------------+
-          //     |           map< string               ,  double        >    |
+          //     |           std::map< std::string               ,  double        >    |
           //     |     +------------------------------------------------+    |
           //     |     |  ID  | coupling variable name | variable value |    |
           //     |     +------------------------------------------------+    |
@@ -1195,15 +1195,15 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
           // -----------------------------------------------------------------
 
           int ID = condition->GetInt("ConditionID");
-          RCP<map<string,double> > map3D;
-          map3D   = CoupledTo3DParams->get<RCP<map<string,double > > >("3D map of values");
+          RCP<std::map<std::string,double> > map3D;
+          map3D   = CoupledTo3DParams->get<RCP<std::map<std::string,double > > >("3D map of values");
 
           // find the applied boundary variable
           std::stringstream stringID;
           stringID<< "_"<<ID;
-          for (map<string,double>::iterator itr = map3D->begin(); itr!=map3D->end(); itr++)
+          for (std::map<std::string,double>::iterator itr = map3D->begin(); itr!=map3D->end(); itr++)
           {
-            string VariableWithId = itr->first;
+            std::string VariableWithId = itr->first;
             size_t found;
             found= VariableWithId.rfind(stringID.str());
             if (found!=string::npos)
@@ -1232,9 +1232,9 @@ void DRT::ELEMENTS::AirwayImpl<distype>::EvaluateTerminalBC(
             Bc = *(condition->Get<string>("phase2"));
           }
 
-          const  vector<int>*    curve  = condition->Get<std::vector<int> >("curve");
+          const  std::vector<int>*    curve  = condition->Get<std::vector<int> >("curve");
           double curvefac = 1.0;
-          const  vector<double>* vals   = condition->Get<std::vector<double> >("val");
+          const  std::vector<double>* vals   = condition->Get<std::vector<double> >("val");
 
           // -----------------------------------------------------------------
           // Read in the value of the applied BC
@@ -1479,14 +1479,14 @@ void DRT::ELEMENTS::AirwayImpl<distype>::CalcFlowRates(
   // REMOVED_FOR_UPGRADE
 
   // extract local values from the global vectors
-  vector<double> mypnp(lm.size());
-  vector<double> mypn (lm.size());
+  std::vector<double> mypnp(lm.size());
+  std::vector<double> mypn (lm.size());
 
   DRT::UTILS::ExtractMyValues(*pnp,mypnp,lm);
   DRT::UTILS::ExtractMyValues(*pn ,mypn ,lm);
 
 #if 0
-  vector<double> myacinar_vn (lm.size());
+  std::vector<double> myacinar_vn (lm.size());
   DRT::UTILS::ExtractMyValues(*acinar_vn,myacinar_vn,lm);
 #endif
   const int numnode = lm.size();
@@ -1800,7 +1800,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
 
   // the number of nodes
   const int numnode = lm.size();
-  vector<int>::iterator it_vcr;
+  std::vector<int>::iterator it_vcr;
 
   RCP<const Epetra_Vector> pnp  = discretization.GetState("pnp");
 
@@ -1808,7 +1808,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
     dserror("Cannot get state vectors 'pnp'");
 
   // extract local values from the global vectors
-  vector<double> mypnp(lm.size());
+  std::vector<double> mypnp(lm.size());
   DRT::UTILS::ExtractMyValues(*pnp,mypnp,lm);
 
   // create objects for element arrays
@@ -1853,7 +1853,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
         //
         //     In this case a map called map1D has the following form:
         //     +-----------------------------------------------------------+
-        //     |              map< string            ,  double        > >  |
+        //     |              std::map< std::string            ,  double        > >  |
         //     |     +------------------------------------------------+    |
         //     |     |  ID  | coupling variable name | variable value |    |
         //     |     +------------------------------------------------+    |
@@ -1869,10 +1869,10 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
         // -----------------------------------------------------------------
 
         int ID = condition->GetInt("ConditionID");
-        RCP<map<string,double> >  map1D;
-        map1D   = CoupledTo3DParams->get<RCP<map<string,double> > >("reducedD map of values");
+        RCP<std::map<std::string,double> >  map1D;
+        map1D   = CoupledTo3DParams->get<RCP<std::map<std::string,double> > >("reducedD map of values");
 
-        string returnedBC = *(condition->Get<string>("ReturnedVariable"));
+        std::string returnedBC = *(condition->Get<string>("ReturnedVariable"));
 
         double BC3d = 0.0;
         if (returnedBC  == "flow")
@@ -1885,7 +1885,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
         }
         else
         {
-          string str = (*condition->Get<string>("ReturnedVariable"));
+          std::string str = (*condition->Get<string>("ReturnedVariable"));
           dserror("%s, is an unimplimented type of coupling",str.c_str());
           exit(1);
         }
@@ -1901,7 +1901,7 @@ void DRT::ELEMENTS::AirwayImpl<distype>::GetCoupledValues(
         // Thus we can use parallel addition
         // -----------------------------------------------------------------
 
-        map<string,double>::iterator itrMap1D;
+        std::map<std::string,double>::iterator itrMap1D;
         itrMap1D = map1D->find(returnedBCwithId.str());
         if (itrMap1D == map1D->end())
         {

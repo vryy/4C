@@ -301,7 +301,7 @@ void LINALG::Preconditioner::EnrichFluidNullSpace(
   {
     DRT::Node* actnode = fdis->gNode(inodes->GID(i));
     const double* x    = actnode->X();
-    vector<int>   dofs = fdis->Dof(actnode);
+    std::vector<int>   dofs = fdis->Dof(actnode);
     if ((int)dofs.size() != nsdim) dserror("dof <-> nullspace dimension mismatch");
     // skip the pressure dof
     const int ndof = (int)dofs.size()-1;

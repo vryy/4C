@@ -17,7 +17,7 @@ namespace INPUT
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-NodeReader::NodeReader(const DRT::INPUT::DatFileReader& reader, string sectionname)
+NodeReader::NodeReader(const DRT::INPUT::DatFileReader& reader, std::string sectionname)
   : reader_(reader), comm_(reader.Comm()), sectionname_(sectionname)
 {
 }
@@ -45,7 +45,7 @@ void NodeReader::Read()
 {
   const int myrank  = comm_->MyPID();
   const int numproc = comm_->NumProc();
-  string inputfile_name = reader_.MyInputfileName();
+  std::string inputfile_name = reader_.MyInputfileName();
 
   int numnodes = reader_.ExcludedSectionLength(sectionname_);
 
@@ -103,7 +103,7 @@ void NodeReader::Read()
     file.open(inputfile_name.c_str());
     file.seekg(reader_.ExcludedSectionPosition(sectionname_));
   }
-  string tmp;
+  std::string tmp;
 
   if (!myrank && !reader_.MyOutputFlag())
   {

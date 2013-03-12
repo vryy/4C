@@ -56,7 +56,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
 {
   DRT::ELEMENTS::Wall1::ActionType act = Wall1::calc_none;
   // get the action required
-  string action = params.get<string>("action","calc_none");
+  std::string action = params.get<std::string>("action","calc_none");
   if (action == "calc_none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff")      act = Wall1::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff")      act = Wall1::calc_struct_nlnstiff;
@@ -350,7 +350,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
     // (depending on what this routine is called for from the post filter)
     case postprocess_stress:
     {
-      string groupname = params.get<string>("groupname","gauss_2PK_stresses_xyz");
+      std::string groupname = params.get<std::string>("groupname","gauss_2PK_stresses_xyz");
 
       //coupling stress are evaluated in the respective coupling element
       //if( groupname != "gauss_2PK_coupling_stresses_xyz" and groupname!= "gauss_cauchy_coupling_stresses_xyz")
@@ -687,7 +687,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
 {
   Teuchos::RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
-  vector<double> mydisp(lm.size());
+  std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
   // find out whether we will use a time curve
@@ -750,7 +750,7 @@ int DRT::ELEMENTS::Wall1::EvaluateNeumann(Teuchos::ParameterList&   params,
   // gaussian points
   const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 
-  //  vector<double>* thick = data_.Get<std::vector<double> >("thick");
+  //  std::vector<double>* thick = data_.Get<std::vector<double> >("thick");
   //  if (!thick) dserror("Cannot find vector of nodal thickness");
 
   // shape functions

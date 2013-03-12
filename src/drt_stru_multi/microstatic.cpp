@@ -833,7 +833,7 @@ void STRUMULTI::MicroStatic::ReadRestart(int step,
                                          Teuchos::RCP<Epetra_Vector> dis,
                                          Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > lastalpha,
                                          Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man,
-                                         string name)
+                                         std::string name)
 {
   Teuchos::RCP<IO::InputControl> inputcontrol = Teuchos::rcp(new IO::InputControl(name, true));
   IO::DiscretizationReader reader(discret_, inputcontrol, step);

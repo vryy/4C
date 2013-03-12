@@ -212,7 +212,7 @@ void MAT::ContChainNetw::Initialize(const int numgp, const int eleid)
   for (int i=0; i<3; ++i) id(i,i) = 1.0;
   LINALG::Matrix<3,3> initstress(true);
 
-  vector<double> randominit(3);
+  std::vector<double> randominit(3);
   double rescale = 0.0;
   for (int i = 0; i < 3; ++i) {
     randominit[i] = ( (double)rand() / ((double)(RAND_MAX)+(double)(1)) );
@@ -344,18 +344,18 @@ void MAT::ContChainNetw::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
   const double chn_stiffact = boltzmann * abstemp * nchain / (4.0*A);
 
   // initial cell dimensions
-  vector<double> li0sq(dim);
+  std::vector<double> li0sq(dim);
   for (int i=0; i<dim; ++i) li0sq[i] = li0_->at(gp)[i]*li0_->at(gp)[i];
   r0 = sqrt(li0sq[0] + li0sq[1] + li0sq[2]);
   // scalar to arrive at stressfree reference conf
   double stressfree = - chn_stiffact * ( 1.0/L + 1.0/(4.0*r0*(1.0-r0/L)*(1.0-r0/L)) - 1.0/(4.0*r0) );
 
   // structural tensors Ni0
-  vector<LINALG::Matrix<dim,dim> > Ni = EvaluateStructTensors(gp);
+  std::vector<LINALG::Matrix<dim,dim> > Ni = EvaluateStructTensors(gp);
   // 'non-standard' invariants representing stretch^2 in n0_i direction
-  vector<double> I = EvaluateInvariants(CG,Ni);
+  std::vector<double> I = EvaluateInvariants(CG,Ni);
   // current cell dimensions
-  vector<double> lisq(dim);
+  std::vector<double> lisq(dim);
   for (int i = 0; i < dim; ++i) lisq[i] = li_->at(gp)[i] * li_->at(gp)[i];
   double r = sqrt(I[0]*lisq[0] + I[1]*lisq[1] + I[2]*lisq[2]);
   double s_chn = chn_stiffact*(4.0/L + 1.0/(r*(1.0-r/L)*(1.0-r/L)) - 1.0/r);
@@ -373,7 +373,7 @@ void MAT::ContChainNetw::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrai
   if ( (kappa >= 0.0)  && (time > mytime_->at(gp)) ){
     double rem_time = time - params_->rembegt_;
     mytime_->at(gp) = time;
-    const double decay = min(1.0,exp(-kappa*rem_time));
+    const double decay = std::min(1.0,exp(-kappa*rem_time));
 
     // evaluate eigenproblem
     Epetra_SerialDenseVector lambda(dim);
@@ -541,9 +541,9 @@ void MAT::ContChainNetw::EvaluateCmat(LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D
   return;
 }
 
-vector<LINALG::Matrix<3,3> > MAT::ContChainNetw::EvaluateStructTensors(const int gp)
+std::vector<LINALG::Matrix<3,3> > MAT::ContChainNetw::EvaluateStructTensors(const int gp)
 {
-  vector<LINALG::Matrix<3,3> > Ni;
+  std::vector<LINALG::Matrix<3,3> > Ni;
   for (int i_fib=0; i_fib<3; ++i_fib){
     LINALG::Matrix<3,3> N0(false);
     for (int i=0; i<3; ++i)
@@ -554,11 +554,11 @@ vector<LINALG::Matrix<3,3> > MAT::ContChainNetw::EvaluateStructTensors(const int
   return Ni;
 }
 
-vector<double> MAT::ContChainNetw::EvaluateInvariants(
+std::vector<double> MAT::ContChainNetw::EvaluateInvariants(
     const LINALG::Matrix<3,3> & CG,
     const std::vector<LINALG::Matrix<3,3> >& Ni)
 {
-  vector<double> Inv(3);
+  std::vector<double> Inv(3);
   for (int i_fib=0; i_fib<3; ++i_fib){
     LINALG::Matrix<3,3> CNi0(false);
     CNi0.Multiply(CG,Ni.at(i_fib));
@@ -614,7 +614,7 @@ void MAT::ContChainNetw::UpdateRate(const Epetra_SerialDenseMatrix& Phi,
   }
 }
 
-std::string MAT::ContChainNetw::PrintStructTens(const vector<Epetra_SerialDenseMatrix>& Ni)
+std::string MAT::ContChainNetw::PrintStructTens(const std::vector<Epetra_SerialDenseMatrix>& Ni)
 {
   std::stringstream out;
   for (int i=0;i<3;++i){
@@ -664,10 +664,10 @@ std::string MAT::ContChainNetw::PrintAnisoCmat(const LINALG::Matrix<6,6>& cmat,
   return out.str();
 }
 
-std::string MAT::ContChainNetw::PrintVec(const vector<double> actvec)
+std::string MAT::ContChainNetw::PrintVec(const std::vector<double> actvec)
 {
   std::stringstream out;
-  vector<double>::const_iterator i;
+  std::vector<double>::const_iterator i;
   for (i=actvec.begin(); i<actvec.end(); ++i) {
     out << *i << " ";
   }
@@ -777,7 +777,7 @@ void MAT::ChainOutputToTxt(const Teuchos::RCP<DRT::Discretization> dis,
     const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
     filename << filebase << "_rem" << ".txt";
     std::ofstream outfile;
-    outfile.open(filename.str().c_str(),ios_base::app);
+    outfile.open(filename.str().c_str(),std::ios_base::app);
     //int nele = dis->NumMyColElements();
     int endele = 100; //nele;
     for (int iele=0; iele<endele; iele+=12) //++iele) iele+=10)
@@ -933,7 +933,7 @@ void MAT::ChainOutputToGmsh(const Teuchos::RCP<DRT::Discretization> dis,
 }
 
 /// gmsh-debug: calculate gausspoint coordinates
-const vector<double> MAT::MatPointCoords(const DRT::Element* actele,const vector<double>& mydisp, int gp)
+const std::vector<double> MAT::MatPointCoords(const DRT::Element* actele,const std::vector<double>& mydisp, int gp)
 {
   // update element geometry
   const int numnode = actele->NumNode();
@@ -955,7 +955,7 @@ const vector<double> MAT::MatPointCoords(const DRT::Element* actele,const vector
   }
   Epetra_SerialDenseMatrix point(1,3);
   point.Multiply('T','N',1.0,funct,xrefe,0.0);
-  vector<double> coords(3);
+  std::vector<double> coords(3);
   coords[0] = point(0,0);
   coords[1] = point(0,1);
   coords[2] = point(0,2);

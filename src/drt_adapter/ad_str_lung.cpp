@@ -102,7 +102,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)
 
   //----------------------------------------------------------------------
   // find all dofs belonging to enclosing boundary -> volume coupling dofs
-  vector<int> dofmapvec;
+  std::vector<int> dofmapvec;
   std::vector<int> nodes;
   DRT::UTILS::FindConditionedNodes(*Discretization(),"StructFluidSurfCoupling",nodes);
   const int numnode = nodes.size();
@@ -114,7 +114,7 @@ ADAPTER::StructureLung::StructureLung(Teuchos::RCP<Structure> stru)
     const std::vector<int> dof = Discretization()->Dof(actnode);
     if (ndim > static_cast<int>(dof.size()))
       dserror("got just %d dofs at node %d (lid=%d) but expected %d",dof.size(),nodes[i],i,ndim);
-    copy(&dof[0], &dof[0]+ndim, back_inserter(dofmapvec));
+    std::copy(&dof[0], &dof[0]+ndim, back_inserter(dofmapvec));
   }
 
   lungconstraintmap_ = Teuchos::rcp(new Epetra_Map(-1, dofmapvec.size(), &dofmapvec[0], 0, Discretization()->Comm()));
@@ -184,11 +184,11 @@ void ADAPTER::StructureLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initvo
       Epetra_SerialDenseVector elevector2;
       Epetra_SerialDenseVector elevector3;
 
-      map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+      std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
       // to the condition geometry
-      map<int,RCP<DRT::Element> >::iterator curr;
+      std::map<int,RCP<DRT::Element> >::iterator curr;
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector and ownerships
@@ -207,8 +207,8 @@ void ADAPTER::StructureLung::InitializeVolCon(Teuchos::RCP<Epetra_Vector> initvo
 
         // assembly
 
-        vector<int> constrlm;
-        vector<int> constrowner;
+        std::vector<int> constrlm;
+        std::vector<int> constrowner;
         constrlm.push_back(condID-offsetID);
         constrowner.push_back(curr->second->Owner());
         LINALG::Assemble(*initvol,elevector3,constrlm,constrowner);
@@ -302,11 +302,11 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
     Epetra_SerialDenseVector elevector2;
     Epetra_SerialDenseVector elevector3;
 
-    map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+    std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
     // no check for empty geometry here since in parallel computations
     // there might be processors which do not own a portion of the elements belonging
     // to the condition geometry
-    map<int,RCP<DRT::Element> >::iterator curr;
+    std::map<int,RCP<DRT::Element> >::iterator curr;
 
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
@@ -351,7 +351,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
       StructMatrix->Assemble(eid,lmstride,elematrix1,lm,lmowner);
 
       // assemble to rectangular matrix. The column corresponds to the constraint ID.
-      vector<int> colvec(1);
+      std::vector<int> colvec(1);
       colvec[0]=gindex;
       elevector2.Scale(-sign);
       StructMatrix->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
@@ -362,8 +362,8 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
 
       // No scaling with -1.0 necessary here, since the constraint rhs is determined consistently,
       // i.e.  -(Vcurr - Vold) in the fsi algorithm, thus -1.0 is included there.
-      vector<int> constrlm;
-      vector<int> constrowner;
+      std::vector<int> constrlm;
+      std::vector<int> constrowner;
       constrlm.push_back(gindex);
       constrowner.push_back(curr->second->Owner());
       elevector3.Scale(sign);
@@ -405,7 +405,7 @@ void ADAPTER::StructureLung::EvaluateVolCon(Teuchos::RCP<LINALG::BlockSparseMatr
 
     for (int j=0; j<Aprime->NumMyRows(); ++j)
     {
-      vector<int>    Indices(MaxNumEntries);
+      std::vector<int>    Indices(MaxNumEntries);
       std::vector<double> Values(MaxNumEntries);
       int Row = Aprime->GRID(j);
       int ierr = Aprime->ExtractGlobalRowCopy(Row,MaxNumEntries,NumEntries,&Values[0],&Indices[0]);

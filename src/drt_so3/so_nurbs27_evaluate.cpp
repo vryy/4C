@@ -51,7 +51,7 @@ int DRT::ELEMENTS::NURBS::So_nurbs27::Evaluate(
   DRT::ELEMENTS::NURBS::So_nurbs27::ActionType act = So_nurbs27::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff"      ) act = So_nurbs27::calc_struct_linstiff      ;
   else if (action=="calc_struct_nlnstiff"      ) act = So_nurbs27::calc_struct_nlnstiff      ;
@@ -425,9 +425,9 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::CalcSTCMatrix
 
   double ratio=1.0;
 
-  vector<int> topnodeids;
-  vector<int> midnodeids;
-  vector<int> botnodeids;
+  std::vector<int> topnodeids;
+  std::vector<int> midnodeids;
+  std::vector<int> botnodeids;
 
   if(length_t<=length_r && length_t<=length_s )
     {
@@ -1070,14 +1070,14 @@ void DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_nlnstiffmass(
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Shape fcts at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<27,1> > DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_shapefcts(
+const std::vector<LINALG::Matrix<27,1> > DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_shapefcts(
   const std::vector<Epetra_SerialDenseVector> & myknots,
   const LINALG::Matrix<27,1>                  & weights
   )
 {
   const int numgp=27;
 
-  vector<LINALG::Matrix<27,1> > shapefcts(numgp);
+  std::vector<LINALG::Matrix<27,1> > shapefcts(numgp);
   // (r,s,t) gp-locations of fully integrated quadratic Nurbs 27
   // fill up nodal f at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
@@ -1103,14 +1103,14 @@ const vector<LINALG::Matrix<27,1> > DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Shape fct derivs at all 27 Gauss Points              |
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<3,27> > DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_derivs(
+const std::vector<LINALG::Matrix<3,27> > DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_derivs(
   const std::vector<Epetra_SerialDenseVector> & myknots,
   const LINALG::Matrix<27,1>                  & weights
 )
 {
   const int numgp=27;
 
-  vector<LINALG::Matrix<3,27> > derivs(numgp);
+  std::vector<LINALG::Matrix<3,27> > derivs(numgp);
   // (r,s,t) gp-locations of fully integrated quadratic Nurbs 27
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
@@ -1138,11 +1138,11 @@ const vector<LINALG::Matrix<3,27> > DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_
 /*----------------------------------------------------------------------*
  |  Evaluate nurbs27 Weights at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-const vector<double> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_gpweights()
+const std::vector<double> DRT::ELEMENTS::NURBS::So_nurbs27::sonurbs27_gpweights()
 {
   const int numgp=27;
 
-  vector<double> gpweights(numgp);
+  std::vector<double> gpweights(numgp);
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int i = 0; i < numgp; ++i)

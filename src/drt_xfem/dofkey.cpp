@@ -66,7 +66,7 @@ Maintainer: Martin Winklmaier
       return;
   }
 
-  //! return string representation of this class
+  //! return std::string representation of this class
   std::string XFEM::DofKey::toString() const
   {
     std::stringstream s;

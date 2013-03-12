@@ -167,7 +167,7 @@ private:
   /*!
   \brief all single windkessel conditions to be optimized
   */
-  map<const int, RCP<DRT::Condition> > optwkmap_;
+  std::map<const int, RCP<DRT::Condition> > optwkmap_;
 
   //! fluid discretization
   RCP<DRT::Discretization>      discret_;

@@ -127,7 +127,7 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
       {
         //cout << node->Id() << "std!! size()" << vcs.size() << endl;
         //cout << " outside " << pos <<  " "<< node->Id() << endl;
-        vector<int> gdofs = bgdis->Dof(node);
+        std::vector<int> gdofs = bgdis->Dof(node);
         stdnodenp_[gid] = gdofs;
       }
       else if (pos==GEO::CUT::Point::inside and  bgdis->NumDof(node) == 0) //void
@@ -137,12 +137,12 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
       else if (pos==GEO::CUT::Point::inside and  bgdis->NumDof(node) != 0) //enriched
       {
         //cout << " inside enriched" <<  pos << " " << node->Id() << endl;
-        vector<int> gdofs = bgdis->Dof(node);
+        std::vector<int> gdofs = bgdis->Dof(node);
         enrichednodenp_[gid] = gdofs;
       }
       else if (pos==GEO::CUT::Point::oncutsurface and  bgdis->NumDof(node) != 0)
       {
-        vector<int> gdofs = bgdis->Dof(node);
+        std::vector<int> gdofs = bgdis->Dof(node);
         stdnodenp_[gid] = gdofs;
       }
       // this case only happens if the two fluid domains are both the same
@@ -158,7 +158,7 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
     }
     else if( bgdis->NumDof(node) != 0) // no xfem node
     {
-      vector<int> gdofs = bgdis->Dof(node);
+      std::vector<int> gdofs = bgdis->Dof(node);
       stdnodenp_[gid] = gdofs;
     }
     else
@@ -175,11 +175,11 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
 #endif
 
 //  debug output
-//   for(map<int, vector<int> >::iterator iter = nodetoparentele_.begin(); iter!= nodetoparentele_.end();
+//   for(std::map<int, std::vector<int> >::iterator iter = nodetoparentele_.begin(); iter!= nodetoparentele_.end();
 //       iter++)
 //   {
 //     cout << "ngid " <<  iter->first << endl;
-//     vector<int> fff= iter->second;
+//     std::vector<int> fff= iter->second;
 //     for (int u=0;u<fff.size();++u)
 //       cout << fff.at(u);
 //     cout << endl;
@@ -200,10 +200,10 @@ void XFEM::XFluidFluidTimeIntegration::CreateBgNodeMaps(const RCP<DRT::Discretiz
 //     for (int i=0; i<bgdis->NumMyColNodes(); ++i)
 //     {
 //        const DRT::Node* actnode = bgdis->lColNode(i);
-//        std::map<int, vector<int> >::const_iterator iter = stdnoden_.find(actnode->Id());
-//        std::map<int, vector<int> >::const_iterator iter2 = enrichednoden_.find(actnode->Id());
-//        std::map<int, vector<int> >::const_iterator iter3 = stdnodenp_.find(actnode->Id());
-//        std::map<int, vector<int> >::const_iterator iter4 = enrichednodenp_.find(actnode->Id());
+//        std::map<int, std::vector<int> >::const_iterator iter = stdnoden_.find(actnode->Id());
+//        std::map<int, std::vector<int> >::const_iterator iter2 = enrichednoden_.find(actnode->Id());
+//        std::map<int, std::vector<int> >::const_iterator iter3 = stdnodenp_.find(actnode->Id());
+//        std::map<int, std::vector<int> >::const_iterator iter4 = enrichednodenp_.find(actnode->Id());
 //        if (iter2 != enrichednoden_.end()) cout  << " enrichned n : " << actnode->Id() << " "  ;
 //        if (iter2 == enrichednoden_.end() and iter == stdnoden_.end()) cout  << " void n :" <<  actnode->Id() << " "  ;
 //        if (iter4 != enrichednodenp_.end()) cout  << " enrichned np : " << actnode->Id() << " "  ;
@@ -312,17 +312,17 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorFullProjection(const R
   for (int lnid=0; lnid<bgdis->NumMyRowNodes(); lnid++)
   {
     DRT::Node* bgnode = bgdis->lRowNode(lnid);
-    map<int, vector<int> >::const_iterator iterstn = stdnoden_.find(bgnode->Id());
-    map<int, vector<int> >::const_iterator iterstnp = stdnodenp_.find(bgnode->Id());
-    map<int, vector<int> >::const_iterator iteren = enrichednoden_.find(bgnode->Id());
-    map<int, vector<int> >::const_iterator iterenp = enrichednodenp_.find(bgnode->Id());
+    std::map<int, std::vector<int> >::const_iterator iterstn = stdnoden_.find(bgnode->Id());
+    std::map<int, std::vector<int> >::const_iterator iterstnp = stdnodenp_.find(bgnode->Id());
+    std::map<int, std::vector<int> >::const_iterator iteren = enrichednoden_.find(bgnode->Id());
+    std::map<int, std::vector<int> >::const_iterator iterenp = enrichednodenp_.find(bgnode->Id());
 
     // Transfer the dofs:
     // n:std -> n+1:std, n:std -> n+1:enriched
     if ((iterstn != stdnoden_.end() and iterstnp != stdnodenp_.end()) or
         (iterstn != stdnoden_.end() and iterenp != enrichednodenp_.end()))
     {
-      vector<int> gdofsn = iterstn->second;
+      std::vector<int> gdofsn = iterstn->second;
 
 #ifdef DEBUG
       if (iterstn->second.size()>4)
@@ -421,7 +421,7 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(const RCP<DRT::Discretiz
   int numproc=embdis_->Comm().NumProc();
 
   //information how many processors work at all
-  vector<int> allproc(numproc);
+  std::vector<int> allproc(numproc);
 
   // create an exporter for point to point comunication
   DRT::Exporter exporter(embdis_->Comm());
@@ -430,11 +430,11 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(const RCP<DRT::Discretiz
   MPI_Request request;
 
   // define send and receive blocks
-  vector<char> sblock;
-  vector<char> rblock;
+  std::vector<char> sblock;
+  std::vector<char> rblock;
 
   // vector which identifies if a bg-node has already interpolated values
-  vector<int> NodeDone;
+  std::vector<int> NodeDone;
   // initialize NodeDone with zeros at the beginning
   for(size_t i=0; i<bgnodeidwithnohistory.size(); ++i)
     NodeDone.push_back(0);
@@ -450,10 +450,10 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(const RCP<DRT::Discretiz
       ReceiveBlock(rblock,exporter,request);
 
       // Unpack info from the receive block from the last proc
-      vector<LINALG::Matrix<3,1> > stuff_coord;
-      vector<LINALG::Matrix<4,1> > stuff_interpolatedvecs;
-      vector<int>  stuff_bgnodeidswithnohistory;
-      vector<int>  stuff_nodedone;
+      std::vector<LINALG::Matrix<3,1> > stuff_coord;
+      std::vector<LINALG::Matrix<4,1> > stuff_interpolatedvecs;
+      std::vector<int>  stuff_bgnodeidswithnohistory;
+      std::vector<int>  stuff_nodedone;
 
       std::vector<char>::size_type position = 0;
       DRT::ParObject::ExtractfromPack(position,rblock,stuff_coord);
@@ -509,16 +509,16 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(const RCP<DRT::Discretiz
     {
       //cout << RED_LIGHT << "NodeDone " << NodeDone.at(i) << END_COLOR << endl;
 
-      map<int, vector<int> >::const_iterator iterstn = stdnoden_.find(bgnode->Id());
-      map<int, vector<int> >::const_iterator iterstnp = stdnodenp_.find(bgnode->Id());
-      map<int, vector<int> >::const_iterator iteren = enrichednoden_.find(bgnode->Id());
-      map<int, vector<int> >::const_iterator iterenp = enrichednodenp_.find(bgnode->Id());
+      std::map<int, std::vector<int> >::const_iterator iterstn = stdnoden_.find(bgnode->Id());
+      std::map<int, std::vector<int> >::const_iterator iterstnp = stdnodenp_.find(bgnode->Id());
+      std::map<int, std::vector<int> >::const_iterator iteren = enrichednoden_.find(bgnode->Id());
+      std::map<int, std::vector<int> >::const_iterator iterenp = enrichednodenp_.find(bgnode->Id());
 
       if ((iteren != enrichednoden_.end() and iterenp != enrichednodenp_.end())
           or ((iteren != enrichednoden_.end() and iterstnp != stdnodenp_.end())))
       {
         IO::cout << "CHECK: Took enriched values !!" << " Node GID " << bgnode->Id() << IO::endl;
-        vector<int> gdofsn = iteren->second;
+        std::vector<int> gdofsn = iteren->second;
 
         WriteValuestoBgStateVector(bgdis,bgnode,gdofsn,bgstatevnp,bgstatevn);
       }
@@ -542,7 +542,7 @@ void XFEM::XFluidFluidTimeIntegration::CommunicateNodes(const RCP<DRT::Discretiz
 //---------------------------------------------------------
 // receive a block in the round robin communication pattern
 //---------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::ReceiveBlock(vector<char>   & rblock,
+void XFEM::XFluidFluidTimeIntegration::ReceiveBlock(std::vector<char>   & rblock,
                                                     DRT::Exporter  & exporter,
                                                     MPI_Request    & request)
 {
@@ -579,7 +579,7 @@ void XFEM::XFluidFluidTimeIntegration::ReceiveBlock(vector<char>   & rblock,
 //---------------------------------------------------------
 // send a block in the round robin communication pattern
 //---------------------------------------------------------
-void XFEM::XFluidFluidTimeIntegration::SendBlock(vector<char>  & sblock  ,
+void XFEM::XFluidFluidTimeIntegration::SendBlock(std::vector<char>  & sblock  ,
                                                  DRT::Exporter & exporter,
                                                  MPI_Request   & request )
 {
@@ -612,8 +612,8 @@ void XFEM::XFluidFluidTimeIntegration::SendBlock(vector<char>  & sblock  ,
 void XFEM::XFluidFluidTimeIntegration::PackValues(std::vector<LINALG::Matrix<3,1> > & bgnodes_coords,
                                                   std::vector<LINALG::Matrix<4,1> > & interpolatedvec,
                                                   std::vector<int>                  &  bgnodeidwithnohistory,
-                                                  vector<int>                       & NodeDone,
-                                                  vector<char>                      & sblock)
+                                                  std::vector<int>                       & NodeDone,
+                                                  std::vector<char>                      & sblock)
 {
   // Pack info into block to send
   DRT::PackBuffer data;
@@ -636,7 +636,7 @@ void XFEM::XFluidFluidTimeIntegration::PackValues(std::vector<LINALG::Matrix<3,1
 //--------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::FindEmbeleAndInterpolatevalues(std::vector<LINALG::Matrix<3,1> > & bgnodes_coords,
                                                                       std::vector<LINALG::Matrix<4,1> > & interpolated_vecs,
-                                                                      vector<int>                       & NodeDone,
+                                                                      std::vector<int>                       & NodeDone,
                                                                       Teuchos::RCP<Epetra_Vector>        embstatevn,
                                                                       Teuchos::RCP<Epetra_Vector>        aledispn)
 
@@ -693,10 +693,10 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
   for (int lnid=0; lnid<bgdis->NumMyRowNodes(); lnid++)
   {
     DRT::Node* bgnode = bgdis->lRowNode(lnid);
-    map<int, vector<int> >::const_iterator iterstn = stdnoden_.find(bgnode->Id());
-    map<int, vector<int> >::const_iterator iterstnp = stdnodenp_.find(bgnode->Id());
-    map<int, vector<int> >::const_iterator iteren = enrichednoden_.find(bgnode->Id());
-    map<int, vector<int> >::const_iterator iterenp = enrichednodenp_.find(bgnode->Id());
+    std::map<int, std::vector<int> >::const_iterator iterstn = stdnoden_.find(bgnode->Id());
+    std::map<int, std::vector<int> >::const_iterator iterstnp = stdnodenp_.find(bgnode->Id());
+    std::map<int, std::vector<int> >::const_iterator iteren = enrichednoden_.find(bgnode->Id());
+    std::map<int, std::vector<int> >::const_iterator iterenp = enrichednodenp_.find(bgnode->Id());
 
     // Transfer the dofs:
     // n:std -> n+1:std, n:std -> n+1:enriched
@@ -704,7 +704,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
         (iterstn != stdnoden_.end() and iterenp != enrichednodenp_.end()))
     {
       //int numsets = bgdis->NumDof(bgnode)/4;
-      vector<int> gdofsn = iterstn->second;
+      std::vector<int> gdofsn = iterstn->second;
 
       //TODO!! die richtige dofs von bgstatevn rauspicke, wenn mehrere
       //dofsets vorhanden sind
@@ -758,10 +758,10 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
       if (numsets > 1)
         IO::cout << "ghost-fluid-approach just available for one dofset!" << IO::endl;
 
-      vector<int> gdofsn = iteren->second;
+      std::vector<int> gdofsn = iteren->second;
       WriteValuestoBgStateVector(bgdis,bgnode,gdofsn,bgstatevnp,bgstatevn);
 #else
-      vector<int> gdofsn = iteren->second;
+      std::vector<int> gdofsn = iteren->second;
       WriteValuestoBgStateVector(bgdis,bgnode,gdofsn,bgstatevnp,bgstatevn);
 
 #endif
@@ -793,7 +793,7 @@ void XFEM::XFluidFluidTimeIntegration::SetNewBgStatevectorKeepGhostValues(const 
 //--------------------------------------------------------------------
 void XFEM::XFluidFluidTimeIntegration::WriteValuestoBgStateVector(const RCP<DRT::Discretization>   bgdis,
                                                                   DRT::Node*                       bgnode,
-                                                                  vector<int>                      gdofs_n,
+                                                                  std::vector<int>                      gdofs_n,
                                                                   Teuchos::RCP<Epetra_Vector>      bgstatevnp,
                                                                   Teuchos::RCP<Epetra_Vector>      bgstatevn)
 {
@@ -1258,8 +1258,8 @@ void XFEM::XFluidFluidTimeIntegration::GmshOutput(const RCP<DRT::Discretization>
       int kind = 0;
       const DRT::Node* actnode = bgdis->lColNode(i);
       const LINALG::Matrix<3,1> pos(actnode->X());
-      map<int, vector<int> >::const_iterator iter = stdnoden_.find(actnode->Id());
-      map<int, vector<int> >::const_iterator iteren = enrichednoden_.find(actnode->Id());
+      std::map<int, std::vector<int> >::const_iterator iter = stdnoden_.find(actnode->Id());
+      std::map<int, std::vector<int> >::const_iterator iteren = enrichednoden_.find(actnode->Id());
       if (iter != stdnoden_.end()) kind = 1;//std
       if (iteren != enrichednoden_.end()) kind = 2; // enriched
       IO::GMSH::cellWithScalarToStream(DRT::Element::point1, kind, pos, gmshfilecontent);
@@ -1273,8 +1273,8 @@ void XFEM::XFluidFluidTimeIntegration::GmshOutput(const RCP<DRT::Discretization>
       int kind = 0;
       const DRT::Node* actnode = bgdis->lColNode(i);
       const LINALG::Matrix<3,1> pos(actnode->X());
-      map<int, vector<int> >::const_iterator iter = stdnodenp_.find(actnode->Id());
-      map<int, vector<int> >::const_iterator iteren = enrichednodenp_.find(actnode->Id());
+      std::map<int, std::vector<int> >::const_iterator iter = stdnodenp_.find(actnode->Id());
+      std::map<int, std::vector<int> >::const_iterator iteren = enrichednodenp_.find(actnode->Id());
       if (iter != stdnodenp_.end()) kind = 1;//std
       if (iteren != enrichednodenp_.end()) kind = 2; // enriched
       IO::GMSH::cellWithScalarToStream(DRT::Element::point1, kind, pos, gmshfilecontent);
@@ -1468,11 +1468,11 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
   std::set<int> incompnodeids_set_all;
 
    // Gather all informations from all processors
-  vector<int> incompdofsAllproc;
-  vector<int> incompveldofsAllproc;
+  std::vector<int> incompdofsAllproc;
+  std::vector<int> incompveldofsAllproc;
 
   // information how many processors work at all
-  vector<int> allproc(bgdis->Comm().NumProc());
+  std::vector<int> allproc(bgdis->Comm().NumProc());
 
   // in case of n processors allproc becomes a vector with entries (0,1,...,n-1)
   for (int i=0; i<bgdis->Comm().NumProc(); ++i) allproc[i] = i;
@@ -1552,7 +1552,7 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
   RCP<Epetra_Map> newrownodemap;
   RCP<Epetra_Map> newcolnodemap;
 
-  vector<int> rownodes;
+  std::vector<int> rownodes;
 
   // convert std::set to std::vector
   for(std::set<int>::iterator id = adjacent_row.begin();
@@ -1570,7 +1570,7 @@ void XFEM::XFluidFluidTimeIntegration::PrepareIncompDiscret(const RCP<DRT::Discr
                                      incompdis_->Comm()));
 
 
-  vector<int> colnodes;
+  std::vector<int> colnodes;
   for(std::set<int>::iterator id = adjacent_col.begin();
       id!=adjacent_col.end();
       ++id)
@@ -1643,7 +1643,7 @@ void XFEM::XFluidFluidTimeIntegration::EvaluateIncompressibility(const RCP<DRT::
       std::vector< GEO::CUT::plain_volumecell_set > cell_sets;
       std::vector< std::vector<int> > nds_sets;
       std::vector<std::vector< DRT::UTILS::GaussIntegration > >intpoints_sets;
-      std::string VolumeCellGaussPointBy =  params_.sublist("XFEM").get<string>("VOLUME_GAUSS_POINTS_BY");
+      std::string VolumeCellGaussPointBy =  params_.sublist("XFEM").get<std::string>("VOLUME_GAUSS_POINTS_BY");
 
       e->GetCellSets_DofSets_GaussPoints( cell_sets, nds_sets, intpoints_sets, VolumeCellGaussPointBy );
 
@@ -1729,7 +1729,7 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
 
   // ----------------------
   // Create needed C_vel-dofmaps
-  vector<int> C_vel_dofids;
+  std::vector<int> C_vel_dofids;
 
   for(int i=0; i<C_vel->MyLength(); ++i)
   {
@@ -1870,14 +1870,14 @@ void  XFEM::XFluidFluidTimeIntegration::SolveIncompOptProb(Teuchos::RCP<Epetra_V
   // Commuinate the last entry of C_vel of each processor
 
   // build an allreduced vector of all last entries of C_vel
-  vector<int> C_vellast;
-  vector<int> C_vellast_All;
+  std::vector<int> C_vellast;
+  std::vector<int> C_vellast_All;
 
   if ((maxgid>-1) and ((*C_vel)[veldofrowmap->LID(maxgid)]>TOL))
     C_vellast.push_back(maxgid);
 
   //information how many processors work at all
-  vector<int> allproc(incompdis_->Comm().NumProc());
+  std::vector<int> allproc(incompdis_->Comm().NumProc());
 
   LINALG::Gather<int>(C_vellast,C_vellast_All,(int)incompdis_->Comm().NumProc(),
                       &allproc[0],incompdis_->Comm());

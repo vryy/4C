@@ -83,11 +83,11 @@ void XFEM::ElementDofManager::ComputeDependentInfo(
 {
 #ifdef COMBUST_NORMAL_ENRICHMENT
   //numParamsPerField_[XFEM::PHYSICS::Veln] = 0;
-  paramsLocalEntries_[XFEM::PHYSICS::Veln] = vector<int>();
+  paramsLocalEntries_[XFEM::PHYSICS::Veln] = std::vector<int>();
 #endif
 
   // count number of dofs for each node
-//   for (map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp = nodalDofSet.begin();
+//   for (std::map<int, const std::set<XFEM::FieldEnr> >::const_iterator tmp = nodalDofSet.begin();
 //        tmp != nodalDofSet.end();
 //        ++tmp)
 //   {

@@ -42,7 +42,7 @@ Maintainer: Volker Gravemeier
 FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   RCP<DRT::Discretization> actdis,
   Teuchos::ParameterList&          params,
-  const string&                    geotype):
+  const std::string&                    geotype):
   discret_      (actdis),
   params_       (params),
   geotype_      (TurbulenceStatisticsBfs::none),
@@ -98,8 +98,8 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
   x2coordinates_ = Teuchos::rcp(new std::vector<double> );
 
   // the criterion allows differences in coordinates by 1e-9
-  set<double,LineSortCriterion> x1avcoords;
-  set<double,LineSortCriterion> x2avcoords;
+  std::set<double,LineSortCriterion> x1avcoords;
+  std::set<double,LineSortCriterion> x2avcoords;
 
   // loop nodes and build sets of lines in x1- and x2-direction
   // accessible on this proc
@@ -162,8 +162,8 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
 #endif
     int numprocs=discret_->Comm().NumProc();
 
-    vector<char> sblock;
-    vector<char> rblock;
+    std::vector<char> sblock;
+    std::vector<char> rblock;
 
 #ifdef PARALLEL
     // create an exporter for point to point communication
@@ -188,7 +188,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
       {
         DRT::ParObject::AddtoPack(data,*x1line);
       }
-      swap( sblock, data() );
+      std::swap( sblock, data() );
 
 #ifdef PARALLEL
       MPI_Request request;
@@ -233,7 +233,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
 
         coordsvec.clear();
 
-        vector<char>::size_type index = 0;
+        std::vector<char>::size_type index = 0;
         while (index < rblock.size())
         {
           double onecoord;
@@ -261,7 +261,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
       {
         DRT::ParObject::AddtoPack(data,*x2line);
       }
-      swap( sblock, data() );
+      std::swap( sblock, data() );
 
 #ifdef PARALLEL
       MPI_Request request;
@@ -306,7 +306,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
 
         coordsvec.clear();
 
-        vector<char>::size_type index = 0;
+        std::vector<char>::size_type index = 0;
         while (index < rblock.size())
         {
           double onecoord;
@@ -542,7 +542,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
 
   Teuchos::ParameterList *  modelparams =&(params_.sublist("TURBULENCE MODEL"));
   // check if we want to compute averages of Smagorinsky constant
-  if (modelparams->get<string>("PHYSICAL_MODEL","no_model") == "Dynamic_Smagorinsky")
+  if (modelparams->get<std::string>("PHYSICAL_MODEL","no_model") == "Dynamic_Smagorinsky")
   {
     // store them in parameterlist for access on the element
     modelparams->set<RCP<std::vector<double> > >("dir1coords_",x1coordinates_);
@@ -556,7 +556,7 @@ FLD::TurbulenceStatisticsBfs::TurbulenceStatisticsBfs(
 
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
 
     if(physicaltype == INPAR::FLUID::loma)
     {
@@ -607,7 +607,7 @@ Teuchos::RCP<Epetra_Vector> velnp
   //----------------------------------------------------------------------
   // values at lower and upper wall
   //----------------------------------------------------------------------
-  for (vector<double>::iterator x1line=x1coordinates_->begin();
+  for (std::vector<double>::iterator x1line=x1coordinates_->begin();
        x1line!=x1coordinates_->end();
        ++x1line)
   {
@@ -637,8 +637,8 @@ Teuchos::RCP<Epetra_Vector> velnp
         if ((node->X()[0]<(*x1line+2e-9) and node->X()[0]>(*x1line-2e-9)) and
             (node->X()[1]<(x2cwall+2e-5) and node->X()[1]>(x2cwall-2e-5)))
         {
-          vector<int> dof = discret_->Dof(node);
-          double      one = 1.0;
+          std::vector<int> dof = discret_->Dof(node);
+          double           one = 1.0;
 
           togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
 
@@ -648,8 +648,8 @@ Teuchos::RCP<Epetra_Vector> velnp
         else if ((node->X()[0]<(*x1line+2e-9) and node->X()[0]>(*x1line-2e-9)) and
                  (node->X()[1]<(x2csupp+2e-5) and node->X()[1]>(x2csupp-2e-5)))
         {
-          vector<int> dof = discret_->Dof(node);
-          double      one = 1.0;
+          std::vector<int> dof = discret_->Dof(node);
+          double           one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
         }
@@ -709,7 +709,7 @@ Teuchos::RCP<Epetra_Vector> velnp
     //----------------------------------------------------------------------
     // loop nodes in x2-direction
     //----------------------------------------------------------------------
-    for (vector<double>::iterator x2line=x2coordinates_->begin();
+    for (std::vector<double>::iterator x2line=x2coordinates_->begin();
          x2line!=x2coordinates_->end();
          ++x2line)
     {
@@ -733,8 +733,8 @@ Teuchos::RCP<Epetra_Vector> velnp
         if ((node->X()[0]<(x1c+2e-5)     and node->X()[0]>(x1c-2e-5)) and
             (node->X()[1]<(*x2line+2e-9) and node->X()[1]>(*x2line-2e-9)))
         {
-          vector<int> dof = discret_->Dof(node);
-          double      one = 1.0;
+          std::vector<int> dof = discret_->Dof(node);
+          double           one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
           togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
@@ -850,7 +850,7 @@ const double                        eosfac)
   //----------------------------------------------------------------------
   // values at lower and upper wall
   //----------------------------------------------------------------------
-  for (vector<double>::iterator x1line=x1coordinates_->begin();
+  for (std::vector<double>::iterator x1line=x1coordinates_->begin();
        x1line!=x1coordinates_->end();
        ++x1line)
   {
@@ -880,8 +880,8 @@ const double                        eosfac)
         if ((node->X()[0]<(*x1line+2e-9) and node->X()[0]>(*x1line-2e-9)) and
             (node->X()[1]<(x2cwall+2e-5) and node->X()[1]>(x2cwall-2e-5)))
         {
-          vector<int> dof = discret_->Dof(node);
-          double      one = 1.0;
+          std::vector<int> dof = discret_->Dof(node);
+          double           one = 1.0;
 
           togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
 
@@ -891,8 +891,8 @@ const double                        eosfac)
         else if ((node->X()[0]<(*x1line+2e-9) and node->X()[0]>(*x1line-2e-9)) and
                  (node->X()[1]<(x2csupp+2e-5) and node->X()[1]>(x2csupp-2e-5)))
         {
-          vector<int> dof = discret_->Dof(node);
-          double      one = 1.0;
+          std::vector<int> dof = discret_->Dof(node);
+          double           one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
         }
@@ -963,7 +963,7 @@ const double                        eosfac)
     //----------------------------------------------------------------------
     // loop nodes in x2-direction and calculate pointwise means
     //----------------------------------------------------------------------
-    for (vector<double>::iterator x2line=x2coordinates_->begin();
+    for (std::vector<double>::iterator x2line=x2coordinates_->begin();
          x2line!=x2coordinates_->end();
          ++x2line)
     {
@@ -987,8 +987,8 @@ const double                        eosfac)
         if ((node->X()[0]<(x1c+2e-5)     and node->X()[0]>(x1c-2e-5)) and
             (node->X()[1]<(*x2line+2e-9) and node->X()[1]>(*x2line-2e-9)))
         {
-          vector<int> dof = discret_->Dof(node);
-          double      one = 1.0;
+          std::vector<int> dof = discret_->Dof(node);
+          double           one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
           togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
@@ -1153,7 +1153,7 @@ Teuchos::RCP<Epetra_Vector> scanp)
   //----------------------------------------------------------------------
   // values at lower and upper wall
   //----------------------------------------------------------------------
-  for (vector<double>::iterator x1line=x1coordinates_->begin();
+  for (std::vector<double>::iterator x1line=x1coordinates_->begin();
        x1line!=x1coordinates_->end();
        ++x1line)
   {
@@ -1183,8 +1183,8 @@ Teuchos::RCP<Epetra_Vector> scanp)
         if ((node->X()[0]<(*x1line+2e-9) and node->X()[0]>(*x1line-2e-9)) and
             (node->X()[1]<(x2cwall+2e-5) and node->X()[1]>(x2cwall-2e-5)))
         {
-          vector<int> dof = discret_->Dof(node);
-          double      one = 1.0;
+          std::vector<int> dof = discret_->Dof(node);
+          double           one = 1.0;
 
           togglep_->ReplaceGlobalValues(1,&one,&(dof[3]));
 
@@ -1194,8 +1194,8 @@ Teuchos::RCP<Epetra_Vector> scanp)
         else if ((node->X()[0]<(*x1line+2e-9) and node->X()[0]>(*x1line-2e-9)) and
                  (node->X()[1]<(x2csupp+2e-5) and node->X()[1]>(x2csupp-2e-5)))
         {
-          vector<int> dof = discret_->Dof(node);
-          double      one = 1.0;
+          std::vector<int> dof = discret_->Dof(node);
+          double           one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
         }
@@ -1259,7 +1259,7 @@ Teuchos::RCP<Epetra_Vector> scanp)
     //----------------------------------------------------------------------
     // loop nodes in x2-direction and calculate pointwise means
     //----------------------------------------------------------------------
-    for (vector<double>::iterator x2line=x2coordinates_->begin();
+    for (std::vector<double>::iterator x2line=x2coordinates_->begin();
          x2line!=x2coordinates_->end();
          ++x2line)
     {
@@ -1283,8 +1283,8 @@ Teuchos::RCP<Epetra_Vector> scanp)
         if ((node->X()[0]<(x1c+2e-5)     and node->X()[0]>(x1c-2e-5)) and
             (node->X()[1]<(*x2line+2e-9) and node->X()[1]>(*x2line-2e-9)))
         {
-          vector<int> dof = discret_->Dof(node);
-          double      one = 1.0;
+          std::vector<int> dof = discret_->Dof(node);
+          double           one = 1.0;
 
           toggleu_->ReplaceGlobalValues(1,&one,&(dof[0]));
           togglev_->ReplaceGlobalValues(1,&one,&(dof[1]));
@@ -1411,7 +1411,7 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
     s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
@@ -1497,10 +1497,10 @@ void FLD::TurbulenceStatisticsBfs::DumpStatistics(int step)
         double x2w  = (*x2sumw_)(i,j)/numsamp_;
         double x2p  = (*x2sump_)(i,j)/numsamp_;
 
-        double x2urms  = sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
-        double x2vrms  = sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
-        double x2wrms  = sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
-        double x2prms  = sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
+        double x2urms  = std::sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
+        double x2vrms  = std::sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
+        double x2wrms  = std::sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
+        double x2prms  = std::sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
 
         double x2uv   = (*x2sumuv_)(i,j)/numsamp_-x2u*x2v;
         double x2uw   = (*x2sumuw_)(i,j)/numsamp_-x2u*x2w;
@@ -1539,7 +1539,7 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
     s.append(".loma_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
@@ -1650,10 +1650,10 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
         double x2rho   = (*x2sumrho_)(i,j)/numsamp_;
         double x2T     = (*x2sumT_)(i,j)/numsamp_;
 
-        double x2urms  = sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
-        double x2vrms  = sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
-        double x2wrms  = sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
-        double x2prms  = sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
+        double x2urms  = std::sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
+        double x2vrms  = std::sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
+        double x2wrms  = std::sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
+        double x2prms  = std::sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
 
 #ifdef COMBINE_SAMPLES
         double x2usq  = (*x2sumsqu_)(i,j)/numsamp_;
@@ -1670,10 +1670,10 @@ void FLD::TurbulenceStatisticsBfs::DumpLomaStatistics(int          step)
         // as they produce nans
         double x2rhorms = 0.0;
         double x2Trms   = 0.0;
-        if (abs((*x2sumsqrho_)(i,j)/numsamp_-x2rho*x2rho)>1e-9)
-            x2rhorms = sqrt((*x2sumsqrho_)(i,j)/numsamp_-x2rho*x2rho);
-        if (abs((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T)>1e-9)
-            x2Trms   = sqrt((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T);
+        if (std::abs((*x2sumsqrho_)(i,j)/numsamp_-x2rho*x2rho)>1e-9)
+            x2rhorms = std::sqrt((*x2sumsqrho_)(i,j)/numsamp_-x2rho*x2rho);
+        if (std::abs((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T)>1e-9)
+            x2Trms   = std::sqrt((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T);
 
 #ifdef COMBINE_SAMPLES
         double x2rhosq = (*x2sumsqrho_)(i,j)/numsamp_;
@@ -1752,7 +1752,7 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int          step)
   Teuchos::RCP<std::ofstream> log;
   if (discret_->Comm().MyPID()==0)
   {
-    std::string s = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+    std::string s = params_.sublist("TURBULENCE MODEL").get<std::string>("statistics outfile");
     s.append(".flow_statistics");
 
     log = Teuchos::rcp(new std::ofstream(s.c_str(),std::ios::out));
@@ -1845,10 +1845,10 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int          step)
 
         double x2T  = (*x2sumT_)(i,j)/numsamp_;
 
-        double x2urms  = sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
-        double x2vrms  = sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
-        double x2wrms  = sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
-        double x2prms  = sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
+        double x2urms  = std::sqrt((*x2sumsqu_)(i,j)/numsamp_-x2u*x2u);
+        double x2vrms  = std::sqrt((*x2sumsqv_)(i,j)/numsamp_-x2v*x2v);
+        double x2wrms  = std::sqrt((*x2sumsqw_)(i,j)/numsamp_-x2w*x2w);
+        double x2prms  = std::sqrt((*x2sumsqp_)(i,j)/numsamp_-x2p*x2p);
 
         // as T is constant in the inflow section
         // <T^2>-<T>*<T> should be zero
@@ -1857,8 +1857,8 @@ void FLD::TurbulenceStatisticsBfs::DumpScatraStatistics(int          step)
         // hence, zero negative values should be excluded
         // as they produce nans
         double x2Trms   = 0.0;
-        if (abs((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T)>1e-9)
-            x2Trms   = sqrt((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T);
+        if (std::abs((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T)>1e-9)
+            x2Trms   = std::sqrt((*x2sumsqT_)(i,j)/numsamp_-x2T*x2T);
 
         double x2uv   = (*x2sumuv_)(i,j)/numsamp_-x2u*x2v;
         double x2uw   = (*x2sumuw_)(i,j)/numsamp_-x2u*x2w;

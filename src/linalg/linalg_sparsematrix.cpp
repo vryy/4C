@@ -922,7 +922,7 @@ void LINALG::SparseMatrix::ApplyDirichlet(
     else
       dserror("matrix type is not correct");
 
-    vector<int> indices(maxnumentries,0);
+    std::vector<int> indices(maxnumentries,0);
     std::vector<double> values(maxnumentries,0.0);
     for (int i=0; i<nummyrows; ++i)
     {
@@ -1058,7 +1058,7 @@ void LINALG::SparseMatrix::ApplyDirichlet(const Epetra_Map& dbctoggle,
     else
       dserror("matrix type is not correct");
 
-    vector<int> indices(maxnumentries,0);
+    std::vector<int> indices(maxnumentries,0);
     std::vector<double> values(maxnumentries,0.0);
     for (int i=0; i<nummyrows; ++i)
     {
@@ -1179,7 +1179,7 @@ void LINALG::SparseMatrix::ApplyDirichletWithTrafo(Teuchos::RCP<const LINALG::Sp
     // initialise matrix Anew with general size (rowmap x colmap)
     // in case of coupled problem (e.g. TSI) transform the rectangular off-diagonal block k_Td
     Teuchos::RCP<Epetra_CrsMatrix> Anew = Teuchos::rcp(new Epetra_CrsMatrix(Copy,rowmap,colmap,maxnumentries,false));
-    vector<int> indices(maxnumentries,0);
+    std::vector<int> indices(maxnumentries,0);
     std::vector<double> values(maxnumentries,0.0);
     for (int i=0; i<nummyrows; ++i)
     {
@@ -1465,8 +1465,8 @@ void LINALG::SparseMatrix::Put(const LINALG::SparseMatrix& A,
 
   // working variables
   int NumEntries;
-  vector<int> Indices(MaxNumEntries);
-  vector<double> Values(MaxNumEntries);
+  std::vector<int> Indices(MaxNumEntries);
+  std::vector<double> Values(MaxNumEntries);
   int err;
 
   // loop rows in #tomap and replace the rows of #this->sysmat_ with provided input matrix #A
@@ -1656,7 +1656,7 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
   //-------------------------------------------- create a redundant set
   std::set<int> gset;
   {
-    vector<int> global(refmap->NumGlobalElements());
+    std::vector<int> global(refmap->NumGlobalElements());
     int count=0;
     for (int proc=0; proc<Comm.NumProc(); ++proc)
     {
@@ -1681,10 +1681,10 @@ void LINALG::SparseMatrix::Split2x2(BlockSparseMatrixBase& Abase) const
     for (int i=0; i<count; ++i) gset.insert(global[i]);
   }
 
-  vector<int>    gcindices1(A->MaxNumEntries());
-  vector<double> gvalues1(A->MaxNumEntries());
-  vector<int>    gcindices2(A->MaxNumEntries());
-  vector<double> gvalues2(A->MaxNumEntries());
+  std::vector<int>    gcindices1(A->MaxNumEntries());
+  std::vector<double> gvalues1(A->MaxNumEntries());
+  std::vector<int>    gcindices2(A->MaxNumEntries());
+  std::vector<double> gvalues2(A->MaxNumEntries());
   //-------------------------------------------------- create block matrices
   const int length = A->NumMyRows();
   for (int i=0; i<length; ++i)
@@ -1771,7 +1771,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Multiply(const LINALG::SparseMatrix& 
 
   //const int npr = A.EpetraMatrix()->MaxNumEntries()*B.EpetraMatrix()->MaxNumEntries();
   // a first guess for the bandwidth of C leading to much less memory consumption:
-  const int npr = max(A.MaxNumEntries(),B.MaxNumEntries());
+  const int npr = std::max(A.MaxNumEntries(),B.MaxNumEntries());
 
   // now create resultmatrix with correct rowmap
   Teuchos::RCP<LINALG::SparseMatrix> C;
@@ -1803,7 +1803,7 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Multiply(const LINALG::SparseMatrix& 
 
   //const int npr = A.EpetraMatrix()->MaxNumEntries()*B.EpetraMatrix()->MaxNumEntries();
   // a first guess for the bandwidth of C leading to much less memory consumption:
-  const int npr = max(A.MaxNumEntries(),B.MaxNumEntries());
+  const int npr = std::max(A.MaxNumEntries(),B.MaxNumEntries());
 
   // now create resultmatrix C with correct rowmap
   Teuchos::RCP<LINALG::SparseMatrix> C;
@@ -1831,8 +1831,8 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::Merge(const LINALG::SparseMatrix& Aii
 
   Teuchos::RCP<Epetra_Map> rowmap = MergeMap(Aii.RowMap(),Agi.RowMap(),false);
   Teuchos::RCP<LINALG::SparseMatrix> mat =
-    Teuchos::rcp(new SparseMatrix(*rowmap,max(Aii.MaxNumEntries()+Aig.MaxNumEntries(),
-                                              Agi.MaxNumEntries()+Agg.MaxNumEntries())));
+    Teuchos::rcp(new SparseMatrix(*rowmap,std::max(Aii.MaxNumEntries()+Aig.MaxNumEntries(),
+                                                   Agi.MaxNumEntries()+Agg.MaxNumEntries())));
 
 
   mat->Add(Aii,false,1.0,1.0);

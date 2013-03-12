@@ -439,8 +439,8 @@ void ELCH::Algorithm::OuterIterationConvection()
   //create output file name
   std::stringstream temp;
   temp << DRT::Problem::Instance()->OutputControlFile()->FileName()<<"_nonliniter_step"<<Step();
-  string outname = temp.str();
-  string probtype = DRT::Problem::Instance()->ProblemName();
+  std::string outname = temp.str();
+  std::string probtype = DRT::Problem::Instance()->ProblemName();
 
   RCP<IO::OutputControl> myoutputcontrol = Teuchos::rcp(new IO::OutputControl(ScaTraField().Discretization()->Comm(),probtype,"Polynomial","myinput",outname,numdim,0,1000));
   // create discretization writer with my own control settings

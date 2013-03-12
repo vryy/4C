@@ -93,7 +93,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
-  RCP<map<int,std::vector<int> > > pbcmapmastertoslave
+  RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave
     =
     Teuchos::rcp(new std::map<int,std::vector<int> > ());
 
@@ -308,7 +308,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   RCP<Teuchos::ParameterList> fluidtimeparams = Teuchos::rcp(new Teuchos::ParameterList());
 
   // provide info about periodic boundary conditions
-  fluidtimeparams->set<RCP<map<int,std::vector<int> > > >("periodic bc",pbcmapmastertoslave);
+  fluidtimeparams->set<RCP<std::map<int,std::vector<int> > > >("periodic bc",pbcmapmastertoslave);
 
   // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma, poro)
   fluidtimeparams->set<int>("Physical Type",
@@ -346,8 +346,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       DRT::Problem::Instance()->XFEMGeneralParams();
 
     fluidtimeparams->sublist("XFEM").set<int>("MAX_NUM_DOFSETS", xdyn.get<int>("MAX_NUM_DOFSETS"));
-    fluidtimeparams->sublist("XFEM").set<string>("VOLUME_GAUSS_POINTS_BY", xdyn.get<string>("VOLUME_GAUSS_POINTS_BY"));
-    fluidtimeparams->sublist("XFEM").set<string>("BOUNDARY_GAUSS_POINTS_BY", xdyn.get<string>("BOUNDARY_GAUSS_POINTS_BY"));
+    fluidtimeparams->sublist("XFEM").set<string>("VOLUME_GAUSS_POINTS_BY", xdyn.get<std::string>("VOLUME_GAUSS_POINTS_BY"));
+    fluidtimeparams->sublist("XFEM").set<string>("BOUNDARY_GAUSS_POINTS_BY", xdyn.get<std::string>("BOUNDARY_GAUSS_POINTS_BY"));
 
     // GMSH solution output
     fluidtimeparams->sublist("XFEM").set<int>("GMSH_DEBUG_OUT",        DRT::INPUT::IntegralValue<int>(xdyn, "GMSH_DEBUG_OUT"));
@@ -371,8 +371,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL")       = xfdyn.sublist("GENERAL");
     fluidtimeparams->sublist("XFLUID DYNAMIC/STABILIZATION") = xfdyn.sublist("STABILIZATION");
 
-    fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<string>("MONOLITHIC_XFFSI_APPROACH",xfdyn.sublist("GENERAL").get<string>("MONOLITHIC_XFFSI_APPROACH"));
-    fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<string>("XFLUIDFLUID_TIMEINT",xfdyn.sublist("GENERAL").get<string>("XFLUIDFLUID_TIMEINT"));
+    fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<string>("MONOLITHIC_XFFSI_APPROACH",xfdyn.sublist("GENERAL").get<std::string>("MONOLITHIC_XFFSI_APPROACH"));
+    fluidtimeparams->sublist("XFLUID DYNAMIC/GENERAL").set<string>("XFLUIDFLUID_TIMEINT",xfdyn.sublist("GENERAL").get<std::string>("XFLUIDFLUID_TIMEINT"));
   }
 
 
@@ -424,7 +424,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       // No explicit predictor for these monolithic FSI schemes, yet.
       // Check, whether fluid predictor is 'steady_state'. Otherwise, throw
       // an error.
-      if (fluidtimeparams->get<string>("predictor") != "steady_state")
+      if (fluidtimeparams->get<std::string>("predictor") != "steady_state")
         dserror("No fluid predictor allowed for current monolithic FSI scheme, yet. Use 'steady_state', instead!");
     }
   }
@@ -447,7 +447,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
       // No explicit predictor for monolithic free surface flow schemes, yet.
       // Check, whether fluid predictor is 'steady_state'. Otherwise, throw
       // an error.
-      if (fluidtimeparams->get<string>("predictor") != "steady_state")
+      if (fluidtimeparams->get<std::string>("predictor") != "steady_state")
         dserror("No fluid predictor allowed for current monolithic free surface scheme, yet. Use 'steady_state', instead!");
     }
   }
@@ -723,7 +723,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   RCP<Teuchos::ParameterList> fluidtimeparams = Teuchos::rcp(new Teuchos::ParameterList());
 
   // --------------------provide info about periodic boundary conditions
-  fluidtimeparams->set<RCP<map<int,std::vector<int> > > >("periodic bc",pbcmapmastertoslave);
+  fluidtimeparams->set<RCP<std::map<int,std::vector<int> > > >("periodic bc",pbcmapmastertoslave);
 
   // physical type of fluid flow (incompressible, Boussinesq Approximation, varying density, loma)
   fluidtimeparams->set<int>("Physical Type",
@@ -733,8 +733,8 @@ void ADAPTER::FluidBaseAlgorithm::SetupInflowFluid(
   SetGeneralParameters(fluidtimeparams,prbdyn,fdyn);
 
   // overwrite canonical flow parameters by inflow type
-  fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("CANONICAL_FLOW",fdyn.sublist("TURBULENT INFLOW").get<string>("CANONICAL_INFLOW"));
-  fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("HOMDIR",fdyn.sublist("TURBULENT INFLOW").get<string>("INFLOW_HOMDIR"));
+  fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("CANONICAL_FLOW",fdyn.sublist("TURBULENT INFLOW").get<std::string>("CANONICAL_INFLOW"));
+  fluidtimeparams->sublist("TURBULENCE MODEL").set<string>("HOMDIR",fdyn.sublist("TURBULENT INFLOW").get<std::string>("INFLOW_HOMDIR"));
   fluidtimeparams->sublist("TURBULENCE MODEL").set<int>("DUMPING_PERIOD",fdyn.sublist("TURBULENT INFLOW").get<int>("INFLOW_DUMPING_PERIOD"));
   fluidtimeparams->sublist("TURBULENCE MODEL").set<int>("SAMPLING_START",fdyn.sublist("TURBULENT INFLOW").get<int>("INFLOW_SAMPLING_START"));
   fluidtimeparams->sublist("TURBULENCE MODEL").set<int>("SAMPLING_STOP",fdyn.sublist("TURBULENT INFLOW").get<int>("INFLOW_SAMPLING_STOP"));
@@ -851,7 +851,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
 
   // ---------------------------------------------- nonlinear iteration
   // type of predictor
-  fluidtimeparams->set<string>          ("predictor"                 ,fdyn.get<string>("PREDICTOR"));
+  fluidtimeparams->set<string>          ("predictor"                 ,fdyn.get<std::string>("PREDICTOR"));
   // set linearisation scheme
   fluidtimeparams->set<int>("Linearisation", DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER"));
   // set bool flag "Newton true or false" for combustion formulation and XFEM
@@ -864,7 +864,7 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   // stop nonlinear iteration when both incr-norms are below this bound
   fluidtimeparams->set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
   // set convergence check
-  fluidtimeparams->set<string>          ("CONVCHECK"  ,fdyn.get<string>("CONVCHECK"));
+  fluidtimeparams->set<string>          ("CONVCHECK"  ,fdyn.get<std::string>("CONVCHECK"));
   // set adaptive linear solver tolerance
   fluidtimeparams->set<bool>            ("ADAPTCONV",DRT::INPUT::IntegralValue<int>(fdyn,"ADAPTCONV")==1);
   fluidtimeparams->set<double>          ("ADAPTCONV_BETTER",fdyn.get<double>("ADAPTCONV_BETTER"));
@@ -896,14 +896,14 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   fluidtimeparams->set<int>("eval err for analyt sol", initfield);
 
   // ------------------------------------------ form of convective term
-  fluidtimeparams->set<string> ("form of convective term", fdyn.get<string>("CONVFORM"));
+  fluidtimeparams->set<string> ("form of convective term", fdyn.get<std::string>("CONVFORM"));
 
   // ------------------------------------ potential Neumann inflow terms
-  fluidtimeparams->set<string> ("Neumann inflow",fdyn.get<string>("NEUMANNINFLOW"));
+  fluidtimeparams->set<string> ("Neumann inflow",fdyn.get<std::string>("NEUMANNINFLOW"));
 
 
   // ------------------------------------ potential reduced_D 3D coupling method
-  fluidtimeparams->set<string> ("Strong 3D_redD coupling",fdyn.get<string>("STRONG_REDD_3D_COUPLING_TYPE"));
+  fluidtimeparams->set<string> ("Strong 3D_redD coupling",fdyn.get<std::string>("STRONG_REDD_3D_COUPLING_TYPE"));
 
   //--------------------------------------mesh tying for fluid
   fluidtimeparams->set<int>("MESHTYING",

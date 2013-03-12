@@ -166,7 +166,7 @@ void FSI::FSIResultTest::TestNode(DRT::INPUT::LineDefinition& res, int& nerr, in
 
       std::string position;
       res.ExtractString("QUANTITY",position);
-      bool unknownpos = true; // make sure the result value string can be handled
+      bool unknownpos = true; // make sure the result value std::string can be handled
       double result = 0.0;    // will hold the actual result of run
 
       // test Lagrange multipliers

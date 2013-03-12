@@ -53,8 +53,8 @@ DRT::ParObject* DRT::MESHFREE::MeshfreeBinType::Create( const std::vector<char> 
   return object;
 }
 
-Teuchos::RCP<DRT::Element> DRT::MESHFREE::MeshfreeBinType::Create( const string eletype,
-                                                                         const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::MESHFREE::MeshfreeBinType::Create( const std::string eletype,
+                                                                         const std::string eledistype,
                                                                          const int id,
                                                                          const int owner )
 {

@@ -132,7 +132,7 @@ steps 25 nnodes 5
   ndofs_ = 0;
   {
     char* foundit = NULL;
-    string filename = iap.get<string>("MONITORFILE");
+    std::string filename = iap.get<std::string>("MONITORFILE");
     if (filename=="none.monitor") dserror("No monitor file provided");
     FILE* file = fopen(filename.c_str(),"rb");
     if (file==NULL) dserror("Could not open monitor file %s",filename.c_str());
@@ -985,7 +985,7 @@ void STR::GenInvAnalysis::PrintFile()
   //FILE * cyFile;
   FILE * pFile;
 
-  string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  std::string name = DRT::Problem::Instance()->OutputControlFile()->FileName();
   name.append(filename_);
 
   if (name.rfind("_run_")!=string::npos)
@@ -996,10 +996,10 @@ void STR::GenInvAnalysis::PrintFile()
     name = name.substr(0, pos);
   }
 
-  string gp     = name+"_plot.gp";
-  string xcurve = name+"_Curve_x.txt";
-  string ycurve = name+"_Curve_y.txt";
-  string para   = name+"_Para.txt";
+  std::string gp     = name+"_plot.gp";
+  std::string xcurve = name+"_Curve_x.txt";
+  std::string ycurve = name+"_Curve_y.txt";
+  std::string para   = name+"_Para.txt";
 
 #if 0 // this only produces columns of zeros anyway
 // it will also burst memory with ccurve_s_ pretty quickly for larger problems
@@ -1050,14 +1050,14 @@ void STR::GenInvAnalysis::ReadInParameters()
 
   for (unsigned prob=0; prob<DRT::Problem::NumInstances(); ++prob)
   {
-    const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(prob)->Materials()->Map();
+    const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(prob)->Materials()->Map();
     std::set<int> mymatset = matset_[prob];
 
     unsigned int overallnummat = mats.size();
     if (mymatset.size() > 0 && overallnummat > mymatset.size()) overallnummat = mymatset.size();
     if (myrank == 0) printf("No. material laws/summands considered : %d\n", overallnummat);
 
-    map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+    std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
 
     for (curr=mats.begin(); curr != mats.end(); ++curr)
     {
@@ -1585,9 +1585,9 @@ void STR::SetMaterialParameters(int prob, Epetra_SerialDenseVector& p_cur, std::
   //const int ngroup   = group->NumGroups();
 
   // loop all materials in problem
-  const map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(prob)->Materials()->Map();
+  const std::map<int,RCP<MAT::PAR::Material> >& mats = *DRT::Problem::Instance(prob)->Materials()->Map();
   int j=0;
-  map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
+  std::map<int,RCP<MAT::PAR::Material> >::const_iterator curr;
   for (curr=mats.begin(); curr != mats.end(); ++curr)
   {
     const RCP<MAT::PAR::Material> actmat = curr->second;

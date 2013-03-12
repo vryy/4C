@@ -453,11 +453,11 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         scatratype == INPAR::SCATRA::scatratype_turbpassivesca)
     {
       // set flag for turbulence model
-      if (turbulencelist.get<string>("PHYSICAL_MODEL") == "Smagorinsky")
+      if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "Smagorinsky")
         turbmodel_ = INPAR::FLUID::smagorinsky;
-      if (turbulencelist.get<string>("PHYSICAL_MODEL") == "Dynamic_Smagorinsky")
+      if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "Dynamic_Smagorinsky")
         turbmodel_ = INPAR::FLUID::dynamic_smagorinsky;
-      if (turbulencelist.get<string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
+      if (turbulencelist.get<std::string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
         turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
       // as the scalar field is constant in the turbulent inflow section
       // we do not need any turbulence model
@@ -680,7 +680,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         {
           std::ostringstream temp;
           temp << k;
-          string name = "flux_phi_"+temp.str();
+          std::string name = "flux_phi_"+temp.str();
           // try to get the pointer to the entry (and check if type is RCP<Epetra_MultiVector>)
           Teuchos::RCP<Epetra_MultiVector>* f = params.getPtr< Teuchos::RCP<Epetra_MultiVector> >(name);
           if (f!= NULL) // field has been set and is not of type Teuchos::null
@@ -808,28 +808,28 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
       {
         // necessary parameters for subgrid-scale velocity estimation
         Csgs_sgvel = mfslist.get<double>("CSGS");
-        if (mfslist.get<string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
+        if (mfslist.get<std::string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
          alpha = 3.0;
         else dserror("Scale-Separtion method not supported!");
         calc_N = DRT::INPUT::IntegralValue<int>(mfslist,"CALC_N");
         N_vel = mfslist.get<double>("N");
-        if (mfslist.get<string>("REF_VELOCITY") == "strainrate")
+        if (mfslist.get<std::string>("REF_VELOCITY") == "strainrate")
          refvel = INPAR::FLUID::strainrate;
-        else if (mfslist.get<string>("REF_VELOCITY") == "resolved")
+        else if (mfslist.get<std::string>("REF_VELOCITY") == "resolved")
          refvel = INPAR::FLUID::resolved;
-        else if (mfslist.get<string>("REF_VELOCITY") == "fine_scale")
+        else if (mfslist.get<std::string>("REF_VELOCITY") == "fine_scale")
          refvel = INPAR::FLUID::fine_scale;
         else
          dserror("Unknown velocity!");
-        if (mfslist.get<string>("REF_LENGTH") == "cube_edge")
+        if (mfslist.get<std::string>("REF_LENGTH") == "cube_edge")
          reflength = INPAR::FLUID::cube_edge;
-        else if (mfslist.get<string>("REF_LENGTH") == "sphere_diameter")
+        else if (mfslist.get<std::string>("REF_LENGTH") == "sphere_diameter")
          reflength = INPAR::FLUID::sphere_diameter;
-        else if (mfslist.get<string>("REF_LENGTH") == "streamlength")
+        else if (mfslist.get<std::string>("REF_LENGTH") == "streamlength")
          reflength = INPAR::FLUID::streamlength;
-        else if (mfslist.get<string>("REF_LENGTH") == "gradient_based")
+        else if (mfslist.get<std::string>("REF_LENGTH") == "gradient_based")
          reflength = INPAR::FLUID::gradient_based;
-        else if (mfslist.get<string>("REF_LENGTH") == "metric_tensor")
+        else if (mfslist.get<std::string>("REF_LENGTH") == "metric_tensor")
          reflength = INPAR::FLUID::metric_tensor;
         else
          dserror("Unknown length!");
@@ -847,15 +847,15 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
         // general parameters
         beta = mfslist.get<double>("BETA");
         if (beta!=0.0) dserror("Lhs terms for mfs not included! Fixed-point iteration only!");
-        if (mfslist.get<string>("EVALUATION_B") == "element_center")
+        if (mfslist.get<std::string>("EVALUATION_B") == "element_center")
         BD_gp = false;
-        else if (mfslist.get<string>("EVALUATION_B") == "integration_point")
+        else if (mfslist.get<std::string>("EVALUATION_B") == "integration_point")
         BD_gp = true;
         else
           dserror("Unknown evaluation point!");
-        if (mfslist.get<string>("CONVFORM") == "convective")
+        if (mfslist.get<std::string>("CONVFORM") == "convective")
         mfs_conservative_ = false;
-        else if (mfslist.get<string>("CONVFORM") == "conservative")
+        else if (mfslist.get<std::string>("CONVFORM") == "conservative")
         mfs_conservative_ = true;
         else
           dserror("Unknown form of convective term!");
@@ -1454,7 +1454,7 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     
     turbmodel_ = INPAR::FLUID::no_model;
     // set flag for turbulence model
-    if (params.sublist("TURBULENCE MODEL").get<string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
+    if (params.sublist("TURBULENCE MODEL").get<std::string>("PHYSICAL_MODEL") == "Multifractal_Subgrid_Scales")
       turbmodel_ = INPAR::FLUID::multifractal_subgrid_scales;
     else
       dserror("Multifractal_Subgrid_Scales expected");
@@ -1465,21 +1465,21 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     bool nwl = DRT::INPUT::IntegralValue<int>(mfslist,"NEAR_WALL_LIMIT");
     // get evaluation of B
     bool BD_gp = false;
-    if (mfslist.get<string>("EVALUATION_B") == "element_center")
+    if (mfslist.get<std::string>("EVALUATION_B") == "element_center")
       BD_gp = false;
-    else if (mfslist.get<string>("EVALUATION_B") == "integration_point")
+    else if (mfslist.get<std::string>("EVALUATION_B") == "integration_point")
       BD_gp = true;
     // get reference length
     INPAR::FLUID::RefLength reflength = INPAR::FLUID::cube_edge;
-    if (mfslist.get<string>("REF_LENGTH") == "cube_edge")
+    if (mfslist.get<std::string>("REF_LENGTH") == "cube_edge")
       reflength = INPAR::FLUID::cube_edge;
-    else if (mfslist.get<string>("REF_LENGTH") == "sphere_diameter")
+    else if (mfslist.get<std::string>("REF_LENGTH") == "sphere_diameter")
       reflength = INPAR::FLUID::sphere_diameter;
-    else if (mfslist.get<string>("REF_LENGTH") == "streamlength")
+    else if (mfslist.get<std::string>("REF_LENGTH") == "streamlength")
       reflength = INPAR::FLUID::streamlength;
-    else if (mfslist.get<string>("REF_LENGTH") == "gradient_based")
+    else if (mfslist.get<std::string>("REF_LENGTH") == "gradient_based")
       reflength = INPAR::FLUID::gradient_based;
-    else if (mfslist.get<string>("REF_LENGTH") == "metric_tensor")
+    else if (mfslist.get<std::string>("REF_LENGTH") == "metric_tensor")
       reflength = INPAR::FLUID::metric_tensor;
     else dserror("Unknown length!");
 
@@ -2111,7 +2111,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
     {
       double val(0.0);
       const DRT::Node* const* nodes = ele->Nodes();
-      string condname = "Dirichlet";
+      std::string condname = "Dirichlet";
 
       for (int vi=0; vi<nen_; ++vi)
       {
@@ -5235,7 +5235,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     std::vector<double> v(1,migepe2);
     std::ostringstream temp;
     temp << k;
-    string name = "Pe_mig_"+temp.str();
+    std::string name = "Pe_mig_"+temp.str();
     actele->AddToData(name,v);
     name = "hk_"+temp.str();
     v[0] = h;
@@ -5273,7 +5273,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     std::vector<double> v(1,epe);
     std::ostringstream temp;
     temp << k;
-    string name = "Pe_"+temp.str();
+    std::string name = "Pe_"+temp.str();
     actele->AddToData(name,v);
 #endif
   }
@@ -5307,7 +5307,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     std::vector<double> v(1,migepe2);
     std::ostringstream temp;
     temp << k;
-    string name = "Pe_mig_"+temp.str();
+    std::string name = "Pe_mig_"+temp.str();
     actele->AddToData(name,v);
     name = "hk_"+temp.str();
     v[0] = h;
@@ -5341,7 +5341,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
     std::vector<double> v(1,epe);
     std::ostringstream temp;
     temp << k;
-    string name = "Pe_"+temp.str();
+    std::string name = "Pe_"+temp.str();
     actele->AddToData(name,v);
 #endif
   }
@@ -5551,10 +5551,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalTau(
   // visualize stabilization parameter
   DRT::ELEMENTS::Transport* actele = dynamic_cast<DRT::ELEMENTS::Transport*>(ele);
   if (!actele) dserror("cast to Transport* failed");
-  vector<double> v(1,tau_[k]);
+  std::vector<double> v(1,tau_[k]);
   std::ostringstream temp;
   temp << k;
-  string name = "tau_"+ temp.str();
+  std::string name = "tau_"+ temp.str();
   actele->AddToData(name,v);
 #endif
 

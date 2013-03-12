@@ -43,7 +43,7 @@ int DRT::ELEMENTS::SoDisp::Evaluate(Teuchos::ParameterList& params,
   DRT::ELEMENTS::SoDisp::ActionType act = SoDisp::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff")      act = SoDisp::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff")      act = SoDisp::calc_struct_nlnstiff;
@@ -179,15 +179,15 @@ int DRT::ELEMENTS::SoDisp::Evaluate(Teuchos::ParameterList& params,
 				double energynorm = 0.0;
 
 				// shape functions, derivatives and integration weights
-				vector<Epetra_SerialDenseVector> shapefcts(numgpt_disp_);
-				vector<Epetra_SerialDenseMatrix> derivs(numgpt_disp_);
-				vector<double> weights(numgpt_disp_);
+				std::vector<Epetra_SerialDenseVector> shapefcts(numgpt_disp_);
+				std::vector<Epetra_SerialDenseMatrix> derivs(numgpt_disp_);
+				std::vector<double> weights(numgpt_disp_);
 				sodisp_shapederiv(shapefcts,derivs,weights);
 
 				// get displacements and extract values of this element
 				RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
 				if (disp==Teuchos::null) dserror("Cannot get state displacement vector");
-				vector<double> mydisp(lm.size());
+				std::vector<double> mydisp(lm.size());
 				DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
 				// nodal displacement vector
@@ -400,8 +400,8 @@ void DRT::ELEMENTS::SoDisp::sodisp_nlnstiffmass(
       Teuchos::ParameterList&   params)         // algorithmic parameters e.g. time
 {
 
-    vector<Epetra_SerialDenseVector> shapefcts(numgpt_disp_);
-    vector<Epetra_SerialDenseMatrix> derivs(numgpt_disp_);
+    std::vector<Epetra_SerialDenseVector> shapefcts(numgpt_disp_);
+    std::vector<Epetra_SerialDenseMatrix> derivs(numgpt_disp_);
     std::vector<double> weights(numgpt_disp_);
     sodisp_shapederiv(shapefcts,derivs,weights);   // call to evaluate
   /* ============================================================================*/
@@ -582,9 +582,9 @@ void DRT::ELEMENTS::SoDisp::sodisp_nlnstiffmass(
  |  shape functions and derivatives for SoDisp                 maf 04/07|
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::SoDisp::sodisp_shapederiv(
-      vector<Epetra_SerialDenseVector>& shapefcts,  // pointer to pointer of shapefct
-      vector<Epetra_SerialDenseMatrix>& derivs,     // pointer to pointer of derivs
-      vector<double>& weights)   // pointer to pointer of weights
+    std::vector<Epetra_SerialDenseVector>& shapefcts,  // pointer to pointer of shapefct
+    std::vector<Epetra_SerialDenseMatrix>& derivs,     // pointer to pointer of derivs
+    std::vector<double>& weights)   // pointer to pointer of weights
 {
 
   const DRT::Element::DiscretizationType distype = Shape();

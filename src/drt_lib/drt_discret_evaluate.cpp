@@ -229,7 +229,7 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
-  multimap<string,RCP<Condition> >::iterator fool;
+  std::multimap<std::string,RCP<Condition> >::iterator fool;
   //--------------------------------------------------------
   // loop through Point Neumann conditions and evaluate them
   //--------------------------------------------------------
@@ -283,8 +283,8 @@ void DRT::Discretization::EvaluateNeumann(Teuchos::ParameterList& params,
        )
     {
       DRT::Condition& cond = *(fool->second);
-      map<int,RCP<DRT::Element> >& geom = cond.Geometry();
-      map<int,RCP<DRT::Element> >::iterator curr;
+      std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+      std::map<int,RCP<DRT::Element> >::iterator curr;
       Epetra_SerialDenseVector elevector;
       Epetra_SerialDenseMatrix elematrix;
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
@@ -427,7 +427,7 @@ void DRT::Discretization::EvaluateDirichlet(Teuchos::ParameterList& params,
   Teuchos::RCP<std::set<int> > dbcgids = Teuchos::null;
   if (dbcmapextractor != Teuchos::null) dbcgids = Teuchos::rcp(new std::set<int>());
 
-  multimap<string,RCP<Condition> >::iterator fool;
+  std::multimap<std::string,RCP<Condition> >::iterator fool;
   //--------------------------------------------------------
   // loop through Dirichlet conditions and evaluate them
   //--------------------------------------------------------
@@ -715,7 +715,7 @@ void DRT::Discretization::EvaluateCondition
 
   Element::LocationArray la(dofsets_.size());
 
-  multimap<string,RCP<Condition> >::iterator fool;
+  std::multimap<std::string,RCP<Condition> >::iterator fool;
 
   //----------------------------------------------------------------------
   // loop through conditions and evaluate them if they match the criterion

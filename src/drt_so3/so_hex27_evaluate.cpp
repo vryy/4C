@@ -55,7 +55,7 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
   DRT::ELEMENTS::So_hex27::ActionType act = So_hex27::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff")                        act = So_hex27::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff")                        act = So_hex27::calc_struct_nlnstiff;
@@ -271,11 +271,11 @@ int DRT::ELEMENTS::So_hex27::Evaluate(Teuchos::ParameterList& params,
     // (depending on what this routine is called for from the post filter)
     case postprocess_stress:
     {
-      const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+      const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+        params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
       if (gpstressmap==Teuchos::null)
         dserror("no gp stress/strain map available for postprocessing");
-      string stresstype = params.get<string>("stresstype","ndxyz");
+      std::string stresstype = params.get<std::string>("stresstype","ndxyz");
       int gid = Id();
       LINALG::Matrix<NUMGPT_SOH27,NUMSTR_SOH27> gpstress(((*gpstressmap)[gid])->A(),true);
 
@@ -1325,9 +1325,9 @@ void DRT::ELEMENTS::So_hex27::soh27_lumpmass(LINALG::Matrix<NUMDOF_SOH27,NUMDOF_
 /*----------------------------------------------------------------------*
  |  Evaluate Hex27 Shape fcts at all 27 Gauss Points                     |
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMNOD_SOH27,1> > DRT::ELEMENTS::So_hex27::soh27_shapefcts()
+const std::vector<LINALG::Matrix<NUMNOD_SOH27,1> > DRT::ELEMENTS::So_hex27::soh27_shapefcts()
 {
-  vector<LINALG::Matrix<NUMNOD_SOH27,1> > shapefcts(NUMGPT_SOH27);
+  std::vector<LINALG::Matrix<NUMNOD_SOH27,1> > shapefcts(NUMGPT_SOH27);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 27
   // fill up nodal f at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
@@ -1347,9 +1347,9 @@ const vector<LINALG::Matrix<NUMNOD_SOH27,1> > DRT::ELEMENTS::So_hex27::soh27_sha
 /*----------------------------------------------------------------------*
  |  Evaluate Hex27 Shape fct derivs at all 27 Gauss Points              |
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > DRT::ELEMENTS::So_hex27::soh27_derivs()
+const std::vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > DRT::ELEMENTS::So_hex27::soh27_derivs()
 {
-  vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs(NUMGPT_SOH27);
+  std::vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > derivs(NUMGPT_SOH27);
   // (r,s,t) gp-locations of fully integrated quadratic Hex 27
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
@@ -1368,9 +1368,9 @@ const vector<LINALG::Matrix<NUMDIM_SOH27,NUMNOD_SOH27> > DRT::ELEMENTS::So_hex27
 /*----------------------------------------------------------------------*
  |  Evaluate Hex27 Weights at all 27 Gauss Points                       |
  *----------------------------------------------------------------------*/
-const vector<double> DRT::ELEMENTS::So_hex27::soh27_weights()
+const std::vector<double> DRT::ELEMENTS::So_hex27::soh27_weights()
 {
-  vector<double> weights(NUMGPT_SOH27);
+  std::vector<double> weights(NUMGPT_SOH27);
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_hex_27point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int i = 0; i < NUMGPT_SOH27; ++i)

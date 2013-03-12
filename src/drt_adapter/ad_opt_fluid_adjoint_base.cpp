@@ -69,7 +69,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // -------------------------------------------------------------------
   // connect degrees of freedom for periodic boundary conditions
   // -------------------------------------------------------------------
-  RCP<map<int,std::vector<int> > > pbcmapmastertoslave = Teuchos::rcp(new std::map<int,std::vector<int> > ());
+  RCP<std::map<int,std::vector<int> > > pbcmapmastertoslave = Teuchos::rcp(new std::map<int,std::vector<int> > ());
 
   PeriodicBoundaryConditions pbc(actdis);
   pbc.UpdateDofsForPeriodicBoundaryConditions();
@@ -158,7 +158,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   Teuchos::RCP<Teuchos::ParameterList> fluidadjointtimeparams = Teuchos::rcp(new Teuchos::ParameterList());
 
   // --------------------provide info about periodic boundary conditions
-  fluidadjointtimeparams->set<RCP<map<int,std::vector<int> > > >("periodic bc",pbcmapmastertoslave);
+  fluidadjointtimeparams->set<RCP<std::map<int,std::vector<int> > > >("periodic bc",pbcmapmastertoslave);
 
   fluidadjointtimeparams->set<int>("Simple Preconditioner",DRT::INPUT::IntegralValue<int>(fdyn,"SIMPLER"));
   fluidadjointtimeparams->set<int>("AMG(BS) Preconditioner",DRT::INPUT::IntegralValue<INPAR::SOLVER::AzPrecType>(DRT::Problem::Instance()->SolverParams(linsolvernumber),"AZPREC"));
@@ -181,7 +181,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
 
   // ---------------------------------------------- nonlinear iteration
   // type of predictor
-  fluidadjointtimeparams->set<string>          ("predictor"                 ,fdyn.get<string>("PREDICTOR"));
+  fluidadjointtimeparams->set<string>          ("predictor"                 ,fdyn.get<std::string>("PREDICTOR"));
   // set linearisation scheme
   fluidadjointtimeparams->set<int>("Linearisation", DRT::INPUT::IntegralValue<INPAR::FLUID::LinearisationAction>(fdyn,"NONLINITER"));
   // maximum number of nonlinear iteration steps
@@ -189,7 +189,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   // stop nonlinear iteration when both incr-norms are below this bound
   fluidadjointtimeparams->set<double>          ("tolerance for nonlin iter" ,fdyn.get<double>("CONVTOL"));
   // set convergence check
-  fluidadjointtimeparams->set<string>          ("CONVCHECK"  ,fdyn.get<string>("CONVCHECK"));
+  fluidadjointtimeparams->set<string>          ("CONVCHECK"  ,fdyn.get<std::string>("CONVCHECK"));
   // set adaptive linear solver tolerance
 
   // ---------------------------------------------- objective variables
@@ -217,7 +217,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   fluidadjointtimeparams->set<INPAR::TOPOPT::AdjointTestCases>("special test case",DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointTestCases>(adjointfdyn,"TESTCASE"));
 
   // ------------------------------------ potential Neumann inflow terms
-  fluidadjointtimeparams->set<string> ("Neumann inflow",fdyn.get<string>("NEUMANNINFLOW"));
+  fluidadjointtimeparams->set<string> ("Neumann inflow",fdyn.get<std::string>("NEUMANNINFLOW"));
 
   // -----------------------sublist containing stabilization parameters
   fluidadjointtimeparams->sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");

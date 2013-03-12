@@ -222,16 +222,16 @@ void MAT::Robinson::Unpack(const std::vector<char>& data)
     isinit_ = false;
 
   // unpack strain vectors
-  strainpllast_ = Teuchos::rcp( new vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
-  strainplcurr_ = Teuchos::rcp( new vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
+  strainpllast_ = Teuchos::rcp( new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
+  strainplcurr_ = Teuchos::rcp( new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
 
   // unpack back stress vectors (for kinematic hardening)
-  backstresslast_ = Teuchos::rcp( new vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
-  backstresscurr_ = Teuchos::rcp( new vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
+  backstresslast_ = Teuchos::rcp( new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
+  backstresscurr_ = Teuchos::rcp( new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> > );
 
   // unpack matrices needed for condensed system
-  kvarva_ = Teuchos::rcp( new vector<LINALG::Matrix<2*NUM_STRESS_3D,1> > );
-  kvakvae_ = Teuchos::rcp( new vector<LINALG::Matrix<2*NUM_STRESS_3D,NUM_STRESS_3D> > );
+  kvarva_ = Teuchos::rcp( new std::vector<LINALG::Matrix<2*NUM_STRESS_3D,1> > );
+  kvakvae_ = Teuchos::rcp( new std::vector<LINALG::Matrix<2*NUM_STRESS_3D,NUM_STRESS_3D> > );
 
   for (int var=0; var<numgp; ++var)
   {

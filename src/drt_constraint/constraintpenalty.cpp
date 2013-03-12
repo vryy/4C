@@ -210,7 +210,7 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
       // is conditions already labeled as active?
       if(activecons_.find(condID)->second==false)
       {
-        const string action = params.get<string>("action");
+        const std::string action = params.get<std::string>("action");
         // last converged step is used reference
         Initialize(params);
         params.set("action",action);
@@ -237,12 +237,12 @@ void UTILS::ConstraintPenalty::EvaluateConstraint(
       Epetra_SerialDenseVector elevector2;
       Epetra_SerialDenseVector elevector3;
 
-      map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+      std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
       // if (geom.empty()) dserror("evaluation of condition with empty geometry");
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
       // to the condition geometry
-      map<int,RCP<DRT::Element> >::iterator curr;
+      std::map<int,RCP<DRT::Element> >::iterator curr;
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector and ownerships
@@ -327,11 +327,11 @@ void UTILS::ConstraintPenalty::EvaluateError(
       Epetra_SerialDenseVector elevector2;
       Epetra_SerialDenseVector elevector3;
 
-      map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+      std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
       // to the condition geometry
-      map<int,RCP<DRT::Element> >::iterator curr;
+      std::map<int,RCP<DRT::Element> >::iterator curr;
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
       {
         // get element location vector and ownerships
@@ -351,8 +351,8 @@ void UTILS::ConstraintPenalty::EvaluateError(
 
         // assembly
 
-        vector<int> constrlm;
-        vector<int> constrowner;
+        std::vector<int> constrlm;
+        std::vector<int> constrowner;
         constrlm.push_back(condID-1);
         constrowner.push_back(curr->second->Owner());
         LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);

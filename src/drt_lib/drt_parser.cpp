@@ -57,7 +57,7 @@ Maintainer: Burkhard Bornemann
 
 /*----------------------------------------------------------------------*/
 /*!
-\brief method used to step through string funct_
+\brief method used to step through std::string funct_
        delivers its character at position pos_++
 \author u.kue
 \date 10/07

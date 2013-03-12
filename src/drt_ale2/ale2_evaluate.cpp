@@ -37,7 +37,7 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList&   params,
   DRT::ELEMENTS::Ale2::ActionType act = Ale2::none;
 
   // get the action required
-  std::string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none")
     dserror("No action supplied");
   else if (action == "calc_ale_lin_stiff")
@@ -328,7 +328,7 @@ void DRT::ELEMENTS::Ale2::ale2_tors_spring_quad4(Epetra_SerialDenseMatrix* sys_m
 
 
 void DRT::ELEMENTS::Ale2::static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
-                                           vector<double>& displacements)
+                                           std::vector<double>& displacements)
 {
   const int iel = NumNode();                              // numnp to this element
   const DiscretizationType distype = this->Shape();
@@ -501,7 +501,7 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
 
 void DRT::ELEMENTS::Ale2::static_ke(
   DRT::Discretization       &dis     ,
-  vector<int>               &lm      ,
+  std::vector<int>          &lm      ,
   Epetra_SerialDenseMatrix  *sys_mat ,
   Epetra_SerialDenseVector  *residual,
   Teuchos::RCP<MAT::Material> material,
@@ -732,7 +732,7 @@ return;
 
 void DRT::ELEMENTS::Ale2::static_ke_laplace(
   DRT::Discretization        &dis     ,
-  vector<int>                &lm      ,
+  std::vector<int>           &lm      ,
   Epetra_SerialDenseMatrix   *sys_mat ,
   Epetra_SerialDenseVector   *residual,
   Teuchos::RCP<MAT::Material>  material,

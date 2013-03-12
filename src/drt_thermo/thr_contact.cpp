@@ -990,7 +990,7 @@ void THR::ThermoContactMan::AssembleB(LINALG::SparseMatrix& bmatrix)
       int mastergid=0;
       std::set<int>::iterator mcurr;
       int size = 0;
-      std::vector<map<int,double> > bmap;
+      std::vector<std::map<int,double> > bmap;
 
       bmap = cnode->GetB();
       bnodes = cnode->GetBNodes();

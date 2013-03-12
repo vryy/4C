@@ -147,7 +147,7 @@ STR::TimIntImpl::TimIntImpl
   // in this case, we need a basis vector for the nullspace/kernel
 
   // get condition "KrylovSpaceProjection" from discretization
-  vector<DRT::Condition*> KSPcond;
+  std::vector<DRT::Condition*> KSPcond;
   discret_->GetCondition("KrylovSpaceProjection",KSPcond);
   int numcond = KSPcond.size();
   int numsolid = 0;

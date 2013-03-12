@@ -203,7 +203,7 @@ std::map<int,std::map<int,std::vector<std::vector<double> > > > EXODUS::EleCente
 //    EXODUS::PlotCosys(myCLine,mymesh,eb_ids);       //generation of accordant Gmsh-file
 //
 //    // plot mesh to gmsh
-//    string meshname = "centerlinemesh.gmsh";
+//    std::string meshname = "centerlinemesh.gmsh";
 //    mymesh.PlotElementBlocksGmsh(meshname,mymesh,eb_ids);
 //    cout << "...done" << endl;
 

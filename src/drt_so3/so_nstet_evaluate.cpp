@@ -116,7 +116,7 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
   DRT::ELEMENTS::NStet::ActionType act = NStet::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff")                act = NStet::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff")                act = NStet::calc_struct_nlnstiff;
@@ -235,10 +235,10 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
         if (ele == ElementType().pstab_cid_mis_.end()) dserror("Cannot find this element");
         std::map<int,std::vector<double> >::iterator elew = ElementType().pstab_cid_mis_weight_.find(Id());
         if (elew == ElementType().pstab_cid_mis_weight_.end()) dserror("Cannot find this element weight");
-        vector<int>& mis = ele->second;
+        std::vector<int>& mis = ele->second;
         const int nummis = (int)mis.size();
         if (nummis < 1) dserror("Element not associated with any mis node");
-        vector<double>& misw = elew->second;
+        std::vector<double>& misw = elew->second;
         const int nummisw = (int)misw.size();
         if (nummis != nummisw) dserror("Number of patches and weight mismatch");
         double totweight = 0.0;
@@ -284,10 +284,10 @@ int DRT::ELEMENTS::NStet::Evaluate(Teuchos::ParameterList& params,
     // (depending on what this routine is called for from the post filter)
     case postprocess_stress:
     {
-      const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-        params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+      const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+        params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
       if (gpstressmap==Teuchos::null) dserror("no gp stress/strain map available for postprocessing");
-      string stresstype = params.get<string>("stresstype","ndxyz");
+      std::string stresstype = params.get<std::string>("stresstype","ndxyz");
 
       const int gid = Id();
       LINALG::Matrix<1,6> gpstress(((*gpstressmap)[gid])->A(),true);

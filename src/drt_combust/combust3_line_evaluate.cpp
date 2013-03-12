@@ -28,7 +28,7 @@ int DRT::ELEMENTS::Combust3Line::Evaluate(
         Epetra_SerialDenseVector& elevec3)
 {
   DRT::ELEMENTS::Combust3Line::ActionType act = Combust3Line::none;
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else dserror("Unknown type of action for Combust3_Line");
 
@@ -69,7 +69,7 @@ void DRT::ELEMENTS::Combust3Line::LocationVector(
     ) const
 {
   DRT::ELEMENTS::Combust3Line::ActionType act = Combust3Line::none;
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
 
   switch(act)

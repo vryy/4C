@@ -72,9 +72,9 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
   //----------------------------------------------------------------------
 
   // the criterion allows differences in coordinates by 1e-9
-  set<double,LineSortCriterion> x1coords;
-  set<double,LineSortCriterion> x2coords;
-  set<double,LineSortCriterion> x3coords;
+  std::set<double,LineSortCriterion> x1coords;
+  std::set<double,LineSortCriterion> x2coords;
+  std::set<double,LineSortCriterion> x3coords;
 
   // loop nodes and build sets of lines in x1-,x2- and x3-direction
   // accessible on this proc
@@ -97,8 +97,8 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
 #endif
     int numprocs=discret_->Comm().NumProc();
 
-    vector<char> sblock;
-    vector<char> rblock;
+    std::vector<char> sblock;
+    std::vector<char> rblock;
 
 #ifdef PARALLEL
     // create an exporter for point to point communication
@@ -123,7 +123,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
       {
         DRT::ParObject::AddtoPack(data,*x1line);
       }
-      swap( sblock, data() );
+      std::swap( sblock, data() );
 
 #ifdef PARALLEL
       MPI_Request request;
@@ -166,7 +166,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
 
         coordsvec.clear();
 
-        vector<char>::size_type index = 0;
+        std::vector<char>::size_type index = 0;
         while (index < rblock.size())
         {
           double onecoord;
@@ -194,7 +194,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
       {
         DRT::ParObject::AddtoPack(data,*x2line);
       }
-      swap( sblock, data() );
+      std::swap( sblock, data() );
 
 #ifdef PARALLEL
       MPI_Request request;
@@ -237,7 +237,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
 
         coordsvec.clear();
 
-        vector<char>::size_type index = 0;
+        std::vector<char>::size_type index = 0;
         while (index < rblock.size())
         {
           double onecoord;
@@ -265,7 +265,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
       {
         DRT::ParObject::AddtoPack(data,*x3line);
       }
-      swap( sblock, data() );
+      std::swap( sblock, data() );
 
 #ifdef PARALLEL
       MPI_Request request;
@@ -308,7 +308,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
 
         coordsvec.clear();
 
-        vector<char>::size_type index = 0;
+        std::vector<char>::size_type index = 0;
         while (index < rblock.size())
         {
           double onecoord;
@@ -404,7 +404,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
 
     // check pbc: the filtering is only done on the master side
     // check whether we have a pbc condition for this node
-     vector<DRT::Condition*> mypbc;
+     std::vector<DRT::Condition*> mypbc;
      // lines are not considered at the moment as a 3d-domain are expected
      node->GetCondition("SurfacePeriodic",mypbc);
 
@@ -416,8 +416,8 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
        unsigned nummaster = 0;
        for (unsigned numcond=0;numcond<mypbc.size();++numcond)
        {
-         const string* mymasterslavetoggle
-         = mypbc[numcond]->Get<string>("Is slave periodic boundary condition");
+         const std::string* mymasterslavetoggle
+         = mypbc[numcond]->Get<std::string>("Is slave periodic boundary condition");
 
          // yes, there is a master condition
          if(*mymasterslavetoggle=="Master")
@@ -768,7 +768,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
     }
 
     // store vector in matrix
-    vector<int> dofs = discret_->Dof(node);
+    std::vector<int> dofs = discret_->Dof(node);
     // store value in vector
     for(int d=0;d<discret_->NumDof(node)-1;++d)
     {
@@ -777,7 +777,7 @@ void FLD::LESScaleSeparation::ConstructSepMatGeoMultigrid()
       std::vector<int> dofcolids;
       for (size_t numnodes=0; numnodes<all_nodes.size(); numnodes++)
       {
-        vector<int> coldofs = discret_->Dof(all_nodes[numnodes]);
+        std::vector<int> coldofs = discret_->Dof(all_nodes[numnodes]);
         int dofcolid = coldofs[d];
         dofcolids.push_back(dofcolid);
       }

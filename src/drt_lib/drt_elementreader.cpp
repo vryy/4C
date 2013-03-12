@@ -35,7 +35,7 @@ namespace INPUT
 /*----------------------------------------------------------------------*/
 ElementReader::ElementReader(Teuchos::RCP<Discretization> dis,
                              const DRT::INPUT::DatFileReader& reader,
-                             string sectionname)
+                             std::string sectionname)
   : name_(dis->Name()),
     reader_(reader),
     comm_(reader.Comm()),
@@ -49,8 +49,8 @@ ElementReader::ElementReader(Teuchos::RCP<Discretization> dis,
 /*----------------------------------------------------------------------*/
 ElementReader::ElementReader(Teuchos::RCP<Discretization> dis,
                              const DRT::INPUT::DatFileReader& reader,
-                             string sectionname,
-                             string elementtype)
+                             std::string sectionname,
+                             std::string elementtype)
   : name_(dis->Name()),
     reader_(reader),
     comm_(reader.Comm()),
@@ -65,7 +65,7 @@ ElementReader::ElementReader(Teuchos::RCP<Discretization> dis,
 /*----------------------------------------------------------------------*/
 ElementReader::ElementReader(Teuchos::RCP<Discretization> dis,
                              const DRT::INPUT::DatFileReader& reader,
-                             string sectionname,
+                             std::string sectionname,
                              const std::set<std::string> & elementtypes)
   : name_(dis->Name()),
     reader_(reader),
@@ -116,7 +116,7 @@ void ElementReader::Partition()
   // vector of all global element ids
   std::vector<int> eids;
   int numele = 0;
-  string inputfile_name = reader_.MyInputfileName();
+  std::string inputfile_name = reader_.MyInputfileName();
 
   // all reading is done on proc 0
   if (myrank==0)
@@ -141,7 +141,7 @@ void ElementReader::Partition()
       // Ok. We do this twice here! The first time we just gather the
       // element numbers. With those we construct a preliminary element
       // row map.
-      string line;
+      std::string line;
       for (int i=0; getline(file, line); ++i)
       {
         if (line.find("--")==0)
@@ -153,7 +153,7 @@ void ElementReader::Partition()
           std::istringstream t;
           t.str(line);
           int elenumber;
-          string eletype;
+          std::string eletype;
           t >> elenumber >> eletype;
           elenumber -= 1;
 
@@ -194,7 +194,7 @@ void ElementReader::Partition()
   // --------------------------------------------------
   // - determine a preliminary element distribution
 
-  // number of element junks to split the reading process in
+  // number of element chunks to split the reading process in
   // approximate block size (just a guess!)
   int nblock = numproc;
   int bsize = static_cast<int>(numele)/nblock;
@@ -234,7 +234,7 @@ void ElementReader::Partition()
   // use serial metis. If this turns out to be too memory consuming,
   // we have to use parmetis and use the distributed elements from the
   // discretization.
-  list<vector<int> > elementnodes;
+  std::list<std::vector<int> > elementnodes;
 #endif
 
   // --------------------------------------------------
@@ -250,7 +250,7 @@ void ElementReader::Partition()
     file.open(inputfile_name.c_str());
     file.seekg(reader_.ExcludedSectionPosition(sectionname_));
   }
-  string line;
+  std::string line;
   int filecount=0;
   bool endofsection = false;
 
@@ -289,8 +289,8 @@ void ElementReader::Partition()
           std::istringstream t;
           t.str(line);
           int elenumber;
-          string eletype;
-          string distype;
+          std::string eletype;
+          std::string distype;
           // read element id type and distype
           t >> elenumber >> eletype >> distype;
           elenumber -= 1;
@@ -345,9 +345,9 @@ void ElementReader::Partition()
             // all node gids of this element are inserted into a set of
             // node ids --- it will be used later during reading of nodes
             // to add the node to one or more discretisations
-            copy(nodeids, nodeids+numnode, inserter(nodes_, nodes_.begin()));
+            std::copy(nodeids, nodeids+numnode, std::inserter(nodes_, nodes_.begin()));
 #if !defined(PARALLEL) || !defined(PARMETIS)
-            elementnodes.push_back(vector<int>(nodeids, nodeids+numnode));
+            elementnodes.push_back(std::vector<int>(nodeids, nodeids+numnode));
 #endif
 
             ++bcount;
@@ -485,7 +485,7 @@ void ParticleReader::Partition()
   // vector of all global particle ids
   std::vector<int> particleids;
   int numparticles = 0;
-  string inputfile_name = reader_.MyInputfileName();
+  std::string inputfile_name = reader_.MyInputfileName();
 
   // all reading is done on proc 0
   if (myrank==0)
@@ -507,7 +507,7 @@ void ParticleReader::Partition()
       // Comments in the node section are not supported!
 
       // Here we construct a preliminary particle row map.
-      string line;
+      std::string line;
       for (int i=0; getline(file, line); ++i)
       {
         if (line.find("--")==0)
@@ -519,7 +519,7 @@ void ParticleReader::Partition()
           std::istringstream t;
           t.str(line);
           int nodeid;
-          string nodetype;
+          std::string nodetype;
           t >> nodetype >> nodeid;
           nodeid -= 1;
 

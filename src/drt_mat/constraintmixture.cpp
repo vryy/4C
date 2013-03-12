@@ -482,7 +482,7 @@ void MAT::ConstraintMixture::Evaluate
   // get variables from params
   double dt = params.get<double>("delta time",-1.0);
   double time = params.get<double>("total time",-1.0);
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   bool output = false;
   if (action == "calc_struct_stress") output = true;
 

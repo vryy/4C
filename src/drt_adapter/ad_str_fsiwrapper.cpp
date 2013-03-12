@@ -131,7 +131,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::FSIStructureWrapper::PredictInterfaceDispnp
   }
   default:
     dserror("unknown interface displacement predictor '%s'",
-             DRT::Problem::Instance()->FSIDynamicParams().get<string>("PREDICTOR").c_str());
+             DRT::Problem::Instance()->FSIDynamicParams().get<std::string>("PREDICTOR").c_str());
     break;
   }
 

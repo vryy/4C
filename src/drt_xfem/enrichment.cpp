@@ -50,7 +50,7 @@ std::string XFEM::Enrichment::enrTypeToString(const EnrType type) const
         case typeJump:      typetext = "Jump"; break;
         case typeVoid:      typetext = "Void"; break;
         case typeKink:      typetext = "Kink"; break;
-        default: dserror("no string defined for EnrType");
+        default: dserror("no std::string defined for EnrType");
     };
     return typetext;
 }

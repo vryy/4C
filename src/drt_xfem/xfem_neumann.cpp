@@ -71,8 +71,8 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
   const double time = params.get("total time",-1.0);
   if (time<0.0) usetime = false;
 
-  multimap<string,DRT::Condition* >::iterator fool;
-  multimap<string,DRT::Condition* > condition;
+  std::multimap<std::string,DRT::Condition* >::iterator fool;
+  std::multimap<std::string,DRT::Condition* > condition;
 
   // vector for conditions of one special type
   std::vector<DRT::Condition *> condition_vec;
@@ -89,7 +89,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
   // copy conditions to a condition multimap
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-    condition.insert( pair<string,DRT::Condition* >(string("PointNeumann"),condition_vec[i]));
+    condition.insert( std::pair<std::string,DRT::Condition* >(string("PointNeumann"),condition_vec[i]));
   }
 
   // get standard Surface Neumann conditions
@@ -97,7 +97,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
   discret.GetCondition("LineNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-    condition.insert( pair<string,DRT::Condition* >(string("LineNeumann"),condition_vec[i]));
+    condition.insert( std::pair<std::string,DRT::Condition* >(string("LineNeumann"),condition_vec[i]));
   }
 
   // get standard Surface Neumann conditions
@@ -105,7 +105,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
   discret.GetCondition("SurfaceNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-    condition.insert( pair<string,DRT::Condition* >(string("SurfaceNeumann"),condition_vec[i]));
+    condition.insert( std::pair<std::string,DRT::Condition* >(string("SurfaceNeumann"),condition_vec[i]));
   }
 
   // get XFEM Point Neumann conditions
@@ -113,7 +113,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
   discret.GetCondition("PointXFEMNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-    condition.insert( pair<string,DRT::Condition* >(string("PointXFEMNeumann"),condition_vec[i]));
+    condition.insert( std::pair<std::string,DRT::Condition* >(string("PointXFEMNeumann"),condition_vec[i]));
   }
 
   // get XFEM Line Neumann conditions
@@ -121,7 +121,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
   discret.GetCondition("LineXFEMNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-    condition.insert( pair<string,DRT::Condition* >(string("LineXFEMNeumann"),condition_vec[i]));
+    condition.insert( std::pair<std::string,DRT::Condition* >(string("LineXFEMNeumann"),condition_vec[i]));
   }
 
   // get XFEM Surface Neumann conditions
@@ -129,7 +129,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
   discret.GetCondition("SurfaceXFEMNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-    condition.insert( pair<string,DRT::Condition* >(string("SurfaceXFEMNeumann"),condition_vec[i]));
+    condition.insert( std::pair<std::string,DRT::Condition* >(string("SurfaceXFEMNeumann"),condition_vec[i]));
   }
 
   // get XFEM Surface Neumann conditions
@@ -137,7 +137,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
   discret.GetCondition("VolXFEMNeumann", condition_vec);
   for(size_t i=0; i< condition_vec.size(); i++)
   {
-    condition.insert( pair<string,DRT::Condition* >(string("VolXFEMNeumann"),condition_vec[i]));
+    condition.insert( std::pair<std::string,DRT::Condition* >(string("VolXFEMNeumann"),condition_vec[i]));
   }
 
   // evaluate standard Neumann conditions
@@ -172,7 +172,7 @@ void XFEM::EvaluateNeumann(  Teuchos::RCP<XFEM::FluidWizard>      wizard,
 /*----------------------------------------------------------------------*
  |  evaluate Neumann for standard conditions (public)       schott 08/11|
  *----------------------------------------------------------------------*/
-void XFEM::EvaluateNeumannStandard( multimap<string,DRT::Condition* > &   condition,
+void XFEM::EvaluateNeumannStandard( std::multimap<std::string,DRT::Condition* > &   condition,
                                     bool                                  usetime,
                                     const double                          time,
                                     bool                                  assemblemat,
@@ -183,7 +183,7 @@ void XFEM::EvaluateNeumannStandard( multimap<string,DRT::Condition* > &   condit
 {
   //TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EvaluateNeumannStandard" );
 
-  multimap<string,DRT::Condition* >::iterator fool;
+  std::multimap<std::string,DRT::Condition* >::iterator fool;
 
   //--------------------------------------------------------
   // loop through Point Neumann conditions and evaluate them
@@ -213,7 +213,7 @@ void XFEM::EvaluateNeumannStandard( multimap<string,DRT::Condition* > &   condit
       DRT::Node* actnode = discret.gNode((*nodeids)[i]);
       if (!actnode) dserror("Cannot find global node %d",(*nodeids)[i]);
       // call explicitly the main dofset, i.e. the first column
-      vector<int> dofs = discret.Dof(0,actnode);
+      std::vector<int> dofs = discret.Dof(0,actnode);
       const unsigned numdf = dofs.size();
       for (unsigned j=0; j<numdf; ++j)
       {
@@ -238,8 +238,8 @@ void XFEM::EvaluateNeumannStandard( multimap<string,DRT::Condition* > &   condit
     )
     {
       DRT::Condition& cond = *(fool->second);
-      map<int,RCP<DRT::Element> >& geom = cond.Geometry();
-      map<int,RCP<DRT::Element> >::iterator curr;
+      std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+      std::map<int,RCP<DRT::Element> >::iterator curr;
       Epetra_SerialDenseVector elevector;
       Epetra_SerialDenseMatrix elematrix;
       for (curr=geom.begin(); curr!=geom.end(); ++curr)
@@ -275,7 +275,7 @@ void XFEM::EvaluateNeumannStandard( multimap<string,DRT::Condition* > &   condit
  |  evaluate Neumann for XFEM conditions (public)           schott 09/11|
  *----------------------------------------------------------------------*/
 void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
-                                multimap<string,DRT::Condition* > &  condition,
+                                std::multimap<std::string,DRT::Condition* > &  condition,
                                 bool                                 usetime,
                                 const double                         time,
                                 bool                                 assemblemat,
@@ -287,7 +287,7 @@ void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
 {
   //TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::EvaluateNeumannXFEM" );
 
-  multimap<string,DRT::Condition* >::iterator fool;
+  std::multimap<std::string,DRT::Condition* >::iterator fool;
 
   //--------------------------------------------------------
   // loop through line/surface Neumann BCs and evaluate them
@@ -302,8 +302,8 @@ void XFEM::EvaluateNeumannXFEM( Teuchos::RCP<XFEM::FluidWizard>      wizard,
     if (fool->first == (string)"SurfaceXFEMNeumann")
     {
       DRT::Condition& cond = *(fool->second);
-      map<int,RCP<DRT::Element> >& geom = cond.Geometry();
-      map<int,RCP<DRT::Element> >::iterator curr;
+      std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+      std::map<int,RCP<DRT::Element> >::iterator curr;
       Epetra_SerialDenseVector elevector;
       Epetra_SerialDenseMatrix elematrix;
 

@@ -58,12 +58,12 @@ TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
   // account for potential Neuman inflow terms if required
   // -------------------------------------------------------------------
   neumanninflow_ = false;
-  if (params_->get<string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
+  if (params_->get<std::string>("Neumann inflow","no") == "yes") neumanninflow_ = true;
 
   // -------------------------------------------------------------------
   // care for periodic boundary conditions
   // -------------------------------------------------------------------
-  pbcmapmastertoslave_ = params_->get<RCP<map<int,std::vector<int> > > >("periodic bc");
+  pbcmapmastertoslave_ = params_->get<RCP<std::map<int,std::vector<int> > > >("periodic bc");
   discret_->ComputeNullSpaceIfNecessary(solver_->Params(),true);
 
   // ensure that degrees of freedom in the discretization have been set
@@ -443,7 +443,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
       // CONVCHECK is set to L_2_norm_without_residual_at_itemax
       if ((itnum != itemax)
           ||
-          (params_->get<string>("CONVCHECK","L_2_norm")
+          (params_->get<std::string>("CONVCHECK","L_2_norm")
               !=
                   "L_2_norm_without_residual_at_itemax"))
       {
@@ -613,9 +613,9 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
       // do adaptive linear solver tolerance (not in first solve)
       if (isadapttol && itnum>1)
       {
-        double currresidual = max(vresnorm_,presnorm_);
-        currresidual = max(currresidual,incvelnorm_L2_/velnorm_L2_);
-        currresidual = max(currresidual,incprenorm_L2_/prenorm_L2_);
+        double currresidual = std::max(vresnorm_,presnorm_);
+        currresidual = std::max(currresidual,incvelnorm_L2_/velnorm_L2_);
+        currresidual = std::max(currresidual,incprenorm_L2_/prenorm_L2_);
         solver_->AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
@@ -949,7 +949,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::EvaluateDirichlet()
       }
       }
 
-      vector<int> gdofs = discret_->Dof(node);
+      std::vector<int> gdofs = discret_->Dof(node);
       velnp_->ReplaceGlobalValues(nsd,(double*)values,&gdofs[0]); // &dofs[0] gives pointer to dofs
     }
   }

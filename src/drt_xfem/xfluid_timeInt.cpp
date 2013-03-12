@@ -123,14 +123,14 @@ void XFEM::XFluidTimeInt::SetAndPrintStatus(bool screenout)
 
 
 /*----------------------------------------------------------------------*
-| returns matching string for each reconstruction method   schott 07/12 |
+| returns matching std::string for each reconstruction method   schott 07/12 |
 *----------------------------------------------------------------------*/
 std::string XFEM::XFluidTimeInt::MapMethodEnumToString
 (
    const enum INPAR::XFEM::XFluidTimeInt term
 )
 {
-  // length of return string is 14 due to usage in formated screen output
+  // length of return std::string is 14 due to usage in formated screen output
   switch (term)
   {
   case INPAR::XFEM::Xf_TimeInt_Copy:
@@ -855,7 +855,7 @@ void XFEM::XFluidTimeInt::IdentifyOldSets(
     {
       GEO::CUT::VolumeCell* vc = *vcs;
 
-      // get sides involved in creation boundary cells (map<sideId,bcells>)
+      // get sides involved in creation boundary cells (std::map<sideId,bcells>)
       vc->GetBoundaryCells(bcells_new);
     }
   }
@@ -889,7 +889,7 @@ void XFEM::XFluidTimeInt::IdentifyOldSets(
       {
         GEO::CUT::VolumeCell* vc = *vcs;
 
-        // get sides involved in creation boundary cells (map<sideId,bcells>)
+        // get sides involved in creation boundary cells (std::map<sideId,bcells>)
         vc->GetBoundaryCells(bcells_old);
       }
     }

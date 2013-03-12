@@ -37,8 +37,8 @@ DRT::ParObject* DRT::ELEMENTS::TransportType::Create( const std::vector<char> & 
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportType::Create( const string eletype,
-                                                            const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::TransportType::Create( const std::string eletype,
+                                                            const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {
@@ -572,7 +572,7 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::Transport::Volumes()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                gjb 01/09|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::Transport::VisNames(std::map<string,int>& names)
+void DRT::ELEMENTS::Transport::VisNames(std::map<std::string,int>& names)
 {
 
   // see whether we have additional data for visualization in our container
@@ -582,24 +582,24 @@ void DRT::ELEMENTS::Transport::VisNames(std::map<string,int>& names)
     temp << k;
 
     // element Peclet number
-    string name = "Pe_"+temp.str();
+    std::string name = "Pe_"+temp.str();
     const std::vector<double>* Pe = data_.Get<std::vector<double> >(name);
-    if (Pe) names.insert(std::pair<string,int>(name,1));
+    if (Pe) names.insert(std::pair<std::string,int>(name,1));
 
     // element Peclet number (only migration term)
     name = "Pe_mig_"+temp.str();
     const std::vector<double>* Pe_mig = data_.Get<std::vector<double> >(name);
-    if (Pe_mig) names.insert(std::pair<string,int>(name,1));
+    if (Pe_mig) names.insert(std::pair<std::string,int>(name,1));
 
     //characteristic element length
     name = "hk_"+temp.str();
     const std::vector<double>* hk = data_.Get<std::vector<double> >(name);
-    if (hk) names.insert(std::pair<string,int>(name,1));
+    if (hk) names.insert(std::pair<std::string,int>(name,1));
 
     // Stabilization parameter at element center
     name = "tau_"+temp.str();
     const std::vector<double>* tau = data_.Get<std::vector<double> >(name);
-    if (tau) names.insert(std::pair<string,int>(name,1));
+    if (tau) names.insert(std::pair<std::string,int>(name,1));
 
   } // loop over transported scalars
 

@@ -34,7 +34,7 @@ int DRT::ELEMENTS::Beam2r::Evaluate(Teuchos::ParameterList& params,
 {
   DRT::ELEMENTS::Beam2r::ActionType act = Beam2r::calc_none;
   // get the action required
-  string action = params.get<string>("action","calc_none");
+  std::string action = params.get<std::string>("action","calc_none");
   if (action == "calc_none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff")      act = Beam2r::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff")      act = Beam2r::calc_struct_nlnstiff;
@@ -348,7 +348,7 @@ int DRT::ELEMENTS::Beam2r::EvaluateNeumann(Teuchos::ParameterList& params,
   // element displacements
   RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
-  vector<double> mydisp(lm.size());
+  std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
 
@@ -818,7 +818,7 @@ int DRT::ELEMENTS::Beam2r::HowManyRandomNumbersINeed()
  | translation parallel to filament axis, damping of translation orthogonal to filament axis, damping of     |
  | rotation around filament axis                                             (public)           cyron   10/09|
  *----------------------------------------------------------------------------------------------------------*/
-inline void DRT::ELEMENTS::Beam2r::MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel,const DRT::UTILS::IntegrationPoints1D gausspoints, const vector<double> jacobi)
+inline void DRT::ELEMENTS::Beam2r::MyDampingConstants(Teuchos::ParameterList& params,LINALG::Matrix<3,1>& gamma, const INPAR::STATMECH::FrictionModel& frictionmodel,const DRT::UTILS::IntegrationPoints1D gausspoints, const std::vector<double> jacobi)
 {  
   //translational damping coefficients according to Howard, p. 107, table 6.2;
   gamma(0) = 2*PI*params.get<double>("ETA",0.0);
@@ -897,7 +897,7 @@ inline void DRT::ELEMENTS::Beam2r::MyTranslationalDamping(Teuchos::ParameterList
   INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
   
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
-  vector<double> jacobi(jacobimass_);
+  std::vector<double> jacobi(jacobimass_);
   
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;
@@ -995,7 +995,7 @@ inline void DRT::ELEMENTS::Beam2r::MyStochasticForces(Teuchos::ParameterList& pa
   INPAR::STATMECH::FrictionModel frictionmodel = DRT::INPUT::get<INPAR::STATMECH::FrictionModel>(params,"FRICTION_MODEL");
   
   //get vector jacobi with Jacobi determinants at each integration point (gets by default those values required for consistent damping matrix)
-  vector<double> jacobi(jacobimass_);
+  std::vector<double> jacobi(jacobimass_);
   
   //determine type of numerical integration performed (lumped damping matrix via lobatto integration!)
   IntegrationType integrationtype = gaussexactintegration;

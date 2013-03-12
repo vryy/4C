@@ -66,7 +66,7 @@ void DRT::Discretization::BoundaryConditionsGeometry()
 
   // now we delete all old geometries that are attached to any conditions
   // and set a communicator to the condition
-  multimap<string,RCP<DRT::Condition> >::iterator fool;
+  std::multimap<std::string,RCP<DRT::Condition> >::iterator fool;
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
   {
     fool->second->ClearGeometry();
@@ -91,7 +91,7 @@ void DRT::Discretization::BoundaryConditionsGeometry()
 
   // create a map that holds the overall number of created elements
   // associated with a specific condition type
-  map<string, int> numele;
+  std::map<std::string, int> numele;
 
   // Loop all conditions and build geometry description if desired
   for (fool=condition_.begin(); fool != condition_.end(); ++fool)
@@ -117,7 +117,7 @@ void DRT::Discretization::BoundaryConditionsGeometry()
       // determine the local number of created elements associated with
       // the active condition
       int localcount=0;
-      for (map<int,RCP<DRT::Element> >::iterator iter=fool->second->Geometry().begin();
+      for (std::map<int,RCP<DRT::Element> >::iterator iter=fool->second->Geometry().begin();
            iter!=fool->second->Geometry().end();
            ++iter)
       {
@@ -168,8 +168,8 @@ void DRT::Discretization::BoundaryConditionsGeometry()
  *  h.kue 09/07
  */
 static void AssignGlobalIDs( const Epetra_Comm& comm,
-                             const map< vector<int>, RCP<DRT::Element> >& elementmap,
-                             map< int, RCP<DRT::Element> >& finalelements )
+                             const std::map< std::vector<int>, RCP<DRT::Element> >& elementmap,
+                             std::map< int, RCP<DRT::Element> >& finalelements )
 {
 #if 0
   // First, give own elements a local id and find out
@@ -190,7 +190,7 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
   // corresponding elements objects
   std::vector< std::vector< RCP<DRT::Element> > > ghostelements( comm.NumProc() );
 
-  map< vector<int>, RCP<DRT::Element> >::const_iterator elemsiter;
+  std::map< std::vector<int>, RCP<DRT::Element> >::const_iterator elemsiter;
   for( elemsiter = elementmap.begin(); elemsiter != elementmap.end(); ++elemsiter )
   {
       const RCP<DRT::Element> element = elemsiter->second;
@@ -238,7 +238,7 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
           std::vector<int>::iterator keyend = find( keybegin, requests[proc].end(), -1 );
           if ( keyend == requests[proc].end() )
               break;
-          std::vector<int> nodes = vector<int>( keybegin, keyend );
+          std::vector<int> nodes = std::vector<int>( keybegin, keyend );
           elemsiter = elementmap.find( nodes );
           if ( elemsiter == elementmap.end() )
               dserror( "Got request for unknown element" );
@@ -412,7 +412,7 @@ static void AssignGlobalIDs( const Epetra_Comm& comm,
  |  Build line geometry in a condition (public)              mwgee 01/07|
  *----------------------------------------------------------------------*/
 /* Hopefully improved by Heiner (h.kue 09/07) */
-void DRT::Discretization::BuildLinesinCondition( const string name,
+void DRT::Discretization::BuildLinesinCondition( const std::string name,
                                                  RCP<DRT::Condition> cond )
 {
   /* First: Create the line objects that belong to the condition. */
@@ -425,8 +425,8 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
   const int ngnode = nodeids->size();
 
   // ptrs to my row/column nodes of those
-  map<int,DRT::Node*> rownodes;
-  map<int,DRT::Node*> colnodes;
+  std::map<int,DRT::Node*> rownodes;
+  std::map<int,DRT::Node*> colnodes;
 
   for( int i=0; i<ngnode; ++i )
   {
@@ -448,9 +448,9 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
   }
 
   // map of lines in our cloud: (node_ids) -> line
-  map< vector<int>, RCP<DRT::Element> > linemap;
+  std::map< std::vector<int>, RCP<DRT::Element> > linemap;
   // loop these nodes and build all lines attached to them
-  map<int,DRT::Node*>::iterator fool;
+  std::map<int,DRT::Node*>::iterator fool;
   for( fool = rownodes.begin(); fool != rownodes.end(); ++fool )
   {
     // currently looking at actnode
@@ -510,7 +510,7 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
 
 
   // Lines be added to the condition: (line_id) -> (line).
-  map< int, RCP<DRT::Element> > finallines;
+  std::map< int, RCP<DRT::Element> > finallines;
 
   AssignGlobalIDs( Comm(), linemap, finallines );
   cond->AddGeometry( finallines );
@@ -522,7 +522,7 @@ void DRT::Discretization::BuildLinesinCondition( const string name,
  *----------------------------------------------------------------------*/
 /* Hopefully improved by Heiner (h.kue 09/07) */
 void DRT::Discretization::BuildSurfacesinCondition(
-                                        const string name,
+                                        const std::string name,
                                         RCP<DRT::Condition> cond)
 {
   // these conditions are special since associated volume conditions also need
@@ -548,8 +548,8 @@ void DRT::Discretization::BuildSurfacesinCondition(
   const int ngnode = nodeids->size();
 
   // ptrs to my row/column nodes of those
-  map<int,DRT::Node*> rownodes;
-  map<int,DRT::Node*> colnodes;
+  std::map<int,DRT::Node*> rownodes;
+  std::map<int,DRT::Node*> colnodes;
   for (int i=0; i<ngnode; ++i)
   {
     if (NodeColMap()->MyGID((*nodeids)[i]))
@@ -567,10 +567,10 @@ void DRT::Discretization::BuildSurfacesinCondition(
   }
 
   // map of surfaces in this cloud: (node_ids) -> (surface)
-  map< vector<int>, RCP<DRT::Element> > surfmap;
+  std::map< std::vector<int>, RCP<DRT::Element> > surfmap;
 
   // loop these row nodes and build all surfs attached to them
-  map<int,DRT::Node*>::iterator fool;
+  std::map<int,DRT::Node*>::iterator fool;
   for (fool=rownodes.begin(); fool != rownodes.end(); ++fool)
   {
     // currently looking at actnode
@@ -640,7 +640,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
   }
 
   // Surfaces be added to the condition: (line_id) -> (surface).
-  map< int, RCP<DRT::Element> > finalsurfs;
+  std::map< int, RCP<DRT::Element> > finalsurfs;
 
   AssignGlobalIDs( Comm(), surfmap, finalsurfs );
   cond->AddGeometry( finalsurfs );
@@ -651,7 +651,7 @@ void DRT::Discretization::BuildSurfacesinCondition(
  |  Build volume geometry in a condition (public)            mwgee 01/07|
  *----------------------------------------------------------------------*/
 void DRT::Discretization::BuildVolumesinCondition(
-                                        const string name,
+                                        const std::string name,
                                         RCP<DRT::Condition> cond)
 {
   // get ptrs to all node ids that have this condition
@@ -703,7 +703,7 @@ void DRT::Discretization::BuildVolumesinCondition(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void DRT::Discretization::FindAssociatedEleIDs(RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const string name)
+void DRT::Discretization::FindAssociatedEleIDs(RCP<DRT::Condition> cond, std::set<int>& VolEleIDs, const std::string name)
 {
   // determine constraint number
   int condID = cond->GetInt("coupling id");

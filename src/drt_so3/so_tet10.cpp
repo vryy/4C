@@ -40,8 +40,8 @@ DRT::ParObject* DRT::ELEMENTS::So_tet10Type::Create( const std::vector<char> & d
 }
 
 
-Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10Type::Create( const string eletype,
-                                                            const string eledistype,
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10Type::Create( const std::string eletype,
+                                                            const std::string eledistype,
                                                             const int id,
                                                             const int owner )
 {
@@ -447,19 +447,19 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Lines()
 /*----------------------------------------------------------------------*
  |  Return names of visualization data (public)                 st 01/10|
  *----------------------------------------------------------------------*/
-void DRT::ELEMENTS::So_tet10::VisNames(std::map<string,int>& names)
+void DRT::ELEMENTS::So_tet10::VisNames(std::map<std::string,int>& names)
 {
 
   if ((Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular))
   {
-    string fiber = "Fiber1";
+    std::string fiber = "Fiber1";
     names[fiber] = 3; // 3-dim vector
     fiber = "Fiber2";
     names[fiber] = 3; // 3-dim vector
   }
   if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular)
   {
-    string fiber = "Fiber1";
+    std::string fiber = "Fiber1";
     names[fiber] = 3; // 3-dim vector
     fiber = "Fiber2";
     names[fiber] = 3;

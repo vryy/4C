@@ -55,7 +55,7 @@ int DRT::IndependentPBCDofSet::AssignDegreesOfFreedom(const DRT::Discretization&
               master->second[0]);
     }
 
-    for (vector<int>::iterator slave=master->second.begin();
+    for (std::vector<int>::iterator slave=master->second.begin();
          slave!=master->second.end();
          ++slave)
     {

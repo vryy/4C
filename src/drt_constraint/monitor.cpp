@@ -130,11 +130,11 @@ void UTILS::Monitor::EvaluateMonitor
     Epetra_SerialDenseVector elevector2;
     Epetra_SerialDenseVector elevector3;
 
-    map<int,RCP<DRT::Element> >& geom = cond.Geometry();
+    std::map<int,RCP<DRT::Element> >& geom = cond.Geometry();
     // no check for empty geometry here since in parallel computations
     // can exist processors which do not own a portion of the elements belonging
     // to the condition geometry
-    map<int,RCP<DRT::Element> >::iterator curr;
+    std::map<int,RCP<DRT::Element> >::iterator curr;
     for (curr=geom.begin(); curr!=geom.end(); ++curr)
     {
       // get element location vector and ownerships
@@ -153,8 +153,8 @@ void UTILS::Monitor::EvaluateMonitor
       if (err) dserror("error while evaluating elements");
 
       // assembly
-      vector<int> constrlm;
-      vector<int> constrowner;
+      std::vector<int> constrlm;
+      std::vector<int> constrowner;
       constrlm.push_back(condID-offsetID);
       constrowner.push_back(curr->second->Owner());
       LINALG::Assemble(*systemvector,elevector3,constrlm,constrowner);

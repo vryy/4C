@@ -1559,7 +1559,7 @@ int main(int argc, char** argv)
      of the node you're interested in */
   int node = 0;
   my_comlinproc.setOption("node", &node, "Global node number",required);
-  /* Set a std::string command line option */
+  /* Set a string command line option */
   std::string infieldtype = "fluid";
   my_comlinproc.setOption("field", &infieldtype, "Field to which output node belongs (fluid, structure, ale, scatra)");
 

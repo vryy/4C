@@ -134,7 +134,7 @@ Teuchos::RCP<ART::ArtNetExplicitTimeInt> dyn_art_net_drt(bool CoupledTo3D)
   arterytimeparams.set                  ("write solution every"      ,artdyn.get<int>("UPRES"));
 
   // solution output
-  if (artdyn.get<string>("SOLVESCATRA")=="yes")
+  if (artdyn.get<std::string>("SOLVESCATRA")=="yes")
   {
     cout<<"Scatra will be solved"<<endl;
     arterytimeparams.set ("solve scatra", true);

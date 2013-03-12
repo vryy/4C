@@ -652,8 +652,8 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Teuc
   {
     // get # dofs per node from params_ list and split row map
     time.ResetStartTime();
-    vector<int> vgid(nlnode*nv);
-    vector<int> pgid(nlnode);
+    std::vector<int> vgid(nlnode*nv);
+    std::vector<int> pgid(nlnode);
     int vcount=0;
     for (int i=0; i<nlnode; ++i)
     {
@@ -661,7 +661,7 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Teuc
         vgid[vcount++] = fullmap.GID(i*ndofpernode+j);
       pgid[i] = fullmap.GID(i*ndofpernode+ndofpernode-1);
     }
-    vector<RCP<const Epetra_Map> > maps(2);
+    std::vector<RCP<const Epetra_Map> > maps(2);
     maps[0] = Teuchos::rcp(new Epetra_Map(-1,nlnode*nv,&vgid[0],0,fullmap.Comm()));
     maps[1] = Teuchos::rcp(new Epetra_Map(-1,nlnode,&pgid[0],0,fullmap.Comm()));
     vgid.clear(); pgid.clear();
@@ -757,12 +757,12 @@ void LINALG::SaddlePointPreconditioner::Setup(RCP<Epetra_Operator>& A,const Teuc
     ///////////// velocity transfer operators
     velparams->sublist("AMGBS Parameters").set("phase 1: max neighbour nodes", 1);
     velparams->sublist("AMGBS Parameters").set("phase 2: node attachement scheme","MaxLink");
-    string velProlongSmoother = velparams->sublist("AMGBS Parameters").get("amgbs: prolongator smoother (vel)","PA-AMG");
+    std::string velProlongSmoother = velparams->sublist("AMGBS Parameters").get("amgbs: prolongator smoother (vel)","PA-AMG");
     Tvel_[curlevel] = TransferOperatorFactory::Create(velProlongSmoother,A11_[curlevel],NULL); /* outfile */
     nextvelNS = Tvel_[curlevel]->buildTransferOperators(velaggs,naggregates_local,velparams->sublist("AMGBS Parameters"),curvelNS,0);
 
     //////////// pressure transfer operators
-    string preProlongSmoother = preparams->sublist("AMGBS Parameters").get("amgbs: prolongator smoother (pre)","PA-AMG");
+    std::string preProlongSmoother = preparams->sublist("AMGBS Parameters").get("amgbs: prolongator smoother (pre)","PA-AMG");
     Tpre_[curlevel] = TransferOperatorFactory::Create(preProlongSmoother,A22_[curlevel],NULL); /* outfile */
     nextpreNS = Tpre_[curlevel]->buildTransferOperators(preaggs,naggregates_local,preparams->sublist("AMGBS Parameters"),curpreNS,naggregates*nv);
 

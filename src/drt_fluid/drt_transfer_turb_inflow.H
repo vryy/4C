@@ -81,35 +81,35 @@ private:
 #ifdef PARALLEL
   //! receive a block in the round robin communication pattern
   void ReceiveBlock(
-    vector<char>  & rblock  ,
+    std::vector<char>  & rblock  ,
     DRT::Exporter & exporter,
     MPI_Request   & request );
 
   //! send a block in the round robin communication pattern
   void SendBlock(
-    vector<char>  & sblock  ,
+    std::vector<char>  & sblock  ,
     DRT::Exporter & exporter,
     MPI_Request   & request );
 #endif
 
   //! unpack all master values contained in receive block
   void UnpackLocalMasterValues(
-    vector<int>             & mymasters    ,
-    vector<std::vector<double> > & mymasters_vel,
-    vector<char>            & rblock
+    std::vector<int>             & mymasters    ,
+    std::vector<std::vector<double> > & mymasters_vel,
+    std::vector<char>            & rblock
     );
 
   //! pack all master values into a send block
   void PackLocalMasterValues(
-    vector<int>             & mymasters    ,
-    vector<std::vector<double> > & mymasters_vel,
+    std::vector<int>             & mymasters    ,
+    std::vector<std::vector<double> > & mymasters_vel,
     DRT::PackBuffer         & sblock
     );
 
   //! for all values avaible on the processor, do the final setting of the value
   void SetValuesAvailableOnThisProc(
-    vector<int>                 & mymasters,
-    vector<std::vector<double> >     & mymasters_vel,
+    std::vector<int>                 & mymasters,
+    std::vector<std::vector<double> >     & mymasters_vel,
     Teuchos::RCP<Epetra_Vector>   velnp);
 
   //! flag active boundary condition (may be used to switch off everything)

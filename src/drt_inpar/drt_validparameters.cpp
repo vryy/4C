@@ -353,7 +353,7 @@ void DRT::INPUT::StringParameter(std::string const &paramName,
 
   // The method Teuchos::setNumericStringParameter() cannot be used for arbitrary
   // string parameters, since the validate() method of the underlying
-  // AnyNumberParameterEntryValidator always tries to convert a given string to DOUBLE(s)!
+  // AnyNumberParameterEntryValidator always tries to convert a given std::string to DOUBLE(s)!
   // This may cause error messages in valgrind.
   // Thus, for arbitrary strings, such as needed for specifying a file or solver name, for instance,
   // this method which uses a StringValidator has to be used!
@@ -1267,7 +1267,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // list of parameters for the respective material
   StringParameter("PARAMLIST","none",
-                  "list of string of parameters to be optimized, order as in INV_LIST",
+                  "list of std::string of parameters to be optimized, order as in INV_LIST",
                   &statinvp);
 
   // number of optimization steps

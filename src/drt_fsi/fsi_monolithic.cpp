@@ -403,7 +403,7 @@ void FSI::Monolithic::PrepareTimeloop()
   if (Comm().MyPID()==0)
   {
     (*log_) << "# num procs      = " << Comm().NumProc() << "\n"
-            << "# Method         = " << nlParams.sublist("Direction").get<string>("Method") << "\n"
+            << "# Method         = " << nlParams.sublist("Direction").get<std::string>("Method") << "\n"
             << "# step | time | time/step | #nliter | res-norm | #liter\n"
             << "#\n"
       ;

@@ -223,7 +223,7 @@ void write_serialdensematrix_result(string result_name, PostField* field,
   GiD_BeginResult(buf.str().c_str(), "ccarat", step, GiD_Matrix,
                       GiD_OnGaussPoints, gaussname, NULL, 6, componentnames);
 
-  vector<double> v(numstress,0.0);
+  std::vector<double> v(numstress,0.0);
 
   for (int k = 0; k < field->num_elements(); ++k)
   {
@@ -434,7 +434,7 @@ int main(int argc, char** argv)
 
   PostProblem problem = PostProblem(My_CLP,argc,argv);
 
-  string filename = problem.outname() + ".flavia.res";
+  std::string filename = problem.outname() + ".flavia.res";
   if (GiD_OpenPostResultFile(const_cast<char*>(filename.c_str()))!=0)
     dserror("failed to open gid output file '%s'", filename.c_str());
 

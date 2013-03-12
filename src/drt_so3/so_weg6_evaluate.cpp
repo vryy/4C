@@ -56,7 +56,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
   DRT::ELEMENTS::So_weg6::ActionType act = So_weg6::none;
 
   // get the required action
-  string action = params.get<string>("action","none");
+  std::string action = params.get<std::string>("action","none");
   if (action == "none") dserror("No action supplied");
   else if (action=="calc_struct_linstiff")             act = So_weg6::calc_struct_linstiff;
   else if (action=="calc_struct_nlnstiff")             act = So_weg6::calc_struct_nlnstiff;
@@ -223,7 +223,7 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
       if (gpstressmap==Teuchos::null)
         dserror("no gp stress/strain map available for postprocessing");
-      string stresstype = params.get<string>("stresstype","ndxyz");
+      std::string stresstype = params.get<std::string>("stresstype","ndxyz");
       int gid = Id();
       LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6> gpstress(((*gpstressmap)[gid])->A(),true);
 
@@ -418,12 +418,12 @@ int DRT::ELEMENTS::So_weg6::Evaluate(Teuchos::ParameterList& params,
         if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         if (stressdata==Teuchos::null) dserror("Cannot get 'stress' data");
         if (straindata==Teuchos::null) dserror("Cannot get 'strain' data");
-        const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
-          params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
+        const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstressmap=
+          params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstressmap",Teuchos::null);
         if (gpstressmap==Teuchos::null)
           dserror("no gp stress map available for writing gpstresses");
-        const RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap=
-          params.get<RCP<map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstrainmap",Teuchos::null);
+        const RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > gpstrainmap=
+          params.get<RCP<std::map<int,RCP<Epetra_SerialDenseMatrix> > > >("gpstrainmap",Teuchos::null);
         if (gpstrainmap==Teuchos::null)
           dserror("no gp strain map available for writing gpstrains");
         std::vector<double> mydisp(lm.size());
@@ -929,9 +929,9 @@ void DRT::ELEMENTS::So_weg6::sow6_nlnstiffmass(
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Shape fcts at all 6 Gauss Points           maf 09/08|
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMNOD_WEG6,1> > DRT::ELEMENTS::So_weg6::sow6_shapefcts()
+const std::vector<LINALG::Matrix<NUMNOD_WEG6,1> > DRT::ELEMENTS::So_weg6::sow6_shapefcts()
 {
-  vector<LINALG::Matrix<NUMNOD_WEG6,1> > shapefcts(NUMGPT_WEG6);
+  std::vector<LINALG::Matrix<NUMNOD_WEG6,1> > shapefcts(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
   // fill up nodal f at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_wedge_6point;
@@ -949,9 +949,9 @@ const vector<LINALG::Matrix<NUMNOD_WEG6,1> > DRT::ELEMENTS::So_weg6::sow6_shapef
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Shape fct-derivs at all 6 Gauss Points     maf 09/08|
  *----------------------------------------------------------------------*/
-const vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > DRT::ELEMENTS::So_weg6::sow6_derivs()
+const std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > DRT::ELEMENTS::So_weg6::sow6_derivs()
 {
-  vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs(NUMGPT_WEG6);
+  std::vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > derivs(NUMGPT_WEG6);
   // (r,s,t) gp-locations of fully integrated linear 6-node Wedge
   // fill up df w.r.t. rst directions (NUMDIM) at each gp
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_wedge_6point;
@@ -969,9 +969,9 @@ const vector<LINALG::Matrix<NUMDIM_WEG6,NUMNOD_WEG6> > DRT::ELEMENTS::So_weg6::s
 /*----------------------------------------------------------------------*
  |  Evaluate Wedge6 Weights at all 6 Gauss Points              maf 09/08|
  *----------------------------------------------------------------------*/
-const vector<double> DRT::ELEMENTS::So_weg6::sow6_weights()
+const std::vector<double> DRT::ELEMENTS::So_weg6::sow6_weights()
 {
-  vector<double> weights(NUMGPT_WEG6);
+  std::vector<double> weights(NUMGPT_WEG6);
   const DRT::UTILS::GaussRule3D gaussrule = DRT::UTILS::intrule_wedge_6point;
   const DRT::UTILS::IntegrationPoints3D intpoints(gaussrule);
   for (int i = 0; i < NUMGPT_WEG6; ++i) {

@@ -98,7 +98,7 @@ void UTILS::MPConstraint2::Initialize(
 
 
   std::vector<double> amplit(constrcond_.size());
-  vector<int> IDs(constrcond_.size());
+  std::vector<int> IDs(constrcond_.size());
   // read data of the input files
   for (unsigned int i=0;i<constrcond_.size();i++)
   {
@@ -163,7 +163,7 @@ void UTILS::MPConstraint2::Evaluate(
 map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFromCondition
 (
   RCP<DRT::Discretization> actdisc,
-  vector< DRT::Condition* >      constrcondvec,
+  std::vector< DRT::Condition* >      constrcondvec,
   const string&             discret_name,
   const string&             element_name,
   int& startID
@@ -190,7 +190,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFro
   // Loop all conditions in constrcondvec
   for (unsigned int j=0;j<constrcondvec.size();j++)
   {
-    vector<int> ngid=*(constrcondvec[j]->Nodes());
+    std::vector<int> ngid=*(constrcondvec[j]->Nodes());
     const int numnodes=ngid.size();
     // We sort the global node ids according to the definition of the boundary condition
     ReorderConstraintNodes(ngid, constrcondvec[j]);
@@ -228,7 +228,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFro
   }
 
   //build unique node row map
-  vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
+  std::vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
   rownodeset.clear();
   RCP<Epetra_Map> constraintnoderowmap = Teuchos::rcp(new Epetra_Map(-1,
                                                              boundarynoderowvec.size(),
@@ -238,7 +238,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFro
   boundarynoderowvec.clear();
 
   //build overlapping node column map
-  vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
+  std::vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
   colnodeset.clear();
   RCP<Epetra_Map> constraintnodecolmap = Teuchos::rcp(new Epetra_Map(-1,
                                                              constraintnodecolvec.size(),
@@ -250,7 +250,7 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFro
 
   newdis->Redistribute(*constraintnoderowmap,*constraintnodecolmap);
 
-  map<int,RCP<DRT::Discretization> > newdismap;
+  std::map<int,RCP<DRT::Discretization> > newdismap;
   newdismap[startID]=newdis;
   return newdismap;
 }
@@ -261,12 +261,12 @@ map<int,RCP<DRT::Discretization> > UTILS::MPConstraint2::CreateDiscretizationFro
  *----------------------------------------------------------------------*/
 void UTILS::MPConstraint2::ReorderConstraintNodes
 (
-  vector<int>& nodeids,
+  std::vector<int>& nodeids,
   const DRT::Condition* cond
 )
 {
   // get this condition's nodes
-  vector<int> temp=nodeids;
+  std::vector<int> temp=nodeids;
   if (nodeids.size()==3)
   {
     nodeids[0]=temp[cond->GetInt("constrNode 1")-1];
@@ -332,7 +332,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       // initialize if it is the first time condition is evaluated
       if(activecons_.find(condID)->second==false)
       {
-        const string action = params.get<string>("action");
+        const std::string action = params.get<std::string>("action");
         Initialize(params,systemvector2);
         params.set("action",action);
       }
@@ -378,7 +378,7 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       }
       if (assemblemat2)
       {
-        vector<int> colvec(1);
+        std::vector<int> colvec(1);
         colvec[0]=gindex;
         elevector2.Scale(scConMat);
         systemmatrix2->Assemble(eid,lmstride,elevector2,lm,lmowner,colvec);
@@ -390,8 +390,8 @@ void UTILS::MPConstraint2::EvaluateConstraint(RCP<DRT::Discretization> disc,
       }
       if (assemblevec3)
       {
-        vector<int> constrlm;
-        vector<int> constrowner;
+        std::vector<int> constrlm;
+        std::vector<int> constrowner;
         constrlm.push_back(gindex);
         constrowner.push_back(actele->Owner());
         LINALG::Assemble(*systemvector3,elevector3,constrlm,constrowner);

@@ -36,7 +36,7 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(RCP<DRT::Discretization
   discret_(actdis),
   output_ (output)
 {
-  vector<DRT::Condition*> impedancecond;
+  std::vector<DRT::Condition*> impedancecond;
   discret_->GetCondition("ImpedanceCond",impedancecond);
 
   // the number of lines of impedance boundary conditions found in the input
@@ -87,7 +87,7 @@ FLD::UTILS::FluidImpedanceWrapper::FluidImpedanceWrapper(RCP<DRT::Discretization
       // sort impedance bc's in map and test, if one condition ID appears
       // more than once. Currently this case is forbidden.
       // -----------------------------------------------------------------
-      bool inserted = impmap_.insert( make_pair( condid, impedancebc ) ).second;
+      bool inserted = impmap_.insert( std::make_pair( condid, impedancebc ) ).second;
       if ( !inserted )
 	dserror("There are more than one impedance condition lines with the same ID. This can not yet be handled.");
     } // end loop over condition lines from input
@@ -139,7 +139,7 @@ void FLD::UTILS::FluidImpedanceWrapper::getResultsOfAPeriod(
   Teuchos::ParameterList & params)
 {
   // get an iterator to my map
-  map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
+  std::map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
   {
@@ -159,7 +159,7 @@ void FLD::UTILS::FluidImpedanceWrapper::getResultsOfAPeriod(
 void FLD::UTILS::FluidImpedanceWrapper::FlowRateCalculation(double time, double dta)
 {
   // get an iterator to my map
-  map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
+  std::map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
   {
@@ -179,7 +179,7 @@ void FLD::UTILS::FluidImpedanceWrapper::FlowRateCalculation(double time, double 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidImpedanceWrapper::OutflowBoundary(double time, double dta, double theta)
 {
-  map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
+  std::map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
   {
@@ -200,7 +200,7 @@ void FLD::UTILS::FluidImpedanceWrapper::OutflowBoundary(double time, double dta,
 void FLD::UTILS::FluidImpedanceWrapper::Impedances()
 {
   // get an iterator to my map
-  map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
+  std::map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
   {
@@ -267,7 +267,7 @@ void FLD::UTILS::FluidImpedanceWrapper::GetWindkesselParams(
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidImpedanceWrapper::UpdateResidual(RCP<Epetra_Vector>  residual )
 {
-  map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
+  std::map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
   {
@@ -287,7 +287,7 @@ void FLD::UTILS::FluidImpedanceWrapper::UpdateResidual(RCP<Epetra_Vector>  resid
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidImpedanceWrapper::WriteRestart( IO::DiscretizationWriter&  output )
 {
-  map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
+  std::map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
   {
@@ -307,7 +307,7 @@ void FLD::UTILS::FluidImpedanceWrapper::WriteRestart( IO::DiscretizationWriter& 
 //<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::UTILS::FluidImpedanceWrapper::ReadRestart( IO::DiscretizationReader& reader)
 {
-  map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
+  std::map<const int, RCP<class FluidImpedanceBc> >::iterator mapiter;
 
   for (mapiter = impmap_.begin(); mapiter != impmap_.end(); mapiter++ )
     mapiter->second->FluidImpedanceBc::ReadRestart(reader,mapiter->first);
@@ -338,13 +338,13 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RCP<DRT::Discretization> actdis,
   // ---------------------------------------------------------------------
   // read in all impedance conditions
   // ---------------------------------------------------------------------
-  vector<DRT::Condition*> impedancecond;
+  std::vector<DRT::Condition*> impedancecond;
   discret_->GetCondition("ImpedanceCond",impedancecond);
 
   // ---------------------------------------------------------------------
   // read in all possible impedance calibrating conditions
   // ---------------------------------------------------------------------
-  vector<DRT::Condition*> impedance_calb_cond;
+  std::vector<DRT::Condition*> impedance_calb_cond;
   discret_->GetCondition("ImpedanceCalbCond",impedance_calb_cond);
   IsPrecalibrated_ = false;
 
@@ -361,7 +361,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RCP<DRT::Discretization> actdis,
   // ---------------------------------------------------------------------
   // get relevant data from impedance condition
   // ---------------------------------------------------------------------
-  treetype_ = *((impedancecond[numcond])->Get<string>("tree"));
+  treetype_ = *((impedancecond[numcond])->Get<std::string>("tree"));
   termradius_ = (impedancecond[numcond])->GetDouble("termradius");
 
   // 'material' parameters required for artery tree and for 3 element windkessel
@@ -440,7 +440,7 @@ FLD::UTILS::FluidImpedanceBc::FluidImpedanceBc(RCP<DRT::Discretization> actdis,
   // ---------------------------------------------------------------------
   // initialize the pressures vecotrs
   // ---------------------------------------------------------------------
-  pressures_ = Teuchos::rcp(new  vector<double>);
+  pressures_ = Teuchos::rcp(new  std::vector<double>);
   pressures_->push_back(0.0);
 
 
@@ -693,7 +693,7 @@ double FLD::UTILS::FluidImpedanceBc::Area( double& density, double& viscosity, i
   eleparams.set<double>("viscosity", 0.0);
   eleparams.set<double>("density", 0.0);
 
-  const string condstring("ImpedanceCond");
+  const std::string condstring("ImpedanceCond");
 
   discret_->EvaluateCondition(eleparams,condstring,condid);
 
@@ -761,16 +761,16 @@ double FLD::UTILS::FluidImpedanceBc::Area( double& density, double& viscosity, i
 void FLD::UTILS::FluidImpedanceBc::Impedances( double area, double density, double viscosity )
 {
   // setup variables
-  vector<std::complex<double> > frequencydomain;  // impedances in the frequency domain
+  std::vector<std::complex<double> > frequencydomain;  // impedances in the frequency domain
   frequencydomain.resize(cyclesteps_,0);
-  vector<std::complex<double> > timedomain;       // impedances in the time domain
+  std::vector<std::complex<double> > timedomain;       // impedances in the time domain
   timedomain.resize(cyclesteps_,0);
 
   // size: number of generations
   std::complex<double> zparent (0,0);  // only as argument
 
   // to store already calculated impedances (to be developed)
-  map<const double, std::complex<double> > zstored;     // as argument
+  std::map<const double, std::complex<double> > zstored;     // as argument
 
   // set up some geometry data
   double radius = sqrt(area/PI);  // the radius to which the artery tree is connected
@@ -887,7 +887,7 @@ void FLD::UTILS::FluidImpedanceBc::FlowRateCalculation(double time, double dta, 
   // create vector (+ initialization with zeros)
   Teuchos::RCP<Epetra_Vector> flowrates = LINALG::CreateVector(*dofrowmap,true);
 
-  const string condstring("ImpedanceCond");
+  const std::string condstring("ImpedanceCond");
   discret_->EvaluateCondition(eleparams,flowrates,condstring,condid);
 
   double local_flowrate = 0.0;
@@ -1040,7 +1040,7 @@ void FLD::UTILS::FluidImpedanceBc::OutflowBoundary(double time, double dta, doub
 
   impedancetbc_->PutScalar(0.0);
 
-  const string condstring("ImpedanceCond");
+  const std::string condstring("ImpedanceCond");
   discret_->EvaluateCondition(eleparams,impedancetbc_,condstring,condid);
 
   /*
@@ -1151,7 +1151,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::WindkesselImpedance(double k)
   double dr = k2_;  // distal resistance
   double ct = k3_;  // capacitance
 
-  complex<double> imag(0,1), imp;
+  std::complex<double> imag(0,1), imp;
 
   double omega = 2.0*PI*k/period_; // circular frequency
 
@@ -1203,7 +1203,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::ArteryImpedance(int k,
 						       double termradius,
 						       double density,
 						       double viscosity,
-						       map<const double,complex<double> > zstored)
+						       std::map<const double,std::complex<double> > zstored)
 {
   // general data
   double lscale = 50.0; // length to radius ratio
@@ -1211,10 +1211,10 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::ArteryImpedance(int k,
   double beta = 0.85;    // left daughter vessel ratio
 
   // some auxiliary stuff
-  complex<double> koeff, imag(0,1), cwave;
+  std::complex<double> koeff, imag(0,1), cwave;
 
   // terminal resistance is assumed zero
-  complex<double> zterminal (0,0);
+  std::complex<double> zterminal (0,0);
 
   double omega = 2.0*PI*k/period_;
 
@@ -1230,8 +1230,8 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::ArteryImpedance(int k,
   // left hand side:
   double leftradius  = alpha*radius;
   double rightradius = beta*radius;
-  complex<double> zleft;
-  complex<double> zright;
+  std::complex<double> zleft;
+  std::complex<double> zright;
   bool terminated = false;
 
   // only if both vessels are smaller than the limit truncate
@@ -1239,7 +1239,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::ArteryImpedance(int k,
     terminated = true;
   else
   {
-    map<const double,complex<double> >::iterator iter = zstored.find(leftradius);
+    std::map<const double,std::complex<double> >::iterator iter = zstored.find(leftradius);
     if(iter != zstored.end()) // impedance of this left radius was already computed, is in map
       zleft = iter->second;
     else                      // left hand side impedance not yet stored
@@ -1262,7 +1262,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::ArteryImpedance(int k,
   // ... combine this to the impedance at my downstream end ...
   //*************************************************************
   // note, we truncate both terminal vessels at once!
-  complex<double> zdown;
+  std::complex<double> zdown;
   if (terminated)
     zdown = zterminal;
   else
@@ -1285,11 +1285,11 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::ArteryImpedance(int k,
   cwave=sqrt( area*koeff / (density*compliance) );
 
   //Convenience coefficient
-  complex<double> gcoeff = compliance * cwave;
+  std::complex<double> gcoeff = compliance * cwave;
 
   // calculate impedance of this, the present vessel
-  complex<double> argument = omega*length/cwave;
-  complex<double> zparent  = (imag/gcoeff * sin(argument) + zdown*cos(argument) ) /
+  std::complex<double> argument = omega*length/cwave;
+  std::complex<double> zparent  = (imag/gcoeff * sin(argument) + zdown*cos(argument) ) /
                              ( cos(argument) + imag*gcoeff*zdown*sin(argument) );
 
   return zparent;
@@ -1320,7 +1320,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCArteryImpedance(int generat
 							 double termradius,
 							 double density,
 							 double viscosity,
-							 map<const double,complex<double> > zstored)
+							 std::map<const double,std::complex<double> > zstored)
 {
   // general data
   double lscale = 50.0; // length to radius ratio
@@ -1329,7 +1329,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCArteryImpedance(int generat
   double mu = viscosity; // dynamic (physical) viscosity
 
   // terminal resistance is assumed zero
-  complex<double> zterminal (0,0);
+  std::complex<double> zterminal (0,0);
 
 
   // get impedances of downward vessels ...
@@ -1338,8 +1338,8 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCArteryImpedance(int generat
 
   double leftradius  = alpha*radius;
   double rightradius = beta*radius;
-  complex<double> zleft;
-  complex<double> zright;
+  std::complex<double> zleft;
+  std::complex<double> zright;
   bool terminated = false;
 
   // only if both vessels are smaller than the limit truncate
@@ -1347,7 +1347,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCArteryImpedance(int generat
     terminated = true;
   else
   {
-    map<const double,complex<double> >::iterator iter = zstored.find(leftradius);
+    std::map<const double,std::complex<double> >::iterator iter = zstored.find(leftradius);
     if(iter != zstored.end()) // impedance of this left radius was already computed, is in map
       zleft = iter->second;
     else                      // left hand side impedance not yet stored
@@ -1370,7 +1370,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCArteryImpedance(int generat
   // ... combine this to the impedance at my downstream end ...
   //*************************************************************
   // note, we truncate both terminal vessels at once!
-  complex<double> zdown;
+  std::complex<double> zdown;
   if (terminated)
     zdown = zterminal;
   else
@@ -1381,7 +1381,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCArteryImpedance(int generat
   //*************************************************************
 
   // calculate dc impedance of this, the present, vessel
-  complex<double> zparentdc = 8.0 * mu * lscale / ( M_PI*radius*radius*radius ) + zdown;
+  std::complex<double> zparentdc = 8.0 * mu * lscale / ( M_PI*radius*radius*radius ) + zdown;
   // DEBUG output
   //cout << "generation: " << generation << endl;
   return zparentdc;
@@ -1406,7 +1406,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
 						     double termradius,
 						     double density,
 						     double viscosity,
-						     map<const double,complex<double> > zstored)
+						     std::map<const double,std::complex<double> > zstored)
 {
    // general data
   double lscale = 5.8; // length to radius ratio
@@ -1414,10 +1414,10 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
   double beta = 0.686;    // left daughter vessel ratio
 
   // some auxiliary stuff
-  complex<double> imag(0,1), Z1, Z2, Z3, ZW;
-  complex<double> koeff, cwave;
+  std::complex<double> imag(0,1), Z1, Z2, Z3, ZW;
+  std::complex<double> koeff, cwave;
   // terminal resistance is assumed zero
-  complex<double> zterminal (0,0);
+  std::complex<double> zterminal (0,0);
 
   double omega = 2.0*PI*k/period_;
 
@@ -1448,15 +1448,15 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
   // left hand side:
     double leftradius  = alpha*radius;
     double rightradius = beta*radius;
-    complex<double> zleft;
-    complex<double> zright;
+    std::complex<double> zleft;
+    std::complex<double> zright;
     bool terminated = false;
 
     if (leftradius < termradius && rightradius < termradius)
             terminated = true;
           else
           {
-            map<const double,complex<double> >::iterator iter = zstored.find(leftradius);
+            std::map<const double,std::complex<double> >::iterator iter = zstored.find(leftradius);
             if(iter != zstored.end()) // impedance of this left radius was already computed, is in map
               zleft = iter->second;
             else                      // left hand side impedance not yet stored
@@ -1479,7 +1479,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
     // ... combine this to the impedance at my downstream end ...
     //*************************************************************
     // note, we truncate both terminal vessels at once!
-    complex<double> zdown;
+    std::complex<double> zdown;
     if (terminated)
       zdown = zterminal;
     else
@@ -1500,11 +1500,11 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::LungImpedance(int k,
     cwave=sqrt( area*koeff / (density*compliance) );
 
     //Convenience coefficient
-    complex<double> gcoeff = compliance * cwave;
+    std::complex<double> gcoeff = compliance * cwave;
 
     // calculate impedance of this, the present vessel
-    complex<double> argument = omega*length/cwave;
-    complex<double> zparent  = (imag/gcoeff * sin(argument) + zdown*cos(argument) ) /
+    std::complex<double> argument = omega*length/cwave;
+    std::complex<double> zparent  = (imag/gcoeff * sin(argument) + zdown*cos(argument) ) /
                                      ( cos(argument) + imag*gcoeff*zdown*sin(argument) );
 
   // calculate impedance of this, the present vessel
@@ -1539,7 +1539,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generatio
 								 double termradius,
 								 double density,
 								 double viscosity,
-								 map<const double,complex<double> > zstored)
+								 std::map<const double,std::complex<double> > zstored)
 {
   //general data
   double lscale = 5.8; // length to radius ratio
@@ -1549,19 +1549,19 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generatio
   double mu = viscosity; // dynamic (physical) viscosity
   generation++;
   // terminal resistance is assumed zero
-  complex<double> zterminal (0,0);
+  std::complex<double> zterminal (0,0);
 
     double leftradius  = alpha*radius;
     double rightradius = beta*radius;
-    complex<double> zleft;
-    complex<double> zright;
+    std::complex<double> zleft;
+    std::complex<double> zright;
     bool terminated = false;
 
     if (leftradius < termradius && rightradius < termradius)
            terminated = true;
          else
          {
-           map<const double,complex<double> >::iterator iter = zstored.find(leftradius);
+           std::map<const double,std::complex<double> >::iterator iter = zstored.find(leftradius);
            if(iter != zstored.end()) // impedance of this left radius was already computed, is in map
              zleft = iter->second;
            else                      // left hand side impedance not yet stored
@@ -1583,7 +1583,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generatio
     // ... combine this to the impedance at my downstream end ...
     //*************************************************************
     // note, we truncate both terminal vessels at once!
-    complex<double> zdown;
+    std::complex<double> zdown;
     if (terminated)
       zdown = zterminal;
     else
@@ -1594,7 +1594,7 @@ std::complex<double> FLD::UTILS::FluidImpedanceBc::DCLungImpedance(int generatio
     //*************************************************************
 
     // calculate dc impedance of this, the present vessel
-    complex<double>  zparentdc = 8.0 * mu * lscale / ( M_PI*radius*radius*radius ) + zdown;
+    std::complex<double>  zparentdc = 8.0 * mu * lscale / ( M_PI*radius*radius*radius ) + zdown;
     return zparentdc;
 }//FluidImplicitTimeInt::DCLungImpedance
 

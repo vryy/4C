@@ -38,7 +38,7 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
 {
   RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
   if (disp==Teuchos::null) dserror("Cannot get state vector 'displacement'");
-  vector<double> mydisp(lm.size());
+  std::vector<double> mydisp(lm.size());
   DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
 
   // find out whether we will use a time curve
@@ -70,7 +70,7 @@ int DRT::ELEMENTS::Shell8Line::EvaluateNeumann(
   const Epetra_SerialDenseMatrix* a3ref = parent_->data_.Get<Epetra_SerialDenseMatrix>("a3ref");
   if (!a3ref) dserror("Cannot find array of directors");
 
-  vector<double> funct(iel);
+  std::vector<double> funct(iel);
   Epetra_SerialDenseMatrix deriv(2,iel);
 
   double xrefe[3][MAXNOD_SHELL8];
