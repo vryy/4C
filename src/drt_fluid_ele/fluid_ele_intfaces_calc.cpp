@@ -151,7 +151,6 @@ bool DRT::ELEMENTS::FluidIntFaceImpl<distype>::PrepareAssemble(
                      or fldpara_->EOS_Div()         == INPAR::FLUID::EOS_DIV_div_jump_xfem_gp);
 
     GP_visc          = faceparams.get<bool>("visc_ghost_penalty", false);
-    stabparams.set("ghost_penalty_fac", faceparams.get<double>("GHOST_PENALTY_FAC"));
   }
   else if(face_type == INPAR::XFEM::face_type_ghost)
   {
