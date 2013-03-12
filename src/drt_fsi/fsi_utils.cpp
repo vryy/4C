@@ -142,7 +142,7 @@ FSI::UTILS::ShiftMap(Teuchos::RCP<const Epetra_Map> emap,
   int maxgid = 0;
   for (unsigned i=0; i<vecSpaces.size(); ++i)
   {
-    maxgid = max(maxgid,vecSpaces[i]->MaxAllGID());
+    maxgid = std::max(maxgid,vecSpaces[i]->MaxAllGID());
   }
 
   std::vector<int> gids;
@@ -440,7 +440,7 @@ Teuchos::RCP<Epetra_Vector> FSI::UTILS::SlideAleUtils::InterpolateFluid
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-vector<double> FSI::UTILS::SlideAleUtils::Centerdisp
+std::vector<double> FSI::UTILS::SlideAleUtils::Centerdisp
 (
     ADAPTER::FSIStructureWrapper& structure,
     const Epetra_Comm& comm

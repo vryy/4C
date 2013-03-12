@@ -500,7 +500,7 @@ void ADAPTER::Coupling::MasterToSlave(Teuchos::RCP<const Epetra_MultiVector> mv,
 #endif
 
   Epetra_MultiVector perm(*permslavedofmap_,mv->NumVectors());
-  copy(mv->Values(), mv->Values()+(mv->MyLength()*mv->NumVectors()), perm.Values());
+  std::copy(mv->Values(), mv->Values()+(mv->MyLength()*mv->NumVectors()), perm.Values());
 
   const int err = sv->Export(perm,*slaveexport_,Insert);
   if (err)
@@ -528,7 +528,7 @@ void ADAPTER::Coupling::SlaveToMaster(Teuchos::RCP<const Epetra_MultiVector> sv,
 #endif
 
   Epetra_MultiVector perm(*permmasterdofmap_,sv->NumVectors());
-  copy(sv->Values(), sv->Values()+(sv->MyLength()*sv->NumVectors()), perm.Values());
+  std::copy(sv->Values(), sv->Values()+(sv->MyLength()*sv->NumVectors()), perm.Values());
 
   const int err = mv->Export(perm,*masterexport_,Insert);
   if (err)
