@@ -63,7 +63,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
     DRT::INPUT::IntegralValue<INPAR::TSI::SolutionSchemeOverFields>(tsidyn,"COUPALGO");
   // coupling variable
   displacementcoupling_
-    = tsidyn.get<std::string>("COUPVARIABLE")=="Displacement";
+    = tsidyn.get<std::string>("COUPVARIABLE") == "Displacement";
   if (displacementcoupling_)
     std::cout << "Coupling variable: displacement" << std::endl;
   else
@@ -73,7 +73,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
   const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
   // major switch to different time integrators
   quasistatic_
-    = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP")==INPAR::STR::dyna_statics;
+    = (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn,"DYNAMICTYP") == INPAR::STR::dyna_statics);
 
   // choose algorithm depending on solution type
   switch (coupling)
@@ -139,7 +139,7 @@ TSI::Partitioned::Partitioned(const Epetra_Comm& comm)
 #endif // TSIPARTITIONEDASOUTPUT
 
     // contact
-    if(StructureField()->ContactManager() != Teuchos::null)
+    if (StructureField()->ContactManager() != Teuchos::null)
       ThermoField()->PrepareThermoContact(StructureField()->ContactManager(),StructureField()->Discretization());
 
 }  // cstr
@@ -274,7 +274,7 @@ void TSI::Partitioned::TimeLoop()
     {
       // only for frictional contact so far
       // as information are needed from the friction node
-      if((cmtman->GetStrategy().Friction())==false)
+      if ((cmtman->GetStrategy().Friction()) == false)
         dserror ("Thermo-Structure interaction only for frictional contact so far");
 
       // counter and print header
@@ -288,7 +288,7 @@ void TSI::Partitioned::TimeLoop()
       //    with heat transfer over the contacting surface (as a result //
       //    from the structural problem).                               //
       //******************************************************************
-      if(coupling==INPAR::TSI::OneWay)
+      if (coupling == INPAR::TSI::OneWay)
       {
         // predict and solve structural system
         StructureField()->PrepareTimeStep();
@@ -307,7 +307,7 @@ void TSI::Partitioned::TimeLoop()
       // 2) The structural field is influenced by the thermal field     //
       //    with a temperature dependent material law.                  //
       //******************************************************************
-      else if (coupling==INPAR::TSI::IterStagg)
+      else if (coupling == INPAR::TSI::IterStagg)
       {
         // prepare time step
         ThermoField()->PrepareTimeStep();
@@ -317,7 +317,7 @@ void TSI::Partitioned::TimeLoop()
         int  itnum = 0;
         bool stopnonliniter = false;
 
-        while (stopnonliniter==false)
+        while (stopnonliniter == false)
         {
           itnum ++;
 
@@ -465,7 +465,7 @@ void TSI::Partitioned::TimeLoopSequStagg()
 
     // get structure variables of old time step (d_n, v_n)
     disp_ = StructureField()->ExtractDispn();
-    if( Step()==0 ) veln_ = StructureField()->ExtractVeln();
+    if(Step() == 0) veln_ = StructureField()->ExtractVeln();
 
     /// thermo field
 
@@ -596,7 +596,7 @@ void TSI::Partitioned::OuterIterationLoop()
   bool stopnonliniter = false;
 
   // outer iteration loop starts
-  if (Comm().MyPID()==0 and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+  if ( (Comm().MyPID() == 0) and PrintScreenEvry() and (Step()%PrintScreenEvry() == 0) )
   {
     std::cout<<"\n";
     std::cout<<"**************************************************************\n";
@@ -618,7 +618,7 @@ void TSI::Partitioned::OuterIterationLoop()
 
   // Pure iterative staggered algorithms
   // iterative staggered TSI withOUT Aitken relaxation
-  if (coupling==INPAR::TSI::IterStagg)
+  if (coupling == INPAR::TSI::IterStagg)
   {
     // structural predictor
     if (displacementcoupling_) // (temperature change due to deformation)
@@ -629,7 +629,7 @@ void TSI::Partitioned::OuterIterationLoop()
       // initialise new time step n+1 with values of old time step n
       Teuchos::RCP<Epetra_Vector> dispnp
         = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
-      if ( Step()==1 )
+      if (Step() == 1)
       {
         dispnp->Update(1.0, *(StructureField()->ExtractDispn()),0.0);
         veln_ = StructureField()->ExtractVeln();
@@ -637,13 +637,13 @@ void TSI::Partitioned::OuterIterationLoop()
       // else: use the velocity of the last converged step
 
       // start OUTER ITERATION
-      while (stopnonliniter==false)
+      while (stopnonliniter == false)
       {
         itnum ++;
 
         // kind of mechanical predictor
         // 1st iteration: get structure variables of old time step (d_n, v_n)
-        if (itnum==1)
+        if (itnum == 1)
           dispnp->Update(1.0,*(StructureField()->ExtractDispn()),0.0);
         // else (itnum>1) use the current solution dispnp of old iteration step
 
@@ -660,7 +660,7 @@ void TSI::Partitioned::OuterIterationLoop()
         ThermoField()->ApplyStructVariables(dispnp,veln_);
 
         // prepare time step with coupled variables
-        if (itnum==1)
+        if (itnum == 1)
           ThermoField()->PrepareTimeStep();
         // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
         else if (itnum != 1)
@@ -681,7 +681,7 @@ void TSI::Partitioned::OuterIterationLoop()
         StructureField()->ApplyTemperatures(temp_);
 
         // prepare time step with coupled variables
-        if (itnum==1)
+        if (itnum == 1)
           StructureField()->PrepareTimeStep();
         // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
         else if (itnum != 1)
@@ -715,12 +715,12 @@ void TSI::Partitioned::OuterIterationLoop()
       temp_->Update(1.0,*(ThermoField()->ExtractTempn()),0.0);
 
       // start OUTER ITERATION
-      while (stopnonliniter==false)
+      while (stopnonliniter == false)
       {
         itnum ++;
 
         // get current temperatures due to solve thermo step, like predictor in FSI
-        if (itnum==1)
+        if (itnum == 1)
         {
           temp_->Update(1.0,*(ThermoField()->ExtractTempn()),0.0);
         }
@@ -744,7 +744,7 @@ void TSI::Partitioned::OuterIterationLoop()
         StructureField()->ApplyTemperatures(temp_);
 
         // prepare time step with coupled variables
-        if (itnum==1)
+        if (itnum == 1)
           StructureField()->PrepareTimeStep();
         // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
         else if (itnum != 1)
@@ -770,7 +770,7 @@ void TSI::Partitioned::OuterIterationLoop()
         ThermoField()->ApplyStructVariables(dispnp,velnp_);
 
         // prepare time step with coupled variables
-        if (itnum==1)
+        if (itnum == 1)
           ThermoField()->PrepareTimeStep();
         // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
         else if (itnum != 1)
@@ -809,11 +809,12 @@ void TSI::Partitioned::OuterIterationLoop()
   // 1. relaxation factor omega = FIXEDOMEGA = const
   // 2. T^{i+1} = omega^{i+1} . T^{i+1} + (1- omega^{i+1}) T^i
   //            = T^i + omega^{i+1} * ( T^{i+1} - T^i )
-  else if ( (coupling==INPAR::TSI::IterStaggAitken) ||
-            (coupling==INPAR::TSI::IterStaggAitkenIrons) ||
-            (coupling==INPAR::TSI::IterStaggFixedRel) )
+  else if ( (coupling == INPAR::TSI::IterStaggAitken) or
+            (coupling == INPAR::TSI::IterStaggAitkenIrons) or
+            (coupling == INPAR::TSI::IterStaggFixedRel)
+          )
   {
-    if (Comm().MyPID()==0)
+    if (Comm().MyPID() == 0)
     {
       std::cout << "Iterative staggered TSI with relaxation" << std::endl;
       std::cout << "Have you set MAXOMEGA to the wished value?" << std::endl;
@@ -828,38 +829,39 @@ void TSI::Partitioned::OuterIterationLoop()
       // initialise new time step n+1 with values of old time step n
       Teuchos::RCP<Epetra_Vector> dispnp
         = LINALG::CreateVector(*(StructureField()->DofRowMap(0)), true);
-      if ( Step()==1 )
+      if (Step() == 1)
       {
         dispnp->Update(1.0, *(StructureField()->ExtractDispn()),0.0);
         veln_ = StructureField()->ExtractVeln();
       }
       // else: use the velocity of the last converged step
 
-      if ( (coupling==INPAR::TSI::IterStaggAitken) ||
-           (coupling==INPAR::TSI::IterStaggAitkenIrons) )
+      if ( (coupling == INPAR::TSI::IterStaggAitken) or
+           (coupling == INPAR::TSI::IterStaggAitkenIrons)
+         )
       {
         // constrain the Aitken factor in the 1st relaxation step of new time step
         // n+1 to maximal value maxomega
         double maxomega = tsidyn.get<double>("MAXOMEGA");
         // omega_{n+1} = min( omega_n, maxomega ) with omega = 1-mu
-        if ( (maxomega>0.0) && (maxomega<1-mu_) )
+        if ( (maxomega > 0.0) and (maxomega < 1-mu_) )
           mu_ = 1 - maxomega;
 
         // reset in every new time step
-        if (del_!=Teuchos::null)
+        if (del_ != Teuchos::null)
         {
           del_->PutScalar(1.0e20);
         }
       }
 
       // start OUTER ITERATION
-      while (stopnonliniter==false)
+      while (stopnonliniter == false)
       {
         itnum ++;
 
         // kind of mechanical predictor
         // 1st iteration: get structure variables of old time step (d_n, v_n)
-        if (itnum==1)
+        if (itnum == 1)
           dispnp->Update(1.0,*(StructureField()->ExtractDispn()),0.0);
         // else (itnum>1) use the current solution dispnp of old iteration step
 
@@ -882,7 +884,7 @@ void TSI::Partitioned::OuterIterationLoop()
         ThermoField()->ApplyStructVariables(dispnp,veln_);
 
         // prepare time step with coupled variables
-        if (itnum==1)
+        if (itnum == 1)
           ThermoField()->PrepareTimeStep();
         // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
         else if (itnum != 1)
@@ -903,13 +905,13 @@ void TSI::Partitioned::OuterIterationLoop()
         StructureField()->ApplyTemperatures(temp_);
 
         // prepare time step with coupled variables
-        if (itnum==1)
+        if (itnum == 1)
           StructureField()->PrepareTimeStep();
         // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
         else if (itnum != 1)
           StructureField()->PreparePartitionStep();
 
-        if (coupling==INPAR::TSI::IterStaggFixedRel)
+        if (coupling == INPAR::TSI::IterStaggFixedRel)
         {
           // get the displacements of the old iteration step d^i_{n+1}
           dispnp->Update(1.0,*(StructureField()->ExtractDispnp()),0.0);
@@ -927,7 +929,7 @@ void TSI::Partitioned::OuterIterationLoop()
         // if r_{i+1} not converged in ConvergenceCheck()
         // --> apply relaxation to displacements
 
-        if (coupling==INPAR::TSI::IterStaggFixedRel)
+        if (coupling == INPAR::TSI::IterStaggFixedRel)
         {
           // -------------------------------------------- relax the displacements
 
@@ -999,7 +1001,7 @@ void TSI::Partitioned::OuterIterationLoop()
           // two previous residuals are required (initial guess and result of 1st
           // iteration)
           // --> start relaxation process if two iterative residuals are available
-          if ( itnum==1 )
+          if (itnum == 1)
           {
             dispnp->Update(1.0,*(StructureField()->Dispnp()),0.0);
 
@@ -1011,7 +1013,7 @@ void TSI::Partitioned::OuterIterationLoop()
           }
           else  // (itnum > 1)
           {
-            if (coupling==INPAR::TSI::IterStaggAitken)
+            if (coupling == INPAR::TSI::IterStaggAitken)
             {
               // relax temperature solution for next iteration step
               // overwrite temp_ with relaxed solution vector
@@ -1024,7 +1026,7 @@ void TSI::Partitioned::OuterIterationLoop()
             // 1. calculate an Aitken factor mu == relaxation factor
             // 2. d^{i+1} = (1 - mu^{i+1}) d^{i+1} + mu^{i+1} d^i
             // 3. limit Aitken factor mu for next time step with 0.0
-            else if (coupling==INPAR::TSI::IterStaggAitkenIrons)
+            else if (coupling == INPAR::TSI::IterStaggAitkenIrons)
             {
               // relax displacement solution for next iteration step
               // overwrite dispnp with relaxed solution vector
@@ -1048,7 +1050,7 @@ void TSI::Partitioned::OuterIterationLoop()
     // relax the temperatures
     else // (!displacementcoupling_)
     {
-      if ( Step()==1 )
+      if (Step() == 1)
       {
         // thermal predictor for the coupling iteration outside the loop
         // get temperature of old time step (T_n)
@@ -1056,8 +1058,9 @@ void TSI::Partitioned::OuterIterationLoop()
         temp_->Update(1.0,*(ThermoField()->ExtractTempn()),0.0);
       }
 
-      if ( (coupling==INPAR::TSI::IterStaggAitken) ||
-           (coupling==INPAR::TSI::IterStaggAitkenIrons) )
+      if ( (coupling == INPAR::TSI::IterStaggAitken) or
+           (coupling == INPAR::TSI::IterStaggAitkenIrons)
+         )
       {
         // initial guess for next time step n+1
         // use minimum between omega_n and maxomega as start value for mu_{n+1}^{i=0}
@@ -1068,24 +1071,24 @@ void TSI::Partitioned::OuterIterationLoop()
         // n+1 to maximal value maxomega
         double maxomega = tsidyn.get<double>("MAXOMEGA");
         // omega_{n+1} = min( omega_n, maxomega )
-        if ( (maxomega>0.0) && (maxomega<1-mu_) )
+        if ( (maxomega > 0.0) and (maxomega < 1-mu_) )
           mu_ = 1 - maxomega;
 
         // reset in every new time step
-        if (del_!=Teuchos::null)
+        if (del_ != Teuchos::null)
         {
           del_->PutScalar(1.0e20);
         }
       }
 
       // start OUTER ITERATION
-      while (stopnonliniter==false)
+      while (stopnonliniter == false)
       {
         itnum ++;
 
         // get current temperatures due to solve thermo step, like predictor in FSI
         // 1. iteration: get newest temperatures, i.e. T_{n+1} == T_n
-        if (itnum==1)
+        if (itnum == 1)
         {
           temp_->Update(1.0,*(ThermoField()->ExtractTempn()),0.0);
         }
@@ -1112,7 +1115,7 @@ void TSI::Partitioned::OuterIterationLoop()
         StructureField()->ApplyTemperatures(temp_);
 
         // prepare time step with coupled variables
-        if (itnum==1)
+        if (itnum == 1)
           StructureField()->PrepareTimeStep();
         // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
         else if (itnum != 1)
@@ -1141,13 +1144,13 @@ void TSI::Partitioned::OuterIterationLoop()
         ThermoField()->ApplyStructVariables(dispnp,velnp_);
 
         // prepare time step with coupled variables
-        if (itnum==1)
+        if (itnum == 1)
           ThermoField()->PrepareTimeStep();
         // within the nonlinear loop, e.g. itnum>1 call only PreparePartitionStep
         else if (itnum != 1)
           ThermoField()->PreparePartitionStep();
 
-        if (coupling==INPAR::TSI::IterStaggFixedRel)
+        if (coupling == INPAR::TSI::IterStaggFixedRel)
         {
           // get temperature solution of old iteration step T_{n+1}^i
           temp_->Update(1.0,*(ThermoField()->ExtractTempnp()),0.0);
@@ -1165,7 +1168,7 @@ void TSI::Partitioned::OuterIterationLoop()
 
         // --------------------------------------------------- start relaxation
 
-        if (coupling==INPAR::TSI::IterStaggFixedRel)
+        if (coupling == INPAR::TSI::IterStaggFixedRel)
         {
           // ------------------------------------------- relax the temperatures
 
@@ -1239,12 +1242,12 @@ void TSI::Partitioned::OuterIterationLoop()
           // two previous residuals are required (initial guess and result of 1st
           // iteration)
           // --> start relaxation process if two iterative residuals are available
-          if ( itnum==1 )
+          if (itnum == 1)
             // get temperature T_{n+1}^{i=1}
             temp_->Update(1.0,*(ThermoField()->Tempnp()),0.0);
           else  // (itnum > 1)
           {
-            if (coupling==INPAR::TSI::IterStaggAitken)
+            if (coupling == INPAR::TSI::IterStaggAitken)
             {
               // relaxation parameter
               // omega^{i+1} = 1- mu^{i+1}
@@ -1256,7 +1259,7 @@ void TSI::Partitioned::OuterIterationLoop()
               //         = T^i + omega^{i+1} * ( T^{i+1} - T^i )
               temp_->Update(omega,*tempincnp_,1.0);
             }
-            else if (coupling==INPAR::TSI::IterStaggAitkenIrons)
+            else if (coupling == INPAR::TSI::IterStaggAitkenIrons)
             {
               // relax displacement solution for next iteration step
               // overwrite tempnp with relaxed solution vector
@@ -1284,7 +1287,7 @@ void TSI::Partitioned::OuterIterationLoop()
 void TSI::Partitioned::DoStructureStep()
 {
 #ifndef TFSI
-  if (Comm().MyPID()==0)
+  if (Comm().MyPID() == 0)
   {
     std::cout<<"\n";
     std::cout<<"************************\n";
@@ -1310,7 +1313,7 @@ void TSI::Partitioned::DoStructureStep()
 void TSI::Partitioned::DoThermoStep()
 {
 #ifndef TFSI
-  if (Comm().MyPID()==0)
+  if (Comm().MyPID() == 0)
   {
     std::cout<<"\n";
     std::cout<<"*********************\n";
@@ -1379,11 +1382,12 @@ bool TSI::Partitioned::ConvergenceCheck(
   // residual increments
   switch (normtypeinc_)
   {
+    // default check:
     case INPAR::TSI::convnorm_abs:
     {
       // print the incremental based convergence check to the screen
       // test here increment
-      if ( (Comm().MyPID()==0) and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+      if ( (Comm().MyPID() == 0) and PrintScreenEvry() and (Step()%PrintScreenEvry() == 0) )
       {
         std::cout<<"\n";
         std::cout<<"***********************************************************************************\n";
@@ -1401,20 +1405,38 @@ bool TSI::Partitioned::ConvergenceCheck(
       // check convergence of the outer loop with a relative norm
       // norm of the increment with respect to the norm of the variables itself: use the last converged solution
       stopnonliniter = ( (tempincnorm_L2 <= ittol) and (dispincnorm_L2 <= ittol) );
-      if ((stopnonliniter==true) and Comm().MyPID()==0 and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+      if ( (stopnonliniter == true) and PrintScreenEvry() and
+           (Comm().MyPID() == 0) and (Step()%PrintScreenEvry() == 0)
+         )
       {
         printf("\n");
         printf("|  Outer Iteration loop converged after iteration %3d/%3d !                       |\n", itnum,itmax);
         printf("+--------------+------------------------+--------------------+--------------------+\n");
       }
-    }
+
+      // warn if itemax is reached without convergence, but proceed to next
+      // timestep
+      if ( (itnum == itmax) and
+           ( (tempincnorm_L2 > ittol) or (dispincnorm_L2 > ittol) )
+         )
+      {
+        stopnonliniter = true;
+        if ( (Comm().MyPID() == 0) and PrintScreenEvry() and (Step()%PrintScreenEvry() == 0) )
+        {
+          printf("|     >>>>>> not converged in itemax steps!                                       |\n");
+          printf("+--------------+------------------------+--------------------+--------------------+\n");
+          printf("\n");
+          printf("\n");
+        }
+      }
+    }  // INPAR::TSI::convnorm_abs
     break;
 
     case INPAR::TSI::convnorm_rel:
     {
       // print the incremental based convergence check to the screen
       // test here increment/variable
-      if ( (Comm().MyPID()==0) and PrintScreenEvry() and (Step()%PrintScreenEvry()==0))
+      if ( (Comm().MyPID() == 0) and PrintScreenEvry() and (Step()%PrintScreenEvry() == 0) )
       {
         std::cout<<"\n";
         std::cout<<"***********************************************************************************\n";
@@ -1428,37 +1450,36 @@ bool TSI::Partitioned::ConvergenceCheck(
         printf("+--------------+------------------------+--------------------+--------------------+\n");
       }
 
-      stopnonliniter = ((tempincnorm_L2/tempnorm_L2 <= ittol) and (dispincnorm_L2/dispnorm_L2 <= ittol));
-      if ( (stopnonliniter==true) and Comm().MyPID()==0 and PrintScreenEvry() and (Step()%PrintScreenEvry()==0) )
+      stopnonliniter = ( (tempincnorm_L2/tempnorm_L2 <= ittol) and (dispincnorm_L2/dispnorm_L2 <= ittol) );
+      if ( (stopnonliniter == true) and (Comm().MyPID() == 0) and PrintScreenEvry() and (Step()%PrintScreenEvry() == 0) )
       {
         printf("\n");
         printf("|  Outer Iteration loop converged after iteration %3d/%3d !                       |\n", itnum,itmax);
         printf("+--------------+------------------------+--------------------+--------------------+\n");
       }
-    }
+
+      // warn if itemax is reached without convergence, but proceed to next
+      // timestep
+      if ( (itnum == itmax) and
+           ( (tempincnorm_L2/tempnorm_L2 > ittol) or (dispincnorm_L2/dispnorm_L2 > ittol) )
+         )
+      {
+        stopnonliniter = true;
+        if ( (Comm().MyPID() == 0) and PrintScreenEvry() and (Step()%PrintScreenEvry() == 0) )
+        {
+          printf("|     >>>>>> not converged in itemax steps!                                       |\n");
+          printf("+--------------+------------------------+--------------------+--------------------+\n");
+          printf("\n");
+          printf("\n");
+        }
+      }
+    }  // INPAR::TSI::convnorm_rel
     break;
 
     default:
       dserror("Cannot check for convergence of residual values!");
   }
   
-
-  // warn if itemax is reached without convergence, but proceed to next
-  // timestep
-  if ( (itnum==itmax) and
-       ( (tempincnorm_L2/tempnorm_L2 > ittol) || (dispincnorm_L2/dispnorm_L2 > ittol) )
-     )
-  {
-    stopnonliniter = true;
-    if ( (Comm().MyPID()==0) and PrintScreenEvry() and (Step()%PrintScreenEvry()==0) )
-    {
-      printf("|     >>>>>> not converged in itemax steps!                                       |\n");
-      printf("+--------------+------------------------+--------------------+--------------------+\n");
-      printf("\n");
-      printf("\n");
-    }
-  }
-
   return stopnonliniter;
 }  // TSI::Partitioned::ConvergenceCheck
 
