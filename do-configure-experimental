@@ -144,6 +144,9 @@ fi
 
 Trilinos_DIR="$Trilinos_PREFIX/lib/cmake/Trilinos"
 
+############################################################
+# handling of potential additional tests
+[[ $ADDITIONAL_TESTS_PATH ]] || ADDITIONAL_TESTS_PATH=""
 
 ############################################################
 
@@ -189,6 +192,7 @@ $CMAKE_COMMAND \
     -D LAPACK_LIBRARIES:FILEPATH=$LAPACK_LIBS \
     -D ACMLDIR:STRING=$ACMLDIR_PATH \
     -D AMDLIBMDIR:FILEPATH=$AMDLIBMDIR_PATH \
+    -D ADDITIONAL_TESTS:FILEPATH="$ADDITIONAL_TESTS_PATH" \
     $EXTRA_ARGS \
     ${BACI_HOME}
 

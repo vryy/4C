@@ -71,6 +71,9 @@ fi
 
 Trilinos_DIR="$Trilinos_PREFIX/lib/cmake/Trilinos"
 
+############################################################
+# handling of potential additional tests
+[[ $ADDITIONAL_TESTS_PATH ]] || ADDITIONAL_TESTS_PATH=""
 
 ############################################################
 
@@ -110,6 +113,7 @@ $CMAKE_COMMAND \
     -D QHULL_INCLUDE_DIR:FILEPATH=$INCLUDE_INSTALL_DIR \
     -D MPI_DIR:FILEPATH=$MPIDIR \
     -D CUBIT_DIR:FILEPATH=$CUBIT_PATH \
+    -D ADDITIONAL_TESTS:FILEPATH="$ADDITIONAL_TESTS_PATH" \
     $EXTRA_ARGS \
     ${BACI_HOME}
 

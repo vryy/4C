@@ -1112,9 +1112,10 @@ endif (HAVE_Trilinos_Q1_2013)
 endif (HAVE_MueLu)
 
 
-if (FS3I_INCACouplingTest)
-  include (/home/hammerl/buildslave/FS3I_INCA_coupling_test.cmake)
-endif (FS3I_INCACouplingTest)
+if (ADDITIONAL_TESTS)
+  message("\nAdditional tests in ${ADDITIONAL_TESTS} are added\n")
+  include (${ADDITIONAL_TESTS})
+endif (ADDITIONAL_TESTS)
 
 # remove any output files from our tests
 add_test(NAME test_cleanup COMMAND sh -c "rm -vf xxx* core.")
