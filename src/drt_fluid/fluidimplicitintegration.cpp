@@ -328,12 +328,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
       && params_->get<int>("MESHTYING")== INPAR::FLUID::no_meshtying)
   {
     // initialize standard (stabilized) system matrix (construct its graph already)
-    DRT::AssembleStrategy strategy(0, 0, Teuchos::null, Teuchos::null,
-                                   Teuchos::null, Teuchos::null, Teuchos::null);
-    Teuchos::RCP<Epetra_CrsGraph> graph = strategy.MatrixGraph(*discret_, dbcmaps_->Map(1));
-    Teuchos::RCP<Epetra_CrsMatrix> matrix (new Epetra_CrsMatrix(Copy, *graph));
-    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(matrix, false, true));
-    sysmat_->Complete();
+    sysmat_ = Teuchos::rcp(new LINALG::SparseMatrix(*dofrowmap,108,false,true));
   }
   else if(params_->get<int>("MESHTYING")!= INPAR::FLUID::no_meshtying)
   {
