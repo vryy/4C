@@ -185,10 +185,10 @@ bool DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::ReadElement(
   linedef->ExtractString("KINEM",buffer);
 
   // geometrically linear
-  if(buffer=="linear")
+  if (buffer == "linear")
     kintype_ = geo_linear;
   // geometrically non-linear with Total Lagrangean approach
-  else if (buffer=="nonlinear")
+  else if (buffer == "nonlinear")
     kintype_ = geo_nonlinear;
   else
     dserror("Reading of SO3_THERMO element failed! KINEM unknown");

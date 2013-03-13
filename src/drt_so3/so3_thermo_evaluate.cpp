@@ -1092,7 +1092,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
     case INPAR::STR::stress_2pk:
     {
       if (elestress == NULL) dserror("stress data not available");
-      for (int i = 0; i < numstr_; ++i)
+      for (int i=0; i<numstr_; ++i)
         (*elestress)(gp,i) = couplstress(i);
     }
     break;
@@ -1214,7 +1214,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_kdT_tsi(
 
     xcurr(i,0) = xrefe(i,0) + disp[i*numdofpernode_+0];
     xcurr(i,1) = xrefe(i,1) + disp[i*numdofpernode_+1];
-xcurr(i,2) = xrefe(i,2) + disp[i*numdofpernode_+2];
+    xcurr(i,2) = xrefe(i,2) + disp[i*numdofpernode_+2];
   }
 
   // shape functions and their first derivatives
@@ -1547,11 +1547,11 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::GLtoEA(
   // rewrite Green-Lagrange strain in tensor notation
   LINALG::Matrix<nsd_,nsd_> gl;
   gl(0,0) = (*glstrain)(0);
-  gl(0,1) = 0.5*(*glstrain)(3);
-  gl(0,2) = 0.5*(*glstrain)(5);
+  gl(0,1) = 0.5 * (*glstrain)(3);
+  gl(0,2) = 0.5 * (*glstrain)(5);
   gl(1,0) = gl(0,1);
   gl(1,1) = (*glstrain)(1);
-  gl(1,2) = 0.5*(*glstrain)(4);
+  gl(1,2) = 0.5 * (*glstrain)(4);
   gl(2,0) = gl(0,2);
   gl(2,1) = gl(1,2);
   gl(2,2) = (*glstrain)(2);
@@ -1580,7 +1580,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::InitJacobianMapping()
   for (int i=0; i<nen_; ++i)
   {
     Node** nodes=Nodes();
-    if(!nodes) dserror("Nodes() returned null pointer");
+    if (!nodes) dserror("Nodes() returned null pointer");
     xrefe(i,0) = Nodes()[i]->X()[0];
     xrefe(i,1) = Nodes()[i]->X()[1];
     xrefe(i,2) = Nodes()[i]->X()[2];
@@ -1597,7 +1597,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::InitJacobianMapping()
   {
     // get the coordinates of Gauss points, here use intrepid
     const double* gpcoord = intpoints_.Point(gp);
-    for (int idim=0;idim<nsd_;idim++)
+    for (int idim=0; idim<nsd_; idim++)
     {
       xsi_[gp](idim) = gpcoord[idim];
     }

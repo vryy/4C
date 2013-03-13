@@ -161,14 +161,15 @@ namespace ELEMENTS
       const DRT::Node& node
       ) const
     {
-      if (nds==1)
+      if (nds == 1)
       {
         // in case of thermomechanics: nds=1 (second discretisation) temperature:
         // 1Dof/Node
         return 1;
       }
       // structure, 3D: 3 Dofs per node
-      return nsd_;
+      else
+        return nsd_;
     };
 
     //@}
