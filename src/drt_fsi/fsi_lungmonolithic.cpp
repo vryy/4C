@@ -562,7 +562,7 @@ void FSI::LungMonolithic::UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Ep
   // increment additional ale residual
   aleresidual_->Update(-1.,*ar,0.);
 
-  ios_base::fmtflags flags = Utils()->out().flags();
+  std::ios_base::fmtflags flags = Utils()->out().flags();
 
   double n,ns,nf,na,nc;
   r.Norm2(&n);
