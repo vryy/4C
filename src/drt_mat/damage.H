@@ -153,6 +153,7 @@ private:
     void Evaluate(
       const LINALG::Matrix<NUM_STRESS_3D,1>& linstrain,
       LINALG::Matrix<NUM_STRESS_3D,1>& plstrain, //!< return the plastic strains to the element
+//      LINALG::Matrix<1,1>& accplstrain, //!< return accumulated plastic strains to the element
       const int gp,  //!< current Gaus point
       Teuchos::ParameterList& params,  //!< parameter list for communication
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  //!< material stiffness matrix
@@ -205,7 +206,7 @@ private:
     //! Check if history variables are already initialized
     bool Initialized() const
     {
-      return ( isinit_ && (strainplcurr_!=Teuchos::null) );
+      return ( isinit_ and (strainplcurr_!=Teuchos::null) );
     }
 
     //! Return quick accessible material parameter data

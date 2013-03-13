@@ -15,21 +15,14 @@ Maintainer: Caroline Danowski
             089 - 289-15253
 </pre>
 */
-
-/*----------------------------------------------------------------------*
- | definitions                                               dano 02/10 |
- *----------------------------------------------------------------------*/
-
-
 /*----------------------------------------------------------------------*
  | headers                                                   dano 02/10 |
  *----------------------------------------------------------------------*/
-#include <vector>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 #include "thermostvenantkirchhoff.H"
+#include "matpar_bundle.H"
+
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
+
 
 
 /*----------------------------------------------------------------------*
@@ -48,7 +41,7 @@ MAT::PAR::ThermoStVenantKirchhoff::ThermoStVenantKirchhoff(
   thetainit_(matdata->GetDouble("INITTEMP"))
 {
   bool young_temp = (DRT::INPUT::IntegralValue<int>(DRT::Problem::Instance()->StructuralDynamicParams(),"YOUNG_IS_TEMP_DEPENDENT")==1);
-  if ( (youngs_.size()>1) && (young_temp==false) )
+  if ( (youngs_.size()>1) and (young_temp==false) )
     dserror("in case of temperature-dependent Young's modulus you have to specifiy YOUNG_IS_TEMP_DEPENDENT in the input file");
 }
 
@@ -210,24 +203,24 @@ void MAT::ThermoStVenantKirchhoff::SetupCmat(
     //                       [                    |      (1-2*nu)/2    0 ]
     //                       [ symmetric          |           (1-2*nu)/2 ]
     //
-    const double mfac = Emod/((1.0+nu)*(1.0-2.0*nu));  // factor
+    const double mfac = Emod / ((1.0 + nu) * (1.0 - 2.0 * nu));  // factor
 
     // clear the material tangent
     cmat.Clear();
     // write non-zero components
-    cmat(0,0) = mfac*(1.0-nu);
-    cmat(0,1) = mfac*nu;
-    cmat(0,2) = mfac*nu;
-    cmat(1,0) = mfac*nu;
-    cmat(1,1) = mfac*(1.0-nu);
-    cmat(1,2) = mfac*nu;
-    cmat(2,0) = mfac*nu;
-    cmat(2,1) = mfac*nu;
-    cmat(2,2) = mfac*(1.0-nu);
+    cmat(0,0) = mfac * (1.0 - nu);
+    cmat(0,1) = mfac * nu;
+    cmat(0,2) = mfac * nu;
+    cmat(1,0) = mfac * nu;
+    cmat(1,1) = mfac * (1.0 - nu);
+    cmat(1,2) = mfac * nu;
+    cmat(2,0) = mfac * nu;
+    cmat(2,1) = mfac * nu;
+    cmat(2,2) = mfac * (1.0 - nu);
     // ~~~
-    cmat(3,3) = mfac*0.5*(1.0-2.0*nu);
-    cmat(4,4) = mfac*0.5*(1.0-2.0*nu);
-    cmat(5,5) = mfac*0.5*(1.0-2.0*nu);
+    cmat(3,3) = mfac * 0.5 * (1.0 - 2.0 * nu);
+    cmat(4,4) = mfac * 0.5 * (1.0 - 2.0 * nu);
+    cmat(5,5) = mfac * 0.5 * (1.0 - 2.0 * nu);
   }
 }
 
@@ -277,9 +270,9 @@ double MAT::ThermoStVenantKirchhoff::STModulus(
 
   // plane strain, rotational symmetry
   // E / (1+nu)
-  const double c1 = Emod/(1.0+pv);
+  const double c1 = Emod / (1.0 + pv);
   // (E*nu) / ((1+nu)(1-2nu))
-  const double b1 = c1*pv/(1.0-2.0*pv);
+  const double b1 = c1 * pv / (1.0 - 2.0 * pv);
 
   // build the lame constants
   //            E
@@ -290,14 +283,14 @@ double MAT::ThermoStVenantKirchhoff::STModulus(
   //            (1+nu)*(1-2*nu)
   //
   //  \f \mu =  \frac{E}{2(1+\nu)} \f
-  const double mu = 0.5*c1;
+  const double mu = 0.5 * c1;
   // lambda
   // \f \frac{E\,\nu}{(1-2\nu)(1+\nu)} \f
   const double lambda = b1;
 
   // stress-temperature modulus
   // \f m\, = \, -(2\,\cdot \mu \, +\, 3\cdot\lambda)\cdot\varalpha_T \f
-  const double stmodulus = (-1)*(2*mu + 3*lambda)*thermexpans;
+  const double stmodulus = (-1) * (2 * mu + 3 * lambda) * thermexpans;
 
   return stmodulus;
 
@@ -350,7 +343,7 @@ void MAT::ThermoStVenantKirchhoff::Evaluate(
   )
 {
   LINALG::Matrix<1,1> init(true);
-  const double inittemp = -1.0*(params_->thetainit_);
+  const double inittemp = -1.0 * (params_->thetainit_);
   // loop over the element nodes
   init(0,0) = inittemp;
   // Delta T = T - T_0

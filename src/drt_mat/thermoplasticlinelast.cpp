@@ -19,11 +19,11 @@
         - describing the Bauschinger effect via \f Hkin \,=\, const.\f
         - constant uniaxial yield stress \f \sigma_y \,=\, const.\f
 
-       geometric linear, for small strains including temperature dependency
+       small strains including temperature dependency
 
        example input line:
        MAT 1 MAT_Struct_ThrPlasticLinElast YOUNG 206.9 NUE 0.29 DENS 0.0
-             THEXPANS 1.72e-5 INITTEMP 293.15 YIELD 0.45 ISOHARD 0.0 KINHARD 0.0 TOL 1.0e-6
+         THEXPANS 1.72e-5 INITTEMP 293.15 YIELD 0.45 ISOHARD 0.0 KINHARD 0.0 TOL 1.0e-6
 
 <pre>
 Maintainer: Caroline Danowski
@@ -33,19 +33,12 @@ Maintainer: Caroline Danowski
 </pre>
 */
 /*----------------------------------------------------------------------*
- | Definitions                                               dano 08/11 |
+ | headers                                                   dano 08/11 |
  *----------------------------------------------------------------------*/
-
-/*----------------------------------------------------------------------*
- | Headers                                                   dano 08/11 |
- *----------------------------------------------------------------------*/
-#include <vector>
-#include <Epetra_SerialDenseMatrix.h>
-#include <Epetra_SerialDenseVector.h>
 #include "thermoplasticlinelast.H"
-#include "../linalg/linalg_utils.H"
+#include "matpar_bundle.H"
+
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
 
 #include "../drt_tsi/tsi_defines.H"
 
@@ -70,6 +63,9 @@ MAT::PAR::ThermoPlasticLinElast::ThermoPlasticLinElast(
 }
 
 
+/*----------------------------------------------------------------------*
+ | is called in Material::Factory from ReadMaterials()       dano 08/11 |
+ *----------------------------------------------------------------------*/
 Teuchos::RCP<MAT::Material> MAT::PAR::ThermoPlasticLinElast::CreateMaterial()
 {
   return Teuchos::rcp(new MAT::ThermoPlasticLinElast(this));
@@ -79,7 +75,10 @@ Teuchos::RCP<MAT::Material> MAT::PAR::ThermoPlasticLinElast::CreateMaterial()
 MAT::ThermoPlasticLinElastType MAT::ThermoPlasticLinElastType::instance_;
 
 
-DRT::ParObject* MAT::ThermoPlasticLinElastType::Create( const std::vector<char> & data )
+/*----------------------------------------------------------------------*
+ | is called in Material::Factory from ReadMaterials()       dano 08/11 |
+ *----------------------------------------------------------------------*/
+DRT::ParObject* MAT::ThermoPlasticLinElastType::Create(const std::vector<char> & data)
 {
   MAT::ThermoPlasticLinElast* plastic = new MAT::ThermoPlasticLinElast();
   plastic->Unpack(data);
@@ -100,8 +99,7 @@ MAT::ThermoPlasticLinElast::ThermoPlasticLinElast()
  | copy-constructor (public)                                      08/11 |
  *----------------------------------------------------------------------*/
 MAT::ThermoPlasticLinElast::ThermoPlasticLinElast(MAT::PAR::ThermoPlasticLinElast* params)
-: plastic_step(false),
-  params_(params)
+: params_(params)
 {
 }
 
@@ -152,6 +150,8 @@ void MAT::ThermoPlasticLinElast::Pack(DRT::PackBuffer& data) const
     AddtoPack(data,strainplrate_->at(var));
     AddtoPack(data,strainelrate_->at(var));
   }
+
+  AddtoPack(data,plastic_step_);
 
   return;
 
@@ -251,6 +251,13 @@ void MAT::ThermoPlasticLinElast::Unpack(const std::vector<char>& data)
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 
+  plastic_step_ = false;
+  int plastic_step;
+  ExtractfromPack(position,data,plastic_step);
+
+  // if it was already plastic before,
+  if (plastic_step != 0) plastic_step_ = true;
+
   return;
 
 } // Unpack()
@@ -261,7 +268,7 @@ void MAT::ThermoPlasticLinElast::Unpack(const std::vector<char>& data)
  *---------------------------------------------------------------------*/
 void MAT::ThermoPlasticLinElast::Setup(const int numgp)
 {
-  // initialize hist variables
+  // initialise hist variables
   strainpllast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   strainplcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
 
@@ -313,7 +320,6 @@ void MAT::ThermoPlasticLinElast::Setup(const int numgp)
     strainplincr_->at(i) = emptymat;
     strainplrate_->at(i) = emptymat;
     strainelrate_->at(i) = emptymat;
-
   }
 
   isinit_=true;
@@ -381,8 +387,8 @@ void MAT::ThermoPlasticLinElast::Reset()
  | evaluate material (public)                                dano 08/11 |
  *----------------------------------------------------------------------*/
 void MAT::ThermoPlasticLinElast::Evaluate(
-  const LINALG::Matrix<6,1>& linstrain,  // linear strain vector
-  LINALG::Matrix<6,1>& plstrain,  // linear strain vector
+  const LINALG::Matrix<NUM_STRESS_3D,1>& linstrain,  // linear strain vector
+  LINALG::Matrix<NUM_STRESS_3D,1>& plstrain,  // linear strain vector
   const int gp, // current Gauss point
   Teuchos::ParameterList& params,  // parameter list for communication & HISTORY
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat, // material stiffness matrix
@@ -436,6 +442,8 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   // accumulated or equivalent plastic strain (scalar-valued)
   // astrain^{p,trial}_{n+1} = astrain^p_n
   strainbar_p = (strainbarpllast_->at(gp))(0,0);
+  if ( ( (strainbarpllast_->at(gp))(0,0) )<0.0 )
+    dserror("accumulated plastic strain has to be equal to or greater than 0!");
 
   // ------------------------------------------------ old back stress
   // beta^{trial}_{n+1} = beta_n
@@ -457,20 +465,20 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   LINALG::Matrix<NUM_STRESS_3D,1> strain_e(true);
 
   // strain^{e,trial}_{n+1} = strain_n+1 - strain^p_n
-  LINALG::Matrix<NUM_STRESS_3D,1> trialstrain_e(true);
+  LINALG::Matrix<NUM_STRESS_3D,1> trialstrain_e(false);
   trialstrain_e.Update( 1.0, strain, 0.0 );
   trialstrain_e.Update( (-1.0), strain_p, 1.0 );
 
   // volumetric strain
   // trace of strain vector
-  double tracestrain = ( trialstrain_e(0)+trialstrain_e(1)+trialstrain_e(2) );
+  double tracestrain = ( trialstrain_e(0) + trialstrain_e(1) + trialstrain_e(2) );
   // volstrain = 1/3 . tr( strain ) . Id
-  LINALG::Matrix<NUM_STRESS_3D,1> volumetricstrain(true);
+  LINALG::Matrix<NUM_STRESS_3D,1> volumetricstrain(false);
   volumetricstrain.Update( (tracestrain/3.0), id2, 0.0 );
 
   // deviatoric strain
   // dev^e = strain^e - volstrain^e
-  LINALG::Matrix<NUM_STRESS_3D,1> devstrain(true);
+  LINALG::Matrix<NUM_STRESS_3D,1> devstrain(false);
   devstrain.Update( 1.0, trialstrain_e, 0.0 );
   devstrain.Update( -1.0, volumetricstrain, 1.0 );
 
@@ -479,108 +487,83 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   double p = kappa * tracestrain;
 
   // deviatoric stress = 2 . G . devstrain
-  LINALG::Matrix<NUM_STRESS_3D,1> devstress(true);
+  LINALG::Matrix<NUM_STRESS_3D,1> devstress(false);
   devstress.Update( 2*G, devstrain, 0.0 );
   // be careful for shear stresses (sigma_12)
   // in Voigt-notation the shear strains have to be scaled with 1/2
   // normally done in the material tangent (cf. id4sharp)
 
-  // --------------------------------------  relativ effective stress
-  // eta^(trial)_{n+1} = s^(trial)_{n+1} - beta^(trial)_{n+1}
+  // --------------------------------------  relative effective stress
+  // eta^{trial}_{n+1} = s^{trial}_{n+1} - beta^{trial}_{n+1}
   LINALG::Matrix<NUM_STRESS_3D,1> eta(true);
   RelDevStress( devstress, beta, eta);
 
-  // J2 = 1/2 (eta11^2 + eta22^2 + eta33^2 + 2 . eta12^2 + 2 . eta23^2 + 2 . eta13^2)
+  // J2 = 1/2 ( (eta11^{trial})^2 + (eta22^{trial})^2 + (eta33^{trial})^2
+  //      + 2 . (eta12^{trial})^2 + 2 . (eta23^{trial})^2 + 2 . (eta13^{trial})^2)
   double J2 = 0.0;
   J2 = 1/2.0 * ( eta(0)*eta(0) + eta(1)*eta(1) + eta(2)*eta(2) ) +
        + eta(3)*eta(3) + eta(4)*eta(4) + eta(5)*eta(5);
 
   // trial effective relative stress
-  // qbar^(trial)_{n+1} := qbar(eta^(trial)_{n+1}) = \sqrt{ 3 . J2 }
+  // qbar^{trial}_{n+1} := qbar(eta^{trial}_{n+1}) = \sqrt{ 3 . J2 }
   double qbar = 0.0;
   qbar = sqrt( 3.0 * J2 );
 
-  //-------------------------------------------------------------------
-  // check plastic admissibility
-  //-------------------------------------------------------------------
+  //---------------------------------------------------------------------------
+  // check plastic admissibility, Phi<=0 is admissble
+  //---------------------------------------------------------------------------
 
   // ----------------------------------------------- trial yield function
 
-  // calculate the uniaxial yield stress
-  // sigma_y = sigma_y0 + Hiso . astrain^{p}_{n} = sigma_y0 + Hiso . astrain^{p, trial}_{n+1}
+  // calculate the uniaxial yield stress considering linear isotropic hardening
+  // sigma_y = sigma_y0 + Hiso . astrain^{p}_{n}
+  //         = sigma_y0 + Hiso . astrain^{p, trial}_{n+1}
   double sigma_y = sigma_y0 + Hiso * strainbar_p;
 
-  // calculate the yield function
+  // calculate the yield function with Dgamma = 0
   // Phi = \sqrt{ 3.0 . J2 } - sigma_y = q - sigma_y
   // with trial values: Phi_trial = q_trial - sigma_y
   double Phi_trial = 0.0;
   Phi_trial = qbar - sigma_y;
 
-  // initialise
-  // if trial state is violated, there are 2 possible states:
+  // --------------------------------------------------------- initialise
+
+  // if trial state is violated, i.e. it's a plastic load step, there are 2
+  // possible states: plastic loading: heaviside = 1, elastic unloading = 0)
   double heaviside = 0.0;
   // incremental plastic multiplier Delta gamma
-  double Dgamma;
+  double Dgamma = 0.0;
+
   // kinematic hardening curve of current time step and old time step
   // betabar = Hkin * strainbar_p
   // linear kinematic hardening: Hkin = const., else: Hkin = Hkin(strainnbar_p)
-  double betabarold;
-  double betabar;
+  double betabarold = 0.0;
+  double betabar = 0.0;
+
+  // unit flow vector Nbar (Prandtl-Reuss)
+  // (using the updated relative stress eta_n+1, no longer eta_n+1^trial)
+  // Nbar = ( eta^{trial}_{n+1} / || eta^{trial}_{n+1} || )
+  LINALG::Matrix<NUM_STRESS_3D,1> Nbar(true);
 
   // flow vector N (Prandtl-Reuss)
-  // (using the updated deviatoric stress s_n+1, no longer s_n+1^trial)
-  // N = sqrt{3/2} . ( s_{n+1} / || s_{n+1} || )
-  LINALG::Matrix<6,1> N(true);
-
-  // flow vector flovec (Prandtl-Reuss)
   // (using the updated relative stress eta_n+1, no longer eta_n+1^trial)
-  // bN = sqrt{3/2} . ( eta_{n+1} / || eta_{n+1} || )
-  LINALG::Matrix<6,1> flovec(true);
+  // N = sqrt{3/2} . ( eta^{trial}_{n+1} / || eta^{trial}_{n+1} || )
+  //   = sqrt{3/2} . Nbar
+  LINALG::Matrix<NUM_STRESS_3D,1> N(true);
 
   //-------------------------------------------------------------------
-  // IF elastic step (Phi_trial <= 0.0, Dgamma = 0.0)
+  // IF consistency condition is violated, i.e. plastic load step
+  // ( Phi_trial > 0.0, Dgamma >= 0.0 )
   //-------------------------------------------------------------------
-  if (Phi_trial < 0.0)
-  {
-    // trial state vectors = result vectors of time step n+1
-    // sigma^e_n+1 = sigma^(e,trial)_n+1 = s^(trial)_{n+1} + p. I
-    Stress( p, devstress, stress );
-
-    // total strains
-    // strain^e_{n+1} = strain^(e,trial)_{n+1}
-    // compute converged engineering strain components (Voigt-notation)
-    strain_e.Update( 1.0, trialstrain_e, 0.0);
-    for (int i=3; i<6; ++i) strain_e(i) *= 2.0;
-
-    // no plastic yielding
-    Dgamma = 0.0;
-
-    // pass the current plastic strains to the element (for visualisation)
-    // compute converged engineering strain components (Voigt-notation)
-    for (int i=3; i<6; ++i) strain_p(i) *= 2.0;
-    plstrain.Update(1.0, strain_p, 0.0);
-
-    // constant values for
-    //  - plastic strains
-    //  - accumulated plastic strains
-    //  - back stress
-    //  - relative stress
-
-  }  // elastic step
-
-  //-------------------------------------------------------------------
-  // ELSE IF plastic step ( Phi_trial > 0.0, Dgamma >= 0.0 )
-  // violated consistency condition
-  //-------------------------------------------------------------------
-  else //if (Phi_trial > 0.0)
+  if (Phi_trial > 1.0e-08)  // if (Phi_trial > 0.0)
   {
     // only first plastic call is output at screen for every processor
     // visualisation of whole plastic behaviour via PLASTIC_STRAIN in postprocessing
-    if(plastic_step == false)
+    if (plastic_step_ == false)
     {
-      if(gp==0)
+      if (gp == 0)
         cout << "first plastic step: plastic strains unequal zero!" << endl;
-      plastic_step = true;
+      plastic_step_ = true;
     }
 
     // calculate kinematic hardening stress of old time step
@@ -591,7 +574,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
 
     // local Newton-Raphson
 
-    // initialize
+    // initialise
     const int itermax = 50;  // max. number of iterations
     int itnum = 0;  // iteration counter
 
@@ -600,61 +583,76 @@ void MAT::ThermoPlasticLinElast::Evaluate(
     // calculate residual derivative/tangent
     // ResTan = Phi' = d(Phi)/d(Dgamma)
     double ResTan = 0.0;
-    // initialise to zero
+    // safety check: set to zero
     Dgamma = 0.0;
     betabar = 0.0;
 
-    // start iteration
+    // start iteration with index m for local Newton
     while (true)
     {
       itnum++;
       // check for convergence
 
-      // if not converged
-      if ( itnum>itermax )
+      // if not converged m > m_max
+      if (itnum > itermax)
       {
         dserror("local Newton iteration did not converge after iteration %3d/%3d with Res=%3d",itnum,itermax,Res);
       }
-      // continue loop
+      // else: continue loop m <= m_max
 
-      // Res:= Phi = q^(trial)_{n+1} - Delta gamma (3 . G + Hkin + Hiso) - sigma_y
-      // Delta gamma . Hkin := betabar - betabarn
-      // Res = qbar - 3 * G * Dgamma - sigma_y;
+      // Res:= Phi = qbar^{trial}_{n+1}
+      //             - Delta gamma (3 . G + Hkin(strainbar_p + Dgamma) )
+      //             - sigma_y(strainbar_p + Dgamma)
+      // - Hiso is introduced in residual via sigma_y(strainbar_p + Dgamma)
+      // - Hkin: using the relation: Delta gamma . Hkin := betabar - betabarold
+      //
+      // --> Res = qbar^{trial} - 3 * G * Dgamma
+      //           - betabar(strainbar_p + Dgamma) + betabarold
+      //           - sigma_y(strainbar_p + Dgamma)
       Res = qbar - 3 * G * Dgamma - betabar + betabarold - sigma_y;
 
       // check for convergence
       double norm = abs(Res);
       // check: absolute value of Res has to be smaller than given tolerance
-      if ( norm < params_->abstol_)
+      if (norm < (params_->abstol_))
       {
 #ifdef DEBUGMATERIAL
-        if(gp==0)
+        if (gp == 0)
           printf("Newton method converged after %i iterations; abs(Res)=  %-14.8E\n", itnum, abs(Res));
 #endif  // #ifdef DEBUGMATERIAL
         break;
       }
 
       // plasticity with linear kinematic hardening
-      // ResTan = -3G - Hkin = const.
-      ResTan = - 3 * G - Hkin - Hiso;
+      // ResTan = -3G - Hkin(strainbar_p + Dgamma^{m-1}) - Hiso(strainbar_p + Dgamma^{m-1})
+      // with Hiso = const. when considering LINEAR isotropic hardening
+      ResTan = - 3 * G - Hkin -Hiso;
 
       // incremental plastic multiplier Dgamma
-      // Dgamma = Dgamma - Phi / Phi'
+      // Dgamma^{m} = Dgamma^{m-1} - Phi / Phi'
       Dgamma += ( -Res )/ResTan;
 
+      // -------------------------- local Newton update of plastic values
+
       // compute new residual of accumulatd plastic strains
-      strainbar_p += Dgamma;
+      // astrain^p_{n+1} = astrain^p_n + Dgamma
+      // astrain^p_{n+1} = SUM{Dgamma_n} from all time steps n
+      // Kuhn-Tucker: Dgamma >= 0.0 --> astrain^p_{n+1} >= 0.0
+      strainbar_p = (strainbarpllast_->at(gp))(0,0) + Dgamma;
+      if (strainbar_p < 0.0)
+        dserror("accumulated plastic strain has to be equal or greater than zero");
 
       // Prager's linear kinemativ hardening rule
       // kinematic hardening stress betabar (scalar-valued)
       // beta_{n+1} = Hkin * astrain^p_{n+1}
       betabar = Hkin * strainbar_p;
 
+      // linear isotropic hardening
       // sigma = sigma_y0 + Hiso . astrain^{p}_{n+1}
       sigma_y = sigma_y0 + Hiso * strainbar_p;
 
 #ifdef DEBUGMATERIAL
-      if(gp==0)
+      if (gp == 0)
       {
         cout << "am 1.GP: local Newton: Res " << Res << endl;
         cout << "local Newton: ResTan " << ResTan << endl;
@@ -666,33 +664,36 @@ void MAT::ThermoPlasticLinElast::Evaluate(
 
     }  // end of local Newton iteration
 
-    // ----------------------------------------------------------- update
+    // --------------------------------------------------- plastic update
 
-    flovec.Update( 1.0, eta, 0.0);
-    // relative stress norm || eta_{n+1}^{trial} ||
+    // ---------------------------------------------- update flow vectors
+    // unit flow vector Nbar = eta_{n+1}^{trial} / || eta_{n+1}^{trial} ||
+    Nbar.Update( 1.0, eta, 0.0);
     double etanorm = 0.0;
     etanorm = sqrt( eta(0)*eta(0) + eta(1)*eta(1) + eta(2)*eta(2) +
                     2 * ( eta(3)*eta(3) + eta(4)*eta(4) + eta(5)*eta(5) ) );
-    const double facflovec = (sqrt( 3.0/2.0 )) /  etanorm ;
-    // flow vector flovec = sqrt(3/2) eta_{n+1}^{trial}  / || eta_{n+1}^{trial} ||
-    flovec.Scale(facflovec);
+    const double facNbar = 1 /  etanorm ;
+    Nbar.Scale(facNbar);
 
-    // relative stress
+    // flow vector N = sqrt(3/2) eta_{n+1}^{trial} / || eta_{n+1}^{trial} ||
+    N.Update(( sqrt( 3.0/2.0 ) ), Nbar, 0.0);
+
+    // update relative stress eta_{n+1}, cf. (7.193)
     // eta = ( 1 - (Delta gamma / qbar_{n+1}^{trial}) . [ 3 . G + Hkin] ) eta_{n+1}^{trial}
     // H_iso is not needed for update of the stress
     const double etafac = 1.0 - ( (Dgamma / qbar) * (3.0 * G + Hkin)  );
     eta.Scale(etafac);
 
-    // update back stress
+    // update back stress, cf. (7.197)
     // beta_n+1 = beta_n * sqrt(2/3) * (betabar - betabarold) * eta / etanorm;
-    // sqrt(2/3) flovec =  2/3 * ( sqrt(3/2) eta / etanorm)
+    // sqrt(2/3) N =  2/3 * ( sqrt(3/2) eta / etanorm)
     const double facbeta = 2.0 / 3.0 * ( betabar - betabarold );
-    beta.Update( facbeta, flovec, 1.0);
+    beta.Update( facbeta, N, 1.0);
 
     // deviatoric stress
-    // s = s_{n+1}^{trial} - 2 . G . Delta gamma . flovec
+    // s = s_{n+1}^{trial} - 2 . G . Delta gamma . N
     const double facdevstress = (-2.0) * G * Dgamma;
-    devstress.Update( facdevstress, flovec, 1.0);
+    devstress.Update( facdevstress, N, 1.0);
 
     // total stress
     // sigma_{n+1} = s_{n+1} + p_{n+1} . Id
@@ -700,13 +701,13 @@ void MAT::ThermoPlasticLinElast::Evaluate(
     Stress( p, devstress, stress );
 
     // total strains
-    // strain^e_{n+1} = strain^(e,trial)_{n+1} - Dgamma . flovec
+    // strain^e_{n+1} = strain^(e,trial)_{n+1} - Dgamma . N
     // compute converged engineering strain components (Voigt-notation)
     strain_e.Update( 1.0, trialstrain_e, 0.0);
-    strain_e.Update( (-Dgamma), flovec, 1.0 );
+    strain_e.Update( (-Dgamma), N, 1.0 );
 
-    // strain^p_{n+1} = strain^p_n + Dgamma . flovec
-    strain_p.Update( Dgamma, flovec, 1.0 );
+    // strain^p_{n+1} = strain^p_n + Dgamma . N
+    strain_p.Update( Dgamma, N, 1.0 );
 
     // compute converged engineering strain components (Voigt-notation)
     for (int i=3; i<6; ++i) strain_e(i) *= 2.0;
@@ -732,7 +733,46 @@ void MAT::ThermoPlasticLinElast::Evaluate(
 
   }  // plastic corrector
 
-  // --------------------------- consistent elastoplastic tangent modulus
+  //-------------------------------------------------------------------
+  // ELSE: elastic step (Phi_trial <= 0.0, Dgamma = 0.0)
+  //-------------------------------------------------------------------
+  else  // (Phi_trial <= 0.0)
+  {
+    // trial state vectors = result vectors of time step n+1
+    // sigma^e_n+1 = sigma^(e,trial)_n+1 = s^{trial}_{n+1} + p. I
+    Stress( p, devstress, stress );
+
+    // total strains
+    // strain^e_{n+1} = strain^(e,trial)_{n+1}
+    // compute converged engineering strain components (Voigt-notation)
+    strain_e.Update( 1.0, trialstrain_e, 0.0);
+    for (int i=3; i<6; ++i) strain_e(i) *= 2.0;
+
+    // no plastic yielding
+    Dgamma = 0.0;
+    // kinematic hardening curve of current time step and old time step
+    // betabar = Hkin * strainbar_p
+    // linear kinematic hardening: Hkin = const., else: Hkin = Hkin(strainnbar_p)
+    betabarold = 0.0;
+    betabar = 0.0;
+
+    // pass the current plastic strains to the element (for visualisation)
+    // compute converged engineering strain components (Voigt-notation)
+    for (int i=3; i<6; ++i) strain_p(i) *= 2.0;
+    plstrain.Update(1.0, strain_p, 0.0);
+
+    // constant values for
+    //  - plastic strains
+    //  - accumulated plastic strains
+    //  - back stress
+    //  - relative stress
+
+  }  // elastic step
+
+  //---------------------------------------------------------------------------
+  // --------------------------------- consistent elastoplastic tangent modulus
+  //---------------------------------------------------------------------------
+
   // using an associative flow rule: C_ep is symmetric
   // ( generally C_ep is nonsymmetric )
   // if Phi^trial=0: two tangent stress-strain relations exist
@@ -740,15 +780,18 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   if (Dgamma > 0.0)
     heaviside = 1.0;
   // elastic unloading --> C == C_e
-  else heaviside = 0.0;
+  else
+    heaviside = 0.0;
 
+  // using an associative flow rule: C_ep is symmetric
+  // ( generally C_ep is nonsymmetric )
   SetupCmatElastoPlastic(
     cmat,
     Dgamma,
     G,
     qbar,
-    flovec,
-    eta, //devstress,
+    N,
+    Nbar,
     heaviside,
     Hiso,
     Hkin
@@ -760,9 +803,9 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   //       = eta : Dgamma . N
 
   // ---------------------------------------- compute plastic strain increment
-  // strain^p_{n+1} = Dgamma . flovec
+  // Delta strain^p_{n+1} = Dgamma . N = Dgamma . sqrt{3/2} eta_{n+1} / || eta_{n+1}||
   for (int i=0; i<6; i++)
-    strainplincr_->at(gp)(i,0) = Dgamma * flovec(i,0);
+    strainplincr_->at(gp)(i,0) = Dgamma * N(i,0);
   // --> strain rate: strain^p_{n+1}' = (Dgamma . N_n+1) / Delta t
 
   // dissipated mechanical power
@@ -770,15 +813,18 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   // with total stress: sigma = sigma^{mech}+sigma^{theta}
 
   // stressdiff = (sigma^{mech} - beta)
-  LINALG::Matrix<NUM_STRESS_3D,1> stressdiff(true);
+  LINALG::Matrix<NUM_STRESS_3D,1> stressdiff(false);
   stressdiff.Update(1.0, stress, 0.0);
   stressdiff.Update((-1.0), (backstresscurr_->at(gp)), 1.0);
 
   // plasticpower_ = (sigma^{mech}+sigma^{theta} - beta) : strain^p_{n+1}'
   double plasticpower = 0.0;
-  plasticpower = (strainplincr_->at(gp))(0)*stressdiff(0) + (strainplincr_->at(gp))(1)*stressdiff(1) +
-                 (strainplincr_->at(gp))(2)*stressdiff(2) + (strainplincr_->at(gp))(3)*stressdiff(3) +
-                 (strainplincr_->at(gp))(4)*stressdiff(4) + (strainplincr_->at(gp))(5)*stressdiff(5);
+  plasticpower = (strainplincr_->at(gp))(0) * stressdiff(0)
+                 + (strainplincr_->at(gp))(1) * stressdiff(1)
+                 + (strainplincr_->at(gp))(2) * stressdiff(2)
+                 + (strainplincr_->at(gp))(3) * stressdiff(3)
+                 + (strainplincr_->at(gp))(4) * stressdiff(4)
+                 + (strainplincr_->at(gp))(5) * stressdiff(5);
   // time step not yet considered, i.e., plasticpower_ is an energy, not a power
   // accumulated plastic strain
   plasticpower_->at(gp) = plasticpower;
@@ -787,12 +833,12 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   LINALG::Matrix<NUM_STRESS_3D,1> ctemp(true);
   SetupCthermo(ctemp);
   double plastictemppower = 0.0;
-  plasticpower = (strainplincr_->at(gp))(0)*ctemp(0) +
-                 (strainplincr_->at(gp))(1)*ctemp(1) +
-                 (strainplincr_->at(gp))(2)*ctemp(2) +
-                 (strainplincr_->at(gp))(3)*ctemp(3) +
-                 (strainplincr_->at(gp))(4)*ctemp(4) +
-                 (strainplincr_->at(gp))(5)*ctemp(5);
+  plasticpower = (strainplincr_->at(gp))(0) * ctemp(0)
+                 + (strainplincr_->at(gp))(1) * ctemp(1)
+                 + (strainplincr_->at(gp))(2) * ctemp(2)
+                 + (strainplincr_->at(gp))(3) * ctemp(3)
+                 + (strainplincr_->at(gp))(4) * ctemp(4)
+                 + (strainplincr_->at(gp))(5) * ctemp(5);
   // time step not yet considered, i.e., plastictemppower_ is an energy, not a power
   plastictemppower_->at(gp) = plastictemppower;
 
@@ -805,9 +851,9 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   cout << " Dgamma " << Dgamma << endl;
   cout << " G " << G << endl;
   cout << " qbar " << qbar << endl;
-  cout << " flow vector " << flovec << endl;
+  cout << " flow vector " << N << endl;
   cout << " heaviside " << heaviside << endl;
-	 cout << " Kinematic hardening modul " << Hkin << endl;
+  cout << " Kinematic hardening modul " << Hkin << endl;
 
   // build the elasto-plastic tangent modulus
   LINALG::Matrix<6,6> cmatFD(true);
@@ -823,7 +869,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
     G,  // shear modulus
     qbar,  // elastic trial von Mises effective stress
     kappa, // bulk modulus
-    flovec, //  flow vector
+    N, //  flow vector
     heaviside  // Heaviside function
     );
 
@@ -852,7 +898,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
  *----------------------------------------------------------------------*/
 void MAT::ThermoPlasticLinElast::Stress(
   const double p,  // volumetric stress
-  const LINALG::Matrix<6,1>& devstress,  // deviatoric stress tensor
+  const LINALG::Matrix<NUM_STRESS_3D,1>& devstress,  // deviatoric stress tensor
   LINALG::Matrix<NUM_STRESS_3D,1>& stress // 2nd PK-stress
   )
 {
@@ -868,8 +914,8 @@ void MAT::ThermoPlasticLinElast::Stress(
  | compute relative deviatoric stress tensor                 dano 08/11 |
  *----------------------------------------------------------------------*/
 void MAT::ThermoPlasticLinElast::RelDevStress(
-  const LINALG::Matrix<6,1>& devstress,  // deviatoric stress tensor
-  const LINALG::Matrix<6,1>& beta,  // back stress tensor
+  const LINALG::Matrix<NUM_STRESS_3D,1>& devstress,  // deviatoric stress tensor
+  const LINALG::Matrix<NUM_STRESS_3D,1>& beta,  // back stress tensor
   LINALG::Matrix<NUM_STRESS_3D,1>& eta // relative stress
   )
 {
@@ -885,7 +931,7 @@ void MAT::ThermoPlasticLinElast::RelDevStress(
  | computes isotropic elasticity tensor in matrix notion     dano 08/11 |
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
-void MAT::ThermoPlasticLinElast::SetupCmat(LINALG::Matrix<6,6>& cmat)
+void MAT::ThermoPlasticLinElast::SetupCmat(LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat)
 {
   // get material parameters
   // Young's modulus (modulus of elasticity)
@@ -902,24 +948,24 @@ void MAT::ThermoPlasticLinElast::SetupCmat(LINALG::Matrix<6,6>& cmat)
   //                       [                    |      (1-2*nu)/2    0 ]
   //                       [ symmetric          |           (1-2*nu)/2 ]
   //
-  const double mfac = young/((1.0+nu)*(1.0-2.0*nu));  // factor
+  const double mfac = young / ( (1.0 + nu) * (1.0 - 2.0*nu) );  // factor
 
   // clear the material tangent
   cmat.Clear();
   // write non-zero components
-  cmat(0,0) = mfac*(1.0-nu);
-  cmat(0,1) = mfac*nu;
-  cmat(0,2) = mfac*nu;
-  cmat(1,0) = mfac*nu;
-  cmat(1,1) = mfac*(1.0-nu);
-  cmat(1,2) = mfac*nu;
-  cmat(2,0) = mfac*nu;
-  cmat(2,1) = mfac*nu;
-  cmat(2,2) = mfac*(1.0-nu);
+  cmat(0,0) = mfac * (1.0 - nu);
+  cmat(0,1) = mfac * nu;
+  cmat(0,2) = mfac * nu;
+  cmat(1,0) = mfac * nu;
+  cmat(1,1) = mfac * (1.0 - nu);
+  cmat(1,2) = mfac * nu;
+  cmat(2,0) = mfac * nu;
+  cmat(2,1) = mfac * nu;
+  cmat(2,2) = mfac * (1.0 - nu);
   // ~~~
-  cmat(3,3) = mfac*0.5*(1.0-2.0*nu);
-  cmat(4,4) = mfac*0.5*(1.0-2.0*nu);
-  cmat(5,5) = mfac*0.5*(1.0-2.0*nu);
+  cmat(3,3) = mfac * 0.5 * (1.0 - 2.0 * nu);
+  cmat(4,4) = mfac * 0.5 * (1.0 - 2.0 * nu);
+  cmat(5,5) = mfac * 0.5 * (1.0 - 2.0 * nu);
 
 }  // SetupCmat()
 
@@ -929,14 +975,14 @@ void MAT::ThermoPlasticLinElast::SetupCmat(LINALG::Matrix<6,6>& cmat)
  | for 3d                                                               |
  *----------------------------------------------------------------------*/
 void MAT::ThermoPlasticLinElast::SetupCmatElastoPlastic(
-  LINALG::Matrix<6,6>& cmat,  // elasto-plastic tangent modulus (out)
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  // elasto-plastic tangent modulus (out)
   double Dgamma,  // plastic multiplier
   double G,  // shear modulus
   double q,  // elastic trial von Mises effective stress
-  LINALG::Matrix<6,1> flowvector,  // unit flow vector
-  LINALG::Matrix<6,1> eta,  // relative stress eta = s - beta
+  LINALG::Matrix<NUM_STRESS_3D,1> flowvector,  // flow vector
+  LINALG::Matrix<NUM_STRESS_3D,1> Nbar,  // unit flow vector
   double heaviside,  // Heaviside function,
-  double Hiso,
+  double Hiso,  // isotropic hardening modulus
   double Hkin  // kinematic hardening modulus
   )
 {
@@ -947,9 +993,13 @@ void MAT::ThermoPlasticLinElast::SetupCmatElastoPlastic(
 
   // depending on the flow vector Cmat_ep can be a fully-occupied matrix
 
-  // C_ep = C_e - ( H^ . Dgamma . 6 . G^2 ) / q . I_d +
-  //        +  H^ . 6 . G^2 ( Dgamma/q - 1/(3 G + Hkin + Hiso) ) N* \otimes N*
-  //
+  // C_ep = C_e - ( H^ . Dgamma . 6 . G^2 ) / qbar^{trial} . I_d +
+  //        +  H^ . 6 . G^2 ( Dgamma/qbar^{trial} - 1/(3 G + Hkin + Hiso) ) Nbar \otimes Nbar
+
+  // ---------------------------------------------------------- Heaviside
+  // if plastic loading:   heaviside = 1.0 --> use C_ep
+  // if elastic unloading: heaviside = 0.0 --> use C_e
+
   // I_d = I_s - 1/3 I . I
   // I_d in Voigt-notation applied to symmetric problem, like stress calculation
   //         [ 2/3   -1/3  -1/3 | 0    0    0  ]
@@ -962,28 +1012,31 @@ void MAT::ThermoPlasticLinElast::SetupCmatElastoPlastic(
   //
 
   // build Cartesian identity 2-tensor I_{AB}
-  LINALG::Matrix<6,1> id2(true);
+  LINALG::Matrix<NUM_STRESS_3D,1> id2(true);
   for (int i=0; i<3; i++) id2(i) = 1.0;
 
   // set Cartesian identity 4-tensor in 6-Voigt matrix notation
   // this is fully 'contra-variant' identity tensor, ie I^{ABCD}
   // REMARK: rows are stress-like 6-Voigt
   //         columns are stress-like 6-Voigt
-  LINALG::Matrix<6,6> id4sharp(true);
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> id4sharp(true);
   for (int i=0; i<3; i++) id4sharp(i,i) = 1.0;
   for (int i=3; i<6; i++) id4sharp(i,i) = 0.5;
 
-  // unit flow vector N_ (cf. de Souza Neto (7.117)/(7.210) )
-  // N_ = sqrt(2/3) . N
-  double flowfac = 0.0;
-  flowfac = sqrt(2.0/3.0);
+  // unit flow vector Nbar (cf. de Souza Neto (7.117)/(7.210) )
+  // Nbar = eta^{trial}_{n+1} / || eta^{trial}_{n+1} || = sqrt(2/3) . N
+  double flowfac = sqrt(2.0/3.0);
   flowvector.Scale(flowfac);
 
+  // ------------------------------------------------------- elastic term
+  // C_ep = C_e
   // add standard isotropic elasticity tensor C_e first
   SetupCmat(cmat);
 
-  // if plastic loading:   heaviside = 1.0 --> use C_ep
-  // if elastic unloading: heaviside = 0.0 --> use C_e
+  // ------------------------------------------------------ plastic terms
+
+  // ------------------------------------------------- first plastic term
+  // - ( H^ . Dgamma . 6 . G^2 ) / qbar^{trial} . I_d
   double epfac = 0.0;
   double epfac3 = 0.0;
   // elastic trial von Mises effective stress
@@ -1000,12 +1053,13 @@ void MAT::ThermoPlasticLinElast::SetupCmatElastoPlastic(
   epfac1 = epfac / (-3.0);
   cmat.MultiplyNT(epfac1, id2, id2, 1.0);
 
-  // unit flow vector: N^{bar} = eta / || eta || = eta^{trial} / || eta^{trial} ||
-  // factoring of shear entries not necessary for this term (devstress is used for N)
-  double norm = 0.0;
-  norm = sqrt( eta(0)*eta(0) + eta(1)*eta(1) + eta(2)*eta(2) +
-                2 * ( eta(3)*eta(3) + eta(4)*eta(4) + eta(5)*eta(5) )
-                );
+  // ------------------------------------------------ second plastic term
+  // +  H^ . 6 . G^2 ( Dgamma/qbar^{trial} - 1/(3 G + Hkin + Hiso) ) Nbar \otimes Nbar
+
+  // unit flow vector (using co-linearity between trial and end state of eta)
+  // Nbar = eta_{n+1} / || eta_{n+1} ||
+  //      = eta^{trial}_{n+1} / || eta^{trial}_{n+1} ||
+
   // loop strains (columns)
   for (int k=0; k<6; ++k)
   {
@@ -1015,11 +1069,11 @@ void MAT::ThermoPlasticLinElast::SetupCmatElastoPlastic(
     {
       if (q != 0.0)
       {
-        epfac3 =  heaviside * 6 * G * G * ( Dgamma / q - 1.0 / (3*G + Hkin + Hiso) )/(norm * norm);
-        cmat(i,k) += epfac3 * eta(i) * eta(k);
-      }
-    }
-  }
+        epfac3 =  heaviside * 6 * G * G * ( Dgamma / q - 1.0 / (3 * G + Hkin + Hiso) );
+        cmat(i,k) += epfac3 * Nbar(i) * Nbar(k);
+      }  // (q != 0.0)
+    } // end rows, loop i
+  }  // end columns, loop k
 
 #ifdef DEBUGMATERIAL
 //  cout << "Ende SetupCmatElastPlast" << endl;
@@ -1043,18 +1097,18 @@ void MAT::ThermoPlasticLinElast::SetupCmatElastoPlastic(
 void MAT::ThermoPlasticLinElast::StrainRateSplit(
   int gp,
   const double stepsize,
-  LINALG::Matrix<6,1>& strainlinrate
+  LINALG::Matrix<NUM_STRESS_3D,1>& strainlinrate
   )
 {
   // build the temporal rate of the plastic strains
   // strain_n+1^p = Dgamma . N --> rate: (strain_n+1^p)' = Dgamma/dt . N
-  strainplrate_->at(gp).Update((1.0/stepsize), (strainplincr_->at(gp)), 0.0);
+  (strainplrate_->at(gp)).Update((1.0/stepsize), (strainplincr_->at(gp)), 0.0);
 
   // insert total strain rate epsilon'
   // epsilon' = (epsilon^e)' + (epsilon^p)'
   for (int i=0; i<6; i++)
   {
-    strainelrate_->at(gp)(i,0) = strainlinrate(i,0) - strainplrate_->at(gp)(i,0);
+    (strainelrate_->at(gp)(i,0)) = strainlinrate(i,0) - (strainplrate_->at(gp)(i,0));
   }
 
   return;
@@ -1069,8 +1123,8 @@ LINALG::Matrix<6,1> MAT::ThermoPlasticLinElast::PlasticStrainDiff(int gp)
 {
   // strain^{p,trial}_{n+1} = strain^p_n
   // equivalent plastic strain
-  LINALG::Matrix<NUM_STRESS_3D,1> strainp_n(true);
-  LINALG::Matrix<NUM_STRESS_3D,1> strainp_np(true);
+  LINALG::Matrix<NUM_STRESS_3D,1> strainp_n(false);
+  LINALG::Matrix<NUM_STRESS_3D,1> strainp_np(false);
   for (int i=0; i<6; i++)
   {
     strainp_n(i,0) = strainpllast_->at(gp)(i,0);
@@ -1078,7 +1132,7 @@ LINALG::Matrix<6,1> MAT::ThermoPlasticLinElast::PlasticStrainDiff(int gp)
   }
 
   //  V_n+1^k = (D_n+1^k - D_n) / Dt
-  LINALG::Matrix<NUM_STRESS_3D,1> strainp_vel(true);
+  LINALG::Matrix<NUM_STRESS_3D,1> strainp_vel(false);
   strainp_vel.Update(1.0, strainp_np, 0.0);
   strainp_vel.Update( (-1.0), strainp_n, 1.0);
 
@@ -1091,7 +1145,7 @@ LINALG::Matrix<6,1> MAT::ThermoPlasticLinElast::PlasticStrainDiff(int gp)
  | computes temperature dependent isotropic                  dano 05/10 |
  | elasticity tensor in matrix notion for 3d, second(!) order tensor    |
  *----------------------------------------------------------------------*/
-void MAT::ThermoPlasticLinElast::SetupCthermo(LINALG::Matrix<6,1>& ctemp)
+void MAT::ThermoPlasticLinElast::SetupCthermo(LINALG::Matrix<NUM_STRESS_3D,1>& ctemp)
 {
   double m = STModulus();
 
@@ -1134,9 +1188,9 @@ double MAT::ThermoPlasticLinElast::STModulus()
 
   // plane strain, rotational symmetry
   // E / (1+nu)
-  const double c1 = ym/(1.0+pv);
+  const double c1 = ym / (1.0 + pv);
   // (E*nu) / ((1+nu)(1-2nu))
-  const double b1 = c1*pv/(1.0-2.0*pv);
+  const double b1 = c1 * pv / (1.0 - 2.0 * pv);
 
   // build the lame constants
   //            E
@@ -1154,7 +1208,7 @@ double MAT::ThermoPlasticLinElast::STModulus()
 
   // stress-temperature modulus
   // \f m\, = \, -(2\,\cdot \mu \, +\, 3\cdot\lambda)\cdot\varalpha_T \f
-  const double stmodulus = (-1)*(2*mu + 3*lambda)*thermexpans;
+  const double stmodulus = (-1) * (2 * mu + 3 * lambda) * thermexpans;
 
   return stmodulus;
 
@@ -1173,7 +1227,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   SetupCthermo(ctemp);
 
   LINALG::Matrix<1,1> init(true);
-  const double inittemp = -1.0*(params_->thetainit_);
+  const double inittemp = -1.0 * (params_->thetainit_);
   // loop over the element nodes
   init(0,0) = inittemp;
   // Delta T = T - T_0
@@ -1190,6 +1244,5 @@ void MAT::ThermoPlasticLinElast::Evaluate(
 
 
 /*----------------------------------------------------------------------*/
-
 
 

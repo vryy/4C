@@ -27,19 +27,19 @@ Maintainer: Caroline Danowski
             089 - 289-15253
 </pre>
 */
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | definitions                                               dano 08/11 |
+ *----------------------------------------------------------------------*/
 #ifndef THERMOPLASTICLINELAST_H_
 #define THERMOPLASTICLINELAST_H_
 
 
+/*----------------------------------------------------------------------*
+ | headers                                                   dano 08/11 |
+ *----------------------------------------------------------------------*/
 #include "matpar_parameter.H"
 #include "material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
-#include <Epetra_SerialDenseVector.h>
-#include <Epetra_SerialDenseMatrix.h>
-
-#include <Teuchos_RCP.hpp>
-#include <Teuchos_ParameterList.hpp>
 
 
 namespace MAT
@@ -49,42 +49,42 @@ namespace MAT
   {
 
     /*----------------------------------------------------------------------*/
-    /// material parameters for plastic lin elastic Material
+    //! material parameters for plastic lin elastic Material
     class ThermoPlasticLinElast : public Parameter
     {
     public:
 
-      /// standard constructor
+      //! standard constructor
       ThermoPlasticLinElast(Teuchos::RCP<MAT::PAR::Material> matdata);
 
-      /// destructor
+      //! destructor
       virtual ~ThermoPlasticLinElast() { ; }
 
-      /// @name material parameters
+      //! @name material parameters
       //@{
 
-      /// Young's modulus
+      //! Young's modulus
       const double youngs_;
-      /// Possion's ratio
+      //! Possion's ratio
       const double poissonratio_;
-      /// mass density
+      //! mass density
       const double density_;
-      /// linear coefficient of thermal expansion \f$ \alpha_T \f$
+      //! linear coefficient of thermal expansion \f$ \alpha_T \f$
       const double thermexpans_;
-      /// initial temperature (constant) \f$ \theta_0 \f$
+      //! initial temperature (constant) \f$ \theta_0 \f$
       const double thetainit_;
-      /// yield stress (constant for perfect plasticity)  \f$ \sigma_y \f$
+      //! yield stress (constant for perfect plasticity)  \f$ \sigma_y \f$
       const double yield_;
-      /// isotropic hardening modulus \f$ H_i \f$
+      //! isotropic hardening modulus \f$ H_i \f$
       const double isohard_;
-      /// kinematic hardening modulus \f$ H_k \f$
+      //! kinematic hardening modulus \f$ H_k \f$
       const double kinhard_;
       // tolerance for local Newton iteration
       const double abstol_;
 
       //@}
 
-      /// create material instance of matching type with my parameters
+      //! create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
     };  // class ThermoThermoPlasticLinElast
@@ -110,15 +110,15 @@ private:
 
 
   /*----------------------------------------------------------------------*/
-  /// wrapper for linear thermo-elasto-plastic material
+  //! wrapper for linear thermo-elasto-plastic material
   class ThermoPlasticLinElast : public Material
   {
   public:
 
-    /// construct empty material object
+    //! construct empty material object
     ThermoPlasticLinElast();
 
-    /// construct the material object given material parameters
+    //! construct the material object given material parameters
     explicit ThermoPlasticLinElast(MAT::PAR::ThermoPlasticLinElast* params);
 
     //! @name Packing and Unpacking
@@ -155,30 +155,30 @@ private:
 
     //@}
 
-    /// material type
+    //! material type
     virtual INPAR::MAT::MaterialType MaterialType() const
     {
       return INPAR::MAT::m_thermopllinelast;
     }
 
-    /// return copy of this material object
+    //! return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const
     {
       return Teuchos::rcp( new ThermoPlasticLinElast( *this ) );
     }
 
-    /// initialize internal stress variables
+    //! initialise internal stress variables
     void Setup(
       const int numgp //!< number of Gauss points
       );
 
-    /// update internal stress variables
+    //! update internal stress variables
     void Update();
 
-    /// reset internal stress variables
+    //! reset internal stress variables
     void Reset();
 
-    /// evaluate material
+    //! evaluate material
     void Evaluate(
       const LINALG::Matrix<6,1>& linstrain,
       LINALG::Matrix<6,1>& plstrain, //!< return the plastic strains to the element
@@ -191,52 +191,52 @@ private:
     // computes stress
     void Stress(
       const double p,  //!< volumetric stress tensor
-      const LINALG::Matrix<6,1>& devstress,  //!< deviatoric stress tensor
+      const LINALG::Matrix<NUM_STRESS_3D,1>& devstress,  //!< deviatoric stress tensor
       LINALG::Matrix<NUM_STRESS_3D,1>& stress //!< 2nd PK-stress
       );
 
-    // computes relative stress eta = stress - back stress
+    //! calculate relative/over strees
     void RelDevStress(
-      const LINALG::Matrix<6,1>& devstrain,  //!< deviatoric stress tensor
-      const LINALG::Matrix<6,1>& beta,  //!< back stress tensor
+      const LINALG::Matrix<NUM_STRESS_3D,1>& devstrain,  //!< deviatoric stress tensor
+      const LINALG::Matrix<NUM_STRESS_3D,1>& beta,  //!< back stress tensor
       LINALG::Matrix<NUM_STRESS_3D,1>& eta //!< relative stress
       );
 
-    /// computes isotropic elasticity tensor in matrix notion for 3d
+    //! computes isotropic elasticity tensor in matrix notion for 3d
     void SetupCmat(
-      LINALG::Matrix<6,6>& cmat  //!< elastic material tangent
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat  //!< elastic material tangent
       );
 
-    /// computes isotropic elastoplastic tensor in matrix notion for 3d
+    //! computes isotropic elastoplastic tensor in matrix notion for 3d
     void SetupCmatElastoPlastic(
-      LINALG::Matrix<6,6>& cmat,  //!< elastoplastic material tangent
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  //!< elasto-plastic material tangent
       double Dgamma,  //!< plastic multiplier
       double G,  //!< shear modulus
       double q,  //!< relative effective stress
-      const LINALG::Matrix<6,1> flowvector,  //!< flow vector
-      const LINALG::Matrix<6,1> eta,  //!< relative stress
+      const LINALG::Matrix<NUM_STRESS_3D,1> flowvector,  //!< flow vector
+      const LINALG::Matrix<NUM_STRESS_3D,1> Nbar,  //!< unit vector
       double heaviside,  //!< Heaviside function
       double Hiso,  //!< isotropic hardening modulus
       double Hkin  //!< kinematic hardening modulus
       );
 
-    /// computes isotropic elastoplastic tensor in matrix notation for 3d
+    //! computes isotropic elastoplastic tensor in matrix notation for 3d
     void SetupCmatElastoPlastic2(
-      LINALG::Matrix<6,6>& cmat,
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,
       double Dgamma,
       double q,
-      LINALG::Matrix<6,1> unitflow
+      LINALG::Matrix<NUM_STRESS_3D,1> unitflow
       );
 
-    /// computes continuum elastoplastic tensor in matrix notation for 3d
+    //! computes continuum elastoplastic tensor in matrix notation for 3d
     void SetupContinuumCmatElastoPlastic(
-      LINALG::Matrix<6,6>& cmat,
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,
       double Dgamma,
       double q,
-      LINALG::Matrix<6,1> unitflow
+      LINALG::Matrix<NUM_STRESS_3D,1> unitflow
       );
 
-    /// return density
+    //! return density
     virtual double Density() const { return params_->density_; }
     
     //! Return accumulated strain at Gauss points
@@ -249,39 +249,36 @@ private:
       )
     const { return ( strainbarpllast_->at(gp) ); }
 
-    /// check if history variables are already initialized
+    //! check if history variables are already initialized
     bool Initialized() const
     {
-      return ( isinit_ && (strainplcurr_!=Teuchos::null) );
+      return ( isinit_ and (strainplcurr_!=Teuchos::null) );
     }
 
-    /// return quick accessible material parameter data
+    //! return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-    //! flag plastic step was called
-    bool plastic_step;
-
-    /// @name temperature specific methods
+    //! @name temperature specific methods
     //@{
 
-    /// main 3D material call to determine stress and constitutive tensor ctemp
+    //! main 3D material call to determine stress and constitutive tensor ctemp
     //  originally method of fourieriso with const!!!
     void Evaluate(
       const LINALG::Matrix<1,1>& Ntemp,  //!< temperature of element
-      LINALG::Matrix<6,1>& ctemp,  //!< temperature dependent material tangent
-      LINALG::Matrix<6,1>& stresstemp  //!< temperature dependent stress term
+      LINALG::Matrix<NUM_STRESS_3D,1>& ctemp,  //!< temperature dependent material tangent
+      LINALG::Matrix<NUM_STRESS_3D,1>& stresstemp  //!< temperature dependent stress term
       );
 
-    /// computes temperature dependent isotropic elasticity tensor in matrix
-    /// notion for 3d
+    //! computes temperature dependent isotropic elasticity tensor in matrix
+    //! notion for 3d
     void SetupCthermo(
-      LINALG::Matrix<6,1>& ctemp  //!< temperature dependent material tangent
+      LINALG::Matrix<NUM_STRESS_3D,1>& ctemp  //!< temperature dependent material tangent
       );
 
-    /// calculates stress-temperature modulus
+    //! calculates stress-temperature modulus
     double STModulus();
 
-    /// initial temperature
+    //! initial temperature
     double InitTemp() const
     {
       return params_->thetainit_;
@@ -289,68 +286,65 @@ private:
 
     //@}
 
-    /// @name specific methods for TSI and plastic material
+    //! @name specific methods for TSI and plastic material
     //@{
 
-    /// additive split into elastic and plastic strain rates needed for TSI
-    /// elastic strain rate ( B d^e' = B d - Dgama N)
+    //! additive split into elastic and plastic strain rates needed for TSI
+    //! elastic strain rate ( B d^e' = B d - Dgama N)
     void StrainRateSplit(
       int gp,  //!< (i): current Gauss point
       const double stepsize,  //!< (i): stepsize
-      LINALG::Matrix<6,1>& strainlinrate  //!< (i): total strain rate ( B d')
+      LINALG::Matrix<NUM_STRESS_3D,1>& strainlinrate  //!< (i): total strain rate ( B d')
       );
 
-    /// return current plastic strain vector \f${\varepsilon}^p_{n+1}\f$
-    LINALG::Matrix<6,1> PlasticStrain(int gp) const
+    //! return current plastic strain vector \f${\varepsilon}^p_{n+1}\f$
+    LINALG::Matrix<NUM_STRESS_3D,1> PlasticStrain(int gp) const
     {
       return strainplcurr_->at(gp);
     }
 
-    /// return current plastic strain vector \f$\dot{\varepsilon}^p_{n+1}\f$
-    LINALG::Matrix<6,1> PlasticStrainRate(int gp) const
+    //! return current plastic strain vector \f$\dot{\varepsilon}^p_{n+1}\f$
+    LINALG::Matrix<NUM_STRESS_3D,1> PlasticStrainRate(int gp) const
     {
       return strainplrate_->at(gp);
     }
 
-    /// return current elastic strain rate vector \f$\dot{\varepsilon}^e_{n+1}\f$
-    LINALG::Matrix<6,1> ElasticStrainRate(int gp) const
+    //! return current elastic strain rate vector \f$\dot{\varepsilon}^e_{n+1}\f$
+    LINALG::Matrix<NUM_STRESS_3D,1> ElasticStrainRate(int gp) const
     {
       return strainelrate_->at(gp);
     }
 
-    /// return relative stress vector \f${\eta}_{n+1}={\sigma}_{n+1}-{\beta}_{n+1}\f$
-    LINALG::Matrix<6,1> RelativeStress() const { return eta_; }
+    //! return relative stress vector \f${\eta}_{n+1}={\sigma}_{n+1}-{\beta}_{n+1}\f$
+    LINALG::Matrix<NUM_STRESS_3D,1> RelativeStress() const { return eta_; }
 
-    /// return relative stress vector \f${\eta}_{n+1}={\sigma}_{n+1}-{\beta}_{n+1}\f$
-    LINALG::Matrix<6,1> ThermalStress() const { return stresstemp_; }
+    //! return relative stress vector \f${\eta}_{n+1}={\sigma}_{n+1}-{\beta}_{n+1}\f$
+    LINALG::Matrix<NUM_STRESS_3D,1> ThermalStress() const { return stresstemp_; }
 
-    /// return plastic power
+    //! return plastic power
     double PlasticPower(int gp) const
     {
       return plasticpower_->at(gp)(0,0);
     }
 
-    /// return thermal stress dependent plastic power
+    //! return thermal stress dependent plastic power
     double PlasticTempPower(int gp) const
     {
       return plastictemppower_->at(gp)(0,0);
     }
 
-    /// return current plastic strain vector \f${\varepsilon}^p_{n+1}\f$
-    LINALG::Matrix<6,1> PlasticStrainDiff(int gp);
+    //! return current plastic strain vector \f${\varepsilon}^p_{n+1}\f$
+    LINALG::Matrix<NUM_STRESS_3D,1> PlasticStrainDiff(int gp);
 
     //@}
 
 
   private:
 
-    /// my material parameters
+    //! my material parameters
     MAT::PAR::ThermoPlasticLinElast* params_;
 
-    /// indicator if #Initialize routine has been called
-    bool isinit_;
-
-    /// plastic history vector
+    //! plastic history vector
     // old plastic strain at t_n
     Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > strainpllast_;  //!< \f${\varepsilon}^p_{n}\f$
     // current plastic strain at t_n+1
@@ -364,7 +358,7 @@ private:
     // current back stress at t_n+1
     Teuchos::RCP<std::vector< LINALG::Matrix<NUM_STRESS_3D,1> > > backstresscurr_;  //!< \f${\beta}_{n+1}\f$
 
-    /// @name specific methods for the combination TSI and plastic material
+    //! @name specific methods for the combination TSI and plastic material
     //@{
 
     //! save stresstemp sigma^{theta} = m . Delta T . I
@@ -382,6 +376,11 @@ private:
     LINALG::Matrix<NUM_STRESS_3D,1> eta_;
 
     //@}
+
+    //! indicator if #Initialize routine has been called
+    bool isinit_;
+    //! indicator if material has started to be plastic
+    bool plastic_step_;
 
   };  // class ThermoThermoPlasticLinElast : public Material
 }  // namespace MAT

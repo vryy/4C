@@ -7,23 +7,21 @@
 the input line should read
   MAT 1   THERM_FourierIso   CAPA 420 CONDUCT 52
 <pre>
-Maintainer: Burkhard Bornemann
-            bornemann@lnm.mw.tum.de
+Maintainer: Caroline Danowski
+            danowski@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15237
+            089 - 289-15253
 </pre>
 */
-
-/*----------------------------------------------------------------------*
- |  definitions                                              dano 09/09 |
- *----------------------------------------------------------------------*/
 
 /*----------------------------------------------------------------------*
  |  headers                                                  dano 09/09 |
  *----------------------------------------------------------------------*/
 #include "fourieriso.H"
+#include "matpar_bundle.H"
+
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/matpar_bundle.H"
+
 
 /*----------------------------------------------------------------------*
  |                                                                      |

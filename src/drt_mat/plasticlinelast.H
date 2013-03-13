@@ -6,7 +6,7 @@
        following ideal von Mises plasticity and a linear elastic material law
        (St.Venant Kirchhoff).
 
-       geometric linear, for small strains
+       small strains
 
        plastic materail with kinematic hardening
         - independent yield stress level of degree of plastification
@@ -28,14 +28,20 @@ Maintainer: Caroline Danowski
             089 - 289-15253
 </pre>
 */
-/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*
+ | definitions                                               dano 04/11 |
+ *----------------------------------------------------------------------*/
 #ifndef PLASTICLINELAST_H_
 #define PLASTICLINELAST_H_
 
 
+/*----------------------------------------------------------------------*
+ | headers                                                   dano 04/11 |
+ *----------------------------------------------------------------------*/
 #include "matpar_parameter.H"
 #include "material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
+
 
 namespace MAT
 {
@@ -118,7 +124,10 @@ private:
     //!
     //!  every class implementing ParObject needs a unique id defined at the
     //!  top of drt_parobject.H (this file) and should return it in this method.
-    virtual int UniqueParObjectId() const { return PlasticLinElastType::Instance().UniqueParObjectId(); }
+    virtual int UniqueParObjectId() const
+    {
+      return PlasticLinElastType::Instance().UniqueParObjectId();
+    }
 
     //!  \brief Pack this class so it can be communicated
     //!
@@ -128,7 +137,9 @@ private:
     //!  identify the exact class on the receiving processor.
     //!
     //!  \param data (in/out): char vector to store class information
-    virtual void Pack(DRT::PackBuffer& data) const;
+    virtual void Pack(
+    DRT::PackBuffer& data  //!<  data (i/o): char vector to store class information
+    ) const;
 
     //!  \brief Unpack data from a char vector into this class
     //!
@@ -140,15 +151,23 @@ private:
     //!
     //!  \param data (in) : vector storing all data to be unpacked into this
     //!  instance.
-    virtual void Unpack(const std::vector<char>& data);
+    virtual void Unpack(
+      const std::vector<char>& data  //!< (i) : vector storing all data to be unpacked into this instance.
+      );
 
     //@}
 
     //! material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_pllinelast; }
+    virtual INPAR::MAT::MaterialType MaterialType() const 
+    {
+      return INPAR::MAT::m_pllinelast; 
+    }
 
     //! return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new PlasticLinElast( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const
+    { 
+      return Teuchos::rcp( new PlasticLinElast( *this ) ); 
+    }
 
     //! initialise internal stress variables
     void Setup(
@@ -217,7 +236,7 @@ private:
       LINALG::Matrix<NUM_STRESS_3D,1> unitflow  //!< unit flow vector
       );
 
-    //! Return density
+    //! return density
     virtual double Density() const { return params_->density_; }
 
     //! Return accumulated strain at Gauss points
@@ -230,16 +249,16 @@ private:
       )
     const { return ( strainbarpllast_->at(gp) ); }
 
-    //! Check if history variables are already initialized
+    //! check if history variables are already initialized
     bool Initialized() const
     {
-      return ( isinit_ && (strainplcurr_!=Teuchos::null) );
+      return ( isinit_ and (strainplcurr_!=Teuchos::null) );
     }
 
-    //! Return quick accessible material parameter data
+    //! return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-    //! Finite difference check for debugging purposes
+    //! finite difference check for debugging purposes
     void FDCheck(
       LINALG::Matrix<NUM_STRESS_3D,1>& stress,  //!< updated stress sigma_n+1
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmatFD, //!< material tangent calculated with FD of stresses
@@ -253,9 +272,6 @@ private:
       LINALG::Matrix<NUM_STRESS_3D,1>& N, // flow vector
       double heaviside  //!< Heaviside function
       );
-
-    //! Flag plastic step was called
-    bool plastic_step;
 
   private:
 
@@ -279,6 +295,8 @@ private:
 
     //! indicator if #Initialize routine has been called
     bool isinit_;
+    //! indicator if material has started to be plastic
+    bool plastic_step_;
 
   };  // class PlasticLinElast : public Material
 }  // namespace MAT

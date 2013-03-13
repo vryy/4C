@@ -804,7 +804,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(
   //-------------------------------------------------------------------
   // IF plastic step ( F > 0.0, (1/2 * devstress : eta) > 0.0 )
   //-------------------------------------------------------------------
-  if ( (ff > 0.0) && (se > 0.0) )
+  if ( (ff > 0.0) and (se > 0.0) )
   {
 //    cout << "plastic step: viscous strain rate strain_p'!= 0" << endl;
 
@@ -864,7 +864,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(
   //-------------------------------------------------------------------
   // IF plastic step ( F > 0.0, (1/2 * devstress : eta) > 0.0 )
   //-------------------------------------------------------------------
-  if ( (ff > 0.0) && (se > 0.0) )
+  if ( (ff > 0.0) and (se > 0.0) )
   {
     // add facu to all diagonal terms matrix kvs
     // facu = - A . F^n / sqrt(J2)
@@ -909,7 +909,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(
   //-------------------------------------------------------------------
   // IF plastic step ( F > 0.0, (1/2 * devstress : eta) > 0.0 )
   //-------------------------------------------------------------------
-  if ( (ff > 0.0) && (se > 0.0) )
+  if ( (ff > 0.0) and (se > 0.0) )
   {
     // calculate elastic material tangent with temperature-dependent Young's modulus
     // CCARAT: so3_mat_robinson_elmat(mat_robin, tmpr, kse);
@@ -949,7 +949,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(
   //-------------------------------------------------------------------
   // IF plastic step ( F > 0.0, (1/2 * devstress : eta) > 0.0 )
   //-------------------------------------------------------------------
-  if ( (ff > 0.0) && (se > 0.0) )
+  if ( (ff > 0.0) and (se > 0.0) )
   {
     // derivative ksv = (pd eta) / (pd strain_p)
     // CCARAT: ksv = pd(Sig)/pd(eps^v)
@@ -997,7 +997,7 @@ void MAT::Robinson::CalcBEViscousStrainRate(
   //-------------------------------------------------------------------
   // IF plastic step ( F > 0.0, (1/2 * devstress : eta) > 0.0 )
   //-------------------------------------------------------------------
-  if ( (ff > 0.0) && (se > 0.0) )
+  if ( (ff > 0.0) and (se > 0.0) )
   {
     // assign vector by another vector and scale it
     // kva = kvs . ksa = kva . (-Id)
@@ -1196,7 +1196,7 @@ void MAT::Robinson::CalcBEBackStressFlow(
   //-------------------------------------------------------------------
   // IF plastic step (G > G_0, 1/2 (devstress . backstress) > 0.0)
   //-------------------------------------------------------------------
-  if ( (gg > gg0) && (sa > 0.0) )
+  if ( (gg > gg0) and (sa > 0.0) )
   {
 //     cout << "plastic step: back stress rate alpha'!= 0" << endl;
 
@@ -1255,7 +1255,7 @@ void MAT::Robinson::CalcBEBackStressFlow(
   //-------------------------------------------------------------------
   // IF plastic step (G > G_0, 1/2 (devstress . backstress) > 0.0)
   //-------------------------------------------------------------------
-  if ( (gg > gg0) && (sa > 0.0) )
+  if ( (gg > gg0) and (sa > 0.0) )
   {
     double fctv = -hh / (pow(gg, beta) * dt);
     // CCARAT: so3_mv6_m05_idscl(fctv, kav);
@@ -1285,7 +1285,7 @@ void MAT::Robinson::CalcBEBackStressFlow(
   //-------------------------------------------------------------------
   // IF plastic step (G > G_0, 1/2 (devstress . backstress) > 0.0)
   //-------------------------------------------------------------------
-  if ( (gg > gg0) && (sa > 0.0) )
+  if ( (gg > gg0) and (sa > 0.0) )
   {
     double fctu = 1.0/dt  +  rr * pow(gg,(mm-beta)) / sqrt(i2);
     double fctv = beta * hh / ( pow(gg,(beta+1.0)) * dt * kk0sq );

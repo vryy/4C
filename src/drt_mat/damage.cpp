@@ -521,9 +521,9 @@ void MAT::Damage::Evaluate(
   {
     // only first plastic call is output at screen for every processor
     // visualisation of whole plastic behaviour via PLASTIC_STRAIN in postprocessing
-    if(plastic_step == false)
+    if (plastic_step == false)
     {
-      if(gp==0)
+      if (gp == 0)
         cout << "first plastic step: plastic strains unequal zero!" << endl;
       plastic_step = true;
     }
@@ -571,7 +571,7 @@ void MAT::Damage::Evaluate(
       if ( norm < params_->abstol_)
       {
 #ifdef DEBUGMATERIAL
-        if(gp==0)
+        if (gp == 0)
           printf("Newton method converged after %i iterations; abs(Res)=  %-14.8E\n", itnum, abs(Res));
 #endif  // #ifdef DEBUGMATERIAL
         break;
@@ -593,7 +593,7 @@ void MAT::Damage::Evaluate(
       sigma_y = sigma_y0;
 
 #ifdef DEBUGMATERIAL
-      if(gp==0)
+      if (gp == 0)
       {
         cout << "am 1.GP: local Newton: Res " << Res << endl;
         cout << "local Newton: ResTan " << ResTan << endl;
