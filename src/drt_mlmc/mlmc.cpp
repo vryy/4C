@@ -1695,7 +1695,7 @@ void STR::MLMC::EvalDisAtEleCenters(Teuchos::RCP<const Epetra_Vector> disp, INPA
     mycontainer->Add("strains",(my_output_elements_c_strains[i]));
     mycontainer->Add("disp",(my_output_elements_c_disp[i]));
     mycontainer->Add("mat_params",(my_output_elements_mat_params[i]));
-    my_output_element_map.insert( pair <int,Teuchos::RCP< DRT::Container> >(my_output_elements_[i],mycontainer) );
+    my_output_element_map.insert( std::pair <int,Teuchos::RCP< DRT::Container> >(my_output_elements_[i],mycontainer) );
   }
   // build exporter
   DRT::Exporter myexporter(*(actdis_coarse_->ElementRowMap()),*OutputMap_,actdis_coarse_->Comm());
