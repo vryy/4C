@@ -289,7 +289,8 @@ void FLD::UTILS::LiftDrag(
 {
   const int liftdrag = params.get<int>("liftdrag");
 
-  if (liftdrag == INPAR::FLUID::liftdrag_none); // do nothing, we don't want lift & drag
+  if (liftdrag == INPAR::FLUID::liftdrag_none)
+  {} // do nothing, we don't want lift & drag
 
   if (liftdrag == INPAR::FLUID::liftdrag_nodeforce)
   {

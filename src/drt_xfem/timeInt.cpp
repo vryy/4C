@@ -525,7 +525,8 @@ flamefront_(flamefront)
         const int* nodeGids = iele->NodeIds(); // node gids
         for (int inode=0;inode<iele->NumNode();inode++) // loop over element nodes
         {
-          if(olddofcolmap_.MyGID(nodeGids[inode]));
+          if(olddofcolmap_.MyGID(nodeGids[inode]))
+          {}
           oldEnrNodes_.insert(nodeGids[inode]);
         } // end loop over element nodes
       } // end if element cut

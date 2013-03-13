@@ -201,7 +201,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
         // sort junction BCs in map 
         // -------------------------------------------------------------------
         RCP<ArtJunctionBc> junbc = Teuchos::rcp(new ArtJunctionBc(discret_, output_, SortedConds[i], SortedIOarts[i],dta, condid, i) );    
-        ajunmap_.insert( std::make_pair( condid, junbc ) ).second;
+        ajunmap_.insert( std::make_pair( condid, junbc ) );
 
         // -------------------------------------------------------------------
         // Creat the nodes' parameters (material prameters, geometric 
