@@ -1923,7 +1923,7 @@ protected:
 
 
 /// << operator
-ostream& operator << (ostream& os, const DRT::Discretization& dis);
+std::ostream& operator << (std::ostream& os, const DRT::Discretization& dis);
 
 
 

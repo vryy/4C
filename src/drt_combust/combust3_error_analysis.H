@@ -611,7 +611,8 @@ void AnalyticalSol_static_bubble_nxnx1(
   // check if Gaussian point (calculate in Phi_h-approx Interface) lies at the same side of the real!!! Interface
   // matid = 3 -> burnt domain (+ domain), matid = 4 -> unburnt domain (- domain)
   if((domainplus && exact_levelset_gp > 0) ||
-      (!domainplus && exact_levelset_gp < 0)); // do nothing
+      (!domainplus && exact_levelset_gp < 0))
+    {} // do nothing
 //  else cout << "\n !!! real Interface side (via PHI) and approximativ Interface side (via PHI_h) are not the same for Gaussian point !!! \n";
 
   double rad_1 = 0.4;

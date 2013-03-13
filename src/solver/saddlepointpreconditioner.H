@@ -31,8 +31,6 @@
 #include "amg/braesssarazin_smoother.H"
 #include "amg/transfer_operator.H"
 
-using namespace std;
-
 namespace LINALG
 {
 

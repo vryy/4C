@@ -19,7 +19,6 @@ Maintainer: Thomas Kloeppel
 #include <Epetra_Vector.h>
 #include <Teuchos_ParameterList.hpp>
 
-using namespace std;
 using namespace Teuchos;
 
 //forward declarations
@@ -141,12 +140,12 @@ namespace UTILS
     }
 
     ///Return vector with IDs of active conditions
-    vector<int> GetActiveCondID();
+    std::vector<int> GetActiveCondID();
 
   protected:
 
     RCP<DRT::Discretization> actdisc_; ///< standard discretization
-    vector<DRT::Condition*> constrcond_; ///< conditions, that define the constraint (all of the same kind)
+    std::vector<DRT::Condition*> constrcond_; ///< conditions, that define the constraint (all of the same kind)
     ConstrType constrtype_; ///< constraint type
     map<int,double>  inittimes_; ///< map with times at which constraint is supposed to become active
     map<int,bool> activecons_; ///< map with indicator if constraints are active

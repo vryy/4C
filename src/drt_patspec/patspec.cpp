@@ -24,8 +24,6 @@ Maintainer: Michael Gee
 #include <Epetra_Time.h>
 
 
-using namespace std;
-
 
 /*----------------------------------------------------------------------*
  |                                                             gee 03/10|
@@ -236,7 +234,7 @@ void PATSPEC::ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis,
 	// upper bounds for the ilt thickness are 0 and 36
 	// Careful! ilt thickness is still normalized! Multiply with max
 	// ilt thickness.
-	(*elestrength)[j] = spatialconst - 379000 * (pow((max(0., min(36., (*ilt)[ilt->Map().LID(dis->ElementRowMap()->GID(j))] * maxiltthick)) /10), 0.5) - 0.81); //from Vande Geest strength formula
+	(*elestrength)[j] = spatialconst - 379000 * (std::pow((std::max(0., std::min(36., (*ilt)[ilt->Map().LID(dis->ElementRowMap()->GID(j))] * maxiltthick)) /10), 0.5) - 0.81); //from Vande Geest strength formula
 
       }
     }
@@ -251,7 +249,7 @@ void PATSPEC::ComputeEleStrength(Teuchos::RCP<DRT::Discretization> dis,
       for (int j=0; j< elestrength->MyLength(); ++j)
       {
 	// contribution of local diameter to strength; lower and upper bounds for the normalized diameter are 1.0 and 3.9
-	(*elestrength)[j] -= 156000 * (   max(1., min(3.9, 2 * (*locrad)[locrad->Map().LID(dis->ElementRowMap()->GID(j))] / subrendia)) - 2.46); //from Vande Geeststrength formula
+	(*elestrength)[j] -= 156000 * (   std::max(1., std::min(3.9, 2 * (*locrad)[locrad->Map().LID(dis->ElementRowMap()->GID(j))] / subrendia)) - 2.46); //from Vande Geeststrength formula
       }
     }
   }
@@ -518,15 +516,15 @@ void PATSPEC::ComputeEleLocalRadius(Teuchos::RCP<DRT::Discretization> dis)
 /*----------------------------------------------------------------------*
  |                                                           maier 06/11|
  *----------------------------------------------------------------------*/
-vector<double> PATSPEC::GetCenterline(string filename)
+std::vector<double> PATSPEC::GetCenterline(string filename)
 {
 
-  ifstream file (filename.c_str());
+  std::ifstream file (filename.c_str());
   if (file == NULL) dserror ("Error opening centerline file");
   std::string sLine;
   char buffer[1000];
   std::vector<double> clcoords;
-  while (getline(file, sLine))
+  while (std::getline(file, sLine))
   {
     if (sLine.size() != 0)
     {

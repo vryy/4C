@@ -65,7 +65,7 @@ void LINALG::TentativeTransferOperator::GetPtent(const Epetra_Map& rowmap, const
 #endif
 
   // generate gids for coarse grid
-  vector<int> coarsegids(naggs*nsdim);
+  std::vector<int> coarsegids(naggs*nsdim);
   for (int i=0; i<naggs; ++i)
     for (int j=0; j<nsdim; ++j)
     {
@@ -75,17 +75,17 @@ void LINALG::TentativeTransferOperator::GetPtent(const Epetra_Map& rowmap, const
   Epetra_Map pdomainmap(-1,naggs*nsdim,&coarsegids[0],0,aggvec.Comm()); // this is the coarse grid (domain) map
 
   ////////////////// loop over aggregates and build ids for dofs
-  map<int, vector<int> > aggdofs;
-  map<int, vector<int> >::iterator fool;
+  std::map<int, std::vector<int> > aggdofs;
+  std::map<int, std::vector<int> >::iterator fool;
   for(int i=0; i<naggs; ++i)
   {
-    vector<int> gids(0);
+    std::vector<int> gids(0);
     aggdofs.insert(std::pair<int,std::vector<int> >(firstagg+i,gids));  // is meant to contain all dof gids for an aggregate
   }
   for(int i=0; i<mylength; ++i)
   {
     if(aggvec[i] < 0) continue;   // this agg doesn't belong to current proc
-    vector<int>& gids = aggdofs[aggvec[i]];
+    std::vector<int>& gids = aggdofs[aggvec[i]];
     gids.push_back(aggvec.Map().GID(i));  // add dof gid to gids for current aggregate
   }
 
@@ -113,7 +113,7 @@ void LINALG::TentativeTransferOperator::GetPtent(const Epetra_Map& rowmap, const
     int n = Bagg.N();
     int lwork = n*10;
     int info = 0;
-    int k = min(m,n);
+    int k = std::min(m,n);
     if(k!=n) dserror("Aggregate too small, fatal!");
 
     std::vector<double> work(lwork);

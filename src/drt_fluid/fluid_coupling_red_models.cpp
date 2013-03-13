@@ -149,7 +149,7 @@ FLD::UTILS::Fluid_couplingWrapperBase::Fluid_couplingWrapperBase(RCP<DRT::Discre
       // sort coupling bc's in map and test, if one condition ID appears
       // more than once. Currently this case is forbidden.
       // -----------------------------------------------------------------
-      bool inserted = coup_map3D_.insert( make_pair( condid, couplingbc ) ).second;
+      bool inserted = coup_map3D_.insert( std::make_pair( condid, couplingbc ) ).second;
       if ( !inserted )
 	dserror("There are more than one 3D-to-OneD coupling condition lines with the same ID. This can not yet be handled.");
     } // end loop over condition lines from input

@@ -439,7 +439,7 @@ void UTILS::Constraint::InitializeConstraint(
 
 /*-----------------------------------------------------------------------*
  *-----------------------------------------------------------------------*/
-vector<int> UTILS::Constraint::GetActiveCondID()
+std::vector<int> UTILS::Constraint::GetActiveCondID()
 {
   std::vector<int> condID;
   std::map<int,bool>::const_iterator mapit;

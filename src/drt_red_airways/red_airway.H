@@ -14,7 +14,6 @@ Maintainer: Mahmoud Ismail
 
 #include "Teuchos_RCP.hpp"
 #include "Epetra_Vector.h"
-using namespace std;
 using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"

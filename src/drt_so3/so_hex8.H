@@ -40,6 +40,7 @@ namespace ELEMENTS
 // forward declarations
 class InvDesign;
 class PreStress;
+class So_sh8Type;
 
 
 class So_hex8Type : public DRT::ElementType
@@ -92,6 +93,7 @@ public:
 
   //! @name Friends
   friend class So_hex8Type;
+  friend class So_sh8Type;
 
   //@}
   //! @name Constructors and destructors and related methods

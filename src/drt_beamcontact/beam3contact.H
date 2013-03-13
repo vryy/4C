@@ -24,7 +24,6 @@ Maintainer: Christoph Meier
 #include "../linalg/linalg_fixedsizematrix.H"
 #include "../linalg/linalg_sparsematrix.H"
 
-using namespace std;
 using namespace Teuchos;
 
 namespace CONTACT
@@ -363,10 +362,10 @@ private:
   \brief Utility method for CPP (evaluate nonlinear function f)
          
   */
-  void EvaluateNewtonF(vector<double>& f,
-                       const std::vector<double>& x1, const vector<double>& x2,
-                       const std::vector<double>& dx1, const vector<double>& dx2,
-                       const std::vector<double>& t1, const vector<double>& t2,
+  void EvaluateNewtonF(std::vector<double>& f,
+                       const std::vector<double>& x1, const std::vector<double>& x2,
+                       const std::vector<double>& dx1, const std::vector<double>& dx2,
+                       const std::vector<double>& t1, const std::vector<double>& t2,
                        const double& norm, int beams_smoothing);
   
   /*!
@@ -374,11 +373,11 @@ private:
   
   */
   void EvaluateNewtonGradF(LINALG::Matrix<2,2>& df,
-                           const std::vector<double>& x1, const vector<double>& x2,
-                           const std::vector<double>& dx1, const vector<double>& dx2,
-                           const std::vector<double>& ddx1, const vector<double>& ddx2,
-                           const std::vector<double>& t1, const vector<double>& t2,
-                           const std::vector<double>& dt1, const vector<double>& dt2,
+                           const std::vector<double>& x1, const std::vector<double>& x2,
+                           const std::vector<double>& dx1, const std::vector<double>& dx2,
+                           const std::vector<double>& ddx1, const std::vector<double>& ddx2,
+                           const std::vector<double>& t1, const std::vector<double>& t2,
+                           const std::vector<double>& dt1, const std::vector<double>& dt2,
                            const double& norm, int beams_smoothing);
   
   /*!
@@ -397,9 +396,9 @@ private:
   void EvaluateStiffcContact(const double& pp, const double& gap,
                              const std::vector<double>& normal, const double& norm,
                              LINALG::SparseMatrix& stiffmatrix,
-                             const std::vector<double>& x1, const vector<double>& x2,
-                             const std::vector<double>& dx1, const vector<double>& dx2,
-                             const std::vector<double>& ddx1, const vector<double>& ddx2, 
+                             const std::vector<double>& x1, const std::vector<double>& x2,
+                             const std::vector<double>& dx1, const std::vector<double>& dx2,
+                             const std::vector<double>& ddx1, const std::vector<double>& ddx2,
                              const Epetra_SerialDenseVector& funct1,
                              const Epetra_SerialDenseVector& funct2,  
                              const Epetra_SerialDenseMatrix& deriv1,
@@ -425,7 +424,7 @@ private:
           
   */
   void ComputeNormal(std::vector<double>& normal, double& gap, double& norm, 
-                     const std::vector<double>& x1, const vector<double>& x2);
+                     const std::vector<double>& x1, const std::vector<double>& x2);
   
 
 
@@ -457,9 +456,9 @@ private:
   \brief Compute coordinates and their derivatives from the discretization
           
   */
-  void ComputeCoordsAndDerivs(vector<double>& x1, std::vector<double>& x2, 
-                              vector<double>& dx1, std::vector<double>& dx2,
-                              vector<double>& ddx1, std::vector<double>& ddx2,
+  void ComputeCoordsAndDerivs(std::vector<double>& x1, std::vector<double>& x2,
+                              std::vector<double>& dx1, std::vector<double>& dx2,
+                              std::vector<double>& ddx1, std::vector<double>& ddx2,
                               const Epetra_SerialDenseVector& funct1,
                               const Epetra_SerialDenseVector& funct2,
                               const Epetra_SerialDenseMatrix& deriv1,
@@ -473,13 +472,13 @@ private:
   \brief Compute contact point tangents and their derivatives
 
   */
-  void ComputeTangentsAndDerivs(vector<double>& t1, std::vector<double>& t2,
-                              vector<double>& dt1, std::vector<double>& dt2,
-                              const Epetra_SerialDenseVector& funct1,
-                              const Epetra_SerialDenseVector& funct2,
-                              const Epetra_SerialDenseMatrix& deriv1,
-                              const Epetra_SerialDenseMatrix& deriv2,
-                              const int& numnode1, const int& numnode2);
+  void ComputeTangentsAndDerivs(std::vector<double>& t1, std::vector<double>& t2,
+                                std::vector<double>& dt1, std::vector<double>& dt2,
+                                const Epetra_SerialDenseVector& funct1,
+                                const Epetra_SerialDenseVector& funct2,
+                                const Epetra_SerialDenseMatrix& deriv1,
+                                const Epetra_SerialDenseMatrix& deriv2,
+                                const int& numnode1, const int& numnode2);
 
 
 
@@ -511,10 +510,10 @@ private:
   \brief Compute linearizations of contact point
           
   */
-  void ComputeLinXiAndLinEta(vector<double>& delta_xi, std::vector<double>& delta_eta, 
-                             const std::vector<double>& x1, const vector<double>& x2,
-                             const std::vector<double>& dx1, const vector<double>& dx2,
-                             const std::vector<double>& ddx1, const vector<double>& ddx2,
+  void ComputeLinXiAndLinEta(std::vector<double>& delta_xi, std::vector<double>& delta_eta,
+                             const std::vector<double>& x1, const std::vector<double>& x2,
+                             const std::vector<double>& dx1, const std::vector<double>& dx2,
+                             const std::vector<double>& ddx1, const std::vector<double>& ddx2,
                              const Epetra_SerialDenseVector& funct1,
                              const Epetra_SerialDenseVector& funct2, 
                              const Epetra_SerialDenseMatrix& deriv1,
@@ -528,10 +527,10 @@ private:
   \brief Compute linearization of gap
           
   */
-  void ComputeLinGap(vector<double>& delta_gap,
-                     vector<double>& delta_xi, std::vector<double>& delta_eta,
-                     const std::vector<double>& x1, const vector<double>& x2,
-                     const std::vector<double>& dx1, const vector<double>& dx2,
+  void ComputeLinGap(std::vector<double>& delta_gap,
+                     std::vector<double>& delta_xi, std::vector<double>& delta_eta,
+                     const std::vector<double>& x1, const std::vector<double>& x2,
+                     const std::vector<double>& dx1, const std::vector<double>& dx2,
                      const Epetra_SerialDenseVector& funct1,
                      const Epetra_SerialDenseVector& funct2, 
                      const double& normdist,
@@ -545,7 +544,7 @@ private:
           
   */
   void ComputeLinNormal(Epetra_SerialDenseMatrix& delta_n, 
-                        const std::vector<double>& x1, const vector<double>& x2,
+                        const std::vector<double>& x1, const std::vector<double>& x2,
                         const double& norm,
                         const int& numnode1, const int& numnode2,
                         const Epetra_SerialDenseMatrix& delta_x1_minus_x2,
@@ -557,7 +556,7 @@ private:
   \brief Compute normal contact disctance
           
   */                
-  void ComputeDistance(vector<double>& distance, double& normdist,
+  void ComputeDistance(std::vector<double>& distance, double& normdist,
                        const std::vector<double>& normal, const double& norm);
   
   /*!
@@ -575,7 +574,7 @@ private:
   problem discretization by applying the pre-computed dofoffset_.
 
   */
-  vector<int> GetGlobalDofs(DRT::Node* node);
+  std::vector<int> GetGlobalDofs(DRT::Node* node);
 
   //@}
    

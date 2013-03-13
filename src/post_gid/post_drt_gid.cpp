@@ -30,8 +30,6 @@ extern "C" {
 
 extern char* fieldnames[];
 
-using namespace std;
-
 const int MAXNODHARDCODED = 1000;
 
 /*----------------------------------------------------------------------*/

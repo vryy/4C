@@ -23,7 +23,6 @@ Maintainer: Ursula Mayer
 #include "../drt_potential/drt_potential_volume.H"
 #include "../drt_geometry/searchtree.H"
 
-using namespace std;
 
 
 namespace POTENTIAL

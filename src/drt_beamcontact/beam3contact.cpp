@@ -616,7 +616,7 @@ void CONTACT::Beam3contact::CheckContactStatus(double& pp)
 /*----------------------------------------------------------------------*
  |  Get global dofs of a node                                 popp 12/10|
  *----------------------------------------------------------------------*/
-vector<int> CONTACT::Beam3contact::GetGlobalDofs(DRT::Node* node)
+std::vector<int> CONTACT::Beam3contact::GetGlobalDofs(DRT::Node* node)
 {
   // get dofs in beam contact discretization
   std::vector<int> cdofs = ContactDiscret().Dof(node);

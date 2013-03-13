@@ -33,7 +33,6 @@ Maintainer: Markus Gitterle
 
 /*----------------------------------------------------------------------*/
 // namespaces
-using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 
 /*----------------------------------------------------------------------*
@@ -244,10 +243,10 @@ void DRT::ELEMENTS::Wall1::w1_call_defgrad_enh(
   // without alphas
 
   // vector M_ges, includes the matrices M1 to M4
-  vector <Epetra_SerialDenseMatrix> M_ges(Wall1::neas_);
+  std::vector <Epetra_SerialDenseMatrix> M_ges(Wall1::neas_);
 
   // vector A_ges, includes the matrices A1 to A4
-  vector <Epetra_SerialDenseMatrix> A_ges(4);
+  std::vector <Epetra_SerialDenseMatrix> A_ges(4);
 
   for (int ieas=0; ieas<Wall1::neas_; ieas++)
   {

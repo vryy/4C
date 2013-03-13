@@ -21,7 +21,6 @@ Maintainer: Thomas Kloeppel
 #include <Epetra_RowMatrix.h>
 #include <Teuchos_ParameterList.hpp>
 
-using namespace std;
 using namespace Teuchos;
 
 namespace DRT

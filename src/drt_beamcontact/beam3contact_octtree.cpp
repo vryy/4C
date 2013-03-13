@@ -35,7 +35,7 @@ Maintainer: Kei Müller
 #include "../drt_beam3/beam3.H"
 #include "../drt_beam3ii/beam3ii.H"
 
-using namespace std;
+
 
 /*----------------------------------------------------------------------*
  |  constructor (public)                                     meier 01/11|
@@ -122,7 +122,7 @@ dofoffset_(dofoffset)
 /*----------------------------------------------------------------------*
  |  calls the almighty Octtree (public)                      meier 01/11|
  *----------------------------------------------------------------------*/
-vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, int step)
+std::vector<RCP<Beam3contact> > Beam3ContactOctTree::OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, int step)
 {
 #ifdef OCTREEDEBUG
   double t_start = Teuchos::Time::wallTime();
@@ -306,12 +306,12 @@ void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, 
       for (int u=0; u<(int)octreelimits_.size(); u++)
       {
         for (int v=0; v<(int)octreelimits_[u].M(); v++)
-          myfile <<scientific<<octreelimits_[u](v)<<" ";
+          myfile << std::scientific<<octreelimits_[u](v)<<" ";
         myfile <<endl;
       }
       // root box
       for(int u=0; u<(int)rootbox_.M(); u++)
-        myfile<<scientific<<rootbox_(u)<<" ";
+        myfile<<std::scientific<<rootbox_(u)<<" ";
       myfile<<endl;
       fprintf(fp, myfile.str().c_str());
       fclose(fp);
@@ -339,7 +339,7 @@ void Beam3ContactOctTree::OctreeOutput(std::vector<RCP<Beam3contact> >& cpairs, 
       for (int u=0; u<allbboxes_->MyLength(); u++)
       {
         for (int v=0; v<allbboxes_->NumVectors(); v++)
-          myfile <<scientific<<setprecision(10)<<(*allbboxes_)[v][u] <<" ";
+          myfile << std::scientific<< std::setprecision(10)<<(*allbboxes_)[v][u] <<" ";
         myfile <<endl;
       }
       fprintf(fp, myfile.str().c_str());
@@ -788,8 +788,8 @@ void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int&
     {
       for(int i=6; i<(bboxlimits->M())/2;i++)
       {
-        minimum = min((*bboxlimits)(2*i,0),(*bboxlimits)(2*i+1,0));
-        maximum = max((*bboxlimits)(2*i,0),(*bboxlimits)(2*i+1,0));
+        minimum = std::min((*bboxlimits)(2*i,0),(*bboxlimits)(2*i+1,0));
+        maximum = std::max((*bboxlimits)(2*i,0),(*bboxlimits)(2*i+1,0));
         (*bboxlimits)(2*i,0) = minimum;    (*bboxlimits)(2*i+1,0) = maximum;
       }
     }
@@ -800,8 +800,8 @@ void Beam3ContactOctTree::CreateAABB(Epetra_SerialDenseMatrix& coord, const int&
         // leave loop at first bogus entry
         if((2*i)%6==0 && (*allbboxes_)[2*i][elecolid]==-1e9)
           break;
-        minimum = min((*allbboxes_)[2*i][elecolid],(*allbboxes_)[2*i+1][elecolid]);
-        maximum = max((*allbboxes_)[2*i][elecolid],(*allbboxes_)[2*i+1][elecolid]);
+        minimum = std::min((*allbboxes_)[2*i][elecolid],(*allbboxes_)[2*i+1][elecolid]);
+        maximum = std::max((*allbboxes_)[2*i][elecolid],(*allbboxes_)[2*i+1][elecolid]);
         //cout << minimum << endl;
         (*allbboxes_)[2*i][elecolid] = minimum;    (*allbboxes_)[2*i+1][elecolid] = maximum;
       }// end of correct
@@ -1186,7 +1186,7 @@ void Beam3ContactOctTree::locateBox(std::vector<std::vector<double> >& allbboxes
                                     int& treedepth)
 {
   // Divide further
-  double extrusionfactor = max(extrusionfactor_,radialextrusion_);
+  double extrusionfactor = std::max(extrusionfactor_,radialextrusion_);
   // Center of octant
   LINALG::Matrix<3,1> center;
   // edge length vector of the suboctants
@@ -1626,7 +1626,7 @@ void Beam3ContactOctTree::BoundingBoxIntersection(std::map<int, LINALG::Matrix<3
           {
             // note: creation of unique "first" entries in map, attention: IDs identical to crosslinker GIDs!!
             int mapfirst = (bboxIDs[0] + 1)*basisnodes_ + bboxIDs[1];
-            contactpairmap.insert ( pair<int, std::vector<int> > (mapfirst, bboxIDs));
+            contactpairmap.insert ( std::pair<int, std::vector<int> > (mapfirst, bboxIDs));
           }
         }
       }

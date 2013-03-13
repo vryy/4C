@@ -16,7 +16,6 @@
 
 #include "transfer_operator_tentative.H"
 
-using namespace std;
 using namespace Teuchos;
 
 namespace LINALG

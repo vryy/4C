@@ -25,7 +25,6 @@
 #include "MLAPI_Aggregation.h"
 #include "MLAPI_Eig.h"
 
-using namespace std;
 using namespace Teuchos;
 
 namespace LINALG

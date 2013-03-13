@@ -16,7 +16,6 @@ Maintainer: Thomas Kloeppel
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Vector.h>
-using namespace std;
 using namespace Teuchos;
 
 #include "../drt_lib/drt_element.H"
@@ -234,7 +233,7 @@ private:
   DRT::Container                                  data_;
 
   //! vector of surfaces of this element (length 1)
-  vector<DRT::Element*>                           surface_;
+  std::vector<DRT::Element*>                      surface_;
 
   // don't want = operator
   ConstraintElement2& operator = (const ConstraintElement2& old);

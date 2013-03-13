@@ -84,7 +84,7 @@ public:
   static const int numdof_ = noddof_ * numnod_;
 
   //! number of strains per node
-  static const int numstr_ = (int) (0.5*numdim_*(numdim_+1));
+  static const int numstr_ = (numdim_*(numdim_+1))/2;
 
   //! number of components necessary to store second derivatives
   /*!

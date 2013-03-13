@@ -49,8 +49,6 @@ Maintainer: Thomas Kloeppel
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
 
-using namespace std;
-
 #include "../drt_lib/drt_dofset_base.H"
 #include "../drt_lib/drt_discret.H"
 

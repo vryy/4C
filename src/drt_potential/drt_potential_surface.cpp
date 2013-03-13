@@ -2370,7 +2370,7 @@ void POTENTIAL::SurfacePotential::AusgabedateiSchreiben(double dDistance,
                             double dForce2,
                             const double time)
 {
-  std::ofstream AusgabeDatei("NumerischeLoesung.txt",ios_base::app);
+  std::ofstream AusgabeDatei("NumerischeLoesung.txt",std::ios_base::app);
 
   if(AusgabeDatei.good())
   {

@@ -377,7 +377,7 @@ DRT::Node* DRT::Discretization::gNode(int gid) const
 /*----------------------------------------------------------------------*
  |  << operator                                              mwgee 11/06|
  *----------------------------------------------------------------------*/
-ostream& operator << (ostream& os, const DRT::Discretization& dis)
+std::ostream& operator << (std::ostream& os, const DRT::Discretization& dis)
 {
   dis.Print(os);
   return os;

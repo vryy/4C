@@ -1682,9 +1682,9 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
       // do adaptive linear solver tolerance (not in first solve)
       if (isadapttol && itnum>1)
       {
-        double currresidual = max(vresnorm_,presnorm_);
-        currresidual = max(currresidual,incvelnorm_L2_/velnorm_L2_);
-        currresidual = max(currresidual,incprenorm_L2_/prenorm_L2_);
+        double currresidual = std::max(vresnorm_,presnorm_);
+        currresidual = std::max(currresidual,incvelnorm_L2_/velnorm_L2_);
+        currresidual = std::max(currresidual,incprenorm_L2_/prenorm_L2_);
         solver_->AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
@@ -2036,9 +2036,9 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
 
       if (isadapttol and itnum>1)
       {
-        double currresidual = max(vresnorm_,presnorm_);
-        currresidual = max(currresidual,incvelnorm_L2_/velnorm_L2_);
-        currresidual = max(currresidual,incprenorm_L2_/prenorm_L2_);
+        double currresidual = std::max(vresnorm_,presnorm_);
+        currresidual = std::max(currresidual,incvelnorm_L2_/velnorm_L2_);
+        currresidual = std::max(currresidual,incprenorm_L2_/prenorm_L2_);
         solver_->AdaptTolerance(ittol,currresidual,adaptolbetter);
       }
 
@@ -4924,7 +4924,6 @@ void FLD::FluidImplicitTimeInt::EvaluateDivU()
       cout << "---------------------------------------------------" << endl << endl;
 
 
-      ostringstream temp;
       const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
       const std::string fname = simulation+".divu";
 

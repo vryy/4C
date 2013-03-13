@@ -37,7 +37,6 @@ Maintainer: Markus Gitterle
 
 /*----------------------------------------------------------------------*/
 // namespaces
-using namespace std; // cout etc.
 using namespace LINALG; // our linear algebra
 using POTENTIAL::PotentialManager; // potential manager
 

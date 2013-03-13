@@ -27,7 +27,6 @@ Maintainer: Mahmoud Ismail
 #include "../drt_io/io.H"
 #include <Epetra_SerialDenseSolver.h>
 
-using namespace std;
 using namespace Teuchos;
 
 namespace ART
@@ -143,8 +142,8 @@ namespace ART
      */
       ArtJunctionBc( RCP<DRT::Discretization>  actdis,
                      IO::DiscretizationWriter& output,
-                     vector<DRT::Condition*> conds,
-                     vector<int> IOart_flag,
+                     std::vector<DRT::Condition*> conds,
+                     std::vector<int> IOart_flag,
                      double dta,
                      int condid,
                      int numcond);
@@ -251,13 +250,13 @@ namespace ART
       IO::DiscretizationWriter&     output_;
 
       //! the vector defining whethe an element is inlet or outlet
-      vector<int>                   IOart_flag_;
+      std::vector<int>              IOart_flag_;
 
       //! Size of the nonlinear problem matrix
       int                           ProbSize_;
 
       //! vector of nodes connected to the junction
-      vector<int>                   nodes_;
+      std::vector<int>              nodes_;
 
       //! An epetra wrapper for Dense matrix solver
       Epetra_SerialDenseSolver      solver_;

@@ -11,7 +11,6 @@
 
 #include "aggregation_method.H"
 
-using namespace std;
 using namespace Teuchos;
 
 namespace LINALG

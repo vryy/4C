@@ -361,7 +361,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
        LINALG::SerialDenseMatrix    deriv(1,numnod);
       
        RCP<const Epetra_Vector> dispincr = discretization.GetState("displacementincr");
-		vector<double> edispincr(lm.size());
+       std::vector<double> edispincr(lm.size());
 	    DRT::UTILS::ExtractMyValues(*dispincr,edispincr,lm);
 	    
 	    elevector2[0] = 0;

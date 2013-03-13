@@ -22,7 +22,6 @@ Maintainer: Thomas Kloeppel
 
 #include "constraint.H"
 
-using namespace std;
 using namespace Teuchos;
 
 /*!

@@ -27,7 +27,6 @@ Maintainer: Mahmoud Ismail
 #include "../drt_io/io.H"
 #include <Epetra_SerialDenseSolver.h>
 
-using namespace std;
 using namespace Teuchos;
 
 namespace ART

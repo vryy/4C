@@ -23,7 +23,6 @@ Maintainer: Jonas Biehler
 #include "../drt_inpar/inpar_structure.H"
 
 
-using namespace std;
 namespace Teuchos
 {
   class ParameterList;

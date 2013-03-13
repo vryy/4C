@@ -295,7 +295,7 @@ void LINALG::PGAMGTransferOperator::PG_AMG(const RCP<SparseMatrix>& A, const RCP
   P_smoothed->Complete(P_tent->DomainMap(),P_tent->RangeMap());
 
 #ifdef DEBUG
-  vector<int> smoothedzerosgids;
+  std::vector<int> smoothedzerosgids;
   int smoothedzeros = 0;
   int tentzeros = 0;
   for(int i=0; i<P_smoothed->EpetraMatrix()->NumMyRows(); i++)

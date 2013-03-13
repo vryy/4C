@@ -22,8 +22,8 @@ int LINALG::AggregationMethod_ML::GetGlobalAggregates(const RCP<Epetra_CrsMatrix
   int naggregates = GetAggregates(A,params,*ThisNS,aggrinfo);
 
   const Epetra_Comm& comm = A->Comm();
-  vector<int> local(comm.NumProc());
-  vector<int> global(comm.NumProc());
+  std::vector<int> local(comm.NumProc());
+  std::vector<int> global(comm.NumProc());
   for (int i=0; i<comm.NumProc(); ++i) local[i] = 0;  // zero out local vector
   local[comm.MyPID()] = naggregates;                  // fill in local aggregates
   comm.SumAll(&local[0],&global[0],comm.NumProc());   // now all aggregates are in global

@@ -14,7 +14,6 @@
 
 #include "transfer_operator_saamg.H"
 
-using namespace std;
 using namespace Teuchos;
 
 namespace LINALG

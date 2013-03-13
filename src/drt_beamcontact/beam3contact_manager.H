@@ -37,7 +37,6 @@ class Beam3ContactOctTree;
 namespace CONTACT
 {
 
-using namespace std;
 using namespace Teuchos;
 
 /*!

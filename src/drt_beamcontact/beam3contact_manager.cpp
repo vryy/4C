@@ -209,12 +209,12 @@ constrnorm_(0.0)
 /*----------------------------------------------------------------------*
  |  print beam3 contact manager (public)                      popp 04/10|
  *----------------------------------------------------------------------*/
-void CONTACT::Beam3cmanager::Print(ostream& os) const
+void CONTACT::Beam3cmanager::Print(std::ostream& os) const
 {
   if (Comm().MyPID()==0)
     os << "Beam3 Contact Discretization:" << endl;
   
-  os << ProblemDiscret();
+  ProblemDiscret().Print(os);
   return;
 }
 
@@ -697,7 +697,7 @@ void CONTACT::Beam3cmanager::SearchPossibleContactPairs(std::map<int,LINALG::Mat
 
          // In the following line the new pair is saved in the container contactpairmap_ which allows for addressing
          // each pair by its to elements IDs. This is not needed now but may be useful for future applications.
-         contactpairmap_[make_pair(ele1->Id(),ele2->Id())] = pairs_[pairs_.size()-1];
+         contactpairmap_[std::make_pair(ele1->Id(),ele2->Id())] = pairs_[pairs_.size()-1];
 
           //***************************************************************
          }
@@ -1201,7 +1201,7 @@ void CONTACT::Beam3cmanager::UpdateConstrNorm(double* cnorm)
           dserror("beam radius is 0! Check your element type.");
       }
 
-      double smallerradius = min(radii[0], radii[1]);
+      double smallerradius = std::min(radii[0], radii[1]);
 
       gapvector[j] = pairs_[i]->GetGap()/smallerradius;
 #else
@@ -1531,7 +1531,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
   // Syntax for gmsh input file  
   // SI(x,y--,z,  x+.5,y,z,    x,y+.5,z,   x,y,z+.5, x+.5,y,z+.5, x,y+.5,z+.5){1,2,3,3,2,1};
   // SI( coordinates of the six corners ){colors}
-  gmshfilecontent << "SI("<<scientific;
+  gmshfilecontent << "SI("<< std::scientific;
   gmshfilecontent << prism(0,0) << "," << prism(1,0) << "," << prism(2,0) << ",";
   gmshfilecontent << prism(0,1) << "," << prism(1,1) << "," << prism(2,1) << ",";
   gmshfilecontent << prism(0,2) << "," << prism(1,2) << "," << prism(2,2) << ",";
@@ -1575,7 +1575,7 @@ void CONTACT::Beam3cmanager::GMSH_2_noded(const int& n,
     // Syntax for gmsh input file  
     // SI(x,y--,z,  x+.5,y,z,    x,y+.5,z,   x,y,z+.5, x+.5,y,z+.5, x,y+.5,z+.5){1,2,3,3,2,1};
     // SI( coordinates of the six corners ){colors}
-    gmshfilecontent << "SI("<<scientific;
+    gmshfilecontent << "SI("<< std::scientific;
     gmshfilecontent << prism(0,0) << "," << prism(1,0) << "," << prism(2,0) << ",";
     gmshfilecontent << prism(0,1) << "," << prism(1,1) << "," << prism(2,1) << ",";
     gmshfilecontent << prism(0,2) << "," << prism(1,2) << "," << prism(2,2) << ",";
@@ -1727,7 +1727,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
     // Syntax for gmsh input file  
     // SI(x,y--,z,  x+.5,y,z,    x,y+.5,z,   x,y,z+.5, x+.5,y,z+.5, x,y+.5,z+.5){1,2,3,3,2,1};
     // SI( coordinates of the six corners ){colors}
-    gmshfilecontent << "SI("<<scientific;
+    gmshfilecontent << "SI("<< std::scientific;
     gmshfilecontent << prism(0,0) << "," << prism(1,0) << "," << prism(2,0) << ",";
     gmshfilecontent << prism(0,1) << "," << prism(1,1) << "," << prism(2,1) << ",";
     gmshfilecontent << prism(0,2) << "," << prism(1,2) << "," << prism(2,2) << ",";
@@ -1771,7 +1771,7 @@ void CONTACT::Beam3cmanager::GMSH_3_noded(const int& n,
       // Syntax for gmsh input file  
       // SI(x,y--,z,  x+.5,y,z,    x,y+.5,z,   x,y,z+.5, x+.5,y,z+.5, x,y+.5,z+.5){1,2,3,3,2,1};
       // SI( coordinates of the six corners ){colors}
-      gmshfilecontent << "SI("<<scientific;
+      gmshfilecontent << "SI("<< std::scientific;
       gmshfilecontent << prism(0,0) << "," << prism(1,0) << "," << prism(2,0) << ",";
       gmshfilecontent << prism(0,1) << "," << prism(1,1) << "," << prism(2,1) << ",";
       gmshfilecontent << prism(0,2) << "," << prism(1,2) << "," << prism(2,2) << ",";

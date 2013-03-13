@@ -73,9 +73,9 @@ wear_(false)
 {
   // set potential global self contact status
   // (this is TRUE if at least one contact interface is a self contact interface)
-  bool selfcontact = 0;
+  bool selfcontact = false;
   for (int i=0;i<(int)interface_.size();++i)
-    if (interface_[i]->SelfContact()) ++selfcontact;
+    if (interface_[i]->SelfContact()) selfcontact = true;
 
   if (selfcontact) isselfcontact_=true;
 

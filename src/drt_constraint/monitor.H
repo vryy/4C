@@ -30,8 +30,6 @@ namespace LINALG
   class SparseOperator;
 }
 
-
-using namespace std;
 using namespace Teuchos;
 
 namespace UTILS
@@ -110,7 +108,7 @@ namespace UTILS
   protected:
 
     RCP<DRT::Discretization> actdisc_; ///< standard discretization
-    vector<DRT::Condition*> moncond_; ///< conditions, that define the monitor (all of the same kind)
+    std::vector<DRT::Condition*> moncond_; ///< conditions, that define the monitor (all of the same kind)
     MoniType montype_; ///< monitor type
     map<int,double>  inittimes_; ///< map with times at which monitor is supposed to become active
     map<int,bool> activemons_; ///< map with indicator if monitors are active

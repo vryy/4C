@@ -23,7 +23,6 @@
 #include "../../linalg/linalg_utils.H"
 #include "../../linalg/linalg_ana.H"
 
-using namespace std;
 using namespace Teuchos;
 
 namespace LINALG

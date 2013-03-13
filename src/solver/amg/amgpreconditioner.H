@@ -14,7 +14,6 @@
 // BACI includes
 #include "../../linalg/linalg_sparsematrix.H"
 
-using namespace std;
 using namespace Teuchos;
 
 namespace LINALG
@@ -110,13 +109,13 @@ namespace LINALG
     RCP<SparseMatrix>       Ainput_;      ///< input matrix
     int                     nlevel_;      ///< no. of grids in hierarchy
     int                     nmaxlevels_;  ///< no. of maximal allowed number of levels
-    vector<RCP<SparseMatrix> >  A_;          ///< the matrix hierarchy
+    std::vector<RCP<SparseMatrix> >  A_;          ///< the matrix hierarchy
 
-    vector<RCP<Smoother> >          preS_; // presmoother
-    vector<RCP<Smoother> >          postS_; // postsmoother
+    std::vector<RCP<Smoother> >          preS_; // presmoother
+    std::vector<RCP<Smoother> >          postS_; // postsmoother
     RCP<Epetra_Operator>                   coarsestSmoother_; // we also use BraessSarazin on coarsest level
 
-    vector<RCP<TransferOperator> >  T_;          ///< transfer operators
+    std::vector<RCP<TransferOperator> >  T_;          ///< transfer operators
 
     int nVerbose_;                               ///< verbosity level
   };

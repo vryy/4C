@@ -22,7 +22,6 @@ Maintainer: Ursula Mayer
 #include "../drt_geometry/intersection_service_templates.H"
 
 
-using namespace std;
 using namespace Teuchos;
 
 

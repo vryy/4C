@@ -16,7 +16,6 @@
 
 #include "../../linalg/linalg_utils.H"
 
-using namespace std;
 using namespace Teuchos;
 
 namespace LINALG

@@ -17,7 +17,6 @@ Maintainer: Kei Müller
 #include "Epetra_Vector.h"
 #include "beam3contact.H"
 
-using namespace std;
 using namespace Teuchos;
 using namespace CONTACT;
 
@@ -50,7 +49,7 @@ class Beam3ContactOctTree
     /*!\brief call octtree search routine
      * \param currentposition (in) node positions in column map format (fully overlapping)
      * \param step            (in) time step (needed for output)*/
-    vector<RCP<Beam3contact> > OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, int step=-1);
+    std::vector<RCP<Beam3contact> > OctTreeSearch(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, int step=-1);
 
     //!\brief checks in which octant a given bounding box lies
     std::vector<int> InWhichOctantLies(const int& thisBBoxID);
@@ -119,7 +118,7 @@ class Beam3ContactOctTree
      * \param currentpositions  (in)  node positions in column map format (fully overlapping)
      * \param contactpaits      (out) vector holding all contact pairs considered after octree evaluation
      */
-    void BoundingBoxIntersection(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, vector<RCP<Beam3contact> >* contactpairs);
+    void BoundingBoxIntersection(std::map<int, LINALG::Matrix<3,1> >&  currentpositions, std::vector<RCP<Beam3contact> >* contactpairs);
 
     /*!\brief intersection method applying axis-aligned bounding boxes when both boxes belong to existing elements
      * \param bboxIDs    (in) vector with bounding box Ids (element GIDs)

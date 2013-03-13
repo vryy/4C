@@ -72,7 +72,7 @@ actdisc_(discr)
   haveconstraint_ = havepenaconstr_ or havelagrconstr_;
   if (haveconstraint_)
   {
-    numConstrID_ = max(maxConstrID-offsetID_+1,0);
+    numConstrID_ = std::max(maxConstrID-offsetID_+1,0);
     constrdofset_ = Teuchos::rcp(new ConstraintDofSet());
     constrdofset_ ->AssignDegreesOfFreedom(actdisc_,numConstrID_,0);
     offsetID_ -= constrdofset_->FirstGID();
@@ -135,7 +135,7 @@ actdisc_(discr)
   //----------------------------------------------------
   //--------------include possible further monitors here
   //----------------------------------------------------
-  numMonitorID_=max(maxMonitorID-minMonitorID_+1,0);
+  numMonitorID_= std::max(maxMonitorID-minMonitorID_+1,0);
   havemonitor_= (areamonitor3d_->HaveMonitor())||(volmonitor3d_->HaveMonitor())||(areamonitor2d_->HaveMonitor());
   if (havemonitor_)
   {

@@ -885,8 +885,8 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
 
 #if 0  // THIS WORKS ONLY IN PARALLEL FOR CONTINOUS GIDS STARTING WITH GID 0
   // >>>>>>>>>>>> this is only necessary for anisotropic aggregation
-  vector<double> globaldiagonalentries(A->NumGlobalRows(),0.0);
-  vector<double> localdiagonalentries(A->NumGlobalRows(),0.0);
+  std::vector<double> globaldiagonalentries(A->NumGlobalRows(),0.0);
+  std::vector<double> localdiagonalentries(A->NumGlobalRows(),0.0);
 
   // extract matrix diagonal entries
   for(int i=0; i<A->NumMyRows(); i++)
@@ -895,7 +895,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
 
     int colnnz = A->NumGlobalEntries(grid);
     int numEntries;
-    vector<int> colindices(colnnz,0);
+    std::vector<int> colindices(colnnz,0);
     std::vector<double> colvals(colnnz,0.0);
 #ifdef DEBUG
     int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
@@ -936,17 +936,17 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
 
 
   // THIS WORKS IN PARALLEL WITHOUT RESTRICTIONS
- vector<int> numrowsofproc(A->Comm().NumProc(),0);
- vector<int> localnumrows(A->Comm().NumProc(),0);
+ std::vector<int> numrowsofproc(A->Comm().NumProc(),0);
+ std::vector<int> localnumrows(A->Comm().NumProc(),0);
  localnumrows[A->Comm().MyPID()] = A->NumMyRows();
  A->Comm().SumAll(&localnumrows[0],&numrowsofproc[0],A->Comm().NumProc());
  int rowoffset = 0;
  for(int i=0; i<A->Comm().MyPID(); i++) rowoffset+=numrowsofproc[i];
 
- vector<double> globaldiagonalentries(A->NumGlobalRows(),0.0);
- vector<double> localdiagonalentries(A->NumGlobalRows(),0.0);
- vector<int> globalrowids_allproc(A->NumGlobalRows(),-1);
- vector<int> localrowids_allproc(A->NumGlobalRows(),-1);
+ std::vector<double> globaldiagonalentries(A->NumGlobalRows(),0.0);
+ std::vector<double> localdiagonalentries(A->NumGlobalRows(),0.0);
+ std::vector<int> globalrowids_allproc(A->NumGlobalRows(),-1);
+ std::vector<int> localrowids_allproc(A->NumGlobalRows(),-1);
 
  // extract matrix diagonal entries
  for(int i=0; i<A->NumMyRows(); i++)
@@ -956,8 +956,8 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
 
    int colnnz = A->NumGlobalEntries(grid);
    int numEntries;
-   vector<int> colindices(colnnz,0);
-   vector<double> colvals(colnnz,0.0);
+   std::vector<int> colindices(colnnz,0);
+   std::vector<double> colvals(colnnz,0.0);
 #ifdef DEBUG
    int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
    if(ret !=0 )
@@ -1004,10 +1004,10 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
 #endif
 
   // define vectors for storing matrix graph information
-  vector<int> globalrowids(A->NumMyRows(),-1);                // local row id -> global row id
-  map<int, vector<int> > globalcolids;  // global col ids
-  map<int, std::vector<double> > vals;  // vals
-  vector<int> numindicesperrow(A->NumMyRows(),0);                                       // number of colindices per local row
+  std::vector<int> globalrowids(A->NumMyRows(),-1);                // local row id -> global row id
+  std::map<int, std::vector<int> > globalcolids;  // global col ids
+  std::map<int, std::vector<double> > vals;  // vals
+  std::vector<int> numindicesperrow(A->NumMyRows(),0);                                       // number of colindices per local row
 
 
 
@@ -1019,7 +1019,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropic(const RCP<Epetra
 
     int colnnz = A->NumGlobalEntries(grid);
     int numEntries;
-    vector<int> colindices(colnnz,0);
+    std::vector<int> colindices(colnnz,0);
     std::vector<double> colvals(colnnz,0.0);
     int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
 
@@ -1129,8 +1129,8 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropicSimple(const RCP<
   }
 
   // THIS WORKS IN PARALLEL WITHOUT RESTRICTIONS
- vector<int> numrowsofproc(A->Comm().NumProc(),0);
- vector<int> localnumrows(A->Comm().NumProc(),0);
+ std::vector<int> numrowsofproc(A->Comm().NumProc(),0);
+ std::vector<int> localnumrows(A->Comm().NumProc(),0);
  localnumrows[A->Comm().MyPID()] = A->NumMyRows();
  A->Comm().SumAll(&localnumrows[0],&numrowsofproc[0],A->Comm().NumProc());
  int rowoffset = 0;
@@ -1143,10 +1143,10 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropicSimple(const RCP<
 
 
   // define vectors for storing matrix graph information
-  vector<int> globalrowids(A->NumMyRows(),-1);                // local row id -> global row id
-  map<int, vector<int> > globalcolids;  // global col ids
-  map<int, std::vector<double> > vals;  // vals
-  vector<int> numindicesperrow(A->NumMyRows(),0);                                       // number of colindices per local row
+  std::vector<int> globalrowids(A->NumMyRows(),-1);                // local row id -> global row id
+  std::map<int, std::vector<int> > globalcolids;  // global col ids
+  std::map<int, std::vector<double> > vals;  // vals
+  std::vector<int> numindicesperrow(A->NumMyRows(),0);                                       // number of colindices per local row
 
   // extract graph information of A + pruning
   for(int i=0; i<A->NumMyRows(); i++)
@@ -1156,7 +1156,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrixAnisotropicSimple(const RCP<
 
     int colnnz = A->NumGlobalEntries(grid);
     int numEntries;
-    vector<int> colindices(colnnz,0);
+    std::vector<int> colindices(colnnz,0);
     std::vector<double> colvals(colnnz,0.0);
     int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
 
@@ -1258,10 +1258,10 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
   }
 
   // define vectors for storing matrix graph information
-  vector<int> globalrowids(A->NumMyRows(),-1);                // local row id -> global row id
-  map<int, vector<int> > globalcolids;  // global col ids
-  map<int, std::vector<double> > vals;  // vals
-  vector<int> numindicesperrow(A->NumMyRows(),0);                                       // number of colindices per local row
+  std::vector<int> globalrowids(A->NumMyRows(),-1);                // local row id -> global row id
+  std::map<int, std::vector<int> > globalcolids;  // global col ids
+  std::map<int, std::vector<double> > vals;  // vals
+  std::vector<int> numindicesperrow(A->NumMyRows(),0);                                       // number of colindices per local row
 
   // extract graph information of A + pruning
   for(int i=0; i<A->NumMyRows(); i++)
@@ -1271,7 +1271,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
 
     int colnnz = A->NumGlobalEntries(grid);
     int numEntries;
-    vector<int> colindices(colnnz,0);
+    std::vector<int> colindices(colnnz,0);
     std::vector<double> colvals(colnnz,0.0);
     int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&colvals[0],&colindices[0]);
 
@@ -1344,7 +1344,7 @@ int LINALG::AggregationMethod_Uncoupled::PruneMatrix(const RCP<Epetra_CrsMatrix>
 
     int colnnz = A->NumGlobalEntries(grid);
     int numEntries;
-    vector<int> colindices(colnnz,-1);
+    std::vector<int> colindices(colnnz,-1);
     std::vector<double> vals(colnnz,-1.0);
     int ret = A->ExtractGlobalRowCopy(grid,colnnz,numEntries,&vals[0],&colindices[0]);
     if(ret!=0) dserror("error extract global row view");
@@ -1420,8 +1420,8 @@ int LINALG::AggregationMethod_Uncoupled::GetGlobalAggregates(const RCP<Epetra_Cr
 
   // transform local agg ids to global agg ids
   const Epetra_Comm& comm = A->Comm();
-  vector<int> local(comm.NumProc());
-  vector<int> global(comm.NumProc());
+  std::vector<int> local(comm.NumProc());
+  std::vector<int> global(comm.NumProc());
   for(int i=0;i<comm.NumProc();++i) local[i] = 0; // zero out local vector
   local[comm.MyPID()] = naggregates_local;         // store number of local aggregates in vector
   comm.SumAll(&local[0],&global[0],comm.NumProc()); // now all aggregates are known in "global" vector

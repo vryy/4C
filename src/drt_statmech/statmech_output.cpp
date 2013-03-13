@@ -1616,12 +1616,12 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
           }
           else
           {
-            gmshfilebonds << "SL(" << scientific;
+            gmshfilebonds << "SL(" << std::scientific;
             gmshfilebonds << coord(0, 0) << "," << coord(1, 0) << ","<< coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1)<< "," << coord(2, 1);
-            gmshfilebonds << ")" << "{" << scientific << 2*color << ","<< 2*color << "};" << endl;
-            gmshfilebonds << "SP(" << scientific;
+            gmshfilebonds << ")" << "{" << std::scientific << 2*color << ","<< 2*color << "};" << std::endl;
+            gmshfilebonds << "SP(" << std::scientific;
             gmshfilebonds << coord(0, 1) << "," << coord(1, 1) << ","<< coord(2, 1);
-            gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+            gmshfilebonds << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << std::endl;
           }
         }
         break;
@@ -1634,9 +1634,9 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
             if((*crosslinkonsamefilament_)[i] < 0.1)
             {
               double beadcolor = 4* color ; //red
-              gmshfilebonds << "SP(" << scientific;
+              gmshfilebonds << "SP(" << std::scientific;
               gmshfilebonds << (*visualizepositions_)[0][i] << ","<< (*visualizepositions_)[1][i] << ","<< (*visualizepositions_)[2][i];
-              gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+              gmshfilebonds << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << std::endl;
             }
           }
           else  // passive crosslink molecule
@@ -1672,12 +1672,12 @@ void STATMECH::StatMechManager::GmshOutputCrosslinkDiffusion(double color, const
             }
             else
             {
-              gmshfilebonds << "SL(" << scientific;
+              gmshfilebonds << "SL(" << std::scientific;
               gmshfilebonds << coord(0, 0) << "," << coord(1, 0) << ","<< coord(2, 0) << "," << coord(0, 1) << "," << coord(1, 1)<< "," << coord(2, 1);
-              gmshfilebonds << ")" << "{" << scientific << 3*color << ","<< 3*color << "};" << endl;
-              gmshfilebonds << "SP(" << scientific;
+              gmshfilebonds << ")" << "{" << std::scientific << 3*color << ","<< 3*color << "};" << std::endl;
+              gmshfilebonds << "SP(" << std::scientific;
               gmshfilebonds << coord(0, 1) << "," << coord(1, 1) << ","<< coord(2, 1);
-              gmshfilebonds << ")" << "{" << scientific << beadcolor << ","<< beadcolor << "};" << endl;
+              gmshfilebonds << ")" << "{" << std::scientific << beadcolor << ","<< beadcolor << "};" << std::endl;
             }
           }
         }
@@ -2065,7 +2065,7 @@ void STATMECH::StatMechManager::GmshWedge(const int& n,
     // Syntax for gmsh input file
     // SI(x,y--,z,  x+.5,y,z,    x,y+.5,z,   x,y,z+.5, x+.5,y,z+.5, x,y+.5,z+.5){1,2,3,3,2,1};
     // SI( coordinates of the six corners ){colors}
-    gmshfilecontent << "SI("<<scientific;
+    gmshfilecontent << "SI("<< std::scientific;
     gmshfilecontent << prism(0,0) << "," << prism(1,0) << "," << prism(2,0) << ",";
     gmshfilecontent << prism(0,1) << "," << prism(1,1) << "," << prism(2,1) << ",";
     gmshfilecontent << prism(0,2) << "," << prism(1,2) << "," << prism(2,2) << ",";
@@ -2110,7 +2110,7 @@ void STATMECH::StatMechManager::GmshWedge(const int& n,
       // Syntax for gmsh input file
       // SI(x,y--,z,  x+.5,y,z,    x,y+.5,z,   x,y,z+.5, x+.5,y,z+.5, x,y+.5,z+.5){1,2,3,3,2,1};
       // SI( coordinates of the six corners ){colors}
-      gmshfilecontent << "SI("<<scientific;
+      gmshfilecontent << "SI("<< std::scientific;
       gmshfilecontent << prism(0,0) << "," << prism(1,0) << "," << prism(2,0) << ",";
       gmshfilecontent << prism(0,1) << "," << prism(1,1) << "," << prism(2,1) << ",";
       gmshfilecontent << prism(0,2) << "," << prism(1,2) << "," << prism(2,2) << ",";
@@ -3591,9 +3591,9 @@ void STATMECH::StatMechManager::DDCorrCurrentStructure(const Epetra_Vector& disr
     if(structurenumber==0 && characlength[0]>=periodlength)
       structurenumber = 3;
 
-    cout<<"\nVolumes: "<<endl;
+    std::cout<<"\nVolumes: "<<endl;
     for(int i=0; i<(int)volumes.size(); i++)
-      cout<<fixed<<setprecision(6)<<"V("<<i<<"): "<<volumes[i]<<"  l_c: "<<characlength[i]<<"  p_cross: "<<crossfraction[i]<<" crosslinks: "<<crosslinksinvolume[i]<<"/"<<numcrossele<<"  niter: "<<niter[i]<<endl;
+      std::cout<<std::fixed<<std::setprecision(6)<<"V("<<i<<"): "<<volumes[i]<<"  l_c: "<<characlength[i]<<"  p_cross: "<<crossfraction[i]<<" crosslinks: "<<crosslinksinvolume[i]<<"/"<<numcrossele<<"  niter: "<<niter[i]<<std::endl;
 
   /// cout and return network structure
     // write to output files

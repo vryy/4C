@@ -72,7 +72,6 @@ Maintainer: Mahmoud Ismail
 #include <iostream>
 #include <Teuchos_TimeMonitor.hpp>
 
-using namespace std;
 using namespace Teuchos;
 using namespace MLAPI;
 

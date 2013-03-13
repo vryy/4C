@@ -201,7 +201,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
         // sort junction BCs in map 
         // -------------------------------------------------------------------
         RCP<ArtJunctionBc> junbc = Teuchos::rcp(new ArtJunctionBc(discret_, output_, SortedConds[i], SortedIOarts[i],dta, condid, i) );    
-        ajunmap_.insert( make_pair( condid, junbc ) ).second;
+        ajunmap_.insert( std::make_pair( condid, junbc ) ).second;
 
         // -------------------------------------------------------------------
         // Creat the nodes' parameters (material prameters, geometric 
@@ -219,7 +219,7 @@ ART::UTILS::ArtJunctionWrapper::ArtJunctionWrapper(RCP<DRT::Discretization> actd
           RCP<JunctionNodeParams> nodeparams = Teuchos::rcp(new JunctionNodeParams);
 
           int local_id =  discret_->NodeRowMap()->LID((*nodes)[0]);
-          inserted = nodalParams->insert( make_pair( local_id, nodeparams) ).second;
+          inserted = nodalParams->insert( std::make_pair( local_id, nodeparams) ).second;
           if(!inserted)
             dserror("Node %d has more than one condition", (*nodes)[0]+1);
         }

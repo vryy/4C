@@ -23,7 +23,6 @@ Maintainer: Thomas Kloeppel
 
 #include "../drt_inpar/inpar_structure.H"
 
-using namespace std;
 using namespace Teuchos;
 
 //forward declarations

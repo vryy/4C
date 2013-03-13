@@ -17,7 +17,6 @@ Maintainer: Thomas Kloeppel
 
 #include "multipointconstraint.H"
 
-using namespace std;
 using namespace Teuchos;
 
 
@@ -93,16 +92,16 @@ namespace UTILS
     //! creating a new discretization based on conditions containing constraint elements
     map<int,RCP<DRT::Discretization> > CreateDiscretizationFromCondition
     (
-      RCP<DRT::Discretization> actdisc,
-      vector< DRT::Condition* >      constrcond, ///< conditions as discretization basis
-      const string&             discret_name, ///< name of new discretization
-      const string&             element_name, ///< name of element type to create
+      RCP<DRT::Discretization>       actdisc,
+      std::vector< DRT::Condition* > constrcond, ///< conditions as discretization basis
+      const std::string&             discret_name, ///< name of new discretization
+      const std::string&             element_name, ///< name of element type to create
       int& startID
     );
 
     //! Reorder MPC nodes based on condition input
     void ReorderConstraintNodes(
-         vector<int>& nodeids,  ///< reordered node ids
+         std::vector<int>& nodeids,  ///< reordered node ids
          const DRT::Condition* condname); ///< condition to deal with
 
 

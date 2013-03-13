@@ -65,7 +65,7 @@ namespace UTILS
 
 namespace STR
 {
-  class TimIntMStep<Epetra_Vector>;
+  template <typename> class TimIntMStep;
 }
 
 

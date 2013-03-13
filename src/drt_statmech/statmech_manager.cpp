@@ -370,8 +370,8 @@ void STATMECH::StatMechManager::InitializeStatMechValues()
   // in case of a non-cubic periodic volume
   if(fabs(pow(periodlength_->at(0)*periodlength_->at(1)*periodlength_->at(2), 1.0/3.0)-periodlength_->at(0))>1e-4)
   {
-    double Hmax = max(periodlength_->at(0), periodlength_->at(1));
-    Hmax = max(Hmax, periodlength_->at(2));
+    double Hmax = std::max(periodlength_->at(0), periodlength_->at(1));
+    Hmax = std::max(Hmax, periodlength_->at(2));
     for(int i=0; i<(int)searchres_->size(); i++)
       searchres_->at(i) = (int)(floor((periodlength_->at(i)/Hmax) * (double)(statmechparams_.get<int>("SEARCHRES",1))));
   }
@@ -1693,7 +1693,7 @@ void STATMECH::StatMechManager::DetectNeighbourNodes(const Epetra_MultiVector&  
       if((int)numbond[part]==1)
         neighbournodes[part].push_back(-1);
       // store local maximal number of LIDs per molecule in order to determine neighbourslid->NumVectors()
-      maxneighbourslocal = max(maxneighbourslocal, (int)neighbournodes[part].size());
+      maxneighbourslocal = std::max(maxneighbourslocal, (int)neighbournodes[part].size());
     }
   }
 
@@ -2110,8 +2110,8 @@ void STATMECH::StatMechManager::SearchAndSetCrosslinkers(const int&             
         // obtain binding spot GID
         std::vector<int> bspotgid(2,0);
         // determine smaller and larger of the GIDs
-        bspotgid.at(1) = min((int)(*crosslinkerbond_)[0][i],(int)(*crosslinkerbond_)[1][i]);
-        bspotgid.at(0) = max((int)(*crosslinkerbond_)[0][i],(int)(*crosslinkerbond_)[1][i]);
+        bspotgid.at(1) = std::min((int)(*crosslinkerbond_)[0][i],(int)(*crosslinkerbond_)[1][i]);
+        bspotgid.at(0) = std::max((int)(*crosslinkerbond_)[0][i],(int)(*crosslinkerbond_)[1][i]);
 
         // different sizes due to different linker elements
         Teuchos::RCP<std::vector<int> > globalnodeids;
@@ -3702,7 +3702,7 @@ void STATMECH::StatMechManager::CrosslinkerDiffusion(const Epetra_MultiVector& b
       // bonding case 2: crosslink molecule attached to one filament
       case 1:
       {
-        int bspotLID = bspotcolmap_->LID(max((int)(*crosslinkerbond_)[0][crosslid],(int)(*crosslinkerbond_)[1][crosslid]));
+        int bspotLID = bspotcolmap_->LID(std::max((int)(*crosslinkerbond_)[0][crosslid],(int)(*crosslinkerbond_)[1][crosslid]));
         for (int j=0; j<crosslinkerpositionstrans->NumVectors(); j++)
           (*crosslinkerpositionstrans)[j][i] = bspotpositions[j][bspotLID];
       }
@@ -3710,8 +3710,8 @@ void STATMECH::StatMechManager::CrosslinkerDiffusion(const Epetra_MultiVector& b
       // bonding case 3: actual crosslinker has been established or passified molecule
       case 2:
       {
-        int largerbspotLID = bspotcolmap_->LID(max((int)(*crosslinkerbond_)[0][crosslid],(int)(*crosslinkerbond_)[1][crosslid]));
-        int smallerbspotLID = bspotcolmap_->LID(min((int)(*crosslinkerbond_)[0][crosslid],(int)(*crosslinkerbond_)[1][crosslid]));
+        int largerbspotLID = bspotcolmap_->LID(std::max((int)(*crosslinkerbond_)[0][crosslid],(int)(*crosslinkerbond_)[1][crosslid]));
+        int smallerbspotLID = bspotcolmap_->LID(std::min((int)(*crosslinkerbond_)[0][crosslid],(int)(*crosslinkerbond_)[1][crosslid]));
         if(smallerbspotLID>-1)
           for (int j=0; j<crosslinkerpositionstrans->NumVectors(); j++)
             (*crosslinkerpositionstrans)[j][i] = (bspotpositions[j][largerbspotLID]+bspotpositions[j][smallerbspotLID])/2.0;
@@ -3803,7 +3803,7 @@ void STATMECH::StatMechManager::CrosslinkerIntermediateUpdate(const Epetra_Multi
   // case: crosslinker element
   if (LID.M()==2 && LID.N()==1)
   {
-    int bspotlid = max((int)LID(0,0), (int)LID(1,0));
+    int bspotlid = std::max((int)LID(0,0), (int)LID(1,0));
     // in case of a loom network, we want the crosslinker position to lie on the horizontal filament
     if(DRT::INPUT::IntegralValue<int>(statmechparams_, "LOOMSETUP"))
       for(int i=0; i<LID.M(); i++)
@@ -4656,8 +4656,8 @@ void STATMECH::StatMechManager::SetInitialCrosslinkers(Teuchos::RCP<CONTACT::Bea
           // obtain binding spot GID
           std::vector<int> bspotgid(2);
           // determine smaller and larger of the GIDs
-          bspotgid.at(1) = min((int)(*crosslinkerbond_)[0][i],(int)(*crosslinkerbond_)[1][i]);
-          bspotgid.at(0) = max((int)(*crosslinkerbond_)[0][i],(int)(*crosslinkerbond_)[1][i]);
+          bspotgid.at(1) = std::min((int)(*crosslinkerbond_)[0][i],(int)(*crosslinkerbond_)[1][i]);
+          bspotgid.at(0) = std::max((int)(*crosslinkerbond_)[0][i],(int)(*crosslinkerbond_)[1][i]);
 
           // different sizes due to different linker elements
           Teuchos::RCP<std::vector<int> > globalnodeids;

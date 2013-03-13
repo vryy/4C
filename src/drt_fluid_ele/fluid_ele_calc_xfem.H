@@ -226,7 +226,7 @@ private:
         double &                                p,           ///< exact pressure
         LINALG::Matrix<my::nsd_,1> &            xyzint,      ///< xyz position of gaussian point
         const double &                          t,           ///< time
-        Teuchos::RCP<MAT::Material> &           mat = Teuchos::null
+        Teuchos::RCP<MAT::Material>             mat = Teuchos::null
         );
 
     //! build the patch coupling matrix Cuiui containing Cuiui for all cutting sides

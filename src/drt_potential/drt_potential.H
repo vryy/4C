@@ -38,7 +38,6 @@ Maintainer: Ursula Mayer
 
 
 
-using namespace std;
 using namespace Teuchos;
 
 
@@ -353,7 +352,7 @@ protected:
   void CollectLmcol(
       const Teuchos::RCP<DRT::Discretization>                       potentialdis,
       const std::map< int, std::map<int, GEO::NearestObject> >&     potentialObjectsAtGP,
-      vector<int> &                                                 lmcol
+      std::vector<int> &                                            lmcol
       );
   
   
@@ -365,8 +364,8 @@ protected:
 
   //! get local index
   int GetLocalIndex(
-      vector<int>&    lmcol,
-      int             value
+      std::vector<int>& lmcol,
+      int               value
       );
   
   

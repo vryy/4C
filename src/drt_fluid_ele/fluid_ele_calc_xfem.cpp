@@ -465,7 +465,7 @@ void FluidEleCalcXFEM<distype>::AnalyticalReference(
     double &                                p,           ///< exact pressure
     LINALG::Matrix<my::nsd_,1> &            xyzint,      ///< xyz position of gaussian point
     const double &                          t,           ///< time
-    Teuchos::RCP<MAT::Material> &           mat
+    Teuchos::RCP<MAT::Material>             mat
 )
 {
   // Compute analytical solution
