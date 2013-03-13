@@ -55,19 +55,19 @@ ADAPTCONV_BETTER                0.1
 ADAPTERDRIVE                    No
 CONTROLNODE -1 -1 -1
 CONTROLTYPE                     load
-DAMPING                         No
+DAMPING                         Yes
 DIVERCONT                       No
 DYNAMICTYP                      GenAlpha
 EIGEN                           0
 ITERNORM                        L2
 ITWANT                          0
-K_DAMP                          0.5
+K_DAMP                          0.25
 LOADLIN                         no
 MAXDT                           0
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
-M_DAMP                          0.5
+M_DAMP                          0.25
 NLNSOL                          fullnewton
 NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
@@ -137,10 +137,9 @@ MAT 6 ELAST_IsoAnisoExpo K1 7.0 K2 13.2 GAMMA 90.0 K1COMP 4.0 K2COMP 7.0 INIT 1 
 MAT 7 ELAST_IsoAnisoExpo K1 7.0 K2 13.2 GAMMA 45.0 K1COMP 4.0 K2COMP 7.0 INIT 1 ADAPT_ANGLE No
 MAT 8 ELAST_IsoAnisoExpo K1 7.0 K2 13.2 GAMMA -45.0 K1COMP 4.0 K2COMP 7.0 INIT 1 ADAPT_ANGLE No
 ----------------------------------------------------------------------CURVE1
-CURVE1 on Explicit FUNC f(t)=sin(t:C1*PI:2)_for_t<_C1_else_f(t)=1 c1 4.0 c2 0.0
+CURVE1 on EXPR FUNC sin(t/4.0*pi/2.0)  t1 0.0 t2 4.0
+CURVE1 on EXPR FUNC 1.0                t1 4.0 t2 1000000000000000 
 ----------------------------------------------------------------------CURVE2
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.0 1 FACTOR 0.0 1
-CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1 150000 FACTOR 1 1
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
@@ -148,10 +147,10 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 1 150000 FACTOR 1 1
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 63 QUANTITY dispx VALUE 1.89454311500628914e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 63 QUANTITY dispy VALUE -1.17332120696572017e-02 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 63 QUANTITY dispz VALUE 1.51593477194972681e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 482 QUANTITY dispz VALUE 9.72708846198889060e-02 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 63 QUANTITY dispx VALUE 8.420912416e-03 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 63 QUANTITY dispy VALUE 4.313806907e-03 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 63 QUANTITY dispz VALUE 1.365287075e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 482 QUANTITY dispz VALUE 1.227285112e-01 TOLERANCE 1e-6
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         8
 NDLINE                          8
@@ -176,45 +175,45 @@ DSURF                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
 DPOINT                          8
 // vertex bottom front right
-E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // vertex bottom front left
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // vertex bottom back right
-E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // vertex bottom back left
-E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // vertex top front right
-E 5 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // vertex top front left
-E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // vertex top back right
-E 7 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 7 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // vertex top back left
-E 8 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 8 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           8
 // edge bottom front
-E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // edge bottom back
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // edge bottom left
-E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 3 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // edge bottom right
-E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // edge top front
-E 5 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 5 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // edge top back
-E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 6 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // edge top left
-E 7 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 7 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // edge top right
-E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 8 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
 DSURF                           2
 // surface bottom
-E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 -0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 1 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 // surface top
-E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.1 0.0 CURVE none 2 none FUNCT 0 0 0
+E 2 - NUMDOF 3 ONOFF 0 1 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 ------------------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL                            0
 ------------------------------------------DESIGN POINT ALE DIRICH CONDITIONS
