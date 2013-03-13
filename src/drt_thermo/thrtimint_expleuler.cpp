@@ -110,7 +110,7 @@ void THR::TimIntExplEuler::IntegrateStep()
     raten_->PutScalar(0.0);
   }
 
-  if (lumpcapa_==false || Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_)==Teuchos::null)
+  if ( (lumpcapa_ == false) or (Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(tang_) == Teuchos::null) )
   {
     // refactor==false: This is not necessary, because we always
     // use the same constant capacity matrix, which was firstly factorised

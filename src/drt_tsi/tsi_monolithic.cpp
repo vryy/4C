@@ -64,7 +64,7 @@ TSI::Monolithic::Monolithic(
   const Teuchos::ParameterList& sdynparams
   )
 : Algorithm(comm),
-  solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams,"ADAPTCONV")==1),
+  solveradapttol_(DRT::INPUT::IntegralValue<int>(sdynparams,"ADAPTCONV") == 1),
   solveradaptolbetter_(sdynparams.get<double>("ADAPTCONV_BETTER")),
   printiter_(true),  // ADD INPUT PARAMETER
   printerrfile_(false),  // ADD INPUT PARAMETER FOR 'true'
@@ -370,7 +370,7 @@ void TSI::Monolithic::TimeLoop()
 void TSI::Monolithic::NewtonFull()
 {
 #ifndef TFSI
-  if ( Comm().MyPID()==0 )
+  if (Comm().MyPID() == 0)
     std::cout << "TSI::Monolithic::NewtonFull()" << std::endl;
 #endif
 
@@ -485,7 +485,7 @@ void TSI::Monolithic::NewtonFull()
   iter_ -= 1;
 
   // test whether max iterations was hit
-  if ( (Converged()) and (Comm().MyPID()==0) )
+  if ( (Converged()) and (Comm().MyPID() == 0) )
   {
     PrintNewtonConv();
   }
@@ -590,7 +590,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   Epetra_Time timerthermo(Comm());
 
   // apply current displacements and velocities to the thermo field
-  if (strmethodname_==INPAR::STR::dyna_statics)
+  if (strmethodname_ == INPAR::STR::dyna_statics)
   {
     // calculate velocity V_n+1^k = (D_n+1^k-D_n)/Dt()
     veln_ = CalcVelocity(StructureField()->Dispnp());
@@ -655,7 +655,7 @@ Teuchos::RCP<const Epetra_Map> TSI::Monolithic::DofRowMap() const
 void TSI::Monolithic::SetupSystem()
 {
 #ifndef TFSI
-  if ( Comm().MyPID()==0 )
+  if (Comm().MyPID() == 0)
     std::cout << " TSI::Monolithic::SetupSystem()" <<  std::endl;
 #endif
 
@@ -674,9 +674,9 @@ void TSI::Monolithic::SetupSystem()
   vecSpaces.push_back(StructureField()->DofRowMap(0));
   vecSpaces.push_back(ThermoField()->DofRowMap(0));
 
-  if (vecSpaces[0]->NumGlobalElements()==0)
+  if (vecSpaces[0]->NumGlobalElements() == 0)
     dserror("No structure equation. Panic.");
-  if (vecSpaces[1]->NumGlobalElements()==0)
+  if (vecSpaces[1]->NumGlobalElements() == 0)
     dserror("No temperature equation. Panic.");
 
   SetDofRowMaps(vecSpaces);
@@ -705,7 +705,7 @@ void TSI::Monolithic::SetDofRowMaps(
 void TSI::Monolithic::SetupSystemMatrix()
 {
 #ifndef TFSI
-  if ( Comm().MyPID()==0 )
+  if (Comm().MyPID() == 0)
     std::cout << " TSI::Monolithic::SetupSystemMatrix()" <<  std::endl;
 #endif
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupSystemMatrix");
@@ -878,7 +878,7 @@ void TSI::Monolithic::SetupSystemMatrix()
 void TSI::Monolithic::SetupRHS()
 {
 #ifndef TFSI
-  if ( Comm().MyPID()==0 )
+  if (Comm().MyPID() == 0)
     std::cout << " TSI::Monolithic::SetupRHS()" <<  std::endl;
 #endif
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupRHS");
@@ -902,7 +902,7 @@ void TSI::Monolithic::SetupRHS()
 void TSI::Monolithic::LinearSolve()
 {
 #ifndef TFSI
-  if ( Comm().MyPID()==0 )
+  if (Comm().MyPID() == 0)
     std::cout << " TSI::Monolithic::LinearSolve()" <<  std::endl;
 #endif
 
@@ -929,7 +929,7 @@ void TSI::Monolithic::LinearSolve()
   Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
 #ifndef TFSI
-  if ( Comm().MyPID()==0 ) { std::cout << " DBC applied to TSI system" <<  std::endl; }
+  if (Comm().MyPID() == 0) { std::cout << " DBC applied to TSI system" <<  std::endl; }
 #endif
 
   // standard solver call
@@ -942,13 +942,13 @@ void TSI::Monolithic::LinearSolve()
              );
 
 #ifndef TFSI
-  if ( Comm().MyPID()==0 ) { std::cout << " Solved" <<  std::endl; }
+  if (Comm().MyPID() == 0) { std::cout << " Solved" <<  std::endl; }
 #endif
 
 #else // use bgs2x2_operator
 
 #ifndef TFSI
-  if ( Comm().MyPID()==0 )
+  if (Comm().MyPID() == 0)
   { std::cout << " DBC applied to TSI system on proc" << Comm().MyPID() <<  std::endl; }
 #endif
 
@@ -965,7 +965,7 @@ void TSI::Monolithic::LinearSolve()
   UnscaleSolution(*systemmatrix_,*iterinc_,*rhs_);
 
 #ifndef TFSI
-  if ( Comm().MyPID()==0 ) { std::cout << " Solved" <<  std::endl; }
+  if (Comm().MyPID() == 0) { std::cout << " Solved" <<  std::endl; }
 #endif
 
 #endif  // TSIBLOCKMATRIXMERGE
@@ -1042,7 +1042,7 @@ bool TSI::Monolithic::Converged()
     // with the norm includes its initial value, i.e. 0.0 used in the denominator
     // in convfres leading to infinity
     // convfres := normrhs_/normrhsiter0_ < tolfres_
-    convfres = ( normrhs_ < (tolfres_ * normrhsiter0_ ));
+    convfres = (normrhs_ < (tolfres_ * normrhsiter0_ ));
     break;
   case INPAR::TSI::convnorm_mix:
     convfres = ( (normstrrhs_ < tolfres_) and (normthrrhs_ < tolfres_) );
@@ -1053,7 +1053,7 @@ bool TSI::Monolithic::Converged()
 
   // combine temperature-like and force-like residuals
   bool conv = false;
-  if (combincfres_==INPAR::TSI::bop_and)
+  if (combincfres_ == INPAR::TSI::bop_and)
     conv = convinc and convfres;
   else
     dserror("Something went terribly wrong with binary operator!");
@@ -1072,8 +1072,8 @@ void TSI::Monolithic::PrintNewtonIter()
 {
   // print to standard out
   // replace myrank_ here general by Comm().MyPID()
-  if ( (Comm().MyPID()==0) and PrintScreenEvry() and
-       (Step()%PrintScreenEvry()==0) and printiter_
+  if ( (Comm().MyPID() == 0) and PrintScreenEvry() and
+       (Step()%PrintScreenEvry() == 0) and printiter_
      )
   {
     if (iter_== 1)
@@ -1082,9 +1082,9 @@ void TSI::Monolithic::PrintNewtonIter()
   }
 
   // print to error file
-  if ( printerrfile_ and printiter_ )
+  if (printerrfile_ and printiter_)
   {
-    if (iter_== 1)
+    if (iter_ == 1)
       PrintNewtonIterHeader(errfile_);
     PrintNewtonIterText(errfile_);
   }
@@ -1108,7 +1108,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
 
   // different style due relative or absolute error checking
   // displacement
-  switch ( normtypefres_ )
+  switch (normtypefres_)
   {
   case INPAR::TSI::convnorm_abs :
     oss <<std::setw(18)<< "abs-res-norm";
@@ -1126,7 +1126,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
     dserror("You should not turn up here.");
   }
 
-  switch ( normtypeinc_ )
+  switch (normtypeinc_)
   {
   case INPAR::TSI::convnorm_abs :
     oss <<std::setw(18)<< "abs-inc-norm";
@@ -1142,7 +1142,7 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile==NULL)
+  if (ofile == NULL)
     dserror("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
@@ -1168,7 +1168,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
 
   // different style due relative or absolute error checking
   // displacement
-  switch ( normtypefres_ )
+  switch (normtypefres_)
   {
   case INPAR::TSI::convnorm_abs :
     oss << std::setw(18) << std::setprecision(5) << std::scientific << normrhs_/ntsi_;
@@ -1186,7 +1186,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
     dserror("You should not turn up here.");
   }
 
-  switch ( normtypeinc_ )
+  switch (normtypeinc_)
   {
   case INPAR::TSI::convnorm_abs :
     oss << std::setw(18) << std::setprecision(5) << std::scientific << norminc_;
@@ -1204,7 +1204,7 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   oss << std::ends;
 
   // print to screen (could be done differently...)
-  if (ofile==NULL)
+  if (ofile == NULL)
     dserror("no ofile available");
   fprintf(ofile, "%s\n", oss.str().c_str());
 
@@ -1236,7 +1236,7 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
   )
 {
 #ifndef TFSI
-  if ( Comm().MyPID()==0 )
+  if (Comm().MyPID() == 0)
     std::cout << " TSI::Monolithic::ApplyStrCouplMatrix()" <<  std::endl;
 #endif
 
@@ -1311,7 +1311,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   )
 {
 #ifndef TFSI
-  if ( Comm().MyPID()==0 )
+  if (Comm().MyPID() == 0)
     std::cout << " TSI::Monolithic::ApplyThrCouplMatrix()" <<  std::endl;
 #endif
 
@@ -1402,7 +1402,7 @@ void TSI::Monolithic::ApplyThrCouplMatrix_ConvBC(
   )
 {
 #ifndef TFSI
-  if ( Comm().MyPID()==0 )
+  if (Comm().MyPID() == 0)
     std::cout << " TSI::Monolithic::ApplyThrCouplMatrix_ConvBC()" <<  std::endl;
 #endif
 
@@ -1510,7 +1510,7 @@ Teuchos::RCP<Epetra_Map> TSI::Monolithic::CombinedDBCMap()
 void TSI::Monolithic::ApplyStructContact(Teuchos::RCP<LINALG::SparseMatrix>& k_st)
 {
   // only in the case of contact
-  if (cmtman_==Teuchos::null)
+  if (cmtman_ == Teuchos::null)
     return;
 
   // contact strategy
@@ -1583,7 +1583,7 @@ void TSI::Monolithic::ApplyStructContact(Teuchos::RCP<LINALG::SparseMatrix>& k_s
 
    // set zero diagonal values to dummy 1.0
    for (int i=0;i<diag->MyLength();++i)
-     if ((*diag)[i]==0.0) (*diag)[i]=1.0;
+     if ((*diag)[i] == 0.0) (*diag)[i]=1.0;
 
    // scalar inversion of diagonal values
    err = diag->Reciprocal(*diag);
@@ -1666,7 +1666,7 @@ void TSI::Monolithic::ApplyStructContact(Teuchos::RCP<LINALG::SparseMatrix>& k_s
 void TSI::Monolithic::ApplyThermContact(Teuchos::RCP<LINALG::SparseMatrix>& k_ts)
 {
   // only in the case of contact
-  if (cmtman_==Teuchos::null)
+  if (cmtman_ == Teuchos::null)
     return;
 
   // contact strategy
@@ -1775,7 +1775,7 @@ void TSI::Monolithic::ApplyThermContact(Teuchos::RCP<LINALG::SparseMatrix>& k_ts
 
   // set zero diagonal values to dummy 1.0
   for (int i=0;i<diag->MyLength();++i)
-    if ((*diag)[i]==0.0) (*diag)[i]=1.0;
+    if ((*diag)[i] == 0.0) (*diag)[i]=1.0;
 
   // scalar inversion of diagonal values
   err = diag->Reciprocal(*diag);

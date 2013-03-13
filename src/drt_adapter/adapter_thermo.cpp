@@ -118,7 +118,7 @@ void ADAPTER::ThermoBaseAlgorithm::SetupTimInt(
 //  //  = DRT::Problem::Instance()->ProblemSizeParams();
 
   // show default parameters of thermo parameter list
-  if ((actdis->Comm()).MyPID()==0)
+  if ( (actdis->Comm() ).MyPID() == 0)
     DRT::INPUT::PrintDefaultParameters(IO::cout, *tdyn);
 
   // add extra parameters (a kind of work-around)

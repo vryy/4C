@@ -47,49 +47,49 @@ DRT::ELEMENTS::TemperBoundaryImplInterface* DRT::ELEMENTS::TemperBoundaryImplInt
   case DRT::Element::quad4:
   {
     static TemperBoundaryImpl<DRT::Element::quad4>* cp4;
-    if (cp4==NULL)
+    if (cp4 == NULL)
       cp4 = new TemperBoundaryImpl<DRT::Element::quad4>(numdofpernode);
       return cp4;
   }
   /*  case DRT::Element::quad8:
   {
     static TemperBoundaryImpl<DRT::Element::quad8>* cp8;
-    if (cp8==NULL)
+    if (cp8 == NULL)
       cp8 = new TemperImpl<DRT::Element::quad8>(numdofpernode);
     return cp8;
   }
   case DRT::Element::quad9:
   {
     static TemperBoundaryImpl<DRT::Element::quad9>* cp9;
-    if (cp9==NULL)
+    if (cp9 == NULL)
       cp9 = new TemperImpl<DRT::Element::quad9>(numdofpernode);
     return cp9;
   }*/
   case DRT::Element::tri3:
   {
     static TemperBoundaryImpl<DRT::Element::tri3>* cp3;
-    if (cp3==NULL)
+    if (cp3 == NULL)
       cp3 = new TemperBoundaryImpl<DRT::Element::tri3>(numdofpernode);
       return cp3;
   }
   /*  case DRT::Element::tri6:
   {
     static TemperBoundaryImpl<DRT::Element::tri6>* cp6;
-    if (cp6==NULL)
+    if (cp6 == NULL)
       cp6 = new TemperBoundaryImpl<DRT::Element::tri6>(numdofpernode);
     return cp6;
   }*/
   case DRT::Element::line2:
   {
     static TemperBoundaryImpl<DRT::Element::line2>* cl2;
-    if (cl2==NULL)
+    if (cl2 == NULL)
       cl2 = new TemperBoundaryImpl<DRT::Element::line2>(numdofpernode);
       return cl2;
   }/*
   case DRT::Element::line3:
   {
     static TemperBoundaryImpl<DRT::Element::line3>* cl3;
-    if (cl3==NULL)
+    if (cl3 == NULL)
       cl3 = new TemperBoundaryImpl<DRT::Element::line3>(numdofpernode);
     return cl3;
   }*/
@@ -280,7 +280,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
       dserror("Unknown type of convection boundary condition");
 
 #ifdef THRASOUTPUT
-    if (ele->Id()==0)
+    if (ele->Id() == 0)
     {
       std::cout << "ele Id= " << ele->Id() << std::endl;
       // print all parameters read from the current condition
@@ -319,7 +319,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     // -------------------------- geometrically nonlinear TSI problem
 
     // if it's a TSI problem with displacementcoupling_ --> go on here!
-    if ( (kintype == 1) && (la.Size()>1) )  // geo_nonlinear
+    if ( (kintype == 1) and (la.Size() > 1) )  // geo_nonlinear
     {
       // set views, here we assemble on the boundary dofs only!
       LINALG::Matrix<nen_,(nsd_+1)*nen_> etangcoupl(elemat2_epetra.A(),true);  // view only!
@@ -330,7 +330,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
         // get the displacements
         Teuchos::RCP<const Epetra_Vector> disp
           = discretization.GetState(1,"displacement");
-        if (disp==Teuchos::null)
+        if (disp == Teuchos::null)
           dserror("Cannot get state vectors 'displacement'");
         // extract the displacements
         DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
@@ -348,7 +348,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
           );
 
       }  // disp!=0
-    }  // la.Size()>1 && kintype==geo_nonlinear
+    }  // (la.Size() > 1) and (kintype == geo_nonlinear)
 
     // BUILD EFFECTIVE TANGENT AND RESIDUAL ACC TO TIME INTEGRATOR
     // check the time integrator
@@ -407,7 +407,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
     // -------------------------- geometrically nonlinear TSI problem
 
     // if it's a TSI problem with displacementcoupling_ --> go on here!
-    if ( (kintype == 1) && (la.Size()>1) )  // geo_nonlinear
+    if ( (kintype == 1) and (la.Size() > 1) )  // geo_nonlinear
     {
       // and now get the current displacements/velocities
       if ( discretization.HasState(1,"displacement") )
@@ -437,7 +437,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
 
         // find out whether we shall use a time curve for q^_c and get the factor
         double curvefac = 1.0;
-        if (curvenum>=0)
+        if (curvenum >= 0)
         {
           curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
         }
@@ -448,7 +448,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
         // enabling for instance a load cycle due to combustion of a fluid
         double surtempcurvefac = 1.0;
         // find out whether we shall use a time curve for T_oo and get the factor
-        if (surtempcurvenum>=0)
+        if (surtempcurvenum >= 0)
         {
           surtempcurvefac = DRT::Problem::Instance()->Curve(surtempcurvenum).f(time);
         }
@@ -499,7 +499,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
           dserror("Unknown type of convection boundary condition");
 
     #ifdef THRASOUTPUT
-        if (ele->Id()==0)
+        if (ele->Id() == 0)
         {
           std::cout << "ele Id= " << ele->Id() << std::endl;
           // print all parameters read from the current condition
@@ -514,7 +514,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
         // get the displacements
         Teuchos::RCP<const Epetra_Vector> disp
           = discretization.GetState(1,"displacement");
-        if (disp==Teuchos::null)
+        if (disp == Teuchos::null)
           dserror("Cannot get state vectors 'displacement'");
         // extract the displacements
         DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
@@ -567,7 +567,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::Evaluate(
           }
         }  // end of switch(timint)
       }  // disp!=0
-    }  // if ( (kintype == 1) && (la.Size()>1) )
+    }  // if ( (kintype == 1) and (la.Size()>1) )
   }  // calc_thermo_fextconvection_coupltang
 
   else
@@ -600,14 +600,14 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
   // find out whether we will use a time curve
   bool usetime = true;
   const double time = params.get("total time",-1.0);
-  if (time<0.0) usetime = false;
+  if (time < 0.0) usetime = false;
 
   // find out whether we will use a time curve and get the factor
   const std::vector<int>* curve  = condition.Get<std::vector<int> >("curve");
   int curvenum = -1;
   if (curve) curvenum = (*curve)[0];
   double curvefac = 1.0;
-  if (curvenum>=0 && usetime)
+  if ( (curvenum >= 0) and usetime)
     curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
 
   // get values, switches and spatial functions from the condition
@@ -630,12 +630,12 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
     double functfac = 1.0;
     // determine global coordinates of current Gauss point
     double coordgp[3]; // coordinate has always to be given in 3D!
-    for (int i = 0; i< 3; i++)
+    for (int i=0; i<3; i++)
       coordgp[i] = 0.0;
 
-    for (int i = 0; i< nsd_; i++)
+    for (int i=0; i<nsd_; i++)
     {
-      for (int j = 0; j < nen_; j++)
+      for (int j=0; j<nen_; j++)
       {
         // node coordinate * shape function
         coordgp[i] += xyze_(i,j) * funct_(j);
@@ -645,14 +645,14 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
     int functnum = -1;
     const double* coordgpref = &coordgp[0]; // needed for function evaluation
 
-    for(int dof=0;dof<numdofpernode_;dof++)
+    for(int dof=0; dof<numdofpernode_; dof++)
     {
       if ((*onoff)[dof]) // is this dof activated?
       {
         // factor given by spatial function
         if (func) functnum = (*func)[dof];
         {
-          if (functnum>0)
+          if (functnum > 0)
           {
             // evaluate function at current gauss point
             functfac = DRT::Problem::Instance()->Funct(functnum-1).Evaluate(dof,coordgpref,time,NULL);
@@ -665,7 +665,7 @@ int DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvaluateNeumann(
         // val = q; fac_ = detJ * w(gp) * timecurve; funcfac =  spatial_fac
         const double val_fac_functfac = (*val)[dof]*fac_*functfac;
 
-        for (int node=0;node<nen_;++node)
+        for (int node=0; node<nen_; ++node)
         {
           // fext  = fext +  N^T  * q * detJ * w(gp) * spatial_fac * timecurve_fac
           // with scalar-valued q
@@ -871,18 +871,15 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::CalculateNlnConvectionFintCond(
       ddet(2,3*i+1) = deriv_(1,i)*dxyzdrs(0,0)-deriv_(0,i)*dxyzdrs(1,0);
       ddet(2,3*i+2) = 0.;
 
-      jacobi_deriv(i*3,0) = 1/detA * (
-                              normal(2,0) * ddet(2,3*i) +
-                              normal(1,0) * ddet(1,3*i)
-                            );
-      jacobi_deriv(i*3+1,0) = 1/detA * (
-                            normal(2,0) * ddet(2,3*i+1) +
-                            normal(0,0) * ddet(0,3*i+1)
-                            );
-      jacobi_deriv(i*3+2,0) = 1/detA * (
-                              normal(0,0) * ddet(0,3*i+2) +
-                              normal(1,0) * ddet(1,3*i+2)
-                              );
+      jacobi_deriv(i*3,0) = 1/detA * ( normal(2,0) * ddet(2,3*i)
+                                       + normal(1,0) * ddet(1,3*i)
+                                       );
+      jacobi_deriv(i*3+1,0) = 1/detA * ( normal(2,0) * ddet(2,3*i+1)
+                                         + normal(0,0) * ddet(0,3*i+1)
+                                         );
+      jacobi_deriv(i*3+2,0) = 1/detA * ( normal(0,0) * ddet(0,3*i+2)
+                                         + normal(1,0) * ddet(1,3*i+2)
+                                         );
     }
 
     // --- calculation of first derivatives of current interfacial
@@ -990,7 +987,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::EvalShapeFuncAndIntFac(
 {
   // coordinates of the current (Gauss) integration point (xsi_)
   const double* gpcoord = (intpoints.IP().qxg)[iquad];
-  for (int idim=0;idim<nsd_;idim++)
+  for (int idim=0; idim<nsd_; idim++)
   {xsi_(idim) = gpcoord[idim];}
 
   // shape functions and their first derivatives
@@ -1036,13 +1033,13 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
       LINALG::Matrix<3,1> dist1(true), dist2(true);
       for (int i=0; i<3; i++)
       {
-        dist1(i) = xyze(i,1)-xyze(i,0);
-        dist2(i) = xyze(i,2)-xyze(i,0);
+        dist1(i) = xyze(i,1) - xyze(i,0);
+        dist2(i) = xyze(i,2) - xyze(i,0);
       }
 
-      normal(0) = dist1(1)*dist2(2) - dist1(2)*dist2(1);
-      normal(1) = dist1(2)*dist2(0) - dist1(0)*dist2(2);
-      normal(2) = dist1(0)*dist2(1) - dist1(1)*dist2(0);
+      normal(0) = dist1(1) * dist2(2) - dist1(2) * dist2(1);
+      normal(1) = dist1(2) * dist2(0) - dist1(0) * dist2(2);
+      normal(2) = dist1(0) * dist2(1) - dist1(1) * dist2(0);
     }
     break;
     case 1:
@@ -1052,7 +1049,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::GetConstNormal(
       // n1 = x2-x1, n2 = y2-y1
       // --> outward-pointing normal: scale with (-1.0)
       normal(0) = xyze(1,1) - xyze(1,0);
-      normal(1) = (-1.0)*(xyze(0,1) - xyze(0,0));
+      normal(1) = (-1.0) * (xyze(0,1) - xyze(0,0));
     }
     break;
     default:
@@ -1096,7 +1093,7 @@ void DRT::ELEMENTS::TemperBoundaryImpl<distype>::IntegrateShapeFunctions(
     // compute integral of shape functions
     for (int node=0; node<nen_; ++node)
     {
-      for (int k=0; k< numdofpernode_; k++)
+      for (int k=0; k<numdofpernode_; k++)
       {
         elevec1[node*numdofpernode_+k] += funct_(node) * fac_;
       }

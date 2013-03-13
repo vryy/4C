@@ -238,7 +238,8 @@ namespace ELEMENTS
     virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
     {
       // in a 3D example (TSI only implemented for hex8 element)
-      if (nds==1){return 3;}
+      if (nds == 1)
+        {return 3;}
       // for the temperature discretization
       return NumDofPerNode(node);
     }
@@ -484,11 +485,16 @@ namespace ELEMENTS
       // get spatial dimension of boundary
       const int nsd = DRT::UTILS::getDimension(parent_->Shape()) - 1;
 
-      if (NumNode()==4 || NumNode()==8 || NumNode()==9) return 4;
-      else if (NumNode()==6) return 3;
-      else if (NumNode()==3 && nsd ==2) return 3;
-      else if (NumNode()==3 && nsd ==1) return 1;
-      else if (NumNode()==2) return 1;
+      if ( (NumNode() == 4) or (NumNode() == 8) or (NumNode() == 9) )
+        return 4;
+      else if (NumNode() == 6)
+        return 3;
+      else if ( (NumNode() == 3) and (nsd ==2) )
+        return 3;
+      else if ( (NumNode() == 3) and (nsd ==1) )
+        return 1;
+      else if (NumNode() == 2)
+        return 1;
       else
       {
         dserror("Could not determine number of lines");

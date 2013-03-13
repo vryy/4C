@@ -127,14 +127,14 @@ DRT::ELEMENTS::TemperImpl<distype> * DRT::ELEMENTS::TemperImpl<distype>::Instanc
   static TemperImpl<distype> * instance;
   if ( create )
   {
-    if ( instance==NULL )
+    if (instance == NULL)
     {
       instance = new TemperImpl<distype>();
     }
   }
   else
   {
-    if ( instance!=NULL )
+    if (instance != NULL)
       delete instance;
     instance = NULL;
   }
@@ -210,7 +210,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     dserror("Location vector length does not match!");
 
   // disassemble temperature
-  if ( discretization.HasState(0, "temperature") )
+  if (discretization.HasState(0, "temperature"))
   {
     std::vector<double> mytempnp((la[0].lm_).size());
     Teuchos::RCP<const Epetra_Vector> tempnp
@@ -278,17 +278,17 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     std::vector<double> myvel( ( (la[0].lm_).size() )*nsd_, 0.0 );
 
     // if it's a TSI problem with displacementcoupling_ --> go on here!
-    if (la.Size()>1)
+    if (la.Size() > 1)
     {
       // and now get the current displacements/velocities
-      if ( (discretization.HasState(1,"displacement")) ||
+      if ( (discretization.HasState(1,"displacement")) and
            (discretization.HasState(1,"velocity"))
          )
       {
         // get the displacements
         Teuchos::RCP<const Epetra_Vector> disp
           = discretization.GetState(1,"displacement");
-        if (disp==Teuchos::null)
+        if (disp == Teuchos::null)
           dserror("Cannot get state vectors 'displacement'");
         // extract the displacements
         DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
@@ -296,7 +296,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // get the velocities
         Teuchos::RCP<const Epetra_Vector> vel
           = discretization.GetState(1,"velocity");
-        if (vel==Teuchos::null)
+        if (vel == Teuchos::null)
           dserror("Cannot get state vectors 'velocity'");
         // extract the displacements
         DRT::UTILS::ExtractMyValues(*vel,myvel,la[1].lm_);
@@ -331,7 +331,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     const double stepsize = params.get<double>("delta time");
 
     // geometrically linear TSI problem
-    if ( (kintype == 0) && (la.Size()>1) )
+    if ( (kintype == 0) and (la.Size() > 1) )
     {
       CalculateCouplFintCondCapa(
         ele,
@@ -411,17 +411,17 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     std::vector<double> myvel( ( (la[0].lm_).size() )*nsd_, 0.0 );
 
     // if it's a TSI problem with displacementcoupling_ --> go on here!
-    if (la.Size()>1)
+    if (la.Size() > 1)
     {
       // and now get the current displacements/velocities
-      if ( (discretization.HasState(1,"displacement")) ||
+      if ( (discretization.HasState(1,"displacement")) and
            (discretization.HasState(1,"velocity"))
          )
       {
         // get the displacements
         Teuchos::RCP<const Epetra_Vector> disp
           = discretization.GetState(1,"displacement");
-        if (disp==Teuchos::null)
+        if (disp == Teuchos::null)
           dserror("Cannot get state vectors 'displacement'");
         // extract the displacements
         DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
@@ -429,7 +429,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // get the velocities
         Teuchos::RCP<const Epetra_Vector> vel
           = discretization.GetState(1,"velocity");
-        if (vel==Teuchos::null)
+        if (vel == Teuchos::null)
           dserror("Cannot get state vectors 'velocity'");
         // extract the velocities
         DRT::UTILS::ExtractMyValues(*vel,myvel,la[1].lm_);
@@ -464,7 +464,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     const double stepsize = params.get<double>("delta time");
 
     // geometrically linear TSI problem
-    if ( (kintype == 0) && (la.Size()>1) )
+    if ( (kintype == 0) and (la.Size() > 1) )
     {
       CalculateCouplFintCondCapa(
         ele,
@@ -549,17 +549,17 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     // if it's a TSI problem with displacementcoupling_ --> go on here!
 
     // and now get the current displacements/velocities
-    if (la.Size()>1)
+    if (la.Size() > 1)
     {
       // and now get the current displacements/velocities
-      if ( (discretization.HasState(1,"displacement")) ||
+      if ( (discretization.HasState(1,"displacement")) and
            (discretization.HasState(1,"velocity"))
          )
       {
         // get the displacements
         Teuchos::RCP<const Epetra_Vector> disp
           = discretization.GetState(1,"displacement");
-        if (disp==Teuchos::null)
+        if (disp == Teuchos::null)
           dserror("Cannot get state vectors 'displacement'");
         // extract the displacements
         DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
@@ -567,7 +567,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // get the velocities
         Teuchos::RCP<const Epetra_Vector> vel
           = discretization.GetState(1,"velocity");
-        if (vel==Teuchos::null)
+        if (vel == Teuchos::null)
           dserror("Cannot get state vectors 'velocity'");
         // extract the velocities
         DRT::UTILS::ExtractMyValues(*vel,myvel,la[1].lm_);
@@ -597,14 +597,14 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
 
 #endif // MonTSIwithoutSTR
 
-      }  // disp!=0 & vel!=0
-    }  // la.Size>1
+      }  // (disp != 0) and (vel != 0)
+    }  // (la.Size > 1)
 
     // get the time step size
     const double stepsize = params.get<double>("delta time");
 
     // geometrically linear TSI problem
-    if ( (kintype == 0) && (la.Size()>1) )
+    if ( (kintype == 0) and (la.Size() > 1) )
     {
       CalculateCouplFintCondCapa(
         ele,
@@ -721,15 +721,16 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     std::vector<double> myvel( ( (la[0].lm_).size() )*nsd_, 0.0 );
 
     // if it's a TSI problem and if there are current displacements/velocities
-    if (la.Size()>1)
+    if (la.Size() > 1)
     {
-      if ( (discretization.HasState(1,"displacement")) &&
-         (discretization.HasState(1,"velocity")) )
+      if ( (discretization.HasState(1,"displacement")) and
+           (discretization.HasState(1,"velocity"))
+         )
       {
         // get the displacements
         Teuchos::RCP<const Epetra_Vector> disp
           = discretization.GetState(1,"displacement");
-        if (disp==Teuchos::null)
+        if (disp == Teuchos::null)
           dserror("Cannot get state vectors 'displacement'");
         // extract the displacements
         DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
@@ -737,7 +738,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // get the velocities
         Teuchos::RCP<const Epetra_Vector> vel
           = discretization.GetState(1,"velocity");
-        if (vel==Teuchos::null)
+        if (vel == Teuchos::null)
           dserror("Cannot get state vectors 'velocity'");
         // extract the velocities
         DRT::UTILS::ExtractMyValues(*vel,myvel,la[1].lm_);
@@ -772,7 +773,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     const double stepsize = params.get<double>("delta time");
 
     // geometrically linear TSI problem
-    if ( (kintype == 0) && (la.Size()>1) )
+    if ( (kintype == 0) and (la.Size() > 1) )
     {
       CalculateCouplFintCondCapa(
         ele,
@@ -900,16 +901,17 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
             INPAR::THR::tempgrad_none);
 
       // if it's a TSI problem and there are current displacements/velocities
-      if (la.Size()>1)
+      if (la.Size() > 1)
       {
-        if ( (discretization.HasState(1,"displacement")) &&
-           (discretization.HasState(1,"velocity")) )
+        if ( (discretization.HasState(1,"displacement")) and
+             (discretization.HasState(1,"velocity"))
+           )
         {
           // get the displacements
           std::vector<double> mydisp((la[1].lm_).size());
           Teuchos::RCP<const Epetra_Vector> disp
             = discretization.GetState(1,"displacement");
-          if (disp==Teuchos::null)
+          if (disp == Teuchos::null)
             dserror("Cannot get state vectors 'displacement'");
           DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
 
@@ -917,7 +919,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
           std::vector<double> myvel((la[1].lm_).size());
           Teuchos::RCP<const Epetra_Vector> vel
             = discretization.GetState(1,"velocity");
-          if (vel==Teuchos::null)
+          if (vel == Teuchos::null)
             dserror("Cannot get state vectors 'velocity'");
           DRT::UTILS::ExtractMyValues(*vel,myvel,la[1].lm_);
 
@@ -976,7 +978,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       = params.get<Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_SerialDenseMatrix> > > >("gpheatfluxmap");
     std::string heatfluxtype = params.get<std::string>("heatfluxtype","ndxyz");
     const int gid = ele->Id();
-    LINALG::Matrix<nquad_,nsd_> gpheatflux(((*gpheatfluxmap)[gid])->A(),true);  // view only!
+    LINALG::Matrix<nquad_,nsd_> gpheatflux( ( (*gpheatfluxmap)[gid] )->A(),true);  // view only!
 
     // set views to components
     LINALG::Matrix<nen_*numdofpernode_,1> efluxx(elevec1_epetra,true);  // view only!
@@ -1052,7 +1054,8 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
   else if (action == "calc_thermo_energy")
   {
     // check length of elevec1
-    if (elevec1_epetra.Length() < 1) dserror("The given result vector is too short.");
+    if (elevec1_epetra.Length() < 1)
+      dserror("The given result vector is too short.");
 
     double kappa = 0.0;
 
@@ -1093,7 +1096,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
       temp.MultiplyTN(1.0,funct_,etemp_,0.0);
 
       // internal energy
-      intenergy +=kappa*fac_*temp(0,0);
+      intenergy += kappa * fac_ * temp(0,0);
 
     }  // -------------------------------- end loop over Gauss Points
 
@@ -1109,17 +1112,18 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
     LINALG::Matrix<nen_*numdofpernode_,nen_*nsd_*numdofpernode_> etangcoupl(elemat1_epetra.A(),true);
 
     // if it's a TSI problem and there are the current displacements/velocities
-    if (la.Size()>1)
+    if (la.Size() > 1)
     {
       // and now get the current displacements/velocities
-      if ( (discretization.HasState(1,"displacement")) &&
-         (discretization.HasState(1,"velocity")) )
+      if ( (discretization.HasState(1,"displacement")) and
+           (discretization.HasState(1,"velocity"))
+         )
       {
         std::vector<double> mydisp((la[1].lm_).size());
         // get the displacements
         Teuchos::RCP<const Epetra_Vector> disp
           = discretization.GetState(1,"displacement");
-        if (disp==Teuchos::null)
+        if (disp == Teuchos::null)
           dserror("Cannot get state vectors 'displacement'");
         // extract the displacements
         DRT::UTILS::ExtractMyValues(*disp,mydisp,la[1].lm_);
@@ -1128,7 +1132,7 @@ int DRT::ELEMENTS::TemperImpl<distype>::Evaluate(
         // get the velocities
         Teuchos::RCP<const Epetra_Vector> vel
           = discretization.GetState(1,"velocity");
-        if (vel==Teuchos::null)
+        if (vel == Teuchos::null)
           dserror("Cannot get state vectors 'velocity'");
         // extract the velocities
         DRT::UTILS::ExtractMyValues(*vel,myvel,la[1].lm_);
@@ -1526,6 +1530,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateCouplFintCondCapa(
       // strainvel includes the elastic strain rates of the structural velocity vel
       // --> if CalcVelocity() is used in tsi
       //     --> calculate the elastic velocity with the given veln_ again
+
       thrpllinelast->StrainRateSplit(iquad,stepsize,strainvel);
       // overwrite the total strain rate by the elastic strain rate
       strainvel.Update(1.0, (thrpllinelast->ElasticStrainRate(iquad)), 0.0);
@@ -1955,7 +1960,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
     LINALG::Matrix<1,1> nt(true);
 #ifdef COUPLEINITTEMPERATURE
     // for TSI validation/verification: change nt to Theta_0 here!!!!
-    if (ele->Id()==0)
+    if (ele->Id() == 0)
       std::cout << "ele Id= " << ele->Id() ": coupling term in thermo field with T_0" << std::endl;
     nt(0,0) = thetainit;
 #else
@@ -1980,7 +1985,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
       // with fint_{Td} = fint_{Td} - 1/2 . N^T . Ctemp : C' . N . T
       //                  + B^T . k_0 . F^{-1} . F^{-T} . B . T
       efint->Multiply((fac_*CtempCdot),funct_,nt,1.0);
-    }  // if (efint!=NULL)
+    }  // if (efint != NULL)
 
     // --------------------------- integrate conductivity matrix k_TT
     // update conductivity matrix k_TT (with displacement dependent term)
@@ -1999,7 +2004,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
       // --> negative term enters the tangent (cf. L923) ctemp.Scale(-1.0);
       // with CtempCdot = (-C_temp) : 1/2  C'
       econd->MultiplyNT((fac_*CtempCdot),funct_,funct_,1.0);
-    }  // if (econd!=NULL)
+    }  // if (econd != NULL)
 
     // --------------------------------------- capacity matrix m_capa
     // capacity matrix is idependent of deformation
@@ -2011,11 +2016,12 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplFintCondCapa(
       // caution: funct_ implemented as (8,1)--> use transposed in code for
       // theoretic part
       ecapa->MultiplyNT((fac_*capacoeff_),funct_,funct_,1.0);
-    }
+    }  // if (ecapa != NULL)
+
   }  // ---------------------------------- end loop over Gauss Points
 
 #ifdef TSIMONOLITHASOUTPUT
-    if (ele->Id()==0)
+    if (ele->Id() == 0)
     {
       std::cout << "CouplNlnFintCondCapa\n" << std::endl;
       std::cout << "ele Id= " << ele->Id() << std::endl;
@@ -2137,18 +2143,18 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplCond(
 
     // put thermal material tangent in vector notation
     LINALG::Matrix<6,1> cmat_vct(true);
-    if (nsd_==3)
+    if (nsd_ == 3)
     {
       cmat_vct(0) = cmat_(0,0);
       cmat_vct(1) = cmat_(1,1);
       cmat_vct(2) = cmat_(2,2);
     }
-    else if (nsd_==2)
+    else if (nsd_ == 2)
     {
       cmat_vct(0) = cmat_(0,0);
       cmat_vct(1) = cmat_(1,1);
     }
-    else if (nsd_==1)
+    else if (nsd_ == 1)
     {
       cmat_vct(0) = cmat_(0,0);
     }
@@ -2296,7 +2302,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateNlnCouplCond(
 
   }  // ---------------------------------- end loop over Gauss Points
 
-}
+}  // CalculateNlnCouplCond()
 
 
 /*----------------------------------------------------------------------*
@@ -2412,7 +2418,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::CalculateInternalDissipation(
       plastictemppower = thrpllinelast->PlasticTempPower(iquad);
       // to be a power the term has to be multiplied by 1/dt
       plastictemppower *= 1.0/stepsize;
-    }
+    }  // if(plasticmat_)
     // ---------------------------------------------------- END OF COUPLING
 
     // update/integrate internal force vector (coupling fraction towards displacements)
@@ -2495,10 +2501,10 @@ void DRT::ELEMENTS::TemperImpl<distype>::Radiation(
     dserror("Illegal number of space dimensions: %d",nsd_);
   }
 
-  if (myneumcond.size()>1)
+  if (myneumcond.size() > 1)
     dserror("more than one VolumeNeumann cond on one node");
 
-  if (myneumcond.size()==1)
+  if (myneumcond.size() == 1)
   {
     // find out whether we will use a time curve
     const std::vector<int>* curve = myneumcond[0]->Get<std::vector<int> >("curve");
@@ -2586,7 +2592,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
 {
   // coordinates of the current (Gauss) integration point (xsi_)
   const double* gpcoord = (intpoints.IP().qxg)[iquad];
-  for (int idim=0;idim<nsd_;idim++)
+  for (int idim=0; idim<nsd_; idim++)
     {xsi_(idim) = gpcoord[idim];}
 
   // shape functions (funct_) and their first derivatives (deriv_)

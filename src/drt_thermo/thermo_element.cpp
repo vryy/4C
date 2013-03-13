@@ -36,7 +36,7 @@ DRT::ELEMENTS::ThermoType DRT::ELEMENTS::ThermoType::instance_;
  | create the new element type (public)                      dano 09/09 |
  | is called in ElementRegisterType                                     |
  *----------------------------------------------------------------------*/
-DRT::ParObject* DRT::ELEMENTS::ThermoType::Create( const std::vector<char> & data )
+DRT::ParObject* DRT::ELEMENTS::ThermoType::Create(const std::vector<char>& data )
 {
   DRT::ELEMENTS::Thermo* object =
     new DRT::ELEMENTS::Thermo(-1,-1);
@@ -56,7 +56,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create(
   const int owner
   )
 {
-  if ( eletype=="THERMO" )
+  if (eletype == "THERMO")
   {
     Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::Thermo(id,owner));
     return ele;
@@ -83,11 +83,11 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoType::Create(
  |                                                           dano 08/12 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ThermoType::NodalBlockInformation(
-  Element * dwele,
-  int & numdf,
-  int & dimns,
-  int & nv,
-  int & np
+  Element* dwele,
+  int& numdf,
+  int& dimns,
+  int& nv,
+  int& np
   )
 {
   numdf = dwele->NumDofPerNode(*(dwele->Nodes()[0]));
@@ -100,9 +100,9 @@ void DRT::ELEMENTS::ThermoType::NodalBlockInformation(
  | ctor (public)                                             dano 08/12 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ThermoType::ComputeNullSpace(
-  DRT::Discretization & dis,
-  std::vector<double> & ns,
-  const double * x0,
+  DRT::Discretization& dis,
+  std::vector<double>& ns,
+  const double* x0,
   int numdf,
   int dimns
   )
@@ -128,7 +128,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::ThermoBoundaryType::Create(
  | setup element                                             dano 09/09 |
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::ThermoType::SetupElementDefinition(
-  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >& definitions
   )
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["THERMO"];
@@ -525,7 +525,7 @@ DRT::Element::DiscretizationType DRT::ELEMENTS::ThermoBoundary::Shape() const
   {
   case 2: return line2;
   case 3:
-    if ((parent_->Shape() == quad8) || (parent_->Shape() == quad9))
+    if ( (parent_->Shape() == quad8) or (parent_->Shape() == quad9) )
       return line3;
     else
       return tri3;
