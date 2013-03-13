@@ -419,7 +419,7 @@ void GenRandomField::SimGaussRandomFieldFFT()
   Teuchos::RCP<Teuchos::Array <std::complex<double> > > d2= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_));
 
 
-  complex<double> i_comp (0,1);
+  std::complex<double> i_comp (0,1);
   for (int j=0;j<M_;j++)
   {
     for (int k=0;k<M_;k++)
@@ -524,7 +524,7 @@ void GenRandomField::SimGaussRandomFieldFFT3D()
   Teuchos::RCP<Teuchos::Array <std::complex<double> > > d6= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_*M_));
   Teuchos::RCP<Teuchos::Array <std::complex<double> > > d7= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_*M_));
 
-  complex<double> i_comp (0,1);
+  std::complex<double> i_comp (0,1);
   for (int j=0;j<M_;j++)
   {
     for (int k=0;k<M_;k++)
@@ -1716,7 +1716,7 @@ void GenRandomField::GetPSDFromSample(Teuchos::RCP<Teuchos::Array <double> > sam
         Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_));
 
   // define complex i
-  complex<double> i_comp (0,1);
+  std::complex<double> i_comp (0,1);
 
   for (int j=0;j<M_*M_;j++)
   {
@@ -1783,7 +1783,7 @@ void GenRandomField::GetPSDFromSample3D(Teuchos::RCP<Teuchos::Array <double> > s
   // allocate output arrays
   Teuchos::RCP<Teuchos::Array <std::complex<double> > > d1= Teuchos::rcp( new Teuchos::Array<std::complex<double> >( M_*M_*M_));
   // define complex i
-  complex<double> i_comp (0,1);
+  std::complex<double> i_comp (0,1);
 
   for (int j=0;j<M_*M_*M_;j++)
   {
