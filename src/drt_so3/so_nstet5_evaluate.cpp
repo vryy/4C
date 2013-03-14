@@ -27,6 +27,9 @@ Maintainer: Michael Gee
 
 #include "so_nstet5.H"
 
+// inverse design object
+#include "inversedesign.H"
+#include "prestress.H"
 
 
 /*----------------------------------------------------------------------*

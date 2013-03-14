@@ -16,10 +16,15 @@ Maintainer: Michael Gee
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 #include "so_nstet5.H"
 #include "so_surface.H"
 #include "so_line.H"
+
+// inverse design object
+#include "inversedesign.H"
+#include "prestress.H"
 
 DRT::ELEMENTS::NStet5Type DRT::ELEMENTS::NStet5Type::instance_;
 
@@ -140,6 +145,13 @@ void DRT::ELEMENTS::NStet5Type::SetupElementDefinition( std::map<std::string,std
   .AddIntVector("TET4",4)
   .AddNamedInt("MAT")
   .AddNamedString("KINEM")
+  .AddOptionalNamedDoubleVector("RAD",3)
+  .AddOptionalNamedDoubleVector("AXI",3)
+  .AddOptionalNamedDoubleVector("CIR",3)
+  .AddOptionalNamedDoubleVector("FIBER1",3)
+  .AddOptionalNamedDoubleVector("FIBER2",3)
+  .AddOptionalNamedDoubleVector("FIBER3",3)
+  .AddOptionalNamedDouble("HU")
   ;
 }
 
@@ -150,7 +162,10 @@ void DRT::ELEMENTS::NStet5Type::SetupElementDefinition( std::map<std::string,std
 DRT::ELEMENTS::NStet5::NStet5(int id, int owner) :
 DRT::Element(id,owner),
 material_(0),
-V_(-1.0)
+V_(-1.0),
+pstype_(INPAR::STR::prestress_none),
+pstime_(0.0),
+time_(0.0)
 {
   sublm_[0] = 0;
   sublm_[1] = 1;
@@ -168,6 +183,22 @@ V_(-1.0)
   sublm_[13] = 2;
   sublm_[14] = 3;
   sublm_[15] = 4;
+
+  Teuchos::RCP<const Teuchos::ParameterList> params = DRT::Problem::Instance()->getParameterList();
+  if (params!=Teuchos::null)
+  {
+    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+    pstype_ = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdyn,"PRESTRESS");
+    pstime_ = sdyn.get<double>("PRESTRESSTIME");
+  }
+
+  if (pstype_==INPAR::STR::prestress_mulf)
+    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(4,4,true));
+
+  if (pstype_==INPAR::STR::prestress_id)
+    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(4,4,true));
+
+
   return;
 }
 
@@ -177,10 +208,19 @@ V_(-1.0)
 DRT::ELEMENTS::NStet5::NStet5(const DRT::ELEMENTS::NStet5& old) :
 DRT::Element(old),
 material_(old.material_),
-V_(old.V_)
-//nxyz_(old.nxyz_)
+V_(old.V_),
+pstype_(old.pstype_),
+pstime_(old.pstime_),
+time_(old.time_)
 {
   for (int i=0; i<16; ++i) sublm_[i] = old.sublm_[i];
+
+  if (pstype_==INPAR::STR::prestress_mulf)
+    prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(*(old.prestress_)));
+
+  if (pstype_==INPAR::STR::prestress_id)
+    invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(*(old.invdesign_)));
+
   return;
 }
 
@@ -213,6 +253,21 @@ void DRT::ELEMENTS::NStet5::Pack(DRT::PackBuffer& data) const
   // V_
   AddtoPack(data,V_);
 
+  // prestress_
+  AddtoPack(data,pstype_);
+  AddtoPack(data,pstime_);
+  AddtoPack(data,time_);
+  if (pstype_==INPAR::STR::prestress_mulf)
+  {
+    DRT::ParObject::AddtoPack(data,*prestress_);
+  }
+
+  // invdesign_
+  if (pstype_==INPAR::STR::prestress_id)
+  {
+    DRT::ParObject::AddtoPack(data,*invdesign_);
+  }
+
   return;
 }
 
@@ -238,6 +293,30 @@ void DRT::ELEMENTS::NStet5::Unpack(const std::vector<char>& data)
   stresstype_ = static_cast<StressType>( ExtractInt(position,data) );
   // V_
   ExtractfromPack(position,data,V_);
+
+  // prestress_
+  pstype_ = static_cast<INPAR::STR::PreStress>( ExtractInt(position,data) );
+  ExtractfromPack(position,data,pstime_);
+  ExtractfromPack(position,data,time_);
+  if (pstype_==INPAR::STR::prestress_mulf)
+  {
+    std::vector<char> tmpprestress(0);
+    ExtractfromPack(position,data,tmpprestress);
+    if (prestress_ == Teuchos::null)
+      prestress_ = Teuchos::rcp(new DRT::ELEMENTS::PreStress(4,4,true));
+    prestress_->Unpack(tmpprestress);
+  }
+
+  // invdesign_
+  if (pstype_==INPAR::STR::prestress_id)
+  {
+    std::vector<char> tmpinvdesign(0);
+    ExtractfromPack(position,data,tmpinvdesign);
+    if (invdesign_ == Teuchos::null)
+      invdesign_ = Teuchos::rcp(new DRT::ELEMENTS::InvDesign(4,4,true));
+    invdesign_->Unpack(tmpinvdesign);
+  }
+
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",(int)data.size(),position);
