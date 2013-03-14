@@ -59,6 +59,8 @@ XFEM::XFluidFluidTimeIntegration::XFluidFluidTimeIntegration(
     timeintapproach_ = xfem_timeintapproach;
     params_ = params;
 
+    Teuchos::ParameterList&   params_xfem  = params_.sublist("XFEM");
+    gmsh_debug_out_ = (bool)params_xfem.get<int>("GMSH_DEBUG_OUT");
     return;
 
   } // end constructor
@@ -250,7 +252,8 @@ int XFEM::XFluidFluidTimeIntegration::SaveAndCreateNewBgNodeMaps(RCP<DRT::Discre
     samemaps_ = true;
   else samemaps_ = false;
 
-  GmshOutput(bgdis);
+  if (gmsh_debug_out_)
+	  GmshOutput(bgdis);
 
   return samemaps_;
 }
@@ -1073,105 +1076,108 @@ void XFEM::XFluidFluidTimeIntegration::SetNewEmbStatevector(const RCP<DRT::Discr
   std::vector<int> pgdofs(4);
 
   // Gmsh----------------------------------------------------------
-  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("emb_element_node_id", 0, 0, 0, bgdis->Comm().MyPID());
-  std::ofstream gmshfilecontent(filename.c_str());
+  if (gmsh_debug_out_)
   {
-    {
-      // draw embedded elements with associated gid at the old  position
-      gmshfilecontent << "View \" " << "emb Element(old)->Id() \" {\n";
-      for (int i=0; i<embdis_->NumMyColElements(); ++i)
-      {
-        const DRT::Element* actele = embdis_->lColElement(i);
-        const DRT::Node*const* pelenodes = actele->Nodes();
-        std::map<int,LINALG::Matrix<3,1> > mapofnodepos; //node id-> position
+	  const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("emb_element_node_id", 0, 0, 0, bgdis->Comm().MyPID());
+	  std::ofstream gmshfilecontent(filename.c_str());
+	  {
+		  {
+			  // draw embedded elements with associated gid at the old  position
+			  gmshfilecontent << "View \" " << "emb Element(old)->Id() \" {\n";
+			  for (int i=0; i<embdis_->NumMyColElements(); ++i)
+			  {
+				  const DRT::Element* actele = embdis_->lColElement(i);
+				  const DRT::Node*const* pelenodes = actele->Nodes();
+				  std::map<int,LINALG::Matrix<3,1> > mapofnodepos; //node id-> position
 
-        std::vector<int> lm;
-        std::vector<int> lmowner;
-        std::vector<int> lmstride;
-        actele->LocationVector(*embdis_, lm, lmowner, lmstride);
+				  std::vector<int> lm;
+				  std::vector<int> lmowner;
+				  std::vector<int> lmstride;
+				  actele->LocationVector(*embdis_, lm, lmowner, lmstride);
 
-        std::vector<double> myolddisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*aledispnpoldstate, myolddisp, lm);
+				  std::vector<double> myolddisp(lm.size());
+				  DRT::UTILS::ExtractMyValues(*aledispnpoldstate, myolddisp, lm);
 
-        for (int inode = 0; inode < actele->NumNode(); ++inode)
-        {
-          // the coordinates of the actuall node
-          LINALG::Matrix<3,1> inodepos(true);
-          inodepos(0,0) = pelenodes[inode]->X()[0] + myolddisp[0+(inode*4)];
-          inodepos(1,0) = pelenodes[inode]->X()[1] + myolddisp[1+(inode*4)];
-          inodepos(2,0) = pelenodes[inode]->X()[2] + myolddisp[2+(inode*4)];
+				  for (int inode = 0; inode < actele->NumNode(); ++inode)
+				  {
+					  // the coordinates of the actuall node
+					  LINALG::Matrix<3,1> inodepos(true);
+					  inodepos(0,0) = pelenodes[inode]->X()[0] + myolddisp[0+(inode*4)];
+					  inodepos(1,0) = pelenodes[inode]->X()[1] + myolddisp[1+(inode*4)];
+					  inodepos(2,0) = pelenodes[inode]->X()[2] + myolddisp[2+(inode*4)];
 
-          mapofnodepos[pelenodes[inode]->Id()] = inodepos;
-        }
-        IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, mapofnodepos, gmshfilecontent);
-      };
-      gmshfilecontent << "};\n";
-    }
+					  mapofnodepos[pelenodes[inode]->Id()] = inodepos;
+				  }
+				  IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, mapofnodepos, gmshfilecontent);
+			  };
+			  gmshfilecontent << "};\n";
+		  }
 
-    {
-      // draw embedded elements with associated gid at the current position
-      gmshfilecontent << "View \" " << "emb Element(new)->Id() \" {\n";
-      for (int i=0; i<embdis_->NumMyColElements(); ++i)
-      {
-        const DRT::Element* actele = embdis_->lColElement(i);
-        const DRT::Node*const* pelenodes = actele->Nodes();
-        std::map<int,LINALG::Matrix<3,1> > mapofnodepos; //node id-> position
+		  {
+			  // draw embedded elements with associated gid at the current position
+			  gmshfilecontent << "View \" " << "emb Element(new)->Id() \" {\n";
+			  for (int i=0; i<embdis_->NumMyColElements(); ++i)
+			  {
+				  const DRT::Element* actele = embdis_->lColElement(i);
+				  const DRT::Node*const* pelenodes = actele->Nodes();
+				  std::map<int,LINALG::Matrix<3,1> > mapofnodepos; //node id-> position
 
-        std::vector<int> lm;
-        std::vector<int> lmowner;
-        std::vector<int> lmstride;
-        actele->LocationVector(*embdis_, lm, lmowner, lmstride);
+				  std::vector<int> lm;
+				  std::vector<int> lmowner;
+				  std::vector<int> lmstride;
+				  actele->LocationVector(*embdis_, lm, lmowner, lmstride);
 
-        std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*aledispnp, mydisp, lm);
+				  std::vector<double> mydisp(lm.size());
+				  DRT::UTILS::ExtractMyValues(*aledispnp, mydisp, lm);
 
-        for (int inode = 0; inode < actele->NumNode(); ++inode)
-        {
-          // the coordinates of the actuall node
-          LINALG::Matrix<3,1> inodepos(true);
-          inodepos(0,0) = pelenodes[inode]->X()[0] + mydisp[0+(inode*4)];
-          inodepos(1,0) = pelenodes[inode]->X()[1] + mydisp[1+(inode*4)];
-          inodepos(2,0) = pelenodes[inode]->X()[2] + mydisp[2+(inode*4)];
+				  for (int inode = 0; inode < actele->NumNode(); ++inode)
+				  {
+					  // the coordinates of the actuall node
+					  LINALG::Matrix<3,1> inodepos(true);
+					  inodepos(0,0) = pelenodes[inode]->X()[0] + mydisp[0+(inode*4)];
+					  inodepos(1,0) = pelenodes[inode]->X()[1] + mydisp[1+(inode*4)];
+					  inodepos(2,0) = pelenodes[inode]->X()[2] + mydisp[2+(inode*4)];
 
-          mapofnodepos[pelenodes[inode]->Id()] = inodepos;
-        }
-        IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, mapofnodepos, gmshfilecontent);
-      };
-      gmshfilecontent << "};\n";
-    }
+					  mapofnodepos[pelenodes[inode]->Id()] = inodepos;
+				  }
+				  IO::GMSH::elementAtCurrentPositionToStream(double(actele->Id()), actele, mapofnodepos, gmshfilecontent);
+			  };
+			  gmshfilecontent << "};\n";
+		  }
 
-    {
-      // draw embedded nodes with associated gid at the current position
-      gmshfilecontent << "View \" " << "emb Node(new)->Id() \" {\n";
-      for (int i=0; i<embdis_->NumMyColElements(); ++i)
-      {
-        const DRT::Element* actele = embdis_->lColElement(i);
-        const DRT::Node*const* pelenodes = actele->Nodes();
-        std::map<int,LINALG::Matrix<3,1> > mapofnodepos; //node id-> position
+		  {
+			  // draw embedded nodes with associated gid at the current position
+			  gmshfilecontent << "View \" " << "emb Node(new)->Id() \" {\n";
+			  for (int i=0; i<embdis_->NumMyColElements(); ++i)
+			  {
+				  const DRT::Element* actele = embdis_->lColElement(i);
+				  const DRT::Node*const* pelenodes = actele->Nodes();
+				  std::map<int,LINALG::Matrix<3,1> > mapofnodepos; //node id-> position
 
-        std::vector<int> lm;
-        std::vector<int> lmowner;
-        std::vector<int> lmstride;
-        actele->LocationVector(*embdis_, lm, lmowner, lmstride);
+				  std::vector<int> lm;
+				  std::vector<int> lmowner;
+				  std::vector<int> lmstride;
+				  actele->LocationVector(*embdis_, lm, lmowner, lmstride);
 
-        std::vector<double> mydisp(lm.size());
-        DRT::UTILS::ExtractMyValues(*aledispnp, mydisp, lm);
+				  std::vector<double> mydisp(lm.size());
+				  DRT::UTILS::ExtractMyValues(*aledispnp, mydisp, lm);
 
-        for (int inode = 0; inode < actele->NumNode(); ++inode)
-        {
-          // the coordinates of the actuall node
-          LINALG::Matrix<3,1> inodepos(true);
-          inodepos(0,0) = pelenodes[inode]->X()[0] + mydisp[0+(inode*4)];
-          inodepos(1,0) = pelenodes[inode]->X()[1] + mydisp[1+(inode*4)];
-          inodepos(2,0) = pelenodes[inode]->X()[2] + mydisp[2+(inode*4)];
+				  for (int inode = 0; inode < actele->NumNode(); ++inode)
+				  {
+					  // the coordinates of the actuall node
+					  LINALG::Matrix<3,1> inodepos(true);
+					  inodepos(0,0) = pelenodes[inode]->X()[0] + mydisp[0+(inode*4)];
+					  inodepos(1,0) = pelenodes[inode]->X()[1] + mydisp[1+(inode*4)];
+					  inodepos(2,0) = pelenodes[inode]->X()[2] + mydisp[2+(inode*4)];
 
-          IO::GMSH::cellWithScalarToStream(DRT::Element::point1, pelenodes[inode]->Id(), inodepos, gmshfilecontent);
-        }
-      };
-      gmshfilecontent << "};\n";
-    }
+					  IO::GMSH::cellWithScalarToStream(DRT::Element::point1, pelenodes[inode]->Id(), inodepos, gmshfilecontent);
+				  }
+			  };
+			  gmshfilecontent << "};\n";
+		  }
+	  }
+	  gmshfilecontent.close();
   }
-  gmshfilecontent.close();
   // --------------------------------------------------------------
 
   for (int lnid=0; lnid<embdis_->NumMyRowNodes(); lnid++)
@@ -1432,6 +1438,7 @@ void XFEM::XFluidFluidTimeIntegration::PatchelementForIncompressibility(const RC
 
   //---------------------------------
   // Gmsh debug output
+  if (gmsh_debug_out_)
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles("incom_patch", step_, 5, 0, bgdis->Comm().MyPID());
     std::ofstream gmshfilecontent(filename.c_str());

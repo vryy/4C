@@ -242,6 +242,8 @@ public:
   Teuchos::ParameterList        params_;
 
   int step_;
+
+  bool gmsh_debug_out_;
 };
 
 } // namespace XFEM
