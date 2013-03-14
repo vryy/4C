@@ -161,10 +161,10 @@ void SCATRA::PassiveScaTraAlgorithm::DoTransportStep()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void SCATRA::PassiveScaTraAlgorithm::Update()
+void SCATRA::PassiveScaTraAlgorithm::Update(const int num)
 {
   FluidField().Update();
-  ScaTraField().Update();
+  ScaTraField().Update(num);
   return;
 }
 

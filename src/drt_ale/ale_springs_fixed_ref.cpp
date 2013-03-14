@@ -148,6 +148,12 @@ void ALE::AleSpringsFixedRef::Solve()
   solver_->Solve(sysmat_->EpetraOperator(),dispnp_,residual_,true);
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ALE::AleSpringsFixedRef::SolveBioGr()
+{
+  solver_->Solve(sysmat_->EpetraOperator(),dispnp_,residual_,true);
+}
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

@@ -211,7 +211,7 @@ void SCATRA::TimIntTaylorGalerkin::ComputeThermPressureTimeDerivative()
  | current solution becomes most recent solution of next timestep       |
  |                                                         schott 05/11 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntTaylorGalerkin::Update()
+void SCATRA::TimIntTaylorGalerkin::Update(const int num)
 {
   // phinm is needed for 2-step Taylor Galerkin methods as well as for restart of level set problems
   phinm_ ->Update(1.0,*phin_,0.0);

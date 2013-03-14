@@ -59,6 +59,8 @@ public:
 
   //@}
 
+  // Solve call for biofilm growth
+  virtual void SolveBioGr();
 
 private:
 

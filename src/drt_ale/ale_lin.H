@@ -70,6 +70,9 @@ public:
 
   virtual void SolveAleXFluidFluidFSI();
 
+  // Solve call for biofilm growth
+  virtual void SolveBioGr();
+
 private:
 
   /// element call

@@ -118,6 +118,9 @@ public:
   /// solve this time step with currently applied interface displacements
   virtual void Solve() = 0;
 
+  // Solve call for biofilm growth
+  virtual void SolveBioGr() = 0;
+
   /// get the linear solver object used for this field
   Teuchos::RCP<LINALG::Solver> LinearSolver() { return solver_; }
 

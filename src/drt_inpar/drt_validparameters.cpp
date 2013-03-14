@@ -4048,6 +4048,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TANGFORCECOEF",0.0,"Coefficient for erosion due to tangential surface forces",&biofilmcontrol);
   DoubleParameter("BIOTIMESTEP",0.05,"Time step size for biofilm growth",&biofilmcontrol);
   IntParameter("BIONUMSTEP",0,"Maximum number of steps for biofilm growth",&biofilmcontrol);
+  BoolParameter("OUTPUT_GMSH","No","Do you want to write Gmsh postprocessing files?",&biofilmcontrol);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& topoptcontrol = list->sublist("TOPOLOGY OPTIMIZATION CONTROL",false,

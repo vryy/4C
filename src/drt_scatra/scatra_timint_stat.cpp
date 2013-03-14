@@ -192,7 +192,7 @@ void SCATRA::TimIntStationary::ReadRestart(int step)
 /*----------------------------------------------------------------------*
  | update of solution at end of time step                     gjb 12/10 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntStationary::Update()
+void SCATRA::TimIntStationary::Update(const int num)
 {
   // for the stationary scheme there is nothing to do except this:
 
@@ -201,7 +201,7 @@ void SCATRA::TimIntStationary::Update()
   if (writeflux_!=INPAR::SCATRA::flux_no)
   {
     if (DoOutput() or DoBoundaryFluxStatistics())
-      flux_ = CalcFlux(true);
+      flux_ = CalcFlux(true, num);
   }
   return;
 };

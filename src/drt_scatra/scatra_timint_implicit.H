@@ -169,7 +169,9 @@ public:
   void Solve();
 
   //! update the solution after convergence of the nonlinear iteration.
-  virtual void Update() = 0;
+  virtual void Update(
+      const int            num=0 //!< field number
+  ) = 0;
 
   //! apply moving mesh data
   void ApplyMeshMovement(
@@ -179,7 +181,8 @@ public:
 
   //! calculate mass/heat flux vectors (in domain / at boundary)
   Teuchos::RCP<Epetra_MultiVector> CalcFlux(
-    const bool writetofile   //!< flag for writing flux info to file
+    const bool writetofile,   //!< flag for writing flux info to file
+    const int num=0           //!< field number
   );
 
   //! calculate mass/heat flux vector field in computational domain
@@ -189,8 +192,9 @@ public:
 
   //! calculate mass/heat normal flux at specified boundaries
   Teuchos::RCP<Epetra_MultiVector> CalcFluxAtBoundary(
-    std::vector<string>& condnames,  //!< ?
+    std::vector<string>& condnames,   //!< ?
     const bool           writetofile, //!< ?
+    const int            num=0,       //!< field number
     bool                 biogrowth=0
   );
 

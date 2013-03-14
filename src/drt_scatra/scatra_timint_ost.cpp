@@ -391,7 +391,7 @@ void SCATRA::TimIntOneStepTheta::ComputeThermPressureTimeDerivative()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntOneStepTheta::Update()
+void SCATRA::TimIntOneStepTheta::Update(const int num)
 {
   // compute time derivative at time n+1
   ComputeTimeDerivative();
@@ -401,7 +401,7 @@ void SCATRA::TimIntOneStepTheta::Update()
   if (writeflux_!=INPAR::SCATRA::flux_no)
   {
     if (DoOutput() or DoBoundaryFluxStatistics())
-      flux_ = CalcFlux(true);
+      flux_ = CalcFlux(true, num);
   }
 
   // after the next command (time shift of solutions) do NOT call

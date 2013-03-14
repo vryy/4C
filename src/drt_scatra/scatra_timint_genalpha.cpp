@@ -428,7 +428,7 @@ void SCATRA::TimIntGenAlpha::ComputeThermPressureTimeDerivative()
  | current solution becomes most recent solution of next timestep       |
  |                                                             vg 11/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntGenAlpha::Update()
+void SCATRA::TimIntGenAlpha::Update(const int num)
 {
   // set history variable to zero for not spoiling flux calculation
   //if (not incremental_) hist_->PutScalar(0.0);
@@ -438,7 +438,7 @@ void SCATRA::TimIntGenAlpha::Update()
   if (writeflux_!=INPAR::SCATRA::flux_no)
   {
     if (DoOutput() or DoBoundaryFluxStatistics())
-      flux_ = CalcFlux(true);
+      flux_ = CalcFlux(true, num);
   }
 
   // compute time derivative at time n+1

@@ -190,6 +190,7 @@ void DRT::Condition::Print(ostream& os) const
   else if (Type()==StructAleCoupling)             os << "Structure - ALE coupling condition";
   else if (Type()==StructFluidSurfCoupling)       os << "Structure - Fluid surface coupling condition";
   else if (Type()==StructFluidVolCoupling)        os << "Structure - Fluid volume coupling condition";
+  else if (Type()==BioGrCoupling)                 os << "Biofilm growth coupling condition: ";
   else if (Type()==ArtInOutletCond)               os << "Artery terminal in_outlet condition";
   else if (Type()==ArtRedTo3DCouplingCond)        os << "Artery reduced D 3D coupling condition";
   else if (Type()==Art3DToRedCouplingCond)        os << "Artery 3D reduced D coupling condition";

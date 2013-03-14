@@ -66,13 +66,10 @@ namespace FS3I
     virtual Teuchos::RCP<Epetra_Vector> StructToAle(Teuchos::RCP<const Epetra_Vector> iv) const;
 
     /// solve fluid-ale
-    virtual void FluidAleSolve(Teuchos::RCP<Epetra_Vector> idisp);
+    virtual void FluidAleSolve();
 
     /// solve structure-ale
-    virtual void StructAleSolve(Teuchos::RCP<Epetra_Vector> idisp);
-
-    /// setup Dirichlet boundary condition map extractor
-    void SetupDBCMapEx(bool dirichletcond, Teuchos::RCP<DRT::Discretization> discret_);
+    virtual void StructAleSolve();
 
     void UpdateAndOutput();
 

@@ -55,7 +55,7 @@ namespace SCATRA{
     void DoTransportStep();
 
     /// take current results for converged and save for next time step
-    void Update();
+    void Update(const int num=0);
 
     /// write output
     void Output();

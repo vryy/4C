@@ -98,6 +98,26 @@ void ALE::AleSprings::Solve()
   incr_->Update(1.0,*dispn_,1.0);
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void ALE::AleSprings::SolveBioGr()
+{
+  EvaluateElements();
+
+  // set fixed nodes
+  Teuchos::ParameterList eleparams;
+  eleparams.set("total time", time_);
+  eleparams.set("delta time", dt_);
+
+  incr_->Update(1.0,*dispnp_,-1.0,*dispn_,0.0);
+
+  LINALG::ApplyDirichlettoSystem(sysmat_,incr_,residual_,incr_,*(dbcmaps_->CondMap()));
+
+  solver_->Solve(sysmat_->EpetraOperator(),incr_,residual_,true);
+
+  incr_->Update(1.0,*dispn_,1.0);
+}
+
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/

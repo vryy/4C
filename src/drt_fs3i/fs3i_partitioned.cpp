@@ -739,7 +739,7 @@ void FS3I::PartFS3I::UpdateScatraFields()
   for (unsigned i=0; i<scatravec_.size(); ++i)
   {
     Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> scatra = scatravec_[i];
-    scatra->ScaTraField().Update();
+    scatra->ScaTraField().Update(i);
   }
 }
 

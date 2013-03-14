@@ -1273,6 +1273,37 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
   condlist.push_back(volsfv);
 
   /*--------------------------------------------------------------------*/
+  // Additional coupling for biofilm growth
+
+  std::vector<Teuchos::RCP<ConditionComponent> > biogrcomponents;
+
+  biogrcomponents.push_back(Teuchos::rcp(new IntConditionComponent("coupling id")));
+
+  Teuchos::RCP<ConditionDefinition> linebiogr =
+    Teuchos::rcp(new ConditionDefinition("DESIGN BIOFILM GROWTH COUPLING LINE CONDITIONS",
+                                         "BioGrCoupling",
+                                         "BioGrCoupling",
+                                         DRT::Condition::BioGrCoupling,
+                                         true,
+                                         DRT::Condition::Line));
+  Teuchos::RCP<ConditionDefinition> surfbiogr =
+    Teuchos::rcp(new ConditionDefinition("DESIGN BIOFILM GROWTH COUPLING SURF CONDITIONS",
+                                         "BioGrCoupling",
+                                         "BioGrCoupling",
+                                         DRT::Condition::BioGrCoupling,
+                                         true,
+                                         DRT::Condition::Surface));
+
+  for (unsigned i=0; i<biogrcomponents.size(); ++i)
+  {
+    linebiogr->AddComponent(biogrcomponents[i]);
+    surfbiogr->AddComponent(biogrcomponents[i]);
+  }
+
+  condlist.push_back(linebiogr);
+  condlist.push_back(surfbiogr);
+
+  /*--------------------------------------------------------------------*/
   // xfem
 
   std::vector<Teuchos::RCP<ConditionComponent> > xfemcomponents;

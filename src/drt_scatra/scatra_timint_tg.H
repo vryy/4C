@@ -64,7 +64,7 @@ public:
 
     /// Update the solution after convergence of the nonlinear iteration.
     /// Current solution becomes old solution of next timestep.
-    void Update();
+    void Update(const int num=0);
 
     /// update the solution after reinitialization
     void UpdateReinit();

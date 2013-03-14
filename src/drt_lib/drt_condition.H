@@ -202,6 +202,7 @@ public:
     StructAleCoupling,
     StructFluidSurfCoupling,
     StructFluidVolCoupling,
+    BioGrCoupling,
     ArtInOutletCond,
     ArtRedTo3DCouplingCond,
     Art3DToRedCouplingCond,

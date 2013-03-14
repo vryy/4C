@@ -409,14 +409,14 @@ void SCATRA::TimIntBDF2::ComputeThermPressureTimeDerivative()
  | current solution becomes most recent solution of next timestep       |
  |                                                            gjb 08/08 |
  *----------------------------------------------------------------------*/
-void SCATRA::TimIntBDF2::Update()
+void SCATRA::TimIntBDF2::Update(const int num)
 {
   // compute flux vector field for later output BEFORE time shift of results
   // is performed below !!
   if (writeflux_!=INPAR::SCATRA::flux_no)
   {
     if (DoOutput() or DoBoundaryFluxStatistics())
-      flux_ = CalcFlux(true);
+      flux_ = CalcFlux(true, num);
   }
 
   // solution of this step becomes most recent solution of the last step

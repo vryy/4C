@@ -23,7 +23,8 @@ namespace UTILS
       cond_fsi       = 1,
       cond_fs        = 2,
       cond_lung_asi  = 3,
-      cond_ale_wear      = 4
+      cond_ale_wear  = 4,
+      cond_bio_gr    = 5
     };
 
     /// setup the whole thing
@@ -37,6 +38,7 @@ namespace UTILS
     MAP_EXTRACTOR_VECTOR_METHODS(FSCond, cond_fs)
     MAP_EXTRACTOR_VECTOR_METHODS(LungASICond,cond_lung_asi)
     MAP_EXTRACTOR_VECTOR_METHODS(AleWearCond,cond_ale_wear)
+    MAP_EXTRACTOR_VECTOR_METHODS(BioGrCond,cond_bio_gr)
   };
 
   /// specific MultiMapExtractor to handle the fluid_fluid_Coupling

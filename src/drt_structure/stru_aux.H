@@ -46,7 +46,8 @@ namespace AUX
     enum {
       cond_other     = 0,
       cond_fsi       = 1,
-      cond_lung_asi  = 2
+      cond_lung_asi  = 2,
+      cond_bio_gr    = 3
     };
 
     /// setup the whole thing
@@ -58,6 +59,7 @@ namespace AUX
     MAP_EXTRACTOR_VECTOR_METHODS(Other, cond_other)
     MAP_EXTRACTOR_VECTOR_METHODS(FSICond,cond_fsi)
     MAP_EXTRACTOR_VECTOR_METHODS(LungASICond,cond_lung_asi)
+    MAP_EXTRACTOR_VECTOR_METHODS(BioGrCond,cond_bio_gr)
   };
 }
 }

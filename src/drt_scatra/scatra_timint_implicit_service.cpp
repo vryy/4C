@@ -52,7 +52,7 @@ Maintainer: Georg Bauer
 /*----------------------------------------------------------------------*
  |  calculate mass / heat flux vector                        gjb   04/08|
  *----------------------------------------------------------------------*/
-Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux(const bool writetofile)
+Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux(const bool writetofile, const int num)
 {
   switch(writeflux_)
   {
@@ -70,7 +70,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFlux(const bool w
     std::vector<std::string> condnames;
     condnames.push_back("ScaTraFluxCalc");
 
-    return CalcFluxAtBoundary(condnames, writetofile);
+    return CalcFluxAtBoundary(condnames, writetofile, num);
     break;
   }
   default:
@@ -182,6 +182,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxInDomain
 Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
     std::vector<string>& condnames,
     const bool writetofile,
+    const int num,
     bool biogrowth)
 {
   // The normal flux calculation is based on the idea proposed in
@@ -486,6 +487,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       {
         std::ostringstream temp;
         temp << condid;
+        temp << num;
         const std::string fname
         = DRT::Problem::Instance()->OutputControlFile()->FileName()+".boundaryflux_"+condnames[i]+"_"+temp.str()+".txt";
 

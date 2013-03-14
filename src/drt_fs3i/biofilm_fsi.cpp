@@ -190,6 +190,7 @@ void FS3I::BiofilmFSI::Timeloop()
 
   const Teuchos::ParameterList& biofilmcontrol = DRT::Problem::Instance()->BIOFILMControlParams();
   const int biofilmgrowth = DRT::INPUT::IntegralValue<int>(biofilmcontrol,"BIOFILMGROWTH");
+  const int outputgmsh_ = DRT::INPUT::IntegralValue<int>(biofilmcontrol,"OUTPUT_GMSH");
 
   if (biofilmgrowth)
   {
@@ -202,7 +203,7 @@ void FS3I::BiofilmFSI::Timeloop()
       time_bio+=dt_bio;
       time_ = time_bio + time_fsi;
 
-      if (step_bio == 1)
+      if (step_bio == 1 && outputgmsh_)
       {
         StructGmshOutput();
         FluidGmshOutput();
@@ -211,8 +212,12 @@ void FS3I::BiofilmFSI::Timeloop()
       // inner loop for fsi and scatra
       InnerTimeloop();
 
-      StructGmshOutput();
-      FluidGmshOutput();
+      //gmsh output only if requested
+      if ( outputgmsh_)
+      {
+        StructGmshOutput();
+        FluidGmshOutput();
+      }
 
       if (Comm().MyPID()==0)
       {
@@ -224,21 +229,11 @@ void FS3I::BiofilmFSI::Timeloop()
       // compute interface displacement and velocity
       ComputeInterfaceVectors(idispnp_,iveln_,struidispnp_,struiveln_);
 
-      // if we have values at the fluid interface we need to apply them
-      if (idispnp_!=Teuchos::null)
-	    {
-	      fsi_->AleField().ApplyInterfaceDisplacements(FluidToAle(idispnp_));
-	    }
       // do all the settings and solve the fluid on a deforming mesh
-      FluidAleSolve(idispnp_);
+      FluidAleSolve();
 
-      // if we have values at the structure interface we need to apply them
-      if (struidispnp_!=Teuchos::null)
-      {
-        ale_->ApplyInterfaceDisplacements(StructToAle(struidispnp_));
-      }
       // do all the settings and solve the structure on a deforming mesh
-      StructAleSolve(struidispnp_);
+      StructAleSolve();
 
       fsi_->Output();
       ScatraOutput();
@@ -255,8 +250,13 @@ void FS3I::BiofilmFSI::Timeloop()
   if (!biofilmgrowth)
   {
     InnerTimeloop();
-    StructGmshOutput();
-    FluidGmshOutput();
+
+    //gmsh output only if requested
+    if (outputgmsh_)
+    {
+      StructGmshOutput();
+      FluidGmshOutput();
+    }
   }
 }
 
@@ -279,9 +279,9 @@ void FS3I::BiofilmFSI::InnerTimeloop()
   fsi_->PrepareTimeloop();
 
   // select fsi boundaries
-  std::vector<std::string> condnames(1);
+  std::vector<std::string> biogrcondnames(1);
 //  condnames[0] = "BioGrCoupling";
-  condnames[0] = "FSICoupling";
+  biogrcondnames[0] = "FSICoupling";
 
   Teuchos::RCP<ADAPTER::ScaTraBaseAlgorithm> struscatra = scatravec_[1];
 
@@ -334,7 +334,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
 
       // calculation of the flux at the interface based on normal influx values before time shift of results
       // is performed in Update
-      Teuchos::RCP<Epetra_MultiVector> strufluxn = struscatra->ScaTraField().CalcFluxAtBoundary(condnames,false,1);
+      Teuchos::RCP<Epetra_MultiVector> strufluxn = struscatra->ScaTraField().CalcFluxAtBoundary(biogrcondnames,false,0,1);
 
       UpdateScatraFields();
 
@@ -360,11 +360,11 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     eleparams.set("action","calc_cur_nodal_normals");
     strudis->ClearState();
     strudis->SetState("displacement",fsi_->StructureField()->Dispnp());
-    strudis->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,nodalnormals,Teuchos::null,Teuchos::null,condnames[0]);
+    strudis->EvaluateCondition(eleparams,Teuchos::null,Teuchos::null,nodalnormals,Teuchos::null,Teuchos::null,biogrcondnames[0]);
     strudis->ClearState();
 
     // loop over all local interface nodes of structure discretization
-    Teuchos::RCP<Epetra_Map> condnodemap = DRT::UTILS::ConditionNodeRowMap(*strudis, condnames[0]);
+    Teuchos::RCP<Epetra_Map> condnodemap = DRT::UTILS::ConditionNodeRowMap(*strudis, biogrcondnames[0]);
     for (int nodei=0; nodei < condnodemap->NumMyElements(); nodei++)
     {
       // Here we rely on the fact that the structure scatra discretization is a clone of the structure mesh
@@ -446,7 +446,7 @@ void FS3I::BiofilmFSI::InnerTimeloop()
     Teuchos::RCP<DRT::Discretization> strudis = fsi_->StructureField()->Discretization();
 
     // loop over all local interface nodes of structure discretization
-    Teuchos::RCP<Epetra_Map> condnodemap = DRT::UTILS::ConditionNodeRowMap(*strudis, condnames[0]);
+    Teuchos::RCP<Epetra_Map> condnodemap = DRT::UTILS::ConditionNodeRowMap(*strudis, biogrcondnames[0]);
     for (int i=0; i < condnodemap->NumMyElements(); i++)
     {
       // get the processor's local node with the same lnodeid
@@ -474,8 +474,8 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
   struidispnp->PutScalar(0.0);
 
   // select biofilm growth boundaries
-  std::string biogrcondname = "FSICoupling";
-//  std::string biogrcondname = "BioGrCoupling";
+//  std::string biogrcondname = "FSICoupling";
+  std::string biogrcondname = "BioGrCoupling";
 
   // set action for elements: compute normal vectors at nodes (for reference configuration)
   RCP<DRT::Discretization> strudis = fsi_->StructureField()->Discretization();
@@ -529,41 +529,6 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
     int error = struiveln_->ReplaceGlobalValues(numdim,&Values[0],&globaldofs[0]);
     if (error > 0) dserror("Could not insert values into vector struiveln_: error %d",error);
 
-//    //output and debug
-//    if (i==5)
-//    {
-//      std::ofstream f;
-//      if (step_bio < 1)
-//      {
-//        f.open("inf.txt");
-//        f << "#| ID | Step | Time | Influx ";
-//        f<<"\n";
-//      }
-//      else
-//        f.open("inf.txt",ios::app);
-//      f << i << " " << step_bio << " " << time_bio << " "<< influx << " " ;
-//      f << "\n";
-//      f.flush();
-//      f.close();
-//
-//      int nodegid = condnodemap->GID(i);
-//      DRT::Node* actnode = strudis->gNode(nodegid);
-//      std::ofstream a;
-//      if (step_bio < 1)
-//      {
-//        a.open("coord.txt");
-//        a << "#| ID | Step | Time | x | y | z | ";
-//        a<<"\n";
-//      }
-//      else
-//        a.open("coord.txt",ios::app);
-//      a << i << " " << step_bio << " " << time_bio << " ";
-//      actnode->Print(a);
-//      a << "\n";
-//      a.flush();
-//      a.close();
-//    }
-
   }
 
   struidispnp->Update(dt_bio,*struiveln_,0.0);
@@ -577,13 +542,20 @@ void FS3I::BiofilmFSI::ComputeInterfaceVectors(RCP<Epetra_Vector> idispnp,
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::FluidAleSolve(Teuchos::RCP<Epetra_Vector> idisp)
+void FS3I::BiofilmFSI::FluidAleSolve()
 {
   RCP<DRT::Discretization> fluidaledis = fsi_->AleField().Discretization();
 
   fsi_->AleField().SetupDBCMapEx(1);
+
+  // if we have values at the fluid interface we need to apply them
+  if (idispnp_!=Teuchos::null)
+  {
+    fsi_->AleField().ApplyInterfaceDisplacements(FluidToAle(idispnp_));
+  }
+
   fsi_->AleField().BuildSystemMatrix();
-  fsi_->AleField().Solve();
+  fsi_->AleField().SolveBioGr();
 
   //change nodes reference position of the fluid field
   Teuchos::RCP<Epetra_Vector> fluiddisp = AleToFluidField(fsi_->AleField().ExtractDispnp());
@@ -617,12 +589,19 @@ void FS3I::BiofilmFSI::FluidAleSolve(Teuchos::RCP<Epetra_Vector> idisp)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::StructAleSolve(Teuchos::RCP<Epetra_Vector> idisp)
+void FS3I::BiofilmFSI::StructAleSolve()
 {
   RCP<DRT::Discretization> structaledis = ale_->Discretization();
   ale_->SetupDBCMapEx(1);
+
+  // if we have values at the structure interface we need to apply them
+  if (struidispnp_!=Teuchos::null)
+  {
+    ale_->ApplyInterfaceDisplacements(StructToAle(struidispnp_));
+  }
+
   ale_->BuildSystemMatrix();
-  ale_->Solve();
+  ale_->SolveBioGr();
 
   //change nodes reference position of the structure field
   Teuchos::RCP<Epetra_Vector> structdisp = AleToStructField(ale_->ExtractDispnp());
@@ -652,41 +631,6 @@ void FS3I::BiofilmFSI::StructAleSolve(Teuchos::RCP<Epetra_Vector> idisp)
   //structure_->Solve();
 
   return;
-}
-
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void FS3I::BiofilmFSI::SetupDBCMapEx(bool dirichletcond, RCP<DRT::Discretization> discret_)
-{
-  Teuchos::ParameterList eleparams;
-  eleparams.set("total time", time_);
-  eleparams.set("delta time", dt_);
-
-  //! maps for extracting Dirichlet and free DOF sets
-  Teuchos::RCP<LINALG::MapExtractor> dbcmaps_;
-  dbcmaps_ = Teuchos::rcp(new LINALG::MapExtractor());
-  const Epetra_Map* dofrowmap = discret_->DofRowMap();
-  Teuchos::RCP<Epetra_Vector> dispnp_ = LINALG::CreateVector(*dofrowmap,true);
-  discret_->EvaluateDirichlet(eleparams,dispnp_,Teuchos::null,Teuchos::null,Teuchos::null,dbcmaps_);
-
-  //! the interface map setup for interface <-> full translation
-  Teuchos::RCP<ALE::UTILS::MapExtractor> interface_ = Teuchos::rcp(new ALE::UTILS::MapExtractor);
-  interface_->Setup(*discret_);
-
-  if (dirichletcond)
-  {
-    // for partitioned FSI the interface becomes a Dirichlet boundary
-    // also for structural Lagrangian simulations with contact and wear
-    // followed by an Eulerian step to take wear into account, the interface
-    // becomes a dirichlet
-    std::vector<Teuchos::RCP<const Epetra_Map> > condmaps;
-    condmaps.push_back(interface_->FSICondMap());
-    condmaps.push_back(interface_->AleWearCondMap());
-    condmaps.push_back(dbcmaps_->CondMap());
-    Teuchos::RCP<Epetra_Map> condmerged = LINALG::MultiMapExtractor::MergeMaps(condmaps);
-    *dbcmaps_ = LINALG::MapExtractor(*(discret_->DofRowMap()), condmerged);
-  }
-
 }
 
 /*----------------------------------------------------------------------*/

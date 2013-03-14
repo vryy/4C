@@ -18,6 +18,7 @@ void ALE::UTILS::MapExtractor::Setup(const DRT::Discretization& dis)
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"FREESURFCoupling",0,ndim)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"StructAleCoupling",0,ndim)));
   mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"AleWear",0,ndim)));
+  mcs.AddSelector(Teuchos::rcp(new DRT::UTILS::NDimConditionSelector(dis,"BioGrCoupling",0,ndim)));
   mcs.SetupExtractor(dis,*dis.DofRowMap(),*this);
 }
 

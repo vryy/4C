@@ -1472,7 +1472,7 @@ void SCATRA::ScaTraTimIntImpl::Output(const int num)
     {
       // for flux output of initial field (before first solve) do:
       if (step_==0)
-        flux_=CalcFlux(true);
+        flux_=CalcFlux(true, num);
 
       OutputFlux(flux_);
     }
