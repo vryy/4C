@@ -916,7 +916,7 @@ void FSI::MortarMonolithicStructureSplit::UnscaleSolution(LINALG::BlockSparseMat
   // increment additional ale residual
   aleresidual_->Update(-1.,*ar,0.);
 
-  ios_base::fmtflags flags = Utils()->out().flags();
+  std::ios_base::fmtflags flags = Utils()->out().flags();
 
   double n,ns,nf,na;
   r.Norm2(&n);
@@ -1631,7 +1631,7 @@ void FSI::MortarMonolithicStructureSplit::CheckKinematicConstraint()
   violationl2 /= sqrt(violation->MyLength());
 
   // output to screen
-  ios_base::fmtflags flags = Utils()->out().flags();
+  std::ios_base::fmtflags flags = Utils()->out().flags();
 
   Utils()->out() << std::scientific
                  << "\nViolation of kinematic interface constraint:\n"
@@ -1678,7 +1678,7 @@ void FSI::MortarMonolithicStructureSplit::CheckDynamicEquilibrium()
   violationl2 /= sqrt(StructureField()->Interface()->FSICondMap()->NumGlobalElements());
 
   // output to screen
-  ios_base::fmtflags flags = Utils()->out().flags();
+  std::ios_base::fmtflags flags = Utils()->out().flags();
 
   Utils()->out() << std::scientific
                  << "\nViolation of dynamic interface equilibrium:\n"

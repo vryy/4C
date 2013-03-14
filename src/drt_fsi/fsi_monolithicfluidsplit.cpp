@@ -939,7 +939,7 @@ void FSI::MonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixBase& m
   // increment additional ale residual
   aleresidual_->Update(-1.,*ar,0.);
 
-  ios_base::fmtflags flags = Utils()->out().flags();
+  std::ios_base::fmtflags flags = Utils()->out().flags();
 
   double n,ns,nf,na;
   r.Norm2(&n);

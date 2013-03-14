@@ -26,7 +26,6 @@
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"
-#include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_geometry/position_array.H"
 //#include <Teuchos_StandardParameterEntryValidators.hpp>  // included by inpar files
 #include "../drt_lib/drt_condition_utils.H"

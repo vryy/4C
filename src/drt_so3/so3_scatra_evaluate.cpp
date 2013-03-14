@@ -24,7 +24,6 @@
 
 #include "../drt_inpar/inpar_structure.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_lib/drt_globalproblem.H"
 
 //#include "Sacado.hpp"

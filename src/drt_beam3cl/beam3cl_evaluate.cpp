@@ -1342,10 +1342,10 @@ inline void DRT::ELEMENTS::BeamCL::MyRotationalDamping(Teuchos::ParameterList&  
       //loop over three dimensions in line direction
       for(int k=0; k<3; k++)
       {
-        if(force != NULL)
+        if(force.M() != 0)
           force(i*6+3+k) += gamma(2)*TWTtomega(k)*(Idamping[gp])(i)*gausspointsdamping.qwgt[gp]*jacobi[gp];
 
-        if(stiffmatrix != NULL)
+        if(stiffmatrix.M() != 0)
           //loop over all column nodes
           for (int j=0; j<fnnode; j++)
             //loop over three dimensions in column direction
@@ -1479,10 +1479,10 @@ inline void DRT::ELEMENTS::BeamCL::MyTranslationalDamping(Teuchos::ParameterList
         //loop over columns of matrix t_{\par} \otimes t_{\par}
         for(int l=0; l<ndim; l++)
         {
-          if(force != NULL)
+          if(force.M() != 0)
             force(i*dof+k)+= funct(i)*jacobi[gp]*gausspoints.qwgt[gp]*( (k==l)*gamma(1) + (gamma(0) - gamma(1))*tpar(k)*tpar(l) ) *(velgp(l)- velbackground(l));
 
-          if(stiffmatrix != NULL)
+          if(stiffmatrix.M() != 0)
             //loop over all column nodes
             for (int j=0; j<fnnode; j++)
             {
@@ -1592,10 +1592,10 @@ inline void DRT::ELEMENTS::BeamCL::MyStochasticForces(Teuchos::ParameterList&   
         //loop dimensions with respect to columns
         for(int l=0; l<ndim; l++)
         {
-          if(force != NULL)
+          if(force.M() != 0)
            force(i*dof+k) -= funct(i)*(sqrt(gamma(1))*(k==l) + (sqrt(gamma(0)) - sqrt(gamma(1)))*tpar(k)*tpar(l))*(*randomnumbers)[gp*randompergauss+l][LID()]*sqrt(jacobi[gp]*gausspoints.qwgt[gp]);
 
-          if(stiffmatrix != NULL)
+          if(stiffmatrix.M() != 0)
             //loop over all column nodes
             for (int j=0; j<fnnode; j++)
             {
@@ -1664,10 +1664,10 @@ inline void DRT::ELEMENTS::BeamCL::MyStochasticMoments(Teuchos::ParameterList&  
       //loop over lines of matrix t_{\par} \otimes t_{\par}
       for(int k=0; k<3; k++)
       {
-        if(force != NULL)
+        if(force.M() != 0)
           force(i*6+3+k) -= (Idamping[gp])(i)*t1(k)*(*randomnumbers)[gp*randompergauss+3][LID()]*sqrt(jacobi[gp]*gausspointsdamping.qwgt[gp]*gamma(2));
 
-        if(stiffmatrix != NULL)
+        if(stiffmatrix.M() != 0)
           //loop over all column nodes
           for (int j=0; j<fnnode; j++)
             //loop over three dimensions with respect to columns

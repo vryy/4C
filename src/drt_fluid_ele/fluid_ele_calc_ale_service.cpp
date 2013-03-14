@@ -24,7 +24,6 @@ Maintainer: Ursula Rasthofer & Volker Gravemeier
 #include "fluid_ele_utils.H"
 
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
-#include "../drt_fem_general/drt_utils_gder2.H"
 #include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 
 #include "../drt_nurbs_discret/drt_nurbs_utils.H"

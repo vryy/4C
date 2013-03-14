@@ -315,7 +315,7 @@ void GEO::CUT::Point::Position( Point::PointPosition pos )
     if(position_ == Point::oncutsurface) return;
 
     // change position for points just in case of undecided point and do not change oncutsurface points
-    if( (position_ == undecided) )
+    if( position_ == undecided )
     {
       position_ = pos;
       if ( pos==Point::outside or pos==Point::inside )
