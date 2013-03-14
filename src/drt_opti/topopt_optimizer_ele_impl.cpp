@@ -183,13 +183,12 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
   DRT::UTILS::GaussIntegration& intpoints
 )
 {
-  double& objective = params.get<double>("objective_value");
+  double& objective = *params.get<double*>("objective_value");
+  Epetra_SerialDenseVector& constraints = *params.get<Epetra_SerialDenseVector*>("constraint_values");
 
-  Teuchos::RCP<Epetra_SerialDenseVector> constraints = params.get<Teuchos::RCP<Epetra_SerialDenseVector> >("constraint_values");
+  Teuchos::RCP<DRT::Discretization> fluiddis = params.get<Teuchos::RCP<DRT::Discretization> >("fluiddis");
 
-  RCP<DRT::Discretization> fluiddis = params.get<RCP<DRT::Discretization> >("fluiddis");
-
-  RCP<std::map<int,RCP<Epetra_Vector> > > fluidvels = params.get<RCP<std::map<int,RCP<Epetra_Vector> > > >("fluidvel");
+  Teuchos::RCP<std::map<int,RCP<Epetra_Vector> > > fluidvels = params.get<Teuchos::RCP<std::map<int,RCP<Epetra_Vector> > > >("fluidvel");
 
   std::map<int,LINALG::Matrix<nsd_,nen_> > efluidvels;
 
@@ -199,7 +198,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateValues(
   std::vector<int> fluidlm;
   DRT::UTILS::DisBasedLocationVector(*fluiddis,*ele,fluidlm,nsd_+1);
 
-  for (std::map<int,RCP<Epetra_Vector> >::iterator i=fluidvels->begin();
+  for (std::map<int,Teuchos::RCP<Epetra_Vector> >::iterator i=fluidvels->begin();
       i!=fluidvels->end();i++)
   {
     ExtractValuesFromGlobalVector(*fluiddis,fluidlm,&efluidvel,NULL,i->second);
@@ -239,12 +238,12 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Values(
   std::map<int,LINALG::Matrix<nsd_,nen_> >& efluidvel,
   LINALG::Matrix<nen_,1>& edens,
   double& objective,
-  Teuchos::RCP<Epetra_SerialDenseVector> constraints,
-  RCP<MAT::Material> mat,
+  Epetra_SerialDenseVector& constraints,
+  Teuchos::RCP<MAT::Material> mat,
   DRT::UTILS::GaussIntegration& intpoints
 )
 {
-  double& densint = (*constraints)[0]; // integrated density
+  double& densint = constraints[0]; // integrated density
 
   //------------------------------------------------------------------------
   //  start loop over integration points
@@ -259,7 +258,7 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Values(
     EvalPorosityAtIntPoint(edens);
 
     // volume constraint
-    densint += fac_*(edens.Dot(funct_) - optiparams_->VolBd()); // TODO c missing
+    densint += fac_*(edens.Dot(funct_) - optiparams_->VolBd());
 
     // dissipation in objective present?
     if (optiparams_->ObjDissipationTerm())
@@ -289,12 +288,21 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Values(
           else // all other time steps -> factor 1-theta as old sol, factor theta as new sol -> overall factor 1
             timefac = 1.0;
 
-          value += timefac*poroint_*fluidvelint_.Dot(fluidvelint_);
-          for (int idim=0;idim<nsd_;idim++)
+          if (optiparams_->OptiCase() == INPAR::TOPOPT::optitest_workflow_without_fluiddata)
+            value -= timefac*edens.Dot(funct_)*edens.Dot(funct_);
+          else // standard case
           {
-            for (int jdim=0;jdim<nsd_;jdim++)
+            value += timefac*poroint_*fluidvelint_.Dot(fluidvelint_);
+            if (0==1)// TODO test this (is_higher_order_ele_)
             {
-              value += timefac*optiparams_->Viscosity()*fluidvelxy_(idim,jdim)*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
+              cout << "here higher order ele" << endl;
+              for (int idim=0;idim<nsd_;idim++)
+              {
+                for (int jdim=0;jdim<nsd_;jdim++)
+                {
+                  value += timefac*optiparams_->Viscosity()*fluidvelxy_(idim,jdim)*(fluidvelxy_(idim,jdim)+fluidvelxy_(jdim,idim));
+                }
+              }
             }
           }
         }
@@ -362,8 +370,8 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
 
   RCP<DRT::Discretization> fluiddis = params.get<RCP<DRT::Discretization> >("fluiddis");
 
-  RCP<std::map<int,RCP<Epetra_Vector> > > fluidvels = params.get<RCP<std::map<int,RCP<Epetra_Vector> > > >("fluidvel");
-  RCP<std::map<int,RCP<Epetra_Vector> > > adjointvels = params.get<RCP<std::map<int,RCP<Epetra_Vector> > > >("adjointvel");
+  Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > fluidvels = params.get<Teuchos::RCP<std::map<int,RCP<Epetra_Vector> > > >("fluidvel");
+  Teuchos::RCP<std::map<int,Teuchos::RCP<Epetra_Vector> > > adjointvels = params.get<Teuchos::RCP<std::map<int,RCP<Epetra_Vector> > > >("adjointvel");
 
   std::map<int,LINALG::Matrix<nsd_,nen_> > efluidvels;
   std::map<int,LINALG::Matrix<nsd_,nen_> > eadjointvels;
@@ -382,7 +390,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
     efluidvels.insert(std::pair<int,LINALG::Matrix<nsd_,nen_> >(i->first,efluidvel));
   }
 
-  for (std::map<int,RCP<Epetra_Vector> >::iterator i=adjointvels->begin();
+  for (std::map<int,Teuchos::RCP<Epetra_Vector> >::iterator i=adjointvels->begin();
       i!=adjointvels->end();i++)
   {
     ExtractValuesFromGlobalVector(*fluiddis,fluidlm,&eadjointvel,NULL,i->second);
@@ -413,7 +421,7 @@ int DRT::ELEMENTS::TopOptImpl<distype>::EvaluateGradients(
 
   // the derivation of the constraints is not handled by the standard assembly process
   // since it is a MultiVector. Thus it is handled manually here
-  RCP<Epetra_MultiVector> constr_der = params.get<RCP<Epetra_MultiVector> >("constraints_derivations");
+  Teuchos::RCP<Epetra_MultiVector> constr_der = params.get<Teuchos::RCP<Epetra_MultiVector> >("constraints_derivations");
 
   std::vector<int> dummylm; // the same as lm
   std::vector<int> dummylmstride; // not required
@@ -480,10 +488,12 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
         else if (timestep==optiparams_->NumTimesteps()) timefac = optiparams_->Theta();
         else                                            timefac = 1.0;
 
-        for (int idim=0;idim<nsd_;idim++)
+        if (optiparams_->OptiCase() == INPAR::TOPOPT::optitest_workflow_without_fluiddata)
+          value -= timefac*dissipation_fac*2*edens.Dot(funct_);
+        else // standard case
         {
           value += timefac*(
-              dissipation_fac*fluidvelint_.Dot(fluidvelint_) // dissipation part
+              dissipation_fac*fluidvelint_.Dot(fluidvelint_) // dissipation part, zero if not used
               -fluidvelint_.Dot(adjointvelint_)); // adjoint part
         }
       }
@@ -496,8 +506,10 @@ void DRT::ELEMENTS::TopOptImpl<distype>::Gradients(
     }
     }
 
-
-    value*= fac_*optiparams_->Dt()*poroderdens_; // scale with integration factor, time step size and poro-derivative
+    if (optiparams_->OptiCase() == INPAR::TOPOPT::optitest_workflow_without_fluiddata)
+      value*= fac_*optiparams_->Dt(); // scale with integration factor and time step size
+    else // standard case
+      value*= fac_*optiparams_->Dt()*poroderdens_; // scale with integration factor, time step size and poro-derivative
 
     for (int vi=0;vi<nen_;vi++)
     {

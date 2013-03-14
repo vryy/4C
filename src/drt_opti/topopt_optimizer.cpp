@@ -50,14 +50,15 @@ params_(params)
   dens_ = Teuchos::rcp(new Epetra_Vector(*optidis_->NodeRowMap(),false));
 
   // value of the objective function
-  obj_value_ = 0.0;
+  obj_ = 0.0;
   // gradient of the objective function
-  obj_grad_ = Teuchos::rcp(new Epetra_Vector(*optidis_->NodeRowMap()));
+  obj_der_ = Teuchos::rcp(new Epetra_Vector(*optidis_->NodeRowMap()));
 
   /// number of constraints
-  switch (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(optimizer_params,"TESTCASE"))
+  switch (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(optimizer_params,"TESTCASE"))
   {
   case INPAR::TOPOPT::optitest_no:
+  case INPAR::TOPOPT::optitest_workflow_without_fluiddata:
   case INPAR::TOPOPT::optitest_snake_one_constr:
   {
     num_constr_ = 1;
@@ -68,12 +69,17 @@ params_(params)
     num_constr_ = 5;
     break;
   }
+  default:
+  {
+    dserror("unknown optimization case");
+    break;
+  }
   }
 
   // value of the constraint(s);
   constr_ = Teuchos::rcp(new Epetra_SerialDenseVector(num_constr_));
   // gradient of the constraint(s)
-  constr_deriv_ = Teuchos::rcp(new Epetra_MultiVector(*optidis_->NodeRowMap(),num_constr_,false));
+  constr_der_ = Teuchos::rcp(new Epetra_MultiVector(*optidis_->NodeRowMap(),num_constr_,false));
 
   // set initial density field if present
   SetInitialDensityField(DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialDensityField>(optimizer_params,"INITIALFIELD"),
@@ -101,28 +107,19 @@ params_(params)
  *----------------------------------------------------------------------*/
 void TOPOPT::Optimizer::ComputeValues()
 {
-  obj_value_ = 0.0; // initialize with zero
-
-  // initialize
-  double* constr = constr_->Values();
-  for (int i=0;i<num_constr_;i++)
-  {
-    *constr = 0.0;
-    constr++;
-  }
+  // initialize local values processor-wise
+  double loc_obj = 0.0;
+  Epetra_SerialDenseVector loc_constr = Epetra_SerialDenseVector(num_constr_);
 
   // check if all data is present
-  DataComplete(false);
-
-  // Transform fluid and adjoint field so that it is better readable at element level
-  TransformFlowFields();
+  CheckData(false);
 
   Teuchos::ParameterList params;
 
   params.set("action","compute_values");
 
-  params.set("objective_value",obj_value_);
-  params.set("constraint_values",constr_);
+  params.set("objective_value",&loc_obj);
+  params.set("constraint_values",&loc_constr);
 
   params.set("fluidvel",fluidvel_);
   params.set("fluiddis",fluiddis_);
@@ -134,8 +131,9 @@ void TOPOPT::Optimizer::ComputeValues()
 
   optidis_->ClearState();
 
-  // extract objective value from parameter list
-  obj_value_ = params.get<double>("objective_value");
+  // communicate local values over processors
+  optidis_->Comm().SumAll(&loc_obj,&obj_,1);
+  optidis_->Comm().SumAll(loc_constr.Values(),constr_->Values(),num_constr_);
 }
 
 
@@ -145,48 +143,29 @@ void TOPOPT::Optimizer::ComputeValues()
 void TOPOPT::Optimizer::ComputeGradients()
 {
   TEUCHOS_FUNC_TIME_MONITOR(" evaluate objective gradient");
-  obj_grad_->PutScalar(0.0);
-  constr_deriv_->PutScalar(0.0);
+  obj_der_->PutScalar(0.0);
+  constr_der_->PutScalar(0.0);
 
-  DataComplete(true);
-
-  // Transform fluid and adjoint field so that it is better readable at element level
-  TransformFlowFields();
+  CheckData(true);
 
   Teuchos::ParameterList params;
 
   params.set("action","compute_gradients");
 
-  params.set("constraints_derivations",constr_deriv_);
-
-//  for (int i=0;i<optidis_->NumMyRowNodes();i++)
-//  {
-//    const int nsd = 2;
-//    const DRT::Node* node = optidis_->lRowNode(i);
-//    const double* coords = node->X();
-//
-//    std::vector<int> fluiddofs = fluiddis_->Dof(node);
-//    std::vector<int> optidof = optidis_->Dof(node);
-//
-//    for (int j=0;j<nsd;j++)
-//    {
-//      (*fluidvel_->begin()->second)[i*(nsd+1)+j] = 1.0;
-//      (*adjointvel_->begin()->second)[i*(nsd+1)+j] = 1.0;
-//    }
-//
-//    if (optidof.size()!=1) dserror("wrong size is %i",optidof.size());
-//
-//    (*dens_)[i] =1.0;
-//  }
+  params.set("constraints_derivations",constr_der_);
 
   params.set("fluidvel",fluidvel_);
   params.set("adjointvel",adjointvel_);
   params.set("fluiddis",fluiddis_);
 
+//  cout << "fluidvel is " << *(*fluidvel_)[1] << endl;
+//  cout << "adjointvel is " << *(*adjointvel_)[1] << endl;
+
   optidis_->ClearState();
 
   optidis_->SetState("density",dens_);
-  optidis_->Evaluate(params,Teuchos::null,obj_grad_);
+
+  optidis_->Evaluate(params,Teuchos::null,obj_der_);
 
   optidis_->ClearState();
 }
@@ -232,7 +211,10 @@ void TOPOPT::Optimizer::SetInitialDensityField(
     break;
   }
   default:
+  {
     dserror("unknown initial field");
+    break;
+  }
   }
 }
 
@@ -284,7 +266,10 @@ void TOPOPT::Optimizer::ImportFlowParams(
           break;
         }
         default:
+        {
           dserror("unknown material %s",imat->Name().c_str());
+          break;
+        }
         }
       }
     }
@@ -306,6 +291,8 @@ void TOPOPT::Optimizer::ImportFlowParams(
   opti_ele_params.set("pres_drop_fac",fluidParams_->get<double>("PRESSURE_DROP_FAC"));
 
   opti_ele_params.set("vol_bd",params_.sublist("TOPOLOGY OPTIMIZER").get<double>("VOLUME_BOUNDARY"));
+
+  opti_ele_params.set<INPAR::TOPOPT::OptiCase>("opti_case",DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_.sublist("TOPOLOGY OPTIMIZER"),"TESTCASE"));
 
   optidis_->Evaluate(opti_ele_params,Teuchos::null,Teuchos::null);
 }
@@ -357,16 +344,16 @@ void TOPOPT::Optimizer::Iterate(
   if (doGradient)
   {
     dens_ = optimizer_->Iterate(
-        obj_value_,
-        obj_grad_,
+        obj_,
+        obj_der_,
         constr_,
-        constr_deriv_
+        constr_der_
     );
   }
   else
   {
     dens_ = optimizer_->Iterate(
-        obj_value_,
+        obj_,
         Teuchos::null,
         constr_,
         Teuchos::null
@@ -383,7 +370,7 @@ void TOPOPT::Optimizer::FinishIteration(
 )
 {
   return optimizer_->FinishIteration(
-      obj_value_,
+      obj_,
       constr_,
       doGradient
   );
@@ -403,16 +390,16 @@ bool TOPOPT::Optimizer::Converged(
   if (doGradient)
   {
     converged = optimizer_->Converged(
-        obj_value_,
-        obj_grad_,
+        obj_,
+        obj_der_,
         constr_,
-        constr_deriv_
+        constr_der_
     );
   }
   else
   {
     converged = optimizer_->Converged(
-        obj_value_,
+        obj_,
         Teuchos::null,
         constr_,
         Teuchos::null
@@ -426,7 +413,7 @@ bool TOPOPT::Optimizer::Converged(
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-bool TOPOPT::Optimizer::DataComplete(bool checkAdjoint) const
+bool TOPOPT::Optimizer::CheckData(bool doAdjoint)
 {
   // n timesteps
   // -> solutions at time t^0,t^1,...,t^n
@@ -441,8 +428,11 @@ bool TOPOPT::Optimizer::DataComplete(bool checkAdjoint) const
   if (num_sols!=fluidvel_->size())
     dserror("fluid field and time step numbers do not fit: n_f = %i, n_t = %i",fluidvel_->size(),num_sols);
 
-  if ((num_sols!=adjointvel_->size()) and (checkAdjoint))
+  if ( (doAdjoint==true) and (num_sols!=adjointvel_->size()))
     dserror("adjoint field and time step numbers do not fit: n_a = %i, n_t = %i",adjointvel_->size(),num_sols);
+
+  // Transform fluid and adjoint field so that it is better readable at element level
+  TransformFlowFields(doAdjoint);
 
   return true;
 }
@@ -451,33 +441,40 @@ bool TOPOPT::Optimizer::DataComplete(bool checkAdjoint) const
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void TOPOPT::Optimizer::TransformFlowFields()
+void TOPOPT::Optimizer::TransformFlowFields(bool doAdjoint)
 {
   const Epetra_Map* colmap = fluiddis_->DofColMap();
 
   // if maps have been mapped before, dont change them
-  if (fluidvel_->begin()->second->Map().PointSameAs(*colmap)) return;
-
-  RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*colmap,false));
-
-  for (std::map<int,RCP<Epetra_Vector> >::iterator i=fluidvel_->begin();
-      i!=fluidvel_->end();i++)
+  if (not fluidvel_->begin()->second->Map().PointSameAs(*colmap))
   {
-    // export vector from row to column map
-    LINALG::Export(*i->second,*vec);
+    RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*colmap,false));
 
-    // set new vector
-    i->second = vec;
+    for (std::map<int,Teuchos::RCP<Epetra_Vector> >::iterator i=fluidvel_->begin();
+        i!=fluidvel_->end();i++)
+    {
+      // export vector from row to column map
+      LINALG::Export(*i->second,*vec);
+
+      // set new vector
+      i->second = vec;
+    }
   }
 
-  for (std::map<int,RCP<Epetra_Vector> >::iterator i=adjointvel_->begin();
-      i!=adjointvel_->end();i++)
+  // if maps have been mapped before, dont change them
+  if ((doAdjoint==true) and (not adjointvel_->begin()->second->Map().PointSameAs(*colmap)))
   {
-    // export vector from row to column map
-    LINALG::Export(*i->second,*vec);
+    Teuchos::RCP<Epetra_Vector> vec = Teuchos::rcp(new Epetra_Vector(*colmap,false));
 
-    // set new vector
-    i->second = vec;
+    for (std::map<int,Teuchos::RCP<Epetra_Vector> >::iterator i=adjointvel_->begin();
+        i!=adjointvel_->end();i++)
+    {
+      // export vector from row to column map
+      LINALG::Export(*i->second,*vec);
+
+      // set new vector
+      i->second = vec;
+    }
   }
 }
 

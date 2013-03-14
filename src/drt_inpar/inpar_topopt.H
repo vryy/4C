@@ -46,6 +46,13 @@ namespace INPAR
       opti_step
     };
 
+    /// type of adjoint equations
+    enum AdjointType
+    {
+      discrete_adjoint,
+      cont_adjoint
+    };
+
     /// initial field for optimization variable
     enum InitialDensityField
     {
@@ -61,7 +68,7 @@ namespace INPAR
     };
 
     /// test configurations for adjoint equations
-    enum AdjointTestCases
+    enum AdjointCase
     {
       adjointtest_no,
       adjointtest_primal,
@@ -75,11 +82,12 @@ namespace INPAR
     };
 
     /// test configuration for optimizer
-    enum OptiTestCases
+    enum OptiCase
     {
       optitest_no,
       optitest_snake_one_constr,
-      optitest_snake_multiple_constr
+      optitest_snake_multiple_constr,
+      optitest_workflow_without_fluiddata
     };
   }
 }

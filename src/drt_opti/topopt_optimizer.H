@@ -148,12 +148,12 @@ namespace TOPOPT
     const double ObjectiveValue(bool compute = false)
     {
       if (compute) ComputeValues();
-      return obj_value_;
+      return obj_;
     }
     const Teuchos::RCP<const Epetra_Vector> ObjectiveGradient(bool compute)
     {
       if (compute) ComputeGradients();
-      return obj_grad_;
+      return obj_der_;
     }
     const Epetra_Map* RowMap();
     const Epetra_Map* ColMap();
@@ -166,9 +166,9 @@ namespace TOPOPT
     void SetInitialDensityField(const INPAR::TOPOPT::InitialDensityField init,const int startfuncno);
 
     /// check if all required data for an optimization step is present
-    bool DataComplete(bool checkAdjoint) const;
+    bool CheckData(bool doAdjoint);
 
-    void TransformFlowFields();
+    void TransformFlowFields(bool doAdjoint);
 
     //! @name general stuff
     Teuchos::RCP<DRT::Discretization> optidis_; /// discretization of optimization field
@@ -190,11 +190,11 @@ namespace TOPOPT
     //! @name fields for optimization
     Teuchos::RCP<Epetra_Vector> dens_; /// new density in row map
 
-    double obj_value_; /// value of the objective (adjoint solution not required)
-    Teuchos::RCP<Epetra_Vector> obj_grad_; /// gradient of the objective (with help of the adjoint solution)
+    double obj_; /// value of the objective (adjoint solution not required)
+    Teuchos::RCP<Epetra_Vector> obj_der_; /// gradient of the objective (with help of the adjoint solution)
 
     Teuchos::RCP<Epetra_SerialDenseVector> constr_; /// values of the constraints
-    Teuchos::RCP<Epetra_MultiVector> constr_deriv_; /// derivatives of the constraints w.r.t. the optimization variables
+    Teuchos::RCP<Epetra_MultiVector> constr_der_; /// derivatives of the constraints w.r.t. the optimization variables
     int num_constr_; /// number of constraints
 
     Teuchos::RCP<OPTI::GCMMA> optimizer_; /// optimizer

@@ -191,7 +191,7 @@ int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
   *----------------------------------------------------------------------*/
   for ( DRT::UTILS::GaussIntegration::const_iterator iquad=intpoints_.begin(); iquad!=intpoints_.end(); ++iquad )
   {
-    if (params.get<INPAR::TOPOPT::AdjointTestCases>("special test case") == INPAR::TOPOPT::adjointtest_no)
+    if (params.get<INPAR::TOPOPT::AdjointCase>("special test case") == INPAR::TOPOPT::adjointtest_no)
     {
       ; // boundary terms are currently independent of velocity -> no entry here
     }
@@ -205,7 +205,7 @@ int DRT::ELEMENTS::FluidAdjoint3BoundaryImpl<distype>::EvaluateNeumann(
       const double timefacfac = fac_*timefac;
       const double timefacfacrhs = fac_*timefacrhs;
 
-      INPAR::TOPOPT::AdjointTestCases testcase = params.get<INPAR::TOPOPT::AdjointTestCases>("special test case");
+      INPAR::TOPOPT::AdjointCase testcase = params.get<INPAR::TOPOPT::AdjointCase>("special test case");
 
       // get global coordinates of gauss point
       double x = 0.0;

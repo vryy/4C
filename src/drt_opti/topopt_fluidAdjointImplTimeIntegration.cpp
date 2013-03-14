@@ -37,7 +37,7 @@ Maintainer: Martin Winklmaier
 TOPOPT::ADJOINT::ImplicitTimeInt::ImplicitTimeInt(
     RCP<DRT::Discretization>      actdis,
     RCP<LINALG::Solver>           solver,
-    RCP<Teuchos::ParameterList>            params,
+    RCP<Teuchos::ParameterList>   params,
     RCP<IO::DiscretizationWriter> output)
   : FluidAdjointTimeInt(actdis,solver,params,output)
 {
@@ -314,7 +314,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::PrepareTimeStep()
     nbcparams.set<int>("action",FLD::ba_calc_adjoint_neumann);
 
     // set flag for test case
-    nbcparams.set("special test case",params_->get<INPAR::TOPOPT::AdjointTestCases>("special test case"));
+    nbcparams.set("special test case",params_->get<INPAR::TOPOPT::AdjointCase>("special test case"));
 
     // in instationary case: fluid starts at step 0 (=initial values), stops at
     // stepmax adjoint starts at step stepmax (=initial values), stops at step 0
@@ -602,6 +602,15 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::NonLinearSolve()
       LINALG::ApplyDirichlettoSystem(sysmat_,incvel_,residual_,zeros_,*(dbcmaps_->CondMap()));
     }
 
+
+
+//    ostringstream filename;
+//    filename << "tests/adjointsysmat_step_" << itnum << ".mtl";
+//    Teuchos::RCP<LINALG::SparseMatrix> A = Teuchos::rcp_dynamic_cast<LINALG::SparseMatrix>(sysmat_);
+//    LINALG::PrintMatrixInMatlabFormat(filename.str(),*A->EpetraMatrix());
+
+
+
     //-------solve for residual displacements to correct incremental displacements
     {
       // time measurement: solver
@@ -869,13 +878,13 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::EvaluateDirichlet()
   DRT::Node* node = NULL;
 
 
-  if (params_->get<INPAR::TOPOPT::AdjointTestCases>("special test case") == INPAR::TOPOPT::adjointtest_no)
+  if (params_->get<INPAR::TOPOPT::AdjointCase>("special test case") == INPAR::TOPOPT::adjointtest_no)
   {
     // TODO dbc due to objective function
   }
   else // special cases
   {
-    INPAR::TOPOPT::AdjointTestCases testcase = params_->get<INPAR::TOPOPT::AdjointTestCases>("special test case");
+    INPAR::TOPOPT::AdjointCase testcase = params_->get<INPAR::TOPOPT::AdjointCase>("special test case");
 
     for (int inode=0;inode<discret_->NumMyRowNodes();inode++)
     {
@@ -1064,8 +1073,10 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
   //set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
 
+  // set type of adjoint equations
+  eleparams.set<INPAR::TOPOPT::AdjointType>("adjoint type",params_->get<INPAR::TOPOPT::AdjointType>("adjoint type"));
   // set flag for test cases
-  eleparams.set<INPAR::TOPOPT::AdjointTestCases>("special test case",params_->get<INPAR::TOPOPT::AdjointTestCases>("special test case"));
+  eleparams.set<INPAR::TOPOPT::AdjointCase>("special test case",params_->get<INPAR::TOPOPT::AdjointCase>("special test case"));
 
   // call standard loop over elements
   discret_->Evaluate(eleparams,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);

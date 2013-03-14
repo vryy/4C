@@ -65,6 +65,7 @@ INITFUNCNO                      2
 TESTCASE                        test_snake_one_constr
 TOL_KKT                         1e-7
 -------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
+ADJOINT_TYPE                    cont_adjoint
 INITIALFIELD                    field_by_function
 INITFUNCNO                      3
 ------------------------------------------------------FLUID DYNAMIC

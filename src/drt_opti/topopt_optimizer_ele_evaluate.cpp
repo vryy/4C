@@ -15,6 +15,7 @@ Maintainer: Martin Winklmaier
 #include "topopt_optimizer_ele.H"
 #include "topopt_optimizer_ele_impl.H"
 #include "topopt_optimizer_ele_parameter.H"
+#include "../drt_lib/drt_discret.H"
 
 
 /*---------------------------------------------------------------------*
@@ -70,13 +71,17 @@ int DRT::ELEMENTS::TopOpt::Evaluate(
   }
   case compute_values:
   {
-    return DRT::ELEMENTS::TopOptImplInterface::Impl(this)->EvaluateValues(
-        this,
-        params,
-        optidis,
-        mat,
-        lm
-    );
+    // do not integrate for ghosted elements
+    if (this->Owner() == optidis.Comm().MyPID())
+    {
+      return DRT::ELEMENTS::TopOptImplInterface::Impl(this)->EvaluateValues(
+          this,
+          params,
+          optidis,
+          mat,
+          lm
+      );
+    }
     break;
   }
   case compute_gradients:
@@ -92,7 +97,10 @@ int DRT::ELEMENTS::TopOpt::Evaluate(
     break;
   }
   default:
+  {
     dserror("undefined action type when evaluating optimization element");
+    break;
+  }
   }
 
   return 0; // algo will never be here, it returned before or gave a dserror
@@ -184,6 +192,7 @@ int DRT::ELEMENTS::TopOptBoundary::EvaluateNeumann(
   {
     Teuchos::RCP<DRT::ELEMENTS::TopOptParam> optiparam = DRT::ELEMENTS::TopOptParam::Instance();
     optiparam->SetGeneralOptimizationParameter(params);
+    break;
   }
   case compute_values:
   {
@@ -209,7 +218,10 @@ int DRT::ELEMENTS::TopOptBoundary::EvaluateNeumann(
     break;
   }
   default:
+  {
     dserror("undefined action type when evaluating optimization element");
+    break;
+  }
   }
 
   return 0; // algo will never be here, it returned before or gave a dserror

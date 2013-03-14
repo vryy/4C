@@ -251,6 +251,19 @@ private:
   ) const;
 
   /// compute momentum residuum
+  void DiscreteGalMom(
+      LINALG::Matrix<nsd_*nsd_,nen_> &    GalMomTestStat,
+      const double &                      timefacfac,
+      const double &                      timefacfacrhs,
+      const double &                      timefacfacpre,
+      const double &                      timefacfacprerhs,
+      const LINALG::Matrix<nsd_,nen_>&    eveln,
+      const LINALG::Matrix<nsd_,nen_>&    evelnp,
+      const LINALG::Matrix<nsd_,nen_>&    efluidveln,
+      const LINALG::Matrix<nsd_,nen_>&    efluidvelnp
+  ) const;
+
+  /// compute momentum residuum
   void MomRes(
       LINALG::Matrix<nsd_*nsd_,nen_> &        lin_resM_Du,    ///< linearisation of the Garlerkin momentum residual
       LINALG::Matrix<nsd_,1> &                StrongResMomScaled,
@@ -271,6 +284,32 @@ private:
       LINALG::Matrix<nsd_,1>&               viscs,
       LINALG::Matrix<nsd_,1>&               viscs_old,
       LINALG::Matrix<nsd_*nsd_,nen_>&       visc_shp
+  ) const;
+
+  //! Compute element matrix entries: PSPG
+  void DiscretePSPG(
+      LINALG::Matrix<nen_*nsd_, nen_> &         estif_w_q,
+      LINALG::Matrix<nen_,nen_> &               estif_r_q,
+      LINALG::Matrix<nsd_,nen_> &               velforce,
+      LINALG::Matrix<nen_,1> &                  preforce,
+      const LINALG::Matrix<nsd_*nsd_,nen_> &    GalMomTestStat,
+      const double &                            timefacfac,
+      const double &                            timefacfacrhs,
+      const double &                            timefacfacpre,
+      const double &                            timefacfacprerhs
+  ) const;
+
+  //! Compute element matrix entries: SUPG
+  void DiscreteSUPG(
+      LINALG::Matrix<nen_*nsd_,nen_*nsd_> &     estif_w_v,      ///< block (weighting function v x u)
+      LINALG::Matrix<nen_*nsd_,nen_> &          estif_r_v,      ///< block (weighting function v x p)
+      LINALG::Matrix<nsd_,nen_> &               velforce,       ///< rhs forces velocity
+      LINALG::Matrix<nen_,1> &                  preforce,
+      const LINALG::Matrix<nsd_*nsd_,nen_> &    GalMomTestStat,    ///< linearisation of the stabilization residual
+      const double &                            timefacfac,     ///< = timefac x fac
+      const double &                            timefacfacrhs,  ///< = timefacrhs x fac
+      const double &                            timefacfacpre,  ///< = timefacpre x fac
+      const double &                            timefacfacprerhs///< = timefacprerhs x fac
   ) const;
 
   //! Compute element matrix entries: PSPG

@@ -207,6 +207,8 @@ namespace OPTI
     const int max_total_iter_; /// maximal total iterations (outer and inner)
     const int max_inner_iter_; /// maximal inner iterations
     const int max_outer_iter_; /// maximal outer iterations (containing the gradient)
+    const int max_sub_iter_; /// maximal iterations within subproblem
+    const int max_inner_sub_iter_; /// maximal iterations of inner subproblem routine
     //@}
 
     //! @name size of optimization problem
@@ -227,7 +229,6 @@ namespace OPTI
     Teuchos::RCP<Epetra_Vector> x_max_; /// upper bound for objective variables
 
     Teuchos::RCP<Epetra_Vector> x_diff_; /// bound difference for objective variables
-    double x_diff_min_; /// minimal difference of x_min and x_max for divisions
     //@}
 
     //! @name moving asymptotes
@@ -268,8 +269,10 @@ namespace OPTI
 
     double rho0_; /// part of the objective function of the MMA subproblem
     Teuchos::RCP<Epetra_SerialDenseVector> rho_; /// part of the objective function of the MMA subproblem, size m_
-    double rho0min_; /// part of the objective function of the MMA subproblem
+    const double rho0min_; /// part of the objective function of the MMA subproblem
     Teuchos::RCP<Epetra_SerialDenseVector> rhomin_; /// part of the objective function of the MMA subproblem
+    const double rho_fac1_; /// factor for updating rho
+    const double rho_fac2_; /// factor for updating rho
     //@}
 
     //! @name additional optimization variables
@@ -297,11 +300,18 @@ namespace OPTI
 
     //! @name convergence stuff
 
-    double tol_sub_; /// tolerance for MMA subproblem
-    double tol_kkt_; /// tolerance for outer iterations (KKT-conditions are checked)
+    const double tol_sub_; /// tolerance for MMA subproblem
+    const double tol_kkt_; /// tolerance for outer iterations (KKT-conditions are checked)
+    const double tol_reducefac_; /// reduction factor of tolerance in subproblem
+    const double resfac_sub_; /// residuum reduction factor in subproblem
+    const double fac_stepsize_; /// factor for adjusting step size of optimization step
+    const double asy_fac1_; /// factor for computation of moving asymptotes
+    const double asy_fac2_; /// factor for computation of moving asymptotes
+    const double fac_x_bd_; /// factor for computation of boundaries for objective variables
+    const double fac_sub_reg_; /// regularisation factor in subproblem
     //@}
 
-    double facmin_; /// minimal coefficient in a denominator
+    const double facmin_; /// minimal coefficient in a denominator
     Teuchos::RCP<Epetra_SerialDenseVector> s_; /// helper variable
 
     //! @name output handling

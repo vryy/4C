@@ -17,6 +17,7 @@ Maintainer: Martin Winklmaier
 
 
 #include "../drt_inpar/inpar_fluid.H"
+#include "../drt_inpar/inpar_topopt.H"
 
 
 namespace DRT
@@ -67,6 +68,8 @@ public:
   double ThetaDiv() {return theta_div_;}
 
   double VolBd() {return vol_bd_;}
+
+  INPAR::TOPOPT::OptiCase OptiCase() {return opti_case_;}
 
 private:
 
@@ -122,6 +125,8 @@ private:
   //@}
 
   double vol_bd_; /// maximal percentage of fluid in background domain
+
+  INPAR::TOPOPT::OptiCase opti_case_; /// type of optimization (e.g. special test cases)
 
   // private constructor
   TopOptParam();

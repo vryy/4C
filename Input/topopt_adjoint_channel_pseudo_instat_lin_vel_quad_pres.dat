@@ -63,6 +63,7 @@ MATID                           2
 INITIALFIELD                    field_by_function
 INITFUNCNO                      2
 ------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
+ADJOINT_TYPE                    cont_adjoint
 INITIALFIELD                    field_by_function
 TESTCASE                        test_stat_lin_vel_quad_pres
 INITFUNCNO                      3

@@ -50,6 +50,7 @@ public:
   double ObjDissipationFac() {return dissipation_fac_;}
   double ObjPresDropFac() {return pressure_drop_fac_;}
 
+  INPAR::TOPOPT::AdjointType AdjointType() {return adjoint_type_;}
   bool IsStationary() {return is_stationary_;}
   bool IsInconsistent() {return is_inconsistent_;}
   INPAR::FLUID::PSPG PSPG() {return pspg_;}
@@ -78,7 +79,7 @@ public:
   double Density() {return dens_;}
   double Viscosity() {return visc_;}
 
-  INPAR::TOPOPT::AdjointTestCases TestCase() {return testcase_;}
+  INPAR::TOPOPT::AdjointCase TestCase() {return testcase_;}
 
 private:
 
@@ -94,6 +95,8 @@ private:
   // set objective's pressure drop factor
   double pressure_drop_fac_;
 
+  //! type of adjoint equations
+  INPAR::TOPOPT::AdjointType adjoint_type_;
   //! flag to (de)activate stationary formulation
   bool is_stationary_;
   //! flag to (de)activate second derivatives
@@ -149,7 +152,7 @@ private:
   double visc_;
 
   //! special test case
-  INPAR::TOPOPT::AdjointTestCases testcase_;
+  INPAR::TOPOPT::AdjointCase testcase_;
 
   // private constructor
   FluidAdjoint3ImplParameter();

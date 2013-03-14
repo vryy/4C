@@ -214,7 +214,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   INPAR::TOPOPT::InitialAdjointField initfield = DRT::INPUT::IntegralValue<INPAR::TOPOPT::InitialAdjointField>(adjointfdyn,"INITIALFIELD");
 
   // ------------------------------------ special test case
-  fluidadjointtimeparams->set<INPAR::TOPOPT::AdjointTestCases>("special test case",DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointTestCases>(adjointfdyn,"TESTCASE"));
+  fluidadjointtimeparams->set<INPAR::TOPOPT::AdjointCase>("special test case",DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(adjointfdyn,"TESTCASE"));
 
   // ------------------------------------ potential Neumann inflow terms
   fluidadjointtimeparams->set<string> ("Neumann inflow",fdyn.get<std::string>("NEUMANNINFLOW"));
@@ -240,18 +240,20 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
     // set additional parameters in list for
     // one-step-theta/BDF2/af-generalized-alpha/stationary scheme
     // -----------------------------------------------------------------
+    // type of adjoint equations
+    fluidadjointtimeparams->set<INPAR::TOPOPT::AdjointType> ("adjoint type",DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointType>(adjointfdyn,"ADJOINT_TYPE"));
     // type of time-integration (or stationary) scheme
-    fluidadjointtimeparams->set<int>              ("time int algo",timeint);
+    fluidadjointtimeparams->set<int>                        ("time int algo",timeint);
     // parameter theta for time-integration schemes
-    fluidadjointtimeparams->set<double>           ("theta"                    ,fdyn.get<double>("THETA"));
+    fluidadjointtimeparams->set<double>                     ("theta"                    ,fdyn.get<double>("THETA"));
     // parameter theta for time-integration schemes
-    fluidadjointtimeparams->set<double>           ("theta_pre"                ,adjointfdyn.get<double>("THETA_PRES"));
+    fluidadjointtimeparams->set<double>                     ("theta_pre"                ,adjointfdyn.get<double>("THETA_PRES"));
     // parameter theta for time-integration schemes
-    fluidadjointtimeparams->set<double>           ("theta_div"                ,adjointfdyn.get<double>("THETA_DIV"));
+    fluidadjointtimeparams->set<double>                     ("theta_div"                ,adjointfdyn.get<double>("THETA_DIV"));
     // number of steps for potential start algorithm
-    fluidadjointtimeparams->set<int>              ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
+    fluidadjointtimeparams->set<int>                        ("number of start steps"    ,fdyn.get<int>("NUMSTASTEPS"));
     // parameter theta for potential start algorithm
-    fluidadjointtimeparams->set<double>           ("start theta"              ,fdyn.get<double>("START_THETA"));
+    fluidadjointtimeparams->set<double>                     ("start theta"              ,fdyn.get<double>("START_THETA"));
 
     fluidadjointtimeparams->set<FILE*>("err file",DRT::Problem::Instance()->ErrorFile()->Handle());
 
@@ -265,7 +267,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
 
     if ((fluidadjointtimeparams->get<bool>("OBJECTIVE_PRESSURE_DROP") == true) and
         (fluidadjointtimeparams->get<double>("PRESSURE_DROP_FAC") <= 0.0))
-        dserror("Optimizing dissipation with negative dissipation coefficient");
+        dserror("Optimizing pressure drop with negative coefficient");
 
     //------------------------------------------------------------------
     // create all vectors and variables associated with the time

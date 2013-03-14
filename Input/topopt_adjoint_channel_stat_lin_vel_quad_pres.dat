@@ -21,7 +21,7 @@ p = 0.5 * (24999*y*y - 25001*x*x)
 o v_1 = 5*x + 2*y
 o v_2 = 3*x + 7*y
 - quadratic adjoint pressure field:
-q = 0.5 * (125000*x*x + 175000*y*y + 100000*x*y)
+q = -0.5 * (125000*x*x + 175000*y*y + 100000*x*y)
 - all right hand side terms set adequate (fluid bodyforce, DBC, NBC, adjoint bodyforce contforce, DBC, NBC)
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      10
@@ -62,6 +62,7 @@ MATID                           2
 INITIALFIELD                    field_by_function
 INITFUNCNO                      2
 ------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
+ADJOINT_TYPE                    cont_adjoint
 INITIALFIELD                    field_by_function
 TESTCASE                        test_stat_lin_vel_quad_pres
 INITFUNCNO                      3

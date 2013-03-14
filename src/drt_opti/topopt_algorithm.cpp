@@ -62,18 +62,21 @@ void TOPOPT::Algorithm::OptimizationLoop()
   // solve the primary field
   DoFluidField();
 
-  if (doGradient_)
-  {
-    // Transfer data from primary field to adjoint field
-    PrepareAdjointField();
-
-    // solve the adjoint equations
-    DoAdjointField();
-  }
-
   // optimization process has not yet finished
   while (OptimizationFinished() == false)
   {
+    if (doGradient_)
+    {
+      // Transfer data from primary field to adjoint field
+      PrepareAdjointField();
+
+      // solve the adjoint equations
+      DoAdjointField();
+    }
+
+    if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(AlgoParameters().sublist("TOPOLOGY ADJOINT FLUID"),"TESTCASE")!=INPAR::TOPOPT::adjointtest_no)
+      break; // stop here if adjoints are tested
+
     // compute the gradient of the objective function
     PrepareOptimizationStep();
 
@@ -94,15 +97,6 @@ void TOPOPT::Algorithm::OptimizationLoop()
 
     // handle inner optimization stuff for which fluid field is required
     FinishOptimizationStep();
-
-    if (doGradient_)
-    {
-      // Transfer data from primary field to adjoint field
-      PrepareAdjointField();
-
-      // solve the adjoint equations
-      DoAdjointField();
-    }
   }
 }
 
@@ -128,7 +122,13 @@ void TOPOPT::Algorithm::PrepareOptimization()
  *------------------------------------------------------------------------------------------------*/
 bool TOPOPT::Algorithm::OptimizationFinished()
 {
-  if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointTestCases>(AlgoParameters().sublist("TOPOLOGY ADJOINT FLUID"),"TESTCASE")!=INPAR::TOPOPT::adjointtest_no)
+  INPAR::TOPOPT::AdjointCase testcase =
+      DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(
+          AlgoParameters().sublist("TOPOLOGY ADJOINT FLUID"),"TESTCASE");
+
+  if (testcase==INPAR::TOPOPT::adjointtest_primal)
+    return true; // test of primal equations
+  else if (testcase!=INPAR::TOPOPT::adjointtest_no and optimizer_->Iter()>=1)
     return true; // special test cases for adjoint equations -> no optimization
 
   if (FluidField().Discretization()->Comm().MyPID()==0)
@@ -229,7 +229,8 @@ void TOPOPT::Algorithm::DoAdjointField()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::PrepareOptimizationStep()
 {
-  optimizer_->ComputeValues();
+  if (optimizer_->Iter()==0)
+    optimizer_->ComputeValues();
 
   if (doGradient_)
     optimizer_->ComputeGradients();
@@ -264,6 +265,8 @@ void TOPOPT::Algorithm::DoOptimizationStep()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::FinishOptimizationStep()
 {
+  optimizer_->ComputeValues();
+
   optimizer_->FinishIteration(doGradient_);
   return;
 }
@@ -351,6 +354,13 @@ void TOPOPT::Algorithm::Output()
  *------------------------------------------------------------------------------------------------*/
 void TOPOPT::Algorithm::Update()
 {
+  INPAR::TOPOPT::AdjointCase testcase =
+      DRT::INPUT::IntegralValue<INPAR::TOPOPT::AdjointCase>(
+          AlgoParameters().sublist("TOPOLOGY ADJOINT FLUID"),"TESTCASE");
+
+  if (testcase!=INPAR::TOPOPT::adjointtest_no)
+    return; // don't delete results for test cases -> resulttest
+
   // clear the field data of the primal and the dual equations
   optimizer_->ClearFieldData();
 

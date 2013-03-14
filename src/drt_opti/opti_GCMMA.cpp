@@ -43,6 +43,8 @@ inner_iter_(0),
 max_total_iter_(params.get<int>("MAX_ITER")),
 max_inner_iter_(params.get<int>("MAX_INNER_ITER")),
 max_outer_iter_(params.get<int>("MAX_GRAD_ITER")),
+max_sub_iter_(params.get<int>("MAX_SUB_ITER")),
+max_inner_sub_iter_(params.get<int>("MAX_INNER_SUB_ITER")),
 m_(numConstraints),
 n_loc_(x->MyLength()),
 n_(x->GlobalLength()),
@@ -50,7 +52,6 @@ x_(Teuchos::rcp(new Epetra_Vector(*x))),
 x_old_(Teuchos::rcp(new Epetra_Vector(*x))),
 x_old2_(Teuchos::rcp(new Epetra_Vector(*x))),
 x_mma_(Teuchos::rcp(new Epetra_Vector(*x))),
-x_diff_min_(params.get<double>("X_DIFF_MIN")),
 obj_(0.0),
 obj_deriv_(Teuchos::rcp(new Epetra_Vector(x->Map()))),
 obj_appr_(0.0),
@@ -63,10 +64,12 @@ r0_(0.0),
 P_(Teuchos::rcp(new Epetra_MultiVector(x->Map(),m_))),
 Q_(Teuchos::rcp(new Epetra_MultiVector(x->Map(),m_))),
 b_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
-rho0_(0.01),
+rho0_(params.get<double>("RHO_INIT")),
 rho_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 rho0min_(params.get<double>("RHOMIN")),
 rhomin_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
+rho_fac1_(params.get<double>("RHO_FAC1")),
+rho_fac2_(params.get<double>("RHO_FAC2")),
 y_mma_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 z_mma_(0.0),
 xsi_(Teuchos::rcp(new Epetra_Vector(x->Map()))),
@@ -80,6 +83,13 @@ c_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 d_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 tol_sub_(params.get<double>("TOL_SUB")),
 tol_kkt_(params.get<double>("TOL_KKT")),
+tol_reducefac_(params.get<double>("tol_reducefac")),
+resfac_sub_(params.get<double>("resfac_sub")),
+fac_stepsize_(params.get<double>("fac_stepsize")),
+asy_fac1_(params.get<double>("asymptotes_fac1")),
+asy_fac2_(params.get<double>("asymptotes_fac2")),
+fac_x_bd_(params.get<double>("fac_x_boundaries")),
+fac_sub_reg_(params.get<double>("fac_sub_reg")),
 facmin_(params.get<double>("FACMIN")),
 s_(Teuchos::rcp(new Epetra_SerialDenseVector(m_))),
 upres_(params_.get<int>("UPRES")),
@@ -87,6 +97,25 @@ output_(output)
 {
   if (m_>100)
     dserror("current implementation inefficient for large number of constraints due to array structure and used solver");
+
+  if (resfac_sub_>0.95 || resfac_sub_<0.5)
+    dserror("factor for residuum check in subproblem shall be slightly smaller than one!");
+  if (tol_reducefac_>0.99 || tol_reducefac_<0.01)
+    dserror("factor for tolerance adaption shall be significant smaller than one!");
+  if (fac_stepsize_>-1.0 || fac_stepsize_<-1.1)
+    dserror("unsensible step size factor");
+  if (asy_fac1_<2.0 || asy_fac1_>20.0)
+    dserror("unsensible factor for updating asymptotes");
+  if (asy_fac2_<1.0e-3 || asy_fac2_>1.0e-1)
+    dserror("unsensible factor for updating asymptotes");
+  if (rho_fac1_<1.01 || rho_fac1_>1.5)
+    dserror("unsensible factor for updating rho");
+  if (rho_fac2_<5 || rho_fac2_>5000)
+    dserror("unsensible factor for updating rho");
+  if (fac_x_bd_<0.01 || fac_x_bd_>0.5)
+    dserror("unsensible factor for computation of boundaries for optimization variable");
+  if (fac_sub_reg_<1.0e-4 || fac_sub_reg_>1.0e-1)
+    dserror("unsensible regularization factor in setup of subproblem");
 
   if (x_min==Teuchos::null)
   {
@@ -110,8 +139,8 @@ output_(output)
     x_max_ = Teuchos::rcp(new Epetra_Vector(*x_max));
 
   // test case modification
-  if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
-      (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
+  if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
+      (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
   {
     x_min_->PutScalar(-2.0);
     x_max_->PutScalar(2.0);
@@ -123,6 +152,16 @@ output_(output)
 
   x_diff_ = Teuchos::rcp(new Epetra_Vector(*x_max_));
   x_diff_->Update(-1.0,*x_min_,1.0);
+
+  // minimal distance of boundaries for x-values
+  const double xdiffmin = params.get<double>("X_DIFF_MIN");
+  double* xdiff = x_diff_->Values();
+  for (int j=0;j<n_loc_;j++)
+  {
+    *xdiff = std::max(*xdiff,xdiffmin);
+
+    xdiff++;
+  }
 
   asymp_min_ = Teuchos::rcp(new Epetra_Vector(*x_min_));
   asymp_max_ = Teuchos::rcp(new Epetra_Vector(*x_max_));
@@ -139,7 +178,7 @@ output_(output)
   for (int i=0;i<m_;i++)
   {
     *p1 = 0.0;
-    *p2 = 1000*a0_;
+    *p2 = params.get<double>("c_init")*a0_;
     *p3 = a0_;
     *p4 = rho0_;
     *p5 = rho0min_;
@@ -191,8 +230,8 @@ void OPTI::GCMMA::InitIter(
   if (outer_iter_ == 0)
   {
     // reset of optimization variable for test cases
-    if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
-        (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
+    if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
+        (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
     {
       if (x_->Map().NumGlobalElements()%3!=0)
         dserror("cannot be tested");
@@ -217,8 +256,8 @@ void OPTI::GCMMA::InitIter(
 
 
   // reset of objective function, constraints and their derivatives for test cases
-  if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
-      (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
+  if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
+      (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
   {
     double locobj = 0.0;
     Epetra_SerialDenseVector locconstr(m_);
@@ -279,7 +318,7 @@ void OPTI::GCMMA::InitIter(
 
     (*constraints)(0) -= l + 1.0e-5;
 
-    if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr)
+    if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr)
     {
       (*constraints)(1) = +g + pow(g,7) - 2 - 1.0e-5;
       (*constraints)(2) = -g - pow(g,7) - 2 - 1.0e-5;
@@ -291,7 +330,7 @@ void OPTI::GCMMA::InitIter(
     {
       (*constraintsgrad)(0)->Update(2.0,*x_mma_,0.0);
 
-      if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr)
+      if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr)
       {
         if (x_->Map().MyGID(0))
         {
@@ -408,11 +447,11 @@ void OPTI::GCMMA::Asymptotes()
       *asy_min = *xval - fac*(*xold-*asy_min);
       *asy_max = *xval + fac*(*asy_max-*xold);
 
-      *asy_min = std::max(*asy_min,*xval-10**xdiff);
-      *asy_min = std::min(*asy_min,*xval-0.01**xdiff);
+      *asy_min = std::max(*asy_min,*xval-asy_fac1_**xdiff);
+      *asy_min = std::min(*asy_min,*xval-asy_fac2_**xdiff);
 
-      *asy_max = std::min(*asy_max,*xval+10**xdiff);
-      *asy_max = std::max(*asy_max,*xval+0.01**xdiff);
+      *asy_max = std::min(*asy_max,*xval+asy_fac1_**xdiff);
+      *asy_max = std::max(*asy_max,*xval+asy_fac2_**xdiff);
 
       xval++;
       xold++;
@@ -511,7 +550,7 @@ void OPTI::GCMMA::UpdateRho(
 )
 {
   /*
-   * fac = (x_mma-x)^2*(asy_max-asy_min)/ ((asy_max-x_mma)*(x_mma-asy_min)*max(x_diff_min,xdiff))
+   * fac = (x_mma-x)^2*(asy_max-asy_min)/ ((asy_max-x_mma)*(x_mma-asy_min)/xdiff)
    *
    * rho0 = std::min(1.1*(rho0+(J-J_app)/fac, 10*rho0)
    * rho = std::min(1.1*(rho+(F-F_app)/fac, 10*rho)
@@ -530,7 +569,7 @@ void OPTI::GCMMA::UpdateRho(
 
   for (int i=0;i<n_loc_;i++)
   {
-    facloc += (*xmma-*x)/(*asy_max-*xmma) * (*xmma-*x)/(*xmma-*asy_min) * (*asy_max-*asy_min)/std::max(x_diff_min_,*xdiff);
+    facloc += (*xmma-*x)/(*asy_max-*xmma) * (*xmma-*x)/(*xmma-*asy_min) * (*asy_max-*asy_min)/(*xdiff);
 
     x++;
     xmma++;
@@ -546,7 +585,7 @@ void OPTI::GCMMA::UpdateRho(
 
   if (objective > obj_appr_ + 0.5*tol_sub_)
   {
-    rho0_ = std::min(1.1*(rho0_ + (objective-obj_appr_)/fac),10*rho0_);
+    rho0_ = std::min(rho_fac1_*(rho0_ + (objective-obj_appr_)/fac),rho_fac2_*rho0_);
   }
 
   double* constr = constraints->Values();
@@ -557,7 +596,7 @@ void OPTI::GCMMA::UpdateRho(
   {
     if (*constr > *constr_appr + 0.5*tol_sub_)
     {
-      *rho = std::min(1.1*((*rho) + (*constr-*constr_appr)/fac),10*(*rho));
+      *rho = std::min(rho_fac1_*((*rho) + (*constr-*constr_appr)/fac),rho_fac2_*(*rho));
     }
 
     constr++;
@@ -579,8 +618,8 @@ bool OPTI::GCMMA::Converged(
 )
 {
   // reset of objective function, constraints and their derivatives for test cases
-  if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
-      (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
+  if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
+      (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
   {
     double locobj = 0.0;
     Epetra_SerialDenseVector locconstr(m_);
@@ -637,7 +676,7 @@ bool OPTI::GCMMA::Converged(
 
     (*constraints)(0) -= l + 1.0e-5;
 
-    if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr)
+    if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr)
     {
       (*constraints)(1) = +g + pow(g,7) - 2 - 1.0e-5;
       (*constraints)(2) = -g - pow(g,7) - 2 - 1.0e-5;
@@ -674,7 +713,7 @@ bool OPTI::GCMMA::Converged(
         (*constraintsgrad)(0)->Update(2.0,*x_mma_,0.0);
       }
 
-      if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr)
+      if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr)
       {
         if (x_->Map().MyGID(0))
         {
@@ -784,8 +823,8 @@ void OPTI::GCMMA::FinishIteration(
 )
 {
   // reset of objective function and constraints for test cases
-  if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
-      (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
+  if ((DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_one_constr) or
+      (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr))
   {
     double locobj = 0.0;
     Epetra_SerialDenseVector locconstr(m_);
@@ -842,7 +881,7 @@ void OPTI::GCMMA::FinishIteration(
 
     (*constraints)(0) -= l + 1.0e-5;
 
-    if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiTestCases>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr)
+    if (DRT::INPUT::IntegralValue<INPAR::TOPOPT::OptiCase>(params_,"TESTCASE") == INPAR::TOPOPT::optitest_snake_multiple_constr)
     {
       (*constraints)(1) = +g + pow(g,7) - 2 - 1.0e-5;
       (*constraints)(2) = -g - pow(g,7) - 2 - 1.0e-5;
@@ -999,9 +1038,10 @@ bool OPTI::GCMMA::InnerConvergence(
   if (outer_iter_==0)
     return true;
 
-  if ((inner_iter_==max_inner_iter_) and (discret_->Comm().MyPID()==0))
+  if ((inner_iter_==max_inner_iter_))
   {
-    printf("WARNING: inner GCMMA optimization loop did not converge\n");
+    if (discret_->Comm().MyPID()==0)
+      printf("WARNING: inner GCMMA optimization loop did not converge\n");
 
     return true;
   }
@@ -1011,8 +1051,12 @@ bool OPTI::GCMMA::InnerConvergence(
   bool finished = true;
   numNotFinished = 0;
 
+//  cout << "obj: diff is " << objective-obj_appr_-tol_sub_ << endl;
+//  cout << "objective is " << objective << endl;
+//  cout << "approximated objective is " << obj_appr_ << endl;
+
   if (obj_appr_ + tol_sub_ < objective)
-  {cout << "objective not finished" << endl;
+  {
     finished = false;
     numNotFinished++;
   }
@@ -1022,8 +1066,12 @@ bool OPTI::GCMMA::InnerConvergence(
 
   for (int i=0;i<m_;i++)
   {
+//    cout << "constr: diff is " << *constr-*constr_appr-tol_sub_ << endl;
+//    cout << "constraint is " << *constraints << endl;
+//    cout << "approximated constraint is " << *constr_appr << endl;
+
     if (*constr_appr + tol_sub_ < *constr)
-    {cout << "constraint " << i << " not finished" << endl;
+    {
       finished = false;
       numNotFinished++;
     }
@@ -1044,13 +1092,11 @@ void OPTI::GCMMA::InitSubSolve()
    * alpha = (1-albeta)*asymp_min + albeta*x
    * beta = (1-albeta)*asymp_max + albeta*x
    */
-  double albeta = 0.1;
+  alpha_->Update(1.0 - fac_x_bd_,*asymp_min_,0.0);
+  alpha_->Update(fac_x_bd_,*x_,1.0);
 
-  alpha_->Update(1.0 - albeta,*asymp_min_,0.0);
-  alpha_->Update(albeta,*x_,1.0);
-
-  beta_->Update(1.0 - albeta,*asymp_max_,0.0);
-  beta_->Update(albeta,*x_,1.0);
+  beta_->Update(1.0 - fac_x_bd_,*asymp_max_,0.0);
+  beta_->Update(fac_x_bd_,*x_,1.0);
 
   double* alpha = alpha_->Values();
   double* beta = beta_->Values();
@@ -1107,8 +1153,8 @@ void OPTI::GCMMA::InitSubSolve()
 
 
   /* compute
-   * p0 = (max(dJ/dx,0) + fac*p0q0 + rho0/max(x_diff,x_diff_min)).*ux2
-   * q0 = (max(-dJ/dx,0) + fac*p0q0 + rho0/max(x_diff,x_diff_min)).*xl2
+   * p0 = (max(dJ/dx,0) + fac*p0q0 + rho0/x_diff).*ux2
+   * q0 = (max(-dJ/dx,0) + fac*p0q0 + rho0/x_diff).*xl2
    * r0 = J - p0./ux1 - q0./xl1
    *
    * with
@@ -1119,8 +1165,7 @@ void OPTI::GCMMA::InitSubSolve()
   double* q0 = q0_->Values();
   double* obj_deriv = obj_deriv_->Values();
 
-  double p0q0; // tmp variable
-  double xdiffinv;
+  double p0q0 = 0.0; // tmp variable
 
   ux1ptr = ux1.Values();
   ux2ptr = ux2.Values();
@@ -1129,8 +1174,6 @@ void OPTI::GCMMA::InitSubSolve()
 
   double* xdiff = x_diff_->Values();
 
-  double fac = 0.001;
-
   double r0loc = 0.0;
 
   for (int i=0;i<n_loc_;i++)
@@ -1138,11 +1181,9 @@ void OPTI::GCMMA::InitSubSolve()
     *p0 = std::max(*obj_deriv,0.0);
     *q0 = std::max(-*obj_deriv,0.0);
 
-    xdiffinv = 1.0/std::max(*xdiff,x_diff_min_);
-
     p0q0 = *p0 + *q0;
-    *p0 = (*p0 + fac*p0q0 + rho0_*xdiffinv)**ux2ptr;
-    *q0 = (*q0 + fac*p0q0 + rho0_*xdiffinv)**xl2ptr;
+    *p0 = (*p0 + fac_sub_reg_*p0q0 + rho0_/(*xdiff))**ux2ptr;
+    *q0 = (*q0 + fac_sub_reg_*p0q0 + rho0_/(*xdiff))**xl2ptr;
 
     r0loc -= *p0/(*ux1ptr) + *q0/(*xl1ptr);
 
@@ -1161,8 +1202,8 @@ void OPTI::GCMMA::InitSubSolve()
 
 
   /* compute
-   * P = (max(dF/dx,0) + fac*pq + rho/max(x_diff,x_diff_min)).*ux2
-   * Q = (max(-dF/dx,0) + fac*pq + rho/max(x_diff,x_diff_min)).*xl2
+   * P = (max(dF/dx,0) + fac*pq + rho/x_diff).*ux2
+   * Q = (max(-dF/dx,0) + fac*pq + rho/x_diff).*xl2
    * b = F - P^T/ux1 - Q^T/xl1
    *
    * with
@@ -1198,11 +1239,9 @@ void OPTI::GCMMA::InitSubSolve()
       *p = std::max(*constr_der,0.0);
       *q = std::max(-*constr_der,0.0);
 
-      xdiffinv = 1.0/std::max(*xdiff,x_diff_min_);
-
       pq = *p + *q;
-      *p = (*p + fac*pq + *rho*xdiffinv)**ux2ptr;
-      *q = (*q + fac*pq + *rho*xdiffinv)**xl2ptr;
+      *p = (*p + fac_sub_reg_*pq + *rho/(*xdiff))**ux2ptr;
+      *q = (*q + fac_sub_reg_*pq + *rho/(*xdiff))**xl2ptr;
 
       p++;
       q++;
@@ -1309,21 +1348,11 @@ void OPTI::GCMMA::SubSolve()
   }
 
 
-
-
   int total_iter = 0;
-
   double tol_sub = 1.0;
-  double tol_fac = 0.1; // factor from one tolerance to next (smaller) one
-  if (tol_fac>0.99)
-    dserror("factor for tolerance adaption shall be significant smaller than one!");
-
   bool tol_reached = false;
-  /*
-   * Initialisation finished
-   */
 
-  while (tol_reached == false)
+  while (tol_reached == false) // this loop has to finish, no max_iter required
   {
     // first step: compute norms of all composed residuals
     double resnorm = 0.0;
@@ -1331,10 +1360,9 @@ void OPTI::GCMMA::SubSolve()
     ResApp(resnorm,resinf,tol_sub);
 
     int inner_iter = 0;
-    int max_sub_inner_iter_ = 200;
 
     // iteration loop of inner algorithm
-    while (inner_iter<max_sub_inner_iter_)
+    while (inner_iter<max_sub_iter_)
     {
       inner_iter++;
       total_iter++;
@@ -1840,14 +1868,11 @@ void OPTI::GCMMA::SubSolve()
         beta++;
       }
 
-      double fac = -1.01;
-      if (fac>-1.0) dserror("unsensible factor");
-
       // min becomes max since fac<0
-      val = std::max(1.0,fac*val);
-      double steg = 0.0;
-      discret_->Comm().MaxAll(&val,&steg,1);
-      steg = 1.0/steg;
+      val = std::max(1.0,fac_stepsize_*val);
+      double stepsize = 0.0;
+      discret_->Comm().MaxAll(&val,&stepsize,1);
+      stepsize = 1.0/stepsize;
       /*
        * steg = 1.0/max(1.0
        *                fac*min(dz/z_mma
@@ -1867,7 +1892,6 @@ void OPTI::GCMMA::SubSolve()
 
 
       int it = 0;
-      int max_it = 50;
       double resnew = 2*resnorm;
 
 
@@ -1884,13 +1908,13 @@ void OPTI::GCMMA::SubSolve()
       double zet_old = zet_;
 
 
-      while ((resnorm<resnew) and (it<max_it))
+      while ((resnorm<resnew) and (it<max_inner_sub_iter_))
       {
         it++;
 
-        x_mma_->Update(steg,dx,1.0,x_mma_old,0.0);
-        xsi_->Update(steg,dxsi,1.0,xsi_old,0.0);
-        eta_->Update(steg,deta,1.0,eta_old,0.0);
+        x_mma_->Update(stepsize,dx,1.0,x_mma_old,0.0);
+        xsi_->Update(stepsize,dxsi,1.0,xsi_old,0.0);
+        eta_->Update(stepsize,deta,1.0,eta_old,0.0);
 
         y = y_mma_->Values();
         double* yptr = y_old.Values();
@@ -1907,10 +1931,10 @@ void OPTI::GCMMA::SubSolve()
 
         for (int i=0;i<m_;i++)
         {
-          *y = *yptr + steg**dyptr;
-          *lam = *lamptr + steg**dlamptr;
-          *mu = *muptr + steg**dmuptr;
-          *s = *sptr + steg**dsptr;
+          *y = *yptr + stepsize**dyptr;
+          *lam = *lamptr + stepsize**dlamptr;
+          *mu = *muptr + stepsize**dmuptr;
+          *s = *sptr + stepsize**dsptr;
 
           y++;
           yptr++;
@@ -1926,16 +1950,16 @@ void OPTI::GCMMA::SubSolve()
           dsptr++;
         }
 
-        z_mma_ = z_mma_old + steg*dz;
-        zet_ = zet_old + steg*dzet;
+        z_mma_ = z_mma_old + stepsize*dz;
+        zet_ = zet_old + stepsize*dzet;
 
 
         // compute residuals
         ResApp(resnew,resinf,tol_sub);
 
-        steg = steg/2.0;
+        stepsize = stepsize/2.0;
 
-        if ((it==max_it) and (discret_->Comm().MyPID()==0))
+        if ((it==max_inner_sub_iter_) and (discret_->Comm().MyPID()==0))
           printf("Reached maximal number of iterations in most inner loop of primal dual interior point optimization algorithm\n");
       }
 
@@ -1943,15 +1967,15 @@ void OPTI::GCMMA::SubSolve()
 
       // it would be sufficient to compute resinf only once here and not in
       // every iteration as done above. but the effort is neglegible
-      if (resinf < 0.9*tol_sub)
+      if (resinf < resfac_sub_*tol_sub)
         break;
     }
 
-    if ((inner_iter==max_sub_inner_iter_) and (discret_->Comm().MyPID()==0))
+    if ((inner_iter==max_sub_iter_) and (discret_->Comm().MyPID()==0))
       printf("Reached maximal number of iterations in inner loop of primal dual interior point optimization algorithm\n");
 
     if (tol_sub > 1.001*tol_sub_)
-      tol_sub *= tol_fac;
+      tol_sub *= tol_reducefac_;
     else
       tol_reached = true;
   }

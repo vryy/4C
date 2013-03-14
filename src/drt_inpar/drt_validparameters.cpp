@@ -4101,6 +4101,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   IntParameter("MAX_ITER",100,"Maximal number of optimization steps",&topoptoptimizer);
   IntParameter("MAX_GRAD_ITER",100,"Maximal number of optimization steps containing the gradient",&topoptoptimizer);
   IntParameter("MAX_INNER_ITER",20,"Maximal number of inner optimization steps",&topoptoptimizer);
+  IntParameter("MAX_SUB_ITER",200,"Maximal iteration number within subproblem",&topoptoptimizer);
+  IntParameter("MAX_INNER_SUB_ITER",50,"Maximal iteration number within inner subproblem routine",&topoptoptimizer);
   IntParameter("MATID",-1,"Material ID for automatic mesh generation",&topoptoptimizer);
 
   setStringToIntegralParameter<int>("INITIALFIELD","zero_field",
@@ -4117,11 +4119,13 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
       tuple<std::string>(
           "test_no",
           "test_snake_one_constr",
-          "test_snake_multiple_constr"),
+          "test_snake_multiple_constr",
+          "test_workflow_without_fluiddata"),
           tuple<int>(
               INPAR::TOPOPT::optitest_no,
               INPAR::TOPOPT::optitest_snake_one_constr,
-              INPAR::TOPOPT::optitest_snake_multiple_constr),
+              INPAR::TOPOPT::optitest_snake_multiple_constr,
+              INPAR::TOPOPT::optitest_workflow_without_fluiddata),
               &topoptoptimizer);
 
   IntParameter("INITFUNCNO",-1,"function number for initial density field in topology optimization",&topoptoptimizer);
@@ -4129,14 +4133,34 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TOL_KKT",1.0e-5,"tolerance of optimization problem (for KKT-conditions)",&topoptoptimizer);
   DoubleParameter("TOL_SUB",1.0e-9,"tolerance of subproblem",&topoptoptimizer);
   DoubleParameter("X_DIFF_MIN",1.0e-5,"minimal difference of upper and lower boundary of optimization variable",&topoptoptimizer);
+  DoubleParameter("RHO_INIT",1.0e-2,"initial rho value",&topoptoptimizer);
   DoubleParameter("RHOMIN",1.0e-6,"minimal parameter value",&topoptoptimizer);
   DoubleParameter("FACMIN",1.0e-10,"minimal parameter value",&topoptoptimizer);
   IntParameter("UPRES",1,"Increment for writing solution",&topoptoptimizer);
   BoolParameter("GMSH_OUTPUT","No","Write Gmsh files",&topoptoptimizer);
+  DoubleParameter("c_init",1000.0,"initial value for solver parameter",&topoptoptimizer);
+  DoubleParameter("tol_reducefac",0.1,"reduction factor for subproblem tolerance",&topoptoptimizer);
+  DoubleParameter("resfac_sub",0.9,"residuum reduction factor for subproblem",&topoptoptimizer);
+  DoubleParameter("fac_stepsize",-1.01,"factor for adjusting step size in every optimization step",&topoptoptimizer);
+  DoubleParameter("RHO_FAC1",1.1,"factor for updating rho",&topoptoptimizer);
+  DoubleParameter("RHO_FAC2",10.0,"factor for updating rho",&topoptoptimizer);
+  DoubleParameter("asymptotes_fac1",10.0,"factor for updating asymptotes",&topoptoptimizer);
+  DoubleParameter("asymptotes_fac2",0.01,"factor for updating asymptotes",&topoptoptimizer);
+  DoubleParameter("fac_x_boundaries",0.1,"unsensible factor for computation of boundaries for optimization variable",&topoptoptimizer);
+  DoubleParameter("fac_sub_reg",0.001,"regularisation factor in subproblem",&topoptoptimizer);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& topoptadjointfluiddyn = topoptcontrol.sublist("TOPOLOGY ADJOINT FLUID",false,
       "control parameters for the adjoint fluid of a topology optimization problem");
+
+  setStringToIntegralParameter<int>("ADJOINT_TYPE","discrete_adjoint","basic type of adjoint equations",
+      tuple<std::string>(
+          "discrete_adjoint",
+          "cont_adjoint"),
+          tuple<int>(
+              INPAR::TOPOPT::discrete_adjoint,
+              INPAR::TOPOPT::cont_adjoint),
+              &topoptadjointfluiddyn);
 
   setStringToIntegralParameter<int>("INITIALFIELD","zero_field","Initial field for adjoint problem",
       tuple<std::string>(

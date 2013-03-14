@@ -1,0 +1,268 @@
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
+created by pre_exodus 
+------------------------------------------------------PROBLEM SIZE
+//ELEMENTS    25
+//NODES       36
+DIM           2
+-------------------------------------------------------PROBLEM TYP
+PROBLEMTYP   Fluid_Top_Opt
+NUMFIELD     1
+RESTART      0
+-------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL
+CONV_CHECK_TYPE                 Residuum
+DISSIPATION_FAC                 1.0
+INCTOL                          1e-6
+MAXTIME                         0.5
+NUMSTEP                         1
+OBJECTIVE_DISSIPATION           Yes
+OBJECTIVE_PRESSURE_DROP         No
+OUTPUT_EVERY_ITER               No
+PRESSURE_DROP_FAC               1.0
+RESTARTEVRY                     100000
+RESTART_ACTION                  Fluid_Time_Step
+RESTOL                          1e-6
+TIMESTEP                        0.05
+UPRES                           1
+-------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY OPTIMIZER
+INITFUNCNO                      2
+INITIALFIELD                    field_by_function
+MATID                           2
+MAX_GRAD_ITER                   40
+TESTCASE                        test_workflow_without_fluiddata
+TOL_KKT                         1e-07
+TOL_SUB                         1e-09
+UPRES                           1
+VOLUME_BOUNDARY                 0.2
+-------------------------------------------------------TOPOLOGY OPTIMIZATION CONTROL/TOPOLOGY ADJOINT FLUID
+ADJOINT_TYPE			discrete_adjoint
+INITFUNCNO                      3
+INITIALFIELD                    field_by_function
+TESTCASE                        test_no
+THETA_DIV                       1
+THETA_PRES                      1
+------------------------------------------------------FLUID DYNAMIC
+CONVTOL                         1e-10
+DISPLAY_STAB                    No
+INFNORMSCALING                  no
+INITIALFIELD                    zero_field // field_by_function
+INITSTATITEMAX                  5
+ITEMAX                          10
+LINEAR_SOLVER                   1
+NEUMANNINFLOW                   no
+NONLINITER                      Newton //fixed_point_like
+NUMSTASTEPS                     0
+PHYSICAL_TYPE                   Topology_optimization
+PREDICTOR                       steady_state
+SIMPLER                         no
+SIMPLER_SOLVER                  -1
+STARTFUNCNO                     1
+STARTINGALGO                    One_Step_Theta
+START_THETA                     1.0
+STEADYSTEP                      -1
+STEADYTOL                       1e-6
+THETA                           1.0
+TIMEINTEGR                      Stationary
+---------------------------------------FLUID DYNAMIC/STABILIZATION
+CROSS-STRESS                    no_cross
+CSTAB                           no_cstab//cstab_qs//
+DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
+EVALUATION_MAT                  integration_point
+EVALUATION_TAU                  integration_point
+PSPG                            yes_pspg
+REYNOLDS-STRESS                 no_reynolds
+STABTYPE                        residual_based
+SUPG                            no_supg
+TDS                             quasistatic
+TRANSIENT                       no_transient
+VSTAB                           no_vstab
+--------------------------------------------------------------------SOLVER 1
+NAME                            Fluid_Solver_for_Top_Opt
+SOLVER                          UMFPACK
+-----------------------------------------------CLONING MATERIAL MAP
+SRC_FIELD fluid SRC_MAT 1 TAR_FIELD opti TAR_MAT 2
+---------------------------------------------------------MATERIALS
+MAT 1 MAT_fluid  DYNVISCOSITY 1.0 DENSITY 1.0
+MAT 2 MAT_opti MINPORO 0 MAXPORO 25000 SMEARFAC 1
+------------------------------------------------------------CURVE1
+------------------------------------------------------------CURVE2
+------------------------------------------------------------CURVE3
+------------------------------------------------------------FUNCT1 // initial flow field
+FUNCT1 EXPR 0 0.0 0 FUNCTION exp(-(10*y)*(10*y)*(10*y)*(10*y)*(10*y)*(10*y)*(10*y)*(10*y)*(10*y)*(10*y)*(10*y)*(10*y)*(10*y)*(10*y)*(10*y)*(10*y))
+------------------------------------------------------------FUNCT2 // initial density field
+FUNCT2 EXPR 0 0.0 0 FUNCTION 0.1
+------------------------------------------------------------FUNCT3 // inflow profile
+FUNCT3 EXPR 0 0.0 0 FUNCTION 1-(10*y)*(10*y)
+
+------------------------------------------------DESIGN DESCRIPTION
+NDPOINT 1
+NDLINE  5
+NDSURF  1
+NDVOL   0
+------------------------------------DESIGN LINE NEUMANN CONDITIONS
+DLINE  1
+// line_outflow
+E 5 - none 0 0 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
+------------------------------------DESIGN SURF NEUMANN CONDITIONS
+DSURF  1
+// surface
+E 1 - none 1 1 0 0 0 0  0.0 0.0 0.0 0.0 0.0 0.0  Live Mid 0 0 0 0 0 0
+------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT 1
+// corner_points
+E 1 - NUMDOF 3  ONOFF 1 1 0  VAL 0.0 0.0 0.0  CURVE none none none FUNCT 0 0 0
+-------------------------------------DESIGN LINE DIRICH CONDITIONS
+DLINE  4
+// lines_wall_up_+_down
+E 1 - NUMDOF 3  ONOFF 1 1 0  VAL 0.0 0.0 0.0  CURVE none none none FUNCT 0 0 0
+// line_inflow
+E 2 - NUMDOF 3  ONOFF 1 1 0  VAL 1.0 0.0 0.0  CURVE none none none FUNCT 3 0 0
+// lines_inflow_wall
+E 3 - NUMDOF 3  ONOFF 1 1 0  VAL 0.0 0.0 0.0  CURVE none none none FUNCT 0 0 0
+// lines_outflow_wall
+E 4 - NUMDOF 3  ONOFF 1 1 0  VAL 0.0 0.0 0.0  CURVE none none none FUNCT 0 0 0
+-----------------------------------------------DNODE-NODE TOPOLOGY
+NODE    1 DNODE 1
+NODE    2 DNODE 1
+NODE    13 DNODE 1
+NODE    24 DNODE 1
+NODE    25 DNODE 1
+NODE    36 DNODE 1
+-----------------------------------------------DLINE-NODE TOPOLOGY
+NODE    13 DLINE 1
+NODE    16 DLINE 1
+NODE    18 DLINE 1
+NODE    20 DLINE 1
+NODE    22 DLINE 1
+NODE    24 DLINE 1
+NODE    25 DLINE 1
+NODE    28 DLINE 1
+NODE    30 DLINE 1
+NODE    32 DLINE 1
+NODE    34 DLINE 1
+NODE    36 DLINE 1
+NODE    1 DLINE 2
+NODE    2 DLINE 2
+NODE    1 DLINE 3
+NODE    2 DLINE 3
+NODE    13 DLINE 3
+NODE    14 DLINE 3
+NODE    35 DLINE 3
+NODE    36 DLINE 3
+NODE    11 DLINE 4
+NODE    12 DLINE 4
+NODE    23 DLINE 4
+NODE    24 DLINE 4
+NODE    25 DLINE 4
+NODE    26 DLINE 4
+NODE    11 DLINE 5
+NODE    12 DLINE 5
+-----------------------------------------------DSURF-NODE TOPOLOGY
+NODE    1 DSURFACE 1
+NODE    2 DSURFACE 1
+NODE    3 DSURFACE 1
+NODE    4 DSURFACE 1
+NODE    5 DSURFACE 1
+NODE    6 DSURFACE 1
+NODE    7 DSURFACE 1
+NODE    8 DSURFACE 1
+NODE    9 DSURFACE 1
+NODE    10 DSURFACE 1
+NODE    11 DSURFACE 1
+NODE    12 DSURFACE 1
+NODE    13 DSURFACE 1
+NODE    14 DSURFACE 1
+NODE    15 DSURFACE 1
+NODE    16 DSURFACE 1
+NODE    17 DSURFACE 1
+NODE    18 DSURFACE 1
+NODE    19 DSURFACE 1
+NODE    20 DSURFACE 1
+NODE    21 DSURFACE 1
+NODE    22 DSURFACE 1
+NODE    23 DSURFACE 1
+NODE    24 DSURFACE 1
+NODE    25 DSURFACE 1
+NODE    26 DSURFACE 1
+NODE    27 DSURFACE 1
+NODE    28 DSURFACE 1
+NODE    29 DSURFACE 1
+NODE    30 DSURFACE 1
+NODE    31 DSURFACE 1
+NODE    32 DSURFACE 1
+NODE    33 DSURFACE 1
+NODE    34 DSURFACE 1
+NODE    35 DSURFACE 1
+NODE    36 DSURFACE 1
+------------------------------------------------DVOL-NODE TOPOLOGY
+-------------------------------------------------------NODE COORDS
+NODE 1  	COORD	-5.0000000000000000e-01	-5.0000000000000000e-01	0.0000000000000000e+00	
+NODE 2  	COORD	-2.9999999999999999e-01	-5.0000000000000000e-01	0.0000000000000000e+00	
+NODE 3  	COORD	-9.9999999999999978e-02	-5.0000000000000000e-01	0.0000000000000000e+00	
+NODE 4  	COORD	1.0000000000000009e-01	-5.0000000000000000e-01	0.0000000000000000e+00	
+NODE 5  	COORD	3.0000000000000004e-01	-5.0000000000000000e-01	0.0000000000000000e+00	
+NODE 6  	COORD	5.0000000000000000e-01	-5.0000000000000000e-01	0.0000000000000000e+00	
+NODE 7  	COORD	-5.0000000000000000e-01	-2.9999999999999999e-01	0.0000000000000000e+00	
+NODE 8  	COORD	-3.0000000000000004e-01	-2.9999999999999999e-01	0.0000000000000000e+00	
+NODE 9  	COORD	-9.9999999999999950e-02	-2.9999999999999999e-01	0.0000000000000000e+00	
+NODE 10  	COORD	1.0000000000000012e-01	-2.9999999999999999e-01	0.0000000000000000e+00	
+NODE 11  	COORD	3.0000000000000010e-01	-2.9999999999999999e-01	0.0000000000000000e+00	
+NODE 12  	COORD	5.0000000000000000e-01	-2.9999999999999999e-01	0.0000000000000000e+00	
+NODE 13  	COORD	-5.0000000000000000e-01	-1.0000000000000001e-01	0.0000000000000000e+00	
+NODE 14  	COORD	-2.9999999999999999e-01	-1.0000000000000001e-01	0.0000000000000000e+00	
+NODE 15  	COORD	-9.9999999999999978e-02	-1.0000000000000001e-01	0.0000000000000000e+00	
+NODE 16  	COORD	1.0000000000000009e-01	-1.0000000000000001e-01	0.0000000000000000e+00	
+NODE 17  	COORD	3.0000000000000004e-01	-1.0000000000000001e-01	0.0000000000000000e+00	
+NODE 18  	COORD	5.0000000000000000e-01	-1.0000000000000001e-01	0.0000000000000000e+00	
+NODE 19  	COORD	-5.0000000000000000e-01	1.0000000000000001e-01	0.0000000000000000e+00	
+NODE 20  	COORD	-3.0000000000000004e-01	1.0000000000000001e-01	0.0000000000000000e+00	
+NODE 21  	COORD	-1.0000000000000009e-01	1.0000000000000001e-01	0.0000000000000000e+00	
+NODE 22  	COORD	9.9999999999999978e-02	1.0000000000000001e-01	0.0000000000000000e+00	
+NODE 23  	COORD	2.9999999999999999e-01	1.0000000000000001e-01	0.0000000000000000e+00	
+NODE 24  	COORD	5.0000000000000000e-01	1.0000000000000001e-01	0.0000000000000000e+00	
+NODE 25  	COORD	-5.0000000000000000e-01	3.0000000000000004e-01	0.0000000000000000e+00	
+NODE 26  	COORD	-3.0000000000000010e-01	3.0000000000000004e-01	0.0000000000000000e+00	
+NODE 27  	COORD	-9.9999999999999978e-02	3.0000000000000004e-01	0.0000000000000000e+00	
+NODE 28  	COORD	1.0000000000000009e-01	3.0000000000000004e-01	0.0000000000000000e+00	
+NODE 29  	COORD	3.0000000000000004e-01	3.0000000000000004e-01	0.0000000000000000e+00	
+NODE 30  	COORD	5.0000000000000000e-01	3.0000000000000004e-01	0.0000000000000000e+00	
+NODE 31  	COORD	-5.0000000000000000e-01	5.0000000000000000e-01	0.0000000000000000e+00	
+NODE 32  	COORD	-2.9999999999999999e-01	5.0000000000000000e-01	0.0000000000000000e+00	
+NODE 33  	COORD	-9.9999999999999978e-02	5.0000000000000000e-01	0.0000000000000000e+00	
+NODE 34  	COORD	1.0000000000000009e-01	5.0000000000000000e-01	0.0000000000000000e+00	
+NODE 35  	COORD	3.0000000000000004e-01	5.0000000000000000e-01	0.0000000000000000e+00	
+NODE 36  	COORD	5.0000000000000000e-01	5.0000000000000000e-01	0.0000000000000000e+00	
+------------------------------------------------STRUCTURE ELEMENTS
+----------------------------------------------------FLUID ELEMENTS
+   1 FLUID2 QUAD4  1 2 8 7    MAT 1 NA Euler GP 2 2
+   2 FLUID2 QUAD4  2 3 9 8    MAT 1 NA Euler GP 2 2
+   3 FLUID2 QUAD4  3 4 10 9    MAT 1 NA Euler GP 2 2
+   4 FLUID2 QUAD4  4 5 11 10    MAT 1 NA Euler GP 2 2
+   5 FLUID2 QUAD4  5 6 12 11    MAT 1 NA Euler GP 2 2
+   6 FLUID2 QUAD4  7 8 14 13    MAT 1 NA Euler GP 2 2
+   7 FLUID2 QUAD4  8 9 15 14    MAT 1 NA Euler GP 2 2
+   8 FLUID2 QUAD4  9 10 16 15    MAT 1 NA Euler GP 2 2
+   9 FLUID2 QUAD4  10 11 17 16    MAT 1 NA Euler GP 2 2
+   10 FLUID2 QUAD4  11 12 18 17    MAT 1 NA Euler GP 2 2
+   11 FLUID2 QUAD4  13 14 20 19    MAT 1 NA Euler GP 2 2
+   12 FLUID2 QUAD4  14 15 21 20    MAT 1 NA Euler GP 2 2
+   13 FLUID2 QUAD4  15 16 22 21    MAT 1 NA Euler GP 2 2
+   14 FLUID2 QUAD4  16 17 23 22    MAT 1 NA Euler GP 2 2
+   15 FLUID2 QUAD4  17 18 24 23    MAT 1 NA Euler GP 2 2
+   16 FLUID2 QUAD4  19 20 26 25    MAT 1 NA Euler GP 2 2
+   17 FLUID2 QUAD4  20 21 27 26    MAT 1 NA Euler GP 2 2
+   18 FLUID2 QUAD4  21 22 28 27    MAT 1 NA Euler GP 2 2
+   19 FLUID2 QUAD4  22 23 29 28    MAT 1 NA Euler GP 2 2
+   20 FLUID2 QUAD4  23 24 30 29    MAT 1 NA Euler GP 2 2
+   21 FLUID2 QUAD4  25 26 32 31    MAT 1 NA Euler GP 2 2
+   22 FLUID2 QUAD4  26 27 33 32    MAT 1 NA Euler GP 2 2
+   23 FLUID2 QUAD4  27 28 34 33    MAT 1 NA Euler GP 2 2
+   24 FLUID2 QUAD4  28 29 35 34    MAT 1 NA Euler GP 2 2
+   25 FLUID2 QUAD4  29 30 36 35    MAT 1 NA Euler GP 2 2
+------------------------------------------------------ALE ELEMENTS
+------------------------------------------------TRANSPORT ELEMENTS
+---------------------------------------------------THERMO ELEMENTS
+---------------------------------------------------------------END
+// END
