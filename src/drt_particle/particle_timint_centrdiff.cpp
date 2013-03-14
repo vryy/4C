@@ -111,6 +111,7 @@ void PARTICLE::TimIntCentrDiff::IntegrateStep()
   fextn_->PutScalar(0.0);
   LINALG::Export(*bubbleforces, *fextn_);
 
+  //check whether all bubbles are of the same size
   double maxradius=-1.0;
   double minradius=-0.5;
   radiusn_->MaxValue(&maxradius);
@@ -239,11 +240,10 @@ void PARTICLE::TimIntCentrDiff::OutputRestart
 
    output_->WriteNodesOnly(step_, (*time_)[0]);
    output_->NewStep(step_, (*time_)[0]);
-   // eventually for restart helpful
-//   output_->WriteVector("displacement", (*dis_)(0));
+   output_->WriteVector("displacement", (*dis_)(0));
    output_->WriteVector("velocity", (*vel_)(0));
    output_->WriteVector("acceleration", (*acc_)(0));
-   output_->WriteVector("fexternal", Fext());
+//   output_->WriteVector("fexternal", Fext());
    output_->WriteVector("radius", radiusn_, output_->nodevector);
 
    // info dedicated to user's eyes staring at standard out
@@ -263,5 +263,34 @@ void PARTICLE::TimIntCentrDiff::OutputRestart
    // we will say what we did
    return;
 
+}
+
+
+/*----------------------------------------------------------------------*/
+/* Read and set restart state */
+void PARTICLE::TimIntCentrDiff::ReadRestartState()
+{
+  IO::DiscretizationReader reader(discret_, step_);
+  // maps need to be adapted to restarted discretization
+  UpdateStatesAfterParticleTransfer();
+
+  // now, state vectors an be read in
+  reader.ReadVector(disn_, "displacement");
+  dis_->UpdateSteps(*disn_);
+  reader.ReadVector(veln_, "velocity");
+  vel_->UpdateSteps(*veln_);
+  reader.ReadVector(accn_, "acceleration");
+  acc_->UpdateSteps(*accn_);
+  reader.ReadVector(radiusn_, "radius");
+
+  return;
+}
+
+/*----------------------------------------------------------------------*/
+/* read restart forces */
+void PARTICLE::TimIntCentrDiff::ReadRestartForce()
+{
+  // currently do nothing
+  return;
 }
 /*----------------------------------------------------------------------*/

@@ -195,6 +195,18 @@ bool DRT::Discretization::DeleteElement(const int gid)
 }
 
 /*----------------------------------------------------------------------*
+ |  remove all nodes and elements (public)                   ghamm 03/13|
+ *----------------------------------------------------------------------*/
+bool DRT::Discretization::ClearDiscret()
+{
+  element_.clear();
+  node_.clear();
+  Reset();
+  CheckFilledGlobally();
+  return true;
+}
+
+/*----------------------------------------------------------------------*
  |  get nodal row map (public)                               mwgee 11/06|
  *----------------------------------------------------------------------*/
 const Epetra_Map* DRT::Discretization::NodeRowMap() const

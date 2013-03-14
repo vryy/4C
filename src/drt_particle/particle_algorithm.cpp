@@ -33,6 +33,7 @@ Maintainer: Georg Hammerl
 #include "../drt_geometry/intersection_math.H"
 #include "../linalg/linalg_utils.H"
 
+#include "../drt_io/io.H"
 #include "../drt_io/io_pstream.H"
 #include "../drt_io/io_gmsh.H"
 #include <Teuchos_TimeMonitor.hpp>
@@ -96,6 +97,12 @@ PARTICLE::Algorithm::Algorithm(
       gravity_acc_(dim) = value;
   }
 
+  // initial setup of particle discretization
+  particledis_ = DRT::Problem::Instance()->GetDis("particle");
+  // new dofs are numbered from zero, minnodgid is ignored and it does not register in static_dofsets_
+  Teuchos::RCP<DRT::IndependentDofSet> independentdofset = Teuchos::rcp(new DRT::IndependentDofSet(true));
+  particledis_->ReplaceDofSet(independentdofset);
+
   return;
 }
 
@@ -142,17 +149,19 @@ void PARTICLE::Algorithm::SetupSystem()
 /*----------------------------------------------------------------------*
  | initialization of the system                             ghamm 11/12 |
  *----------------------------------------------------------------------*/
-void PARTICLE::Algorithm::Init()
+void PARTICLE::Algorithm::Init(bool restarted)
 {
-  particledis_ = DRT::Problem::Instance()->GetDis("particle");
-
   // FillComplete() necessary for DRT::Geometry .... could be removed perhaps
   particledis_->FillComplete(false,false,false);
+
   // extract noderowmap because it will be called Reset() after adding elements
   Teuchos::RCP<Epetra_Map> particlerowmap = Teuchos::rcp(new Epetra_Map(*particledis_->NodeRowMap()));
   CreateBins();
 
   Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcs();
+
+  if(binrowmap->NumGlobalElements() > particlerowmap->NumGlobalElements() / 4.0)
+    IO::cout << "\n\n\n WARNING: Reduction of number of bins recommended!! Increase cutoff radius. \n\n\n" << IO::endl;
 
   //--------------------------------------------------------------------
   // -> 1) create a set of homeless particles that are not in a bin on this proc
@@ -168,33 +177,33 @@ void PARTICLE::Algorithm::Init()
   // start round robin loop to fill particles into their correct bins
   FillParticlesIntoBins(homelessparticles);
 
-  // ghost bins and particles according to the bins
+  // ghost bins and particles according to the bins --> final FillComplete() call included
   SetupGhosting(binrowmap);
 
-  // add fully redundant discret for particle walls
+  // the following has only to be done once --> skip in case of restart
+  if(not restarted)
+  {
+    // add fully redundant discret for particle walls with identical dofs to full structural discret
+    Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
+    if (not structdis->Filled() or not structdis->HaveDofs())
+      structdis->FillComplete();
+    SetupParticleWalls(structdis);
 
-  // set degrees of freedom in the discretization
-  // access the structural discretization
-  Teuchos::RCP<DRT::Discretization> structdis = DRT::Problem::Instance()->GetDis("structure");
-  if (not structdis->Filled() or not structdis->HaveDofs())
-    structdis->FillComplete();
-  SetupParticleWalls(structdis);
+    // access structural dynamic params list which will be possibly modified while creating the time integrator
+    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+    // create time integrator based on structural time integration
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> particles =
+        Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(), const_cast<Teuchos::ParameterList&>(sdyn), particledis_));
+    particles_ = particles->StructureFieldrcp();
+
+    // determine consistent initial acceleration for the particles
+    CalculateAndApplyForcesToParticles();
+    Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->DetermineMassDampConsistAccel();
+  }
 
   // some output
   IO::cout << "after ghosting of particles" << IO::endl;
   DRT::UTILS::PrintParallelDistribution(*particledis_);
-
-  // access structural dynamic params list which will be possibly modified while creating the time integrator
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
-  // create time integrator based on structural time integration
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> particles =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->StructuralDynamicParams(), const_cast<Teuchos::ParameterList&>(sdyn), particledis_));
-  particles_ = particles->StructureFieldrcp();
-
-  // determine consistent initial acceleration for the particles
-  CalculateAndApplyForcesToParticles();
-  Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->DetermineMassDampConsistAccel();
 
   return;
 }
@@ -306,14 +315,27 @@ void PARTICLE::Algorithm::Update()
 
 
 /*----------------------------------------------------------------------*
-| read restart information for given time step              ghamm 09/12 |
+| read restart information for given time step              ghamm 03/13 |
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::ReadRestart(int restart)
 {
-  if (restart)
+  // particledis_ needs to be cleared to remove initial particles (bins could stay!?!)
+  particledis_->ClearDiscret();
+
+  // read in particles for restart
   {
-    dserror("restart is not yet available");
+    IO::DiscretizationReader reader(particledis_, restart);
+    reader.ReadNodesOnly(restart);
   }
+
+  // Init() is needed to obtain connectivity -> includes FillComplete())
+  Init(true);
+
+  // now, correct map layouts are available and states can be read
+  particles_->ReadRestart(restart);
+  SetTimeStep(particles_->GetTime(),restart);
+
+  // CAREFUL when deformable walls are handled in case of restart (history data)
 
   return;
 }
@@ -624,9 +646,7 @@ void PARTICLE::Algorithm::SetupGhosting(Teuchos::RCP<Epetra_Map> binrowmap)
     // create ghosting for particles
     particledis_->ExportColumnNodes(*particlecolmap);
 
-    //new dofs are numbered from zero, minnodgid is ignored and it does not register in static_dofsets_
-    Teuchos::RCP<DRT::IndependentDofSet> independentdofset = Teuchos::rcp(new DRT::IndependentDofSet(true));
-    particledis_->ReplaceDofSet(independentdofset);
+    // Note: IndependentDofSet is used; new dofs are numbered from zero, minnodgid is ignored and it does not register in static_dofsets_
     particledis_->FillComplete(true, false, true);
 
 
@@ -975,7 +995,7 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> s
       }
     }
 
-    //// 2.3) assign fluid element to remaining bins
+    //// 2.3) assign wall element to remaining bins
     {
       for(std::set<int>::const_iterator biniter=binIds.begin(); biniter!=binIds.end(); ++biniter)
         particlewalls_[*biniter].insert(wallele->Id());

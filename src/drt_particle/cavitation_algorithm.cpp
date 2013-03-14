@@ -51,6 +51,12 @@ CAVITATION::Algorithm::Algorithm(
   ) : PARTICLE::Algorithm(comm,params),
   fluiddis_(Teuchos::null)
 {
+  // setup fluid time integrator
+  fluiddis_ = DRT::Problem::Instance()->GetDis("fluid");
+  // ask base algorithm for the fluid time integrator
+  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
+      Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(DRT::Problem::Instance()->CavitationParams(),false));
+  fluid_ = fluid->FluidFieldrcp();
 
   return;
 }
@@ -101,17 +107,8 @@ void CAVITATION::Algorithm::SetupSystem()
 /*----------------------------------------------------------------------*
  | initialization of the system                             ghamm 11/12 |
  *----------------------------------------------------------------------*/
-void CAVITATION::Algorithm::Init()
+void CAVITATION::Algorithm::Init(bool restarted)
 {
-  particledis_ = DRT::Problem::Instance()->GetDis("particle");
-
-  fluiddis_ = DRT::Problem::Instance()->GetDis("fluid");
-
-  // ask base algorithm for the fluid time integrator
-  Teuchos::RCP<ADAPTER::FluidBaseAlgorithm> fluid =
-      Teuchos::rcp(new ADAPTER::FluidBaseAlgorithm(DRT::Problem::Instance()->CavitationParams(),false));
-  fluid_ = fluid->FluidFieldrcp();
-
   // FillComplete() necessary for DRT::Geometry .... could be removed perhaps
   particledis_->FillComplete(false,false,false);
   // extract noderowmap because it will be called Reset() after adding elements
@@ -122,11 +119,13 @@ void CAVITATION::Algorithm::Init()
   std::map<int, std::set<int> > fluideles;
   Teuchos::RCP<Epetra_Map> binrowmap = DistributeBinsToProcs(fluideles);
 
-  if(binrowmap->NumGlobalElements() > fluiddis_->NumGlobalElements() / 4.0)
-    IO::cout << "\n\n\n WARNING: Reduction of number of bins recommended!! Increase cutoff radius. \n\n\n" << IO::endl;
-
-  // read out bubble inflow condition and set bubble inflows in corresponding bins
-  BuildBubbleInflowCondition();
+  // the following has only to be done once --> skip in case of restart
+  if(not restarted)
+  {
+    // read out bubble inflow condition and set bubble inflows in corresponding bins
+    // assumption: only row bins are available up to here
+    BuildBubbleInflowCondition();
+  }
 
   //--------------------------------------------------------------------
   // -> 1) create a set of homeless particles that are not in a bin on this proc
@@ -145,22 +144,26 @@ void CAVITATION::Algorithm::Init()
   // ghost bins, particles and fluid elements according to the bins
   SetupGhosting(binrowmap, fluideles);
 
+  // the following has only to be done once --> skip in case of restart
+  if(not restarted)
+  {
+    // access structural dynamic params list which will be possibly modified while creating the time integrator
+    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
+
+    // create time integrator based on structural time integration
+    Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> particles =
+        Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->CavitationParams(), const_cast<Teuchos::ParameterList&>(sdyn), particledis_));
+    particles_ = particles->StructureFieldrcp();
+
+    // determine consistent initial acceleration for the particles
+    CalculateAndApplyForcesToParticles();
+    Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->DetermineMassDampConsistAccel();
+  }
+
   // some output
   IO::cout << "after ghosting" << IO::endl;
   DRT::UTILS::PrintParallelDistribution(*particledis_);
   DRT::UTILS::PrintParallelDistribution(*fluiddis_);
-
-  // access structural dynamic params list which will be possibly modified while creating the time integrator
-  const Teuchos::ParameterList& sdyn = DRT::Problem::Instance()->StructuralDynamicParams();
-
-  // create time integrator based on structural time integration
-  Teuchos::RCP<ADAPTER::StructureBaseAlgorithm> particles =
-      Teuchos::rcp(new ADAPTER::StructureBaseAlgorithm(DRT::Problem::Instance()->CavitationParams(), const_cast<Teuchos::ParameterList&>(sdyn), particledis_));
-  particles_ = particles->StructureFieldrcp();
-
-  // determine consistent initial acceleration for the particles
-  CalculateAndApplyForcesToParticles();
-  Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->DetermineMassDampConsistAccel();
 
   return;
 }
@@ -503,36 +506,33 @@ void CAVITATION::Algorithm::ParticleInflow()
 {
   std::map<int, std::list<Teuchos::RCP<BubbleSource> > >::const_iterator biniter;
 
-  // count inflowing particles in this time step on each proc to distribute bubble ids
-  int myinflowcount = 0;
+  int timeforinflow = 0;
   for(biniter=bubble_source_.begin(); biniter!=bubble_source_.end(); ++biniter)
   {
     // all particles have the same inflow frequency --> it is enough to test one
+    // assumption only valid in case of one condition or conditions with identical inflow frequency
     if(biniter->second.size() != 0)
     {
       double inflowtime = 1.0 / biniter->second.front()->inflow_freq_;
       if(Step() % ((int)(inflowtime/Dt())) == 0)
-        myinflowcount += biniter->second.size();
+      {
+        timeforinflow = 1;
+        break;
+      }
     }
   }
 
-  int maxinflowcount = 0;
-  particledis_->Comm().MaxAll(&myinflowcount, &maxinflowcount, 1);
-  if(maxinflowcount == 0)
+  int globaltimeforinflow = 0;
+  particledis_->Comm().MaxAll(&timeforinflow, &globaltimeforinflow, 1);
+  if(globaltimeforinflow == 0)
     return; // no inflow detected
 
-  int numproc = particledis_->Comm().NumProc();
-  int ginflowcount[numproc];
-  particledis_->Comm().GatherAll(&myinflowcount, &ginflowcount[0], 1);
 
   // initialize bubble id with largest bubble id in use + 1 (on each proc)
-  int bubbleid = particledis_->NodeRowMap()->MaxAllGID()+1;
-  // find correct first id of entering bubble on each proc
-  for(int iproc=0; iproc<myrank_; iproc++)
-    bubbleid += ginflowcount[iproc];
-  int storeinitbubbleid = bubbleid;
+  int maxbubbleid = particledis_->NodeRowMap()->MaxAllGID()+1;
 
   // start filling particles
+  int inflowcounter = 0;
   for(biniter=bubble_source_.begin(); biniter!=bubble_source_.end(); ++biniter)
   {
     std::list<Teuchos::RCP<BubbleSource> >::const_iterator particleiter;
@@ -540,16 +540,16 @@ void CAVITATION::Algorithm::ParticleInflow()
     {
       std::vector<double> inflow_position = (*particleiter)->inflow_position_;
       std::set<Teuchos::RCP<DRT::Node>,PARTICLE::Less> homelessparticles;
-      Teuchos::RCP<DRT::Node> newparticle = Teuchos::rcp(new DRT::Node(bubbleid,&inflow_position[0],myrank_));
+      int newbubbleid = maxbubbleid + (*particleiter)->inflowid_;
+      Teuchos::RCP<DRT::Node> newparticle = Teuchos::rcp(new DRT::Node(newbubbleid, &inflow_position[0], myrank_));
       PlaceNodeCorrectly(newparticle, &inflow_position[0], homelessparticles);
       if(homelessparticles.size() != 0)
         dserror("New bubble could not be inserted on this proc! Bubble inflow broken.");
-
-      bubbleid++;
     }
+    inflowcounter += (int)biniter->second.size();
   }
 
-  std::cout << "Inflow of " << bubbleid-storeinitbubbleid << " bubbles on proc " << myrank_ << std::endl;
+  std::cout << "Inflow of " << inflowcounter << " bubbles on proc " << myrank_ << std::endl;
 
   // rebuild connectivity and assign degrees of freedom (note: IndependentDofSet)
   particledis_->FillComplete(true, false, true);
@@ -564,7 +564,6 @@ void CAVITATION::Algorithm::ParticleInflow()
   Teuchos::RCP<Epetra_Vector> veln = particles_->ExtractVelnp();
   Teuchos::RCP<Epetra_Vector> radiusn = Teuchos::rcp_dynamic_cast<PARTICLE::TimIntCentrDiff>(particles_)->ExtractRadiusnp();
 
-  bubbleid = storeinitbubbleid;
   for(biniter=bubble_source_.begin(); biniter!=bubble_source_.end(); ++biniter)
   {
     std::list<Teuchos::RCP<BubbleSource> >::const_iterator particleiter;
@@ -573,8 +572,9 @@ void CAVITATION::Algorithm::ParticleInflow()
       std::vector<double> inflow_position = (*particleiter)->inflow_position_;
       std::vector<double> inflow_vel = (*particleiter)->inflow_vel_;
       double inflow_radius = (*particleiter)->inflow_radius_;
+      int newbubbleid = maxbubbleid + (*particleiter)->inflowid_;
 
-      DRT::Node* currparticle = particledis_->gNode(bubbleid);
+      DRT::Node* currparticle = particledis_->gNode(newbubbleid);
       // get the first gid of a particle and convert it into a LID
       int lid = dofrowmap->LID(particledis_->Dof(currparticle, 0));
       for(int dim=0; dim<3; dim++)
@@ -582,10 +582,8 @@ void CAVITATION::Algorithm::ParticleInflow()
         (*disn)[lid+dim] = inflow_position[dim];
         (*veln)[lid+dim] = inflow_vel[dim];
       }
-      lid = noderowmap->LID(bubbleid);
+      lid = noderowmap->LID(newbubbleid);
       (*radiusn)[lid] = inflow_radius;
-
-      bubbleid++;
     }
   }
 
@@ -603,7 +601,7 @@ void CAVITATION::Algorithm::Update()
 
 
 /*----------------------------------------------------------------------*
-| read restart information for given time step              ghamm 11/12 |
+| read restart information for given time step              ghamm 03/13 |
  *----------------------------------------------------------------------*/
 void CAVITATION::Algorithm::ReadRestart(int restart)
 {
@@ -673,9 +671,10 @@ Teuchos::RCP<Epetra_Map> CAVITATION::Algorithm::DistributeBinsToProcs(std::map<i
 
     Teuchos::RCP<Teuchos::Time> t = Teuchos::TimeMonitor::getNewTimer("CAVITATION::Algorithm::DistributeBinsToProcs_step1+2_fast");
     Teuchos::TimeMonitor monitor(*t);
-    for (int lid = 0; lid < fluiddis_->NumMyColElements(); ++lid)
+    // loop over row fluid elements is enough, extended ghosting always includes standard ghosting
+    for (int lid = 0; lid < fluiddis_->NumMyRowElements(); ++lid)
     {
-      DRT::Element* fluidele = fluiddis_->lColElement(lid);
+      DRT::Element* fluidele = fluiddis_->lRowElement(lid);
       DRT::Node** fluidnodes = fluidele->Nodes();
       const int numnode = fluidele->NumNode();
 
@@ -1113,8 +1112,13 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
   // build inflow boundary condition
   std::vector<DRT::Condition*> conds;
   particledis_->GetCondition("ParticleInflow", conds);
+  // unique bubbleinflow id over all inflow conditions
+  int bubbleinflowid = 0;
   for (size_t i=0; i<conds.size(); i++)
   {
+    if(i>0)
+      dserror("only taken care of one particle inflow condition so far. "
+          "Remedy: bubble_source_ needs to be a vector of the current layout");
     /*
      * inflow condition --> bubble sources
      *
@@ -1181,13 +1185,14 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
           bool found = particledis_->HaveGlobalElement(binId);
           if(found == true)
           {
-            Teuchos::RCP<BubbleSource> bubbleinflow = Teuchos::rcp(new BubbleSource(source_pos, *inflow_vel, initial_radius, inflow_freq));
+            Teuchos::RCP<BubbleSource> bubbleinflow = Teuchos::rcp(new BubbleSource(bubbleinflowid, source_pos, *inflow_vel, initial_radius, inflow_freq));
             bubble_source_[binId].push_back(bubbleinflow);
 #ifdef DEBUG
             if(particledis_->gElement(binId)->Owner() != myrank_)
-              dserror("Only row elements should show up here. Either add additional if-case or move ghosting to a later point in time.");
+              dserror("Only row bins should show up here. Either add additional if-case or move ghosting to a later point in time.");
 #endif
           }
+          bubbleinflowid++;
         }
       }
     }
@@ -1201,11 +1206,13 @@ void CAVITATION::Algorithm::BuildBubbleInflowCondition()
  | particle source                                         ghamm 02/13  |
  *----------------------------------------------------------------------*/
 CAVITATION::BubbleSource::BubbleSource(
+  int bubbleinflowid,
   std::vector<double> inflow_position,
   std::vector<double> inflow_vel,
   double inflow_radius,
   double inflow_freq
   ) :
+  inflowid_(bubbleinflowid),
   inflow_position_(inflow_position),
   inflow_vel_(inflow_vel),
   inflow_radius_(inflow_radius),

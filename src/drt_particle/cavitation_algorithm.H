@@ -57,7 +57,7 @@ namespace CAVITATION
     virtual ~Algorithm(){};
 
     /// do initialization of problem
-    virtual void Init();
+    virtual void Init(bool restarted);
 
     /// read restart
     virtual void ReadRestart(
@@ -143,6 +143,7 @@ namespace CAVITATION
   public:
 
     BubbleSource(
+      int bubbleinflowid,   ///< unique id over all inflow conditions
       std::vector<double> inflow_position,  ///< position of particle source
       std::vector<double> inflow_vel,   ///< inflow velocity
       double inflow_radius,   ///< initial radius of particle
@@ -150,6 +151,7 @@ namespace CAVITATION
       );
 
     // internal variables
+    int inflowid_;
     std::vector<double> inflow_position_;
     std::vector<double> inflow_vel_;
     double inflow_radius_;

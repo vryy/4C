@@ -63,8 +63,8 @@ namespace PARTICLE
 
     virtual ~Algorithm(){};
 
-    /// do initialization of problem
-    virtual void Init();
+    /// do initialization of problem, reduced version for restart
+    virtual void Init(bool restarted);
 
     /// read restart
     virtual void ReadRestart(

@@ -834,6 +834,15 @@ public:
   virtual bool DeleteElement(const int gid);
 
   /*!
+  \brief Removes all nodes and elements from discretization (Filled()==true NOT prerequisite)
+
+  \return Returns true upon successful deletion of all nodes and elements
+
+  \note CheckFilledGlobally() is called to make sure all processors are informed.
+  */
+  virtual bool ClearDiscret();
+
+  /*!
   \brief Complete construction of a discretization  (Filled()==true NOT prerequisite)
 
   After adding or deleting nodes or elements or redistributing them in parallel,

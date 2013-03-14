@@ -17,6 +17,7 @@ DIM           3
 PROBLEMTYP                      Cavitation
 NUMFIELD                        2
 RESTART                         0
+//RESTART                         3
 --------------------------------------------------------------------------IO
 OUTPUT_OUT                      No
 OUTPUT_GID                      No

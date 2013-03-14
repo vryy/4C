@@ -85,6 +85,12 @@ namespace PARTICLE
     //! Write restart which is equivalent to standard output for particles
     virtual void OutputRestart(bool& datawritten);
 
+    //! Read and set restart state
+    virtual void ReadRestartState();
+
+    //! Read restart forces
+    virtual void ReadRestartForce();
+
     //@}
 
     //! @name Vector access

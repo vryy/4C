@@ -565,7 +565,7 @@ namespace STR
     );
 
     //! Read and set restart state
-    void ReadRestartState();
+    virtual void ReadRestartState();
 
     //! Read and set restart forces
     virtual void ReadRestartForce() = 0;

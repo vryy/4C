@@ -136,6 +136,22 @@ void IO::DiscretizationReader::ReadMesh(int step)
   return;
 }
 
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void IO::DiscretizationReader::ReadNodesOnly(int step)
+{
+  FindMeshGroup(step, input_->ControlFile());
+
+  Teuchos::RCP<std::vector<char> > nodedata =
+    meshreader_->ReadNodeData(step,dis_->Comm().NumProc(),dis_->Comm().MyPID());
+
+  // unpack nodes; FillComplete() has to be called manually
+  dis_->UnPackMyNodes(nodedata);
+  return;
+}
+
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void IO::DiscretizationReader::ReadRedundantDoubleVector( Teuchos::RCP<std::vector<double> >& doublevec,

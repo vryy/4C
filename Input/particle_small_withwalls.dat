@@ -19,6 +19,7 @@ NUMDF                           6
 PROBLEMTYP                      Particle
 NUMFIELD                        1
 RESTART                         0
+//RESTART                         6
 SHAPEFCT                        Meshfree
 --------------------------------------------------------------------------IO
 OUTPUT_OUT                      No

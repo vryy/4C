@@ -90,6 +90,9 @@ public:
   /// read into the discretization given in the constructor
   void ReadMesh(int step);
 
+  /// read nodes into the discretization given in the constructor
+  void ReadNodesOnly(int step);
+
   //! read a non discretisation based vector of doubles
   /*!
     This vector should have been written only by proc0.
