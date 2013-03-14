@@ -3,12 +3,10 @@
 \brief
 
 <pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
-writen by : Alexander Volf
-			alexander.volf@mytum.de
+            089 - 289-15239
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -39,6 +37,7 @@ writen by : Alexander Volf
 DRT::ELEMENTS::So_tet4Type DRT::ELEMENTS::So_tet4Type::instance_;
 
 
+//------------------------------------------------------------------------
 DRT::ParObject* DRT::ELEMENTS::So_tet4Type::Create( const std::vector<char> & data )
 {
   DRT::ELEMENTS::So_tet4* object = new DRT::ELEMENTS::So_tet4(-1,-1);
@@ -47,6 +46,7 @@ DRT::ParObject* DRT::ELEMENTS::So_tet4Type::Create( const std::vector<char> & da
 }
 
 
+//------------------------------------------------------------------------
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4Type::Create( const std::string eletype,
                                                             const std::string eledistype,
                                                             const int id,
@@ -61,6 +61,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4Type::Create( const std::string
 }
 
 
+//------------------------------------------------------------------------
 Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4Type::Create( const int id, const int owner )
 {
   Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So_tet4(id,owner));
@@ -68,6 +69,7 @@ Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet4Type::Create( const int id, con
 }
 
 
+//------------------------------------------------------------------------
 void DRT::ELEMENTS::So_tet4Type::NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np )
 {
   numdf = 3;
@@ -75,11 +77,13 @@ void DRT::ELEMENTS::So_tet4Type::NodalBlockInformation( DRT::Element * dwele, in
   nv = 3;
 }
 
+//------------------------------------------------------------------------
 void DRT::ELEMENTS::So_tet4Type::ComputeNullSpace( DRT::Discretization & dis, std::vector<double> & ns, const double * x0, int numdf, int dimns )
 {
   DRT::UTILS::ComputeStructure3DNullSpace( dis, ns, x0, numdf, dimns );
 }
 
+//------------------------------------------------------------------------
 void DRT::ELEMENTS::So_tet4Type::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
 {
   std::map<std::string,DRT::INPUT::LineDefinition>& defs = definitions["SOLIDT4"];
@@ -97,7 +101,6 @@ void DRT::ELEMENTS::So_tet4Type::SetupElementDefinition( std::map<std::string,st
     .AddOptionalNamedDouble("HU")
     ;
 }
-
 
 /*----------------------------------------------------------------------***
  |  ctor (public)                                              maf 04/07|
@@ -394,6 +397,9 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet4::Surfaces()
   return DRT::UTILS::ElementBoundaryFactory<StructuralSurface,DRT::Element>(DRT::UTILS::buildSurfaces,this);
 }
 
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
+//-----------------------------------------------------------------------
 std::vector<double> DRT::ELEMENTS::So_tet4::ElementCenterRefeCoords()
 {
   // update element geometry

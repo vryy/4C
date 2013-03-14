@@ -1,11 +1,10 @@
 /*!----------------------------------------------------------------------
 \file so_tet4.H
 
-<pre>
-Maintainer: Moritz Frenzel
-            frenzel@lnm.mw.tum.de
+Maintainer: Michael Gee
+            gee@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15240
+            089 - 289-15239
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -343,7 +342,7 @@ public:
 
 protected:
 
-  //! action parameters recognized by so_tet10
+  //! action parameters recognized by so_tet4
   enum ActionType
   {
     none,
