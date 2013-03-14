@@ -24,6 +24,9 @@ Teuchos::RCP<DRT::UTILS::GaussPoints> GEO::CUT::DirectDivergence::VCIntegrationR
   // get integration facets and reference plane
   ListFacets( facetIterator, RefPlaneEqn, IteratorRefFacet, isRef_ );
 
+  if( isRef_ )
+    refFacet_ = *IteratorRefFacet;
+
   if( facetIterator.size()==0 )
     dserror( "x-component normal is zero on all the facets? It should not be." );
 
