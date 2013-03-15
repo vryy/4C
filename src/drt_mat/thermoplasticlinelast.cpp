@@ -248,15 +248,15 @@ void MAT::ThermoPlasticLinElast::Unpack(const std::vector<char>& data)
 
   }
 
-  if (position != data.size())
-    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
-
   plastic_step_ = false;
   int plastic_step;
   ExtractfromPack(position,data,plastic_step);
 
   // if it was already plastic before,
   if (plastic_step != 0) plastic_step_ = true;
+
+  if (position != data.size())
+    dserror("Mismatch in size of data %d <-> %d",data.size(),position);
 
   return;
 
