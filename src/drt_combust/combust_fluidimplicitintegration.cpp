@@ -2819,6 +2819,14 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
     output_col_vel = DRT::UTILS::GetColVersionOfRowVector(discret_, state_.velnp_);
   }
 
+  // check maps before writing fields
+#ifdef DEBUG
+  // get map of this vector
+  const Epetra_BlockMap& phimap = phinp_->Map();
+  // check, whether this map is still identical with the current node map in the discretization
+  if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
+#endif
+
   //------------------------
   // write pressure solution
   //------------------------
@@ -2859,12 +2867,6 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
         //---------------------------------------------------------------
         // extract local level-set (G-function) values from global vector
         //---------------------------------------------------------------
-#ifdef DEBUG
-        // get map of this vector
-        const Epetra_BlockMap& phimap = phinp_->Map();
-        // check, whether this map is still identical with the current node map in the discretization
-        if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
-#endif
         size_t numnode = ele->NumNode();
         std::vector<double> myphinp(numnode);
         // extract G-function values to element level
@@ -2941,12 +2943,6 @@ void FLD::CombustFluidImplicitTimeInt::OutputToGmsh(
             //------------------------------------------------------------------------------------------
             // extract local level-set (G-function) values from global vector
             //------------------------------------------------------------------------------------------
-#ifdef DEBUG
-            // get map of this vector
-            const Epetra_BlockMap& phimap = phinp_->Map();
-            // check, whether this map is still identical with the current node map in the discretization
-            if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
-#endif
             size_t numnode = ele->NumNode();
             std::vector<double> myphinp(numnode);
             // extract G-function values to element level
@@ -3875,6 +3871,13 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
 {
   const bool screen_out = true;
 
+#ifdef DEBUG
+  // get map of this vector
+  const Epetra_BlockMap& phimap = phinp_->Map();
+  // check, whether this map is still identical with the current node map in the discretization
+  if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
+#endif
+
   if (gmshoutput_)
   {
     const std::string filename = IO::GMSH::GetNewFileNameAndDeleteOldFiles(filestr, step, 500, screen_out, discret_->Comm().MyPID());
@@ -3935,12 +3938,6 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
         //------------------------------------------------------------------------------------------
         // extract local level-set (G-function) values from global vector
         //------------------------------------------------------------------------------------------
-#ifdef DEBUG
-        // get map of this vector
-        const Epetra_BlockMap& phimap = phinp_->Map();
-        // check, whether this map is still identical with the current node map in the discretization
-        if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
-#endif
         size_t numnode = ele->NumNode();
         std::vector<double> myphinp(numnode);
         // extract G-function values to element level
@@ -4031,12 +4028,6 @@ void FLD::CombustFluidImplicitTimeInt::PlotVectorFieldToGmsh(
             //------------------------------------------------------------------------------------------
             // extract local level-set (G-function) values from global vector
             //------------------------------------------------------------------------------------------
-#ifdef DEBUG
-            // get map of this vector
-            const Epetra_BlockMap& phimap = phinp_->Map();
-            // check, whether this map is still identical with the current node map in the discretization
-            if (not phimap.SameAs(*discret_->NodeColMap())) dserror("node column map has changed!");
-#endif
             size_t numnode = ele->NumNode();
             std::vector<double> myphinp(numnode);
             // extract G-function values to element level
