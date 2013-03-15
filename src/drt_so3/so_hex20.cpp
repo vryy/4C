@@ -18,12 +18,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_mat/contchainnetw.H"
-#include "../drt_mat/artwallremod.H"
 #include "../drt_mat/viscoanisotropic.H"
-#include "../drt_mat/anisotropic_balzani.H"
-#include "../drt_mat/holzapfelcardiovascular.H"
-#include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
@@ -283,13 +278,13 @@ void DRT::ELEMENTS::So_hex20::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex20::soh20_expol
 (
-    LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20>& stresses,
+    LINALG::Matrix<NUMGPT_SOH20,MAT::NUM_STRESS_3D>& stresses,
     Epetra_MultiVector& expolstresses
 )
 {
   static LINALG::Matrix<NUMNOD_SOH20,NUMGPT_SOH20> expol;
   static bool isfilled;
-  LINALG::Matrix<NUMNOD_SOH20,NUMSTR_SOH20> nodalstresses;
+  LINALG::Matrix<NUMNOD_SOH20,MAT::NUM_STRESS_3D> nodalstresses;
 
   if (isfilled==true)
   {
@@ -396,62 +391,8 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_hex20::Lines()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_hex20::VisNames(std::map<std::string,int>& names)
 {
-
-  if (Material()->MaterialType() == INPAR::MAT::m_contchainnetw){
-    std::string fiber = "Fiber1";
-    names[fiber] = 3; // 3-dim vector
-    fiber = "Fiber2";
-    names[fiber] = 3; // 3-dim vector
-    fiber = "Fiber3";
-    names[fiber] = 3; // 3-dim vector
-    fiber = "Fiber4";
-    names[fiber] = 3; // 3-dim vector
-    fiber = "FiberCell1";
-    names[fiber] = 3; // 3-dim vector
-    fiber = "FiberCell2";
-    names[fiber] = 3; // 3-dim vector
-    fiber = "FiberCell3";
-    names[fiber] = 3; // 3-dim vector
-    fiber = "l1";
-    names[fiber] = 1;
-    fiber = "l2";
-    names[fiber] = 1;
-    fiber = "l3";
-    names[fiber] = 1;
-//    fiber = "l1_0";
-//    names[fiber] = 1;
-//    fiber = "l2_0";
-//    names[fiber] = 1;
-//    fiber = "l3_0";
-//    names[fiber] = 1;
-  }
-  if ((Material()->MaterialType() == INPAR::MAT::m_artwallremod) ||
-      (Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic) ||
-      (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular))
-  {
-    std::string fiber = "Fiber1";
-    names[fiber] = 3; // 3-dim vector
-    fiber = "Fiber2";
-    names[fiber] = 3; // 3-dim vector
-  }
-  if (Material()->MaterialType() == INPAR::MAT::m_anisotropic_balzani){
-    std::string fiber = "Fiber1";
-    names[fiber] = 3; // 3-dim vector
-    fiber = "Fiber2";
-    names[fiber] = 3; // 3-dim vector
-  }
-  if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular)
-  {
-    std::string fiber = "Fiber1";
-    names[fiber] = 3; // 3-dim vector
-    fiber = "Fiber2";
-    names[fiber] = 3;
-    fiber = "Fiber3";
-    names[fiber] = 3;
-    fiber = "Fiber4";
-    names[fiber] = 3;
-  }
-
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  so3mat->VisNames(names);
   return;
 }
 
@@ -464,180 +405,8 @@ bool DRT::ELEMENTS::So_hex20::VisData(const string& name, std::vector<double>& d
   if (DRT::Element::VisData(name,data))
     return true;
 
-  if (Material()->MaterialType() == INPAR::MAT::m_contchainnetw){
-    RCP<MAT::Material> mat = Material();
-    MAT::ContChainNetw* chain = static_cast <MAT::ContChainNetw*>(mat.get());
-    if (!chain->Initialized()){
-      data[0] = 0.0; data[1] = 0.0; data[2] = 0.0;
-    } else {
-      RCP<std::vector<std::vector<double> > > gplis = chain->Getli();
-      RCP<std::vector<std::vector<double> > > gpli0s = chain->Getli0();
-      RCP<std::vector<LINALG::Matrix<3,3> > > gpnis = chain->Getni();
-
-      std::vector<double> centerli (3,0.0);
-      std::vector<double> centerli_0 (3,0.0);
-      for (int i = 0; i < (int)gplis->size(); ++i) {
-        LINALG::Matrix<3,1> loc(&(gplis->at(i)[0]));
-        //Epetra_SerialDenseVector loc(CV,&(gplis->at(i)[0]),3);
-        LINALG::Matrix<3,1> glo;
-        //glo.Multiply('N','N',1.0,gpnis->at(i),loc,0.0);
-        glo.Multiply(gpnis->at(i),loc);
-        // Unfortunately gpnis is a vector of Epetras, to change this
-        // I must begin at a deeper level...
-        centerli[0] += glo(0);
-        centerli[1] += glo(1);
-        centerli[2] += glo(2);
-
-//        centerli[0] += gplis->at(i)[0];
-//        centerli[1] += gplis->at(i)[1];
-//        centerli[2] += gplis->at(i)[2];
-//
-        centerli_0[0] += gplis->at(i)[0];
-        centerli_0[1] += gplis->at(i)[1];
-        centerli_0[2] += gplis->at(i)[2];
-      }
-      centerli[0] /= gplis->size();
-      centerli[1] /= gplis->size();
-      centerli[2] /= gplis->size();
-
-      centerli_0[0] /= gplis->size();
-      centerli_0[1] /= gplis->size();
-      centerli_0[2] /= gplis->size();
-
-      // just the unit cell of the first gp
-      int gp = 0;
-//      Epetra_SerialDenseVector loc(CV,&(gplis->at(gp)[0]),3);
-//      Epetra_SerialDenseVector glo(3);
-//      glo.Multiply('N','N',1.0,gpnis->at(gp),loc,0.0);
-      LINALG::Matrix<3,3> T(gpnis->at(gp).A(),true);
-      std::vector<double> gpli =  chain->Getli()->at(gp);
-
-      if (name == "Fiber1"){
-        if ((int)data.size()!=3) dserror("size mismatch");
-        data[0] = centerli[0]; data[1] = -centerli[1]; data[2] = -centerli[2];
-      } else if (name == "Fiber2"){
-        data[0] = centerli[0]; data[1] = centerli[1]; data[2] = -centerli[2];
-      } else if (name == "Fiber3"){
-        data[0] = centerli[0]; data[1] = centerli[1]; data[2] = centerli[2];
-      } else if (name == "Fiber4"){
-        data[0] = -centerli[0]; data[1] = -centerli[1]; data[2] = centerli[2];
-      } else if (name == "FiberCell1"){
-        LINALG::Matrix<3,1> e(true);
-        e(0) = gpli[0];
-        LINALG::Matrix<3,1> glo;
-        //glo.Multiply('N','N',1.0,T,e,0.0);
-        glo.Multiply(T, e);
-        data[0] = glo(0); data[1] = glo(1); data[2] = glo(2);
-      } else if (name == "FiberCell2"){
-        LINALG::Matrix<3,1> e(true);
-        e(1) = gpli[1];
-        LINALG::Matrix<3,1> glo;
-        //glo.Multiply('N','N',1.0,T,e,0.0);
-        glo.Multiply(T, e);
-        data[0] = glo(0); data[1] = glo(1); data[2] = glo(2);
-      } else if (name == "FiberCell3"){
-        LINALG::Matrix<3,1> e(true);
-        e(2) = gpli[2];
-        LINALG::Matrix<3,1> glo;
-        //glo.Multiply('N','N',1.0,T,e,0.0);
-        glo.Multiply(T, e);
-        data[0] = glo(0); data[1] = glo(1); data[2] = glo(2);
-      } else if (name == "l1"){
-        data[0] = centerli_0[0];
-      } else if (name == "l2"){
-        data[0] = centerli_0[1];
-      } else if (name == "l3"){
-        data[0] = centerli_0[2];
-//      } else if (name == "l1_0"){
-//        data[0] = centerli_0[0];
-//      } else if (name == "l2_0"){
-//        data[0] = centerli_0[1];
-//      } else if (name == "l3_0"){
-//        data[0] = centerli_0[2];
-      } else {
-        return false;
-      }
-    }
-  }
-  if (Material()->MaterialType() == INPAR::MAT::m_artwallremod){
-    MAT::ArtWallRemod* art = static_cast <MAT::ArtWallRemod*>(Material().get());
-    std::vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
-    std::vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
-    if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
-    } else {
-      return false;
-    }
-  }
-  if (Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic){
-    MAT::ViscoAnisotropic* art = static_cast <MAT::ViscoAnisotropic*>(Material().get());
-    std::vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
-    std::vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
-    if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
-    } else {
-      return false;
-    }
-  }
-  if (Material()->MaterialType() == INPAR::MAT::m_anisotropic_balzani){
-    MAT::AnisotropicBalzani* balz = static_cast <MAT::AnisotropicBalzani*>(Material().get());
-    if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = balz->Geta1().at(0); data[1] = balz->Geta1().at(1); data[2] = balz->Geta1().at(2);
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = balz->Geta2().at(0); data[1] = balz->Geta2().at(1); data[2] = balz->Geta2().at(2);
-    } else {
-      return false;
-    }
-  }
-  if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
-    MAT::HolzapfelCardio* art = static_cast <MAT::HolzapfelCardio*>(Material().get());
-    std::vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
-    std::vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
-    if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
-    } else {
-      return false;
-    }
-  }
-  if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
-    MAT::HumphreyCardio* art = static_cast <MAT::HumphreyCardio*>(Material().get());
-    std::vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
-    std::vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
-    std::vector<double> a3 = art->Geta3()->at(0);  // get a3 of first gp
-    std::vector<double> a4 = art->Geta4()->at(0);  // get a4 of first gp
-    if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
-    } else if (name == "Fiber3"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a3[0]; data[1] = a3[1]; data[2] = a3[2];
-    } else if (name == "Fiber4"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a4[0]; data[1] = a4[1]; data[2] = a4[2];
-    } else {
-      return false;
-    }
-  }
-
-
-  return true;
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  return so3mat->VisData(name, data, NUMGPT_SOH20);
 }
 
 

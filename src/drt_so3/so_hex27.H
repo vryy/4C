@@ -23,7 +23,6 @@ Maintainer: Thomas Kloeppel
 const int NUMNOD_SOH27 = 27;      ///< number of nodes
 const int NODDOF_SOH27 = 3;      ///< number of dofs per node
 const int NUMDOF_SOH27 = 81;     ///< total dofs per element
-const int NUMSTR_SOH27 = 6;      ///< number of strains/stresses
 const int NUMGPT_SOH27 = 27;      ///< total gauss points per element
 const int NUMDIM_SOH27 = 3;      ///< number of dimensions
 
@@ -413,8 +412,8 @@ protected:
       LINALG::Matrix<NUMDOF_SOH27,NUMDOF_SOH27>* stiffmatrix,    ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH27,NUMDOF_SOH27>* massmatrix,     ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOH27,1>* force,          ///< element internal force vector
-      LINALG::Matrix<NUMGPT_SOH27,NUMSTR_SOH27>* elestress,      ///< stresses at GP
-      LINALG::Matrix<NUMGPT_SOH27,NUMSTR_SOH27>* elestrain,      ///< strains at GP
+      LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>* elestress,      ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>* elestrain,      ///< strains at GP
       Teuchos::ParameterList&   params,         ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType   iostress,  ///< stress output option
       const INPAR::STR::StrainType   iostrain); ///< strain output option
@@ -427,8 +426,8 @@ protected:
       LINALG::Matrix<NUMDOF_SOH27,NUMDOF_SOH27>* stiffmatrix,    ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH27,NUMDOF_SOH27>* massmatrix,     ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOH27,1>* force,          ///< element internal force vector
-      LINALG::Matrix<NUMGPT_SOH27,NUMSTR_SOH27>* elestress,      ///< stresses at GP
-      LINALG::Matrix<NUMGPT_SOH27,NUMSTR_SOH27>* elestrain,      ///< strains at GP
+      LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>* elestress,      ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>* elestrain,      ///< strains at GP
       Teuchos::ParameterList&   params,         ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType   iostress,  ///< stress output option
       const INPAR::STR::StrainType   iostrain); ///< strain output option
@@ -437,7 +436,7 @@ protected:
   void soh27_lumpmass(LINALG::Matrix<NUMDOF_SOH27,NUMDOF_SOH27>* emass);
 
   //! Extrapolate Gauss-point values (e.g. stresses) to nodes
-  void soh27_expol(LINALG::Matrix<NUMGPT_SOH27,NUMSTR_SOH27>& stresses,
+  void soh27_expol(LINALG::Matrix<NUMGPT_SOH27,MAT::NUM_STRESS_3D>& stresses,
                    Epetra_MultiVector& expolstresses);
 
   //! Evaluate Hex27 Shapefcts to keep them static
@@ -452,33 +451,6 @@ protected:
         LINALG::Matrix<NUMNOD_SOH27,NUMGPT_SOH27>** shapefct,   // pointer to pointer of shapefct
         LINALG::Matrix<NUMDOF_SOH27,NUMNOD_SOH27>** deriv,     // pointer to pointer of derivs
         LINALG::Matrix<NUMGPT_SOH27,1>** weights);   // pointer to pointer of weights
-
-  /*!
-   * \brief Interface to material laws working with soh8.
-   *
-   * Here the interface to any material takes place. Stress and C-mat must be retrieved
-   * whereas all necessary data is passed. Add whatever your material needs, but
-   * make sure that exchange is not overdone performance-wise.
-   * Right now EAS is based on GL-Strains which is ok for any hyperelastic material.
-   * This means that e.g. the deformation gradient is not alleviated from locking
-   * and therefore only to be used with disp-based soh8.
-   *
-   * \param *stress (out): Voigt-Vector of stresses at current gp
-   * \param *cmat (out): Elasticity matrix at current gp
-   * \param *density (out): density of material
-   * \param *glstrain (in): Voigt-Vector of GL-strains at current gp
-   * \param *defgrd (in): F at current gp, CAUTION! only for disp-based soh8
-   * \param gp (in): current gp
-   * \param params (in): parameterlist to access time, etc. in materials
-   * */
-
-  void soh27_mat_sel(LINALG::Matrix<6,1>* stress,
-                    LINALG::Matrix<6,6>* cmat,
-                    double* density,
-                    LINALG::Matrix<6,1>* glstrain,
-                    LINALG::Matrix<3,3>* defgrd,
-                    const int gp,
-                    Teuchos::ParameterList&  params);
 
   //! @name Multi-scale related stuff
 

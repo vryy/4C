@@ -161,7 +161,6 @@ public:
   static const int NUMPRES_ = 8;  ///< total discrete pressures per element
   static const int NUMPRESBRO_ = 1;  ///< total number of discrete, discontinuous/broken
                                      ///< pressures per element
-  static const int NUMSTR_ = 6;  ///< number of strains/stresses
   static const int NUMDFGR_ = 9;  ///< number of deformation gradient components
                                          ///< (deformation gradient is non-symmetric)
   static const int NUMGPT_ = 8;  ///< total gauss points per element
@@ -373,8 +372,8 @@ private:
     LINALG::Matrix<NUMPRES_,NUMPRES_>* stabmatrix,  ///< element stabilisation matrix
     LINALG::Matrix<NUMDISP_,1>* force,  ///< element internal force vector
     LINALG::Matrix<NUMPRES_,1>* incomp,  ///< incompressibility residual
-    LINALG::Matrix<NUMGPT_,NUMSTR_>* elestress,  ///< stresses at GP
-    LINALG::Matrix<NUMGPT_,NUMSTR_>* elestrain,  ///< strains at GP
+    LINALG::Matrix<NUMGPT_,MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+    LINALG::Matrix<NUMGPT_,MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
     double* volume,  ///< current element volume
     Teuchos::ParameterList& params,         ///< algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress,   ///< stress output option
@@ -383,25 +382,25 @@ private:
 
   /// Return stress at Gauss point
   void Stress(
-    LINALG::Matrix<NUMGPT_,NUMSTR_>* elestress,  ///< store the stress herein
+    LINALG::Matrix<NUMGPT_,MAT::NUM_STRESS_3D>* elestress,  ///< store the stress herein
     const INPAR::STR::StressType iostress,  ///< stress type
     const int gp,  ///< Gauss point index
     const double& detdefgrd,  ///< determinant of (assumed) deformation gradient
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& defgrd,  ///< (assumed) deformation gradient
-    const LINALG::Matrix<NUMSTR_,1>& glstrain,  ///< Green-Lagrange strain vector
-    const LINALG::Matrix<NUMSTR_,1>& stress,  ///< (deviatoric) 2nd Piola-Kirchhoff stress vector
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& glstrain,  ///< Green-Lagrange strain vector
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& stress,  ///< (deviatoric) 2nd Piola-Kirchhoff stress vector
     const double& pressure  ///< true pressure
     );
 
   /// Return strain at Gauss point
   void Strain(
-    LINALG::Matrix<NUMGPT_,NUMSTR_>* elestrain,  ///< store the strain herein
+    LINALG::Matrix<NUMGPT_,MAT::NUM_STRESS_3D>* elestrain,  ///< store the strain herein
     const INPAR::STR::StrainType iostrain,  ///< strain type
     const int gp,  ///< Gauss point index
     const double& detdefgrd,  ///< determinant of (assumed) deformation gradient
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& defgrd,  ///< (assumed) deformation gradient
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& invdefgrd,  ///< (assumed) inverted deformation gradient
-    const LINALG::Matrix<NUMSTR_,1>& glstrain  ///< Green-Lagrange strain vector
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& glstrain  ///< Green-Lagrange strain vector
     );
 
   /// Recover deformation gradient incoperating assumed natural GL strain
@@ -416,7 +415,7 @@ private:
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& Jinv,  ///< inverse of transposed material Jacobi matrix \f$[X_{,\xi}]\f$
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& Jac,  ///< transposed material Jacobi matrix \f$[X_{,\xi}]^T\f$
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& jac,  ///< transposed spatial Jacobi matrix \f$[x_{,\xi}]^T\f$
-    const LINALG::Matrix<NUMSTR_,1>& glstrain  ///< material Green-Lagrange strain vector
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& glstrain  ///< material Green-Lagrange strain vector
                                                ///< in global Cartesian components \f$[\boldsymbol{E}]\f$
     );
 
@@ -427,7 +426,7 @@ private:
 
   /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store results in elevectors
   void sosh8p8_expol(
-    LINALG::Matrix<NUMGPT_,NUMSTR_>& stresses, ///< gp stresses
+    LINALG::Matrix<NUMGPT_,MAT::NUM_STRESS_3D>& stresses, ///< gp stresses
     Epetra_MultiVector& expolstresses  ///< nodal stresses
   );
 
@@ -500,14 +499,14 @@ private:
     Teuchos::RCP<Epetra_SerialDenseMatrix> M,  ///< EAS shape functions in material configuration
     const double& detJ0,  ///< material-to-parameter Jacobian determinant at origin
     const double& detJ,  ///< material-to-parameter Jacobian determinant at GP
-    const LINALG::Matrix<NUMSTR_,NUMSTR_>& T0invT,  ///< parameter-to-material transformation for 2-tensors
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& T0invT,  ///< parameter-to-material transformation for 2-tensors
     const Epetra_SerialDenseMatrix& Mloc  ///< parametric EAS shape function eval. at GP
     );
 
   /// add EAS strain contribution
   template<int NUMEAS_T>
   static void EasAddStrain(
-    LINALG::Matrix<NUMSTR_,1>& glstrain,  ///< Green-Lagrange strain vector
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1>& glstrain,  ///< Green-Lagrange strain vector
     const Teuchos::RCP<Epetra_SerialDenseMatrix>& M,  ///< EAS shape functions in material configuration
     const Epetra_SerialDenseMatrix* alpha  ///< EAS parameters
     );
@@ -521,15 +520,15 @@ private:
     Teuchos::RCP<Epetra_SerialDenseMatrix>& Kap,  ///< current tangent k_ap
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& defgradD,  ///< compatible deformation gradient
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& invrgtstrD,  ///< compatible inverse right stretch tensor
-    const LINALG::Matrix<NUMSTR_,NUMSTR_>& rcgbyrgtstr,  ///< right stretch tensor diff'd w.r.t right CG
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& rcgbyrgtstr,  ///< right stretch tensor diff'd w.r.t right CG
     const double& detdefgrad,  ///< determinant of deformation gradient
     const LINALG::Matrix<NUMDFGR_,1>& tinvdefgrad,  ///< vector of transposed inverse deformation gradient
     const LINALG::Matrix<NUMDFGR_,NUMDFGR_>& WmT,  ///< the matrix ( fv . fv^T + Wm )
-    const LINALG::Matrix<NUMSTR_,NUMSTR_>& cmat,  ///< (isotropic) elasticity matrix
-    const LINALG::Matrix<NUMSTR_,1>& stress,  ///< 2nd Piola-Kirchhoff stress vector
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& cmat,  ///< (isotropic) elasticity matrix
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& stress,  ///< 2nd Piola-Kirchhoff stress vector
     const double& effpressure,  ///< effective pressure at Gauss point
     const double& detJ_w,  ///< integration factor
-    const LINALG::Matrix<NUMSTR_,NUMDISP_>& cb,  ///< elasticity matrix times B-operator
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDISP_>& cb,  ///< elasticity matrix times B-operator
     const LINALG::Matrix<NUMDFGR_,NUMDISP_>& defgradbydisp,  ///< deformation gradient diff'd w.r.t. displacements
     const LINALG::Matrix<NUMPRES_,1>& prshfct,  ///< effective pressure shape functions
     const Teuchos::RCP<Epetra_SerialDenseMatrix>& M  ///< EAS shape functions in material configuration
@@ -600,7 +599,7 @@ private:
   ///   \end{array}\right]
   ///\f]
   static void Matrix2TensorToVector6Voigt(
-    LINALG::Matrix<NUMSTR_,1>& bvct,  ///< 6-Voigt vector
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1>& bvct,  ///< 6-Voigt vector
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& bmat,  ///< 3x3 sym 2-tensor
     const VoigtType outvoigt6 = voigt6_strain  ///< type of 6-Voigt vector
     );
@@ -610,7 +609,7 @@ private:
   /// opposite of #Matrix2TensorToVector6Voigt
   static void Vector6VoigtToMatrix2Tensor(
     LINALG::Matrix<NUMDIM_,NUMDIM_>& bmat,  ///< 3x3 sym 2-tensor
-    const LINALG::Matrix<NUMSTR_,1>& bvct,  ///< 6-Voigt vector
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& bvct,  ///< 6-Voigt vector
     const VoigtType invoigt6 = voigt6_strain   ///< type of 6-Voigt vector
     );
 
@@ -636,7 +635,7 @@ private:
   ///                + (F^{-1})_{il} \cdot (F^{-1})_{kj} \big)
   ///\f]
   static void InvVector6VoigtDiffByItself(
-    LINALG::Matrix<NUMSTR_,NUMSTR_>& invfderf,  ///< 6x6 derivative
+    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& invfderf,  ///< 6x6 derivative
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& invfmat  ///< 3x3 inverse symmetric 2-tensor
     );
 
@@ -656,7 +655,7 @@ private:
   ///\f]
   ///
   static void InvVector6VoigtTwiceDiffByItself(
-    LINALG::Matrix<NUMSTR_,NUMSTR_*NUMSTR_>& invbvdderb,  ///< 6x36 matrix
+    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D*MAT::NUM_STRESS_3D>& invbvdderb,  ///< 6x36 matrix
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& ibt  ///< 3x3 inverted symmetric 2-tensor
     );
 
@@ -668,7 +667,7 @@ private:
   ///   = \delta_{ik}\cdot F_{lj} + \delta_{jl}\cdot F_{ik}
   ///\f]
   static void SqVector6VoigtDiffByItself(
-    LINALG::Matrix<NUMSTR_,NUMSTR_>& sqfderf,  ///< diff. squared matrix
+    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& sqfderf,  ///< diff. squared matrix
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat,  ///< symmetric 2-tensor
     const VoigtType outvoigt6 = voigt6_strain  ///< 6-Voigt row type of resulting matrix
     );
@@ -704,7 +703,7 @@ private:
   /// \end{array}
   ///\f]
   static void SqVector6VoigtTwiceDiffByItself(
-    LINALG::Matrix<NUMSTR_,NUMSTR_*NUMSTR_>& sqfdderf,  ///< 2nd derivative
+    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D*MAT::NUM_STRESS_3D>& sqfdderf,  ///< 2nd derivative
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat  ///< symmetric 2-tensor (not needed)
     );
 
@@ -714,7 +713,7 @@ private:
   /// cf. #SqVector6VoigtTwiceDiffByItself bit with sparse storage of 6-tensor
   static void SqVector6VoigtTwiceDiffByItself(
     int* isqfdderf,  ///< indices of non-zero entries
-    LINALG::Matrix<NUMSTR_,6>& sqfdderf  ///< 2nd derivative data (sparsely stored)
+    LINALG::Matrix<MAT::NUM_STRESS_3D,6>& sqfdderf  ///< 2nd derivative data (sparsely stored)
     );
 
   /// Build 6x9 Voigt matrix for 2-tensor-dot-2-tensor product
@@ -736,7 +735,7 @@ private:
   ///   \mathbf{A} = \mathbf{B} \; \tilde{\mathbf{C}}
   ///\f]
   static void Matrix2TensorToMatrix6x9Voigt(
-    LINALG::Matrix<NUMSTR_,NUMDFGR_>& bm,  ///< (out) 6x9 Voigt matrix
+    LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDFGR_>& bm,  ///< (out) 6x9 Voigt matrix
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& bt,  ///< (in) 3x3 matrix
     const bool transpose = true  ///< transpose entries
     );
@@ -761,7 +760,7 @@ private:
   ///
   /// This operation is also known as 'pull back' or 'base transformation', respectively.
   static void Matrix2TensorToLeftRightProductMatrix6x6Voigt(
-    LINALG::Matrix<NUMSTR_,NUMSTR_>& bm,  ///< (out) 6x6 Voigt matrix
+    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& bm,  ///< (out) 6x6 Voigt matrix
     const LINALG::Matrix<NUMDIM_,NUMDIM_>& bt,  ///< (in) 3x3 matrix of 2-tensor
     const bool transpose, ///< 3x3 input matrix is transposed
     const VoigtType rowvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix

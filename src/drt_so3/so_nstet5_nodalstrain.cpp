@@ -28,9 +28,7 @@ Maintainer: Michael Gee
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/neohooke.H"
-#include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
-#include "../drt_mat/mooneyrivlin.H"
 #include "../drt_mat/elasthyper.H"
 
 #include "so_nstet5.H"
@@ -54,7 +52,7 @@ void DRT::ELEMENTS::NStet5Type::ElementDeformationGradient(DRT::Discretization& 
     e->LocationVector(dis,lm,lmowner,lmstride);
     std::vector<double> mydisp(lm.size());
     DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-    
+
     //------------------------------------subelement F
     LINALG::Matrix<5,3> subdisp(false);
     for (int j=0; j<3; ++j)
@@ -67,12 +65,12 @@ void DRT::ELEMENTS::NStet5Type::ElementDeformationGradient(DRT::Discretization& 
       for (int i=0; i<4; ++i)
         for (int j=0; j<3; ++j)
           disp(i,j) = subdisp(e->SubLM(k)[i],j);
-      
+
       e->SubF(k) = e->BuildF(disp,e->SubNxyz(k));
       double J = e->SubF(k).Determinant();
       if (J<=0.0) dserror("det(F) of Element %d / Subelement %d %10.5e <= 0 !!\n",e->Id(),k,J);
-    } // for (int k=0; k<4; ++k) 
-    
+    } // for (int k=0; k<4; ++k)
+
   } // ele
   return;
 }
@@ -99,7 +97,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
       action != "calc_struct_nlnstiff"      &&
       action != "calc_struct_stress"        &&
       action != "calc_struct_internalforce") return;
-      
+
   // These get filled in here, so remove old stuff
   if (action == "calc_struct_stress")
   {
@@ -177,13 +175,13 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
     std::vector<std::vector<std::vector<int> > >&   lmlm      = lmlm_[nodeLid];
     const int ndofperpatch = (int)lm.size();
 
-    if (action == "calc_struct_nlnstiffmass" || 
+    if (action == "calc_struct_nlnstiffmass" ||
         action == "calc_struct_nlnstifflmass" ||
         action == "calc_struct_nlnstiff" ||
         action == "calc_struct_internalforce")
     {
       // do nodal integration of stiffness and internal force
-      stiff.LightShape(ndofperpatch,ndofperpatch); 
+      stiff.LightShape(ndofperpatch,ndofperpatch);
       force.LightSize(ndofperpatch);
       LINALG::SerialDenseMatrix* stiffptr = &stiff;
       if (action == "calc_struct_internalforce") stiffptr = NULL;
@@ -207,7 +205,7 @@ void DRT::ELEMENTS::NStet5Type::PreEvaluate(DRT::Discretization& dis,
         (*(*nstress_)(i))[lid] = nodalstress[i];
         (*(*nstrain_)(i))[lid] = nodalstrain[i];
       }
-      
+
     }
     else dserror("Unknown action");
 
@@ -426,7 +424,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
         break;
       }
   }
-        
+
   //-----------------------------------------------------------------------
   // get displacements of this patch
   std::vector<double> patchdisp(ndofinpatch);
@@ -437,8 +435,8 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
     if (lid==-1) dserror("Cannot find degree of freedom on this proc");
     patchdisp[i] = disp[disp.Map().LID(lm[i])];
 //    tpatchdisp[i] = patchdisp[i];
-//    tpatchdisp[i].diff(i,ndofinpatch);        
-//    tpatchdisp[i].val().diff(i,ndofinpatch); 
+//    tpatchdisp[i].diff(i,ndofinpatch);
+//    tpatchdisp[i].val().diff(i,ndofinpatch);
   }
 
   //-----------------------------------------------------------------------
@@ -446,7 +444,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
   double Vnode = 0.0;
   LINALG::Matrix<3,3> Fnode(true);
 //  LINALG::TMatrix<FADFAD,3,3> tFnode(true);
-  
+
   for (int i=0; i<neleinpatch; ++i)
   {
     DRT::ELEMENTS::NStet5* ele = adjele[i];
@@ -455,7 +453,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
     for (unsigned j=0; j<subele.size(); ++j)
     {
       const int subeleid = subele[j];
-      
+
       // copy subelement displacements to 4x3 format
 //      LINALG::Matrix<4,3> eledispmat(false);
 //      LINALG::TMatrix<FADFAD,4,3> teledispmat(false);
@@ -465,12 +463,12 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
 //          eledispmat(k,l) = patchdisp[lmlm[i][j][k*3+l]];
 //          teledispmat(k,l) = tpatchdisp[lmlm[i][j][k*3+l]];
 //        }
-           
+
      // build F from this subelement
 //     LINALG::Matrix<3,3> F(false);
 //     LINALG::TMatrix<FADFAD,3,3> tF(true);
 //     F = ele->BuildF(eledispmat,ele->SubNxyz(subeleid));
-     LINALG::Matrix<3,3> F = ele->SubF(subeleid);  
+     LINALG::Matrix<3,3> F = ele->SubF(subeleid);
 //     tF = TBuildF(teledispmat,ele->SubNxyz(subeleid));
 
      // add 1/3 of subelement material volume to this node
@@ -482,35 +480,35 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
 //     tF.Scale(V);
      Fnode += F;
 //     tFnode += tF;
-     
+
     } // for (unsigned j=0; j<subele.size(); ++j)
   } // for (int i=0; i<neleinpatch; ++i)
-  
+
   // do the actual averaging
   Fnode.Scale(1.0/Vnode);
 //  tFnode.Scale(1.0/Vnode);
-  
-  
+
+
   //-----------------------------------------------------------------------
   // build B operator
- 
+
   Epetra_SerialDenseMatrix bopbar(6,ndofinpatch);
 //  Teuchos::SerialDenseMatrix<int,FAD> tbopbar(6,ndofinpatch,true);
   Epetra_SerialDenseMatrix nxyzbar(9,ndofinpatch);
-  
+
   // loop elements in patch
   for (int ele=0; ele<neleinpatch; ++ele)
   {
     // current element
     DRT::ELEMENTS::NStet5* actele = adjele[ele];
     std::vector<int>& subele = adjsubele[actele->Id()];
-    // loop subelements in this element  
+    // loop subelements in this element
     for (unsigned j=0; j<subele.size();++j)
     {
       const int subeleid = subele[j];
       double V = actele->SubV(subeleid)/3;
       V=V/Vnode;
-      
+
       // get derivatives with respect to X
       const LINALG::Matrix<4,3>& nxyz = actele->SubNxyz(subeleid);
       for (int k=0; k<4; ++k)
@@ -520,27 +518,28 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
            int index=lmlm[ele][j][k*3+l];
            if (index%3==0)
            {
-             nxyzbar(l*3+0,index+0) += V*nxyz(k,l);  
-             nxyzbar(l*3+1,index+1) += V*nxyz(k,l);  
-             nxyzbar(l*3+2,index+2) += V*nxyz(k,l);  
+             nxyzbar(l*3+0,index+0) += V*nxyz(k,l);
+             nxyzbar(l*3+1,index+1) += V*nxyz(k,l);
+             nxyzbar(l*3+2,index+2) += V*nxyz(k,l);
            }
            else if (index%3==1)
            {
-             nxyzbar(l*3+0,index-1) += V*nxyz(k,l);  
-             nxyzbar(l*3+1,index+0) += V*nxyz(k,l);  
-             nxyzbar(l*3+2,index+1) += V*nxyz(k,l);  
+             nxyzbar(l*3+0,index-1) += V*nxyz(k,l);
+             nxyzbar(l*3+1,index+0) += V*nxyz(k,l);
+             nxyzbar(l*3+2,index+1) += V*nxyz(k,l);
            }
            else
            {
-             nxyzbar(l*3+0,index-2) += V*nxyz(k,l);  
-             nxyzbar(l*3+1,index-1) += V*nxyz(k,l);  
-             nxyzbar(l*3+2,index+0) += V*nxyz(k,l);  
+             nxyzbar(l*3+0,index-2) += V*nxyz(k,l);
+             nxyzbar(l*3+1,index-1) += V*nxyz(k,l);
+             nxyzbar(l*3+2,index+0) += V*nxyz(k,l);
            }
          }//for (int l=0; l<3; ++l)
-      }//for (int k=0; k<4; ++k)      
-    }//for (unsigned j=0; j<subele.size();++j) 
-  }//for (int ele=0; ele<neleinpatch; ++ele)    
-    
+      }//for (int k=0; k<4; ++k)
+    }//for (unsigned j=0; j<subele.size();++j)
+  }//for (int ele=0; ele<neleinpatch; ++ele)
+
+
 
   for (int j=0; j<ndofinpatch; ++j)
   {
@@ -549,10 +548,10 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
      bopbar(2,j) = Fnode(0,2)*nxyzbar(6,j)+Fnode(1,2)*nxyzbar(7,j)+Fnode(2,2)*nxyzbar(8,j);
      bopbar(3,j) = Fnode(0,1)*nxyzbar(0,j)+Fnode(0,0)*nxyzbar(3,j)+Fnode(1,1)*nxyzbar(1,j)+Fnode(1,0)*nxyzbar(4,j)+Fnode(2,1)*nxyzbar(2,j)+Fnode(2,0)*nxyzbar(5,j);
      bopbar(4,j) = Fnode(0,2)*nxyzbar(3,j)+Fnode(0,1)*nxyzbar(6,j)+Fnode(1,2)*nxyzbar(4,j)+Fnode(1,1)*nxyzbar(7,j)+Fnode(2,2)*nxyzbar(5,j)+Fnode(2,1)*nxyzbar(8,j);
-     bopbar(5,j) = Fnode(0,2)*nxyzbar(0,j)+Fnode(0,0)*nxyzbar(6,j)+Fnode(1,2)*nxyzbar(1,j)+Fnode(1,0)*nxyzbar(7,j)+Fnode(2,2)*nxyzbar(2,j)+Fnode(2,0)*nxyzbar(8,j);    
-  } 
-   
-  
+     bopbar(5,j) = Fnode(0,2)*nxyzbar(0,j)+Fnode(0,0)*nxyzbar(6,j)+Fnode(1,2)*nxyzbar(1,j)+Fnode(1,0)*nxyzbar(7,j)+Fnode(2,2)*nxyzbar(2,j)+Fnode(2,0)*nxyzbar(8,j);
+  }
+
+
 
 
   //-------------------------------------------------------------- averaged strain
@@ -562,7 +561,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
 //  LINALG::TMatrix<FADFAD,3,3> tcauchygreen;
   cauchygreen.MultiplyTN(Fnode,Fnode);
 //  tcauchygreen.MultiplyTN(tFnode,tFnode);
-  
+
   // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
   // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
   LINALG::Matrix<6,1> glstrain(true);
@@ -585,7 +584,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
   for (int i=0; i<ndofinpatch; ++i)
     for (int k=0; k<6; ++k)
       tbopbar(k,i) = tglstrain(k).dx(i);
-#endif      
+#endif
 
   //-------------------------------------------------------- output of strain
   if (iostrain != INPAR::STR::strain_none)
@@ -683,7 +682,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
         sum += tbopbar(j,i) * stress(j);
       tforce(i,0) = Vnode * sum;
     }
-#endif    
+#endif
   }
   //--------------------------------------------------- elastic stiffness
   if (stiff)
@@ -698,16 +697,16 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
 
   if (stiff)
   {
-    
+
     if (!force) dserror("Cannot compute stiffness matrix without computing internal force");
 
     Teuchos::SerialDenseMatrix<int,double> kg(ndofinpatch,ndofinpatch,true);
-    for (int m=0; m<ndofinpatch; ++m) 
+    for (int m=0; m<ndofinpatch; ++m)
     {
-      for (int n=0; n<ndofinpatch; ++n) 
+      for (int n=0; n<ndofinpatch; ++n)
       {
-        for (int i=0; i<3; ++i) 
-	{ 
+        for (int i=0; i<3; ++i)
+	{
 	  double sum     = Vnode * (stress(0) * nxyzbar(i,n)      * nxyzbar(i,m)    \
                                   + stress(1) * nxyzbar(i+1*3,n)  * nxyzbar(i+1*3,m)\
                                   + stress(2) * nxyzbar(i+2*3,n)  * nxyzbar(i+2*3,m)\
@@ -716,7 +715,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
 		  		  + stress(5) *(nxyzbar(i,n)      * nxyzbar(i+2*3,m) + nxyzbar(i+2*3,n) * nxyzbar(i,m))     );
           (*stiff)(m,n) += sum;
           kg(m,n)       += sum;
-                                                        
+
 	}//for (int i=0; i<3; ++i)
       }//for (int n=0; n<ndofinpatch; ++n)
     }//for (int m=0; m<ndofinpatch; ++m)
@@ -729,7 +728,7 @@ void DRT::ELEMENTS::NStet5Type::NodalIntegration(
 #endif
 
   }//if (stiff)
- 
+
   return;
 }
 
@@ -758,7 +757,9 @@ void DRT::ELEMENTS::NStet5Type::SelectMaterial(
     case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       MAT::StVenantKirchhoff* stvk = static_cast<MAT::StVenantKirchhoff*>(mat.get());
-      stvk->Evaluate(glstrain,cmat,stress);
+      Teuchos::ParameterList params;
+      LINALG::Matrix<3,3> defgrd(true);
+      stvk->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
       density = stvk->Density();
     }
     break;
@@ -772,7 +773,8 @@ void DRT::ELEMENTS::NStet5Type::SelectMaterial(
     case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
     {
       MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
-      aaa->Evaluate(glstrain,cmat,stress);
+      Teuchos::ParameterList params;
+      aaa->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
       density = aaa->Density();
     }
     break;
@@ -780,7 +782,7 @@ void DRT::ELEMENTS::NStet5Type::SelectMaterial(
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
-      hyper->Evaluate(glstrain,cmat,stress,params);
+      hyper->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
       density = hyper->Density();
       return;
       break;
@@ -980,7 +982,7 @@ void DRT::ELEMENTS::NStet5Type::StrainOutput(
                     LINALG::Matrix<3,3>&         F,
                     LINALG::Matrix<6,1>&         glstrain,
                     const double                 weight)
-{ 
+{
 
   LINALG::Matrix<3,3> glstrainout;
 

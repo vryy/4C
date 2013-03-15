@@ -33,7 +33,7 @@ Maintainer: Caroline Danowski
 
 
 #include "matpar_parameter.H"
-#include "material.H"
+#include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
@@ -131,7 +131,7 @@ private:
 
   /*----------------------------------------------------------------------*/
   //! wrapper for visco-plastic Robinson's material
-  class Robinson : public Material
+  class Robinson : public So3Material
   {
   public:
 
@@ -181,28 +181,19 @@ private:
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Robinson( *this ) ); }
 
     //! initialise internal stress variables
-    void Setup(
+    virtual void Setup(
       const int numgp, //!< number of Gauss points
       DRT::INPUT::LineDefinition* linedef
       );
 
     //! update internal stress variables
-    void Update();
+    virtual void Update();
 
-    //! reset internal stress variables
-    void Reset();
-
-    //! evaluate material
-    void Evaluate(
-      const LINALG::Matrix<NUM_STRESS_3D,1>& strain,  //!< return the total strains to the element
-      LINALG::Matrix<NUM_STRESS_3D,1>& plstrain,  //!< return the plastic strains to the element
-      const LINALG::Matrix<NUM_STRESS_3D,1>& straininc,  // total strain increment
-      const double& scalartemp,  //!< scalar-valued temperature
-      const int gp,  //!< current Gaus point
-      Teuchos::ParameterList& params,  //!< parameter list for communication
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  //!< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>& stress  //!< 2nd PK-stress
-      );
+    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
+                          const LINALG::Matrix<6,1>* glstrain,
+                          Teuchos::ParameterList& params,
+                          LINALG::Matrix<6,1>* stress,
+                          LINALG::Matrix<6,6>* cmat);
 
     //! computes Cauchy stress
     void Stress(

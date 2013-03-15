@@ -23,6 +23,22 @@ bool DRT::ELEMENTS::Wall1::ReadElement(const std::string& eletype,
                                        const std::string& distype,
                                        DRT::INPUT::LineDefinition* linedef)
 {
+  // set discretization type
+  SetDisType(DRT::StringToDistype(distype));
+
+  linedef->ExtractDouble("THICK",thickness_);
+  if  (thickness_<=0) dserror("WALL element thickness needs to be < 0");
+
+  std::vector<int> ngp;
+  linedef->ExtractIntVector("GP",ngp);
+
+  if      ((NumNode()==4) and ((ngp[0]<2) or (ngp[1]<2))) dserror("Insufficient number of Gauss points");
+  else if ((NumNode()==8) and ((ngp[0]<3) or (ngp[1]<3))) dserror("Insufficient number of Gauss points");
+  else if ((NumNode()==9) and ((ngp[0]<3) or (ngp[1]<3))) dserror("Insufficient number of Gauss points");
+  else if ((NumNode()==6) and (ngp[0]<3)) dserror("Insufficient number of Gauss points");
+
+  gaussrule_ = getGaussrule(&ngp[0]);
+
   // read number of material model
   int material = 0;
   linedef->ExtractInt("MAT",material);
@@ -39,25 +55,11 @@ bool DRT::ELEMENTS::Wall1::ReadElement(const std::string& eletype,
   }
 
   if (mat->MaterialType() == INPAR::MAT::m_elasthyper){
+    const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
+    const int numgp = intpoints.nquad;
     MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(mat.get());
-    elahy->Setup(linedef);
+    elahy->Setup(numgp,linedef);
   }
-
-  // set discretization type
-  SetDisType(DRT::StringToDistype(distype));
-
-  linedef->ExtractDouble("THICK",thickness_);
-  if  (thickness_<=0) dserror("WALL element thickness needs to be < 0");
-
-  std::vector<int> ngp;
-  linedef->ExtractIntVector("GP",ngp);
-
-  if      ((NumNode()==4) and ((ngp[0]<2) or (ngp[1]<2))) dserror("Insufficient number of Gauss points");
-  else if ((NumNode()==8) and ((ngp[0]<3) or (ngp[1]<3))) dserror("Insufficient number of Gauss points");
-  else if ((NumNode()==9) and ((ngp[0]<3) or (ngp[1]<3))) dserror("Insufficient number of Gauss points");
-  else if ((NumNode()==6) and (ngp[0]<3)) dserror("Insufficient number of Gauss points");
-
-  gaussrule_ = getGaussrule(&ngp[0]);
 
   std::string buffer;
   // reduced dimension assumption

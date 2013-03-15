@@ -24,8 +24,6 @@ Maintainer: Susanna Tinkl
 
 #include "growth_ip.H"
 #include "elasthyper.H"
-#include "holzapfelcardiovascular.H"
-#include "humphreycardiovascular.H"
 #include "aaaneohooke.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -210,7 +208,7 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Setup                                         (public)         02/10|
  *----------------------------------------------------------------------*/
-void MAT::Growth::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::Growth::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   theta_ = Teuchos::rcp(new std::vector<double> (numgp));
   thetaold_ = Teuchos::rcp(new std::vector<double> (numgp));
@@ -224,15 +222,9 @@ void MAT::Growth::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
 
   // Setup of elastic material
   matelastic_ = MAT::Material::Factory(params_->idmatelastic_);
-  if (matelastic_->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) {
-    MAT::HolzapfelCardio* holz = static_cast <MAT::HolzapfelCardio*>(matelastic_.get());
-    holz->Setup(numgp, linedef);
-  } else if (matelastic_->MaterialType() == INPAR::MAT::m_humphreycardiovascular) {
-    MAT::HumphreyCardio* hum = static_cast <MAT::HumphreyCardio*>(matelastic_.get());
-    hum->Setup(numgp, linedef);
-  } else if (matelastic_->MaterialType() == INPAR::MAT::m_elasthyper) {
+  if (matelastic_->MaterialType() == INPAR::MAT::m_elasthyper) {
     MAT::ElastHyper* elast = static_cast <MAT::ElastHyper*>(matelastic_.get());
-    elast->Setup(linedef);
+    elast->Setup(numgp,linedef);
   }
 
   isinit_ = true;
@@ -240,9 +232,9 @@ void MAT::Growth::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
 }
 
 /*----------------------------------------------------------------------*
- |  ResetGrowth                                   (public)         11/12|
+ |  ResetAll                                      (public)         11/12|
  *----------------------------------------------------------------------*/
-void MAT::Growth::ResetGrowth(const int numgp)
+void MAT::Growth::ResetAll(const int numgp)
 {
   for (int j=0; j<numgp; ++j)
   {
@@ -274,15 +266,16 @@ void MAT::Growth::Update()
  Only the elastic part contributes to the stresses, thus we have to
  compute the elastic Cauchy Green Tensor Cdach and elastic 2PK stress Sdach.
  */
-void MAT::Growth::Evaluate
-(
-  const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
-  const int gp,
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
-  LINALG::Matrix<NUM_STRESS_3D,1> * stress,
-  Teuchos::ParameterList& params
-)
+void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
+                           const LINALG::Matrix<6,1>* glstrain,
+                           Teuchos::ParameterList& params,
+                           LINALG::Matrix<6,1>* stress,
+                           LINALG::Matrix<6,6>* cmat)
 {
+  // get gauss point number
+  const int gp = params.get<int>("gp",-1);
+  if (gp == -1) dserror("no Gauss point number provided in material");
+
   double dt = params.get<double>("delta time",-1.0);
   double time = params.get<double>("total time",-1.0);
   std::string action = params.get<std::string>("action","none");
@@ -502,16 +495,12 @@ void MAT::Growth::EvaluateElastic
 {
   if (matelastic_->MaterialType() == INPAR::MAT::m_elasthyper) {
     MAT::ElastHyper* elast = static_cast <MAT::ElastHyper*>(matelastic_.get());
-    elast->Evaluate(*glstrain, *cmat, *stress, params);
-  } else if (matelastic_->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) {
-    MAT::HolzapfelCardio* holz = static_cast <MAT::HolzapfelCardio*>(matelastic_.get());
-    holz->Evaluate(glstrain, gp, cmat, stress);
-  } else if (matelastic_->MaterialType() == INPAR::MAT::m_humphreycardiovascular) {
-    MAT::HumphreyCardio* hum = static_cast <MAT::HumphreyCardio*>(matelastic_.get());
-    hum->Evaluate(glstrain, gp, cmat, stress);
+    LINALG::Matrix<3,3> defgrd(true);
+    elast->Evaluate(&defgrd,glstrain,params,stress,cmat);
   } else if (matelastic_->MaterialType() == INPAR::MAT::m_aaaneohooke){
     MAT::AAAneohooke* aaaneo = static_cast <MAT::AAAneohooke*>(matelastic_.get());
-    aaaneo->Evaluate(*glstrain, *cmat, *stress);
+    LINALG::Matrix<3,3> defgrd(true);
+    aaaneo->Evaluate(&defgrd,glstrain,params,stress,cmat);
   } else dserror("material not implemented for growth");
 
 }
@@ -677,5 +666,83 @@ void MAT::GrowthOutputToGmsh
   f_system_theta.close();
 
   return;
+}
+
+void MAT::Growth::VisNames(std::map<string,int>& names)
+{
+  string fiber = "Theta";
+  names[fiber] = 1;
+  fiber = "Mandel";
+  names[fiber] = 1;
+  if (Matelastic()->MaterialType() == INPAR::MAT::m_elasthyper)
+  {
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Matelastic().get());
+    if (elahy->AnisotropicPrincipal() or elahy->AnisotropicModified())
+    {
+      std::vector<LINALG::Matrix<3,1> > fibervecs;
+      elahy->GetFiberVecs(fibervecs);
+      int vissize = fibervecs.size();
+      string fiber;
+      for (int i = 0; i < vissize; i++)
+      {
+        std::ostringstream s;
+        s << "Fiber" << i+1;
+        fiber = s.str();
+        names[fiber] = 3; // 3-dim vector
+      }
+    }
+  }
+}
+
+bool MAT::Growth::VisData(const string& name, std::vector<double>& data, int numgp)
+{
+  if (name == "Theta")
+  {
+    if ((int)data.size()!=1)
+      dserror("size mismatch");
+    double temp = 0.0;
+    for (int iter=0; iter<numgp; iter++)
+      temp += Gettheta()->at(iter);
+    data[0] = temp/numgp;
+  }
+  else if (name == "Mandel")
+  {
+    if ((int)data.size()!=1)
+      dserror("size mismatch");
+    double temp = 0.0;
+    for (int iter=0; iter<numgp; iter++)
+      temp += Getmandel()->at(iter);
+    data[0] = temp/numgp;
+  }
+  else if (Matelastic()->MaterialType() == INPAR::MAT::m_elasthyper)
+  {
+    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Matelastic().get());
+    if (elahy->AnisotropicPrincipal() or elahy->AnisotropicModified())
+    {
+      std::vector<LINALG::Matrix<3,1> > fibervecs;
+      elahy->GetFiberVecs(fibervecs);
+      int vissize = fibervecs.size();
+      for (int i = 0; i < vissize; i++)
+      {
+        std::ostringstream s;
+        s << "Fiber" << i+1;
+        string fiber;
+        fiber = s.str();
+        if (name == fiber)
+        {
+          if ((int)data.size()!=3)
+            dserror("size mismatch");
+          data[0] = fibervecs.at(i)(0);
+          data[1] = fibervecs.at(i)(1);
+          data[2] = fibervecs.at(i)(2);
+        }
+      }
+    }
+  }
+  else
+  {
+    return false;
+  }
+  return true;
 }
 

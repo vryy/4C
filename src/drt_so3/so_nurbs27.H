@@ -34,7 +34,6 @@ Maintainer: Peter Gamnitzer
 const int NUMNOD_SONURBS27 = 27;      ///< number of nodes
 const int NODDOF_SONURBS27 = 3;      ///< number of dofs per node
 const int NUMDOF_SONURBS27 = 81;     ///< total dofs per element
-const int NUMSTR_SONURBS27 = 6;      ///< number of strains/stresses
 const int NUMGPT_SONURBS27 = 27;      ///< total gauss points per element
 const int NUMDIM_SONURBS27 = 3;      ///< number of dimensions
 
@@ -309,7 +308,7 @@ public:
    const int                   stc_layer,
    std::vector<int>&           lm,
    DRT::Discretization&        discretization,
-   bool                        do_inverse 
+   bool                        do_inverse
    );
 
 protected:
@@ -367,32 +366,6 @@ protected:
       LINALG::Matrix<81,81>* massmatrix    , ///< element mass matrix
       LINALG::Matrix<81,1>*  force         , ///< element internal force vector
       Teuchos::ParameterList& params        );
-
-  /*!
-   \brief Interface to material laws
-
-   Here the interface to any material takes place. Stress and C-mat must be retrieved
-   whereas all necessary data is passed. Add whatever your material needs, but
-   make sure that exchange is not overdone performance-wise.
-
-   \param *stress (out): Voigt-Vector of stresses at current gp
-   \param *cmat (out): Elasticity matrix at current gp
-   \param *density (out): density of material
-   \param *glstrain (in): Voigt-Vector of GL-strains at current gp
-   \param *defgrd (in): F at current gp, CAUTION! only for disp-based soh8
-   \param gp (in): current gp
-   \param params (in): parameterlist to access time, etc. in materials
-   */
-
-  void sonurbs27_mat_sel(
-    LINALG::Matrix<6,1>* stress  ,
-    LINALG::Matrix<6,6>* cmat    ,
-    double*              density ,
-    LINALG::Matrix<6,1>* glstrain,
-    LINALG::Matrix<3,3>* defgrd  ,
-    const int            gp      ,
-    Teuchos::ParameterList& params  );
-
 
   //! Evaluate Nurbs27 Shapefcts to keep them static
   const std::vector<LINALG::Matrix<27, 1> > sonurbs27_shapefcts(

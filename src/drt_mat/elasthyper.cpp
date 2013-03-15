@@ -266,7 +266,7 @@ void MAT::ElastHyper::SetupAAA(Teuchos::ParameterList& params)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::Setup(DRT::INPUT::LineDefinition* linedef)
+void MAT::ElastHyper::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // Setup summands
   for (unsigned int p=0; p<potsum_.size(); ++p)
@@ -452,12 +452,11 @@ bool MAT::ElastHyper::HaveCoefficientsStretchesModified()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ElastHyper::Evaluate(
-  const LINALG::Matrix<6,1>& glstrain,
-  LINALG::Matrix<6,6>& cmat,
-  LINALG::Matrix<6,1>& stress,
-  Teuchos::ParameterList& params
-  )
+void MAT::ElastHyper::Evaluate(const LINALG::Matrix<3,3>* defgrd,
+                               const LINALG::Matrix<6,1>* glstrain,
+                               Teuchos::ParameterList& params,
+                               LINALG::Matrix<6,1>* stress,
+                               LINALG::Matrix<6,6>* cmat)
 {
 
   LINALG::Matrix<6,1> id2(true) ;
@@ -476,13 +475,13 @@ void MAT::ElastHyper::Evaluate(
   LINALG::Matrix<3,1> modgamma(true);
   LINALG::Matrix<5,1> moddelta(true);
 
-  EvaluateKinQuant(glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv,pranisoinv);
+  EvaluateKinQuant(*glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv,pranisoinv);
   EvaluateGammaDelta(rcg,prinv,modinv,pranisoinv,gamma,delta,modgamma,moddelta);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
-  stress.Clear();
-  cmat.Clear();
+  stress->Clear();
+  cmat->Clear();
 
   // build stress response and elasticity tensor
   // for potentials based on principal invariants
@@ -491,8 +490,8 @@ void MAT::ElastHyper::Evaluate(
     LINALG::Matrix<NUM_STRESS_3D,1> stressisoprinc(true) ;
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisoprinc(true) ;
     EvaluateIsotropicPrinc(stressisoprinc,cmatisoprinc,scg,id2,icg,id4sharp,gamma,delta);
-    stress.Update(1.0, stressisoprinc, 1.0);
-    cmat.Update(1.0,cmatisoprinc,1.0);
+    stress->Update(1.0, stressisoprinc, 1.0);
+    cmat->Update(1.0,cmatisoprinc,1.0);
   }
 
   if (isomod_)
@@ -502,10 +501,10 @@ void MAT::ElastHyper::Evaluate(
     LINALG::Matrix<NUM_STRESS_3D,1> stressisomodvol(true) ;
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodvol(true) ;
     EvaluateIsotropicMod(stressisomodiso,stressisomodvol,cmatisomodiso,cmatisomodvol,rcg,id2,icg,id4,id4sharp,modinv,prinv,modgamma,moddelta);
-    stress.Update(1.0, stressisomodiso, 1.0);
-    stress.Update(1.0, stressisomodvol, 1.0);
-    cmat.Update(1.0,cmatisomodiso,1.0);
-    cmat.Update(1.0,cmatisomodvol,1.0);
+    stress->Update(1.0, stressisomodiso, 1.0);
+    stress->Update(1.0, stressisomodvol, 1.0);
+    cmat->Update(1.0,cmatisomodiso,1.0);
+    cmat->Update(1.0,cmatisomodvol,1.0);
   }
 
   /*----------------------------------------------------------------------*/
@@ -513,7 +512,7 @@ void MAT::ElastHyper::Evaluate(
   const bool havecoeffstrpr = HaveCoefficientsStretchesPrincipal();
   const bool havecoeffstrmod = HaveCoefficientsStretchesModified();
   if (havecoeffstrpr or havecoeffstrmod) {
-    ResponseStretches(cmat,stress,rcg,havecoeffstrpr,havecoeffstrmod);
+    ResponseStretches(*cmat,*stress,rcg,havecoeffstrpr,havecoeffstrmod);
   }
 
   /*----------------------------------------------------------------------*/
@@ -523,8 +522,8 @@ void MAT::ElastHyper::Evaluate(
       LINALG::Matrix<NUM_STRESS_3D,1> stressanisoprinc(true) ;
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatanisoprinc(true) ;
       EvaluateAnisotropicPrinc(stressanisoprinc,cmatanisoprinc,rcg,params);
-      stress.Update(1.0, stressanisoprinc, 1.0);
-      cmat.Update(1.0, cmatanisoprinc, 1.0);
+      stress->Update(1.0, stressanisoprinc, 1.0);
+      cmat->Update(1.0, cmatanisoprinc, 1.0);
   }
 
   if (anisomod_)
@@ -532,8 +531,8 @@ void MAT::ElastHyper::Evaluate(
       LINALG::Matrix<NUM_STRESS_3D,1> stressanisomod(true) ;
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatanisomod(true) ;
       EvaluateAnisotropicMod(stressanisomod,cmatanisomod,rcg,icg,prinv);
-      stress.Update(1.0, stressanisomod, 1.0);
-      cmat.Update(1.0, cmatanisomod, 1.0);
+      stress->Update(1.0, stressanisomod, 1.0);
+      cmat->Update(1.0, cmatanisomod, 1.0);
   }
 
   return ;
@@ -952,3 +951,50 @@ void MAT::ElastHyper::ResponseStretches(
   return;
 }
 
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void MAT::ElastHyper::VisNames(std::map<string,int>& names)
+{
+  if (AnisotropicPrincipal() or AnisotropicModified())
+  {
+    std::vector<LINALG::Matrix<3,1> > fibervecs;
+    GetFiberVecs(fibervecs);
+    int vissize = fibervecs.size();
+    string fiber;
+    for (int i = 0; i < vissize; i++)
+    {
+      std::ostringstream s;
+      s << "Fiber" << i+1;
+      fiber = s.str();
+      names[fiber] = 3; // 3-dim vector
+    }
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+bool MAT::ElastHyper::VisData(const string& name, std::vector<double>& data, int numgp)
+{
+  if (AnisotropicPrincipal() or AnisotropicModified())
+  {
+    std::vector<LINALG::Matrix<3,1> > fibervecs;
+    GetFiberVecs(fibervecs);
+    int vissize = fibervecs.size();
+    for (int i = 0; i < vissize; i++)
+    {
+      std::ostringstream s;
+      s << "Fiber" << i+1;
+      string fiber;
+      fiber = s.str();
+      if (name == fiber)
+      {
+        if ((int)data.size()!=3)
+          dserror("size mismatch");
+        data[0] = fibervecs.at(i)(0);
+        data[1] = fibervecs.at(i)(1);
+        data[2] = fibervecs.at(i)(2);
+      }
+    }
+  }
+  return true;
+}

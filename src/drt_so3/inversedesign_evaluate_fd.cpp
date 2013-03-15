@@ -526,7 +526,7 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
 
   //********************** non-permuted original function cstress(disp)
   LINALG::SerialDenseMatrix xcurr(NUMNOD_SOH8,NUMDIM_SOH8);
-  Epetra_SerialDenseVector cstress(NUMSTR_SOH8);
+  Epetra_SerialDenseVector cstress(MAT::NUM_STRESS_3D);
   {
     LINALG::SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);
     for (int i=0; i<NUMNOD_SOH8; ++i)
@@ -560,7 +560,7 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
     LINALG::SerialDenseMatrix cauchygreen(NUMDIM_SOH8,NUMDIM_SOH8);
     cauchygreen.Multiply('T','N',1.0,F,F,0.0);
 
-    LINALG::SerialDenseVector glstrain(NUMSTR_SOH8);
+    LINALG::SerialDenseVector glstrain(MAT::NUM_STRESS_3D);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -568,11 +568,12 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
 
-    Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
-    Epetra_SerialDenseVector stress(NUMSTR_SOH8);
-    LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
-    double density;
-    ele->soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&F,gp,params);
+    Epetra_SerialDenseMatrix cmat(MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D);
+    Epetra_SerialDenseVector stress(MAT::NUM_STRESS_3D);
+    params.set<int>("gp",gp);
+    params.set<int>("eleID",ele->Id());
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
+    so3mat->Evaluate(&F,&glstrain,params,&stress,&cmat);
 
     cstress.Multiply('N','N',detf,IF,stress,0.0);
     //cout << "unperm cstress\n" << cstress;
@@ -615,7 +616,7 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
       LINALG::SerialDenseMatrix cauchygreen(NUMDIM_SOH8,NUMDIM_SOH8);
       cauchygreen.Multiply('T','N',1.0,F,F,0.0);
 
-      LINALG::SerialDenseVector glstrain(NUMSTR_SOH8);
+      LINALG::SerialDenseVector glstrain(MAT::NUM_STRESS_3D);
       glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
       glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
       glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -623,13 +624,14 @@ void DRT::ELEMENTS::InvDesign::FDstiffmatrix(Epetra_SerialDenseMatrix& stiff,
       glstrain(4) = cauchygreen(1,2);
       glstrain(5) = cauchygreen(2,0);
 
-      Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
-      Epetra_SerialDenseVector stress(NUMSTR_SOH8);
-      double density;
-      LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
-      ele->soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&F,gp,params);
+      Epetra_SerialDenseMatrix cmat(MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D);
+      Epetra_SerialDenseVector stress(MAT::NUM_STRESS_3D);
+      params.set<int>("gp",gp);
+      params.set<int>("eleID",ele->Id());
+      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
+      so3mat->Evaluate(&F,&glstrain,params,&stress,&cmat);
 
-      Epetra_SerialDenseVector cstressperm(NUMSTR_SOH8);
+      Epetra_SerialDenseVector cstressperm(MAT::NUM_STRESS_3D);
       cstressperm.Multiply('N','N',detf,IF,stress,0.0);
       //cout << "cstressperm (i,j)=(" << i << "," << j << ")\n" << cstressperm;
 
@@ -747,8 +749,8 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
 
   //********************** non-permuted original function cstress(disp)
   LINALG::SerialDenseMatrix xcurr(NUMNOD_SOH8,NUMDIM_SOH8);
-  Epetra_SerialDenseVector cstress(NUMSTR_SOH8);
-  Epetra_SerialDenseVector stress(NUMSTR_SOH8);
+  Epetra_SerialDenseVector cstress(MAT::NUM_STRESS_3D);
+  Epetra_SerialDenseVector stress(MAT::NUM_STRESS_3D);
   double detf;
   {
     LINALG::SerialDenseMatrix xrefe(NUMNOD_SOH8,NUMDIM_SOH8);
@@ -783,7 +785,7 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
     LINALG::SerialDenseMatrix cauchygreen(NUMDIM_SOH8,NUMDIM_SOH8);
     cauchygreen.Multiply('T','N',1.0,F,F,0.0);
 
-    LINALG::SerialDenseVector glstrain(NUMSTR_SOH8);
+    LINALG::SerialDenseVector glstrain(MAT::NUM_STRESS_3D);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -791,10 +793,11 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
     glstrain(4) = cauchygreen(1,2);
     glstrain(5) = cauchygreen(2,0);
 
-    Epetra_SerialDenseMatrix cmat(NUMSTR_SOH8,NUMSTR_SOH8);
-    LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
-    double density;
-    ele->soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&F,gp,params);
+    Epetra_SerialDenseMatrix cmat(MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D);
+    params.set<int>("gp",gp);
+    params.set<int>("eleID",ele->Id());
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
+    so3mat->Evaluate(&F,&glstrain,params,&stress,&cmat);
 
     cstress.Multiply('N','N',detf,IF,stress,0.0);
     //cout << "unperm cstress\n" << cstress;
@@ -834,7 +837,7 @@ void DRT::ELEMENTS::InvDesign::FD_dISdX(Epetra_SerialDenseMatrix& stiff,
       LINALG::SerialDenseMatrix IF(6,6);
       BuildIF(IF,F);
 
-      Epetra_SerialDenseVector cstressperm(NUMSTR_SOH8);
+      Epetra_SerialDenseVector cstressperm(MAT::NUM_STRESS_3D);
       cstressperm.Multiply('N','N',detf,IF,stress,0.0);
       //cout << "cstressperm (i,j)=(" << i << "," << j << ")\n" << cstressperm;
 
@@ -865,7 +868,7 @@ void DRT::ELEMENTS::InvDesign::FD_dISdf(Epetra_SerialDenseMatrix& dISdf,
 {
 
   //********************** non-permuted original function cstress(disp)
-  Epetra_SerialDenseVector cstress(NUMSTR_SOH8);
+  Epetra_SerialDenseVector cstress(MAT::NUM_STRESS_3D);
   double detf;
   {
     LINALG::SerialDenseMatrix F(f);
@@ -914,7 +917,7 @@ void DRT::ELEMENTS::InvDesign::FD_dISdf(Epetra_SerialDenseMatrix& dISdf,
       LINALG::SerialDenseMatrix IFperm(6,6);
       BuildIF(IFperm,Fperm);
 
-      Epetra_SerialDenseVector cstressperm(NUMSTR_SOH8);
+      Epetra_SerialDenseVector cstressperm(MAT::NUM_STRESS_3D);
       //cstressperm.Multiply('N','N',detf,IFperm,stress,0.0);
       cstressperm.Multiply('N','N',1.0,IFperm,stress,0.0); // detf is done outside
 

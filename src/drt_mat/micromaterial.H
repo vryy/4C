@@ -19,7 +19,7 @@ Maintainer: Lena Yoshihara
 
 #include <Teuchos_RCP.hpp>
 
-#include "material.H"
+#include "so3_material.H"
 #include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
@@ -83,7 +83,7 @@ private:
 
   /*----------------------------------------------------------------------*/
   /// class for handling of micro-macro transitions
-  class MicroMaterial : public Material
+  class MicroMaterial : public So3Material
   {
   public:
 
@@ -137,24 +137,24 @@ private:
     /// return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new MicroMaterial( *this ) ); }
 
-	  /// evaluate micro material on a processor with macro scale
-    void Evaluate(LINALG::Matrix<3,3>* defgrd,
-                  LINALG::Matrix<6,6>* cmat,
-                  LINALG::Matrix<6,1>* stress,
-                  double* density,
-                  const int gp,
-                  const int ele_ID);
+    /// evaluate micro material on a processor with macro scale
+    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
+                          const LINALG::Matrix<6,1>* glstrain,
+                          Teuchos::ParameterList& params,
+                          LINALG::Matrix<6,1>* stress,
+                          LINALG::Matrix<6,6>* cmat);
 
-	  /// evaluate micro material on a processor which only knows about the micro scale (supporting proc)
+    /// evaluate micro material on a processor which only knows about the micro scale (supporting proc)
     void Evaluate(LINALG::Matrix<3,3>* defgrd,
                   LINALG::Matrix<6,6>* cmat,
                   LINALG::Matrix<6,1>* stress,
-                  double* density,
                   const int gp,
                   const int ele_ID,
                   const int microdisnum,
                   double V0,
                   bool eleowner);
+
+    virtual double Density() const;
 
     /// Calculate stresses and strains on the micro-scale
     void PrepareOutput();
@@ -163,7 +163,7 @@ private:
     void Output();
 
     // Update state vectors
-    void Update();
+    virtual void Update();
 
     /// Read restart of micro scale on a processor with macro scale
     void ReadRestart(const int gp, const int eleID, const bool eleowner);
@@ -188,9 +188,10 @@ private:
 
     std::map<int,Teuchos::RCP<MicroMaterialGP> > matgp_;
 
+    double density_;
+
     /// my material parameters
     MAT::PAR::MicroMaterial* params_;
-
   };
 
 }

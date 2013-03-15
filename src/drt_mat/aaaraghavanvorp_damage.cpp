@@ -178,9 +178,11 @@ void MAT::AAAraghavanvorp_damage::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Setup: Initialize/allocate internal g variables (public)         05/08|
  *----------------------------------------------------------------------*/
-
-void MAT::AAAraghavanvorp_damage::Setup(const int numgp,const double strength)
+void MAT::AAAraghavanvorp_damage::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
+  double strength = 0.0; // section for extracting the element strength
+  linedef->ExtractDouble("STRENGTH",strength);
+
   cout << "SETUP \n";
   histgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
   histglast_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
@@ -243,18 +245,6 @@ void MAT::AAAraghavanvorp_damage::Update()
      histeqstrmaxcurr_->at(j)=emptyvec;
 //     histeqstrmaxcurr_->at(j)=0.0;
     }
-  return;
-}
-
-/*----------------------------------------------------------------------*
- |  Reset internal stress variables               (public)         05/08|
- *----------------------------------------------------------------------*/
-
-void MAT::AAAraghavanvorp_damage::Reset()
-{
-  // do nothing,
-  // because #histstresscurr_ and #artstresscurr_ are recomputed anyway at every iteration
-  // based upon #histstresslast_ and #artstresslast_ untouched within time step
   return;
 }
 
@@ -366,12 +356,15 @@ void MAT::AAAraghavanvorp_damage::StressTensTransfCauchytoSPK(LINALG::Matrix<NUM
  J    .. det(F) determinante of the Jacobian matrix, IIIc^0.5
 
   */
-void MAT::AAAraghavanvorp_damage::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain, ///< green lagrange strain
-            	  			    const int gp,                        ///< current Gauss point
-            	  			    Teuchos::ParameterList& params,      ///< parameter list for communication
-					    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,
-					    LINALG::Matrix<NUM_STRESS_3D,1>* stress)
+void MAT::AAAraghavanvorp_damage::Evaluate(const LINALG::Matrix<3,3>* defgrd,
+                                           const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain, ///< green lagrange strain
+                                           Teuchos::ParameterList& params,      ///< parameter list for communication
+                                           LINALG::Matrix<NUM_STRESS_3D,1>* stress,
+                                           LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat)
 {
+  const int gp = params.get<int>("gp",-1);
+  if (gp == -1) dserror("no Gauss point number provided in material");
+
   // material parameters for volumetric part
   const double bulk  =  params_->bulk_; // Bulk's modulus(Volumetric)
   const double beta2 =  -2;             // parameter from Holzapfel (p244), Simo & Miehe (1991)
@@ -399,7 +392,7 @@ void MAT::AAAraghavanvorp_damage::Evaluate( const LINALG::Matrix<NUM_STRESS_3D,1
 
   //  if (!gp) printf("strXX %15.10e",sqrt(rcg(0,0)));
 
-  for(unsigned i = 0;i<NUM_STRESS_3D;i++) // in the first step could be problem without it
+  for(int i = 0;i<NUM_STRESS_3D;i++) // in the first step could be problem without it
      if((rcg(i)<0) | (rcg(i) < 1.0e-12))
        rcg(i)=0.0;
 

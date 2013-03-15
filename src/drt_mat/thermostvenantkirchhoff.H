@@ -26,7 +26,7 @@ Maintainer: Caroline Danowski
  | headers                                                   dano 02/10 |
  *----------------------------------------------------------------------*/
 #include "matpar_parameter.H"
-#include "material.H"
+#include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
 
@@ -96,7 +96,7 @@ private:
 
   /*----------------------------------------------------------------------*/
   //! Wrapper for St.-Venant-Kirchhoff material with temperature term
-  class ThermoStVenantKirchhoff : public Material
+  class ThermoStVenantKirchhoff : public So3Material
   {
   public:
 
@@ -159,11 +159,12 @@ private:
     }
 
     //! evaluates stresses for 3d
-    void Evaluate(
-      const LINALG::Matrix<6,1>& glstrain,  //!< Green-Lagrange strain
-      LINALG::Matrix<6,6>& cmat,  //!< elastic material tangent
-      LINALG::Matrix<6,1>& stress,  //!< stress
-      Teuchos::ParameterList& params  //!< parameter list
+    virtual void Evaluate(
+      const LINALG::Matrix<3,3>* defgrd, //!< deformation gradient
+      const LINALG::Matrix<6,1>* glstrain,  //!< Green-Lagrange strain
+      Teuchos::ParameterList& params,  //!< parameter list
+      LINALG::Matrix<6,1>* stress,  //!< stress
+      LINALG::Matrix<6,6>* cmat  //!< elastic material tangent
       );
 
     //! main 3D material call to determine stress and constitutive tensor ctemp

@@ -21,7 +21,7 @@ Maintainer: Andreas Maier
 #define AAA_MIXEDEFFECTS_H_
 
 #include "matpar_parameter.H"
-#include "material.H"
+#include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
@@ -87,7 +87,7 @@ private:
 
   /*----------------------------------------------------------------------*/
 
-  class AAA_mixedeffects : public Material
+  class AAA_mixedeffects : public So3Material
   {
 
   public:
@@ -158,10 +158,11 @@ private:
 		  double elelocalrad);
 
     // THE material routine
-    void Evaluate(const LINALG::Matrix<6,1>& glstrain,
-		  LINALG::Matrix<6,6>& cmat,
-		  LINALG::Matrix<6,1>& stress,
-		  double elelocalrad);
+    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
+                  const LINALG::Matrix<6,1>* glstrain,
+                  Teuchos::ParameterList& params,
+		  LINALG::Matrix<6,1>* stress,
+                  LINALG::Matrix<6,6>* cmat);
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

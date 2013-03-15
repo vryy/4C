@@ -32,14 +32,18 @@ class MicroMaterialGP
 
 }
 
-void MAT::MicroMaterial::Evaluate(LINALG::Matrix<3,3>* defgrd,
-                                  LINALG::Matrix<6,6>* cmat,
-                                  LINALG::Matrix<6,1>* stress,
-                                  double* density,
-                                  const int gp,
-                                  const int ele_ID)
+virtual void MAT::MicroMaterial::Evaluate(const LINALG::Matrix<3,3>* defgrd,
+                                          const LINALG::Matrix<6,1>* glstrain,
+                                          Teuchos::ParameterList& params
+                                          LINALG::Matrix<6,1>* stress,
+                                          LINALG::Matrix<6,6>* cmat)
 {
   dserror("MAT::MicroMaterial::Evaluate not available");
+}
+
+virtual double Density() const
+{
+  dserror("MAT::MicroMaterial::Density not available");
 }
 
 void PrepareOutput()

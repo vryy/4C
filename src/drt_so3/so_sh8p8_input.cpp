@@ -18,13 +18,7 @@ Maintainer: Burkhard Bornemann
 /* headers */
 
 #include "so_sh8p8.H"
-#include "../drt_mat/artwallremod.H"
-#include "../drt_mat/anisotropic_balzani.H"
-#include "../drt_mat/viscoanisotropic.H"
-#include "../drt_mat/visconeohooke.H"
-#include "../drt_mat/viscogenmax.H"
-#include "../drt_mat/elasthyper.H"
-#include "../drt_mat/aaaraghavanvorp_damage.H"
+#include "../drt_mat/so3_material.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 
@@ -39,57 +33,8 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement(const std::string& eletype,
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
-  // special element-dependent input of material parameters
-  switch (Material()->MaterialType())
-  {
-  case INPAR::MAT::m_artwallremod:
-  {
-    MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(Material().get());
-    remo->Setup(NUMGPT_SOH8, this->Id(), linedef);
-    break;
-  }
-  case INPAR::MAT::m_anisotropic_balzani:
-  {
-    MAT::AnisotropicBalzani* balz = static_cast <MAT::AnisotropicBalzani*>(Material().get());
-    balz->Setup(linedef);
-    break;
-  }
-  case INPAR::MAT::m_viscoanisotropic:
-  {
-    MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
-    visco->Setup(NUMGPT_SOH8, linedef);
-    break;
-  }
-  case INPAR::MAT::m_visconeohooke:
-  {
-    MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(Material().get());
-    visco->Setup(NUMGPT_SOH8);
-    break;
-  }
-  case INPAR::MAT::m_viscogenmax:
-  {
-    MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(Material().get());
-    viscogenmax->Setup(NUMGPT_SOH8,linedef);
-    break;
-  }
-  case INPAR::MAT::m_elasthyper:
-  {
-    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
-    elahy->Setup(linedef);
-    break;
-  }
-  case INPAR::MAT::m_aaaraghavanvorp_damage:
-  {
-    double strength = 0.0; // section for extracting the element strength
-    linedef->ExtractDouble("STRENGTH",strength);
-    MAT::AAAraghavanvorp_damage* aaadamage = static_cast <MAT::AAAraghavanvorp_damage*>(Material().get());
-    aaadamage->Setup(NUMGPT_SOH8,strength);
-    //aaadamage->Setup(NUMGPT_SOH8);
-  }
-  default:
-    // Do nothing. Simple material.
-    break;
-  }
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  so3mat->Setup(NUMGPT_SOH8, linedef);
 
   // a temprorary variable for read-in
   std::string buffer;
@@ -109,7 +54,7 @@ bool DRT::ELEMENTS::So_sh8p8::ReadElement(const std::string& eletype,
 
   // we expect kintype to be total lagrangian
   kintype_ = soh8_nonlinear;
-  
+
 
   // read EAS technology flag
   linedef->ExtractString("EAS",buffer);

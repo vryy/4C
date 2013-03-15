@@ -102,7 +102,7 @@ void MAT::AAA_mixedeffects::Unpack(const std::vector<char>& data)
   int matid;
   ExtractfromPack(position,data,matid);
   params_ = NULL;
-  
+
   if (DRT::Problem::Instance()->Materials() != Teuchos::null)
     if (DRT::Problem::Instance()->Materials()->Num() != 0)
     {
@@ -166,11 +166,15 @@ void MAT::AAA_mixedeffects::Unpack(const std::vector<char>& data)
 
  */
 void MAT::AAA_mixedeffects::Evaluate(
-            const LINALG::Matrix<6,1>& glstrain,
-		  LINALG::Matrix<6,6>& cmat,
-		  LINALG::Matrix<6,1>& stress,
-		  double elelocalrad)
+  const LINALG::Matrix<3,3>* defgrd,
+  const LINALG::Matrix<6,1>* glstrain,
+  Teuchos::ParameterList& params,
+  LINALG::Matrix<6,1>* stress,
+  LINALG::Matrix<6,6>* cmat)
 {
+  double elelocalrad = params.get("localrad meanvalue",-999.0);
+  if (elelocalrad==-999.0) dserror("Aneurysm local radii not found");
+
   // material parameters for isochoric part
   const double alpha    = 1E6*(0.09631+0.03329*(elelocalrad*2/params_->refdia_ - 2.55));
   const double beta     = 1E6*(-0.9553*(elelocalrad*2/(params_->refdia_) - 2.55)+(0.06721 * (params_->age_)));
@@ -187,7 +191,7 @@ void MAT::AAA_mixedeffects::Evaluate(
     identity(i) = 1.0;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::Matrix<6,1> rcg(glstrain);
+  LINALG::Matrix<6,1> rcg(*glstrain);
   rcg.Scale(2.0);
   rcg += identity;
 
@@ -253,8 +257,8 @@ void MAT::AAA_mixedeffects::Evaluate(
 
   // 3rd step: add everything up
   //============================
-  stress  = pktwoiso;
-  stress += pktwovol;
+  (*stress)  = pktwoiso;
+  (*stress) += pktwovol;
 
 
   //--- do elasticity matrix -------------------------------------------------------------
@@ -278,20 +282,20 @@ void MAT::AAA_mixedeffects::Evaluate(
   // contribution: I \obtimes I
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
-      cmat(i,j) = delta1;
+      (*cmat)(i,j) = delta1;
 
   // contribution: Cinv \otimes Cinv
   for (int i = 0; i < 6; i++)
     for (int j = 0; j < 6; j++)
     {
       // contribution: Cinv \otimes I + I \otimes Cinv
-      cmat(i,j) += delta3 * ( identity(i)*invc(j) + invc(i)*identity(j) );
+      (*cmat)(i,j) += delta3 * ( identity(i)*invc(j) + invc(i)*identity(j) );
       // contribution: Cinv \otimes Cinv
-      cmat(i,j) += delta6 * invc(i)*invc(j);
+      (*cmat)(i,j) += delta6 * invc(i)*invc(j);
     }
 
   // contribution: boeppel-product
-  AddtoCmatHolzapfelProduct(cmat,invc,delta7);
+  AddtoCmatHolzapfelProduct(*cmat,invc,delta7);
 
   // 2nd step: volumetric part
   //==========================
@@ -301,10 +305,10 @@ void MAT::AAA_mixedeffects::Evaluate(
   // contribution: Cinv \otimes Cinv
   for (int i = 0; i < 6; i++)
     for (int j = 0; j < 6; j++)
-      cmat(i,j) += delta6 * invc(i)*invc(j);
+      (*cmat)(i,j) += delta6 * invc(i)*invc(j);
 
   // contribution: boeppel-product
-  AddtoCmatHolzapfelProduct(cmat,invc,delta7);
+  AddtoCmatHolzapfelProduct(*cmat,invc,delta7);
 
   return;
 }

@@ -200,8 +200,8 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
         std::vector<double> myres(lm.size());
         DRT::UTILS::ExtractMyValues(*res,myres,lm);
-        LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20> stress;
-        LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20> strain;
+        LINALG::Matrix<NUMGPT_SOH20,MAT::NUM_STRESS_3D> stress;
+        LINALG::Matrix<NUMGPT_SOH20,MAT::NUM_STRESS_3D> strain;
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
@@ -248,7 +248,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
         dserror("no gp stress/strain map available for postprocessing");
       std::string stresstype = params.get<std::string>("stresstype","ndxyz");
       int gid = Id();
-      LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20> gpstress(((*gpstressmap)[gid])->A(),true);
+      LINALG::Matrix<NUMGPT_SOH20,MAT::NUM_STRESS_3D> gpstress(((*gpstressmap)[gid])->A(),true);
 
       Teuchos::RCP<Epetra_MultiVector> poststress=params.get<Teuchos::RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
       if (poststress==Teuchos::null)
@@ -265,7 +265,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
         int lid = elemap.LID(Id());
         if (lid!=-1)
         {
-          for (int i = 0; i < NUMSTR_SOH20; ++i)
+          for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
           {
             double& s = (*((*poststress)(i)))[lid]; // resolve pointer for faster access
             s = 0.;
@@ -294,50 +294,17 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
 
     case calc_struct_update_istep:
     {
-      // Update of history for visco material
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
-      {
-        MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
-        visco->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_viscoanisotropic)
-      {
-        MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
-        visco->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_viscogenmax)
-      {
-        MAT::ViscoGenMax* viscogenmax = static_cast <MAT::ViscoGenMax*>(mat.get());
-        viscogenmax->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-      {
-        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
-        micro->Update();
-      }
+      // Update of history for materials
+      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+      so3mat->Update();
     }
     break;
 
   case calc_struct_reset_istep:
   {
-    // Reset of history for visco material
-    RCP<MAT::Material> mat = Material();
-    if (mat->MaterialType() == INPAR::MAT::m_visconeohooke)
-    {
-      MAT::ViscoNeoHooke* visco = static_cast <MAT::ViscoNeoHooke*>(mat.get());
-      visco->Reset();
-    }
-    else if (mat->MaterialType() == INPAR::MAT::m_viscoanisotropic)
-    {
-      MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(mat.get());
-      visco->Reset();
-    }
-    else if (mat->MaterialType() == INPAR::MAT::m_viscogenmax)
-    {
-      MAT::ViscoAnisotropic* viscogenmax = static_cast <MAT::ViscoAnisotropic*>(mat.get());
-      viscogenmax->Reset();
-    }
+    // Reset of history (if needed)
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+    so3mat->ResetStep();
   }
   break;
 
@@ -445,7 +412,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
               //**************************************************************
                   // get analytical solution
                   LINALG::Matrix<NUMDIM_SOH20,1> uanalyt(true);
-              LINALG::Matrix<NUMSTR_SOH20,1> strainanalyt(true);
+              LINALG::Matrix<MAT::NUM_STRESS_3D,1> strainanalyt(true);
               LINALG::Matrix<NUMDIM_SOH20,NUMDIM_SOH20> derivanalyt(true);
 
               CONTACT::AnalyticalSolutions3D(xgp,uanalyt,strainanalyt,derivanalyt);
@@ -500,7 +467,7 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
               //--------------------------------------------------------------
 
               // compute linear B-operator
-              LINALG::Matrix<NUMSTR_SOH20,NUMDOF_SOH20> bop;
+              LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH20> bop;
               for (int i=0; i<NUMNOD_SOH20; ++i)
               {
                 bop(0,NODDOF_SOH20*i+0) = N_XYZ(0,i);
@@ -525,19 +492,22 @@ int DRT::ELEMENTS::So_hex20::Evaluate(Teuchos::ParameterList& params,
               }
 
               // compute linear strain at GP
-              LINALG::Matrix<NUMSTR_SOH20,1> straingp(true);
+              LINALG::Matrix<MAT::NUM_STRESS_3D,1> straingp(true);
               straingp.Multiply(bop,nodaldisp);
 
               // strain error
-              LINALG::Matrix<NUMSTR_SOH20,1> strainerror(true);
-              for (int k=0;k<NUMSTR_SOH20;++k)
+              LINALG::Matrix<MAT::NUM_STRESS_3D,1> strainerror(true);
+              for (int k=0;k<MAT::NUM_STRESS_3D;++k)
                 strainerror(k,0) = strainanalyt(k,0) - straingp(k,0);
 
               // compute stress vector and constitutive matrix
-              double density = 0.0;
-              LINALG::Matrix<NUMSTR_SOH20,NUMSTR_SOH20> cmat(true);
-              LINALG::Matrix<NUMSTR_SOH20,1> stress(true);
-              soh20_mat_sel(&stress,&cmat,&density,&strainerror,&defgrd,gp,params);
+              LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
+              LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
+              LINALG::Matrix<3,3> defgrd(true);
+              params.set<int>("gp",gp);
+              params.set<int>("eleID",Id());
+              Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+              so3mat->Evaluate(&defgrd,&strainerror,params,&stress,&cmat);
 
               // compute GP contribution to energy error norm
               energynorm += fac * stress.Dot(strainerror);
@@ -705,8 +675,8 @@ void DRT::ELEMENTS::So_hex20::soh20_linstiffmass(
     LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* stiffmatrix, // element stiffness matrix
     LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* massmatrix,  // element mass matrix
     LINALG::Matrix<NUMDOF_SOH20,1>* force,                 // element internal force vector
-    LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20>* elestress,   // stresses at GP
-    LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20>* elestrain,   // strains at GP
+    LINALG::Matrix<NUMGPT_SOH20,MAT::NUM_STRESS_3D>* elestress,   // stresses at GP
+    LINALG::Matrix<NUMGPT_SOH20,MAT::NUM_STRESS_3D>* elestrain,   // strains at GP
     Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
     const INPAR::STR::StressType   iostress,  // stress output option
     const INPAR::STR::StrainType   iostrain)  // strain output option
@@ -787,7 +757,7 @@ void DRT::ELEMENTS::So_hex20::soh20_linstiffmass(
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
-    LINALG::Matrix<NUMSTR_SOH20,NUMDOF_SOH20> bop;
+    LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH20> bop;
     for (int i=0; i<NUMNOD_SOH20; ++i)
     {
       bop(0,NODDOF_SOH20*i+0) = defgrd(0,0)*N_XYZ(0,i);
@@ -812,15 +782,15 @@ void DRT::ELEMENTS::So_hex20::soh20_linstiffmass(
     }
 
     // now build the linear strain
-    LINALG::Matrix<NUMSTR_SOH20,1> strainlin(true);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> strainlin(true);
     strainlin.Multiply(bop,nodaldisp);
 
     // and rename it as glstrain to use the common methods further on
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    Epetra_SerialDenseVector glstrain_epetra(NUMSTR_SOH20);
-    LINALG::Matrix<NUMSTR_SOH20,1> glstrain(glstrain_epetra.A(),true);
+    Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain(glstrain_epetra.A(),true);
     glstrain.Update(1.0,strainlin);
 
     // return gp strains (only in case of stress/strain output)
@@ -873,16 +843,13 @@ void DRT::ELEMENTS::So_hex20::soh20_linstiffmass(
       dserror("requested strain type not available");
     }
 
-    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    ** Here all possible material laws need to be incorporated,
-    ** the stress vector, a C-matrix, and a density must be retrieved,
-    ** every necessary data must be passed.
-    */
-    double density = 0.0;
-    LINALG::Matrix<NUMSTR_SOH20,NUMSTR_SOH20> cmat(true);
-    LINALG::Matrix<NUMSTR_SOH20,1> stress(true);
-    LINALG::Matrix<NUMSTR_SOH20,1> plglstrain(true);
-    soh20_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
+    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
+    params.set<int>("gp",gp);
+    params.set<int>("eleID",Id());
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
@@ -891,7 +858,7 @@ void DRT::ELEMENTS::So_hex20::soh20_linstiffmass(
     case INPAR::STR::stress_2pk:
     {
       if (elestress == NULL) dserror("stress data not available");
-      for (int i = 0; i < NUMSTR_SOH20; ++i)
+      for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
         (*elestress)(gp,i) = stress(i);
     }
     break;
@@ -949,6 +916,8 @@ void DRT::ELEMENTS::So_hex20::soh20_linstiffmass(
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
     {
+      double density = Material()->Density();
+
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
       double ifactor, massfactor;
@@ -983,8 +952,8 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(
       LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* stiffmatrix, // element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH20,NUMDOF_SOH20>* massmatrix,  // element mass matrix
       LINALG::Matrix<NUMDOF_SOH20,1>* force,                 // element internal force vector
-      LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20>* elestress,   // stresses at GP
-      LINALG::Matrix<NUMGPT_SOH20,NUMSTR_SOH20>* elestrain,   // strains at GP
+      LINALG::Matrix<NUMGPT_SOH20,MAT::NUM_STRESS_3D>* elestress,   // stresses at GP
+      LINALG::Matrix<NUMGPT_SOH20,MAT::NUM_STRESS_3D>* elestrain,   // strains at GP
       Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
       const INPAR::STR::StressType   iostress,  // stress output option
       const INPAR::STR::StrainType   iostrain)  // strain output option
@@ -1078,8 +1047,8 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    Epetra_SerialDenseVector glstrain_epetra(NUMSTR_SOH20);
-    LINALG::Matrix<NUMSTR_SOH20,1> glstrain(glstrain_epetra.A(),true);
+    Epetra_SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain(glstrain_epetra.A(),true);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -1157,7 +1126,7 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(
     **      [ ... |          F_23*N_{,1}^k+F_21*N_{,3}^k        | ... ]
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
-    LINALG::Matrix<NUMSTR_SOH20,NUMDOF_SOH20> bop;
+    LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH20> bop;
     for (int i=0; i<NUMNOD_SOH20; ++i)
     {
       bop(0,NODDOF_SOH20*i+0) = defgrd(0,0)*N_XYZ(0,i);
@@ -1181,15 +1150,13 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(
       bop(5,NODDOF_SOH20*i+2) = defgrd(2,2)*N_XYZ(0,i) + defgrd(2,0)*N_XYZ(2,i);
     }
 
-    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    ** Here all possible material laws need to be incorporated,
-    ** the stress vector, a C-matrix, and a density must be retrieved,
-    ** every necessary data must be passed.
-    */
-    double density = 0.0;
-    LINALG::Matrix<NUMSTR_SOH20,NUMSTR_SOH20> cmat(true);
-    LINALG::Matrix<NUMSTR_SOH20,1> stress(true);
-    soh20_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
+    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
+    params.set<int>("gp",gp);
+    params.set<int>("eleID",Id());
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp stresses
@@ -1198,7 +1165,7 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(
     case INPAR::STR::stress_2pk:
     {
       if (elestress == NULL) dserror("stress data not available");
-      for (int i = 0; i < NUMSTR_SOH20; ++i)
+      for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
         (*elestress)(gp,i) = stress(i);
     }
     break;
@@ -1278,6 +1245,8 @@ void DRT::ELEMENTS::So_hex20::soh20_nlnstiffmass(
 
     if (massmatrix != NULL) // evaluate mass matrix +++++++++++++++++++++++++
     {
+      double density = Material()->Density();
+
       // integrate consistent mass matrix
       const double factor = detJ_w * density;
       double ifactor, massfactor;

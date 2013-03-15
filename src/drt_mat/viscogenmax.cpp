@@ -246,9 +246,9 @@ void MAT::ViscoGenMax::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void MAT::ViscoGenMax::Setup(const int numgp,DRT::INPUT::LineDefinition* linedef)
+void MAT::ViscoGenMax::Setup(int numgp,DRT::INPUT::LineDefinition* linedef)
 {
-  MAT::ElastHyper::Setup(linedef);
+  MAT::ElastHyper::Setup(numgp,linedef);
 
   // flags for the viscous contribution
   vis_isoprinc_ = false ;
@@ -343,7 +343,7 @@ void MAT::ViscoGenMax::Setup(const int numgp,DRT::INPUT::LineDefinition* linedef
 /*------------------------------------------------------------------------------------------*
 |  Setup internal stress variables - special for the inverse analysis (public)         04/12|
 *-------------------------------------------------------------------------------------------*/
-void MAT::ViscoGenMax::Setupvisco(const int numgp)
+void MAT::ViscoGenMax::ResetAll(const int numgp)
 {
 // flags for the viscous contribution
   vis_isoprinc_ = false ;
@@ -472,27 +472,18 @@ void MAT::ViscoGenMax::Update()
   return;
 }
 
-/*----------------------------------------------------------------------*
- |  Reset internal stress variables               (public)         05/08|
- *----------------------------------------------------------------------*/
-void MAT::ViscoGenMax::Reset()
-{
-  // do nothing,
-  // because #histstresscurr_ and #artstresscurr_ are recomputed anyway at every iteration
-  // based upon #histstresslast_ and #artstresslast_ untouched within time step
-  return;
-}
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void MAT::ViscoGenMax::Evaluate(
-  const LINALG::Matrix<6,1>& glstrain,
-  LINALG::Matrix<6,6>& cmat,
-  LINALG::Matrix<6,1>& stress,
-  const int gp,
-  Teuchos::ParameterList& params
+  const LINALG::Matrix<3,3>* defgrd,
+      const LINALG::Matrix<6,1>* glstrain,
+      Teuchos::ParameterList& params,
+      LINALG::Matrix<6,1>* stress,
+      LINALG::Matrix<6,6>* cmat
   )
 {
+  const int gp = params.get<int>("gp",-1);
+  if (gp == -1) dserror("no Gauss point number provided in material");
 
   if (viscoparams_->relax_isot_princ_!=0)
     {
@@ -529,21 +520,21 @@ void MAT::ViscoGenMax::Evaluate(
   LINALG::Matrix<3,1> anisogamma(true);
   LINALG::Matrix<15,1> anisodelta(true);
 
-  EvaluateKinQuant(glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv,pranisoinv);
+  EvaluateKinQuant(*glstrain,id2,scg,rcg,icg,id4,id4sharp,prinv,modinv,pranisoinv);
   EvaluateGammaDelta(rcg,prinv,modinv,pranisoinv,gamma,delta,modgamma,moddelta);
 
   // blank resulting quantities
   // ... even if it is an implicit law that cmat is zero upon input
-  stress.Clear();
-  cmat.Clear();
+  stress->Clear();
+  cmat->Clear();
 
   if (isoprinc_)
     {
     LINALG::Matrix<NUM_STRESS_3D,1> stressisoprinc(true) ;
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisoprinc(true) ;
     EvaluateIsotropicPrinc(stressisoprinc,cmatisoprinc,scg,id2,icg,id4sharp,gamma,delta);
-    stress.Update(1.0, stressisoprinc, 1.0);
-    cmat.Update(1.0,cmatisoprinc,1.0);
+    stress->Update(1.0, stressisoprinc, 1.0);
+    cmat->Update(1.0,cmatisoprinc,1.0);
 
     // viscous contribution
     if (vis_isoprinc_)
@@ -590,12 +581,12 @@ void MAT::ViscoGenMax::Evaluate(
         artstressisoprinccurr_->at(gp) = Q;
 
         // add the viscous to the elastic contribution
-        stress.Update(1.0,Q,1.0);
+        stress->Update(1.0,Q,1.0);
 
         // constitutive tensor
         // viscous contribution : Cmat = Cmatx(1+delta) with (1+delta)=scalarvisco
         cmatisoprinc.Scale(scalarvisco);
-        cmat.Update(1.0,cmatisoprinc,1.0);
+        cmat->Update(1.0,cmatisoprinc,1.0);
       }
     }
 
@@ -608,10 +599,10 @@ void MAT::ViscoGenMax::Evaluate(
     LINALG::Matrix<NUM_STRESS_3D,1> stressisomodvol(true) ;
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatisomodvol(true) ;
     EvaluateIsotropicMod(stressisomodiso,stressisomodvol,cmatisomodiso,cmatisomodvol,rcg,id2,icg,id4,id4sharp,modinv,prinv,modgamma,moddelta);
-    stress.Update(1.0, stressisomodiso, 1.0);
-    stress.Update(1.0, stressisomodvol, 1.0);
-    cmat.Update(1.0,cmatisomodiso,1.0);
-    cmat.Update(1.0,cmatisomodvol,1.0);
+    stress->Update(1.0, stressisomodiso, 1.0);
+    stress->Update(1.0, stressisomodvol, 1.0);
+    cmat->Update(1.0,cmatisomodiso,1.0);
+    cmat->Update(1.0,cmatisomodvol,1.0);
 
     // viscous contribution
 
@@ -662,12 +653,12 @@ void MAT::ViscoGenMax::Evaluate(
         artstressisomodisocurr_->at(gp) = Qiso;
 
         // add the viscous to the elastic contribution
-        stress.Update(1.0,Qiso,1.0); //--> at this point, stress includes the isochoric viscoelastic contributions
+        stress->Update(1.0,Qiso,1.0); //--> at this point, stress includes the isochoric viscoelastic contributions
         //----------------------------------------------------------------------
         // constitutive tensor
         // Cmat = Cmat_iso_inf(1+delta_iso) + Cmat_vol_inf(1+delta_vol)
         cmatisomodiso.Scale(scalarvisco);
-        cmat.Update(1.0,cmatisomodiso,1.0);
+        cmat->Update(1.0,cmatisomodiso,1.0);
       }
 
     // viscous part of the volumetric contribution
@@ -715,7 +706,7 @@ void MAT::ViscoGenMax::Evaluate(
         artstressisomodvolcurr_->at(gp) = Qvol;
 
         // add the viscous contribution
-        stress.Update(1.0,Qvol,1.0);//--> at this point, stress includes the isochoric and volumetric viscoelastic contributions
+        stress->Update(1.0,Qvol,1.0);//--> at this point, stress includes the isochoric and volumetric viscoelastic contributions
         //----------------------------------------------------------------------
 
         // constitutive tensor
@@ -724,7 +715,7 @@ void MAT::ViscoGenMax::Evaluate(
         // 1+delta = scalarvisco ; could be two different scalars for iso and vol contributions
         // overall contributions by taking into account the viscous contribution
         cmatisomodvol.Scale(scalarvisco);
-        cmat.Update(1.0,cmatisomodvol,1.0);
+        cmat->Update(1.0,cmatisomodvol,1.0);
       }
   }
 
@@ -733,7 +724,7 @@ void MAT::ViscoGenMax::Evaluate(
   const bool havecoeffstrpr = HaveCoefficientsStretchesPrincipal();
   const bool havecoeffstrmod = HaveCoefficientsStretchesModified();
   if (havecoeffstrpr or havecoeffstrmod) {
-    ResponseStretches(cmat,stress,rcg,havecoeffstrpr,havecoeffstrmod);
+    ResponseStretches(*cmat,*stress,rcg,havecoeffstrpr,havecoeffstrmod);
   }
 
   /*----------------------------------------------------------------------*/
@@ -743,8 +734,8 @@ void MAT::ViscoGenMax::Evaluate(
       LINALG::Matrix<NUM_STRESS_3D,1> stressanisoprinc(true) ;
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> cmatanisoprinc(true) ;
       EvaluateAnisotropicPrinc(stressanisoprinc,cmatanisoprinc,rcg,params);
-      stress.Update(1.0, stressanisoprinc, 1.0);
-      cmat.Update(1.0, cmatanisoprinc, 1.0);
+      stress->Update(1.0, stressanisoprinc, 1.0);
+      cmat->Update(1.0, cmatanisoprinc, 1.0);
 
       // viscous contribution
       if (vis_anisoprinc_)
@@ -791,12 +782,12 @@ void MAT::ViscoGenMax::Evaluate(
           artstressanisoprinccurr_->at(gp) = Q;
 
           // add the viscous to the elastic contribution
-          stress.Update(1.0,Q,1.0);
+          stress->Update(1.0,Q,1.0);
 
           // constitutive tensor
           // viscous contribution : Cmat = Cmatx(1+delta) with (1+delta)=scalarvisco
-          cmat.Scale(scalarvisco);
-          cmat.Update(1.0, cmatanisoprinc, 1.0);
+          cmat->Scale(scalarvisco);
+          cmat->Update(1.0, cmatanisoprinc, 1.0);
         }
   }
 

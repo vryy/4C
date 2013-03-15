@@ -35,7 +35,6 @@ Maintainer: Lena Wiechert
 #include "aaagasser.H"
 #include "aaaraghavanvorp_damage.H"
 #include "aaa_mixedeffects.H"
-#include "logneohooke.H"
 #include "scatra_mat.H"
 #include "myocard.H"
 #include "mixfrac.H"
@@ -44,13 +43,8 @@ Maintainer: Lena Wiechert
 #include "arrhenius_temp.H"
 #include "arrhenius_pv.H"
 #include "ferech_pv.H"
-#include "anisotropic_balzani.H"
-#include "mooneyrivlin.H"
-#include "yeoh.H"
 #include "visconeohooke.H"
 #include "viscoanisotropic.H"
-#include "contchainnetw.H"
-#include "artwallremod.H"
 #include "carreauyasuda.H"
 #include "modpowerlaw.H"
 #include "yoghurt.H"
@@ -58,20 +52,14 @@ Maintainer: Lena Wiechert
 #include "matlist.H"
 #include "elchmat.H"
 #include "elchphase.H"
-#include "biocell.H"
 #include "ion.H"
 #include "diffcond.H"
 #include "newman.H"
 #include "compogden.H"
-#include "charmm.H"
-#include "itskov.H"
-#include "protein.H"
 #include "elasthyper.H"
 #include "viscogenmax.H"
 #include "cnst_1d_art.H"
 #include "fourieriso.H"
-#include "holzapfelcardiovascular.H"
-#include "humphreycardiovascular.H"
 #include "growth_ip.H"
 #include "constraintmixture.H"
 #include "biofilm.H"
@@ -174,20 +162,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::MicroMaterial* params = static_cast<MAT::PAR::MicroMaterial*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-  case INPAR::MAT::m_anisotropic_balzani:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::AnisotropicBalzani(curmat));
-    MAT::PAR::AnisotropicBalzani* params = static_cast<MAT::PAR::AnisotropicBalzani*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_mooneyrivlin:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::MooneyRivlin(curmat));
-    MAT::PAR::MooneyRivlin* params = static_cast<MAT::PAR::MooneyRivlin*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
   case INPAR::MAT::m_visconeohooke:
   {
     if (curmat->Parameter() == NULL)
@@ -200,20 +174,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::ViscoAnisotropic(curmat));
     MAT::PAR::ViscoAnisotropic* params = static_cast<MAT::PAR::ViscoAnisotropic*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_contchainnetw:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::ContChainNetw(curmat));
-    MAT::PAR::ContChainNetw* params = static_cast<MAT::PAR::ContChainNetw*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_artwallremod:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::ArtWallRemod(curmat));
-    MAT::PAR::ArtWallRemod* params = static_cast<MAT::PAR::ArtWallRemod*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_neohooke:
@@ -256,13 +216,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::AAA_mixedeffects(curmat));
     MAT::PAR::AAA_mixedeffects* params = static_cast<MAT::PAR::AAA_mixedeffects*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_logneohooke:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::LogNeoHooke(curmat));
-    MAT::PAR::LogNeoHooke* params = static_cast<MAT::PAR::LogNeoHooke*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_scatra:
@@ -377,27 +330,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ElchPhase* params = static_cast<MAT::PAR::ElchPhase*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-  case INPAR::MAT::m_biocell:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::BioCell(curmat));
-    MAT::PAR::BioCell* params = static_cast<MAT::PAR::BioCell*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_charmm:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::CHARMM(curmat));
-    MAT::PAR::CHARMM* params = static_cast<MAT::PAR::CHARMM*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_protein:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::PROTEIN(curmat));
-    MAT::PAR::PROTEIN* params = static_cast<MAT::PAR::PROTEIN*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
   case INPAR::MAT::m_ion:
   {
     if (curmat->Parameter() == NULL)
@@ -419,25 +351,11 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::Newman* params = static_cast<MAT::PAR::Newman*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-  case INPAR::MAT::m_yeoh:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::Yeoh(curmat));
-    MAT::PAR::Yeoh* params = static_cast<MAT::PAR::Yeoh*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
   case INPAR::MAT::m_compogden:
   {
     if (curmat->Parameter() == NULL)
       curmat->SetParameter(new MAT::PAR::CompOgden(curmat));
     MAT::PAR::CompOgden* params = static_cast<MAT::PAR::CompOgden*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_itskov:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::Itskov(curmat));
-    MAT::PAR::Itskov* params = static_cast<MAT::PAR::Itskov*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_elasthyper:
@@ -512,20 +430,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::FourierIso* params = static_cast<MAT::PAR::FourierIso*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-  case INPAR::MAT::m_holzapfelcardiovascular:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::HolzapfelCardio(curmat));
-    MAT::PAR::HolzapfelCardio* params = static_cast<MAT::PAR::HolzapfelCardio*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
-  case INPAR::MAT::m_humphreycardiovascular:
-  {
-    if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::HumphreyCardio(curmat));
-    MAT::PAR::HumphreyCardio* params = static_cast<MAT::PAR::HumphreyCardio*>(curmat->Parameter());
-    return params->CreateMaterial();
-  }
   case INPAR::MAT::m_growth:
   {
     if (curmat->Parameter() == NULL)
@@ -568,29 +472,6 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::ParticleMat* params = static_cast<MAT::PAR::ParticleMat*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-  case INPAR::MAT::m_pl_mises_3D:
-  case INPAR::MAT::m_pl_mises:
-  case INPAR::MAT::m_pl_hoff:
-  case INPAR::MAT::m_damage:
-  case INPAR::MAT::m_pl_foam:
-  case INPAR::MAT::m_pl_mises_ls:
-  case INPAR::MAT::m_pl_dp:
-  case INPAR::MAT::m_pl_epc:
-  case INPAR::MAT::m_pl_epc3D:
-  case INPAR::MAT::m_stvenpor:
-  case INPAR::MAT::m_pl_por_mises:
-  case INPAR::MAT::m_viscohyper:
-  case INPAR::MAT::m_pl_hash:
-  case INPAR::MAT::m_el_orth:
-  case INPAR::MAT::m_mfoc:
-  case INPAR::MAT::m_mfcc:
-  case INPAR::MAT::m_nhmfcc:
-  case INPAR::MAT::m_multi_layer:
-  case INPAR::MAT::m_ifmat:
-  case INPAR::MAT::m_interf_therm:
-  case INPAR::MAT::m_dam_mp:
-  case INPAR::MAT::m_damage_ge:
-  case INPAR::MAT::m_th_fourier_gen:
   default:
     dserror("unknown material type %d", curmat->Type());
     break;

@@ -211,7 +211,7 @@ void MAT::ViscoAnisotropic::Unpack(const std::vector<char>& data)
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void MAT::ViscoAnisotropic::Setup(const int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::ViscoAnisotropic::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
 
   /*fiber directions can be defined in the element line
@@ -388,13 +388,16 @@ void MAT::ViscoAnisotropic::UpdateFiberDirs(const int gp, LINALG::Matrix<3,3>* d
  *----------------------------------------------------------------------*/
 void MAT::ViscoAnisotropic::Evaluate
 (
+  const LINALG::Matrix<3,3>* defgrd,
   const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
-  const int gp,
   Teuchos::ParameterList& params,
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
-  LINALG::Matrix<NUM_STRESS_3D,1> * stress
+  LINALG::Matrix<NUM_STRESS_3D,1>* stress,
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat
 )
 {
+  const int gp = params.get<int>("gp",-1);
+  if (gp == -1) dserror("no Gauss point number provided in material");
+
   const double mue = params_->mue_;
   const double kappa = params_->kappa_;
   const double k1 = params_->k1_;
@@ -690,5 +693,43 @@ void MAT::ViscoAnisotropic::Evaluate
   return;
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::ViscoAnisotropic::VisNames(std::map<string,int>& names)
+{
+  string fiber = "Fiber1";
+  names[fiber] = 3; // 3-dim vector
+  fiber = "Fiber2";
+  names[fiber] = 3; // 3-dim vector
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool MAT::ViscoAnisotropic::VisData(const string& name, std::vector<double>& data, int numgp)
+{
+  std::vector<double> a1 = Geta1()->at(0);  // get a1 of first gp
+  std::vector<double> a2 = Geta2()->at(0);  // get a2 of first gp
+  if (name == "Fiber1")
+  {
+    if ((int)data.size()!=3)
+      dserror("size mismatch");
+    data[0] = a1[0];
+    data[1] = a1[1];
+    data[2] = a1[2];
+  }
+  else if (name == "Fiber2")
+  {
+    if ((int)data.size()!=3)
+      dserror("size mismatch");
+    data[0] = a2[0];
+    data[1] = a2[1];
+    data[2] = a2[2];
+  }
+  else
+  {
+    return false;
+  }
+  return true;
+}
 
 

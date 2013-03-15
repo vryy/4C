@@ -29,7 +29,7 @@ Maintainer: Susanna Tinkl
 #define CONSTRAINTMIXTURE_H_
 
 
-#include "material.H"
+#include "so3_material.H"
 #include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
@@ -147,7 +147,7 @@ namespace MAT
     //@}
 
     /// Setup
-    void Setup(const int ngp, const double massprodbasal);
+    void Setup(int ngp, const double massprodbasal);
 
   private:
 
@@ -210,7 +210,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for constraint mixture material
-  class ConstraintMixture : public Material
+  class ConstraintMixture : public So3Material
   {
   public:
 
@@ -267,29 +267,29 @@ namespace MAT
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ConstraintMixture( *this ) ); }
 
     /// Setup
-    void Setup
+    virtual void Setup
     (
-      const int numgp,  ///< number of Gauss points
+      int numgp,  ///< number of Gauss points
       DRT::INPUT::LineDefinition* linedef ///< definition of element line
     );
 
     /// SetupHistory
-    void SetupHistory(const int numgp);
+    virtual void ResetAll(const int numgp);
 
     /// Update
-    void Update();
+    virtual void Update();
 
-    /// Reset
-    void Reset();
+    /// Reset time step
+    virtual void ResetStep();
 
     /// Evaluate material
-    void Evaluate
+    virtual void Evaluate
     (
-      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
-      const int gp,  ///< current Gauss point
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
-      Teuchos::ParameterList& params   ///< parameter list
+      const LINALG::Matrix<3,3>* defgrd,
+      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
+      Teuchos::ParameterList& params,
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat
     );
 
     /// Return density
@@ -330,6 +330,12 @@ namespace MAT
     /// evaluate fiber directions from locsys, pull back
     void EvaluateFiberVecs
     (const int gp, const LINALG::Matrix<3,3>& locsys, const LINALG::Matrix<3,3>& defgrd);
+
+    /// Return names of visualization data
+    virtual void VisNames(std::map<string,int>& names);
+
+    /// Return visualization data
+    virtual bool VisData(const string& name, std::vector<double>& data, int numgp);
 
   private:
 

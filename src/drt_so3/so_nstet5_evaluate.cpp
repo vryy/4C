@@ -20,9 +20,7 @@ Maintainer: Michael Gee
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/neohooke.H"
-#include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
-#include "../drt_mat/mooneyrivlin.H"
 #include "../drt_mat/elasthyper.H"
 
 #include "so_nstet5.H"
@@ -542,7 +540,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
       LINALG::Matrix<6,1> glstrainbar(false);
       if (iostrain != INPAR::STR::strain_none)
       {
-        // do deviatoric F, C, E 
+        // do deviatoric F, C, E
         const double J = F.Determinant();
         LINALG::Matrix<3,3> Cbar(cauchygreen);
         Cbar.Scale(pow(J,-2./3.));
@@ -666,7 +664,7 @@ void DRT::ELEMENTS::NStet5::nstet5nlnstiffmass(
       LINALG::Matrix<12,1> subforce(true);
       // integrate internal force vector f = f + (B^T . sigma) * V
       subforce.MultiplyTN(SubV(sub),bop,stress,0.0);
-      
+
       for (int i=0; i<4; ++i) // loop 4 nodes of subelement
       {
         (*force)(SubLM(sub)[i]*3+0) += subforce(i*3+0);
@@ -831,7 +829,8 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(
     case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
     {
       MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
-      aaa->Evaluate(&glstrain_e,&cmat_e,&stress_e);
+      Teuchos::ParameterList params;
+      aaa->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
       density = aaa->Density();
     }
     break;
@@ -839,7 +838,7 @@ void DRT::ELEMENTS::NStet5::SelectMaterial(
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
-      hyper->Evaluate(glstrain,cmat,stress,params);
+      hyper->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
       density = hyper->Density();
       return;
       break;

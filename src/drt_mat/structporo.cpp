@@ -15,6 +15,7 @@
 #include "structporo.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
+#include "../drt_mat/so3_material.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -77,6 +78,9 @@ MAT::StructPoro::StructPoro(MAT::PAR::StructPoro* params) :
   isinitialized_(false)
 {
   mat_ = MAT::Material::Factory(params_->matid_);
+
+  MAT::So3Material* so3mat = static_cast<MAT::So3Material*>(mat_.get());
+  if (so3mat == NULL) dserror("MAT::StructPoro: underlying material should be of type MAT::So3Material");
 }
 
 /*----------------------------------------------------------------------*
@@ -770,3 +774,33 @@ void MAT::StructPoro::GetGradPorosityAtGP(LINALG::Matrix<2,1>& gradporosity, int
   return;
 }
 */
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::StructPoro::Evaluate(const LINALG::Matrix<3,3>* defgrd,
+                               const LINALG::Matrix<6,1>* glstrain,
+                               Teuchos::ParameterList& params,
+                               LINALG::Matrix<6,1>* stress,
+                               LINALG::Matrix<6,6>* cmat)
+{
+  MAT::So3Material* so3mat = static_cast<MAT::So3Material*>(mat_.get());
+  so3mat->Evaluate(defgrd,glstrain,params,stress,cmat);
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::StructPoro::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
+                                   double& psi)
+{
+  MAT::So3Material* so3mat = static_cast<MAT::So3Material*>(mat_.get());
+  so3mat->StrainEnergy(glstrain,psi);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::StructPoro::Update()
+{
+  MAT::So3Material* so3mat = static_cast<MAT::So3Material*>(mat_.get());
+  so3mat->Update();
+}

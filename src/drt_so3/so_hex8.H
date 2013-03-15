@@ -25,7 +25,6 @@ Maintainer: Michael Gee
 const int NUMNOD_SOH8 = 8;      ///< number of nodes
 const int NODDOF_SOH8 = 3;      ///< number of dofs per node
 const int NUMDOF_SOH8 = 24;     ///< total dofs per element
-const int NUMSTR_SOH8 = 6;      ///< number of strains/stresses
 const int NUMGPT_SOH8 = 8;      ///< total gauss points per element
 const int NUMDIM_SOH8 = 3;      ///< number of dimensions
 
@@ -458,8 +457,8 @@ protected:
     calc_struct_update_istep,
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                               //!< during iteration to last converged state
-    calc_struct_reset_discretization,  //!< reset elementwise internal variables
-                                       //!< to state in the beginning of the computation
+    calc_struct_reset_all,  //!< reset elementwise internal variables
+                            //!< to state in the beginning of the computation
     calc_struct_energy,       //!< compute internal energy
     calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
     postprocess_stress,       //!< postprocess stresses
@@ -554,9 +553,9 @@ protected:
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  ///< stresses at GP
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  ///< strains at GP
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain,  ///< plastic strains at GP
+      LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+      LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* eleplstrain,  ///< plastic strains at GP
       Teuchos::ParameterList& params,  ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType iostress,  ///< stress output option
       const INPAR::STR::StrainType iostrain,  ///< strain output option
@@ -571,9 +570,9 @@ protected:
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  ///< stresses at GP
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  ///< strains at GP
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain,  ///< plastic strains at GP
+      LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
+      LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* eleplstrain,  ///< plastic strains at GP
       Teuchos::ParameterList& params,  ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType iostress,  ///< stress output option
       const INPAR::STR::StrainType iostrain,  ///< strain output option
@@ -584,7 +583,7 @@ protected:
 
   /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store results in elevectors
   void soh8_expol(
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>& stresses,  ///< gp stresses
+      LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>& stresses,  ///< gp stresses
       Epetra_MultiVector& expolstresses);  ///< nodal stresses
 
   //! remodeling for fibers at the end of time step (st 01/10)
@@ -601,55 +600,6 @@ protected:
   //! Evaluate Hex8 Weights to keep them static
   const std::vector<double> soh8_weights();
 
-  // to be removed!!!
-  void soh8_shapederiv(
-        LINALG::Matrix<NUMNOD_SOH8,NUMGPT_SOH8>** shapefct,   // pointer to pointer of shapefct
-        LINALG::Matrix<NUMDOF_SOH8,NUMNOD_SOH8>** deriv,     // pointer to pointer of derivs
-        LINALG::Matrix<NUMGPT_SOH8,1>** weights);   // pointer to pointer of weights
-
-  /*!
-   * \brief Interface to material laws working with soh8.
-   *
-   * Here the interface to any material takes place. Stress and C-mat must be retrieved
-   * whereas all necessary data is passed. Add whatever your material needs, but
-   * make sure that exchange is not overdone performance-wise.
-   * Right now EAS is based on GL-Strains which is ok for any hyperelastic material.
-   * This means that e.g. the deformation gradient is not alleviated from locking
-   * and therefore only to be used with disp-based soh8.
-   *
-   * \param *stress (out): Voigt-Vector of stresses at current gp
-   * \param *cmat (out): Elasticity matrix at current gp
-   * \param *density (out): density of material
-   * \param *glstrain (in): Voigt-Vector of GL-strains at current gp
-   * \param *plglstrain (in): Voigt-Vector of plastic GL-strains at current gp
-   * \param *defgrd (in): F at current gp, CAUTION! only for disp-based soh8
-   * \param gp (in): current gp
-   * \param params (in): parameterlist to access time, etc. in materials
-   * */
-
-  void soh8_mat_sel(LINALG::Matrix<6,1>* stress,
-                    LINALG::Matrix<6,6>* cmat,
-                    double* density,
-                    LINALG::Matrix<6,1>* glstrain,
-                    LINALG::Matrix<6,1>* plglstrain,
-                    LINALG::Matrix<3,3>* defgrd,
-                    const int gp,
-                    Teuchos::ParameterList&  params);
-
-  //! Interface to material laws working with soh8 and GEMM
-  void soh8_mat_sel_gemm(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
-                         LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
-                         double* density,
-                         LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_m,
-                         LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_new,
-                         LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_old,
-                         LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* rcg_new,
-                         LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* rcg_old);
-
-  //! Interface to material laws working with soh8 and having a hyperelatic SEF
-  void soh8_mat_sel_strainenergy(LINALG::Matrix<6,1>* glstrain,
-                                 double* psi);
-
   //! Calculate linear stiffness and mass matrix
   virtual void linstiffmass(
     std::vector<int>& lm,  ///< location matrix
@@ -658,9 +608,9 @@ protected:
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,  ///< element stiffness matrix
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,  ///< element mass matrix
     LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  ///< stresses at GP
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain, ///< strains at GP
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* eleplstrain, // plastic strains at GP
+    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain, ///< strains at GP
+    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* eleplstrain, // plastic strains at GP
     Teuchos::ParameterList& params,  ///< algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress,  ///< stress output option
     const INPAR::STR::StrainType iostrain, ///< strain output option
@@ -668,14 +618,14 @@ protected:
 
   //! push forward of material stresses to the current, spatial configuration
   void PK2toCauchy(
-    LINALG::Matrix<NUMSTR_SOH8,1>* stress,
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* defgrd,
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* cauchystress
     );
 
   //! push forward of Green-Lagrange strain to Euler-Almansi strains
   void GLtoEA(
-    LINALG::Matrix<NUMSTR_SOH8,1>* glstrain,
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* defgrd,
     LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>* euler_almansi
     );
@@ -689,8 +639,8 @@ protected:
     std::vector<double>& residual,  //!< current residual displ
     std::vector<double>& temp, //!< current temperature
     LINALG::Matrix<NUMDOF_SOH8,1>* force,  //!< element internal force vector
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  //!< stresses at GP
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  //!< strains at GP
+    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,  //!< stresses at GP
+    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,  //!< strains at GP
     Teuchos::ParameterList& params,  //!< algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress,  //!< stress output option
     const INPAR::STR::StrainType iostrain  //!< strain output option
@@ -719,8 +669,7 @@ protected:
     LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,  //!< (o): material tangent matrix at current gp
     LINALG::Matrix<3,3>* defgrd,  //!< F at current gp, CAUTION! only for disp-based soh8
     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain,  //!< (o): total strain
-    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* plglstrain,  //!< (o): plastic strain
-    LINALG::Matrix<MAT::NUM_STRESS_3D,1>& straininc,  //!< (i): total strain increment
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1>* straininc,  //!< (i): total strain increment
     const double& scalartemp,  //!< scalar-valued temperature of the element
     double* density,  //!< density of material
     const int gp,  //!< current Gauss point
@@ -745,7 +694,7 @@ protected:
   void soh8_eassetup(
           std::vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
           double& detJ0,                      // det of Jacobian at origin
-          LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8>& T0invT,   // maps M(origin) local to global
+          LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& T0invT,   // maps M(origin) local to global
           const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe);    // material element coords
 
 

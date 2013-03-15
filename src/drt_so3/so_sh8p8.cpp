@@ -94,8 +94,8 @@ void DRT::ELEMENTS::So_sh8p8Type::SetupElementDefinition( std::map<std::string,s
  |  initialise static arrays                                 bborn 03/09|
  *----------------------------------------------------------------------*/
 // 6-Voigt C-index                                        0 1 2  3 4 5
-const int DRT::ELEMENTS::So_sh8p8::VOIGT6ROW_[NUMSTR_] = {0,1,2, 0,1,2};
-const int DRT::ELEMENTS::So_sh8p8::VOIGT6COL_[NUMSTR_] = {0,1,2, 1,2,0};
+const int DRT::ELEMENTS::So_sh8p8::VOIGT6ROW_[MAT::NUM_STRESS_3D] = {0,1,2, 0,1,2};
+const int DRT::ELEMENTS::So_sh8p8::VOIGT6COL_[MAT::NUM_STRESS_3D] = {0,1,2, 1,2,0};
 
 // 9-Voigt C-index                                         0 1 2  3 4 5  6 7 8
 const int DRT::ELEMENTS::So_sh8p8::VOIGT9ROW_[NUMDFGR_] = {0,1,2, 0,1,2, 0,2,1};
@@ -225,7 +225,7 @@ void DRT::ELEMENTS::So_sh8p8::Print(std::ostream& os) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::sosh8p8_expol
 (
-    LINALG::Matrix<NUMGPT_,NUMSTR_>& stresses,
+    LINALG::Matrix<NUMGPT_,MAT::NUM_STRESS_3D>& stresses,
     Epetra_MultiVector& expolstresses
 )
 {
@@ -284,7 +284,7 @@ void DRT::ELEMENTS::So_sh8p8::sosh8p8_expol
     isfilled = true;
   }
 
-  LINALG::Matrix<NUMNOD_,NUMSTR_> nodalstresses;
+  LINALG::Matrix<NUMNOD_,MAT::NUM_STRESS_3D> nodalstresses;
 
   nodalstresses.Multiply(expol, stresses);
 

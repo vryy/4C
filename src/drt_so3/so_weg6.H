@@ -26,7 +26,6 @@ Maintainer: Michael Gee
 const int NUMNOD_WEG6 = 6;      ///< number of nodes
 const int NODDOF_WEG6 = 3;      ///< number of dofs per node
 const int NUMDOF_WEG6 = 18;     ///< total dofs per element
-const int NUMSTR_WEG6 = 6;      ///< number of strains/stresses
 const int NUMGPT_WEG6 = 6;      ///< total gauss points per element
 const int NUMDIM_WEG6 = 3;      ///< number of dimensions
 
@@ -359,8 +358,8 @@ protected:
     calc_struct_update_istep,
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                               //!< during iteration to last converged state
-    calc_struct_reset_discretization,  //!< reset elementwise internal variables
-                                       //!< to state in the beginning of the computation
+    calc_struct_reset_all,  //!< reset elementwise internal variables
+                            //!< to state in the beginning of the computation
     postprocess_stress,
     prestress_update,
     inversedesign_update,
@@ -418,30 +417,11 @@ protected:
                                  LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix,
                                  LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,
                                  LINALG::Matrix<NUMDOF_WEG6,1>* force,
-                                 LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,
-                                 LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,
+                                 LINALG::Matrix<NUMGPT_WEG6,MAT::NUM_STRESS_3D>* elestress,
+                                 LINALG::Matrix<NUMGPT_WEG6,MAT::NUM_STRESS_3D>* elestrain,
                                  Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
                                  const INPAR::STR::StressType             iostress,
                                  const INPAR::STR::StrainType             iostrain);
-
-  //! material selection for sow6
-  void sow6_mat_sel(Epetra_SerialDenseVector* stress,
-                    Epetra_SerialDenseMatrix* cmat,
-                    double* density,
-                    const Epetra_SerialDenseVector* glstrain,
-                    Epetra_SerialDenseMatrix* defgrd,
-                    const int gp,
-                    Teuchos::ParameterList&   params);         // algorithmic parameters e.g. time
-
-  //! material selection for sow6
-  void sow6_mat_sel(
-                    LINALG::Matrix<6,1>* stress,
-                    LINALG::Matrix<6,6>* cmat,
-                    double* density,
-                    LINALG::Matrix<6,1>* glstrain,
-                    LINALG::Matrix<3,3>* defgrd,
-                    const int gp,
-                    Teuchos::ParameterList&  params);         // algorithmic parameters e.g. time
 
   //! remodeling for fibers at the end of time step (st 01/10)
   void sow6_remodel(
@@ -469,7 +449,7 @@ protected:
   /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store them in elevecs
   void soweg6_expol
   (
-      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>& stresses, ///< gp stresses
+      LINALG::Matrix<NUMGPT_WEG6,MAT::NUM_STRESS_3D>& stresses, ///< gp stresses
       Epetra_MultiVector& expolstresses  ///< nodal stresses
   );
 

@@ -12,10 +12,12 @@ Maintainer: ???
 
 
 #include "matpar_parameter.H"
-#include "material.H"
+//#include "material.H"
+#include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
+#include <Teuchos_ParameterList.hpp>
 
 
 namespace MAT
@@ -76,7 +78,7 @@ private:
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for St.-Venant-Kirchhoff material
-  class StVenantKirchhoff : public Material
+  class StVenantKirchhoff : public So3Material
   {
   public:
 
@@ -157,13 +159,25 @@ private:
                   Epetra_SerialDenseVector* stress_e);
 
     /// evaluate material law
-    void Evaluate(const LINALG::Matrix<6,1>& glstrain,
-                  LINALG::Matrix<6,6>& cmat,
-                  LINALG::Matrix<6,1>& stress);
+    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
+                          const LINALG::Matrix<6,1>* glstrain,
+                          Teuchos::ParameterList& params,
+                          LINALG::Matrix<6,1>* stress,
+                          LINALG::Matrix<6,6>* cmat);
 
     /// evaluate strain energy function
-    void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
-                      double& psi);
+    virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
+                              double& psi);
+
+    /// evaluate for GEMM
+    virtual void EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
+                              LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
+                              double* density,
+                              LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_m,
+                              LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_new,
+                              LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_old,
+                              LINALG::Matrix<3,3>* rcg_new,
+                              LINALG::Matrix<3,3>* rcg_old);
 
     // computes isotropic elasticity tensor in matrix notion for 3d
     void SetupCmat(LINALG::Matrix<6,6>& cmat);

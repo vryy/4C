@@ -39,7 +39,7 @@ Maintainer: Caroline Danowski
  | headers                                                   dano 04/11 |
  *----------------------------------------------------------------------*/
 #include "matpar_parameter.H"
-#include "material.H"
+#include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
 
@@ -108,7 +108,7 @@ private:
 
   /*----------------------------------------------------------------------*/
   //! wrapper for linear elasto-plastic material
-  class PlasticLinElast : public Material
+  class PlasticLinElast : public So3Material
   {
   public:
 
@@ -158,36 +158,30 @@ private:
     //@}
 
     //! material type
-    virtual INPAR::MAT::MaterialType MaterialType() const 
+    virtual INPAR::MAT::MaterialType MaterialType() const
     {
-      return INPAR::MAT::m_pllinelast; 
+      return INPAR::MAT::m_pllinelast;
     }
 
     //! return copy of this material object
     virtual Teuchos::RCP<Material> Clone() const
-    { 
-      return Teuchos::rcp( new PlasticLinElast( *this ) ); 
+    {
+      return Teuchos::rcp( new PlasticLinElast( *this ) );
     }
 
     //! initialise internal stress variables
-    void Setup(
-      const int numgp //!< number of Gauss points
-      );
+    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     //! update internal stress variables
-    void Update();
-
-    //! reset internal stress variables
-    void Reset();
+    virtual void Update();
 
     //! evaluate material
-    void Evaluate(
-      const LINALG::Matrix<NUM_STRESS_3D,1>& linstrain,
-      LINALG::Matrix<NUM_STRESS_3D,1>& plstrain, //!< return the plastic strains to the element
-      const int gp,  //!< current Gaus point
+    virtual void Evaluate(
+      const LINALG::Matrix<3,3>* defgrd,
+      const LINALG::Matrix<NUM_STRESS_3D,1>* linstrain,
       Teuchos::ParameterList& params,  //!< parameter list for communication
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  //!< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>& stress  //!< 2nd PK-stress
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  //!< 2nd PK-stress
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat  //!< material stiffness matrix
       );
 
     //! computes stress
@@ -258,7 +252,13 @@ private:
     //! return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-    //! finite difference check for debugging purposes
+    /// Return names of visualization data
+    virtual void VisNames(std::map<string,int>& names);
+
+    /// Return visualization data
+    virtual bool VisData(const string& name, std::vector<double>& data, int numgp);
+
+    //! Finite difference check for debugging purposes
     void FDCheck(
       LINALG::Matrix<NUM_STRESS_3D,1>& stress,  //!< updated stress sigma_n+1
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmatFD, //!< material tangent calculated with FD of stresses

@@ -128,16 +128,18 @@ void MAT::PlasticHyperElast::Unpack(const std::vector<char>& data)
  |  Calculate stress and constitutive tensor                            |
  *----------------------------------------------------------------------*/
 void MAT::PlasticHyperElast::Evaluate(
-            const LINALG::Matrix<6,1>& glstrain,
-                  LINALG::Matrix<6,6>& cmat,
-                  LINALG::Matrix<6,1>& stress)
+  const LINALG::Matrix<3,3>* defgrd,
+  const LINALG::Matrix<6,1>* glstrain,
+  Teuchos::ParameterList& params,
+  LINALG::Matrix<6,1>* stress,
+  LINALG::Matrix<6,6>* cmat)
 {
   // get material parameters
   const double ym = params_->youngs_;    // Young's modulus
   const double nu = params_->poissonratio_; // Poisson's ratio
 
   // right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::Matrix<6,1> rcg(glstrain);
+  LINALG::Matrix<6,1> rcg(*glstrain);
   rcg.Scale(2.0);
   rcg(0) += 1.0;
   rcg(1) += 1.0;
@@ -175,12 +177,12 @@ void MAT::PlasticHyperElast::Evaluate(
   // Second Piola-Kirchhoff stress tensor
   // S = -2 c1 I3^{-beta} C^{-1} + 2 c1 Identity
   const double fac = std::pow(I3,-beta);
-  stress = invc;
-  stress.Scale(-2.0*c1*fac); // volumetric part
+  *stress = invc;
+  stress->Scale(-2.0*c1*fac); // volumetric part
   const double iso = 2.0*c1; // isochoric part
-  stress(0) += iso;
-  stress(1) += iso;
-  stress(2) += iso;
+  (*stress)(0) += iso;
+  (*stress)(1) += iso;
+  (*stress)(2) += iso;
 
   // material tensor
   // C = 4 c1 beta I3^{-beta} C^{-1} dyad C^{-1} + 4 c1 I3^{-beta} C^{-1} boeppel C^{-1}
@@ -189,8 +191,8 @@ void MAT::PlasticHyperElast::Evaluate(
   const double delta7 = 4.0 * c1 * fac;
   for (int i=0; i<6; ++i)
     for (int j=0; j<6; ++j)
-      cmat(i,j) = delta6 * invc(i)*invc(j);
-  AddtoCmatHolzapfelProduct(cmat,invc,delta7);
+      (*cmat)(i,j) = delta6 * invc(i)*invc(j);
+  AddtoCmatHolzapfelProduct(*cmat,invc,delta7);
 
   return;
 } // end of plastichyperelast evaluate

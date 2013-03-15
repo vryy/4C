@@ -24,7 +24,7 @@ Maintainer: Susanna Tinkl
 #define GROWTH_IP_H_
 
 
-#include "material.H"
+#include "so3_material.H"
 #include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
@@ -96,7 +96,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for growth material
-  class Growth : public Material
+  class Growth : public So3Material
   {
   public:
 
@@ -153,30 +153,20 @@ namespace MAT
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Growth( *this ) ); }
 
     /// Setup
-    void Setup
-    (
-      const int numgp,  ///< number of Gauss points
-      DRT::INPUT::LineDefinition* linedef ///< definition of element line
-    );
+    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
-    /// Resest growth variables to start values
-    void ResetGrowth
-    (
-      const int numgp   ///< number of Gauss points
-    );
+    /// Reset internal variables to state in the beginning of the computation (needed for inverse analysis)
+    virtual void ResetAll(int numgp);
 
     /// Update
-    void Update();
+    virtual void Update();
 
     /// Evaluate material
-    void Evaluate
-    (
-      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
-      const int gp,  ///< current Gauss point
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
-      Teuchos::ParameterList& params   ///< parameter list
-    );
+    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
+                          const LINALG::Matrix<6,1>* glstrain,
+                          Teuchos::ParameterList& params,
+                          LINALG::Matrix<6,1>* stress,
+                          LINALG::Matrix<6,6>* cmat);
 
     /// Return density
     virtual double Density() const {return params_->density_;}
@@ -192,6 +182,12 @@ namespace MAT
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+
+    /// Return names of visualization data
+    virtual void VisNames(std::map<string,int>& names);
+
+    /// Return visualization data
+    virtual bool VisData(const string& name, std::vector<double>& data, int numgp);
 
   private:
 

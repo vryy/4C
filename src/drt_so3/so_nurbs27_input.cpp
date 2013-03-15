@@ -11,14 +11,8 @@ Maintainer: Peter Gamnitzer
 *----------------------------------------------------------------------*/
 
 #include "so_nurbs27.H"
-#include "../drt_mat/artwallremod.H"
-#include "../drt_mat/viscoanisotropic.H"
-#include "../drt_mat/visconeohooke.H"
-#include "../drt_mat/viscogenmax.H"
-#include "../drt_mat/elasthyper.H"
-#include "../drt_mat/charmm.H"
-#include "../drt_mat/aaaraghavanvorp_damage.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_mat/so3_material.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -30,6 +24,10 @@ bool DRT::ELEMENTS::NURBS::So_nurbs27::ReadElement(const std::string& eletype,
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
+
+  const int numgp=27;
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  so3mat->Setup(numgp, linedef);
 
   // read possible gaussian points, obsolete for computation
   std::vector<int> ngp;

@@ -12,6 +12,7 @@ Maintainer: Michael Gee
 
 #include "inversedesign.H"
 #include "../drt_mat/material.H"
+#include "../drt_mat/so3_material.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
@@ -627,8 +628,8 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOH8,          1>* force,          ///< element internal force vector
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
+      LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,      ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,      ///< strains at GP
       Teuchos::ParameterList&   params,         ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType iostress,    ///< stress output option
       const INPAR::STR::StrainType iostrain)    ///< strain output option
@@ -706,8 +707,8 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
 
     //-- Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    LINALG::SerialDenseVector glstrain_epetra(NUMSTR_SOH8);
-    LINALG::Matrix<NUMSTR_SOH8,1> glstrain(glstrain_epetra.A(),true);
+    LINALG::SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain(glstrain_epetra.A(),true);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -716,7 +717,7 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
     glstrain(5) = cauchygreen(2,0);
 
     //---- build B-operator (wrt to spatial, that is known configuration)
-    LINALG::Matrix<NUMSTR_SOH8,NUMDOF_SOH8> B;
+    LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOH8> B;
     for (int i=0; i<NUMNOD_SOH8; ++i)
     {
       B(0,NODDOF_SOH8*i+0) = n_xyz(0,i);
@@ -762,14 +763,15 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
     }
 
     //------------------------------------------------- call material law
-    double density = 0.0;
-    LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8> cmat(true);
-    LINALG::Matrix<NUMSTR_SOH8,1> stress(true);
-    LINALG::Matrix<NUMSTR_SOH8,1> plglstrain(true);
-    ele->soh8_mat_sel(&stress,&cmat,&density,&glstrain,&plglstrain,&F,gp,params);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
+    params.set<int>("gp",gp);
+    params.set<int>("eleID",ele->Id());
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
+    so3mat->Evaluate(&F,&glstrain,params,&stress,&cmat);
 
     //------------------------------------------- compute cauchy stresses
-    LINALG::Matrix<NUMSTR_SOH8,1> cstress;
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> cstress;
     cstress.Multiply(j,IF,stress);
 
     //--------------------------------------- output strains and stresses
@@ -898,6 +900,7 @@ void DRT::ELEMENTS::InvDesign::soh8_nlnstiffmass(
     // volume here!
     if (massmatrix)
     {
+      double density = ele->Material()->Density();
       const double fac = density * detj * gpweights[gp];
       for (int inod=0; inod<NUMNOD_SOH8; ++inod)
         for (int jnod=0; jnod<NUMNOD_SOH8; ++jnod)
@@ -979,8 +982,8 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
       LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* stiffmatrix,    ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_WEG6,NUMDOF_WEG6>* massmatrix,     ///< element mass matrix
       LINALG::Matrix<NUMDOF_WEG6,          1>* force,          ///< element internal force vector
-      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestress,      ///< stresses at GP
-      LINALG::Matrix<NUMGPT_WEG6,NUMSTR_WEG6>* elestrain,      ///< strains at GP
+      LINALG::Matrix<NUMGPT_WEG6,MAT::NUM_STRESS_3D>* elestress,      ///< stresses at GP
+      LINALG::Matrix<NUMGPT_WEG6,MAT::NUM_STRESS_3D>* elestrain,      ///< strains at GP
       Teuchos::ParameterList&   params,         ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType iostress,    ///< stress output option
       const INPAR::STR::StrainType iostrain)    ///< strain output option
@@ -1073,8 +1076,8 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
 
     //-- Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    LINALG::SerialDenseVector glstrain_epetra(NUMSTR_WEG6);
-    LINALG::Matrix<NUMSTR_WEG6,1> glstrain(glstrain_epetra.A(),true);
+    LINALG::SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain(glstrain_epetra.A(),true);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -1083,7 +1086,7 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
     glstrain(5) = cauchygreen(2,0);
 
     //---- build B-operator (wrt to spatial, that is known configuration)
-    LINALG::Matrix<NUMSTR_WEG6,NUMDOF_WEG6> B;
+    LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_WEG6> B;
     for (int i=0; i<NUMNOD_WEG6; ++i)
     {
       B(0,NODDOF_WEG6*i+0) = n_xyz(0,i);
@@ -1129,10 +1132,12 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
     }
 
     //------------------------------------------------- call material law
-    double density = 0.0;
     LINALG::Matrix<6,6> cmat(true);
     LINALG::Matrix<6,1> stress(true);
-    ele->sow6_mat_sel(&stress,&cmat,&density,&glstrain,&F,gp,params);
+    params.set<int>("gp",gp);
+    params.set<int>("eleID",ele->Id());
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
+    so3mat->Evaluate(&F,&glstrain,params,&stress,&cmat);
 
     //------------------------------------------- compute cauchy stresses
     LINALG::Matrix<6,1> cstress;
@@ -1264,6 +1269,8 @@ void DRT::ELEMENTS::InvDesign::sow6_nlnstiffmass(
     if (massmatrix)
     { // evaluate mass matrix +++++++++++++++++++++++++
       // integrate concistent mass matrix
+      double density = ele->Material()->Density();
+
       for (int inod=0; inod<NUMNOD_WEG6; ++inod)
       {
         for (int jnod=0; jnod<NUMNOD_WEG6; ++jnod)
@@ -1364,8 +1371,8 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
       LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,    ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,     ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOTET4,            1>* force,          ///< element internal force vector
-      LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,       ///< stresses at GP
-      LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,      ///< strains at GP
+      LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* elestress,       ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* elestrain,      ///< strains at GP
       const INPAR::STR::StressType iostress,    ///< stress output options
       const INPAR::STR::StrainType iostrain)
 {
@@ -1375,7 +1382,6 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
   const static std::vector<LINALG::Matrix<NUMNOD_SOTET4,1> > shapefcts = ele->so_tet4_1gp_shapefcts();
   const static std::vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = ele->so_tet4_1gp_derivs();
   const static std::vector<double> gpweights = ele->so_tet4_1gp_weights();
-  double density =  0.0;
 
   //---------------------------------------------------------------------
   // element geometry (note that this is inverse!)
@@ -1439,8 +1445,8 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
 
     // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
     // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    LINALG::SerialDenseVector glstrain_epetra(NUMSTR_SOTET4);
-    LINALG::Matrix<NUMSTR_SOTET4,1> glstrain(glstrain_epetra.A(),true);
+    LINALG::SerialDenseVector glstrain_epetra(MAT::NUM_STRESS_3D);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> glstrain(glstrain_epetra.A(),true);
     glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
     glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
     glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
@@ -1449,7 +1455,7 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
     glstrain(5) = cauchygreen(2,0);
 
     //---- build B-operator (wrt to spatial, that is known configuration)
-    LINALG::Matrix<NUMSTR_SOTET4,NUMDOF_SOTET4> B;
+    LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOTET4> B;
     for (int i=0; i<NUMNOD_SOTET4; ++i)
     {
       B(0,NODDOF_SOTET4*i+0) = n_xyz(i,0);
@@ -1497,7 +1503,10 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
     //------------------------------------------------- call material law
     LINALG::Matrix<6,6> cmat(true);
     LINALG::Matrix<6,1> stress(true);
-    ele->so_tet4_mat_sel(&stress,&cmat,&density,&glstrain, &F,gp,params);
+    params.set<int>("gp",gp);
+    params.set<int>("eleID",ele->Id());
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(ele->Material());
+    so3mat->Evaluate(&F,&glstrain,params,&stress,&cmat);
 
     //------------------------------------------- compute cauchy stresses
     LINALG::Matrix<6,1> cstress;
@@ -1554,14 +1563,14 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
     case INPAR::STR::stress_2pk:
     {
       if (elestress == NULL) dserror("stress data not available");
-      for (int i = 0; i < NUMSTR_SOTET4; ++i)
+      for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
         (*elestress)(gp,i) = stress(i);
     }
     break;
     case INPAR::STR::stress_cauchy:
     {
       if (elestress == NULL) dserror("stress data not available");
-      for (int i = 0; i < NUMSTR_SOTET4; ++i)
+      for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
         (*elestress)(gp,i) = cstress(i);
     }
     break;
@@ -1630,6 +1639,8 @@ void DRT::ELEMENTS::InvDesign::so_tet4_nlnstiffmass(
   // evaluate mass matrix
   if (massmatrix != NULL)
   {
+    double density = ele->Material()->Density();
+
     //consistent mass matrix evaluated using a 4-point rule
     for (int gp=0; gp<4; gp++)
     {

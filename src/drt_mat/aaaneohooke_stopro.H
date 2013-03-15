@@ -27,7 +27,7 @@ Maintainer: Jonas Biehler
 #define AAANEOHOOKE_STOPRO_H_
 
 #include "matpar_parameter.H"
-#include "material.H"
+#include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
@@ -93,7 +93,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// aneurysm wall material according to Raghavan and Vorp [2000]
-  class AAAneohooke_stopro : public Material
+  class AAAneohooke_stopro : public So3Material
   {
 
   public:
@@ -164,14 +164,21 @@ namespace MAT
     void Init(double value_stopro, std::string stochpar);
 
     // THE material routine
-    void Evaluate(const LINALG::Matrix<6,1>& glstrain,
-      LINALG::Matrix<6,6>& cmat,
-      LINALG::Matrix<6,1>& stress,
-      Teuchos::ParameterList& params);
-
+    virtual void Evaluate(
+      const LINALG::Matrix<3,3>* defgrd,
+      const LINALG::Matrix<6,1>* glstrain,
+      Teuchos::ParameterList& params,
+      LINALG::Matrix<6,1>* stress,
+      LINALG::Matrix<6,6>* cmat);
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+
+    /// Return names of visualization data
+    virtual void VisNames(std::map<string,int>& names);
+
+    /// Return visualization data
+    virtual bool VisData(const string& name, std::vector<double>& data, int numgp);
 
   private:
 

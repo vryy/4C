@@ -13,9 +13,7 @@ Maintainer: Moritz Frenzel
 
 
 #include "so_shw6.H" //**
-#include "../drt_mat/artwallremod.H"
-#include "../drt_mat/viscoanisotropic.H"
-#include "../drt_mat/elasthyper.H"
+#include "../drt_mat/so3_material.H"
 #include "../drt_lib/drt_linedefinition.H"
 
 
@@ -30,17 +28,8 @@ bool DRT::ELEMENTS::So_shw6::ReadElement(const std::string& eletype,
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
-  // special element-dependent input of material parameters
-  if (Material()->MaterialType() == INPAR::MAT::m_artwallremod){
-    MAT::ArtWallRemod* remo = static_cast <MAT::ArtWallRemod*>(Material().get());
-    remo->Setup(NUMGPT_WEG6, this->Id(), linedef);
-  } else if (Material()->MaterialType() == INPAR::MAT::m_viscoanisotropic){
-    MAT::ViscoAnisotropic* visco = static_cast <MAT::ViscoAnisotropic*>(Material().get());
-    visco->Setup(NUMGPT_WEG6, linedef);
-  } else if (Material()->MaterialType() == INPAR::MAT::m_elasthyper){
-    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
-    elahy->Setup(linedef);
-  }
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  so3mat->Setup(NUMGPT_WEG6, linedef);
 
   std::string buffer;
   linedef->ExtractString("KINEM",buffer);

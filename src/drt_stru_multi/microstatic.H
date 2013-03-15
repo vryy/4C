@@ -216,7 +216,6 @@ public:
   */
   void StaticHomogenization(LINALG::Matrix<6,1>* stress,
                             LINALG::Matrix<6,6>* cmat,
-                            double *density,
                             LINALG::Matrix<3,3>* defgrd,
                             const bool mod_newton,
                             bool& build_stiff);
@@ -268,6 +267,8 @@ public:
 
   */
   void SetEASData();
+
+  double Density() const { return density_; };
 
 
 protected:

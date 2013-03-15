@@ -25,7 +25,7 @@ Maintainer: Alexander Popp
 #define PLASTICHYPERELAST_H_
 
 #include "matpar_parameter.H"
-#include "material.H"
+#include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
@@ -89,7 +89,7 @@ namespace MAT
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for finite strain elasto-plastic material
-  class PlasticHyperElast : public Material
+  class PlasticHyperElast : public So3Material
   {
   public:
 
@@ -174,12 +174,14 @@ namespace MAT
     //! @name Evaluation methods
 
     /// evaluate material law
-    void Evaluate(const LINALG::Matrix<6,1>& glstrain,
-                  LINALG::Matrix<6,6>& cmat,
-                  LINALG::Matrix<6,1>& stress);
+    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
+                  const LINALG::Matrix<6,1>* glstrain,
+                  Teuchos::ParameterList& params,
+                  LINALG::Matrix<6,1>* stress,
+                  LINALG::Matrix<6,6>* cmat);
 
     /// evaluate strain energy function
-    void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
+    virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
                       double& psi);
 
     //@}

@@ -65,8 +65,7 @@ public:
   /// Perform microscale simulation
   void PerformMicroSimulation(LINALG::Matrix<3,3>* defgrd,
                               LINALG::Matrix<6,1>* stress,
-                              LINALG::Matrix<6,6>* cmat,
-                              double* density);
+                              LINALG::Matrix<6,6>* cmat);
 
   void Update();
 
@@ -84,6 +83,9 @@ public:
 
   /// get ele id
   int eleID() {return ele_ID_; }
+
+  /// get density
+  double Density() const {return density_;}
 
 
 private:
@@ -104,6 +106,9 @@ private:
 
   /// microstructure discretization writer
   Teuchos::RCP<IO::DiscretizationWriter> micro_output_;
+
+  /// homogenized density
+  double density_;
 
   /// my vector of old displacements
   Teuchos::RCP<Epetra_Vector> dis_;

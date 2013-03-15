@@ -24,7 +24,6 @@ Maintainer: Jonas Biehler
 #define NUMNOD_SOTET10      10      ///< number of nodes
 #define NODDOF_SOTET10       3      ///< number of dofs per node
 #define NUMDOF_SOTET10      30      ///< total dofs per element
-#define NUMSTR_SOTET10       6      ///< number of strains/stresses
 #define NUMGPT_SOTET10       4      ///< number gauss points per element for stiffness integration
 #define NUMGPT_MASS_SOTET10  11      ///< number gauss points per element for mass integration
 #define NUMDIM_SOTET10       3      ///< number of dimensions
@@ -59,7 +58,7 @@ public:
                                              const int owner );
 
   virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
-  
+
   virtual int Initialize(DRT::Discretization& dis);
 
   virtual void NodalBlockInformation( DRT::Element * dwele, int & numdf, int & dimns, int & nv, int & np );
@@ -76,7 +75,7 @@ private:
 /*!
 \brief A C++ version of the 10-node tet solid element
 
-a structural 10-node tetrahedral solid displacement element 
+a structural 10-node tetrahedral solid displacement element
 \author biehler
 */
 
@@ -394,10 +393,10 @@ protected:
 
   // don't want = operator
   So_tet10& operator = (const So_tet10& old);
-  
+
   //! init the inverse of the jacobian and its determinant in the material configuration
   virtual void InitJacobianMapping();
-  
+
   //! Calculate nonlinear stiffness and mass matrix
   virtual void so_tet10_nlnstiffmass(
        std::vector<int>&         lm,             ///< location matrix
@@ -406,8 +405,8 @@ protected:
        LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* stiffmatrix,    ///< element stiffness matrix
        LINALG::Matrix<NUMDOF_SOTET10,NUMDOF_SOTET10>* massmatrix,     ///< element mass matrix
        LINALG::Matrix<NUMDOF_SOTET10,1>* force,          ///< element internal force vector
-       LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestress,      ///< stresses at GP
-       LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>* elestrain,      ///< strains at GP
+       LINALG::Matrix<NUMGPT_SOTET10,MAT::NUM_STRESS_3D>* elestress,      ///< stresses at GP
+       LINALG::Matrix<NUMGPT_SOTET10,MAT::NUM_STRESS_3D>* elestrain,      ///< strains at GP
        Teuchos::ParameterList&   params,         ///< algorithmic parameters e.g. time
        const INPAR::STR::StressType   iostress,  ///< stress output option
        const INPAR::STR::StrainType   iostrain); ///< strain output option
@@ -418,13 +417,13 @@ protected:
   /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store them in elevecs
   void so_tet10_expol
   (
-      LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses, ///< gp stresses
+      LINALG::Matrix<NUMGPT_SOTET10,MAT::NUM_STRESS_3D>& stresses, ///< gp stresses
       Epetra_MultiVector& expolstresses  ///< nodal stresses
   );
 
   // These functions are basically copied from the So_integrator,
   // along with the rather inconsitent matrix sizes.
-  
+
   //! Evaluate Tet10 Shapefcts at 4 gausspoints to keep them static
   const std::vector<LINALG::Matrix<NUMNOD_SOTET10,1> > so_tet10_4gp_shapefcts();
   //! Evaluate Tet10 Derivs at 4 gausspoints to keep them static
@@ -438,17 +437,6 @@ protected:
   const std::vector<LINALG::Matrix<NUMDIM_SOTET10,NUMNOD_SOTET10> >& so_tet10_11gp_derivs();
   //! Evaluate Tet10 Weights at 10 gausspoints to keep them static
   const std::vector<double>& so_tet10_11gp_weights();
-
-
-//  // Material selection
-  void so_tet10_mat_sel(
-                      LINALG::Matrix<NUMSTR_SOTET10,1>* stress,
-                      LINALG::Matrix<NUMSTR_SOTET10,NUMSTR_SOTET10>* cmat,
-                      double* density,
-                      LINALG::Matrix<NUMSTR_SOTET10,1>* glstrain,
-                      LINALG::Matrix<NUMDIM_SOTET10,NUMDIM_SOTET10>* defgrd,
-                      const int gp,
-                      Teuchos::ParameterList params);
 
 }; // class So_tet10
 

@@ -28,7 +28,7 @@ bool DRT::ELEMENTS::NStet::ReadElement(const std::string& eletype,
 
   if (Material()->MaterialType() == INPAR::MAT::m_elasthyper){
     MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
-    elahy->Setup(linedef);
+    elahy->Setup(0,linedef);
   }
 
   std::string buffer;

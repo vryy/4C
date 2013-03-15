@@ -14,7 +14,7 @@
 
 
 #include "matpar_parameter.H"
-#include "material.H"
+#include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
@@ -92,7 +92,7 @@ namespace MAT
   /// Wrapper for StructPoro material
   ///
   /// This object exists (several times) at every element
-  class StructPoro: public Material
+  class StructPoro: public So3Material
   {
     public:
 
@@ -336,6 +336,18 @@ namespace MAT
       void GetGradJAtGP(LINALG::Matrix<1,3>& gradJ, int gp) const;
       void GetGradJAtGP(LINALG::Matrix<1,2>& gradJ, int gp) const;
       */
+
+      /// evaluate material law
+      virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
+                            const LINALG::Matrix<6,1>* glstrain,
+                            Teuchos::ParameterList& params,
+                            LINALG::Matrix<6,1>* stress,
+                            LINALG::Matrix<6,6>* cmat);
+
+      virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
+                                double& psi);
+
+      virtual void Update();
 
 
     private:

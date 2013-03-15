@@ -92,7 +92,7 @@ void DRT::ELEMENTS::So_hex8::soh8_reiniteas(const DRT::ELEMENTS::So_hex8::EASTyp
 void DRT::ELEMENTS::So_hex8::soh8_eassetup(
           std::vector<Epetra_SerialDenseMatrix>** M_GP,    // M-matrix evaluated at GPs
           double& detJ0,                      // det of Jacobian at origin
-          LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8>& T0invT,   // maps M(origin) local to global
+          LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& T0invT,   // maps M(origin) local to global
           const LINALG::Matrix<NUMNOD_SOH8,NUMDIM_SOH8>& xrefe)    // material element coords
 {
   // vector of df(origin)
@@ -163,7 +163,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
   T0invT(5,5) = jac0(0,0) * jac0(2,2) + jac0(2,0) * jac0(0,2);
 
   // now evaluate T0^{-T} with solver
-  LINALG::FixedSizeSerialDenseSolver<NUMSTR_SOH8,NUMSTR_SOH8,1> solve_for_inverseT0;
+  LINALG::FixedSizeSerialDenseSolver<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D,1> solve_for_inverseT0;
   solve_for_inverseT0.SetMatrix(T0invT);
   int err2 = solve_for_inverseT0.Factor();
   int err = solve_for_inverseT0.Invert();
@@ -173,7 +173,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
 
     // fill up M at each gp
   if (eastype_ == soh8_easmild) {
-    //static Epetra_SerialDenseMatrix M_mild(NUMSTR_SOH8*NUMGPT_SOH8,neas_);
+    //static Epetra_SerialDenseMatrix M_mild(MAT::NUM_STRESS_3D*NUMGPT_SOH8,neas_);
     static std::vector<Epetra_SerialDenseMatrix> M_mild(NUMGPT_SOH8);
     static bool M_mild_eval;
     /* easmild is the EAS interpolation of 9 modes, based on
@@ -192,7 +192,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
       // fill up M at each gp
       for (int i=0; i<NUMGPT_SOH8; ++i) {
-        M_mild[i].Shape(NUMSTR_SOH8,neas_);
+        M_mild[i].Shape(MAT::NUM_STRESS_3D,neas_);
         M_mild[i](0,0) = r[i];
         M_mild[i](1,1) = s[i];
         M_mild[i](2,2) = t[i];
@@ -225,7 +225,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
       const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
       // fill up M at each gp
       for (int i=0; i<NUMGPT_SOH8; ++i) {
-        M_full[i].Shape(NUMSTR_SOH8,neas_);
+        M_full[i].Shape(MAT::NUM_STRESS_3D,neas_);
         M_full[i](0,0) = r[i];        M_full[i](0,15) = r[i]*s[i]; M_full[i](0,16) = r[i]*t[i];
         M_full[i](1,1) = s[i];        M_full[i](1,17) = r[i]*s[i]; M_full[i](1,18) = s[i]*t[i];
         M_full[i](2,2) = t[i];        M_full[i](2,19) = r[i]*t[i]; M_full[i](2,20) = s[i]*t[i];
@@ -258,7 +258,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
         const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
         // fill up M at each gp
         for (int i=0; i<NUMGPT_SOH8; ++i) {
-          M_sosh8[i].Shape(NUMSTR_SOH8,neas_);
+          M_sosh8[i].Shape(MAT::NUM_STRESS_3D,neas_);
           M_sosh8[i](0,0) = r[i];
           M_sosh8[i](1,1) = s[i];
           M_sosh8[i](2,2) = t[i]; M_sosh8[i](2,5) = r[i]*t[i]; M_sosh8[i](2,6) = s[i]*t[i];
@@ -289,7 +289,7 @@ void DRT::ELEMENTS::So_hex8::soh8_eassetup(
         const double t[NUMGPT_SOH8] = {-gploc,-gploc,-gploc,-gploc, gploc, gploc, gploc, gploc};
         // fill up M at each gp
         for (int i=0; i<NUMGPT_SOH8; ++i) {
-          M_sosh8[i].Shape(NUMSTR_SOH8,neas_);
+          M_sosh8[i].Shape(MAT::NUM_STRESS_3D,neas_);
           int e = 0;
           M_sosh8[i](2,e++) = t[i]*t[i]*t[i];
 

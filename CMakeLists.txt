@@ -376,34 +376,25 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/aaaneohooke_stopro.cpp
   src/drt_mat/aaaraghavanvorp_damage.cpp
   src/drt_mat/aaa_mixedeffects.cpp
-  src/drt_mat/anisotropic_balzani.cpp
   src/drt_mat/arrhenius_pv.cpp
   src/drt_mat/arrhenius_spec.cpp
   src/drt_mat/arrhenius_temp.cpp
-  src/drt_mat/artwallremod.cpp
-  src/drt_mat/biocell.cpp
   src/drt_mat/biofilm.cpp
   src/drt_mat/carreauyasuda.cpp
-  src/drt_mat/charmm.cpp
   src/drt_mat/cnst_1d_art.cpp
   src/drt_mat/compogden.cpp
   src/drt_mat/constraintmixture.cpp
-  src/drt_mat/contchainnetw.cpp
   src/drt_mat/elasthyper.cpp
   src/drt_mat/viscogenmax.cpp
   src/drt_mat/ferech_pv.cpp
   src/drt_mat/fluidporo.cpp
   src/drt_mat/fourieriso.cpp
   src/drt_mat/growth_ip.cpp
-  src/drt_mat/holzapfelcardiovascular.cpp
-  src/drt_mat/humphreycardiovascular.cpp
   src/drt_mat/ion.cpp
   src/drt_mat/diffcond.cpp
   src/drt_mat/elchmat.cpp
   src/drt_mat/elchphase.cpp
   src/drt_mat/newman.cpp
-  src/drt_mat/itskov.cpp
-  src/drt_mat/logneohooke.cpp
   src/drt_mat/material.cpp
   src/drt_mat/material_service.cpp
   src/drt_mat/matlist.cpp
@@ -413,7 +404,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/micromaterial.cpp
   src/drt_mat/mixfrac.cpp
   src/drt_mat/modpowerlaw.cpp
-  src/drt_mat/mooneyrivlin.cpp
   src/drt_mat/myocard.cpp
   src/drt_mat/neohooke.cpp
   src/drt_mat/newtonianfluid.cpp
@@ -423,7 +413,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/plastichyperelast.cpp
   src/drt_mat/plasticlinelast.cpp
   src/drt_mat/damage.cpp
-  src/drt_mat/protein.cpp
   src/drt_mat/scatra_mat.cpp
   src/drt_mat/spring.cpp
   src/drt_mat/structporo.cpp
@@ -434,7 +423,6 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/robinson.cpp
   src/drt_mat/viscoanisotropic.cpp
   src/drt_mat/visconeohooke.cpp
-  src/drt_mat/yeoh.cpp
   src/drt_mat/yoghurt.cpp
   src/drt_matelast/elast_coupanisoexpo.cpp
   src/drt_matelast/elast_coupanisoexpotwocoup.cpp
@@ -627,7 +615,6 @@ set(OBJS_SOH8_LIB
   src/drt_so3/so_hex8fbar_input.cpp
   src/drt_so3/so_line.cpp
   src/drt_so3/so_line_evaluate.cpp
-  src/drt_so3/so_material.cpp
   src/drt_so3/so_nstet5.cpp
   src/drt_so3/so_nstet5_evaluate.cpp
   src/drt_so3/so_nstet5_input.cpp

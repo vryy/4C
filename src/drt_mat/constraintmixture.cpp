@@ -251,7 +251,7 @@ void MAT::ConstraintMixture::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Setup                                         (public)         12/10|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixture::Setup (const int numgp, DRT::INPUT::LineDefinition* linedef)
+void MAT::ConstraintMixture::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   if (*params_->integration_ != "Implicit" && *params_->integration_ != "Explicit")
     dserror("unknown option for integration");
@@ -283,7 +283,7 @@ void MAT::ConstraintMixture::Setup (const int numgp, DRT::INPUT::LineDefinition*
   }
 
   // history
-  SetupHistory(numgp);
+  ResetAll(numgp);
 
   // fiber vectors
   a1_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,1> > (numgp));
@@ -332,9 +332,9 @@ void MAT::ConstraintMixture::Setup (const int numgp, DRT::INPUT::LineDefinition*
 }
 
 /*----------------------------------------------------------------------*
- |  SetupHistory                                  (public)         03/11|
+ |  ResetAll                                      (public)         03/11|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixture::SetupHistory (const int numgp)
+void MAT::ConstraintMixture::ResetAll(const int numgp)
 {
   const Teuchos::ParameterList& timeintegr = DRT::Problem::Instance()->StructuralDynamicParams();
   double dt = timeintegr.get<double>("TIMESTEP");
@@ -462,7 +462,7 @@ void MAT::ConstraintMixture::Update()
 /*----------------------------------------------------------------------*
  |  Reset internal variables                      (public)         01/12|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixture::Reset()
+void MAT::ConstraintMixture::ResetStep()
 {
   history_->back().SetTime(0.0, 0.0);
 }
@@ -470,15 +470,16 @@ void MAT::ConstraintMixture::Reset()
 /*----------------------------------------------------------------------*
  |  Evaluate                                      (public)         12/10|
  *----------------------------------------------------------------------*/
-void MAT::ConstraintMixture::Evaluate
-(
-  const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
-  const int gp,
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,
-  LINALG::Matrix<NUM_STRESS_3D,1>* stress,
-  Teuchos::ParameterList& params
-)
+void MAT::ConstraintMixture::Evaluate(const LINALG::Matrix<3,3>* defgrd,
+                                      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
+                                      Teuchos::ParameterList& params,
+                                      LINALG::Matrix<NUM_STRESS_3D,1>* stress,
+                                      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat)
 {
+  // get gauss point number
+  const int gp = params.get<int>("gp",-1);
+  if (gp == -1) dserror("no Gauss point number provided in material");
+
   // get variables from params
   double dt = params.get<double>("delta time",-1.0);
   double time = params.get<double>("total time",-1.0);
@@ -1476,7 +1477,7 @@ void MAT::ConstraintMixture::EvaluateImplicitAll
     //--------------------------------------------------------------------------------------
     // derivative of residual
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> DResidual(true);
-    for (unsigned int id = 0; id < NUM_STRESS_3D; id++)
+    for (int id = 0; id < NUM_STRESS_3D; id++)
       DResidual(id,id) = 1.0;
 
     // for all 4 fiber families
@@ -1581,7 +1582,7 @@ void MAT::ConstraintMixture::EvaluateImplicitAll
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> RHS(cmatelastic);
   // left matrix of the linear equations
   LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> LM(true);
-  for (unsigned int id = 0; id < NUM_STRESS_3D; id++) LM(id,id) = 1.0;
+  for (int id = 0; id < NUM_STRESS_3D; id++) LM(id,id) = 1.0;
 
   // Fiber1
   double stretch = prestretchcollagen(0)/actcollstretch(0);
@@ -1769,7 +1770,7 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle
       //--------------------------------------------------------------------------------------
       // derivative of residual
       LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> DResidual(true);
-      for (unsigned int id = 0; id < NUM_STRESS_3D; id++)
+      for (int id = 0; id < NUM_STRESS_3D; id++)
         DResidual(id,id) = 1.0;
 
       // linearisation of stress formula
@@ -1854,7 +1855,7 @@ void MAT::ConstraintMixture::EvaluateImplicitSingle
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> RHS(cmatelastic);
     // left matrix of the linear equations
     LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> LM(true);
-    for (unsigned int id = 0; id < NUM_STRESS_3D; id++) LM(id,id) = 1.0;
+    for (int id = 0; id < NUM_STRESS_3D; id++) LM(id,id) = 1.0;
 
     LINALG::Matrix<NUM_STRESS_3D,1> dmassdstress(true);
     LINALG::Matrix<NUM_STRESS_3D,1> dmassdstretch(true);
@@ -2110,6 +2111,106 @@ void MAT::ConstraintMixture::EvaluateFiberVecs
   a4_->at(gp).Update(1.0/a4_0norm,a4_0);
 
   return;
+}
+
+/// Return names of visualization data
+void MAT::ConstraintMixture::VisNames(std::map<string,int>& names)
+{
+  string fiber = "MassStress";
+  names[fiber] = 3;
+  fiber = "Fiber1";
+  names[fiber] = 3; // 3-dim vector
+  fiber = "Fiber2";
+  names[fiber] = 3; // 3-dim vector
+  fiber = "referentialMassDensity";
+  names[fiber] = 1;
+  fiber = "CollagenMassDensity";
+  names[fiber] = 3;
+  fiber = "Prestretch";
+  names[fiber] = 3;
+  fiber = "Homstress";
+  names[fiber] = 3;
+}
+
+/// Return visualization data
+bool MAT::ConstraintMixture::VisData(const string& name, std::vector<double>& data, int numgp)
+{
+  if (name == "MassStress")
+  {
+    if ((int)data.size()!=3)
+      dserror("size mismatch");
+    LINALG::Matrix<3,1> temp(true);
+    for (int iter=0; iter<numgp; iter++)
+      temp.Update(1.0,GetVis(iter),1.0);
+    data[0] = temp(0)/numgp;
+    data[1] = temp(1)/numgp;
+    data[2] = temp(2)/numgp;
+  }
+  else if (name == "Fiber1")
+  {
+    if ((int)data.size()!=3)
+      dserror("size mismatch");
+    LINALG::Matrix<3,1> a1 = Geta1()->at(0); // get a1 of first gp
+    data[0] = a1(0);
+    data[1] = a1(1);
+    data[2] = a1(2);
+  }
+  else if (name == "Fiber2")
+  {
+    if ((int)data.size()!=3)
+      dserror("size mismatch");
+    LINALG::Matrix<3,1> a2 = Geta2()->at(0); // get a2 of first gp
+    data[0] = a2(0);
+    data[1] = a2(1);
+    data[2] = a2(2);
+  }
+  else if (name == "referentialMassDensity")
+  {
+    if ((int)data.size()!=1)
+      dserror("size mismatch");
+    double temp = 0.0;
+    for (int iter=0; iter<numgp; iter++)
+      temp += GetMassDensity(iter);
+    data[0] = temp/numgp;
+  }
+  else if (name == "CollagenMassDensity")
+  {
+    if ((int)data.size()!=3)
+      dserror("size mismatch");
+    LINALG::Matrix<3,1> temp(true);
+    for (int iter=0; iter<numgp; iter++)
+      temp.Update(1.0,GetMassDensityCollagen(iter),1.0);
+    data[0] = temp(0)/numgp;
+    data[1] = temp(1)/numgp;
+    data[2] = temp(2)/numgp;
+  }
+  else if (name == "Prestretch")
+  {
+    if ((int)data.size()!=3)
+      dserror("size mismatch");
+    LINALG::Matrix<3,1> temp(true);
+    for (int iter=0; iter<numgp; iter++)
+      temp.Update(1.0,GetPrestretch(iter),1.0);
+    data[0] = temp(0)/numgp;
+    data[1] = temp(1)/numgp;
+    data[2] = temp(2)/numgp;
+  }
+  else if (name == "Homstress")
+  {
+    if ((int)data.size()!=3)
+      dserror("size mismatch");
+    LINALG::Matrix<3,1> temp(true);
+    for (int iter=0; iter<numgp; iter++)
+      temp.Update(1.0,GetHomstress(iter),1.0);
+    data[0] = temp(0)/numgp;
+    data[1] = temp(1)/numgp;
+    data[2] = temp(2)/numgp;
+  }
+  else
+  {
+    return false;
+  }
+  return true;
 }
 
 //----------------------------------------------------------------------

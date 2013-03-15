@@ -582,7 +582,9 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3d(
     case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
-      stvk->Evaluate(*glstrain,*cmat,*stress);
+      LINALG::Matrix<3,3> defgrd(true);
+      Teuchos::ParameterList params;
+      stvk->Evaluate(&defgrd,glstrain,params,stress,cmat);
       return;
       break;
     }
@@ -590,7 +592,8 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3d(
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
-      hyper->Evaluate(*glstrain,*cmat,*stress,params);
+      LINALG::Matrix<3,3> defgrd(true);
+      hyper->Evaluate(&defgrd,glstrain,params,stress,cmat);
       return;
       break;
     }
@@ -639,22 +642,6 @@ double DRT::ELEMENTS::Wall1::Density(
     return actmat->Density();
     break;
   }
-  case INPAR::MAT::m_stvenpor :  // porous linear elastic
-    dserror("Illegal typ of material for this element");
-    return 0;
-    break;
-  case INPAR::MAT::m_pl_mises: // von Mises material law
-    dserror("Illegal typ of material for this element");
-    return 0;
-    break;
-  case INPAR::MAT::m_pl_mises_3D: // Stefan's von mises 3D material law (certainly not Stefan Lenz's law)
-    dserror("Illegal typ of material for this element");
-    return 0;
-    break;
-  case INPAR::MAT::m_pl_dp :  // Drucker-Prager material law
-    dserror("Illegal typ of material for this element");
-    return 0;
-    break;
   default:
     dserror("Illegal typ of material for this element");
     return 0;

@@ -15,12 +15,7 @@ writen by : Alexander Volf
 
 #include "so_tet4.H"
 #include "../drt_lib/drt_linedefinition.H"
-#include "../drt_mat/holzapfelcardiovascular.H"
-#include "../drt_mat/humphreycardiovascular.H"
-#include "../drt_mat/growth_ip.H"
-#include "../drt_mat/constraintmixture.H"
-#include "../drt_mat/elasthyper.H"
-#include "../drt_mat/structporo.H"
+#include "../drt_mat/so3_material.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -35,29 +30,8 @@ bool DRT::ELEMENTS::So_tet4::ReadElement(const std::string& eletype,
 
   Teuchos::RCP<MAT::Material> mat = Material();
 
-  if(mat->MaterialType() == INPAR::MAT::m_structporo)
-  {
-    MAT::StructPoro* actmat = static_cast<MAT::StructPoro*>(mat.get());
-    //actmat->Setup(NUMGPT_SOTET4);
-    mat = actmat->GetMaterial();
-  }
-
-  if (mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
-    MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(mat.get());
-    holzcard->Setup(NUMGPT_SOTET4, linedef);
-  } else if (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
-    MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(mat.get());
-    humcard->Setup(NUMGPT_SOTET4, linedef);
-  } else if (mat->MaterialType() == INPAR::MAT::m_growth){
-    MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
-    grow->Setup(NUMGPT_SOTET4, linedef);
-  } else if (mat->MaterialType() == INPAR::MAT::m_constraintmixture){
-    MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
-    comix->Setup(NUMGPT_SOTET4, linedef);
-  } else if (mat->MaterialType() == INPAR::MAT::m_elasthyper){
-    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(mat.get());
-    elahy->Setup(linedef);
-  }
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  so3mat->Setup(NUMGPT_SOTET4, linedef);
 
   std::string buffer;
   linedef->ExtractString("KINEM",buffer);

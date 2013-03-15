@@ -23,8 +23,6 @@ Maintainer: Axel Gerstenberger
 // Several parameters which are fixed for Solid Wedge6
 const int NUMDIM_DISP = 3;      ///< number of dimensions
 const int NODDOF_DISP = 3;      ///< number of dofs per node
-const int NUMSTR_DISP = 6;      ///< number of strains/stresses
-
 
 namespace DRT
 {
@@ -343,19 +341,6 @@ protected:
                                  Epetra_SerialDenseMatrix* massmatrix,
                                  Epetra_SerialDenseVector* force,
                                  Teuchos::ParameterList&   params);         // algorithmic parameters e.g. time
-
-  //! material selection for so_disp
-  void sodisp_mat_sel(Epetra_SerialDenseVector* stress,
-                    Epetra_SerialDenseMatrix* cmat,
-                    double* density,
-                    const Epetra_SerialDenseVector* glstrain,
-                    Teuchos::ParameterList&   params);         // algorithmic parameters e.g. time
-  void sodisp_mat_sel(
-          LINALG::Matrix<6,1>* stress,
-          LINALG::Matrix<6,6>* cmat,
-          double* density,
-          LINALG::Matrix<6,1>* glstrain,
-          Teuchos::ParameterList&   params);        // algorithmic parameters e.g. time
 
   //! evaluate shape functions and derivatives - non-static due to flexible shape
   void sodisp_shapederiv(

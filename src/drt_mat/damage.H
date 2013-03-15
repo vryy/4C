@@ -24,7 +24,7 @@ Maintainer: Caroline Danowski
 #define DAMAGE_H_
 
 #include "matpar_parameter.H"
-#include "material.H"
+#include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
@@ -90,7 +90,7 @@ private:
 
   /*----------------------------------------------------------------------*/
   //! wrapper for elasto-plastic material including damage
-  class Damage : public Material
+  class Damage : public So3Material
   {
   public:
 
@@ -139,25 +139,18 @@ private:
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new Damage( *this ) ); }
 
     //! initialise internal stress variables
-    void Setup(
-      const int numgp //!< number of Gauss points
-      );
+    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     //! update internal stress variables
-    void Update();
-
-    //! reset internal stress variables
-    void Reset();
+    virtual void Update();
 
     //! evaluate material
-    void Evaluate(
-      const LINALG::Matrix<NUM_STRESS_3D,1>& linstrain,
-      LINALG::Matrix<NUM_STRESS_3D,1>& plstrain, //!< return the plastic strains to the element
-//      LINALG::Matrix<1,1>& accplstrain, //!< return accumulated plastic strains to the element
-      const int gp,  //!< current Gaus point
+    virtual void Evaluate(
+      const LINALG::Matrix<3,3>* defgrd,
+      const LINALG::Matrix<NUM_STRESS_3D,1>* linstrain,
       Teuchos::ParameterList& params,  //!< parameter list for communication
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  //!< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>& stress  //!< 2nd PK-stress
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  //!< 2nd PK-stress
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat  //!< material stiffness matrix
       );
 
     //! computes stress
@@ -192,7 +185,7 @@ private:
 
     //! Return density
     virtual double Density() const { return params_->density_; }
-    
+
     //! Return accumulated strain at Gauss points
     //! use the old vector (last_) for postprocessing
     //! Output is called after(!!) Update, so that newest values are included in
@@ -211,6 +204,12 @@ private:
 
     //! Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+
+    /// Return names of visualization data
+    virtual void VisNames(std::map<string,int>& names);
+
+    /// Return visualization data
+    virtual bool VisData(const string& name, std::vector<double>& data, int numgp);
 
     //! Flag plastic step was called
     bool plastic_step;

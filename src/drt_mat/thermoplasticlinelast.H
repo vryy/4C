@@ -38,7 +38,7 @@ Maintainer: Caroline Danowski
  | headers                                                   dano 08/11 |
  *----------------------------------------------------------------------*/
 #include "matpar_parameter.H"
-#include "material.H"
+#include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
 
@@ -111,7 +111,7 @@ private:
 
   /*----------------------------------------------------------------------*/
   //! wrapper for linear thermo-elasto-plastic material
-  class ThermoPlasticLinElast : public Material
+  class ThermoPlasticLinElast : public So3Material
   {
   public:
 
@@ -168,24 +168,21 @@ private:
     }
 
     //! initialise internal stress variables
-    void Setup(
-      const int numgp //!< number of Gauss points
-      );
+    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     //! update internal stress variables
-    void Update();
+    virtual void Update();
 
     //! reset internal stress variables
     void Reset();
 
     //! evaluate material
-    void Evaluate(
-      const LINALG::Matrix<6,1>& linstrain,
-      LINALG::Matrix<6,1>& plstrain, //!< return the plastic strains to the element
-      const int gp,  //!< current Gaus point
+    virtual void Evaluate(
+      const LINALG::Matrix<3,3>* defgrd,
+      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
       Teuchos::ParameterList& params,  //!< parameter list for communication
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat,  //!< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>& stress  //!< 2nd PK-stress
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  //!< 2nd PK-stress
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat  //!< material stiffness matrix
       );
 
     // computes stress
@@ -238,7 +235,7 @@ private:
 
     //! return density
     virtual double Density() const { return params_->density_; }
-    
+
     //! Return accumulated strain at Gauss points
     //! use the old vector (last_) for postprocessing
     //! Output is called after(!!) Update, so that newest values are included in
@@ -337,6 +334,12 @@ private:
     LINALG::Matrix<NUM_STRESS_3D,1> PlasticStrainDiff(int gp);
 
     //@}
+
+    /// Return names of visualization data
+    virtual void VisNames(std::map<string,int>& names);
+
+    /// Return visualization data
+    virtual bool VisData(const string& name, std::vector<double>& data, int numgp);
 
 
   private:

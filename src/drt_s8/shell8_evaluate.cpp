@@ -94,9 +94,6 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
     actmat->m.compogden->density = mat->Density();
     break;
   }
-  case INPAR::MAT::m_viscohyper:
-    dserror("viscohyperelastic material in shell8 not ported to DRT");
-    break;
   default:
     dserror("Material of type %d is not implemented",material->MaterialType());
     break;
@@ -224,9 +221,6 @@ int DRT::ELEMENTS::Shell8::Evaluate(Teuchos::ParameterList&   params,
     delete actmat->m.compogden;
     break;
   }
-  case INPAR::MAT::m_viscohyper:
-    dserror("viscohyperelastic material in shell8 not ported to DRT");
-    break;
   default:
     dserror("Material of type %d is not implemented",material->MaterialType());
     break;
@@ -1759,9 +1753,6 @@ void DRT::ELEMENTS::Shell8::s8tmat(
       amdel(&tmp1);
       amdel(&tmp2);
     }
-    break;
-    case m_viscohyper:/*-------------------------viscous kompressible ogden */
-      dserror("viscous kompressible ogden in shell8 not ported to DRT");
     break;
     default:
       dserror("Ilegal typ of material for element shell8");
@@ -3878,22 +3869,6 @@ int DRT::ELEMENTS::Shell8Type::Initialize(DRT::Discretization& dis)
       Epetra_SerialDenseMatrix forces;
       forces.Shape(18,actele->ngp_[0]*actele->ngp_[1]); // 18 forces on upto 9 gaussian points
       actele->data_.Add("forces",forces);
-    }
-
-    //--------------------------------------allocate space for material history
-    Teuchos::RCP<MAT::Material> material = actele->Material();
-    MATERIAL* actmat = NULL;
-    if (material->MaterialType()==INPAR::MAT::m_viscohyper)/* material is viscohyperelastic */
-    {
-      dserror("viscohyperelastic material in shell8 not ported to DRT");
-      const int nmaxw  = actmat->m.viscohyper->nmaxw;
-      const int ngauss = actele->ngp_[0]*actele->ngp_[1]*actele->ngp_[2];
-      const int size = ngauss*(nmaxw+1)*3*3;
-      std::vector<double> his1(size);
-      std::vector<double> his2(size);
-      for (int i=0; i<size; ++i) his1[i] = his2[i] = 0.0;
-      actele->data_.Add("mathis1",his1);
-      actele->data_.Add("mathis2",his2);
     }
   } // for (int i=0; i<dis.NumMyColElements(); ++i)
 

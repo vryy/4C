@@ -379,12 +379,12 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToVector9Voigt(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToVector6Voigt(
-  LINALG::Matrix<NUMSTR_,1>& bvct,
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1>& bvct,
   const LINALG::Matrix<NUMDIM_,NUMDIM_>& bmat,
   const VoigtType outvoigt6
   )
 {
-  for (int ij=0; ij<NUMSTR_; ++ij)
+  for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
   {
     const int i = VOIGT6ROW_[ij];
     const int j = VOIGT6COL_[ij];
@@ -405,7 +405,7 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToVector6Voigt(
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::Vector6VoigtToMatrix2Tensor(
   LINALG::Matrix<NUMDIM_,NUMDIM_>& bmat,
-  const LINALG::Matrix<NUMSTR_,1>& bvct,
+  const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& bvct,
   const VoigtType invoigt6
   )
 {
@@ -467,7 +467,7 @@ void DRT::ELEMENTS::So_sh8p8::InvVector9VoigtDiffByItself(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtDiffByItself(
-  LINALG::Matrix<NUMSTR_,NUMSTR_>& invfderf,
+  LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& invfderf,
   const LINALG::Matrix<NUMDIM_,NUMDIM_>& invfmat
   )
 {
@@ -476,12 +476,12 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtDiffByItself(
 
 //  cout << endl;
 //  cout << endl;
-  for (int ij=0; ij<NUMSTR_; ++ij)
+  for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
   {
 //    cout << "[";
     const int i = VOIGT6ROW_[ij];
     const int j = VOIGT6COL_[ij];
-    for (int kl=0; kl<NUMSTR_; ++kl)
+    for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
     {
       const int k = VOIGT6ROW_[kl];
       const int l = VOIGT6COL_[kl];
@@ -555,7 +555,7 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtDiffByItself(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
-  LINALG::Matrix<NUMSTR_,NUMSTR_*NUMSTR_>& invbvdderb,
+  LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D*MAT::NUM_STRESS_3D>& invbvdderb,
   const LINALG::Matrix<NUMDIM_,NUMDIM_>& ibt
   )
 {
@@ -564,17 +564,17 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
 //  cout << endl;
 //  cout << endl;
 
-  for (int kl=0; kl<NUMSTR_; ++kl)
+  for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
   {
     const int k = VOIGT6ROW_[kl];
     const int l = VOIGT6COL_[kl];
-    for (int mn=kl; mn<NUMSTR_; ++mn)
+    for (int mn=kl; mn<MAT::NUM_STRESS_3D; ++mn)
     {
       const int m = VOIGT6ROW_[mn];
       const int n = VOIGT6COL_[mn];
-      const int klmn = NUMSTR_*kl + mn;
-      const int mnkl = NUMSTR_*mn + kl;
-      for (int ij=0; ij<NUMSTR_; ++ij)
+      const int klmn = MAT::NUM_STRESS_3D*kl + mn;
+      const int mnkl = MAT::NUM_STRESS_3D*mn + kl;
+      for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
       {
 //    cout << "[\n";
         const int i = VOIGT6ROW_[ij];
@@ -628,7 +628,7 @@ void DRT::ELEMENTS::So_sh8p8::InvVector6VoigtTwiceDiffByItself(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
-  LINALG::Matrix<NUMSTR_,NUMSTR_>& sqfderf,
+  LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& sqfderf,
   const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat,
   const VoigtType outvoigt6
   )
@@ -642,12 +642,12 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtDiffByItself(
 
   // (F.F)_{,F} with F^T=F
 //  cout << endl;
-  for (int ij=0; ij<NUMSTR_; ++ij)
+  for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
   {
 //    cout << "[";
     const int i = VOIGT6ROW_[ij];
     const int j = VOIGT6COL_[ij];
-    for (int kl=0; kl<NUMSTR_; ++kl)
+    for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
     {
       const int k = VOIGT6ROW_[kl];
       const int l = VOIGT6COL_[kl];
@@ -754,7 +754,7 @@ void DRT::ELEMENTS::So_sh8p8::SqVector9VoigtDiffByItself(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
-  LINALG::Matrix<NUMSTR_,NUMSTR_*NUMSTR_>& sqfdderf,
+  LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D*MAT::NUM_STRESS_3D>& sqfdderf,
   const LINALG::Matrix<NUMDIM_,NUMDIM_>& fmat
   )
 {
@@ -767,20 +767,20 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
 
   // (F^T.F)_{,FF} with F^T=F
 //  cout << endl;
-  for (int ij=0; ij<NUMSTR_; ++ij)
+  for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
   {
 //    cout << "[";
     const int i = VOIGT6ROW_[ij];
     const int j = VOIGT6COL_[ij];
-    for (int kl=0; kl<NUMSTR_; ++kl)
+    for (int kl=0; kl<MAT::NUM_STRESS_3D; ++kl)
     {
       const int k = VOIGT6ROW_[kl];
       const int l = VOIGT6COL_[kl];
-      for (int mn=0; mn<NUMSTR_; ++mn)
+      for (int mn=0; mn<MAT::NUM_STRESS_3D; ++mn)
       {
         const int m = VOIGT6ROW_[mn];
         const int n = VOIGT6COL_[mn];
-        const int klmn = NUMSTR_*kl + mn;
+        const int klmn = MAT::NUM_STRESS_3D*kl + mn;
         double sqfdderf_ijklmn = 0.25*(id(i,k)*id(l,m)*id(j,n)+id(j,l)*id(i,m)*id(k,n)
                                        +id(i,k)*id(l,n)*id(j,m)+id(j,l)*id(i,n)*id(k,m)  // swap 'm' and 'n'
                                        +id(i,l)*id(k,m)*id(j,n)+id(j,k)*id(i,m)*id(l,n)  // swap 'k' and 'l'
@@ -843,51 +843,51 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
-  int* isqfdderf,  //[NUMSTR_*6];
-  LINALG::Matrix<NUMSTR_,6>& sqfdderf
+  int* isqfdderf,  //[MAT::NUM_STRESS_3D*6];
+  LINALG::Matrix<MAT::NUM_STRESS_3D,6>& sqfdderf
   )
 {
-  isqfdderf[NUMSTR_*0+0] = 0;  sqfdderf(0,0) = 2.0;
-  isqfdderf[NUMSTR_*0+1] = 21;  sqfdderf(0,1) = 0.5;
-  isqfdderf[NUMSTR_*0+2] = 35;  sqfdderf(0,2) = 0.5;
-  isqfdderf[NUMSTR_*0+3] = -1;  sqfdderf(0,3) = 0.0;  // dummy
-  isqfdderf[NUMSTR_*0+4] = -1;  sqfdderf(0,4) = 0.0;  // dummy
-  isqfdderf[NUMSTR_*0+5] = -1;  sqfdderf(0,5) = 0.0;  // dummy
+  isqfdderf[MAT::NUM_STRESS_3D*0+0] = 0;  sqfdderf(0,0) = 2.0;
+  isqfdderf[MAT::NUM_STRESS_3D*0+1] = 21;  sqfdderf(0,1) = 0.5;
+  isqfdderf[MAT::NUM_STRESS_3D*0+2] = 35;  sqfdderf(0,2) = 0.5;
+  isqfdderf[MAT::NUM_STRESS_3D*0+3] = -1;  sqfdderf(0,3) = 0.0;  // dummy
+  isqfdderf[MAT::NUM_STRESS_3D*0+4] = -1;  sqfdderf(0,4) = 0.0;  // dummy
+  isqfdderf[MAT::NUM_STRESS_3D*0+5] = -1;  sqfdderf(0,5) = 0.0;  // dummy
 
-  isqfdderf[NUMSTR_*1+0] = 7;   sqfdderf(1,0) = 2.0;
-  isqfdderf[NUMSTR_*1+1] = 21;  sqfdderf(1,1) = 0.5;
-  isqfdderf[NUMSTR_*1+2] = 28;  sqfdderf(1,2) = 0.5;
-  isqfdderf[NUMSTR_*1+3] = -1;  sqfdderf(1,3) = 0.0;  // dummy
-  isqfdderf[NUMSTR_*1+4] = -1;  sqfdderf(1,4) = 0.0;  // dummy
-  isqfdderf[NUMSTR_*1+5] = -1;  sqfdderf(1,5) = 0.0;  // dummy
+  isqfdderf[MAT::NUM_STRESS_3D*1+0] = 7;   sqfdderf(1,0) = 2.0;
+  isqfdderf[MAT::NUM_STRESS_3D*1+1] = 21;  sqfdderf(1,1) = 0.5;
+  isqfdderf[MAT::NUM_STRESS_3D*1+2] = 28;  sqfdderf(1,2) = 0.5;
+  isqfdderf[MAT::NUM_STRESS_3D*1+3] = -1;  sqfdderf(1,3) = 0.0;  // dummy
+  isqfdderf[MAT::NUM_STRESS_3D*1+4] = -1;  sqfdderf(1,4) = 0.0;  // dummy
+  isqfdderf[MAT::NUM_STRESS_3D*1+5] = -1;  sqfdderf(1,5) = 0.0;  // dummy
 
-  isqfdderf[NUMSTR_*2+0] = 14;  sqfdderf(2,0) = 2.0;
-  isqfdderf[NUMSTR_*2+1] = 28;  sqfdderf(2,1) = 0.5;
-  isqfdderf[NUMSTR_*2+2] = 35;  sqfdderf(2,2) = 0.5;
-  isqfdderf[NUMSTR_*2+3] = -1;  sqfdderf(2,3) = 0.0;  // dummy
-  isqfdderf[NUMSTR_*2+4] = -1;  sqfdderf(2,4) = 0.0;  // dummy
-  isqfdderf[NUMSTR_*2+5] = -1;  sqfdderf(2,5) = 0.0;  // dummy
+  isqfdderf[MAT::NUM_STRESS_3D*2+0] = 14;  sqfdderf(2,0) = 2.0;
+  isqfdderf[MAT::NUM_STRESS_3D*2+1] = 28;  sqfdderf(2,1) = 0.5;
+  isqfdderf[MAT::NUM_STRESS_3D*2+2] = 35;  sqfdderf(2,2) = 0.5;
+  isqfdderf[MAT::NUM_STRESS_3D*2+3] = -1;  sqfdderf(2,3) = 0.0;  // dummy
+  isqfdderf[MAT::NUM_STRESS_3D*2+4] = -1;  sqfdderf(2,4) = 0.0;  // dummy
+  isqfdderf[MAT::NUM_STRESS_3D*2+5] = -1;  sqfdderf(2,5) = 0.0;  // dummy
 
-  isqfdderf[NUMSTR_*3+0] = 3;  sqfdderf(3,0) = 1.0;
-  isqfdderf[NUMSTR_*3+1] = 9;  sqfdderf(3,1) = 1.0;
-  isqfdderf[NUMSTR_*3+2] = 18;  sqfdderf(3,2) = 1.0;
-  isqfdderf[NUMSTR_*3+3] = 19;  sqfdderf(3,3) = 1.0;
-  isqfdderf[NUMSTR_*3+4] = 29;  sqfdderf(3,4) = 0.5;
-  isqfdderf[NUMSTR_*3+5] = 34;  sqfdderf(3,5) = 0.5;
+  isqfdderf[MAT::NUM_STRESS_3D*3+0] = 3;  sqfdderf(3,0) = 1.0;
+  isqfdderf[MAT::NUM_STRESS_3D*3+1] = 9;  sqfdderf(3,1) = 1.0;
+  isqfdderf[MAT::NUM_STRESS_3D*3+2] = 18;  sqfdderf(3,2) = 1.0;
+  isqfdderf[MAT::NUM_STRESS_3D*3+3] = 19;  sqfdderf(3,3) = 1.0;
+  isqfdderf[MAT::NUM_STRESS_3D*3+4] = 29;  sqfdderf(3,4) = 0.5;
+  isqfdderf[MAT::NUM_STRESS_3D*3+5] = 34;  sqfdderf(3,5) = 0.5;
 
-  isqfdderf[NUMSTR_*4+0] = 9;  sqfdderf(4,0) = 1.0;
-  isqfdderf[NUMSTR_*4+1] = 16;  sqfdderf(4,1) = 1.0;
-  isqfdderf[NUMSTR_*4+2] = 23;  sqfdderf(4,2) = 0.5;
-  isqfdderf[NUMSTR_*4+3] = 25;  sqfdderf(4,3) = 1.0;
-  isqfdderf[NUMSTR_*4+4] = 26;  sqfdderf(4,4) = 1.0;
-  isqfdderf[NUMSTR_*4+5] = 33;  sqfdderf(4,5) = 0.5;
+  isqfdderf[MAT::NUM_STRESS_3D*4+0] = 9;  sqfdderf(4,0) = 1.0;
+  isqfdderf[MAT::NUM_STRESS_3D*4+1] = 16;  sqfdderf(4,1) = 1.0;
+  isqfdderf[MAT::NUM_STRESS_3D*4+2] = 23;  sqfdderf(4,2) = 0.5;
+  isqfdderf[MAT::NUM_STRESS_3D*4+3] = 25;  sqfdderf(4,3) = 1.0;
+  isqfdderf[MAT::NUM_STRESS_3D*4+4] = 26;  sqfdderf(4,4) = 1.0;
+  isqfdderf[MAT::NUM_STRESS_3D*4+5] = 33;  sqfdderf(4,5) = 0.5;
 
-  isqfdderf[NUMSTR_*5+0] = 5;  sqfdderf(5,0) = 1.0;
-  isqfdderf[NUMSTR_*5+1] = 17;  sqfdderf(5,1) = 1.0;
-  isqfdderf[NUMSTR_*5+2] = 22;  sqfdderf(5,2) = 0.5;
-  isqfdderf[NUMSTR_*5+3] = 27;  sqfdderf(5,3) = 0.5;
-  isqfdderf[NUMSTR_*5+4] = 30;  sqfdderf(5,4) = 1.0;
-  isqfdderf[NUMSTR_*5+5] = 32;  sqfdderf(5,5) = 1.0;
+  isqfdderf[MAT::NUM_STRESS_3D*5+0] = 5;  sqfdderf(5,0) = 1.0;
+  isqfdderf[MAT::NUM_STRESS_3D*5+1] = 17;  sqfdderf(5,1) = 1.0;
+  isqfdderf[MAT::NUM_STRESS_3D*5+2] = 22;  sqfdderf(5,2) = 0.5;
+  isqfdderf[MAT::NUM_STRESS_3D*5+3] = 27;  sqfdderf(5,3) = 0.5;
+  isqfdderf[MAT::NUM_STRESS_3D*5+4] = 30;  sqfdderf(5,4) = 1.0;
+  isqfdderf[MAT::NUM_STRESS_3D*5+5] = 32;  sqfdderf(5,5) = 1.0;
 
   return;
 }
@@ -896,7 +896,7 @@ void DRT::ELEMENTS::So_sh8p8::SqVector6VoigtTwiceDiffByItself(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToMatrix6x9Voigt(
-  LINALG::Matrix<NUMSTR_,NUMDFGR_>& bm,
+  LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDFGR_>& bm,
   const LINALG::Matrix<NUMDIM_,NUMDIM_>& bt,
   const bool transpose
   )
@@ -908,7 +908,7 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToMatrix6x9Voigt(
   {
     const int k = VOIGT9ROW_[kl];
     const int l = VOIGT9COL_[kl];
-    for (int ij=0; ij<NUMSTR_; ++ij)
+    for (int ij=0; ij<MAT::NUM_STRESS_3D; ++ij)
     {
 //    cout << "[";
       const int i = VOIGT6ROW_[ij];
@@ -945,18 +945,18 @@ void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToMatrix6x9Voigt(
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_sh8p8::Matrix2TensorToLeftRightProductMatrix6x6Voigt(
-  LINALG::Matrix<NUMSTR_,NUMSTR_>& bm,  ///< (out) 6x6 Voigt matrix
+  LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& bm,  ///< (out) 6x6 Voigt matrix
   const LINALG::Matrix<NUMDIM_,NUMDIM_>& bt,  ///< (in) 3x3 matrix of 2-tensor
   const bool transpose, ///< 3x3 input matrix is transposed
   const VoigtType rowvoigt6,  ///< 6-Voigt vector layout on rows of 6x6 matrix
   const VoigtType colvoigt6  ///< 6-Voigt vector layout on columns of 6x6 matrix
   )
 {
-  for (int ab=0; ab<NUMSTR_; ++ab)
+  for (int ab=0; ab<MAT::NUM_STRESS_3D; ++ab)
   {
     const int a = VOIGT6ROW_[ab];
     const int b = VOIGT6COL_[ab];
-    for (int AB=0; AB<NUMSTR_; ++AB)
+    for (int AB=0; AB<MAT::NUM_STRESS_3D; ++AB)
     {
       const int A = VOIGT6ROW_[AB];
       const int B = VOIGT6COL_[AB];

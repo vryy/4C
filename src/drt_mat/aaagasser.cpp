@@ -126,11 +126,15 @@ void MAT::AAAgasser::Unpack(const std::vector<char>& data)
  |  Evaluate Material                         (public)                  |
  *----------------------------------------------------------------------*/
 void MAT::AAAgasser::Evaluate(
-  const LINALG::Matrix<6,1>& glstrain,
-	      LINALG::Matrix<6,6>& cmat,
-	      LINALG::Matrix<6,1>& stress,
-                      double normdist)
+  const LINALG::Matrix<3,3>* defgrd,
+  const LINALG::Matrix<6,1>* glstrain,
+  Teuchos::ParameterList& params,
+  LINALG::Matrix<6,1>* stress,
+  LINALG::Matrix<6,6>* cmat)
 {
+  double normdist = params.get("iltthick meanvalue",-999.0);
+  if (normdist==-999.0) dserror("Aneurysm mean ilt distance not found");
+
   // material parameters for isochoric part:
   // calculate element stiffness parameter, in dependence of 'normdist':
   double Cele = 0.0;
@@ -165,7 +169,7 @@ void MAT::AAAgasser::Evaluate(
   //  [0.5*glstrain(5)    0.5*glstrain(4)       glstrain(2)]
 
   // right Cauchy-Green Tensor:
-  LINALG::Matrix<6,1> rcg(glstrain);
+  LINALG::Matrix<6,1> rcg(*glstrain);
   rcg.Scale(2.0);
   rcg.Update(1.0, id2, 1.0);
 
@@ -211,7 +215,7 @@ void MAT::AAAgasser::Evaluate(
 
 
   //--- determine 2nd Piola Kirchhoff stresses pktwo -------------------------------------
-  stress.Clear();
+  stress->Clear();
 
   // 1st step: isochoric part (HOLZAPFEL S.248)
   //=========================
@@ -220,11 +224,11 @@ void MAT::AAAgasser::Evaluate(
   double gamma3 = 4./3.*Cele*pow(iiinv,-2./3.)*(-inv*inv + 2*iinv);
 
   // contribution: I
-  stress.Update(gamma1, id2, 1.0);
+  stress->Update(gamma1, id2, 1.0);
   // contribution: C
-  stress.Update(gamma2, scg, 1.0);
+  stress->Update(gamma2, scg, 1.0);
   // contribution: Cinv
-  stress.Update(gamma3, invc, 1.0);
+  stress->Update(gamma3, invc, 1.0);
 
 
   // 2nd step: volumetric part (HOLZAPFEL S.230)
@@ -250,13 +254,13 @@ void MAT::AAAgasser::Evaluate(
   }
   else dserror("Choose OSM, SuBa or SiTa for the volumetric part! See reference...!");
 
-  stress.Update(pres*detf, invc, 1.0);
+  stress->Update(pres*detf, invc, 1.0);
 
 
 
 
   //--- do elasticity matrix -------------------------------------------------------------
-  cmat.Clear();
+  cmat->Clear();
 
   // 1st step: isochoric part (HOLZAPFEL S.261)
   //=========================
@@ -266,22 +270,22 @@ void MAT::AAAgasser::Evaluate(
   double delta8 =     8.0*Cele*pow(iiinv,-2./3.);
 
   // contribution: (C \otimes Cinv + Cinv \otimes C)
-  cmat.MultiplyNT(delta5, scg, invc, 1.0);
-  cmat.MultiplyNT(delta5, invc, scg, 1.0);
+  cmat->MultiplyNT(delta5, scg, invc, 1.0);
+  cmat->MultiplyNT(delta5, invc, scg, 1.0);
   // contribution: Cinv \otimes Cinv
-  cmat.MultiplyNT(delta6, invc, invc, 1.0);
+  cmat->MultiplyNT(delta6, invc, invc, 1.0);
   // contribution: Cinv \odot Cinv
-  AddtoCmatHolzapfelProduct(cmat, invc, delta7);
+  AddtoCmatHolzapfelProduct(*cmat, invc, delta7);
   // contribution: S
-  cmat.Update(delta8, id4, 1.0);
+  cmat->Update(delta8, id4, 1.0);
 
 
   // 2nd step: volumetric part (HOLZAPFEL S.254f)
   //==========================
   //contribution: J prestild Cinv \otimes Cinv
-  cmat.MultiplyNT(detf*prestild,invc,invc,1.0);
+  cmat->MultiplyNT(detf*prestild,invc,invc,1.0);
   //contribution: -2 J*p Cinv \odot Cinv
-  AddtoCmatHolzapfelProduct(cmat, invc, -2*detf*pres);
+  AddtoCmatHolzapfelProduct(*cmat, invc, -2*detf*pres);
 
 
   return;

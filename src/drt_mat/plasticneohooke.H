@@ -22,7 +22,7 @@ Maintainer: Alexander Popp
 
 
 #include "matpar_parameter.H"
-#include "material.H"
+#include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
@@ -95,7 +95,7 @@ private:
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Plastic Neo-Hookean Material
-  class PlasticNeoHooke : public Material
+  class PlasticNeoHooke : public So3Material
   {
   public:
 
@@ -144,25 +144,19 @@ private:
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new PlasticNeoHooke( *this ) ); }
 
     /// Initialize internal stress variables
-    void Setup
-    (
-      const int numgp ///< number of Gauss points
-    );
+    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     /// Update internal stress variables
-    void Update();
-
-    /// Reset internal stress variables
-    void Reset();
+    virtual void Update();
 
     /// Evaluate material
-    void Evaluate
+    virtual void Evaluate
     (
       const LINALG::Matrix<3,3>* defgrd,                  ///< deformation gradient
-      const int gp,                                       ///< current Gaus point
+      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,    ///< Green-Lagrange strains
       Teuchos::ParameterList& params,                     ///< parameter list for communication
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>* stress             ///< 2nd PK-stress
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,            ///< 2nd PK-stress
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat   ///< material stiffness matrix
     );
 
     /// Return density

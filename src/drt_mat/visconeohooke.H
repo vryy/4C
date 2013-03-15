@@ -12,7 +12,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #ifndef VISCONEOHOOKE_H_
 #define VISCONEOHOOKE_H_
 
-#include "material.H"
+#include "so3_material.H"
 #include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include <Teuchos_RCP.hpp>
@@ -73,7 +73,7 @@ private:
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Visco-NeoHooke material
-  class ViscoNeoHooke : public Material
+  class ViscoNeoHooke : public So3Material
   {
   public:
 
@@ -130,25 +130,19 @@ private:
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ViscoNeoHooke( *this ) ); }
 
     /// Initialize internal stress variables
-    void Setup
-    (
-      const int numgp  ///< number of Gauss points
-    );
+    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     /// Update internal stress variables
-    void Update();
-
-    /// Reset internal stress variables
-    void Reset();
+    virtual void Update();
 
     /// Evaluate material
-    void Evaluate
+    virtual void Evaluate
     (
+      const LINALG::Matrix<3,3>* defgrd, ///< deformation gradient
       const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
-      const int gp,   ///< current Gauss point
       Teuchos::ParameterList& params,  ///< parameter list for communication
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>* stress  ///< 2nd PK-stress
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat  ///< material stiffness matrix
     );
 
     /// Return density

@@ -17,7 +17,7 @@ Maintainer: Burkhard Bornemann
 
 
 #include "matpar_parameter.H"
-#include "material.H"
+#include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
 // forward declaration due to avoid header definition
@@ -130,7 +130,7 @@ private:
   /// \date 05/09
   class Material;
 
-  class ElastHyper : public Material
+  class ElastHyper : public So3Material
   {
   public:
 
@@ -197,14 +197,13 @@ private:
     virtual double ShearMod() const;
 
     /// hyperelastic stress response plus elasticity tensor
-    virtual void Evaluate(
-      const LINALG::Matrix<6,1>& glstrain,  ///< Green-Lagrange strain
-      LINALG::Matrix<6,6>& cmat,  ///< elasticity matrix
-      LINALG::Matrix<6,1>& stress,  ///< 2nd Piola--Kirchhoff stress
-      Teuchos::ParameterList& params ///< Container for additional information
-      );
+    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,  ///< Deformation gradient
+                          const LINALG::Matrix<6,1>* glstrain,///< Green-Lagrange strain
+                          Teuchos::ParameterList& params,     ///< Container for additional information
+                          LINALG::Matrix<6,1>* stress,        ///< 2nd Piola-Kirchhoff stresses
+                          LINALG::Matrix<6,6>* cmat);         ///< Constitutive matrix
 
-    virtual void Setup(DRT::INPUT::LineDefinition* linedef);
+    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     virtual void Update();
 
@@ -237,7 +236,12 @@ private:
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
-//  private:
+    /// Return names of visualization data
+    virtual void VisNames(std::map<string,int>& names);
+
+    /// Return visualization data
+    virtual bool VisData(const string& name, std::vector<double>& data, int numgp);
+
   protected:
     /// calculates the kinematic quantities and tensors used afterwards
     virtual void EvaluateKinQuant(

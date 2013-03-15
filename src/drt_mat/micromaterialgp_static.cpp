@@ -70,6 +70,7 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
     // create a counter of macroscale GP associated with this "time integration" class
     // note that the counter is immediately updated afterwards!
     microstaticcounter_[microdisnum_] = 0;
+    density_ = (microstaticmap_[microdisnum_])->Density();
   }
 
   microstaticcounter_[microdisnum] += 1;
@@ -291,8 +292,7 @@ void MAT::MicroMaterialGP::ResetTimeAndStep()
 
 void MAT::MicroMaterialGP::PerformMicroSimulation(LINALG::Matrix<3,3>* defgrd,
                                                   LINALG::Matrix<6,1>* stress,
-                                                  LINALG::Matrix<6,6>* cmat,
-                                                  double* density)
+                                                  LINALG::Matrix<6,6>* cmat)
 {
   // select corresponding "time integration class" for this microstructure
   Teuchos::RCP<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
@@ -305,7 +305,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(LINALG::Matrix<3,3>* defgrd,
 
   microstatic->Predictor(defgrd);
   microstatic->FullNewton();
-  microstatic->StaticHomogenization(stress, cmat, density, defgrd, mod_newton_, build_stiff_);
+  microstatic->StaticHomogenization(stress, cmat, defgrd, mod_newton_, build_stiff_);
 
   // note that it is not necessary to save displacements and EAS data
   // explicitly since we dealt with RCP's -> any update in class

@@ -167,9 +167,11 @@ void MAT::AAAneohooke::Unpack(const std::vector<char>& data)
 
  */
 void MAT::AAAneohooke::Evaluate(
-            const LINALG::Matrix<6,1>& glstrain,
-		  LINALG::Matrix<6,6>& cmat,
-		  LINALG::Matrix<6,1>& stress)
+  const LINALG::Matrix<3,3>* defgrd,
+  const LINALG::Matrix<6,1>* glstrain,
+  Teuchos::ParameterList& params,
+  LINALG::Matrix<6,1>* stress,
+  LINALG::Matrix<6,6>* cmat)
 {
   // material parameters for isochoric part
   const double youngs   = params_->youngs_;    // Young's modulus
@@ -188,7 +190,7 @@ void MAT::AAAneohooke::Evaluate(
     identity(i) = 1.0;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::Matrix<6,1> rcg(glstrain);
+  LINALG::Matrix<6,1> rcg(*glstrain);
   rcg.Scale(2.0);
   rcg += identity;
 
@@ -254,8 +256,8 @@ void MAT::AAAneohooke::Evaluate(
 
   // 3rd step: add everything up
   //============================
-  stress  = pktwoiso;
-  stress += pktwovol;
+  (*stress)  = pktwoiso;
+  (*stress) += pktwovol;
 
 
   //--- do elasticity matrix -------------------------------------------------------------
@@ -279,20 +281,20 @@ void MAT::AAAneohooke::Evaluate(
   // contribution: I \obtimes I
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
-      cmat(i,j) = delta1;
+      (*cmat)(i,j) = delta1;
 
   // contribution: Cinv \otimes Cinv
   for (int i = 0; i < 6; i++)
     for (int j = 0; j < 6; j++)
     {
       // contribution: Cinv \otimes I + I \otimes Cinv
-      cmat(i,j) += delta3 * ( identity(i)*invc(j) + invc(i)*identity(j) );
+      (*cmat)(i,j) += delta3 * ( identity(i)*invc(j) + invc(i)*identity(j) );
       // contribution: Cinv \otimes Cinv
-      cmat(i,j) += delta6 * invc(i)*invc(j);
+      (*cmat)(i,j) += delta6 * invc(i)*invc(j);
     }
 
   // contribution: boeppel-product
-  AddtoCmatHolzapfelProduct(cmat,invc,delta7);
+  AddtoCmatHolzapfelProduct(*cmat,invc,delta7);
 
   // 2nd step: volumetric part
   //==========================
@@ -302,10 +304,10 @@ void MAT::AAAneohooke::Evaluate(
   // contribution: Cinv \otimes Cinv
   for (int i = 0; i < 6; i++)
     for (int j = 0; j < 6; j++)
-      cmat(i,j) += delta6 * invc(i)*invc(j);
+      (*cmat)(i,j) += delta6 * invc(i)*invc(j);
 
   // contribution: boeppel-product
-  AddtoCmatHolzapfelProduct(cmat,invc,delta7);
+  AddtoCmatHolzapfelProduct(*cmat,invc,delta7);
 
   return;
 }
@@ -337,7 +339,7 @@ void MAT::AAAneohooke::Evaluate(
 
  where
 
- K    .. bulk modulus 
+ K    .. bulk modulus
  beta2 =  -2.0 a parameter according to Doll and Schweizerhof; 9.0 according to Holzapfel, alternatively;
  numerical stability parameter
  J    .. det(F) determinante of the Jacobian matrix

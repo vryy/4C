@@ -13,7 +13,7 @@ Maintainer: Moritz Frenzel & Thomas Kloeppel
 #define VISCOANISOTROPIC_H_
 
 
-#include "material.H"
+#include "so3_material.H"
 #include "matpar_parameter.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include <Teuchos_ParameterList.hpp>
@@ -78,7 +78,7 @@ private:
 
   /*----------------------------------------------------------------------*/
   /// Wrapper for Visco-NeoHooke material
-  class ViscoAnisotropic : public Material
+  class ViscoAnisotropic : public So3Material
   {
   public:
 
@@ -137,7 +137,7 @@ private:
     /// Setup and Initialize internal stress variables
     void Setup
     (
-      const int numgp,  ///< number of Gauss points
+      int numgp,  ///< number of Gauss points
       DRT::INPUT::LineDefinition* linedef
     );
 
@@ -149,7 +149,7 @@ private:
      );
 
     /// Update internal stress variables
-    void Update();
+    virtual void Update();
 
     void UpdateFiberDirs
     (
@@ -157,22 +157,14 @@ private:
       LINALG::Matrix<3,3>* defgrd
     );
 
-    /// Reset internal stress variables
-    void Reset(){
-      // do nothing,
-      // because #histstresscurr_ and #artstresscurr_ are recomputed anyway at every iteration
-      // based upon #histstresslast_ and #artstresslast_ untouched within time step
-      return;
-    };
-
     /// Evaluate material
-    void Evaluate
+    virtual void Evaluate
     (
+      const LINALG::Matrix<3,3>* defgrd, ///< deformation gradient
       const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
-      const int gp,   ///< current Gauss point
       Teuchos::ParameterList& params,  ///< parameter list for communication
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>* stress  ///< 2nd PK-stress
+      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
+      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat  ///< material stiffness matrix
     );
 
     /// Return density
@@ -195,6 +187,12 @@ private:
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
+
+    /// Return names of visualization data
+    virtual void VisNames(std::map<string,int>& names);
+
+    /// Return visualization data
+    virtual bool VisData(const string& name, std::vector<double>& data, int numgp);
 
   private:
 

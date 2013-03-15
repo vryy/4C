@@ -13,9 +13,7 @@ Maintainer: Jonas Biehler
 
 #include "so_tet10.H"
 #include "../drt_lib/drt_linedefinition.H"
-#include "../drt_mat/holzapfelcardiovascular.H"
-#include "../drt_mat/humphreycardiovascular.H"
-#include "../drt_mat/elasthyper.H"
+#include "../drt_mat/so3_material.H"
 
 
 /*----------------------------------------------------------------------*/
@@ -29,16 +27,8 @@ bool DRT::ELEMENTS::So_tet10::ReadElement(const std::string& eletype,
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
-  if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
-    MAT::HolzapfelCardio* holzcard = static_cast <MAT::HolzapfelCardio*>(Material().get());
-    holzcard->Setup(NUMGPT_SOTET10, linedef);
-  } else if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
-    MAT::HumphreyCardio* humcard = static_cast <MAT::HumphreyCardio*>(Material().get());
-    humcard->Setup(NUMGPT_SOTET10, linedef);
-  }else if (Material()->MaterialType() == INPAR::MAT::m_elasthyper){
-    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
-    elahy->Setup(linedef);
-  }
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  so3mat->Setup(NUMGPT_SOTET10, linedef);
 
   std::string buffer;
   linedef->ExtractString("KINEM",buffer);

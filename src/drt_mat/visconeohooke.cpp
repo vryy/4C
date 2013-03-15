@@ -167,7 +167,7 @@ void MAT::ViscoNeoHooke::Unpack(const std::vector<char>& data)
 /*----------------------------------------------------------------------*
  |  Initialise/allocate internal stress variables (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::ViscoNeoHooke::Setup(const int numgp)
+void MAT::ViscoNeoHooke::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   histstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   artstresscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
@@ -220,26 +220,18 @@ void MAT::ViscoNeoHooke::Update()
 }
 
 /*----------------------------------------------------------------------*
- |  Reset internal stress variables               (public)         05/08|
- *----------------------------------------------------------------------*/
-void MAT::ViscoNeoHooke::Reset()
-{
-  // do nothing,
-  // because #histstresscurr_ and #artstresscurr_ are recomputed anyway at every iteration
-  // based upon #histstresslast_ and #artstresslast_ untouched within time step
-  return;
-}
-
-/*----------------------------------------------------------------------*
  |  Evaluate Material                             (public)         05/08|
  *----------------------------------------------------------------------*/
-void MAT::ViscoNeoHooke::Evaluate(const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
-                                  const int gp,
+void MAT::ViscoNeoHooke::Evaluate(const LINALG::Matrix<3,3>* defgrd,
+                                  const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
                                   Teuchos::ParameterList& params,
-                                  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,
-                                  LINALG::Matrix<NUM_STRESS_3D,1>* stress)
-
+                                  LINALG::Matrix<NUM_STRESS_3D,1>* stress,
+                                  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat)
 {
+  // get gauss point number
+  const int gp = params.get<int>("gp",-1);
+  if (gp == -1) dserror("no Gauss point number provided in material");
+
   // get material parameters
   const double E_s  = params_->youngs_slow_;
   const double nue  = params_->poisson_;

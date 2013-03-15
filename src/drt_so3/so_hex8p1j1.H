@@ -152,9 +152,9 @@ public:
   \param D_T_bar (out): current reference moduli
   \param t (in): current volume theta
   */
-  void ConvertMat(const LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8>& cmat,
+  void ConvertMat(const LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& cmat,
                   const LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& F,
-                  LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8>& D_T_bar,
+                  LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& D_T_bar,
                   const double t);
 
   virtual So_Hex8P1J1Type & ElementType() const
@@ -239,8 +239,8 @@ public:
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
     LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
     LINALG::Matrix<NUMDOF_SOH8,1>* force,  ///< element internal force vector
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  ///< stresses at GP
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  ///< strains at GP
+    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,  ///< stresses at GP
+    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,  ///< strains at GP
     Teuchos::ParameterList& params,  ///< algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress,   ///< stress output option
     const INPAR::STR::StrainType iostrain   ///< strain output option
@@ -248,27 +248,27 @@ public:
 
   /// Return stress at Gauss point
   void Stress(
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,  ///< store the stress herein
+    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,  ///< store the stress herein
     const INPAR::STR::StressType iostress,  ///< stress type
     const int gp,  ///< Gauss point index
     const double& detdefgrd,  ///< determinant of (assumed) deformation gradient
     const LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& defgrd,  ///< (assumed) deformation gradient
-    const LINALG::Matrix<NUMSTR_SOH8,1>& stress  ///< Cauchy stress vector
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& stress  ///< Cauchy stress vector
     );
 
   /// Return strain at Gauss point
   void Strain(
-    LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,  ///< store the strain herein
+    LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,  ///< store the strain herein
     const INPAR::STR::StrainType iostrain,  ///< strain type to store for post-proc
     const int gp,  ///< Gauss point index
     const double& detdefgrd,  ///< determinant of (assumed) deformation gradient
     const LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& defgrd,  ///< deformation gradient
-    const LINALG::Matrix<NUMSTR_SOH8,1>& glstrain  ///< Green-Lagrange strain vector
+    const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& glstrain  ///< Green-Lagrange strain vector
     );
 
   /// Push-pull-operator
   static void PushPullOperator(
-    LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8>& g, ///< (G_ab^AB or G_AB^ab) or (G^ab_AB or G^AB_ab)
+    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& g, ///< (G_ab^AB or G_AB^ab) or (G^ab_AB or G^AB_ab)
     const LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& f,  ///< [F^-1]=[F^B_b] or [F]=[F^b_B]
     const bool& transpose,  ///< co-variant if true
     const double& fac  //  a scaling factor, eg det(F)

@@ -26,9 +26,7 @@ Maintainer: Michael Gee
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/neohooke.H"
-#include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
-#include "../drt_mat/mooneyrivlin.H"
 #include "../drt_mat/elasthyper.H"
 
 #include "so_nstet.H"
@@ -191,7 +189,7 @@ void DRT::ELEMENTS::NStetType::PreEvaluate(DRT::Discretization& dis,
       mis_ndofperpatch = (int)(*mis_lm).size();
     }
 
-    if (action == "calc_struct_nlnstiffmass" || 
+    if (action == "calc_struct_nlnstiffmass" ||
         action == "calc_struct_nlnstifflmass" ||
         action == "calc_struct_nlnstiff" ||
         action == "calc_struct_internalforce")
@@ -1347,7 +1345,9 @@ void DRT::ELEMENTS::NStetType::SelectMaterial(
     case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
     {
       MAT::StVenantKirchhoff* stvk = static_cast<MAT::StVenantKirchhoff*>(mat.get());
-      stvk->Evaluate(glstrain,cmat,stress);
+      Teuchos::ParameterList params;
+      LINALG::Matrix<3,3> defgrd(true);
+      stvk->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
       density = stvk->Density();
     }
     break;
@@ -1361,7 +1361,8 @@ void DRT::ELEMENTS::NStetType::SelectMaterial(
     case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
     {
       MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
-      aaa->Evaluate(glstrain,cmat,stress);
+      Teuchos::ParameterList params;
+      aaa->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
       density = aaa->Density();
     }
     break;
@@ -1369,7 +1370,7 @@ void DRT::ELEMENTS::NStetType::SelectMaterial(
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
-      hyper->Evaluate(glstrain,cmat,stress,params);
+      hyper->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
       density = hyper->Density();
       return;
       break;

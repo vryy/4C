@@ -52,9 +52,6 @@ public:
 
 private:
 
-  //! debug plot for defining thickness direction
-  void sosh8_gmshplotdis(const DRT::Discretization& dis);
-
   static So_sh8Type instance_;
 };
 
@@ -248,8 +245,8 @@ protected:
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* stiffmatrix,    ///< element stiffness matrix
       LINALG::Matrix<NUMDOF_SOH8,NUMDOF_SOH8>* massmatrix,     ///< element mass matrix
       LINALG::Matrix<NUMDOF_SOH8,1>* force,          ///< element internal force vector
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,      ///< stresses at GP
-      LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestrain,      ///< strains at GP
+      LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,      ///< stresses at GP
+      LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestrain,      ///< strains at GP
       Teuchos::ParameterList&   params,         ///< algorithmic parameters e.g. time
       const INPAR::STR::StressType  iostress,   ///< stress output option
       const INPAR::STR::StrainType  iostrain);  ///< strain output option
@@ -265,21 +262,21 @@ protected:
 
   //! Evaluate transformation matrix T (parameter->material) at gp
   void sosh8_evaluateT(const LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& jac,///< actual jacobian
-                       LINALG::Matrix<NUMSTR_SOH8,NUMSTR_SOH8>& TinvT);///< T^{-T}
+                       LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>& TinvT);///< T^{-T}
 
   //! Return true Cauchy-stress at gausspoint
-  void sosh8_Cauchy(LINALG::Matrix<NUMGPT_SOH8,NUMSTR_SOH8>* elestress,
+  void sosh8_Cauchy(LINALG::Matrix<NUMGPT_SOH8,MAT::NUM_STRESS_3D>* elestress,
                     const int gp,
                     const LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8>& defgrd,
-                    const LINALG::Matrix<NUMSTR_SOH8,1>& glstrain,
-                    const LINALG::Matrix<NUMSTR_SOH8,1>& stress);
+                    const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& glstrain,
+                    const LINALG::Matrix<MAT::NUM_STRESS_3D,1>& stress);
 
   //! Find "thin"=thickness direction
   ThicknessDirection sosh8_findthickdir();
-  
+
   //! Find aspect ratio of the element
   double sosh8_calcaspectratio();
-  
+
   //! Calculate the STC matrix
   virtual void CalcSTCMatrix
   (

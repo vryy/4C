@@ -291,7 +291,7 @@ void STR::MLMC::Integrate()
         // create an adapterbase and adapter
         ADAPTER::StructureBaseAlgorithm adapterbase(sdyn, const_cast<Teuchos::ParameterList&>(sdyn), structdis);
         ADAPTER::Structure& structadaptor = adapterbase.StructureField();
-    
+
         // do restart
         const int restart = DRT::Problem::Instance()->Restart();
         if (restart)
@@ -1127,7 +1127,7 @@ void STR::MLMC::SetupStochMat(unsigned int random_seed)
           //compute x coord
           ele_center[0]=phi*25;
           ele_center[1]=ele_center[2];
-          
+
           //IO::cout << "No Spherical Field" << IO::endl;
           //ele_center[1]=ele_center[2];
         }
@@ -1257,7 +1257,7 @@ void STR::MLMC::ResetPrestress()
     {
       Teuchos::ParameterList p;
       // action for elements
-      p.set("action","calc_struct_reset_discretization");
+      p.set("action","calc_struct_reset_all");
       discret_->Evaluate(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null);
      }
     break;

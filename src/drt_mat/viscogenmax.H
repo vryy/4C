@@ -212,27 +212,24 @@ private:
 
     /// hyperelastic stress response plus elasticity tensor
     virtual void Evaluate(
-      const LINALG::Matrix<6,1>& glstrain,  ///< Green-Lagrange strain
-      LINALG::Matrix<6,6>& cmat,  ///< elasticity matrix
-      LINALG::Matrix<6,1>& stress,  ///< 2nd Piola--Kirchhoff stress
-      const int gp,   ///< current Gauss point
-      Teuchos::ParameterList& params  ///< parameter list for communication
+      const LINALG::Matrix<3,3>* defgrd, ///< deformation gradient
+      const LINALG::Matrix<6,1>* glstrain,  ///< Green-Lagrange strain
+      Teuchos::ParameterList& params,  ///< parameter list for communication
+      LINALG::Matrix<6,1>* stress,  ///< 2nd Piola--Kirchhoff stress
+      LINALG::Matrix<6,6>* cmat  ///< elasticity matrix
       );
 
 
-    virtual void Setup(const int numgp,DRT::INPUT::LineDefinition* linedef);
+    virtual void Setup(int numgp,DRT::INPUT::LineDefinition* linedef);
     /// setup patient-specific AAA stuff
 //    void SetupAAA(Teuchos::ParameterList& params);
     //void Setupvisco(const int numgp);
 
-    virtual void Setupvisco(const int numgp);
+    virtual void ResetAll(const int numgp);
     virtual void SetupTimeVariables();
 
     // update internal stress variables
     virtual void Update();
-
-    // reset internal stress variables
-    virtual void Reset();
 
   private:
 

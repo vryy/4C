@@ -161,10 +161,12 @@ void MAT::AAAneohooke_stopro::Init(double value_stopro, std::string stochpar)
 }
 
 
-void MAT::AAAneohooke_stopro::Evaluate(const LINALG::Matrix<6,1>& glstrain,
-                                       LINALG::Matrix<6,6>& cmat,
-                                       LINALG::Matrix<6,1>& stress,
-                                       Teuchos::ParameterList& params)
+void MAT::AAAneohooke_stopro::Evaluate(
+  const LINALG::Matrix<3,3>* defgrd,
+  const LINALG::Matrix<6,1>* glstrain,
+  Teuchos::ParameterList& params,
+  LINALG::Matrix<6,1>* stress,
+  LINALG::Matrix<6,6>* cmat)
 {
   double beta = params_->beta_mean_;
   double youngs = params_->youngs_mean_;
@@ -200,7 +202,7 @@ void MAT::AAAneohooke_stopro::Evaluate(const LINALG::Matrix<6,1>& glstrain,
     identity(i) = 1.0;
 
   // right Cauchy-Green Tensor  C = 2 * E + I
-  LINALG::Matrix<6,1> rcg(glstrain);
+  LINALG::Matrix<6,1> rcg(*glstrain);
   rcg.Scale(2.0);
   rcg += identity;
 
@@ -294,8 +296,8 @@ void MAT::AAAneohooke_stopro::Evaluate(const LINALG::Matrix<6,1>& glstrain,
 
   // 3rd step: add everything up
   //============================
-  stress  = pktwoiso;
-  stress += pktwovol;
+  (*stress)  = pktwoiso;
+  (*stress) += pktwovol;
 
 
   //--- do elasticity matrix -------------------------------------------------------------
@@ -319,20 +321,20 @@ void MAT::AAAneohooke_stopro::Evaluate(const LINALG::Matrix<6,1>& glstrain,
   // contribution: I \obtimes I
   for (int i = 0; i < 3; i++)
     for (int j = 0; j < 3; j++)
-      cmat(i,j) = delta1;
+      (*cmat)(i,j) = delta1;
 
   // contribution: Cinv \otimes Cinv
   for (int i = 0; i < 6; i++)
     for (int j = 0; j < 6; j++)
     {
       // contribution: Cinv \otimes I + I \otimes Cinv
-      cmat(i,j) += delta3 * ( identity(i)*invc(j) + invc(i)*identity(j) );
+      (*cmat)(i,j) += delta3 * ( identity(i)*invc(j) + invc(i)*identity(j) );
       // contribution: Cinv \otimes Cinv
-      cmat(i,j) += delta6 * invc(i)*invc(j);
+      (*cmat)(i,j) += delta6 * invc(i)*invc(j);
     }
 
   // contribution: boeppel-product
-  AddtoCmatHolzapfelProduct(cmat,invc,delta7);
+  AddtoCmatHolzapfelProduct(*cmat,invc,delta7);
 
   // 2nd step: volumetric part
   //==========================
@@ -342,12 +344,41 @@ void MAT::AAAneohooke_stopro::Evaluate(const LINALG::Matrix<6,1>& glstrain,
   // contribution: Cinv \otimes Cinv
   for (int i = 0; i < 6; i++)
     for (int j = 0; j < 6; j++)
-      cmat(i,j) += delta6 * invc(i)*invc(j);
+      (*cmat)(i,j) += delta6 * invc(i)*invc(j);
 
   // contribution: boeppel-product
-  AddtoCmatHolzapfelProduct(cmat,invc,delta7);
+  AddtoCmatHolzapfelProduct(*cmat,invc,delta7);
 
   return;
+}
+
+
+void MAT::AAAneohooke_stopro::VisNames(std::map<string,int>& names)
+{
+  string fiber = "beta";
+  names[fiber] = 1; // scalar
+  fiber = "youngs";
+  names[fiber] = 1; // scalar
+}
+
+
+bool MAT::AAAneohooke_stopro::VisData(const string& name, std::vector<double>& data, int numgp)
+{
+  if (name=="beta")
+  {
+    if ((int)data.size()!=1) dserror("size mismatch");
+    data[0] = Beta();
+  }
+  else if (name=="youngs")
+  {
+    if ((int)data.size()!=1) dserror("size mismatch");
+    data[0] = Youngs();
+  }
+  else
+  {
+    return false;
+  }
+  return true;
 }
 
 

@@ -20,9 +20,7 @@ Maintainer: Michael Gee
 #include "../drt_mat/micromaterial.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/neohooke.H"
-#include "../drt_mat/anisotropic_balzani.H"
 #include "../drt_mat/aaaneohooke.H"
-#include "../drt_mat/mooneyrivlin.H"
 #include "../drt_mat/elasthyper.H"
 
 #include "so_nstet.H"
@@ -760,7 +758,8 @@ void DRT::ELEMENTS::NStet::SelectMaterial(
     case INPAR::MAT::m_aaaneohooke: /*-- special case of generalised NeoHookean material see Raghavan, Vorp */
     {
       MAT::AAAneohooke* aaa = static_cast<MAT::AAAneohooke*>(mat.get());
-      aaa->Evaluate(&glstrain_e,&cmat_e,&stress_e);
+      Teuchos::ParameterList params;
+      aaa->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
       density = aaa->Density();
     }
     break;
@@ -768,7 +767,7 @@ void DRT::ELEMENTS::NStet::SelectMaterial(
     {
       MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
       Teuchos::ParameterList params;
-      hyper->Evaluate(glstrain,cmat,stress,params);
+      hyper->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
       density = hyper->Density();
       return;
       break;

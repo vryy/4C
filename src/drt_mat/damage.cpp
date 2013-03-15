@@ -222,7 +222,7 @@ void MAT::Damage::Unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
  | initialise / allocate internal stress variables (public)      04/11 |
  *---------------------------------------------------------------------*/
-void MAT::Damage::Setup(const int numgp)
+void MAT::Damage::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   // initialize hist variables
   strainpllast_ = Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
@@ -302,32 +302,21 @@ void MAT::Damage::Update()
 }  // Update()
 
 
-/*---------------------------------------------------------------------*
- | reset internal stress variables (public)                 dano 04/11 |
- *---------------------------------------------------------------------*/
-void MAT::Damage::Reset()
-{
-  // do nothing,
-  // because #histplasticrcgcurr_ and #histeplasticscurr_ are recomputed
-  // anyway at every iteration based upon #histplasticrcglast_ and
-  // #histeplasticslast_ untouched within time step
-
-  return;
-}  // Reset()
-
-
 /*----------------------------------------------------------------------*
  | evaluate material (public)                                dano 08/11 |
  *----------------------------------------------------------------------*/
 void MAT::Damage::Evaluate(
-  const LINALG::Matrix<NUM_STRESS_3D,1>& linstrain,  // linear strain vector
-  LINALG::Matrix<NUM_STRESS_3D,1>& plstrain,  // linear strain vector
-  const int gp, // current Gauss point
+  const LINALG::Matrix<3,3>* defgrd,
+  const LINALG::Matrix<NUM_STRESS_3D,1>* linstrain,  // linear strain vector
   Teuchos::ParameterList& params,  // parameter list for communication & HISTORY
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>& cmat, // material stiffness matrix
-  LINALG::Matrix<NUM_STRESS_3D,1>& stress // 2nd PK-stress
+  LINALG::Matrix<NUM_STRESS_3D,1>* stress, // 2nd PK-stress
+  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat // material stiffness matrix
   )
 {
+  const int gp = params.get<int>("gp",-1);
+  if (gp == -1) dserror("no Gauss point number provided in material");
+  LINALG::Matrix<MAT::NUM_STRESS_3D,1> plstrain(true);
+
   // get material parameters
   // Young's modulus
   double young = params_->youngs_;
@@ -356,7 +345,7 @@ void MAT::Damage::Evaluate(
   //  strain^e: definition of additive decomposition:
   //  strain^e = strain - strain^p
   // REMARK: stress-like 6-Voigt vector
-  LINALG::Matrix<NUM_STRESS_3D,1> strain(linstrain);
+  LINALG::Matrix<NUM_STRESS_3D,1> strain(*linstrain);
 
   //---------------------------------------------------------------------------
   // elastic predictor (trial values)
@@ -485,7 +474,7 @@ void MAT::Damage::Evaluate(
   {
     // trial state vectors = result vectors of time step n+1
     // sigma^e_n+1 = sigma^(e,trial)_n+1 = s^(trial)_{n+1} + p. I
-    Stress( p, devstress, stress );
+    Stress( p, devstress, *stress );
 
     // total strains
     // strain^e_{n+1} = strain^(e,trial)_{n+1}
@@ -624,7 +613,7 @@ void MAT::Damage::Evaluate(
     // total stress
     // sigma_{n+1} = s_{n+1} + p_{n+1} . Id
     // pressure/volumetric stress no influence due to plasticity
-    Stress( p, devstress, stress );
+    Stress( p, devstress, *stress );
 
     // total strains
     // strain^e_{n+1} = strain^(e,trial)_{n+1} - Dgamma . flovec
@@ -673,7 +662,7 @@ void MAT::Damage::Evaluate(
   // using an associative flow rule: C_ep is symmetric
   // ( generally C_ep is nonsymmetric )
   SetupCmatElastoPlastic(
-    cmat,
+    *cmat,
     Dgamma,
     G,
     q,
@@ -692,6 +681,8 @@ void MAT::Damage::Evaluate(
 
   cout << "cmat " << cmat << endl;
 #endif // #ifdef DEBUGMATERIAL
+
+  params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain",plstrain);
 
   return;
 
@@ -883,3 +874,24 @@ void MAT::Damage::SetupCmatElastoPlastic(
 #endif // #ifdef DEBUGMATERIAL
 
 }  // SetupCmatElastoPlastic()
+
+
+void MAT::Damage::VisNames(std::map<string,int>& names)
+{
+  string accumulatedstrain = "accumulatedstrain";
+  names[accumulatedstrain] = 1; // scalar
+}
+
+
+bool MAT::Damage::VisData(const string& name, std::vector<double>& data, int numgp)
+{
+  if (name == "accumulatedstrain")
+  {
+    if ((int)data.size()!=1) dserror("size mismatch");
+    LINALG::Matrix<1,1> temp(true);
+    for (int iter=0; iter<numgp; iter++)
+      temp.Update(1.0,AccumulatedStrain(iter),1.0);
+    data[0] = temp(0)/numgp;
+  }
+  return true;
+}

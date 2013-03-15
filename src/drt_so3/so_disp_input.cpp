@@ -14,8 +14,7 @@ Maintainer: Axel Gerstenberger
 
 #include "so_disp.H"
 #include "../drt_lib/drt_linedefinition.H"
-#include "../drt_mat/elasthyper.H"
-
+#include "../drt_mat/so3_material.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -27,12 +26,6 @@ bool DRT::ELEMENTS::SoDisp::ReadElement(const std::string& eletype,
   int material = 0;
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
-
-  // special element-dependent input of material parameters
-  if (Material()->MaterialType() == INPAR::MAT::m_elasthyper){
-    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
-    elahy->Setup(linedef);
-  }
 
   DiscretizationType shape = StringToDistype(distype);
 
@@ -114,6 +107,10 @@ bool DRT::ELEMENTS::SoDisp::ReadElement(const std::string& eletype,
   default:
     dserror("Reading of SOLID3 element failed: integration points\n");
   } // end switch distype
+
+  // set up of materials with GP data (e.g., history variables)
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  so3mat->Setup(numgpt_disp_, linedef);
 
   std::string buffer;
   linedef->ExtractString("KINEM",buffer);

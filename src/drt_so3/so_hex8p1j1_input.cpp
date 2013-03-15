@@ -13,10 +13,8 @@ Maintainer: Lena Wiechert
 
 
 #include "so_hex8p1j1.H"
-#include "../drt_mat/plasticneohooke.H"
-#include "../drt_mat/elasthyper.H"
 #include "../drt_lib/drt_linedefinition.H"
-
+#include "../drt_mat/so3_material.H"
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -29,16 +27,10 @@ bool DRT::ELEMENTS::So_Hex8P1J1::ReadElement(const std::string& eletype,
   linedef->ExtractInt("MAT",material);
   SetMaterial(material);
 
-  // special element-dependent input of material parameters
-  if (Material()->MaterialType() == INPAR::MAT::m_plneohooke)
-  {
-    MAT::PlasticNeoHooke* plastic = static_cast <MAT::PlasticNeoHooke*>(Material().get());
-    plastic->Setup(NUMGPT_SOH8);
+  // set up of materials with GP data (e.g., history variables)
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  so3mat->Setup(NUMGPT_SOH8, linedef);
 
-  } else if (Material()->MaterialType() == INPAR::MAT::m_elasthyper){
-    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Material().get());
-    elahy->Setup(linedef);
-  }
   // temporary variable for read-in
     std::string buffer;
   // read kinematic flag

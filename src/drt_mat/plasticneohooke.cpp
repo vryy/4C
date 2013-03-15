@@ -227,7 +227,7 @@ void MAT::PlasticNeoHooke::Unpack(const std::vector<char>& data)
 /*---------------------------------------------------------------------*
 |  Initialise/allocate internal stress variables (public)        11/09 |
 *----------------------------------------------------------------------*/
-void MAT::PlasticNeoHooke::Setup(const int numgp)
+void MAT::PlasticNeoHooke::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
 {
   histplasticrcgcurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<NUM_STRESS_3D,1> >);
   histeplasticscurr_=Teuchos::rcp(new std::vector<LINALG::Matrix<1,1> >);
@@ -321,31 +321,21 @@ void MAT::PlasticNeoHooke::Update()
   return;
 }
 
-/*---------------------------------------------------------------------*
-|  Reset internal stress variables (public)                      11/09 |
-*----------------------------------------------------------------------*/
-void MAT::PlasticNeoHooke::Reset()
-{
-  // do nothing,
-  // because #histplasticrcgcurr_ and #histeplasticscurr_ are recomputed
-  // anyway at every iteration based upon #histplasticrcglast_ and
-  // #histeplasticslast_ untouched within time step
-
-  return;
-}
-
 /*----------------------------------------------------------------------*
  |  Evaluate material (public)                                    11/09 |
  *----------------------------------------------------------------------*/
 void MAT::PlasticNeoHooke::Evaluate
   (
     const LINALG::Matrix<3,3>* defgrd, //!< deformation gradient
-    const int gp, //!< current Gauss point
+    const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain, //!< Green-Lagrange strains
     Teuchos::ParameterList& params,  //!< parameter list for communication & HISTORY
-    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat, //!< material stiffness matrix
-    LINALG::Matrix<NUM_STRESS_3D,1>* stress //!< 2nd PK-stress
+    LINALG::Matrix<NUM_STRESS_3D,1>* stress, //!< 2nd PK-stress
+    LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat //!< material stiffness matrix
   )
 {
+  const int gp = params.get<int>("gp",-1);
+  if (gp == -1) dserror("no Gauss point number provided in material");
+
   // get material parameters
   // Young's modulus
   double ym =       params_->youngs_;

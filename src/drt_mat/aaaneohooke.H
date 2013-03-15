@@ -21,7 +21,7 @@ Maintainer: Christiane Förster
 #define AAANEOHOOKE_H_
 
 #include "matpar_parameter.H"
-#include "material.H"
+#include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 #include <Epetra_SerialDenseVector.h>
 #include <Epetra_SerialDenseMatrix.h>
@@ -85,7 +85,7 @@ private:
 
   /*----------------------------------------------------------------------*/
   /// aneurysm wall material according to Raghavan and Vorp [2000]
-  class AAAneohooke : public Material
+  class AAAneohooke : public So3Material
   {
 
   public:
@@ -152,9 +152,12 @@ private:
 		  Epetra_SerialDenseVector* stress_e);
 
     // THE material routine
-    void Evaluate(const LINALG::Matrix<6,1>& glstrain,
-		  LINALG::Matrix<6,6>& cmat,
-		  LINALG::Matrix<6,1>& stress);
+    virtual void Evaluate(
+      const LINALG::Matrix<3,3>* defgrd,
+      const LINALG::Matrix<6,1>* glstrain,
+      Teuchos::ParameterList& params,
+      LINALG::Matrix<6,1>* stress,
+      LINALG::Matrix<6,6>* cmat);
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }

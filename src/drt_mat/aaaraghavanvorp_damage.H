@@ -24,7 +24,7 @@ date: 26/05/2009
 #define AAARAGHAVANVORP_DAMAGE_H
 
 #include "matpar_parameter.H"
-#include "material.H"
+#include "so3_material.H"
 #include "../drt_lib/drt_parobjectfactory.H"
 
 namespace MAT
@@ -87,7 +87,7 @@ private:
 
   /*----------------------------------------------------------------------*/
   /// aneurysm wall material with damage according Simo approach explained in Holzapfel (p298)
-  class AAAraghavanvorp_damage : public Material
+  class AAAraghavanvorp_damage : public So3Material
   {
 
   public:
@@ -158,20 +158,10 @@ private:
     virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new AAAraghavanvorp_damage( *this ) ); }
 
     /// Initialize internal stress variables
-    void Setup
-    (
-      const int numgp,       ///< number of Gauss points
-      const double strength  ///< element strength
-    );
+    virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
 
     /// Update internal stress variables
-    void Update();
-
-    /// Reset internal stress variables
-    void Reset();
-      // do nothing,
-      // because #gcurr_ is recomputed anyway at every iteration
-      // based upon #glast_ is untouched within time step
+    virtual void Update();
 
     void StressTensTransfSPKtoCauchy(LINALG::Matrix<NUM_STRESS_3D,1>& f,      ///< deformation gradient tensor
                                      const double detf,                       ///< determinant of deformation gradient tensor
@@ -186,12 +176,11 @@ private:
                                     );
 
     // THE material routine
-    void Evaluate(
+    virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
     		  const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain, ///< green lagrange strain
-	          const int gp,                        ///< current Gauss point
-                  Teuchos::ParameterList& params,      ///< parameter list for communication
-		  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,           ///< material stiffness matrix
-		  LINALG::Matrix<NUM_STRESS_3D,1>* stress          ///< 2nd PK-stress
+	          Teuchos::ParameterList& params,      ///< parameter list for communication
+		  LINALG::Matrix<NUM_STRESS_3D,1>* stress,          ///< 2nd PK-stress
+                  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat           ///< material stiffness matrix
                  );
 
     /// Return quick accessible material parameter data

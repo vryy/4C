@@ -95,14 +95,13 @@ void STRUMULTI::np_support_drt()
       LINALG::Matrix<6,6> cmat(*(const_cast<Epetra_SerialDenseMatrix*>(cmatcopy)), true);
       const Epetra_SerialDenseMatrix* stresscopy = condnamemap[0]->Get<Epetra_SerialDenseMatrix>("stress");
       LINALG::Matrix<6,1> stress(*(const_cast<Epetra_SerialDenseMatrix*>(stresscopy)), true);
-      double density = condnamemap[0]->GetDouble("density");
       int gp = condnamemap[0]->GetInt("gp");
       int microdisnum = condnamemap[0]->GetInt("microdisnum");
       double V0 = condnamemap[0]->GetDouble("V0");
       bool eleowner = condnamemap[0]->GetInt("eleowner");
 
       // dummy material is used to evaluate the micro material
-      dummymaterials[eleID]->Evaluate(&defgrd, &cmat, &stress, &density, gp, eleID, microdisnum, V0, eleowner);
+      dummymaterials[eleID]->Evaluate(&defgrd, &cmat, &stress, gp, eleID, microdisnum, V0, eleowner);
       break;
     }
     case 1:
@@ -168,7 +167,7 @@ void STRUMULTI::np_support_drt()
     case 6:
     {
       // receive data from the master proc for inverse analysis
-      // Note: task[1] does not contain an element id in this case, 
+      // Note: task[1] does not contain an element id in this case,
       // it's the length of the vector that will be broadcast
       int np = task[1];
       Epetra_SerialDenseVector p_cur(np);
@@ -194,7 +193,7 @@ void STRUMULTI::np_support_drt()
     case 7: // will replace case 6; this case is used when gen_inv_analysis is used with multi scale
     {
       // receive data from the master proc for inverse analysis
-      // Note: task[1] does not contain an element id in this case, 
+      // Note: task[1] does not contain an element id in this case,
       // it's the length of the vector that will be broadcast
       int np = task[1];
       Epetra_SerialDenseVector p_cur(np);

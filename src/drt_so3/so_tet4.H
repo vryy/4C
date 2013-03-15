@@ -23,7 +23,6 @@ Maintainer: Michael Gee
 #define NUMNOD_SOTET4       4      ///< number of nodes
 #define NODDOF_SOTET4       3      ///< number of dofs per node
 #define NUMDOF_SOTET4      12      ///< total dofs per element
-#define NUMSTR_SOTET4       6      ///< number of strains/stresses 	/****/
 #define NUMGPT_SOTET4       1      ///< total gauss points per element	/****/
 #define NUMDIM_SOTET4       3      ///< number of dimensions/****/
 #define NUMCOORD_SOTET4     4      ///< number of shape function cooordinates (ksi1-ksi4)
@@ -359,8 +358,8 @@ protected:
     calc_struct_update_istep,
     calc_struct_reset_istep,  //!< reset elementwise internal variables
                               //!< during iteration to last converged state
-    calc_struct_reset_discretization,  //!< reset elementwise internal variables
-                                       //!< to state in the beginning of the computation
+    calc_struct_reset_all,  //!< reset elementwise internal variables
+                            //!< to state in the beginning of the computation
     calc_struct_errornorms,   //!< compute error norms (L2,H1,energy)
     prestress_update,
     calc_struct_energy,
@@ -426,9 +425,9 @@ protected:
     LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,
     LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,
     LINALG::Matrix<NUMDOF_SOTET4,1>* force,
-    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* stresses,
-    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,
-    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* eleplstrain,
+    LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* stresses,
+    LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* elestrain,
+    LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* eleplstrain,
     Teuchos::ParameterList& params,
     const INPAR::STR::StressType iostress,
     const INPAR::STR::StrainType iostrain,
@@ -442,9 +441,9 @@ protected:
     LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,  // element stiffness matrix
     LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,  // element mass matrix
     LINALG::Matrix<NUMDOF_SOTET4,1>* force,  // element internal force vector
-    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,  // stresses at GP
-    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,  // strains at GP
-    LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* eleplstrain, // plastic strains at GP
+    LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
+    LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
+    LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* eleplstrain, // plastic strains at GP
     Teuchos::ParameterList& params,  // algorithmic parameters e.g. time
     const INPAR::STR::StressType iostress,  // stress output option
     const INPAR::STR::StrainType iostrain,  // strain output option
@@ -458,7 +457,7 @@ protected:
   /// Extrapolate Gauss-point values (e.g. stresses) to nodes and store them in elevecs
   void so_tet4_expol
   (
-      LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>& stresses, ///< gp stresses
+      LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>& stresses, ///< gp stresses
       Epetra_MultiVector& expolstresses  ///< nodal stresses
   );
 
@@ -482,24 +481,6 @@ protected:
   const std::vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > so_tet4_4gp_derivs();
   //! Evaluate Tet4 Weights at 4 gausspoints to keep them static
   const std::vector<double> so_tet4_4gp_weights();
-
-  /// material selection for so_tet4
-  void so_tet4_mat_sel(Epetra_SerialDenseVector* stress,
-                       Epetra_SerialDenseMatrix* cmat,
-                       double* density,
-                       const Epetra_SerialDenseVector* glstrain,
-                       const Epetra_SerialDenseMatrix* defgrd,
-                       int gp);
-
-  /// material selection for so_tet4
-  void so_tet4_mat_sel(
-                    LINALG::Matrix<6,1>* stress,
-                    LINALG::Matrix<6,6>* cmat,
-                    double* density,
-                    LINALG::Matrix<6,1>* glstrain,
-                    LINALG::Matrix<3,3>* defgrd,
-                    const int gp,
-                    Teuchos::ParameterList& params);
 
   //! @name Multi-scale related stuff
 

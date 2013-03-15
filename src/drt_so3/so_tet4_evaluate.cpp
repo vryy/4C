@@ -23,8 +23,6 @@ written by : Alexander Volf
 #include "../drt_patspec/patspec.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/elasthyper.H"
-#include "../drt_mat/holzapfelcardiovascular.H"
-#include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_mat/stvenantkirchhoff.H"
 #include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
@@ -100,7 +98,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
   else if (action=="calc_struct_fsiload")              act = So_tet4::calc_struct_fsiload;
   else if (action=="calc_struct_update_istep")         act = So_tet4::calc_struct_update_istep;
   else if (action=="calc_struct_reset_istep")          act = So_tet4::calc_struct_reset_istep;
-  else if (action=="calc_struct_reset_discretization") act = So_tet4::calc_struct_reset_discretization;
+  else if (action=="calc_struct_reset_all")            act = So_tet4::calc_struct_reset_all;
   else if (action=="calc_struct_errornorms")           act = So_tet4::calc_struct_errornorms;
   else if (action=="calc_struct_prestress_update")     act = So_tet4::prestress_update;
   else if (action=="calc_struct_energy")	       act = So_tet4::calc_struct_energy;
@@ -217,8 +215,8 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
         std::vector<double> myres(lm.size());
         DRT::UTILS::ExtractMyValues(*res,myres,lm);
-        LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4> stress(true); // set to zero
-        LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4> strain(true);
+        LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D> stress(true); // set to zero
+        LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D> strain(true);
         INPAR::STR::StressType iostress = DRT::INPUT::get<INPAR::STR::StressType>(params, "iostress", INPAR::STR::stress_none);
         INPAR::STR::StrainType iostrain = DRT::INPUT::get<INPAR::STR::StrainType>(params, "iostrain", INPAR::STR::strain_none);
 
@@ -260,7 +258,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
 
       std::string stresstype = params.get<std::string>("stresstype","ndxyz");
       int gid = Id();
-      LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4> gpstress(((*gpstressmap)[gid])->A(),true);
+      LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D> gpstress(((*gpstressmap)[gid])->A(),true);
 
       RCP<Epetra_MultiVector> poststress=params.get<RCP<Epetra_MultiVector> >("poststress",Teuchos::null);
       if (poststress==Teuchos::null) dserror("No element stress/strain vector available");
@@ -276,7 +274,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
         int lid = elemap.LID(Id());
         if (lid!=-1)
         {
-          for (int i = 0; i < NUMSTR_SOTET4; ++i)
+          for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
           {
             double& s = (*((*poststress)(i)))[lid];
             s = 0.;
@@ -384,74 +382,39 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
     case calc_struct_update_istep:
     {
       // determine new fiber directions
-      RCP<MAT::Material> mat = Material();
       bool remodel;
       const Teuchos::ParameterList& patspec = DRT::Problem::Instance()->PatSpecParams();
       remodel = DRT::INPUT::IntegralValue<int>(patspec,"REMODEL");
-      if (remodel &&
-          ((mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) ||
-           (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular) ||
-           (mat->MaterialType() == INPAR::MAT::m_constraintmixture) ||
-           (mat->MaterialType() == INPAR::MAT::m_elasthyper)))// && timen_ <= timemax_ && stepn_ <= stepmax_)
+      if (remodel)
       {
         RCP<const Epetra_Vector> disp = discretization.GetState("displacement");
         if (disp==Teuchos::null) dserror("Cannot get state vectors 'displacement'");
         std::vector<double> mydisp(lm.size());
         DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
-        so_tet4_remodel(lm,mydisp,params,mat);
+        so_tet4_remodel(lm,mydisp,params,Material());
       }
-      // Update of history for visco material
-      if (mat->MaterialType() == INPAR::MAT::m_growth)
-      {
-        MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
-        grow->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
-      {
-        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
-        comix->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_struct_multiscale)
-      {
-        MAT::MicroMaterial* micro = static_cast <MAT::MicroMaterial*>(mat.get());
-        micro->Update();
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
-      {
-        MAT::ElastHyper* elasthyper = static_cast <MAT::ElastHyper*>(mat.get());
-        elasthyper->Update();
-      }
-
+      // Update of history for materials
+      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+      so3mat->Update();
     }
     break;
 
     //==================================================================================
     case calc_struct_reset_istep:
     {
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
-      {
-        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
-        comix->Reset();
-      }
+      // Reset of history (if needed)
+      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+      so3mat->ResetStep();
     }
     break;
 
     //==================================================================================
-    case calc_struct_reset_discretization:
+    case calc_struct_reset_all:
     {
       // Reset of history for materials
-      RCP<MAT::Material> mat = Material();
-      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture)
-      {
-        MAT::ConstraintMixture* comix = static_cast <MAT::ConstraintMixture*>(mat.get());
-        comix->SetupHistory(NUMGPT_SOTET4);
-      }
-      else if (mat->MaterialType() == INPAR::MAT::m_growth)
-      {
-        MAT::Growth* grow = static_cast <MAT::Growth*>(mat.get());
-        grow->ResetGrowth(NUMGPT_SOTET4);
-      }
+      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+      so3mat->ResetAll(NUMGPT_SOTET4);
+
       // Reset prestress
       if (pstype_==INPAR::STR::prestress_mulf)
       {
@@ -552,7 +515,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
           //**************************************************************
           // get analytical solution
           LINALG::Matrix<NUMDIM_SOTET4,1> uanalyt(true);
-          LINALG::Matrix<NUMSTR_SOTET4,1> strainanalyt(true);
+          LINALG::Matrix<MAT::NUM_STRESS_3D,1> strainanalyt(true);
           LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> derivanalyt(true);
 
           CONTACT::AnalyticalSolutions3D(xgp,uanalyt,strainanalyt,derivanalyt);
@@ -610,7 +573,7 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
           //--------------------------------------------------------------
 
           // compute linear B-operator
-          LINALG::Matrix<NUMSTR_SOTET4,NUMDOF_SOTET4> bop;
+          LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOTET4> bop;
           for (int i=0; i<NUMNOD_SOTET4; ++i)
           {
             bop(0,NODDOF_SOTET4*i+0) = N_XYZ(0,i);
@@ -635,19 +598,21 @@ int DRT::ELEMENTS::So_tet4::Evaluate(Teuchos::ParameterList&  params,
           }
 
           // compute linear strain at GP
-          LINALG::Matrix<NUMSTR_SOTET4,1> straingp(true);
+          LINALG::Matrix<MAT::NUM_STRESS_3D,1> straingp(true);
           straingp.Multiply(bop,nodaldisp);
 
           // strain error
-          LINALG::Matrix<NUMSTR_SOTET4,1> strainerror(true);
-          for (int k=0;k<NUMSTR_SOTET4;++k)
+          LINALG::Matrix<MAT::NUM_STRESS_3D,1> strainerror(true);
+          for (int k=0;k<MAT::NUM_STRESS_3D;++k)
             strainerror(k,0) = strainanalyt(k,0) - straingp(k,0);
 
           // compute stress vector and constitutive matrix
-          double density = 0.0;
-          LINALG::Matrix<NUMSTR_SOTET4,NUMSTR_SOTET4> cmat(true);
-          LINALG::Matrix<NUMSTR_SOTET4,1> stress(true);
-          so_tet4_mat_sel(&stress,&cmat,&density,&strainerror,&defgrd,gp,params);
+          LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
+          LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
+          params.set<int>("gp",gp);
+          params.set<int>("eleID",Id());
+          Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+          so3mat->Evaluate(&defgrd,&strainerror,params,&stress,&cmat);
 
           // compute GP contribution to energy error norm
           energynorm += fac * stress.Dot(strainerror);
@@ -881,9 +846,9 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
   LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,  // element stiffness matrix
   LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,  // element mass matrix
   LINALG::Matrix<NUMDOF_SOTET4,1>* force,  // element internal force vector
-  LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,  // stresses at GP
-  LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,  // strains at GP
-  LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* eleplstrain, // plastic strains at GP
+  LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
+  LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
+  LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* eleplstrain, // plastic strains at GP
   Teuchos::ParameterList& params,  // algorithmic parameters e.g. time
   const INPAR::STR::StressType iostress,  // stress output option
   const INPAR::STR::StrainType iostrain,  // strain output option
@@ -896,7 +861,6 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
   const static std::vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = so_tet4_1gp_derivs();
   const static std::vector<double> gpweights = so_tet4_1gp_weights();
 /* ============================================================================*/
-  double density;
   // element geometry
   /* structure of xrefe:
     **             [  X_1   Y_1   Z_1  ]
@@ -1091,7 +1055,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
     // size is 6x12
-    LINALG::Matrix<NUMSTR_SOTET4,NUMDOF_SOTET4> bop;
+    LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOTET4> bop;
     for (int i=0; i<NUMNOD_SOTET4; i++)
     {
       bop(0,NODDOF_SOTET4*i+0) = defgrd(0,0)*nxyz(i,0);
@@ -1115,14 +1079,13 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
       bop(5,NODDOF_SOTET4*i+2) = defgrd(2,2)*nxyz(i,0) + defgrd(2,0)*nxyz(i,2);
     }
 
-    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    ** Here all possible material laws need to be incorporated,
-    ** the stress vector, a C-matrix, and a density must be retrieved,
-    ** every necessary data must be passed.
-    */
-    LINALG::Matrix<NUMSTR_SOTET4,NUMSTR_SOTET4> cmat(true);
-    LINALG::Matrix<NUMSTR_SOTET4,1> stress(true);
-    so_tet4_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
+    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
+    params.set<int>("gp",gp);
+    params.set<int>("eleID",Id());
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
 
     // return gp stresses
     switch (iostress)
@@ -1130,7 +1093,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
     case INPAR::STR::stress_2pk:
     {
       if (elestress == NULL) dserror("no stress data available");
-      for (int i = 0; i < NUMSTR_SOTET4; ++i)
+      for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
         (*elestress)(gp,i) = stress(i);
     }
     break;
@@ -1184,14 +1147,14 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       // size is 6x12
-      LINALG::Matrix<NUMSTR_SOTET4,NUMDOF_SOTET4> cb;
+      LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOTET4> cb;
       cb.Multiply(cmat,bop);          // temporary C . B
       // size is 12x12
       stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
 
       // integrate `geometric' stiffness matrix and add to keu
       // auxiliary integrated stress
-      LINALG::Matrix<NUMSTR_SOTET4,1> sfac(stress);
+      LINALG::Matrix<MAT::NUM_STRESS_3D,1> sfac(stress);
       // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       sfac.Scale(detJ_w);
       // intermediate Sm.B_L
@@ -1225,6 +1188,7 @@ void DRT::ELEMENTS::So_tet4::nlnstiffmass(
   // evaluate mass matrix
   if (massmatrix != NULL)
   {
+    double density = Material()->Density();
     //consistent mass matrix evaluated using a 4-point rule
     for (int gp=0; gp<4; gp++)
     {
@@ -1258,9 +1222,9 @@ void DRT::ELEMENTS::So_tet4::linstiffmass(
   LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* stiffmatrix,  // element stiffness matrix
   LINALG::Matrix<NUMDOF_SOTET4,NUMDOF_SOTET4>* massmatrix,  // element mass matrix
   LINALG::Matrix<NUMDOF_SOTET4,1>* force,  // element internal force vector
-  LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestress,  // stresses at GP
-  LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* elestrain,  // strains at GP
-  LINALG::Matrix<NUMGPT_SOTET4,NUMSTR_SOTET4>* eleplstrain, // plastic strains at GP
+  LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* elestress,  // stresses at GP
+  LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* elestrain,  // strains at GP
+  LINALG::Matrix<NUMGPT_SOTET4,MAT::NUM_STRESS_3D>* eleplstrain, // plastic strains at GP
   Teuchos::ParameterList& params,  // algorithmic parameters e.g. time
   const INPAR::STR::StressType iostress,  // stress output option
   const INPAR::STR::StrainType iostrain,  // strain output option
@@ -1273,7 +1237,6 @@ void DRT::ELEMENTS::So_tet4::linstiffmass(
   const static std::vector<LINALG::Matrix<NUMDIM_SOTET4+1,NUMNOD_SOTET4> > derivs = so_tet4_1gp_derivs();
   const static std::vector<double> gpweights = so_tet4_1gp_weights();
 /* ============================================================================*/
-  double density;
   // element geometry
   /* structure of xrefe:
     **             [  X_1   Y_1   Z_1  ]
@@ -1466,7 +1429,7 @@ void DRT::ELEMENTS::So_tet4::linstiffmass(
     **      [                       F_33*N_{,1}^k+F_31*N_{,3}^k       ]
     */
     // size is 6x12
-    LINALG::Matrix<NUMSTR_SOTET4,NUMDOF_SOTET4> bop;
+    LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOTET4> bop;
     for (int i=0; i<NUMNOD_SOTET4; i++)
     {
       bop(0,NODDOF_SOTET4*i+0) = defgrd(0,0)*nxyz(i,0);
@@ -1490,14 +1453,13 @@ void DRT::ELEMENTS::So_tet4::linstiffmass(
       bop(5,NODDOF_SOTET4*i+2) = defgrd(2,2)*nxyz(i,0) + defgrd(2,0)*nxyz(i,2);
     }
 
-    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    ** Here all possible material laws need to be incorporated,
-    ** the stress vector, a C-matrix, and a density must be retrieved,
-    ** every necessary data must be passed.
-    */
-    LINALG::Matrix<NUMSTR_SOTET4,NUMSTR_SOTET4> cmat(true);
-    LINALG::Matrix<NUMSTR_SOTET4,1> stress(true);
-    so_tet4_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
+    // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+    LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
+    LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
+    params.set<int>("gp",gp);
+    params.set<int>("eleID",Id());
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+    so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
 
     // return gp stresses
     switch (iostress)
@@ -1505,7 +1467,7 @@ void DRT::ELEMENTS::So_tet4::linstiffmass(
     case INPAR::STR::stress_2pk:
     {
       if (elestress == NULL) dserror("no stress data available");
-      for (int i = 0; i < NUMSTR_SOTET4; ++i)
+      for (int i = 0; i < MAT::NUM_STRESS_3D; ++i)
         (*elestress)(gp,i) = stress(i);
     }
     break;
@@ -1559,14 +1521,14 @@ void DRT::ELEMENTS::So_tet4::linstiffmass(
       // integrate `elastic' and `initial-displacement' stiffness matrix
       // keu = keu + (B^T . C . B) * detJ * w(gp)
       // size is 6x12
-      LINALG::Matrix<NUMSTR_SOTET4,NUMDOF_SOTET4> cb;
+      LINALG::Matrix<MAT::NUM_STRESS_3D,NUMDOF_SOTET4> cb;
       cb.Multiply(cmat,bop);          // temporary C . B
       // size is 12x12
       stiffmatrix->MultiplyTN(detJ_w,bop,cb,1.0);
 
       // integrate `geometric' stiffness matrix and add to keu
       // auxiliary integrated stress
-      LINALG::Matrix<NUMSTR_SOTET4,1> sfac(stress);
+      LINALG::Matrix<MAT::NUM_STRESS_3D,1> sfac(stress);
       // detJ*w(gp)*[S11,S22,S33,S12=S21,S23=S32,S13=S31]
       sfac.Scale(detJ_w);
       // intermediate Sm.B_L
@@ -1599,23 +1561,24 @@ void DRT::ELEMENTS::So_tet4::linstiffmass(
   // evaluate mass matrix
   if (massmatrix != NULL)
   {
-   //consistent mass matrix evaluated using a 4-point rule
-   for (int gp=0; gp<4; gp++)
-   {
-     double factor = density * detJ * gpweights4gp[gp];
-     double ifactor, massfactor;
-     for (int inod=0; inod<NUMNOD_SOTET4; ++inod)
-     {
-       ifactor = (shapefcts4gp[gp])(inod) * factor;
-       for (int jnod=0; jnod<NUMNOD_SOTET4; ++jnod)
-       {
-         massfactor = (shapefcts4gp[gp])(jnod) * ifactor;
-         (*massmatrix)(NUMDIM_SOTET4*inod+0,NUMDIM_SOTET4*jnod+0) += massfactor;
-         (*massmatrix)(NUMDIM_SOTET4*inod+1,NUMDIM_SOTET4*jnod+1) += massfactor;
-         (*massmatrix)(NUMDIM_SOTET4*inod+2,NUMDIM_SOTET4*jnod+2) += massfactor;
-       }
-     }
-   }
+    double density = Material()->Density();
+    //consistent mass matrix evaluated using a 4-point rule
+    for (int gp=0; gp<4; gp++)
+    {
+      double factor = density * detJ * gpweights4gp[gp];
+      double ifactor, massfactor;
+      for (int inod=0; inod<NUMNOD_SOTET4; ++inod)
+      {
+        ifactor = (shapefcts4gp[gp])(inod) * factor;
+        for (int jnod=0; jnod<NUMNOD_SOTET4; ++jnod)
+        {
+          massfactor = (shapefcts4gp[gp])(jnod) * ifactor;
+          (*massmatrix)(NUMDIM_SOTET4*inod+0,NUMDIM_SOTET4*jnod+0) += massfactor;
+          (*massmatrix)(NUMDIM_SOTET4*inod+1,NUMDIM_SOTET4*jnod+1) += massfactor;
+          (*massmatrix)(NUMDIM_SOTET4*inod+2,NUMDIM_SOTET4*jnod+2) += massfactor;
+        }
+      }
+    }
   }// end of mass matrix +++++++++++++++++++++++++++++++++++++++++++++++++++
 
   return;
@@ -1868,173 +1831,164 @@ void DRT::ELEMENTS::So_tet4::UpdateJacobianMapping(
 }
 
 /*----------------------------------------------------------------------*
- |  remodeling of fiber directions (protected)               tinkl 01/10|
- *----------------------------------------------------------------------*/
+  |  remodeling of fiber directions (protected)               tinkl 01/10|
+  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet4::so_tet4_remodel(
-      std::vector<int>&         lm,             // location matrix
-      std::vector<double>&      disp,           // current displacements
-      Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
-      RCP<MAT::Material>        mat)            // material
+  std::vector<int>&         lm,             // location matrix
+  std::vector<double>&      disp,           // current displacements
+  Teuchos::ParameterList&   params,         // algorithmic parameters e.g. time
+  RCP<MAT::Material>        mat)            // material
 {
-// in a first step ommit everything with prestress
-
-  // current  displacements of element
-  LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xdisp;
-  for (int i=0; i<NUMNOD_SOTET4; ++i)
+  if (( Material()->MaterialType() == INPAR::MAT::m_constraintmixture) ||
+      ( Material()->MaterialType() == INPAR::MAT::m_elasthyper))
   {
-    xdisp(i,0) = disp[i*NODDOF_SOTET4+0];
-    xdisp(i,1) = disp[i*NODDOF_SOTET4+1];
-    xdisp(i,2) = disp[i*NODDOF_SOTET4+2];
-  }
+    // in a first step ommit everything with prestress
 
-  /* =========================================================================*/
-  /* ============================================== Loop over Gauss Points ===*/
-  /* =========================================================================*/
-  // interpolated values of stress and defgrd for remodeling
-  LINALG::Matrix<3,3> avg_stress(true);
-  LINALG::Matrix<3,3> avg_defgrd(true);
-
-  for (int gp=0; gp<NUMGPT_SOTET4; gp++)
-  {
-    const LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4>& nxyz = nxyz_;
-
-    //                                      d xcurr
-    // (material) deformation gradient F = --------- = xcurr^T * nxyz^T
-    //                                      d xrefe
-
-    /*structure of F
-    **             [    dx       dy       dz    ]
-    **             [  ------   ------   ------  ]
-    **             [    dX       dX       dX    ]
-    **             [                            ]
-    **      F   =  [    dx       dy       dz    ]
-    **             [  ------   ------   ------  ]
-    **             [    dY       dY       dY    ]
-    **             [                            ]
-    **             [    dx       dy       dz    ]
-    **             [  ------   ------   ------  ]
-    **             [    dZ       dZ       dZ    ]
-    */
-
-    // size is 3x3
-    LINALG::Matrix<3,3> defgrd(false);
-
-    if (pstype_==INPAR::STR::prestress_mulf)
+    // current  displacements of element
+    LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> xdisp;
+    for (int i=0; i<NUMNOD_SOTET4; ++i)
     {
-      // get derivatives wrt to last spatial configuration
-      LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> N_xyz;
-      prestress_->StoragetoMatrix(gp,N_xyz,prestress_->JHistory());
-
-      // build multiplicative incremental defgrd
-      //defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
-      defgrd.MultiplyTN(xdisp,N_xyz);
-      defgrd(0,0) += 1.0;
-      defgrd(1,1) += 1.0;
-      defgrd(2,2) += 1.0;
-
-      // get stored old incremental F
-      LINALG::Matrix<3,3> Fhist;
-      prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
-
-      // build total defgrd = delta F * F_old
-      LINALG::Matrix<3,3> Fnew;
-      Fnew.Multiply(defgrd,Fhist);
-      defgrd = Fnew;
-    }
-    else
-    {
-      defgrd.MultiplyTN(xdisp,nxyz);
-      defgrd(0,0)+=1;
-      defgrd(1,1)+=1;
-      defgrd(2,2)+=1;
+      xdisp(i,0) = disp[i*NODDOF_SOTET4+0];
+      xdisp(i,1) = disp[i*NODDOF_SOTET4+1];
+      xdisp(i,2) = disp[i*NODDOF_SOTET4+2];
     }
 
-    // Right Cauchy-Green tensor = F^T * F
-    // size is 3x3
-    LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> cauchygreen;
-    cauchygreen.MultiplyTN(defgrd,defgrd);
+    /* =========================================================================*/
+    /* ============================================== Loop over Gauss Points ===*/
+    /* =========================================================================*/
+    // interpolated values of stress and defgrd for remodeling
+    LINALG::Matrix<3,3> avg_stress(true);
+    LINALG::Matrix<3,3> avg_defgrd(true);
 
-    // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
-    // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
-    LINALG::Matrix<6,1> glstrain(false);
-    glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
-    glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
-    glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
-    glstrain(3) = cauchygreen(0,1);
-    glstrain(4) = cauchygreen(1,2);
-    glstrain(5) = cauchygreen(2,0);
-
-    /* call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
-    ** Here all possible material laws need to be incorporated,
-    ** the stress vector, a C-matrix, and a density must be retrieved,
-    ** every necessary data must be passed.
-    */
-    double density = 0.0;
-    LINALG::Matrix<NUMSTR_SOTET4,NUMSTR_SOTET4> cmat(true);
-    LINALG::Matrix<NUMSTR_SOTET4,1> stress(true);
-    so_tet4_mat_sel(&stress,&cmat,&density,&glstrain,&defgrd,gp,params);
-    // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
-
-    // Cauchy stress
-    const double detF = defgrd.Determinant();
-
-    LINALG::Matrix<3,3> pkstress;
-    pkstress(0,0) = stress(0);
-    pkstress(0,1) = stress(3);
-    pkstress(0,2) = stress(5);
-    pkstress(1,0) = pkstress(0,1);
-    pkstress(1,1) = stress(1);
-    pkstress(1,2) = stress(4);
-    pkstress(2,0) = pkstress(0,2);
-    pkstress(2,1) = pkstress(1,2);
-    pkstress(2,2) = stress(2);
-
-    LINALG::Matrix<3,3> temp(true);
-    LINALG::Matrix<3,3> cauchystress(true);
-    temp.Multiply(1.0/detF,defgrd,pkstress);
-    cauchystress.MultiplyNT(temp,defgrd);
-
-    // evaluate eigenproblem based on stress of previous step
-    LINALG::Matrix<3,3> lambda(true);
-    LINALG::Matrix<3,3> locsys(true);
-    LINALG::SYEV(cauchystress,lambda,locsys);
-
-    // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
-    double newgamma = atan(lambda(1,1)/lambda(2,2));
-    //compression in 2nd max direction, thus fibers are alligned to max principal direction
-    if (lambda(1,1) < 0) newgamma = 0.0;
-
-    if (mat->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular) {
-      MAT::HolzapfelCardio* holz = static_cast <MAT::HolzapfelCardio*>(mat.get());
-      holz->EvaluateFiberVecs(gp,newgamma,locsys,defgrd);
-    } else if (mat->MaterialType() == INPAR::MAT::m_humphreycardiovascular) {
-      MAT::HumphreyCardio* hum = static_cast <MAT::HumphreyCardio*>(mat.get());
-      hum->EvaluateFiberVecs(gp,locsys,defgrd);
-    } else if (mat->MaterialType() == INPAR::MAT::m_constraintmixture) {
-      MAT::ConstraintMixture* comi = static_cast <MAT::ConstraintMixture*>(mat.get());
-      comi->EvaluateFiberVecs(gp,locsys,defgrd);
-    } else if (mat->MaterialType() == INPAR::MAT::m_elasthyper) {
-      // we only have fibers at element center, thus we interpolate stress and defgrd
-      avg_stress.Update(1.0/NUMGPT_SOTET4,cauchystress,1.0);
-      avg_defgrd.Update(1.0/NUMGPT_SOTET4,defgrd,1.0);
-    } else dserror("material not implemented for remodeling");
-
-    if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
+    for (int gp=0; gp<NUMGPT_SOTET4; gp++)
     {
+      const LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4>& nxyz = nxyz_;
+
+      //                                      d xcurr
+      // (material) deformation gradient F = --------- = xcurr^T * nxyz^T
+      //                                      d xrefe
+
+      /*structure of F
+      **             [    dx       dy       dz    ]
+      **             [  ------   ------   ------  ]
+      **             [    dX       dX       dX    ]
+      **             [                            ]
+      **      F   =  [    dx       dy       dz    ]
+      **             [  ------   ------   ------  ]
+      **             [    dY       dY       dY    ]
+      **             [                            ]
+      **             [    dx       dy       dz    ]
+      **             [  ------   ------   ------  ]
+      **             [    dZ       dZ       dZ    ]
+      */
+
+      // size is 3x3
+      LINALG::Matrix<3,3> defgrd(false);
+
+      if (pstype_==INPAR::STR::prestress_mulf)
+      {
+        // get derivatives wrt to last spatial configuration
+        LINALG::Matrix<NUMNOD_SOTET4,NUMDIM_SOTET4> N_xyz;
+        prestress_->StoragetoMatrix(gp,N_xyz,prestress_->JHistory());
+
+        // build multiplicative incremental defgrd
+        //defgrd.Multiply('T','N',1.0,xdisp,N_xyz,0.0);
+        defgrd.MultiplyTN(xdisp,N_xyz);
+        defgrd(0,0) += 1.0;
+        defgrd(1,1) += 1.0;
+        defgrd(2,2) += 1.0;
+
+        // get stored old incremental F
+        LINALG::Matrix<3,3> Fhist;
+        prestress_->StoragetoMatrix(gp,Fhist,prestress_->FHistory());
+
+        // build total defgrd = delta F * F_old
+        LINALG::Matrix<3,3> Fnew;
+        Fnew.Multiply(defgrd,Fhist);
+        defgrd = Fnew;
+      }
+      else
+      {
+        defgrd.MultiplyTN(xdisp,nxyz);
+        defgrd(0,0)+=1;
+        defgrd(1,1)+=1;
+        defgrd(2,2)+=1;
+      }
+
+      // Right Cauchy-Green tensor = F^T * F
+      // size is 3x3
+      LINALG::Matrix<NUMDIM_SOTET4,NUMDIM_SOTET4> cauchygreen;
+      cauchygreen.MultiplyTN(defgrd,defgrd);
+
+      // Green-Lagrange strains matrix E = 0.5 * (Cauchygreen - Identity)
+      // GL strain vector glstrain={E11,E22,E33,2*E12,2*E23,2*E31}
+      LINALG::Matrix<6,1> glstrain(false);
+      glstrain(0) = 0.5 * (cauchygreen(0,0) - 1.0);
+      glstrain(1) = 0.5 * (cauchygreen(1,1) - 1.0);
+      glstrain(2) = 0.5 * (cauchygreen(2,2) - 1.0);
+      glstrain(3) = cauchygreen(0,1);
+      glstrain(4) = cauchygreen(1,2);
+      glstrain(5) = cauchygreen(2,0);
+
+      // call material law cccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D> cmat(true);
+      LINALG::Matrix<MAT::NUM_STRESS_3D,1> stress(true);
+      params.set<int>("gp",gp);
+      params.set<int>("eleID",Id());
+      Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+      so3mat->Evaluate(&defgrd,&glstrain,params,&stress,&cmat);
+      // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
+
+      // Cauchy stress
+      const double detF = defgrd.Determinant();
+
+      LINALG::Matrix<3,3> pkstress;
+      pkstress(0,0) = stress(0);
+      pkstress(0,1) = stress(3);
+      pkstress(0,2) = stress(5);
+      pkstress(1,0) = pkstress(0,1);
+      pkstress(1,1) = stress(1);
+      pkstress(1,2) = stress(4);
+      pkstress(2,0) = pkstress(0,2);
+      pkstress(2,1) = pkstress(1,2);
+      pkstress(2,2) = stress(2);
+
+      LINALG::Matrix<3,3> temp(true);
+      LINALG::Matrix<3,3> cauchystress(true);
+      temp.Multiply(1.0/detF,defgrd,pkstress);
+      cauchystress.MultiplyNT(temp,defgrd);
+
       // evaluate eigenproblem based on stress of previous step
       LINALG::Matrix<3,3> lambda(true);
       LINALG::Matrix<3,3> locsys(true);
-      LINALG::SYEV(avg_stress,lambda,locsys);
+      LINALG::SYEV(cauchystress,lambda,locsys);
 
-      // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
-      double newgamma = atan(lambda(1,1)/lambda(2,2));
-      //compression in 2nd max direction, thus fibers are alligned to max principal direction
-      if (lambda(1,1) < 0) newgamma = 0.0;
+      if (mat->MaterialType() == INPAR::MAT::m_constraintmixture) {
+        MAT::ConstraintMixture* comi = static_cast <MAT::ConstraintMixture*>(mat.get());
+        comi->EvaluateFiberVecs(gp,locsys,defgrd);
+      } else if (mat->MaterialType() == INPAR::MAT::m_elasthyper) {
+        // we only have fibers at element center, thus we interpolate stress and defgrd
+        avg_stress.Update(1.0/NUMGPT_SOTET4,cauchystress,1.0);
+        avg_defgrd.Update(1.0/NUMGPT_SOTET4,defgrd,1.0);
+      } else dserror("material not implemented for remodeling");
 
-      // new fiber vectors
-      MAT::ElastHyper* elast = static_cast <MAT::ElastHyper*>(mat.get());
-      elast->EvaluateFiberVecs(newgamma,locsys,avg_defgrd);
-    }
-  } // end loop over gauss points
+      if (mat->MaterialType() == INPAR::MAT::m_elasthyper)
+      {
+        // evaluate eigenproblem based on stress of previous step
+        LINALG::Matrix<3,3> lambda(true);
+        LINALG::Matrix<3,3> locsys(true);
+        LINALG::SYEV(avg_stress,lambda,locsys);
+
+        // modulation function acc. Hariton: tan g = 2nd max lambda / max lambda
+        double newgamma = atan(lambda(1,1)/lambda(2,2));
+        //compression in 2nd max direction, thus fibers are alligned to max principal direction
+        if (lambda(1,1) < 0) newgamma = 0.0;
+
+        // new fiber vectors
+        MAT::ElastHyper* elast = static_cast <MAT::ElastHyper*>(mat.get());
+        elast->EvaluateFiberVecs(newgamma,locsys,avg_defgrd);
+      }
+    } // end loop over gauss points
+  }
 }
 

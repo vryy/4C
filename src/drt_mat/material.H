@@ -2,7 +2,7 @@
 /*!
 \file material.H
 
-\brief Interface class for complex materials at Gauss points
+\brief Interface class for materials at Gauss points
 
 <pre>
 Maintainer: Lena Wiechert
@@ -33,7 +33,7 @@ namespace MAT
     class Parameter;
   }
 
-  const unsigned int  NUM_STRESS_3D = 6; ///< 6 stresses for 3D
+  const int  NUM_STRESS_3D = 6; ///< 6 stresses for 3D
 
   /// Interface class for materials in elements
   /*!

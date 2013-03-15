@@ -600,7 +600,10 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
   // required for predictor TangDis --> can be helpful in compressible case!
   case calc_struct_reset_istep:
   {
-    // do nothing;
+    // Reset of history (if needed)
+    Teuchos::RCP<MAT::Material> mat = so3_ele::Material();
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(mat);
+    so3mat->ResetStep();
   }
   break;
 
@@ -610,18 +613,8 @@ int DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::EvaluateCouplWithThr(
     // TODO 2012-10-31 check if Update has to be called here again
     Teuchos::RCP<MAT::Material> mat = so3_ele::Material();
 
-    // Update of history for thermo-(visco-)plastic material if they exist
-    if (mat->MaterialType() == INPAR::MAT::m_thermopllinelast)
-    {
-      MAT::ThermoPlasticLinElast* thrpllinelast = static_cast <MAT::ThermoPlasticLinElast*>(mat.get());
-      thrpllinelast->Update();
-    }
-    // incremental update of internal variables/history
-    else if (mat->MaterialType() == INPAR::MAT::m_vp_robinson)
-    {
-      MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
-      robinson->Update();
-    }
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+    so3mat->Update();
   }  // calc_struct_update_istep
   break;
 
@@ -794,14 +787,13 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::lin_fint_tsi(
     LINALG::Matrix<numstr_,1> couplstress(true);
     LINALG::Matrix<numstr_,numstr_> cmat(true);
     LINALG::Matrix<numstr_,1> glstrain(true);
-    LINALG::Matrix<numstr_,1> plglstrain(true);
     // take care: current temperature ( N . T ) is passed to the element
     //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
     //                             2.) couplstress = C . Delta T
     // do not call the material for Robinson's material
     if ( !(Material()->MaterialType() == INPAR::MAT::m_vp_robinson) )
       Materialize(&couplstress,&ctemp,&Ntemp,&cmat,&defgrd,&glstrain,
-        &plglstrain,straininc,scalartemp,&density,gp,params);
+        &straininc,scalartemp,&density,gp,params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
@@ -1071,7 +1063,6 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
     LINALG::Matrix<numstr_,1> couplstress(true);
     LINALG::Matrix<numstr_,numstr_> cmattemp(true);
     LINALG::Matrix<numstr_,1> glstrain(true);
-    LINALG::Matrix<numstr_,1> plglstrain(true);
     LINALG::Matrix<numstr_,1> straininc(true);
     // take care: current temperature ( N . T ) is passed to the element
     //            in the material: 1.) Delta T = subtract ( N . T - T_0 )
@@ -1079,12 +1070,13 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::nln_stifffint_tsi(
     // do not call the material for Robinson's material
     if ( !(Material()->MaterialType() == INPAR::MAT::m_vp_robinson) )
       Materialize(&couplstress,&ctemp,&Ntemp,&cmattemp,&defgrd,&glstrain,
-        &plglstrain,straininc,scalartemp,&density,gp,params);
+        &straininc,scalartemp,&density,gp,params);
 
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // TODO 2012-08-06 check if we need plastic strains in the thermal routine?!!
     // I think we do NOT need, because thermal influence is volumetric ONLY
+    // otherwise, get plglstrains from params
 
     // return gp stresses
     switch (iostress)
@@ -1291,8 +1283,7 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
   LINALG::Matrix<numstr_,numstr_>* cmat,
   LINALG::Matrix<nsd_,nsd_>* defgrd, //
   LINALG::Matrix<numstr_,1>* glstrain,
-  LINALG::Matrix<numstr_,1>* plglstrain,
-  LINALG::Matrix<numstr_,1>& straininc,
+  LINALG::Matrix<numstr_,1>* straininc,
   const double& scalartemp,
   double* density,
   const int gp,
@@ -1332,7 +1323,11 @@ void DRT::ELEMENTS::So3_Thermo<so3_ele,distype>::Materialize(
     case INPAR::MAT::m_vp_robinson: /*-- visco-plastic Robinson's material */
     {
       MAT::Robinson* robinson = static_cast <MAT::Robinson*>(mat.get());
-      robinson->Evaluate(*glstrain,*plglstrain,straininc,scalartemp,gp,params,*cmat,*couplstress);
+      params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1>* >("straininc", straininc);
+      params.set<double>("scalartemp",scalartemp);
+      params.set<int>("gp",gp);
+      //robinson->Evaluate(*glstrain,*plglstrain,straininc,scalartemp,gp,params,*cmat,*couplstress);
+      robinson->Evaluate(defgrd,glstrain,params,couplstress,cmat);
       *density = robinson->Density();
       return;
       break;

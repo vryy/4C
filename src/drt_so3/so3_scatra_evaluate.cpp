@@ -18,7 +18,6 @@
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensevector.H"
 #include "Epetra_SerialDenseSolver.h"
-#include "../drt_mat/robinson.H"
 #include "../drt_mat/micromaterial.H"
 #include <iterator>
 

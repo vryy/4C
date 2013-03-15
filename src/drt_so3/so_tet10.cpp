@@ -19,11 +19,10 @@ Maintainer: Jonas Biehler
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_mat/holzapfelcardiovascular.H"
-#include "../drt_mat/humphreycardiovascular.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_fem_general/drt_utils_integration.H"
+#include "../drt_mat/so3_material.H"
 
 // inverse design object
 #include "inversedesign.H"
@@ -306,13 +305,13 @@ void DRT::ELEMENTS::So_tet10::Print(ostream& os) const
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet10::so_tet10_expol
 (
-    LINALG::Matrix<NUMGPT_SOTET10,NUMSTR_SOTET10>& stresses,
+    LINALG::Matrix<NUMGPT_SOTET10,MAT::NUM_STRESS_3D>& stresses,
     Epetra_MultiVector& expolstresses
 )
 {
   static LINALG::Matrix<NUMNOD_SOTET10,NUMGPT_SOTET10> expol;
   static bool isfilled;
-  LINALG::Matrix<NUMNOD_SOTET10,NUMSTR_SOTET10> nodalstresses;
+  LINALG::Matrix<NUMNOD_SOTET10,MAT::NUM_STRESS_3D> nodalstresses;
 
   if (isfilled==true)
   {
@@ -449,26 +448,8 @@ std::vector<Teuchos::RCP<DRT::Element> > DRT::ELEMENTS::So_tet10::Lines()
  *----------------------------------------------------------------------*/
 void DRT::ELEMENTS::So_tet10::VisNames(std::map<std::string,int>& names)
 {
-
-  if ((Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular))
-  {
-    std::string fiber = "Fiber1";
-    names[fiber] = 3; // 3-dim vector
-    fiber = "Fiber2";
-    names[fiber] = 3; // 3-dim vector
-  }
-  if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular)
-  {
-    std::string fiber = "Fiber1";
-    names[fiber] = 3; // 3-dim vector
-    fiber = "Fiber2";
-    names[fiber] = 3;
-    fiber = "Fiber3";
-    names[fiber] = 3;
-    fiber = "Fiber4";
-    names[fiber] = 3;
-  }
-
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  so3mat->VisNames(names);
   return;
 }
 
@@ -481,44 +462,8 @@ bool DRT::ELEMENTS::So_tet10::VisData(const string& name, std::vector<double>& d
   if (DRT::Element::VisData(name,data))
     return true;
 
-  if (Material()->MaterialType() == INPAR::MAT::m_holzapfelcardiovascular){
-    MAT::HolzapfelCardio* art = static_cast <MAT::HolzapfelCardio*>(Material().get());
-    std::vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
-    std::vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
-    if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
-    } else {
-      return false;
-    }
-  }
-  if (Material()->MaterialType() == INPAR::MAT::m_humphreycardiovascular){
-    MAT::HumphreyCardio* art = static_cast <MAT::HumphreyCardio*>(Material().get());
-    std::vector<double> a1 = art->Geta1()->at(0);  // get a1 of first gp
-    std::vector<double> a2 = art->Geta2()->at(0);  // get a2 of first gp
-    std::vector<double> a3 = art->Geta3()->at(0);  // get a3 of first gp
-    std::vector<double> a4 = art->Geta4()->at(0);  // get a4 of first gp
-    if (name == "Fiber1"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a1[0]; data[1] = a1[1]; data[2] = a1[2];
-    } else if (name == "Fiber2"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a2[0]; data[1] = a2[1]; data[2] = a2[2];
-    } else if (name == "Fiber3"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a3[0]; data[1] = a3[1]; data[2] = a3[2];
-    } else if (name == "Fiber4"){
-      if ((int)data.size()!=3) dserror("size mismatch");
-      data[0] = a4[0]; data[1] = a4[1]; data[2] = a4[2];
-    } else {
-      return false;
-    }
-  }
-
-  return true;
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  return so3mat->VisData(name, data, NUMGPT_SOTET10);
 }
 
 

@@ -234,14 +234,15 @@ void MAT::StVenantKirchhoff::Evaluate(const Epetra_SerialDenseVector* glstrain_e
 /*----------------------------------------------------------------------*
 //calculates stresses using one of the above method to evaluate the elasticity tensor
  *----------------------------------------------------------------------*/
-void MAT::StVenantKirchhoff::Evaluate(
-                  const LINALG::Matrix<6,1>& glstrain,
-                  LINALG::Matrix<6,6>& cmat,
-                  LINALG::Matrix<6,1>& stress)
+void MAT::StVenantKirchhoff::Evaluate(const LINALG::Matrix<3,3>* defgrd,
+                                      const LINALG::Matrix<6,1>* glstrain,
+                                      Teuchos::ParameterList& params,
+                                      LINALG::Matrix<6,1>* stress,
+                                      LINALG::Matrix<6,6>* cmat)
 {
-  SetupCmat(cmat);
+  SetupCmat(*cmat);
   // evaluate stresses
-  stress.MultiplyNN(cmat,glstrain);  // sigma = C . epsilon
+  stress->MultiplyNN(*cmat,*glstrain);  // sigma = C . epsilon
 }
 
 
@@ -249,7 +250,7 @@ void MAT::StVenantKirchhoff::Evaluate(
  |  Calculate strain energy                                    gee 10/09|
  *----------------------------------------------------------------------*/
 void MAT::StVenantKirchhoff::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
-                                 double& psi)
+                                          double& psi)
 {
   LINALG::Matrix<6,6> cmat(true);
   SetupCmat(cmat);
@@ -260,6 +261,75 @@ void MAT::StVenantKirchhoff::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
   for (int k=0;k<6;++k)
     psi += glstrain(k)*stress(k);
   psi /= 2.0;
+
+  return;
+}
+
+
+/*----------------------------------------------------------------------*
+ |  Evaluate for GEMM                                           ly 02/13|
+ *----------------------------------------------------------------------*/
+void MAT::StVenantKirchhoff::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
+                                          LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
+                                          double* density,
+                                          LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_m,
+                                          LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_new,
+                                          LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_old,
+                                          LINALG::Matrix<3,3>* rcg_new,
+                                          LINALG::Matrix<3,3>* rcg_old)
+{
+  #ifdef DEBUG
+  if (!stress) dserror("No stress vector supplied");
+  if (!cmat) dserror("No material tangent matrix supplied");
+  if (!glstrain_m) dserror("No GL strains supplied");
+  if (!glstrain_new) dserror("No GL strains supplied");
+  if (!glstrain_old) dserror("No GL strains supplied");
+#endif
+
+  // strain energy function
+  double psi = 0.0;
+  double psio = 0.0;
+
+  Teuchos::ParameterList params;
+  LINALG::Matrix<3,3> defgrd(true);
+  Evaluate(&defgrd,glstrain_m,params,stress,cmat);
+  *density = Density();
+  StrainEnergy(*glstrain_new,psi);
+  StrainEnergy(*glstrain_old,psio);
+
+  //**********************************************************************
+  // ALGORITHMIC STRESSES AND CMAT FOR GEMM
+  //**********************************************************************
+  // tensor M = increment of Cauchy-Green tensor
+      LINALG::Matrix<3,3> M;
+  M.Update(1.0,*rcg_new,-1.0,*rcg_old);
+  double Mb = M.Dot(M);
+
+  // second term in algorithmic stress only if Mb > 0
+  // see: O. Gonzalez, Exact energy and momentum conserving algorithms for
+  // general models in nonlinear elasticity, CMAME, 190(2000), pp. 1763-1783
+  if (Mb < 1.0e-12) return;
+
+  // derivative of strain energy function dpsi = 0.5*stressm
+  // double contraction dpsi : M
+  double dpsiM = 0.5*(*stress)(0)*M(0,0) + 0.5*(*stress)(1)*M(1,1) + 0.5*(*stress)(2)*M(2,2)
+               +     (*stress)(3)*M(0,1) +     (*stress)(4)*M(1,2) +     (*stress)(5)*M(0,2);
+
+  // extend stressm to algorithmic stress
+  (*stress)(0) += 2 * ((psi - psio - dpsiM) / Mb) * M(0,0);
+  (*stress)(1) += 2 * ((psi - psio - dpsiM) / Mb) * M(1,1);
+  (*stress)(2) += 2 * ((psi - psio - dpsiM) / Mb) * M(2,2);
+  (*stress)(3) += 2 * ((psi - psio - dpsiM) / Mb) * M(0,1);
+  (*stress)(4) += 2 * ((psi - psio - dpsiM) / Mb) * M(1,2);
+  (*stress)(5) += 2 * ((psi - psio - dpsiM) / Mb) * M(0,2);
+
+  // TODO: extend cmat to algorithmic material tensor
+  // -> not yet completely implemented!!!
+  // -> using only cmat so far, which is ok but not optimal!!!
+
+  //**********************************************************************
+  //**********************************************************************
+  //**********************************************************************
 
   return;
 }
