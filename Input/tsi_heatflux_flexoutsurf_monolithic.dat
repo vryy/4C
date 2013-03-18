@@ -52,7 +52,7 @@ OUTPUT_OUT                      No
 PREFIX_GROUP_ID                 No
 STDOUTEVRY                      1
 STRUCT_DISP                     Yes
-STRUCT_PLASTIC_STRAIN           EA  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
+STRUCT_PLASTIC_STRAIN           no  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
 STRUCT_SE                       No
 STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   EA  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
