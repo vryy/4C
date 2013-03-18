@@ -761,7 +761,7 @@ void FLD::CombustFluidImplicitTimeInt::PrepareNonlinearSolve()
   int numcond = KSPcond.size();
   int numfluid = 0;
 
-  DRT::Condition* kspcond;
+  DRT::Condition* kspcond = NULL;
   // check if for fluid Krylov projection is required
   for(int icond = 0; icond < numcond; icond++)
   {

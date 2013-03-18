@@ -152,7 +152,7 @@ STR::TimIntImpl::TimIntImpl
   int numcond = KSPcond.size();
   int numsolid = 0;
 
-  DRT::Condition* kspcond;
+  DRT::Condition* kspcond = NULL;
   // check if for solid Krylov projection is required
   for(int icond = 0; icond < numcond; icond++)
   {
