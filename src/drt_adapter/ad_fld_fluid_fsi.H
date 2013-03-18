@@ -103,6 +103,8 @@ namespace ADAPTER {
 
     virtual void SetMeshMap(Teuchos::RCP<const Epetra_Map> mm);
 
+    //! @name Conversion between displacement and velocity at interface
+
     //! Conversion of displacement to velocity at the interface without predictors or inhomogeneous DBCs
     //!
     //! All input vectors have to live on the fluid field map.
@@ -138,6 +140,8 @@ namespace ADAPTER {
     virtual void FreeSurfDisplacementToVelocity(Teuchos::RCP<Epetra_Vector> fcx);
 
     virtual void FreeSurfVelocityToDisplacement(Teuchos::RCP<Epetra_Vector> fcx);
+
+    //@}
 
     virtual Teuchos::RCP<Epetra_Vector>   IntegrateInterfaceShape();
 
