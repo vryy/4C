@@ -50,6 +50,7 @@ PARTICLE::Algorithm::Algorithm(
   particles_(Teuchos::null),
   bincolmap_(Teuchos::null),
   particlewalldis_(Teuchos::null),
+  wall_output_(Teuchos::null),
   myrank_(comm.MyPID())
 {
   // INFO regarding output: Bins are not written to file because they cannot be post-processed
@@ -869,9 +870,10 @@ void PARTICLE::Algorithm::SetupParticleWalls(Teuchos::RCP<DRT::Discretization> s
   particlewalldis->FillComplete(true, false, false);
   particlewalldis_ = particlewalldis;
 
-  // some output
+  // some output to screen and initialization of binary output
   IO::cout << "after adding particle walls" << IO::endl;
   DRT::UTILS::PrintParallelDistribution(*particlewalldis_);
+  wall_output_ = Teuchos::rcp(new IO::DiscretizationWriter(particlewalldis_));
 
 
   //--------------------------------------------------------------------
@@ -1186,6 +1188,16 @@ void PARTICLE::Algorithm::TestResults(const Epetra_Comm& comm)
 void PARTICLE::Algorithm::Output()
 {
   particles_->Output();
+
+  // so far: fixed walls
+  if(Step() == 1 and wall_output_ != Teuchos::null)
+  {
+    wall_output_->WriteMesh(Step(),Time());
+    wall_output_->NewStep(Step(),Time());
+    Teuchos::RCP<Epetra_Vector> walldisp = Teuchos::rcp(new Epetra_Vector(*particlewalldis_->DofRowMap(), true));
+    wall_output_->WriteVector("displacement", walldisp);
+  }
+
 
 //  const std::string filename = IO::GMSH::GetFileName("particle_data", Step(), true, Comm().MyPID());
 //  std::ofstream gmshfilecontent(filename.c_str());

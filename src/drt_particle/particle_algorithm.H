@@ -42,6 +42,10 @@ namespace ADAPTER
 {
   class Structure;
 }
+namespace IO
+{
+  class DiscretizationWriter;
+}
 
 /*----------------------------------------------------------------------*
  | particle algorithm                                       ghamm 09/12 |
@@ -208,6 +212,10 @@ namespace PARTICLE
     //! Future: Dynamical registering of wall elements in bins when they are moving
     std::map<int, std::set<int> > particlewalls_;   ///< map that contains all wall element ids of each bin
 
+    //@}
+
+    //! @name output discretization writer
+    Teuchos::RCP<IO::DiscretizationWriter> wall_output_;
     //@}
 
     //! @name miscellaneous stuff

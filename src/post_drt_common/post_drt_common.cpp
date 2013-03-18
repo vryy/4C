@@ -136,7 +136,8 @@ PostProblem::PostProblem(Teuchos::CommandLineProcessor& CLP,
   spatial_approx_ = map_read_string(&control_table_, "spatial_approximation");
 
   if (spatial_approx_!="Nurbs" and
-      spatial_approx_!="Polynomial")
+      spatial_approx_!="Polynomial" and
+      spatial_approx_!="Meshfree")
   {
     dserror("unknown type of spatial approximation '%s'", spatial_approx_.c_str());
   }
@@ -309,45 +310,89 @@ void PostProblem::setup_filter(std::string control_file_name, std::string output
       printf("read restarted control file: %s\n", control_file_name.c_str());
 
     /* find the previous results */
-
-    INT counter = 0;
-
-    /*
-     * the dummy_symbol is a hack that allows us to treat all results
-     * in the list the same way (use the same code). Without it we'd
-     * need special conditions for the first entry. */
-    SYMBOL dummy_symbol;
-    SYMBOL* previous_results = &dummy_symbol;
-    previous_results->next = map_find_symbol(table, "result");
-    while (previous_results->next != NULL)
     {
-      SYMBOL* result;
-      INT step;
-      result = previous_results->next;
-      step = map_read_int(symbol_map(result), "step");
+      INT counter = 0;
 
-      if (step < first_step)
+      /*
+       * the dummy_symbol is a hack that allows us to treat all results
+       * in the list the same way (use the same code). Without it we'd
+       * need special conditions for the first entry. */
+      SYMBOL dummy_symbol;
+      SYMBOL* previous_results = &dummy_symbol;
+      previous_results->next = map_find_symbol(table, "result");
+      while (previous_results->next != NULL)
       {
-        /* found it */
-        /* Now we simply switch all previous results to our main
-         * map. The assumption is a perfect ordering */
-        map_prepend_symbols(&control_table_, "result", result,
-                            map_symbol_count(table, "result") - counter);
-        previous_results->next = NULL;
+        SYMBOL* result;
+        INT step;
+        result = previous_results->next;
+        step = map_read_int(symbol_map(result), "step");
 
-        /*
-         * In case all results go to the main map we have to disconnect
-         * them explicitly. */
-        if (previous_results == &dummy_symbol)
+        if (step < first_step)
         {
-          map_disconnect_symbols(table, "result");
-        }
-        break;
-      }
+          /* found it */
+          /* Now we simply switch all previous results to our main
+           * map. The assumption is a perfect ordering */
+          map_prepend_symbols(&control_table_, "result", result,
+                              map_symbol_count(table, "result") - counter);
+          previous_results->next = NULL;
 
-      /* Not found yet. Go up one result. */
-      previous_results = previous_results->next;
-      counter += 1;
+          /*
+           * In case all results go to the main map we have to disconnect
+           * them explicitly. */
+          if (previous_results == &dummy_symbol)
+          {
+            map_disconnect_symbols(table, "result");
+          }
+          break;
+        }
+
+        /* Not found yet. Go up one result. */
+        previous_results = previous_results->next;
+        counter += 1;
+      }
+    }
+
+    /* find the previous mesh files */
+    {
+      INT counter = 0;
+
+      /*
+       * the dummy_symbol is a hack that allows us to treat all results
+       * in the list the same way (use the same code). Without it we'd
+       * need special conditions for the first entry. */
+      SYMBOL dummy_symbol;
+      SYMBOL* previous_fields = &dummy_symbol;
+      previous_fields->next = map_find_symbol(table, "field");
+      while (previous_fields->next != NULL)
+      {
+        SYMBOL* field;
+        INT step;
+        field = previous_fields->next;
+        step = map_read_int(symbol_map(field), "step");
+
+        if (step < first_step)
+        {
+          /* found it */
+          /* Now we simply switch all previous fields to our main
+           * map. The assumption is a perfect ordering */
+          map_prepend_symbols(&control_table_, "field", field,
+                              map_symbol_count(table, "field") - counter);
+          previous_fields->next = NULL;
+
+          /*
+           * In case all fields go to the main map we have to disconnect
+           * them explicitly. */
+          if (previous_fields == &dummy_symbol)
+          {
+            map_disconnect_symbols(table, "field");
+          }
+          break;
+        }
+
+        /* Not found yet. Go up one field. */
+        previous_fields = previous_fields->next;
+        counter += 1;
+      }
     }
   }
 }
@@ -1043,7 +1088,7 @@ PostField PostProblem::getfield(MAP* field_info)
 
   RCP<DRT::Discretization> dis;
 
-  if(spatial_approx_=="Polynomial")
+  if(spatial_approx_=="Polynomial" or spatial_approx_=="Meshfree")
   {
     if(problemtype_==prb_combust)
     {

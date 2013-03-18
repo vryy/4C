@@ -177,7 +177,11 @@ int main(
     {
       PostField* particlefield = problem.get_discretization(0);
       ParticleEnsightWriter  particlewriter(particlefield, problem.outname());
-      particlewriter.WriteFiles();
+      particlewriter.WriteFilesChangingGeom();
+
+      PostField* particlewallfield = problem.get_discretization(1);
+      StructureEnsightWriter writer(particlewallfield, problem.outname(), problem.stresstype(), problem.straintype());
+      writer.WriteFiles();
       break;
     }
     case prb_cavitation:
@@ -289,11 +293,6 @@ int main(
         StructureEnsightWriter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
         structwriter.WriteFiles();
 
-//         std::cout << "  Fluid Field" << std::endl;
-//         PostField* fluidfield = problem.get_discretization(1);
-//         XFluidEnsightWriter xfluidwriter(fluidfield, basename);
-//         xfluidwriter.WriteFiles();
-
         std::cout << "  Fluid Field" << std::endl;
         PostField* fluidfield = problem.get_discretization(1);
         FluidEnsightWriter fluidwriter(fluidfield, basename);
@@ -305,14 +304,6 @@ int main(
         InterfaceEnsightWriter ifacewriter(ifacefield, basename);
         ifacewriter.WriteFiles();
 
-
-        // in the future, we might also write the interface
-        // but at the moment, some procs might have no row elements
-        // and the HDF5 writing process can not handle this
-//        std::cout << "  Interface Field" << std::endl;
-//        PostField* ifacefield = problem.get_discretization(2);
-//        InterfaceEnsightWriter ifacewriter(ifacefield, basename);
-//        ifacewriter.WriteFiles();
         break;
     }
     case prb_fluid_xfem2:
@@ -321,17 +312,10 @@ int main(
 
         std::string basename = problem.outname();
 
-//        std::cout << "  Structural Field" << std::endl;
-//        PostField* structfield = problem.get_discretization(0);
-//        StructureEnsightWriter structwriter(structfield, problem.outname(), problem.stresstype(), problem.straintype());
-//        structwriter.WriteFiles();
-
-
         std::cout << "  Fluid Field" << std::endl;
         PostField* fluidfield = problem.get_discretization(0);
         FluidEnsightWriter fluidwriter(fluidfield, basename);
         fluidwriter.WriteFiles();
-
 
         std::cout << "  Interface Field" << std::endl;
         PostField* ifacefield = problem.get_discretization(1);

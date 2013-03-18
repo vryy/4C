@@ -497,7 +497,8 @@ RCP<Epetra_Map> EnsightWriter::WriteCoordinates(
   // communicated to proc 0
   Teuchos::RCP<Epetra_Map> proc0map;
 
-  if(field_->problem()->SpatialApproximation()=="Polynomial")
+  if(field_->problem()->SpatialApproximation()=="Polynomial" or
+     field_->problem()->SpatialApproximation()=="Meshfree")
   {
     WriteCoordinatesForPolynomialShapefunctions(
       geofile,dis,proc0map);
@@ -1553,7 +1554,8 @@ void EnsightWriter::WriteDofResultStep(std::ofstream& file,
       offset
       );
   }
-  else if(field_->problem()->SpatialApproximation()=="Polynomial")
+  else if(field_->problem()->SpatialApproximation()=="Polynomial" or
+          field_->problem()->SpatialApproximation()=="Meshfree")
   {
     //------------------------------------------------------
     // each processor provides its result values for proc 0
@@ -1716,7 +1718,8 @@ void EnsightWriter::WriteNodalResultStep(std::ofstream& file,
       0
       );
   }
-  else if(field_->problem()->SpatialApproximation()=="Polynomial")
+  else if(field_->problem()->SpatialApproximation()=="Polynomial" or
+          field_->problem()->SpatialApproximation()=="Meshfree")
   {
 
   // contract Epetra_MultiVector on proc0 (proc0 gets everything, other procs empty)
