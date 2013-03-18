@@ -402,7 +402,12 @@ bool GEO::CUT::KERNEL::PtInsideTriangle( std::vector<Point*> tri, Point* check )
   dot11 = v1.Dot(v1);
   dot12 = v1.Dot(v2);
 
-  double invDenom = 1.0 / (dot00 * dot11 - dot01 * dot01);
+  double Det = dot00 * dot11 - dot01 * dot01;
+
+  if( fabs(Det) < 1e-15 )
+    dserror("the triangle is actually on a line. Verify tolerances in cut_tolerance.H\n");
+
+  double invDenom = 1.0 / Det;
   double u = (dot11 * dot02 - dot01 * dot12) * invDenom;
   double v = (dot00 * dot12 - dot01 * dot02) * invDenom;
 
