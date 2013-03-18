@@ -804,3 +804,12 @@ void MAT::StructPoro::Update()
   MAT::So3Material* so3mat = static_cast<MAT::So3Material*>(mat_.get());
   so3mat->Update();
 }
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+double MAT::StructPoro::Density() const
+{
+  MAT::So3Material* so3mat = static_cast<MAT::So3Material*>(mat_.get());
+  return so3mat->Density();
+}
+

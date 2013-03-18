@@ -349,6 +349,8 @@ namespace MAT
 
       virtual void Update();
 
+      virtual double Density() const;
+
 
     private:
 
