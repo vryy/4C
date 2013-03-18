@@ -347,10 +347,28 @@ namespace MAT
       virtual void StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
                                 double& psi);
 
+      virtual void  EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
+                                 LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
+                                 double* density,
+                                 LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_m,
+                                 LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_new,
+                                 LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_old,
+                                 LINALG::Matrix<3,3>* rcg_new,
+                                 LINALG::Matrix<3,3>* rcg_old);
+
+      virtual void Setup(int numgp, DRT::INPUT::LineDefinition* linedef);
+
       virtual void Update();
 
       virtual double Density() const;
 
+      virtual void ResetStep();
+
+      virtual void ResetAll(int numgp);
+
+      virtual void VisNames(std::map<string,int>& names);
+
+      virtual bool VisData(const string& name, std::vector<double>& data, int numgp);
 
     private:
 
@@ -360,7 +378,7 @@ namespace MAT
       MAT::PAR::StructPoro* params_;
 
       /// actual material
-      Teuchos::RCP<MAT::Material> mat_;
+      Teuchos::RCP<MAT::So3Material> mat_;
 
       /// porosity at gauss points
       Teuchos::RCP<std::vector<double> > porosity_;

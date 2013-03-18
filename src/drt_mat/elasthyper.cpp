@@ -995,6 +995,7 @@ bool MAT::ElastHyper::VisData(const string& name, std::vector<double>& data, int
         data[2] = fibervecs.at(i)(2);
       }
     }
+    return true;
   }
-  return true;
+  return false;
 }

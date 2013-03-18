@@ -77,10 +77,8 @@ MAT::StructPoro::StructPoro(MAT::PAR::StructPoro* params) :
   //gradporosity_(Teuchos::null),
   isinitialized_(false)
 {
-  mat_ = MAT::Material::Factory(params_->matid_);
-
-  MAT::So3Material* so3mat = static_cast<MAT::So3Material*>(mat_.get());
-  if (so3mat == NULL) dserror("MAT::StructPoro: underlying material should be of type MAT::So3Material");
+  mat_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->matid_));
+  if (mat_ == Teuchos::null) dserror("MAT::StructPoro: underlying material should be of type MAT::So3Material");
 }
 
 /*----------------------------------------------------------------------*
@@ -273,7 +271,8 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
 
     if (params_ != NULL)// materials are not accessible in postprocessing mode
     {
-      mat_ = MAT::Material::Factory(params_->matid_);
+      mat_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->matid_));
+      if (mat_ == Teuchos::null) dserror("MAT::StructPoro: underlying material should be of type MAT::So3Material");
 
       std::vector<char> basedata(0);
       ExtractfromPack(position,data,basedata);
@@ -783,8 +782,7 @@ void MAT::StructPoro::Evaluate(const LINALG::Matrix<3,3>* defgrd,
                                LINALG::Matrix<6,1>* stress,
                                LINALG::Matrix<6,6>* cmat)
 {
-  MAT::So3Material* so3mat = static_cast<MAT::So3Material*>(mat_.get());
-  so3mat->Evaluate(defgrd,glstrain,params,stress,cmat);
+  mat_->Evaluate(defgrd,glstrain,params,stress,cmat);
 }
 
 
@@ -793,23 +791,78 @@ void MAT::StructPoro::Evaluate(const LINALG::Matrix<3,3>* defgrd,
 void MAT::StructPoro::StrainEnergy(const LINALG::Matrix<6,1>& glstrain,
                                    double& psi)
 {
-  MAT::So3Material* so3mat = static_cast<MAT::So3Material*>(mat_.get());
-  so3mat->StrainEnergy(glstrain,psi);
+  mat_->StrainEnergy(glstrain,psi);
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 void MAT::StructPoro::Update()
 {
-  MAT::So3Material* so3mat = static_cast<MAT::So3Material*>(mat_.get());
-  so3mat->Update();
+  mat_->Update();
 }
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 double MAT::StructPoro::Density() const
 {
-  MAT::So3Material* so3mat = static_cast<MAT::So3Material*>(mat_.get());
-  return so3mat->Density();
+  return mat_->Density();
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::StructPoro::EvaluateGEMM(LINALG::Matrix<MAT::NUM_STRESS_3D,1>* stress,
+                                   LINALG::Matrix<MAT::NUM_STRESS_3D,MAT::NUM_STRESS_3D>* cmat,
+                                   double* density,
+                                   LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_m,
+                                   LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_new,
+                                   LINALG::Matrix<MAT::NUM_STRESS_3D,1>* glstrain_old,
+                                   LINALG::Matrix<3,3>* rcg_new,
+                                   LINALG::Matrix<3,3>* rcg_old)
+{
+  mat_->EvaluateGEMM(stress,cmat,density,glstrain_m,glstrain_new,glstrain_old,rcg_new,rcg_old);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::StructPoro::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
+{
+  mat_->Setup(numgp,linedef);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::StructPoro::ResetStep()
+{
+  mat_->ResetStep();
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::StructPoro::ResetAll(int numgp)
+{
+  mat_->ResetAll(numgp);
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void MAT::StructPoro::VisNames(std::map<string,int>& names)
+{
+  mat_->VisNames(names);
+  std::string porosity = "porosity";
+  names[porosity] = 1; // scalar
+}
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+bool MAT::StructPoro::VisData(const string& name, std::vector<double>& data, int numgp)
+{
+  if (mat_->VisData(name,data,numgp))
+    return true;
+  if (name=="porosity")
+  {
+    if ((int)data.size()!=1) dserror("size mismatch");
+    data[0] = PorosityAv();
+    return true;
+  }
+  return false;
+}

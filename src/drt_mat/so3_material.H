@@ -88,7 +88,7 @@ namespace MAT
 
     /// Return visualization data
     virtual bool VisData(const string& name, std::vector<double>& data, int numgp)
-    { /* do nothing for simple material models */ return true; };
+    { /* do nothing for simple material models */ return false; };
 
     //@}
   };

@@ -188,14 +188,12 @@ bool DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ReadElement(const std::string& el
 
   Teuchos::RCP<MAT::Material> mat = so3_ele::Material();
 
-  if(mat->MaterialType() == INPAR::MAT::m_structporo)
-  {
-    MAT::StructPoro* actmat = static_cast<MAT::StructPoro*>(mat.get());
-    if(actmat == NULL)
-      dserror("StructPoro Material Type expected for porous media!");
-    actmat->Setup(numgpt_);
-  }
-  return true ;
+  MAT::StructPoro* actmat = dynamic_cast<MAT::StructPoro*>(mat.get());
+  if(actmat == NULL)
+    dserror("StructPoro Material Type expected for porous media!");
+  actmat->Setup(numgpt_);
+
+ return true ;
 }
 
 /*----------------------------------------------------------------------*/
@@ -204,12 +202,6 @@ template<class so3_ele, DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::VisNames(std::map<std::string,int>& names)
 {
   so3_ele::VisNames(names);
-
-  if (Material()->MaterialType() == INPAR::MAT::m_structporo)
-  {
-    std::string porosity = "porosity";
-    names[porosity] = 1; // scalar
-  }
 }
 
 /*----------------------------------------------------------------------*/
@@ -217,18 +209,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::VisNames(std::map<std::string,int
 template<class so3_ele, DRT::Element::DiscretizationType distype>
 bool DRT::ELEMENTS::So3_Poro<so3_ele,distype>::VisData(const string& name, std::vector<double>& data)
 {
-  so3_ele::VisData(name, data);
-
-  if (Material()->MaterialType() == INPAR::MAT::m_structporo)
-  {
-    MAT::StructPoro* structporo = static_cast <MAT::StructPoro*>(Material().get());
-      if (name=="porosity")
-      {
-        if ((int)data.size()!=1) dserror("size mismatch");
-          data[0] = structporo->PorosityAv();
-      }
-  }
-  return true;
+  return so3_ele::VisData(name, data);
 }
 
 /*----------------------------------------------------------------------*/

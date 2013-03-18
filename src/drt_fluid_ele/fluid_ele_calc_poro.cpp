@@ -316,7 +316,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
   LINALG::Matrix<my::nen_, 1> epressnp_timederiv(true);
   this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
       &epressnp_timederiv, "accnp");
-      
+
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
@@ -746,7 +746,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
                                 dphi_dJ,
                                 dphi_dJdp,
                                 dphi_dJJ,
-                                dphi_dpp);
+                                dphi_dpp,
+                                false);
     double refporositydot = structmat_->RefPorosityTimeDeriv();
 
     //porosity gradient (calculated only if needed)
@@ -1934,7 +1935,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
                                 dphi_dJ,
                                 dphi_dJdp,
                                 dphi_dJJ,
-                                dphi_dpp);
+                                dphi_dpp,
+                                false);
     double refporositydot = structmat_->RefPorosityTimeDeriv();
 
     // dF/dx
