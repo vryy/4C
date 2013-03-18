@@ -627,7 +627,7 @@ void MAT::Robinson::Evaluate(const LINALG::Matrix<3,3>* defgrd,
   plstrain.Update(1.0, strain_pn, 0.0);
 
   // set in parameter list
-  params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1>* >("plglstrain",&plstrain);
+  params.set<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain",plstrain);
 
 }  // Evaluate()
 

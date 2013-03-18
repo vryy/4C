@@ -1172,21 +1172,21 @@ void DRT::ELEMENTS::So_hex8::linstiffmass(
     case INPAR::STR::strain_gl:
     {
      if (eleplstrain == NULL) dserror("plastic strain data not available");
-     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1>* >("plglstrain");
+     LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
      for (int i = 0; i < 3; ++i)
-       (*eleplstrain)(gp,i) = (*plglstrain)(i);
+       (*eleplstrain)(gp,i) = plglstrain(i);
      for (int i = 3; i < 6; ++i)
-       (*eleplstrain)(gp,i) = 0.5 * (*plglstrain)(i);
+       (*eleplstrain)(gp,i) = 0.5 * plglstrain(i);
     }
     break;
     case INPAR::STR::strain_ea:
     {
      if (eleplstrain == NULL) dserror("plastic strain data not available");
-     LINALG::Matrix<MAT::NUM_STRESS_3D,1>* plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1>* >("plglstrain");
+     LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
 
      // e = F^{T-1} . E . F^{-1}
      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi;
-     GLtoEA(plglstrain,&defgrd,&euler_almansi);
+     GLtoEA(&plglstrain,&defgrd,&euler_almansi);
 
      (*eleplstrain)(gp,0) = euler_almansi(0,0);
      (*eleplstrain)(gp,1) = euler_almansi(1,1);
