@@ -39,7 +39,7 @@ namespace FSI {
 
   Inside the time loop the interface problem is solved using NOX. To
   do so Timeloop() needs to know an object which defines the nonlinear
-  residual of the FSI problem. This is always a RCP to the
+  residual of the FSI problem. This is always a Teuchos::RCP to the
   DirichletNeumannCoupling object itself!
 
   So the second part of this class consists of the interface residual
