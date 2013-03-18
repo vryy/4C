@@ -282,12 +282,12 @@ CURVE2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.3 0.5 FACTOR 11598.84 16
 CURVE2 on Polygonal T 0.0 BYSTEP No 0 0 BYABSTIME Yes 0.5 1.05 FACTOR 16131.72 16131.72
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         25
+NDPOINT                         26
 NDLINE                          5
 NDSURF                          8
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          16
+DPOINT                          17
 E 3 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 4 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 5 - NUMDOF 6 ONOFF 1 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
@@ -304,6 +304,8 @@ E 16 - NUMDOF 6 ONOFF 1 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none no
 E 17 - NUMDOF 6 ONOFF 1 0 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 18 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 E 19 - NUMDOF 6 ONOFF 0 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+// fsi interface slave DOFs
+E 26 - NUMDOF 6 ONOFF 0 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
@@ -408,6 +410,46 @@ NODE 1523 DNODE 22
 NODE 1525 DNODE 23
 NODE 1526 DNODE 24
 NODE 1551 DNODE 25
+NODE 5   DNODE 26
+NODE 6   DNODE 26
+NODE 11  DNODE 26
+NODE 15  DNODE 26
+NODE 19  DNODE 26
+NODE 23  DNODE 26
+NODE 27  DNODE 26
+NODE 31  DNODE 26
+NODE 35  DNODE 26
+NODE 39  DNODE 26
+NODE 43  DNODE 26
+NODE 47  DNODE 26
+NODE 51  DNODE 26
+NODE 55  DNODE 26
+NODE 59  DNODE 26
+NODE 63  DNODE 26
+NODE 67  DNODE 26
+NODE 71  DNODE 26
+NODE 75  DNODE 26
+NODE 79  DNODE 26
+NODE 785 DNODE 26
+NODE 786 DNODE 26
+NODE 789 DNODE 26
+NODE 791 DNODE 26
+NODE 793 DNODE 26
+NODE 795 DNODE 26
+NODE 797 DNODE 26
+NODE 799 DNODE 26
+NODE 801 DNODE 26
+NODE 803 DNODE 26
+NODE 805 DNODE 26
+NODE 807 DNODE 26
+NODE 809 DNODE 26
+NODE 811 DNODE 26
+NODE 813 DNODE 26
+NODE 815 DNODE 26
+NODE 817 DNODE 26
+NODE 819 DNODE 26
+NODE 821 DNODE 26
+NODE 823 DNODE 26
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 785 DLINE 1
 NODE 786 DLINE 1

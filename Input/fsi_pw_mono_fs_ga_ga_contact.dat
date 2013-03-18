@@ -230,25 +230,18 @@ CURVE2 on Polygonal T 0.0 BYABSTIME Yes 0.01 6.0 FACTOR 0.4 0.4
 ----------------------------------------------------------------------CURVE3
 CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0.0 0.01 FACTOR 0.0 0.4
 CURVE3 on Polygonal T 0.0 BYABSTIME Yes 0.01 6.0 FACTOR 0.4 0.4
-----------------------------------------------------------------------CURVE4
-----------------------------------------------------------------------CURVE5
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 0 0 0 FUNCTION 1-(x*x+y*y)/(0.5*0.5)
-----------------------------------------------------------------------FUNCT2
-----------------------------------------------------------------------FUNCT3
-----------------------------------------------------------------------FUNCT4
-----------------------------------------------------------------------FUNCT5
-----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 478 QUANTITY velx VALUE 1.06374894516010432e+00 TOLERANCE 1e-7
-FLUID DIS fluid NODE 478 QUANTITY vely VALUE -1.32777940445872167e+00 TOLERANCE 1e-7
-FLUID DIS fluid NODE 478 QUANTITY velz VALUE -6.42313665142704382e-01 TOLERANCE 1e-7
-FLUID DIS fluid NODE 478 QUANTITY pressure VALUE 1.03231726858930997e+04 TOLERANCE 1e-4
+FLUID DIS fluid NODE 478 QUANTITY velx VALUE 1.06374532670e+00 TOLERANCE 1e-7
+FLUID DIS fluid NODE 478 QUANTITY vely VALUE -1.32778461745e+00 TOLERANCE 1e-7
+FLUID DIS fluid NODE 478 QUANTITY velz VALUE -6.42226754492e-01 TOLERANCE 1e-7
+FLUID DIS fluid NODE 478 QUANTITY pressure VALUE 1.03229938915e+04 TOLERANCE 1e-4
 STRUCTURE DIS structure NODE 1325 QUANTITY dispx VALUE -1.42709609116804933e-04 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1325 QUANTITY dispy VALUE -8.14217844055244513e-03 TOLERANCE 1e-8
 STRUCTURE DIS structure NODE 1325 QUANTITY dispz VALUE -2.20574796267256171e-04 TOLERANCE 1e-8
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
+NDPOINT                         1
 NDLINE                          0
 NDSURF                          11
 NDVOL                           0
@@ -277,7 +270,8 @@ DSURF                           0
 ----------------------------------------DESIGN VOL THERMO NEUMANN CONDITIONS
 DVOL                            0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          0
+DPOINT                          1
+E 1 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
@@ -460,6 +454,38 @@ DSURF                           0
 ------------------------------DESIGN SURF WINDKESSEL OPTIMIZATION CONDITIONS
 DSURF                           0
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
+NODE 5   DNODE 1
+NODE 6   DNODE 1
+NODE 11  DNODE 1
+NODE 15  DNODE 1
+NODE 19  DNODE 1
+NODE 23  DNODE 1
+NODE 27  DNODE 1
+NODE 31  DNODE 1
+NODE 35  DNODE 1
+NODE 39  DNODE 1
+NODE 43  DNODE 1
+NODE 47  DNODE 1
+NODE 51  DNODE 1
+NODE 55  DNODE 1
+NODE 59  DNODE 1
+NODE 63  DNODE 1
+NODE 926 DNODE 1
+NODE 927 DNODE 1
+NODE 930 DNODE 1
+NODE 932 DNODE 1
+NODE 934 DNODE 1
+NODE 936 DNODE 1
+NODE 938 DNODE 1
+NODE 940 DNODE 1
+NODE 942 DNODE 1
+NODE 944 DNODE 1
+NODE 946 DNODE 1
+NODE 948 DNODE 1
+NODE 950 DNODE 1
+NODE 952 DNODE 1
+NODE 954 DNODE 1
+NODE 956 DNODE 1
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
 NODE 926 DSURFACE 1

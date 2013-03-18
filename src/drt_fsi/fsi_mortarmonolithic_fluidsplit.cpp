@@ -29,7 +29,6 @@ Maintainer: Matthias Mayr
 #include "fsi_matrixtransform.H"
 #include "fsi_utils.H"
 
-#include "../drt_lib/drt_colors.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_fluid/fluid_utils_mapextractor.H"
@@ -52,6 +51,72 @@ FSI::MortarMonolithicFluidSplit::MortarMonolithicFluidSplit(const Epetra_Comm& c
   : BlockMonolithic(comm,timeparams),
     comm_(comm)
 {
+  // ---------------------------------------------------------------------------
+  // FSI specific check of Dirichlet boundary conditions
+  // ---------------------------------------------------------------------------
+  // Create intersection of slave DOFs that hold a Dirichlet boundary condition
+  // and are located at the FSI interface
+  std::vector<Teuchos::RCP<const Epetra_Map> > intersectionmaps;
+  intersectionmaps.push_back(FluidField().GetDBCMapExtractor()->CondMap());
+  intersectionmaps.push_back(FluidField().Interface()->FSICondMap());
+  Teuchos::RCP<Epetra_Map> intersectionmap = LINALG::MultiMapExtractor::IntersectMaps(intersectionmaps);
+
+  // Check whether the intersection is empty
+  if (intersectionmap->NumGlobalElements() != 0)
+  {
+//    std::cout << "Slave interface nodes with Dirichlet boundary condition (input file numbering):" << std::endl;
+//    for (int i=0; i < (int)FluidField().Discretization()->NumMyRowNodes(); i++)
+//    {
+//      // get all nodes and add them
+//      int gid = FluidField().Discretization()->NodeRowMap()->GID(i);
+//
+//      // do only nodes that I have in my discretization
+//      if (!FluidField().Discretization()->NodeColMap()->MyGID(gid)) continue;
+//      DRT::Node* node = FluidField().Discretization()->gNode(gid);
+//      if (!node) dserror("Cannot find node with gid %",gid);
+//
+//      std::vector<int> nodedofs = FluidField().Discretization()->Dof(node);
+//
+//      for (int j=0; j < (int)nodedofs.size(); j++)
+//      {
+//        for (int k=0; k < (int)intersectionmap->NumGlobalElements(); k++)
+//        {
+//          if (nodedofs[j] == intersectionmap->GID(k))
+//          {
+//            std::cout << gid+1 << std::endl;
+//            k = (int)intersectionmap->GID(k);
+//            j = (int)nodedofs.size();
+//          }
+//        }
+//      }
+//    }
+
+    // It is not allowed, that slave DOFs at the interface hold a Dirichlet
+    // boundary condition. Thus --> Error message
+
+    // We do not have to care whether ALE interface DOFs carry DBCs in the
+    // input file since they do not occur in the monolithic system and, hence,
+    // do not cause a conflict.
+
+    std::stringstream errormsg;
+    errormsg  << "  +---------------------------------------------------------------------------------------------+" << std::endl
+              << "  |                DIRICHLET BOUNDARY CONDITIONS ON SLAVE SIDE OF FSI INTERFACE                 |" << std::endl
+              << "  +---------------------------------------------------------------------------------------------+" << std::endl
+              << "  | NOTE: The slave side of the interface is not allowed to carry Dirichlet boundary conditions.|" << std::endl
+              << "  |                                                                                             |" << std::endl
+              << "  | This is a fluid split scheme. Hence, master and slave field are chosen as follows:          |" << std::endl
+              << "  |     MASTER  = STRUCTURE                                                                     |" << std::endl
+              << "  |     SLAVE   = FLUID                                                                         |" << std::endl
+              << "  |                                                                                             |" << std::endl
+              << "  | Dirichlet boundary conditions were detected on slave interface degrees of freedom. Please   |" << std::endl
+              << "  | remove Dirichlet boundary conditions from the slave side of the FSI interface.              |" << std::endl
+              << "  | Only the master side of the FSI interface is allowed to carry Dirichlet boundary conditions.|" << std::endl
+              << "  +---------------------------------------------------------------------------------------------+" << std::endl;
+
+    dserror(errormsg.str());
+  }
+  // ---------------------------------------------------------------------------
+
   notsetup_ = true;
 
   coupsfm_  = Teuchos::rcp(new ADAPTER::CouplingMortar());
@@ -636,10 +701,16 @@ void FSI::MortarMonolithicFluidSplit::SetupSystemMatrix(LINALG::BlockSparseMatri
   const Teuchos::RCP<LINALG::BlockSparseMatrixBase> a = AleField().BlockSystemMatrix();
 
 #ifdef DEBUG
+  // check whether allocation was successful
   if (mortarp == Teuchos::null) { dserror("Expected Teuchos::rcp to mortar matrix P."); }
   if (s==Teuchos::null)         { dserror("expect structure block matrix"); }
   if (f==Teuchos::null)         { dserror("expect fluid block matrix"); }
   if (a==Teuchos::null)         { dserror("expect ale block matrix"); }
+
+  // some checks whether maps for matrix-matrix-multiplication do really match
+  if (!f->Matrix(0,1).DomainMap().PointSameAs(mortarp->RangeMap())) { dserror("Maps do not match."); }
+  if (!f->Matrix(1,0).RangeMap(). PointSameAs(mortarp->RangeMap())) { dserror("Maps do not match."); }
+  if (!f->Matrix(1,1).DomainMap().PointSameAs(mortarp->RangeMap())) { dserror("Maps do not match."); }
 #endif
 
   // extract submatrices
@@ -1028,21 +1099,21 @@ void FSI::MortarMonolithicFluidSplit::UnscaleSolution(LINALG::BlockSparseMatrixB
   Utils()->out() << std::scientific
                  << "\nlinear solver quality:\n"
                  << "L_2-norms:\n"
-                 << END_COLOR "   |r|=" YELLOW << n
-                 << END_COLOR "   |rs|=" YELLOW << ns
-                 << END_COLOR "   |rf|=" YELLOW << nf
-                 << END_COLOR "   |ra|=" YELLOW << na
-                 << END_COLOR "\n";
+                 << "   |r|=" << n
+                 << "   |rs|=" << ns
+                 << "   |rf|=" << nf
+                 << "   |ra|=" << na
+                 << "\n";
   r.NormInf(&n);
   sr->NormInf(&ns);
   fr->NormInf(&nf);
   ar->NormInf(&na);
   Utils()->out() << "L_inf-norms:\n"
-                 << END_COLOR "   |r|=" YELLOW << n
-                 << END_COLOR "   |rs|=" YELLOW << ns
-                 << END_COLOR "   |rf|=" YELLOW << nf
-                 << END_COLOR "   |ra|=" YELLOW << na
-                 << END_COLOR "\n";
+                 << "   |r|=" << n
+                 << "   |rs|=" << ns
+                 << "   |rf|=" << nf
+                 << "   |ra|=" << na
+                 << "\n";
 
   Utils()->out().flags(flags);
 
@@ -1566,7 +1637,7 @@ void FSI::MortarMonolithicFluidSplit::Output()
     const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
     const int uprestart = fsidyn.get<int>("RESTARTEVRY");
     const int upres = fsidyn.get<int>("UPRES");
-    if ((uprestart != 0 && FluidField().Step() % uprestart == 0) || FluidField().Step() % upres)
+    if ((uprestart != 0 && FluidField().Step() % uprestart == 0) || FluidField().Step() % upres == 0)
       FluidField().DiscWriter()->WriteVector("fsilambda", lambdafull);
   }
   FluidField().    OutputReducedD();
@@ -1650,8 +1721,8 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
   const Teuchos::RCP<LINALG::SparseMatrix> mortardinv = coupsfm_->GetDinvMatrix();
 
 #ifdef DEBUG
-  if (mortarp == Teuchos::null)    { dserror("Expected rcp to mortar matrix P."); }
-  if (mortardinv == Teuchos::null) { dserror("Expected rcp to mortar matrix D^{-1}."); }
+  if (mortarp == Teuchos::null)    { dserror("Expected Teuchos::rcp to mortar matrix P."); }
+  if (mortardinv == Teuchos::null) { dserror("Expected Teuchos::rcp to mortar matrix D^{-1}."); }
 #endif
 
   // get fluid shape derivative matrix
@@ -1706,7 +1777,7 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
    */
 
   // ---------Addressing term (1)
-  lambda_->Update(ftiparam,*lambda_,0.0);
+  lambda_->Scale(ftiparam);
   // ---------End of term (1)
 
   // ---------Addressing term (3)
@@ -1734,9 +1805,9 @@ void FSI::MortarMonolithicFluidSplit::RecoverLagrangeMultiplier()
   // ---------End of term (5)
 
   // ---------Addressing term (6)
-    auxvec = Teuchos::rcp(new Epetra_Vector(fgiprev_->RangeMap(),true));
-    fgiprev_->Apply(*duiinc_,*auxvec);
-    tmpvec->Update(1.0,*auxvec,1.0);
+  auxvec = Teuchos::rcp(new Epetra_Vector(fgiprev_->RangeMap(),true));
+  fgiprev_->Apply(*duiinc_,*auxvec);
+  tmpvec->Update(1.0,*auxvec,1.0);
   // ---------End of term (6)
 
   // ---------Addressing term (7)
@@ -1814,8 +1885,8 @@ void FSI::MortarMonolithicFluidSplit::CheckKinematicConstraint()
   const Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMMatrix();
 
 #ifdef DEBUG
-  if (mortarm == Teuchos::null) { dserror("Expected rcp to mortar matrix M."); }
-  if (mortard == Teuchos::null) { dserror("Expected rcp to mortar matrix D."); }
+  if (mortarm == Teuchos::null) { dserror("Expected Teuchos::rcp to mortar matrix M."); }
+  if (mortard == Teuchos::null) { dserror("Expected Teuchos::rcp to mortar matrix D."); }
 #endif
 
   // get interface displacements and velocities
@@ -1875,8 +1946,8 @@ void FSI::MortarMonolithicFluidSplit::CheckDynamicEquilibrium()
   const Teuchos::RCP<LINALG::SparseMatrix> mortarm = coupsfm_->GetMMatrix();
 
 #ifdef DEBUG
-  if (mortarm == Teuchos::null) { dserror("Expected rcp to mortar matrix M."); }
-  if (mortard == Teuchos::null) { dserror("Expected rcp to mortar matrix D."); }
+  if (mortarm == Teuchos::null) { dserror("Expected Teuchos::rcp to mortar matrix M."); }
+  if (mortard == Teuchos::null) { dserror("Expected Teuchos::rcp to mortar matrix D."); }
 #endif
 
   // auxiliary vectors

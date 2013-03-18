@@ -51,6 +51,8 @@ TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab
 -----------------------------------------------------------------FSI DYNAMIC
+ADAPTIVEDIST                    0
+BASETOL                         1.0e-8
 COUPALGO                        iter_mortar_monolithicstructuresplit
 COUPMETHOD                      mtr
 COUPVARIABLE                    Displacement
@@ -152,12 +154,12 @@ CURVE1 on EXPR FUNC (1-cos(2*t*pi/5)) t1 0.0 t2 5.0
 ----------------------------------------------------------------------FUNCT1
 FUNCT1 EXPR 0 0 0 FUNCTION 10*(y-1)
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         16
+NDPOINT                         17
 NDLINE                          34
 NDSURF                          19
 NDVOL                           0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          8
+DPOINT                          9
 // cavity vertex front left bottom
 E 1 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
 // cavity vertex back left bottom
@@ -174,6 +176,8 @@ E 6 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none non
 E 7 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
 // lid vertex back left
 E 8 - NUMDOF 6 ONOFF 1 1 1 0 0 0 VAL 1.0 0.0 0.0 0.0 0.0 0.0 CURVE 1 none none none none none FUNCT 0 0 0 0 0 0
+// structure fsi nodes that intersect with Dirichlet BCs
+E 9 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           18
 // structure edge front left
@@ -317,6 +321,68 @@ NODE 966 DNODE 5
 NODE 965 DNODE 6
 NODE 1015 DNODE 7
 NODE 1017 DNODE 8
+NODE 3   DNODE 9
+NODE 4   DNODE 9
+NODE 7   DNODE 9
+NODE 8   DNODE 9
+NODE 11  DNODE 9
+NODE 12  DNODE 9
+NODE 15  DNODE 9
+NODE 16  DNODE 9
+NODE 19  DNODE 9
+NODE 20  DNODE 9
+NODE 23  DNODE 9
+NODE 24  DNODE 9
+NODE 27  DNODE 9
+NODE 28  DNODE 9
+NODE 31  DNODE 9
+NODE 32  DNODE 9
+NODE 35  DNODE 9
+NODE 36  DNODE 9
+NODE 39  DNODE 9
+NODE 40  DNODE 9
+NODE 43  DNODE 9
+NODE 44  DNODE 9
+NODE 47  DNODE 9
+NODE 48  DNODE 9
+NODE 51  DNODE 9
+NODE 52  DNODE 9
+NODE 55  DNODE 9
+NODE 56  DNODE 9
+NODE 59  DNODE 9
+NODE 60  DNODE 9
+NODE 63  DNODE 9
+NODE 64  DNODE 9
+NODE 67  DNODE 9
+NODE 68  DNODE 9
+NODE 71  DNODE 9
+NODE 72  DNODE 9
+NODE 75  DNODE 9
+NODE 76  DNODE 9
+NODE 79  DNODE 9
+NODE 80  DNODE 9
+NODE 83  DNODE 9
+NODE 84  DNODE 9
+NODE 87  DNODE 9
+NODE 88  DNODE 9
+NODE 91  DNODE 9
+NODE 92  DNODE 9
+NODE 95  DNODE 9
+NODE 96  DNODE 9
+NODE 99  DNODE 9
+NODE 100 DNODE 9
+NODE 103 DNODE 9
+NODE 104 DNODE 9
+NODE 107 DNODE 9
+NODE 108 DNODE 9
+NODE 111 DNODE 9
+NODE 112 DNODE 9
+NODE 115 DNODE 9
+NODE 116 DNODE 9
+NODE 119 DNODE 9
+NODE 120 DNODE 9
+NODE 123 DNODE 9
+NODE 124 DNODE 9
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 4 DLINE 1
@@ -3534,10 +3600,10 @@ NODE 1132 COORD 1.00000000e+00 1.10000002e+00 -5.00000007e-02
 ----------------------------------------------------------------ALE ELEMENTS
 ----------------------------------------------------------TRANSPORT ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 60 QUANTITY dispy VALUE -3.28423205315e-05 TOLERANCE 1e-13
-FLUID DIS fluid NODE 589 QUANTITY velx VALUE 3.00088907326e-05 TOLERANCE 1e-13
-FLUID DIS fluid NODE 589 QUANTITY vely VALUE -6.97276265617e-04 TOLERANCE 1e-12
-FLUID DIS fluid NODE 589 QUANTITY velz VALUE 0.0 TOLERANCE 1e-8
-FLUID DIS fluid NODE 589 QUANTITY pressure VALUE 6.36024615347e-03 TOLERANCE 1e-11
+STRUCTURE DIS structure NODE 60 QUANTITY dispy VALUE -3.28504130468710919e-05 TOLERANCE 1e-9
+FLUID DIS fluid NODE 589 QUANTITY velx VALUE 3.00126570728137784e-05 TOLERANCE 1e-9
+FLUID DIS fluid NODE 589 QUANTITY vely VALUE -6.972192972e-04 TOLERANCE 1e-12
+FLUID DIS fluid NODE 589 QUANTITY velz VALUE 0.0 TOLERANCE 1e-9
+FLUID DIS fluid NODE 589 QUANTITY pressure VALUE 6.3625368948e-03 TOLERANCE 1e-11
 -------------------------------------------------------------------------END
 //                              END

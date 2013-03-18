@@ -34,7 +34,6 @@ TIMEINTEGR                      BDF2
 ADAPTIVEDIST                    0.01
 BASETOL                         1e-06
 COUPALGO                        iter_monolithicstructuresplit
-COUPMETHOD                      conforming
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
 MAXTIME                         1.0
@@ -88,9 +87,7 @@ NDLINE                          0
 NDSURF                          3
 NDVOL                           3
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT                          3
-//                              fsi_fluid_nodes
-E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
+DPOINT                          2
 //                              fsi_str_nodes
 E 2 - NUMDOF 4 ONOFF 0 0 0 0 VAL 0.0 0.0 0.0 0.0 CURVE none none none none FUNCT 0 0 0 0
 //                              str_dry_nodes

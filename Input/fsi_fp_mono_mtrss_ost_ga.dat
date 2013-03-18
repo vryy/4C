@@ -36,7 +36,6 @@ TIMEINTEGR                      One_Step_Theta
 ADAPTIVEDIST                    0.01
 BASETOL                         1e-06
 COUPALGO                        iter_mortar_monolithicstructuresplit
-COUPMETHOD                      mtr
 INFNORMSCALING                  Yes
 ITEMAX                          100
 LINEARBLOCKSOLVER               PreconditionedKrylov
@@ -130,15 +129,13 @@ E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 
 // struct_dry_nodes
 E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF  4
+DSURF  3
 // fluid_inflow_surf
 E 1 - NUMDOF 4 ONOFF 0 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
-// fluid_fsi_surf
-E 2 - NUMDOF 4 ONOFF 0 1 1 0 VAL 1.0 0.0 0.0 0.0 CURVE 1 none none none FUNCT 0 0 0 0
 // struct_dry_surf
 E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
 // struct_fsi_surf
-E 4 - NUMDOF 3 ONOFF 0 1 1 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
+E 4 - NUMDOF 3 ONOFF 0 0 0 VAL 1.0 0.0 0.0 CURVE 1 none none FUNCT 0 0 0
 --------------------------------------DESIGN VOL DIRICH CONDITIONS
 DVOL   2
 // fluid_vol

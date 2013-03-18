@@ -428,10 +428,14 @@ FUNCT1 EXPR 0.0 0.0 0.0 FUNCTION 0.9-0.01*z
 ----------------------------------------------------------------------FUNCT2
 
 ----------------------------------------------------------DESIGN DESCRIPTION
-NDPOINT                         0
+NDPOINT                         1
 NDLINE                          3
 NDSURF                          19
 NDVOL                           1
+-----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+DPOINT                          1
+// slave side fsi nodes
+E 1 - NUMDOF 3 ONOFF 0 0 0 VAL 0.0 0.0 0.0 CURVE none none none FUNCT 0 0 0
 -----------------------------------------------DESIGN LINE DIRICH CONDITIONS
 DLINE                           2
 // solid fsi lines
@@ -489,6 +493,48 @@ E 1 - COUPID 1 FIELDNUM 2 PERMCOEF 0.01
 // fluid fsi
 E 4 - COUPID 1 FIELDNUM 1 PERMCOEF 0.01
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
+NODE 1   DNODE 1
+NODE 4   DNODE 1
+NODE 5   DNODE 1
+NODE 8   DNODE 1
+NODE 21  DNODE 1
+NODE 24  DNODE 1
+NODE 31  DNODE 1
+NODE 34  DNODE 1
+NODE 41  DNODE 1
+NODE 44  DNODE 1
+NODE 51  DNODE 1
+NODE 54  DNODE 1
+NODE 61  DNODE 1
+NODE 64  DNODE 1
+NODE 71  DNODE 1
+NODE 74  DNODE 1
+NODE 81  DNODE 1
+NODE 84  DNODE 1
+NODE 91  DNODE 1
+NODE 94  DNODE 1
+NODE 101 DNODE 1
+NODE 104 DNODE 1
+NODE 111 DNODE 1
+NODE 114 DNODE 1
+NODE 121 DNODE 1
+NODE 124 DNODE 1
+NODE 131 DNODE 1
+NODE 134 DNODE 1
+NODE 141 DNODE 1
+NODE 144 DNODE 1
+NODE 151 DNODE 1
+NODE 154 DNODE 1
+NODE 161 DNODE 1
+NODE 164 DNODE 1
+NODE 171 DNODE 1
+NODE 174 DNODE 1
+NODE 181 DNODE 1
+NODE 184 DNODE 1
+NODE 191 DNODE 1
+NODE 194 DNODE 1
+NODE 201 DNODE 1
+NODE 204 DNODE 1
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 NODE 1 DLINE 1
 NODE 4 DLINE 1
