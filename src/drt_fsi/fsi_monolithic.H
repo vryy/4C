@@ -54,12 +54,15 @@ namespace FSI
 
   class FSIResultTest;
 
-namespace UTILS
-{
-  class DebugWriter;
-  class MonolithicDebugWriter;
+  namespace UTILS
+  {
+    class DebugWriter;
+    class MonolithicDebugWriter;
+  }
 }
 
+namespace FSI
+{
   /// monolithic FSI algorithm base
   /*!
 
