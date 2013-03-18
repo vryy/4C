@@ -715,6 +715,22 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AppendMaterialDefinition(matlist,m);
   }
 
+  /*----------------------------------------------------------------------*/
+  // Visco-elastic Neo-Hookean material law
+  {
+    Teuchos::RCP<MaterialDefinition> m
+      = Teuchos::rcp(new MaterialDefinition("MAT_VISCONEOHOOKE",
+                                            "visco-elastic neo-Hookean material law",
+                                            INPAR::MAT::m_visconeohooke));
+    AddNamedReal(m,"YOUNGS_SLOW","???");
+    AddNamedReal(m,"POISSON","???");
+    AddNamedReal(m,"DENS","???");
+    AddNamedReal(m,"YOUNGS_FAST","???");
+    AddNamedReal(m,"RELAX","???");
+    AddNamedReal(m,"THETA","???");
+
+    AppendMaterialDefinition(matlist,m);
+  }
 
   /*----------------------------------------------------------------------*/
   // Visco-elastic anisotropic fiber material law
@@ -1165,7 +1181,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
     AddNamedReal(m,"SIGMA","Contractility (maximal stress)");
     AddNamedReal(m,"TAUC0","Initial value for the active stress");
     AddNamedReal(m,"MAX_ACTIVATION","Maximal value for the rescaled activation");
-    AddNamedReal(m,"MIN_ACTIVATION","Minimal value for the rescaled activation"); 
+    AddNamedReal(m,"MIN_ACTIVATION","Minimal value for the rescaled activation");
     AddNamedInt(m,"SOURCE_ACTIVATION","Where the activation comes from: 0=scatra , >0 Id for FUNCT");
     AddNamedReal(m,"GAMMA","azimuth angle", true);
     AddNamedReal(m,"THETA","polar angle", true);
@@ -1174,8 +1190,8 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
 
     AppendMaterialDefinition(matlist,m);
   }
- 
- 
+
+
   /*--------------------------------------------------------------------*/
   // coupled anisotropic material with variable stress coefficient
   {
