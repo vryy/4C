@@ -620,10 +620,26 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::ComputeError(
 
 //        // d(t) = -t^3
 //        {
-//          u(0) = -3*t^2;
+//          u(0) = -3.0 * t * t;
 //          u(1) = 0.0;
 //          u(2) = 0.0;
-//          p = actmat->Density() * 6 * t * (xyzint(0) + 1.5);
+//          p = actmat->Density() * 6.0 * t * (xyzint(0) + 1.5);
+//        }
+
+//        // d(t) = -t^4
+//        {
+//          u(0) = -4.0 * t * t * t;
+//          u(1) = 0.0;
+//          u(2) = 0.0;
+//          p = actmat->Density() * 12.0 * t * t * (xyzint(0) + 1.5);
+//        }
+
+//        // d(t) = -t^5
+//        {
+//          u(0) = -5.0 * t * t * t *t;
+//          u(1) = 0.0;
+//          u(2) = 0.0;
+//          p = actmat->Density() * 20.0 * t * t * t * (xyzint(0) + 1.5);
 //        }
       }
       else dserror("Material is not a Newtonian Fluid");
