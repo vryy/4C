@@ -452,10 +452,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
   // artficial all-scale subgrid diffusivity
   if (assgd)
   {
-    dserror("Check CalcSubgrDiff() for assgd before using it. Read remark");
-    // remark: this option seems to use some variables (conv_phi_ and scatrares_)
-    //         which have not yet been set properly when this function is called
-
     // classical linear artificial all-scale subgrid diffusivity
     if (whichassgd == INPAR::SCATRA::assgd_artificial)
     {
@@ -474,9 +470,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
     }
     else
     {
-      // gradient of current scalar value
-      gradphi_.Multiply(derxy_,ephinp_[k]);
-
       // gradient norm
       const double grad_norm = gradphi_.Norm2();
 
@@ -494,6 +487,27 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
         {
         case INPAR::SCATRA::assgd_hughes:
         {
+	  if (eid_ == 0)
+          {
+            std::cout << "WARNING: Nonlinear isotropic artificial diffusion according to Hughes et al. (1986)\n";
+            std::cout << "         is implemented based on the exact tau for 1D stationary problems!" << std::endl; 
+          }
+          // remark on this warning:
+          // 1. Here, tau is calculated based on the exact formula for 1-D stationary problems. This is inconsistent
+          //    if the problem is not 1-D and/or other definitions than the ecaxt tau are chosen in the input file.
+          //    Consistently, one has to use the same definition here.
+          // 2. Instead of using sigma = tau_bhbar, Hughes et al. suggested to use sigma = tau_bhbar - tau to not double
+          //    the SUPG stabilization. This is another inconsitent aspect on this implementation. To have the right tau
+          //    here (i.e, not the one the last gauss point or even last step), one has to calaculate tau first. Then,
+          //    sigma and, hence, the addition diffusion is computed based on this tau. Next, tau is recomputed with the
+          //    diffusivity repaced by the original (physical) diffusivity plus the estimated artificial diffusivity. This
+          //    is pobably not a good choice, because, first, tau is considered in the estimation of the artificial diffusion
+          //    and then this artificial diffusion is incorporated into tau. This would reduce the effect. Perhaps, one 
+          //    should either consider tau in sigma or the artificial diffusion in tau. When changing this aspect, be aware
+          //    that tau has to be computed after the subgrid-scale velocity has been calcuated since, for this calculation
+          //    tau is overwritten by its value in the fluid field. Note that similar considerations may also hold for
+          //    the methods by do Carmo and Almeida.
+	  
           // get norm of velocity vector b_h^par
           const double vel_norm_bhpar = abs(conv_phi_[k]/grad_norm);
 
@@ -521,9 +535,14 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
         }
         break;
         case INPAR::SCATRA::assgd_tezduyar:
+        case INPAR::SCATRA::assgd_tezduyar_wo_phizero:
         {
           // velocity norm
           const double vel_norm = convelint_.Norm2();
+	  
+          // calculate stream length
+          // according to John and Knobloch stream length in direction of b_h^par should be used
+          //const double h_stream = CalcCharEleLength(vol,vel_norm); 
 
           // get norm of velocity vector b_h^par
           const double vel_norm_bhpar = abs(conv_phi_[k]/grad_norm);
@@ -532,12 +551,19 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
           // (so far, only exact formula for stationary 1-D implemented)
 
           // compute sigma (version 1 according to John and Knobloch (2007))
-          //sigma = (h/vel_norm)*(1.0-(vel_norm_bhpar/vel_norm));
-
-          // compute sigma (version 2 according to John and Knobloch (2007))
-          // setting scaling phi_0=1.0 as in John and Knobloch (2007)
-          const double phi0 = 1.0;
-          sigma = (h*h*grad_norm/(vel_norm*phi0))*(1.0-(vel_norm_bhpar/vel_norm));
+          if (whichassgd == INPAR::SCATRA::assgd_tezduyar_wo_phizero)
+          {
+            if (vel_norm > EPS10)
+              sigma = (h/vel_norm)*(1.0-(vel_norm_bhpar/vel_norm));
+          }
+          else
+          {
+            // compute sigma (version 2 according to John and Knobloch (2007))
+            // setting scaling phi_0=1.0 as in John and Knobloch (2007)
+            const double phi0 = 1.0;
+            if (vel_norm > EPS10)
+              sigma = (h*h*grad_norm/(vel_norm*phi0))*(1.0-(vel_norm_bhpar/vel_norm));
+          }
 
           // set specific term to convective term
           specific_term = conv_phi_[k];
@@ -557,10 +583,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
           double zeta = 0.0;
           if (whichassgd == INPAR::SCATRA::assgd_docarmo)
             zeta = 1.0;
-          else zeta = std::max(1.0,(conv_phi_[k]/scatrares_[k]));
+          else
+          {
+            if (abs(scatrares_[k]) > EPS10)
+              zeta = std::max(1.0,(conv_phi_[k]/scatrares_[k]));
+          }
 
           // compute sigma
-          sigma = tau_[k]*std::max(0.0,(vel_norm/vel_norm_zh)-zeta);
+          if (vel_norm_zh > EPS10)
+            sigma = tau_[k]*std::max(0.0,(vel_norm/vel_norm_zh)-zeta);
 
           // set specific term to residual
           specific_term = scatrares_[k];
@@ -571,6 +602,12 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
 
         // computation of subgrid diffusivity
         sgdiff_[k] = sigma*scatrares_[k]*specific_term/(grad_norm*grad_norm);
+        if (sgdiff_[k] < 0.0)
+        {
+          std::cout << "WARNING: isotropic artificial diffusion sgdiff < 0.0\n";
+          std::cout << "         -> set sgdiff to abs(sgdiff)!" << std::endl;
+          sgdiff_[k] = abs(sigma*scatrares_[k]*specific_term/(grad_norm*grad_norm));
+        }
       }
       else sgdiff_[k] = 0.0;
     }

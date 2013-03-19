@@ -3826,18 +3826,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "artificial_linear",
                                  "Hughes_etal_86_nonlinear",
                                  "Tezduyar_Park_86_nonlinear",
+                                 "Tezduyar_Park_86_nonlinear_wo_phizero",
                                  "doCarmo_Galeao_91_nonlinear",
                                  "Almeida_Silva_97_nonlinear"),
                                tuple<std::string>(
                                  "classical linear artificial subgrid-diffusivity",
                                  "nonlinear isotropic according to Hughes et al. (1986)",
                                  "nonlinear isotropic according to Tezduyar and Park (1986)",
+                                 "nonlinear isotropic according to Tezduyar and Park (1986) without user parameter phi_zero",
                                  "nonlinear isotropic according to doCarmo and Galeao (1991)",
                                  "nonlinear isotropic according to Almeida and Silva (1997)")  ,
                                 tuple<int>(
                                     INPAR::SCATRA::assgd_artificial,
                                     INPAR::SCATRA::assgd_hughes,
                                     INPAR::SCATRA::assgd_tezduyar,
+                                    INPAR::SCATRA::assgd_tezduyar_wo_phizero,
                                     INPAR::SCATRA::assgd_docarmo,
                                     INPAR::SCATRA::assgd_almeida),
                                &scatradyn_stab);

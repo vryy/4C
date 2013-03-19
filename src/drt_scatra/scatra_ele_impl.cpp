@@ -312,6 +312,7 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     efluxreconstr_(numscal_),  // size of vector
     weights_(true),      // initialized to zero
     myknots_(nsd_),       // size of vector
+    eid_(0),
     diffcond_(false),
     cursolvar_(false),
     chemdiffcoupltransp_(true),
@@ -395,6 +396,9 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     for(int i=0; i<nsd_; i++){ for(int j=0; j<nsd_; j++){ diffus3_[k](i,j)=0; }}
     for(int i=0; i<nsd_; i++){ diffus3_[k](i,i) = 1; }
   }
+
+  // set element id
+  eid_ = ele->Id();
   
   // check for the action parameter
   const SCATRA::Action action = DRT::INPUT::get<SCATRA::Action>(params,"action");
@@ -1637,7 +1641,6 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
   const enum INPAR::SCATRA::ScaTraType  scatratype ///< type of scalar transport problem
   )
 {
-  eid_ = ele->Id();
   // ---------------------------------------------------------------------
   // call routine for calculation of body force in element nodes
   // (time n+alpha_F for generalized-alpha scheme, at time n+1 otherwise)
@@ -1703,7 +1706,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
       // calculation of all-scale subgrid diffusivity (artificial or due to
       // constant-coefficient Smagorinsky model) at element center
       if (assgd or turbmodel_ == INPAR::FLUID::smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+      {
+        if (assgd) dserror("Evaluation of artificial diffusion at element center not supported!");
+
         CalcSubgrDiff(dt,timefac,whichassgd,assgd,Cs,tpn,vol,k);
+      }
 
       // calculation of fine-scale artificial subgrid diffusivity at element center
       if (fssgd) CalcFineScaleSubgrDiff(ele,subgrdiff,whichfssgd,Cs,tpn,vol,k);
@@ -1836,7 +1843,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           // calculation of all-scale subgrid diffusivity (artificial or due to
           // constant-coefficient Smagorinsky model) at integration point
           if (assgd or turbmodel_ == INPAR::FLUID::smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+          {
+            if (assgd) dserror("Artificial diffusion not supported for elch!");
+
             CalcSubgrDiff(dt,timefac,whichassgd,assgd,Cs,tpn,vol,k);
+          }
 
           // calculation of fine-scale artificial subgrid diffusivity
           // at integration point
@@ -1983,7 +1994,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
           // calculation of all-scale subgrid diffusivity (artificial or due to
           // constant-coefficient Smagorinsky model) at integration point
           if (assgd or turbmodel_ == INPAR::FLUID::smagorinsky or turbmodel_ == INPAR::FLUID::dynamic_smagorinsky)
+          {
+            if (assgd) CalTau(ele,diffus_[k],dt,timefac,vol,k,0.0,false);
+
             CalcSubgrDiff(dt,timefac,whichassgd,assgd,Cs,tpn,vol,k);
+          }
 
           // calculation of fine-scale artificial subgrid diffusivity
           // at integration point
@@ -2027,7 +2042,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
               // at the element center, hence BD_gp should always be combined with
               // mat_gp_
               dserror("evaluation of B and D at gauss-point should always be combined with evaluation material at gauss-point!");
-	    }
+          }
             // calculate model coefficients
             CalcBAndDForMultifracSubgridScales(B_mfs,D_mfs,Csgs_sgvel,alpha,calc_N,N_vel,refvel,reflength,c_nu,nwl,nwl_scatra,Csgs_sgphi,c_diff,vol,k);
           }

@@ -889,7 +889,7 @@ private:
   std::vector<Epetra_SerialDenseVector> myknots_;
 
   /*========================================================================*/
-  //! @name Miscellaneous - to be done!!!
+  //! @name can be very useful
   /*========================================================================*/
 
   double eid_;

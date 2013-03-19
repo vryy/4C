@@ -117,6 +117,7 @@ namespace INPAR
       assgd_artificial,
       assgd_hughes,
       assgd_tezduyar,
+      assgd_tezduyar_wo_phizero,
       assgd_docarmo,
       assgd_almeida
     };
