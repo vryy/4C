@@ -20,7 +20,7 @@ Maintainer: Jonas Biehler
 #include "../linalg/linalg_serialdensevector.H"
 #include "../drt_contact/contact_analytical.H"
 #include "../drt_lib/drt_globalproblem.H"
-#include "../drt_mat/micromaterial.H"
+#include "../drt_mat/so3_material.H"
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_fem_general/drt_utils_integration.H"
 

@@ -18,7 +18,7 @@ Maintainer: Thomas Kloeppel
 #include "../drt_lib/drt_utils_factory.H"
 #include "../drt_lib/drt_utils_nullspace.H"
 #include "../drt_lib/drt_dserror.H"
-#include "../drt_mat/viscoanisotropic.H"
+#include "../drt_mat/so3_material.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_linedefinition.H"
 #include "../drt_lib/drt_globalproblem.H"

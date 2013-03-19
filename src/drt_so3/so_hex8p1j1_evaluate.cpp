@@ -20,8 +20,7 @@ Maintainer: Lena Wiechert
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_serialdensematrix.H"
 #include "../linalg/linalg_serialdensevector.H"
-#include "../drt_mat/plasticneohooke.H"
-#include "../drt_mat/micromaterial.H"
+#include "../drt_mat/so3_material.H"
 
 #include <Epetra_SerialComm.h>
 

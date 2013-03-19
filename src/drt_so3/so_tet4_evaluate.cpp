@@ -24,9 +24,7 @@ written by : Alexander Volf
 #include "Epetra_SerialDenseSolver.h"
 #include "../drt_mat/elasthyper.H"
 #include "../drt_mat/stvenantkirchhoff.H"
-#include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
-#include "../drt_mat/micromaterial.H"
 #include "../drt_contact/contact_analytical.H"
 #include "../drt_lib/drt_globalproblem.H"
 

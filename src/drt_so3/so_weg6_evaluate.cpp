@@ -21,10 +21,8 @@ Maintainer: Moritz Frenzel
 #include "../drt_fem_general/drt_utils_integration.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_mat/elasthyper.H"
-#include "../drt_mat/viscoanisotropic.H"
-#include "../drt_mat/growth_ip.H"
 #include "../drt_mat/constraintmixture.H"
-#include "../drt_mat/micromaterial.H"
+#include "../drt_mat/so3_material.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_lib/drt_globalproblem.H"
 
