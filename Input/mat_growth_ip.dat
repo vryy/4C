@@ -83,7 +83,7 @@ NUMSTEP                         50
 PREDICT                         ConstDis
 RESULTSEVRY                     1
 RESEVRYERGY                     0
-RESTARTEVRY                     1
+RESTARTEVRY                     10
 RESULTDT                        0
 TIMEADAPT                       0
 TIMESTEP                        0.1

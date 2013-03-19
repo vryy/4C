@@ -23,8 +23,6 @@ Maintainer: Susanna Tinkl
 
 
 #include "growth_ip.H"
-#include "elasthyper.H"
-#include "aaaneohooke.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_lib/drt_utils_factory.H"  // for function Factory in Unpack
@@ -187,7 +185,7 @@ void MAT::Growth::Unpack(const std::vector<char>& data)
   ExtractfromPack(position,data,dataelastic);
   if (dataelastic.size()>0) {
     DRT::ParObject* o = DRT::UTILS::Factory(dataelastic);  // Unpack is done here
-    MAT::Material* matel = dynamic_cast<MAT::Material*>(o);
+    MAT::So3Material* matel = dynamic_cast<MAT::So3Material*>(o);
     if (matel==NULL)
       dserror("failed to unpack elastic material");
     matelastic_ = Teuchos::rcp(matel);
@@ -221,11 +219,8 @@ void MAT::Growth::Setup(int numgp, DRT::INPUT::LineDefinition* linedef)
   }
 
   // Setup of elastic material
-  matelastic_ = MAT::Material::Factory(params_->idmatelastic_);
-  if (matelastic_->MaterialType() == INPAR::MAT::m_elasthyper) {
-    MAT::ElastHyper* elast = static_cast <MAT::ElastHyper*>(matelastic_.get());
-    elast->Setup(numgp,linedef);
-  }
+  matelastic_ = Teuchos::rcp_dynamic_cast<MAT::So3Material>(MAT::Material::Factory(params_->idmatelastic_));
+  matelastic_->Setup(numgp, linedef);
 
   isinit_ = true;
   return;
@@ -242,6 +237,8 @@ void MAT::Growth::ResetAll(const int numgp)
     thetaold_->at(j) = 1.0;
     mandel_->at(j) = 0.0;
   }
+
+  matelastic_->ResetAll(numgp);
 }
 
 /*----------------------------------------------------------------------*
@@ -255,7 +252,15 @@ void MAT::Growth::Update()
     thetaold_->at(i) = theta_->at(i);
   }
 
-  return;
+  matelastic_->Update();
+}
+
+/*----------------------------------------------------------------------*
+ |  Reset internal variables                      (public)         03/13|
+ *----------------------------------------------------------------------*/
+void MAT::Growth::ResetStep()
+{
+  matelastic_->ResetStep();
 }
 
 /*----------------------------------------------------------------------*
@@ -315,12 +320,14 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     // elastic right Cauchy-Green Tensor Cdach = F_g^-T C F_g^-1
     LINALG::Matrix<NUM_STRESS_3D,1> Cdach(C);
     Cdach.Scale(1.0/theta/theta);
+    LINALG::Matrix<3,3> defgrddach(*defgrd);
+    defgrddach.Scale(1.0/theta);
     // elastic Green Lagrange strain
     LINALG::Matrix<NUM_STRESS_3D,1> glstraindach(Cdach);
     glstraindach -= Id;
     glstraindach.Scale(0.5);
     // elastic 2 PK stress and constitutive matrix
-    EvaluateElastic(&glstraindach,gp,&cmatelastic,&Sdach,params);
+    matelastic_->Evaluate(&defgrddach,&glstraindach,params,&Sdach,&cmatelastic);
 
     // trace of elastic Mandel stress Mdach = Cdach Sdach
     double mandel = Cdach(0)*Sdach(0) + Cdach(1)*Sdach(1) + Cdach(2)*Sdach(2) +
@@ -365,12 +372,14 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
         // update elastic variables
         Cdach = C;
         Cdach.Scale(1.0/thetatemp/thetatemp);
+        LINALG::Matrix<3,3> defgrddach(*defgrd);
+        defgrddach.Scale(1.0/thetatemp);
         glstraindach = Cdach;
         glstraindach -= Id;
         glstraindach.Scale(0.5);
         cmatelastic.Scale(0.0);
         Sdach.Scale(0.0);
-        EvaluateElastic(&glstraindach,gp,&cmatelastic,&Sdach,params);
+        matelastic_->Evaluate(&defgrddach,&glstraindach,params,&Sdach,&cmatelastic);
 
         // trace of mandel stress
         mandel = Cdach(0)*Sdach(0) + Cdach(1)*Sdach(1) + Cdach(2)*Sdach(2) +
@@ -445,12 +454,14 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     // elastic right Cauchy-Green Tensor Cdach = F_g^-T C F_g^-1
     LINALG::Matrix<NUM_STRESS_3D,1> Cdach(C);
     Cdach.Scale(1.0/theta/theta);
+    LINALG::Matrix<3,3> defgrddach(*defgrd);
+    defgrddach.Scale(1.0/theta);
     // elastic Green Lagrange strain
     LINALG::Matrix<NUM_STRESS_3D,1> glstraindach(Cdach);
     glstraindach -= Id;
     glstraindach.Scale(0.5);
     // elastic 2 PK stress and constitutive matrix
-    EvaluateElastic(&glstraindach,gp,&cmatelastic,&Sdach,params);
+    matelastic_->Evaluate(&defgrddach,&glstraindach,params,&Sdach,&cmatelastic);
 
     // 2PK stress S = F_g^-1 Sdach F_g^-T
     LINALG::Matrix<NUM_STRESS_3D,1> S(Sdach);
@@ -467,7 +478,7 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     mandel_->at(gp) = mandel;
 
   } else {
-    EvaluateElastic(glstrain,gp,cmat,stress,params);
+    matelastic_->Evaluate(defgrd,glstrain,params,stress,cmat);
     // build identity tensor I
     LINALG::Matrix<NUM_STRESS_3D,1> Id(true);
     for (int i = 0; i < 3; i++) Id(i) = 1.0;
@@ -479,30 +490,6 @@ void MAT::Growth::Evaluate(const LINALG::Matrix<3,3>* defgrd,
     S = *stress;
     mandel_->at(gp) = C(0)*S(0) + C(1)*S(1) + C(2)*S(2) + C(3)*S(3) + C(4)*S(4) + C(5)*S(5);
   }
-}
-
-/*----------------------------------------------------------------------*
- |  Evaluate elastic Material                     (private)        02/10|
- *----------------------------------------------------------------------*/
-void MAT::Growth::EvaluateElastic
-(
-  const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,
-  const int gp,
-  LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D> * cmat,
-  LINALG::Matrix<NUM_STRESS_3D,1> * stress,
-  Teuchos::ParameterList& params
-)
-{
-  if (matelastic_->MaterialType() == INPAR::MAT::m_elasthyper) {
-    MAT::ElastHyper* elast = static_cast <MAT::ElastHyper*>(matelastic_.get());
-    LINALG::Matrix<3,3> defgrd(true);
-    elast->Evaluate(&defgrd,glstrain,params,stress,cmat);
-  } else if (matelastic_->MaterialType() == INPAR::MAT::m_aaaneohooke){
-    MAT::AAAneohooke* aaaneo = static_cast <MAT::AAAneohooke*>(matelastic_.get());
-    LINALG::Matrix<3,3> defgrd(true);
-    aaaneo->Evaluate(&defgrd,glstrain,params,stress,cmat);
-  } else dserror("material not implemented for growth");
-
 }
 
 /*----------------------------------------------------------------------*
@@ -534,6 +521,49 @@ void MAT::Growth::EvaluateGrowthLaw
   }
 
 }
+
+/*----------------------------------------------------------------------*
+ |  Names of gp data to be visualized             (public)         03/13|
+ *----------------------------------------------------------------------*/
+void MAT::Growth::VisNames(std::map<string,int>& names)
+{
+  string fiber = "Theta";
+  names[fiber] = 1;
+  fiber = "Mandel";
+  names[fiber] = 1;
+  matelastic_->VisNames(names);
+}
+
+/*----------------------------------------------------------------------*
+ |  gp data to be visualized                      (public)         03/13|
+ *----------------------------------------------------------------------*/
+bool MAT::Growth::VisData(const string& name, std::vector<double>& data, int numgp)
+{
+  if (name == "Theta")
+  {
+    if ((int)data.size()!=1)
+      dserror("size mismatch");
+    double temp = 0.0;
+    for (int iter=0; iter<numgp; iter++)
+      temp += theta_()->at(iter);
+    data[0] = temp/numgp;
+  }
+  else if (name == "Mandel")
+  {
+    if ((int)data.size()!=1)
+      dserror("size mismatch");
+    double temp = 0.0;
+    for (int iter=0; iter<numgp; iter++)
+      temp += mandel_->at(iter);
+    data[0] = temp/numgp;
+  }
+  else
+  {
+    return matelastic_->VisData(name, data, numgp);
+  }
+  return true;
+}
+
 
 /*----------------------------------------------------------------------*
  |  Debug output to gmsh-file                                      10/10|
@@ -585,7 +615,7 @@ void MAT::GrowthOutputToGmsh
     Teuchos::RCP<std::vector<double> > theta = grow->Gettheta();
 
     // material plot at gauss points
-    int ngp = grow->Gettheta()->size();
+    int ngp = theta->size();
 
     // update element geometry
     const int numnode = actele->NumNode();
@@ -649,11 +679,11 @@ void MAT::GrowthOutputToGmsh
 
       // write theta
       double thetagp = theta->at(gp);
-	    gmshfilecontent_theta << "SP(" << std::scientific << point(0,0) << ",";
-  	  gmshfilecontent_theta << std::scientific << point(0,1) << ",";
-	    gmshfilecontent_theta << std::scientific << point(0,2) << ")";
-	    gmshfilecontent_theta << "{" << std::scientific
-	    << thetagp
+      gmshfilecontent_theta << "SP(" << std::scientific << point(0,0) << ",";
+      gmshfilecontent_theta << std::scientific << point(0,1) << ",";
+      gmshfilecontent_theta << std::scientific << point(0,2) << ")";
+      gmshfilecontent_theta << "{" << std::scientific
+      << thetagp
       << "};" << endl;
     }
   }
@@ -667,82 +697,3 @@ void MAT::GrowthOutputToGmsh
 
   return;
 }
-
-void MAT::Growth::VisNames(std::map<string,int>& names)
-{
-  string fiber = "Theta";
-  names[fiber] = 1;
-  fiber = "Mandel";
-  names[fiber] = 1;
-  if (Matelastic()->MaterialType() == INPAR::MAT::m_elasthyper)
-  {
-    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Matelastic().get());
-    if (elahy->AnisotropicPrincipal() or elahy->AnisotropicModified())
-    {
-      std::vector<LINALG::Matrix<3,1> > fibervecs;
-      elahy->GetFiberVecs(fibervecs);
-      int vissize = fibervecs.size();
-      string fiber;
-      for (int i = 0; i < vissize; i++)
-      {
-        std::ostringstream s;
-        s << "Fiber" << i+1;
-        fiber = s.str();
-        names[fiber] = 3; // 3-dim vector
-      }
-    }
-  }
-}
-
-bool MAT::Growth::VisData(const string& name, std::vector<double>& data, int numgp)
-{
-  if (name == "Theta")
-  {
-    if ((int)data.size()!=1)
-      dserror("size mismatch");
-    double temp = 0.0;
-    for (int iter=0; iter<numgp; iter++)
-      temp += Gettheta()->at(iter);
-    data[0] = temp/numgp;
-  }
-  else if (name == "Mandel")
-  {
-    if ((int)data.size()!=1)
-      dserror("size mismatch");
-    double temp = 0.0;
-    for (int iter=0; iter<numgp; iter++)
-      temp += Getmandel()->at(iter);
-    data[0] = temp/numgp;
-  }
-  else if (Matelastic()->MaterialType() == INPAR::MAT::m_elasthyper)
-  {
-    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(Matelastic().get());
-    if (elahy->AnisotropicPrincipal() or elahy->AnisotropicModified())
-    {
-      std::vector<LINALG::Matrix<3,1> > fibervecs;
-      elahy->GetFiberVecs(fibervecs);
-      int vissize = fibervecs.size();
-      for (int i = 0; i < vissize; i++)
-      {
-        std::ostringstream s;
-        s << "Fiber" << i+1;
-        string fiber;
-        fiber = s.str();
-        if (name == fiber)
-        {
-          if ((int)data.size()!=3)
-            dserror("size mismatch");
-          data[0] = fibervecs.at(i)(0);
-          data[1] = fibervecs.at(i)(1);
-          data[2] = fibervecs.at(i)(2);
-        }
-      }
-    }
-  }
-  else
-  {
-    return false;
-  }
-  return true;
-}
-

@@ -161,12 +161,15 @@ namespace MAT
     /// Update
     virtual void Update();
 
+    /// Reset time step
+    virtual void ResetStep();
+
     /// Evaluate material
     virtual void Evaluate(const LINALG::Matrix<3,3>* defgrd,
-                          const LINALG::Matrix<6,1>* glstrain,
+                          const LINALG::Matrix<6,1>* glstrain,  ///<green lagrange strain
                           Teuchos::ParameterList& params,
-                          LINALG::Matrix<6,1>* stress,
-                          LINALG::Matrix<6,6>* cmat);
+                          LINALG::Matrix<6,1>* stress,  ///< 2nd PK-stress
+                          LINALG::Matrix<6,6>* cmat);  ///< material stiffness matrix
 
     /// Return density
     virtual double Density() const {return params_->density_;}
@@ -178,7 +181,7 @@ namespace MAT
     Teuchos::RCP<std::vector<double> > Getmandel() const {return mandel_;}
 
     /// Return elastic material
-    Teuchos::RCP<MAT::Material> Matelastic() const { return matelastic_; }
+    //Teuchos::RCP<MAT::Material> Matelastic() const { return matelastic_; }
 
     /// Return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
@@ -201,19 +204,9 @@ namespace MAT
     /// mandel stress
     Teuchos::RCP<std::vector<double> > mandel_;
     /// elastic material
-    Teuchos::RCP<MAT::Material> matelastic_;
+    Teuchos::RCP<MAT::So3Material> matelastic_;
     /// indicates if material is initialized
     bool isinit_;
-
-    /// Evaluate elastic material
-    void EvaluateElastic
-    (
-      const LINALG::Matrix<NUM_STRESS_3D,1>* glstrain,  ///<green lagrange strain
-      const int gp,   ///< current Gauss point
-      LINALG::Matrix<NUM_STRESS_3D,NUM_STRESS_3D>* cmat,  ///< material stiffness matrix
-      LINALG::Matrix<NUM_STRESS_3D,1>* stress,  ///< 2nd PK-stress
-      Teuchos::ParameterList& params
-    );
 
     /// Evaluate growth law
     void EvaluateGrowthLaw
