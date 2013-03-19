@@ -21,6 +21,7 @@ NUMDF                           6
 NUMFIELD                        1
 PROBLEMTYP                      Poroelasticity
 RESTART                         0
+//!RESTART                      5
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------DISCRETISATION
 NUMAIRWAYSDIS                   0
@@ -107,7 +108,7 @@ NORMCOMBI_RESFINC               And
 NORM_INC                        Abs
 NORM_RESF                       Abs
 NUMSTEP                         10
-RESTARTEVRY                     100
+RESTARTEVRY                     5
 RESTOL                          1e-06
 TIMESTEP                        0.01
 UPRES                           1
