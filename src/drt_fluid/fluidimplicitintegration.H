@@ -914,6 +914,10 @@ protected:
   // possible inf-norm scaling of linear system / fluid matrix
   Teuchos::RCP<FLD::UTILS::FluidInfNormScaling> fluid_infnormscaling_;
 
+  //! @name Biofilm specific stuff
+  //@{
+  Teuchos::RCP<Epetra_Vector> fldgrdisp_;
+  //@}
 
 private:
 

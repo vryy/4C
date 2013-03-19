@@ -107,7 +107,8 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   dtsolve_(0.0),
   surfacesplitter_(NULL),
   inrelaxation_(false),
-  msht_(INPAR::FLUID::no_meshtying)
+  msht_(INPAR::FLUID::no_meshtying),
+  fldgrdisp_(Teuchos::null)
 {
   // time measurement: initialization
   TEUCHOS_FUNC_TIME_MONITOR(" + initialization");

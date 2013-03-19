@@ -45,9 +45,7 @@ FLD::TimInt::TimInt(
   myrank_      (discret_->Comm().MyPID()),
   updateprojection_(false),
   projector_(Teuchos::null),
-  kspsplitter_(Teuchos::null),
-  fldgrdisp_(Teuchos::null)
-
+  kspsplitter_(Teuchos::null)
 {}
 
 FLD::TimInt::~TimInt()

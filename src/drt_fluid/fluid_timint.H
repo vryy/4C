@@ -320,11 +320,6 @@ protected:
   Teuchos::RCP<FLD::UTILS::KSPMapExtractor> kspsplitter_;
   //@}
 
-  //! @name Biofilm specific stuff
-  //@{
-  Teuchos::RCP<Epetra_Vector> fldgrdisp_;
-  //@}
-
 }; // class TimInt
 
 }
