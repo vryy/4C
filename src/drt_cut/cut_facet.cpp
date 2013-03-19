@@ -13,7 +13,8 @@ GEO::CUT::Facet::Facet( Mesh & mesh, const std::vector<Point*> & points, Side * 
     parentside_( side ),
     planar_( false ),
     planar_known_( false ),
-    position_( cutsurface ? Point::oncutsurface : Point::undecided )
+    position_( cutsurface ? Point::oncutsurface : Point::undecided ),
+    isPlanarComputed_( false )
 {
   FindCornerPoints();
 
@@ -196,6 +197,10 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, bool dotriangulate )
 
 bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points )
 {
+  if ( isPlanarComputed_ )
+    return isPlanar_;
+
+
   LINALG::Matrix<3,1> x1;
   LINALG::Matrix<3,1> x2;
   LINALG::Matrix<3,1> x3;
@@ -205,9 +210,10 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
   LINALG::Matrix<3,1> b3;
 
   unsigned i = Normal( points, x1, x2, x3, b1, b2, b3 );
-  if ( i==0 )
+  if ( i==0 ) // all on one line is ok
   {
-    // all on one line is ok
+    isPlanarComputed_ = true;
+    isPlanar_ = true;
     return true;
   }
 
@@ -241,9 +247,13 @@ bool GEO::CUT::Facet::IsPlanar( Mesh & mesh, const std::vector<Point*> & points 
 
       CreateTriangulation( mesh, points );
 
+      isPlanarComputed_ = true;
+      isPlanar_ = false;
       return false;
     }
   }
+  isPlanarComputed_ = true;
+  isPlanar_ = true;
   return true;
 }
 
@@ -1129,7 +1139,7 @@ const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal(Eleme
        stream << "{";
        for ( std::vector<GEO::CUT::Point*>::const_iterator i=tri.begin(); i!=tri.end(); ++i )
        {
-    	 GEO::CUT::Point * p = *i;
+       GEO::CUT::Point * p = *i;
          p->Print( stream );
          stream << ",";
        }
@@ -1150,7 +1160,7 @@ const std::vector<std::vector<double> > GEO::CUT::Facet::CornerPointsLocal(Eleme
        const GEO::CUT::plain_facet_set & holes = f.Holes();
        for ( GEO::CUT::plain_facet_set::const_iterator i=holes.begin(); i!=holes.end(); ++i )
        {
-    	 GEO::CUT::Facet & h = **i;
+       GEO::CUT::Facet & h = **i;
          stream << h;
        }
      }

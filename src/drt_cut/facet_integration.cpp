@@ -721,24 +721,37 @@ void GEO::CUT::FacetIntegration::GenerateDivergenceCells( bool divergenceRule, /
     {
       std::string splitMethod;
 
+      std::vector<std::vector<Point*> > split;
+
+      // if the facet is warped, do centre point triangulation --> reduced error (??)
+      if( face1_->IsPlanar( mesh, face1_->CornerPoints() ) ==false )
+      {
+        if(!face1_->IsTriangulated())
+          face1_->DoTriangulation( mesh, corners );
+        split  = face1_->Triangulation();
+      }
+      // the facet is not warped
+      else
+      {
 #if 1 // split facet
-      if( !face1_->IsFacetSplit() )
-        face1_->SplitFacet( corners );
-      const std::vector<std::vector<GEO::CUT::Point*> > split = face1_->GetSplitCells();
-      splitMethod = "split";
+        if( !face1_->IsFacetSplit() )
+          face1_->SplitFacet( corners );
+        split = face1_->GetSplitCells();
+        splitMethod = "split";
 #endif
 
-#if 0 // triangulate facet
-      //std::cout<<"!!! WARNING !!! Facets are triangulated instead of getting splitted ---> more Gauss points\n";
-      std::vector<std::vector<GEO::CUT::Point*> > split;
-      TriangulateFacet tf( corners );
+  #if 0 // triangulate facet
+        //std::cout<<"!!! WARNING !!! Facets are triangulated instead of getting splitted ---> more Gauss points\n";
+        std::vector<std::vector<GEO::CUT::Point*> > split;
+        TriangulateFacet tf( corners );
 
-      std::vector<int> ptconc;
-      tf.EarClipping( ptconc, true );
+        std::vector<int> ptconc;
+        tf.EarClipping( ptconc, true );
 
-      split = tf.GetSplitCells();
-      splitMethod = "triangulation";
+        split = tf.GetSplitCells();
+        splitMethod = "triangulation";
 #endif
+      }
 
       for ( std::vector<std::vector<Point*> >::const_iterator j=split.begin();
                                                               j!=split.end(); ++j )
@@ -855,7 +868,7 @@ void GEO::CUT::FacetIntegration::DebugAreaCheck( plain_boundarycell_set & divCel
   }
 
   //std::cout.precision(15);
-  if( fabs(area1-area2)>1e-16 )
+  if( fabs(area1-area2)>1e-10 )
   {
     std::cout<<"The coordinates of the facet\n";
     for( unsigned i=0;i<corners.size();i++ )

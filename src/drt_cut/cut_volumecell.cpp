@@ -660,6 +660,10 @@ void GEO::CUT::VolumeCell::DumpGmshGaussPoints(const std::vector<std::vector<dou
   file.close();
 }
 
+/*----------------------------------------------------------------------------------------------------------*
+ * Perform integration of a pre-defined function over this vc using gauss points          Sudhakar 01/13
+ * generated from tessellation
+ *----------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::VolumeCell::integrateSpecificFunctionsTessellation()
 {
 

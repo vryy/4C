@@ -227,14 +227,14 @@ public:
    */
   const std::vector<std::vector<Point*> > & GetSplitCells() const { return splitCells_; }
 
+  bool IsPlanar( Mesh & mesh, const std::vector<Point*> & points );
+
 private:
 
   Facet( const Facet & );
   Facet & operator=( const Facet & );
 
   bool IsPlanar( Mesh & mesh, bool dotriangulate );
-
-  bool IsPlanar( Mesh & mesh, const std::vector<Point*> & points );
 
   void CreateTriangulation( Mesh & mesh, const std::vector<Point*> & points );
 
@@ -273,6 +273,12 @@ private:
   Point::PointPosition position_;
 
   plain_volumecell_set cells_;
+
+  //! already cheacked whether the facet is planar?
+  bool isPlanarComputed_;
+
+  //! whether this facet lie on a plane?
+  bool isPlanar_;
 };
 
   inline Facet * FindFacet( const plain_facet_set & facets, const std::vector<Point*> & side )

@@ -66,11 +66,32 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
   bool RefOnCutSide=false;
   std::vector<std::vector<double> > eqnAllFacets(facete.size());
 
+  // store the iterators of  all warped facets
+  std::vector<plain_facet_set::const_iterator> warpFac;
+
+  // check whether all facets of this vc are oriented in a plane
+  // if not then some sides are warped
+  // we need to generate quadrature rules in global coordinates
+  bool inGlobal = false;
   for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
   {
     Facet *fe = *i;
-    std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_);
+    std::vector<Point*> corn = fe->CornerPoints();
+    bool isPlanar = fe->IsPlanar( mesh_, corn );
 
+    if ( isPlanar == false )
+    {
+      inGlobal = true;
+      warpFac.push_back(i);
+      std::cout<<"encountered a WARPED side\n";
+    }
+  }
+
+  for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
+  {
+    Facet *fe = *i;
+
+    std::vector<std::vector<double> > cornersLocal = fe->CornerPointsLocal(elem1_);
     FacetIntegration faee1(fe,elem1_,position_,false,false);
 
     std::vector<double> RefPlaneTemp = faee1.equation_plane(cornersLocal);
@@ -79,6 +100,18 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
     // consider only facet whose x-direction normal componenet is non-zero
     if( fabs(RefPlaneTemp[0])>TOL_EQN_PLANE )
     {
+
+      if( warpFac.size() > 0 ) // if there are warped facets that are not yet processed
+      {
+         if( i == warpFac[0] )
+         {
+           // reference plane cant be defined over warped facet since the facet itself is not in a plane
+           facetIterator.push_back(i);
+           warpFac.erase( warpFac.begin() );
+           continue;
+         }
+      }
+
       // store the non-cut facet as reference
       if( isRef_==false && !fe->OnCutSide() && fabs(RefPlaneTemp[0])>REF_PLANE_DIRDIV )
       {
@@ -331,10 +364,13 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
   VolumeIntegration vi( volcell_, elem1_, volcell_->Position(), 1);
   Epetra_SerialDenseVector volMom = vi.compute_rhs_moment();
   volMom(0) = volcell_->Volume();
-  std::cout<<"comparison of volume prediction\n";
-  std::cout<<std::setprecision(15)<<volGlobal<<"\t"<<volMom(0)<<"\n";
+
   if( fabs(volGlobal-volMom(0))>1e-6 )
+  {
+    std::cout<<"comparison of volume prediction\n";
+    std::cout<<std::setprecision(15)<<volGlobal<<"\t"<<volMom(0)<<"\n";
     dserror("volume prediction is wrong");
+  }
 #endif
 
   volcell_->SetVolume(volGlobal);
