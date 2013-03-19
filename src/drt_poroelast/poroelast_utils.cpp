@@ -157,6 +157,12 @@ bool POROELAST::UTILS::PoroelastCloneStrategy::CheckPoro(
   if (poroeletet4!=NULL)
     return true;
 
+  //check for tet10
+  DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>* poroeletet10 =
+      dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>*>(actele);
+  if (poroeletet10!=NULL)
+    return true;
+
   //check for hex27
   DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>* poroelehex27 =
       dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_hex27, DRT::Element::hex27>*>(actele);

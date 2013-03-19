@@ -39,6 +39,7 @@ class So3_Poro : public so3_ele
 
   //! @name Friends
   friend class So_tet4PoroType;
+  friend class So_tet10PoroType;
   friend class So_hex8PoroType;
   friend class So_hex27PoroType;
 
@@ -168,6 +169,8 @@ public:
     {
     case DRT::Element::tet4:
       return So_tet4PoroType::Instance();
+    case DRT::Element::tet10:
+      return So_tet10PoroType::Instance();
     case DRT::Element::hex8:
       return So_hex8PoroType::Instance();
     case DRT::Element::hex27:

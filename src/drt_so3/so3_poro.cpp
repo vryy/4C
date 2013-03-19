@@ -222,6 +222,9 @@ int DRT::ELEMENTS::So3_Poro<so3_ele,distype>::UniqueParObjectId() const
   case DRT::Element::tet4:
     return So_tet4PoroType::Instance().UniqueParObjectId();
     break;
+  case DRT::Element::tet10:
+    return So_tet10PoroType::Instance().UniqueParObjectId();
+    break;
   case DRT::Element::hex8:
     return So_hex8PoroType::Instance().UniqueParObjectId();
     break;

@@ -15,6 +15,7 @@
 #include "so_hex8.H"
 #include "so_tet4.H"
 #include "so_hex27.H"
+#include "so_tet10.H"
 
 namespace DRT
 {
@@ -110,6 +111,36 @@ private:
 
   static So_hex27PoroType instance_;
 };
+
+/*----------------------------------------------------------------------*
+ |  TET 10 Element                                       |
+ *----------------------------------------------------------------------*/
+class So_tet10PoroType : public So_tet10Type
+{
+public:
+
+  std::string Name() const { return "So_tet10PoroType"; }
+
+  static So_tet10PoroType & Instance() { return instance_; };
+
+  virtual DRT::ParObject* Create( const std::vector<char> & data );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const string eletype,
+                                             const string eledistype,
+                                             const int id,
+                                             const int owner );
+
+  virtual Teuchos::RCP<DRT::Element> Create( const int id, const int owner );
+
+  virtual int Initialize(DRT::Discretization& dis);
+
+  virtual void SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions );
+
+private:
+
+  static So_tet10PoroType instance_;
+};
+
 
 }//ELEMENTS
 }//DRT

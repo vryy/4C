@@ -4404,6 +4404,24 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
     }
     break;
   }
+  case DRT::Element::tri6:
+  {
+    if(ele->ParentElement()->Shape()==DRT::Element::tet10)
+    {
+      PoroBoundary<DRT::Element::tet10>(
+          ele,
+          params,
+          discretization,
+          plm,
+          elemat1,
+          elevec1);
+    }
+    else
+    {
+      dserror("expected combination tri6/tet10 for surface/parent pair");
+    }
+    break;
+  }
   case DRT::Element::quad9:
   {
     if(ele->ParentElement()->Shape()==DRT::Element::hex27)

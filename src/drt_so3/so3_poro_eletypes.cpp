@@ -220,3 +220,72 @@ int DRT::ELEMENTS::So_hex27PoroType::Initialize(DRT::Discretization& dis)
   }
   return 0;
 }
+
+/*----------------------------------------------------------------------*
+ |  TET 10 Element                                       |
+ *----------------------------------------------------------------------*/
+
+
+DRT::ELEMENTS::So_tet10PoroType DRT::ELEMENTS::So_tet10PoroType::instance_;
+
+
+DRT::ParObject* DRT::ELEMENTS::So_tet10PoroType::Create( const std::vector<char> & data )
+{
+  DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>* object =
+        new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>(-1,-1);
+  object->Unpack(data);
+  return object;
+}
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10PoroType::Create( const std::string eletype,
+                                                            const std::string eledistype,
+                                                            const int id,
+                                                            const int owner )
+{
+  if ( eletype=="SOLIDT10PORO" )
+  {
+    Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>
+                                                                    (id,owner));
+    return ele;
+  }
+  return Teuchos::null;
+}
+
+Teuchos::RCP<DRT::Element> DRT::ELEMENTS::So_tet10PoroType::Create( const int id, const int owner )
+{
+  Teuchos::RCP<DRT::Element> ele = Teuchos::rcp(new DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>
+                                                                   (id,owner));
+  return ele;
+}
+
+void DRT::ELEMENTS::So_tet10PoroType::SetupElementDefinition( std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> > & definitions )
+{
+
+  std::map<std::string,std::map<std::string,DRT::INPUT::LineDefinition> >  definitions_tet10;
+  So_tet10Type::SetupElementDefinition(definitions_tet10);
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs_tet10 =
+      definitions_tet10["SOLIDT10"];
+
+  std::map<std::string, DRT::INPUT::LineDefinition>& defs =
+      definitions["SOLIDT10PORO"];
+
+  defs["TET10"]=defs_tet10["TET10"];
+}
+
+/*----------------------------------------------------------------------*
+ |  init the element (public)                                           |
+ *----------------------------------------------------------------------*/
+int DRT::ELEMENTS::So_tet10PoroType::Initialize(DRT::Discretization& dis)
+{
+  So_tet10Type::Initialize(dis);
+  for (int i=0; i<dis.NumMyColElements(); ++i)
+  {
+    if (dis.lColElement(i)->ElementType() != *this) continue;
+    DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>* actele =
+        dynamic_cast<DRT::ELEMENTS::So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10> * >(dis.lColElement(i));
+    if (!actele) dserror("cast to So_tet10_poro* failed");
+    actele->So3_Poro<DRT::ELEMENTS::So_tet10, DRT::Element::tet10>::InitElement();
+  }
+  return 0;
+}
