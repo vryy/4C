@@ -500,6 +500,10 @@ void PARTICLE::Algorithm::FillParticlesIntoBins(std::set<Teuchos::RCP<DRT::Node>
     particledis_->Comm().Barrier(); // I feel better this way ;-)
   } // end for irobin
 
+  std::cout << " There are " << homelessparticles.size() << " particles which have left the computational domain on rank " << myrank << std::endl;
+  // erase everything that is left
+  homelessparticles.clear();
+
   return;
 }
 
