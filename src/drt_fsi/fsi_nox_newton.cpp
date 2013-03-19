@@ -22,9 +22,10 @@ NOX::FSI::Newton::Newton(const Teuchos::RCP<NOX::GlobalData>& gd,
   // NOX::FSI::Newton::reset()
   paramsPtr = &params;
 
+  // adaptive tolerance settings for linear solver
   Teuchos::ParameterList& lsParams = paramsPtr->sublist("Newton").sublist("Linear Solver");
-  plaintol_ = lsParams.get<double>("base tolerance",1e-4);
-  better_   = lsParams.get<double>("adaptive distance",0.1);
+  plaintol_ = lsParams.get<double>("base tolerance"); // relative tolerance
+  better_   = lsParams.get<double>("adaptive distance"); // adaptive distance
 }
 
 
@@ -36,7 +37,7 @@ bool NOX::FSI::Newton::reset(const Teuchos::RCP<NOX::GlobalData>& gd,
   paramsPtr = &params;
 
   Teuchos::ParameterList& lsParams = paramsPtr->sublist("Newton").sublist("Linear Solver");
-  plaintol_ = lsParams.get<double>("base tolerance",1e-4);
+  plaintol_ = lsParams.get<double>("base tolerance");
 
   return NOX::Direction::Newton::reset(gd,params);
 }
@@ -58,14 +59,16 @@ bool NOX::FSI::Newton::compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group&
   currentnlnres_ = 0;
   desirednlnres_ = 1;
   if (better_ > 0)
-  for (unsigned i=0; i<cresiduals_.size(); ++i)
   {
-    double c = cresiduals_[i];
-    double d = dresiduals_[i];
-    if (currentnlnres_/desirednlnres_ < c/d)
+    for (unsigned i=0; i<cresiduals_.size(); ++i)
     {
-      currentnlnres_ = c;
-      desirednlnres_ = d;
+      double c = cresiduals_[i];
+      double d = dresiduals_[i];
+      if (currentnlnres_/desirednlnres_ < c/d)
+      {
+        currentnlnres_ = c;
+        desirednlnres_ = d;
+      }
     }
   }
 
@@ -78,15 +81,17 @@ bool NOX::FSI::Newton::compute(NOX::Abstract::Vector& dir, NOX::Abstract::Group&
 
   // heuristic tolerance calculation
   if (better_ > 0)
-  if (currentnlnres_*plaintol_ < desirednlnres_)
   {
-    double tol = desirednlnres_*better_/currentnlnres_;
-    if (tol>plaintol_)
+    if (currentnlnres_*plaintol_ < desirednlnres_)
     {
-      lsParams.set<double>("Tolerance",tol);
-      utils_->out() << "                *** Aztec adapted relative tolerance "
-                    << tol
-                    << "\n";
+      double tol = desirednlnres_*better_/currentnlnres_;
+      if (tol>plaintol_)
+      {
+        lsParams.set<double>("Tolerance",tol);
+        utils_->out() << "                *** Aztec adapted relative tolerance "
+                      << tol
+                      << "\n";
+      }
     }
   }
 

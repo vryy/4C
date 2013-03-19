@@ -657,9 +657,9 @@ void FSI::Monolithic::SetDefaultParameters(const Teuchos::ParameterList& fsidyn,
   lsParams.set<int>("Output Frequency",10);
   lsParams.set<bool>("Output Solver Details",true);
 
-  // adaptive tolerance settings
-  lsParams.set<double>("base tolerance",fsidyn.get<double>("BASETOL"));
-  lsParams.set<double>("adaptive distance",fsidyn.get<double>("ADAPTIVEDIST"));
+  // adaptive tolerance settings for linear solver
+  lsParams.set<double>("base tolerance",fsidyn.get<double>("BASETOL")); // relative tolerance
+  lsParams.set<double>("adaptive distance",fsidyn.get<double>("ADAPTIVEDIST")); // adaptive distance
 
 }
 
