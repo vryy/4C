@@ -6,6 +6,7 @@
 #include "fsi_overlapprec_fsiamg.H"
 #include "fsi_statustest.H"
 #include "fsi_monolithic_linearsystem.H"
+#include "fsi_nox_newton.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_ale/ale_utils_mapextractor.H"
@@ -20,11 +21,6 @@
 #include <Teuchos_TimeMonitor.hpp>
 #include <Teuchos_Time.hpp>
 #include <Epetra_Time.h>
-
-#include "fsi_debugwriter.H"
-#include "fsi_nox_aitken.H"
-#include "fsi_nox_group.H"
-#include "fsi_nox_newton.H"
 
 #include "../drt_inpar/drt_validparameters.H"
 #include "../drt_lib/drt_colors.H"

@@ -21,7 +21,6 @@ Maintainer: Matthias Mayr
 
 #include "fsi_monolithic.H"
 #include "fsi_debugwriter.H"
-#include "fsi_nox_aitken.H"
 #include "fsi_nox_group.H"
 #include "fsi_nox_newton.H"
 #include "fsi_statustest.H"
