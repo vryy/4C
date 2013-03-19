@@ -1,0 +1,81 @@
+/*
+ * MueLu_MeshtyingSPAmalgamationFactory_decl.hpp
+ *
+ *  Created on: 18.03.2013
+ *      Author: wiesner
+ */
+
+#ifndef MUELU_MESHTYINGSPAMALGAMATIONFACTORY_DECL_HPP_
+#define MUELU_MESHTYINGSPAMALGAMATIONFACTORY_DECL_HPP_
+
+#ifdef HAVE_MueLu
+#ifdef HAVE_Trilinos_Q1_2013
+
+#include <Xpetra_Matrix_fwd.hpp>
+#include <Xpetra_Map_fwd.hpp>
+#include <Xpetra_StridedMap_fwd.hpp>
+
+#include "MueLu_ConfigDefs.hpp"
+#include "MueLu_SingleLevelFactoryBase.hpp"
+#include "MueLu_ThresholdAFilterFactory_fwd.hpp"
+#include <MueLu_AmalgamationInfo_fwd.hpp>
+#include <MueLu_AmalgamationFactory_fwd.hpp>
+
+
+namespace MueLu {
+
+  /*!
+    @class MeshtyingSPAmalgamationFactory class.
+    @brief special factory
+
+  */
+
+  template <class Scalar = double, class LocalOrdinal = int, class GlobalOrdinal = LocalOrdinal, class Node = Kokkos::DefaultNode::DefaultNodeType, class LocalMatOps = typename Kokkos::DefaultKernels<void,LocalOrdinal,Node>::SparseOps>
+  class MeshtyingSPAmalgamationFactory : public SingleLevelFactoryBase {
+#undef MUELU_MESHTYINGSPAMALGAMATIONFACTORY_SHORT
+    #include "MueLu_UseShortNames.hpp"
+
+
+  public:
+    //! @name Constructors/Destructors.
+    //@{
+
+    //! Constructor.
+    MeshtyingSPAmalgamationFactory();
+
+    //! Destructor.
+    virtual ~MeshtyingSPAmalgamationFactory();
+    //@}
+
+    //! Input
+    //@{
+
+    RCP<const ParameterList> GetValidParameterList(const ParameterList& paramList = ParameterList()) const;
+
+    void DeclareInput(Level &currentLevel) const;
+
+    //@}
+
+    //@{
+    //! @name Build methods.
+
+    //! Build an object with this factory.
+    void Build(Level & currentLevel) const;
+
+    //@}
+
+  private:
+    // amalgamation information
+    mutable RCP<std::map<GlobalOrdinal,std::vector<GlobalOrdinal> > > nodegid2dofgids_;
+
+
+  }; // class MeshtyingSPAmalgamationFactory
+
+} // namespace MueLu
+
+#define MUELU_MESHTYINGSPAMALGAMATIONFACTORY_SHORT
+#endif // Q1/2013
+#endif // HAVE_MueLu
+
+
+#endif /* MUELU_MESHTYINGSPAMALGAMATIONFACTORY_DECL_HPP_ */

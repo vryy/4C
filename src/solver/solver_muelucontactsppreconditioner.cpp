@@ -44,7 +44,7 @@
 #include <MueLu_PgPFactory.hpp>
 #include <MueLu_GenericRFactory.hpp>
 #include <MueLu_TransPFactory.hpp>
-#include <MueLu_RAPFactory.hpp>
+#include <MueLu_BlockedRAPFactory.hpp>
 #include <MueLu_VerbosityLevel.hpp>
 #include <MueLu_SmootherFactory.hpp>
 #include <MueLu_NullspaceFactory.hpp>
@@ -72,6 +72,7 @@
 #include "muelu/muelu_ContactASlaveDofFilterFactory_decl.hpp"
 #include "muelu/muelu_ContactSPAggregationFactory_decl.hpp"
 #include "muelu/MueLu_MyTrilinosSmoother_decl.hpp"
+#include "muelu/MueLu_MeshtyingSPAmalgamationFactory_decl.hpp"
 
 #include "solver_muelucontactsppreconditioner.H"
 
@@ -137,6 +138,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     ///////////////////////////////////////////////////////////////////////
     Teuchos::RCP<const Teuchos::Comm<int> > comm = Xpetra::toXpetra(A->RangeMap(0).Comm());
 
+#if 0
     ///////////////////////////////////////////////////////////////////////
     // get contact information
     ///////////////////////////////////////////////////////////////////////
@@ -145,6 +147,32 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     //Teuchos::RCP<Epetra_Map> epActiveDofMap = mllist_.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap");
     Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
     //Teuchos::RCP<Xpetra::EpetraMap> xMasterDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epMasterDofMap  ));
+#else
+    // extract additional maps from parameter list
+    // these maps are provided by the STR::TimInt::PrepareContactMeshtying routine, that
+    // has access to the contact manager class
+    Teuchos::RCP<Epetra_Map> epMasterDofMap = Teuchos::null;
+    Teuchos::RCP<Epetra_Map> epSlaveDofMap = Teuchos::null;
+    Teuchos::RCP<Epetra_Map> epActiveDofMap = Teuchos::null;
+    Teuchos::RCP<Epetra_Map> epInnerDofMap = Teuchos::null;
+    Teuchos::RCP<Map> xSingleNodeAggMap = Teuchos::null;
+    Teuchos::RCP<Map> xNearZeroDiagMap = Teuchos::null;
+    if(mllist_.isSublist("Linear System properties")) {
+      const Teuchos::ParameterList & linSystemProps = mllist_.sublist("Linear System properties");
+      // extract information provided by solver (e.g. PermutedAztecSolver)
+      epMasterDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact masterDofMap");
+      epSlaveDofMap =  linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact slaveDofMap");
+      epActiveDofMap = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact activeDofMap");
+      epInnerDofMap  = linSystemProps.get<Teuchos::RCP<Epetra_Map> > ("contact innerDofMap");
+      if(linSystemProps.isParameter("non diagonal-dominant row map"))
+        xSingleNodeAggMap = linSystemProps.get<Teuchos::RCP<Map> > ("non diagonal-dominant row map");
+      if(linSystemProps.isParameter("near-zero diagonal row map"))
+        xNearZeroDiagMap  = linSystemProps.get<Teuchos::RCP<Map> > ("near-zero diagonal row map");
+    }
+
+    // transform epetra to xpetra
+    Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
+#endif
 
     ///////////////////////////////////////////////////////////////////////
     // prepare maps for blocked operator
@@ -263,9 +291,11 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     M11->SetFactory("P", P11Fact);
     M11->SetFactory("Ptent", Ptent11Fact);
     M11->SetFactory("R", R11Fact);
+    M11->SetFactory("Aggregates", UCAggFact11);
     M11->SetFactory("Nullspace", nspFact11);
     M11->SetFactory("Ptent", P11Fact);
     M11->SetFactory("CoarseMap", coarseMapFact11);
+    M11->SetFactory("UnAmalgamationInfo", amalgFact11);
     M11->SetIgnoreUserData(true);               // always use data from factories defined in factory manager
 
     ///////////////////////////////////////////////////////////////////////
@@ -297,7 +327,11 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     // Lagrange multiplier DOFs
     Teuchos::RCP<MueLu::ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > UCAggFact22 = Teuchos::rcp(new MueLu::ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>(UCAggFact11, amalgFact11));
 
-    Teuchos::RCP<AmalgamationFactory> amalgFact22 = Teuchos::rcp(new AmalgamationFactory(/*A22Fact*/));
+
+    // TODO switch between contact and meshtying
+    //Teuchos::RCP<AmalgamationFactory> amalgFact22 = Teuchos::rcp(new AmalgamationFactory(/*A22Fact*/));
+    Teuchos::RCP<MueLu::MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > amalgFact22 = Teuchos::rcp(new MueLu::MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>());
+    amalgFact22->SetFactory("A", A22Fact); // just to be sure, seems not to use factory from M22?
 
     // use tentative prolongation operator (prolongation operator smoothing doesn't make sense since
     // the A11 block is not valid for smoothing)
@@ -321,6 +355,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     M22->SetFactory("Nullspace", nspFact22);
     M22->SetFactory("Ptent", P22Fact);
     M22->SetFactory("CoarseMap", coarseMapFact22);
+    M22->SetFactory("UnAmalgamationInfo", amalgFact22);
     M22->SetIgnoreUserData(true);               // always use data from factories defined in factory manager
 
     ///////////////////////////////////////////////////////////////////////
@@ -336,7 +371,8 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     ///////////////////////////////////////////////////////////////////////
     // define RAPFactory
     ///////////////////////////////////////////////////////////////////////
-    Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp(new RAPFactory(/*PFact, RFact*/));
+    //Teuchos::RCP<RAPFactory> AcFact = Teuchos::rcp(new RAPFactory(/*PFact, RFact*/));
+    Teuchos::RCP<BlockedRAPFactory> AcFact = Teuchos::rcp(new BlockedRAPFactory());
     AcFact->SetFactory("P",PFact);
     AcFact->SetFactory("R",RFact);
     AcFact->SetRepairZeroDiagonal(true); // repair zero diagonal entries in Ac, that are resulting from Ptent with nullspacedim > ndofspernode
@@ -426,18 +462,19 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   int sweeps   = smolevelsublist.get<int>("smoother: sweeps");
 
   // create SchurComp factory (SchurComplement smoother is provided by local FactoryManager)
-  Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory(/*MueLu::NoFactory::getRCP(),*/omega));
+  Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory());
+  SFact->SetParameter("omega", Teuchos::ParameterEntry(omega));
   SFact->SetFactory("A",MueLu::NoFactory::getRCP());
   Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(sweeps,omega)); // append SC smoother information
 
   // define SchurComplement solver
-  /*Teuchos::ParameterList SCList;
+  Teuchos::ParameterList SCList;
   SCList.set("relaxation: sweeps", (LO) 10);
   SCList.set("relaxation: damping factor", (SC) 0.6);
   SCList.set("relaxation: type", "Gauss-Seidel");
-  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp(new TrilinosSmoother("RELAXATION",SCList,0,SFact));*/
+  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp(new TrilinosSmoother("RELAXATION",SCList,0,SFact));
   //Teuchos::RCP<SmootherPrototype> smoProtoSC = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("ILU", SCList,0,SFact);
-  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp( new DirectSolver("Klu"/*"Umfpack"*/,Teuchos::ParameterList()) );
+  //Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp( new DirectSolver("Klu"/*"Umfpack"*/,Teuchos::ParameterList()) );
   smoProtoSC->SetFactory("A",SFact);
   Teuchos::RCP<SmootherFactory> SmooSCFact = Teuchos::rcp(new SmootherFactory(smoProtoSC));
 
@@ -490,7 +527,8 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   int sweeps   = smolevelsublist.get<int>("smoother: sweeps");
 
   // create SchurComp factory (SchurComplement smoother is provided by local FactoryManager)
-  Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory(/*MueLu::NoFactory::getRCP(),*/omega));
+  Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory());
+  SFact->SetParameter("omega", Teuchos::ParameterEntry(omega));
   SFact->SetFactory("A",MueLu::NoFactory::getRCP());
   Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(sweeps,omega)); // append SC smoother information
 

@@ -1186,6 +1186,7 @@ set(OBJS_SOLVER
   src/solver/muelu/MueLu_MyTrilinosSmoother.cpp
   src/solver/muelu/MueLu_IterationAFactory.cpp
   src/solver/muelu/MueLu_SelectiveSaPFactory.cpp
+  src/solver/muelu/MueLu_MeshtyingSPAmalgamationFactory.cpp
 )
 set(OBJS_DRT_CONSTRAINT
   src/drt_constraint/constraint.cpp

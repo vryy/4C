@@ -17,6 +17,7 @@
 #include <Xpetra_BlockedCrsMatrix_fwd.hpp>
 
 #include "muelu/muelu_ContactSPAggregationFactory_fwd.hpp"
+#include "muelu/MueLu_MeshtyingSPAmalgamationFactory_fwd.hpp"
 
 #include <MueLu_Hierarchy.hpp> // for MueLu
 #include <MueLu_SmootherFactory.hpp>
