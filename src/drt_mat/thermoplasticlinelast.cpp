@@ -413,7 +413,7 @@ void MAT::ThermoPlasticLinElast::Evaluate(
   //  strain^e: definition of additive decomposition:
   //  strain^e = strain - strain^p
   // REMARK: stress-like 6-Voigt vector
-  LINALG::Matrix<NUM_STRESS_3D,1> strain(linstrain);
+  LINALG::Matrix<NUM_STRESS_3D,1> strain(*linstrain);
 
   //-------------------------------------------------------------------
   // elastic predictor (trial values)
