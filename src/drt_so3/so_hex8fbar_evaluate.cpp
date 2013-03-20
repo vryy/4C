@@ -25,6 +25,7 @@ Maintainer: Alexander Popp
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "prestress.H"
+#include "../drt_patspec/patspec.H"
 
 /*----------------------------------------------------------------------*
  |  evaluate the element (public)                                       |
@@ -67,6 +68,11 @@ int DRT::ELEMENTS::So_hex8fbar::Evaluate(Teuchos::ParameterList& params,
   else if (action=="multi_calc_dens")                             act = So_hex8fbar::multi_calc_dens;
   else if (action=="calc_struct_prestress_update")                act = So_hex8fbar::prestress_update;
   else dserror("Unknown type of action for So_hex8fbar");
+  
+  // check for patient specific data
+  PATSPEC::GetILTDistance(Id(),params,discretization);
+  PATSPEC::GetLocalRadius(Id(),params,discretization);
+
   // what should the element do
   switch(act)
   {
