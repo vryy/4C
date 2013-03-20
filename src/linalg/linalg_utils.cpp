@@ -388,6 +388,30 @@ RCP<Epetra_CrsMatrix> LINALG::Multiply(const Epetra_CrsMatrix& A, bool transA,
                                        const Epetra_CrsMatrix& B, bool transB,
                                        bool complete)
 {
+  /* ATTENTION (Q1/2013 and later)
+   *
+   * Be careful with LINALG::Multiply when using Trilinos Q1/2013.
+   * The new EpetraExt MMM routines are very fast, but not well tested and
+   * sometimes crash. To be on the safe side consider to use LINALG::MLMultiply
+   * which is based on ML and well tested over several years.
+   *
+   * For improving speed of MM operations (even beyond MLMultiply) we probably
+   * should rethink the design of our Multiply routines. As a starting point we
+   * should have a look at the new variants of the EpetraExt routines. See also
+   * the following personal communication with Chris Siefert
+   *
+   * "There are basically 3 different matrix-matrix-multiplies in the new EpetraExt MMM:
+   *
+   * 1) Re-use existing C.  I think this works, but it isn't well tested.
+   * 2) Start with a clean C and FillComplete.  This is the one we're using in MueLu that works fine.
+   * 3) Any other case.  This is the one you found a bug in.
+   *
+   * I'll try to track the bug in #3 down, but you really should be calling #2 (or #1) if at all possible.
+   *
+   * -Chris"
+   *
+   */
+
   // make sure FillComplete was called on the matrices
   if (!A.Filled()) dserror("A has to be FillComplete");
   if (!B.Filled()) dserror("B has to be FillComplete");
