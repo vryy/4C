@@ -59,8 +59,6 @@ private:
   /// set structure velocity fields on scatra field
   void SetVelocityFields() ;
 
-private:
-
 };
 
 }
