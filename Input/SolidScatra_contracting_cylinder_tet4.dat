@@ -55,7 +55,7 @@ AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0
 AZGRAPH                         0
-AZITER                          1000
+AZITER                          10000
 AZOMEGA                         0
 AZOUTPUT                        100
 AZPOLY                          5
@@ -76,7 +76,7 @@ ML_COARSEN                      MIS
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     0.59
 ML_DAMPMED                      0.69
-ML_MAXCOARSESIZE                200
+ML_MAXCOARSESIZE                400
 ML_MAXLEVEL                     5
 ML_PRINT                        0
 ML_PROLONG_SMO                  1.33
@@ -94,7 +94,7 @@ ADAPTCONV_BETTER                0.1
 ADAPTERDRIVE                    No
 CONTROLNODE -1 -1 -1
 CONTROLTYPE                     load
-DAMPING                         No//Rayleigh
+DAMPING                         Rayleigh
 DIVERCONT                       No
 DYNAMICTYP                      GenAlpha
 EIGEN                           0
@@ -118,19 +118,19 @@ NORM_DISP                       Abs
 NORM_INCO                       Abs
 NORM_PRES                       Abs
 NORM_RESF                       Abs
-NUMSTEP                         10
+NUMSTEP                         15
 PREDICT                         ConstDisVelAcc
 PRESTRESS                       none
 PRESTRESSTIME                   0
 PTCDT                           0.1
 RESEVRYERGY                     0
-RESTARTEVRY                     20
+RESTARTEVRY                     50
 RESULTDT                        0
 RESULTSEVRY                     1
 STC_LAYER                       1
 STC_SCALING                     no
 TIMEADAPT                       0
-TIMESTEP                        0.01
+TIMESTEP                        0.001
 TOLCONSTR                       1e-03
 TOLDISP                         1e-09 // 10-7 meter
 TOLINCO                         1e-03
@@ -165,7 +165,7 @@ MAT 20 ELAST_CoupAnisoNeoHooke_VarProp C 100000 SOURCE_ACTIVATION 1
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 5.0 FUNCTION (0.5*tanh((t-sqrt(x^2+y^2+z^2)/1000)/0.00001)+0.5)*tanh(4*(t-sqrt(x^2+y^2+z^2)/1000)/0.4)*exp(-(((t-sqrt(x^2+y^2+z^2)/1000)/0.5)^10))
+FUNCT1 COMPONENT 0 EXPR 0.0 0.0 5.0 FUNCTION (0.5*tanh((t-sqrt(z^2)/100)/0.00001)+0.5)*tanh((t-sqrt(z^2)/300)/0.1)*exp(-(((t-sqrt(z^2)/100)/0.5)^10))
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -175,11 +175,11 @@ NDLINE  0
 NDSURF  3
 NDVOL   0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           2
-// up
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
+//DSURF                           1
+//up
+//E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
 // down
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
+//E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
 -----------------------------------------------DNODE-NODE TOPOLOGY
 -----------------------------------------------DLINE-NODE TOPOLOGY
 -----------------------------------------------DSURF-NODE TOPOLOGY
@@ -5741,16 +5741,16 @@ NODE 928  	COORD	-1.7820130483767356e+00	-9.0798099947909394e-01	-3.374333039301
 ---------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 // checking z-displacement of 4 points on top of the cylinder
-STRUCTURE DIS structure NODE 184 QUANTITY dispz VALUE -2.79986527634506044e-01 TOLERANCE 1e-3
-STRUCTURE DIS structure NODE 185 QUANTITY dispz VALUE -2.47254015253433490e-01 TOLERANCE 1e-3
-STRUCTURE DIS structure NODE 254 QUANTITY dispz VALUE -2.38083399767083759e-01 TOLERANCE 1e-3
-STRUCTURE DIS structure NODE 255 QUANTITY dispz VALUE -2.63821971487827545e-01 TOLERANCE 1e-3
+STRUCTURE DIS structure NODE 184 QUANTITY dispz VALUE -1.17647364025774845e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 185 QUANTITY dispz VALUE -1.53180061014311614e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 254 QUANTITY dispz VALUE -1.32836205061931029e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 255 QUANTITY dispz VALUE -1.07755834826301133e-01 TOLERANCE 1e-6
 // checking xyz displacement of 2 points at the middle
-STRUCTURE DIS structure NODE 41 QUANTITY dispx VALUE 3.29027920686512862e-02 TOLERANCE 1e-3
-STRUCTURE DIS structure NODE 41 QUANTITY dispy VALUE 1.78547616135617294e-02 TOLERANCE 1e-3
-STRUCTURE DIS structure NODE 41 QUANTITY dispz VALUE -1.39148509822575539e-01 TOLERANCE 1e-3
-STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE 1.66916928010220518e-02 TOLERANCE 1e-3
-STRUCTURE DIS structure NODE 42 QUANTITY dispy VALUE -5.75491600291734400e-03 TOLERANCE 1e-3
-STRUCTURE DIS structure NODE 42 QUANTITY dispz VALUE -1.01996513443979364e-01 TOLERANCE 1e-3
+STRUCTURE DIS structure NODE 41 QUANTITY dispx VALUE  1.08967571955530633e-02 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 41 QUANTITY dispy VALUE -3.17822184997510540e-02 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 41 QUANTITY dispz VALUE  2.00737511090049760e-02 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE -7.79396266323952123e-03 TOLERANCE 1e-4
+STRUCTURE DIS structure NODE 42 QUANTITY dispy VALUE -1.41424957107789302e-02 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 42 QUANTITY dispz VALUE  2.12950414277708125e-02 TOLERANCE 1e-5
 -----------------------------------------------------------END
 // END

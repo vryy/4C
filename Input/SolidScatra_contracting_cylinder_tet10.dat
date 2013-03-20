@@ -1,4 +1,7 @@
------------------------------------------------------------------------TITLE
+==================================================================
+                  General Data File BACI
+==================================================================
+-------------------------------------------------------------TITLE
 Contracting Cylinder
 Test for SolidScatra Material with Tet10 Elements
 Maintainer: A. Nagler
@@ -50,7 +53,7 @@ AZBDIAG                         0
 AZCONV                          AZ_r0
 AZDROP                          0
 AZGRAPH                         0
-AZITER                          1000
+AZITER                          2000
 AZOMEGA                         0
 AZOUTPUT                        100
 AZPOLY                          5
@@ -71,7 +74,7 @@ ML_COARSEN                      MIS
 ML_DAMPCOARSE                   1
 ML_DAMPFINE                     0.59
 ML_DAMPMED                      0.69
-ML_MAXCOARSESIZE                200
+ML_MAXCOARSESIZE                400
 ML_MAXLEVEL                     5
 ML_PRINT                        0
 ML_PROLONG_SMO                  1.33
@@ -113,24 +116,24 @@ NORM_DISP                       Abs
 NORM_INCO                       Abs
 NORM_PRES                       Abs
 NORM_RESF                       Abs
-NUMSTEP                         5
+NUMSTEP                         15
 PREDICT                         ConstDisVelAcc
 PRESTRESS                       none
 PRESTRESSTIME                   0
 PTCDT                           0.1
 RESEVRYERGY                     0
-RESTARTEVRY                     20
+RESTARTEVRY                     50
 RESULTDT                        0
 RESULTSEVRY                     1
 STC_LAYER                       1
 STC_SCALING                     no
 TIMEADAPT                       0
-TIMESTEP                        0.002
+TIMESTEP                        0.001
 TOLCONSTR                       1e-03
-TOLDISP                         1e-04                           // 10-7 meter
+TOLDISP                         1e-09 // 10-7 meter
 TOLINCO                         1e-03
 TOLPRE                          1e-03
-TOLRES                          1e-01                           // 10-7 newton
+TOLRES                          1e-06  // 10-1 newton
 UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
@@ -159,7 +162,7 @@ MAT 20 ELAST_CoupAnisoNeoHooke_VarProp C 100000 SOURCE_ACTIVATION 1
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
 ----------------------------------------------------------------------FUNCT1
-FUNCT1 COMPONENT 0 EXPR 0.0 0.0 5.0 FUNCTION (0.5*tanh((t-sqrt(x^2+y^2+z^2)/1000)/0.00001)+0.5)*tanh(4*(t-sqrt(x^2+y^2+z^2)/1000)/0.4)*exp(-(((t-sqrt(x^2+y^2+z^2)/1000)/0.5)^10))
+FUNCT1 COMPONENT 0 EXPR 0.0 0.0 5.0 FUNCTION (0.5*tanh((t-sqrt(z^2)/100)/0.00001)+0.5)*tanh((t-sqrt(z^2)/300)/0.1)*exp(-(((t-sqrt(z^2)/100)/0.5)^10))
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------------------FUNCT3
 ----------------------------------------------------------------------FUNCT4
@@ -169,11 +172,11 @@ NDLINE                          0
 NDSURF                          3
 NDVOL                           0
 -----------------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF                           2
+//DSURF                           2
 // up
-E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
+//E 1 - NUMDOF 3 ONOFF 1 1 0 VAL 0.0 0.0 0.0 CURVE none none none
 // down
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
+//E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 CURVE none none none
 ---------------------------------------------------------DNODE-NODE TOPOLOGY
 ---------------------------------------------------------DLINE-NODE TOPOLOGY
 ---------------------------------------------------------DSURF-NODE TOPOLOGY
@@ -12559,16 +12562,16 @@ NODE 6434 COORD -1.70002351856 1.04177575203 4.18716651965
 -------------------------------------------------------------THERMO ELEMENTS
 ----------------------------------------------------------RESULT DESCRIPTION
 // checking z-displacement of 4 points on top of the cylinder
-STRUCTURE DIS structure NODE 184 QUANTITY dispz VALUE -3.42166958230148921e-01 TOLERANCE 1e-3
-STRUCTURE DIS structure NODE 185 QUANTITY dispz VALUE -3.24686509165222736e-01 TOLERANCE 1e-3
-STRUCTURE DIS structure NODE 254 QUANTITY dispz VALUE -3.21961245722734490e-01 TOLERANCE 1e-3
-STRUCTURE DIS structure NODE 255 QUANTITY dispz VALUE -3.39381450771223891e-01 TOLERANCE 1e-3
+STRUCTURE DIS structure NODE 184 QUANTITY dispz VALUE -1.15808781764480007e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 185 QUANTITY dispz VALUE -1.76070342040059002e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 254 QUANTITY dispz VALUE -1.73156484108639597e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 255 QUANTITY dispz VALUE -1.27502560552153560e-01 TOLERANCE 1e-6
 // checking xyz displacement of 2 points at the middle
-STRUCTURE DIS structure NODE 41 QUANTITY dispx VALUE 3.45633796531824439e-02 TOLERANCE 1e-3
-STRUCTURE DIS structure NODE 41 QUANTITY dispy VALUE 1.51990692577924393e-02 TOLERANCE 1e-3
-STRUCTURE DIS structure NODE 41 QUANTITY dispz VALUE -1.36396499905454965e-01 TOLERANCE 1e-3
-STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE 1.54360194988229314e-02 TOLERANCE 1e-3
-STRUCTURE DIS structure NODE 42 QUANTITY dispy VALUE -9.15003391844539452e-03 TOLERANCE 1e-3
-STRUCTURE DIS structure NODE 42 QUANTITY dispz VALUE -9.55113845644723486e-02 TOLERANCE 1e-3
+STRUCTURE DIS structure NODE 41 QUANTITY dispx VALUE -1.48300975825216407e-02 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 41 QUANTITY dispy VALUE  2.71343145809999770e-02 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 41 QUANTITY dispz VALUE  8.70610535207257813e-03 TOLERANCE 1e-4
+STRUCTURE DIS structure NODE 42 QUANTITY dispx VALUE  7.62666997852720022e-03 TOLERANCE 1e-4
+STRUCTURE DIS structure NODE 42 QUANTITY dispy VALUE  1.42224563251583981e-02 TOLERANCE 1e-5
+STRUCTURE DIS structure NODE 42 QUANTITY dispz VALUE  8.63521289910623886e-03 TOLERANCE 1e-4
 -------------------------------------------------------------------------END
 // END
