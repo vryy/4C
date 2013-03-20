@@ -220,7 +220,7 @@ void TSI::Partitioned::TimeLoop()
 
       // normally PrepareTimeStep() should be called outside the nonlinear loop,
       // but at this point the coupling variables are not known, yet!
-      // call PrepareTimeStep() after ApplyTemperatures()/ApplyStructVariables()
+      // call PrepareTimeStep() after ApplyCouplingState()/ApplyStructVariables()
 
       // switch TSI algorithm (synchronous)
       // only the one field knows the 2nd field, that contains the coupling
@@ -333,7 +333,7 @@ void TSI::Partitioned::TimeLoop()
           const Teuchos::RCP<Epetra_Vector> tempnp = ThermoField()->ExtractTempnp();
 
           // apply current temperatur field
-          StructureField()->ApplyTemperatures(tempnp);
+          StructureField()->ApplyCouplingState(tempnp,"temperature");
 
           // solve structure system
           StructureField()->Solve();
@@ -432,7 +432,7 @@ void TSI::Partitioned::TimeLoopOneWay()
     /// structure field
 
     // pass the current temperatures to the structural field
-    StructureField()->ApplyTemperatures(tempnp);
+    StructureField()->ApplyCouplingState(tempnp,"temperature");
 
     // call the predictor here, because the temperature is now also available
     StructureField()->PrepareTimeStep();
@@ -489,7 +489,7 @@ void TSI::Partitioned::TimeLoopSequStagg()
     /// structure field
 
     // pass the current temperatures to the structure field
-    StructureField()->ApplyTemperatures(temp_);
+    StructureField()->ApplyCouplingState(temp_,"temperature");
 
     // prepare time step with coupled variables
     StructureField()->PrepareTimeStep();
@@ -527,7 +527,7 @@ void TSI::Partitioned::TimeLoopSequStagg()
     // get current displacement due to solve structure step
 
     // pass the current temperatures to the structure field
-    StructureField()->ApplyTemperatures(temp_);
+    StructureField()->ApplyCouplingState(temp_,"temperature");
 
     // prepare time step with coupled variables
     StructureField()->PrepareTimeStep();
@@ -676,9 +676,10 @@ void TSI::Partitioned::OuterIterationLoop()
         // ---------------------------------------------------- structure field
 
         // pass the current temperatures to the structure field
-        // ApplyTemperatures() also calls PreparePartitionStep() for prediction
+        //todo
+        // ApplyCouplingState() also calls PreparePartitionStep() for prediction
         // with just calculated incremental solutions
-        StructureField()->ApplyTemperatures(temp_);
+        StructureField()->ApplyCouplingState(temp_,"temperature");
 
         // prepare time step with coupled variables
         if (itnum == 1)
@@ -739,9 +740,10 @@ void TSI::Partitioned::OuterIterationLoop()
         // ---------------------------------------------------- structure field
 
         // pass the current temperatures to the structure field
-        // ApplyTemperatures() also calls PreparePartitionStep() for prediction
+        //todo
+        // ApplyCouplingState() also calls PreparePartitionStep() for prediction
         // with just calculated incremental solutions
-        StructureField()->ApplyTemperatures(temp_);
+        StructureField()->ApplyCouplingState(temp_,"temperature");
 
         // prepare time step with coupled variables
         if (itnum == 1)
@@ -900,9 +902,9 @@ void TSI::Partitioned::OuterIterationLoop()
         // ---------------------------------------------------- structure field
 
         // pass the current temperatures to the structure field
-        // ApplyTemperatures() also calls PreparePartitionStep() for prediction
+        // ApplyCouplingState() also calls PreparePartitionStep() for prediction
         // with just calculated incremental solutions
-        StructureField()->ApplyTemperatures(temp_);
+        StructureField()->ApplyCouplingState(temp_,"temperature");
 
         // prepare time step with coupled variables
         if (itnum == 1)
@@ -1110,9 +1112,10 @@ void TSI::Partitioned::OuterIterationLoop()
         // ---------------------------------------------------- structure field
 
         // pass the current temperatures to the structure field
-        // ApplyTemperatures() also calls PreparePartitionStep() for prediction
+        //todo
+        // ApplyCouplingState() also calls PreparePartitionStep() for prediction
         // with just calculated incremental solutions
-        StructureField()->ApplyTemperatures(temp_);
+        StructureField()->ApplyCouplingState(temp_,"temperature");
 
         // prepare time step with coupled variables
         if (itnum == 1)

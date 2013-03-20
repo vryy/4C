@@ -244,7 +244,7 @@ void FS3I::PartFS3I_2WC::SetScaTraValuesInFSI()
                                            fluidscatra_->ScaTraField().ThermPressDtAm(),
                                            fluidscatra_->ScaTraField().Discretization());
 
-      fsi_->StructureField()->ApplyTemperatures(structurescatra_->ScaTraField().Phiaf());
+      fsi_->StructureField()->ApplyCouplingState(structurescatra_->ScaTraField().Phiaf(),"temperature");
     }
     else
     {*/
@@ -257,7 +257,7 @@ void FS3I::PartFS3I_2WC::SetScaTraValuesInFSI()
                                            fluidscatra_->ScaTraField().ThermPressDtNp(),
                                            fluidscatra_->ScaTraField().ThermPressDtNp(),
                                            fluidscatra_->ScaTraField().Discretization());
-      fsi_->StructureField()->ApplyTemperatures(structurescatra_->ScaTraField().Phinp());
+      fsi_->StructureField()->ApplyCouplingState(structurescatra_->ScaTraField().Phinp(),"temperature");
     //}
 }
 

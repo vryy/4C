@@ -1,14 +1,15 @@
-/*!----------------------------------------------------------------------
- \file poro_scatra.H
- \brief
+/*----------------------------------------------------------------------*/
+/*!
+ \file poro_scatra_part.H
+
+ \brief  base class for partitioned poroelasticity scalar transport interaction algorithms
 
  <pre>
- Maintainer: Anh-Tu Vuong
- vuong@lnm.mw.tum.de
- http://www.lnm.mw.tum.de
- 089 - 289-15264
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
  </pre>
-
  *----------------------------------------------------------------------*/
 
 #ifndef PORO_SCATRA_PART_H
@@ -58,20 +59,25 @@ namespace POROELAST
 
     //Methods
 
-    //! solve one time step of porous media problem
-    void DoPoroStep();
-    //! solve one time step of scalar transport problem
-    void DoScatraStep();
+    //! Main time loop.
+    virtual void Timeloop()=0;
+
+    //! solve one time/incremental step of porous media problem (depending on coupling algorithm)
+    virtual void DoPoroStep()=0;
+    //! solve one time/incremental step of scalar transport problem (depending on coupling algorithm)
+    virtual void DoScatraStep()=0;
 
     //! apply solution of poro-problem to scatra
     void SetPoroSolution();
+
+    //! apply solution of scatra to poro
+    void SetScatraSolution();
+
+  private:
     //! apply displacement fields to scatra
     void SetMeshDisp();
     //! apply velocity fields to scatra
     void SetVelocityFields();
-
-    //! Main time loop.
-    virtual void Timeloop()=0;
   };
 }
 

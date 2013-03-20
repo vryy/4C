@@ -2,7 +2,7 @@
 /*!
  \file poroelast_partitioned.H
 
- \brief  Partitioned poroelasticity algorithm
+ \brief  base class for partitioned poroelasticity algorithms
 
  <pre>
    Maintainer: Anh-Tu Vuong
@@ -40,8 +40,8 @@ namespace POROELAST
       //!destructor
       virtual ~Partitioned(){};
 
-      //! solve one time step
-      virtual void Solve();
+      //! proceed one time step (prepare, solve, update)
+      void DoTimeStep();
 
       //! initialise system
       virtual void SetupSystem();
@@ -57,7 +57,7 @@ namespace POROELAST
       void DoFluidStep();
 
       //! solve one time step (iteration between fields)
-      void OuterLoop();
+      void Solve();
 
       //! update and write output to screen and files after solved time step
       void UpdateAndOutput();

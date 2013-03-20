@@ -64,7 +64,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
   const double gemmalphaf = params.get<double>("alpha f");
   const double gemmxi = params.get<double>("xi");
   // density if mass is calculated
-  const double density = (massmatrix) ? Density(material) : 0.0;
+  const double density = (massmatrix) ? (material->Density()) : 0.0;
 
   // general arrays
   Epetra_SerialDenseVector shpfct(numnode);  // shape functions at Gauss point
@@ -294,6 +294,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
     case INPAR::STR::strain_ea:
     default:
       dserror("requested strain type not supported");
+      break;
     }
 
     // return stresses at Gauss points (only in case of stress/strain output)
@@ -320,6 +321,7 @@ void DRT::ELEMENTS::Wall1::FintStiffMassGEMM(
       break;
     default:
       dserror("requested stress type not supported");
+      break;
     }
 
     // stiffness and internal force

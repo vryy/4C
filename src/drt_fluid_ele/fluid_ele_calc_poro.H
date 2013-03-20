@@ -111,6 +111,7 @@ private:
                   const LINALG::Matrix<my::nsd_,my::nen_> &                       edispnp,
                   const LINALG::Matrix<my::nsd_,my::nen_> &                       edispn,
                   const LINALG::Matrix<my::nsd_,my::nen_> &                       egridv,
+                  const LINALG::Matrix<my::nen_,1>&                               escaaf,
                   Teuchos::RCP<MAT::Material>                                     mat,
                   bool                                                            isale,
                   const DRT::UTILS::GaussIntegration &                            intpoints);
@@ -132,6 +133,7 @@ private:
         const LINALG::Matrix<my::nen_, 1> &                               epressnp_timederiv,
         const LINALG::Matrix<my::nsd_, my::nen_> &                        edispnp,
         const LINALG::Matrix<my::nsd_, my::nen_> &                        egridv,
+        const LINALG::Matrix<my::nen_,1>&                                 escaaf,
         Teuchos::RCP<MAT::Material>                                       mat,
         bool                                                              isale,
         const DRT::UTILS::GaussIntegration &                              intpoints);
@@ -173,6 +175,7 @@ private:
       const LINALG::Matrix<my::nsd_,my::nen_>&                      edispnp,
       const LINALG::Matrix<my::nsd_,my::nen_>&                      edispn,
       const LINALG::Matrix<my::nsd_,my::nen_>&                      egridv,
+      const LINALG::Matrix<my::nen_,1>&                             escaaf,
       LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_>&  estif,
       LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_>&  emesh,
       LINALG::Matrix<(my::nsd_+1)*my::nen_,1>&                      eforce,
@@ -189,6 +192,7 @@ private:
       const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
       const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
+      const LINALG::Matrix<my::nen_,1>&                             escaaf,
       LINALG::Matrix<(my::nsd_ + 1) * my::nen_,my::nsd_ * my::nen_>&  ecoupl,
       LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1>&                   eforce,
       Teuchos::RCP<const MAT::Material>                               material,
@@ -245,7 +249,8 @@ private:
                                 LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>& F_x,
                                 LINALG::Matrix<my::nsd_*my::nsd_,my::nsd_>& F_X);
 
-  void ComputeContiTimeRHS(const LINALG::Matrix<my::nen_, 1>&        epren,
+  void ComputeContiTimeRHS(Teuchos::ParameterList&                                       params,
+                           const LINALG::Matrix<my::nen_, 1>&        epren,
                            const LINALG::Matrix<my::nsd_, my::nen_>& edispn,
                            LINALG::Matrix<my::nen_,1>&               preforce,
                            const double&                             rhsfac
@@ -278,6 +283,13 @@ private:
                               LINALG::Matrix<1,my::nsd_*my::nen_>&               dJ_dus,
                               LINALG::Matrix<1,my::nsd_*my::nen_>&               dphi_dus,
                               LINALG::Matrix<my::nsd_,my::nen_*my::nsd_>&        dgradphi_dus);
+
+  void PreEvaluate
+    (
+      Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
+      DRT::ELEMENTS::Fluid*                 ele, ///< fluid element
+      DRT::Discretization&      discretization  ///< pointer to discretization for de-assembly
+    );
 
   /// computation of material derivatives
   double SetupMaterialDerivatives();

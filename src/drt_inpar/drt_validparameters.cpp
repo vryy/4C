@@ -2274,6 +2274,24 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("MAXTIME",1000.0,"total simulation time",&poroscatradyn);
   DoubleParameter("TIMESTEP",0.05,"time step size dt",&poroscatradyn);
   IntParameter("UPRES",1,"increment for writing solution",&poroscatradyn);
+  IntParameter("ITEMAX",10,"maximum number of iterations over fields",&poroscatradyn);
+  DoubleParameter("CONVTOL",1e-6,"Tolerance for convergence check",&poroscatradyn);
+
+  // Coupling strategy for poroscatra solvers
+  setStringToIntegralParameter<int>(
+                              "COUPALGO","solid_to_scatra",
+                              "Coupling strategies for SSI solvers",
+                              tuple<std::string>(
+                                "scatra_to_solid",
+                                "solid_to_scatra",
+                                "two_way"
+                                ),
+                              tuple<int>(
+                                INPAR::PORO_SCATRA::Part_ScatraToPoro,
+                                INPAR::PORO_SCATRA::Part_PoroToScatra,
+                                INPAR::PORO_SCATRA::Part_TwoWay
+                                ),
+                              &poroscatradyn);
 
   /*----------------------------------------------------------------------*/
   Teuchos::ParameterList& ssidyn = list->sublist(

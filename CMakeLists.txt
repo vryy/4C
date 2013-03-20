@@ -416,6 +416,7 @@ set(OBJS_DRT_MAT_LIB
   src/drt_mat/scatra_mat.cpp
   src/drt_mat/spring.cpp
   src/drt_mat/structporo.cpp
+  src/drt_mat/structporo_reaction.cpp
   src/drt_mat/stvenantkirchhoff.cpp
   src/drt_mat/sutherland.cpp
   src/drt_mat/thermostvenantkirchhoff.cpp
@@ -1430,6 +1431,7 @@ set(OBJS_DRT_POROELAST
   src/drt_poroelast/poro_scatra_base.cpp
   src/drt_poroelast/poro_scatra_part.cpp
   src/drt_poroelast/poro_scatra_part_1wc.cpp
+  src/drt_poroelast/poro_scatra_part_2wc.cpp
 )
 
 set(OBJS_DRT_SSI

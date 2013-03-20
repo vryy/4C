@@ -241,12 +241,16 @@ namespace ADAPTER
     //@}
 
 
-    //! @name TSI specific methods
+    //! @name volume coupled specific methods
     //@{
 
-    //! apply temperatures  for TSI
-    virtual void ApplyTemperatures(Teuchos::RCP<const Epetra_Vector> temp)
-    { structure_->ApplyTemperatures(temp); }
+    //! set volume coupling state (e.g. temperatures for tsi, fluid velocities for poro) in structural discretization
+    virtual void SetCouplingState()
+    { structure_->SetCouplingState(); }
+
+    //! apply volume coupling state (e.g. temperatures for tsi, fluid velocities for poro) in structural time integrator
+    virtual void ApplyCouplingState(Teuchos::RCP<const Epetra_Vector> velnp,   const string& name, unsigned dofset=1)
+    { structure_->ApplyCouplingState(velnp,name,dofset); }
 
     /// set forces due to interface with fluid, the force is expected external-force-like
     virtual void SetForceInterface(Teuchos::RCP<Epetra_Vector> iforce)
@@ -305,15 +309,6 @@ namespace ADAPTER
     /// create result test for encapsulated structure algorithm
     virtual Teuchos::RCP<DRT::ResultTest> CreateFieldTest()
     { return structure_->CreateFieldTest(); }
-
-
-    //! @name Poroelasticity specific methods
-    //@{
-
-    virtual void ApplyVelAndPress(Teuchos::RCP<const Epetra_Vector> velnp)
-    { structure_->ApplyVelAndPress(velnp); }
-
-    //@}
 
     //! @name Biofilm specific methods
     //@{

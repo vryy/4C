@@ -2,7 +2,7 @@
 /*!
  \file poro_monolithicstructuresplit.H
 
- \brief  Basis of all monolithic poroelasticity algorithms
+ \brief  monolithic poroelasticity algorithm with split of structure degrees of freedom at the interface
 
  <pre>
    Maintainer: Anh-Tu Vuong

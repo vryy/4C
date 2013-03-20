@@ -46,7 +46,7 @@ namespace ADAPTER
     virtual Teuchos::RCP<const Epetra_Vector> Accam()
     { return fluid_->Accam(); }
     virtual Teuchos::RCP<const Epetra_Vector> Scaaf()
-    { dserror("not implemented"); return Teuchos::null; };
+    { return fluid_->Scaaf();  };
     virtual Teuchos::RCP<const Epetra_Vector> Scaam()
     { dserror("not implemented"); return Teuchos::null; };
     virtual Teuchos::RCP<const Epetra_Vector> Hist()

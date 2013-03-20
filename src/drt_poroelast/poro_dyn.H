@@ -12,8 +12,8 @@
  *------------------------------------------------------------------------------------------------*/
 
 
-#ifndef POROELAST_H
-#define POROELAST_H
+#ifndef PORO_DYN_H
+#define PORO_DYN_H
 
   //! global control routine for standard porous media problem
   void poroelast_drt();

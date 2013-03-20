@@ -21,6 +21,7 @@
 #include "../drt_fem_general/drt_utils_shapefunctions_service.H"
 
 #include "../drt_mat/structporo.H"
+#include "../drt_mat/structporo_reaction.H"
 
 #include "../drt_fem_general/drt_utils_gausspoints.H"
 
@@ -41,6 +42,8 @@ intpoints_(distype)
 
   init_=false;
 
+  scatracoupling_=false;
+
   return;
 }
 
@@ -57,7 +60,8 @@ data_(old.data_),
 xsi_(old.xsi_),
 intpoints_(distype),
 ishigherorder_(old.ishigherorder_),
-init_(old.init_)
+init_(old.init_),
+scatracoupling_(old.scatracoupling_)
 {
   numgpt_ = intpoints_.NumPoints();
 
@@ -102,6 +106,9 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Pack(DRT::PackBuffer& data) const
   for (int i=0; i<size; ++i)
     AddtoPack(data,xsi_[i]);
 
+  // scatracoupling_
+  AddtoPack(data,scatracoupling_);
+
   // add base class Element
   DRT::ELEMENTS::Wall1::Pack(data);
 
@@ -141,6 +148,9 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::Unpack(const std::vector<char>& data)
   for (int i=0; i<size; ++i)
     ExtractfromPack(position,data,xsi_[i]);
 
+  // scatracoupling_
+  scatracoupling_ = (bool)( ExtractInt(position,data) );
+
   // extract base class Element
   std::vector<char> basedata(0);
   ExtractfromPack(position,data,basedata);
@@ -174,50 +184,15 @@ bool DRT::ELEMENTS::Wall1_Poro<distype>::ReadElement(const std::string& eletype,
                                              const std::string& eledistype,
                                              DRT::INPUT::LineDefinition* linedef)
 {
+  // read base element
   Wall1::ReadElement(eletype,eledistype,linedef );
 
-  Teuchos::RCP<MAT::Material> mat = Wall1::Material();
+  //setup poro material
+  Teuchos::RCP<MAT::StructPoro> poromat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
+  if(poromat==Teuchos::null)
+    dserror("material assigned to poro element is not a poro material!");
+  poromat->PoroSetup(numgpt_, linedef);
 
-  if(mat->MaterialType() == INPAR::MAT::m_structporo)
-  {
-    MAT::StructPoro* actmat = static_cast<MAT::StructPoro*>(mat.get());
-    if(actmat == NULL)
-      dserror("StructPoro Material Type expected for porous media!");
-    actmat->Setup(numgpt_);
-  }
-
-  return true ;
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-void DRT::ELEMENTS::Wall1_Poro<distype>::VisNames(std::map<std::string,int>& names)
-{
-
-  if (Material()->MaterialType() == INPAR::MAT::m_structporo)
-  {
-    std::string porosity = "porosity";
-    names[porosity] = 1; // scalar
-  }
-}
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-template<DRT::Element::DiscretizationType distype>
-bool DRT::ELEMENTS::Wall1_Poro<distype>::VisData(const string& name, std::vector<double>& data)
-{
-  Wall1::VisData(name, data);
-
-  if (Material()->MaterialType() == INPAR::MAT::m_structporo)
-  {
-    MAT::StructPoro* structporo = static_cast <MAT::StructPoro*>(Material().get());
-      if (name=="porosity")
-      {
-        if ((int)data.size()!=1) dserror("size mismatch");
-          data[0] = structporo->PorosityAv();
-      }
-  }
   return true;
 }
 

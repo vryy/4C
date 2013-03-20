@@ -184,16 +184,16 @@ bool DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ReadElement(const std::string& el
                                          const std::string& eledistype,
                                          DRT::INPUT::LineDefinition* linedef)
 {
+  // read base element
   so3_ele::ReadElement(eletype,eledistype,linedef );
 
-  Teuchos::RCP<MAT::Material> mat = so3_ele::Material();
+  //setup poro material
+  Teuchos::RCP<MAT::StructPoro> poromat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
+  if(poromat == Teuchos::null)
+    dserror("no poro material assigned to poro element!");
+  poromat->PoroSetup(numgpt_, linedef);
 
-  MAT::StructPoro* actmat = dynamic_cast<MAT::StructPoro*>(mat.get());
-  if(actmat == NULL)
-    dserror("StructPoro Material Type expected for porous media!");
-  actmat->Setup(numgpt_);
-
- return true ;
+  return true;
 }
 
 /*----------------------------------------------------------------------*/

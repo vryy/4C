@@ -17,10 +17,14 @@
 
 #include "so3_poro_eletypes.H"
 
+  // forward declaration
+namespace MAT
+{
+  class StructPoro;
+}
 
 namespace DRT
 {
-// forward declarations
 class Discretization;
 
 namespace ELEMENTS
@@ -148,13 +152,24 @@ public:
   */
   virtual int NumDofPerNode(const unsigned nds, const DRT::Node& node) const
   {
-    if (nds==1)
-    {
+    /* here we assume the dofset numbers to be assigned as follows
+     *     structure = dofset 0
+     *     fluid     = dofset 1
+     *     scatra    = dofset 2
+     * this is kind of implicit. One might think of a better solution ...
+    */
+
+    if (nds==0)
+      // structure, 3D: 3 Dofs per node
+      return 3;
+    else if (nds==1)
       // in case of porous media: nds=1 (second discretization) fluid: 4Dof/Node
       return 4;
-    }
-    // structure, 3D: 3 Dofs per node
-    return 3;
+    else if (nds==2)
+      // in case of scalar transport in porous media: nds=2 (third discretization) scatra: 1Dof/Node
+      return 1;
+    dserror("invalid number of dof sets");
+    return -1;
   };
 
   /*!
@@ -206,6 +221,13 @@ public:
     Epetra_SerialDenseVector& elevec2,  ///< vector to be filled by element
     Epetra_SerialDenseVector& elevec3  ///< vector to be filled by element
   );
+
+  void PreEvaluate
+    (
+      Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
+      DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
+      DRT::Element::LocationArray& la ///< location array for de-assembly
+    );
 
 
   //! initialize the inverse of the jacobian and its determinant in the material configuration
@@ -294,12 +316,15 @@ protected:
     Epetra_SerialDenseVector& elevec3  ///< vector to be filled by element
   );
 
-  void PreEvaluate
-    (
-      Teuchos::ParameterList& params,  ///< ParameterList for communication between control routine and elements
-      DRT::Discretization&      discretization,  ///< pointer to discretization for de-assembly
-      DRT::Element::LocationArray& la ///< location array for de-assembly
-    );
+  //compute porosity at gausspoint and linearization of porosity w.r.t. structural displacements
+  virtual void ComputePorosityAndLinearization(Teuchos::ParameterList&                     params,
+                                               const double& press,
+                                               const double& J,
+                                               const int& gp,
+                                               Teuchos::RCP< MAT::StructPoro >  structmat,
+                                               const LINALG::Matrix<1,numdof_>& dJ_dus,
+                                               double &                         porosity,
+                                               LINALG::Matrix<1,numdof_>&       dphi_dus);
 
   //! action parameters recognized by so_hex8
   enum ActionType

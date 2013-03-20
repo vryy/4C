@@ -84,6 +84,18 @@ DRT::ELEMENTS::FluidEleCalcPoro<distype>::FluidEleCalcPoro()
 
 }
 
+/*----------------------------------------------------------------------*
+ * Action type: Evaluate
+ *----------------------------------------------------------------------*/
+template <DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::FluidEleCalcPoro<distype>::PreEvaluate(
+                                                  Teuchos::ParameterList&      params,
+                                                  DRT::ELEMENTS::Fluid*        ele,
+                                                  DRT::Discretization&         discretization)
+{
+ //do nothing
+  return;
+}
 
 /*----------------------------------------------------------------------*
  * Action type: Evaluate
@@ -205,8 +217,11 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
       &epren, "veln");
 
   LINALG::Matrix<my::nen_, 1> epressnp_timederiv(true);
- my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
+  my::ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
       &epressnp_timederiv, "accnp");
+
+  LINALG::Matrix<my::nen_,1> escaaf(true);
+  my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, NULL, &escaaf,"scaaf");
 
   if (not my::fldpara_->IsGenalpha())
     eaccam.Clear();
@@ -234,6 +249,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   // set element id
   my::eid_ = ele->Id();
 
+  PreEvaluate(params,ele,discretization);
 
   // call inner evaluate (does not know about DRT element or discretization object)
   int result = Evaluate(
@@ -254,6 +270,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
                   edispnp,
                   edispn,
                   egridv,
+                  escaaf,
                   mat,
                   ele->IsAle(),
                   intpoints);
@@ -317,6 +334,9 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
   this->ExtractValuesFromGlobalVector(discretization, lm, *my::rotsymmpbc_, NULL,
       &epressnp_timederiv, "accnp");
 
+  LINALG::Matrix<my::nen_,1> escaaf(true);
+  my::ExtractValuesFromGlobalVector(discretization,lm, *my::rotsymmpbc_, NULL, &escaaf,"scaaf");
+
   // ---------------------------------------------------------------------
   // get additional state vectors for ALE case: grid displacement and vel.
   // ---------------------------------------------------------------------
@@ -336,6 +356,9 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
 
   // set element id
   my::eid_ = ele->Id();
+
+  PreEvaluate(params,ele,discretization);
+
   // call inner evaluate (does not know about DRT element or discretization object)
   int result = EvaluateOD(params,
       elemat1,
@@ -347,6 +370,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
       epressnp_timederiv,
       edispnp,
       egridv,
+      escaaf,
       mat,
       ele->IsAle(),
       intpoints);
@@ -377,6 +401,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
   const LINALG::Matrix<my::nsd_,my::nen_> &                       edispnp,
   const LINALG::Matrix<my::nsd_,my::nen_> &                       edispn,
   const LINALG::Matrix<my::nsd_,my::nen_> &                       egridv,
+  const LINALG::Matrix<my::nen_,1>&                               escaaf,
   Teuchos::RCP<MAT::Material>                                     mat,
   bool                                                            isale,
   const DRT::UTILS::GaussIntegration &                            intpoints)
@@ -409,6 +434,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::Evaluate(
        edispnp,
        edispn,
        egridv,
+       escaaf,
        elemat1,
        elemat2,  // -> emesh
        elevec1,
@@ -437,6 +463,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
     const LINALG::Matrix<my::nen_, 1> &                               epressnp_timederiv,
     const LINALG::Matrix<my::nsd_, my::nen_> &                        edispnp,
     const LINALG::Matrix<my::nsd_, my::nen_> &                        egridv,
+    const LINALG::Matrix<my::nen_,1>&                                 escaaf,
     Teuchos::RCP<MAT::Material>                                       mat,
     bool                                                              isale,
     const DRT::UTILS::GaussIntegration &                              intpoints)
@@ -465,6 +492,7 @@ int DRT::ELEMENTS::FluidEleCalcPoro<distype>::EvaluateOD(
         epressnp_timederiv,
         edispnp,
         egridv,
+        escaaf,
         elemat1,
         elevec1,
         mat,
@@ -494,6 +522,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
   const LINALG::Matrix<my::nsd_,my::nen_>&                      edispnp,
   const LINALG::Matrix<my::nsd_,my::nen_>&                      edispn,
   const LINALG::Matrix<my::nsd_,my::nen_>&                      egridv,
+  const LINALG::Matrix<my::nen_,1>&                             escaaf,
   LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_>&  estif,
   LINALG::Matrix<(my::nsd_+1)*my::nen_,(my::nsd_+1)*my::nen_>&  emesh,
   LINALG::Matrix<(my::nsd_+1)*my::nen_,1>&                      eforce,
@@ -707,6 +736,10 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
         gridvdiv += gridvelderxy(idim,idim);
       }
     }
+
+    // compute scalar at n+alpha_F or n+1
+    const double scalaraf = my::funct_.Dot(escaaf);
+
     // -------------------------(material) deformation gradient F = d xyze_ / d XYZE = xyze_ * N_XYZ_^T
     LINALG::Matrix<my::nsd_,my::nsd_>          defgrd(false);
     defgrd.MultiplyNT(my::xyze_,N_XYZ_);
@@ -733,21 +766,23 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
     double dphi_dp=0.0;
     double dphi_dJ=0.0;
     double dphi_dJdp=0.0;
-    double dphi_dJJ=0.0;
     double dphi_dpp=0.0;
     double porosity=0.0;
 
-    structmat_->ComputePorosity( //params,
+    params.set<double>("scalar",scalaraf);
+
+    structmat_->ComputePorosity( params,
                                 press,
                                 J,
                                 *(iquad),
                                 porosity,
-                                dphi_dp,
-                                dphi_dJ,
-                                dphi_dJdp,
-                                dphi_dJJ,
-                                dphi_dpp,
+                                &dphi_dp,
+                                &dphi_dJ,
+                                &dphi_dJdp,
+                                NULL, //dphi_dJJ not needed
+                                &dphi_dpp,
                                 false);
+
     double refporositydot = structmat_->RefPorosityTimeDeriv();
 
     //porosity gradient (calculated only if needed)
@@ -1616,7 +1651,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
        }
      }
 
-     ComputeContiTimeRHS(epren,edispn,preforce,rhsfac);
+     ComputeContiTimeRHS(params,epren,edispn,preforce,rhsfac);
 /***********************************************************************************************************/
 
     // 5) standard Galerkin bodyforce term on right-hand side
@@ -1759,6 +1794,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
     const LINALG::Matrix<my::nen_, 1> &                             epressnp_timederiv,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       edispnp,
     const LINALG::Matrix<my::nsd_, my::nen_>&                       egridv,
+    const LINALG::Matrix<my::nen_,1>&                               escaaf,
     LINALG::Matrix<(my::nsd_ + 1) * my::nen_,my::nsd_ * my::nen_>&  ecoupl,
     LINALG::Matrix<(my::nsd_ + 1) * my::nen_, 1>&                   eforce,
     Teuchos::RCP<const MAT::Material>                               material,
@@ -1923,20 +1959,24 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::SysmatOD(
     double dphi_dJ=0.0;
     double dphi_dJdp=0.0;
     double dphi_dJJ=0.0;
-    double dphi_dpp=0.0;
     double porosity=0.0;
 
-    structmat_->ComputePorosity(// params,
+    // compute scalar at n+alpha_F or n+1
+    const double scalaraf = my::funct_.Dot(escaaf);
+    params.set<double>("scalar",scalaraf);
+
+    structmat_->ComputePorosity(params,
                                 press,
                                 J,
                                 *(iquad),
                                 porosity,
-                                dphi_dp,
-                                dphi_dJ,
-                                dphi_dJdp,
-                                dphi_dJJ,
-                                dphi_dpp,
+                                &dphi_dp,
+                                &dphi_dJ,
+                                &dphi_dJdp,
+                                &dphi_dJJ,
+                                NULL, //dphi_dpp not needed
                                 false);
+
     double refporositydot = structmat_->RefPorosityTimeDeriv();
 
     // dF/dx
@@ -3964,6 +4004,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeFDerivative(
  *----------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType distype>
 void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeContiTimeRHS(
+                                Teuchos::ParameterList&                   params,
                                 const LINALG::Matrix<my::nen_, 1>&        epren,
                                 const LINALG::Matrix<my::nsd_, my::nen_>& edispn,
                                 LINALG::Matrix<my::nen_,1>&               preforce,
@@ -3994,24 +4035,20 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::ComputeContiTimeRHS(
   double press_old = my::funct_.Dot(epren);
 
   //-----------------------------------auxilary variables for computing the porosity
-  double dphi_dp_old=0.0;
-  double dphi_dJ_old=0.0;
-  double dphi_dJdp_old=0.0;
-  double dphi_dJJ_old=0.0;
-  double dphi_dpp_old=0.0;
-  double porosity_old=0.0;
+  double porosity_old = 0.0;
+  double dphi_dp_old  = 0.0;
 
   // compute porosity, but do not save
-  structmat_->ComputePorosity(//params,
+  structmat_->ComputePorosity(params,
                             press_old,
                             J_old,
                             -1,
                             porosity_old,
-                            dphi_dp_old,
-                            dphi_dJ_old,
-                            dphi_dJdp_old,
-                            dphi_dJJ_old,
-                            dphi_dpp_old,
+                            &dphi_dp_old,
+                            NULL,
+                            NULL,
+                            NULL,
+                            NULL,
                             false);
 
   //rhs from last time step
@@ -4225,8 +4262,8 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::GetStructMaterial()
   if(structele == NULL)
     dserror("Fluid element %i not on local processor", my::eid_);
   //get structure material
-  structmat_ = Teuchos::rcp_static_cast<MAT::StructPoro>((structele->Material()));
-  if(structmat_->MaterialType() != INPAR::MAT::m_structporo)
+  structmat_ = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(structele->Material());
+  if(structmat_ == Teuchos::null)
     dserror("invalid structure material for poroelasticity");
 
   return;

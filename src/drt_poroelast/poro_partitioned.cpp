@@ -28,7 +28,7 @@
 POROELAST::Partitioned::Partitioned(const Epetra_Comm& comm,
                                           const Teuchos::ParameterList& timeparams) :
       PoroBase(comm, timeparams),
-      fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(FluidField().Velnp())))),
+      fluidincnp_(Teuchos::rcp(new Epetra_Vector(*(FluidField()->Velnp())))),
       structincnp_(Teuchos::rcp(new Epetra_Vector(*(StructureField()->Dispnp())))),
       del_(Teuchos::null),
       delhist_(Teuchos::null),
@@ -40,18 +40,18 @@ POROELAST::Partitioned::Partitioned(const Epetra_Comm& comm,
   itmax_ = porodyn.get<int>("ITEMAX"); // default: =10
   ittol_ = porodyn.get<double>("INCTOL"); // default: =1e-6
 
-  fluidveln_ = LINALG::CreateVector(*(FluidField().DofRowMap()), true);
+  fluidveln_ = LINALG::CreateVector(*(FluidField()->DofRowMap()), true);
   fluidveln_->PutScalar(0.0);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void POROELAST::Partitioned::Solve()
+void POROELAST::Partitioned::DoTimeStep()
 {
 
     PrepareTimeStep();
 
-    OuterLoop();
+    Solve();
 
     UpdateAndOutput();
 }
@@ -76,7 +76,7 @@ void POROELAST::Partitioned::UpdateAndOutput()
 
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
-void POROELAST::Partitioned::OuterLoop()
+void POROELAST::Partitioned::Solve()
 {
   int  itnum = 0;
   bool stopnonliniter = false;
@@ -91,7 +91,7 @@ void POROELAST::Partitioned::OuterLoop()
 
   if ( Step()==1 )
   {
-    fluidveln_->Update(1.0,*(FluidField().Veln()),0.0);
+    fluidveln_->Update(1.0,*(FluidField()->Veln()),0.0);
   }
 
   while (stopnonliniter==false)
@@ -100,19 +100,19 @@ void POROELAST::Partitioned::OuterLoop()
 
     // store increment from first solution for convergence check (like in
     // elch_algorithm: use current values)
-    fluidincnp_->Update(1.0,*FluidField().Velnp(),0.0);
+    fluidincnp_->Update(1.0,*FluidField()->Velnp(),0.0);
     structincnp_->Update(1.0,*StructureField()->Dispnp(),0.0);
 
     // get current fluid velocities due to solve fluid step, like predictor in FSI
     // 1. iteration: get velocities of old time step (T_n)
     if (itnum==1)
     {
-      fluidveln_->Update(1.0,*(FluidField().Veln()),0.0);
+      fluidveln_->Update(1.0,*(FluidField()->Veln()),0.0);
     }
     else // itnum > 1
     {
       // save velocity solution of old iteration step T_{n+1}^i
-      fluidveln_->Update(1.0,*(FluidField().Velnp()),0.0);
+      fluidveln_->Update(1.0,*(FluidField()->Velnp()),0.0);
     }
 
     // set fluid- and structure-based scalar transport values required in FSI
@@ -170,9 +170,9 @@ void POROELAST::Partitioned::DoFluidStep()
         << "\n***********************\n FLUID SOLVER \n***********************\n";
   }
 
-  //FluidField().PrepareSolve();
+  //FluidField()->PrepareSolve();
   // Newton-Raphson iteration
-  FluidField().NonlinearSolve();
+  FluidField()->NonlinearSolve();
 }
 
 /*----------------------------------------------------------------------*/
@@ -184,7 +184,7 @@ void POROELAST::Partitioned::PrepareTimeStep()
 
   StructureField()-> PrepareTimeStep();
   SetStructSolution();
-  FluidField().PrepareTimeStep();
+  FluidField()->PrepareTimeStep();
   SetFluidSolution();
 }
 
@@ -213,12 +213,12 @@ bool POROELAST::Partitioned::ConvergenceCheck(
 
   // build the current temperature increment Inc T^{i+1}
   // \f Delta T^{k+1} = Inc T^{k+1} = T^{k+1} - T^{k}  \f
-  fluidincnp_->Update(1.0,*(FluidField().Velnp()),-1.0);
+  fluidincnp_->Update(1.0,*(FluidField()->Velnp()),-1.0);
   structincnp_->Update(1.0,*(StructureField()->Dispnp()),-1.0);
 
   // build the L2-norm of the temperature increment and the temperature
   fluidincnp_->Norm2(&fluidincnorm_L2);
-  FluidField().Velnp()->Norm2(&fluidnorm_L2);
+  FluidField()->Velnp()->Norm2(&fluidnorm_L2);
   structincnp_->Norm2(&dispincnorm_L2);
   StructureField()->Dispnp()->Norm2(&structnorm_L2);
 
@@ -309,8 +309,8 @@ dserror("Aitken Relaxation not yet implemented");
   // difference of last two solutions
   if (del_ == Teuchos::null)
   {
-    del_ = LINALG::CreateVector(*(FluidField().DofRowMap(0)), true);
-    delhist_ = LINALG::CreateVector(*(FluidField().DofRowMap(0)), true);
+    del_ = LINALG::CreateVector(*(FluidField()->DofRowMap(0)), true);
+    delhist_ = LINALG::CreateVector(*(FluidField()->DofRowMap(0)), true);
     del_->PutScalar(1.0e20);
     delhist_->PutScalar(0.0);
   }

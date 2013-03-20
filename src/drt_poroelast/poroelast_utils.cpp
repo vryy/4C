@@ -23,10 +23,13 @@
 #include "poro_monolithicstructuresplit.H"
 #include "poro_monolithicfluidsplit.H"
 #include "poroelast_utils.H"
+#include "../drt_inpar/inpar_poroelast.H"
 
 #include "poro_scatra_base.H"
 
 #include "poro_scatra_part_1wc.H"
+#include "poro_scatra_part_2wc.H"
+#include "../drt_inpar/inpar_poroscatra.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_mat/matpar_bundle.H"
@@ -288,10 +291,34 @@ Teuchos::RCP<POROELAST::PORO_SCATRA_Base> POROELAST::UTILS::CreatePoroScatraAlgo
     const Teuchos::ParameterList& timeparams,
     const Epetra_Comm& comm)
 {
+  DRT::Problem* problem = DRT::Problem::Instance();
+
   // create an empty PORO_SCATRA_Base instance
   Teuchos::RCP<POROELAST::PORO_SCATRA_Base> algo = Teuchos::null;
 
-  algo = Teuchos::rcp(new POROELAST::PORO_SCATRA_Part_1WC(comm, timeparams));
+  //Parameter reading
+  const Teuchos::ParameterList& params = problem->PoroScatraControlParams();
+  const INPAR::PORO_SCATRA::SolutionSchemeOverFields coupling
+    = DRT::INPUT::IntegralValue<INPAR::PORO_SCATRA::SolutionSchemeOverFields>(params,"COUPALGO");
+
+  switch (coupling)
+  {
+    case INPAR::PORO_SCATRA::Part_ScatraToPoro:
+    {
+      algo = Teuchos::rcp(new POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro(comm, timeparams));
+      break;
+    }
+    case INPAR::PORO_SCATRA::Part_PoroToScatra:
+    {
+      algo = Teuchos::rcp(new POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra(comm, timeparams));
+      break;
+    }
+    case INPAR::PORO_SCATRA::Part_TwoWay:
+    {
+      algo = Teuchos::rcp(new POROELAST::PORO_SCATRA_Part_2WC(comm, timeparams));
+      break;
+    }
+  }
 
   return algo;
 }

@@ -2984,6 +2984,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
       discret_->SetState("dispnp", dispnp_);
       discret_->SetState("gridv", gridv_);
       discret_->SetState("velnp",velnp_);
+      discret_->SetState("scaaf",scaaf_);
       discret_->EvaluateCondition(eleparams,sysmat_,Teuchos::null,residual_,Teuchos::null,Teuchos::null,condname);
       discret_->ClearState();
     }

@@ -52,7 +52,8 @@ void DRT::ELEMENTS::Wall1::w1_call_matgeononl(
 )
 {
 
-  if(material->MaterialType() == INPAR::MAT::m_structporo)
+  if(material->MaterialType() == INPAR::MAT::m_structporo or
+    material->MaterialType() == INPAR::MAT::m_structpororeaction)
   {
     const MAT::StructPoro* actmat = static_cast<const MAT::StructPoro*>(material.get());
     //setup is done in so3_poro
@@ -567,87 +568,16 @@ void DRT::ELEMENTS::Wall1::MaterialResponse3d(
   const LINALG::Matrix<6,1>* glstrain
   )
 {
-  Teuchos::RCP<MAT::Material> mat = Material();
 
-  if(mat->MaterialType() == INPAR::MAT::m_structporo)
-  {
-    const MAT::StructPoro* actmat = static_cast<const MAT::StructPoro*>(mat.get());
-    //setup is done in so3_poro
-    //actmat->Setup(NUMGPT_SOH8);
-    mat = actmat->GetMaterial();
-  }
+  Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(Material());
+  if(so3mat == Teuchos::null)
+    dserror("cast to So3Material failed!");
 
-  switch (mat->MaterialType())
-  {
-    case INPAR::MAT::m_stvenant: /*------------------ st.venant-kirchhoff-material */
-    {
-      MAT::StVenantKirchhoff* stvk = static_cast <MAT::StVenantKirchhoff*>(mat.get());
-      LINALG::Matrix<3,3> defgrd(true);
-      Teuchos::ParameterList params;
-      stvk->Evaluate(&defgrd,glstrain,params,stress,cmat);
-      return;
-      break;
-    }
-    case INPAR::MAT::m_elasthyper: /*----------- general hyperelastic matrial */
-    {
-      MAT::ElastHyper* hyper = static_cast <MAT::ElastHyper*>(mat.get());
-      Teuchos::ParameterList params;
-      LINALG::Matrix<3,3> defgrd(true);
-      hyper->Evaluate(&defgrd,glstrain,params,stress,cmat);
-      return;
-      break;
-    }
-    default:
-    {
-      dserror("Unknown type of material %d", mat->MaterialType());
-      break;
-    }
-  }
+  Teuchos::ParameterList params;
+  so3mat->Evaluate(NULL,glstrain,params,stress,cmat);
+
   return;
 }
-
-/*-----------------------------------------------------------------------------*
-| deliver density                                                   bborn 08/08|
-*-----------------------------------------------------------------------------*/
-double DRT::ELEMENTS::Wall1::Density(
-  Teuchos::RCP<const MAT::Material> material
-)
-{
-  if(material->MaterialType() == INPAR::MAT::m_structporo)
-  {
-    const MAT::StructPoro* actmat = static_cast<const MAT::StructPoro*>(material.get());
-    //setup is done in so3_poro
-    //actmat->Setup(NUMGPT_SOH8);
-    material = actmat->GetMaterial();
-  }
-
-  // switch material type
-  switch (material->MaterialType())
-  {
-  case INPAR::MAT::m_stvenant :  // linear elastic
-  {
-    const MAT::StVenantKirchhoff* actmat = static_cast<const MAT::StVenantKirchhoff*>(material.get());
-    return actmat->Density();
-    break;
-  }
-  case INPAR::MAT::m_neohooke : // kompressible neo-Hooke
-  {
-    const MAT::NeoHooke* actmat = static_cast<const MAT::NeoHooke*>(material.get());
-    return actmat->Density();
-    break;
-  }
-  case INPAR::MAT::m_elasthyper: // general hyperelastic matrial
-  {
-    const MAT::ElastHyper* actmat = static_cast<const MAT::ElastHyper*>(material.get());
-    return actmat->Density();
-    break;
-  }
-  default:
-    dserror("Illegal typ of material for this element");
-    return 0;
-    break;
-  }
-}  // Density
 
 /*-----------------------------------------------------------------------------*
 | deliver internal/strain energy                                    bborn 08/08|

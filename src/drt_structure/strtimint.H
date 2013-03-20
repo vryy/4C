@@ -459,11 +459,7 @@ namespace STR
 
     //! @name porous media specific methods
     //@{
-    //! Apply the current fluid velocities and pressures to the structure problem
-    void ApplyVelAndPress
-    (
-      Teuchos::RCP<const Epetra_Vector> veln  //!< current velocities and pressures
-    );
+
     //@}
 
     //! Set forces due to interface with fluid, the force is expected external-force-like
@@ -761,12 +757,6 @@ namespace STR
     //! @name TSI specific methods
     //@{
 
-    //! Apply the current temperatures to the structure problem
-    void ApplyTemperatures
-    (
-      Teuchos::RCP<const Epetra_Vector> temp  //!< current temperatures
-    );
-
     //! specific method for iterative staggered partitioned TSI
 
     /// Identify residual
@@ -780,6 +770,20 @@ namespace STR
     /// recalculate structural matrices for tsi simulations
     virtual void TSIMatrix() = 0;
 
+    //@}
+
+    //! @name volume coupling specific methods
+    //@{
+    //! Set the coupling state (e.g. temperatures for tsi, fluid velocities for poro) onto the structure discretization
+    void SetCouplingState();
+
+    //! Apply the coupling state (e.g. temperatures for tsi, fluid velocities for poro) to the structure time integrator
+    void ApplyCouplingState
+    (
+      Teuchos::RCP<const Epetra_Vector> state,  //!< (i) current state
+      const string& name,                       //!< (i) name of state
+      unsigned dofset=1                         //!< (i) number of dofset state is applied to
+    );
     //@}
 
     //! @name Contact and meshtying specific methods
@@ -993,10 +997,6 @@ namespace STR
     Teuchos::RCP<Epetra_Vector> accn_;  //!< global accelerations
                                         //!< \f${A}_{n+1}\f$
                                         //!< at \f$t_{n+1}\f$
-    //! global coupling variables of the thermo field
-    Teuchos::RCP<Epetra_Vector> tempn_; //!< global temperatures
-                                        //!< \f${T}_{n+1}\f$
-                                        //!< at \f$t_{n+1}\f$
     //! additional external forces
     Teuchos::RCP<Epetra_Vector> fifc_;  //!< interface force in e.g. FSI
     //@}
@@ -1027,12 +1027,10 @@ namespace STR
     double            dtcmt_;    //!< contact / meshtying evaluation time
     //@}
 
-    //! @name Poroelasticity specific stuff
+    //! @name volume coupling specific stuff
     //@{
-    // global coupling variable of the fluid field (for poroelasticity problems only)
-    Teuchos::RCP<Epetra_Vector> fluidveln_; //!< global velocities and pressures at n+1
-    //double initporosity_;
-
+    // global coupling variable
+    std::vector<std::map<string,Teuchos::RCP<const Epetra_Vector> > > couplstate_; // map of references to coupling states
     //@}
 
     //! @name Patient specific stuff

@@ -42,8 +42,50 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::PreEvaluate(Teuchos::ParameterList& par
                                         DRT::Discretization&      discretization,
                                         DRT::Element::LocationArray& la)
 {
-  //do nothing
-    return;
+  if(scatracoupling_)
+  {
+    if(la.Size()>2)
+    {
+      if (discretization.HasState(2,"temperature"))
+      {
+        // check if you can get the scalar state
+        Teuchos::RCP<const Epetra_Vector> tempnp
+          = discretization.GetState(2,"temperature");
+
+        // extract local values of the global vectors
+        Teuchos::RCP<std::vector<double> >mytemp = Teuchos::rcp(new std::vector<double>(la[2].lm_.size()) );
+        DRT::UTILS::ExtractMyValues(*tempnp,*mytemp,la[2].lm_);
+
+        double scalar = 0.0;
+        for(unsigned int i=0; i<mytemp->size(); i++)
+          scalar += mytemp->at(i)/mytemp->size();
+        //params.set<Teuchos::RCP<std::vector<double> > >("scalar",mytemp);
+        params.set<double>("scalar",scalar);
+      }
+    }
+    else
+    {
+      const double time = params.get("total time",0.0);
+    // find out whether we will use a time curve and get the factor
+      int num = 0; // TO BE READ FROM INPUTFILE AT EACH ELEMENT!!!
+      std::vector<double> xrefe; xrefe.resize(3);
+      DRT::Node** nodes = Nodes();
+      // get displacements of this element
+    //  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+     for (int i=0; i<numnod_; ++i){
+        const double* x = nodes[i]->X();
+        xrefe [0] +=  x[0]/numnod_;
+        xrefe [1] +=  x[1]/numnod_;
+        xrefe [2] +=  x[2]/numnod_;
+
+      }
+      const double* coordgpref = &xrefe[0];
+      double functfac = DRT::Problem::Instance()->Funct(num).Evaluate(0,coordgpref,time,NULL);
+      params.set<double>("scalar",functfac);
+    }
+  }
+
+  return;
 }
 
 /*----------------------------------------------------------------------*
@@ -76,6 +118,11 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::Evaluate(Teuchos::ParameterList& params,
   // off diagonal terms in stiffness matrix for monolithic coupling
   case Wall1_Poro<distype>::calc_struct_multidofsetcoupling:
   {
+    //in some cases we need to write/change some data before evaluating
+    PreEvaluate(params,
+                discretization,
+                la);
+
     MyEvaluate(params,
                       discretization,
                       la,
@@ -277,9 +324,7 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
     if (elemat1.IsInitialized()) matptr = &elemat1;
 
     //get structure material
-    MAT::StructPoro* structmat = static_cast<MAT::StructPoro*>((Material()).get());
-    if(structmat->MaterialType() != INPAR::MAT::m_structporo)
-      dserror("calc_struct_nlnstiffmass: invalid structure material for poroelasticity");
+    Teuchos::RCP<MAT::StructPoro> structmat = Teuchos::rcp_static_cast<MAT::StructPoro>(Material());
 
     const double initporosity = structmat->Initporosity();
     if(initporosity<0.0)
@@ -638,12 +683,12 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
 
   //get fluid material
   Teuchos::RCP< MAT::FluidPoro > fluidmat = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(fluidele->Material());
-  if(fluidmat->MaterialType() != INPAR::MAT::m_fluidporo)
+  if(fluidmat == Teuchos::null)
     dserror("invalid fluid material for poroelasticity");
 
   //get structure material
   Teuchos::RCP< MAT::StructPoro > structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-  if(structmat->MaterialType() != INPAR::MAT::m_structporo)
+  if(structmat == Teuchos::null)
     dserror("invalid structure material for poroelasticity");
 
   double reacoeff = fluidmat->ComputeReactionCoeff();
@@ -988,18 +1033,19 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::nlnstiff_poroelast(
     double dphi_dJ=0.0;
     double dphi_dJdp=0.0;
     double dphi_dJJ=0.0;
-    double dphi_dpp=0.0;
     double porosity=0.0;
 
-    structmat->ComputePorosity( press,
+    structmat->ComputePorosity( params,
+                                press,
                                 J,
                                 gp,
                                 porosity,
-                                dphi_dp,
-                                dphi_dJ,
-                                dphi_dJdp,
-                                dphi_dJJ,
-                                dphi_dpp);
+                                &dphi_dp,
+                                &dphi_dJ,
+                                &dphi_dJdp,
+                                &dphi_dJJ,
+                                NULL        //dphi_dpp not needed
+                                );
 
     porosity_gp[gp] = porosity;
 
@@ -1575,12 +1621,11 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::coupling_poroelast(
 
   //get fluid material
   Teuchos::RCP< MAT::FluidPoro > fluidmat = Teuchos::rcp_dynamic_cast<MAT::FluidPoro>(fluidele->Material());
-  if(fluidmat->MaterialType() != INPAR::MAT::m_fluidporo)
+  if(fluidmat == Teuchos::null)
     dserror("invalid fluid material for poroelasticity");
-
   //get structure material
   Teuchos::RCP< MAT::StructPoro > structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(Material());
-  if(structmat->MaterialType() != INPAR::MAT::m_structporo)
+  if(structmat == Teuchos::null)
     dserror("invalid structure material for poroelasticity");
 
   const double reacoeff = fluidmat->ComputeReactionCoeff();
@@ -1786,20 +1831,19 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::coupling_poroelast(
     double dphi_dp=0.0;
     double dphi_dJ=0.0;
     double dphi_dJdp=0.0;
-    double dphi_dJJ=0.0;
     double dphi_dpp=0.0;
     double porosity=0.0;
 
-    structmat->ComputePorosity( //params,
+    structmat->ComputePorosity( params,
                                 press,
                                 J,
                                 gp,
                                 porosity,
-                                dphi_dp,
-                                dphi_dJ,
-                                dphi_dJdp,
-                                dphi_dJJ,
-                                dphi_dpp);
+                                &dphi_dp,
+                                &dphi_dJ,
+                                &dphi_dJdp,
+                                NULL,       //dphi_dJJ not needed
+                                &dphi_dpp);
 
     //-----------material porosity gradient
     LINALG::Matrix<1,numdim_> grad_porosity;
@@ -2211,6 +2255,7 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::couplstress_poroelast(
 
     default:
       dserror("requested stress type not available");
+      break;
     }
   }
 
@@ -2249,7 +2294,14 @@ void DRT::ELEMENTS::Wall1_Poro<distype>::InitJacobianMapping()
     if (detJ_[gp] <= 0.0) dserror("Element Jacobian mapping %10.5e <= 0.0",detJ_[gp]);
   }
 
+  scatracoupling_=false;
+
+  PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
+  if(probtype == prb_poroscatra)
+    scatracoupling_=true;
+
   init_=true;
+
   return;
 }
 

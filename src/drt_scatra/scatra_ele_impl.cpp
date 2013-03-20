@@ -6713,7 +6713,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS_PoroScatraMod(
 
   const Teuchos::RCP<const MAT::StructPoro>& structmat
             = Teuchos::rcp_dynamic_cast<const MAT::StructPoro>(structele->Material());
-  if(structmat->MaterialType() != INPAR::MAT::m_structporo)
+  if(structmat == Teuchos::null)
     dserror("invalid structure material for poroelasticity");
 
   const double           porosity   = structmat->GetPorosityAtGP(iquad);

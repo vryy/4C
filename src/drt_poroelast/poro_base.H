@@ -78,14 +78,19 @@ namespace POROELAST
       //! perform result tests
       virtual void TestResults(const Epetra_Comm& comm);
 
+      //! return state vector at time step n+1
+      //virtual Teuchos::RCP<Epetra_Vector> State()=0;
+
       //! access to structural field
       const Teuchos::RCP<ADAPTER::FSIStructureWrapper>& StructureField(){return structure_;}
 
       //! access to fluid field
-      ::ADAPTER::FluidPoro& FluidField(){return *fluid_;}
+      const Teuchos::RCP<ADAPTER::FluidPoro>& FluidField(){return fluid_;}
 
       //! solve time step (depending on algorithm)
       virtual void Solve() = 0;
+
+      virtual void DoTimeStep() = 0;
 
       /// setup solver (for monolithic only)
       virtual bool SetupSolver(){return false;};

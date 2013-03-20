@@ -145,7 +145,6 @@ STR::TimInt::TimInt
   disn_(Teuchos::null),
   veln_(Teuchos::null),
   accn_(Teuchos::null),
-  tempn_(Teuchos::null),
   fifc_(Teuchos::null),
   stiff_(Teuchos::null),
   mass_(Teuchos::null),
@@ -154,7 +153,7 @@ STR::TimInt::TimInt
   dtsolve_(0.0),
   dtele_(0.0),
   dtcmt_(0.0),
-  fluidveln_(Teuchos::null),
+  couplstate_(0),
   pslist_(Teuchos::null),
   strgrdisp_(Teuchos::null)
 {
@@ -715,13 +714,10 @@ void STR::TimInt::DetermineMassDampConsistAccel()
     discret_->SetState(0,"residual displacement", zeros_);
     discret_->SetState(0,"displacement", (*dis_)(0));
     if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", (*vel_)(0));
-    // set the temperature for the coupled problem
-    if(tempn_!=Teuchos::null)
-    {
-      discret_->SetState(1,"temperature",tempn_);
-    }
-    if(fluidveln_!=Teuchos::null)    //porelasticity specific (coupling with fluid field)
-      discret_->SetState(1,"fluidvel",fluidveln_);
+
+    //set coupling state for volume coupled problems (e.g. for tsi and poro)
+    SetCouplingState();
+
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -1290,11 +1286,10 @@ void STR::TimInt::DetermineStressStrain()
     // extended SetState(0,...) in case of multiple dofsets (e.g. TSI)
     discret_->SetState(0,"residual displacement", zeros_);
     discret_->SetState(0,"displacement", disn_);
-    // set the temperature for the coupled problem
-    if(tempn_!=Teuchos::null)
-      discret_->SetState(1,"temperature",tempn_);
-    if(fluidveln_!=Teuchos::null)
-      discret_->SetState(1,"fluidvel",fluidveln_);
+
+    //set coupling state for volume coupled problems (e.g. for tsi and poro)
+    SetCouplingState();
+
     if(dismatn_!= Teuchos::null)
       discret_->SetState(0,"material displacement",dismatn_);
 
@@ -1884,11 +1879,10 @@ void STR::TimInt::ApplyForceStiffInternal
   if (damping_ == INPAR::STR::damp_material)
     discret_->SetState(0,"velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
-  // set the temperature for the coupled problem
-  if(tempn_!=Teuchos::null)
-    discret_->SetState(1,"temperature",tempn_);
-  if(fluidveln_!=Teuchos::null)    //porelasticity specific (coupling with fluid field)
-    discret_->SetState(1,"fluidvel",fluidveln_);
+
+  //set coupling state for volume coupled problems (e.g. for tsi and poro)
+  SetCouplingState();
+
   if(dismatn_!=Teuchos::null)
     discret_->SetState(0,"material displacement",dismatn_);
   discret_->Evaluate(p, stiff, damp, fint, Teuchos::null, Teuchos::null);
@@ -1934,11 +1928,10 @@ void STR::TimInt::ApplyForceInternal
   discret_->ClearState();
   discret_->SetState("residual displacement", disi);  // these are incremental
   discret_->SetState("displacement", dis);
-  // set the temperature for the coupled problem
-  if(tempn_!=Teuchos::null)
-    discret_->SetState(1,"temperature",tempn_);
-  if(fluidveln_!=Teuchos::null) //porelasticity specific parameters
-    discret_->SetState(1,"fluidvel",fluidveln_);
+
+  //set coupling state for volume coupled problems (e.g. for tsi and poro)
+  SetCouplingState();
+
   if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", vel);
   //fintn_->PutScalar(0.0);  // initialise internal force vector
   discret_->Evaluate(p, Teuchos::null, Teuchos::null,
@@ -2023,42 +2016,50 @@ bool STR::TimInt::UseContactSolver()
 }
 
 /*----------------------------------------------------------------------*/
-/* get the temperature from the temperature discretization   dano 03/10 */
-void STR::TimInt::ApplyTemperatures(
-  Teuchos::RCP<const Epetra_Vector> temp  ///< temperature vector T
+/* set volume coupling state from other discretization  vuong 01/12*/
+void STR::TimInt::ApplyCouplingState(
+  Teuchos::RCP<const Epetra_Vector> state,
+  const string& name,
+  unsigned dofset
   )
 {
-  if (tempn_ == Teuchos::null)
-    tempn_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
+  //check
+  if(state == Teuchos::null)
+    dserror("coupling state is Teuchos::null!");
 
-  if( (temp != Teuchos::null) && (tempn_->Map().SameAs(temp->Map())) )
-  {
-    // temperatures T at chosen time t dependent on call in coupled algorithm
-    tempn_->Update(1.0, *temp, 0.0);
-  }
-  else dserror("no temperatures available for TSI or maps not equal");
+  if(dofset == 0)
+    dserror("dofset number equals zero!");
 
-  // where the fun starts
+  //copy state values
+  RCP<Epetra_Vector> tmp = LINALG::CreateVector(*(discret_->DofRowMap(dofset)), true);
+  LINALG::Export(*state,*tmp);
+
+  //resize the coupling state vector, if it is too short
+  if (couplstate_.size()<dofset)
+    couplstate_.resize(dofset);
+
+  //save state
+  couplstate_[dofset-1][name] = tmp;
+
   return;
 }
 
 /*----------------------------------------------------------------------*/
-/* get the velocites and pressures from the fluid discretization  vuong 01/12*/
-void STR::TimInt::ApplyVelAndPress(
-  Teuchos::RCP<const Epetra_Vector> veln  ///< the current velocities
-  )
+/* set coupling state for volume coupled problems          */
+void STR::TimInt::SetCouplingState()
 {
-  if (fluidveln_ == Teuchos::null)
-    fluidveln_ = LINALG::CreateVector(*(discret_->DofRowMap(1)), true);
+  std::map<string,Teuchos::RCP<const Epetra_Vector> >::iterator it;
 
-  dsassert( fluidveln_->Map().SameAs(veln->Map()), "maps do not match!");
-
-  if(veln != Teuchos::null )
+  //loop over dofsets
+  for (unsigned int iter = 0; iter<couplstate_.size();  ++iter)
   {
-    // velocities and pressures at t_{n+1}
-    fluidveln_->Update(1.0, *veln, 0.0);
+    //the number of the dof set is iter+1 as couplstate_ does not include the own dof set
+    const int dofset = iter+1;
+
+    //set all saved states onto the respective dofset
+    for(it=couplstate_[iter].begin(); it!=couplstate_[iter].end(); ++it)
+      discret_->SetState(dofset,it->first,it->second);
   }
-  else dserror("no velocities and pressures available");
 
   return;
 }

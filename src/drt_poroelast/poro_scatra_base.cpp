@@ -149,7 +149,7 @@ void POROELAST::PORO_SCATRA_Base::TestResults(const Epetra_Comm& comm)
   DRT::Problem* problem = DRT::Problem::Instance();
 
   problem->AddFieldTest(poro_->StructureField()->CreateFieldTest());
-  problem->AddFieldTest(poro_->FluidField().CreateFieldTest());
+  problem->AddFieldTest(poro_->FluidField()->CreateFieldTest());
   problem->AddFieldTest(scatra_->CreateScaTraFieldTest());
   problem->TestAll(comm);
 }

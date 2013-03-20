@@ -46,19 +46,13 @@ bool DRT::ELEMENTS::Wall1::ReadElement(const std::string& eletype,
 
   Teuchos::RCP<MAT::Material> mat = Material();
 
-  if(mat->MaterialType() == INPAR::MAT::m_structporo)
   {
-    MAT::StructPoro* actmat = static_cast<MAT::StructPoro*>(mat.get());
-    //setup is done in so3_poro
-    //actmat->Setup(NUMGPT_SOH8);
-    mat = actmat->GetMaterial();
-  }
-
-  if (mat->MaterialType() == INPAR::MAT::m_elasthyper){
+    Teuchos::RCP<MAT::So3Material> so3mat = Teuchos::rcp_dynamic_cast<MAT::So3Material>(mat);
+    if(so3mat == Teuchos::null)
+      dserror("material is not a So3Material");
     const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
     const int numgp = intpoints.nquad;
-    MAT::ElastHyper* elahy = static_cast <MAT::ElastHyper*>(mat.get());
-    elahy->Setup(numgp,linedef);
+    so3mat->Setup(numgp,linedef);
   }
 
   std::string buffer;
@@ -186,6 +180,7 @@ DRT::UTILS::GaussRule2D DRT::ELEMENTS::Wall1::getGaussrule(int* ngp)
     }
     default:
        dserror("Unknown distype");
+       break;
   }
   return rule;
 }

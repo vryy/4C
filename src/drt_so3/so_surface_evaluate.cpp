@@ -1866,11 +1866,11 @@ void DRT::ELEMENTS::StructuralSurface::CalculateSurfacePorosity(
     const double J = det/detJ;
 
     //get structure material
-    MAT::StructPoro* structmat = static_cast<MAT::StructPoro*>((parentele->Material()).get());
-    if(structmat->MaterialType() != INPAR::MAT::m_structporo)
+    Teuchos::RCP<MAT::StructPoro> structmat = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(parentele->Material());
+    if(structmat == Teuchos::null)
       dserror("invalid structure material for poroelasticity");
     double porosity=0.0;
-    structmat->ComputeSurfPorosity(//params,
+    structmat->ComputeSurfPorosity( params,
                                     press,
                                     J,
                                     LSurfNumber(),

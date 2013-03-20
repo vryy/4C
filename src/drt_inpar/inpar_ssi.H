@@ -1,9 +1,16 @@
-/*
- * inpar_ssi.H
- *
- *  Created on: Jun 29, 2012
- *      Author: vuong
- */
+/*!------------------------------------------------------------------------------------------------*
+\file inpar_ssi.H
+
+\brief
+
+<pre>
+Maintainer: Anh-Tu Vuong
+            vuong@lnm.mw.tum.de
+            http://www.lnm.mw.tum.de
+            089 - 289-15264
+</pre>
+ *------------------------------------------------------------------------------------------------*/
+
 
 #ifndef INPAR_SSI_H_
 #define INPAR_SSI_H_

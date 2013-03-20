@@ -43,57 +43,6 @@ POROELAST::PORO_SCATRA_Part::PORO_SCATRA_Part(const Epetra_Comm& comm,
 
 }
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void POROELAST::PORO_SCATRA_Part::DoPoroStep()
-{
-  //1)  solve the step problem. Methods obtained from poroelast->TimeLoop(sdynparams); --> sdynparams
-  //			CUIDADO, aqui vuelve a avanzar el paso de tiempo. Hay que corregir eso.
-  //2)  Newton-Raphson iteration
-  //3)  calculate stresses, strains, energies
-  //4)  update all single field solvers
-  //5)  write output to screen and files
-  poro_-> Solve();
-}
-
-void POROELAST::PORO_SCATRA_Part::DoScatraStep()
-{
-  const Epetra_Comm& comm =
-      DRT::Problem::Instance()->GetDis("structure")->Comm();
-
-  if (comm.MyPID() == 0)
-  {
-    cout
-        << "\n***********************\n TRANSPORT SOLVER \n***********************\n";
-  }
-  // -------------------------------------------------------------------
-  // prepare time step
-  // -------------------------------------------------------------------
-  scatra_->ScaTraField().PrepareTimeStep();
-
-  // -------------------------------------------------------------------
-  //                  solve nonlinear / linear equation
-  // -------------------------------------------------------------------
-  scatra_->ScaTraField().Solve();
-
-  // -------------------------------------------------------------------
-  //                         update solution
-  //        current solution becomes old solution of next timestep
-  // -------------------------------------------------------------------
-  scatra_->ScaTraField().Update();
-
-  // -------------------------------------------------------------------
-  // evaluate error for problems with analytical solution
-  // -------------------------------------------------------------------
-  scatra_->ScaTraField().EvaluateErrorComparedToAnalyticalSol();
-
-  // -------------------------------------------------------------------
-  //                         output of solution
-  // -------------------------------------------------------------------
-  scatra_->ScaTraField().Output();
-}
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Part::SetPoroSolution()
@@ -104,15 +53,34 @@ void POROELAST::PORO_SCATRA_Part::SetPoroSolution()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void POROELAST::PORO_SCATRA_Part::SetScatraSolution()
+{
+  //porous structure
+  poro_->StructureField()->ApplyCouplingState(scatra_->ScaTraField().Phinp(),"temperature",2);
+
+  //porous fluid
+  poro_->FluidField()->SetIterLomaFields(scatra_->ScaTraField().Phinp(),
+                                        scatra_->ScaTraField().Phin(),
+                                        scatra_->ScaTraField().Phidtnp(),
+                                        Teuchos::null,
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        0.0,
+                                        scatra_->ScaTraField().Discretization());
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Part::SetVelocityFields()
 {
   scatra_->ScaTraField().SetVelocityField(
-      poro_->FluidField().ConvectiveVel(), //convective vel.
+      poro_->FluidField()->ConvectiveVel(), //convective vel.
       Teuchos::null, //acceleration
-      poro_->FluidField().Velnp(), //velocity
+      poro_->FluidField()->Velnp(), //velocity
       Teuchos::null, //fsvel
       Teuchos::null, //dofset
-      poro_->FluidField().Discretization()); //discretization
+      poro_->FluidField()->Discretization()); //discretization
 }
 
 /*----------------------------------------------------------------------*/
@@ -120,7 +88,7 @@ void POROELAST::PORO_SCATRA_Part::SetVelocityFields()
 void POROELAST::PORO_SCATRA_Part::SetMeshDisp()
 {
   scatra_->ScaTraField().ApplyMeshMovement(
-      poro_->FluidField().Dispnp(),
-      poro_->FluidField().Discretization());
+      poro_->FluidField()->Dispnp(),
+      poro_->FluidField()->Discretization());
 }
 

@@ -112,10 +112,9 @@ namespace POROELAST
       bool Converged();
 
       //! newton iteration
-      void NewtonFull();
-
-      //! solve one time step
       void Solve();
+
+      void DoTimeStep();
 
       //! @name Output
 

@@ -673,12 +673,6 @@ private:
     const LINALG::Matrix<6,1>* glstrain  ///< 3D Green-Lagrange strain vector
   );
 
-  /// (constant) density
-  /// \return density
-  double Density(
-    Teuchos::RCP<const MAT::Material> material  ///< material pointer
-  );
-
   /// Internal/strain energy
   double EnergyInternal(
     Teuchos::RCP<const MAT::Material> material,  ///< element material

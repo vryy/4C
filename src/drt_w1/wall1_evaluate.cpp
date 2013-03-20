@@ -96,8 +96,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
     case Wall1::calc_struct_stress:
     {
       DRT::NURBS::NurbsDiscretization* nurbsdis
-	=
-	dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
+  =
+  dynamic_cast<DRT::NURBS::NurbsDiscretization*>(&(discretization));
 
       bool zero_sized=(*((*nurbsdis).GetKnotVector())).GetEleKnots(myknots,Id());
 
@@ -110,9 +110,8 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
       break;
     }
     default :
-    {
       myknots.clear();
-    }
+      break;
     }
   }
 
@@ -668,6 +667,7 @@ int DRT::ELEMENTS::Wall1::Evaluate(Teuchos::ParameterList&   params,
     break;
     default:
       dserror("Unknown type of action for Wall1 %d", act);
+      break;
   }
   return 0;
 
@@ -924,7 +924,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
 
   // ------------------------------------ check calculation of mass matrix
   double density = 0.0;
-  if (massmatrix) density = Density(material);
+  if (massmatrix) density = material->Density();
 
   /*------- get integraton data ---------------------------------------- */
   const DiscretizationType distype = Shape();
@@ -1124,6 +1124,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
       case INPAR::STR::strain_ea:
       default:
         dserror("requested strain type not supported");
+        break;
       }
 
       // return gp stresses (only in case of stress output)
@@ -1148,6 +1149,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
         break;
       default:
         dserror("requested stress type not supported");
+        break;
       }
 
       /*-----first piola-kirchhoff stress vector------------------------------*/
@@ -1184,6 +1186,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
      case INPAR::STR::strain_ea:
      default:
         dserror("requested strain type not supported");
+        break;
      }
 
      // return gp stresses (only in case of stress output)
@@ -1208,6 +1211,7 @@ void DRT::ELEMENTS::Wall1::w1_nlnstiffmass(
        break;
      default:
        dserror("requested stress type not supported");
+       break;
      }
 
      /*---------------------- geometric part of stiffness matrix kg ---*/
@@ -1312,7 +1316,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(
 
   // ------------------------------------ check calculation of mass matrix
   double density = 0.0;
-  if (massmatrix) density = Density(material);
+  if (massmatrix) density = material->Density();
 
   /*------- get integraton data ---------------------------------------- */
   const DiscretizationType distype = Shape();
@@ -1428,6 +1432,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(
     case INPAR::STR::strain_ea:
     default:
       dserror("requested strain type not supported");
+      break;
    }
 
    // return gp stresses (only in case of stress output)
@@ -1452,6 +1457,7 @@ void DRT::ELEMENTS::Wall1::w1_linstiffmass(
      break;
    default:
      dserror("requested stress type not supported");
+     break;
    }
 
    /*-------------------------------- linear stiffness matrix keu ---*/

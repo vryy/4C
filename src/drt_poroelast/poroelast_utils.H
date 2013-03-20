@@ -20,7 +20,6 @@
  *----------------------------------------------------------------------*/
 #include "Epetra_Vector.h"
 #include "Teuchos_RCP.hpp"
-#include "../drt_inpar/inpar_poroelast.H"
 
 /*----------------------------------------------------------------------*
  |  forward declaration                                                 |

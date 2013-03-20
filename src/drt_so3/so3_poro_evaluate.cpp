@@ -67,7 +67,6 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::PreEvaluate(Teuchos::ParameterLis
         params.set<Teuchos::RCP<std::vector<double> > >("scalar",mytemp);
       }
     }
-    /*
     else
     {
       const double time = params.get("total time",0.0);
@@ -88,10 +87,28 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::PreEvaluate(Teuchos::ParameterLis
       double functfac = DRT::Problem::Instance()->Funct(num).Evaluate(0,coordgpref,time,NULL);
       params.set<double>("scalar",functfac);
     }
-    */
   }
   else
   {
+    /*
+    const double time = params.get("total time",0.0);
+  // find out whether we will use a time curve and get the factor
+    int num = 0; // TO BE READ FROM INPUTFILE AT EACH ELEMENT!!!
+    std::vector<double> xrefe; xrefe.resize(3);
+    DRT::Node** nodes = Nodes();
+    // get displacements of this element
+  //  DRT::UTILS::ExtractMyValues(*disp,mydisp,lm);
+   for (int i=0; i<numnod_; ++i){
+      const double* x = nodes[i]->X();
+      xrefe [0] +=  x[0]/numnod_;
+      xrefe [1] +=  x[1]/numnod_;
+      xrefe [2] +=  x[2]/numnod_;
+
+    }
+    const double* coordgpref = &xrefe[0];
+    double functfac = DRT::Problem::Instance()->Funct(num).Evaluate(0,coordgpref,time,NULL);
+    params.set<double>("scalar",functfac);
+    */
     //do nothing
   }//if(scatracoupling_)
   return;
@@ -1055,28 +1072,13 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
 
     //--------------------------------------------------------------------
 
-    double dphi_dp=0.0;
-    double dphi_dJ=0.0;
-    double dphi_dJdp=0.0;
-    double dphi_dJJ=0.0;
-    double dphi_dpp=0.0;
-    double porosity=0.0;
-
-    structmat->ComputePorosity( //params,
-                                press,
-                                J,
-                                gp,
-                                porosity,
-                                dphi_dp,
-                                dphi_dJ,
-                                dphi_dJdp,
-                                dphi_dJJ,
-                                dphi_dpp);
-
     //linearization of porosity w.r.t structure displacement d\phi/d(us) = d\phi/dJ*dJ/d(us)
     LINALG::Matrix<1,numdof_> dphi_dus;
-    dphi_dus.Update( dphi_dJ , dJ_dus );
+    double porosity=0.0;
 
+    ComputePorosityAndLinearization(params,press,J,gp,structmat,dJ_dus,porosity,dphi_dus);
+
+    /*
     //material porosity gradient Grad(phi) = dphi/dp * Grad(p) + dphi/dJ * Grad(J)
     LINALG::Matrix<numdim_,1> grad_porosity;
     for (int idim=0; idim<numdim_; ++idim)
@@ -1088,6 +1090,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::nlnstiff_poroelast(
     dgradphi_dus.MultiplyTN(dphi_dJJ, GradJ ,dJ_dus);
     dgradphi_dus.Update(dphi_dJ, dgradJ_dus, 1.0);
     dgradphi_dus.Multiply(dphi_dJdp, Gradp, dJ_dus, 1.0);
+    */
 
     //F^-T * Grad\phi
     //LINALG::Matrix<numdim_,1> Finvgradphi;
@@ -1903,23 +1906,21 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
 
     //**************************************************+auxilary variables for computing the porosity and linearization
     double dphi_dp=0.0;
-    double dphi_dJ=0.0;
-    double dphi_dJdp=0.0;
-    double dphi_dJJ=0.0;
-    double dphi_dpp=0.0;
     double porosity=0.0;
 
-    structmat->ComputePorosity( //params,
+    structmat->ComputePorosity( params,
                                 press,
                                 J,
                                 gp,
                                 porosity,
-                                dphi_dp,
-                                dphi_dJ,
-                                dphi_dJdp,
-                                dphi_dJJ,
-                                dphi_dpp);
+                                &dphi_dp,
+                                NULL,       //dphi_dJ not needed
+                                NULL,       //dphi_dJdp not needed
+                                NULL,       //dphi_dJJ not needed
+                                NULL        //dphi_dpp not needed
+                                );
 
+    /*
     //-----------material porosity gradient
     LINALG::Matrix<1,numdim_> grad_porosity;
     for (int idim=0; idim<numdim_; ++idim)
@@ -1931,6 +1932,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::coupling_poroelast(
     dgradphi_dp.MultiplyTT(dphi_dJdp,GradJ,shapefct);
     dgradphi_dp.MultiplyNT(dphi_dpp,Gradp,shapefct,1.0);
     dgradphi_dp.Update(dphi_dp,N_XYZ,1.0);
+    */
 
     //******************* FAD ************************
     /*
@@ -2331,6 +2333,7 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::couplstress_poroelast(
 
     default:
       dserror("requested stress type not available");
+      break;
     }
   }
 
@@ -2484,6 +2487,38 @@ void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::stress_expol
   }
 }
 
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+template<class so3_ele, DRT::Element::DiscretizationType distype>
+void DRT::ELEMENTS::So3_Poro<so3_ele,distype>::ComputePorosityAndLinearization
+(   Teuchos::ParameterList&                     params,
+    const double& press,
+    const double& J,
+    const int& gp,
+    Teuchos::RCP< MAT::StructPoro >  structmat,
+    const LINALG::Matrix<1,numdof_>& dJ_dus,
+    double &                         porosity,
+    LINALG::Matrix<1,numdof_>&       dphi_dus)
+{
+  double dphi_dJ=0.0;
+
+  structmat->ComputePorosity( params,
+                              press,
+                              J,
+                              gp,
+                              porosity,
+                              NULL,      // dphi_dp not needed
+                              &dphi_dJ,
+                              NULL,      //dphi_dJdp not needed
+                              NULL,      //dphi_dJJ not needed
+                              NULL       //dphi_dpp not needed
+                              );
+
+  dphi_dus.Update( dphi_dJ , dJ_dus );
+
+  return;
+}
 /*----------------------------------------------------------------------*
  *----------------------------------------------------------------------*/
 

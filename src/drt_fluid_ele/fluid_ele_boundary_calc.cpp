@@ -4096,19 +4096,13 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::NoPenetration(
       double norm = nodenormal.Norm2();
       nodenormal.Scale(1/norm);
 
-      //bool isset=false;
       for (int idof=0;idof<numdofpernode_;idof++)
       {
-        //if(isset==false and abs(nodenormal(idof)) > 0.5)
         if(mycondVector[inode*numdofpernode_+idof]!=0.0)
         {
           for (int idof2=0;idof2<numdofpernode_;idof2++)
               elemat1(inode*numdofpernode_+idof,inode*numdofpernode_+idof2) += nodenormal(idof2);
-          //elevec1(inode*numdofpernode_+idof) = 1.0;
-          //isset=true;
         }
-        //else //no condition set on dof
-         // elevec1(inode*numdofpernode_+idof) = 0.0;
       }
     }
   }
@@ -4531,6 +4525,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
   // extract local values from the global vectors
   Teuchos::RCP<const Epetra_Vector> velnp = discretization.GetState("velnp");
   Teuchos::RCP<const Epetra_Vector> gridvel = discretization.GetState("gridv");
+  Teuchos::RCP<const Epetra_Vector> scaaf = discretization.GetState("scaaf");
 
   if (velnp==Teuchos::null)
     dserror("Cannot get state vector 'velnp'");
@@ -4541,12 +4536,15 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
   DRT::UTILS::ExtractMyValues(*velnp,myvelnp,lm);
   std::vector<double> mygridvel(lm.size());
   DRT::UTILS::ExtractMyValues(*gridvel,mygridvel,lm);
+  std::vector<double> myscaaf(lm.size());
+  DRT::UTILS::ExtractMyValues(*scaaf,myscaaf,lm);
 
   // allocate velocity vectors
   LINALG::Matrix<nsd_,bdrynen_> evelnp(true);
   LINALG::Matrix<bdrynen_,1> epressnp(true);
   LINALG::Matrix<nsd_,bdrynen_> edispnp(true);
   LINALG::Matrix<nsd_,bdrynen_> egridvel(true);
+  LINALG::Matrix<bdrynen_,1> escaaf(true);
 
   // split velocity and pressure, insert into element arrays
   for (int inode=0;inode<bdrynen_;inode++)
@@ -4558,6 +4556,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
       egridvel(idim,inode) = mygridvel[idim+(inode*numdofpernode_)];
     }
     epressnp(inode) = myvelnp[nsd_+(inode*numdofpernode_)];
+    escaaf(inode) = myscaaf[nsd_+(inode*numdofpernode_)];
   }
 
   const int peleid = pele->Id();
@@ -4571,7 +4570,7 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
 
   const Teuchos::RCP<MAT::StructPoro>& structmat
             = Teuchos::rcp_dynamic_cast<MAT::StructPoro>(structele->Material());
-  if(structmat->MaterialType() != INPAR::MAT::m_structporo)
+  if(structmat == Teuchos::null)
     dserror("invalid structure material for poroelasticity");
 
   // get coordinates of gauss points w.r.t. local parent coordinate system
@@ -4634,26 +4633,29 @@ void DRT::ELEMENTS::FluidBoundaryImpl<distype>::PoroBoundary(
     gridvelint.Multiply(egridvel,funct_);
     double press = epressnp.Dot(funct_);
 
-   // double porosity_gp = porosity[gpid];
+    double scalar = escaaf.Dot(funct_);
 
     double dphi_dp=0.0;
     double dphi_dJ=0.0;
-    double dphi_dJdp=0.0;
-    double dphi_dJJ=0.0;
-    double dphi_dpp=0.0;
+    //double dphi_dJdp=0.0;
+    //double dphi_dJJ=0.0;
+    //double dphi_dpp=0.0;
     double porosity_gp=0.0;
 
-    structmat->ComputeSurfPorosity(//params,
+    params.set<double>("scalar",scalar);
+
+    structmat->ComputeSurfPorosity(params,
                                    press,
                                    J,
                                    ele->SurfaceNumber(),
                                    gpid,
                                    porosity_gp,
-                                   dphi_dp,
-                                   dphi_dJ,
-                                   dphi_dJdp,
-                                   dphi_dJJ,
-                                   dphi_dpp);
+                                   &dphi_dp,
+                                   &dphi_dJ,
+                                   NULL,                  //dphi_dJdp not needed
+                                   NULL,                  //dphi_dJJ not needed
+                                   NULL                   //dphi_dpp not needed
+                                   );
 
     // The integration factor is not multiplied with drs
     // since it is the same as the scaling factor for the unit normal derivatives

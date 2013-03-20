@@ -2490,8 +2490,8 @@ void STR::TimIntImpl::UseBlockMatrix(Teuchos::RCP<const LINALG::MultiMapExtracto
     discret_->SetState("residual displacement", zeros_);
     discret_->SetState("displacement", (*dis_)(0));
     if (damping_ == INPAR::STR::damp_material) discret_->SetState("velocity", (*vel_)(0));
-    if(fluidveln_!=Teuchos::null)    //porelasticity specific (coupling with fluid field)
-      discret_->SetState(1,"fluidvel",fluidveln_);
+    //set state for volume coupling (e.g. for tsi and poro)
+    SetCouplingState();
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }
@@ -2674,10 +2674,8 @@ void STR::TimIntImpl::TSIMatrix()
     discret_->SetState(0,"residual displacement", zeros_);
     discret_->SetState(0,"displacement", (*dis_)(0));
     if (damping_ == INPAR::STR::damp_material) discret_->SetState(0,"velocity", (*vel_)(0));
-    if(tempn_!=Teuchos::null)
-    {
-      discret_->SetState(1,"temperature",tempn_);
-    }
+    //set state for volume coupling (e.g. for tsi and poro)
+    SetCouplingState();
     discret_->Evaluate(p, stiff_, mass_, fint, Teuchos::null, Teuchos::null);
     discret_->ClearState();
   }

@@ -181,7 +181,7 @@ void TSI::Monolithic::ReadRestart(int step)
   ThermoField()->ApplyStructVariables(StructureField()->Dispnp(),
                                       StructureField()->ExtractVelnp()
                                       );
-  StructureField()->ApplyTemperatures(ThermoField()->Tempnp());
+  StructureField()->ApplyCouplingState(ThermoField()->Tempnp(),"temperature");
 
   // second ReadRestart needed due to the coupling variables
   ThermoField()->ReadRestart(step);
@@ -551,7 +551,7 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
 
 #ifndef MonTSIwithoutTHR
   // apply current temperature to structure
-  StructureField()->ApplyTemperatures(ThermoField()->Tempnp());
+  StructureField()->ApplyCouplingState(ThermoField()->Tempnp(),"temperature");
 #endif
 
 #ifdef TSIPARALLEL
@@ -562,8 +562,8 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
     Teuchos::RCP<Epetra_Vector> tempera = Teuchos::rcp(new Epetra_Vector(ThermoField()->Tempn()->Map(),true));
     if (ThermoField()->Tempnp() != Teuchos::null)
       tempera->Update(1.0, *ThermoField()->Tempnp(), 0.0);
-    StructureField()->ApplyTemperatures(tempera);
-    StructureField()->ApplyTemperatures(ThermoField()->Tempn());
+    StructureField()->ApplyCouplingState(tempera,"temperature");
+    StructureField()->ApplyCouplingState(ThermoField()->Tempn(),"temperature");
 #endif // TSIMONOLITHASOUTPUT
 
   // Monolithic TSI accesses the linearised structure problem:

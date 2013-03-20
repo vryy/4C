@@ -63,20 +63,20 @@ void POROELAST::MonolithicSplit::PrepareTimeStep()
 
   // call the predictor
   StructureField()->PrepareTimeStep();
-  FluidField().PrepareTimeStep();
+  FluidField()->PrepareTimeStep();
 
   if (evaluateinterface_)
   {
     //here we account for DBCs and preconditioning on the FSI-Interface. In both cases the structure field decides, what to do
     //(I don't thing this is the best solution, but at least the easiest one)
 
-    double timescale = FluidField().TimeScaling();
+    double timescale = FluidField()->TimeScaling();
 
     Teuchos::RCP<Epetra_Vector> idispnp = StructureField()->Interface()->ExtractFSICondVector(StructureField()->ExtractDispnp());
     Teuchos::RCP<Epetra_Vector> idispn = StructureField()->Interface()->ExtractFSICondVector(StructureField()->ExtractDispn());
     Teuchos::RCP<Epetra_Vector> ivelnp = StructureField()->Interface()->ExtractFSICondVector(StructureField()->ExtractVelnp());
-    Teuchos::RCP<Epetra_Vector> ifvelnp = FluidField().ExtractInterfaceVelnp();
-    Teuchos::RCP<Epetra_Vector> ifveln = FluidField().ExtractInterfaceVeln();
+    Teuchos::RCP<Epetra_Vector> ifvelnp = FluidField()->ExtractInterfaceVelnp();
+    Teuchos::RCP<Epetra_Vector> ifveln = FluidField()->ExtractInterfaceVeln();
 
     ddi_->Update(1.0,*idispnp,-1.0,*idispn,0.0);
     ddi_->Update(-1.0,*ifveln,timescale);
@@ -89,7 +89,7 @@ void POROELAST::MonolithicSplit::PrepareTimeStep()
     //any preconditioned values at the FSI-Interface
     fsibcextractor_->InsertOtherVector(inobcveln,ifvelnp);
 
-    FluidField().ApplyInterfaceVelocities(ifvelnp);
+    FluidField()->ApplyInterfaceVelocities(ifvelnp);
   }
 }
 
@@ -117,8 +117,8 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::FSIDBCMap()
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicSplit::FSIDBCMap");
 
   std::vector<Teuchos::RCP<const Epetra_Map> > fluidmaps;
-  fluidmaps.push_back(FluidField().Interface()->FSICondMap());
-  fluidmaps.push_back(FluidField().GetDBCMapExtractor()->CondMap());
+  fluidmaps.push_back(FluidField()->Interface()->FSICondMap());
+  fluidmaps.push_back(FluidField()->GetDBCMapExtractor()->CondMap());
 
   //vector of dbc and fsi coupling of fluid field
   Teuchos::RCP<Epetra_Map> fluidfsibcmap = LINALG::MultiMapExtractor::IntersectMaps(fluidmaps);
@@ -177,8 +177,8 @@ void POROELAST::MonolithicSplit::SetupCouplingAndMatrixes()
   const int ndim = DRT::Problem::Instance()->NDim();
   icoupfs_->SetupConditionCoupling( *StructureField()->Discretization(),
                                     StructureField()->Interface()->FSICondMap(),
-                                    *FluidField().Discretization(),
-                                    FluidField().Interface()->FSICondMap(),
+                                    *FluidField()->Discretization(),
+                                    FluidField()->Interface()->FSICondMap(),
                                    "FSICoupling",
                                    ndim);
 
@@ -188,10 +188,10 @@ void POROELAST::MonolithicSplit::SetupCouplingAndMatrixes()
 
   if(fsibcmap_->NumGlobalElements())
   {
-    ADAPTER::FluidPoro& fluidfield = dynamic_cast<ADAPTER::FluidPoro&>(FluidField());
-    fluidfield.AddDirichCond(fsibcmap_);
+    const Teuchos::RCP<ADAPTER::FluidPoro>& fluidfield = Teuchos::rcp_dynamic_cast<ADAPTER::FluidPoro>(FluidField());
+    fluidfield->AddDirichCond(fsibcmap_);
 
-    fsibcextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*FluidField().Interface()->Map(1), fsibcmap_));
+    fsibcextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*FluidField()->Interface()->Map(1), fsibcmap_));
 
     Teuchos::RCP<Epetra_Vector> idispnp = StructureField()->Interface()->ExtractFSICondVector(StructureField()->ExtractDispnp());
     ddi_=Teuchos::rcp(new Epetra_Vector(idispnp->Map(),true));
@@ -205,13 +205,13 @@ void POROELAST::MonolithicSplit::SetupCouplingAndMatrixes()
   // initialize coupling matrixes
   k_fs_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<
             LINALG::DefaultBlockMatrixStrategy>(*(StructureField()->Interface()),
-                                                *(FluidField().Interface()),
+                                                *(FluidField()->Interface()),
                                                 81,
                                                 false,
                                                 true));
 
   k_sf_ = Teuchos::rcp(new LINALG::BlockSparseMatrix<
-            LINALG::DefaultBlockMatrixStrategy>(*(FluidField().Interface()),
+            LINALG::DefaultBlockMatrixStrategy>(*(FluidField()->Interface()),
                                                 *(StructureField()->Interface()),
                                                 81,
                                                 false,
@@ -226,7 +226,7 @@ Teuchos::RCP<Epetra_Map> POROELAST::MonolithicSplit::CombinedDBCMap()
   TEUCHOS_FUNC_TIME_MONITOR("POROELAST::MonolithicSplit::CombinedDBCMap");
 
   const Teuchos::RCP<const Epetra_Map > scondmap = StructureField()->GetDBCMapExtractor()->CondMap();
-  const Teuchos::RCP<const Epetra_Map > fcondmap = FluidField().GetDBCMapExtractor()->CondMap();
+  const Teuchos::RCP<const Epetra_Map > fcondmap = FluidField()->GetDBCMapExtractor()->CondMap();
 
   std::vector<Teuchos::RCP<const Epetra_Map> > vectoroverallfsimaps;
   vectoroverallfsimaps.push_back(scondmap);

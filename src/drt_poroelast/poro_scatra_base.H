@@ -2,7 +2,7 @@
 /*!
  \file poro_scatra_base.H
 
- \brief
+ \brief  base class for all poroelasticity scalar transport interaction algorithms
 
  <pre>
    Maintainer: Anh-Tu Vuong

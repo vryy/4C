@@ -105,7 +105,7 @@ POROELAST::PoroBase::PoroBase(const Epetra_Comm& comm,
     const Teuchos::ParameterList& fdyn = DRT::Problem::Instance()->FluidDynamicParams();
 
     std::vector<DRT::Condition*> porocoupl;
-    FluidField().Discretization()->GetCondition("PoroCoupling", porocoupl);
+    FluidField()->Discretization()->GetCondition("PoroCoupling", porocoupl);
     if ( porocoupl.size() == 0 )
       dserror("no Poro Coupling Condition defined for porous media problem. Fix your input file!");
 
@@ -141,11 +141,11 @@ void POROELAST::PoroBase::ReadRestart( int restart)
 {
   if (restart)
   {
-    FluidField().ReadRestart(restart);
+    FluidField()->ReadRestart(restart);
     StructureField()->ReadRestart(restart);
 
     // apply current velocity and pressures to structure
-    StructureField()->ApplyVelAndPress(FluidField().Velnp());
+    StructureField()->ApplyCouplingState(FluidField()->Velnp(),"fluidvel");
 
     Teuchos::RCP<Epetra_Vector> dispn;
     if (StructureField()->HaveConstraint())
@@ -158,18 +158,18 @@ void POROELAST::PoroBase::ReadRestart( int restart)
 
     // transfer the current structure displacement to the fluid field
     Teuchos::RCP<Epetra_Vector> structdisp = StructureToFluidField(dispn);
-    FluidField().ApplyMeshDisplacement(structdisp);
+    FluidField()->ApplyMeshDisplacement(structdisp);
 
     // transfer the current structure velocity to the fluid field
     Teuchos::RCP<Epetra_Vector> structvel = StructureToFluidField(
         StructureField()->ExtractVelnp());
-    FluidField().ApplyMeshVelocity(structvel);
+    FluidField()->ApplyMeshVelocity(structvel);
 
     // second ReadRestart needed due to the coupling variables
-    FluidField().ReadRestart(restart);
+    FluidField()->ReadRestart(restart);
     StructureField()->ReadRestart(restart);
 
-    SetTimeStep(FluidField().Time(), restart);
+    SetTimeStep(FluidField()->Time(), restart);
   }
 
   return;
@@ -180,13 +180,21 @@ void POROELAST::PoroBase::ReadRestart( int restart)
  *----------------------------------------------------------------------*/
 void POROELAST::PoroBase::PrepareTimeStep()
 {
-// counter and print header
+  // counter and print header
   IncrementTimeAndStep();
   PrintHeader();
 
-// call the predictor
+  //set fluid velocities and pressures onto the structure
+  SetFluidSolution();
+
+  // call the predictor
   StructureField()-> PrepareTimeStep();
-  FluidField().PrepareTimeStep();
+
+  //set structure displacements onto the fluid
+  SetStructSolution();
+
+  // call the predictor
+  FluidField()->PrepareTimeStep();
 }
 
 /*----------------------------------------------------------------------*
@@ -195,7 +203,7 @@ void POROELAST::PoroBase::PrepareTimeStep()
 void POROELAST::PoroBase::Update()
 {
   StructureField()->Update();
-  FluidField().Update();
+  FluidField()->Update();
 }
 
 /*----------------------------------------------------------------------*
@@ -210,7 +218,7 @@ void POROELAST::PoroBase::PrepareOutput()
 void POROELAST::PoroBase::TestResults(const Epetra_Comm& comm)
 {
   DRT::Problem::Instance()->AddFieldTest(StructureField()->CreateFieldTest());
-  DRT::Problem::Instance()->AddFieldTest(FluidField().CreateFieldTest());
+  DRT::Problem::Instance()->AddFieldTest(FluidField()->CreateFieldTest());
   DRT::Problem::Instance()->TestAll(comm);
 }
 
@@ -252,18 +260,18 @@ void POROELAST::PoroBase::SetStructSolution()
 
   // transfer the current structure displacement to the fluid field
   Teuchos::RCP<Epetra_Vector> structdisp = StructureToFluidField(dispnp);
-  FluidField().ApplyMeshDisplacement(structdisp);
+  FluidField()->ApplyMeshDisplacement(structdisp);
 
   // transfer the current structure velocity to the fluid field
   Teuchos::RCP<Epetra_Vector> structvel = StructureToFluidField(velnp);
-  FluidField().ApplyMeshVelocity(structvel);
+  FluidField()->ApplyMeshVelocity(structvel);
 }
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 void POROELAST::PoroBase::SetFluidSolution()
 {
-  StructureField()->ApplyVelAndPress(FluidField().Velnp());
+  StructureField()->ApplyCouplingState(FluidField()->Velnp(),"fluidvel");
 }
 
 /*----------------------------------------------------------------------*/
@@ -274,7 +282,7 @@ void POROELAST::PoroBase::TimeLoop()
   while (NotFinished())
   {
     //solve one time step
-    Solve();
+    DoTimeStep();
   }
 }
 
@@ -286,7 +294,7 @@ void POROELAST::PoroBase::Output()
   // written. And these entries define the order in which the filters handle
   // the Discretizations, which in turn defines the dof number ordering of the
   // Discretizations.
-  FluidField().Output();
+  FluidField()->Output();
   StructureField()->Output();
 } // Monolithic::Output()
 
@@ -297,7 +305,7 @@ void POROELAST::PoroBase::SetupProxiesAndCoupling()
 
   //get discretizations
   Teuchos::RCP<DRT::Discretization> structdis = StructureField()->Discretization();
-  Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
+  Teuchos::RCP<DRT::Discretization> fluiddis = FluidField()->Discretization();
 
   // if one discretization is a subset of the other, they will differ in node number (and element number)
   // we assume matching grids for the overlapping part here
@@ -368,7 +376,7 @@ void POROELAST::PoroBase::SetupProxiesAndCoupling()
   if(submeshes_)
     psiextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*StructureField()->DofRowMap(), coupfs_->MasterDofMap()));
 
-  FluidField().SetMeshMap(coupfs_->SlaveDofMap());
+  FluidField()->SetMeshMap(coupfs_->SlaveDofMap());
 }
 
 /*----------------------------------------------------------------------*
@@ -376,18 +384,18 @@ void POROELAST::PoroBase::SetupProxiesAndCoupling()
 void POROELAST::PoroBase::CheckForPoroConditions()
 {
   std::vector<DRT::Condition*> nopencond;
-  FluidField().Discretization()->GetCondition("NoPenetration", nopencond);
+  FluidField()->Discretization()->GetCondition("NoPenetration", nopencond);
   noPenHandle_ = Teuchos::rcp(new POROELAST::NoPenetrationConditionHandle(nopencond));
 
   partincond_=false;
   std::vector<DRT::Condition*> poroPartInt;
-  FluidField().Discretization()->GetCondition("PoroPartInt",poroPartInt);
+  FluidField()->Discretization()->GetCondition("PoroPartInt",poroPartInt);
   if(poroPartInt.size())
     partincond_=true;
 
   presintcond_=false;
   std::vector<DRT::Condition*> poroPresInt;
-  FluidField().Discretization()->GetCondition("PoroPresInt",poroPresInt);
+  FluidField()->Discretization()->GetCondition("PoroPresInt",poroPresInt);
   if(poroPresInt.size())
     presintcond_=true;
 }
@@ -398,7 +406,7 @@ void POROELAST::PoroBase::CalculateSurfPoro(const string& condstring)
 {
   //check if the condition exists
   std::vector<DRT::Condition*> surfporo;
-  FluidField().Discretization()->GetCondition(condstring, surfporo);
+  FluidField()->Discretization()->GetCondition(condstring, surfporo);
 
   if(surfporo.size())
   {
@@ -412,14 +420,14 @@ void POROELAST::PoroBase::CalculateSurfPoro(const string& condstring)
     p.set("delta time", Dt());
 
     Teuchos::RCP<DRT::Discretization> structdis = StructureField()->Discretization();
-    Teuchos::RCP<DRT::Discretization> fluiddis = FluidField().Discretization();
+    Teuchos::RCP<DRT::Discretization> fluiddis = FluidField()->Discretization();
 
     // set vector values needed by elements
     structdis->ClearState();
     // extended SetState(0,...) in case of multiple dofsets
     structdis->SetState(0,"displacement", StructureField()->Dispnp());
 
-    structdis->SetState(1,"fluidvel",FluidField().Velnp());
+    structdis->SetState(1,"fluidvel",FluidField()->Velnp());
 
     structdis->EvaluateCondition(p,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,Teuchos::null,condstring);
     structdis->ClearState();
@@ -481,6 +489,7 @@ void POROELAST::NoPenetrationConditionHandle::Clear(POROELAST::coupltype couplty
       fluidfluidConstraintMatrix_->Zero();
       fluidstructureConstraintMatrix_->Zero();
       structVelConstraintMatrix_->Zero();
+      break;
     }
   }
   return;

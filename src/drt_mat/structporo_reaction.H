@@ -1,0 +1,201 @@
+/*----------------------------------------------------------------------*/
+/*!
+ \file structporo_reaction.H
+
+ \brief
+
+ <pre>
+   Maintainer: Anh-Tu Vuong
+               vuong@lnm.mw.tum.de
+               http://www.lnm.mw.tum.de
+               089 - 289-15264
+ </pre>
+ *----------------------------------------------------------------------*/
+
+
+#ifndef STRUCTPORO_REACTION_H_
+#define STRUCTPORO_REACTION_H_
+
+#include "structporo.H"
+
+namespace MAT
+{
+
+  // forward declaration
+  class StructPoroReaction;
+
+  namespace PAR
+  {
+
+    class StructPoroReaction: public PAR::StructPoro
+    {
+
+      friend class MAT::StructPoroReaction;
+
+      public:
+
+        /// standard constructor
+        StructPoroReaction(Teuchos::RCP<MAT::PAR::Material> matdata);
+
+        /// destructor
+        virtual ~StructPoroReaction()
+        {
+          ;
+        }
+
+        /// create material instance of matching type with my parameters
+        virtual Teuchos::RCP<MAT::Material> CreateMaterial();
+
+        /// @name material parameters
+        //@{
+
+        //@}
+
+    }; // class StructPoro
+
+  } // namespace PAR
+
+  class StructPoroReactionType: public DRT::ParObjectType
+  {
+    public:
+
+      std::string Name() const
+      {
+        return "StructPoroReactionType";
+      }
+
+      static StructPoroReactionType & Instance()
+      {
+        return instance_;
+      }
+      ;
+
+      virtual DRT::ParObject* Create(const std::vector<char> & data);
+
+    private:
+
+      static StructPoroReactionType instance_;
+  };
+
+  /*----------------------------------------------------------------------*/
+  /// Wrapper for StructPoro material
+  ///
+  /// This object exists (several times) at every element
+  class StructPoroReaction: public StructPoro
+  {
+    public:
+
+      /// construct empty material object
+      StructPoroReaction();
+
+      /// construct the material object given material parameters
+      explicit StructPoroReaction(MAT::PAR::StructPoroReaction* params);
+
+      //! @name Packing and Unpacking
+
+      /*!
+       \brief Return unique ParObject id
+
+       every class implementing ParObject needs a unique id defined at the
+       top of drt_parobject.H (this file) and should return it in this method.
+       */
+      virtual int UniqueParObjectId() const
+      {
+        return StructPoroReactionType::Instance().UniqueParObjectId();
+      }
+
+      /*!
+       \brief Pack this class so it can be communicated
+
+       Resizes the vector data and stores all information of a class in it.
+       The first information to be stored in data has to be the
+       unique parobject id delivered by UniqueParObjectId() which will then
+       identify the exact class on the receiving processor.
+
+       \param data (in/out): char vector to store class information
+       */
+      virtual void Pack(DRT::PackBuffer& data) const;
+
+      /*!
+       \brief Unpack data from a char vector into this class
+
+       The vector data contains all information to rebuild the
+       exact copy of an instance of a class on a different processor.
+       The first entry in data has to be an integer which is the unique
+       parobject id defined at the top of this file and delivered by
+       UniqueParObjectId().
+
+       \param data (in) : vector storing all data to be unpacked into this
+       instance.
+       */
+      virtual void Unpack(const std::vector<char>& data);
+
+      //@}
+
+      /// material type
+      virtual INPAR::MAT::MaterialType MaterialType() const
+      {
+        return INPAR::MAT::m_structpororeaction;
+      }
+
+      /// return initial porosity
+      double RefPorosityTimeDeriv() const
+      {
+        return dphiDphiref_*refporositydot_;
+      }
+
+      /// compute current porosity and save it
+      void ComputePorosity(  Teuchos::ParameterList& params, ///< (i) element parameter list
+                             double press,                  ///< (i) pressure at gauss point
+                             double J,                      ///< (i) determinant of jacobian at gauss point
+                             int gp,                        ///< (i) number of current gauss point
+                             double& porosity,              ///< (o) porosity at gauss point
+                             double* dphi_dp,               ///< (o) first derivative of porosity w.r.t. pressure at gauss point
+                             double* dphi_dJ,               ///< (o) first derivative of porosity w.r.t. jacobian at gauss point
+                             double* dphi_dJdp,             ///< (o) derivative of porosity w.r.t. pressure and jacobian at gauss point
+                             double* dphi_dJJ,              ///< (o) second derivative of porosity w.r.t. jacobian at gauss point
+                             double* dphi_dpp,               ///< (o) second derivative of porosity w.r.t. pressure at gauss point
+                             bool save = true
+                             ) ;
+
+      /// return copy of this material object
+      virtual Teuchos::RCP<Material> Clone() const
+      {
+        return Teuchos::rcp(new StructPoroReaction(*this));
+      }
+
+      /// Initialize internal variables
+      void Setup
+      (
+        int numgp,  ///< number of Gauss points
+        DRT::INPUT::LineDefinition* linedef
+      );
+
+      /// Return quick accessible material parameter data
+      virtual MAT::PAR::Parameter* Parameter() const
+      {
+        return params_;
+      }
+
+    protected:
+
+      void Reaction(double cnp, Teuchos::ParameterList& params);
+
+      /// my material parameters
+      MAT::PAR::StructPoroReaction* params_;
+
+      ///reference porosity
+      double refporosity_;
+
+      ///derivative of porosity w.r.t. reference porosity
+      double dphiDphiref_;
+
+      ///time derivative of reference porosity
+      double refporositydot_;
+
+  };
+
+}
+
+
+#endif /* STRUCTPORO_REACTION_H_ */

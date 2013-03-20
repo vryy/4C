@@ -217,6 +217,7 @@ DRT::UTILS::GaussRule1D DRT::ELEMENTS::Wall1Line::getOptimalGaussrule(const Disc
       break;
     default:
     dserror("unknown number of nodes for gaussrule initialization");
+    break;
     }
   return rule;
 }
@@ -461,6 +462,7 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
 
     default:
       dserror("Unimplemented type of action for Soh8Surface");
+      break;
 
    }
    return 0;
@@ -608,11 +610,12 @@ int DRT::ELEMENTS::Wall1Line::Evaluate(Teuchos::ParameterList& params,
       const double J = det/detJ;
 
       //get structure material
-      MAT::StructPoro* structmat = static_cast<MAT::StructPoro*>((parentele->Material()).get());
-      if(structmat->MaterialType() != INPAR::MAT::m_structporo)
+      Teuchos::RCP<MAT::StructPoro> structmat = Teuchos::rcp_static_cast<MAT::StructPoro>(parentele->Material());
+      if(structmat == Teuchos::null)
         dserror("invalid structure material for poroelasticity");
       double porosity=0.0;
-      structmat->ComputeSurfPorosity( press,
+      structmat->ComputeSurfPorosity( params,
+                                      press,
                                       J,
                                       LLineNumber(),
                                       gp,

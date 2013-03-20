@@ -57,6 +57,7 @@ void ADAPTER::FluidPoro::EvaluateNoPenetrationCond(Teuchos::RCP<Epetra_Vector> C
   if (!Discretization()->HaveDofs()) dserror("AssignDegreesOfFreedom() was not called");
 
   Discretization()->SetState(0,"dispnp", Dispnp());
+  Discretization()->SetState(0,"scaaf",Scaaf());
 
   Teuchos::ParameterList params;
 
