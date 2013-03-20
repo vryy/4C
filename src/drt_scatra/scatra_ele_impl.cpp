@@ -3051,10 +3051,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
 // convective stabilization term
 //----------------------------------------------------------------
 // convective stabilization of convective term (in convective form)
+// transient stabilization of convective term (in convective form)
   const double dens2taufac = timetaufac*densnp_[k]*densnp_[k];
   for (int vi=0; vi<nen_; ++vi)
   {
-    const double v = dens2taufac*(conv_(vi)+sgconv_(vi));
+    const double v = dens2taufac*(conv_(vi)+sgconv_(vi)+diffreastafac_*1.0/timefac*funct_(vi));
     const int fvi = vi*numdofpernode_+k;
 
     for (int ui=0; ui<nen_; ++ui)
@@ -3072,9 +3073,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
   {
     const double denstaufac = timetaufac*densnp_[k];
     // convective stabilization of diffusive term (in convective form)
+    // transient stabilization of diffusive term (in convective form)
     for (int vi=0; vi<nen_; ++vi)
     {
-      const double v = denstaufac*(conv_(vi)+sgconv_(vi));
+      const double v = denstaufac*(conv_(vi)+sgconv_(vi)+diffreastafac_*1.0/timefac*funct_(vi));
       const int fvi = vi*numdofpernode_+k;
 
       for (int ui=0; ui<nen_; ++ui)
@@ -3144,9 +3146,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
     // stabilization of transient term
     //----------------------------------------------------------------
     // convective stabilization of transient term (in convective form)
+    // transient stabilization of transient term
     for (int vi=0; vi<nen_; ++vi)
     {
-      const double v = densamnptaufac*(conv_(vi)+sgconv_(vi));
+      const double v = densamnptaufac*(conv_(vi)+sgconv_(vi)+diffreastafac_*1.0/timefac*funct_(vi));
       const int fvi = vi*numdofpernode_+k;
 
       for (int ui=0; ui<nen_; ++ui)
@@ -3498,7 +3501,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatAndRHS(
   {
     const int fvi = vi*numdofpernode_+k;
 
-    erhs[fvi] -= vrhs*(conv_(vi)+sgconv_(vi));
+    erhs[fvi] -= vrhs*(conv_(vi)+sgconv_(vi)+diffreastafac_*1.0/timefac*funct_(vi));
   }
 
 // diffusive rhs stabilization

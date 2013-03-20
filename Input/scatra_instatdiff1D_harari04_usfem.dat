@@ -1,0 +1,111 @@
+//
+// Maintainer: Ursula Rasthofer
+// rasthofer@lnm.mw.tum.de
+// http://www.lnm.mw.tum.de
+// 089 - 289-15236
+//
+==================================================================
+General Data File CCARAT
+==================================================================
+-----------------------------------------------------------------------TITLE
+example taken form Harari 2004
+here: - withou calculation of initial phidt
+      - phi_0 does not match DBC at x=1
+      remark: scilab non-matching DBC without assuming zero acceleration
+----------------------------------------------------------------PROBLEM SIZE
+ELEMENTS                        10
+NODES                           11
+DIM                             1
+MATERIALS                       4
+NUMDF                           1
+-----------------------------------------------------------------PROBLEM TYP
+PROBLEMTYP                      Scalar_Transport
+NUMFIELD                        2
+RESTART                         0
+--------------------------------------------------------------DISCRETISATION
+NUMFLUIDDIS                     1
+NUMSTRUCDIS                     0
+NUMALEDIS                       0
+NUMTHERMDIS                     0
+----------------------------------------------------SCALAR TRANSPORT DYNAMIC
+LINEAR_SOLVER                   1
+SOLVERTYPE                      linear_full //linear_incremental
+//MASSMAT                       consistent //row_sum //_including_stab
+SKIPINITDER                     yes
+TIMEINTEGR                      One_Step_Theta
+UPRES                           1
+NUMSTEP                         1
+MAXTIME                         1000.0
+TIMESTEP                        0.01
+THETA                           0.5
+ALPHA_M                         0.83333333333333
+ALPHA_F                         0.66666666666666
+GAMMA                           0.66666666666666
+VELOCITYFIELD                   zero
+VELFUNCNO                       1
+INITIALFIELD                    field_by_function
+INITFUNCNO                      2
+--------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+STABTYPE                        USFEM
+DEFINITION_TAU                  Franca_Valentin
+--------------------------------------------------------------------SOLVER 1
+NAME                            Sca_Tra_Solver
+SOLVER                          UMFPACK 
+-------------------------------------------------------------------MATERIALS
+MAT 1 MAT_scatra DIFFUSIVITY 0.1
+----------------------------------------------------------------------CURVE1
+----------------------------------------------------------------------FUNCT1
+FUNCT1 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
+FUNCT1 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
+FUNCT1 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
+----------------------------------------------------------------------FUNCT2
+FUNCT2 EXPR 0 0.0 0 FUNCTION 1.0
+----------------------------------------------------------DESIGN DESCRIPTION
+NDPOINT                         2
+NDLINE                          1
+NDSURF                          0
+NDVOL                           0
+----------------------------------------------DESIGN POINT DIRICH CONDITIONS
+// DOBJECT FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL CURVE CURVE CURVE CURVE CURVE CURVE
+DPOINT                          1
+E 2 - NUMDOF 6 ONOFF 1 0 0 0 0 0 VAL 0.0 0.0 0.0 0.0 0.0 0.0 CURVE none none none none none none FUNCT 0 0 0 0 0 0
+---------------------------------------------DESIGN POINT NEUMANN CONDITIONS
+// DOBJECT CURVE FLAG FLAG FLAG FLAG FLAG FLAG VAL VAL VAL VAL VAL VAL FUNC FUNC FUNC FUNC FUNC FUNC NSURF
+DPOINT                          0
+---------------------------------------------------------DNODE-NODE TOPOLOGY
+NODE 1 DNODE 1
+NODE 6 DNODE 2
+---------------------------------------------------------DLINE-NODE TOPOLOGY
+NODE 1 DLINE 1
+NODE 2 DLINE 1
+NODE 3 DLINE 1
+NODE 4 DLINE 1
+NODE 5 DLINE 1
+NODE 6 DLINE 1
+---------------------------------------------------------DSURF-NODE TOPOLOGY
+----------------------------------------------------------DVOL-NODE TOPOLOGY
+-----------------------------------------------------------------NODE COORDS
+NODE 1 COORD 0.000000000000000e+00 0.000000000000000e+00 0.000000000000000e+00
+NODE 2 COORD 2.000000000000000e-01 0.000000000000000e+00 0.000000000000000e+00
+NODE 3 COORD 4.000000000000000e-01 0.000000000000000e+00 0.000000000000000e+00
+NODE 4 COORD 6.000000000000000e-01 0.000000000000000e+00 0.000000000000000e+00
+NODE 5 COORD 8.000000000000000e-01 0.000000000000000e+00 0.000000000000000e+00
+NODE 6 COORD 1.000000000000002e+00 0.000000000000000e+00 0.000000000000000e+00
+----------------------------------------------------------STRUCTURE ELEMENTS
+--------------------------------------------------------------FLUID ELEMENTS
+----------------------------------------------------------------ALE ELEMENTS
+----------------------------------------------------------TRANSPORT ELEMENTS
+1 TRANSP LINE2 1 2 MAT 1
+2 TRANSP LINE2 2 3 MAT 1
+3 TRANSP LINE2 3 4 MAT 1
+4 TRANSP LINE2 4 5 MAT 1
+5 TRANSP LINE2 5 6 MAT 1
+----------------------------------------------------------RESULT DESCRIPTION
+SCATRA DIS scatra NODE 1 QUANTITY phi VALUE 9.99999999460135958e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 2 QUANTITY phi VALUE 9.99999977865607681e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 3 QUANTITY phi VALUE 9.99998185519682448e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 4 QUANTITY phi VALUE 9.99851234748270312e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 5 QUANTITY phi VALUE 9.87803063838399553e-01 TOLERANCE 1e-9
+//SCATRA DIS scatra NODE 6 QUANTITY phi VALUE 0.00000000000000000e+00 TOLERANCE 1e-9
+-------------------------------------------------------------------------END
+//                              END
