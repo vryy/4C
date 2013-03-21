@@ -334,8 +334,8 @@ MAT 2 MAT_Struct_Multiscale MICROFILE sohex8_multiscale_micro2.dat MICRODIS_NUM 
 ----------------------------------------------------------------------CURVE1
 CURVE1 on EXPR FUNC t/1.5 t1 0. t2 1.5
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 2.247349863417316684e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 2.247349863417322929e-02 TOLERANCE 1e-8
-STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -9.433002740385063034e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 1 QUANTITY dispx VALUE 2.23447603442736044e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 1 QUANTITY dispy VALUE 2.23447603442734830e-02 TOLERANCE 1e-8
+STRUCTURE DIS structure NODE 1 QUANTITY dispz VALUE -9.39447349299021156e-02 TOLERANCE 1e-8
 -------------------------------------------------------------------------END
 //                              END
