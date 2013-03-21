@@ -17,6 +17,8 @@
 #include "../drt_mat/matpar_bundle.H"
 #include "../drt_mat/so3_material.H"
 
+#include "../drt_lib/drt_utils_factory.H"  // for function Factory in Unpack
+
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
 MAT::PAR::StructPoro::StructPoro(Teuchos::RCP<MAT::PAR::Material> matdata) :
@@ -166,10 +168,16 @@ void MAT::StructPoro::Pack(DRT::PackBuffer& data) const
   }
   */
 
+  /*
   if (params_ != NULL) // materials are not accessible in postprocessing mode
   {
     mat_->Pack(data);
   }
+  */
+
+  // Pack data of underlying material
+  if (mat_!=Teuchos::null)
+    mat_->Pack(data);
 }
 
 /*----------------------------------------------------------------------*/
@@ -259,6 +267,7 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
   */
 
   // unpack the sub-material
+  /*
   {
     // we create the sub-material using the factory, because this way we can use the known matid.
     // This way however the material is fully setup according to the dat-file and in order to
@@ -277,6 +286,21 @@ void MAT::StructPoro::Unpack(const std::vector<char>& data)
       dserror("Mismatch in size of data %d <-> %d",data.size(),position);
     }
   }
+  */
+
+  // Unpack data of sub material (these lines are copied from drt_element.cpp)
+  std::vector<char> datamat;
+  ExtractfromPack(position,data,datamat);
+  if (datamat.size()>0)
+  {
+    DRT::ParObject* o = DRT::UTILS::Factory(datamat);  // Unpack is done here
+    MAT::So3Material* mat = dynamic_cast<MAT::So3Material*>(o);
+    if (mat==NULL)
+      dserror("failed to unpack elastic material");
+    mat_ = Teuchos::rcp(mat);
+  }
+  else mat_ = Teuchos::null;
+
   isinitialized_=true;
 }
 
