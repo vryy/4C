@@ -570,11 +570,6 @@ void PATSPEC::GetILTDistance(const int eleid,
       if (actmat->MaterialType() == INPAR::MAT::m_elasthyper)
       {
         MAT::ElastHyper* hyper = static_cast<MAT::ElastHyper*>(actmat.get());
-
-        const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
-        int maxhulumen  = pslist.get<int>("MAXHULUMEN");
-        params.set("max hu lumen", maxhulumen);
-
         hyper->SetupAAA(params);
       }
 

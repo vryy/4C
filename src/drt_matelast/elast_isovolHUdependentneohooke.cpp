@@ -20,6 +20,7 @@ maintainer: Andreas Maier
 #include "../drt_mat/matpar_material.H"
 #include "../drt_lib/standardtypes_cpp.H"
 #include "../drt_lib/drt_linedefinition.H"
+#include "../drt_lib/drt_globalproblem.H"
 
 /*----------------------------------------------------------------------*
  |                                                                      |
@@ -66,8 +67,7 @@ MAT::ELASTIC::IsoVolHUDependentNeoHooke::IsoVolHUDependentNeoHooke(MAT::ELASTIC:
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolHUDependentNeoHooke::PackSummand(DRT::PackBuffer& data) const
 {
-  AddtoPack(data,HU_);
-  AddtoPack(data,HUlumen_);
+  AddtoPack(data,alpha_);
 }
 
 
@@ -76,8 +76,7 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::PackSummand(DRT::PackBuffer& data)
 void MAT::ELASTIC::IsoVolHUDependentNeoHooke::UnpackSummand(const std::vector<char>& data,
 																														std::vector<char>::size_type& position)
 {
-  ExtractfromPack(position,data,HU_);
-  ExtractfromPack(position,data,HUlumen_);
+  ExtractfromPack(position,data,alpha_);
 }
 
 
@@ -85,33 +84,28 @@ void MAT::ELASTIC::IsoVolHUDependentNeoHooke::UnpackSummand(const std::vector<ch
 /*----------------------------------------------------------------------*/
 void MAT::ELASTIC::IsoVolHUDependentNeoHooke::Setup(DRT::INPUT::LineDefinition* linedef)
 {
+  double HU = 0.0;
   if (linedef->HaveNamed("HU"))
   {
-    linedef->ExtractDouble("HU",HU_);
+    linedef->ExtractDouble("HU",HU);
   }
   else
   {
-    HU_ = -999.0;
+    HU = -999.0;
   }
-}
 
-
-/*----------------------------------------------------------------------*/
-/*----------------------------------------------------------------------*/
-void MAT::ELASTIC::IsoVolHUDependentNeoHooke::SetupAAA(Teuchos::ParameterList& params)
-{
-  HUlumen_ = params.get("max hu lumen",-999);
+  const Teuchos::ParameterList& pslist = DRT::Problem::Instance()->PatSpecParams();
+  int HUlumen  = pslist.get<int>("MAXHULUMEN");
 
   //if HU is smaller than the threshold for calcification or smaller than
   // the Lumen HU (+10 security factor), there is no contribution at all
-  if (HU_ <= params_->ctmin_ || HU_ < (HUlumen_ + 10))
+  if (HU <= params_->ctmin_ || HU < (HUlumen + 10))
     alpha_ = 0.;
-  else if (HU_ > params_->ctmax_)
+  else if (HU > params_->ctmax_)
     alpha_ = params_->alphamax_;
   else
-    alpha_ = 0.5 * params_->alphamax_ * (sin(PI * (HU_ - params_->ctmin_)/(params_->ctmax_ - params_->ctmin_) -PI/2) + 1.0);
+    alpha_ = 0.5 * params_->alphamax_ * (sin(PI * (HU - params_->ctmin_)/(params_->ctmax_ - params_->ctmin_) -PI/2) + 1.0);
 }
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/

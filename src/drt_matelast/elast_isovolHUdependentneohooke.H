@@ -119,9 +119,6 @@ namespace ELASTIC
     /// Setup of summand
     virtual void Setup(DRT::INPUT::LineDefinition* linedef);
 
-    /// Setup of patient-specific materials
-    virtual void SetupAAA(Teuchos::ParameterList& params);
-
     /// Add principal calcified coefficients for IsoVolHUDependentNeoHooke material.
     void AddCoefficientsPrincipal(
         LINALG::Matrix<3,1>& gamma,  ///< necessary coefficients for first derivative
@@ -164,10 +161,6 @@ namespace ELASTIC
 
     /// my material parameters
     MAT::ELASTIC::PAR::IsoVolHUDependentNeoHooke* params_;
-
-    /// information about HU from medical image data
-    double HU_;
-    int HUlumen_;
 
     /// factor for material parameter
     double alpha_;
