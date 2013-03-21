@@ -312,12 +312,10 @@ private:
   hid_t meshgroup_;
   hid_t resultgroup_;
 
+  const char* GenerateUniqueId();
 
   /// cache to remember maps we have already written
-  std::map<const Epetra_BlockMapData*, std::string> mapcache_;
-
-  /// dummy stack to really save the maps we cache
-  std::vector<Epetra_BlockMap> mapstack_;
+  std::map<const char*, std::string> mapcache_;
 
   int resultfile_changed_;
   int meshfile_changed_;

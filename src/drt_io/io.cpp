@@ -501,7 +501,6 @@ void IO::DiscretizationWriter::CreateResultFile(const int step)
 
   // we will never refer to maps stored in other files
   mapcache_.clear();
-  mapstack_.clear();
 
   resultfile_ = H5Fcreate(resultname.str().c_str(),
                           H5F_ACC_TRUNC,H5P_DEFAULT,H5P_DEFAULT);
@@ -682,10 +681,8 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
 
     // We maintain a map cache to avoid rewriting the same map all the
     // time. The idea is that a map is never modified once it is
-    // constructed. Thus the internal data class can be used to find
-    // identical maps easily. This will not find all identical maps, but
-    // all maps with the same data pointer are guaranteed to be
-    // identical.
+    // constructed. This will not find all identical maps, but
+    // all maps with the same unique id.
 
     std::ostringstream groupname;
     groupname << "/step"
@@ -695,8 +692,15 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
 
     valuename = groupname.str()+valuename;
 
-    const Epetra_BlockMapData* mapdata = vec->Map().DataPtr();
-    std::map<const Epetra_BlockMapData*, std::string>::const_iterator m = mapcache_.find(mapdata);
+    // check whether vec->Map has already been written to HDF5 file
+    const char* uniqueLabel = vec->Map().Label();
+    if(uniqueLabel == 0)
+    {
+      uniqueLabel = GenerateUniqueId();
+      const_cast<Epetra_BlockMap&>(vec->Map()).SetLabel(uniqueLabel);
+    }
+
+    std::map<const char*, std::string>::const_iterator m = mapcache_.find(uniqueLabel);
     if (m!=mapcache_.end())
     {
       // the map has been written already, just link to it again
@@ -723,12 +727,7 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
       idname = groupname.str()+idname;
 
       // remember where we put the map
-      mapcache_[mapdata] = idname;
-
-      // Make a copy of the map. This is a RCP copy internally. We just make
-      // sure here the map stays alive as long as we keep our cache. Otherwise
-      // subtle errors could occur.
-      mapstack_.push_back(vec->Map());
+      mapcache_[uniqueLabel] = idname;
     }
 
     if (dis_->Comm().MyPID() == 0)
@@ -796,10 +795,8 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
 
     // We maintain a map cache to avoid rewriting the same map all the
     // time. The idea is that a map is never modified once it is
-    // constructed. Thus the internal data class can be used to find
-    // identical maps easily. This will not find all identical maps, but
-    // all maps with the same data pointer are guaranteed to be
-    // identical.
+    // constructed. This will not find all identical maps, but
+    // all maps with the same unique id.
 
     std::ostringstream groupname;
     groupname << "/step"
@@ -809,8 +806,15 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
 
     valuename = groupname.str()+valuename;
 
-    const Epetra_BlockMapData* mapdata = elemap.DataPtr();
-    std::map<const Epetra_BlockMapData*, std::string>::const_iterator m = mapcache_.find(mapdata);
+    // check whether elemap has already been written to HDF5 file
+    const char* uniqueLabel = elemap.Label();
+    if(uniqueLabel == 0)
+    {
+      uniqueLabel = GenerateUniqueId();
+      const_cast<Epetra_Map&>(elemap).SetLabel(uniqueLabel);
+    }
+
+    std::map<const char*, std::string>::const_iterator m = mapcache_.find(uniqueLabel);
     if (m!=mapcache_.end())
     {
       // the map has been written already, just link to it again
@@ -828,12 +832,7 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
       idname = groupname.str()+idname;
 
       // remember where we put the map
-      mapcache_[mapdata] = idname;
-
-      // Make a copy of the map. This is a RCP copy internally. We just make
-      // sure here the map stays alive as long as we keep our cache. Otherwise
-      // subtle errors could occur.
-      mapstack_.push_back(elemap);
+      mapcache_[uniqueLabel] = idname;
     }
 
     if (dis_->Comm().MyPID() == 0)
@@ -1302,4 +1301,15 @@ void IO::DiscretizationWriter::WriteKnotvector() const
     } // endif proc0
   }
 
+}
+
+/*----------------------------------------------------------------------*/
+/* generate unique id for writing map-based information                 */
+/*----------------------------------------------------------------------*/
+const char* IO::DiscretizationWriter::GenerateUniqueId()
+{
+   static int i = 1;
+   std::stringstream ss;
+   ss << i;
+   return ss.str().c_str();
 }
