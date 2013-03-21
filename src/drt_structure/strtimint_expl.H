@@ -176,6 +176,9 @@ namespace STR
     //! Read and set external forces from file
     virtual void ReadRestartForce() = 0;
 
+    //! Write internal and external forces for restart
+    virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
+
     virtual Teuchos::RCP<Epetra_Vector> Velaf()
     {
       dserror("mid velocities not available");

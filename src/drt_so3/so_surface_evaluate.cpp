@@ -1082,11 +1082,11 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
     const int numnode = NumNode();
     LINALG::SerialDenseMatrix x(numnode,3);
 
-    Teuchos::RCP<const Epetra_Vector> dism = discretization.GetState("displacement");
-    if (dism==Teuchos::null) dserror("Cannot get state vector 'displacement'");
-    std::vector<double> mydism(lm.size());
-    DRT::UTILS::ExtractMyValues(*dism,mydism,lm);
-    SpatialConfiguration(x,mydism);
+    Teuchos::RCP<const Epetra_Vector> disn = discretization.GetState("new displacement");
+    if (disn==Teuchos::null) dserror("Cannot get state vector 'new displacement'");
+    std::vector<double> mydisn(lm.size());
+    DRT::UTILS::ExtractMyValues(*disn,mydisn,lm);
+    SpatialConfiguration(x,mydisn);
 
     const DRT::UTILS::IntegrationPoints2D  intpoints(gaussrule_);
 
@@ -1115,32 +1115,15 @@ int DRT::ELEMENTS::StructuralSurface::Evaluate(Teuchos::ParameterList&   params,
       double con_quot_max = (gamma_min_eq-gamma_min)/m2+1.;
       double con_quot_eq = (k1xC)/(k1xC+k2);
 
-      // element geometry update (n+1)
-      Teuchos::RCP<const Epetra_Vector> disn = discretization.GetState("new displacement");
-      if (disn==Teuchos::null) dserror("Cannot get state vector 'new displacement'");
-      std::vector<double> mydisn(lm.size());
-      DRT::UTILS::ExtractMyValues(*disn,mydisn,lm);
-      SpatialConfiguration(x,mydisn);
-
-      // set up matrices and parameters needed for the evaluation of
-      // interfacial area and its first derivative w.r.t. the displacements at (n+1)
-      double Anew = 0.;                                            // interfacial area
-      RCP<Epetra_SerialDenseVector> Adiffnew = Teuchos::rcp(new Epetra_SerialDenseVector);
-
-      ComputeAreaDeriv(x, numnode, ndof, Anew, Adiffnew,Teuchos::null);
-
-      surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, Anew, Adiffnew, elevector1, elematrix1, this->Id(),
-          time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0,
-          gamma_min, gamma_min_eq, con_quot_max,
-          con_quot_eq, newstep);
+      surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, elevector1, elematrix1, this->Id(),
+          time, dt, 0, 0.0, k1xC, k2, m1, m2, gamma_0, gamma_min, gamma_min_eq, con_quot_max, con_quot_eq, newstep);
     }
     else if (cond->Type()==DRT::Condition::SurfaceTension) // ideal liquid
     {
       int curvenum = cond->GetInt("curve");
       double const_gamma = cond->GetDouble("gamma");
-      surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, 0., Adiff, elevector1, elematrix1, this->Id(),
-          time, dt, 1, const_gamma, 0.0, 0.0, 0.0, 0.0, 0.0,
-          0.0, 0.0, 0.0, 0.0, newstep);
+      surfstressman->StiffnessAndInternalForces(curvenum, A, Adiff, Adiff2, elevector1, elematrix1, this->Id(),
+          time, dt, 1, const_gamma, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, newstep);
     }
     else
       dserror("Unknown condition type %d",cond->Type());

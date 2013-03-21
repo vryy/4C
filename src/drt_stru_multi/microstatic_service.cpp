@@ -265,8 +265,8 @@ void STRUMULTI::MicroStatic::CalcRefNorms()
   normchardis_ = STR::AUX::CalculateVectorNorm(iternorm_, dis_);
   if (normchardis_ < toldisi_) normchardis_ = 1.0;
 
-  double fintnorm = STR::AUX::CalculateVectorNorm(iternorm_, fintm_);
-  double freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freactm_);
+  double fintnorm = STR::AUX::CalculateVectorNorm(iternorm_, fintn_);
+  double freactnorm = STR::AUX::CalculateVectorNorm(iternorm_, freactn_);
   normcharforce_ = std::max(fintnorm, freactnorm);
   if (normcharforce_ < tolfres_) normcharforce_ = 1.0;
 }
@@ -286,7 +286,7 @@ void STRUMULTI::MicroStatic::PrintNewton(bool print_unconv, Epetra_Time timer)
   {
     normfres_ /= normcharforce_;
   }
-  
+
   if (relres_reldis)
   {
     normfres_ /= normcharforce_;
@@ -344,7 +344,7 @@ void STRUMULTI::MicroStatic::PrintNewton(bool print_unconv, Epetra_Time timer)
  |  print to screen                                             lw 12/07|
  *----------------------------------------------------------------------*/
 void STRUMULTI::MicroStatic::PrintPredictor()
-{  
+{
 
   if (normtypefres_ == INPAR::STR::convnorm_rel)
   {

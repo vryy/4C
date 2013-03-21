@@ -257,7 +257,7 @@ void STR::TimIntGEMM::EvaluateForceStiffResidual(bool predict)
 
   // close stiffness matrix
   stiff_->Complete();
-  
+
   // hallelujah
   return;
 }
@@ -525,3 +525,9 @@ void STR::TimIntGEMM::ReadRestartForce()
 }
 
 /*----------------------------------------------------------------------*/
+/* write external forces for restart */
+void STR::TimIntGEMM::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
+{
+  output->WriteVector("fexternal", fext_);
+  return;
+}

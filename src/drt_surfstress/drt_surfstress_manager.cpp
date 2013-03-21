@@ -42,12 +42,11 @@ UTILS::SurfStressManager::SurfStressManager(Teuchos::RCP<DRT::Discretization> di
     {
     case INPAR::STR::dyna_genalpha:
       if (DRT::INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(sdynparams.sublist("GENALPHA"), "GENAVG")
-             != INPAR::STR::midavg_imrlike)
-        dserror("Surface stresses are only implemented for imr-like generalized alpha");
-      alphaf_ = sdynparams.sublist("GENALPHA").get<double>("ALPHA_F");
+             != INPAR::STR::midavg_trlike)
+        dserror("Surface stresses are only implemented for tr-like generalized alpha");
       break;
     default:
-      dserror("Surface stresses are only implemented for imr-like generalized alpha");
+      dserror("Surface stresses are only implemented for tr-like generalized alpha");
       break;
     }
 
@@ -67,8 +66,6 @@ UTILS::SurfStressManager::SurfStressManager(Teuchos::RCP<DRT::Discretization> di
     con_current_     = Teuchos::rcp(new Epetra_Vector(*surfcolmap,true));
     con_last_        = Teuchos::rcp(new Epetra_Vector(*surfcolmap,true));
     gamma_current_   = Teuchos::rcp(new Epetra_Vector(*surfcolmap,true));
-    gamma_last_      = Teuchos::rcp(new Epetra_Vector(*surfcolmap,true));
-
 
     std::vector<string> conditions_to_copy;
     std::string condname = "SurfaceStress";
@@ -111,17 +108,17 @@ void UTILS::SurfStressManager::WriteResults(const int istep, const double timen)
   // The column map based vectors used for calculations are exported
   // to row map based ones needed for writing
 
-  RCP<Epetra_Vector> A_last_row = LINALG::CreateVector(*surfrowmap_,true);
-  RCP<Epetra_Vector> con_last_row = LINALG::CreateVector(*surfrowmap_,true);
-  RCP<Epetra_Vector> gamma_last_row = LINALG::CreateVector(*surfrowmap_,true);
+  RCP<Epetra_Vector> A_row = LINALG::CreateVector(*surfrowmap_,true);
+  RCP<Epetra_Vector> con_row = LINALG::CreateVector(*surfrowmap_,true);
+  RCP<Epetra_Vector> gamma_row = LINALG::CreateVector(*surfrowmap_,true);
 
-  LINALG::Export(*A_last_, *A_last_row);
-  LINALG::Export(*con_last_, *con_last_row);
-  LINALG::Export(*gamma_last_, *gamma_last_row);
+  LINALG::Export(*A_current_, *A_row);
+  LINALG::Export(*con_current_, *con_row);
+  LINALG::Export(*gamma_current_, *gamma_row);
 
-  surfoutput_->WriteVector("gamma", gamma_last_row, IO::DiscretizationWriter::elementvector);
-  surfoutput_->WriteVector("Gamma", con_last_row, IO::DiscretizationWriter::elementvector);
-  surfoutput_->WriteVector("Area", A_last_row, IO::DiscretizationWriter::elementvector);
+  surfoutput_->WriteVector("gamma", gamma_row, IO::DiscretizationWriter::elementvector);
+  surfoutput_->WriteVector("Gamma", con_row, IO::DiscretizationWriter::elementvector);
+  surfoutput_->WriteVector("Area", A_row, IO::DiscretizationWriter::elementvector);
 }
 
 
@@ -147,15 +144,12 @@ void UTILS::SurfStressManager::ReadRestart(const int step,
 
   RCP<Epetra_Vector> A = LINALG::CreateVector(*surfrowmap_,true);
   RCP<Epetra_Vector> con = LINALG::CreateVector(*surfrowmap_,true);
-  RCP<Epetra_Vector> gamma = LINALG::CreateVector(*surfrowmap_,true);
 
   reader.ReadVector(A, "Area");
   reader.ReadVector(con, "Gamma");
-  reader.ReadVector(gamma, "gamma");
 
   LINALG::Export(*A, *A_last_);
   LINALG::Export(*con, *con_last_);
-  LINALG::Export(*gamma, *gamma_last_);
 }
 
 
@@ -167,7 +161,6 @@ void UTILS::SurfStressManager::ReadRestart(const int step,
 *--------------------------------------------------------------------*/
 
 void UTILS::SurfStressManager::EvaluateSurfStress(Teuchos::ParameterList& p,
-                                                  const RCP<Epetra_Vector> dism,
                                                   const RCP<Epetra_Vector> disn,
                                                   Teuchos::RCP<Epetra_Vector> fint,
                                                   Teuchos::RCP<LINALG::SparseOperator> stiff)
@@ -176,7 +169,6 @@ void UTILS::SurfStressManager::EvaluateSurfStress(Teuchos::ParameterList& p,
   p.set("action","calc_surfstress_stiff");
 
   discret_->ClearState();
-  discret_->SetState("displacement",dism);
   discret_->SetState("new displacement",disn);
 
   double currtime = p.get<double>("total time", 0.);
@@ -205,7 +197,6 @@ void UTILS::SurfStressManager::Update()
 {
   A_last_->Update(1.0, *A_current_, 0.0);
   con_last_->Update(1.0, *con_current_, 0.0);
-  gamma_last_->Update(1.0, *gamma_current_, 0.0);
 }
 
 /*-------------------------------------------------------------------*
@@ -219,8 +210,6 @@ void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
                                                           const double& A,
                                                           const RCP<Epetra_SerialDenseVector> Adiff,
                                                           const RCP<Epetra_SerialDenseMatrix> Adiff2,
-                                                          const double& Anew,
-                                                          const RCP<Epetra_SerialDenseVector> Adiffnew,
                                                           Epetra_SerialDenseVector& fint,
                                                           Epetra_SerialDenseMatrix& K_surf,
                                                           const int ID,
@@ -245,7 +234,7 @@ void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
 
   if (surface_flag==0)                                   // SURFACTANT
   {
-    (*A_current_)[LID] = Anew;
+    (*A_current_)[LID] = A;
 
     /*-----------calculation of current surface stress and its partial
      *-----------------derivative with respect to the interfacial area */
@@ -287,7 +276,7 @@ void UTILS::SurfStressManager::StiffnessAndInternalForces(const int curvenum,
 
     for (int j=0;j<ndof;++j)
     {
-      K_surf(i,j) = (dgamma*(*Adiff)[i]*(*Adiffnew)[j]+gamma*(*Adiff2)(i,j))*curvefac;
+      K_surf(i,j) = (dgamma*(*Adiff)[i]*(*Adiff)[j]+gamma*(*Adiff2)(i,j))*curvefac;
     }
   }
 
@@ -324,7 +313,7 @@ void UTILS::SurfStressManager::SurfactantModel(
 
   /*-------------------------------------------------------------------*
    |     DETERMINATION OF CURRENT NON-DIMENSIONALIZED INTERFACIAL      |
-   |       SURFACTANT CONCENTRATION CON_QUOT_NEW  (n+1-alphaf)         |
+   |       SURFACTANT CONCENTRATION CON_QUOT_NEW  (n+1)                |
    *-------------------------------------------------------------------*/
 
   /* use of non-dimensionalized interfacial surfactant concentration:
@@ -415,8 +404,6 @@ void UTILS::SurfStressManager::SurfactantModel(
   /* save history variables */
   (*con_current_)[LID] = con_new;
   (*gamma_current_)[LID] = gamma;
-
-  gamma = (1.-alphaf_)*(*gamma_current_)[LID]+alphaf_*(*gamma_last_)[LID];
 
   return;
 }

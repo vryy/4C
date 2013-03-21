@@ -163,6 +163,9 @@ namespace STR
 
     //! Read and set restart for forces
     void ReadRestartForce();
+
+    //! Write internal and external forces for restart
+    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output);
     //@}
 
     //! @name Access methods
@@ -171,7 +174,8 @@ namespace STR
     //! Return external force \f$F_{ext,n}\f$
     Teuchos::RCP<Epetra_Vector> Fext()
     {
-      return fext_;
+      dserror("Statics: no external forces at t_n available");
+      return Teuchos::null;
     }
 
     //! Return external force \f$F_{ext,n+1}\f$
@@ -199,10 +203,8 @@ namespace STR
     //! @name Global force vectors
     //! Residual \c fres_ exists already in base class
     //@{
-    Teuchos::RCP<Epetra_Vector> fint_;  //!< internal force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fintn_;  //!< internal force at \f$t_{n+1}\f$
 
-    Teuchos::RCP<Epetra_Vector> fext_;  //!< external force at \f$t_n\f$
     Teuchos::RCP<Epetra_Vector> fextn_;  //!< external force at \f$t_{n+1}\f$
 
     //@}

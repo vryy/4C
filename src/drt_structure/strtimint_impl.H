@@ -186,7 +186,6 @@ namespace STR
     (
       const double time,                         //!< evaluation time
       const double dt,                           //!< time step size
-      const Teuchos::RCP<Epetra_Vector> dism,    //!< displacement state at n+1-alphaf
       const Teuchos::RCP<Epetra_Vector> disn,    //!< displacement state at n+1
       Teuchos::RCP<Epetra_Vector>& fint,         //!< internal force
       Teuchos::RCP<LINALG::SparseOperator>& stiff  //! stiffness
@@ -675,6 +674,9 @@ namespace STR
 
     //! Read and set external forces from file
     virtual void ReadRestartForce() = 0;
+
+    //! Write internal and external forces for restart
+    virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
 
     //! FORMERLY: Return residual displacements \f$\Delta D_{n+1}^{<k>}\f$
     //! Called from the previous adapters as InitialGuess()

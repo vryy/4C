@@ -264,14 +264,14 @@ void STR::TimIntGenAlpha::EvaluateForceStiffResidual(bool predict)
   ApplyForceStiffConstraint(timen_, (*dis_)(0), disn_, fintn_, stiff_, pcon);
 
   // add surface stress force
-  ApplyForceStiffSurfstress(timen_, (*dt_)[0], disn_, disn_, fintn_, stiff_);
+  ApplyForceStiffSurfstress(timen_, (*dt_)[0], disn_, fintn_, stiff_);
 
   // add potential forces
   ApplyForceStiffPotential(timen_, disn_, fintn_, stiff_);
   TestForceStiffPotential(timen_, disn_, step_);
 
   // add forces and stiffness due to embedding tissue condition
-	ApplyForceStiffEmbedTissue(stiff_,fintn_,disn_,predict);
+  ApplyForceStiffEmbedTissue(stiff_,fintn_,disn_,predict);
 
   // total internal mid-forces F_{int;n+1-alpha_f} ----> TR-like
   // F_{int;n+1-alpha_f} := (1.-alphaf) * F_{int;n+1} + alpha_f * F_{int;n}
@@ -543,24 +543,21 @@ void STR::TimIntGenAlpha::UpdateStepElement()
 }
 
 /*----------------------------------------------------------------------*/
-/* read restart forces */
+/* read and/or calculate forces for restart */
 void STR::TimIntGenAlpha::ReadRestartForce()
 {
   IO::DiscretizationReader reader(discret_, step_);
-  // external force
   reader.ReadVector(fext_, "fexternal");
-  // determine internal force
-  fint_->PutScalar(0.0);
-  // Set dt to 0, since we do not propagate in time.
-  // No time integration on material level
-  ApplyForceInternal((*time_)[0], 0.0, (*dis_)(0), zeros_, (*vel_)(0), fint_);
-  // for TR scale constraint matrix with the same value fintn_ is scaled with
-  ParameterList pcon;
-  pcon.set("scaleConstrMat", (1.0-alphaf_));
-  ApplyForceStiffConstraint((*time_)[0], (*dis_)(0), (*dis_)(0), fint_, stiff_, pcon);
+  reader.ReadVector(fint_, "fint");
 
-  // bye
   return;
 }
 
 /*----------------------------------------------------------------------*/
+/* write internal and external forces for restart */
+void STR::TimIntGenAlpha::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
+{
+  output->WriteVector("fexternal", fext_);
+  output->WriteVector("fint",fint_);
+  return;
+}

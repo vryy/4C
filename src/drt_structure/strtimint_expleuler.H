@@ -103,7 +103,7 @@ namespace STR
 
     //! Return linear error coefficient of displacements
     double MethodLinErrCoeffDis()
-    { 
+    {
       dserror("has not been checked yet!");
       return 1./2.;
       //const double dt = (*dt_)[0];
@@ -138,6 +138,8 @@ namespace STR
     //! Read and set restart for forces
     void ReadRestartForce();
 
+    //! Write internal and external forces for restart
+    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output);
 
     virtual Teuchos::RCP<Epetra_Vector> Velaf()
     {

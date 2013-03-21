@@ -134,18 +134,6 @@ public:
   void FullNewton();
 
   /*!
-  \brief Update for a new time step in case of imr-like generalized
-  alpha time integration
-
-  */
-  void UpdateNewTimeStep(Teuchos::RCP<Epetra_Vector> dis,
-                         Teuchos::RCP<Epetra_Vector> dism,
-                         Teuchos::RCP<Epetra_Vector> disn,
-                         Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldalpha,
-                         Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > alpha,
-                         Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man);
-
-  /*!
   \brief Calculate stresses and strains
 
   */
@@ -178,7 +166,6 @@ public:
 
   */
   void SetState(Teuchos::RCP<Epetra_Vector> dis,
-                Teuchos::RCP<Epetra_Vector> dism,
                 Teuchos::RCP<Epetra_Vector> disn,
                 Teuchos::RCP<UTILS::SurfStressManager> surfman,
                 Teuchos::RCP<std::vector<char> > stress,
@@ -270,7 +257,6 @@ public:
 
   double Density() const { return density_; };
 
-
 protected:
 
   // don't want = operator and cctor
@@ -283,11 +269,6 @@ protected:
   Teuchos::RCP<LINALG::Solver>           solver_;
   int                           myrank_;
   int                           maxentriesperrow_;
-
-  double                        beta_;
-  double                        gamma_;
-  double                        alphaf_;
-  double                        alpham_;
 
   double                        dt_;
   double                        time_;
@@ -335,13 +316,12 @@ protected:
   Teuchos::RCP<Epetra_Vector>    dirichtoggle_;
   Teuchos::RCP<Epetra_Vector>    invtoggle_;
   Teuchos::RCP<Epetra_Vector>    zeros_;
-  Teuchos::RCP<Epetra_Vector>    dis_;
-  Teuchos::RCP<Epetra_Vector>    disn_;
-  Teuchos::RCP<Epetra_Vector>    dism_;
+  Teuchos::RCP<Epetra_Vector>    dis_;  //!< displacements at t_{n} (needed for convergence check only)
+  Teuchos::RCP<Epetra_Vector>    disn_; //!< displacements at t_{n+1}
   Teuchos::RCP<Epetra_Vector>    disi_;
-  Teuchos::RCP<Epetra_Vector>    fintm_;
-  Teuchos::RCP<Epetra_Vector>    fresm_;
-  Teuchos::RCP<Epetra_Vector>    freactm_;
+  Teuchos::RCP<Epetra_Vector>    fintn_;
+  Teuchos::RCP<Epetra_Vector>    fresn_;
+  Teuchos::RCP<Epetra_Vector>    freactn_;
 
   Teuchos::RCP<std::vector<char> > stress_;
   Teuchos::RCP<std::vector<char> > strain_;

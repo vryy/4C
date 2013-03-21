@@ -254,8 +254,12 @@ void STR::TimIntExplEuler::UpdateStepElement()
 /* read restart forces */
 void STR::TimIntExplEuler::ReadRestartForce()
 {
-  // do nothing
   return;
 }
 
 /*----------------------------------------------------------------------*/
+/* write internal and external forces for restart */
+void STR::TimIntExplEuler::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
+{
+  return;
+}

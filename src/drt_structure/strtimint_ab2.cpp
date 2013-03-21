@@ -161,7 +161,7 @@ void STR::TimIntAB2::IntegrateStep()
 
   // TIMING
   //if (!myrank_) cout << "T_contact:  " << timer_->WallTime() - dtcpu  << endl;
-  
+
   // determine time derivative of linear momentum vector,
   // ie \f$\dot{P} = M \dot{V}_{n=1}\f$
   frimpn_->Update(1.0, *fextn_, -1.0, *fintn_, 0.0);
@@ -170,7 +170,7 @@ void STR::TimIntAB2::IntegrateStep()
   {
     frimpn_->Update(-1.0, *fviscn_, 1.0);
   }
-  
+
   if (HaveContactMeshtying())
   {
     frimpn_->Update(1.0, *fcmtn_, 1.0);
@@ -265,3 +265,9 @@ void STR::TimIntAB2::ReadRestartForce()
 }
 
 /*----------------------------------------------------------------------*/
+/* write internal and external forces for restart */
+void STR::TimIntAB2::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
+{
+  dserror("No restart ability Adams-Bashforth 2nd order time integrator!");
+  return;
+}

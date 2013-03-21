@@ -931,9 +931,11 @@ void STR::TimInt::ReadRestart
   ReadRestartConstraint();
   ReadRestartContactMeshtying();
   ReadRestartStatMech();
-  ReadRestartForce();
   ReadRestartSurfstress();
   ReadRestartMultiScale();
+
+  ReadRestartForce();
+
   // fix pointer to #dofrowmap_, which has not really changed, but is
   // located at different place
   dofrowmap_ = discret_->DofRowMap();
@@ -1124,7 +1126,6 @@ void STR::TimInt::OutputRestart
   if (writereducedrestart_==true)
   {
     // write restart output, please
-    //output_->WriteMesh(step_, (*time_)[0]);
     output_->NewStep(step_, (*time_)[0]);
     output_->WriteVector("displacement", (*dis_)(0));
     output_->WriteElementData(firstoutputofrun_);
@@ -1132,21 +1133,14 @@ void STR::TimInt::OutputRestart
   else
   {
     // write restart output, please
-
     output_->WriteMesh(step_, (*time_)[0]);
     output_->NewStep(step_, (*time_)[0]);
     output_->WriteVector("displacement", (*dis_)(0));
     output_->WriteVector("velocity", (*vel_)(0));
     output_->WriteVector("acceleration", (*acc_)(0));
-    output_->WriteVector("fexternal", Fext());
     if(!HaveStatMech())
       output_->WriteElementData(firstoutputofrun_);
-
-    //biofilm growth
-    if (strgrdisp_!=Teuchos::null)
-    {
-      output_->WriteVector("str_growth_displ", strgrdisp_);
-    }
+    WriteRestartForce(output_);
   }
   // owner of elements is just written once because it does not change during simulation (so far)
   firstoutputofrun_ = false;
@@ -1180,6 +1174,12 @@ void STR::TimInt::OutputRestart
   if (HaveStatMech())
   {
     statmechman_->WriteRestart(output_, (*dt_)[0]);
+  }
+
+  //biofilm growth
+  if (strgrdisp_!=Teuchos::null)
+  {
+    output_->WriteVector("str_growth_displ", strgrdisp_);
   }
 
   // info dedicated to user's eyes staring at standard out

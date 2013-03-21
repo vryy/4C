@@ -41,16 +41,14 @@ STR::TimIntStatics::TimIntStatics
     contactsolver,
     output
   ),
-  fint_(Teuchos::null),
   fintn_(Teuchos::null),
-  fext_(Teuchos::null),
   fextn_(Teuchos::null)
 {
 
   INPAR::STR::PreStress pstype = DRT::INPUT::IntegralValue<INPAR::STR::PreStress>(sdynparams,"PRESTRESS");
   INPAR::STR::DynamicType dyntype = DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP");
 
-  if ( pstype != INPAR::STR::prestress_none && dyntype != INPAR::STR::dyna_statics ) 
+  if ( pstype != INPAR::STR::prestress_none && dyntype != INPAR::STR::dyna_statics )
   {
     dserror("Paranoia Error: PRESTRESS is only allowed in combinations with DYNAMICTYPE Statics!!");
   }
@@ -63,7 +61,7 @@ STR::TimIntStatics::TimIntStatics
     else if (pstype == INPAR::STR::prestress_id) IO::cout << "with static INVERSE DESIGN prestress" << IO::endl;
     else IO::cout << "with statics" << IO::endl;
   }
-  
+
 
   // check if predictor is admissible for statics
   if ( (pred_ == INPAR::STR::pred_constvel) or (pred_ == INPAR::STR::pred_constacc))
@@ -71,13 +69,9 @@ STR::TimIntStatics::TimIntStatics
 
   // create force vectors
 
-  // internal force vector F_{int;n} at last time
-  fint_ = LINALG::CreateVector(*dofrowmap_, true);
   // internal force vector F_{int;n+1} at new time
   fintn_ = LINALG::CreateVector(*dofrowmap_, true);
 
-  // external force vector F_ext at last times
-  fext_ = LINALG::CreateVector(*dofrowmap_, true);
   // external force vector F_{n+1} at new time
   fextn_ = LINALG::CreateVector(*dofrowmap_, true);
 
@@ -175,7 +169,7 @@ void STR::TimIntStatics::EvaluateForceStiffResidual(bool predict)
 
   // close stiffness matrix
   stiff_->Complete();
-  
+
   // hallelujah
   return;
 }
@@ -282,14 +276,6 @@ void STR::TimIntStatics::UpdateStepState()
   //    A_{n} := A_{n+1}
   acc_->UpdateSteps(*accn_);  // this simply copies zero vectors
 
-  // update new external force
-  //    F_{ext;n} := F_{ext;n+1}
-  fext_->Update(1.0, *fextn_, 0.0);
-
-  // update new internal force
-  //    F_{int;n} := F_{int;n+1}
-  fint_->Update(1.0, *fintn_, 0.0);
-
   // update surface stress
   UpdateStepSurfstress();
 
@@ -330,17 +316,12 @@ void STR::TimIntStatics::UpdateStepElement()
 /* read restart forces */
 void STR::TimIntStatics::ReadRestartForce()
 {
-  IO::DiscretizationReader reader(discret_, step_);
-  // set 'initial' external force
-  reader.ReadVector(fext_, "fexternal");
-  // set 'initial' internal force vector
-  // Set dt to 0, since we do not propagate in time.
-  ApplyForceInternal((*time_)[0], 0.0, (*dis_)(0), zeros_, (*vel_)(0), fint_);
-
-  ParameterList pcon; //no scaling necessary
-  ApplyForceStiffConstraint((*time_)[0], (*dis_)(0), (*dis_)(0), fint_, stiff_, pcon);
   return;
 }
 
 /*----------------------------------------------------------------------*/
-
+/* write internal and external forces for restart */
+void STR::TimIntStatics::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
+{
+  return;
+}

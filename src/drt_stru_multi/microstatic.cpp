@@ -64,9 +64,6 @@ V0_(V0)
   const Teuchos::ParameterList& sdyn_micro  = DRT::Problem::Instance(microdisnum_)->StructuralDynamicParams();
   const Teuchos::ParameterList& sdyn_macro  = DRT::Problem::Instance()->StructuralDynamicParams();
 
-  // we can use here the parameters of the macroscale input file
-  //const Teuchos::ParameterList& probtype = DRT::Problem::Instance()->ProblemTypeParams();
-
   // i/o options should be read from the corresponding micro-file
   const Teuchos::ParameterList& ioflags  = DRT::Problem::Instance(microdisnum_)->IOParams();
 
@@ -83,22 +80,6 @@ V0_(V0)
                                     discret_->Comm(),
                                     DRT::Problem::Instance()->ErrorFile()->Handle()));
   discret_->ComputeNullSpaceIfNecessary(solver_->Params());
-
-  // -------------------------------------------------------------------
-  // access dynamic / io / etc. parameters
-  // -------------------------------------------------------------------
-  // new time intgration implementation -> generalized alpha
-  // parameters are located in a sublist
-  if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn_macro,"DYNAMICTYP") == INPAR::STR::dyna_genalpha)
-  {
-    const Teuchos::ParameterList& genalpha  = DRT::Problem::Instance()->StructuralDynamicParams().sublist("GENALPHA");
-    beta_ = genalpha.get<double>("BETA");
-    gamma_ = genalpha.get<double>("GAMMA");
-    alpham_ = genalpha.get<double>("ALPHA_M");
-    alphaf_ = genalpha.get<double>("ALPHA_F");
-  }
-  else
-    dserror("multi-scale problems are only implemented for imr-like generalized alpha time integration schemes");
 
   INPAR::STR::PredEnum pred = DRT::INPUT::IntegralValue<INPAR::STR::PredEnum>(sdyn_micro, "PREDICT");
   pred_ = pred;
@@ -144,10 +125,6 @@ V0_(V0)
   discret_->Comm().Broadcast(&numstep_, 1, 0);
   discret_->Comm().Broadcast(&restart_, 1, 0);
   discret_->Comm().Broadcast(&restartevry_, 1, 0);
-  discret_->Comm().Broadcast(&beta_, 1, 0);
-  discret_->Comm().Broadcast(&gamma_, 1, 0);
-  discret_->Comm().Broadcast(&alpham_, 1, 0);
-  discret_->Comm().Broadcast(&alphaf_, 1, 0);
 
   // -------------------------------------------------------------------
   // get a vector layout from the discretization to construct matching
@@ -178,25 +155,22 @@ V0_(V0)
   //                \  1   i-th DOF is free
   invtoggle_ = LINALG::CreateVector(*dofrowmap,false);
 
-  // displacements D_{n} at last time
-  dis_ = LINALG::CreateVector(*dofrowmap,true);
-
   // displacements D_{n+1} at new time
   disn_ = LINALG::CreateVector(*dofrowmap,true);
 
-  // mid-displacements D_{n+1-alpha_f}
-  dism_ = LINALG::CreateVector(*dofrowmap,true);
+  // displacements D_{n+1} at old time
+  dis_ = LINALG::CreateVector(*dofrowmap,true);
 
   // iterative displacement increments IncD_{n+1}
   // also known as residual displacements
   disi_ = LINALG::CreateVector(*dofrowmap,true);
 
-  // internal force vector F_int at different times
-  fintm_ = LINALG::CreateVector(*dofrowmap,true);
+  // internal force vector F_int
+  fintn_ = LINALG::CreateVector(*dofrowmap,true);
 
-  // dynamic force residual at mid-time R_{n+1-alpha}
+  // dynamic force residual
   // also known as out-of-balance-force
-  fresm_ = LINALG::CreateVector(*dofrowmap,false);
+  fresn_ = LINALG::CreateVector(*dofrowmap,false);
 
   // -------------------------------------------------------------------
   // create "empty" EAS history map
@@ -226,7 +200,7 @@ V0_(V0)
     discret_->SetState("residual displacement",zeros_);
     discret_->SetState("displacement",dis_);
 
-    discret_->Evaluate(p,stiff_,Teuchos::null,fintm_,Teuchos::null,Teuchos::null);
+    discret_->Evaluate(p,stiff_,Teuchos::null,fintn_,Teuchos::null,Teuchos::null);
     discret_->ClearState();
   }
 
@@ -238,7 +212,7 @@ V0_(V0)
   STRUMULTI::MicroStatic::SetUpHomogenization();
 
   // reaction force vector at different times
-  freactm_ = LINALG::CreateVector(*pdof_,true);
+  freactn_ = LINALG::CreateVector(*pdof_,true);
 
   //----------------------- compute an inverse of the dirichtoggle vector
   invtoggle_->PutScalar(1.0);
@@ -312,10 +286,8 @@ void STRUMULTI::MicroStatic::PredictConstDis(LINALG::Matrix<3,3>* defgrd)
   // mid-displacements since the given macroscopic deformation
   // gradient is evaluated at the mid-point!
   {
-    // dism then also holds prescribed new dirichlet displacements
-    EvaluateMicroBC(defgrd, dism_);
-    disn_->Update(1.0, *dism_, -alphaf_, *dis_, 0.);
-    disn_->Scale(1.0/(1.0-alphaf_));
+    // disn then also holds prescribed new dirichlet displacements
+    EvaluateMicroBC(defgrd, disn_);
     discret_->ClearState();
   }
 
@@ -337,21 +309,20 @@ void STRUMULTI::MicroStatic::PredictConstDis(LINALG::Matrix<3,3>* defgrd)
     // other parameters that might be needed by the elements
     p.set("total time",timen_);
     p.set("delta time",dt_);
-    p.set("alpha f",alphaf_);
     // set vector values needed by elements
     discret_->ClearState();
     disi_->Scale(0.0);
     discret_->SetState("residual displacement",disi_);
-    discret_->SetState("displacement",dism_);
-    fintm_->PutScalar(0.0);  // initialise internal force vector
+    discret_->SetState("displacement",disn_);
+    fintn_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->Evaluate(p,stiff_,Teuchos::null,fintm_,Teuchos::null,Teuchos::null);
+    discret_->Evaluate(p,stiff_,Teuchos::null,fintn_,Teuchos::null,Teuchos::null);
     discret_->ClearState();
 
     if (surf_stress_man_->HaveSurfStress())
     {
       p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fintm_,stiff_);
+      surf_stress_man_->EvaluateSurfStress(p,disn_,fintn_,stiff_);
     }
 
     // complete stiffness matrix
@@ -363,19 +334,19 @@ void STRUMULTI::MicroStatic::PredictConstDis(LINALG::Matrix<3,3>* defgrd)
 
   //-------------------------------------------- compute residual forces
   // add static mid-balance
-  fresm_->Update(-1.0,*fintm_,0.0);
+  fresn_->Update(-1.0,*fintn_,0.0);
 
   // extract reaction forces
-  int err = freactm_->Import(*fresm_, *importp_, Insert);
+  int err = freactn_->Import(*fresn_, *importp_, Insert);
   if (err)
     dserror("Importing reaction forces of prescribed dofs using importer returned err=%d",err);
 
   // blank residual at DOFs on Dirichlet BC
-  Epetra_Vector fresmcopy(*fresm_);
-  fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+  Epetra_Vector fresncopy(*fresn_);
+  fresn_->Multiply(1.0,*invtoggle_,fresncopy,0.0);
 
   // store norm of residual
-  normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fresm_);
+  normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fresn_);
 
   return;
 } // STRUMULTI::MicroStatic::Predictor()
@@ -391,7 +362,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
     = LINALG::CreateVector(*(discret_->DofRowMap()), true);
 
   // copy last converged displacements
-  dbcinc->Update(1.0, *dism_, 0.0);
+  dbcinc->Update(1.0, *disn_, 0.0);
 
   // apply new displacements at DBCs -> this has to be done with the
   // mid-displacements since the given macroscopic deformation
@@ -405,7 +376,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
   // subtract the displacements of the last converged step
   // DBC-DOFs hold increments of current step
   // free-DOFs hold zeros
-  dbcinc->Update(-1.0, *dism_, 1.0);
+  dbcinc->Update(-1.0, *disn_, 1.0);
 
   //--------------------------------- set EAS internal data if necessary
 
@@ -425,21 +396,20 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
     // other parameters that might be needed by the elements
     p.set("total time",timen_);
     p.set("delta time",dt_);
-    p.set("alpha f",alphaf_);
     // set vector values needed by elements
     discret_->ClearState();
     disi_->PutScalar(0.0);
     discret_->SetState("residual displacement",disi_);
-    discret_->SetState("displacement",dism_);
-    fintm_->PutScalar(0.0);  // initialise internal force vector
+    discret_->SetState("displacement",disn_);
+    fintn_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->Evaluate(p,stiff_,Teuchos::null,fintm_,Teuchos::null,Teuchos::null);
+    discret_->Evaluate(p,stiff_,Teuchos::null,fintn_,Teuchos::null,Teuchos::null);
     discret_->ClearState();
 
     if (surf_stress_man_->HaveSurfStress())
     {
       p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fintm_,stiff_);
+      surf_stress_man_->EvaluateSurfStress(p,disn_,fintn_,stiff_);
     }
   }
 
@@ -447,7 +417,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
 
   //-------------------------------------------- compute residual forces
   // add static mid-balance
-  fresm_->Update(-1.0,*fintm_,0.0);
+  fresn_->Update(-1.0,*fintn_,0.0);
 
   // add linear reaction forces to residual
   {
@@ -457,24 +427,24 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
     stiff_->Multiply(false, *dbcinc, *freact);
 
     // add linear reaction forces due to prescribed Dirichlet BCs
-    fresm_->Update(-1.0, *freact, 1.0);
+    fresn_->Update(-1.0, *freact, 1.0);
   }
 
   // blank residual at DOFs on Dirichlet BC
   {
-    Epetra_Vector fresmcopy(*fresm_);
-    fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+    Epetra_Vector fresncopy(*fresn_);
+    fresn_->Multiply(1.0,*invtoggle_,fresncopy,0.0);
   }
 
   // apply Dirichlet BCs to system of equations
   disi_->PutScalar(0.0);
   stiff_->Complete();
-  LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
+  LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresn_,zeros_,dirichtoggle_);
 
   // solve for disi_
   // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
   solver_->Reset();
-  solver_->Solve(stiff_->EpetraMatrix(), disi_, fresm_, true, true);
+  solver_->Solve(stiff_->EpetraMatrix(), disi_, fresn_, true, true);
   solver_->Reset();
 
   // store norm of displacement increments
@@ -485,11 +455,7 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
   disi_->Update(1.0, *dbcinc, 1.0);
 
   // displacements
-  // note that disi is not Inc_D{n+1} but Inc_D{n+1-alphaf} since everything
-  // on the microscale "lives" exclusively at the pseudo generalized
-  // mid point! This is just a quasi-static problem!
-  dism_->Update(1.0,*disi_,1.0);
-  disn_->Update(1.0/(1.0-alphaf_),*disi_,1.0);
+  disn_->Update(1.0,*disi_,1.0);
 
   // reset anything that needs to be reset at the element level
 
@@ -519,39 +485,38 @@ void STRUMULTI::MicroStatic::PredictTangDis(LINALG::Matrix<3,3>* defgrd)
     // other parameters that might be needed by the elements
     p.set("total time",timen_);
     p.set("delta time",dt_);
-    p.set("alpha f",alphaf_);
     // set vector values needed by elements
     discret_->ClearState();
     disi_->PutScalar(0.0);
     discret_->SetState("residual displacement",disi_);
-    discret_->SetState("displacement",dism_);
-    fintm_->PutScalar(0.0);  // initialise internal force vector
+    discret_->SetState("displacement",disn_);
+    fintn_->PutScalar(0.0);  // initialise internal force vector
 
-    discret_->Evaluate(p,stiff_,Teuchos::null,fintm_,Teuchos::null,Teuchos::null);
+    discret_->Evaluate(p,stiff_,Teuchos::null,fintn_,Teuchos::null,Teuchos::null);
     discret_->ClearState();
 
     if (surf_stress_man_->HaveSurfStress())
     {
       p.set("surfstr_man", surf_stress_man_);
-      surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fintm_,stiff_);
+      surf_stress_man_->EvaluateSurfStress(p,disn_,fintn_,stiff_);
     }
   }
 
   //-------------------------------------------- compute residual forces
   // add static mid-balance
-  fresm_->Update(-1.0,*fintm_,0.0);
+  fresn_->Update(-1.0,*fintn_,0.0);
 
   // extract reaction forces
-  int err = freactm_->Import(*fresm_, *importp_, Insert);
+  int err = freactn_->Import(*fresn_, *importp_, Insert);
   if (err)
     dserror("Importing reaction forces of prescribed dofs using importer returned err=%d",err);
 
   // blank residual at DOFs on Dirichlet BC
-  Epetra_Vector fresmcopy(*fresm_);
-  fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+  Epetra_Vector fresncopy(*fresn_);
+  fresn_->Multiply(1.0,*invtoggle_,fresncopy,0.0);
 
   // store norm of residual
-  normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fresm_);
+  normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fresn_);
 
   return;
 }
@@ -584,7 +549,7 @@ void STRUMULTI::MicroStatic::FullNewton()
     //----------------------- apply dirichlet BCs to system of equations
     disi_->PutScalar(0.0);  // Useful? depends on solver and more
 
-    LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresm_,zeros_,dirichtoggle_);
+    LINALG::ApplyDirichlettoSystem(stiff_,disi_,fresn_,zeros_,dirichtoggle_);
 
     //--------------------------------------------------- solve for disi
     // Solve K_Teffdyn . IncD = -R  ===>  IncD_{n+1}
@@ -594,16 +559,12 @@ void STRUMULTI::MicroStatic::FullNewton()
       double wanted = tolfres_;
       solver_->AdaptTolerance(wanted,worst,adaptolbetter_);
     }
-    solver_->Solve(stiff_->EpetraMatrix(),disi_,fresm_,true,numiter_==0);
+    solver_->Solve(stiff_->EpetraMatrix(),disi_,fresn_,true,numiter_==0);
     solver_->ResetTolerance();
 
     //---------------------------------- update mid configuration values
     // displacements
-    // note that disi is not Inc_D{n+1} but Inc_D{n+1-alphaf} since everything
-    // on the microscale "lives" exclusively at the pseudo generalized
-    // mid point! This is just a quasi-static problem!
-    dism_->Update(1.0,*disi_,1.0);
-    disn_->Update(1.0/(1.0-alphaf_),*disi_,1.0);
+    disn_->Update(1.0,*disi_,1.0);
 
     //---------------------------- compute internal forces and stiffness
     {
@@ -616,7 +577,6 @@ void STRUMULTI::MicroStatic::FullNewton()
       // other parameters that might be needed by the elements
       p.set("total time",timen_);
       p.set("delta time",dt_);
-      p.set("alpha f",alphaf_);
       // set vector values needed by elements
       discret_->ClearState();
       // we do not need to scale disi_ here with 1-alphaf (cf. strugenalpha), since
@@ -624,16 +584,16 @@ void STRUMULTI::MicroStatic::FullNewton()
       // -> we solve our quasi-static problem there and only update data to the "end"
       // of the time step after having finished a macroscopic dt
       discret_->SetState("residual displacement",disi_);
-      discret_->SetState("displacement",dism_);
-      fintm_->PutScalar(0.0);  // initialise internal force vector
+      discret_->SetState("displacement",disn_);
+      fintn_->PutScalar(0.0);  // initialise internal force vector
 
-      discret_->Evaluate(p,stiff_,Teuchos::null,fintm_,Teuchos::null,Teuchos::null);
+      discret_->Evaluate(p,stiff_,Teuchos::null,fintn_,Teuchos::null,Teuchos::null);
       discret_->ClearState();
 
       if (surf_stress_man_->HaveSurfStress())
       {
         p.set("surfstr_man", surf_stress_man_);
-        surf_stress_man_->EvaluateSurfStress(p,dism_,disn_,fintm_,stiff_);
+        surf_stress_man_->EvaluateSurfStress(p,disn_,fintn_,stiff_);
       }
     }
 
@@ -642,21 +602,21 @@ void STRUMULTI::MicroStatic::FullNewton()
 
     //------------------------------------------ compute residual forces
     // add static mid-balance
-    fresm_->Update(-1.0,*fintm_,0.0);
+    fresn_->Update(-1.0,*fintn_,0.0);
 
     // extract reaction forces
-    int err = freactm_->Import(*fresm_, *importp_, Insert);
+    int err = freactn_->Import(*fresn_, *importp_, Insert);
     if (err)
       dserror("Importing reaction forces of prescribed dofs using importer returned err=%d",err);
 
     // blank residual DOFs which are on Dirichlet BC
-    Epetra_Vector fresmcopy(*fresm_);
-    fresm_->Multiply(1.0,*invtoggle_,fresmcopy,0.0);
+    Epetra_Vector fresncopy(*fresn_);
+    fresn_->Multiply(1.0,*invtoggle_,fresncopy,0.0);
 
     //---------------------------------------------- build residual norm
     normdisi_ = STR::AUX::CalculateVectorNorm(iternorm_, disi_);
 
-    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fresm_);
+    normfres_ = STR::AUX::CalculateVectorNorm(iternorm_, fresn_);
 
   //--------------------------------- increment equilibrium loop index
     ++numiter_;
@@ -723,8 +683,6 @@ void STRUMULTI::MicroStatic::Output(Teuchos::RCP<IO::DiscretizationWriter> outpu
 
     if (surf_stress_man_->HaveSurfStress())
       surf_stress_man_->WriteRestart(step, time);
-
-    //Teuchos::RCP<std::vector<char> > lastalphadata = Teuchos::rcp(new std::vector<char>());
 
     Teuchos::RCP<Epetra_SerialDenseMatrix> emptyalpha = Teuchos::rcp(new Epetra_SerialDenseMatrix(1, 1));
 
@@ -922,7 +880,6 @@ void STRUMULTI::MicroStatic::EvaluateMicroBC(LINALG::Matrix<3,3>* defgrd,
 }
 
 void STRUMULTI::MicroStatic::SetState(Teuchos::RCP<Epetra_Vector> dis,
-                                      Teuchos::RCP<Epetra_Vector> dism,
                                       Teuchos::RCP<Epetra_Vector> disn,
                                       Teuchos::RCP<UTILS::SurfStressManager> surfman,
                                       Teuchos::RCP<std::vector<char> > stress,
@@ -935,7 +892,6 @@ void STRUMULTI::MicroStatic::SetState(Teuchos::RCP<Epetra_Vector> dis,
                                       Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldKda)
 {
   dis_ = dis;
-  dism_ = dism;
   disn_ = disn;
   surf_stress_man_ = surfman;
 
@@ -951,42 +907,6 @@ void STRUMULTI::MicroStatic::SetState(Teuchos::RCP<Epetra_Vector> dis,
   oldKda_    = oldKda;
 }
 
-void STRUMULTI::MicroStatic::UpdateNewTimeStep(Teuchos::RCP<Epetra_Vector> dis,
-                                               Teuchos::RCP<Epetra_Vector> dism,
-                                               Teuchos::RCP<Epetra_Vector> disn,
-                                               Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > alpha,
-                                               Teuchos::RCP<std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> > > oldalpha,
-                                               Teuchos::RCP<UTILS::SurfStressManager> surf_stress_man)
-{
-  // these updates hold for an imr-like generalized alpha time integration
-  // -> if another time integration scheme should be used, this needs
-  // to be changed accordingly
-
-  dis->Update(1.0, *disn, 0.0);
-  dism->Update(1.0, *dis, 0.0);
-  disn->Update(1.0, *dis, 0.0);
-
-  if (surf_stress_man->HaveSurfStress())
-  {
-    surf_stress_man->Update();
-  }
-
-  const Epetra_Map* elemap = discret_->ElementRowMap();
-  for (int i=0;i<elemap->NumMyElements();++i)
-  {
-    RCP<Epetra_SerialDenseMatrix> alphai  = (*alpha)[i];
-    RCP<Epetra_SerialDenseMatrix> alphao = (*oldalpha)[i];
-
-    if (alphai!=null && alphao!=Teuchos::null) // update only those elements with EAS
-    {
-      Epetra_BLAS blas;
-      blas.SCAL(alphao->M() * alphao->N(), -alphaf_/(1.0-alphaf_), alphao->A());  // alphao *= -alphaf/(1.0-alphaf)
-      blas.AXPY(alphao->M() * alphao->N(), 1.0/(1.0-alphaf_), alphai->A(), alphao->A());  // alphao += 1.0/(1.0-alphaf) * alpha
-      blas.COPY(alphai->M() * alphai->N(), alphao->A(), alphai->A());  // alpha := alphao
-    }
-  }
-}
-
 void STRUMULTI::MicroStatic::SetTime(const double time, const double timen, const double dt, const int step, const int stepn)
 {
   time_  = time;
@@ -1000,8 +920,7 @@ void STRUMULTI::MicroStatic::SetTime(const double time, const double timen, cons
 
 void STRUMULTI::MicroStatic::ClearState()
 {
-  dis_ = Teuchos::null;
-  dism_ = Teuchos::null;
+  dis_ =  Teuchos::null;
   disn_ = Teuchos::null;
 }
 
@@ -1073,7 +992,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
   // IMPORTANT: the RVE has to be centered around (0,0,0), otherwise
   // modifications of this approach are necessary.
 
-  freactm_->Scale(-1.0);
+  freactn_->Scale(-1.0);
 
   LINALG::Matrix<3,3> P(true);
 
@@ -1083,7 +1002,7 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
     {
       for (int n=0; n<np_/3; ++n)
       {
-        P(i,j) += (*freactm_)[n*3+i]*(*Xp_)[n*3+j];
+        P(i,j) += (*freactn_)[n*3+i]*(*Xp_)[n*3+j];
       }
       P(i,j) /= V0_;
 			// sum P(i,j) over the microdis
@@ -1132,14 +1051,9 @@ void STRUMULTI::MicroStatic::StaticHomogenization(LINALG::Matrix<6,1>* stress,
 
     stiff_->ApplyDirichlet(dirichtoggle_);
 
-    // get parameter list of structural dynamics
-//    const Teuchos::ParameterList& sdyn = DRT::Problem::Instance(microdisnum_)->StructuralDynamicParams();
     // use solver blocks for structure
     // get the solver number used for structural solver
-    const int linsolvernumber = 9; //sdyn.get<int>("LINEAR_SOLVER");
-    // check if the structural solver has a valid solver number
-    if (linsolvernumber == (-1))
-      dserror("no linear solver defined for structural field. Please set LINEAR_SOLVER in STRUCTURAL DYNAMIC to a valid number!");
+    const int linsolvernumber = 9;
 
     //TODO: insert input parameter from dat file for solver block Belos
 

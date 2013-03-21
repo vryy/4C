@@ -297,8 +297,8 @@ void ADAPTER::StructureBaseAlgorithm::SetupTimInt(
       {
         if (DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdyn, "DYNAMICTYP") != INPAR::STR::dyna_genalpha)
           dserror("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha");
-        else if (DRT::INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(sdyn.sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_imrlike)
-          dserror("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha with GENAVG=ImrLike");
+        else if (DRT::INPUT::IntegralValue<INPAR::STR::MidAverageEnum>(sdyn.sublist("GENALPHA"), "GENAVG") != INPAR::STR::midavg_trlike)
+          dserror("In multi-scale simulations, you have to use DYNAMICTYP=GenAlpha with GENAVG=TrLike");
         break;
       }
     }

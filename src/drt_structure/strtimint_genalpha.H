@@ -1,4 +1,4 @@
- /*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 /*!
 \file strtimint_genalpha.H
 \brief Structural time integration with generalised-alpha
@@ -212,6 +212,9 @@ namespace STR
 
     //! Read and set restart for forces
     void ReadRestartForce();
+
+    //! Write internal and external forces for restart
+    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output);
 
     //@}
 

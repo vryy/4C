@@ -40,9 +40,8 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
 {
   DRT::Problem* microproblem = DRT::Problem::Instance(microdisnum_);
   Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis("structure");
-  dism_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
-  disn_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
   dis_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
+  disn_ = LINALG::CreateVector(*microdis->DofRowMap(),true);
   lastalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
   oldalpha_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
   oldfeas_ = Teuchos::rcp(new std::map<int, Teuchos::RCP<Epetra_SerialDenseMatrix> >);
@@ -70,10 +69,10 @@ MAT::MicroMaterialGP::MicroMaterialGP(const int gp, const int ele_ID, const bool
     // create a counter of macroscale GP associated with this "time integration" class
     // note that the counter is immediately updated afterwards!
     microstaticcounter_[microdisnum_] = 0;
-    density_ = (microstaticmap_[microdisnum_])->Density();
   }
 
   microstaticcounter_[microdisnum] += 1;
+  density_ = (microstaticmap_[microdisnum_])->Density();
 
   // create and initialize "empty" EAS history map (if necessary)
   EasInit();
@@ -113,11 +112,10 @@ void MAT::MicroMaterialGP::ReadRestart()
 {
   step_ = DRT::Problem::Instance()->Restart();
   microstaticmap_[microdisnum_]->ReadRestart(step_, dis_, lastalpha_, surf_stress_man_, restartname_);
-  // both dism_ and disn_ equal dis_
-  dism_->Update(1.0, *dis_, 0.0);
-  disn_->Update(1.0, *dis_, 0.0);
-  // both lastalpha and oldalpha are the same
+
   *oldalpha_ = *lastalpha_;
+
+  disn_->Update(1.0,*dis_,0.0);
 }
 
 
@@ -298,7 +296,7 @@ void MAT::MicroMaterialGP::PerformMicroSimulation(LINALG::Matrix<3,3>* defgrd,
   Teuchos::RCP<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
   // set displacements and EAS data of last step
-  microstatic->SetState(dis_, dism_, disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+  microstatic->SetState(dis_,disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
 
   // set current time, time step size and step number
   microstatic->SetTime(time_, timen_, dt_, step_, stepn_);
@@ -322,12 +320,24 @@ void MAT::MicroMaterialGP::Update()
   // select corresponding "time integration class" for this microstructure
   Teuchos::RCP<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
-  microstatic->UpdateNewTimeStep(dis_, dism_, disn_, oldalpha_, lastalpha_, surf_stress_man_);
-
   time_  = timen_;
   timen_ += dt_;
   step_  = stepn_;
   stepn_++;
+
+  dis_->Update(1.0,*disn_,0.0);
+
+  if (surf_stress_man_->HaveSurfStress())
+  {
+    surf_stress_man_->Update();
+  }
+
+  DRT::Problem* microproblem = DRT::Problem::Instance(microdisnum_);
+  Teuchos::RCP<DRT::Discretization> microdis = microproblem->GetDis("structure");
+  const Epetra_Map* elemap = microdis->ElementRowMap();
+
+  for (int i=0;i<elemap->NumMyElements();++i)
+    (*lastalpha_)[i] = (*oldalpha_)[i];
 
   // in case of modified Newton, the stiffness matrix needs to be rebuilt at
   // the beginning of the new time step
@@ -344,7 +354,7 @@ void MAT::MicroMaterialGP::PrepareOutput()
   strain_ = Teuchos::rcp(new std::vector<char>());
   plstrain_ = Teuchos::rcp(new std::vector<char>());
 
-  microstatic->SetState(dis_, dism_, disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+  microstatic->SetState(dis_, disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
   microstatic->SetTime(time_, timen_, dt_, step_, stepn_);
   microstatic->PrepareOutput();
 }
@@ -356,7 +366,7 @@ void MAT::MicroMaterialGP::Output()
   Teuchos::RCP<STRUMULTI::MicroStatic> microstatic = microstaticmap_[microdisnum_];
 
   // set displacements and EAS data of last step
-  microstatic->SetState(dis_, dism_, disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
+  microstatic->SetState(dis_, disn_, surf_stress_man_, stress_, strain_, plstrain_, lastalpha_, oldalpha_, oldfeas_, oldKaainv_, oldKda_);
   microstatic->Output(micro_output_, time_, step_, dt_);
 
   // we don't need these containers anymore

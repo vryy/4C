@@ -113,9 +113,6 @@ private:
   /// my vector of old displacements
   Teuchos::RCP<Epetra_Vector> dis_;
 
-  /// my vector of displacements at the generalized midpoint
-  Teuchos::RCP<Epetra_Vector> dism_;
-
   /// my vector of new displacements
   Teuchos::RCP<Epetra_Vector> disn_;
 

@@ -204,6 +204,10 @@ namespace STR
 
     //! Read and set restart for forces
     void ReadRestartForce();
+
+    //! Write internal and external forces for restart
+    void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output);
+
     //@}
 
     //! @name Access methods

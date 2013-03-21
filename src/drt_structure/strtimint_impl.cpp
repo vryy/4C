@@ -605,7 +605,6 @@ void STR::TimIntImpl::ApplyForceStiffSurfstress
 (
   const double time,
   const double dt,
-  const Teuchos::RCP<Epetra_Vector> dism,
   const Teuchos::RCP<Epetra_Vector> disn,
   Teuchos::RCP<Epetra_Vector>& fint,
   Teuchos::RCP<LINALG::SparseOperator>& stiff
@@ -619,9 +618,8 @@ void STR::TimIntImpl::ApplyForceStiffSurfstress
     p.set("surfstr_man", surfstressman_);
     p.set("total time", time);
     p.set("delta time", dt);
-    surfstressman_->EvaluateSurfStress(p, dism, disn, fint, stiff);
+    surfstressman_->EvaluateSurfStress(p, disn, fint, stiff);
   }
-
   // bye bye
   return;
 }

@@ -389,6 +389,9 @@ namespace STR
     //! Patient Specific Output
     void OutputPatspec();
 
+    //! Write internal and external forces (if necessary for restart)
+    virtual void WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output) = 0;
+
     //! Check wether energy output file is attached
     bool AttachedEnergyFile()
     {

@@ -509,18 +509,19 @@ void STR::TimIntOneStepTheta::UpdateStepElement()
 void STR::TimIntOneStepTheta::ReadRestartForce()
 {
   IO::DiscretizationReader reader(discret_, step_);
-  // set 'initial' external force
   reader.ReadVector(fext_, "fexternal");
-  fint_->PutScalar(0.0);
-  // set 'initial' internal force vector
-  // Set dt to 0, since we do not propagate in time.
-  ApplyForceInternal((*time_)[0], 0.0, (*dis_)(0), zeros_, (*vel_)(0), fint_);
+  reader.ReadVector(fint_, "fint");
 
-  // for TR scale constraint matrix with the same value fintn_ is scaled with
-  ParameterList pcon;
-  pcon.set("scaleConstrMat", theta_);
-  ApplyForceStiffConstraint((*time_)[0], (*dis_)(0), (*dis_)(0), fint_, stiff_, pcon);
   return;
 }
 
 /*----------------------------------------------------------------------*/
+
+/*----------------------------------------------------------------------*/
+/* write internal and external forces for restart */
+void STR::TimIntOneStepTheta::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
+{
+  output->WriteVector("fexternal",fext_);
+  output->WriteVector("fint",fint_);
+  return;
+}

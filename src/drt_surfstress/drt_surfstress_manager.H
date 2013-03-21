@@ -102,13 +102,11 @@ public:
     due to interfacial energy
 
     \param p (in): parameter list
-    \param dism (in): displacements (n+1-alphaf)
     \param disn (in): displacements (n+1)
     \param fint (out): internal forces
     \param stiff (out): stiffness matrix
   */
   void EvaluateSurfStress(Teuchos::ParameterList& p,
-                          const Teuchos::RCP<Epetra_Vector> dism,
                           const Teuchos::RCP<Epetra_Vector> disn,
                           Teuchos::RCP<Epetra_Vector> fint,
                           Teuchos::RCP<LINALG::SparseOperator> stiff);
@@ -123,11 +121,9 @@ public:
     stiffnesses due to interfacial phenomena
 
     \param curvenum (in): number of time curve
-    \param A (in): current interfacial area at (n+1-alphaf)
-    \param Adiff (in): first partial derivatives of surface area at (n+1-alphaf)
-    \param Adiff2 (in): second partial derivatives of surface area at (n+1-alphaf)
-    \param Anew (in): current interfacial area at (n+1)
-    \param Adiffnew (in): first partial derivatives of surface area at (n+1)
+    \param A (in): current interfacial area at (n+1)
+    \param Adiff (in): first partial derivatives of surface area at (n+1)
+    \param Adiff2 (in): second partial derivatives of surface area at (n+1)
     \param fint (out): element internal force vector
     \param stiff (out): element stiffness matrix
     \param ID (in): ID of surface condition
@@ -150,8 +146,6 @@ public:
                                   const double& A,
                                   const Teuchos::RCP<Epetra_SerialDenseVector> Adiff,
                                   const Teuchos::RCP<Epetra_SerialDenseMatrix> Adiff2,
-                                  const double& Anew,
-                                  const Teuchos::RCP<Epetra_SerialDenseVector> Adiffnew,
                                   Epetra_SerialDenseVector& fint,
                                   Epetra_SerialDenseMatrix& stiff,
                                   const int ID,
@@ -211,7 +205,6 @@ private:
   //! name@ Private Attributes
 
   bool havesurfstress_;
-  double alphaf_;
   double timen_;
 
   // current discretization
@@ -240,9 +233,6 @@ private:
 
   // current surface stresses (n+1)^i
   Teuchos::RCP<Epetra_Vector> gamma_current_;
-
-  // surface stresses of former time step (n)
-  Teuchos::RCP<Epetra_Vector> gamma_last_;
 
   //@}
 }; //class
