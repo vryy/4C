@@ -69,6 +69,27 @@ void POROELAST::PORO_SCATRA_Part_2WC::Timeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void POROELAST::PORO_SCATRA_Part_2WC::ReadRestart(int restart)
+{
+  // read restart information, set vectors and variables
+  // (Note that dofmaps might have changed in a redistribution call!)
+  if (restart)
+  {
+    scatra_->ScaTraField().ReadRestart(restart);
+    SetScatraSolution();
+    poro_->ReadRestart(restart);
+
+    //second restart needed due to two way coupling.
+    // the poro variables need to be set on scatra
+    SetPoroSolution();
+    scatra_->ScaTraField().ReadRestart(restart);
+
+    SetTimeStep(poro_->Time(), restart);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 void POROELAST::PORO_SCATRA_Part_2WC::DoPoroStep()
 {
   if (Comm().MyPID() == 0)

@@ -73,6 +73,9 @@ namespace POROELAST
     //! apply solution of scatra to poro
     void SetScatraSolution();
 
+    //! read and set fields needed for restart
+    virtual void ReadRestart(int restart)=0;
+
   private:
     //! apply displacement fields to scatra
     void SetMeshDisp();

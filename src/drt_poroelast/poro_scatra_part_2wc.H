@@ -34,6 +34,9 @@ namespace POROELAST
     //!full time loop
     virtual void Timeloop();
 
+    //! read and set fields needed for restart
+    void ReadRestart(int restart);
+
   protected:
     //! prepare time step for single fields
     void PrepareTimeStep();

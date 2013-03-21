@@ -37,6 +37,9 @@ namespace POROELAST
 
     //! Main time loop (depending on order of field solve)
     void Timeloop()=0;
+
+    //! read and set fields needed for restart
+    virtual void ReadRestart(int restart)=0;
   };
 
   class PORO_SCATRA_Part_1WC_PoroToScatra : public PORO_SCATRA_Part_1WC
@@ -52,6 +55,9 @@ namespace POROELAST
     //! actual time loop
     void Timeloop();
 
+    //! read and set fields needed for restart
+    void ReadRestart(int restart);
+
   };
 
   class PORO_SCATRA_Part_1WC_ScatraToPoro : public PORO_SCATRA_Part_1WC
@@ -66,6 +72,9 @@ namespace POROELAST
 
     //! actual time loop
     void Timeloop();
+
+    //! read and set fields needed for restart
+    void ReadRestart(int restart);
 
   };
 }

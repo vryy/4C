@@ -323,15 +323,6 @@ int DRT::ELEMENTS::Wall1_Poro<distype>::MyEvaluate(
     LINALG::Matrix<numdof_,numdof_>* matptr = NULL;
     if (elemat1.IsInitialized()) matptr = &elemat1;
 
-    //get structure material
-    Teuchos::RCP<MAT::StructPoro> structmat = Teuchos::rcp_static_cast<MAT::StructPoro>(Material());
-
-    const double initporosity = structmat->Initporosity();
-    if(initporosity<0.0)
-      dserror("calc_struct_nlnstiffmass: invalid initial porosity!");
-
-    elemat2.Scale(1-initporosity);
-
     // need current fluid state,
     // call the fluid discretization: fluid equates 2nd dofset
     // disassemble velocities and pressures

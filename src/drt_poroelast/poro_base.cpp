@@ -141,6 +141,11 @@ void POROELAST::PoroBase::ReadRestart( int restart)
 {
   if (restart)
   {
+    // apply current velocity and pressures to structure
+    SetFluidSolution();
+    // apply current structural displacements to fluid
+    SetStructSolution();
+
     FluidField()->ReadRestart(restart);
     StructureField()->ReadRestart(restart);
 
@@ -149,25 +154,9 @@ void POROELAST::PoroBase::ReadRestart( int restart)
       AddDofSets(true);
 
     // apply current velocity and pressures to structure
-    StructureField()->ApplyCouplingState(FluidField()->Velnp(),"fluidvel");
-
-    Teuchos::RCP<Epetra_Vector> dispn;
-    if (StructureField()->HaveConstraint())
-    {
-      //displacment vector without lagrange-multipliers
-      dispn = consplitter_->ExtractCondVector(StructureField()->Dispnp());
-    }
-    else
-      dispn = StructureField()->ExtractDispnp();
-
-    // transfer the current structure displacement to the fluid field
-    Teuchos::RCP<Epetra_Vector> structdisp = StructureToFluidField(dispn);
-    FluidField()->ApplyMeshDisplacement(structdisp);
-
-    // transfer the current structure velocity to the fluid field
-    Teuchos::RCP<Epetra_Vector> structvel = StructureToFluidField(
-        StructureField()->ExtractVelnp());
-    FluidField()->ApplyMeshVelocity(structvel);
+    SetFluidSolution();
+    // apply current structural displacements to fluid
+    SetStructSolution();
 
     // second ReadRestart needed due to the coupling variables
     FluidField()->ReadRestart(restart);

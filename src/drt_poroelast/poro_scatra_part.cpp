@@ -91,4 +91,3 @@ void POROELAST::PORO_SCATRA_Part::SetMeshDisp()
       poro_->FluidField()->Dispnp(),
       poro_->FluidField()->Discretization());
 }
-

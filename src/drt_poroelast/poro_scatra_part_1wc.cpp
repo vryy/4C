@@ -121,6 +121,22 @@ void POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::Timeloop()
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
+void POROELAST::PORO_SCATRA_Part_1WC_PoroToScatra::ReadRestart(int restart)
+{
+  // read restart information, set vectors and variables
+  // (Note that dofmaps might have changed in a redistribution call!)
+  if (restart)
+  {
+    poro_->ReadRestart(restart);
+    SetPoroSolution();
+    scatra_->ScaTraField().ReadRestart(restart);
+
+    SetTimeStep(poro_->Time(), restart);
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
 POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro::PORO_SCATRA_Part_1WC_ScatraToPoro(const Epetra_Comm& comm,
     const Teuchos::ParameterList& timeparams)
   : PORO_SCATRA_Part_1WC(comm, timeparams)
@@ -147,5 +163,21 @@ void POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro::Timeloop()
     DoScatraStep(); // It has its own time and timestep variables, and it increments them by itself.
     SetScatraSolution();
     DoPoroStep(); // It has its own time and timestep variables, and it increments them by itself.
+  }
+}
+
+/*----------------------------------------------------------------------*/
+/*----------------------------------------------------------------------*/
+void POROELAST::PORO_SCATRA_Part_1WC_ScatraToPoro::ReadRestart(int restart)
+{
+  // read restart information, set vectors and variables
+  // (Note that dofmaps might have changed in a redistribution call!)
+  if (restart)
+  {
+    scatra_->ScaTraField().ReadRestart(restart);
+    SetScatraSolution();
+    poro_->ReadRestart(restart);
+
+    SetTimeStep(poro_->Time(), restart);
   }
 }

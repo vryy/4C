@@ -54,7 +54,7 @@ namespace POROELAST
     virtual void Timeloop()=0;
 
     //! read and set fields needed for restart
-    void ReadRestart(int restart);
+    virtual void ReadRestart(int restart);
 
     //! setup for single fields
     void SetupSystem();
