@@ -41,6 +41,9 @@ namespace DRT
     */
      ~DofSetSubProxy(){};
 
+     /// original DofSet has been reset
+     void NotifyReset();
+
      //! @name Access methods
 
      /// Get the gid of all dofs of a node

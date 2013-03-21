@@ -83,7 +83,7 @@ void POROELAST::PORO_SCATRA_Part_1WC::DoScatraStep()
 void POROELAST::PORO_SCATRA_Part_1WC::PrepareTimeStep()
 {
   IncrementTimeAndStep();
-  PrintHeader();
+  //PrintHeader();
 
   //PrepareTimeStep of single fields is called in DoPoroStep and DoScatraStep
 }

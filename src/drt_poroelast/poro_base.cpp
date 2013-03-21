@@ -144,6 +144,10 @@ void POROELAST::PoroBase::ReadRestart( int restart)
     FluidField()->ReadRestart(restart);
     StructureField()->ReadRestart(restart);
 
+    //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
+    if(submeshes_)
+      AddDofSets(true);
+
     // apply current velocity and pressures to structure
     StructureField()->ApplyCouplingState(FluidField()->Velnp(),"fluidvel");
 
@@ -168,6 +172,10 @@ void POROELAST::PoroBase::ReadRestart( int restart)
     // second ReadRestart needed due to the coupling variables
     FluidField()->ReadRestart(restart);
     StructureField()->ReadRestart(restart);
+
+    //in case of submeshes, we need to rebuild the subproxies, also (they are reset during restart)
+    if(submeshes_)
+      AddDofSets(true);
 
     SetTimeStep(FluidField()->Time(), restart);
   }
@@ -321,33 +329,8 @@ void POROELAST::PoroBase::SetupProxiesAndCoupling()
   else
     submeshes_ = false;
 
-  // the problem is two way coupled, thus each discretization must know the other discretization
-  Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
-  Teuchos::RCP<DRT::DofSet> fluiddofset = Teuchos::null;
-
-  /* When coupling porous media with a pure structure we will have two discretizations
-   * of different size. In this case we need a special proxy, which can handle submeshes.
-   */
-  if(submeshes_)
-  {
-    // build a proxy of the structure discretization for the fluid field (the structure disc. is the bigger one)
-    structdofset = structdis->GetDofSetProxy(structdis->NodeColMap(),structdis->ElementColMap());
-    // build a proxy of the fluid discretization for the structure field
-    fluiddofset = fluiddis->GetDofSetProxy(fluiddis->NodeColMap(),fluiddis->ElementColMap());
-  }
-  else
-  {
-    // build a proxy of the structure discretization for the fluid field
-    structdofset = structdis->GetDofSetProxy();
-    // build a proxy of the fluid discretization for the structure field
-    fluiddofset = fluiddis->GetDofSetProxy();
-  }
-
-  // check if FluidField has 2 discretizations, so that coupling is possible
-  if (fluiddis->AddDofSet(structdofset) != 1)
-    dserror("unexpected dof sets in fluid field");
-  if (structdis->AddDofSet(fluiddofset)!=1)
-    dserror("unexpected dof sets in structure field");
+  // add dof set of structure/fluid discretization to fluid/structure discretization
+  AddDofSets();
 
   // the fluid-ale coupling not always matches
   const Epetra_Map* fluidnoderowmap = fluiddis->NodeRowMap();
@@ -377,6 +360,54 @@ void POROELAST::PoroBase::SetupProxiesAndCoupling()
     psiextractor_ = Teuchos::rcp(new LINALG::MapExtractor(*StructureField()->DofRowMap(), coupfs_->MasterDofMap()));
 
   FluidField()->SetMeshMap(coupfs_->SlaveDofMap());
+}
+
+
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void POROELAST::PoroBase::AddDofSets(bool replace)
+{
+  // the problem is two way coupled, thus each discretization must know the other discretization
+  Teuchos::RCP<DRT::DofSet> structdofset = Teuchos::null;
+  Teuchos::RCP<DRT::DofSet> fluiddofset = Teuchos::null;
+
+  //get discretizations
+  Teuchos::RCP<DRT::Discretization> structdis = StructureField()->Discretization();
+  Teuchos::RCP<DRT::Discretization> fluiddis = FluidField()->Discretization();
+
+  /* When coupling porous media with a pure structure we will have two discretizations
+   * of different size. In this case we need a special proxy, which can handle submeshes.
+   */
+  if(submeshes_)
+  {
+    // build a proxy of the structure discretization for the fluid field (the structure disc. is the bigger one)
+    structdofset = structdis->GetDofSetProxy(structdis->NodeColMap(),structdis->ElementColMap());
+    // build a proxy of the fluid discretization for the structure field
+    fluiddofset = fluiddis->GetDofSetProxy(fluiddis->NodeColMap(),fluiddis->ElementColMap());
+  }
+  else
+  {
+    // build a proxy of the structure discretization for the fluid field
+    structdofset = structdis->GetDofSetProxy();
+    // build a proxy of the fluid discretization for the structure field
+    fluiddofset = fluiddis->GetDofSetProxy();
+  }
+
+  if(not replace)
+  {
+    // check if FluidField has 2 discretizations, so that coupling is possible
+    if (fluiddis->AddDofSet(structdofset) != 1)
+      dserror("unexpected dof sets in fluid field");
+    if (structdis->AddDofSet(fluiddofset)!=1)
+      dserror("unexpected dof sets in structure field");
+  }
+  else
+  {
+    fluiddis->ReplaceDofSet(1,structdofset);
+    //fluiddis->FillComplete(true,false,false);
+    structdis->ReplaceDofSet(1,fluiddofset);
+    //structdis->FillComplete(true,false,false);
+  }
 }
 
 /*----------------------------------------------------------------------*

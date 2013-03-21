@@ -162,6 +162,9 @@ namespace POROELAST
       //! setup of everything, that is needed for the volumetric coupling
       void SetupProxiesAndCoupling();
 
+      //! add dof set of structure/fluid discretization to fluid/structure discretization
+      void AddDofSets(bool replace =false);
+
       //! check for special poro conditions and set bools
       void CheckForPoroConditions();
 

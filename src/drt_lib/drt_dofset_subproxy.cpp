@@ -28,3 +28,13 @@ DRT::DofSetSubProxy::DofSetSubProxy(DofSet* dofset,
     dserror("no node or element map provided for DofSetSubProxy");
 }
 
+/*----------------------------------------------------------------------*
+ *----------------------------------------------------------------------*/
+void DRT::DofSetSubProxy::NotifyReset()
+{
+  subcolnodes_ = NULL;
+  subcoleles_ = NULL;
+
+  // clear my Teuchos::rcps.
+  DofSetProxy::NotifyReset();
+}

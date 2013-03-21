@@ -21,6 +21,7 @@ MATERIALS                       4
 NUMFIELD                        1
 PROBLEMTYP                      Poroelastic_scalar_transport
 RESTART                         0
+//!RESTART                      5
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
@@ -170,7 +171,7 @@ THETA                           0.66
 VELOCITYFIELD                   Navier_Stokes
 VELFUNCNO                       -1
 INITIALFIELD                    field_by_function
-SCATRATYPE Poroscatra //Poroscatra ConvectionDiffusion
+SCATRATYPE                      Poroscatra //Poroscatra ConvectionDiffusion
 INITFUNCNO                      1
 FSSUGRDIFF                      No
 WRITEFLUX                       No
@@ -188,7 +189,7 @@ STABTYPE                        no_stabilization
 SUGRVEL                         no
 ----------------------------------------------------------POROSCATRA CONTROL
 UPRES                           1
-RESTARTEVRY                     10
+RESTARTEVRY                     5
 NUMSTEP                         10
 MAXTIME                         4.0
 TIMESTEP                        0.01

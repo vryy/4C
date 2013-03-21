@@ -97,7 +97,7 @@ public:
   void NotifyAssigned();
 
   /// original DofSet has been reset
-  void NotifyReset();
+  virtual void NotifyReset();
 
   /// our original DofSet dies
   void Disconnect(DofSet* dofset);

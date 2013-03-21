@@ -544,7 +544,9 @@ const Epetra_Map* DRT::Discretization::DofColMap(unsigned nds) const
 void DRT::Discretization::ReplaceDofSet(unsigned nds, Teuchos::RCP<DofSet> newdofset, bool replaceinstatdofsets)
 {
   dsassert(nds<dofsets_.size(),"undefined dof set");
-  havedof_ = false;
+  // if we already have our dofs here and we add a properly filled (proxy)
+  // DofSet, we do not need (and do not want) to refill.
+  havedof_ = havedof_ and newdofset->Filled() and nds!=0;
   if (replaceinstatdofsets)
     newdofset->ReplaceInStaticDofsets(dofsets_[nds]);
   dofsets_[nds] = newdofset;

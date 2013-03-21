@@ -21,6 +21,7 @@ MATERIALS                       4
 NUMFIELD                        1
 PROBLEMTYP                      Poroelasticity
 RESTART                         0
+//!RESTART                      5
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------DISCRETISATION
 NUMALEDIS                       0
@@ -104,7 +105,7 @@ NORMCOMBI_RESFINC               And
 NORM_INC                        Abs
 NORM_RESF                       Abs
 NUMSTEP                         10
-RESTARTEVRY                     100
+RESTARTEVRY                     5
 RESTOL                          1e-04
 TIMESTEP                        0.01
 UPRES                           1

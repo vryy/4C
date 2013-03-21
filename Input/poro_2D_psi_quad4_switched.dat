@@ -143,7 +143,7 @@ NORMCOMBI_RESFINC               Or
 NORM_INC                        Abs
 NORM_RESF                       Abs
 NUMSTEP                         50
-RESTARTEVRY                     100
+RESTARTEVRY                     40
 RESTOL                          1e-08
 TIMESTEP                        0.01
 UPRES                           1
@@ -197,6 +197,7 @@ SOLVER                          UMFPACK
 NUMFIELD                        1
 PROBLEMTYP                      Poroelasticity
 RESTART                         0
+//!RESTART                      40
 SHAPEFCT                        Polynomial
 --------------------------------------------------------------------SOLVER 2
 AMGBS_BS_DAMPING 1.3 1.3 1.3
