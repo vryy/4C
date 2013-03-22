@@ -290,6 +290,14 @@ public:
 
   //@}
 
+  //!@name Data management
+  //@{
+
+  /// clear all stored map data
+  void ClearMapCache();
+
+  //@}
+
 private:
 
   //! open new mesh file
@@ -312,10 +320,12 @@ private:
   hid_t meshgroup_;
   hid_t resultgroup_;
 
-  const char* GenerateUniqueId();
 
   /// cache to remember maps we have already written
-  std::map<const char*, std::string> mapcache_;
+  std::map<const Epetra_BlockMapData*, std::string> mapcache_;
+
+  /// dummy stack to really save the maps we cache
+  std::vector<Epetra_BlockMap> mapstack_;
 
   int resultfile_changed_;
   int meshfile_changed_;

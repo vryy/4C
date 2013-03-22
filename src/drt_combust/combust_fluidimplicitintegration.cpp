@@ -2372,6 +2372,11 @@ void FLD::CombustFluidImplicitTimeInt::Output()
   const bool write_restart_data = step_!=0 and uprestart_ != 0 and step_%uprestart_ == 0;
   const bool do_time_sample = special_flow_!="no" && step_>=samstart_ && step_<=samstop_;
 
+  // in case of redistribution stored maps in the DiscretizationWriter get invalid and need to be 
+  // erased in order to keep memory usage bounded
+  if(redist_this_step_)
+    output_->ClearMapCache();
+
   // -------------------------------------------------------------------
   //         calculate lift'n'drag forces from the residual
   // -------------------------------------------------------------------

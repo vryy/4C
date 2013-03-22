@@ -246,6 +246,10 @@ void PARTICLE::TimIntCentrDiff::OutputRestart
 //   output_->WriteVector("fexternal", Fext());
    output_->WriteVector("radius", radiusn_, output_->nodevector);
 
+   // maps are rebuild in every step so that reuse is not possible
+   // keeps memory usage bounded
+   output_->ClearMapCache();
+
    // info dedicated to user's eyes staring at standard out
    if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
    {
