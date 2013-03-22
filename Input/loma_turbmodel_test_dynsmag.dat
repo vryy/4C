@@ -46,16 +46,16 @@ CONVFORM                        convective
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 INCONSISTENT                    yes
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes_pspg
-SUPG                            yes_supg
+PSPG                            yes
+SUPG                            yes
 VSTAB                           no_vstab
-CSTAB                           cstab_qs
+GRAD_DIV                           yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 EVALUATION_TAU                  integration_point
@@ -155,12 +155,12 @@ ML_COARSEN                      UC                              // UC MIS METIS 
 ML_AGG_SIZE                     27                              // objective size of an aggregate with METIS/VBMETIS, 2D: 9, 3D: 27
 ML_PROLONG_SMO                  0.0                             // damping factor for prolongator smoother (usually 0.0 or 1.33)
 ML_PROLONG_THRES                0.0                             // threshold for prolongator smoother/aggregation
-ML_SMOOTHERFINE                 SGS                             // SGS Jacobi Chebychev MLS ILU KLU
-ML_SMOOTHERMED                  SGS                             // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERFINE                 ILU                             // SGS Jacobi Chebychev MLS ILU KLU
+ML_SMOOTHERMED                  ILU                             // SGS Jacobi Chebychev MLS ILU KLU
 ML_SMOOTHERCOARSE               Umfpack                         // SGS Jacobi Chebychev MLS KLU Superlu Umfpack
-ML_SMOTIMES 2 2 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
-ML_DAMPFINE                     0.67                            // damping fine grid
-ML_DAMPMED                      0.67                            // damping med grids
+ML_SMOTIMES 1 1 1 // no. smoothing steps or polynomial order on each level (at least ML_MAXLEVEL numbers)
+ML_DAMPFINE                     1.0                            // damping fine grid
+ML_DAMPMED                      1.0                            // damping med grids
 ML_DAMPCOARSE                   1.0                             // damping coarse grid
 --------------------------------------------------------------------SOLVER 2
 NAME                            Sca_Tra_Solver

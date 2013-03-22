@@ -46,9 +46,9 @@ DRT::ELEMENTS::FluidAdjoint3ImplParameter::FluidAdjoint3ImplParameter()
   adjoint_type_(INPAR::TOPOPT::discrete_adjoint),
   is_stationary_(false),
   is_inconsistent_(false),
-  pspg_(INPAR::FLUID::pstab_use_pspg),
-  supg_(INPAR::FLUID::convective_stab_supg),
-  cstab_(INPAR::FLUID::continuity_stab_yes),
+  pspg_(true),
+  supg_(true),
+  graddiv_(true),
   whichtau_(INPAR::FLUID::tau_not_defined),
   mat_gp_(false),     // standard evaluation of the material at the element center
   tau_gp_(false),     // standard evaluation of tau at the element center
@@ -108,12 +108,12 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::SetElementGeneralAdjointParamete
 // ---------------------------------------------------------------------
 // get control parameters for stabilization and higher-order elements
 //----------------------------------------------------------------------
-  Teuchos::ParameterList& stablist = params.sublist("STABILIZATION");
+  Teuchos::ParameterList& stablist = params.sublist("RESIDUAL-BASED STABILIZATION");
 
   // no safety check necessary since all options are used
-  pspg_     = DRT::INPUT::IntegralValue<INPAR::FLUID::PSPG>(stablist,"PSPG");
-  supg_     = DRT::INPUT::IntegralValue<INPAR::FLUID::SUPG>(stablist,"SUPG");
-  cstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CStab>(stablist,"CSTAB");
+  pspg_     = DRT::INPUT::IntegralValue<int>(stablist,"PSPG");
+  supg_     = DRT::INPUT::IntegralValue<int>(stablist,"SUPG");
+  graddiv_    = DRT::INPUT::IntegralValue<int>(stablist,"GRAD_DIV");
 
 //-------------------------------
 // get tau definition
@@ -262,7 +262,7 @@ void DRT::ELEMENTS::FluidAdjoint3ImplParameter::PrintAdjointParameter() const
   //! Flag to (de)activate SUPG stabilization
   std::cout << "|    SUPG:    " << supg_<< std::endl ;
   //! Flag to (de)activate least-squares stabilization of continuity equation
-  std::cout << "|    Grad-Div-Stab:    " << cstab_ << std::endl ;
+  std::cout << "|    Grad-Div-Stab:    " << graddiv_ << std::endl ;
   //! Flag to define tau
   std::cout << "|    Definition of stabilization parameter:    " << whichtau_ << std::endl;
   //! flag for material evaluation at Gaussian integration points

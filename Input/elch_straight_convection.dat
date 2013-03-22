@@ -101,15 +101,15 @@ RESTARTEVRY                     1000
 TIMESTEP                        1.0
 UPRES                           1
 TEMPERATURE                     11604.506                       // abused as a scaling factor in order to have: F/RT = 1.0
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes_pspg
-SUPG                            yes_supg
+PSPG                            yes
+SUPG                            yes
 VSTAB                           no_vstab
-CSTAB                           cstab_qs
+GRAD_DIV                           yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL

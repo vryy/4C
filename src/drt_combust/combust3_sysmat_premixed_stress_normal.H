@@ -266,7 +266,7 @@ void SysmatDomainStressNormal(
     const bool                          newton,       ///< full Newton or fixed-point-like
     const bool                          pstab,        ///< flag for stabilization
     const bool                          supg,         ///< flag for stabilization
-    const bool                          cstab,        ///< flag for stabilization
+    const bool                          graddiv,        ///< flag for stabilization
     const INPAR::FLUID::TauType         tautype,      ///< stabilization parameter definition
     const bool                          instationary, ///< switch between stationary and instationary formulation
     COMBUST::LocalAssembler<DISTYPE, ASSTYPE, NUMDOF>&   assembler
@@ -1110,7 +1110,7 @@ void SysmatDomainStressNormal(
       COMBUST::BuildStandardDomainIntegralsNormal<DISTYPE,ASSTYPE,NUMDOF,shpVecSizeVel,shpVecSizePres>(
           assembler, shp, shp_pres, fac, timefac, timefacfac, densaf, dynvisc,
           gpvelnp, pres, accam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_viscs2,
-          instationary, genalpha, newton, pstab, supg, cstab,
+          instationary, genalpha, newton, pstab, supg, graddiv,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 #ifndef COMBUST_DECOUPLEDXFEM
       if (epsilonele_unknowns_present)

@@ -28,7 +28,6 @@ NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 ----------------------------------------------------------------ELCH CONTROL
 ---------------------------------------------------------------FLUID DYNAMIC
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -------------------------------------------------------INTERACTION POTENTIAL
 APPROXIMATION_TYPE              None

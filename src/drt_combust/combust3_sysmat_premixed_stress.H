@@ -353,7 +353,7 @@ void SysmatDomainStress(
     const bool                          newton,       ///< full Newton or fixed-point-like
     const bool                          pstab,        ///< flag for stabilization
     const bool                          supg,         ///< flag for stabilization
-    const bool                          cstab,        ///< flag for stabilization
+    const bool                          graddiv,        ///< flag for stabilization
     const INPAR::FLUID::TauType         tautype,      ///< stabilization parameter definition
     const bool                          instationary, ///< switch between stationary and instationary formulation
     const bool                          genalpha,
@@ -951,7 +951,7 @@ void SysmatDomainStress(
       COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
           assembler, shp, shp, fac, timefac, rhsfac, densaf, dynvisc,
           gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_conv_c, enr_viscs2,
-          instationary, genalpha, newton, pstab, supg, cstab,
+          instationary, genalpha, newton, pstab, supg, graddiv,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
 
       if (epsilonele_unknowns_present)

@@ -90,16 +90,16 @@ MAXTIME                         9
 NUMSTEP                         450
 TIMESTEP                        0.02
 NEUMANNINFLOW                   no
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-CSTAB                           cstab_qs
+GRAD_DIV                           yes
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 EVALUATION_MAT                  element_center
 EVALUATION_TAU                  element_center
-PSPG                            yes_pspg
+PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
 STABTYPE                        residual_based
-SUPG                            yes_supg
+SUPG                            yes
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab

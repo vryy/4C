@@ -684,7 +684,7 @@ private:
   //! sum over all in plane averaged dissipation rates from reynolds term
   RCP<std::vector<double> >     sum_eps_rey_;
   //! sum over all in plane averaged dissipation rates from least squares continuity term
-  RCP<std::vector<double> >     sum_eps_cstab_;
+  RCP<std::vector<double> >     sum_eps_graddiv_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (Smagorinsky)
   RCP<std::vector<double> >     sum_eps_eddyvisc_;
   //! sum over all in plane averaged dissipation rates from eddy viscosity model (AVM3)

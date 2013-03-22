@@ -449,8 +449,12 @@ int gp = 0;
     * stabilization part                                                        *
     * ------------------------------------------------------------------------- */
 
-    if ((fluidAdjoint3Parameter_->PSPG() == INPAR::FLUID::pstab_use_pspg) or
-        (fluidAdjoint3Parameter_->SUPG() == INPAR::FLUID::convective_stab_supg))
+    /* ------------------------------------------------------------------------ *
+    * stabilization part                                                        *
+    * ------------------------------------------------------------------------- */
+
+    if ((fluidAdjoint3Parameter_->PSPG()) or
+        (fluidAdjoint3Parameter_->SUPG()))
     {
       if (fluidAdjoint3Parameter_->AdjointType() == INPAR::TOPOPT::discrete_adjoint)
       {
@@ -474,7 +478,7 @@ int gp = 0;
             efluidvelnp);
 
         // 8) PSPG term
-        if (fluidAdjoint3Parameter_->PSPG() == INPAR::FLUID::pstab_use_pspg)
+        if (fluidAdjoint3Parameter_->PSPG())
         {
           LINALG::Matrix<nen_,nen_> estif(true);estif-=estif_r_q;
 
@@ -493,7 +497,7 @@ int gp = 0;
         }
 
         // 9) SUPG term
-        if (fluidAdjoint3Parameter_->SUPG() == INPAR::FLUID::convective_stab_supg)
+        if (fluidAdjoint3Parameter_->SUPG())
         {
           DiscreteSUPG(estif_w_v,
               estif_w_q,
@@ -532,7 +536,7 @@ int gp = 0;
             efluidvelnp);
 
         // 8) PSPG term
-        if (fluidAdjoint3Parameter_->PSPG() == INPAR::FLUID::pstab_use_pspg)
+        if (fluidAdjoint3Parameter_->PSPG())
         {
           PSPG(estif_r_v,
               estif_r_q,
@@ -546,7 +550,7 @@ int gp = 0;
         }
 
         // 9) SUPG term
-        if (fluidAdjoint3Parameter_->SUPG() == INPAR::FLUID::convective_stab_supg)
+        if (fluidAdjoint3Parameter_->SUPG())
         {
           SUPG(estif_w_v,
               estif_w_q,
@@ -562,7 +566,7 @@ int gp = 0;
     }
 
     // 10) continuity stabilization
-    if (fluidAdjoint3Parameter_->CStab() == INPAR::FLUID::continuity_stab_yes)
+    if (fluidAdjoint3Parameter_->CStab())
     {
       ContStab(estif_w_v,
           velforce,
@@ -3038,7 +3042,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ContStab(
     const double &                            timefacfacdivrhs
 ) const
 {
-  double cstabfac = timefacfacdiv*tau_(2);
+  double graddivfac = timefacfacdiv*tau_(2);
   double value = 0.0;
 
   /* continuity stabilisation on left hand side */
@@ -3058,7 +3062,7 @@ void DRT::ELEMENTS::FluidAdjoint3Impl<distype>::ContStab(
     {
       const int fui_p_idim = fui+idim;
 
-      value = cstabfac*derxy_(idim,ui);
+      value = graddivfac*derxy_(idim,ui);
 
       for (int vi=0; vi<nen_; ++vi)
       {

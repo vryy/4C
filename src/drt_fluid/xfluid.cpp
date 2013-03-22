@@ -1970,11 +1970,11 @@ FLD::XFluid::XFluid(
   visc_stab_hk_      = DRT::INPUT::IntegralValue<INPAR::XFEM::ViscStab_hk>(params_xf_stab,"VISC_STAB_HK");
 
   // set flag if any edge-based fluid stabilization has to integrated as std or gp stabilization
-  edge_based_        = (params_->sublist("STABILIZATION").get<string>("STABTYPE")=="edge_based"
-                        or params_->sublist("EDGE-BASED-STABILIZATION").get<string>("EOS_PRES")        != "none"
-                        or params_->sublist("EDGE-BASED-STABILIZATION").get<string>("EOS_CONV_STREAM") != "none"
-                        or params_->sublist("EDGE-BASED-STABILIZATION").get<string>("EOS_CONV_CROSS")  != "none"
-                        or params_->sublist("EDGE-BASED-STABILIZATION").get<string>("EOS_DIV")         != "none");
+  edge_based_        = (params_->sublist("RESIDUAL-BASED STABILIZATION").get<string>("STABTYPE")=="edge_based"
+                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_PRES")        != "none"
+                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_STREAM") != "none"
+                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_CONV_CROSS")  != "none"
+                        or params_->sublist("EDGE-BASED STABILIZATION").get<string>("EOS_DIV")         != "none");
 
   // set flag if the viscous ghost-penalty stabiliation due to Nitsche's method has to be integrated
   ghost_penalty_     = (bool)DRT::INPUT::IntegralValue<int>(params_xf_stab,"GHOST_PENALTY_STAB");
@@ -2652,9 +2652,8 @@ void FLD::XFluid::PrintStabilizationParams()
   // output of stabilization details
   if (myrank_==0)
   {
-    Teuchos::ParameterList *  stabparams                =&(params_->sublist("STABILIZATION"));
-    //Teuchos::ParameterList *  stabparams_residualbased  =&(params_->sublist("RESIDUAL-BASED-STABILIZATION"));
-    Teuchos::ParameterList *  stabparams_edgebased      =&(params_->sublist("EDGE-BASED-STABILIZATION"));
+    Teuchos::ParameterList *  stabparams                =&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
+    Teuchos::ParameterList *  stabparams_edgebased      =&(params_->sublist("EDGE-BASED STABILIZATION"));
     Teuchos::ParameterList *  interfstabparams          =&(params_->sublist("XFLUID DYNAMIC/STABILIZATION"));
 
 
@@ -2725,9 +2724,10 @@ void FLD::XFluid::PrintStabilizationParams()
       IO::cout <<  "                    " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
       IO::cout <<  "                    " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
       IO::cout <<  "                    " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
-      IO::cout <<  "                    " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
+      IO::cout <<  "                    " << "GRAD_DIV           = " << stabparams->get<string>("GRAD_DIV")          <<"\n";
       IO::cout <<  "                    " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
       IO::cout <<  "                    " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
+      IO::cout << "+------------------------------------------------------------------------------------+\n" << IO::endl;
 
       if(stabparams->get<string>("VSTAB")           != "no_vstab")    dserror("check VSTAB for XFEM");
       if(stabparams->get<string>("CROSS-STRESS")    != "no_cross")    dserror("check CROSS-STRESS for XFEM");
@@ -2737,9 +2737,9 @@ void FLD::XFluid::PrintStabilizationParams()
     else if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
     {
       // safety check for combinations of edge-based and residual-based stabilizations
-      if((stabparams->get<string>("PSPG")           != "no_pspg")     or
-         (stabparams->get<string>("SUPG")           != "no_supg")     or
-         (stabparams->get<string>("CSTAB")          != "no_cstab")    or
+      if((DRT::INPUT::IntegralValue<int>(*stabparams,"PSPG") != false)     or
+         (DRT::INPUT::IntegralValue<int>(*stabparams,"SUPG") != false)     or
+         (DRT::INPUT::IntegralValue<int>(*stabparams,"GRAD_DIV") != false)    or
          (stabparams->get<string>("VSTAB")          != "no_vstab")    or
          (stabparams->get<string>("CROSS-STRESS")   != "no_cross")    or
          (stabparams->get<string>("REYNOLDS-STRESS")!= "no_reynolds"))
@@ -2749,24 +2749,22 @@ void FLD::XFluid::PrintStabilizationParams()
     }
 
     // check for non-valid combinations of residual-based and edge-based fluid stabilizations in the XFEM
-    if( (stabparams->get<string>("PSPG") != "no_pspg") and (stabparams_edgebased->get<string>("EOS_PRES") == "std_eos") )
+    if( (DRT::INPUT::IntegralValue<int>(*stabparams,"PSPG") != false) and (stabparams_edgebased->get<string>("EOS_PRES") == "std_eos") )
       dserror("combine PSPG only with ghost-penalty variant of EOS_PRES ! ");
-    if( (stabparams->get<string>("SUPG") != "no_supg") and (stabparams_edgebased->get<string>("EOS_CONV_STREAM") == "std_eos") )
+    if( (DRT::INPUT::IntegralValue<int>(*stabparams,"SUPG") != false) and (stabparams_edgebased->get<string>("EOS_CONV_STREAM") == "std_eos") )
       dserror("combine SUPG only with ghost-penalty variant of EOS_CONV_STREAM ! ");
-    if( (stabparams->get<string>("SUPG") != "no_supg") and (stabparams_edgebased->get<string>("EOS_CONV_CROSS") == "std_eos") )
+    if( (DRT::INPUT::IntegralValue<int>(*stabparams,"SUPG") != false) and (stabparams_edgebased->get<string>("EOS_CONV_CROSS") == "std_eos") )
       dserror("combine SUPG only with ghost-penalty variant of EOS_CONV_CROSS ! ");
 
     //---------------------------------------------------------------------------------------------
     IO::cout << "\n\nEDGE-BASED (EOS) fluid stabilizations " << "\n";
-
     IO::cout <<  "                    " << "EOS_PRES             = " << stabparams_edgebased->get<string>("EOS_PRES")      <<"\n";
     IO::cout <<  "                    " << "EOS_CONV_STREAM      = " << stabparams_edgebased->get<string>("EOS_CONV_STREAM")      <<"\n";
     IO::cout <<  "                    " << "EOS_CONV_CROSS       = " << stabparams_edgebased->get<string>("EOS_CONV_CROSS")      <<"\n";
     IO::cout <<  "                    " << "EOS_DIV              = " << stabparams_edgebased->get<string>("EOS_DIV")      <<"\n";
     IO::cout <<  "                    " << "EOS_DEFINITION_TAU   = " << stabparams_edgebased->get<string>("EOS_DEFINITION_TAU")      <<"\n";
     IO::cout <<  "                    " << "EOS_H_DEFINITION     = " << stabparams_edgebased->get<string>("EOS_H_DEFINITION")      <<"\n";
-    IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
-    IO::cout << "\n";
+    IO::cout << "+------------------------------------------------------------------------------------+\n" << IO::endl;
 
 
     //---------------------------------------------------------------------------------------------
@@ -2774,7 +2772,7 @@ void FLD::XFluid::PrintStabilizationParams()
     IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
     IO::cout << "                              INTERFACE-STABILIZATION                       \n" << IO::endl;
     IO::cout << "Stabilization type:      " << interfstabparams->get<string>("EMBEDDED_BOUNDARY") << "\n";
-    IO::cout << "Coupling strategy:       " << interfstabparams->get<string>("COUPLING_STRATEGY") << "\n";
+    IO::cout << "Coupling strategy:       " << interfstabparams->get<string>("COUPLING_STRATEGY") << "\n"<< IO::endl;
 
     if(boundIntType_ == INPAR::XFEM::BoundaryTypeSigma)
       IO::cout << "MSH_L2_PROJ:             " << interfstabparams->get<string>("MSH_L2_PROJ") << "\n";
@@ -3722,7 +3720,7 @@ void FLD::XFluid::TimeUpdate()
 {
   cout << "FLD::XFluid::TimeUpdate " << endl;
 
-  Teuchos::ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
+  Teuchos::ParameterList *  stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
 
   if(stabparams->get<string>("TDS") == "time_dependent")
   { dserror("check this implementation");
@@ -5791,9 +5789,8 @@ void FLD::XFluid::SetElementGeneralFluidParameter()
   eleparams.set<int>("Physical Type", physicaltype_);
 
   // parameter for stabilization
-  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-  eleparams.sublist("RESIDUAL-BASED-STABILIZATION") = params_->sublist("RESIDUAL-BASED-STABILIZATION");
-  eleparams.sublist("EDGE-BASED-STABILIZATION") = params_->sublist("EDGE-BASED-STABILIZATION");
+  eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
+  eleparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
 
 
   //set time integration scheme

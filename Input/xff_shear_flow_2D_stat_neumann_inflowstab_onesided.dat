@@ -65,15 +65,15 @@ TIMEINTEGR Stationary //One_Step_Theta
 TIMESTEP                        1.0
 UPRES                           1
 LINEAR_SOLVER                   1
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based                  // edge_based //
 DEFINITION_TAU Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG yes_pspg //no_pspg /
-SUPG yes_supg //no_supg//yes_supg
+PSPG yes //no /
+SUPG yes //no//yes
 VSTAB                           no_vstab
-CSTAB no_cstab //cstab_qs
+GRAD_DIV no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 -----------------------------------------------------------------ALE DYNAMIC

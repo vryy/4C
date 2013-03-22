@@ -1068,7 +1068,7 @@ void TOPOPT::ADJOINT::ImplicitTimeInt::SetElementGeneralAdjointParameter() const
   eleparams.set<double>("presDropFac" ,params_->get<double>("PRESSURE_DROP_FAC"));
 
   // parameter for stabilization
-  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+  eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
 
   //set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);

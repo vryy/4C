@@ -78,15 +78,15 @@ SIMPLER                         No
 LINEAR_SOLVER                   1
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 LINEAR_SOLVER                   2
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes_pspg
-SUPG                            yes_supg//yes_supg
+PSPG                            yes
+SUPG                            yes//yes
 VSTAB                           no_vstab
-CSTAB                           cstab_qs //cstab_qs
+GRAD_DIV                           yes //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 --------------------------------------------------------------------SOLVER 1

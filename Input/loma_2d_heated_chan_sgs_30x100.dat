@@ -67,21 +67,21 @@ CONVFORM                        convective
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 INCONSISTENT                    yes
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes_pspg
-SUPG                            yes_supg
+PSPG                            yes
+SUPG                            yes
 VSTAB                           no_vstab
-CSTAB                           cstab_qs
+GRAD_DIV                           yes
 CROSS-STRESS                    cross_rhs
 REYNOLDS-STRESS                 reynolds_rhs
 EVALUATION_TAU                  integration_point
 EVALUATION_MAT                  integration_point
-LOMA_CONTI_SUPG                 yes_supg
+LOMA_CONTI_SUPG                 yes
 LOMA_CONTI_CROSS_STRESS         cross_rhs
 LOMA_CONTI_REYNOLDS_STRESS      reynolds_rhs
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL

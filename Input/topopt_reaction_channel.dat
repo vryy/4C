@@ -66,16 +66,16 @@ STEADYTOL                       1e-6
 THETA                           0.66
 TIMEINTEGR                      Stationary
 PHYSICAL_TYPE                   Topology_optimization
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-CSTAB                           cstab_qs
+GRAD_DIV                           yes
 DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
 EVALUATION_MAT                  element_center//integration_point//
 EVALUATION_TAU                  element_center//integration_point//
-PSPG                            yes_pspg
+PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
 STABTYPE                        residual_based
-SUPG                            yes_supg//yes_supg
+SUPG                            yes//yes
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab

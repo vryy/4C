@@ -70,7 +70,7 @@ FSSUGRDIFF                      No
 WRITEFLUX                       No
 CONVFORM                        conservative
 MATID                           4
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC

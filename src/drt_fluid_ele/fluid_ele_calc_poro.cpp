@@ -1249,7 +1249,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
 
 /************************************************************************/
     // 2) stabilization of continuity equation
-    if (my::fldpara_->CStab() == INPAR::FLUID::continuity_stab_yes)
+    if (my::fldpara_->CStab())
     {
       dserror("continuity stabilization not implemented for poroelasticity");
       /*
@@ -1659,7 +1659,7 @@ void DRT::ELEMENTS::FluidEleCalcPoro<distype>::Sysmat(
                      rhsfac);
 
     // 6) PSPG term
-    if (my::fldpara_->PSPG() == INPAR::FLUID::pstab_use_pspg)
+    if (my::fldpara_->PSPG())
     {
       PSPG(estif_q_u,
            ppmat,

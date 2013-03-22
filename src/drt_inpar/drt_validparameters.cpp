@@ -2560,7 +2560,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                "Scale blocks of matrix with row infnorm?",
                                yesnotuple,yesnovalue,&fdyn);
 
-  BoolParameter("DISPLAY_STAB","Yes","show stabilization setting on screen",&fdyn);
   BoolParameter("GMSH_OUTPUT","No","write output to gmsh files",&fdyn);
   BoolParameter("COMPUTE_DIVU","No","Compute divergence of velocity field at the element center",&fdyn);
   IntParameter("UPRES",1,"Increment for writing solution",&fdyn);
@@ -2596,7 +2595,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& fdyn_stab = fdyn.sublist("STABILIZATION",false,"");
+  Teuchos::ParameterList& fdyn_stab = fdyn.sublist("RESIDUAL-BASED STABILIZATION",false,"");
 
   // this parameter defines various stabilized methods
   setStringToIntegralParameter<int>("STABTYPE",
@@ -2650,35 +2649,9 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::FLUID::inertia_stab_keep_complete),
                                &fdyn_stab);
 
-  setStringToIntegralParameter<int>("PSPG",
-                               "yes_pspg",
-                               "Flag to (de)activate PSPG.",
-                               tuple<std::string>(
-                                 "no_pspg",
-                                 "yes_pspg"),
-                               tuple<std::string>(
-                                 "No PSPG -> inf-sup-stable elements mandatory",
-                                 "Use PSPG -> allowing for equal-order interpolation"),
-                               tuple<int>(
-                                 INPAR::FLUID::pstab_assume_inf_sup_stable,   //No PSPG -> inf-sup-stable elements mandatory
-                                 INPAR::FLUID::pstab_use_pspg),               // Use PSPG -> allowing for equal-order interpolation
-                               &fdyn_stab);
-
-
-
-  setStringToIntegralParameter<int>("SUPG",
-                               "yes_supg",
-                               "Flag to (de)activate SUPG.",
-                               tuple<std::string>(
-                                 "no_supg",
-                                 "yes_supg"),
-                               tuple<std::string>(
-                                 "No SUPG",
-                                 "Use SUPG."),
-                               tuple<int>(
-                                 INPAR::FLUID::convective_stab_none,  // no SUPG stabilization
-                                 INPAR::FLUID::convective_stab_supg), // use SUPG stabilization
-                               &fdyn_stab);
+  BoolParameter("PSPG","Yes","Flag to (de)activate PSPG stabilization.",&fdyn_stab);
+  BoolParameter("SUPG","Yes","Flag to (de)activate SUPG stabilization.",&fdyn_stab);
+  BoolParameter("GRAD_DIV","Yes","Flag to (de)activate grad-div term.",&fdyn_stab);
 
   setStringToIntegralParameter<int>("VSTAB",
                                "no_vstab",
@@ -2726,21 +2699,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    ),
                                &fdyn_stab);
 
-  setStringToIntegralParameter<int>("CSTAB",
-                               "cstab_qs",
-                               "Flag to (de)activate least-squares stabilization of continuity equation.",
-                               tuple<std::string>(
-                                 "no_cstab",
-                                 "cstab_qs"),
-                               tuple<std::string>(
-                                 "No continuity stabilization",
-                                 "Quasistatic continuity stabilization"),
-                               tuple<int>(
-                                   INPAR::FLUID::continuity_stab_none,
-                                   INPAR::FLUID::continuity_stab_yes
-                                 ),
-                               &fdyn_stab);
-
   setStringToIntegralParameter<int>("CROSS-STRESS",
                                "no_cross",
                                "Flag to (de)activate cross-stress term -> residual-based VMM.",
@@ -2786,8 +2744,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn_stab);
 
   // this parameter selects the tau definition applied
-  // the options "tau_not_defined" are only available in Peter's Genalpha code
-  // (there, which_tau is set via the string, not via INPAR::FLUID::TauType)
   setStringToIntegralParameter<int>("DEFINITION_TAU",
                                "Franca_Barrenechea_Valentin_Frey_Wall",
                                "Definition of tau_M and Tau_C",
@@ -2805,9 +2761,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "Codina",
                                  "Codina_wo_dt",
                                  "Franca_Madureira_Valentin_Badia_Codina",
-                                 "Franca_Madureira_Valentin_Badia_Codina_wo_dt",
-                                 //"BFVW_gradient_based_hk",
-                                 "Smoothed_FBVW"),
+                                 "Franca_Madureira_Valentin_Badia_Codina_wo_dt"),
                                tuple<int>(
                                    INPAR::FLUID::tau_taylor_hughes_zarins,
                                    INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt,
@@ -2822,9 +2776,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                    INPAR::FLUID::tau_codina,
                                    INPAR::FLUID::tau_codina_wo_dt,
                                    INPAR::FLUID::tau_franca_madureira_valentin_badia_codina,
-                                   INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt,
-                                   //INPAR::FLUID::tau_not_defined,
-                                   INPAR::FLUID::tau_not_defined),
+                                   INPAR::FLUID::tau_franca_madureira_valentin_badia_codina_wo_dt),
                                &fdyn_stab);
 
   // this parameter selects the location where tau is evaluated
@@ -2856,19 +2808,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
 
   // these parameters active additional terms in loma continuity equation
   // which might be identified as SUPG-/cross- and Reynolds-stress term
-  setStringToIntegralParameter<int>("LOMA_CONTI_SUPG",
-                               "no_supg",
-                               "Flag to (de)activate SUPG-term in loma continuity equation.",
-                               tuple<std::string>(
-                                 "no_supg",
-                                 "yes_supg"),
-                               tuple<std::string>(
-                                 "No SUPG",
-                                 "Use SUPG."),
-                               tuple<int>(
-                                 INPAR::FLUID::convective_stab_none,  // no SUPG stabilization
-                                 INPAR::FLUID::convective_stab_supg), // use SUPG stabilization
-                               &fdyn_stab);
+  BoolParameter("LOMA_CONTI_SUPG","No","Flag to (de)activate SUPG stabilization in loma continuity equation.",&fdyn_stab);
 
   setStringToIntegralParameter<int>("LOMA_CONTI_CROSS_STRESS",
                                "no_cross",
@@ -2899,7 +2839,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                  "no_reynolds",
                                  "yes_reynolds",
                                  "reynolds_rhs"
-                                 //"reynolds_complete"
                                  ),
                                tuple<std::string>(
                                  "No Reynolds-stress term",
@@ -2915,14 +2854,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fdyn_stab);
 
   /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& fdyn_residual_based_stab = fdyn.sublist("RESIDUAL-BASED-STABILIZATION",false,"");
-
-  // TODO: @Ursula: prepared list to be filled!
-
-
-
-  /*----------------------------------------------------------------------*/
-  Teuchos::ParameterList& fdyn_edge_based_stab = fdyn.sublist("EDGE-BASED-STABILIZATION",false,"");
+  Teuchos::ParameterList& fdyn_edge_based_stab = fdyn.sublist("EDGE-BASED STABILIZATION",false,"");
 
   //! Flag to (de)activate edge-based (EOS) pressure stabilization
   setStringToIntegralParameter<int>("EOS_PRES",

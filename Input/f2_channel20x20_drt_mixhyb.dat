@@ -35,7 +35,7 @@ GAMMA                           0.6666
 CONVCHECK                       L_2_norm
 CONVTOL                         1.0E-6
 INITIALFIELD                    zero_field
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 EVALUATION_TAU                  integration_point
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver

@@ -84,18 +84,18 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.001
 UPRES                           1
 GMSH_OUTPUT                     no
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-CSTAB                           cstab_qs
+GRAD_DIV                           yes
 //DEFINITION_TAU                Franca_Barrenechea_Valentin_Frey_Wall
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
 EVALUATION_MAT                  element_center
 EVALUATION_TAU                  element_center
-PSPG                            yes_pspg
+PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
 RSTAB                           no_rstab
 STABTYPE                        residual_based
-SUPG                            yes_supg
+SUPG                            yes
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab

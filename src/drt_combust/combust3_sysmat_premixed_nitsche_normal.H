@@ -62,7 +62,7 @@ void SysmatDomainNitscheNormal(
     const bool                     newton,       ///< full Newton or fixed-point-like
     const bool                     pstab,        ///< turn on/off PSPG stabilization
     const bool                     supg,         ///< turn on/off SUPG stabilization
-    const bool                     cstab,        ///< turn on/off BV   stabilization
+    const bool                     graddiv,        ///< turn on/off BV   stabilization
     const INPAR::FLUID::TauType    tautype,      //< stabilization parameter definition
     const bool                     instationary, ///< switch between stationary and instationary formulation
     const bool                     genalpha,
@@ -848,7 +848,7 @@ void SysmatDomainNitscheNormal(
       COMBUST::BuildStandardDomainIntegralsNormal<DISTYPE,ASSTYPE,NUMDOF,shpVecSizeVel,shpVecSizePres>(
           assembler, shp, shp_pres, fac, timefac, timefacfac, densaf, dynvisc,
           gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c, enr_viscs2,
-          instationary, genalpha, newton, pstab, supg, cstab,
+          instationary, genalpha, newton, pstab, supg, graddiv,
           tau_stab_Mu, tau_stab_Mp, tau_stab_C);
     } // end loop over gauss points
   ++icell;

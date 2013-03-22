@@ -1506,13 +1506,11 @@ void FLD::CombustFluidImplicitTimeInt::NonlinearSolve()
         //type of linearisation: include reactive terms for linearisation
         if(DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation") == INPAR::FLUID::Newton)
           eleparams.set("include reactive terms for linearisation",true);
-        else if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(*params_, "Linearisation") == INPAR::FLUID::minimal)
-          dserror("LinearisationAction minimal is not defined in the combustion formulation");
         else
           eleparams.set("include reactive terms for linearisation",false);
 
         // parameters for stabilization
-        eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+        eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
 
         // parameters for stabilization
         eleparams.sublist("TURBULENCE MODEL") = params_->sublist("TURBULENCE MODEL");
@@ -2280,15 +2278,9 @@ void FLD::CombustFluidImplicitTimeInt::TimeUpdate()
 }// FluidImplicitTimeInt::TimeUpdate
 
 
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 /*----------------------------------------------------------------------*
  | update acceleration for generalized-alpha time integration  vg 02/09 |
  *----------------------------------------------------------------------*/
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
-//<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>//
 void FLD::CombustFluidImplicitTimeInt::GenAlphaUpdateAcceleration()
 {
 
@@ -2368,6 +2360,22 @@ void FLD::CombustFluidImplicitTimeInt::GenAlphaIntermediateValues()
  *------------------------------------------------------------------------------------------------*/
 void FLD::CombustFluidImplicitTimeInt::Output()
 {
+  // ##########################################################################################
+  // #                        WARNING                                                         #
+  // # Be careful when adding new fields to the output section:                               #
+  // # All maps are stored in the DiscretizationWriter. If they have been changed by calling  #
+  // # FillComplete on the discretization, these new maps are added to the stack while        #
+  // # outdated ones are not removed. This has a significant negative impact on the memory    #
+  // # requirements, since the memory is not freed and the stored pointers point on nothing,  #
+  // # i.e., memory leak. In combustion, FillComplete is called in every time step after the  #
+  // # new flame front has been incorporated. However, since velocity and pressure are        #
+  // # written on the standard dofset, which does not change, this problem is circumvented.   #
+  // # Likewise, it is circumvented for the Owner, which is written only once now. In case of #
+  // # redistribution, also the standard dofset has to be rebuild and the new Owner also to   #
+  // # be written. Therefore, the map stack of the DiscretizationWriter is erased and all     #
+  // # outdated maps are deleted (see below).                                                 #
+  // ##########################################################################################
+
   const bool write_visualization_data = step_%upres_ == 0;
   const bool write_restart_data = step_!=0 and uprestart_ != 0 and step_%uprestart_ == 0;
   const bool do_time_sample = special_flow_!="no" && step_>=samstart_ && step_<=samstop_;

@@ -64,18 +64,18 @@ THETA                           1.00
 TIMEINTEGR Stationary //One_Step_Theta
 TIMESTEP                        1.0
 LINEAR_SOLVER                   1
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based //  
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen_wo_dt //Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            no_pspg//    yes_pspg //   
-SUPG                            no_supg
+PSPG                            no//    yes //   
+SUPG                            no
 VSTAB                           no_vstab
-CSTAB                           no_cstab
+GRAD_DIV                           no
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
---------------------------------------FLUID DYNAMIC/EDGE-BASED-STABILIZATION
+--------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
 EOS_PRES                        std_eos // none, std_eos, xfem_gp
 EOS_CONV_STREAM                 std_eos // none, std_eos, xfem_gp
 EOS_CONV_CROSS                  none // none, std_eos, xfem_gp

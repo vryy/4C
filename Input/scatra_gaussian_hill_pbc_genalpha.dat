@@ -67,7 +67,7 @@ INITFUNCNO                      2
 FSSUGRDIFF                      No
 WRITEFLUX                       No
 MATID                           4
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC

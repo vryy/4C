@@ -42,18 +42,6 @@ namespace INPAR
       stabtype_edgebased
     };
 
-    //! flag to (de)activate PSPG stabilization
-    enum PSPG
-    {
-      pstab_assume_inf_sup_stable,  // no pspg stabilization
-      pstab_use_pspg                // use pspg stabilization
-    };
-    //! flag to (de)activate SUPG stabilization
-    enum SUPG
-    {
-      convective_stab_none,
-      convective_stab_supg
-    };
     //! flag to select the type of viscosity stabilization
     enum VStab
     {
@@ -63,6 +51,7 @@ namespace INPAR
       viscous_stab_usfem,
       viscous_stab_usfem_only_rhs
     };
+
     //! flag to select the type of reactive stabilization
     enum RStab
     {
@@ -70,12 +59,7 @@ namespace INPAR
       reactive_stab_gls,
       reactive_stab_usfem
     };
-    //! flag to (de)activate continuity stabilization
-    enum CStab
-    {
-      continuity_stab_none,
-      continuity_stab_yes
-    };
+
     //! flag to select the type of cross stress stabilization
     enum CrossStress
     {
@@ -83,6 +67,7 @@ namespace INPAR
       cross_stress_stab,
       cross_stress_stab_only_rhs
     };
+
     //! flag to select the type of Reynolds stress stabilization
     enum ReynoldsStress
     {
@@ -91,6 +76,7 @@ namespace INPAR
       reynolds_stress_stab_only_rhs
     };
 
+    //! flag to select time-dependent subgrid-scales
     enum SubscalesTD
     {
       subscales_quasistatic,
@@ -262,10 +248,8 @@ namespace INPAR
     //! linearisation actions recognized by fluid3 (genalpha implementation)
     enum LinearisationAction
     {
-      no_linearisation,
       fixed_point_like,
-      Newton          ,
-      minimal
+      Newton
     };
 
     //!  norm for convergence check of nonlinear iteration

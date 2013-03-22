@@ -581,7 +581,7 @@ void DRT::ELEMENTS::FluidEleCalcLoma<distype>::SysmatOD(
     // computation of SUPG and contributions to element matrix
     // (potentially including Reynolds-stress term)
     //----------------------------------------------------------------------
-    if (my::fldpara_->SUPG() == INPAR::FLUID::convective_stab_supg)
+    if (my::fldpara_->SUPG())
     {
       // weighting functions for SUPG term
       LINALG::Matrix<my::nen_,1> supg_rey_weight;

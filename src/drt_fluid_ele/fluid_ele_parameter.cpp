@@ -60,10 +60,10 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
   stabtype_(INPAR::FLUID::stabtype_nostab),
   tds_(INPAR::FLUID::subscales_quasistatic),
   transient_(INPAR::FLUID::inertia_stab_drop),
-  pspg_(INPAR::FLUID::pstab_use_pspg),
-  supg_(INPAR::FLUID::convective_stab_supg),
+  pspg_(true),
+  supg_(true),
   vstab_(INPAR::FLUID::viscous_stab_none),
-  cstab_(INPAR::FLUID::continuity_stab_yes),
+  graddiv_(true),
   cross_(INPAR::FLUID::cross_stress_stab_none),
   reynolds_(INPAR::FLUID::reynolds_stress_stab_none),
   whichtau_(INPAR::FLUID::tau_not_defined),
@@ -113,7 +113,7 @@ DRT::ELEMENTS::FluidEleParameter::FluidEleParameter()
   adapt_Csgs_phi_(false),
   meanCai_(0.0),
   update_mat_(false),
-  conti_supg_(INPAR::FLUID::convective_stab_none),
+  conti_supg_(true),
   conti_cross_(INPAR::FLUID::cross_stress_stab_none),
   conti_reynolds_(INPAR::FLUID::reynolds_stress_stab_none),
   multifrac_loma_conti_(false),
@@ -180,8 +180,6 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
   //std::string newtonstr   = params.get<std::string>("Linearisation");
   if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params, "Linearisation")==INPAR::FLUID::Newton)
     is_newton_       = true;
-  if (DRT::INPUT::get<INPAR::FLUID::LinearisationAction>(params, "Linearisation")==INPAR::FLUID::minimal)
-    dserror("There is no LinearisationAction minimal in the fluid formulation");
 
   // set flags for formuation of the convective velocity term (conservative or convective)
   std::string convformstr = params.get<std::string>("form of convective term");
@@ -235,39 +233,21 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
   // ---------------------------------------------------------------------
   // get control parameters for stabilization and higher-order elements
   //----------------------------------------------------------------------
-  Teuchos::ParameterList& stablist               = params.sublist("STABILIZATION");
-  //Teuchos::ParameterList& stablist_residualbased = params.sublist("RESIDUAL-BASED-STABILIZATION");
-  Teuchos::ParameterList& stablist_edgebased     = params.sublist("EDGE-BASED-STABILIZATION");
+  Teuchos::ParameterList& stablist               = params.sublist("RESIDUAL-BASED STABILIZATION");
+  Teuchos::ParameterList& stablist_edgebased     = params.sublist("EDGE-BASED STABILIZATION");
 
   stabtype_ = DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(stablist, "STABTYPE");
 
-
-  // --------------------------------
-  // edge-based fluid stabilization can be used as standard fluid stabilization or
-  // as ghost-penalty stabilization in addition to residual-based stabilizations in the XFEM
-
-  // set parameters if single stabilization terms are switched on/off or which type of stabilization is chosen
-  EOS_pres_         = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Pres>(stablist_edgebased,"EOS_PRES");
-  EOS_conv_stream_  = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Stream>(stablist_edgebased,"EOS_CONV_STREAM");
-  EOS_conv_cross_   = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Cross>(stablist_edgebased,"EOS_CONV_CROSS");
-  EOS_div_          = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Div>(stablist_edgebased,"EOS_DIV");
-
-  EOS_element_lenght_ = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_ElementLength>(stablist_edgebased, "EOS_H_DEFINITION");
-  EOS_whichtau_       = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_TauType>(stablist_edgebased, "EOS_DEFINITION_TAU");
-
-  //---------------------------------
-  // if edge-based stabilization is selected, all residual-based stabilization terms
-  // are switched off
-  if (stablist.get<std::string>("STABTYPE") == "residual_based")
+  if (stabtype_ == INPAR::FLUID::stabtype_residualbased)
   {
     // no safety check necessary since all options are used
     tds_      = DRT::INPUT::IntegralValue<INPAR::FLUID::SubscalesTD>(stablist,"TDS");
     transient_= DRT::INPUT::IntegralValue<INPAR::FLUID::Transient>(stablist,"TRANSIENT");
-    pspg_     = DRT::INPUT::IntegralValue<INPAR::FLUID::PSPG>(stablist,"PSPG");
-    supg_     = DRT::INPUT::IntegralValue<INPAR::FLUID::SUPG>(stablist,"SUPG");
+    pspg_     = DRT::INPUT::IntegralValue<int>(stablist,"PSPG");
+    supg_     = DRT::INPUT::IntegralValue<int>(stablist,"SUPG");
     vstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::VStab>(stablist,"VSTAB");
     rstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::RStab>(stablist,"RSTAB");
-    cstab_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CStab>(stablist,"CSTAB");
+    graddiv_    = DRT::INPUT::IntegralValue<int>(stablist,"GRAD_DIV");
     cross_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stablist,"CROSS-STRESS");
     reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stablist,"REYNOLDS-STRESS");
 
@@ -338,7 +318,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
       else if (rstab_ == INPAR::FLUID::reactive_stab_gls) viscreastabfac_ =  1.0;
     }
   }
-  else if (stablist.get<std::string>("STABTYPE") == "edge_based")
+  else if (stabtype_ == INPAR::FLUID::stabtype_edgebased)
   {
     if (myrank==0)
     {
@@ -346,35 +326,52 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
       IO::cout << " Edge-based stabilization: all residual-based stabilization terms are switched off!\n";
       IO::cout << "+----------------------------------------------------------------------------------+\n" << IO::endl;
     }
-    pspg_      = INPAR::FLUID::pstab_assume_inf_sup_stable;
-    supg_      = INPAR::FLUID::convective_stab_none;
-    vstab_     = INPAR::FLUID::viscous_stab_none;
-    rstab_     = INPAR::FLUID::reactive_stab_none;
-    cstab_     = INPAR::FLUID::continuity_stab_none;
-    cross_     = INPAR::FLUID::cross_stress_stab_none;
-    reynolds_  = INPAR::FLUID::reynolds_stress_stab_none;
-    tds_       = INPAR::FLUID::subscales_quasistatic;
+    //---------------------------------
+    // if edge-based stabilization is selected, all residual-based stabilization terms
+    // are switched off
+    pspg_ = false;
+    supg_ = false;
+    vstab_ = INPAR::FLUID::viscous_stab_none;
+    rstab_ = INPAR::FLUID::reactive_stab_none;
+    graddiv_ = false;
+    cross_ = INPAR::FLUID::cross_stress_stab_none;
+    reynolds_ = INPAR::FLUID::reynolds_stress_stab_none;
+    tds_ = INPAR::FLUID::subscales_quasistatic;
     transient_ = INPAR::FLUID::inertia_stab_drop;
     is_inconsistent_ = false;
 
+    // --------------------------------
+    // edge-based fluid stabilization can be used as standard fluid stabilization or
+    // as ghost-penalty stabilization in addition to residual-based stabilizations in the XFEM
+
+    // set parameters if single stabilization terms are switched on/off or which type of stabilization is chosen
+    EOS_pres_         = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Pres>(stablist_edgebased,"EOS_PRES");
+    EOS_conv_stream_  = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Stream>(stablist_edgebased,"EOS_CONV_STREAM");
+    EOS_conv_cross_   = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Cross>(stablist_edgebased,"EOS_CONV_CROSS");
+    EOS_div_          = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Div>(stablist_edgebased,"EOS_DIV");
+
+    EOS_element_lenght_ = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_ElementLength>(stablist_edgebased, "EOS_H_DEFINITION");
+    EOS_whichtau_       = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_TauType>(stablist_edgebased, "EOS_DEFINITION_TAU");
+
   }
-  else if (stablist.get<std::string>("STABTYPE") == "no_stabilization")
+  else if (stabtype_ == INPAR::FLUID::stabtype_nostab)
   {
     if (myrank==0)
     {
       IO::cout << "+----------------------------------------------------------------------------------+\n";
       IO::cout << "+                                   WARNING\n";
       IO::cout << " No stabilization selected: all stabilization terms are switched off!\n";
+      IO::cout << "                            BACI says: Good luck!\n";
       IO::cout << "+----------------------------------------------------------------------------------+\n" << IO::endl;
     }
-    pspg_      = INPAR::FLUID::pstab_assume_inf_sup_stable;
-    supg_      = INPAR::FLUID::convective_stab_none;
-    vstab_     = INPAR::FLUID::viscous_stab_none;
-    rstab_     = INPAR::FLUID::reactive_stab_none;
-    cstab_     = INPAR::FLUID::continuity_stab_none;
-    cross_     = INPAR::FLUID::cross_stress_stab_none;
-    reynolds_  = INPAR::FLUID::reynolds_stress_stab_none;
-    tds_       = INPAR::FLUID::subscales_quasistatic;
+    pspg_ = false;
+    supg_ = false;
+    vstab_ = INPAR::FLUID::viscous_stab_none;
+    rstab_ = INPAR::FLUID::reactive_stab_none;
+    graddiv_ = false;
+    cross_ = INPAR::FLUID::cross_stress_stab_none;
+    reynolds_ = INPAR::FLUID::reynolds_stress_stab_none;
+    tds_ = INPAR::FLUID::subscales_quasistatic;
     transient_ = INPAR::FLUID::inertia_stab_drop;
     is_inconsistent_ = false;
   }
@@ -686,7 +683,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementLomaParameter( Teuchos::Paramet
 {
   // get parameter lists
   Teuchos::ParameterList& lomaparams = params.sublist("LOMA");
-  Teuchos::ParameterList& stabparams = params.sublist("STABILIZATION");
+  Teuchos::ParameterList& stabparams = params.sublist("RESIDUAL-BASED STABILIZATION");
   Teuchos::ParameterList& turbmodelparamsmfs = params.sublist("MULTIFRACTAL SUBGRID SCALES");
 
   //---------------------------------------------------------------------------------
@@ -699,7 +696,7 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementLomaParameter( Teuchos::Paramet
   // parameter for additional rbvmm terms in continuity equation
   //---------------------------------------------------------------------------------
 
-  conti_supg_     = DRT::INPUT::IntegralValue<INPAR::FLUID::SUPG>(stabparams,"LOMA_CONTI_SUPG");
+  conti_supg_     = DRT::INPUT::IntegralValue<int>(stabparams,"LOMA_CONTI_SUPG");
   conti_cross_    = DRT::INPUT::IntegralValue<INPAR::FLUID::CrossStress>(stabparams,"LOMA_CONTI_CROSS_STRESS");
   conti_reynolds_ = DRT::INPUT::IntegralValue<INPAR::FLUID::ReynoldsStress>(stabparams,"LOMA_CONTI_REYNOLDS_STRESS");
 
@@ -766,7 +763,7 @@ void DRT::ELEMENTS::FluidEleParameter::PrintFluidParameter()
     //! Flag to (de)activate viscous term in residual-based stabilization
     std::cout << "|    VSTAB:    " << vstab_ << std::endl;
     //! Flag to (de)activate least-squares stabilization of continuity equation
-    std::cout << "|    Grad-Div-Stab:    " << cstab_ << std::endl ;
+    std::cout << "|    Grad-Div-Stab:    " << graddiv_ << std::endl ;
     //! Flag to (de)activate reactive term in residual-based stabilization
     std::cout << "|    reactive stabilization:    " << rstab_ << std::endl;
     //! Flag to (de)activate cross-stress term -> residual-based VMM

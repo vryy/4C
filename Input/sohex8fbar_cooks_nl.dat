@@ -28,7 +28,7 @@ NUMSTRUCDIS                     1
 // Number of meshes in thermal field
 NUMTHERMDIS                     1
 ---------------------------------------------------------------FLUID DYNAMIC
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -----------------------------------------------------------------FSI DYNAMIC
 --------------------------------------------------------------------------IO

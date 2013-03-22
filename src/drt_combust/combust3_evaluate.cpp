@@ -312,15 +312,12 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
 
 
       // stabilization terms
-      bool pstab = true;
-      bool supg  = true;
-      bool cstab = true;
-      if (DRT::INPUT::IntegralValue<INPAR::FLUID::SUPG>(params.sublist("STABILIZATION"),"SUPG")   == INPAR::FLUID::convective_stab_none) supg = false;
-      if (DRT::INPUT::IntegralValue<INPAR::FLUID::PSPG>(params.sublist("STABILIZATION"),"PSPG")   == INPAR::FLUID::pstab_assume_inf_sup_stable) pstab = false;
-      if (DRT::INPUT::IntegralValue<INPAR::FLUID::CStab>(params.sublist("STABILIZATION"),"CSTAB") == INPAR::FLUID::continuity_stab_none) cstab = false;
+      const bool pstab = DRT::INPUT::IntegralValue<int>(params.sublist("RESIDUAL-BASED STABILIZATION"),"PSPG");
+      const bool supg  = DRT::INPUT::IntegralValue<int>(params.sublist("RESIDUAL-BASED STABILIZATION"),"SUPG");
+      const bool graddiv = DRT::INPUT::IntegralValue<int>(params.sublist("RESIDUAL-BASED STABILIZATION"),"GRAD_DIV");
 
       // stabilization parameter
-      const INPAR::FLUID::TauType tautype = DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(params.sublist("STABILIZATION"),"DEFINITION_TAU");
+      const INPAR::FLUID::TauType tautype = DRT::INPUT::IntegralValue<INPAR::FLUID::TauType>(params.sublist("RESIDUAL-BASED STABILIZATION"),"DEFINITION_TAU");
       // check if stabilization parameter definition can be handled by combust3 element
       if (!(tautype == INPAR::FLUID::tau_taylor_hughes_zarins or
             tautype == INPAR::FLUID::tau_taylor_hughes_zarins_wo_dt or
@@ -387,7 +384,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary,
+          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary,
           genalpha,combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens,
           connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration));
       }
@@ -429,7 +426,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
         // calculate element coefficient matrix and rhs
         COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_uncondensed_, mystate, elemat1_uncond, elevec1_uncond,
-          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens,
           connected_interface, veljumptype, fluxjumptype,smoothed_boundary_integration));
 
@@ -449,7 +446,7 @@ int DRT::ELEMENTS::Combust3::Evaluate(Teuchos::ParameterList& params,
       // calculate element coefficient matrix and rhs
       COMBUST::callSysmat(assembly_type,
           this, ih_, *eleDofManager_, mystate, elemat1, elevec1,
-          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens,
           connected_interface,veljumptype,fluxjumptype,smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
 #endif

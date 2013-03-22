@@ -74,7 +74,7 @@ RESTARTEVRY                     1000
 TIMESTEP                        1.0
 UPRES                           1
 TEMPERATURE                     11604.506                       // abused as a scaling factor in order to have: F/RT = 1.0
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC

@@ -63,7 +63,7 @@ void BuildStandardDomainIntegrals(
     const bool newton,                                 // turn on/off linearization of convective term
     const bool pstab,                                  // turn on/off PSPG stabilization
     const bool supg,                                   // turn on/off SUPG stabilization
-    const bool cstab,                                  // turn on/off BV   stabilization
+    const bool graddiv,                                  // turn on/off BV   stabilization
     const double& tau_stab_Mu,                         // SUPG stabilization parameter
     const double& tau_stab_Mp,                         // PSPG stabilization parameter
     const double& tau_stab_C                           // BV   stabilization parameter
@@ -605,9 +605,9 @@ void BuildStandardDomainIntegrals(
 
   //----------------------------------------------------------------------
   //                     STABILISATION, CONTINUITY PART
-  if(cstab)
+  if(graddiv)
   {
-#ifdef COMBUST_CSTAB
+#ifdef COMBUST_GRAD_DIV
     const double timefac_tau_C = timefac * tau_stab_C * fac;
     const double altrhstauCfac    = altrhsfac * tau_stab_C;
     const double altrhstauCfac_divu = altrhstauCfac * (vderxy(0,0)+vderxy(1,1)+vderxy(2,2));
@@ -635,7 +635,7 @@ void BuildStandardDomainIntegrals(
     assembler.template Vector<XFEM::PHYSICS::Vely>(shpvel.dy, -altrhstauCfac_divu);
     assembler.template Vector<XFEM::PHYSICS::Velz>(shpvel.dz, -altrhstauCfac_divu);
 #endif
-  } // endif cstab
+  } // endif graddiv
 }
 
 
@@ -677,7 +677,7 @@ void BuildStandardDomainIntegralsStab(
     const bool newton,                                 // turn on/off linearization of convective term
     const bool pstab,                                  // turn on/off PSPG stabilization
     const bool supg,                                   // turn on/off SUPG stabilization
-    const bool cstab,                                  // turn on/off BV   stabilization
+    const bool graddiv,                                  // turn on/off BV   stabilization
     const double& tau_stab_Mu,                         // SUPG stabilization parameter
     const double& tau_stab_Mp,                         // PSPG stabilization parameter
     const double& tau_stab_C                           // BV   stabilization parameter
@@ -1021,9 +1021,9 @@ void BuildStandardDomainIntegralsStab(
 #if 1
   //----------------------------------------------------------------------
   //                     STABILISATION, CONTINUITY PART
-  if(cstab)
+  if(graddiv)
   {
-#ifdef COMBUST_CSTAB
+#ifdef COMBUST_GRAD_DIV
     const double timefac_tau_C = timefac * tau_stab_C * fac;
     const double timefac_tau_C_divunp = timefac_tau_C * (vderxy(0,0)+vderxy(1,1)+vderxy(2,2));
     /* continuity stabilisation on left hand side */
@@ -1050,7 +1050,7 @@ void BuildStandardDomainIntegralsStab(
     assembler.template Vector<XFEM::PHYSICS::Vely>(shpvel.dy, -timefac_tau_C_divunp);
     assembler.template Vector<XFEM::PHYSICS::Velz>(shpvel.dz, -timefac_tau_C_divunp);
 #endif
-  } // endif cstab
+  } // endif graddiv
 #endif
 }
 
@@ -1083,7 +1083,7 @@ void BuildStandardDomainIntegralsNormal(
     const bool newton,                                     // turn on/off linearization of convective term
     const bool pstab,                                      // turn on/off PSPG stabilization
     const bool supg,                                       // turn on/off SUPG stabilization
-    const bool cstab,                                      // turn on/off BV   stabilization
+    const bool graddiv,                                      // turn on/off BV   stabilization
     const double& tau_stab_Mu,                             // SUPG stabilization parameter
     const double& tau_stab_Mp,                             // PSPG stabilization parameter
     const double& tau_stab_C                               // BV   stabilization parameter
@@ -1576,9 +1576,9 @@ void BuildStandardDomainIntegralsNormal(
 
   //----------------------------------------------------------------------
   //                     STABILISATION, CONTINUITY PART
-  if(cstab)
+  if(graddiv)
   {
-#ifdef COMBUST_CSTAB
+#ifdef COMBUST_GRAD_DIV
     const double timefac_tau_C = timefac * tau_stab_C * fac;
     const double timefac_tau_C_divunp = timefac_tau_C * (vderxy(0,0)+vderxy(1,1)+vderxy(2,2));
     /* continuity stabilisation on left hand side */
@@ -1605,7 +1605,7 @@ void BuildStandardDomainIntegralsNormal(
     assembler.template VectorN<XFEM::PHYSICS::Vely>(shp.vely.dy, -timefac_tau_C_divunp);
     assembler.template VectorN<XFEM::PHYSICS::Velz>(shp.velz.dz, -timefac_tau_C_divunp);
 #endif
-  } // endif cstab
+  } // endif graddiv
 }
 
 } // namespace COMBUST

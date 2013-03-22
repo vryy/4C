@@ -1032,7 +1032,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     RCP<std::vector<double> > local_incr_eps_supg     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
     RCP<std::vector<double> > local_incr_eps_cross    = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
     RCP<std::vector<double> > local_incr_eps_rey      = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
-    RCP<std::vector<double> > local_incr_eps_cstab    = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
+    RCP<std::vector<double> > local_incr_eps_graddiv    = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
     RCP<std::vector<double> > local_incr_eps_eddyvisc = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
     RCP<std::vector<double> > local_incr_eps_visc     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
     RCP<std::vector<double> > local_incr_eps_conv     = Teuchos::rcp(new std::vector<double> ((nodeplanes_->size()-1)  ,0.0));
@@ -1070,7 +1070,7 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     eleparams_.set<RCP<std::vector<double> > >("incr_eps_supg"    ,local_incr_eps_supg    );
     eleparams_.set<RCP<std::vector<double> > >("incr_eps_cross"   ,local_incr_eps_cross   );
     eleparams_.set<RCP<std::vector<double> > >("incr_eps_rey"     ,local_incr_eps_rey     );
-    eleparams_.set<RCP<std::vector<double> > >("incr_eps_cstab"   ,local_incr_eps_cstab   );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_graddiv"   ,local_incr_eps_graddiv   );
     eleparams_.set<RCP<std::vector<double> > >("incr_eps_eddyvisc",local_incr_eps_eddyvisc);
     eleparams_.set<RCP<std::vector<double> > >("incr_eps_visc"    ,local_incr_eps_visc    );
     eleparams_.set<RCP<std::vector<double> > >("incr_eps_conv"    ,local_incr_eps_conv    );
@@ -1131,8 +1131,8 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
     sum_eps_cross_->resize(nodeplanes_->size()-1,0.0);
     sum_eps_rey_=  Teuchos::rcp(new std::vector<double> );
     sum_eps_rey_->resize(nodeplanes_->size()-1,0.0);
-    sum_eps_cstab_=  Teuchos::rcp(new std::vector<double> );
-    sum_eps_cstab_->resize(nodeplanes_->size()-1,0.0);
+    sum_eps_graddiv_=  Teuchos::rcp(new std::vector<double> );
+    sum_eps_graddiv_->resize(nodeplanes_->size()-1,0.0);
     sum_eps_eddyvisc_=  Teuchos::rcp(new std::vector<double> );
     sum_eps_eddyvisc_->resize(nodeplanes_->size()-1,0.0);
     sum_eps_visc_=  Teuchos::rcp(new std::vector<double> );
@@ -1269,6 +1269,16 @@ FLD::TurbulenceStatisticsCha::TurbulenceStatisticsCha(
       (*log) << "# Statistics for turbulent incompressible channel flow (first- and second-order moments)\n\n";
 
       log->flush();
+
+      // additional output for dynamic Smagorinsky model
+      if (smagorinsky_)
+      {
+        std::string s_smag = params_.sublist("TURBULENCE MODEL").get<string>("statistics outfile");
+        s_smag.append(".Cs_statistics");
+
+        log_Cs = Teuchos::rcp(new std::ofstream(s_smag.c_str(),std::ios::out));
+        (*log_Cs) << "# Statistics for turbulent incompressible channel flow (Smagorinsky constant)\n\n";
+      }
 
       // additional output for scale similarity model
       if (scalesimilarity_)
@@ -3244,7 +3254,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     RCP<std::vector<double> > local_incr_eps_supg     = eleparams_.get<RCP<std::vector<double> > >("incr_eps_supg"    );
     RCP<std::vector<double> > local_incr_eps_cross    = eleparams_.get<RCP<std::vector<double> > >("incr_eps_cross"   );
     RCP<std::vector<double> > local_incr_eps_rey      = eleparams_.get<RCP<std::vector<double> > >("incr_eps_rey"     );
-    RCP<std::vector<double> > local_incr_eps_cstab    = eleparams_.get<RCP<std::vector<double> > >("incr_eps_cstab"   );
+    RCP<std::vector<double> > local_incr_eps_graddiv    = eleparams_.get<RCP<std::vector<double> > >("incr_eps_graddiv"   );
     RCP<std::vector<double> > local_incr_eps_pspg     = eleparams_.get<RCP<std::vector<double> > >("incr_eps_pspg"    );
 
     RCP<std::vector<double> > local_incrcrossstress   = eleparams_.get<RCP<std::vector<double> > >("incrcrossstress"  );
@@ -3349,8 +3359,8 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
     // (in plane) averaged values of dissipation by continuity stabilisation
 
-    RCP<std::vector<double> > global_incr_eps_cstab;
-    global_incr_eps_cstab  = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    RCP<std::vector<double> > global_incr_eps_graddiv;
+    global_incr_eps_graddiv  = Teuchos::rcp(new std::vector<double> (presize,0.0));
 
     // (in plane) averaged values of dissipation by eddy viscosity
 
@@ -3476,8 +3486,8 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     discret_->Comm().SumAll(&((*local_incr_eps_rey  )[0]),
                             &((*global_incr_eps_rey )[0]),
                             presize);
-    discret_->Comm().SumAll(&((*local_incr_eps_cstab  )[0]),
-                            &((*global_incr_eps_cstab )[0]),
+    discret_->Comm().SumAll(&((*local_incr_eps_graddiv  )[0]),
+                            &((*global_incr_eps_graddiv )[0]),
                             presize);
     discret_->Comm().SumAll(&((*local_incr_eps_eddyvisc  )[0]),
                             &((*global_incr_eps_eddyvisc )[0]),
@@ -3542,7 +3552,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
       (*sum_eps_supg_    )[rr]+=(*global_incr_eps_supg    )[rr];
       (*sum_eps_cross_   )[rr]+=(*global_incr_eps_cross   )[rr];
       (*sum_eps_rey_     )[rr]+=(*global_incr_eps_rey     )[rr];
-      (*sum_eps_cstab_   )[rr]+=(*global_incr_eps_cstab   )[rr];
+      (*sum_eps_graddiv_   )[rr]+=(*global_incr_eps_graddiv   )[rr];
       (*sum_eps_eddyvisc_)[rr]+=(*global_incr_eps_eddyvisc)[rr];
       (*sum_eps_visc_    )[rr]+=(*global_incr_eps_visc    )[rr];
       (*sum_eps_conv_    )[rr]+=(*global_incr_eps_conv    )[rr];
@@ -3587,7 +3597,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     local_incr_eps_supg     = Teuchos::rcp(new std::vector<double> (presize,0.0));
     local_incr_eps_cross    = Teuchos::rcp(new std::vector<double> (presize,0.0));
     local_incr_eps_rey      = Teuchos::rcp(new std::vector<double> (presize,0.0));
-    local_incr_eps_cstab    = Teuchos::rcp(new std::vector<double> (presize,0.0));
+    local_incr_eps_graddiv    = Teuchos::rcp(new std::vector<double> (presize,0.0));
     local_incr_eps_eddyvisc = Teuchos::rcp(new std::vector<double> (presize,0.0));
     local_incr_eps_visc     = Teuchos::rcp(new std::vector<double> (presize,0.0));
     local_incr_eps_conv     = Teuchos::rcp(new std::vector<double> (presize,0.0));
@@ -3625,7 +3635,7 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
     eleparams_.set<RCP<std::vector<double> > >("incr_eps_supg"    ,local_incr_eps_supg    );
     eleparams_.set<RCP<std::vector<double> > >("incr_eps_cross"   ,local_incr_eps_cross   );
     eleparams_.set<RCP<std::vector<double> > >("incr_eps_rey"     ,local_incr_eps_rey     );
-    eleparams_.set<RCP<std::vector<double> > >("incr_eps_cstab"   ,local_incr_eps_cstab   );
+    eleparams_.set<RCP<std::vector<double> > >("incr_eps_graddiv"   ,local_incr_eps_graddiv   );
     eleparams_.set<RCP<std::vector<double> > >("incr_eps_eddyvisc",local_incr_eps_eddyvisc);
     eleparams_.set<RCP<std::vector<double> > >("incr_eps_visc"    ,local_incr_eps_visc    );
     eleparams_.set<RCP<std::vector<double> > >("incr_eps_conv"    ,local_incr_eps_conv    );
@@ -4172,7 +4182,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
       (*log_res) << "  eps_supg   ";
       (*log_res) << "  eps_cross  ";
       (*log_res) << "   eps_rey   ";
-      (*log_res) << "  eps_cstab  ";
+      (*log_res) << "  eps_graddiv  ";
       (*log_res) << " eps_eddyvisc";
       (*log_res) << "   eps_visc  ";
       (*log_res) << "   eps_conv  ";
@@ -4241,7 +4251,7 @@ void FLD::TurbulenceStatisticsCha::TimeAverageMeansAndOutputOfStatistics(const i
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_cstab_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_graddiv_   )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
@@ -4487,7 +4497,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
       (*log_res) << "  eps_supg   ";
       (*log_res) << "  eps_cross  ";
       (*log_res) << "   eps_rey   ";
-      (*log_res) << "  eps_cstab  ";
+      (*log_res) << "  eps_graddiv  ";
       (*log_res) << " eps_eddyvisc";
       (*log_res) << "   eps_visc  ";
       (*log_res) << "   eps_conv  ";
@@ -4556,7 +4566,7 @@ void FLD::TurbulenceStatisticsCha::DumpStatistics(const int step)
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_cstab_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_graddiv_   )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
@@ -4781,7 +4791,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
       (*log_res) << "  eps_supg   ";
       (*log_res) << "  eps_cross  ";
       (*log_res) << "   eps_rey   ";
-      (*log_res) << "  eps_cstab  ";
+      (*log_res) << "  eps_graddiv  ";
       (*log_res) << " eps_eddyvisc";
       (*log_res) << "   eps_visc  ";
       (*log_res) << "   eps_conv  ";
@@ -4850,7 +4860,7 @@ void FLD::TurbulenceStatisticsCha::DumpLomaStatistics(const int step)
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_cstab_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_graddiv_   )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
@@ -5178,7 +5188,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
       (*log_res) << "  eps_supg   ";
       (*log_res) << "  eps_cross  ";
       (*log_res) << "   eps_rey   ";
-      (*log_res) << "  eps_cstab  ";
+      (*log_res) << "  eps_graddiv  ";
       (*log_res) << " eps_eddyvisc";
       (*log_res) << "   eps_visc  ";
       (*log_res) << "   eps_conv  ";
@@ -5247,7 +5257,7 @@ void FLD::TurbulenceStatisticsCha::DumpScatraStatistics(const int step)
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_supg_    )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_cross_   )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_rey_     )[rr]/(numele_*numsamp_) << "  ";
-        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_cstab_   )[rr]/(numele_*numsamp_) << "  ";
+        (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_graddiv_   )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_eddyvisc_)[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_visc_    )[rr]/(numele_*numsamp_) << "  ";
         (*log_res)  << std::setw(11) << std::setprecision(4) << (*sum_eps_conv_    )[rr]/(numele_*numsamp_) << "  ";
@@ -5606,7 +5616,7 @@ void FLD::TurbulenceStatisticsCha::ClearStatistics()
       (*sum_eps_supg_    )[rr]=0.0;
       (*sum_eps_cross_   )[rr]=0.0;
       (*sum_eps_rey_     )[rr]=0.0;
-      (*sum_eps_cstab_   )[rr]=0.0;
+      (*sum_eps_graddiv_   )[rr]=0.0;
       (*sum_eps_eddyvisc_)[rr]=0.0;
       (*sum_eps_visc_    )[rr]=0.0;
       (*sum_eps_conv_    )[rr]=0.0;

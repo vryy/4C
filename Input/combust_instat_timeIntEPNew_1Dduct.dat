@@ -100,14 +100,14 @@ NUMSTEP                         18
 TIMESTEP                        0.02
 NEUMANNINFLOW                   no
 GMSH_OUTPUT                     yes
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 DEFINITION_TAU                  Taylor_Hughes_Zarins
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes_pspg
-SUPG                            yes_supg
+PSPG                            yes
+SUPG                            yes
 VSTAB                           no_vstab
-CSTAB                           cstab_qs
+GRAD_DIV                           yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC

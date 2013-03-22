@@ -126,14 +126,14 @@ CONVFORM                        convective
 CONVTOL                         1e-14
 UPRES                           1
 GMSH_OUTPUT                     yes
-----------------------------------------FLUID DYNAMIC/STABILIZATION
+----------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-CSTAB                           cstab_qs
+GRAD_DIV                           yes
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
-PSPG                            yes_pspg
+PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
 STABTYPE                        residual_based
-SUPG                            yes_supg
+SUPG                            yes
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab

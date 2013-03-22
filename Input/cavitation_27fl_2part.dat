@@ -76,13 +76,13 @@ UPRES                           1
 MESHTYING                       no
 INITIALFIELD                    zero_field //BELTRAMI-FLOW
 CALCERROR                       beltrami_flow
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-CSTAB                           cstab_qs
+GRAD_DIV                        yes
 DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
-PSPG                            yes_pspg
+PSPG                            yes
 STABTYPE                        residual_based
-SUPG                            yes_supg
+SUPG                            yes
 EVALUATION_TAU                  integration_point
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver

@@ -56,7 +56,7 @@ Maintainer: Florian Henke
 #define COMBUST_PSPG_PRESSURE   // turn on/off PSPG pressure term
 #define COMBUST_PSPG_RHS        // turn on/off PSPG RHS term
 
-#define COMBUST_CSTAB // turn on/off CSTAB inertia term
+#define COMBUST_GRAD_DIV // turn on/off GRAD_DIV inertia term
 
 //-------------------------------------------
 // combustion Nitsche boundary integral terms

@@ -220,7 +220,7 @@ void ADAPTER::TopOptFluidAdjointAlgorithm::SetupAdjointFluid(const Teuchos::Para
   fluidadjointtimeparams->set<string> ("Neumann inflow",fdyn.get<std::string>("NEUMANNINFLOW"));
 
   // -----------------------sublist containing stabilization parameters
-  fluidadjointtimeparams->sublist("STABILIZATION")=fdyn.sublist("STABILIZATION");
+  fluidadjointtimeparams->sublist("RESIDUAL-BASED STABILIZATION")=fdyn.sublist("RESIDUAL-BASED STABILIZATION");
 
   // -------------------------------------------------------------------
   // additional parameters and algorithm call depending on respective

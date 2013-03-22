@@ -81,14 +81,14 @@ ADAPTCONV_BETTER                1.0
 SIMPLER                         no
 NONLINITER                      Newton
 CONVFORM                        convective
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic
 TRANSIENT                       no_transient
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen
-SUPG                            yes_supg
-PSPG                            yes_pspg
-CSTAB                           cstab_qs
+SUPG                            yes
+PSPG                            yes
+GRAD_DIV                           yes
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC

@@ -51,14 +51,14 @@ GAMMA                           0.666666666666667
 ADAPTCONV                       yes
 ADAPTCONV_BETTER                1.0
 SIMPLER                         no
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             time_dependent
 TRANSIENT                       no_transient
-SUPG                            yes_supg
-PSPG                            yes_pspg
+SUPG                            yes
+PSPG                            yes
 VSTAB                           vstab_usfem
-CSTAB                           cstab_qs
+GRAD_DIV                           yes
 CROSS-STRESS                    cross_rhs
 REYNOLDS-STRESS                 reynolds_rhs
 --------------------------------------------------------------------SOLVER 1

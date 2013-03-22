@@ -1085,7 +1085,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
     // 3) stabilization of continuity equation,
     //    standard Galerkin viscous part for low-Mach-number flow and
     //    right-hand-side part of standard Galerkin viscous term
-    if (fldpara_->CStab() == INPAR::FLUID::continuity_stab_yes or
+    if (fldpara_->CStab() or
         fldpara_->PhysicalType() == INPAR::FLUID::loma)
       ContStab( estif_u,
                 velforce,
@@ -1141,7 +1141,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
                       timefacfac);
 
     // 9) PSPG term
-    if (fldpara_->PSPG() == INPAR::FLUID::pstab_use_pspg)
+    if (fldpara_->PSPG())
     {
       PSPG(estif_q_u,
            ppmat,
@@ -1156,7 +1156,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::Sysmat(
 
     // 10) SUPG term as well as first part of Reynolds-stress term on
     //     left-hand side and Reynolds-stress term on right-hand side
-    if(fldpara_->SUPG() == INPAR::FLUID::convective_stab_supg)
+    if(fldpara_->SUPG())
     {
       SUPG(estif_u,
            estif_p_v,
@@ -3870,7 +3870,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::ContStab(
   double conti_stab_and_vol_visc_fac=0.0;
   double conti_stab_and_vol_visc_rhs=0.0;
 
-  if (fldpara_->CStab() == INPAR::FLUID::continuity_stab_yes)
+  if (fldpara_->CStab())
   {
     conti_stab_and_vol_visc_fac+=timefacfacpre*tau_(2);
     conti_stab_and_vol_visc_rhs-=rhsfac*tau_(2)*conres_old_;
@@ -4600,7 +4600,7 @@ void DRT::ELEMENTS::FluidEleCalc<distype>::SUPG(
   {
     const double temp_supg = rhsfac*scaconvfacaf_*sgscaint_;
 
-    if(fldpara_->ContiSUPG() == INPAR::FLUID::convective_stab_supg)
+    if(fldpara_->ContiSUPG())
     {
       for (int vi=0; vi<nen_; ++vi)
       {

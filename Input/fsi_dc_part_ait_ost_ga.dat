@@ -64,14 +64,14 @@ NUMSTASTEPS                     0
 START_THETA                     1.00
 INITIALFIELD                    zero_field
 STARTFUNCNO                     2
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic
 TRANSIENT                       no_transient
-SUPG                            yes_supg
-PSPG                            yes_pspg
+SUPG                            yes
+PSPG                            yes
 VSTAB                           vstab_gls
-CSTAB                           cstab_qs
+GRAD_DIV                           yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 -----------------------------------------------------------------ALE DYNAMIC

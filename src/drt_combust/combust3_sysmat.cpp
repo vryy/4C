@@ -711,7 +711,7 @@ void Sysmat(
     const bool                              newton,          ///< full Newton or fixed-point-like
     const bool                              pstab,           ///< flag for stabilisation
     const bool                              supg,            ///< flag for stabilisation
-    const bool                              cstab,           ///< flag for stabilisation
+    const bool                              graddiv,           ///< flag for stabilisation
     const INPAR::FLUID::TauType             tautype,         ///< stabilization parameter definition
     const bool                              instationary,    ///< switch between stationary and instationary formulation
     const bool                              genalpha,
@@ -784,25 +784,25 @@ void Sysmat(
 //    {
 //      COMBUST::SysmatDomainNitscheGalerkin<DISTYPE,ASSTYPE,NUMDOF>(
 //          ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler,
 //          ele_meas_plus, ele_meas_minus);
 //
 //      // plus call
 //      COMBUST::SysmatDomainNitscheStabHexRule<DISTYPE,ASSTYPE,NUMDOF>(
 //          ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler,
 //          true);
 //      // minus call
 //      COMBUST::SysmatDomainNitscheStabHexRule<DISTYPE,ASSTYPE,NUMDOF>(
 //          ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler,
 //          false);
 //    }
 //    else
     {
       COMBUST::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
           ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
-          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
+          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler,
           ele_meas_plus, ele_meas_minus);
     }
 #else
@@ -816,7 +816,7 @@ void Sysmat(
 //    }
     COMBUST::SysmatDomainNitscheNormal<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, egradphi,
-        material, timealgo, time, dt, theta, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
+        material, timealgo, time, dt, theta, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler,
         ele_meas_plus, ele_meas_minus);
 #endif
 #endif
@@ -836,18 +836,18 @@ void Sysmat(
 
     COMBUST::SysmatDomainStressNormal<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, egradphi, etensor, ediscpres,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler);
+        material, timealgo, dt, theta, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler);
 
 #else
     COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor, ediscpres,
         material, timealgo, dt, theta, ga_alphaF, ga_alphaM, ga_gamma,
-        newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler);
+        newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler);
 #ifdef COMBUST_SIGMA_BASED
     // TODO: der aufruf ist doch der gleiche wie der darueber? -> COMBUST_SIGMA_BASED raus?
     COMBUST::SysmatDomainStress<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor, ediscpres,
-        material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler);
+        material, timealgo, dt, theta, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler);
 #endif
 #endif
 #endif
@@ -916,7 +916,7 @@ void Sysmat(
   {
     COMBUST::SysmatTwoPhaseFlow<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor,
-        material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary,
+        material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary,
         genalpha, assembler);
   }
   break;
@@ -924,7 +924,7 @@ void Sysmat(
   {
     COMBUST::SysmatTwoPhaseFlow<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi, etensor,
-        material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary,
+        material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary,
         genalpha, assembler);
 
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
@@ -953,7 +953,7 @@ void Sysmat(
 
     COMBUST::SysmatDomainNitsche<DISTYPE,ASSTYPE,NUMDOF>(
         ele, ih, dofman, evelaf, eveln, evelnm, eaccn, eaccam, epreaf, ephi,
-        material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha, assembler,
+        material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha, assembler,
         ele_meas_plus, ele_meas_minus);
 
     // boundary integrals are added for intersected and touched elements (fully or partially enriched elements)
@@ -1004,7 +1004,7 @@ void COMBUST::callSysmat(
     const bool                           newton,
     const bool                           pstab,
     const bool                           supg,
-    const bool                           cstab,
+    const bool                           graddiv,
     const INPAR::FLUID::TauType          tautype,       ///< stabilization parameter definition
     const bool                           instationary,
     const bool                           genalpha,
@@ -1031,33 +1031,33 @@ void COMBUST::callSysmat(
     case DRT::Element::hex8:
       COMBUST::Sysmat<DRT::Element::hex8,XFEM::standard_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
-          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
     break;
     case DRT::Element::hex20:
       COMBUST::Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
-          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox, variablesurftens,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
     break;
 //    case DRT::Element::hex27:
 //      COMBUST::Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
 //          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet4:
 //      COMBUST::Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
 //          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet10:
 //      COMBUST::Sysmat<DRT::Element::tet10,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
 //          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
 //    break;
     default:
@@ -1071,33 +1071,33 @@ void COMBUST::callSysmat(
     case DRT::Element::hex8:
       COMBUST::Sysmat<DRT::Element::hex8,XFEM::xfem_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
-          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres, surftensapprox, variablesurftens,
           connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
     break;
     case DRT::Element::hex20:
       COMBUST::Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
           ele, ih, eleDofManager, mystate, estif, eforce,
-          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
           combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox, variablesurftens,
             connected_interface, veljumptype, fluxjumptype, smoothed_boundary_integration,nitsche_convflux,nitsche_convstab,nitsche_convpenalty);
     break;
 //    case DRT::Element::hex27:
 //      COMBUST::Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
 //          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet4:
 //      COMBUST::Sysmat<DRT::Element::tet4,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
 //          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
 //    break;
 //    case DRT::Element::tet10:
 //      COMBUST::Sysmat<DRT::Element::tet10,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, cstab, tautype, instationary, genalpha,
+//          material, timealgo, time, dt, theta, ga_alphaF, ga_alphaM, ga_gamma, newton, pstab, supg, graddiv, tautype, instationary, genalpha,
 //          combusttype, flamespeed, marksteinlength, nitschevel, nitschepres,surftensapprox);
 //    break;
     default:
@@ -1465,25 +1465,25 @@ void COMBUST::callNitscheErrors(
 //    case DRT::Element::hex20:
 //      COMBUST::Sysmat<DRT::Element::hex20,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//          material, timealgo, dt, theta, newton, pstab, supg, graddiv, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres);
 //    break;
 //    case DRT::Element::hex27:
 //      COMBUST::Sysmat<DRT::Element::hex27,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//          material, timealgo, dt, theta, newton, pstab, supg, graddiv, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres);
 //    break;
 //    case DRT::Element::tet4:
 //      COMBUST::Sysmat<DRT::Element::tet4,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//          material, timealgo, dt, theta, newton, pstab, supg, graddiv, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres);
 //    break;
 //    case DRT::Element::tet10:
 //      COMBUST::Sysmat<DRT::Element::tet10,XFEM::standard_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//          material, timealgo, dt, theta, newton, pstab, supg, graddiv, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres);
 //    break;
     default:
@@ -1501,25 +1501,25 @@ void COMBUST::callNitscheErrors(
 //    case DRT::Element::hex20:
 //      COMBUST::Sysmat<DRT::Element::hex20,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//          material, timealgo, dt, theta, newton, pstab, supg, graddiv, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres);
 //    break;
 //    case DRT::Element::hex27:
 //      COMBUST::Sysmat<DRT::Element::hex27,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//          material, timealgo, dt, theta, newton, pstab, supg, graddiv, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres);
 //    break;
 //    case DRT::Element::tet4:
 //      COMBUST::Sysmat<DRT::Element::tet4,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//          material, timealgo, dt, theta, newton, pstab, supg, graddiv, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres);
 //    break;
 //    case DRT::Element::tet10:
 //      COMBUST::Sysmat<DRT::Element::tet10,XFEM::xfem_assembly>(
 //          ele, ih, eleDofManager, mystate, estif, eforce,
-//          material, timealgo, dt, theta, newton, pstab, supg, cstab, tautype, instationary,
+//          material, timealgo, dt, theta, newton, pstab, supg, graddiv, tautype, instationary,
 //          combusttype, flamespeed, nitschevel, nitschepres);
 //    break;
     default:

@@ -68,7 +68,7 @@ WRITEFLUX                       totalflux_boundary
 MATID                           4
 --------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
 DEFINITION_TAU                  Franca_Valentin
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC

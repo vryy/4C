@@ -72,19 +72,6 @@ GAMMA 0.581 //0.83333333333 //0.611111111
 ALPHA_M 0.378 //0.0 //0.333333333
 ALPHA_F 0.459 //0.3333333333333 //0.444444444
 -------------------------------------------------------------CONTACT DYNAMIC
----------------------------------------------------------------FLUID DYNAMIC
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
-STABTYPE                        residual_based
-DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
-TDS                             quasistatic
-TRANSIENT                       no_transient
-PSPG                            yes_pspg
-SUPG                            yes_supg
-VSTAB                           no_vstab
-CSTAB                           cstab_qs
-CROSS-STRESS                    no_cross
-REYNOLDS-STRESS                 no_reynolds
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         1000.0
 TIMESTEP                        0.05

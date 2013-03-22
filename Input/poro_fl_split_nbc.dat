@@ -63,17 +63,17 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.01
 UPRES                           1
 LINEAR_SOLVER                   3
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-CSTAB                           no_cstab
+GRAD_DIV                           no
 DEFINITION_TAU                  Franca_Madureira_Valentin_Badia_Codina
 EVALUATION_MAT                  integration_point
 EVALUATION_TAU                  integration_point
-PSPG                            yes_pspg //yes_pspg no_pspg
+PSPG                            yes //yes no_pspg
 REYNOLDS-STRESS                 no_reynolds
 RSTAB                           rstab_gls //rstab_gls no_rstab
 STABTYPE                        residual_based //residual_based no_stabilization
-SUPG                            no_supg
+SUPG                            no
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab

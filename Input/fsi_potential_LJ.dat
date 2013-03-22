@@ -68,14 +68,14 @@ THETA                           0.66
 TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        0.05
 UPRES                           1
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    no_cross
-CSTAB                           cstab_qs
+GRAD_DIV                           yes
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
-PSPG                            yes_pspg
+PSPG                            yes
 REYNOLDS-STRESS                 no_reynolds
 STABTYPE                        residual_based
-SUPG                            yes_supg
+SUPG                            yes
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           no_vstab

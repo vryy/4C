@@ -99,15 +99,15 @@ MAXTIME                         3333
 NUMSTEP                         33
 TIMESTEP                        0.333
 NEUMANNINFLOW                   no
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes_pspg
-SUPG                            yes_supg
+PSPG                            yes
+SUPG                            yes
 VSTAB                           no_vstab
-CSTAB                           cstab_qs
+GRAD_DIV                           yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC

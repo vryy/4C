@@ -93,15 +93,15 @@ public:
   //! Flag to (de)activate time-dependent term in large-scale momentum equation
   INPAR::FLUID::Transient Transient(){return transient_;};
   //! Flag to (de)activate PSPG stabilization
-  INPAR::FLUID::PSPG PSPG(){return pspg_;};
+  bool PSPG(){return pspg_;};
   //! Flag to (de)activate SUPG stabilization
-  INPAR::FLUID::SUPG SUPG(){return supg_;};
+  bool SUPG(){return supg_;};
   //! Flag to (de)activate viscous term in residual-based stabilization
   INPAR::FLUID::VStab VStab(){return vstab_;};
   //! Flag to (de)activate reactive term in residual-based stabilization
   INPAR::FLUID::RStab RStab(){return rstab_;};
   //! Flag to (de)activate least-squares stabilization of continuity equation
-  INPAR::FLUID::CStab CStab(){return cstab_;};
+  bool CStab(){return graddiv_;};
   //! Flag to (de)activate cross-stress term -> residual-based VMM
   INPAR::FLUID::CrossStress Cross(){return cross_;};
   //! Flag to (de)activate Reynolds-stress term -> residual-based VMM
@@ -197,7 +197,7 @@ public:
   //! flag for material update
   bool UpdateMat(){return update_mat_;};
   //! flag to (de)activate continuity SUPG term
-  INPAR::FLUID::SUPG ContiSUPG(){return conti_supg_;};
+  bool ContiSUPG(){return conti_supg_;};
   //! flag to (de)activate continuity cross-stress term -> residual-based VMM
   INPAR::FLUID::CrossStress ContiCross(){return conti_cross_;};
   //! flag to (de)activate continuity Reynolds-stress term -> residual-based VMM
@@ -245,15 +245,15 @@ private:
   //! Flag to (de)activate time-dependent term in large-scale momentum equation
   INPAR::FLUID::Transient transient_;
   //! Flag to (de)activate PSPG stabilization
-  INPAR::FLUID::PSPG pspg_;
+  bool pspg_;
   //! Flag to (de)activate SUPG stabilization
-  INPAR::FLUID::SUPG supg_;
+  bool supg_;
   //! Flag to (de)activate viscous term in residual-based stabilization
   INPAR::FLUID::VStab vstab_;
   //! Flag to (de)activate reactive term in residual-based stabilization
   INPAR::FLUID::RStab rstab_;
   //! Flag to (de)activate least-squares stabilization of continuity equation
-  INPAR::FLUID::CStab cstab_;
+  bool graddiv_;
   //! Flag to (de)activate cross-stress term -> residual-based VMM
   INPAR::FLUID::CrossStress cross_;
   //! Flag to (de)activate Reynolds-stress term -> residual-based VMM
@@ -351,7 +351,7 @@ private:
   //! flag for material update
   bool update_mat_;
   //! flag to (de)activate continuity SUPG term
-  INPAR::FLUID::SUPG conti_supg_;
+  bool conti_supg_;
   //! flag to (de)activate continuity cross-stress term -> residual-based VMM
   INPAR::FLUID::CrossStress conti_cross_;
   //! flag to (de)activate continuity Reynolds-stress term -> residual-based VMM

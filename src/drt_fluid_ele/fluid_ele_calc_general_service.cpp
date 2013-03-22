@@ -949,7 +949,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   double eps_supg        = 0.0;
   double eps_cross       = 0.0;
   double eps_rey         = 0.0;
-  double eps_cstab       = 0.0;
+  double eps_graddiv       = 0.0;
   double eps_pspg        = 0.0;
 
   mean_res        .Clear();
@@ -1272,7 +1272,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     //---------------------------------------------------------------
 
     // dissipation by supg-stabilization
-    if (fldpara_->SUPG() == INPAR::FLUID::convective_stab_supg)
+    if (fldpara_->SUPG())
     {
       for (int rr=0;rr<nsd_;rr++)
       {
@@ -1303,7 +1303,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     }
 
     // dissipation by pspg-stabilization
-    if (fldpara_->PSPG() == INPAR::FLUID::pstab_use_pspg)
+    if (fldpara_->PSPG())
     {
       for (int rr=0;rr<nsd_;rr++)
       {
@@ -1312,9 +1312,9 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
     }
 
     // dissipation by continuity-stabilization
-    if (fldpara_->CStab() == INPAR::FLUID::continuity_stab_yes)
+    if (fldpara_->CStab())
     {
-      eps_cstab += fac_ * vdiv_ * tau_(2) * conres_old_;
+      eps_graddiv += fac_ * vdiv_ * tau_(2) * conres_old_;
     }
 
     //---------------------------------------------------------------
@@ -1766,7 +1766,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   eps_supg /= vol;
   eps_cross /= vol;
   eps_rey /= vol;
-  eps_cstab /= vol;
+  eps_graddiv /= vol;
   eps_pspg /= vol;
 
   RCP<std::vector<double> > incrvol           = params.get<RCP<std::vector<double> > >("incrvol"          );
@@ -1781,7 +1781,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   RCP<std::vector<double> > incr_eps_supg      = params.get<RCP<std::vector<double> > >("incr_eps_supg"    );
   RCP<std::vector<double> > incr_eps_cross     = params.get<RCP<std::vector<double> > >("incr_eps_cross"   );
   RCP<std::vector<double> > incr_eps_rey       = params.get<RCP<std::vector<double> > >("incr_eps_rey"     );
-  RCP<std::vector<double> > incr_eps_cstab     = params.get<RCP<std::vector<double> > >("incr_eps_cstab"   );
+  RCP<std::vector<double> > incr_eps_graddiv     = params.get<RCP<std::vector<double> > >("incr_eps_graddiv"   );
   RCP<std::vector<double> > incr_eps_pspg      = params.get<RCP<std::vector<double> > >("incr_eps_pspg"    );
 
   RCP<std::vector<double> > incrhk            = params.get<RCP<std::vector<double> > >("incrhk"           );
@@ -1878,7 +1878,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
   (*incr_eps_supg    )[nlayer] += eps_supg       ;
   (*incr_eps_cross   )[nlayer] += eps_cross      ;
   (*incr_eps_rey     )[nlayer] += eps_rey        ;
-  (*incr_eps_cstab   )[nlayer] += eps_cstab      ;
+  (*incr_eps_graddiv   )[nlayer] += eps_graddiv      ;
   (*incr_eps_pspg    )[nlayer] += eps_pspg       ;
 
   // averages of subgrid stress tensors
@@ -1930,7 +1930,7 @@ int DRT::ELEMENTS::FluidEleCalc<distype>::CalcDissipation(
       \param pspg             (i) boolean flag for stabilisation (pass-through)
       \param supg             (i) boolean flag for stabilisation (pass-through)
       \param vstab            (i) boolean flag for stabilisation (pass-through)
-      \param cstab            (i) boolean flag for stabilisation (pass-through)
+      \param graddiv            (i) boolean flag for stabilisation (pass-through)
       \param cross            (i) boolean flag for stabilisation (pass-through)
       \param reynolds         (i) boolean flag for stabilisation (pass-through)
       \param turb_mod_action  (i) selecting turbulence model (none, Smagorisky,

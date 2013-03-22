@@ -66,13 +66,13 @@ TIMEINTEGR                      One_Step_Theta
 TIMESTEP                        1
 NEUMANNINFLOW                   no
 LINEAR_SOLVER                   1
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        residual_based
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            yes_pspg
-SUPG                            yes_supg//yes_supg
-CSTAB no_cstab// cstab_qs//
+PSPG                            yes
+SUPG                            yes//yes
+GRAD_DIV no// yes//
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
 DEFINITION_TAU                  Taylor_Hughes_Zarins_Whiting_Jansen//Franca_Barrenechea_Valentin_Frey_Wall

@@ -55,14 +55,14 @@ UPRES                           4
 MESHTYING                       no
 INITIALFIELD                    BELTRAMI-FLOW
 CALCERROR                       beltrami_flow
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 CROSS-STRESS                    yes_cross
-CSTAB                           cstab_qs
+GRAD_DIV                           yes
 DEFINITION_TAU Taylor_Hughes_Zarins_Whiting_Jansen //Franca_Barrenechea_Valentin_Frey_Wall
-PSPG                            yes_pspg
+PSPG                            yes
 REYNOLDS-STRESS                 yes_reynolds
 STABTYPE                        residual_based
-SUPG                            yes_supg
+SUPG                            yes
 TDS                             quasistatic
 TRANSIENT                       no_transient
 VSTAB                           vstab_usfem

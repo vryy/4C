@@ -74,7 +74,7 @@ void SysmatTwoPhaseFlow(
     const bool                          newton,        ///< full Newton or fixed-point-like
     const bool                          pstab,         ///< flag for stabilization
     const bool                          supg,          ///< flag for stabilization
-    const bool                          cstab,         ///< flag for stabilization
+    const bool                          graddiv,         ///< flag for stabilization
     const INPAR::FLUID::TauType         tautype,       ///< stabilization parameter definition
     const bool                          instationary,  ///< switch between stationary and instationary formulation
     const bool                          genalpha,
@@ -807,7 +807,7 @@ void SysmatTwoPhaseFlow(
       COMBUST::BuildStandardDomainIntegrals<DISTYPE,ASSTYPE,NUMDOF,shpVecSize>(
          assembler, shpvel, shppres, fac, timefac, rhsfac, densaf, dynvisc,
          gpvelnp, pres, gpaccam, gradp, vderxy, rhsint, res_old, visc_old, enr_conv_c_, enr_conv_c_sg, enr_viscs2,
-         instationary, genalpha, newton, pstab, supg, cstab,
+         instationary, genalpha, newton, pstab, supg, graddiv,
          tau_stab_M, tau_stab_Mp, tau_stab_C);
 #else
 
@@ -1265,7 +1265,7 @@ void SysmatTwoPhaseFlow(
 
       //----------------------------------------------------------------------
       //                     STABILISATION, CONTINUITY PART
-      if(cstab)
+      if(graddiv)
       {
         const double timefac_timefac_tau_C=timefac*timefac*tau_stab_C * fac;
         const double timefac_timefac_tau_C_divunp=timefac_timefac_tau_C*(vderxy(0, 0)+vderxy(1, 1)+vderxy(2, 2));
@@ -1292,7 +1292,7 @@ void SysmatTwoPhaseFlow(
         assembler.template Vector<Velx>(shpvel.dx, -timefac_timefac_tau_C_divunp);
         assembler.template Vector<Vely>(shpvel.dy, -timefac_timefac_tau_C_divunp);
         assembler.template Vector<Velz>(shpvel.dz, -timefac_timefac_tau_C_divunp);
-      } // endif cstab
+      } // endif graddiv
 #endif
 
     } // end loop over gauss points

@@ -884,8 +884,6 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
   fluidtimeparams->set<bool>("GMSH_OUTPUT", DRT::INPUT::IntegralValue<bool>(fdyn,"GMSH_OUTPUT"));
   // flag for writing fluid field to gmsh
   fluidtimeparams->set<bool>("COMPUTE_DIVU", DRT::INPUT::IntegralValue<bool>(fdyn,"COMPUTE_DIVU"));
-  // flag for the display of the stabilization parameter
-  fluidtimeparams->set<bool>("DISPLAY_STAB", DRT::INPUT::IntegralValue<bool>(fdyn,"DISPLAY_STAB"));
 
   // ---------------------------------------------------- lift and
   // drag
@@ -914,9 +912,8 @@ void ADAPTER::FluidBaseAlgorithm::SetGeneralParameters(
       Teuchos::getIntegralValue<int>(fdyn,"CALCERROR"));
 
   // -----------------------sublist containing stabilization parameters
-  fluidtimeparams->sublist("STABILIZATION")                =fdyn.sublist("STABILIZATION");
-  fluidtimeparams->sublist("RESIDUAL-BASED-STABILIZATION") =fdyn.sublist("RESIDUAL-BASED-STABILIZATION");
-  fluidtimeparams->sublist("EDGE-BASED-STABILIZATION")     =fdyn.sublist("EDGE-BASED-STABILIZATION");
+  fluidtimeparams->sublist("RESIDUAL-BASED STABILIZATION") =fdyn.sublist("RESIDUAL-BASED STABILIZATION");
+  fluidtimeparams->sublist("EDGE-BASED STABILIZATION")     =fdyn.sublist("EDGE-BASED STABILIZATION");
 
   // -----------------------------get also scatra stabilization sublist
   const Teuchos::ParameterList& scatradyn =

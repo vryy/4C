@@ -700,11 +700,10 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
 void FLD::FluidImplicitTimeInt::Integrate()
 {
   // output of stabilization details
-  if ((myrank_==0) and (params_->get<bool>("DISPLAY_STAB")))
+  if (myrank_==0)
   {
-    Teuchos::ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
-    //Teuchos::ParameterList *  stabparams_residualbased  =&(params_->sublist("RESIDUAL-BASED-STABILIZATION"));
-    Teuchos::ParameterList *  stabparams_edgebased      =&(params_->sublist("EDGE-BASED-STABILIZATION"));
+    Teuchos::ParameterList *  stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
+    Teuchos::ParameterList *  stabparams_edgebased      =&(params_->sublist("EDGE-BASED STABILIZATION"));
 
     cout << "Stabilization type         : " << stabparams->get<std::string>("STABTYPE") << "\n";
     cout << "                             " << "Evaluation Tau  = " << stabparams->get<std::string>("EVALUATION_TAU") <<"\n";
@@ -727,18 +726,22 @@ void FLD::FluidImplicitTimeInt::Integrate()
           dserror("The quasistatic version of the residual-based stabilization currently does not support the incorporation of the transient term.");
         }
       }
-      cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
+
       cout <<  "                             " << "SUPG            = " << stabparams->get<string>("SUPG")           <<"\n";
       cout <<  "                             " << "PSPG            = " << stabparams->get<string>("PSPG")           <<"\n";
-      cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
-      cout <<  "                             " << "CSTAB           = " << stabparams->get<string>("CSTAB")          <<"\n";
+      cout <<  "                             " << "GRAD_DIV        = " << stabparams->get<string>("GRAD_DIV")          <<"\n";
       cout <<  "                             " << "CROSS-STRESS    = " << stabparams->get<string>("CROSS-STRESS")   <<"\n";
       cout <<  "                             " << "REYNOLDS-STRESS = " << stabparams->get<string>("REYNOLDS-STRESS")<<"\n";
-      cout << endl;
+      cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
+      cout <<  "                             " << "RSTAB           = " << stabparams->get<string>("RSTAB")          <<"\n";
+      cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
+      cout <<  "                             " << "Evaluation Mat  = " << stabparams->get<string>("EVALUATION_MAT") <<"\n";
       cout << "\n";
+      cout << endl;
     }
     else if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_edgebased)
     {
+      dserror("Edge-based stabilization for standard fluid problems not yet activated!");
       //---------------------------------------------------------------------------------------------
       cout << "\n\nEDGE-BASED (EOS) fluid stabilizations " << "\n";
 
@@ -748,8 +751,7 @@ void FLD::FluidImplicitTimeInt::Integrate()
       cout <<  "                    " << "EOS_DIV              = " << stabparams_edgebased->get<string>("EOS_DIV")      <<"\n";
       cout <<  "                    " << "EOS_DEFINITION_TAU   = " << stabparams_edgebased->get<string>("EOS_DEFINITION_TAU")      <<"\n";
       cout <<  "                    " << "EOS_H_DEFINITION     = " << stabparams_edgebased->get<string>("EOS_H_DEFINITION")      <<"\n";
-      cout << "+------------------------------------------------------------------------------------+" << endl;
-      cout << "\n";
+      cout << "+------------------------------------------------------------------------------------+\n" << endl;
     }
 
   }
@@ -1303,7 +1305,7 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
 
 #if 0
         // add edged-based stabilization, if selected
-        if(params_->sublist("STABILIZATION").get<std::string>("STABTYPE")=="edge_based")
+        if(params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("STABTYPE")=="edge_based")
         {
           if (timealgo_!=INPAR::FLUID::timeint_one_step_theta and timealgo_!=INPAR::FLUID::timeint_stationary)
             dserror("Other time integration schemes than OST currently not supported for edge-based stabilization!");
@@ -1733,16 +1735,6 @@ void FLD::FluidImplicitTimeInt::NonlinearSolve()
     // -------------------------------------------------------------------
     // update velocity and pressure values by increments
     // -------------------------------------------------------------------
-    // this is a temporary correction for the dynamic Smagorinsky model
-    // will be removed as soon as the solver settings are clarified
-    if (projector_ != Teuchos::null and turbmodel_==INPAR::FLUID::dynamic_smagorinsky)
-    {
-      // note: Krylov projection also affects Dirichet boundary conditions
-      //       depending on solver tolerances, increment is unequal to zero
-      //       this affects filtering at wall
-      // therefore: set increment at dirichlet boundary to zero
-      dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),incvel_);
-    }
     velnp_->Update(1.0,*incvel_,1.0);
 
     // -------------------------------------------------------------------
@@ -2063,16 +2055,6 @@ void FLD::FluidImplicitTimeInt::MultiCorrector()
     // -------------------------------------------------------------------
     // update within iteration
     // -------------------------------------------------------------------
-    // this is a temporary correction for the dynamic Smagorinsky model
-    // will be removed as soon as the solver settings are clarified
-    if (projector_ != Teuchos::null and turbmodel_==INPAR::FLUID::dynamic_smagorinsky)
-    {
-      // note: Krylov projection also affects Dirichet boundary conditions
-      //       depending on solver tolerances, increment is unequal to zero
-      //       this affects filtering at wall
-      // therefore: set increment at dirichlet boundary to zero
-      dbcmaps_->InsertCondVector(dbcmaps_->ExtractCondVector(zeros_),incvel_);
-    }
     IterUpdate(incvel_);
 
     // -------------------------------------------------------------------
@@ -3081,7 +3063,7 @@ void FLD::FluidImplicitTimeInt::Evaluate(Teuchos::RCP<const Epetra_Vector> vel)
 void FLD::FluidImplicitTimeInt::TimeUpdate()
 {
 
-  Teuchos::ParameterList *  stabparams=&(params_->sublist("STABILIZATION"));
+  Teuchos::ParameterList *  stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
 
   if(stabparams->get<std::string>("TDS") == "time_dependent")
   {
@@ -3468,7 +3450,7 @@ void FLD::FluidImplicitTimeInt::Output()
       // But never do this for step 0 (visualization of initial field) since
       // it would lead to writing the mesh twice for step 0
       // (FluidBaseAlgorithm already wrote the mesh) -> HDF5 writer will claim!
-      if ((step_!=0) and ((params_->sublist("STABILIZATION").get<std::string>("TDS")) != "quasistatic"))
+      if ((step_!=0) and ((params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("TDS")) != "quasistatic"))
         output_->WriteMesh(step_,time_);
 
       // also write impedance bc information if required
@@ -3517,7 +3499,7 @@ void FLD::FluidImplicitTimeInt::Output()
     // But never do this for step 0 (visualization of initial field) since
     // it would lead to writing the mesh twice for step 0
     // (FluidBaseAlgorithm already wrote the mesh) -> HDF5 writer will claim!
-    if ((step_!=0) and ((params_->sublist("STABILIZATION").get<std::string>("TDS")) != "quasistatic"))
+    if ((step_!=0) and ((params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("TDS")) != "quasistatic"))
       output_->WriteMesh(step_,time_);
 
     //only perform stress calculation when output is needed
@@ -3756,7 +3738,7 @@ void FLD::FluidImplicitTimeInt::ReadRestart(int step)
 
   // read the previously written elements including the history data
   // only avalaible+required for time-dependent subgrid scales!
-  if ((params_->sublist("STABILIZATION").get<std::string>("TDS")) != "quasistatic")
+  if ((params_->sublist("RESIDUAL-BASED STABILIZATION").get<std::string>("TDS")) != "quasistatic")
     reader.ReadMesh(step_);
 
   // also read impedance bc information if required
@@ -5941,9 +5923,8 @@ void FLD::FluidImplicitTimeInt::SetElementGeneralFluidParameter()
   eleparams.set<int>("Physical Type", physicaltype_);
 
   // parameter for stabilization
-  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
-  eleparams.sublist("RESIDUAL-BASED-STABILIZATION") = params_->sublist("RESIDUAL-BASED-STABILIZATION");
-  eleparams.sublist("EDGE-BASED-STABILIZATION") = params_->sublist("EDGE-BASED-STABILIZATION");
+  eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
+  eleparams.sublist("EDGE-BASED STABILIZATION") = params_->sublist("EDGE-BASED STABILIZATION");
 
   //set time integration scheme
   eleparams.set<int>("TimeIntegrationScheme", timealgo_);
@@ -6033,7 +6014,7 @@ void FLD::FluidImplicitTimeInt::SetElementLomaParameter()
   // set parameters to update material with subgrid-scale temperature
   // potential inclusion of additional subgrid-scale terms in continuity equation
   eleparams.sublist("LOMA") = params_->sublist("LOMA");
-  eleparams.sublist("STABILIZATION") = params_->sublist("STABILIZATION");
+  eleparams.sublist("RESIDUAL-BASED STABILIZATION") = params_->sublist("RESIDUAL-BASED STABILIZATION");
   eleparams.sublist("MULTIFRACTAL SUBGRID SCALES") = params_->sublist("MULTIFRACTAL SUBGRID SCALES");
 
   // call standard loop over elements

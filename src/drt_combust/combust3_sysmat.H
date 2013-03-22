@@ -81,7 +81,7 @@ namespace COMBUST
       const bool                              newton,
       const bool                              pstab,
       const bool                              supg,
-      const bool                              cstab,
+      const bool                              graddiv,
       const INPAR::FLUID::TauType             tautype,      ///< stabilization parameter definition
       const bool                              instationary,
       const bool                              genalpha,

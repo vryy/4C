@@ -94,26 +94,6 @@ LIFTDRAG                        no
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
-STABTYPE                        residual_based
-DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall
-TDS                             quasistatic
-TRANSIENT                       no_transient
-PSPG                            yes_pspg
-SUPG                            yes_supg
-VSTAB                           no_vstab
-CSTAB                           cstab_qs
-CROSS-STRESS                    no_cross
-REYNOLDS-STRESS                 no_reynolds
-----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
-TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
-PHYSICAL_MODEL                  no_model
-CANONICAL_FLOW                  no
-CHAN_AMPL_INIT_DIST             0.1
-HOMDIR                          xz
-SAMPLING_START                  0
-SAMPLING_STOP                   0
-DUMPING_PERIOD                  0
 -----------------------------------------------------------------FSI DYNAMIC
 MAXTIME                         1000.0
 TIMESTEP                        0.05

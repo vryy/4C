@@ -59,18 +59,18 @@ TIMEINTEGR One_Step_Theta //BDF2
 TIMESTEP                        0.01
 NEUMANNINFLOW                   no
 LINEAR_SOLVER                   1
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 STABTYPE                        edge_based                      // residual_based //
 DEFINITION_TAU                  Franca_Barrenechea_Valentin_Frey_Wall_wo_dt //Barrenechea_Franca_Valentin_Wall
 TDS                             quasistatic
 TRANSIENT                       no_transient
-PSPG                            no_pspg //yes_pspg
-SUPG                            no_supg //yes_supg//yes_supg
+PSPG no //yes
+SUPG no //yes//yes
 VSTAB                           no_vstab
-CSTAB                           no_cstab //cstab_qs
+GRAD_DIV no //yes
 CROSS-STRESS                    no_cross
 REYNOLDS-STRESS                 no_reynolds
---------------------------------------FLUID DYNAMIC/EDGE-BASED-STABILIZATION
+--------------------------------------FLUID DYNAMIC/EDGE-BASED STABILIZATION
 EOS_PRES                        std_eos // none, std_eos, xfem_gp
 EOS_CONV_STREAM                 std_eos // none, std_eos, xfem_gp
 EOS_CONV_CROSS                  none // none, std_eos, xfem_gp

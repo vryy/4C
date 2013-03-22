@@ -53,9 +53,9 @@ public:
   INPAR::TOPOPT::AdjointType AdjointType() {return adjoint_type_;}
   bool IsStationary() {return is_stationary_;}
   bool IsInconsistent() {return is_inconsistent_;}
-  INPAR::FLUID::PSPG PSPG() {return pspg_;}
-  INPAR::FLUID::SUPG SUPG() {return supg_;}
-  INPAR::FLUID::CStab CStab() {return cstab_;}
+  bool PSPG() {return pspg_;}
+  bool SUPG() {return supg_;}
+  bool CStab() {return graddiv_;}
   INPAR::FLUID::TauType TauType() {return whichtau_;}
   bool EvalMatAtGP() {return mat_gp_;}
   bool EvalTauAtGP() {return tau_gp_;}
@@ -102,11 +102,11 @@ private:
   //! flag to (de)activate second derivatives
   bool is_inconsistent_;
   //! Flag to (de)activate PSPG stabilization
-  INPAR::FLUID::PSPG pspg_;
+  bool pspg_;
   //! Flag to (de)activate SUPG stabilization
-  INPAR::FLUID::SUPG supg_;
+  bool supg_;
   //! Flag to (de)activate least-squares stabilization of continuity equation
-  INPAR::FLUID::CStab cstab_;
+  bool graddiv_;
   //! Flag to define tau
   INPAR::FLUID::TauType whichtau_;
   //! flag for material evaluation at Gaussian integration points

@@ -67,7 +67,7 @@ LIFTDRAG                        no
 ADAPTCONV                       Yes
 ADAPTCONV_BETTER                0.1
 SIMPLER                         No
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 TURBULENCE_APPROACH             DNS_OR_RESVMM_LES
 CANONICAL_FLOW time_averaging //for testing the time averaging possibility

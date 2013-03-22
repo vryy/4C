@@ -77,7 +77,7 @@ RESTARTEVRY                     1000
 TIMESTEP                        1.0
 UPRES                           1
 TEMPERATURE                     11.604506                       // abused as a scaling factor in order to have: F/RT = 100.0 -> F/RT\phi is the result stored in \phi
--------------------------------------------------FLUID DYNAMIC/STABILIZATION
+-------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
