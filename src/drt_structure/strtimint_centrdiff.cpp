@@ -261,6 +261,5 @@ void STR::TimIntCentrDiff::ReadRestartForce()
 /* write internal and external forces for restart */
 void STR::TimIntCentrDiff::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
 {
-  dserror("No restart ability for central differences time integrator!");
   return;
 }

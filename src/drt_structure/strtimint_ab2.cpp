@@ -268,6 +268,5 @@ void STR::TimIntAB2::ReadRestartForce()
 /* write internal and external forces for restart */
 void STR::TimIntAB2::WriteRestartForce(Teuchos::RCP<IO::DiscretizationWriter> output)
 {
-  dserror("No restart ability Adams-Bashforth 2nd order time integrator!");
   return;
 }
