@@ -729,8 +729,6 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
       // sure here the map stays alive as long as we keep our cache. Otherwise
       // subtle errors could occur.
       mapstack_.push_back(vec->Map());
-
-      cout << "size of mapstack  " << mapstack_.size() << endl;
     }
 
     if (dis_->Comm().MyPID() == 0)
