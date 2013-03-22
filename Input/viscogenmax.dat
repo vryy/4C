@@ -15,10 +15,10 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 ----------------------------------------------------------RESULT DESCRIPTION
-STRUCTURE DIS structure NODE 545 QUANTITY dispx VALUE 2.678278657e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 545 QUANTITY dispy VALUE -1.991502798e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 1641 QUANTITY dispx VALUE 5.578460279e-01 TOLERANCE 1e-6
-STRUCTURE DIS structure NODE 1641 QUANTITY dispy VALUE -1.499354638e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 545 QUANTITY dispx VALUE 2.47095224531976104e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 545 QUANTITY dispy VALUE -1.73151016707556449e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 1641 QUANTITY dispx VALUE 5.17766878985431167e-01 TOLERANCE 1e-6
+STRUCTURE DIS structure NODE 1641 QUANTITY dispy VALUE -1.28734335550616807e-01 TOLERANCE 1e-6
 -----------------------------------------------------------------IO
 ALE_DISP                        No
 FILESTEPS                       1000
@@ -141,6 +141,8 @@ UZAWAALGO                       direct
 UZAWAMAXITER                    50
 UZAWAPARAM                      1
 UZAWATOL                        1e-08
+-------------------------------------------------STRUCTURAL DYNAMIC/GENALPHA
+GENAVG                          TrLike
 ----------------------------------------------------------MATERIALS
 //Law E
 MAT 1   MAT_ViscoGenMax   NUMMAT 3 MATIDS 2 3 4 DENS 0.0002 GAMMA 0 RELAX_ISOT_PRINC 0 BETA_ISOT_PRINC 1.0 RELAX_ISOT_MOD_VOL 0.1 BETA_ISOT_MOD_VOL 1.0 RELAX_ISOT_MOD_ISOC 0.1 BETA_ISOT_MOD_ISOC 1.0 RELAX_ANISOT_PRINC 0 BETA_ANISOT_PRINC 0 INIT_MODE -1
