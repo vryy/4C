@@ -45,7 +45,6 @@ THETA_DIV                       1
 THETA_PRES                      1
 ------------------------------------------------------FLUID DYNAMIC
 CONVTOL                         1e-10
-DISPLAY_STAB                    No
 INFNORMSCALING                  no
 INITIALFIELD                    zero_field // field_by_function
 INITSTATITEMAX                  5

@@ -713,7 +713,6 @@ void FLD::FluidImplicitTimeInt::Integrate()
 
     if(DRT::INPUT::IntegralValue<INPAR::FLUID::StabType>(*stabparams, "STABTYPE") == INPAR::FLUID::stabtype_residualbased)
     {
-      cout << "RESIDUAL-BASED fluid stabilization " << "\n";
 
       cout << "                             " << stabparams->get<std::string>("TDS")<< "\n";
       cout << "\n";

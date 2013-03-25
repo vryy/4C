@@ -220,7 +220,7 @@ TIMESTEP                        0.01
 UPRES                           1
 //
 --------------------------FLUID DYNAMIC/MULTIFRACTAL SUBGRID SCALES
-----------------------------------------FLUID DYNAMIC/STABILIZATION
+----------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
 //
 // Flag to (de)activate cross-stress term -> residual-based VMM.
 //     no_cross,yes_cross,cross_rhs
@@ -228,7 +228,7 @@ CROSS-STRESS                    no_cross
 //
 // Flag to (de)activate least-squares stabilization of continuity equation.
 //     no_cstab,cstab_qs
-CSTAB                           cstab_qs
+GRAD_DIV                           yes
 //
 // Definition of tau_M and Tau_C
 //     Taylor_Hughes_Zarins
@@ -266,11 +266,11 @@ LOMA_CONTI_REYNOLDS_STRESS      no_reynolds
 //
 // Flag to (de)activate SUPG-term in loma continuity equation.
 //     no_supg,yes_supg
-LOMA_CONTI_SUPG                 no_supg
+LOMA_CONTI_SUPG                 no
 //
 // Flag to (de)activate PSPG.
 //     no_pspg,yes_pspg
-PSPG                            yes_pspg
+PSPG                            yes
 //
 // Flag to (de)activate Reynolds-stress term -> residual-based VMM.
 //     no_reynolds,yes_reynolds,reynolds_rhs
@@ -286,7 +286,7 @@ STABTYPE                        residual_based
 //
 // Flag to (de)activate SUPG.
 //     no_supg,yes_supg
-SUPG                            yes_supg
+SUPG                            yes
 //
 // Flag to allow time dependency of subscales for residual-based stabilization.
 //     quasistatic,time_dependent

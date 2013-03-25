@@ -317,6 +317,25 @@ void DRT::ELEMENTS::FluidEleParameter::SetElementGeneralFluidParameter( Teuchos:
       if (rstab_ == INPAR::FLUID::reactive_stab_usfem)    viscreastabfac_ = -1.0;
       else if (rstab_ == INPAR::FLUID::reactive_stab_gls) viscreastabfac_ =  1.0;
     }
+
+    // case of xfem check whether additional xfem-stabilization terms in the form of
+    // edge-based terms are activated (i.e., ghost penalties)
+    if (stablist_edgebased.get<string>("EOS_PRES") == "xfem_gp" or
+        stablist_edgebased.get<string>("EOS_CONV_STREAM") == "xfem_gp" or
+        stablist_edgebased.get<string>("EOS_CONV_CROSS") == "xfem_gp" or
+        stablist_edgebased.get<string>("EOS_DIV") == "xfem_gp")
+    {
+        EOS_pres_         = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Pres>(stablist_edgebased,"EOS_PRES");
+        EOS_conv_stream_  = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Stream>(stablist_edgebased,"EOS_CONV_STREAM");
+        EOS_conv_cross_   = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Conv_Cross>(stablist_edgebased,"EOS_CONV_CROSS");
+        EOS_div_          = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_Div>(stablist_edgebased,"EOS_DIV");
+
+        EOS_whichtau_       = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_TauType>(stablist_edgebased, "EOS_DEFINITION_TAU");
+    }
+    // setting the EOS element length outside of the if-statement is not very beautiful,
+    // but there is an input parameter in the XFEM STABILIZATION section, which requires that
+    // this parameter has been set
+    EOS_element_lenght_ = DRT::INPUT::IntegralValue<INPAR::FLUID::EOS_ElementLength>(stablist_edgebased, "EOS_H_DEFINITION");
   }
   else if (stabtype_ == INPAR::FLUID::stabtype_edgebased)
   {
