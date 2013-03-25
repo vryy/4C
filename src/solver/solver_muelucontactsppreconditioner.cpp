@@ -112,9 +112,14 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     int maxLevels = 3;
     int verbosityLevel = 10;
     int maxCoarseSize = 100;
+    int minPerAgg = 9;       // optimal for 2d
+    int maxNbrAlreadySelected = 0;
+    std::string agg_type = "Uncoupled";
     if(mllist_.isParameter("max levels")) maxLevels = mllist_.get<int>("max levels");
     if(mllist_.isParameter("ML output"))  verbosityLevel = mllist_.get<int>("ML output");
     if(mllist_.isParameter("coarse: max size")) maxCoarseSize = mllist_.get<int>("coarse: max size");
+    if(mllist_.isParameter("aggregation: type"))               agg_type            = mllist_.get<std::string> ("aggregation: type");
+    if(mllist_.isParameter("aggregation: nodes per aggregate"))minPerAgg           = mllist_.get<int>("aggregation: nodes per aggregate");
 
     // translate verbosity parameter
     Teuchos::EVerbosityLevel eVerbLevel = Teuchos::VERB_NONE;
@@ -223,16 +228,11 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
 
     // prepare aggCoarseStat
     // TODO rebuild node-based map
-    // still problematich for reparitioning
+    // still problematic for repartitioning
     Teuchos::ArrayRCP<unsigned int> aggStat;
     if(nDofRows > 0) aggStat = Teuchos::arcp<unsigned int>(nDofRows/numdf);
     for(LocalOrdinal i=0; i<nDofRows; ++i) {
       aggStat[i/numdf] = MueLu::NodeStats::READY;
-      /*GlobalOrdinal grid = strMap1->getGlobalElement(i);
-      if(xSlaveDofMap->isNodeGlobalElement(grid))
-        aggStat[i/numdf] = MueLu::NodeStats::ONEPT;
-      if(xMasterDofMap->isNodeGlobalElement(grid))
-        aggStat[i/numdf] = MueLu::NodeStats::ONEPT;*/
     }
 
     ///////////////////////////////////////////////////////////////////////
@@ -261,9 +261,15 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     Teuchos::RCP<CoalesceDropFactory> dropFact11 = Teuchos::rcp(new CoalesceDropFactory(/*A11Fact,amalgFact11*/));
     //dropFact11->setDefaultVerbLevel(Teuchos::VERB_EXTREME);
     Teuchos::RCP<UncoupledAggregationFactory> UCAggFact11 = Teuchos::rcp(new UncoupledAggregationFactory(/*dropFact11*/));
-    UCAggFact11->SetMinNodesPerAggregate(9); // 9
-    UCAggFact11->SetMaxNeighAlreadySelected(1);
-    UCAggFact11->SetOrdering(MueLu::AggOptions::GRAPH);
+    //UCAggFact11->SetMinNodesPerAggregate(9); // 9
+    //UCAggFact11->SetMaxNeighAlreadySelected(1);
+    //UCAggFact11->SetOrdering(MueLu::AggOptions::GRAPH);
+
+    UCAggFact11->SetParameter("MaxNeighAlreadySelected",Teuchos::ParameterEntry(maxNbrAlreadySelected));
+    UCAggFact11->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(minPerAgg));
+    UCAggFact11->SetParameter("Ordering",Teuchos::ParameterEntry(MueLu::AggOptions::GRAPH));
+
+
     Teuchos::RCP<TentativePFactory> Ptent11Fact = Teuchos::rcp(new TentativePFactory(/*UCAggFact11,amalgFact11*/)); // check me
     Teuchos::RCP<TentativePFactory> P11Fact = Ptent11Fact;
     Teuchos::RCP<TransPFactory> R11Fact = Teuchos::rcp(new TransPFactory());
@@ -325,10 +331,10 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
 
     // use tentative prolongation operator (prolongation operator smoothing doesn't make sense since
     // the A11 block is not valid for smoothing)
-    Teuchos::RCP<TentativePFactory> P22Fact = Teuchos::rcp(new TentativePFactory(/*UCAggFact22, amalgFact22*/));
+    Teuchos::RCP<TentativePFactory> P22Fact = Teuchos::rcp(new TentativePFactory());
     Teuchos::RCP<TransPFactory> R22Fact = Teuchos::rcp(new TransPFactory());
     R22Fact->SetFactory("P",P22Fact);
-    Teuchos::RCP<NullspaceFactory> nspFact22 = Teuchos::rcp(new NullspaceFactory("Nullspace2"/*,P22Fact*/));
+    Teuchos::RCP<NullspaceFactory> nspFact22 = Teuchos::rcp(new NullspaceFactory("Nullspace2"));
     nspFact22->SetFactory("Nullspace2",P22Fact);
     Teuchos::RCP<BlockedCoarseMapFactory> coarseMapFact22 = Teuchos::rcp(new BlockedCoarseMapFactory(coarseMapFact11,UCAggFact22,nspFact22));
     coarseMapFact22->setStridingData(stridingInfo2);
