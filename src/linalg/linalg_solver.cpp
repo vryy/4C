@@ -70,6 +70,8 @@ Maintainer: Michael Gee
 #include <Teuchos_StandardParameterEntryValidators.hpp>
 #include <EpetraExt_Transpose_RowMatrix.h>
 
+#include "../drt_lib/drt_globalproblem.H"  // access global problem. can we avoid this?
+
 #include "../solver/solver_directsolver.H"
 #include "../solver/solver_aztecsolver.H"
 #include "../solver/solver_stratimikossolver.H"
@@ -869,6 +871,16 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
       smolevelsublist.set("smoother: type"                        ,"Amesos-Superludist");
       break;
 #endif
+    case 10: // Braess-Sarazin smoother (only for MueLu with BlockedOperators)
+    {
+      smolevelsublist.set("smoother: type"                        ,"Braess-Sarazin");
+      smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
+      smolevelsublist.set("smoother: damping factor"              ,damp);
+      Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
+      SchurCompList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+      //std::cout << mllist << std::endl;
+    }
+    break;
     default: dserror("Unknown type of smoother for ML: tuple %d",type); break;
     } // switch (type)
   } // for (int i=0; i<azvar->mlmaxlevel-1; ++i)
@@ -940,6 +952,16 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
   case 6:
     mllist.set("coarse: type","Amesos-Superludist");
     break;
+  case 10: // Braess-Sarazin smoother (only for MueLu with BlockedOperators)
+  {
+    mllist.set("coarse: type","Braess-Sarazin");
+    mllist.set("coarse: sweeps"        ,mlsmotimessteps[coarse]);
+    mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
+    Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
+    SchurCompList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+    //std::cout << mllist << std::endl;
+  }
+  break;
   default: dserror("Unknown type of coarse solver for ML"); break;
   } // switch (azvar->mlsmotype_coarse)
   // default values for nullspace
@@ -1517,9 +1539,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateSolverParameters(const Teu
       muelulist = LINALG::Solver::TranslateBACIToML(inparams,&azlist);         // MueLu reuses the ML parameter list
       muelulist.set("MueLu: Prec Type", "ContactSP"); // not used?
       // append AMGBS information
-      muelulist.set("amgbs: prolongator smoother (vel)",inparams.get<std::string>("AMGBS_PSMOOTHER_VEL"));
-      muelulist.set("amgbs: prolongator smoother (pre)",inparams.get<std::string>("AMGBS_PSMOOTHER_PRE"));
-      std::cout << muelulist << std::endl;
+      //muelulist.set("amgbs: prolongator smoother (vel)",inparams.get<std::string>("AMGBS_PSMOOTHER_VEL"));
+      //muelulist.set("amgbs: prolongator smoother (pre)",inparams.get<std::string>("AMGBS_PSMOOTHER_PRE"));
     }
     if (azprectyp == INPAR::SOLVER::azprec_MueLuAMG_contactPen)
     {
