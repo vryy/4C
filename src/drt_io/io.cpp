@@ -729,6 +729,15 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
       // sure here the map stays alive as long as we keep our cache. Otherwise
       // subtle errors could occur.
       mapstack_.push_back(vec->Map());
+      // BUT: If a problem relies on FillComplete()-calls in every time step, new maps are created in
+      // every time step. Storing all old maps in mapstack_ leads to an unbounded increase in
+      // memory consumption which has to be strictly avoided.
+      // Remedy: ClearMapCache() can be called to get rid of old maps when too many are stored.
+      // The following limit of 20 is somehow arbitrary and could be increased. The basic idea is:
+      // 3 maps (dofrow, noderow and elerow) per field involved in the problem plus some more in
+      // case mapstack_ is not cleared after each time step
+      if(mapstack_.size() > 20)
+        dserror("Careful! Due to repeated FillComplete()-calls many maps are stored in the output process.");
     }
 
     if (dis_->Comm().MyPID() == 0)
@@ -834,6 +843,15 @@ void IO::DiscretizationWriter::WriteVector(const std::string name,
       // sure here the map stays alive as long as we keep our cache. Otherwise
       // subtle errors could occur.
       mapstack_.push_back(elemap);
+      // BUT: If a problem relies on FillComplete()-calls in every time step, new maps are created in
+      // every time step. Storing all old maps in mapstack_ leads to an unbounded increase in
+      // memory consumption which has to be strictly avoided.
+      // Remedy: ClearMapCache() can be called to get rid of old maps when too many are stored.
+      // The following limit of 20 is somehow arbitrary and could be increased. The basic idea is:
+      // 3 maps (dofrow, noderow and elerow) per field involved in the problem plus some more in
+      // case mapstack_ is not cleared after each time step
+      if(mapstack_.size() > 20)
+        dserror("Careful! Due to repeated FillComplete()-calls many maps are stored in the output process.");
     }
 
     if (dis_->Comm().MyPID() == 0)
