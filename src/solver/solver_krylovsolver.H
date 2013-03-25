@@ -150,12 +150,12 @@ class KrylovSolver : public SolverType
   /*! @brief Count number of zeros on diagonal of input matrix */
   int CountZerosOnDiagonalEpetra(const Teuchos::RCP<Epetra_CrsMatrix>& A);
   /*! @brief Count number of zeros on diagonal of input matrix */
-  int CountZerosOnDiagonal(const Teuchos::RCP<const Matrix>& xOp);
+  int CountZerosOnDiagonal(const Teuchos::RCP<const Xpetra::Matrix<double, int, int> >& xOp);
 
   /*! @brief Returns map with global row ids of rows with absolute value < tolerance on the diagonal of matrix A */
   Teuchos::RCP<Map> FindZeroDiagonalEntries(const Teuchos::RCP<Epetra_CrsMatrix>& A, double tolerance = 1e-5);
   /*! @brief Returns map with global row ids of rows with absolute value < tolerance on the diagonal of matrix A */
-  Teuchos::RCP<Map> FindZeroDiagonalEntries(const Teuchos::RCP<Matrix>& xA, double tolerance = 1e-5);
+  Teuchos::RCP<Map> FindZeroDiagonalEntries(const Teuchos::RCP<Xpetra::Matrix<double, int, int> >& xA, double tolerance = 1e-5);
 
   /*! @brief Returns map with non-diagonal dominant rows of matrix A.
    *
@@ -168,7 +168,7 @@ class KrylovSolver : public SolverType
    *  - if the row is a zero row (-> singular matrix) we divide zero by zero
    * */
   Teuchos::RCP<Map> FindNonDiagonalDominantRows(const Teuchos::RCP<Epetra_CrsMatrix>& A, double diagDominanceRatio = 1.0);
-  Teuchos::RCP<Map> FindNonDiagonalDominantRows(const Teuchos::RCP<Matrix>& xA, double diagDominanceRatio = 1.0);
+  Teuchos::RCP<Map> FindNonDiagonalDominantRows(const Teuchos::RCP<Xpetra::Matrix<double, int, int> >& xA, double diagDominanceRatio = 1.0);
 
   /*! @brief if true, the linear solver is allowed to decide to solve a permuted linear system (default: false)*/
   bool bAllowPermutation_;

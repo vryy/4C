@@ -138,16 +138,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     ///////////////////////////////////////////////////////////////////////
     Teuchos::RCP<const Teuchos::Comm<int> > comm = Xpetra::toXpetra(A->RangeMap(0).Comm());
 
-#if 0
-    ///////////////////////////////////////////////////////////////////////
-    // get contact information
-    ///////////////////////////////////////////////////////////////////////
-    //Teuchos::RCP<Epetra_Map> epMasterDofMap = mllist_.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::MasterDofMap");
-    Teuchos::RCP<Epetra_Map> epSlaveDofMap  = mllist_.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::SlaveDofMap");
-    //Teuchos::RCP<Epetra_Map> epActiveDofMap = mllist_.get<Teuchos::RCP<Epetra_Map> >("LINALG::SOLVER::MueLu_ContactPreconditioner::ActiveDofMap");
-    Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
-    //Teuchos::RCP<Xpetra::EpetraMap> xMasterDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epMasterDofMap  ));
-#else
+
     // extract additional maps from parameter list
     // these maps are provided by the STR::TimInt::PrepareContactMeshtying routine, that
     // has access to the contact manager class
@@ -172,7 +163,6 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
 
     // transform epetra to xpetra
     Teuchos::RCP<Xpetra::EpetraMap> xSlaveDofMap   = Teuchos::rcp(new Xpetra::EpetraMap( epSlaveDofMap  ));
-#endif
 
     ///////////////////////////////////////////////////////////////////////
     // prepare maps for blocked operator
@@ -361,7 +351,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     ///////////////////////////////////////////////////////////////////////
     // define block transfer operators
     ///////////////////////////////////////////////////////////////////////
-    Teuchos::RCP<BlockedPFactory> PFact = Teuchos::rcp(new BlockedPFactory(Teuchos::null)); // use row map index base from bOp
+    Teuchos::RCP<BlockedPFactory> PFact = Teuchos::rcp(new BlockedPFactory()); // use row map index base from bOp
     PFact->AddFactoryManager(M11);
     PFact->AddFactoryManager(M22);
 
@@ -453,8 +443,9 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 
   const Teuchos::ParameterList smolevelsublist = paramList.sublist("smoother: list " + levelstr);
 
-  if (type != "symmetric Gauss-Seidel") {
-    TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: Please set the ML_SMOOTHERCOARSE, ML_SMOOTHERMED and ML_SMOOTHERFINE parameters to SGS in your dat file. Other smoother options are not accepted. \n Note: In fact we're using only the ML_DAMPFINE, ML_DAMPMED, ML_DAMPCOARSE as well as the ML_SMOTIMES parameters for Braess-Sarazin.");
+  //if (type != "symmetric Gauss-Seidel") {
+  if (type != "Braess-Sarazin") {
+    TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: Please set the ML_SMOOTHERCOARSE, ML_SMOOTHERMED and ML_SMOOTHERFINE parameters to BS in your dat file. Other smoother options are not accepted. \n Note: In fact we're using only the ML_DAMPFINE, ML_DAMPMED, ML_DAMPCOARSE as well as the ML_SMOTIMES parameters for Braess-Sarazin.");
   }
 
   //smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, 0, AFact) );*/
@@ -468,15 +459,9 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(sweeps,omega)); // append SC smoother information
 
   // define SchurComplement solver
-  Teuchos::ParameterList SCList;
-  SCList.set("relaxation: sweeps", (LO) 10);
-  SCList.set("relaxation: damping factor", (SC) 0.6);
-  SCList.set("relaxation: type", "Gauss-Seidel");
-  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp(new TrilinosSmoother("RELAXATION",SCList,0,SFact));
-  //Teuchos::RCP<SmootherPrototype> smoProtoSC = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("ILU", SCList,0,SFact);
-  //Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp( new DirectSolver("Klu"/*"Umfpack"*/,Teuchos::ParameterList()) );
-  smoProtoSC->SetFactory("A",SFact);
-  Teuchos::RCP<SmootherFactory> SmooSCFact = Teuchos::rcp(new SmootherFactory(smoProtoSC));
+  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
+  const Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
+  Teuchos::RCP<SmootherFactory> SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,SFact);
 
   // setup local factory manager for SchurComplementFactory
   Teuchos::RCP<FactoryManager> MB = Teuchos::rcp(new FactoryManager());
@@ -509,39 +494,30 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   sprintf(levelchar,"(level %d)",level);
   std::string levelstr(levelchar);
 
-  if(paramList.isSublist("smoother: list " + levelstr)==false)
-    return Teuchos::null;
-  TEUCHOS_TEST_FOR_EXCEPTION(paramList.isSublist("smoother: list " + levelstr)==false, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: no ML smoother parameter list for coarsest level. error.");
+  std::string type = paramList.get<std::string>("coarse: type");
+  TEUCHOS_TEST_FOR_EXCEPTION(type.empty(), MueLu::Exceptions::RuntimeError, "MueLu::ContactSpPreconditioner: no ML smoother type for coarsest level. error.");
 
-  std::string type = paramList.sublist("smoother: list " + levelstr).get<std::string>("smoother: type");
-  TEUCHOS_TEST_FOR_EXCEPTION(type.empty(), MueLu::Exceptions::RuntimeError, "MueLu::ContactSpPreconditioner: no ML smoother type for level. error.");
-
-  const Teuchos::ParameterList smolevelsublist = paramList.sublist("smoother: list " + levelstr);
-
-  if (type != "symmetric Gauss-Seidel") {
-    TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: Please set the ML_SMOOTHERCOARSE, ML_SMOOTHERMED and ML_SMOOTHERFINE parameters to SGS in your dat file. Other smoother options are not accepted. \n Note: In fact we're using only the ML_DAMPFINE, ML_DAMPMED, ML_DAMPCOARSE as well as the ML_SMOTIMES parameters for Braess-Sarazin.");
+  if (type != "Braess-Sarazin") {
+    TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: Please set the ML_SMOOTHERCOARSE, ML_SMOOTHERMED and ML_SMOOTHERFINE parameters to BS in your dat file. Other smoother options are not accepted. \n Note: In fact we're using only the ML_DAMPFINE, ML_DAMPMED, ML_DAMPCOARSE as well as the ML_SMOTIMES parameters for Braess-Sarazin.");
   }
 
+  const Teuchos::ParameterList smolevelsublist = paramList;
+
   //smooProto = Teuchos::rcp( new MueLu::MyTrilinosSmoother<Scalar,LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>("SlaveDofMap", MueLu::NoFactory::getRCP(), ifpackType, ifpackList, 0, AFact) );*/
-  Scalar omega = smolevelsublist.get<double>("smoother: damping factor");   // Braess-Sarazin damping/scaling factor
-  int sweeps   = smolevelsublist.get<int>("smoother: sweeps");
+  Scalar omega = smolevelsublist.get<double>("coarse: damping factor");   // Braess-Sarazin damping/scaling factor
+  int sweeps   = smolevelsublist.get<int>("coarse: sweeps");
 
   // create SchurComp factory (SchurComplement smoother is provided by local FactoryManager)
+  std::cout << paramList << std::endl;
   Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory());
   SFact->SetParameter("omega", Teuchos::ParameterEntry(omega));
   SFact->SetFactory("A",MueLu::NoFactory::getRCP());
   Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(sweeps,omega)); // append SC smoother information
 
   // define SchurComplement solver
-  /*Teuchos::ParameterList SCList;
-  SCList.set("relaxation: sweeps", (LO) 10);
-  SCList.set("relaxation: damping factor", (SC) 0.6);
-  SCList.set("relaxation: type", "Gauss-Seidel");
-  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp(new TrilinosSmoother("RELAXATION",SCList,0,SFact));*/
-  //Teuchos::RCP<SmootherPrototype> smoProtoSC = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("ILU", SCList,0,SFact);
-  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::rcp( new DirectSolver("Klu"/*"Umfpack"*/,Teuchos::ParameterList()) );
-  smoProtoSC->SetFactory("A",SFact);
-  Teuchos::RCP<SmootherFactory> SmooSCFact = Teuchos::rcp(new SmootherFactory(smoProtoSC));
+  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
+  const Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("coarse: SchurComp list");
+  Teuchos::RCP<SmootherFactory> SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,SFact);
 
   // setup local factory manager for SchurComplementFactory
   Teuchos::RCP<FactoryManager> MB = Teuchos::rcp(new FactoryManager());
@@ -565,6 +541,33 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   }
 
   return SmooFact;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::InterpretBACIList2MueLuSmoother(const Teuchos::ParameterList& paramList, Teuchos::RCP<FactoryBase> AFact)
+{
+  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
+  std::string type = paramList.get<std::string>("solver");
+  if(type == "umfpack") {
+    smoProtoSC = Teuchos::rcp( new DirectSolver("Klu" /*"Umfpack"*/,Teuchos::ParameterList()) );
+  } else if(type == "aztec") {
+    std::string prectype = paramList.sublist("Aztec Parameters").get<std::string>("Preconditioner Type");
+    if(prectype == "ILU") {
+      Teuchos::ParameterList SCList;
+      SCList.set<int>("fact: level-of-fill", 0);
+      smoProtoSC = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("ILU", SCList,0,AFact);
+    } else if (prectype == "point relaxation") {
+      const Teuchos::ParameterList & ifpackParameters =  paramList.sublist("IFPACK Parameters");
+      smoProtoSC = Teuchos::rcp(new TrilinosSmoother("RELAXATION",ifpackParameters,0,AFact));
+    } else TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: unknown type for SchurComplement smoother (IFPACK based)");
+
+  } else {
+    TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: unknown type for SchurComplement solver/smoother");
+  }
+  smoProtoSC->SetFactory("A",AFact);
+  Teuchos::RCP<SmootherFactory> SmooSCFact = Teuchos::rcp(new SmootherFactory(smoProtoSC));
+  return SmooSCFact;
 }
 
 #endif //#ifdef HAVE_Trilinos_Q1_2013
