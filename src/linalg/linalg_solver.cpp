@@ -878,12 +878,13 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
       smolevelsublist.set("smoother: damping factor"              ,damp);
       Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
       SchurCompList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
-      //std::cout << mllist << std::endl;
     }
+    break;
     case 11: // SIMPLE smoother  (only for MueLu with BlockedOperators)
     case 12: // SIMPLEC smoother (only for MueLu with BlockedOperators)
     {
-      // TODO
+      if(type == 11)         smolevelsublist.set("smoother: type","SIMPLE");
+      else if(type == 12)    smolevelsublist.set("smoother: type","SIMPLEC");
       smolevelsublist.set("smoother: type"                        ,"SIMPLE");
       smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
       smolevelsublist.set("smoother: damping factor"              ,damp);
@@ -971,17 +972,17 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
     mllist.set("coarse: damping factor",inparams.get<double>("ML_DAMPCOARSE"));
     Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
     SchurCompList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
-    //std::cout << mllist << std::endl;
   }
   break;
   case 11: // SIMPLE smoother  (only for MueLu with BlockedOperators)
   case 12: // SIMPLEC smoother (only for MueLu with BlockedOperators)
   {
-    // TODO
-    mllist.set("smoother: type"                        ,"SIMPLE");
-    mllist.set("smoother: sweeps"                      ,mlsmotimessteps[coarse]);
-    mllist.set("smoother: damping factor"              ,inparams.get<double>("ML_DAMPCOARSE"));
-    Teuchos::ParameterList& predictList = mllist.sublist("smoother: Predictor list");
+    int type = DRT::INPUT::IntegralValue<int>(inparams,"ML_SMOOTHERCOARSE");
+    if(type == 11)         mllist.set("coarse: type"                        ,"SIMPLE");
+    else if(type == 12)    mllist.set("coarse: type"                        ,"SIMPLEC");
+    mllist.set("coarse: sweeps"                      ,mlsmotimessteps[coarse]);
+    mllist.set("coarse: damping factor"              ,inparams.get<double>("ML_DAMPCOARSE"));
+    Teuchos::ParameterList& predictList = mllist.sublist("coarse: Predictor list");
     predictList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
     Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
     SchurCompList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));

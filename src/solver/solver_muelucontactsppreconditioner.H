@@ -62,11 +62,23 @@ namespace LINALG
       virtual const std::string getParameterListName() const { return "MueLu (Contact) Parameters"; } // TODO check me
     private:
 
+      //! function interprets ML parameter lists
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetBlockSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact);
+
+      //! function interprets ML parameter lists for creating a SIMPLE level smoother
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetSIMPLESmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact);
+
       //! function interprets ML parameter lists for creating a Braess Sarazin level smoother
       Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetBraessSarazinSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact);
 
       //! function interprets coarse ML parameter list
-      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetCoarsestBraessSarazinSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact);
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetCoarsestBlockSmootherFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact);
+
+      //! function interprets coarse ML parameter list for creating a SIMPLE level smoother
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetCoarsestSIMPLESmootherFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact);
+
+      //! function interprets coarse ML parameter list for creating a Braess Sarazin level smoother
+      Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > GetCoarsestBraessSarazinSmootherFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact);
 
       //! function interprets ML parameter lists for creating a Braess Sarazin level smoother
       Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > InterpretBACIList2MueLuSmoother(const Teuchos::ParameterList& paramList, Teuchos::RCP<FactoryBase> AFact);
