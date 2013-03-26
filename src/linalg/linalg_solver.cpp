@@ -880,6 +880,18 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
       SchurCompList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
       //std::cout << mllist << std::endl;
     }
+    case 11: // SIMPLE smoother  (only for MueLu with BlockedOperators)
+    case 12: // SIMPLEC smoother (only for MueLu with BlockedOperators)
+    {
+      // TODO
+      smolevelsublist.set("smoother: type"                        ,"SIMPLE");
+      smolevelsublist.set("smoother: sweeps"                      ,mlsmotimessteps[i]);
+      smolevelsublist.set("smoother: damping factor"              ,damp);
+      Teuchos::ParameterList& predictList = smolevelsublist.sublist("smoother: Predictor list");
+      predictList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+      Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
+      SchurCompList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
+    }
     break;
     default: dserror("Unknown type of smoother for ML: tuple %d",type); break;
     } // switch (type)
@@ -960,6 +972,19 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
     Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
     SchurCompList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
     //std::cout << mllist << std::endl;
+  }
+  break;
+  case 11: // SIMPLE smoother  (only for MueLu with BlockedOperators)
+  case 12: // SIMPLEC smoother (only for MueLu with BlockedOperators)
+  {
+    // TODO
+    mllist.set("smoother: type"                        ,"SIMPLE");
+    mllist.set("smoother: sweeps"                      ,mlsmotimessteps[coarse]);
+    mllist.set("smoother: damping factor"              ,inparams.get<double>("ML_DAMPCOARSE"));
+    Teuchos::ParameterList& predictList = mllist.sublist("smoother: Predictor list");
+    predictList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER1")));
+    Teuchos::ParameterList& SchurCompList = mllist.sublist("coarse: SchurComp list");
+    SchurCompList = TranslateSolverParameters(DRT::Problem::Instance()->SolverParams(inparams.get<int>("SUB_SOLVER2")));
   }
   break;
   default: dserror("Unknown type of coarse solver for ML"); break;

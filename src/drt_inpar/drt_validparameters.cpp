@@ -5307,20 +5307,20 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
 
   setStringToIntegralParameter<int>(
     "ML_SMOOTHERFINE","ILU","",
-    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS","Umfpack","BS"),
-    tuple<int>(0,1,2,3,4,5,6,7,8,9,10),
+    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS","Umfpack","BS","SIMPLE","SIMPLEC"),
+    tuple<int>(0,1,2,3,4,5,6,7,8,9,10,11,12),
     &list);
 
   setStringToIntegralParameter<int>(
     "ML_SMOOTHERMED","ILU","",
-    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS","Umfpack","BS"),
-    tuple<int>(0,1,2,3,4,5,6,7,8,9,10),
+    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS","Umfpack","BS","SIMPLE","SIMPLEC"),
+    tuple<int>(0,1,2,3,4,5,6,7,8,9,10,11,12),
     &list);
 
   setStringToIntegralParameter<int>(
     "ML_SMOOTHERCOARSE","Umfpack","",
-    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS","Umfpack","BS"),
-    tuple<int>(0,1,2,3,4,5,6,7,8,9,10),
+    tuple<std::string>("SGS","Jacobi","Chebychev","MLS","ILU","KLU","Superlu","GS","DGS","Umfpack","BS","SIMPLE","SIMPLEC"),
+    tuple<int>(0,1,2,3,4,5,6,7,8,9,10,11,12),
     &list);
 
   setStringToIntegralParameter<int>(
@@ -5329,8 +5329,8 @@ void DRT::INPUT::SetValidSolverParameters(Teuchos::ParameterList& list)
     tuple<int>(0,1,2,4,7),
     &list);
 
-  IntParameter("SUB_SOLVER1", -1  ,"sub solver/smoother block number (used for fine and intermedium BraessSarazin (BS) level smoother)",&list);
-  IntParameter("SUB_SOLVER2", -1  ,"sub solver/smoother block number (used for coarse BraessSarazin (BS) level smoother)",&list);
+  IntParameter("SUB_SOLVER1", -1  ,"sub solver/smoother block number (SIMPLE/C: used for prediction of primary variable on all levels, BS: used for fine and intermedium BraessSarazin (BS) level smoother)",&list);
+  IntParameter("SUB_SOLVER2", -1  ,"sub solver/smoother block number (SIMPLE/C: used for SchurComplement eq. on all levels, BS: used for coarse BraessSarazin (BS) level smoother)",&list);
 
   IntParameter("MueLu_INITSMOO_SWEEPS", 1  ,"number of sweeps for adaptive SA smoother (initialization phase). For Chebyshev it is used as polynomial degree",&list);
   DoubleParameter("MueLu_INITSMOO_DAMPING",1.,"damping parameter for adaptive SA smoother (initialization phase). For Chebyshev it is used as alpha parameter",&list);

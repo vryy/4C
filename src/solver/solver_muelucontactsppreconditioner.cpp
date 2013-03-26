@@ -461,6 +461,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   // create SchurComp factory (SchurComplement smoother is provided by local FactoryManager)
   Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory());
   SFact->SetParameter("omega", Teuchos::ParameterEntry(omega));
+  //SFact->SetParameter("lumping", Teuchos::ParameterEntry(false));
   SFact->SetFactory("A",MueLu::NoFactory::getRCP());
   Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(sweeps,omega)); // append SC smoother information
 
@@ -517,6 +518,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   std::cout << paramList << std::endl;
   Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory());
   SFact->SetParameter("omega", Teuchos::ParameterEntry(omega));
+  // SFact->SetParameter("lumping", Teuchos::ParameterEntry(false));
   SFact->SetFactory("A",MueLu::NoFactory::getRCP());
   Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(sweeps,omega)); // append SC smoother information
 
