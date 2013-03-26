@@ -1108,6 +1108,14 @@ void STR::TimInt::OutputStep()
     OutputPatspec();
   }
 
+  // clear cache
+  // for contact/meshtying the maps can change during the simulation and
+  // therefore are useless for the next timesteps
+  // TODO: improve this by using more sophisticated criteria
+  // e.g. only after redistribution and if contact has changed...
+  if (HaveContactMeshtying())
+    output_->ClearMapCache();
+
   // what's next?
   return;
 }
