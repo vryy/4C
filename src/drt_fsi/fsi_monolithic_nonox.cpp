@@ -47,6 +47,24 @@ FSI::MonolithicNoNOX::MonolithicNoNOX(const Epetra_Comm& comm,
     = DRT::INPUT::IntegralValue<INPAR::FSI::BinaryOp>(fsidyn,"NORMCOMBI_RESFINC");
   tolinc_ =  fsidyn.get<double>("CONVTOL");
   tolfres_ = fsidyn.get<double>("CONVTOL");
+
+  TOL_DIS_RES_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
+  TOL_DIS_RES_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
+  TOL_DIS_INC_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
+  TOL_DIS_INC_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
+  TOL_FSI_RES_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
+  TOL_FSI_RES_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
+  TOL_FSI_INC_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
+  TOL_FSI_INC_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
+  TOL_PRE_RES_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
+  TOL_PRE_RES_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
+  TOL_PRE_INC_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
+  TOL_PRE_INC_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
+  TOL_VEL_RES_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
+  TOL_VEL_RES_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
+  TOL_VEL_INC_L2_  =  fsidyn.get<double>("TOL_DIS_RES_L2");
+  TOL_VEL_INC_INF_ =  fsidyn.get<double>("TOL_DIS_RES_INF");
+  // set tolerances for nonlinear solver
 }
 
 /*----------------------------------------------------------------------*/
@@ -152,7 +170,6 @@ bool FSI::MonolithicNoNOX::Converged()
   bool convinc = false;
   bool convfres = false;
 
-
   // residual increments
   switch (normtypeinc_)
   {
@@ -160,12 +177,17 @@ bool FSI::MonolithicNoNOX::Converged()
       convinc = norminc_ < tolinc_;
       break;
     case INPAR::FSI::convnorm_rel:
-      convinc = (((normstrinc_/ns_)<tolinc_) and ((norminterfacerhs_/ni_)<tolinc_) and ((normflvelinc_/nfv_)<tolinc_) and
-                ((normflpresinc_/nfp_)<tolinc_) and ((normaleinc_/na_)<tolinc_));
+      convinc = (((normstrincL2_/ns_) < TOL_DIS_INC_L2_) and
+    		  	((normstrincInf_) < TOL_DIS_INC_INF_) and
+    		    ((norminterfaceincL2_/ni_) < TOL_FSI_INC_L2_) and
+    		    ((norminterfaceincInf_) < TOL_FSI_INC_INF_) and
+    		    ((normflvelincL2_/nfv_) < TOL_VEL_INC_L2_)    and
+    		    ((normflvelincInf_) < TOL_VEL_INC_INF_)    and
+                ((normflpresincL2_/nfp_) < TOL_PRE_INC_L2_)   and
+                ((normflpresincInf_) < TOL_PRE_INC_INF_));
       break;
     case INPAR::FSI::convnorm_mix:
-      convinc = ((normstrinc_<tolinc_) and (norminterfacerhs_<tolinc_) and (normflvelinc_<tolinc_) and
-                 (normflpresinc_<tolinc_) and (normaleinc_<tolinc_));
+    	dserror("not implemented!");
       break;
   default:
       dserror("Cannot check for convergence of residual values!");
@@ -178,12 +200,17 @@ bool FSI::MonolithicNoNOX::Converged()
     convfres = normrhs_ < tolfres_;
     break;
   case INPAR::FSI::convnorm_rel:
-    convfres = (((normstrrhs_/ns_)<tolfres_) and ((norminterfacerhs_/ni_)<tolfres_) and ((normflvelrhs_/nfv_)<tolfres_) and
-                ((normflpresrhs_/nfp_)<tolfres_) and ((normalerhs_/na_)<tolfres_));
+    convfres =  (((normstrrhsL2_/ns_) < TOL_DIS_RES_L2_) and
+    			((normstrrhsInf_) < TOL_DIS_RES_INF_) and
+    			((norminterfacerhsL2_/ni_) < TOL_FSI_RES_L2_) and
+    			((norminterfacerhsInf_) < TOL_FSI_RES_INF_) and
+    			((normflvelrhsL2_/nfv_) < TOL_VEL_RES_L2_)    and
+    			((normflvelrhsInf_) < TOL_VEL_RES_INF_)    and
+    			((normflpresrhsL2_/nfp_) < TOL_PRE_RES_L2_)   and
+    			((normflpresrhsInf_) < TOL_PRE_RES_INF_));
     break;
   case INPAR::FSI::convnorm_mix:
-    convfres = ((normstrrhs_<tolfres_) and (norminterfacerhs_<tolfres_) and (normflvelrhs_<tolfres_) and
-                (normflpresrhs_<tolfres_) and (normalerhs_<tolfres_));
+	  dserror("not implemented!");
     break;
   default:
     dserror("Cannot check for convergence of residual forces!");
@@ -194,7 +221,7 @@ bool FSI::MonolithicNoNOX::Converged()
   if (combincfres_==INPAR::FSI::bop_and)
      conv = convinc and convfres;
    else
-     dserror("Something went terribly wrong with binary operator!");
+     dserror("Something went wrong!");
 
   return conv;
 }
@@ -388,8 +415,11 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader()
   // open outstringstream
   //std::ostringstream oss;
 
+  IO::cout << "==========================================================================================="
+		      "========================================================================="<< IO::endl;
+
   // enter converged state etc
-  IO::cout << "| numiter |";
+  IO::cout << "|nit |";
 
   // different style due relative or absolute error checking
   // displacement
@@ -399,11 +429,13 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader()
     IO::cout <<"            "<< "abs-res-norm  |";
     break;
   case INPAR::FSI::convnorm_rel :
-   IO::cout <<"   "<< "str-res  |"  <<"  "<< "intrf-res  |" <<"  "<< "flv-res  |"
-            <<"   "<< "flp-res  |"  <<"   "<< "ale-res  |";
+   IO::cout << "str-rs-l2|"  << "fsi-rs-l2|" << "flv-rs-l2|"
+            << "flp-rs-l2|" ;
+   IO::cout << "str-rs-li|"  << "fsi-rs-li|" << "flv-rs-li|"
+            << "flp-rs-li|" ;
     break;
   case INPAR::FSI::convnorm_mix :
-    IO::cout <<"                  "<< "mix-res-norm";
+	  dserror("not implemented");
     break;
   default:
     dserror("You should not turn up here.");
@@ -415,19 +447,22 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader()
     IO::cout <<"                  "<< "abs-inc-norm";
     break;
   case INPAR::FSI::convnorm_rel :
-    IO::cout <<"   "<< "str-inc  |"  <<"   "<< "intrf-inc  |" <<"   "<< "flv-inc  |"
-             <<"   "<< "flp-inc  |"  <<"   "<< "ale-inc  |";
+	   IO::cout << "str-in-l2|"  << "fsi-in-l2|" << "flv-in-l2|"
+	            << "flp-in-l2|" ;
+	   IO::cout << "str-in-li|"  << "fsi-in-li|" << "flv-in-li|"
+	            << "flp-in-li|" ;
     break;
   case INPAR::FSI::convnorm_mix :
-    IO::cout <<"              "<< "mix-inc-norm";
+	  dserror("not implemented");
     break;
   default:
     dserror("You should not turn up here.");
   }
 
   // add solution time
-  IO::cout << "   "<< "wct    |" << IO::endl;
-  IO::cout << "============================================================================================================================================================="<< IO::endl;
+  IO::cout << IO::endl;
+  IO::cout << "==========================================================================================="
+		      "========================================================================="<< IO::endl;
 }
 
 /*---------------------------------------------------------------------*/
@@ -436,7 +471,7 @@ void FSI::MonolithicNoNOX::PrintNewtonIterHeader()
 void FSI::MonolithicNoNOX::PrintNewtonIterText()
 {
   // enter converged state etc
-  IO::cout << "   " << iter_ << "/" << itermax_;
+  IO::cout << " " << iter_ << "/" << itermax_;
 
   // different style due relative or absolute error checking
   // displacement
@@ -446,18 +481,17 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText()
 	  IO::cout << "             " << (normrhs_) << IO::endl;
     break;
   case INPAR::FSI::convnorm_rel :
-	  IO::cout << "      "<< (normstrrhs_/ns_)
-	           << "     "<< (norminterfacerhs_/ni_)
-	           << "    "<< (normflvelrhs_/nfv_)
-	           << "    "<< (normflpresrhs_/nfp_)
-	           << "    "<< (normalerhs_/na_);
+	  IO::cout << "|" << (normstrrhsL2_/ns_)
+	           << "|" << (norminterfacerhsL2_/ni_)
+	           << "|" << (normflvelrhsL2_/nfv_)
+	           << "|" << (normflpresrhsL2_/nfp_)
+	           << "|" << (normstrrhsInf_)
+	           << "|" << (norminterfacerhsInf_)
+	           << "|" << (normflvelrhsInf_)
+	           << "|" << (normflpresrhsInf_);
     break;
-  case INPAR::FSI::convnorm_mix : //TODO_ check why this is the same like above
-	  IO::cout << "      "<< (normstrrhs_/ns_)
-	           << "     "<< (norminterfacerhs_/ni_)
-	           << "    "<< (normflvelrhs_/nfv_)
-	           << "    "<< (normflpresrhs_/nfp_)
-	           << "    "<< (normalerhs_/na_);
+  case INPAR::FSI::convnorm_mix :
+	  dserror("not implemented!");
     break;
   default:
     dserror("You should not turn up here.");
@@ -469,18 +503,18 @@ void FSI::MonolithicNoNOX::PrintNewtonIterText()
 	  IO::cout << "             " << (norminc_) << IO::endl;
     break;
   case INPAR::FSI::convnorm_rel :
-	  IO::cout << "    "<< (normstrinc_/ns_)
-	           << "     "<< (norminterfaceinc_/ni_)
-	           << "     "<< (normflvelinc_/nfv_)
-	           << "    "<< (normflpresinc_/nfp_)
-	           << "    "<< (normaleinc_/na_) << IO::endl;
+	  IO::cout << "|" << (normstrincL2_/ns_)
+	           << "|" << (norminterfaceincL2_/ni_)
+	           << "|" << (normflvelincL2_/nfv_)
+	           << "|" << (normflpresincL2_/nfp_)
+	           << "|" << (normstrincInf_)
+	           << "|" << (norminterfaceincInf_)
+	           << "|" << (normflvelincInf_)
+	           << "|" << (normflpresincInf_)
+           	   << "|" << IO::endl;
     break;
-  case INPAR::FSI::convnorm_mix ://TODO_ check why this is the same like above
-	  IO::cout << "    "<< (normstrinc_/ns_)
-	           << "     "<< (norminterfaceinc_/ni_)
-	           << "     "<< (normflvelinc_/nfv_)
-	           << "    "<< (normflpresinc_/nfp_)
-	           << "    "<< (normaleinc_/na_) << IO::endl;
+  case INPAR::FSI::convnorm_mix :
+	  dserror("not implemented!");
     break;
   default:
     dserror("You should not turn up here.");

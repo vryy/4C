@@ -170,21 +170,39 @@ namespace FSI
     int nall_;
 
     double normrhs_;  //!< norm of residual forces
-    double normstrrhs_;  //!< norm of structural residual forces
-    double norminterfacerhs_; //!< norm of interface residual forces
-    double normflrhs_;  //!< norm of fluid residual forces
-    double normflvelrhs_;  //!< norm of inner fluid velocity residual forces
-    double normflpresrhs_;  //!< norm of fluid pressure residual forces
-    double normalerhs_;  //!< norm of ale residual forces
-
     double norminc_;  //!< norm of solution increment
-    double normstrinc_;  //!< norm of inner structural increment
-    double norminterfaceinc_; //!< norm of interface residual forces
-    double normflinc_;  //!< norm of fluid residual forces
-    double normflvelinc_;  //!< norm of inner fluid velocity residual forces
-    double normflpresinc_;  //!< norm of fluid pressure residual forces
-    double normaleinc_;  //!< norm of ale residual forces
 
+    //L2-NORMS
+    //--------------------------------------------------------------------------//
+    double normstrrhsL2_;  //!< norm of structural residual
+    double normflvelrhsL2_;  //!< norm of inner fluid velocity residual
+    double normflpresrhsL2_;  //!< norm of fluid pressure residual
+    double normalerhsL2_;  //!< norm of ale residual
+    double norminterfacerhsL2_; //!< norm of interface residual
+
+    //--------------------------------------------------------------------------//
+    double normstrincL2_;  //!< norm of inner structural increment
+    double normflvelincL2_;  //!< norm of inner fluid velocity residual forces
+    double normflpresincL2_;  //!< norm of fluid pressure residual forces
+    double normaleincL2_;  //!< norm of ale residual forces
+    double norminterfaceincL2_; //!< norm of interface residual forces
+    //--------------------------------------------------------------------------//
+
+    //Inf-NORMS
+    //--------------------------------------------------------------------------//
+    double normstrrhsInf_;  //!< norm of structural residual
+    double normflvelrhsInf_;  //!< norm of inner fluid velocity residual
+    double normflpresrhsInf_;  //!< norm of fluid pressure residual
+    double normalerhsInf_;  //!< norm of ale residual
+    double norminterfacerhsInf_; //!< norm of interface residual
+
+    //--------------------------------------------------------------------------//
+    double normstrincInf_;  //!< norm of inner structural increment
+    double normflvelincInf_;  //!< norm of inner fluid velocity residual forces
+    double normflpresincInf_;  //!< norm of fluid pressure residual forces
+    double normaleincInf_;  //!< norm of ale residual forces
+    double norminterfaceincInf_; //!< norm of interface residual forces
+    //--------------------------------------------------------------------------//
 
     Teuchos::RCP<Epetra_Vector> iterinc_;   //!< increment between Newton steps k and k+1
     Teuchos::RCP<Epetra_Vector> rhs_;       //!< rhs of FSI system
@@ -214,6 +232,22 @@ namespace FSI
     double tolinc_;  //!< tolerance residual temperatures
     double tolfres_;  //!< tolerance force residual
 
+    double TOL_DIS_RES_L2_;
+    double TOL_DIS_RES_INF_;
+    double TOL_DIS_INC_L2_;
+    double TOL_DIS_INC_INF_;
+    double TOL_FSI_RES_L2_;
+    double TOL_FSI_RES_INF_;
+    double TOL_FSI_INC_L2_;
+    double TOL_FSI_INC_INF_;
+    double TOL_PRE_RES_L2_;
+    double TOL_PRE_RES_INF_;
+    double TOL_PRE_INC_L2_;
+    double TOL_PRE_INC_INF_;
+    double TOL_VEL_RES_L2_;
+    double TOL_VEL_RES_INF_;
+    double TOL_VEL_INC_L2_;
+    double TOL_VEL_INC_INF_;
     //@}
 
     //@}
