@@ -116,9 +116,14 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
     interface->AddMortarNode(mrtrnode);
   }
 
-  // max master element ID needed for unique eleIDs in interface discretization
-  // will be used as offset for slave elements
-  int EleOffset = masterdis.ElementRowMap()->MaxAllGID()+1;
+  // We need to determine an element offset to start the numbering of the slave
+  // mortar elements AFTER the master mortar elements in order to ensure unique
+  // eleIDs in the interface discretization. The element offset equals the
+  // overall number of master mortar elements (which is not equal to the number
+  // of elements in the field that is chosen as master side).
+  int eleoffset = 0;
+  int nummastermtreles = masterelements.size();
+  comm.SumAll(&nummastermtreles,&eleoffset,1);
 
   // feeding master elements to the interface
   std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator elemiter;
@@ -137,7 +142,7 @@ void ADAPTER::CouplingMortar::Setup(DRT::Discretization& masterdis,
   {
     Teuchos::RCP<DRT::Element> ele = elemiter->second;
     Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(
-                new MORTAR::MortarElement(ele->Id() + EleOffset, ele->Owner(), ele->Shape(),
+                new MORTAR::MortarElement(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
                     ele->NumNode(), ele->NodeIds(), true));
 
     interface->AddMortarElement(mrtrele);
@@ -377,7 +382,15 @@ void ADAPTER::CouplingMortar::Setup
 
   // max master element ID needed for unique eleIDs in interface discretization
   // will be used as offset for slave elements
-  int EleOffset = dis.ElementRowMap()->MaxAllGID()+1;
+  //
+  //
+  // Note: We should count the actual number of master mortar elements as the
+  // offset for slave mortar elements since the number of finite elements
+  // attached to the interface does not equal the number of mortar elements, if
+  // the interface goes around an element corner.
+  // Since we use the MaxAllGID() of the entire discretization here, the element
+  // offset is large enough, for sure.
+  int eleoffset = dis.ElementRowMap()->MaxAllGID()+1;
 
   // feeding master elements to the interface
   std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator elemiter;
@@ -402,7 +415,7 @@ void ADAPTER::CouplingMortar::Setup
     }
 
     Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(
-                new MORTAR::MortarElement(ele->Id() + EleOffset, ele->Owner(), ele->Shape(),
+                new MORTAR::MortarElement(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
                     ele->NumNode(), &(nidsoff[0]), true));
 
     interface->AddMortarElement(mrtrele);
@@ -683,7 +696,14 @@ bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
 
   // max master element ID needed for unique eleIDs in interface discretization
   // will be used as offset for slave elements
-  int EleOffset = dis.ElementRowMap()->MaxAllGID()+1;
+  //
+  // Note: We should count the actual number of master mortar elements as the
+  // offset for slave mortar elements since the number of finite elements
+  // attached to the interface does not equal the number of mortar elements, if
+  // the interface goes around an element corner.
+  // Since we use the MaxAllGID() of the entire discretization here, the element
+  // offset is large enough, for sure.
+  int eleoffset = dis.ElementRowMap()->MaxAllGID()+1;
 
   // feeding master elements to the interface
   std::map<int, Teuchos::RCP<DRT::Element> >::const_iterator elemiter;
@@ -702,7 +722,7 @@ bool ADAPTER::CouplingMortar::Setup(DRT::Discretization& dis,
   {
     Teuchos::RCP<DRT::Element> ele = elemiter->second;
     Teuchos::RCP<MORTAR::MortarElement> mrtrele = Teuchos::rcp(
-                new MORTAR::MortarElement(ele->Id() + EleOffset, ele->Owner(), ele->Shape(),
+                new MORTAR::MortarElement(ele->Id() + eleoffset, ele->Owner(), ele->Shape(),
                     ele->NumNode(), ele->NodeIds(), true));
 
     interface->AddMortarElement(mrtrele);
