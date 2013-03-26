@@ -67,7 +67,10 @@ INITFUNCNO                      2
 FSSUGRDIFF                      No
 WRITEFLUX                       No
 MATID                           4
--------------------------------------------------FLUID DYNAMIC/RESIDUAL-BASED STABILIZATION
+SKIPINITDER                     no //yes //no
+--------------------------------------SCALAR TRANSPORT DYNAMIC/STABILIZATION
+STABTYPE    SUPG //SUPG //no_stabilization
+DEFINITION_TAU Franca_Valentin //(for binary electrolyte solution!)
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
@@ -127,10 +130,31 @@ FUNCT2 EXPR 0 0.0 0 FUNCTION (5.0/7.0)*exp((-1.0)*((x-(2.0/15.0))^2)/((0.0329983
 ----------------------------------------------------------------------FUNCT5
 ----------------------------------------------------------------------FUNCT6
 ----------------------------------------------------------RESULT DESCRIPTION
-SCATRA DIS scatra NODE 222 QUANTITY phi VALUE 3.750658381e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 230 QUANTITY phi VALUE 3.712613405e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 246 QUANTITY phi VALUE 3.603774510e-01 TOLERANCE 1e-9
-SCATRA DIS scatra NODE 261 QUANTITY phi VALUE 3.434321063e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 222 QUANTITY phi1 VALUE 3.750658381e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 230 QUANTITY phi1 VALUE 3.712613405e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 246 QUANTITY phi1 VALUE 3.603774510e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 261 QUANTITY phi1 VALUE 3.434321063e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 222 QUANTITY phi2 VALUE 5.15935162167425743e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 230 QUANTITY phi2 VALUE 4.85765903917763975e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 246 QUANTITY phi2 VALUE 4.45877565336456727e-01 TOLERANCE 1e-9
+SCATRA DIS scatra NODE 261 QUANTITY phi2 VALUE 3.99876593633862132e-01 TOLERANCE 1e-9
+//
+// values below are identical (minus one) to elch version of this test case 
+// and must be fulfilled!!!
+// if the scatra test case is adapted like that:
+// - stabilization is deactivated
+// - calculation of initial time derivative is deactivated
+//
+// in this case there is absolutely no space allowing for small differences!!
+//
+//SCATRA DIS scatra NODE 222 QUANTITY phi1 VALUE 3.72174019352420671e-01 TOLERANCE 1e-9
+//SCATRA DIS scatra NODE 230 QUANTITY phi1 VALUE 3.65008370057102183e-01 TOLERANCE 1e-9
+//SCATRA DIS scatra NODE 246 QUANTITY phi1 VALUE 3.51451691615127182e-01 TOLERANCE 1e-9
+//SCATRA DIS scatra NODE 261 QUANTITY phi1 VALUE 3.32595517871924706e-01 TOLERANCE 1e-9
+//SCATRA DIS scatra NODE 222 QUANTITY phi2 VALUE 5.08175873379806631e-01 TOLERANCE 1e-9
+//SCATRA DIS scatra NODE 230 QUANTITY phi2 VALUE 4.74361342222213989e-01 TOLERANCE 1e-9
+//SCATRA DIS scatra NODE 246 QUANTITY phi2 VALUE 4.32150559275846669e-01 TOLERANCE 1e-9
+//SCATRA DIS scatra NODE 261 QUANTITY phi2 VALUE 3.85041712210048237e-01 TOLERANCE 1e-9
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         0
 NDLINE                          0
