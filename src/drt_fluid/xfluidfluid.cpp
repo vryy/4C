@@ -6,7 +6,7 @@
 Maintainer:  Shadan Shahmiri
              shahmiri@lnm.mw.tum.de
              http://www.lnm.mw.tum.de
-             089 - 289-15240
+             089 - 289-15265
 </pre>
 
 *----------------------------------------------------------------------*/
@@ -3502,8 +3502,6 @@ void FLD::XFluidFluid::CutAndSaveBgFluidStatus()
 
 // -------------------------------------------------------------------
 // In this function:
-//
-// - Create Patch boxes which are not used at the moment (todo)
 // - Set new bg state vectors: veln_, velnm_, accn_
 // - Set velnp_ and alevelnp_ to the veln_ and aleveln_ as start values
 // - disp is the displacment of the embedded fluid at the time we want to
@@ -3542,11 +3540,14 @@ void FLD::XFluidFluid::SetBgStateVectors(Teuchos::RCP<Epetra_Vector>    disp)
       LINALG::Export(*aleaccnp_,*aleaccnpcol);
       LINALG::Export(*disp,*aledispcol);
 
-      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->velnp_,state_->velnp_,alevelnpcol,aledispcol);
-      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->veln_,state_->veln_,alevelncol,aledispcol);
-      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->velnm_,state_->velnm_,alevelnmcol,aledispcol);
-      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accn_,state_->accn_,aleaccncol,aledispcol);
-      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,staten_->accnp_,state_->accnp_,aleaccnpcol,aledispcol);
+      // we have five state vectors, which need values from the last time step
+      xfluidfluid_timeint_->SetNewBgStatevectorAndProjectEmbToBg(bgdis_,
+    		                                                     staten_->velnp_,state_->velnp_,alevelnpcol,
+    		                                                     staten_->veln_,state_->veln_,alevelncol,
+    		                                                     staten_->velnm_,state_->velnm_,alevelnmcol,
+    		                                                     staten_->accn_,state_->accn_,aleaccncol,
+    		                                                     staten_->accnp_,state_->accnp_,aleaccnpcol,
+    		                                                     aledispcol);
 
       //-------------------------
       // Enforce incompressibility

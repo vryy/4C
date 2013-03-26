@@ -87,28 +87,63 @@ public:
   void CreateBgNodeMapsForRestart(Teuchos::RCP<DRT::Discretization> bgdis,
                                   Teuchos::RCP<XFEM::FluidWizard>   wizard);
 
-  /// set values to background state vector
-  void SetNewBgStatevectorAndProjectEmbToBg(const Teuchos::RCP<DRT::Discretization>  bgdis,
-                                            Teuchos::RCP<Epetra_Vector>              bgstatevn,
-                                            Teuchos::RCP<Epetra_Vector>              bgstatevnp,
-                                            Teuchos::RCP<Epetra_Vector>              embstatevn,
-                                            Teuchos::RCP<Epetra_Vector>              aledispn);
+  void SetNewBgStatevectorAndProjectEmbToBg(const Teuchos::RCP<DRT::Discretization>   bgdis,
+		  	  	  	  	  	  	  	  	  	Teuchos::RCP<Epetra_Vector>               bgstatevn1,
+                                            Teuchos::RCP<Epetra_Vector>               bgstatevnp1,
+                                            Teuchos::RCP<Epetra_Vector>               embstatevn1,
+                                            Teuchos::RCP<Epetra_Vector>           	  bgstatevn2,
+                                            Teuchos::RCP<Epetra_Vector>           	  bgstatevnp2,
+                                            Teuchos::RCP<Epetra_Vector>           	  embstatevn2,
+                                            Teuchos::RCP<Epetra_Vector>               bgstatevn3,
+                                            Teuchos::RCP<Epetra_Vector>               bgstatevnp3,
+                                            Teuchos::RCP<Epetra_Vector>               embstatevn3,
+                                            Teuchos::RCP<Epetra_Vector>               bgstatevn4,
+                                            Teuchos::RCP<Epetra_Vector>               bgstatevnp4,
+                                            Teuchos::RCP<Epetra_Vector>               embstatevn4,
+                                            Teuchos::RCP<Epetra_Vector>               bgstatevn5,
+                                            Teuchos::RCP<Epetra_Vector>               bgstatevnp5,
+                                            Teuchos::RCP<Epetra_Vector>               embstatevn5,
+                                            Teuchos::RCP<Epetra_Vector>               aledispn);
 
   /// set values to background state vector. Do not do the projection if
   /// ghost-values are available.
-  void SetNewBgStatevectorKeepGhostValues(const Teuchos::RCP<DRT::Discretization>  bgdis,
-                                          Teuchos::RCP<Epetra_Vector>              bgstatevn,
-                                          Teuchos::RCP<Epetra_Vector>              bgstatevnp,
-                                          Teuchos::RCP<Epetra_Vector>              embstatevn,
-                                          Teuchos::RCP<Epetra_Vector>              aledispn);
+  void SetNewBgStatevectorKeepGhostValues(const Teuchos::RCP<DRT::Discretization>     bgdis,
+		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevn1,
+		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevnp1,
+		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 embstatevn1,
+		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevn2,
+		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevnp2,
+		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>           	  embstatevn2,
+		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevn3,
+		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevnp3,
+		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 embstatevn3,
+		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevn4,
+		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevnp4,
+		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 embstatevn4,
+		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>     	          bgstatevn5,
+		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 bgstatevnp5,
+		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 embstatevn5,
+		  	  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>                 aledispn);
 
   /// set values to background state vector. Always project values from
   /// embedded discretization if no history values are available.
-  void SetNewBgStatevectorFullProjection(const Teuchos::RCP<DRT::Discretization>  bgdis,
-                                         Teuchos::RCP<Epetra_Vector>              bgstatevn,
-                                         Teuchos::RCP<Epetra_Vector>              bgstatevnp,
-                                         Teuchos::RCP<Epetra_Vector>              embstatevn,
-                                         Teuchos::RCP<Epetra_Vector>              aledispn);
+  void SetNewBgStatevectorFullProjection(const Teuchos::RCP<DRT::Discretization>      bgdis,
+		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevn1,
+		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevnp1,
+		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  embstatevn1,
+		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevn2,
+		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevnp2,
+		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  embstatevn2,
+		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevn3,
+		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevnp3,
+		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  embstatevn3,
+		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevn4,
+		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevnp4,
+		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  embstatevn4,
+		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevn5,
+		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  bgstatevnp5,
+		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  embstatevn5,
+		  	  	  	  	  	  	  	  	 Teuchos::RCP<Epetra_Vector>                  aledispn);
 
   void SetNewEmbStatevector(const Teuchos::RCP<DRT::Discretization>  bgdis,
                             Teuchos::RCP<Epetra_Vector>              statevbg_n,
@@ -128,8 +163,12 @@ public:
   ///  interpolatedvec and return true.
   bool ComputeSpacialToElementCoordAndProject(DRT::Element*                       pele,
                                               LINALG::Matrix<3,1>&                x,
-                                              LINALG::Matrix<4,1>&                interpolatedvec,
-                                              Teuchos::RCP<Epetra_Vector>         embstate_n,
+                                              LINALG::Matrix<20,1>&               interpolatedvec,
+                                              Teuchos::RCP<Epetra_Vector>         embstate_n1,
+                                              Teuchos::RCP<Epetra_Vector>         embstate_n2,
+                                              Teuchos::RCP<Epetra_Vector>         embstate_n3,
+                                              Teuchos::RCP<Epetra_Vector>         embstate_n4,
+                                              Teuchos::RCP<Epetra_Vector>         embstate_n5,
                                               Teuchos::RCP<Epetra_Vector>         embeddeddisp,
                                               Teuchos::RCP<DRT::Discretization>   sourcedis);
 
@@ -142,6 +181,10 @@ public:
 
 
   void GmshOutput(const Teuchos::RCP<DRT::Discretization>        bgdis);
+
+  void GmshOutputForInterpolateFSI(const Teuchos::RCP<DRT::Discretization>    bgdis,
+                                   Teuchos::RCP<Epetra_Vector>                aledispnp,
+                                   Teuchos::RCP<Epetra_Vector>                aledispnpoldstate);
 
   void PatchelementForIncompressibility(const Teuchos::RCP<DRT::Discretization>  bgdis,
                                         Teuchos::RCP<XFEM::FluidWizard>          wizard_n,
@@ -162,12 +205,24 @@ public:
   /// Transfer data in the round robin communication pattern
   void CommunicateNodes(const Teuchos::RCP<DRT::Discretization>    bgdis,
                         std::vector<LINALG::Matrix<3,1> >        & bgnodes_coords,
-                        std::vector<LINALG::Matrix<4,1> >        & interpolated_vecs,
+                        std::vector<LINALG::Matrix<20,1> >       & interpolated_vecs,
                         std::vector<int>                         & bgnodeidwithnohistory,
-                        Teuchos::RCP<Epetra_Vector>                embstatevn,
                         Teuchos::RCP<Epetra_Vector>                aledispn,
-                        Teuchos::RCP<Epetra_Vector>                bgstatevnp,
-                        Teuchos::RCP<Epetra_Vector>                bgstatevn);
+                        Teuchos::RCP<Epetra_Vector>     	   embstatevn1,
+                        Teuchos::RCP<Epetra_Vector>         	   bgstatevnp1,
+                        Teuchos::RCP<Epetra_Vector>		   bgstatevn1,
+                        Teuchos::RCP<Epetra_Vector>                embstatevn2,
+                        Teuchos::RCP<Epetra_Vector>                bgstatevnp2,
+                        Teuchos::RCP<Epetra_Vector>                bgstatevn2,
+                        Teuchos::RCP<Epetra_Vector>                embstatevn3,
+                        Teuchos::RCP<Epetra_Vector>                bgstatevnp3,
+                        Teuchos::RCP<Epetra_Vector>                bgstatevn3,
+                        Teuchos::RCP<Epetra_Vector>                embstatevn4,
+                        Teuchos::RCP<Epetra_Vector>                bgstatevnp4,
+                        Teuchos::RCP<Epetra_Vector>                bgstatevn4,
+                        Teuchos::RCP<Epetra_Vector>                embstatevn5,
+                        Teuchos::RCP<Epetra_Vector>                bgstatevnp5,
+                        Teuchos::RCP<Epetra_Vector>                bgstatevn5);
 
   /// receive a block in the round robin communication pattern
   void ReceiveBlock(std::vector<char>  & rblock,
@@ -181,21 +236,23 @@ public:
 
   /// pack values in the round robin communication pattern
   void PackValues(std::vector<LINALG::Matrix<3,1> > & bgnodes_coords,
-                  std::vector<LINALG::Matrix<4,1> > & interpolatedvec,
+                  std::vector<LINALG::Matrix<20,1> >& interpolatedvec,
                   std::vector<int>                  & bgnodeidwithnohistory,
                   std::vector<int>                  & NodeDone,
                   std::vector<char>                 & sblock);
 
 
   void FindEmbeleAndInterpolatevalues(std::vector<LINALG::Matrix<3,1> > & bgnodes_coords,
-                                      std::vector<LINALG::Matrix<4,1> > & interpolated_vecs,
-                                      std::vector<int>                  & NodeDone,
-                                      Teuchos::RCP<Epetra_Vector>         embstatevn,
-                                      Teuchos::RCP<Epetra_Vector>         aledispn);
+		  	  	  	  	  	  	  	  std::vector<LINALG::Matrix<20,1> > & interpolated_vecs,
+		  	  	  	  	  	  	  	  std::vector<int>                  & NodeDone,
+		  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>         aledispn,
+		  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>         embstatevn1,
+		  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>         embstatevn2,
+		  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>         embstatevn3,
+		  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>         embstatevn4,
+		  	  	  	  	  	  	  	  Teuchos::RCP<Epetra_Vector>         embstatevn5);
 
-
-//  void CreatePatchBoxes(std::map<int, GEO::CUT::BoundingBox> &
-//  patchboxes);
+  void SearchRadius();
 
   private:
 
@@ -244,6 +301,10 @@ public:
   int step_;
 
   bool gmsh_debug_out_;
+
+  // min radius needed for the search tree
+  double minradius_;
+
 };
 
 } // namespace XFEM
