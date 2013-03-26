@@ -552,7 +552,7 @@ void MORTAR::MortarInterface::FillComplete(int maxdof)
   Discret().FillComplete(true,false,false);
 
   // need row and column maps of slave and master nodes / elements / dofs
-  // separately so we can easily adress them
+  // separately so we can easily address them
   UpdateMasterSlaveSets();
 
   // initialize node data container
