@@ -32,7 +32,7 @@ namespace INPAR
       m_thermopllinelast, ///< Hooke elasticity with temperature and von Mises plasticity
       m_neohooke,    ///< Neo-Hooke material
       m_plneohooke,  ///< Neo-Hooke elasticity and von Mises plasticity
-      m_plhyperelast,///< general hyperelasticty and finite strain von Mises plasticity
+      m_plnlnlogneohooke,///< Neo-Hooke elasticity with logarithmic finite strain von Mises plasticity
       m_pllinelast,  ///< linear elasticity (St. Venant Kirchhoff) and von Mises plasticity
       m_elpldamage,  ///< elasto-plastic material with von Mises plasticity and damage
       m_aaaneohooke, ///< quasi Neo-Hooke material for aneurysmatic artery wall

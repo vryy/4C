@@ -535,16 +535,15 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
   // Hyperelasticity / finite strain von-Mises plasticity
   {
     Teuchos::RCP<MaterialDefinition> m
-      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_PlasticHyperElast",
+      = Teuchos::rcp(new MaterialDefinition("MAT_Struct_PlasticNlnLogNeoHooke",
                                             "hyperelastic / finite strain plastic von Mises material",
-                                            INPAR::MAT::m_plhyperelast));
+                                            INPAR::MAT::m_plnlnlogneohooke));
 
     AddNamedReal(m,"YOUNG","Young's modulus");
     AddNamedReal(m,"NUE","Poisson's ratio");
     AddNamedReal(m,"DENS","mass density");
     AddNamedReal(m,"YIELD","yield stress");
     AddNamedReal(m,"ISOHARD","isotropic hardening modulus");
-    AddNamedReal(m,"KINHARD","kinematic hardening modulus");
 
     AppendMaterialDefinition(matlist,m);
   }
