@@ -333,7 +333,10 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     R22Fact->SetFactory("P",P22Fact);
     Teuchos::RCP<NullspaceFactory> nspFact22 = Teuchos::rcp(new NullspaceFactory("Nullspace2"));
     nspFact22->SetFactory("Nullspace2",P22Fact);
-    Teuchos::RCP<BlockedCoarseMapFactory> coarseMapFact22 = Teuchos::rcp(new BlockedCoarseMapFactory(coarseMapFact11,UCAggFact22,nspFact22));
+    Teuchos::RCP<BlockedCoarseMapFactory> coarseMapFact22 = Teuchos::rcp(new BlockedCoarseMapFactory());
+    coarseMapFact22->SetFactory("CoarseMap",coarseMapFact11); // feed BlockedCoarseMap with necessary input
+    coarseMapFact22->SetFactory("Aggregates",UCAggFact22);
+    coarseMapFact22->SetFactory("Nullspace",nspFact22);
     coarseMapFact22->setStridingData(stridingInfo2);
 
     ///////////////////////////////////////////////////////////////////////
