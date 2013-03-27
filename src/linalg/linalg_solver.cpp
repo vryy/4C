@@ -788,8 +788,8 @@ const Teuchos::ParameterList LINALG::Solver::TranslateBACIToML(const Teuchos::Pa
     char levelstr[11];
     sprintf(levelstr,"(level %d)",i);
     Teuchos::ParameterList& smolevelsublist = mllist.sublist("smoother: list "+(string)levelstr);
-    int type;
-    double damp;
+    int type = 0;
+    double damp = 0.0;
     if (i==0)
     {
       type = DRT::INPUT::IntegralValue<int>(inparams,"ML_SMOOTHERFINE");
@@ -1958,8 +1958,10 @@ Teuchos::RCP<LINALG::SparseMatrix> LINALG::MLMultiply(const LINALG::SparseMatrix
   if (!A.Filled()) dserror("A has to be FillComplete");
   if (!B.Filled()) dserror("B has to be FillComplete");
 
-  EpetraExt::RowMatrix_Transpose transposera(true,NULL,false);
-  EpetraExt::RowMatrix_Transpose transposerb(true,NULL,false);
+  //EpetraExt::RowMatrix_Transpose transposera(true,NULL,false);
+  //EpetraExt::RowMatrix_Transpose transposerb(true,NULL,false);
+  EpetraExt::RowMatrix_Transpose transposera;
+  EpetraExt::RowMatrix_Transpose transposerb;
   Epetra_CrsMatrix* Atrans = NULL;
   Epetra_CrsMatrix* Btrans = NULL;
   if (transA)

@@ -323,7 +323,8 @@ void LINALG::Add(const Epetra_CrsMatrix& A,
   RCP<EpetraExt::RowMatrix_Transpose> Atrans = Teuchos::null;
   if (transposeA)
   {
-    Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
+    //Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
+    Atrans = Teuchos::rcp(new EpetraExt::RowMatrix_Transpose());
     Aprime = &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
   }
   else
@@ -373,7 +374,7 @@ RCP<Epetra_CrsMatrix> LINALG::Transpose(const Epetra_CrsMatrix& A)
   if (!A.Filled()) dserror("FillComplete was not called on A");
 
   RCP<EpetraExt::RowMatrix_Transpose> Atrans =
-      Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(false,NULL,false));
+      Teuchos::rcp(new EpetraExt::RowMatrix_Transpose(/*false,NULL,false*/));
   Epetra_CrsMatrix* Aprime =
       &(dynamic_cast<Epetra_CrsMatrix&>(((*Atrans)(const_cast<Epetra_CrsMatrix&>(A)))));
 
