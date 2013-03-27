@@ -1126,6 +1126,8 @@ endif (HAVE_MueLu)
 
 if (HAVE_MueLu)
 if (HAVE_Trilinos_Q1_2013)
+
+# contact (condensed formulation, different permutation)
 baci_test(contact3D_lin_duallagr_algebr_contact1 1 "")
 baci_test(contact3D_lin_duallagr_algebr_contact1 2 "")
 baci_test(contact3D_lin_duallagr_algebr_contact2 1 "")
@@ -1136,6 +1138,21 @@ baci_test(contact3D_lin_duallagr_local_contact2 1 "")
 baci_test(contact3D_lin_duallagr_local_contact2 2 "")
 baci_test(contact3D_lin_duallagr_noperm_contact1 1 "")
 baci_test(contact3D_lin_duallagr_noperm_contact1 2 "")
+
+# meshtying condensed formulation (dual Lagrange)
+baci_test(meshtying3D_duallagr_muelu_contact1 1 "")
+baci_test(meshtying3D_duallagr_muelu_contact1 2 "")
+baci_test(meshtying3D_duallagr_muelu_contact2 1 "")
+baci_test(meshtying3D_duallagr_muelu_contact2 2 "")
+
+# meshtying saddlepoint formulation
+baci_test(meshtying3D_contactsp_duallagr_simple 1 "")
+baci_test(meshtying3D_contactsp_duallagr_simple 2 "")
+baci_test(meshtying3D_contactsp_stdlagr_braesssarazin 1 "")
+baci_test(meshtying3D_contactsp_stdlagr_braesssarazin 2 "")
+baci_test(meshtying3D_contactsp_duallagr_braesssarazin 1 "")
+baci_test(meshtying3D_contactsp_duallagr_braesssarazin 2 "")
+
 endif (HAVE_Trilinos_Q1_2013)
 endif (HAVE_MueLu)
 
