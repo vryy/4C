@@ -24,7 +24,7 @@ Maintainer: Lena Wiechert
 #include "thermostvenantkirchhoff.H"
 #include "thermoplasticlinelast.H"
 #include "plasticneohooke.H"
-#include "plastichyperelast.H"
+#include "plasticnlnlogneohooke.H"
 #include "plasticlinelast.H"
 #include "robinson.H"
 #include "damage.H"
@@ -128,11 +128,11 @@ Teuchos::RCP<MAT::Material> MAT::Material::Factory(int matnum)
     MAT::PAR::PlasticNeoHooke* params = static_cast<MAT::PAR::PlasticNeoHooke*>(curmat->Parameter());
     return params->CreateMaterial();
   }
-  case INPAR::MAT::m_plhyperelast:
+  case INPAR::MAT::m_plnlnlogneohooke:
   {
     if (curmat->Parameter() == NULL)
-      curmat->SetParameter(new MAT::PAR::PlasticHyperElast(curmat));
-    MAT::PAR::PlasticHyperElast* params = static_cast<MAT::PAR::PlasticHyperElast*>(curmat->Parameter());
+      curmat->SetParameter(new MAT::PAR::PlasticNlnLogNeoHooke(curmat));
+    MAT::PAR::PlasticNlnLogNeoHooke* params = static_cast<MAT::PAR::PlasticNlnLogNeoHooke*>(curmat->Parameter());
     return params->CreateMaterial();
   }
   case INPAR::MAT::m_pllinelast:
