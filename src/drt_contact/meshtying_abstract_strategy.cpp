@@ -57,14 +57,12 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  | ctor (public)                                             popp 05/09 |
  *----------------------------------------------------------------------*/
-CONTACT::MtAbstractStrategy::MtAbstractStrategy(DRT::Discretization& discret,
-                                                Teuchos::RCP<Epetra_Map> problemrowmap,
+CONTACT::MtAbstractStrategy::MtAbstractStrategy(DRT::Discretization& probdiscret,
                                                 Teuchos::ParameterList params,
                                                 std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface,
                                                 int dim, Teuchos::RCP<Epetra_Comm> comm,
                                                 double alphaf, int maxdof) :
-MORTAR::StrategyBase(problemrowmap,params,dim,comm,alphaf,maxdof),
-probdiscret_(discret),
+MORTAR::StrategyBase(probdiscret,params,dim,comm,alphaf,maxdof),
 interface_(interface),
 dualquadslave3d_(false)
 {
@@ -203,7 +201,7 @@ void CONTACT::MtAbstractStrategy::Setup(bool redistributed)
   // (no need to rebuild this map after redistribution)
   if (!redistributed)
   {
-    gndofrowmap_ = LINALG::SplitMap(*problemrowmap_, *gsdofrowmap_);
+    gndofrowmap_ = LINALG::SplitMap(*ProblemDofs(), *gsdofrowmap_);
     gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *gmdofrowmap_);
   }
   
@@ -624,7 +622,10 @@ void CONTACT::MtAbstractStrategy::MeshInitialization(Teuchos::RCP<Epetra_Vector>
   //**********************************************************************
   // (3) re-initialize finite elements
   //**********************************************************************
-  DRT::ParObjectFactory::Instance().InitializeElements(ProblemDiscret());
+  // this is NOT possible for a const DRT::Discretization& as provided by
+  // the access method ProblemDiscret(). Thus, we directly hand in the class
+  // member variable probdiscret_, which is of type DRT::Discretization&.
+  DRT::ParObjectFactory::Instance().InitializeElements(probdiscret_);
   
   return;
 }
@@ -854,8 +855,8 @@ void CONTACT::MtAbstractStrategy::InterfaceForces(bool output)
   mmatrix_->Multiply(true, *z_, *fcmastertemp);
   
   // export the interface forces to full dof layout
-  Teuchos::RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(*problemrowmap_));
-  Teuchos::RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(*problemrowmap_));
+  Teuchos::RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+  Teuchos::RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   LINALG::Export(*fcslavetemp, *fcslave);
   LINALG::Export(*fcmastertemp, *fcmaster);
 

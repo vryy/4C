@@ -67,7 +67,6 @@ discret_(discret)
   // welcome message
 
   // create some local variables (later to be stored in strategy)
-  Teuchos::RCP<Epetra_Map> problemrowmap = Teuchos::rcp(new Epetra_Map(*(Discret().DofRowMap())));
   int dim = DRT::Problem::Instance()->NDim();
   if (dim!= 2 && dim!=3) dserror("ERROR: Meshtying problem must be 2D or 3D");
   std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interfaces;
@@ -302,11 +301,11 @@ discret_(discret)
   INPAR::CONTACT::SolvingStrategy stype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(mtparams,"STRATEGY");
   if (stype == INPAR::CONTACT::solution_lagmult)
-    strategy_ = Teuchos::rcp(new MtLagrangeStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf,maxdof));
+    strategy_ = Teuchos::rcp(new MtLagrangeStrategy(Discret(),mtparams,interfaces,dim,comm_,alphaf,maxdof));
   else if (stype == INPAR::CONTACT::solution_penalty)
-    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf,maxdof));
+    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(Discret(),mtparams,interfaces,dim,comm_,alphaf,maxdof));
   else if (stype == INPAR::CONTACT::solution_auglag)
-    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(Discret(),problemrowmap,mtparams,interfaces,dim,comm_,alphaf,maxdof));
+    strategy_ = Teuchos::rcp(new MtPenaltyStrategy(Discret(),mtparams,interfaces,dim,comm_,alphaf,maxdof));
   else
     dserror("Unrecognized strategy");
   if(Comm().MyPID()==0) std::cout << "done!" << endl;
@@ -480,7 +479,10 @@ bool CONTACT::MtManager::ReadAndCheckInput(Teuchos::ParameterList& mtparams)
 void CONTACT::MtManager::WriteRestart(IO::DiscretizationWriter& output)
 {
   // write restart information for meshtying
-  output.WriteVector("lagrmultold",GetStrategy().LagrMultOld());
+  Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
+  Teuchos::RCP<Epetra_Vector> lagrmultoldexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+  LINALG::Export(*(GetStrategy().LagrMultOld()),*lagrmultoldexp);
+  output.WriteVector("lagrmultold",lagrmultoldexp);
 
   return;
 }
@@ -504,7 +506,7 @@ void CONTACT::MtManager::ReadRestart(IO::DiscretizationReader& reader,
 void CONTACT::MtManager::PostprocessTractions(IO::DiscretizationWriter& output)
 {
   // evaluate interface tractions
-  Teuchos::RCP<Epetra_Map> problem = GetStrategy().ProblemRowMap();
+  Teuchos::RCP<Epetra_Map> problem = GetStrategy().ProblemDofs();
   Teuchos::RCP<Epetra_Vector> traction = Teuchos::rcp(new Epetra_Vector(*(GetStrategy().LagrMultOld())));
   Teuchos::RCP<Epetra_Vector> tractionexp = Teuchos::rcp(new Epetra_Vector(*problem));
   LINALG::Export(*traction, *tractionexp);

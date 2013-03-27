@@ -44,8 +44,12 @@ Maintainer: Alexander Popp
 #include "Epetra_Map.h"
 #include "Epetra_Vector.h"
 
-
 // forward declarations
+namespace DRT
+{
+  class Discretization;
+}
+
 namespace LINALG
 {
   class MapExtractor;
@@ -98,7 +102,7 @@ class StrategyBase
 
     Creates the strategy base object and initializes all global variables.
 
-    \param problemrowmap (in): Global problem dof row map
+    \param probdiscret (in): Underlying problem discretization
     \param params (in): List of meshtying/contact parameters
     \param dim (in): Global problem dimension
     \param comm (in): A communicator object
@@ -106,7 +110,7 @@ class StrategyBase
     \param maxdof (in): Highest dof number in global problem
 
     */
-    StrategyBase(Teuchos::RCP<Epetra_Map> problemrowmap,
+    StrategyBase(DRT::Discretization& probdiscret,
                  Teuchos::ParameterList params,
                  int dim, Teuchos::RCP<Epetra_Comm> comm,
                  double alphaf, int maxdof);
@@ -138,11 +142,29 @@ class StrategyBase
     const Epetra_Comm& Comm() const { return *comm_; }
 
     /*!
-    \brief Return row map of global problem
+    \brief Get the underlying problem discretization
 
     */
-    const Teuchos::RCP<Epetra_Map> ProblemRowMap() { return problemrowmap_; }
-        
+    const DRT::Discretization& ProblemDiscret() const { return probdiscret_; }
+
+    /*!
+    \brief Get the underlying problem dof row map
+
+    */
+    const Teuchos::RCP<Epetra_Map> ProblemDofs() { return probdofs_; }
+
+    /*!
+    \brief Get the underlying problem node row map
+
+    */
+    const Teuchos::RCP<Epetra_Map> ProblemNodes() { return probnodes_; }
+
+    /*!
+    \brief Get the underlying problem dof row map
+
+    */
+    const Teuchos::RCP<Epetra_Map> ProblemElements() { return probeles_; }
+
     //@}
 
     //! @name Purely virtual functions
@@ -219,13 +241,17 @@ class StrategyBase
     // don't want cctor (= operator impossible anyway for abstract class)
     StrategyBase(const StrategyBase& old);
 
-    Teuchos::RCP<Epetra_Map>   problemrowmap_;  // global problem dof row map (not only interfaces)
-    Teuchos::RCP<Epetra_Comm>  comm_;           // communicator
-    Teuchos::ParameterList     scontact_;       // containing contact input parameters
-    int                        dim_;            // dimension of problem (2D or 3D)
-    double                     alphaf_;         // Generalized-alpha parameter (0.0 for statics)
-    bool                       parredist_;      // flag indicating parallel redistribution status
-    int                        maxdof_;         // highest dof number in problem discretization
+    DRT::Discretization&        probdiscret_;      // underlying problem discretization (not only interfaces)
+    Teuchos::RCP<Epetra_Map>    probdofs_;         // underlying problem dof row map (not only interfaces)
+    Teuchos::RCP<Epetra_Map>    probnodes_;        // underlying problem node row map (not only interfaces)
+    Teuchos::RCP<Epetra_Map>    probeles_;         // underlying problem element row map (not only interfaces)
+
+    Teuchos::RCP<Epetra_Comm>   comm_;             // communicator
+    Teuchos::ParameterList      scontact_;         // containing contact input parameters
+    int                         dim_;              // dimension of problem (2D or 3D)
+    double                      alphaf_;           // Generalized-alpha parameter (0.0 for statics)
+    bool                        parredist_;        // flag indicating parallel redistribution status
+    int                         maxdof_;           // highest dof number in problem discretization
 
 }; // class StrategyBase
 } // namespace MORTAR

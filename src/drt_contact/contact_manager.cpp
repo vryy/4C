@@ -68,7 +68,6 @@ discret_(discret)
   // welcome message
 
   // create some local variables (later to be stored in strategy)
-  Teuchos::RCP<Epetra_Map> problemrowmap = Teuchos::rcp(new Epetra_Map(*(Discret().DofRowMap())));
   int dim = DRT::Problem::Instance()->NDim();
   if (dim!= 2 && dim!=3) dserror("ERROR: Contact problem must be 2D or 3D");
   std::vector<Teuchos::RCP<CONTACT::CoInterface> > interfaces;
@@ -420,11 +419,11 @@ discret_(discret)
   INPAR::CONTACT::SolvingStrategy stype =
       DRT::INPUT::IntegralValue<INPAR::CONTACT::SolvingStrategy>(cparams,"STRATEGY");
   if (stype == INPAR::CONTACT::solution_lagmult)
-    strategy_ = Teuchos::rcp(new CoLagrangeStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf,maxdof));
+    strategy_ = Teuchos::rcp(new CoLagrangeStrategy(Discret(),cparams,interfaces,dim,comm_,alphaf,maxdof));
   else if (stype == INPAR::CONTACT::solution_penalty)
-    strategy_ = Teuchos::rcp(new CoPenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf,maxdof));
+    strategy_ = Teuchos::rcp(new CoPenaltyStrategy(Discret(),cparams,interfaces,dim,comm_,alphaf,maxdof));
   else if (stype == INPAR::CONTACT::solution_auglag)
-    strategy_ = Teuchos::rcp(new CoPenaltyStrategy(problemrowmap,cparams,interfaces,dim,comm_,alphaf,maxdof));
+    strategy_ = Teuchos::rcp(new CoPenaltyStrategy(Discret(),cparams,interfaces,dim,comm_,alphaf,maxdof));
   else
     dserror("Unrecognized strategy");
   if(Comm().MyPID()==0) std::cout << "done!" << endl;
@@ -699,16 +698,32 @@ void CONTACT::CoManager::WriteRestart(IO::DiscretizationWriter& output)
   // quantities to be written for restart
   GetStrategy().DoWriteRestart(activetoggle,sliptoggle,weightedwear);
 
+  // export restart information for contact to problem dof row map
+  Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
+  Teuchos::RCP<Epetra_Vector> lagrmultoldexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+  LINALG::Export(*(GetStrategy().LagrMultOld()),*lagrmultoldexp);
+  Teuchos::RCP<Epetra_Vector> activetoggleexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+  LINALG::Export(*activetoggle,*activetoggleexp);
+
   // write restart information for contact
-  output.WriteVector("lagrmultold",GetStrategy().LagrMultOld());
-  output.WriteVector("activetoggle",activetoggle);
+  output.WriteVector("lagrmultold",lagrmultoldexp);
+  output.WriteVector("activetoggle",activetoggleexp);
 
   // friction
   if(GetStrategy().Friction())
-    output.WriteVector("sliptoggle",sliptoggle);
+  {
+    Teuchos::RCP<Epetra_Vector> sliptoggleexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+    LINALG::Export(*sliptoggle,*sliptoggleexp);
+    output.WriteVector("sliptoggle",sliptoggleexp);
+  }
   
+  // wear
   if (weightedwear != Teuchos::null)
-    output.WriteVector("weightedwear", weightedwear);
+  {
+    Teuchos::RCP<Epetra_Vector> weightedwearexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+    LINALG::Export(*weightedwear,*weightedwearexp);
+    output.WriteVector("weightedwear", weightedwearexp);
+  }
 
   return;
 }
@@ -734,6 +749,8 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   // *********************************************************************
   // active contact set and slip set
   // *********************************************************************
+
+  // evaluate active set and slip set
   Teuchos::RCP<Epetra_Vector> activeset = Teuchos::rcp(new Epetra_Vector(*GetStrategy().ActiveRowNodes()));
   activeset->PutScalar(1.0);
   if (GetStrategy().Friction())
@@ -744,7 +761,13 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
     LINALG::Export(*slipset, *slipsetexp);
     activeset->Update(1.0,*slipsetexp,1.0);
   }
-  output.WriteVector("activeset",activeset);
+
+  // export to problem node row map
+  Teuchos::RCP<Epetra_Map> problemnodes = GetStrategy().ProblemNodes();
+  Teuchos::RCP<Epetra_Vector> activesetexp = Teuchos::rcp(new Epetra_Vector(*problemnodes));
+  LINALG::Export(*activeset,*activesetexp);
+
+  output.WriteVector("activeset",activesetexp);
 
   // *********************************************************************
   // contact tractions
@@ -753,17 +776,17 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   // evaluate contact tractions
   GetStrategy().OutputStresses();
   
-  // problem row map  
-  Teuchos::RCP<Epetra_Map> problem = GetStrategy().ProblemRowMap();
+  // export to problem dof row map
+  Teuchos::RCP<Epetra_Map> problemdofs = GetStrategy().ProblemDofs();
 
   // normal direction
   Teuchos::RCP<Epetra_Vector> normalstresses = GetStrategy().ContactNorStress();
-  Teuchos::RCP<Epetra_Vector> normalstressesexp = Teuchos::rcp(new Epetra_Vector(*problem));
+  Teuchos::RCP<Epetra_Vector> normalstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
   LINALG::Export(*normalstresses, *normalstressesexp);
 
   // tangential plane
   Teuchos::RCP<Epetra_Vector> tangentialstresses = GetStrategy().ContactTanStress();
-  Teuchos::RCP<Epetra_Vector> tangentialstressesexp = Teuchos::rcp(new Epetra_Vector(*problem));
+  Teuchos::RCP<Epetra_Vector> tangentialstressesexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
   LINALG::Export(*tangentialstresses, *tangentialstressesexp);
   
   // write to output
@@ -783,11 +806,11 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   Teuchos::RCP<Epetra_Vector> fcmasternor = Teuchos::rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap()));
   Teuchos::RCP<Epetra_Vector> fcmastertan = Teuchos::rcp(new Epetra_Vector(GetStrategy().MMatrix()->DomainMap()));
   
-  // vectors with problemrowmap
-  Teuchos::RCP<Epetra_Vector> fcslavenorexp = Teuchos::rcp(new Epetra_Vector(*problem));
-  Teuchos::RCP<Epetra_Vector> fcslavetanexp = Teuchos::rcp(new Epetra_Vector(*problem));
-  Teuchos::RCP<Epetra_Vector> fcmasternorexp = Teuchos::rcp(new Epetra_Vector(*problem));
-  Teuchos::RCP<Epetra_Vector> fcmastertanexp = Teuchos::rcp(new Epetra_Vector(*problem));
+  // vectors with problem dof row map
+  Teuchos::RCP<Epetra_Vector> fcslavenorexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+  Teuchos::RCP<Epetra_Vector> fcslavetanexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+  Teuchos::RCP<Epetra_Vector> fcmasternorexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
+  Teuchos::RCP<Epetra_Vector> fcmastertanexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
 
   // multiplication
   GetStrategy().DMatrix()->Multiply(true, *normalstresses, *fcslavenor);
@@ -875,7 +898,7 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
 
     // write output
     Teuchos::RCP<Epetra_Vector> wearoutput = GetStrategy().ContactWear();
-    Teuchos::RCP<Epetra_Vector> wearoutputexp = Teuchos::rcp(new Epetra_Vector(*problem));
+    Teuchos::RCP<Epetra_Vector> wearoutputexp = Teuchos::rcp(new Epetra_Vector(*problemdofs));
     LINALG::Export(*wearoutput, *wearoutputexp);
     output.WriteVector("wear",wearoutputexp);
   }

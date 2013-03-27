@@ -57,10 +57,11 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  | ctor (public)                                             popp 05/09 |
  *----------------------------------------------------------------------*/
-CONTACT::CoAbstractStrategy::CoAbstractStrategy(Teuchos::RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
+CONTACT::CoAbstractStrategy::CoAbstractStrategy(DRT::Discretization& probdiscret,
+                                                Teuchos::ParameterList params,
                                                 std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
                                                 int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof) :
-MORTAR::StrategyBase(problemrowmap,params,dim,comm,alphaf,maxdof),
+MORTAR::StrategyBase(probdiscret,params,dim,comm,alphaf,maxdof),
 interface_(interface),
 isincontact_(false),
 wasincontact_(false),
@@ -347,7 +348,7 @@ void CONTACT::CoAbstractStrategy::Setup(bool redistributed, bool init)
   // (no need to rebuild this map after redistribution)
   if (!redistributed)
   {
-    gndofrowmap_ = LINALG::SplitMap(*problemrowmap_, *gsdofrowmap_);
+    gndofrowmap_ = LINALG::SplitMap(*(ProblemDiscret().DofRowMap()), *gsdofrowmap_);
     gndofrowmap_ = LINALG::SplitMap(*gndofrowmap_, *gmdofrowmap_);
   }
 
@@ -1907,8 +1908,8 @@ void CONTACT::CoAbstractStrategy::InterfaceForces(bool output)
   }
 
   // export the interface forces to full dof layout
-  Teuchos::RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(*problemrowmap_));
-  Teuchos::RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(*problemrowmap_));
+  Teuchos::RCP<Epetra_Vector> fcslave = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
+  Teuchos::RCP<Epetra_Vector> fcmaster = Teuchos::rcp(new Epetra_Vector(*ProblemDofs()));
   LINALG::Export(*fcslavetemp, *fcslave);
   LINALG::Export(*fcmastertemp, *fcmaster);
 

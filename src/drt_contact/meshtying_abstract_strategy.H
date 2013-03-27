@@ -86,8 +86,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     all necessary Epetra_Maps and global vector and matrix quantities. 
 
     */
-    MtAbstractStrategy(DRT::Discretization& discret,
-                       Teuchos::RCP<Epetra_Map> problemrowmap,
+    MtAbstractStrategy(DRT::Discretization& probdiscret,
                        Teuchos::ParameterList params,
                        std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface,
                        int dim, Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
@@ -99,14 +98,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     virtual ~MtAbstractStrategy() {};
     
     //! @name Access methods
-    
-    /*!
-    \brief Get the underlying problem discretization
 
-    */
-    DRT::Discretization& ProblemDiscret() const { return probdiscret_; }
-
-    
     /*!
     \brief Return Lagrange multiplier vector (t_n+1)
      
@@ -447,8 +439,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     // don't want cctor (= operator impossible anyway for abstract class)
     MtAbstractStrategy(const MtAbstractStrategy& old);
 
-    DRT::Discretization&  probdiscret_;               // the underlying problem discretization
-    std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface_; // contact interfaces
+    std::vector<Teuchos::RCP<MORTAR::MortarInterface> > interface_; // meshtying interfaces
     
     Teuchos::RCP<Epetra_Map> glmdofrowmap_;         // global Lagrange mult. dof row map (of all interfaces)
     Teuchos::RCP<Epetra_Map> gsdofrowmap_;          // global slave dof row map (of all interfaces)

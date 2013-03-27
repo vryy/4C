@@ -53,11 +53,11 @@ Maintainer: Alexander Popp
 /*----------------------------------------------------------------------*
  | ctor (public)                                             popp 01/10 |
  *----------------------------------------------------------------------*/
-MORTAR::StrategyBase::StrategyBase(Teuchos::RCP<Epetra_Map> problemrowmap,
+MORTAR::StrategyBase::StrategyBase(DRT::Discretization& probdiscret,
                                    Teuchos::ParameterList params,
                                    int dim, Teuchos::RCP<Epetra_Comm> comm,
                                    double alphaf, int maxdof) :
-problemrowmap_(problemrowmap),
+probdiscret_(probdiscret),
 comm_(comm),
 scontact_(params),
 dim_(dim),
@@ -65,6 +65,11 @@ alphaf_(alphaf),
 maxdof_(maxdof)
 
 {
+  // create and store Epetra_Maps for problem dof, node, ele row maps
+  probdofs_ =  Teuchos::rcp(new Epetra_Map(*(probdiscret.DofRowMap())));
+  probnodes_ = Teuchos::rcp(new Epetra_Map(*(probdiscret.NodeRowMap())));
+  probeles_ =  Teuchos::rcp(new Epetra_Map(*(probdiscret.ElementRowMap())));
+
   // empty constructor
   // (this is an abstract base class)
 }

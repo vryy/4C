@@ -44,8 +44,12 @@ Maintainer: Alexander Popp
 #include "../drt_mortar/mortar_strategy_base.H"
 #include "../drt_inpar/inpar_mortar.H"
 
-
 // forward declarations
+namespace DRT
+{
+  class Discretization;
+}
+
 namespace LINALG
 {
   class SparseMatrix;
@@ -83,9 +87,11 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     all necessary Epetra_Maps and global vector and matrix quantities.
 
     */
-    CoAbstractStrategy(Teuchos::RCP<Epetra_Map> problemrowmap, Teuchos::ParameterList params,
-                       std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface, int dim,
-                       Teuchos::RCP<Epetra_Comm> comm, double alphaf, int maxdof);
+    CoAbstractStrategy(DRT::Discretization& probdiscret,
+                       Teuchos::ParameterList params,
+                       std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface,
+                       int dim, Teuchos::RCP<Epetra_Comm> comm,
+                       double alphaf, int maxdof);
 
     /*!
     \brief Destructor
