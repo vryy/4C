@@ -854,6 +854,7 @@ void FSI::MonolithicFluidSplit::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, 
   {
     // The matrices are modified here. Do we have to change them back later on?
 
+    // do scaling of structure rows
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0,0).EpetraMatrix();
     srowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
     scolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
@@ -867,6 +868,7 @@ void FSI::MonolithicFluidSplit::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, 
         mat.Matrix(2,0).EpetraMatrix()->RightScale(*scolsum_))
       dserror("structure scaling failed");
 
+    // do scaling of ale rows
     A = mat.Matrix(2,2).EpetraMatrix();
     arowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
     acolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
@@ -880,6 +882,7 @@ void FSI::MonolithicFluidSplit::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, 
         mat.Matrix(1,2).EpetraMatrix()->RightScale(*acolsum_))
       dserror("ale scaling failed");
 
+    // do scaling of structure and ale rhs vectors
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b,0);
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b,2);
 

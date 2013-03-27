@@ -427,20 +427,30 @@ namespace FSI
 
     //@}
 
-    /// the composed system matrix
-    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
+    //! @name Methods for infnorm-scaling of the system
 
-    /// apply infnorm scaling to linear block system
+    //! apply infnorm scaling to linear block system
+    //!
+    //! This affects only the main diagonal blocks, not the off-diagonal
+    //! coupling blocks.
     virtual void ScaleSystem(Epetra_Vector& b) { ScaleSystem(*SystemMatrix(),b); }
 
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) { UnscaleSolution(*SystemMatrix(),x,b); }
 
     /// apply infnorm scaling to linear block system
+    //!
+    //! This affects only the main diagonal blocks, not the off-diagonal
+    //! coupling blocks.
     virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b) {}
 
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b) {}
+
+    //@}
+
+    /// the composed system matrix
+    virtual Teuchos::RCP<LINALG::BlockSparseMatrixBase> SystemMatrix() const = 0;
 
     /// start a new time step
     virtual void PrepareTimeStep();

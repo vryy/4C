@@ -21,12 +21,15 @@ namespace FSI
 
     //@}
 
+    //! @name Methods for infnorm-scaling of the system
+
     /// apply infnorm scaling to linear block system
     virtual void ScaleSystem(Epetra_Vector& b) = 0;
 
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) = 0;
 
+    //@}
   };
 }
 

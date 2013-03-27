@@ -89,11 +89,15 @@ namespace FSI
     /// Extract initial guess from fields
     virtual void InitialGuess(Teuchos::RCP<Epetra_Vector> ig ) = 0;
 
+    //! @name Methods for infnorm-scaling of the system
+
     /// apply infnorm scaling to linear block system
     virtual void ScaleSystem(Epetra_Vector& b) {}
 
     /// undo infnorm scaling from scaled solution
     virtual void UnscaleSolution(Epetra_Vector& x, Epetra_Vector& b) {}
+
+    //@}
 
     //! @name Output
 

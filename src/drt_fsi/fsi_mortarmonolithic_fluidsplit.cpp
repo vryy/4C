@@ -960,13 +960,14 @@ void FSI::MortarMonolithicFluidSplit::InitialGuess(Teuchos::RCP<Epetra_Vector> i
 /*----------------------------------------------------------------------*/
 void FSI::MortarMonolithicFluidSplit::ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b)
 {
-  const Teuchos::ParameterList& fsidyn   = DRT::Problem::Instance()->FSIDynamicParams();
+  const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
   const bool scaling_infnorm = (bool)DRT::INPUT::IntegralValue<int>(fsidyn,"INFNORMSCALING");
 
   if (scaling_infnorm)
   {
     // The matrices are modified here. Do we have to change them back later on?
 
+    // do scaling of structure rows
     Teuchos::RCP<Epetra_CrsMatrix> A = mat.Matrix(0,0).EpetraMatrix();
     srowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
     scolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
@@ -980,6 +981,7 @@ void FSI::MortarMonolithicFluidSplit::ScaleSystem(LINALG::BlockSparseMatrixBase&
         mat.Matrix(2,0).EpetraMatrix()->RightScale(*scolsum_))
       dserror("structure scaling failed");
 
+    // do scaling of ale rows
     A = mat.Matrix(2,2).EpetraMatrix();
     arowsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
     acolsum_ = Teuchos::rcp(new Epetra_Vector(A->RowMap(),false));
@@ -993,6 +995,7 @@ void FSI::MortarMonolithicFluidSplit::ScaleSystem(LINALG::BlockSparseMatrixBase&
         mat.Matrix(1,2).EpetraMatrix()->RightScale(*acolsum_))
       dserror("ale scaling failed");
 
+    // do scaling of structure and ale rhs vectors
     Teuchos::RCP<Epetra_Vector> sx = Extractor().ExtractVector(b,0);
     Teuchos::RCP<Epetra_Vector> ax = Extractor().ExtractVector(b,2);
 
