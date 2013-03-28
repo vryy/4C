@@ -1478,57 +1478,58 @@ void DRT::ELEMENTS::So_hex8::nlnstiffmass(
     // end of call material law ccccccccccccccccccccccccccccccccccccccccccccccc
 
     // return gp plastic strains (only in case of plastic strain output)
-     switch (ioplstrain)
-     {
-     case INPAR::STR::strain_gl:
-     {
-       if (eleplstrain == NULL) dserror("plastic strain data not available");
-       LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
-       for (int i = 0; i < 3; ++i)
-         (*eleplstrain)(gp,i) = plglstrain(i);
-       for (int i = 3; i < 6; ++i)
-         (*eleplstrain)(gp,i) = 0.5 * plglstrain(i);
-     }
-     break;
-     case INPAR::STR::strain_ea:
-     {
-       if (eleplstrain == NULL) dserror("plastic strain data not available");
-       LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
-       // rewriting Green-Lagrange strains in matrix format
-       LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> gl;
-       gl(0,0) = plglstrain(0);
-       gl(0,1) = 0.5*plglstrain(3);
-       gl(0,2) = 0.5*plglstrain(5);
-       gl(1,0) = gl(0,1);
-       gl(1,1) = plglstrain(1);
-       gl(1,2) = 0.5*plglstrain(4);
-       gl(2,0) = gl(0,2);
-       gl(2,1) = gl(1,2);
-       gl(2,2) = plglstrain(2);
+    switch (ioplstrain)
+    {
+    case INPAR::STR::strain_gl:
+    {
+      if (eleplstrain == NULL) dserror("plastic strain data not available");
+      LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain
+        = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
+      for (int i = 0; i < 3; ++i)
+       (*eleplstrain)(gp,i) = plglstrain(i);
+      for (int i = 3; i < 6; ++i)
+       (*eleplstrain)(gp,i) = 0.5 * plglstrain(i);
+    }
+    break;
+    case INPAR::STR::strain_ea:
+    {
+      if (eleplstrain == NULL) dserror("plastic strain data not available");
+      LINALG::Matrix<MAT::NUM_STRESS_3D,1> plglstrain = params.get<LINALG::Matrix<MAT::NUM_STRESS_3D,1> >("plglstrain");
+      // rewriting Green-Lagrange strains in matrix format
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> gl;
+      gl(0,0) = plglstrain(0);
+      gl(0,1) = 0.5*plglstrain(3);
+      gl(0,2) = 0.5*plglstrain(5);
+      gl(1,0) = gl(0,1);
+      gl(1,1) = plglstrain(1);
+      gl(1,2) = 0.5*plglstrain(4);
+      gl(2,0) = gl(0,2);
+      gl(2,1) = gl(1,2);
+      gl(2,2) = plglstrain(2);
 
-       // inverse of deformation gradient
-       LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invdefgrd;
-       invdefgrd.Invert(defgrd);
+      // inverse of deformation gradient
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> invdefgrd;
+      invdefgrd.Invert(defgrd);
 
-       LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> temp;
-       LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi;
-       temp.Multiply(gl,invdefgrd);
-       euler_almansi.MultiplyTN(invdefgrd,temp);
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> temp;
+      LINALG::Matrix<NUMDIM_SOH8,NUMDIM_SOH8> euler_almansi;
+      temp.Multiply(gl,invdefgrd);
+      euler_almansi.MultiplyTN(invdefgrd,temp);
 
-       (*eleplstrain)(gp,0) = euler_almansi(0,0);
-       (*eleplstrain)(gp,1) = euler_almansi(1,1);
-       (*eleplstrain)(gp,2) = euler_almansi(2,2);
-       (*eleplstrain)(gp,3) = euler_almansi(0,1);
-       (*eleplstrain)(gp,4) = euler_almansi(1,2);
-       (*eleplstrain)(gp,5) = euler_almansi(0,2);
-     }
-     break;
-     case INPAR::STR::strain_none:
-       break;
-     default:
-       dserror("requested plastic strain type not available");
-       break;
-     }
+      (*eleplstrain)(gp,0) = euler_almansi(0,0);
+      (*eleplstrain)(gp,1) = euler_almansi(1,1);
+      (*eleplstrain)(gp,2) = euler_almansi(2,2);
+      (*eleplstrain)(gp,3) = euler_almansi(0,1);
+      (*eleplstrain)(gp,4) = euler_almansi(1,2);
+      (*eleplstrain)(gp,5) = euler_almansi(0,2);
+    }
+    break;
+    case INPAR::STR::strain_none:
+      break;
+    default:
+      dserror("requested plastic strain type not available");
+      break;
+    }
 
     // return gp stresses
     switch (iostress)
