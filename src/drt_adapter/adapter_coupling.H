@@ -17,13 +17,7 @@ Maintainer: Ulrich Kuettler
 #ifndef FSI_COUPLING_H
 #define FSI_COUPLING_H
 
-#include <string>
-#include <vector>
-#include <set>
-#include <map>
-
 #include <Teuchos_RCP.hpp>
-#include <Epetra_Export.h>
 #include <Epetra_Map.h>
 #include <Epetra_CrsMatrix.h>
 
@@ -39,9 +33,6 @@ namespace DRT
 
 namespace ADAPTER
 {
-
-  class ConditionDofMap;
-
   /// Management of coupling between two (matching) sets of nodes from two discretizations
   /*!
     Interface coupled problems with matching meshes need to transfer

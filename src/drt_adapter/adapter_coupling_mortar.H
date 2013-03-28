@@ -18,13 +18,18 @@ Maintainer: Alexander Popp
 
 #include <Teuchos_RCP.hpp>
 #include <Epetra_Map.h>
-#include "../drt_lib/drt_discret.H"
+#include <Epetra_CrsMatrix.h>
 
 // forward declarations
 
 namespace LINALG
 {
   class SparseMatrix;
+}
+
+namespace DRT
+{
+  class Discretization;
 }
 
 namespace MORTAR
