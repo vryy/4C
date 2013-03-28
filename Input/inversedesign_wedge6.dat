@@ -4,7 +4,7 @@
 // http://www.lnm.mw.tum.de
 // 089 - 289-15239
 //
-// necessary defines: CCADISCRET D_SOLID3 BINIO INVERSEDESIGNCREATE
+// necessary defines: D_SOLID3 BINIO INVERSEDESIGNCREATE
 //
 -----------------------------------------------------------------------TITLE
 inverse design problem with wedge6 element

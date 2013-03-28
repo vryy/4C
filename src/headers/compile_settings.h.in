@@ -10,14 +10,6 @@
 #define CHANGEDDATE "unknown"
 #endif
 
-#ifndef CCADISCRET
-#cmakedefine CCADISCRET
-#endif
-
-#ifndef TRILINOS_PACKAGE
-#cmakedefine TRILINOS_PACKAGE
-#endif
-
 #ifndef DEBUG
 #cmakedefine DEBUG
 #endif
@@ -56,10 +48,6 @@
 
 #ifndef QHULL
 #cmakedefine QHULL
-#endif
-
-#ifndef D_EXODUS
-#cmakedefine D_EXODUS
 #endif
 
 #ifndef PRESTRESS

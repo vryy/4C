@@ -21,7 +21,6 @@ its parameters and conditions.
 
 */
 /*----------------------------------------------------------------------*/
-#ifdef D_EXODUS
 
 #include "pre_exodus.H"
 #include <Teuchos_RCP.hpp>
@@ -45,11 +44,7 @@ its parameters and conditions.
 #include "pre_exodus_validate.H"
 #include "pre_exodus_centerline.H"
 
-#ifdef PARALLEL
 #include <Epetra_MpiComm.h>
-#else
-#include <Epetra_SerialComm.h>
-#endif
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -530,6 +525,3 @@ int EXODUS::CreateDefaultBCFile(EXODUS::Mesh& mymesh)
 
   return 0;
 }
-
-
-#endif

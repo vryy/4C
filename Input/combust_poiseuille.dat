@@ -4,7 +4,7 @@
 // http://www.lnm.mw.tum.de
 // 089 - 289-15265
 //
-// necessary defines: D_FLUID3 CCADISCRET BINIO TRAP_FE
+// necessary defines: D_FLUID3 BINIO TRAP_FE
 //
 ==================================================================
 General Data File CCARAT

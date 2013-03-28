@@ -14,7 +14,6 @@ Maintainer: Moritz
 Here is everything related with reading a bc file
 */
 /*----------------------------------------------------------------------*/
-#ifdef D_EXODUS
 #ifndef PRE_EXODUS_READBC_H_
 #define PRE_EXODUS_READBC_H_
 
@@ -100,5 +99,3 @@ void CorrectXYPlaneForPeriodicBoundaryConditions(
 
 
 #endif /*PRE_EXODUS_READBC_H_*/
-#endif /*EXODUS*/
-

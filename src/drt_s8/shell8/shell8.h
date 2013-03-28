@@ -72,10 +72,6 @@ double        wgtt[3];
 
 #if 0
 
-// TODO: check, if still necessary!
-//#ifndef CCADISCRET
-
-
 /*----------------------------------------------------------------------*
  |  PROTOTYPES OF ALL SHELL8 ROUTINES                    m.gee 11/01    |
  *----------------------------------------------------------------------*/

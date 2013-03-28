@@ -14,7 +14,6 @@ Maintainer: Moritz
 Here is everything related with writing a dat-file
 */
 /*----------------------------------------------------------------------*/
-#ifdef D_EXODUS
 #include "pre_exodus_writedat.H"
 #include "pre_exodus_reader.H"
 #include "pre_exodus_soshextrusion.H" // to calculate normal
@@ -537,6 +536,3 @@ void EXODUS::DatEles(Teuchos::RCP< const EXODUS::ElementBlock> eb, const EXODUS:
   }
   return;
 }
-
-
-#endif //D_EXODUS

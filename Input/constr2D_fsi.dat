@@ -4,7 +4,7 @@
 // http://www.lnm.mw.tum.de
 // 089 - 289-25257
 //
-// necessary defines: D_FLUID2 CCADISCRET BINIO D_ALE
+// necessary defines: D_FLUID2 BINIO D_ALE
 //
 -----------------------------------------------------------------------TITLE
 Two-dimensional FSI calculation for an ellipsoid with constant area in

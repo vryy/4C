@@ -98,4 +98,4 @@ typedef struct _VISCOHYPER
      DOUBLE                    betas[4];       /* strain energy factors of the springs of the maxwell elements */
 } VISCOHYPER;
 
-#endif /* defined(CCADISCRET) && !defined(D_SHELL8) */
+#endif /* !defined(D_SHELL8) */

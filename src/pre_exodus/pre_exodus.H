@@ -19,8 +19,6 @@ or the well-known .dat file is created.
 
 */
 /*----------------------------------------------------------------------*/
-#ifdef D_EXODUS
-
 #ifndef PRE_EXODUS_H_
 #define PRE_EXODUS_H_
 
@@ -38,4 +36,3 @@ int CreateDefaultBCFile(EXODUS::Mesh& mesh);
 } // of namespace EXODUS
 
 #endif /*PRE_EXODUS_H_*/
-#endif

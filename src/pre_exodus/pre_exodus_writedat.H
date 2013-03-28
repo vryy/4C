@@ -14,7 +14,6 @@ Maintainer: Moritz
 Here is everything related with writing a dat-file
 */
 /*----------------------------------------------------------------------*/
-#ifdef D_EXODUS
 #ifndef PRE_EXODUS_WRITEDAT_H_
 #define PRE_EXODUS_WRITEDAT_H_
 
@@ -84,5 +83,3 @@ inline std::string CondGeomTypeToString(const EXODUS::cond_def& def)
 
 
 #endif /*PRE_EXODUS_WRITEDAT_H_*/
-#endif /*EXODUS*/
-

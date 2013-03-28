@@ -1,7 +1,7 @@
 //
 // Maintainer: Benedikt Schott
 //
-// necessary defines: D_FLUID3 D_SOLID3 CCADISCRET BINIO QHULL
+// necessary defines: D_FLUID3 D_SOLID3 BINIO QHULL
 //
 // Both volumecell and boundarycell points by Tessellation
 ==================================================================

@@ -15,7 +15,6 @@ Here everything related with the exodus format and the accessible data
 is handed to a c++ object mesh.
 */
 /*----------------------------------------------------------------------*/
-#ifdef D_EXODUS
 #ifndef PRE_EXODUS_READER_H_
 #define PRE_EXODUS_READER_H_
 
@@ -427,4 +426,3 @@ int PyrSideNumberExoToBaci(const int exoface);
 } // of namespace EXODUS
 
 #endif /*PRE_EXODUS_READER_H_*/
-#endif

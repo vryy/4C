@@ -156,11 +156,6 @@ endif ()
 
 add_definitions("-DQHULL")
 
-option (D_EXODUS "Pre_exodus (exodusII, netcdf)" OFF)
-if (D_EXODUS)
-  add_definitions("-DD_EXODUS")
-endif(D_EXODUS)
-
 #   tools
 
 option (PERF "detailed time measurement" OFF)
@@ -1684,7 +1679,7 @@ add_executable (post_drt_ensight ${OBJS_POST_DRT_ENSIGHT})
 add_executable (post_drt_generic ${OBJS_POST_DRT_GENERIC})
 add_executable (post_drt_monitor ${OBJS_POST_DRT_MONITOR})
 add_executable (post_drt_s8convert ${OBJS_POST_DRT_S8CONVERT})
-
+add_executable (pre_exodus ${OBJS_PRE_EXODUS})
 add_executable (pre_curve ${OBJS_PRE_CURVE})
 
 target_link_libraries (${baciname} 
@@ -1723,13 +1718,8 @@ target_link_libraries (post_drt_generic ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_monitor ${FILTER_LIBRARIES})
 target_link_libraries (post_drt_s8convert ${FILTER_LIBRARIES})
 target_link_libraries (pre_curve ${FILTER_LIBRARIES})
+target_link_libraries (pre_exodus ${FILTER_LIBRARIES})
 
-option (D_EXODUS "exodus filter" OFF)
-if (D_EXODUS)
-  add_definitions("-DD_EXODUS")
-  add_executable (pre_exodus ${OBJS_PRE_EXODUS})
-  target_link_libraries (pre_exodus ${FILTER_LIBRARIES})
-endif (D_EXODUS)
 
 ###------------------------------------------------------------------ Tests
 

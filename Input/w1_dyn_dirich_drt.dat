@@ -4,7 +4,7 @@
 // http://www.lnm.mw.tum.de/Members/bornemann
 // 089 - 289-15237
 //
-// necessary defines: CCADISCRET D_WALL1 BINIO
+// necessary defines: D_WALL1 BINIO
 //
 //
 // #define MAXNOD (4)

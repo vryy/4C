@@ -4,7 +4,7 @@
 // http://www.lnm.mw.tum.de
 // 089 - 289-15239
 //
-// necessary defines: D_FLUID3 CCADISCRET BINIO D_ALE D_SOLID3
+// necessary defines: D_FLUID3 BINIO D_ALE D_SOLID3
 //
 -----------------------------------------------------------------------TITLE
 Pressure Wave MFSI with backward Euler

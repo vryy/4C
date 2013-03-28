@@ -14,7 +14,6 @@ Maintainer: Moritz
 Here is everything related with reading a bc file
 */
 /*----------------------------------------------------------------------*/
-#ifdef D_EXODUS
 #include "pre_exodus_readbc.H"
 #include "pre_exodus_reader.H"
 
@@ -781,5 +780,3 @@ void EXODUS::CorrectXYPlaneForPeriodicBoundaryConditions(
    }
    return;
 }
-
-#endif //D_EXODUS

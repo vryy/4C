@@ -14,7 +14,6 @@ Maintainer: Moritz
 Here everything related with solid-shell body extrusion
 */
 /*----------------------------------------------------------------------*/
-#ifdef D_EXODUS
 #include "pre_exodus_soshextrusion.H"
 #include "pre_exodus_reader.H"
 #include "pre_exodus_validate.H"
@@ -1767,6 +1766,3 @@ void EXODUS::PlotEleConnGmsh(const std::map<int,std::vector<int> >& conn, const 
   f_system << gmshfilecontent.str();
   f_system.close();
 }
-
-
-#endif

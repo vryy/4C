@@ -4,7 +4,7 @@
 // http://www.lnm.mw.tum.de
 // 089 - 289-25239
 //
-// necessary defines: CCADISCRET D_SOLID3 BINIO BINIO
+// necessary defines: D_SOLID3 BINIO BINIO
 //
 // start with
 // mpirun -np 10 ./baci-release -ngroup=5 -glayout=2,2,2,2,2 -nptype=copyDatFile Input/invaaa.dat xxx | tee xxx.log

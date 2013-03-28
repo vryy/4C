@@ -17,7 +17,6 @@ Maintainer: Michael Gee
 #include "../../drt_lib/drt_dserror.H"
 
 #if 0
-//#ifndef CCADISCRET
 ///*----------------------------------------------------------------------*
 // | call material laws                                     m.gee 6/01    |
 // *----------------------------------------------------------------------*/
@@ -105,8 +104,6 @@ Maintainer: Michael Gee
 //#endif
 //return;
 //} /* end of s8_tmat */
-//
-//#endif
 #endif // if 0
 
 /*----------------------------------------------------------------------*

@@ -15,9 +15,6 @@ Validate a given BACI input file (after all preprocessing steps)
 
 */
 
-#ifdef D_EXODUS
-
-
 #ifndef PRE_EXODUS_VALIDATE_H_
 #define PRE_EXODUS_VALIDATE_H_
 
@@ -55,5 +52,3 @@ std::vector<int> RewindEle(std::vector<int> old_nodeids, const DRT::Element::Dis
 }
 
 #endif // PRE_EXODUS_VALIDATE_H_
-
-#endif
