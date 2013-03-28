@@ -67,7 +67,7 @@ MAT::PlasticNlnLogNeoHookeType MAT::PlasticNlnLogNeoHookeType::instance_;
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()                  |
  *----------------------------------------------------------------------*/
-DRT::ParObject* MAT::PlasticNlnLogNeoHookeType::Create( const std::vector<char> & data )
+DRT::ParObject* MAT::PlasticNlnLogNeoHookeType::Create(const std::vector<char>& data)
 {
   MAT::PlasticNlnLogNeoHooke* plasticneo = new MAT::PlasticNlnLogNeoHooke();
   plasticneo->Unpack(data);
@@ -194,6 +194,9 @@ void MAT::PlasticNlnLogNeoHooke::Unpack(const std::vector<char>& data)
 
   if (position != data.size())
     dserror("Mismatch in size of data %d <-> %d",data.size(),position);
+
+  return;
+
 }  // Unpack()
 
 
@@ -216,17 +219,18 @@ void MAT::PlasticNlnLogNeoHooke::Setup(int numgp, DRT::INPUT::LineDefinition* li
 
   LINALG::Matrix<3,3> emptymat(true);
   for (int i=0; i<3; i++)
-    emptymat(i,i)=1.0;
+    emptymat(i,i) = 1.0;
 
   for (int i=0; i<numgp; i++)
   {
     invplrcglast_->at(i) = emptymat;
     invplrcgcurr_->at(i) = emptymat;
+
     accplstrainlast_->at(i) = 0.0;
     accplstraincurr_->at(i) = 0.0;
   }
 
-  isinit_=true;
+  isinit_ = true;
   return;
 
 }  // Setup()
@@ -238,12 +242,12 @@ void MAT::PlasticNlnLogNeoHooke::Setup(int numgp, DRT::INPUT::LineDefinition* li
 void MAT::PlasticNlnLogNeoHooke::Update()
 {
   // make current values at time step t_n+1 to values of last step t_n
-  invplrcglast_=invplrcgcurr_;
-  accplstrainlast_=accplstraincurr_;
+  invplrcglast_ = invplrcgcurr_;
+  accplstrainlast_ = accplstraincurr_;
 
   // empty vectors of current data
-  invplrcgcurr_= Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >);
-  accplstraincurr_   = Teuchos::rcp(new std::vector<double>);
+  invplrcgcurr_ = Teuchos::rcp(new std::vector<LINALG::Matrix<3,3> >);
+  accplstraincurr_ = Teuchos::rcp(new std::vector<double>);
 
   // get the size of the vector
   // (use the last vector, because it includes latest results, current is empty)
@@ -254,6 +258,7 @@ void MAT::PlasticNlnLogNeoHooke::Update()
   LINALG::Matrix<3,3> emptymat(true);
   for (int i=0; i<3; i++)
     emptymat(i,i)=1.0;
+
   for (int i=0; i<histsize; i++)
   {
     invplrcgcurr_->at(i) = emptymat;
@@ -271,10 +276,12 @@ void MAT::PlasticNlnLogNeoHooke::Evaluate(
   const LINALG::Matrix<6,1>* glstrain,
   Teuchos::ParameterList& params,
   LINALG::Matrix<6,1>* stress,
-  LINALG::Matrix<6,6>* cmat)
+  LINALG::Matrix<6,6>* cmat
+  )
 {
+  // extract the gauss points from the parameter list
   const int gp = params.get<int>("gp",-1);
-    if (gp == -1) dserror("no Gauss point number provided in material");
+  if (gp == -1) dserror("no Gauss point number provided in material");
 
   // elastic material data
   // get material parameters
@@ -544,7 +551,8 @@ bool MAT::PlasticNlnLogNeoHooke::VisData(
     data[0] = temp/numgp;
   }
   return true;
-}
+
+}  // VisData()
 
 
 /*----------------------------------------------------------------------*/

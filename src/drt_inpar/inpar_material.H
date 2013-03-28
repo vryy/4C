@@ -29,7 +29,8 @@ namespace INPAR
     {
       m_stvenant,    ///< St.Venant Kirchhoff material
       m_thermostvenant, ///< St.Venant Kirchhoff material with temperature
-      m_thermopllinelast, ///< Hooke elasticity with temperature and von Mises plasticity
+      m_thermopllinelast, ///< Temperature-dependent Hooke elasticity and von Mises plasticity
+      m_thermoplhyperelast, ///< Temperature-dependent hyperelasticity and von Mises plasticity
       m_neohooke,    ///< Neo-Hooke material
       m_plneohooke,  ///< Neo-Hooke elasticity and von Mises plasticity
       m_plnlnlogneohooke,///< Neo-Hooke elasticity with logarithmic finite strain von Mises plasticity

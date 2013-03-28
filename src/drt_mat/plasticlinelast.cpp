@@ -60,6 +60,7 @@ MAT::PAR::PlasticLinElast::PlasticLinElast(
 {
 }
 
+
 /*----------------------------------------------------------------------*
  | is called in Material::Factory from ReadMaterials()       dano 02/12 |
  *----------------------------------------------------------------------*/
@@ -1117,14 +1118,19 @@ void MAT::PlasticLinElast::FDCheck(
 }  // FDCheck()
 
 
-/*----------------------------------------------------------------------*/
-
+/*---------------------------------------------------------------------*
+ | return names of visualization data (public)              dano 03/13 |
+ *---------------------------------------------------------------------*/
 void MAT::PlasticLinElast::VisNames(std::map<string,int>& names)
 {
   string accumulatedstrain = "accumulatedstrain";
   names[accumulatedstrain] = 1; // scalar
 }
 
+
+/*---------------------------------------------------------------------*
+ | return visualization data (public)                       dano 03/13 |
+ *---------------------------------------------------------------------*/
 bool MAT::PlasticLinElast::VisData(const string& name, std::vector<double>& data, int numgp)
 {
   if (name == "accumulatedstrain")
@@ -1137,3 +1143,7 @@ bool MAT::PlasticLinElast::VisData(const string& name, std::vector<double>& data
   }
   return true;
 }
+
+
+/*----------------------------------------------------------------------*/
+

@@ -868,7 +868,7 @@ void MAT::PlasticNeoHooke::Evaluate
         temp2.MultiplyNT(Vtemp2,Vtemp1); // N_{ba}
 
         ElastSymTensorMultiply(ET, c1, temp1, temp1, 1.0); // N_{abab}
-        ElastSymTensorMultiply(ET, c1, temp1, temp2, 1.0); // N_{abab}
+        ElastSymTensorMultiply(ET, c1, temp1, temp2, 1.0); // N_{abba}
       }
     }
   }  // update the deviatoric tangent modulus \hat{C}^{SE}

@@ -1,37 +1,36 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file plastichyperelast.H
+\file thermoplastichyperelast.H
 \brief Contains the functions to establish local material law /
-       stress-strain law for isotropic material following large strain
-       von-Mises plasticity with linear isotropic hardening
-       and logarithmic hyperelastic material (i.e. linear relation
-       between Kirchhoff-stress and logarithmic strain; also known as Hencky
-       material model). 
-       The principal stress-based implementation follows
-       Bonet and Wood: "Nonlinear continuum mechanics for finite element analysis.",
-       Cambridge University Press, Cambridge, 2008
+       stress-strain law for isotropic material following finite strain
+       von-Mises plasticity with linear isotropic hardening and general
+       hyperelasticity (for the time being: NeoHooke).
 
-       geometrically nonlinear, finite strains, rate-independent
+       implementation is based on
+       Simo and Hughes: "Computational Inelasticity."
+       Springer, 2000.
+
+       geometrically nonlinear, for finite strains, rate-independent
 
        example input line:
-       MAT 1 MAT_Struct_PlasticNlnLogNeoHooke YOUNG 206.9 NUE 0.29 DENS 0.0
-         YIELD 0.45 ISOHARD 0.0
+       MAT 1 MAT_Struct_ThrPlasticHyperElast YOUNG 206.9 NUE 0.29 DENS 0.0
+         YIELD 0.45 ISOHARD 0.0 KINHARD 0.0
 
 <pre>
-Maintainer: Alexander Popp
-            popp@lnm.mw.tum.de
+Maintainer: Caroline Danowski
+            danowski@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
-            089 - 289-15238
+            089 - 289-15253
 </pre>
 */
 /*----------------------------------------------------------------------*
- | definitions                                                          |
+ | definitions                                               dano 03/13 |
  *----------------------------------------------------------------------*/
-#ifndef PLASTICNLNLOGNEOHOOKE_H_
-#define PLASTICNLNLOGNEOHOOKE_H_
+#ifndef THERMO_PLAST_HYPERELAST_H_
+#define THERMO_PLAST_HYPERELAST_H_
 
 /*----------------------------------------------------------------------*
- | headers                                                              |
+ | headers                                                   dano 03/13 |
  *----------------------------------------------------------------------*/
 #include "matpar_parameter.H"
 #include "so3_material.H"
@@ -45,15 +44,15 @@ namespace MAT
 
     /*----------------------------------------------------------------------*/
     //! material parameters for neo-Hooke
-    class PlasticNlnLogNeoHooke : public Parameter
+    class ThermoPlasticHyperElast : public Parameter
     {
     public:
 
       //! standard constructor
-      PlasticNlnLogNeoHooke(Teuchos::RCP<MAT::PAR::Material> matdata);
+      ThermoPlasticHyperElast(Teuchos::RCP<MAT::PAR::Material> matdata);
 
       //! destructor
-      virtual ~PlasticNlnLogNeoHooke() { ; }
+      virtual ~ThermoPlasticHyperElast() { ; }
 
       //! @name material parameters
       //@{
@@ -68,44 +67,46 @@ namespace MAT
       const double yield_;
       //! linear isotropic hardening modulus
       const double isohard_;
+      //! linear kinematic hardening modulus
+      const double kinhard_;
 
       //@}
 
       //! create material instance of matching type with my parameters
       virtual Teuchos::RCP<MAT::Material> CreateMaterial();
 
-    };  // class PlasticNlnLogNeoHooke
+    };  // class ThermoPlasticHyperElast
 
   }  // namespace PAR
 
 
-  class PlasticNlnLogNeoHookeType : public DRT::ParObjectType
+  class ThermoPlasticHyperElastType : public DRT::ParObjectType
   {
   public:
 
-    std::string Name() const { return "PlasticNlnLogNeoHookeType"; }
+    std::string Name() const { return "ThermoPlasticHyperElastType"; }
 
-    static PlasticNlnLogNeoHookeType & Instance() { return instance_; };
+    static ThermoPlasticHyperElastType & Instance() { return instance_; };
 
     virtual DRT::ParObject* Create( const std::vector<char> & data );
 
   private:
 
-    static PlasticNlnLogNeoHookeType instance_;
+    static ThermoPlasticHyperElastType instance_;
 
-  };  // class PlasticNlnLogNeoHookeType
+  };  // class ThermoPlasticHyperElastType
 
   /*----------------------------------------------------------------------*/
   //! wrapper for finite strain elasto-plastic material
-  class PlasticNlnLogNeoHooke : public So3Material
+  class ThermoPlasticHyperElast : public So3Material
   {
   public:
 
     //! construct empty material object
-    PlasticNlnLogNeoHooke();
+    ThermoPlasticHyperElast();
 
     //! construct the material object given material parameters
-    explicit PlasticNlnLogNeoHooke(MAT::PAR::PlasticNlnLogNeoHooke* params);
+    explicit ThermoPlasticHyperElast(MAT::PAR::ThermoPlasticHyperElast* params);
 
     //! @name Packing and Unpacking
 
@@ -117,7 +118,7 @@ namespace MAT
     */
     virtual int UniqueParObjectId() const
     {
-      return PlasticNlnLogNeoHookeType::Instance().UniqueParObjectId();
+      return ThermoPlasticHyperElastType::Instance().UniqueParObjectId();
     }
 
     /*!
@@ -151,10 +152,10 @@ namespace MAT
     //! @name Access methods
 
     //! material type
-    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_plnlnlogneohooke; }
+    virtual INPAR::MAT::MaterialType MaterialType() const { return INPAR::MAT::m_thermoplhyperelast; }
 
     //! return copy of this material object
-    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new PlasticNlnLogNeoHooke( *this ) ); }
+    virtual Teuchos::RCP<Material> Clone() const { return Teuchos::rcp( new ThermoPlasticHyperElast( *this ) ); }
 
     //! Young's modulus
     double Youngs() const { return params_->youngs_; }
@@ -174,6 +175,9 @@ namespace MAT
     //! isotropic hardening modulus
     virtual double IsoHard() const { return params_->isohard_; }
 
+    //! kinematic hardening modulus
+    virtual double KinHard() const { return params_->kinhard_; }
+
     //! return quick accessible material parameter data
     virtual MAT::PAR::Parameter* Parameter() const { return params_; }
 
@@ -188,7 +192,7 @@ namespace MAT
     //! check if history variables are already initialized
     bool Initialized() const
     {
-      return ( isinit_ and (accplstraincurr_!=Teuchos::null) );
+      return ( isinit_ and (defgrdcurr_!=Teuchos::null) );
     }
 
     //! return names of visualization data
@@ -222,25 +226,30 @@ namespace MAT
   private:
 
     //! my material parameters
-    MAT::PAR::PlasticNlnLogNeoHooke* params_;
+    MAT::PAR::ThermoPlasticHyperElast* params_;
 
-    //! inverse right cauchy green of plastic strain
-    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > invplrcglast_;
-    //! inverse right cauchy green of plastic strain
-    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > invplrcgcurr_;
-
-    //! old (i.e. at t_n) accumulated palstic strain
+    //! plastic history variables
+    // old (i.e. at t_n)  deformation gradient at each Gauss-point
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > defgrdlast_;
+    // current (i.e. at t_n+1) deformation gradient at each Gauss-point
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > defgrdcurr_;
+    
+    // old (i.e. at t_n) ealstic, isochoric right Cauchy-Green tensor
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > bebarlast_;
+    // current (i.e. at t_n+1) ealstic, isochoric right Cauchy-Green tensor
+    Teuchos::RCP<std::vector<LINALG::Matrix<3,3> > > bebarcurr_;
+    
+    // old (i.e. at t_n) accumulated palstic strain
     Teuchos::RCP<std::vector<double> > accplstrainlast_;
-    //! current (i.e. at t_n+1) accumulated palstic strain
+    // current (i.e. at t_n+1) accumulated palstic strain
     Teuchos::RCP<std::vector<double> > accplstraincurr_;
 
     //! indicator if #Initialize routine has been called
     bool isinit_;
 
-  };  // class PlasticNlnLogNeoHooke
+  };  // class ThermoPlasticHyperElast
 
 }  // namespace MAT
 
-
 /*----------------------------------------------------------------------*/
-#endif  // PLASTICNLNLOGNEOHOOKE_H_
+#endif  // THERMO_PLAST_HYPERELAST_H_
