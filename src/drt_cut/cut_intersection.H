@@ -19,8 +19,165 @@ template <DRT::Element::DiscretizationType edgetype,
           int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
           int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
 >
+class IntersectionBase
+{
+public:
+
+  IntersectionBase(  LINALG::Matrix<3, numNodesSurface> xyze_surfaceElement,
+                     LINALG::Matrix<3, numNodesLine> xyze_lineElement )
+    : xyze_lineElement_(xyze_lineElement),
+      xyze_surfaceElement_(xyze_surfaceElement),
+      xsi_( true ),
+      x_( true )
+  {
+
+#if 1
+    scale_ = 1;
+#else
+    scale_ = 0;
+    LINALG::Matrix<3,1> d;
+    for ( int i=0; i<numNodesSurface; ++i )
+    {
+      LINALG::Matrix<3,1> x1( &xyze_surfaceElement_( 0, i ),  true );
+      LINALG::Matrix<3,1> x2( &xyze_surfaceElement_( 0, ( i+1 )%numNodesSurface ),  true );
+      d.Update( 1, x2, -1, x1, 0 );
+      scale_ += d.Norm2();
+    }
+    scale_ /= numNodesSurface;
+
+    xyze_lineElement_.Scale( 1./scale_ );
+    xyze_surfaceElement_.Scale( 1./scale_ );
+#endif
+  }
+
+  bool ComputeCurveSurfaceIntersection();
+
+  bool AtEdge();
+
+  bool SurfaceWithinLimits();
+
+  bool LineWithinLimits();
+
+
+private:
+
+  LINALG::Matrix<3, numNodesLine> xyze_lineElement_;
+  LINALG::Matrix<3, numNodesSurface> xyze_surfaceElement_;
+
+  LINALG::Matrix<3,1> xsi_;
+  LINALG::Matrix<3,1> x_;
+
+  double scale_;
+
+};
+
+
+
+template <DRT::Element::DiscretizationType edgetype,
+          DRT::Element::DiscretizationType sidetype,
+          int numNodesLine,
+          int numNodesSurface
+>
+bool IntersectionBase<edgetype, sidetype, numNodesLine, numNodesSurface>::ComputeCurveSurfaceIntersection()
+{
+  KERNEL::ComputeIntersection<edgetype, sidetype> ci( xsi_ );
+  //KERNEL::DebugComputeIntersection<edgetype, sidetype> ci( xsi_ );
+
+
+  if ( ci( xyze_surfaceElement_, xyze_lineElement_ ) )
+  {
+    return true;
+  }
+
+  return false;
+}
+
+
+template <DRT::Element::DiscretizationType edgetype,
+          DRT::Element::DiscretizationType sidetype,
+          int numNodesLine,
+          int numNodesSurface
+>
+bool IntersectionBase<edgetype, sidetype, numNodesLine, numNodesSurface>::AtEdge()
+{
+  switch ( sidetype )
+  {
+  case DRT::Element::quad4:
+  case DRT::Element::quad8:
+  case DRT::Element::quad9:
+  {
+    return ( fabs( xsi_( 0 )+1 )<TOLERANCE or fabs( xsi_( 1 )+1 )<TOLERANCE or
+             fabs( xsi_( 0 )-1 )<TOLERANCE or fabs( xsi_( 1 )-1 )<TOLERANCE );
+  }
+  case DRT::Element::tri3:
+  case DRT::Element::tri6:
+  {
+    return ( fabs( xsi_( 0 )+0 )<TOLERANCE or fabs( xsi_( 1 )+0 )<TOLERANCE or
+             fabs( xsi_( 1 )+xsi_( 0 )-1 )<TOLERANCE );
+  }
+  default:
+    throw std::runtime_error( "unsupported side type" );
+  }
+}
+
+
+template <DRT::Element::DiscretizationType edgetype,
+          DRT::Element::DiscretizationType sidetype,
+          int numNodesLine,
+          int numNodesSurface
+>
+bool IntersectionBase<edgetype, sidetype, numNodesLine, numNodesSurface>::SurfaceWithinLimits()
+{
+  bool intersects = false;
+  switch ( sidetype )
+  {
+  case DRT::Element::quad4:
+  case DRT::Element::quad8:
+  case DRT::Element::quad9:
+  {
+    intersects = ( xsi_( 0 ) >= -1-TOLERANCE and xsi_( 1 ) >= -1-TOLERANCE and
+                   xsi_( 0 ) <=  1+TOLERANCE and xsi_( 1 ) <=  1+TOLERANCE );
+    break;
+  }
+  case DRT::Element::tri3:
+  case DRT::Element::tri6:
+  {
+    intersects = ( xsi_( 0 ) >= 0-TOLERANCE and xsi_( 1 ) >= 0-TOLERANCE and
+                   xsi_( 0 ) <= 1+TOLERANCE and xsi_( 1 ) <= 1+TOLERANCE and
+                   xsi_( 1 ) <= ( 1 - xsi_( 0 ) )+TOLERANCE );
+    break;
+  }
+  default:
+    throw std::runtime_error( "unsupported side type" );
+  }
+  return intersects;
+}
+
+
+template <DRT::Element::DiscretizationType edgetype,
+          DRT::Element::DiscretizationType sidetype,
+          int numNodesLine,
+          int numNodesSurface
+>
+bool IntersectionBase<edgetype, sidetype, numNodesLine, numNodesSurface>::LineWithinLimits()
+{
+  return xsi_( 2 ) >= -1-TOLERANCE and xsi_( 2 ) <=  1+TOLERANCE;
+}
+
+
+
+/*!
+\brief A class to calculate the intersection of an edge with a side. The core class where the all the
+cut points are actually calculated
+ */
+template <DRT::Element::DiscretizationType edgetype,
+          DRT::Element::DiscretizationType sidetype,
+          int numNodesLine    = DRT::UTILS::DisTypeToNumNodePerEle<edgetype>::numNodePerElement,
+          int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement
+>
 class Intersection
 {
+
 public:
 
   Intersection( Mesh & mesh,

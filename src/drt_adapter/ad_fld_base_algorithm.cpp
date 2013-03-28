@@ -118,7 +118,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   {
     if (probtype == prb_fsi_xfem or
         probtype == prb_fluid_xfem or
-        probtype == prb_fluid_xfem2 or
         probtype == prb_combust)
     {
       actdis->FillComplete(false,false,false);
@@ -134,8 +133,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // -------------------------------------------------------------------
   RCP<IO::DiscretizationWriter> output =
     Teuchos::rcp(new IO::DiscretizationWriter(actdis));
-  if (probtype != prb_fluid_xfem and
-      probtype != prb_combust and
+  if (probtype != prb_combust and
       probtype != prb_fluid_fluid and
       probtype != prb_fluid_fluid_ale and
       probtype != prb_fluid_fluid_fsi)
@@ -271,7 +269,6 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   // compute null space information
   if (probtype != prb_fsi_xfem and
       probtype != prb_fluid_xfem and
-      probtype != prb_fluid_xfem2 and
       probtype != prb_combust)
   {
     switch(DRT::INPUT::IntegralValue<int>(fdyn,"MESHTYING"))
@@ -335,7 +332,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   fluidtimeparams->sublist("LOMA").set<bool>("update material",DRT::INPUT::IntegralValue<int>(lomadyn,"SGS_MATERIAL_UPDATE"));
 
   // ----------------------------- sublist for general xfem-specific parameters
-  if (   probtype == prb_fluid_xfem2
+  if (   probtype == prb_fluid_xfem
       or probtype == prb_fsi_xfem
       or probtype == prb_fluid_fluid
       or probtype == prb_fluid_fluid_ale
@@ -359,7 +356,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   }
 
   // ----------------------------- sublist for xfem-specific fluid parameters
-  if (   probtype == prb_fluid_xfem2
+  if (   probtype == prb_fluid_xfem
       or probtype == prb_fsi_xfem
       or probtype == prb_fluid_fluid
       or probtype == prb_fluid_fluid_ale
@@ -453,8 +450,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
   }
   // sanity checks and default flags
   if (probtype == prb_fsi_xfem or
-      probtype == prb_fluid_xfem or
-      probtype == prb_fluid_xfem2)
+      probtype == prb_fluid_xfem)
   {
     const Teuchos::ParameterList& fsidyn = DRT::Problem::Instance()->FSIDynamicParams();
     fluidtimeparams->set<bool>("interface second order", DRT::INPUT::IntegralValue<int>(fsidyn,"SECONDORDER"));
@@ -550,7 +546,7 @@ void ADAPTER::FluidBaseAlgorithm::SetupFluid(const Teuchos::ParameterList& prbdy
     switch (probtype)
     {
     case prb_fsi_xfem:
-    case prb_fluid_xfem2:
+    case prb_fluid_xfem:
     {
       RCP<DRT::Discretization> soliddis = DRT::Problem::Instance()->GetDis("structure");
       Teuchos::RCP<FLD::XFluid> tmpfluid = Teuchos::rcp( new FLD::XFluid( actdis, soliddis, solver, fluidtimeparams, output));

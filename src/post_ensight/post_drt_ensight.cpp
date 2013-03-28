@@ -284,7 +284,7 @@ int main(
     }
     case prb_fsi_xfem:
     {
-      std::cout << "Output XFEM Problem" << std::endl;
+      std::cout << "Output FSI-XFEM Problem" << std::endl;
 
         std::string basename = problem.outname();
 
@@ -306,9 +306,9 @@ int main(
 
         break;
     }
-    case prb_fluid_xfem2:
+    case prb_fluid_xfem:
     {
-        std::cout << "Output XFluid2 Problem" << std::endl;
+        std::cout << "Output FLUID-XFEM Problem" << std::endl;
 
         std::string basename = problem.outname();
 

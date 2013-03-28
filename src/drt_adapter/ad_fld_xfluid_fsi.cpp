@@ -68,7 +68,7 @@ ADAPTER::XFluidFSI::XFluidFSI(Teuchos::RCP< Fluid> fluid,
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractInterfaceForces()
 {
-  cout << "ExtractInterfaceForces (itrueresnp)" << endl;
+  //cout << "ExtractInterfaceForces (itrueresnp)" << endl;
 
   // the trueresidual vector has to match the solid dis
   // it contains the forces acting on the structural surface
@@ -80,7 +80,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractInterfaceForces()
 /*----------------------------------------------------------------------*/
 Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractInterfaceVeln()
 {
-  cout << "call ExtractInterfaceVeln() "<< endl;
+  //cout << "call ExtractInterfaceVeln() "<< endl;
 
   // it depends, when this method is called, and when velnp is updated
   // the FSI algorithm expects first an time update and then asks for the old time step velocity
@@ -95,7 +95,7 @@ Teuchos::RCP<Epetra_Vector> ADAPTER::XFluidFSI::ExtractInterfaceVeln()
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> ivel)
 {
-  cout << "ApplyInterfaceVelocities" << endl;
+  //cout << "ApplyInterfaceVelocities" << endl;
 
   interface_->InsertFSICondVector(ivel,xfluid_->IVelnp());
 }
@@ -105,7 +105,7 @@ void ADAPTER::XFluidFSI::ApplyInterfaceVelocities(Teuchos::RCP<Epetra_Vector> iv
 /*----------------------------------------------------------------------*/
 void ADAPTER::XFluidFSI::ApplyMeshDisplacement(Teuchos::RCP<const Epetra_Vector> idisp)
 {
-  cout << "ApplyMeshDisplacement" << endl;
+  //cout << "ApplyMeshDisplacement" << endl;
 
   interface_->InsertFSICondVector(idisp,xfluid_->IDispnp());
 

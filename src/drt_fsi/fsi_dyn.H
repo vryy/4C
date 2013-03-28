@@ -5,7 +5,7 @@
 
 
 void fluid_ale_drt();
-void fluid_xfem2_drt();
+void fluid_xfem_drt();
 void fluid_fluid_ale_drt();
 void fluid_fluid_fsi_drt();
 void fluid_freesurf_drt();

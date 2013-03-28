@@ -53,8 +53,8 @@ void ntacal()
     case prb_scatra:
       scatra_dyn(restart);
       break;
-    case prb_fluid_xfem2:
-      fluid_xfem2_drt();
+    case prb_fluid_xfem:
+      fluid_xfem_drt();
       break;
     case prb_fluid_fluid_ale:
       fluid_fluid_ale_drt();

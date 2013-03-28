@@ -414,7 +414,7 @@ namespace FLD
     void SetInitialInterfaceField();
 
     /// set the interface displacement
-    void SetInterfaceDisplacement();
+    void SetInterfaceDisplacement(Teuchos::RCP<Epetra_Vector> idisp);
 
     /// compute interface velocities from function
     void ComputeInterfaceVelocities();
@@ -617,7 +617,6 @@ namespace FLD
     //! @name setting an initial interface displacement
     enum INPAR::XFEM::InterfaceDisplacement interface_disp_;
     int interface_disp_func_no_;
-    int interface_disp_curve_no_;
     //@}
 
     /// initial flow field
@@ -684,6 +683,9 @@ namespace FLD
 
     // flag whether this output step is the first one (restarted or not)
     bool firstoutputofrun_;
+
+    // counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
+    int restart_count_;
 
 
     //--------------------------------------------------------------------

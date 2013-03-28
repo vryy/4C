@@ -181,7 +181,7 @@ FLD::XFluid::XFluidState::XFluidState( XFluid & xfluid, Epetra_Vector & idispcol
     kspsplitter_->Setup(*(xfluid.discret_));
     xfluid.SetupKrylovSpaceProjection(kspcond);
     if (xfluid.myrank_ == 0)
-      cout << "\nSetup of KrylovSpaceProjection in xfluid field\n" << endl;
+      IO::cout << "\nSetup of KrylovSpaceProjection in xfluid field\n" << IO::endl;
   }
   else if (numfluid == 0)
   {
@@ -1942,16 +1942,17 @@ FLD::XFluid::XFluid(
   // get input parameter how to prescribe solid displacement
   interface_disp_           = DRT::INPUT::IntegralValue<INPAR::XFEM::InterfaceDisplacement>(params_xf_gen,"INTERFACE_DISP");
   interface_disp_func_no_   = params_xf_gen.get<int>("DISP_FUNCT_NO", -1);
-  interface_disp_curve_no_  = params_xf_gen.get<int>("DISP_CURVE_NO", -1);
 
   // output for used FUNCT
   if(myrank_ == 0)
   {
-    std::cout << "Set fields by following functions: \n"
-              << "\t\t initial interface velocity     by funct: " <<  interface_vel_init_func_no_  << "\n"
-              << "\t\t interface velocity             by funct: " <<  interface_vel_func_no_       << "\n"
-              << "\t\t interface displacement         by funct: " <<  interface_disp_func_no_
-                                                   << ", curve: " <<  interface_disp_curve_no_     <<  "\n\n";
+    std::cout << "Set interface fields: \n"
+              << "\t\t initial interface velocity:     " << params_xf_gen.get<string>("INTERFACE_VEL_INITIAL")
+              << "\t funct: " <<  interface_vel_init_func_no_ << "\n"
+              << "\t\t interface velocity:             " << params_xf_gen.get<string>("INTERFACE_VEL")
+              << "\t\t funct: " <<  interface_vel_func_no_ << "\n"
+              << "\t\t interface displacement:         " << params_xf_gen.get<string>("INTERFACE_DISP")
+              << "\t funct: " <<  interface_disp_func_no_ << "\n";
 
     if(interface_vel_func_no_ != interface_vel_init_func_no_ and interface_vel_init_func_no_ == -1)
       dserror("Are you sure that you want to choose two different functions for VEL_INIT_FUNCT_NO and VEL_FUNCT_NO");
@@ -2081,6 +2082,9 @@ FLD::XFluid::XFluid(
   // used to write out owner of elements just once
   firstoutputofrun_ = true;
 
+  // counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
+  restart_count_ = 0;
+
 
   //--------------------------------------------------------
   // create interface fields
@@ -2099,6 +2103,10 @@ FLD::XFluid::XFluid(
   // set an initial interface velocity field
   if(interface_vel_init_ == INPAR::XFEM::interface_vel_init_by_funct and step_ == 0)
     SetInitialInterfaceField();
+
+  if(interface_disp_ == INPAR::XFEM::interface_disp_by_funct or
+     interface_disp_ == INPAR::XFEM::interface_disp_by_implementation)
+    SetInterfaceDisplacement(idispn_);
 
   // -------------------------------------------------------------------
   // read restart for boundary discretization
@@ -2595,7 +2603,7 @@ void FLD::XFluid::CheckXFluidParams( Teuchos::ParameterList& params_xfem,
     // ----------------------------------------------------------------------
     PROBLEM_TYP probtype = DRT::Problem::Instance()->ProblemType();
 
-    if( probtype == prb_fluid_xfem2 or
+    if( probtype == prb_fluid_xfem or
         probtype == prb_fsi_xfem      )
     {
       // check some input configurations
@@ -2603,12 +2611,12 @@ void FLD::XFluid::CheckXFluidParams( Teuchos::ParameterList& params_xfem,
 
       if(probtype == prb_fsi_xfem    and xfluid_mov_bound != INPAR::XFEM::XFSIMovingBoundary)
         dserror("INPUT CHECK: choose xfsi_moving_boundary!!! for prb_fsi_xfem");
-      if(probtype == prb_fluid_xfem2 and xfluid_mov_bound == INPAR::XFEM::XFSIMovingBoundary)
-        dserror("INPUT CHECK: do not choose xfsi_moving_boundary!!! for prb_fluid_xfem2");
+      if(probtype == prb_fluid_xfem  and xfluid_mov_bound == INPAR::XFEM::XFSIMovingBoundary)
+        dserror("INPUT CHECK: do not choose xfsi_moving_boundary!!! for prb_fluid_xfem");
       if(probtype == prb_fsi_xfem    and interface_disp_  != INPAR::XFEM::interface_disp_by_fsi)
         dserror("INPUT CHECK: choose interface_disp_by_fsi for prb_fsi_xfem");
-      if(probtype == prb_fluid_xfem2 and interface_disp_  == INPAR::XFEM::interface_disp_by_fsi )
-        dserror("INPUT CHECK: do not choose interface_disp_by_fsi for prb_fluid_xfem2");
+      if(probtype == prb_fluid_xfem  and interface_disp_  == INPAR::XFEM::interface_disp_by_fsi )
+        dserror("INPUT CHECK: do not choose interface_disp_by_fsi for prb_fluid_xfem");
       if(probtype == prb_fsi_xfem    and interface_vel_   != INPAR::XFEM::interface_vel_by_disp )
         dserror("INPUT CHECK: do you want to use !interface_vel_by_disp for prb_fsi_xfem?");
     }
@@ -2777,22 +2785,19 @@ void FLD::XFluid::PrintStabilizationParams()
     if(boundIntType_ == INPAR::XFEM::BoundaryTypeSigma)
       IO::cout << "MSH_L2_PROJ:             " << interfstabparams->get<string>("MSH_L2_PROJ") << "\n";
 
-    if(conv_stab_scaling_ != INPAR::XFEM::ConvStabScaling_none)
+    if(boundIntType_ == INPAR::XFEM::BoundaryTypeNitsche)
     {
-      IO::cout << "CONV_STAB:               " << "yes" << "\n";
-      IO::cout << "CONV_STAB_SCALING:       " << interfstabparams->get<string>("CONV_STAB_SCALING") << "\n";
+      IO::cout << "VISC_STAB_FAC:           " << visc_stab_fac_ << "\n";
+      IO::cout << "VISC_STAB_SCALING:       " << interfstabparams->get<string>("VISC_STAB_SCALING") << "\n";
     }
-    else
-      IO::cout << "CONV_STAB:               " << "no" << "\n";
 
-    if(ghost_penalty_ == true)
-      IO::cout << "GHOST_PENALTY_STAB:      " << "yes" << "\n";
-    else
-      IO::cout << "GHOST_PENALTY_STAB:      " << "no" << "\n";
+    IO::cout << "GHOST_PENALTY_STAB:      " << interfstabparams->get<string>("GHOST_PENALTY_STAB") << "\n";
+    IO::cout << "GHOST_PENALTY_FAC:       " << ghost_penalty_fac_ << "\n";
 
+    IO::cout << "CONV_STAB_SCALING:       " << interfstabparams->get<string>("CONV_STAB_SCALING") << "\n";
+    IO::cout << "CONV_STAB_FAC:           " << conv_stab_fac_ << "\n";
 
-    IO::cout << "+------------------------------------------------------------------------------------+" << IO::endl;
-    IO::cout << "\n";
+    IO::cout << "+------------------------------------------------------------------------------------+\n" << IO::endl;
 
   }
 
@@ -2979,7 +2984,7 @@ void FLD::XFluid::SolveStationaryProblem()
 void FLD::XFluid::PrepareTimeStep()
 {
 
-  IO::cout << "PrepareTimeStep (FLD::XFluid::PrepareTimeStep) " << IO::endl;
+  if(myrank_ == 0) IO::cout << "PrepareTimeStep (FLD::XFluid::PrepareTimeStep) " << IO::endl;
 
   // -------------------------------------------------------------------
   //              set time dependent parameters
@@ -2990,7 +2995,7 @@ void FLD::XFluid::PrepareTimeStep()
   // reset the state-class iterator for the new timestep
   state_it_ = -1;
 
-  printf("----------------------XFLUID-------  time step %2d ----------------------------------------\n", step_);
+  if(myrank_ == 0) printf("----------------------XFLUID-------  time step %2d ----------------------------------------\n", step_);
 
   // -------------------------------------------------------------------
   //                       output to screen
@@ -3041,7 +3046,7 @@ void FLD::XFluid::PrepareSolve()
   INPAR::XFEM::MovingBoundary xfluid_mov_bound = DRT::INPUT::IntegralValue<INPAR::XFEM::MovingBoundary>(params_->sublist("XFLUID DYNAMIC/GENERAL"), "XFLUID_BOUNDARY");
   if( xfluid_mov_bound == INPAR::XFEM::XFluidMovingBoundary)
   {
-    SetInterfaceDisplacement();
+    SetInterfaceDisplacement(idispnp_);
     ComputeInterfaceVelocities();
   }
   else if( xfluid_mov_bound == INPAR::XFEM::XFluidStationaryBoundary)
@@ -3059,7 +3064,7 @@ void FLD::XFluid::PrepareSolve()
 void FLD::XFluid::PrepareNonlinearSolve()
 {
 
-  IO::cout << "FLD::XFLUID::PrepareNonlinearSolve()" << IO::endl;
+  //IO::cout << "FLD::XFLUID::PrepareNonlinearSolve()" << IO::endl;
 
   // print the gmsh discretization output before the cut is performed
   OutputDiscret();
@@ -3718,7 +3723,7 @@ void FLD::XFluid::Evaluate(
  *----------------------------------------------------------------------*/
 void FLD::XFluid::TimeUpdate()
 {
-  cout << "FLD::XFluid::TimeUpdate " << endl;
+  if(myrank_ == 0) IO::cout << "FLD::XFluid::TimeUpdate " << IO::endl;
 
   Teuchos::ParameterList *  stabparams=&(params_->sublist("RESIDUAL-BASED STABILIZATION"));
 
@@ -3812,7 +3817,14 @@ void FLD::XFluid::TimeUpdate()
  *----------------------------------------------------------------------*/
 void FLD::XFluid::CutAndSetStateVectors()
 {
-  if(myrank_==0) std::cout << "CutAndSetStateVectors " << endl;
+  if(myrank_==0)
+  {
+    // counter will be increased when the new state class is created
+
+    IO::cout << "======================================================\n";
+    IO::cout << "CutAndSetStateVectors: state-class iterator: " <<  state_it_ +1 << "\n";
+    IO::cout << "======================================================\n";
+  }
 
   //------------------------------------------------------------------------------------
   //                             XFEM TIME-INTEGRATION
@@ -3866,10 +3878,7 @@ void FLD::XFluid::CutAndSetStateVectors()
 
     //---------------------------------------------------------------
 
-    if(myrank_==0) std::cout << "state-class iterator: " <<  state_it_ << endl;
-
-
-    if(myrank_==0) std::cout << "XFEM::TIMEINTEGRATION: ..." << endl;
+    if(myrank_==0) IO::cout << "XFEM::TIMEINTEGRATION: ..." << IO::endl;
 
     const Epetra_Map* newdofrowmap = discret_->DofRowMap();
 
@@ -3895,7 +3904,7 @@ void FLD::XFluid::CutAndSetStateVectors()
     // set old row state vectors at timestep t^n that have to be updated to new interface position
     //---------------------------------------------------------------
 
-    if(myrank_==0) std::cout << "\t ...TransferDofsToNewMap...";
+    if(myrank_==0) IO::cout << "\t ...TransferDofsToNewMap...";
 
 
     if(timealgo_ !=  INPAR::FLUID::timeint_one_step_theta) dserror("check which vectors have to be reconstructed for non-OST scheme");
@@ -3949,7 +3958,6 @@ void FLD::XFluid::CutAndSetStateVectors()
       }
     } // TransferDofsToNewMap
 
-    // TODO: export the row vectors before col-vectors used for semilagrangean
 
     //------------------------------------------------------------------------------------
 
@@ -3982,7 +3990,6 @@ void FLD::XFluid::CutAndSetStateVectors()
 
     //------------------------------------------------------------------------------------
 
-    cout << "after reconstruction output ! " << endl;
 
     //------------------------------------------------------------------------------------
 
@@ -3999,60 +4006,18 @@ void FLD::XFluid::CutAndSetStateVectors()
       boundarydis_->SetState("idispnp",idispnp_);
       boundarydis_->SetState("idispn",idispn_);
 
-      // Important: export the vectors used for semi-lagrange after the transfer between interface processors above
+      RCP<Epetra_Vector> veln_col = Teuchos::rcp(new Epetra_Vector(*dofcolmap_Intn_,true));
+      LINALG::Export(*veln_Intn_,*veln_col);
+
+      // Important: export the vectors used for Semi-Lagrangean method after transfer between interface processors above
       std::vector<RCP<Epetra_Vector> > oldColStateVectorsn;
       {
-        RCP<Epetra_Vector> veln_col = Teuchos::rcp(new Epetra_Vector(*dofcolmap_Intn_,true));
-        LINALG::Export(*veln_Intn_,*veln_col);
         oldColStateVectorsn.push_back(veln_col);
 
         RCP<Epetra_Vector> accn_col = Teuchos::rcp(new Epetra_Vector(*dofcolmap_Intn_,true));
         LINALG::Export(*accn_Intn_,*accn_col);
         oldColStateVectorsn.push_back(accn_col);
       }
-
-//      // HACK FOR FLUIDPUSHER modify node 106 in step 2"
-//      if(step_ ==2)
-//      {
-//        cout << "!!!!!!!!!!!!! HACK FOR FLUIDPUSHER modify node 106 in step 2" << endl;
-//
-//        if(reconstr_method.find(106) != reconstr_method.end())
-//        {
-//          ((reconstr_method.find(106))->second)[0] = INPAR::XFEM::Xf_TimeInt_SemiLagrange;
-//        }
-//        else
-//        {
-//          std::vector<INPAR::XFEM::XFluidTimeInt> vec;
-//          vec.push_back(INPAR::XFEM::Xf_TimeInt_SemiLagrange);
-//          reconstr_method.insert(std::pair<int,std::vector<INPAR::XFEM::XFluidTimeInt> >(106, vec ));
-//        }
-//
-//
-//
-//        if(reconstr_method.find(107) != reconstr_method.end())
-//        {
-//          ((reconstr_method.find(107))->second)[0] = INPAR::XFEM::Xf_TimeInt_SemiLagrange;
-//        }
-//        else
-//        {
-//          std::vector<INPAR::XFEM::XFluidTimeInt> vec;
-//          vec.push_back(INPAR::XFEM::Xf_TimeInt_SemiLagrange);
-//          reconstr_method.insert(std::pair<int,std::vector<INPAR::XFEM::XFluidTimeInt> >(107, vec ));
-//        }
-//
-//
-//
-//        if(reconstr_method.find(120) != reconstr_method.end())
-//        {
-//          ((reconstr_method.find(120))->second)[0] = INPAR::XFEM::Xf_TimeInt_SemiLagrange;
-//        }
-//        else
-//        {
-//          std::vector<INPAR::XFEM::XFluidTimeInt> vec;
-//          vec.push_back(INPAR::XFEM::Xf_TimeInt_SemiLagrange);
-//          reconstr_method.insert(std::pair<int,std::vector<INPAR::XFEM::XFluidTimeInt> >(120, vec ));
-//        }
-//      } // hack for step == 2
 
 
       // TODO: set this param
@@ -4089,7 +4054,7 @@ void FLD::XFluid::CutAndSetStateVectors()
               *timeIntData,
               reconstr_method,
               xfemtimeint_,
-              veln_Intn_,
+              veln_col,
               dta_,
               theta_,
               true));
@@ -4114,7 +4079,6 @@ void FLD::XFluid::CutAndSetStateVectors()
     } //SEMILAGRANGE RECONSTRUCTION of std values
 
 
-cout << "after semilagrange " << endl;
 
 
     //------------------------------------------------------------------------------------
@@ -4164,7 +4128,6 @@ cout << "after semilagrange " << endl;
       if(myrank_==0) std::cout << " done\n" << std::flush;
 
     } // GHOST PENALTY
-    cout << "after ghost penalty " << endl;
 
     //------------------------------------------------------------------------------------
     //                      set initial start vectors for new timestep
@@ -4200,18 +4163,6 @@ cout << "after semilagrange " << endl;
 
     } // GMSH OUTPUT
 
-
-    //cout << * state_->accnp_ << endl;
-
-
-//    cout << "!!!!!!!!!!!!! HACK FOR FLUIDPUSHER set acc to zero! Implement update of accelerations!" << endl;
-//
-//
-//    //TODO
-//    // update for veln, because just velnp is updated at the moment
-//    // attention with accelerations
-//    state_->accnp_->Scale(0.0);
-//    state_->accn_->Scale(0.0);
 
 #if(0)
       {
@@ -4704,7 +4655,9 @@ void FLD::XFluid::OutputDiscret()
     gmshfilecontent.setf(std::ios::scientific,std::ios::floatfield);
     gmshfilecontent.precision(16);
 
-    disToStream(discret_,     "fld",     true, false, true, false, true,  false, gmshfilecontent);
+    bool xdis_faces = (ghost_penalty_ or edge_based_);
+
+    disToStream(discret_,     "fld",     true, false, true, false, xdis_faces,  false, gmshfilecontent);
     disToStream(soliddis_,    "str",     true, false, true, false, false, false, gmshfilecontent, &currsolidpositions);
     disToStream(boundarydis_, "cut",     true, true,  true, true,  false, false, gmshfilecontent, &currinterfacepositions);
 
@@ -4968,7 +4921,9 @@ void FLD::XFluid::Output()
     // write restart
     if (write_restart_data)
     {
-      cout << "---  write restart... " << endl;
+      if(myrank_ == 0) IO::cout << "---  write restart... " << IO::endl;
+
+      restart_count_++;
 
       // velocity/pressure vector
       fluid_output_->WriteVector("velnp_res",state_->velnp_);
@@ -4980,6 +4935,25 @@ void FLD::XFluid::Output()
       fluid_output_->WriteVector("velnm_res",state_->velnm_);
     }
 
+    //-----------------------------------------------------------
+    // REMARK on "Why to clear the MapCache" for restarts
+    //-----------------------------------------------------------
+    // every time, when output-vectors are written based on a new(!), still unknown map
+    // the map is stored in a mapstack (io.cpp, WriteVector-routine) for efficiency in standard applications.
+    // However, in the XFEM for each timestep or FSI-iteration we have to cut and the map is created newly
+    // (done by the FillComplete call).
+    // This is the reason why the MapStack increases and the storage is overwritten for large problems.
+    // Hence, we have clear the MapCache in regular intervals of written restarts.
+    // In case of writing paraview-output, here, we use a standard map which does not change over time, that's okay.
+    // For the moment, restart_count = 5 is set quite arbitrary, in case that we need for storage, we have to reduce this number
+
+    if(restart_count_ == 5)
+    {
+      if(myrank_ == 0) IO::cout << "\t... Clear MapCache after " << restart_count_ << " written restarts." << IO::endl;
+
+      fluid_output_->ClearMapCache(); // clear the output's map-cache
+      restart_count_ = 0;
+    }
 
     // output for interface
     boundary_output_->NewStep(step_,time_);
@@ -5000,101 +4974,8 @@ void FLD::XFluid::Output()
       boundary_output_->WriteVector("idispnp_res", idispnp_);
     }
 
-
-    // no solid output for XFluid, solid output for XFSI done by Adapter and structure part
-    //       // output for solid
-    //       solid_output_->NewStep(step_,time_);
-    //
-    //       solid_output_->WriteVector("displacement", soliddispnp_);
-    //
-    //       solid_output_->WriteElementData();
   }
 
-  //    if (uprestart_ != 0 && step_%uprestart_ == 0) //add restart data
-  //     {
-  //       // acceleration vector at time n+1 and n, velocity/pressure vector at time n and n-1
-  //       output_.WriteVector("accnp",accnp_);
-  //       output_.WriteVector("accn", accn_);
-  //       output_.WriteVector("veln", veln_);
-  //       output_.WriteVector("velnm",velnm_);
-
-  //       if (alefluid_)
-  //       {
-  //         output_.WriteVector("dispn", dispn_);
-  //         output_.WriteVector("dispnm",dispnm_);
-  //       }
-
-  //       // also write impedance bc information if required
-  //       // Note: this method acts only if there is an impedance BC
-  //       impedancebc_->WriteRestart(output_);
-
-  //       Wk_optimization_->WriteRestart(output_);
-  //     }
-
-  //    vol_surf_flow_bc_->Output(output_);
-
-
-
-
-
-
-
-  //
-  //
-  //	  if (write_visualization_data or write_restart_data)
-  //	  {
-  //	    output_->NewStep(step_,time_);
-  //	  }
-  //
-  //	  if (write_visualization_data)  //write solution for visualization
-  //	  {
-  //	    Teuchos::RCP<Epetra_Vector> velnp_out = dofmanager_np_->fillPhysicalOutputVector(
-  //	        *state_.velnp_, dofset_out_, state_.nodalDofDistributionMap_, physprob_.fieldset_);
-  //
-  //	    // write physical fields on full domain including voids etc.
-  //	    if (physprob_.fieldset_.find(XFEM::PHYSICS::Velx) != physprob_.fieldset_.end())
-  //	    {
-  //	      // output velocity field for visualization
-  //	      output_->WriteVector("velocity_smoothed", velnp_out);
-  //
-  //	      // output (hydrodynamic) pressure for visualization
-  //	      Teuchos::RCP<Epetra_Vector> pressure = velpressplitterForOutput_.ExtractCondVector(velnp_out);
-  //	      pressure->Scale(density_);
-  //	      output_->WriteVector("pressure_smoothed", pressure);
-  //
-  //	      //output_->WriteVector("residual", trueresidual_);
-  //
-  //	      //only perform stress calculation when output is needed
-  ////	      if (writestresses_)
-  ////	      {
-  ////	        Teuchos::RCP<Epetra_Vector> traction = CalcStresses();
-  ////	        output_->WriteVector("traction",traction);
-  ////	      }    // debug output
-  //	      state_->GmshOutput( *discret_, *boundarydis_, "result", step_, state_->velnp_ );
-  //	    }
-  //	    else if (physprob_.fieldset_.find(XFEM::PHYSICS::Temp) != physprob_.fieldset_.end())
-  //	    {
-  //	      output_->WriteVector("temperature_smoothed", velnp_out);
-  //	    }
-  //
-  //	    // write domain decomposition for visualization
-  //	    output_->WriteElementData();
-  //	  }
-  //
-  //	  // write restart
-  //	  if (write_restart_data)
-  //	  {
-  //	    output_->WriteVector("velnp", state_.velnp_);
-  //	    output_->WriteVector("veln" , state_.veln_);
-  //	    output_->WriteVector("velnm", state_.velnm_);
-  //	    output_->WriteVector("accnp", state_.accnp_);
-  //	    output_->WriteVector("accn" , state_.accn_);
-  //	  }
-  //
-  //	  OutputToGmsh(step_, time_);
-  //
-  //	  if (fluidfluidCoupling_)
-  //	    FluidFluidboundaryOutput();
 
   return;
 }
@@ -5471,9 +5352,9 @@ void FLD::XFluid::SetInitialInterfaceField()
 /*----------------------------------------------------------------------*
  |  set interface displacement at current time             schott 03/12 |
  *----------------------------------------------------------------------*/
-void FLD::XFluid::SetInterfaceDisplacement()
+void FLD::XFluid::SetInterfaceDisplacement(Teuchos::RCP<Epetra_Vector> idisp)
 {
-  cout << "\t set interface displacement at current time " << time_ << endl;
+  if(myrank_ == 0) IO::cout << "\t set interface displacement, time " << time_ << IO::endl;
 
   if( timealgo_ != INPAR::FLUID::timeint_stationary)
   {
@@ -5483,11 +5364,10 @@ void FLD::XFluid::SetInterfaceDisplacement()
 
       if(interface_disp_func_no_ != -1)
       {
-        cout << "\t ... interface displacement by FUNCT " << interface_disp_func_no_ << " and CURVE " << interface_disp_curve_no_ << endl;
-
-        double curvefac = 1.0;
-
-        if( interface_disp_curve_no_ > -1) curvefac = DRT::Problem::Instance()->Curve( interface_disp_curve_no_-1).f(time_);
+        if(myrank_ == 0)
+        {
+          IO::cout << "\t\t ... interface displacement by FUNCT " << interface_disp_func_no_ << IO::endl;
+        }
 
         // loop all nodes on the processor
         for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
@@ -5505,8 +5385,7 @@ void FLD::XFluid::SetInterfaceDisplacement()
 
               double initialval=DRT::Problem::Instance()->Funct( interface_disp_func_no_-1).Evaluate(dof%4,lnode->X(),time_,NULL);
 
-              initialval *= curvefac;
-              idispnp_->ReplaceGlobalValues(1,&initialval,&gid);
+              idisp->ReplaceGlobalValues(1,&initialval,&gid);
             }
           }
 
@@ -5525,7 +5404,7 @@ void FLD::XFluid::SetInterfaceDisplacement()
     }
     else if( interface_disp_ == INPAR::XFEM::interface_disp_by_implementation)
     {
-      cout << "\t ... interface displacement by IMPLEMENTATION " << endl;
+      if(myrank_ == 0) IO::cout << "\t\t ... interface displacement by IMPLEMENTATION " << IO::endl;
 
       // loop all nodes on the processor
       for(int lnodeid=0;lnodeid<boundarydis_->NumMyRowNodes();lnodeid++)
@@ -5562,7 +5441,7 @@ void FLD::XFluid::SetInterfaceDisplacement()
           diff(2) = node_coord(2)-center(2);
 
           // rotation matrix
-          double T=16.0; // time for one rotation
+          double T=1.0*16.0; // time for one rotation
 
           LINALG::Matrix<3,3> rot(true);
           double arg=2.*M_PI*(time_-0.3)/T;
@@ -5590,7 +5469,7 @@ void FLD::XFluid::SetInterfaceDisplacement()
             double initialval=0.0;
             if(dof<3) initialval = x_new(dof);
 
-            idispnp_->ReplaceGlobalValues(1,&initialval,&gid);
+            idisp->ReplaceGlobalValues(1,&initialval,&gid);
           }
         }
         }
@@ -5602,7 +5481,7 @@ void FLD::XFluid::SetInterfaceDisplacement()
 
             double initialval=0.0;
 
-            idispnp_->ReplaceGlobalValues(1,&initialval,&gid);
+            idisp->ReplaceGlobalValues(1,&initialval,&gid);
           }
         }
 
@@ -5632,7 +5511,7 @@ void FLD::XFluid::ComputeInterfaceVelocities()
   // XFSI:    use always interface vel by displacement (second order yes/no )
   // (the right input parameter configuration is checked in adapter_fluid_base_algorithm)
 
-  cout << "\t set interface velocity " << endl;
+  if(myrank_ == 0) IO::cout << "\t set interface velocity, time " << time_ << IO::endl;
 
   if( timealgo_ != INPAR::FLUID::timeint_stationary)
   {
@@ -5642,14 +5521,13 @@ void FLD::XFluid::ComputeInterfaceVelocities()
       if(Step() == 0) dserror("for interface_vel_by_disp, set idispn!!!");
       // compute the interface velocity using the new and old interface displacement vector
 
-      cout << "\t ... interface velocity by displacement ";
-
-      cout << " PAY ATTENTION: MAYBE this is done twice (in ApplyInterfaceVelocities and here)" << endl;
+      if(myrank_ == 0) IO::cout << "\t\t ... interface velocity by displacement ";
 
       double thetaiface = 0.0;
       if (params_->get<bool>("interface second order"))
       {
-        cout << " (second order: YES) " << endl;
+        if(myrank_ == 0) IO::cout << "(second order: YES) " << IO::endl;
+
         thetaiface = 0.5;
 //        if(step_==1)
 //        {
@@ -5659,18 +5537,13 @@ void FLD::XFluid::ComputeInterfaceVelocities()
       }
       else
       {
-        cout << " (second order: NO) " << endl;
+        if(myrank_ == 0) IO::cout << "(second order: NO) " << IO::endl;
         thetaiface = 1.0;
       }
-
-//      cout << "idispn" << *idispn_ << endl;
-//      cout << "idispnp" << *idispnp_ << endl;
 
 
       ivelnp_->Update(1.0/(thetaiface*Dt()),*idispnp_,-1.0/(thetaiface*Dt()),*idispn_,0.0);
       ivelnp_->Update(-(1.0-thetaiface)/thetaiface,*iveln_,1.0);
-
-//      cout << "ivelnp_" << *ivelnp_ << endl;
 
     }
     else if(interface_vel_ == INPAR::XFEM::interface_vel_by_funct)
@@ -5678,7 +5551,7 @@ void FLD::XFluid::ComputeInterfaceVelocities()
 
       if(interface_vel_func_no_ != -1)
       {
-        cout << "\t ... interface velocity by FUNCT " << interface_vel_func_no_ << endl;
+        if(myrank_ == 0) IO::cout << "\t\t ... interface velocity by FUNCT " << interface_vel_func_no_ << IO::endl;
 
         double curvefac = 1.0;
 
@@ -5710,7 +5583,7 @@ void FLD::XFluid::ComputeInterfaceVelocities()
     }
     else if(interface_vel_ == INPAR::XFEM::interface_vel_zero)
     {
-      cout << "\t ... interface velocity: zero" << endl;
+      if(myrank_ == 0) IO::cout << "\t\t ... interface velocity: zero" << IO::endl;
 
       ivelnp_->PutScalar(0.0);
     }
@@ -5885,7 +5758,7 @@ void FLD::XFluid::GenAlphaUpdateAcceleration()
 void FLD::XFluid::ReadRestart(int step)
 {
 
-  std::cout << "ReadRestart for fluid dis " << endl;
+  if(myrank_ == 0) IO::cout << "ReadRestart for fluid dis " << IO::endl;
 
 
   //-------- fluid discretization
@@ -5948,7 +5821,7 @@ void FLD::XFluid::ReadRestart(int step)
 void FLD::XFluid::ReadRestartBound(int step)
 {
 
-  std::cout << "ReadRestart for boundary discretization " << endl;
+  if(myrank_ == 0) IO::cout << "ReadRestart for boundary discretization " << IO::endl;
 
   //-------- boundary discretization
   IO::DiscretizationReader boundaryreader(boundarydis_, step);
@@ -5956,9 +5829,11 @@ void FLD::XFluid::ReadRestartBound(int step)
   time_ = boundaryreader.ReadDouble("time");
   step_ = boundaryreader.ReadInt("step");
 
-  cout << "time: " << time_ << endl;
-  cout << "step: " << step_ << endl;
-
+  if(myrank_ == 0)
+  {
+    IO::cout << "time: " << time_ << IO::endl;
+    IO::cout << "step: " << step_ << IO::endl;
+  }
 
   boundaryreader.ReadVector(iveln_,   "iveln_res");
   boundaryreader.ReadVector(idispn_,  "idispn_res");

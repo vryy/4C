@@ -249,6 +249,13 @@ int DRT::ELEMENTS::FluidInternalSurfaceStab<distype,pdistype, ndistype>::Evaluat
   if(EOS_conv_stream or EOS_conv_cross or EOS_div_vel_jump or GP_visc) EOS_vel=true;
 
 
+  if(ghost_penalty_reconstruct)
+  {
+    EOS_vel  = true;
+    EOS_pres = true;
+  }
+
+
   if( (!EOS_vel) and (!EOS_pres) and (!EOS_div_div_jump))
   {
     dserror("do not call EvaluateEdgeBasedStabilization if no stab is required!");

@@ -24,7 +24,7 @@ std::map<std::string,PROBLEM_TYP> DRT::StringToProblemTypeMap()
     string2prbtype["Structure"] =                                 prb_structure;
     string2prbtype["Structure_Ale"] =                             prb_struct_ale;
     string2prbtype["Fluid"] =                                     prb_fluid;
-    string2prbtype["Fluid_XFEM2"] =                               prb_fluid_xfem2;
+    string2prbtype["Fluid_XFEM"] =                                prb_fluid_xfem;
     string2prbtype["Fluid_Fluid_Ale"] =                           prb_fluid_fluid_ale;
     string2prbtype["Fluid_Fluid"] =                               prb_fluid_fluid;
     string2prbtype["Fluid_Fluid_FSI"] =                           prb_fluid_fluid_fsi;

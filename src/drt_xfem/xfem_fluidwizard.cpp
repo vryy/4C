@@ -138,7 +138,7 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
   const double t_end = Teuchos::Time::wallTime()-t_start;
   if ( backdis_.Comm().MyPID() == 0 )
   {
-    IO::cout << "\n XFEM::FluidWizard::Cut: Success (" << t_end  <<  " secs)\n";
+    IO::cout << "\n\t ... Success (" << t_end  <<  " secs)\n" << IO::endl;
   }
 
   if(gmsh_output) cw.DumpGmshNumDOFSets(include_inner);

@@ -108,13 +108,13 @@ void XFEM::XFluidTimeInt::SetAndPrintStatus(bool screenout)
 
   if(screenout)
   {
-    cout << "\nXFEM::XFluidTimeInt::Status:\n" << std::flush;
+    IO::cout << "\nProc " << myrank_ << ": XFEM::XFluidTimeInt::Status:\n";
 
     for(std::map<INPAR::XFEM::XFluidTimeInt,int>::iterator reconstrMethod = reconstr_counts_.begin();
         reconstrMethod != reconstr_counts_.end();
         reconstrMethod++)
     {
-      cout << MapMethodEnumToString(reconstrMethod->first) << ":\t #dofsets:\t" << reconstrMethod->second << endl;
+      IO::cout << MapMethodEnumToString(reconstrMethod->first) << ":\t #dofsets:\t" << reconstrMethod->second << IO::endl;
     }
   }
 
@@ -504,7 +504,7 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
         if(nds_old == -1) // not found
         {
 #ifdef DEBUG_TIMINT
-          cout << "XFLUID-TIMINIT CASE D: node " << gid << ",\t no corresponding dofset found at time t^n for dofset " << nds_new << " at time t^(n+1)" << endl;
+          IO::cout << "XFLUID-TIMINIT CASE D: node " << gid << ",\t no corresponding dofset found at time t^n for dofset " << nds_new << " at time t^(n+1)" << IO::endl;
 #endif
           if(is_std_set_np) // std at t^(n+1)
           {
@@ -520,8 +520,8 @@ void XFEM::XFluidTimeInt::TransferDofsToNewMap(
           bool is_std_set_n = Is_Std_CellSet(n_old, dof_cellsets_old[nds_old]);
 
 #ifdef DEBUG_TIMINT
-          cout << "XFLUID-TIMINIT CASE D: node " << gid << ",\t corresponding std(yes/no: " << is_std_set_n << ") dofset "
-                                                 << nds_old << " found at time t^n for dofset " << nds_new << " at time t^(n+1)" << endl;
+          IO::cout << "XFLUID-TIMINIT CASE D: node " << gid << ",\t corresponding std(yes/no: " << is_std_set_n << ") dofset "
+                                                     << nds_old << " found at time t^n for dofset " << nds_new << " at time t^(n+1)" << IO::endl;
 #endif
 
           if(is_std_set_np and is_std_set_n) // std at t^n and t^(n+1)
@@ -625,7 +625,7 @@ void XFEM::XFluidTimeInt::CopyDofs(DRT::Node*                              node,
                                    const int                               nds_old,            /// the corresponding nodal dofset at w.r.t old interface
                                    std::vector<RCP<Epetra_Vector> >&       newRowStateVectors, /// row map based state vectors at new interface
                                    std::vector<RCP<const Epetra_Vector> >& oldRowStateVectors, /// row map based state vectors at old interface
-                                   Teuchos::RCP<std::set<int> >            dbcgids
+                                   Teuchos::RCP<std::set<int> >            dbcgids             /// set of DBC global ids
 )
 {
 
@@ -707,7 +707,6 @@ void XFEM::XFluidTimeInt::MarkDofs(
 
     RCP<Epetra_Vector> vec_new = *it;
 
-    // TODO: look at this loop -> get better startvalues, e.g. 0.0 for ghost penalty
     // set a dummy value for dofs in the vector
     for(size_t i=0; i<dofs_new.size(); i++)
     {
@@ -741,7 +740,7 @@ void XFEM::XFluidTimeInt::MarkDofs(
 void XFEM::XFluidTimeInt::SetReconstrMethod(
     DRT::Node*                     node,                 /// drt node
     const int                      nds_new,              /// nodal dofset w.r.t new interface position
-    INPAR::XFEM::XFluidTimeInt     method                /// reconstruction method
+    INPAR::XFEM::XFluidTimeInt     method                /// which type of reconstruction method
     )
 {
   std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >::iterator it;
@@ -779,7 +778,6 @@ int XFEM::XFluidTimeInt::FindStdDofSet(
       it!= dof_cell_sets.end();
       it++)
   {
-
     if(Is_Std_CellSet(node,*it)) return count;
 
     count ++;
@@ -792,29 +790,24 @@ int XFEM::XFluidTimeInt::FindStdDofSet(
 // is this node a standard or ghost node w.r.t current set
 // -------------------------------------------------------------------
 bool XFEM::XFluidTimeInt::Is_Std_CellSet(
-    GEO::CUT::Node*                                  node,     /// cut node
+    GEO::CUT::Node*                                                  node,     /// cut node
     const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp >&  cell_set  /// set of volumecells
     )
 {
-//  // assume non-standard set
-//  bool is_std_set = false;
+  // assume non-standard set
 
   GEO::CUT::Point* p = node->point();
 
-  GEO::CUT::Point::PointPosition pos = p->Position();
-
-  if(pos == GEO::CUT::Point::oncutsurface)
-  {
-    cout << "!!WARNING point is on cut surface, Is_Std_CellSet decision?!" << endl;
-//    dserror("point is on cut surface, Is_Std_CellSet decision?!");
-  }
+//  GEO::CUT::Point::PointPosition pos = p->Position();
+//
+//  if(pos == GEO::CUT::Point::oncutsurface)
+//  {
+//    IO::cout << "!!WARNING point is on cut surface, Is_Std_CellSet decision?!" << IO::endl;
+//  }
 
   // at least one vc has to contain the node
   for(std::set<GEO::CUT::plain_volumecell_set>::const_iterator sets=cell_set.begin(); sets!=cell_set.end(); sets++)
   {
-//    // break the outer loop if at least one vc contains this point
-//    if(is_std_set == true) break;
-
     const GEO::CUT::plain_volumecell_set& set = *sets;
 
     for(GEO::CUT::plain_volumecell_set::const_iterator vcs=set.begin(); vcs!=set.end(); vcs++)
@@ -822,23 +815,22 @@ bool XFEM::XFluidTimeInt::Is_Std_CellSet(
       if((*vcs)->Contains(p))
       {
         // return if at least one vc contains this point
-//        is_std_set=true;
         return true;
       }
     }
   }
 
-  return false; // is_std_set;
+  return false;
 }
 
 // -------------------------------------------------------------------
 // identify cellsets at time t^n with cellsets at time t^(n+1)
 // -------------------------------------------------------------------
 void XFEM::XFluidTimeInt::IdentifyOldSets(
-    int &                                                          nds_old,            /// set identified nodal dofset at t^n
-    std::vector<int> &                                             identified_sides,   /// set identified using sides (side-Ids)
+    int &                                                                         nds_old,            /// set identified nodal dofset at t^n
+    std::vector<int> &                                                            identified_sides,   /// set identified using sides (side-Ids)
     const std::vector<std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp> >&  dof_cellsets_old,   /// all dofcellsets at t^n
-    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>& cell_set_new        /// dofcellset at t^(n+1) which has to be identified
+    const std::set<GEO::CUT::plain_volumecell_set, GEO::CUT::Cmp>&                cell_set_new        /// dofcellset at t^(n+1) which has to be identified
     )
 {
   // set of side-ids involved in cutting the current connection of volumecells at t^(n+1)
@@ -922,7 +914,7 @@ void XFEM::XFluidTimeInt::IdentifyOldSets(
   if(num_found_old_cellsets > 1)
   {
 #ifdef DEBUG_TIMINT
-    cout << "Warning: found dofset at t^n not unique, set status to unfound!" << endl;
+    IO::cout << "Warning: found dofset at t^n not unique, set status to unfound!" << IO::endl;
 #endif
     nds_old = -1;
   }
@@ -1057,7 +1049,7 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
       else // on_cut_sides_new.begin() == on_cut_sides_old.begin()
       {
 #ifdef DEBUG_TIMINT
-        cout << "point moves within side " << *(on_cut_sides_new.begin()) << " oncutsurface!" << endl;
+        IO::cout << "point moves within side " << *(on_cut_sides_new.begin()) << " oncutsurface!" << IO::endl;
 #endif
 
         // no changing side
@@ -1079,7 +1071,7 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
   if(pos_old == GEO::CUT::Point::oncutsurface and pos_new == GEO::CUT::Point::oncutsurface)
   {
 #ifdef DEBUG_TIMINT
-    cout << "!!WARNING point is on cut surfac at time t^n and t^(n+1)" << endl;
+    IO::cout << "!!WARNING point is on cut surfac at time t^n and t^(n+1)" << IO::endl;
 #endif
 
     const GEO::CUT::plain_side_set & cut_sides_old  = p_old->CutSides();
@@ -1111,7 +1103,7 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
     side_count++;
 
 #ifdef DEBUG_TIMINT
-    cout <<  "\t CheckChangingSide for node " << n_old->Id() << " w.r.t side " << *sides << endl;
+    IO::cout <<  "\t CheckChangingSide for node " << n_old->Id() << " w.r.t side " << *sides << IO::endl;
 #endif
 
     int sid = *sides;
@@ -1148,7 +1140,7 @@ bool XFEM::XFluidTimeInt::CheckChangingSide(
     {
 
 #ifdef DEBUG_TIMINT
-      cout << "\t\t node " << n_new->Id()<< " changed interface side, node within space-time side element for at least one side" << endl;
+      IO::cout << "\t\t node " << n_new->Id()<< " changed interface side, node within space-time side element for at least one side" << IO::endl;
 #endif
 
       changed_side = true;
@@ -1204,7 +1196,7 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
     double perturbation = 1e-008;
 
 #ifdef DEBUG_TIMINT
-    cout << "\t\t\t Not Successful! -> Apply small artificial translation in normal direction at t^(n+1) of " << perturbation << endl;
+    IO::cout << "\t\t\t Not Successful! -> Apply small artificial translation in normal direction at t^(n+1) of " << perturbation << IO::endl;
 #endif
 
     //------------------------------------------------------------------
@@ -1269,8 +1261,8 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
     successful_check = CheckSTSideVolume<space_time_distype,numnode_space_time>(xyze_st);
 
 #ifdef DEBUG_TIMINT
-    if(successful_check) cout << "\t\t\t Successful check!" << endl;
-    else                 cout << "\t\t\t Again not successful check!" << endl;
+    if(successful_check) IO::cout << "\t\t\t Successful check!" << IO::endl;
+    else                 IO::cout << "\t\t\t Again not successful check!" << IO::endl;
 #endif
   }
 
@@ -1290,7 +1282,7 @@ bool XFEM::XFluidTimeInt::WithinSpaceTimeSide(
     within_space_time_side=true;
 
 #ifdef DEBUG_TIMINT
-    cout << "\t\t\t changing side found!" << xyze_new << " \n local coords " << rst << endl;
+    IO::cout << "\t\t\t changing side found!" << xyze_new << " \n local coords " << rst << IO::endl;
 #endif
   }
 
@@ -1338,7 +1330,7 @@ bool XFEM::XFluidTimeInt::CheckSTSideVolume( LINALG::Matrix<3,numnode_space_time
      // code that executes when exception-declaration is thrown
      // in the try block
 #ifdef DEBUG_TIMINT
-     cout << "\t\t\t det for space-time side element (det == 0.0) => distorted flat st-element" << endl;
+     IO::cout << "\t\t\t det for space-time side element (det == 0.0) => distorted flat st-element" << IO::endl;
 #endif
      successful = false;
      return successful;
@@ -1352,7 +1344,7 @@ bool XFEM::XFluidTimeInt::CheckSTSideVolume( LINALG::Matrix<3,numnode_space_time
   if (det < 1E-14 and det > -1E-14)
   {
 #ifdef DEBUG_TIMINT
-    cout << "\t\t\t det for space-time side element (det == " << det << ") => distorted flat st-element" << endl;
+    IO::cout << "\t\t\t det for space-time side element (det == " << det << ") => distorted flat st-element" << IO::endl;
 #endif
     successful = false;
     return successful;
@@ -1362,8 +1354,9 @@ bool XFEM::XFluidTimeInt::CheckSTSideVolume( LINALG::Matrix<3,numnode_space_time
   return successful;
 }
 
-
-/// timint output for reconstruction methods
+// -------------------------------------------------------------------
+// timint output for reconstruction methods
+// -------------------------------------------------------------------
 void XFEM::XFluidTimeInt::Output()
 {
 
@@ -1400,7 +1393,7 @@ void XFEM::XFluidTimeInt::Output()
 
   gmshfilecontent.close();
 
-  if(myrank_==0) std::cout << endl;
+  if(myrank_==0) IO::cout << IO::endl;
 
 }
 

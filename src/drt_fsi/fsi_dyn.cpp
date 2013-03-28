@@ -109,7 +109,7 @@ void fluid_ale_drt()
 /*----------------------------------------------------------------------*/
 // entry point for Fluid on XFEM in DRT
 /*----------------------------------------------------------------------*/
-void fluid_xfem2_drt()
+void fluid_xfem_drt()
 {
 #ifdef PARALLEL
   const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();

@@ -144,7 +144,7 @@ void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool co
   TEUCHOS_FUNC_TIME_MONITOR( "GEO::CUT --- 2/3 --- Cut_Positions_Dofsets (parallel)" );
 
 
-  if(myrank_==0) IO::cout << "\n\t ... 2/3 Cut_Positions_Dofsets (parallel)" << IO::endl;
+  if(myrank_==0) IO::cout << "\t * 2/3 Cut_Positions_Dofsets (parallel) ...";
 
   const double t_start = Teuchos::Time::wallTime();
 
@@ -191,7 +191,7 @@ void GEO::CutWizard::CutParallel_FindPositionDofSets(bool include_inner, bool co
   const double t_diff = Teuchos::Time::wallTime()-t_start;
   if ( myrank_ == 0 )
   {
-    IO::cout << " ... Success (" << t_diff  <<  " secs)";
+    IO::cout << " Success (" << t_diff  <<  " secs)" << IO::endl;
   }
 
 }

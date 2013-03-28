@@ -16,7 +16,6 @@ Maintainer: Benedikt Schott
 #ifndef XFLUID_TIMEINT_STD_SEMILAGRANGE_H_
 #define XFLUID_TIMEINT_STD_SEMILAGRANGE_H_
 
-
 #include "xfluid_timeInt_base.H"
 
 
@@ -28,6 +27,10 @@ namespace DRT
 
 namespace XFEM
 {
+
+/*========================================================================*/
+// forward declarations
+/*========================================================================*/
 
   class XFLUID_TIMEINT_BASE;
   class TimeIntData;
@@ -43,6 +46,10 @@ class XFLUID_SemiLagrange : public XFLUID_STD
 {
 public:
 
+  /*========================================================================*/
+  //! constructor/destructor
+  /*========================================================================*/
+
   //! constructor
   explicit XFLUID_SemiLagrange(
       XFEM::XFLUID_TIMEINT_BASE&                                     timeInt,          /// time integration base class object
@@ -56,29 +63,20 @@ public:
   );
 
   //! destructor
-  ~XFLUID_SemiLagrange()
-  {return;}
+  ~XFLUID_SemiLagrange(){ return; }
+
+  /*========================================================================*/
+  //! compute routines
+  /*========================================================================*/
 
   //! get startvalues in time step for nodes which changed interface-side
-  void compute(
-      vector<RCP<Epetra_Vector> >& newRowVectorsn
-  );
+  void compute( vector<RCP<Epetra_Vector> >& newRowVectorsn );
 
 private:
 
-  //! disabled copy constructor
-  explicit XFLUID_SemiLagrange(const XFEM::XFLUID_SemiLagrange& slvalues);
-
-  //! disabled default constructor
-  explicit XFLUID_SemiLagrange();
-
-  //! determine point's dofset in element ele w.r.t old or new interface position
-  void getNodalDofSet(
-      DRT::Element*           ele,    /// pointer to element
-      LINALG::Matrix<3,1>&    x ,     /// global coordinates of point
-      std::vector<int>&       nds,    /// determine the points dofset w.r.t old/new interface position
-      bool                    step_np /// computation w.r.t old or new interface position?
-      );
+  /*========================================================================*/
+  //! control routines for Semi-Lagrangean Newton-loop
+  /*========================================================================*/
 
   //! run a Newton loop in order to compute the exact Lagrangian origin for a node which changed interface side
   void NewtonLoop(
@@ -100,8 +98,32 @@ private:
       bool&                   elefound          /// element found ?
   );
 
+  //! check if newton iteration has finished
+  bool globalNewtonFinished( int counter = 0 ) const;
+
+  //! Decide how or if to continue when the startpoint approximation changed the side
+  bool continueForChangingSide(
+      TimeIntData*            data,             ///< current data to be updated
+      DRT::Element*           ele,              ///< pointer to element the current point lies in
+      std::vector<int>&       nds_curr          ///< nds-vector of current volumecell the current startpoint approximation lies in
+  );
+
   //! determine velocity and pressure for nodes where the "normal" semi-lagrange startfinder failed
   void getDataForNotConvergedNodes();
+
+  //! prepare new iteration
+  void newIteration_prepare( vector<RCP<Epetra_Vector> > newRowVectors );
+
+  //! gradients at a node
+  void newIteration_nodalData( vector<RCP<Epetra_Vector> > newColVectors );
+
+  //! reinitialize some data for new computations, e.g. at a new FGI
+  void reinitializeData();
+
+
+  /*========================================================================*/
+  //! Semi-Lagrangean backtracking routines
+  /*========================================================================*/
 
   //! call the back tracking which computes the final values
   void callBackTracking(
@@ -110,13 +132,6 @@ private:
       LINALG::Matrix<3,1>&  xi,                  /// local coordinates
       const char*           backTrackingType     /// type of backTracking
   );
-
-  template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
-  void extractNodalValuesFromVector(
-      LINALG::Matrix<3,numnode>& evel,
-      LINALG::Matrix<numnode,1>& epre,
-      RCP<Epetra_Vector> vel_vec,
-      std::vector<int>& lm);
 
   //! track back the Lagrangian origin to get final values
   template<const int numnode, DRT::Element::DiscretizationType DISTYPE>
@@ -127,17 +142,25 @@ private:
       const char*           backTrackingType     /// type of backTrackingwVectors
   );
 
-  void newIteration_prepare(
-      vector<RCP<Epetra_Vector> > newRowVectors
+  /*========================================================================*/
+  //! element/dofset based routines
+  /*========================================================================*/
+
+  //! determine point's dofset in element ele w.r.t old or new interface position
+  void getNodalDofSet(
+      DRT::Element*           ele,    /// pointer to element
+      LINALG::Matrix<3,1>&    x ,     /// global coordinates of point
+      std::vector<int>&       nds,    /// determine the points dofset w.r.t old/new interface position
+      GEO::CUT::VolumeCell*&  vc,     /// valid fluid volumecell the point x lies in
+      bool                    step_np /// computation w.r.t old or new interface position?
       );
 
-  //! gradients at a node
-  void newIteration_nodalData(
-      vector<RCP<Epetra_Vector> > newColVectors
-  );
-
-  //! reinitialize some data for new computations, f.e. at a new FGI
-  void reinitializeData();
+  template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
+  void extractNodalValuesFromVector(
+      LINALG::Matrix<3,numnode>& evel,
+      LINALG::Matrix<numnode,1>& epre,
+      RCP<Epetra_Vector> vel_vec,
+      std::vector<int>& lm);
 
   //! compute the nodal gradient
   template<const int numnode, DRT::Element::DiscretizationType DISTYPE>
@@ -151,28 +174,38 @@ private:
       vector<LINALG::Matrix<1,3> >& presnpDeriv1
   ) const;
 
+
+  /*========================================================================*/
+  //! others
+  /*========================================================================*/
+
   //! compute the theta which has to be used for computation
   double Theta(TimeIntData* data) const;
 
-  //! check if newton iteration has finished
-  bool globalNewtonFinished(
-      int counter = 0
-  ) const;
 
-# ifdef PARALLEL
+
+  /*========================================================================*/
+  //! parallel routines
+  /*========================================================================*/
+
   //! export data to startpoint processor when Semi-Lagrange algorithm failed
-  void exportAlternativAlgoData(
-  );
+  void exportAlternativAlgoData();
 
   //! export data to neighbour proc in Newton loop
-  void exportIterData(
-      bool& procfinished
-  );
-# endif
+  void exportIterData( bool& procfinished );
 
-  // constants
-  const double theta_default_; // factor of one-step theta scheme
-//  double flamespeed_; // absolute flame velocity without fluid influence
-}; // class Startvalues
+
+  /*========================================================================*/
+  //! constants
+  /*========================================================================*/
+
+  const double theta_default_;    //! factor of one-step theta scheme
+
+  const double relTolIncr_;       //! tolerance for the increment
+  const double relTolRes_;        //! tolerance for the residual
+
+}; // class XFLUID_SemiLagrange
 } // namespace XFEM
+
+
 #endif /*XFLUID_TIMEINT_SEMILAGRANGE_H_*/

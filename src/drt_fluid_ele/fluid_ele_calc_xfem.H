@@ -329,13 +329,6 @@ private:
         LINALG::BlockMatrix<LINALG::Matrix<my::nen_,   1>,6,1>&                rhs   ///< rhs vector
         );
 
-//    Teuchos::RCP<DRT::ELEMENTS::XFLUID::SideInterface<distype> > CreateSideImpl(
-//        bool fluidfluidcoupling,
-//        DRT::Element * side,
-//        Epetra_SerialDenseMatrix & side_xyze,
-//        std::vector<Epetra_SerialDenseMatrix> & side_matrices,
-//        std::map<int, std::vector<Epetra_SerialDenseMatrix> > Cuiui_coupling
-//    );
 
     inline double HK(double vol)
     {

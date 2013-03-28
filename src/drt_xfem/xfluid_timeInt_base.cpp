@@ -1,33 +1,40 @@
 /*!------------------------------------------------------------------------------------------------*
 \file timeInt.cpp
 
-\brief provides the basic time integration classes "TimeInt", "TimeIntStd", "TimeIntEnr"
+\brief provides the basic class for XFEM-time-integration, e.g. for Semi-Lagrangean methods
 
 <pre>
-Maintainer: Martin Winklmaier
-            winklmaier@lnm.mw.tum.de
+Maintainer: Benedikt Schott
+            schott@lnm.mw.tum.de
             http://www.lnm.mw.tum.de
             089 - 289-15241
 </pre>
  *------------------------------------------------------------------------------------------------*/
 
 
+#include "../drt_bele3/bele3.H"
+#include "../drt_bele3/bele3_4.H"
+
+#include "../drt_lib/drt_discret.H"
 #include "../drt_lib/drt_exporter.H"
-#include "../drt_combust/combust_flamefront.H"
+#include "../drt_lib/drt_utils.H"
+
 #include "../drt_geometry/position_array.H"
-#include "../drt_xfem/xfem_fluidwizard.H"
+
+#include "../drt_inpar/inpar_xfem.H"
 
 #include "../drt_cut/cut_volumecell.H"
 #include "../drt_cut/cut_elementhandle.H"
 #include "../drt_cut/cut_sidehandle.H"
-//#include "../drt_cut/cut_intersection.H"
-
-#include "../drt_bele3/bele3.H"
-#include "../drt_bele3/bele3_4.H"
+#include "../drt_cut/cut_intersection.H"
+#include "../drt_cut/cut_position.H"
 
 #include "../drt_io/io.H"
 #include "../drt_io/io_gmsh.H"
 #include "../drt_io/io_control.H"
+
+#include "../drt_xfem/xfem_fluidwizard.H"
+#include "../drt_xfem/xfem_fluiddofset.H"
 
 #include "xfluid_timeInt_base.H"
 
@@ -35,52 +42,39 @@ Maintainer: Martin Winklmaier
 //#define DEBUG_TIMINT_STD
 
 /*------------------------------------------------------------------------------------------------*
- * basic XFEM time-integration constructor                                       winklmaier 11/11 *
+ * basic XFEM time-integration constructor                                           schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 XFEM::XFLUID_TIMEINT_BASE::XFLUID_TIMEINT_BASE(
-    const RCP<DRT::Discretization> discret,
-    const RCP<DRT::Discretization> boundarydis,
-    Teuchos::RCP<XFEM::FluidWizard>         wizard_old,       /// fluid wizard at t^n
-    Teuchos::RCP<XFEM::FluidWizard>         wizard_new,       /// fluid wizard at t^(n+1)
-    Teuchos::RCP<XFEM::FluidDofSet>         dofset_old,       /// fluid wizard at t^n
-    Teuchos::RCP<XFEM::FluidDofSet>         dofset_new,       /// fluid wizard at t^(n+1)
-    std::vector<RCP<Epetra_Vector> > oldVectors,
-    const Epetra_Map& olddofcolmap,
-    const Epetra_Map& newdofrowmap,
-    const RCP<std::map<int,std::vector<int> > > pbcmap
+    const RCP<DRT::Discretization>          discret,          /// background discretization
+    const RCP<DRT::Discretization>          boundarydis,      /// cut discretization
+    Teuchos::RCP<XFEM::FluidWizard>         wizard_old,       /// fluid wizard w.r.t. old interface position
+    Teuchos::RCP<XFEM::FluidWizard>         wizard_new,       /// fluid wizard w.r.t. new interface position
+    Teuchos::RCP<XFEM::FluidDofSet>         dofset_old,       /// fluid dofset w.r.t. old interface position
+    Teuchos::RCP<XFEM::FluidDofSet>         dofset_new,       /// fluid dofset w.r.t. new interface position
+    std::vector<RCP<Epetra_Vector> >        oldVectors,       /// vector of col-vectors w.r.t. old interface position
+    const Epetra_Map&                       olddofcolmap,     /// dofcolmap w.r.t. old interface position
+    const Epetra_Map&                       newdofrowmap,     /// dofcolmap w.r.t. new interface position
+    const RCP<std::map<int,std::vector<int> > > pbcmap        /// map of periodic boundary conditions
 ) :
 discret_(discret),
 boundarydis_(boundarydis),
-wizard_old_(wizard_old),       /// fluid wizard at t^n
-wizard_new_(wizard_new),       /// fluid wizard at t^(n+1)
-dofset_old_(dofset_old),       /// fluid dofset at t^n
-dofset_new_(dofset_new),       /// fluid dofset at t^(n+1)
+wizard_old_(wizard_old),
+wizard_new_(wizard_new),
+dofset_old_(dofset_old),
+dofset_new_(dofset_new),
 olddofcolmap_(olddofcolmap),
 newdofrowmap_(newdofrowmap),
 oldVectors_(oldVectors),
+timeIntData_(Teuchos::null),
 pbcmap_(pbcmap),
 myrank_(discret_->Comm().MyPID()),
 numproc_(discret_->Comm().NumProc()),
-newton_max_iter_(10),
-newton_tol_(1.0e-10)
+newton_max_iter_(10),          /// maximal number of newton iterations for Semi-Lagrangean algorithm
+limits_tol_(1.0e-10),          /// newton tolerance for Semi-Lagrangean algorithm
+TOL_dist_(1.0e-12)             /// tolerance to find the shortest distance of point to its projection on the surface dis
 {
-
   return;
 } // end constructor
-
-
-
-/*------------------------------------------------------------------------------------------------*
- * out of order!                                                                 winklmaier 10/11 *
- *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_TIMEINT_BASE::compute(
-    std::vector<RCP<Epetra_Vector> > newRowVectorsn,
-    std::vector<RCP<Epetra_Vector> > newRowVectorsnp
-)
-{
-  dserror("Unused function! Use a function of the derived classes");
-} // end function compute
-
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -91,7 +85,7 @@ void XFEM::XFLUID_TIMEINT_BASE::type(
     int iterMax
 )
 {
-
+//TODO: update this for FSI
   if (iter==1)
     FGIType_=FRS1FGI1_;
   else if (iterMax==1 or iter%iterMax==1)
@@ -106,153 +100,37 @@ void XFEM::XFLUID_TIMEINT_BASE::type(
 
 /*------------------------------------------------------------------------------------------------*
  * assign the Epetra vectors which shall be computed to the                                       *
- * algorithms data structure                                                     winklmaier 10/11 *
+ * algorithms data structure                                                         schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::handleVectors(
     std::vector<RCP<Epetra_Vector> >& newRowVectorsn
 )
 {
-//  if (newRowVectorsn.size()!=newRowVectorsnp.size())
-//    dserror("Number of state-vectors of different times are different!");
-
-//  newVectors_.insert(newVectors_.end(),newRowVectorsnp.begin(),newRowVectorsnp.end());
-
   newVectors_ = newRowVectorsn;
 
   if (oldVectors_.size() != newVectors_.size())
     dserror("Number of state-vectors at new and old discretization are different!");
+
 } // end function handleVectors
 
-
-
-/*------------------------------------------------------------------------------------------------*
- * identify intersection status of an element                                    winklmaier 01/12 *
- *------------------------------------------------------------------------------------------------*/
-XFEM::XFLUID_TIMEINT_BASE::intersectionType XFEM::XFLUID_TIMEINT_BASE::intersectionStatus(
-    const DRT::Element* ele,
-    bool oldTimeStep
-) const
-{
-  // return status are: 0 = uncut, 1 = bisected/trisected, 2 = numerically intersected
-
-  // initialization
-  RCP<COMBUST::InterfaceHandleCombust> ih;
-  RCP<Epetra_Vector> phi;
-
-  if (oldTimeStep)
-  {
-    ih = oldinterfacehandle_;
-    phi = phin_;
-  }
-  else
-  {
-    ih = newinterfacehandle_;
-    phi = phinp_;
-  }
-
-  // check if "normally" intersected
-  if ((ih->ElementBisected(ele->Id())) or
-      (ih->ElementTrisected(ele->Id())))
-    return XFEM::XFLUID_TIMEINT_BASE::cut_; // bisected or trisected
-
-  // check if numerically intersected:
-  // this means, nodes are on different sides of the interface,
-  // but the cut status is not bi- or trisected so that some phi-values are nearly zero
-  const int* elenodeids = ele->NodeIds();  // nodeids of element
-  double phivalue = 0.0;
-  bool side = true;
-  for (int nodeid=0;nodeid<ele->NumNode();nodeid++) // loop over element nodes
-  {
-    phivalue = (*phi)[discret_->gNode(elenodeids[nodeid])->LID()];
-    if (nodeid == 0)
-      side = plusDomain(phivalue);
-    else
-    {
-      if (side!=plusDomain(phivalue)) // different sides
-        return XFEM::XFLUID_TIMEINT_BASE::numerical_cut_; // numerically intersected
-    }
-  }
-
-  return XFEM::XFLUID_TIMEINT_BASE::uncut_;
-} // end function intersectionStatus
-
-
-
-/*------------------------------------------------------------------------------------------------*
- * identify interface side of a point in combustion                              winklmaier 10/10 *
- *------------------------------------------------------------------------------------------------*/
-int XFEM::XFLUID_TIMEINT_BASE::interfaceSide(
-    double phi
-) const
-{
-  if (plusDomain(phi) == true) return 1;
-  else return -1;
-} // end function interfaceSide
-
-
-
-/*------------------------------------------------------------------------------------------------*
- * identify interface side of a point in combustion                              winklmaier 10/10 *
- *------------------------------------------------------------------------------------------------*/
-int XFEM::XFLUID_TIMEINT_BASE::interfaceSide(
-    DRT::Element* ele,
-    LINALG::Matrix<3,1> x,
-    bool newTimeStep
-) const
-{
-  const int nsd = 3; // dimension
-
-  // required interfacehandle
-  RCP<COMBUST::InterfaceHandleCombust> ih = newTimeStep ? newinterfacehandle_ : oldinterfacehandle_;
-  const GEO::DomainIntCells&  domainIntCells(ih->ElementDomainIntCells(ele->Id()));
-
-  static LINALG::Matrix<nsd,1> eta(true); // local cell coordinates
-  bool pointInCell = false; // boolean whether point is in current cell
-
-  // loop over domain integration cells
-  for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
-  {
-    callXToXiCoords(*cell,x,eta,pointInCell);
-
-    if (pointInCell)
-    {
-      if (cell->getDomainPlus()==true) 	return 1;
-      else 								return -1;
-    }
-  }
-
-  // handle special case of tiny cell which was removed by cut:
-  // all remaining cells are at same side, values in this ele are all at
-  // this side since it is uncut and no more enriched
-  bool side = 0;
-  for (GEO::DomainIntCells::const_iterator cell = domainIntCells.begin(); cell != domainIntCells.end(); ++cell)
-  {
-    if (cell == domainIntCells.begin())
-      side = cell->getDomainPlus();
-    else
-      if (side !=cell->getDomainPlus())
-        break; // special case of more than once cut element with deleted cell
-
-    if (side==true)		return 1;
-    else				return -1;
-  }
-
-  dserror("point in an element should be in one of the elements domain integration cells");
-  return 0;
-} // end function interfaceSide
 
 
 /*------------------------------------------------------------------------------------------------*
  * check if the current point x2 changed the side compared to x1                     schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
-    bool                    newTimeStep,       /// new/old timestep for both points x1 and x2
+    const bool              newTimeStep,       /// new/old timestep for both points x1 and x2
     DRT::Element*           ele1,              /// first element where x1 lies in
     LINALG::Matrix<3,1>&    x1,                /// global coordinates of point x1
     DRT::Element*           ele2,              /// second element where x2 lies in
     LINALG::Matrix<3,1>&    x2                 /// global coordinates of point x2
 ) const
 {
+
+#ifdef DEBUG_TIMINT_STD
+  IO::cout << "\n\t\t\t check if point changed the side ";
+#endif
+
   //-----------------------------------------------------------------------
   // special case of equal coordinates x1 and x2 -> no line
   LINALG::Matrix<3,1> diff(true);
@@ -267,12 +145,19 @@ bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
 
   // REMARK:
   // changing the side of a point at two times (newton steps) with coordinates x1 and x2 is done
-  // via changing the cut of this trace between x1 and x2 with surrounding cutting sides
+  // via changing the cut of the linear trace between x1 and x2 with surrounding cutting sides
   // if there is a cut between the ray tracer and a cutting side, then the point changed the side
   // while moving from Position x1 to Position x2
 
-  // first of all find involved elements which are possibly passed through by the ray between x1 and x2
-  // second we have to find all possible cutting sides
+  //-----------------------------------------------------------------------
+  //-----------------------------------------------------------------------
+  // first: find involved elements which are possibly passed through by the ray between x1 and x2
+
+#ifdef DEBUG_TIMINT_STD
+  IO::cout << "\n\t\t\t\t\t --------------------------------- ";
+  IO::cout << "\n\t\t\t\t\t Find involved background elements ";
+  IO::cout << "\n\t\t\t\t\t --------------------------------- ";
+#endif
 
   int mi = 0; // we assume only cutting sides with mesh 0 (meshintersection)
 
@@ -284,9 +169,18 @@ bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
   if(ele1->Id() == ele2->Id()) // line within one element
   {
     eids.insert(ele1->Id()); // just one element to check
+
+#ifdef DEBUG_TIMINT_STD
+    IO::cout << "\n\t\t\t\t\t check changing side just for the unique element" << ele1->Id() << IO::endl;
+#endif
+
   }
   else if( Neighbors(ele1,ele2, common_nodes) )
   {
+#ifdef DEBUG_TIMINT_STD
+    IO::cout << "\n\t\t\t\t\t check changing side for neighboring elements: " << IO::endl;
+#endif
+
     // get all elements adjacent to common nodes in ele1 and ele2
 
     // REMARK: if at least one common node is not a row node, then there is possibly one adjacent element missing,
@@ -310,32 +204,43 @@ bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
       {
         DRT::Element* ele = elements[e_it];
 
-        eids.insert(ele->Id()); cout << "\t\t add element " << ele->Id() << endl;
+        eids.insert(ele->Id());
+
+#ifdef DEBUG_TIMINT_STD
+        IO::cout << "\n\t\t\t\t\t add element " << ele->Id() << IO::endl;
+#endif
       }
     }
   }
   else
   {
-    //dserror("please check this case: ele1 = %d and ele2 = %d are not Neighbors -> check all sides in cutdiscret", ele1->Id(), ele2->Id());
-
-#ifdef DEBUG_TIMINT_STD
-    cout << "\t\t\t all sides have to be check for changing side, ele1 = " << ele1->Id()
-         << " and ele2 = " << ele2->Id()
-         << " are not Neighbors" << endl;
-#endif
-
     // check all sides ghosted in boundarydis
     check_allsides=true;
+
+#ifdef DEBUG_TIMINT_STD
+    IO::cout << "\n\t\t\t\t\t all sides on boundary discretization have to be check, ele1 = " << ele1->Id()
+             << " and ele2 = " << ele2->Id()
+             << " are not Neighbors" << IO::endl;
+#endif
+
   }
 
+  //-----------------------------------------------------------------------
+  //-----------------------------------------------------------------------
+  // second: find all boundary sides involved in cutting the determined background elements
 
-  //---------------------------------------------------------------------
+
+#ifdef DEBUG_TIMINT_STD
+  IO::cout << "\n\t\t\t\t\t --------------------------------- ";
+  IO::cout << "\n\t\t\t\t\t Find involved sides with possible cuts between trace and side ";
+  IO::cout << "\n\t\t\t\t\t --------------------------------- " << IO::endl;
+#endif
+
   std::set<int> cut_sides;
 
   // collect all cutting sides
   if(check_allsides)
   {
-    cout << " \t\t check all sides" << endl;
     // add all sides of cut_discret to check
     for(int i=0; i< boundarydis_->NumMyColElements(); i++)
     {
@@ -379,25 +284,35 @@ bool XFEM::XFLUID_TIMEINT_BASE::changedSideSameTime(
 
           if(!is_elements_side) // is a cutting side
           {
-            cut_sides.insert(parent_side->Id()); cout << "\t\t add side " << parent_side->Id() << endl;
+            cut_sides.insert(parent_side->Id());
+
+#ifdef DEBUG_TIMINT_STD
+            IO::cout << "\n\t\t\t\t\t add side with Id=" << parent_side->Id() << IO::endl;
+#endif
           } // !element's side
         } //facets
       }//sub elements
     }
   }
 
-  //---------------------------------------------------------------------
-  // check cut between the line and all cutting sides
+  //-----------------------------------------------------------------------
+  //-----------------------------------------------------------------------
+  // third: check cut between the line and all cutting sides
   for(std::set<int>::iterator side_it= cut_sides.begin(); side_it!=cut_sides.end(); side_it++)
   {
     // get the side via sidehandle
     GEO::CUT::SideHandle* sh = wizard->GetCutSide(*side_it, mi);
 
-    cout << "changedSideSameTime with help of side" << *side_it << endl;
+#ifdef DEBUG_TIMINT_STD
+    IO::cout << "\n\t\t\t\t\t SIDE-CHECK with side=" << *side_it << IO::endl;
+#endif
 
     if(callSideEdgeIntersection(sh, *side_it, x1, x2))
     {
-      cout << " changed side! " << endl;
+#ifdef DEBUG_TIMINT_STD
+      IO::cout << "\n\t\t\t\t\t <<< POINT CHANGED THE SIDE >>>" << IO::endl;
+#endif
+
       return true;
     }
   }
@@ -447,11 +362,11 @@ bool XFEM::XFLUID_TIMEINT_BASE::Neighbors(
 
     if(nodeids1_vec[index1] < nodeids2_vec[index2]) index1++;
     else if(nodeids1_vec[index1] > nodeids2_vec[index2]) index2++;
-    else // nodeids1_vec[index1] == nodeids2_vec[index2
+    else // nodeids1_vec[index1] == nodeids2_vec[index2]
     {
       common_nodes.insert(nodeids1_vec[index1]);
-    cout << "common node between element " << ele1->Id() << " and element " << ele2->Id() << " is " << nodeids1_vec[index1] << endl;
-      is_neighbor = true; // true if at least one node is common
+
+      is_neighbor = true; // true if at least one node is common, find also further common nodes
 
       index1++;
       index2++;
@@ -513,9 +428,6 @@ bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersectionT(
 ) const
 {
 
-//  cout << "\t\t check changed side via intersection between side " << sid
-//       << " and line " << x1 << " and " << x2 << endl;
-
   const int nsd = 3;
   const int numNodesSurface = DRT::UTILS::DisTypeToNumNodePerEle<sidetype>::numNodePerElement;
 
@@ -534,35 +446,20 @@ bool XFEM::XFLUID_TIMEINT_BASE::callSideEdgeIntersectionT(
 
   LINALG::Matrix<3,1> xsi(true);
 
-  //cout << "\t\tcompute intersection between side and line KERNEL::ComputeIntersection" << endl;
 
-  GEO::CUT::KERNEL::DebugComputeIntersection<DRT::Element::line2, sidetype> ci( xsi );
-  //GEO::CUT::KERNEL::ComputeIntersection<DRT::Element::line2, sidetype> ci( xsi );
-  if ( ci( xyze_surfaceElement, xyze_lineElement ) )
+  GEO::CUT::IntersectionBase<DRT::Element::line2, sidetype> intersect(xyze_surfaceElement, xyze_lineElement);
+
+  // check also limits during the newton scheme and when converged
+  if(intersect.ComputeCurveSurfaceIntersection())
   {
+    if( intersect.SurfaceWithinLimits() and intersect.LineWithinLimits())
+    {
       return true;
+    }
   }
 
   return false;
 }
-
-
-
-
-/*------------------------------------------------------------------------------------------------*
- * call the computation of local coordinates for an element                      winklmaier 11/11 *
- *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(
-    const GEO::DomainIntCell& cell,
-    LINALG::Matrix<3,1>& x,
-    LINALG::Matrix<3,1>& xi,
-    bool& pointInDomain
-) const
-{
-  LINALG::SerialDenseMatrix xyz(cell.CellNodalPosXYZ());
-  callXToXiCoords(xyz,cell.Shape(),x,xi,pointInDomain);
-} // end function callXToXiCoords
-
 
 
 /*------------------------------------------------------------------------------------------------*
@@ -612,12 +509,81 @@ void XFEM::XFLUID_TIMEINT_BASE::callXToXiCoords(
 } // end function callXToXiCoords
 
 
+//! compute local element coordinates and check whether the according point is inside the element
+template<DRT::Element::DiscretizationType DISTYPE>
+void XFEM::XFLUID_TIMEINT_BASE::XToXiCoords(
+    LINALG::SerialDenseMatrix& xyz,        /// node coordinates of element
+    LINALG::Matrix<3,1>&       x,           /// global coordinates of point
+    LINALG::Matrix<3,1>&       xi,          /// determined local coordinates w.r.t ele
+    bool&                      pointInCell  /// lies point in element?
+) const
+{
+  const int nsd = 3; // dimension
+  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement; // number of nodes of element
+
+  LINALG::Matrix<nsd,numnode> xyze(xyz);
+
+  GEO::CUT::Position<DISTYPE> pos(xyze,x);
+  pos.Compute();
+  xi = pos.LocalCoordinates(); // local coordinates
+
+  pointInCell = pos.WithinLimitsTol(limits_tol_); // check if point is in element
+};
+
+
+//! data at an arbitrary point lying in an element
+template<const int numnode,DRT::Element::DiscretizationType DISTYPE>
+void XFEM::XFLUID_TIMEINT_BASE::evalShapeAndDeriv(
+    DRT::Element*                 element,           /// pointer to element
+    LINALG::Matrix<3,1>&          xi,                /// local coordinates of point w.r.t element
+    LINALG::Matrix<3,3>&          xji,               /// inverse of jacobian
+    LINALG::Matrix<numnode,1>&    shapeFcn,          /// shape functions at point
+    LINALG::Matrix<3,numnode>&    shapeFcnDerivXY,   /// derivatives of shape function w.r.t global coordiantes xyz
+    bool                          compute_deriv      /// shall derivatives and jacobian be computed
+) const
+{
+  const int* elenodeids = element->NodeIds();  // nodeids of element
+  const int nsd = 3;                           // dimension
+
+  // clear data that shall be filled
+  shapeFcn.Clear();
+  shapeFcnDerivXY.Clear();
+
+  //-------------------------------------------------------
+  DRT::UTILS::shape_function_3D(shapeFcn, xi(0),xi(1),xi(2),DISTYPE); // evaluate shape functions at xi
+
+  if(compute_deriv)
+  {
+    LINALG::Matrix<nsd,numnode> nodecoords(true); // node coordinates of the element
+    for (size_t nodeid=0;nodeid<numnode;nodeid++) // fill node coordinates
+    {
+      DRT::Node* currnode = discret_->gNode(elenodeids[nodeid]);
+      for (int i=0;i<nsd;i++)
+        nodecoords(i,nodeid) = currnode->X()[i];
+    }
+
+    // shape function derivatives w.r.t local coordinates
+    LINALG::Matrix<3,numnode> shapeFcnDeriv;
+    DRT::UTILS::shape_function_3D_deriv1(shapeFcnDeriv,xi(0),xi(1),xi(2),DISTYPE);
+
+    LINALG::Matrix<nsd,nsd> xjm(true);              // jacobi matrix
+    xjm.MultiplyNT(shapeFcnDeriv,nodecoords);       // jacobian J = (dx/dxi)^T
+    xji.Clear();
+    xji.Invert(xjm);                                // jacobian inverted J^(-1) = dxi/dx
+
+    shapeFcnDerivXY.Multiply(xji,shapeFcnDeriv);    // (dN/dx)^T = (dN/dxi)^T * J^(-T)
+  }
+
+  return;
+}; // end template evalShapeAndDeriv
+
+
 
 /*------------------------------------------------------------------------------------------------*
  * add adjacent elements for a periodic boundary node                            winklmaier 05/11 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::addPBCelements(
-    const DRT::Node* node,
+    const DRT::Node*                   node,
     std::vector<const DRT::Element*>&  eles
 ) const
 {
@@ -647,11 +613,13 @@ void XFEM::XFLUID_TIMEINT_BASE::addPBCelements(
 }
 
 
-
+/*------------------------------------------------------------------------------------------------*
+ * find the PBC node                                                             winklmaier 05/11 *
+ *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::findPBCNode(
     const DRT::Node* node,
-    DRT::Node*& pbcnode,
-    bool& pbcnodefound
+    DRT::Node*&      pbcnode,
+    bool&            pbcnodefound
 ) const
 {
   const int nodegid = node->Id(); // global node id
@@ -718,32 +686,29 @@ void XFEM::XFLUID_TIMEINT_BASE::clearState(
   std::vector<TimeIntData>::iterator data;
   while(true) // while loop over data to be cleared
   {
-    for (data=timeIntData_->begin();
-        data!=timeIntData_->end(); data++) // for loop over all data
+    for (data=timeIntData_->begin(); data!=timeIntData_->end(); data++) // for loop over all data
     {
       if (data->state_==state)
       {
         timeIntData_->erase(data);
         break;
       }
-    } // end for loop over all data
-    if (data==timeIntData_->end())
-      break;
-  } // end while loop over data to be cleared
+    }
+    if (data==timeIntData_->end()) break;
+  }// end while loop over data to be cleared
 
   return;
 } // end function clear state
 
 
 
-#ifdef PARALLEL
 /*------------------------------------------------------------------------------------------------*
- * basic function sending data to dest and receiving data from source            winklmaier 10/10 *
+ * basic function sending data to dest and receiving data from source                schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::sendData(
-    DRT::PackBuffer& dataSend,
-    int& dest,
-    int& source,
+    DRT::PackBuffer&   dataSend,
+    int&               dest,
+    int&               source,
     std::vector<char>& dataRecv
 ) const
 {
@@ -786,11 +751,11 @@ void XFEM::XFLUID_TIMEINT_BASE::sendData(
 
 /*------------------------------------------------------------------------------------------------*
  * packing a node for parallel communication only with the basic nodal data                       *
- * without an underlying discretization fitting to the node's new prozessor      winklmaier 10/10 *
+ * without an underlying discretization fitting to the node's new prozessor          schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::packNode(
     DRT::PackBuffer& dataSend,
-    DRT::Node& node
+    DRT::Node&       node
 ) const
 {
   const int nsd = 3;
@@ -803,12 +768,12 @@ void XFEM::XFLUID_TIMEINT_BASE::packNode(
 
 /*------------------------------------------------------------------------------------------------*
  * unpacking a node after parallel communication only with the basic nodal data                   *
- * without an underlying discretization fitting to the node's new prozessor      winklmaier 10/10 *
+ * without an underlying discretization fitting to the node's new prozessor          schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_TIMEINT_BASE::unpackNode(
     std::vector<char>::size_type& posinData,
-    std::vector<char>& dataRecv,
-    DRT::Node& node
+    std::vector<char>&            dataRecv,
+    DRT::Node&                    node
 ) const
 {
   const int nsd = 3; // dimension
@@ -834,7 +799,8 @@ void XFEM::XFLUID_TIMEINT_BASE::unpackNode(
     node = newNode;
   } // end if correct processor
 } // end function unpackNode
-#endif // PARALLEL
+
+
 
 
 
@@ -842,12 +808,12 @@ void XFEM::XFLUID_TIMEINT_BASE::unpackNode(
  * basic XFEM time-integration constructor for standard degrees of freedom           schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 XFEM::XFLUID_STD::XFLUID_STD(
-    XFEM::XFLUID_TIMEINT_BASE&                                       timeInt,            /// time integration base class object
-    const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&   reconstr_method,    /// reconstruction map for nodes and its dofsets
-    INPAR::XFEM::XFluidTimeInt&                                      timeIntType,        /// type of time integration
-    const RCP<Epetra_Vector>                                         veln,               /// velocity at time t^n
-    const double&                                                    dt,                 /// time step size
-    bool                                                             initialize          /// is initialization?
+    XFEM::XFLUID_TIMEINT_BASE&                                       timeInt,            ///< time integration base class object
+    const std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >&   reconstr_method,    ///< reconstruction map for nodes and its dofsets
+    INPAR::XFEM::XFluidTimeInt&                                      timeIntType,        ///< type of time integration
+    const RCP<Epetra_Vector>                                         veln,               ///< velocity at time t^n in col map
+    const double&                                                    dt,                 ///< time step size
+    const bool                                                       initialize          ///< is initialization?
 ) :
 XFEM::XFLUID_TIMEINT_BASE::XFLUID_TIMEINT_BASE(timeInt),
 timeIntType_(timeIntType),
@@ -859,23 +825,6 @@ dt_(dt)
     const int nsd = 3; // dimension
     timeIntData_ = Teuchos::rcp(new std::vector<TimeIntData>); // vector containing all data used for computation
 
-    /*------------------------*
-     * Initialization         *
-     *------------------------*/
-//    for (int leleid=0; leleid<discret_->NumMyColElements(); leleid++)  // loop over processor nodes
-//    {
-//      DRT::Element* iele = discret_->lColElement(leleid);
-//      if (intersectionStatus(iele)!=XFLUID_TIMEINT_BASE::uncut_) // element cut
-//      {
-//        const int* nodeGids = iele->NodeIds(); // node gids
-//        for (int inode=0;inode<iele->NumNode();inode++) // loop over element nodes
-//        {
-//          if(olddofcolmap_.MyGID(nodeGids[inode]));
-//          oldEnrNodes_.insert(nodeGids[inode]);
-//        } // end loop over element nodes
-//      } // end if element cut
-//    } // end loop over processor nodes
-
     LINALG::Matrix<nsd,1> dummyStartpoint; // dummy startpoint for comparison
     for (int i=0;i<nsd;i++) dummyStartpoint(i) = 777.777;
 
@@ -883,14 +832,17 @@ dt_(dt)
     // fill timeIntData_ structure with the data for the nodes which are marked for SEMILAGRANGEAN reconstruction
 
 #ifdef DEBUG_TIMINT_STD
-    cout << "\n\tFill timeIntData_ for SEMI-LAGRANGIAN algorithm" << endl;
+    IO::cout << "\n\t ---------------------------------------------------------------------- ";
+    IO::cout << "\n\t PREPARE SEMI-LAGRANGEAN time integration: fill timeIntData for nodes"   ;
+    IO::cout << "\n\t ---------------------------------------------------------------------- " << IO::endl;
 #endif
+
     // loop over processor nodes
     for (int lnodeid=0; lnodeid<discret_->NumMyRowNodes(); lnodeid++)
     {
-      DRT::Node* currnode = discret_->lRowNode(lnodeid); // current analysed node
+      DRT::Node* node = discret_->lRowNode(lnodeid);
 
-      std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >::const_iterator it = reconstr_method.find(currnode->Id());
+      std::map<int, std::vector<INPAR::XFEM::XFluidTimeInt> >::const_iterator it = reconstr_method.find(node->Id());
       if(it != reconstr_method.end())
       {
         // reconstruction methods just for marked dofsets
@@ -898,33 +850,33 @@ dt_(dt)
         {
           if((it->second)[i] == INPAR::XFEM::Xf_TimeInt_SemiLagrange )
           {
+
 #ifdef DEBUG_TIMINT_STD
-            cout << "\n\tcall Semilagrange Algorithm for node " << currnode->Id() << " and dofset " << i;
+            IO::cout << "\t * fill timeIntData for node " << node->Id() << " and dofset " << i << IO::endl;
 #endif
 
             // constructor for standard computation
-            timeIntData_->push_back(TimeIntData(
-                *currnode,                                                                             // node
-                i,                                                                                     // nds (nodal dofset) at new timestep
-                LINALG::Matrix<nsd,1>(true),                                                           // velocity
-                std::vector<LINALG::Matrix<nsd,nsd> >(oldVectors_.size(),LINALG::Matrix<nsd,nsd>(true)),    // vel deriv
-                std::vector<LINALG::Matrix<1,nsd> >(oldVectors_.size(),LINALG::Matrix<1,nsd>(true)),        // pres deriv
-                dummyStartpoint,                                                                       // ...
-                1,                                                                                     // searchedProcs
-                0,                                                                                     // counter
-                std::vector<int>(1,-1),                                                                     // startGid
-                std::vector<int>(1,-1),                                                                     // startOwner
-                INFINITY,                                                                              // minimal distance
-                TimeIntData::predictor_)); // data created for the node
+            timeIntData_->push_back(
+                TimeIntData(
+                *node,                                  //! node for which SL-algorithm is called
+                i,                                      //! nds (nodal dofset) number w.r.t new interface position, for which SL-algo is called
+                LINALG::Matrix<nsd,1>(true),            //!  velocity at point x (=x_Lagr(t^n+1))
+                std::vector<LINALG::Matrix<nsd,nsd> >(oldVectors_.size(),LINALG::Matrix<nsd,nsd>(true)),    //! velocity gradient at point x (=x_Lagr(t^n+1))
+                std::vector<LINALG::Matrix<1,nsd> >(oldVectors_.size(),LINALG::Matrix<1,nsd>(true)),        //! pressure gradient at point x (=x_Lagr(t^n+1))
+                dummyStartpoint,                        // dummy-startpoint
+                1,                                      // searchedProcs
+                0,                                      // counter
+                INFINITY,                               // minimal distance
+                TimeIntData::predictor_
+                )); // data created for the node
 
-
-          } // semi-lagrangian algo
+          }
         } // nodaldofsets
-      } // some dofsets has to be reconstructed
+      } // some dofsets have to be reconstructed
     } // end loop over processor nodes
 
     //--------------------------------------------------------------------------------------
-    // compute initial points on the right side of the interface to start finding the lagrangian origin
+    // compute initial points on the right side of the interface to start finding the Lagrangean origin
     startpoints();
 
     //--------------------------------------------------------------------------------------
@@ -999,7 +951,7 @@ void XFEM::XFLUID_STD::elementSearch(
   DRT::Element* currele = NULL;  // current element
 
   //loop over elements
-  for (int ieleid = startid;ieleid<discret_->NumMyRowElements();ieleid++)
+  for (int ieleid = startid; ieleid<discret_->NumMyRowElements(); ieleid++)
   {
     // if ele != NULL additional check
     // first it should be checked if it is fitting
@@ -1008,18 +960,13 @@ void XFEM::XFLUID_STD::elementSearch(
       currele = ele;
       ele = NULL; // reset ele, ele will be set if an element is found finally
     }
-    else
-      currele = discret_->lRowElement(ieleid);
+    else currele = discret_->lRowElement(ieleid);
 
-    //    cout << "currently analysed element" << *currele;
-    //    cout << "startpoint approximation: " << x;
     callXToXiCoords(currele,x,xi,found);
-    //    cout << "in local xi-coordinates: " << xi;
 
     if (found)
     {
       ele = currele;
-      //cout << "coordinates found in element " << ele->Id() << endl;
       break;
     }
   } // end loop over processor elements
@@ -1061,7 +1008,105 @@ void XFEM::XFLUID_STD::getGPValues(
 } // end function getGPValues
 
 
+//! interpolate velocity and derivatives for a point in an element
+template<DRT::Element::DiscretizationType DISTYPE>
+void XFEM::XFLUID_STD::getGPValuesT(
+    DRT::Element*                 ele,                 ///< pointer to element
+    LINALG::Matrix<3,1>&          xi,                  ///< local coordinates of point w.r.t element
+    std::vector<int>&             nds,                 ///< nodal dofset of point for elemental nodes
+    bool                          step_np,             ///< computation w.r.t. old or new interface position
+    LINALG::Matrix<3,1>&          vel,                 ///< determine velocity at point
+    LINALG::Matrix<3,3>&          vel_deriv,           ///< determine velocity derivatives at point
+    bool                          compute_deriv        ///< shall derivatives be computed?
+) const
+{
+  Teuchos::RCP<const Epetra_Vector> vel_vec = Teuchos::null;
 
+  RCP<XFEM::FluidDofSet> dofset = step_np ? dofset_new_ : dofset_old_;
+  string state = step_np ? "velnp" : "veln";
+
+  if(step_np) vel_vec = discret_->GetState(state);
+  else vel_vec = veln_;
+
+  const int nsd = 3; // dimension
+
+  const int numdofpernode = nsd +1;
+  const int numnode = DRT::UTILS::DisTypeToNumNodePerEle<DISTYPE>::numNodePerElement; // number of element nodes
+
+  //-------------------------------------------------------
+  // initialization
+  LINALG::Matrix<numnode,1>    shapeFcn(true);       /// shape function at point
+  LINALG::Matrix<nsd,numnode>  shapeFcnDeriv(true);  /// xyz shape derivatives at point
+  LINALG::Matrix<nsd,nsd>      xji(true);            /// inverse of jacobian
+
+  //-------------------------------------------------------
+  // get element location vector, dirichlet flags and ownerships (discret, nds, la, doDirichlet)
+  if((int)(nds.size()) != numnode) dserror("size of nds-vector (%d) != numnode(%d)", nds.size(), numnode);
+
+  std::vector<int> lm;
+
+  for(int inode=0; inode< numnode; inode++)
+  {
+    DRT::Node* node = ele->Nodes()[inode];
+    std::vector<int> dofs;
+    dofset->Dof(*node, nds[inode], dofs );
+
+    int size = dofs.size();
+
+    for (int j=0; j< size; ++j)
+    {
+      lm.push_back(dofs[j]);
+    }
+  }
+
+  //-------------------------------------------------------
+  // get element-wise velocity/pressure field
+  LINALG::Matrix<nsd,numnode> evel(true);
+  LINALG::Matrix<numnode,1>   epre(true);
+
+  if(vel_vec == Teuchos::null)
+    dserror("Cannot get state vector %s", state.c_str());
+
+  // extract local values of the global vectors
+  std::vector<double> mymatrix(lm.size());
+  DRT::UTILS::ExtractMyValues(*vel_vec,mymatrix,lm);
+
+  for (int inode=0; inode<numnode; ++inode)  // number of nodes
+  {
+    for(int idim=0; idim<nsd; ++idim) // number of dimensions
+    {
+      (evel)(idim,inode) = mymatrix[idim+(inode*numdofpernode)];
+    }
+    (epre)(inode,0) = mymatrix[nsd+(inode*numdofpernode)];
+  }
+
+
+  //-------------------------------------------------------
+  evalShapeAndDeriv<numnode,DISTYPE>(
+      ele,
+      xi,
+      xji,
+      shapeFcn,
+      shapeFcnDeriv,
+      compute_deriv
+  );
+
+  //-------------------------------------------------------
+  // interpolate velocity and pressure values at starting point
+  vel.Clear(); // set to zero
+  vel.Multiply(evel, shapeFcn);
+
+  //double pres = 0.0;
+  //pres = epre.Dot(shapeFcn);
+
+  if(compute_deriv)
+  {
+    vel_deriv.Clear();
+    vel_deriv.MultiplyNT(evel,shapeFcnDeriv);
+  }
+
+  return;
+}; // end template getGPValuesT
 
 
 
@@ -1072,7 +1117,9 @@ void XFEM::XFLUID_STD::startpoints()
 {
 
 #ifdef DEBUG_TIMINT_STD
-  cout << "\n\t compute initial start points for finding lagrangean origin" << endl;
+  IO::cout << "\n\t ---------------------------------------------------------------------- ";
+  IO::cout << "\n\t compute initial start points for finding the Lagrangean origin";
+  IO::cout << "\n\t ---------------------------------------------------------------------- " << IO::endl;
 #endif
 
   // REMARK: we do not need parallel communication for start point values because
@@ -1084,7 +1131,7 @@ void XFEM::XFLUID_STD::startpoints()
   {
     if (data->state_==TimeIntData::basicStd_) // correct state
     {
-      // find a start approximation for semilagrange backtracking
+      // find a start approximation for Semi-Lagrange backtracking
       // this start approximation can be found by tracking back the projection of current node
       // along structural movement
       ProjectAndTrackback(*data);
@@ -1107,8 +1154,10 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
 {
 
 #ifdef DEBUG_TIMINT_STD
-  cout << "\n\t ProjectAndTrackback for node " << data.node_.Id() << endl;
+  IO::cout << "\n\t * ProjectAndTrackback for node " << data.node_.Id() << IO::endl;
 #endif
+
+  const std::string state = "idispnp";
 
   const int nsd = 3;
   LINALG::Matrix<nsd,1> newNodeCoords(data.node_.X()); // coords of endpoint of Lagrangian characteristics
@@ -1208,18 +1257,14 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
 
     DRT::Element* side = boundarydis_->gElement(*it);
 
-#ifdef DEBUG_TIMINT_STD
-      cout << "\t\t\tcall projection of point for side element " << side->Id() << endl;
-#endif
-
     CallProjectOnSide(side,
+                      state,
                       newNodeCoords,
                       proj_sid,
                       min_dist,
                       proj_x_np,
                       proj_xi_side,
-                      data);
-
+                      data.proj_);
 
     //------------------------------------
     // edges are checked twice (w.r.t both sides)
@@ -1233,13 +1278,10 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
     for(std::vector<Teuchos::RCP<DRT::Element> >::iterator line_it = lines.begin(); line_it!= lines.end(); line_it++)
     {
 
-#ifdef DEBUG_TIMINT_STD
-      cout << "\t\t\tcall projection of point to line " << line_count << " for side element " << side->Id() << endl;
-#endif
-
       CallProjectOnLine(side,
                         &(**line_it),
                         line_count,           ///< local line id w.r.t side element
+                        state,
                         newNodeCoords,        ///< node coordinates of point that has to be projected
                         min_dist,             ///< minimal distance, potentially updated
                         proj_x_np,            ///< projection of point on this side
@@ -1247,10 +1289,8 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
                         proj_lineid,          ///< std::map<side ID, local line id>
                         proj_nid_line,        ///< std::map<side ID, vec<line Ids>>
                         proj_sid,             ///< id of side that contains the projected point
-                        data                  ///< reference to data
+                        data.proj_            ///< reference to data
                          );
-
-
 
       line_count++;
     } // loop lines of side
@@ -1268,6 +1308,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
 
     CallProjectOnPoint(
                        node,                 ///< pointer to node
+                       state,
                        newNodeCoords,        ///< node coordinates of point that has to be projected
                        min_dist,             ///< minimal distance, potentially updated
                        proj_nid_np,          ///< nid id of projected point on surface
@@ -1276,20 +1317,28 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
                        proj_xi_line,         ///< std::map<side ID, local coordinates of projection of point w.r.t to this line>
                        proj_lineid,          ///< std::map<side ID, local line id>
                        proj_nid_line,        ///< std::map<side ID, vec<line Ids>>
-                       data                  ///< reference to data
+                       data.proj_            ///< reference to data
                        );
-
 
 
   } // loop points
 
+
   if(data.proj_ == TimeIntData::failed_) dserror("projection of node %d not successful!", n_new->Id());
+
+#ifdef DEBUG_TIMINT_STD
+  IO::cout << "\n\t => Projection of node lies on (side=0, line=1, point=2, failed=3): " << data.proj_
+           << " with distance " << min_dist << IO::endl;
+#endif
 
 
   // track back the projected points on structural surface from t^(n+1)->t^n
   if(data.proj_ == TimeIntData::onSide_)
   {
+
     DRT::Element* side = boundarydis_->gElement(proj_sid);
+
+    if(side == NULL) dserror("side with id %d not found ", proj_sid);
 
     // side geometry at initial state t^0
     const int numnodes = side->NumNode();
@@ -1306,7 +1355,6 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
 
     ComputeStartPoint_Side(side, side_xyze, cutla[0].lm_, proj_xi_side, min_dist, proj_x_n, start_point);
 
-
   }
   else if(data.proj_ == TimeIntData::onLine_)
   {
@@ -1318,11 +1366,81 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
       std::vector<int>&    local_lineIds = proj_lineid.find(line->first)->second;
       std::vector<double>& local_xi_line = proj_xi_line.find(line->first)->second;
 
-      if(sides.size()!= 2) dserror("there must be two sides adjacent to line, but there are %d sides", sides.size());
+
+      int sid_1 = -1;
+      int sid_2 = -1;
+
+      if(sides.size()<=0)
+      {
+        dserror("there must be at least one found side adjacent to this line, but there are %d sides", sides.size());
+      }
+      else if(sides.size() == 1)
+      {
+        sid_1 = sides[0];
+
+        // find the second neighboring side
+        DRT::Element* side_1 = boundarydis_->gElement(sid_1);
+
+        DRT::Node * * nodes = side_1->Nodes();
+
+        std::set<int> neighbor_sides;
+
+        for(int i=0; i< side_1->NumNode(); i++)
+        {
+          DRT::Element* * surr_sides = nodes[i]->Elements();
+          for(int s=0; s< nodes[i]->NumElement(); s++)
+          {
+            neighbor_sides.insert(surr_sides[s]->Id());
+          }
+        }
+
+        // check which neighbor side is the right one
+        for(std::set<int>::iterator s=neighbor_sides.begin(); s!=neighbor_sides.end(); s++)
+        {
+          DRT::Element* side_tmp = boundarydis_->gElement(*s);
+
+          std::vector<RCP<DRT::Element> > lines_tmp = side_tmp->Lines();
+
+          for(std::vector<RCP<DRT::Element> >::iterator line_it = lines_tmp.begin(); line_it != lines_tmp.end(); line_it++)
+          {
+            DRT::Node** line_nodes = (*line_it)->Nodes();
+            std::vector<int> line_nids;
+            for ( int i=0; i<(*line_it)->NumNode(); ++i )
+            {
+              line_nids.push_back(line_nodes[i]->Id());
+            }
+
+            sort(line_nids.begin(), line_nids.end());
+
+            if(line_nids == line->first)
+            {
+              // side found
+              if(sid_2 == -1 and side_tmp->Id() != sid_1) sid_2 = side_tmp->Id();
+              break;
+            }
+          }
+        }
+        if(sid_2 == -1)
+        {
+#ifdef DEBUG_TIMINT_STD
+          cout << "\t\t\t\tneighbor side not found, current line seems to be a line at the boundary" << endl;
+          cout << "\t\t\t\t -> the same distance should have been found for a side ? " << endl;
+          cout << "line nodeids: " << endl;
+          for(int i=0; i< (int)(line->first).size(); i++)
+            cout << "\t nid: " << (line->first)[i] << endl;
+#endif
+        }
+      }
+      else if(sides.size() == 2)
+      {
+        sid_1 = sides[0];
+        sid_2 = sides[1];
+      }
+      else dserror("non valid number of sides adjacent to line");
 
       //---------------------------------------------------------
       // side 1
-      DRT::Element* side_1 = boundarydis_->gElement(sides[0]);
+      DRT::Element* side_1 = boundarydis_->gElement(sid_1);
 
       // side geometry at initial state t^0
       const int numnodes_1 = side_1->NumNode();
@@ -1339,7 +1457,7 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
 
       //---------------------------------------------------------
       // side 2
-      DRT::Element* side_2 = boundarydis_->gElement(sides[1]);
+      DRT::Element* side_2 = boundarydis_->gElement(sid_2);
 
       // side geometry at initial state t^0
       const int numnodes_2 = side_2->NumNode();
@@ -1361,20 +1479,6 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
       std::vector<Teuchos::RCP<DRT::Element> > lines = side_1->Lines();
 
       RCP<DRT::Element> line_ele = lines[local_lineIds[0]];
-//
-//      // line geometry
-//      const int numnodes = line->NumNode();
-//      DRT::Node ** nodes = line->Nodes();
-//      Epetra_SerialDenseMatrix line_xyze( 3, numnodes );
-//      for ( int i=0; i<numnodes; ++i )
-//      {
-//        const double * x = nodes[i]->X();
-//        std::copy( x, x+3, &line_xyze( 0, i ) );
-//      }
-//
-//
-//      DRT::Element::LocationArray cutla( 1 );
-//      line->LocationVector(*boundarydis_,cutla,false);
 
       call_get_projxn_Line(side_1, &*line_ele, proj_x_n, local_xi_line[0]);
 
@@ -1395,54 +1499,111 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
   }
   else if(data.proj_ == TimeIntData::onPoint_)
   {
-    dserror("implement startvalue w.r.t point");
+    std::vector<DRT::Element* >             surr_sides;           ///< pointer to side element
+    std::vector<Epetra_SerialDenseMatrix >  surr_sides_xyze;      ///< side's node coordinates
+    std::vector<std::vector<int> >          surr_sides_lm;        ///< local map
+
+
+    // get the node
+    DRT::Node* node = boundarydis_->gNode(proj_nid_np);
+
+    // get all surrounding sides
+    DRT::Element** node_sides = node->Elements();
+
+    for(int s=0; s<node->NumElement(); s++)
+    {
+      // side geometry at initial state t^0
+      DRT::Element* side = node_sides[s];
+      const int numnodes = side->NumNode();
+      DRT::Node ** nodes = side->Nodes();
+      Epetra_SerialDenseMatrix side_xyze( 3, numnodes );
+      for ( int i=0; i<numnodes; ++i )
+      {
+        const double * x = nodes[i]->X();
+        std::copy( x, x+3, &side_xyze( 0, i ) );
+      }
+
+      DRT::Element::LocationArray cutla( 1 );
+      side->LocationVector(*boundarydis_,cutla,false);
+
+      surr_sides.push_back(side);
+      surr_sides_xyze.push_back(side_xyze);
+      surr_sides_lm.push_back(cutla[0].lm_);
+
+    }
+
+    //----------------------------------------------------
+
+    // its point geometry
+    Epetra_SerialDenseMatrix point_xyze( 3, 1 );
+
+    const double * x = node->X();
+    std::copy( x, x+3, &point_xyze( 0, 0 ) );
+
+    std::vector<int> lm = boundarydis_->Dof(0,node);
+
+    // get the coordinates of the projection point at time tn
+    const std::string state = "idispn";
+
+     Teuchos::RCP<const Epetra_Vector> matrix_state = boundarydis_->GetState( state);
+     if(matrix_state == Teuchos::null)
+       dserror("Cannot get state vector %s", state.c_str());
+
+     // extract local values of the global vectors
+     std::vector<double> mymatrix(lm.size());
+     DRT::UTILS::ExtractMyValues(*matrix_state,mymatrix,lm);
+
+     // add the displacement of the interface
+     for(int idim=0; idim<3; ++idim) // number of dimensions
+     {
+       point_xyze(idim,0) += mymatrix[idim]; // attention! disp state vector has 3+1 dofs for displacement (the same as for (u,p))
+     }
+
+     // fill LINALG matrix
+     for(int idim=0; idim<3; ++idim) // number of dimensions
+     {
+       proj_x_n(idim) = point_xyze(idim,0); // attention! disp state vector has 3+1 dofs for displacement (the same as for (u,p))
+     }
+
+     //----------------------------------------------------
+
+
+    ComputeStartPoint_AVG(
+        surr_sides,           ///< pointer to side element
+        surr_sides_xyze,      ///< side's node coordinates
+        surr_sides_lm,        ///< local map
+        min_dist,             ///< distance from point to its projection
+        proj_x_n,                    ///< projected point at t^n
+        start_point           ///< final start point
+        );
   }
   else dserror("unknown projection method for tracking back the structural surface point");
 
 
-
-  // track back the projected points from t^(n+1) -> t^n
-
-
-
-
+  /// set the data
   if(data.proj_ != TimeIntData::failed_)
   {
     // fill data
     //  data.startpoint_.Update(1.0,newNodeCoords,-dt_,nodevel);
     data.startpoint_.Update(1.0,start_point,0.0);
     data.initialpoint_.Update(1.0,start_point,0.0);
+    data.initial_eid_=-1;
+    data.initial_ele_owner_=-1;
     data.dMin_ = min_dist;
-    data.startGid_.clear();
-    data.startGid_.push_back(-1);
-    data.startOwner_.clear();
-    data.startOwner_.push_back(-1);
   }
 
 
-
-
-
-
-
-
-
-
-
-
-
+#if(1)
   // GMSH debug output
 
-//
-//  std::string filename="start_value_Semilagrange";
   int myrank = 0; //discret.Comm().MyPID();
 
-  if(myrank==0) std::cout << "\n\t ... writing Gmsh output...\n" << std::flush;
+  if(myrank==0) IO::cout << "\n\t ... writing Gmsh output for startvalues ...\n" << IO::flush;
 
   int step = 0;
 
   const int step_diff = 100;
-  bool screen_out = true; //xfluid_.gmsh_debug_out_screen_;
+  bool screen_out = true;
 
    // output for Element and Node IDs
    std::ostringstream filename_base_startvalues;
@@ -1472,50 +1633,187 @@ void XFEM::XFLUID_STD::ProjectAndTrackback( TimeIntData& data)
 
    gmshfilecontent_startvalues   << "};\n";
 
-//  int pointno=1,point_begin,point_end,lineno=1;
-//  for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
-//  {
-//     point_begin = pointno;
-//     Facet *fe = *i;
-////the side id of the first facet is used as the file name for every volumecell
-//     if(i==facete.begin())
-//     {
-//       static int sideno = 0;
-//       sideno++;
-//       std::stringstream out;
-//       out <<"side"<<sideno<<".pos";
-//       filename = out.str();
-//       file.open(filename.c_str());
-//     }
-//     const std::vector<std::vector<double> > corners = fe->CornerPointsLocal(ParentElement());
-//     for(std::vector<std::vector<double> >::const_iterator k=corners.begin();k!=corners.end();k++)
-//     {
-//       const std::vector<double> coords = *k;
-//       file<<"Point("<<pointno<<")={"<<coords[0]<<","<<coords[1]<<","<<coords[2]<<","<<"1"<<"};"<<std::endl;
-//       pointno++;
-//     }
-//     point_end = pointno;
-//     for(int i=point_begin;i!=point_end;i++)
-//     {
-//       if(i!=point_end-1)
-//         file<<"Line("<<lineno<<")={"<<i<<","<<i+1<<"};"<<std::endl;
-//       else
-//         file<<"Line("<<lineno<<")={"<<i<<","<<point_begin<<"};"<<std::endl;
-//       lineno++;
-//     }
-//  }
-//
-//  for(unsigned i=0;i<gauspts.size();i++)
-//  {
-//     file<<"Point("<<pointno<<")={"<<gauspts[i][0]<<","<<gauspts[i][1]<<","<<gauspts[i][2]<<","<<"1"<<"};"<<std::endl;
-//     pointno++;
-//  }
-//  file.close();
-
-
+#endif
 
 
 }
+
+
+bool XFEM::XFLUID_STD::FindNearestSurfPoint(     LINALG::Matrix<3,1>&    x,      ///< coords of point to be projected
+                                                 LINALG::Matrix<3,1>&    proj_x, ///< coords of projected point
+                                                 GEO::CUT::VolumeCell*   vc,     ///< volumcell on that's cut-surface we want to project
+                                                 const std::string       state   ///< state n or np?
+)
+{
+
+  if(vc == NULL) dserror("do not call FindNearestSurfPoint with Null-Pointer for Volumecell");
+
+  //--------------------------------------------------------
+  // get involved side ids for projection and distance computation
+  //--------------------------------------------------------
+
+  // set of side-ids involved in cutting the current connection of volumecells at t^(n+1)
+  std::map<int, std::vector<GEO::CUT::BoundaryCell*> >  bcells_new;
+
+  // get sides involved in creation boundary cells (std::map<sideId,bcells>)
+  vc->GetBoundaryCells(bcells_new);
+
+
+
+  std::set<int> points;
+  std::set<int> sides;
+
+  // loop bcs and extract sides and nodes
+  for(std::map<int, std::vector<GEO::CUT::BoundaryCell*> >::iterator bcells_it= bcells_new.begin();
+      bcells_it!=bcells_new.end();
+      bcells_it++)
+  {
+    int sid=bcells_it->first;
+    sides.insert(sid);
+
+    // get the side
+    DRT::Element* side = boundarydis_->gElement(sid);
+    int numnode = side->NumNode();
+    const int * side_nodes = side->NodeIds();
+
+    // get the nodes
+    for(int i=0; i< numnode; i++)
+    {
+      points.insert(side_nodes[i]);
+    }
+  }
+
+
+  return ProjectToSurface( x, proj_x, state, points, sides);
+
+}
+
+
+/*------------------------------------------------------------------------------------------------*
+ * Project the current point onto the structural surface given by point and side Ids schott 06/12 *
+ *------------------------------------------------------------------------------------------------*/
+bool XFEM::XFLUID_STD::ProjectToSurface(     LINALG::Matrix<3,1>& x,      ///< coords of point to be projected
+                                             LINALG::Matrix<3,1>& proj_x, ///< coords of projected point
+                                             const std::string state,     ///< state n or np?
+                                             std::set<int>& points,       ///< node Ids of surface for that distance has to be computed
+                                             std::set<int>& sides         ///< side Ids of surface for that and it's lines the distances have to be computed
+    )
+{
+
+#ifdef DEBUG_TIMINT_STD
+  IO::cout << "\n\t * FindNearestSurfPoint for point " << x << IO::endl;
+#endif
+
+  if(points.size() == 0 and sides.size() == 0) dserror("there are no cutting sides around current point (%d,%d,%d), Projection on surface not possible here", x(0), x(1), x(2));
+
+  //-------------------------------------
+  // initialize data holding information about minimal distance
+
+  // smallest distance
+  int proj_sid = -1;                                  ///< id of side that contains the projected point
+  std::map<std::vector<int>, std::vector<int> >    proj_lineid;         ///< std::map< sorted nids, global side IDs >
+  // smallest distance w.r.t side
+  LINALG::Matrix<2,1> proj_xi_side(true);             ///< local coordinates of projected point if projection w.r.t side
+  // smallest distance w.r.t line
+  std::map<std::vector<int>, std::vector<double> > proj_xi_line;        ///< std::map<sorted nids,local line coordinates w.r.t lines of different sides>
+  std::map<std::vector<int>, std::vector<int> >    proj_nid_line;       ///< std::map<sorted nids, sideids>
+  // smallest distance w.r.t point
+  int proj_nid_np = -1;                               ///< nid of projected point if projection w.r.t point (structural node)
+
+  double min_dist = INFINITY;                         ///< minimal distance
+
+  TimeIntData::projection proj = TimeIntData::failed_;                  ///< projection method yielding minimal distance
+
+  //----------------------------------------------------------------------
+  // check distance to sides and its lines
+  //----------------------------------------------------------------------
+  for(std::set<int>::iterator it= sides.begin(); it!=sides.end(); it++)
+  {
+
+    //-------------------------------------------------
+
+    DRT::Element* side = boundarydis_->gElement(*it);
+
+    CallProjectOnSide(side,
+                      state,
+                      x,
+                      proj_sid,
+                      min_dist,
+                      proj_x,
+                      proj_xi_side,
+                      proj);
+
+    //------------------------------------
+    // edges are checked twice (w.r.t both sides)
+    //------------------------------------
+
+    // loop all edges of current side
+    std::vector<Teuchos::RCP<DRT::Element> > lines = side->Lines();
+
+    int line_count = 0;
+
+    for(std::vector<Teuchos::RCP<DRT::Element> >::iterator line_it = lines.begin(); line_it!= lines.end(); line_it++)
+    {
+
+      CallProjectOnLine(side,
+                        &(**line_it),
+                        line_count,           ///< local line id w.r.t side element
+                        state,
+                        x,                    ///< node coordinates of point that has to be projected
+                        min_dist,             ///< minimal distance, potentially updated
+                        proj_x,               ///< projection of point on this side
+                        proj_xi_line,         ///< std::map<side ID, local coordinates of projection of point w.r.t to this line>
+                        proj_lineid,          ///< std::map<side ID, local line id>
+                        proj_nid_line,        ///< std::map<side ID, vec<line Ids>>
+                        proj_sid,             ///< id of side that contains the projected point
+                        proj                  ///< reference to data
+                         );
+
+      line_count++;
+    } // loop lines of side
+  } // loop sides
+
+
+  //------------------------------------
+  // check minimal distance w.r.t points (structural nodes)
+  //------------------------------------
+  // loop all points
+  for(std::set<int>::iterator it = points.begin(); it!=points.end(); it++)
+  {
+    // compute distance to following point
+    DRT::Node* node = boundarydis_->gNode(*it);
+
+    CallProjectOnPoint(
+                       node,                 ///< pointer to node on which we want to project
+                       state,
+                       x,                    ///< node coordinates of point that has to be projected
+                       min_dist,             ///< minimal distance, potentially updated
+                       proj_nid_np,          ///< nid id of projected point on surface
+                       proj_x,               ///< projection of point on this side
+                       proj_sid,             ///< id of side that contains the projected point
+                       proj_xi_line,         ///< std::map<side ID, local coordinates of projection of point w.r.t to this line>
+                       proj_lineid,          ///< std::map<side ID, local line id>
+                       proj_nid_line,        ///< std::map<side ID, vec<line Ids>>
+                       proj                  ///< reference to data
+                       );
+
+
+  } // loop points
+
+
+  if(proj == TimeIntData::failed_) dserror("projection of point (%d,%d,%d) not successful!", x(0),x(1),x(2));
+
+#ifdef DEBUG_TIMINT_STD
+  IO::cout << "\n\t => Projection of node lies on (side=0, line=1, point=2, failed=3): " << proj
+           << " with distance " << min_dist << " coords: "
+           << proj_x << IO::endl;
+#endif
+
+  return (proj != TimeIntData::failed_);
+
+}
+
+
 
 
 void XFEM::XFLUID_STD::ComputeStartPoint_Side(
@@ -1544,8 +1842,8 @@ void XFEM::XFLUID_STD::ComputeStartPoint_Line(
     Epetra_SerialDenseMatrix &   side1_xyze,      ///< side's node coordinates
     DRT::Element*                side2,           ///< pointer to side element
     Epetra_SerialDenseMatrix &   side2_xyze,      ///< side's node coordinates
-    const std::vector<int>&           lm1,             ///< local map
-    const std::vector<int>&           lm2,             ///< local map
+    const std::vector<int>&      lm1,             ///< local map
+    const std::vector<int>&      lm2,             ///< local map
     double &                     dist,           ///< distance from point to its projection
     LINALG::Matrix<3,1>&         proj_x_n,       ///< projected point at t^n
     LINALG::Matrix<3,1>&         start_point     ///< final start point
@@ -1595,6 +1893,59 @@ void XFEM::XFLUID_STD::ComputeStartPoint_Line(
 
   return;
 }
+
+
+void XFEM::XFLUID_STD::ComputeStartPoint_AVG(
+    const std::vector<DRT::Element* > &            sides,           ///< pointer to side element
+    std::vector<Epetra_SerialDenseMatrix > &       sides_xyze,      ///< side's node coordinates
+    const std::vector<std::vector<int> > &         sides_lm,        ///< local map
+    double &                                       dist,            ///< distance from point to its projection
+    LINALG::Matrix<3,1>&                           proj_x_n,        ///< projected point at t^n
+    LINALG::Matrix<3,1>&                           start_point      ///< final start point
+)
+{
+  if(sides.size() != sides_xyze.size() or
+     sides.size() != sides_lm.size() ) dserror("not equal number of sides, xyze-coordinates or lm-vectors ");
+
+  LINALG::Matrix<3,1> normal_avg(true); // averaged normal vector
+
+  ///
+  for(std::vector<DRT::Element* >::const_iterator it = sides.begin(); it!=sides.end(); it++)
+  {
+    DRT::Element* side = *it;
+
+    LINALG::Matrix<2,1> side_center(true);
+
+    LINALG::Matrix<3,1> local_node_coord(true);
+
+    // get the side-center
+    for(int i=0; i< side->NumNode(); i++)
+    {
+      local_node_coord = DRT::UTILS::getNodeCoordinates( i, side->Shape());
+      side_center(0) += local_node_coord(0);
+      side_center(1) += local_node_coord(1);
+    }
+
+    side_center.Scale(1.0/ side->NumNode());
+
+    // get the normal at the side center
+    LINALG::Matrix<3,1> proj_x_n_dummy1(true);
+    LINALG::Matrix<3,1> side_normal(true);
+
+    callgetNormalSide_tn(side, side_normal, sides_xyze[it-sides.begin()], sides_lm[it-sides.begin()], proj_x_n_dummy1, side_center);
+
+    normal_avg+=side_normal;
+  }
+
+  normal_avg.Scale(1.0/normal_avg.Norm2());
+
+  // map point into fluid domain along normal vector
+  start_point.Update(1.0, proj_x_n, dist, normal_avg);
+
+  return;
+}
+
+
 
 void XFEM::XFLUID_STD::callgetNormalSide_tn(
     DRT::Element*                side,           ///< pointer to side element
@@ -1887,12 +2238,13 @@ void XFEM::XFLUID_STD::addeidisp(
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::CallProjectOnSide(
     DRT::Element*          side,                 ///< pointer to structural side element
+    const std::string      state,                ///< state n or np?
     LINALG::Matrix<3,1>&   newNodeCoords,        ///< node coordinates of point that has to be projected
     int &                  proj_sid,             ///< id of side when projection lies on side
     double &               min_dist,             ///< minimal distance, potentially updated
     LINALG::Matrix<3,1>&   proj_x_np,            ///< projection of point on this side
     LINALG::Matrix<2,1>&   proj_xi_side,         ///< local coordinates of projection of point w.r.t to this side
-    TimeIntData&           data                  ///< reference to data
+    TimeIntData::projection& proj                  ///< reference to data
     )
 {
   bool on_side = false;                 ///< lies projection on side?
@@ -1923,27 +2275,27 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
     {
 //      case DRT::Element::tri3:
 //      {
-//        on_side = ProjectOnSide<DRT::Element::tri3,numdofpernode>(side_xyze, cutla[0].lm_,newNodeCoords,x_side,xi_side);
+//        on_side = ProjectOnSide<DRT::Element::tri3,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side);
 //        break;
 //      }
 //      case DRT::Element::tri6:
 //      {
-//        on_side = ProjectOnSide<DRT::Element::tri6,numdofpernode>(side_xyze, cutla[0].lm_,newNodeCoords,x_side,xi_side);
+//        on_side = ProjectOnSide<DRT::Element::tri6,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side);
 //        break;
 //      }
     case DRT::Element::quad4:
     {
-      on_side = ProjectOnSide<DRT::Element::quad4,numdofpernode>(side_xyze, cutla[0].lm_,newNodeCoords,x_side,xi_side, curr_dist);
+      on_side = ProjectOnSide<DRT::Element::quad4,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
       break;
     }
     case DRT::Element::quad8:
     {
-//        on_side = ProjectOnSide<DRT::Element::quad8,numdofpernode>(side_xyze, cutla[0].lm_,newNodeCoords,x_side,xi_side, curr_dist);
+//        on_side = ProjectOnSide<DRT::Element::quad8,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
       break;
     }
 //      case DRT::Element::quad9:
 //      {
-//        on_side = ProjectOnSide<DRT::Element::quad9,numdofpernode>(side_xyze, cutla[0].lm_,newNodeCoords,x_side,xi_side, curr_dist);
+//        on_side = ProjectOnSide<DRT::Element::quad9,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
 //        break;
 //      }
     default:
@@ -1958,27 +2310,27 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
     {
 //      case DRT::Element::tri3:
 //      {
-//        on_side = ProjectOnSide<DRT::Element::tri3,numdofpernode>(side_xyze, cutla[0].lm_,newNodeCoords,x_side,xi_side, curr_dist);
+//        on_side = ProjectOnSide<DRT::Element::tri3,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
 //        break;
 //      }
 //      case DRT::Element::tri6:
 //      {
-//        on_side = ProjectOnSide<DRT::Element::tri6,numdofpernode>(side_xyze, cutla[0].lm_,newNodeCoords,x_side,xi_side, curr_dist);
+//        on_side = ProjectOnSide<DRT::Element::tri6,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
 //        break;
 //      }
     case DRT::Element::quad4:
     {
-      on_side = ProjectOnSide<DRT::Element::quad4,numdofpernode>(side_xyze, cutla[0].lm_,newNodeCoords,x_side,xi_side, curr_dist);
+      on_side = ProjectOnSide<DRT::Element::quad4,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
       break;
     }
     case DRT::Element::quad8:
     {
-      //      on_side = ProjectOnSide<DRT::Element::quad8,numdofpernode>(side_xyze, cutla[0].lm_,newNodeCoords,x_side,xi_side, curr_dist);
+      //      on_side = ProjectOnSide<DRT::Element::quad8,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
       break;
     }
 //      case DRT::Element::quad9:
 //      {
-//        //      on_side = ProjectOnSide<DRT::Element::quad9,numdofpernode>(side_xyze, cutla[0].lm_,newNodeCoords,x_side,xi_side, curr_dist);
+//        //      on_side = ProjectOnSide<DRT::Element::quad9,numdofpernode>(side_xyze, cutla[0].lm_,state,newNodeCoords,x_side,xi_side, curr_dist);
 //        break;
 //      }
     default:
@@ -1990,20 +2342,20 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
   if(on_side)
   {
 #ifdef DEBUG_TIMINT_STD
-    cout << "\t\t\tprojection of current node lies on side " << side->Id() << " with distance " << curr_dist << endl;
+    cout << "\t\tprojection of current node lies on side " << side->Id() << " with distance " << curr_dist << endl;
 #endif
 
-    if(curr_dist < min_dist && curr_dist > 0)
+    if(curr_dist < min_dist-TOL_dist_ && curr_dist >= 0)
     {
 
 #ifdef DEBUG_TIMINT_STD
-      cout << "\t\t\t\tupdated smallest distance! " << curr_dist << endl;
+      cout << "\t\t\t>>> updated smallest distance! " << curr_dist << endl;
 #endif
 
 
       //--------------------
       // set current minimal distance w.r.t side
-      data.proj_ = TimeIntData::onSide_;
+      proj = TimeIntData::onSide_;
       // set side that contains the projected point
       proj_sid = side->Id();
       // update minimal distance
@@ -2018,7 +2370,7 @@ void XFEM::XFLUID_STD::CallProjectOnSide(
     else if(curr_dist < 0)
     {
 #ifdef DEBUG_TIMINT_STD
-      cout << "\t\t\t\tnegative distance -> do not update" << endl;
+      cout << "\t\t\tnegative distance -> do not update" << endl;
 #endif
     }
   }
@@ -2035,6 +2387,7 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
     DRT::Element*                    side,                 ///< pointer to structural side element
     DRT::Element*                    line,                 ///< pointer to structural line of side element
     int                              line_count,           ///< local line id w.r.t side element
+    const std::string                state,                ///< state n or np?
     LINALG::Matrix<3,1>&             newNodeCoords,        ///< node coordinates of point that has to be projected
     double &                         min_dist,             ///< minimal distance, potentially updated
     LINALG::Matrix<3,1>&             proj_x_np,            ///< projection of point on this side
@@ -2042,7 +2395,7 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
     std::map<std::vector<int>, std::vector<int> >&     proj_lineid,          ///< std::map<sorted nids, local line id w.r.t sides>
     std::map<std::vector<int>, std::vector<int> >&     proj_nid_line,        ///< std::map<sorted nids, side Ids>
     int &                            proj_sid,             ///< id of side that contains the projected point
-    TimeIntData&                     data                  ///< reference to data
+    TimeIntData::projection&         proj                 ///< reference to data
     )
 {
 
@@ -2079,7 +2432,7 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
     {
     case DRT::Element::line2:
     {
-      on_line = ProjectOnLine<DRT::Element::line2,numdofpernode>(line_xyze, cutla[0].lm_,newNodeCoords,x_line,xi_line, curr_dist);
+      on_line = ProjectOnLine<DRT::Element::line2,numdofpernode>(line_xyze, cutla[0].lm_,state,newNodeCoords,x_line,xi_line, curr_dist);
       break;
     }
     default:
@@ -2094,7 +2447,7 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
     {
     case DRT::Element::line2:
     {
-      on_line = ProjectOnLine<DRT::Element::line2,numdofpernode>(line_xyze, cutla[0].lm_,newNodeCoords,x_line,xi_line, curr_dist);
+      on_line = ProjectOnLine<DRT::Element::line2,numdofpernode>(line_xyze, cutla[0].lm_,state,newNodeCoords,x_line,xi_line, curr_dist);
       break;
     }
     default:
@@ -2106,17 +2459,16 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
   if(on_line)
   {
 #ifdef DEBUG_TIMINT_STD
-    cout << "\t\t\tprojection lies on line " << " for side "<< side->Id() << endl;
+    cout << "\t\tline-proj: projection lies on line " << line_count << " of side "<< side->Id() << endl;
 #endif
 
-    const double TOL_dist = 1e-12;
-
-    if(curr_dist < (min_dist+TOL_dist) && curr_dist > 0)
+    // distance has to be smaller than the last one
+    if(curr_dist < (min_dist-TOL_dist_) && curr_dist >= 0)
     {
       cout.precision(15);
-      cout << "\t\t\t\tupdated smallest distance!" << curr_dist << endl;
+      cout << "\t\t\t>>> updated smallest distance!" << curr_dist << endl;
 
-      if(curr_dist < (min_dist-TOL_dist)) // smaller distance found
+      if(curr_dist < (min_dist-TOL_dist_)) // smaller distance found
       {
         // another line found, reset already found lines
         proj_lineid.clear();
@@ -2141,7 +2493,7 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
 
       //--------------------
       // set current minimal distance w.r.t line
-      data.proj_ = TimeIntData::onLine_;
+      proj = TimeIntData::onLine_;
       // update minimal distance
       min_dist = curr_dist;
       // update projection point
@@ -2197,6 +2549,7 @@ void XFEM::XFLUID_STD::CallProjectOnLine(
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::CallProjectOnPoint(
     DRT::Node*                     node,                 ///< pointer to node
+    const std::string              state,                ///< state n or np?
     LINALG::Matrix<3,1>&           newNodeCoords,        ///< node coordinates of point that has to be projected
     double &                       min_dist,             ///< minimal distance, potentially updated
     int &                          proj_nid_np,          ///< nid id of projected point on surface
@@ -2205,7 +2558,7 @@ void XFEM::XFLUID_STD::CallProjectOnPoint(
     std::map<std::vector<int>, std::vector<double> > proj_xi_line,         ///< std::map<side ID, local coordinates of projection of point w.r.t to this line>
     std::map<std::vector<int>, std::vector<int> >    proj_lineid,          ///< std::map<side ID, local line id>
     std::map<std::vector<int>, std::vector<int> >    proj_nid_line,        ///< std::map<side ID, vec<line Ids>>
-    TimeIntData&                   data                  ///< reference to data
+    TimeIntData::projection&       proj                  ///< projection type
 )
 {
 
@@ -2223,17 +2576,18 @@ void XFEM::XFLUID_STD::CallProjectOnPoint(
 
 
   // compute distance between two points
-  ProjectOnPoint(point_xyze, lm,newNodeCoords, x_point, curr_dist);
+  ProjectOnPoint(point_xyze, lm, state, newNodeCoords, x_point, curr_dist);
+
 
   // update minimal distance if possible
-  if(curr_dist < min_dist)
+  if(curr_dist < min_dist-TOL_dist_ and curr_dist >= 0)
   {
 #ifdef DEBUG_TIMINT_STD
-    cout << "\t\t\t\tupdated smallest distance!" << curr_dist << endl;
+    cout << "\t\t\t>>> updated smallest distance w.r.t point-proj!" << curr_dist << endl;
 #endif
     //--------------------
     // set current minimal distance w.r.t point
-    data.proj_ = TimeIntData::onPoint_;
+    proj = TimeIntData::onPoint_;
     //reset side id
     proj_sid = -1;
     // reset line id w.r.t side->Id() that contains the projected point
@@ -2261,18 +2615,18 @@ template<DRT::Element::DiscretizationType side_distype, const int numdof>
 bool XFEM::XFLUID_STD::ProjectOnSide(
     Epetra_SerialDenseMatrix &   side_xyze,      ///< side's node coordinates
     const std::vector<int>&      lm,             ///< local map
+    const std::string            state,          ///< state n or np
     LINALG::Matrix<3,1> &        x_gp_lin,       ///< global coordinates of point that has to be projected
     LINALG::Matrix<3,1> &        x_side,         ///< projected point on side
     LINALG::Matrix<2,1> &        xi_side,        ///< local coordinates of projected point w.r.t side
     double &                     dist            ///< distance from point to its projection
 )
 {
-  //  TEUCHOS_FUNC_TIME_MONITOR( "FLD::XFluid::XFluidState::ProjectOnSide" );
 
   const int side_nen_ = DRT::UTILS::DisTypeToNumNodePerEle<side_distype>::numNodePerElement;
 
   // add displacements
-  addeidisp<side_distype, numdof>(side_xyze, *boundarydis_, "idispnp", lm);
+  addeidisp<side_distype, numdof>(side_xyze, *boundarydis_, state, lm);
 
   // fill Linalg matrix with current node coordinates including displacements
   LINALG::Matrix<3,side_nen_> xyze_(side_xyze);
@@ -2326,9 +2680,9 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
     dserror("define start side xi-coordinates for unsupported cell type");
   }
 
-  const double absTolIncr = 1.0e-9;   // rel tolerance for the local coordinates increment
-  const double relTolRes  = 1.0e-9;   // rel tolerance for the whole residual
-  const double absTOLdist = 1.0e-9;   // abs tolerance for distance
+  const double absTolIncr = 1.0e-9;   // absolute tolerance for the local coordinates increment
+  const double absTolRes  = 1.0e-9;   // absolute tolerance for the whole residual
+  const double absTOLdist = 1.0e-9;   // absolute tolerance for distance
 
   int iter=0;
   const int maxiter = 7;
@@ -2414,7 +2768,7 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
     // update solution
     sol.Update(1.0, incr, 1.0);
 
-    if ( (incr.Norm2()/sol.Norm2() < absTolIncr) && (residuum.Norm2()/sol.Norm2() < relTolRes) )
+    if ( (incr.Norm2() < absTolIncr) && (residuum.Norm2() < absTolRes) )
     {
       converged = true;
     }
@@ -2425,7 +2779,7 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
     if(    //sqrt(incr(0)*incr(0)+incr(1)*incr(1))/sqrt(sol(0)*sol(0)+sol(1)*sol(1)) <  relTolIncr
         sqrt(incr(0)*incr(0)+incr(1)*incr(1)) <  absTolIncr
         && incr(2) < absTOLdist
-        && residuum.Norm2()/sol.Norm2() < relTolRes)
+        && residuum.Norm2() < absTolRes)
     {
       converged = true;
     }
@@ -2449,9 +2803,9 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
         << incr(2)
         << " \tabsTOL: " << absTOLdist
         << endl;
-    cout << "relative criterion whole residuum "
-        << residuum.Norm2()/sol.Norm2()
-        << " \trelTOL: " << relTolRes
+    cout << "absolute criterion whole residuum "
+        << residuum.Norm2()
+        << " \tabsTOL: " << absTolRes
         << endl;
 
 
@@ -2473,12 +2827,13 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
   }
   else
   {
+
     LINALG::Matrix<3,1> xsi(true);
     xsi(0) = sol(0);
     xsi(1) = sol(1);
     xsi(2) = 0;
 
-    bool within_limits = WithinLimits<side_distype>(xsi);
+    bool within_limits = WithinLimits<side_distype>(xsi, 1e-10);
 
     if(within_limits)
     {
@@ -2502,6 +2857,10 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
       xi_side(0) = sol(0);
       xi_side(1) = sol(1);
 
+#ifdef DEBUG_TIMINT_STD
+    cout << "\t\tside-proj: converged with local coordinates " << sol(0) << " " << sol(1) << " " << " dist: " << sol(2)*normal_length << endl;
+#endif
+
     }
     else
     {
@@ -2515,6 +2874,11 @@ bool XFEM::XFLUID_STD::ProjectOnSide(
       x_side(0) = INFINITY;
       x_side(1) = INFINITY;
       x_side(2) = INFINITY;
+
+#ifdef DEBUG_TIMINT_STD
+    cout << "\t\tside-proj: converged with local coordinates " << sol(0) << " " << sol(1) << ". Check if is on side: false" << endl;
+#endif
+
     }
 
   }
@@ -2529,6 +2893,7 @@ template<DRT::Element::DiscretizationType line_distype, const int numdof>
 bool XFEM::XFLUID_STD::ProjectOnLine(
     Epetra_SerialDenseMatrix &   line_xyze,      ///< line's node coordinates
     const std::vector<int>&      lm,             ///< local map
+    const std::string            state,          ///< state n or np?
     LINALG::Matrix<3,1> &        x_point_np,     ///< global coordinates of point that has to be projected
     LINALG::Matrix<3,1> &        x_line,         ///< projected point on line
     double &                     xi_line,        ///< local coordinates of projected point w.r.t line
@@ -2541,7 +2906,7 @@ bool XFEM::XFLUID_STD::ProjectOnLine(
   const int line_nen_ = DRT::UTILS::DisTypeToNumNodePerEle<line_distype>::numNodePerElement;
 
   // add displacements
-  addeidisp<line_distype, numdof>(line_xyze, *boundarydis_, "idispnp", lm);
+  addeidisp<line_distype, numdof>(line_xyze, *boundarydis_, state, lm);
 
   // fill LINALG matrix
   LINALG::Matrix<3,line_nen_> xyze_(line_xyze);
@@ -2571,7 +2936,7 @@ bool XFEM::XFLUID_STD::ProjectOnLine(
     xsi(1) = 0;
     xsi(2) = 0;
 
-    bool within_limits = WithinLimits<line_distype>(xsi);
+    bool within_limits = WithinLimits<line_distype>(xsi, 1e-10);
 
     if(within_limits)
     {
@@ -2618,12 +2983,12 @@ bool XFEM::XFLUID_STD::ProjectOnLine(
 void XFEM::XFLUID_STD::ProjectOnPoint(
     Epetra_SerialDenseMatrix &   point_xyze,     ///< point's node coordinates
     const std::vector<int>&      lm,             ///< local map
+    const std::string            state,          ///< state n or np?
     LINALG::Matrix<3,1> &        x_point_np,     ///< global coordinates of point that has to be projected
     LINALG::Matrix<3,1> &        x_point,        ///< global coordinates of point on surface
     double &                     dist            ///< distance from point to its projection
 )
 {
-  const std::string state = "idispnp";
 
   Teuchos::RCP<const Epetra_Vector> matrix_state = boundarydis_->GetState( state);
   if(matrix_state == Teuchos::null)
@@ -2659,45 +3024,45 @@ void XFEM::XFLUID_STD::ProjectOnPoint(
  * check if local coordinates are within limits                      schott 07/12 *
  *--------------------------------------------------------------------------------*/
 template <DRT::Element::DiscretizationType elementtype>
-bool XFEM::XFLUID_STD::WithinLimits(LINALG::Matrix<3,1>& xsi_)
+bool XFEM::XFLUID_STD::WithinLimits(LINALG::Matrix<3,1>& xsi_, const double TOL)
 {
 
   switch ( elementtype )
   {
   case DRT::Element::line2:
   case DRT::Element::line3:
-    return ( xsi_( 0 ) >= -1-TOLERANCE and xsi_( 0 ) <=  1+TOLERANCE);
+    return ( xsi_( 0 ) >= -1-TOL and xsi_( 0 ) <=  1+TOL);
   case DRT::Element::tri3:
   case DRT::Element::tri6:
-    return ( xsi_( 0 ) >=   -TOLERANCE and xsi_( 1 ) >=   -TOLERANCE and
-             xsi_( 0 ) <=  1+TOLERANCE and xsi_( 1 ) <=  1+TOLERANCE and
-            (xsi_( 0 ) + xsi_( 1 )) <= 1+TOLERANCE);
+    return ( xsi_( 0 ) >=   -TOL and xsi_( 1 ) >=   -TOL and
+             xsi_( 0 ) <=  1+TOL and xsi_( 1 ) <=  1+TOL and
+            (xsi_( 0 ) + xsi_( 1 )) <= 1+TOL);
   case DRT::Element::quad4:
   case DRT::Element::quad8:
   case DRT::Element::quad9:
-    return ( xsi_( 0 ) >= -1-TOLERANCE and xsi_( 1 ) >= -1-TOLERANCE and
-             xsi_( 0 ) <=  1+TOLERANCE and xsi_( 1 ) <=  1+TOLERANCE );
+    return ( xsi_( 0 ) >= -1-TOL and xsi_( 1 ) >= -1-TOL and
+             xsi_( 0 ) <=  1+TOL and xsi_( 1 ) <=  1+TOL );
   case DRT::Element::hex8:
   case DRT::Element::hex20:
   case DRT::Element::hex27:
-    return ( xsi_( 0 ) >= -1-TOLERANCE and xsi_( 1 ) >= -1-TOLERANCE and xsi_( 2 ) >= -1-TOLERANCE and
-             xsi_( 0 ) <=  1+TOLERANCE and xsi_( 1 ) <=  1+TOLERANCE and xsi_( 2 ) <=  1+TOLERANCE );
+    return ( xsi_( 0 ) >= -1-TOL and xsi_( 1 ) >= -1-TOL and xsi_( 2 ) >= -1-TOL and
+             xsi_( 0 ) <=  1+TOL and xsi_( 1 ) <=  1+TOL and xsi_( 2 ) <=  1+TOL );
   case DRT::Element::tet4:
   case DRT::Element::tet10:
-    return ( xsi_( 0 ) >=   -TOLERANCE and xsi_( 1 ) >=   -TOLERANCE and xsi_( 2 ) >=   -TOLERANCE and
-             xsi_( 0 )+xsi_( 1 )+xsi_( 2 ) <= 1+TOLERANCE );
+    return ( xsi_( 0 ) >=   -TOL and xsi_( 1 ) >=   -TOL and xsi_( 2 ) >=   -TOL and
+             xsi_( 0 )+xsi_( 1 )+xsi_( 2 ) <= 1+TOL );
   case DRT::Element::pyramid5:
-    return ( xsi_( 0 ) >= -1-TOLERANCE and xsi_( 1 ) >= -1-TOLERANCE and xsi_( 2 ) >=   -TOLERANCE and
-             xsi_( 0 ) <=  1+TOLERANCE and xsi_( 1 ) <=  1+TOLERANCE and
+    return ( xsi_( 0 ) >= -1-TOL and xsi_( 1 ) >= -1-TOL and xsi_( 2 ) >=   -TOL and
+             xsi_( 0 ) <=  1+TOL and xsi_( 1 ) <=  1+TOL and
              ( fabs( xsi_( 0 ) ) > fabs( xsi_( 1 ) ) ?
-               ( xsi_( 2 )+fabs( xsi_( 0 ) ) <= 1+TOLERANCE ) :
-               ( xsi_( 2 )+fabs( xsi_( 1 ) ) <= 1+TOLERANCE ) )
+               ( xsi_( 2 )+fabs( xsi_( 0 ) ) <= 1+TOL ) :
+               ( xsi_( 2 )+fabs( xsi_( 1 ) ) <= 1+TOL ) )
       );
   case DRT::Element::wedge6:
   case DRT::Element::wedge15:
-    return ( xsi_( 0 ) >=   -TOLERANCE and xsi_( 1 ) >=   -TOLERANCE and xsi_( 2 ) >= -1-TOLERANCE and
-             xsi_( 2 ) <=  1+TOLERANCE and
-             xsi_( 0 )+xsi_( 1 ) <= 1+TOLERANCE );
+    return ( xsi_( 0 ) >=   -TOL and xsi_( 1 ) >=   -TOL and xsi_( 2 ) >= -1-TOL and
+             xsi_( 2 ) <=  1+TOL and
+             xsi_( 0 )+xsi_( 1 ) <= 1+TOL );
   default:
     throw std::runtime_error( "unsupported element type in XFEM::XFLUID_STD::WithinLimits" );
   }
@@ -2706,10 +3071,9 @@ bool XFEM::XFLUID_STD::WithinLimits(LINALG::Matrix<3,1>& xsi_)
 
 /*------------------------------------------------------------------------------------------------*
  * setting the computed data for the standard degrees of freedom into the according               *
- * Epetra Vectors for all handled nodes                                              schott 06/10 *
+ * Epetra Vectors for all handled nodes                                              schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
-void XFEM::XFLUID_STD::setFinalData(
-)
+void XFEM::XFLUID_STD::setFinalData()
 {
   const int nsd = 3; // 3 dimensions for a 3d fluid element
 
@@ -2728,6 +3092,10 @@ void XFEM::XFLUID_STD::setFinalData(
     //-------------------------------------------------------
     DRT::Node* node = discret_->gNode(gnodeid);
 
+    cout << "dofset at new timestep " << data->nds_np_ << endl;
+
+    if(data->nds_np_ == -1) dserror("cannot get dofs for dofset with number %d", data->nds_np_);
+
     std::vector<int> dofs;
     dofset_new_->Dof(*node, data->nds_np_, dofs );
 
@@ -2741,7 +3109,7 @@ void XFEM::XFLUID_STD::setFinalData(
         (*newVectors_[index])[newdofrowmap_.LID(dofs[i])] = velValues[index](i,0); // set the value
     }
     for (size_t index=0;index<vectorSize(data->type_);index++)
-      (*newVectors_[index])[newdofrowmap_.LID(dofs[3])] = presValues[index]; // set the value
+      (*newVectors_[index])[newdofrowmap_.LID(dofs[nsd])] = presValues[index]; // set the value
 
     data->type_ = TimeIntData::standard_; // predictor is done, so next time standard
   } // end loop over nodes
@@ -2749,12 +3117,13 @@ void XFEM::XFLUID_STD::setFinalData(
 
 
 
-#ifdef PARALLEL
 /*------------------------------------------------------------------------------------------------*
  * export start data to neighbour proc                                           winklmaier 06/10 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::exportStartData()
 {
+  dserror("this function has still to be adapted for XFSI");
+
   const int nsd = 3; // 3 dimensions for a 3d fluid element
 
   // destination proc (the "next" one)
@@ -2779,11 +3148,8 @@ void XFEM::XFLUID_STD::exportStartData()
     DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
     DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
     DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
-//    DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
     DRT::ParObject::AddtoPack(dataSend,data->searchedProcs_);
     DRT::ParObject::AddtoPack(dataSend,data->counter_);
-    DRT::ParObject::AddtoPack(dataSend,data->startGid_);
-    DRT::ParObject::AddtoPack(dataSend,data->startOwner_);
     DRT::ParObject::AddtoPack(dataSend,data->dMin_);
     DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
   }
@@ -2799,11 +3165,8 @@ void XFEM::XFLUID_STD::exportStartData()
     DRT::ParObject::AddtoPack(dataSend,data->velDeriv_);
     DRT::ParObject::AddtoPack(dataSend,data->presDeriv_);
     DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
-//    DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
     DRT::ParObject::AddtoPack(dataSend,data->searchedProcs_);
     DRT::ParObject::AddtoPack(dataSend,data->counter_);
-    DRT::ParObject::AddtoPack(dataSend,data->startGid_);
-    DRT::ParObject::AddtoPack(dataSend,data->startOwner_);
     DRT::ParObject::AddtoPack(dataSend,data->dMin_);
     DRT::ParObject::AddtoPack(dataSend,(int)data->type_);
   }
@@ -2827,11 +3190,8 @@ void XFEM::XFLUID_STD::exportStartData()
     std::vector<LINALG::Matrix<nsd,nsd> > velDeriv; // derivation of velocity at point x
     std::vector<LINALG::Matrix<1,nsd> > presDeriv; // derivation of pressure at point x
     LINALG::Matrix<nsd,1> startpoint; // startpoint
-//    double phiValue; // phi-value
     int searchedProcs; // number of searched processors
     int counter; // iteration counter
-    std::vector<int> startGid; // global id of first startpoint
-    std::vector<int> startOwner; // owner of first startpoint
     double dMin; // minimal distance
     int newtype; // type of the data
 
@@ -2841,11 +3201,8 @@ void XFEM::XFLUID_STD::exportStartData()
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,velDeriv);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,presDeriv);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,startpoint);
-//    DRT::ParObject::ExtractfromPack(posinData,dataRecv,phiValue);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,searchedProcs);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,counter);
-    DRT::ParObject::ExtractfromPack(posinData,dataRecv,startGid);
-    DRT::ParObject::ExtractfromPack(posinData,dataRecv,startOwner);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,dMin);
     DRT::ParObject::ExtractfromPack(posinData,dataRecv,newtype);
 
@@ -2856,11 +3213,8 @@ void XFEM::XFLUID_STD::exportStartData()
         velDeriv,
         presDeriv,
         startpoint,
-//        phiValue,
         searchedProcs,
         counter,
-        startGid,
-        startOwner,
         dMin,
         (TimeIntData::type)newtype));
   }
@@ -2871,10 +3225,17 @@ void XFEM::XFLUID_STD::exportStartData()
 
 
 /*------------------------------------------------------------------------------------------------*
- * export final data to node's proc                                              winklmaier 06/10 *
+ * export final data to node's proc                                                  schott 07/12 *
  *------------------------------------------------------------------------------------------------*/
 void XFEM::XFLUID_STD::exportFinalData()
 {
+#ifdef DEBUG_TIMINT_STD
+  IO::cout << "\n\t=============================";
+  IO::cout << "\n\t  export Final Data  ";
+  IO::cout << "\n\t=============================" << IO::endl;
+#endif
+
+
   const int nsd = 3; // 3 dimensions for a 3d fluid element
 
   // array of vectors which stores data for
@@ -2882,6 +3243,7 @@ void XFEM::XFLUID_STD::exportFinalData()
   std::vector<std::vector<TimeIntData> > dataVec(numproc_);
 
   // fill vectors with the data
+  // fill data into a vector where the index corresponds to the destination which is equal to the node's owner
   for (std::vector<TimeIntData>::iterator data=timeIntData_->begin();
       data!=timeIntData_->end(); data++)
   {
@@ -2909,10 +3271,8 @@ void XFEM::XFLUID_STD::exportFinalData()
         data!=dataVec[dest].end(); data++)
     {
       DRT::ParObject::AddtoPack(dataSend,data->node_.Id());
+      DRT::ParObject::AddtoPack(dataSend,data->nds_np_);
       DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
-      DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
-      DRT::ParObject::AddtoPack(dataSend,data->startGid_);
-      DRT::ParObject::AddtoPack(dataSend,data->startOwner_);
       DRT::ParObject::AddtoPack(dataSend,data->velValues_);
       DRT::ParObject::AddtoPack(dataSend,data->presValues_);
       DRT::ParObject::AddtoPack(dataSend,data->type_);
@@ -2924,10 +3284,8 @@ void XFEM::XFLUID_STD::exportFinalData()
         data!=dataVec[dest].end(); data++)
     {
       DRT::ParObject::AddtoPack(dataSend,data->node_.Id());
+      DRT::ParObject::AddtoPack(dataSend,data->nds_np_);
       DRT::ParObject::AddtoPack(dataSend,data->startpoint_);
-      DRT::ParObject::AddtoPack(dataSend,data->phiValue_);
-      DRT::ParObject::AddtoPack(dataSend,data->startGid_);
-      DRT::ParObject::AddtoPack(dataSend,data->startOwner_);
       DRT::ParObject::AddtoPack(dataSend,data->velValues_);
       DRT::ParObject::AddtoPack(dataSend,data->presValues_);
       DRT::ParObject::AddtoPack(dataSend,data->type_);
@@ -2946,29 +3304,23 @@ void XFEM::XFLUID_STD::exportFinalData()
     while (posinData < dataRecv.size())
     {
       int gid; // global id of node
+      int nds_np; // dofset number of node at new timestep
       LINALG::Matrix<nsd,1> startpoint; // startpoint
-      double phiValue; // phi-value
-      std::vector<int> startGid; // global id of first startpoint
-      std::vector<int> startOwner; // owner of first startpoint
       std::vector<LINALG::Matrix<nsd,1> > velValues; // velocity values
       std::vector<double> presValues; // pressure values
       int newtype; // type of the data
 
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,gid);
+      DRT::ParObject::ExtractfromPack(posinData,dataRecv,nds_np);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,startpoint);
-      DRT::ParObject::ExtractfromPack(posinData,dataRecv,phiValue);
-      DRT::ParObject::ExtractfromPack(posinData,dataRecv,startGid);
-      DRT::ParObject::ExtractfromPack(posinData,dataRecv,startOwner);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,velValues);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,presValues);
       DRT::ParObject::ExtractfromPack(posinData,dataRecv,newtype);
 
       timeIntData_->push_back(TimeIntData(
           *discret_->gNode(gid),
+          nds_np,
           startpoint,
-          phiValue,
-          startGid,
-          startOwner,
           velValues,
           presValues,
           (TimeIntData::type)newtype));
@@ -2978,7 +3330,6 @@ void XFEM::XFLUID_STD::exportFinalData()
     discret_->Comm().Barrier();
   } // end loop over processors
 } // end exportfinalData
-#endif //parallel
 
 
 

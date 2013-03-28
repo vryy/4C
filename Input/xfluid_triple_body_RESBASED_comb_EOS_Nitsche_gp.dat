@@ -15,7 +15,7 @@ created by pre_exodus
 //NODES       10275
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_XFEM2
+PROBLEMTYP                      Fluid_XFEM
 NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION

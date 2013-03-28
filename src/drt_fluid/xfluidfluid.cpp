@@ -1988,6 +1988,14 @@ FLD::XFluidFluid::XFluidFluid(
   output_ = (Teuchos::rcp(new IO::DiscretizationWriter(bgdis_)));
   output_->WriteMesh(0,0.0);
 
+
+  // used to write out owner of elements just once
+  firstoutputofrun_ = true;
+
+  // counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
+  restart_count_ = 0;
+
+
   //-------------------------------------------------------------------
   // create internal faces extension for edge based stabilization
   if(edge_based_ or ghost_penalty_)
@@ -4082,6 +4090,8 @@ void FLD::XFluidFluid::Output()
   {
     IO::cout << "---  write restart... " << IO::endl;
 
+    restart_count_++;
+
     // velocity/pressure vector
     output_->WriteVector("velnp_bg",state_->velnp_);
 
@@ -4091,6 +4101,28 @@ void FLD::XFluidFluid::Output()
     output_->WriteVector("veln_bg",state_->veln_);
     output_->WriteVector("velnm_bg",state_->velnm_);
   }
+
+
+  //-----------------------------------------------------------
+  // REMARK on "Why to clear the MapCache" for restarts
+  //-----------------------------------------------------------
+  // every time, when output-vectors are written based on a new(!), still unknown map
+  // the map is stored in a mapstack (io.cpp, WriteVector-routine) for efficiency in standard applications.
+  // However, in the XFEM for each timestep or FSI-iteration we have to cut and the map is created newly
+  // (done by the FillComplete call).
+  // This is the reason why the MapStack increases and the storage is overwritten for large problems.
+  // Hence, we have clear the MapCache in regular intervals of written restarts.
+  // In case of writing paraview-output, here, we use a standard map which does not change over time, that's okay.
+  // For the moment, restart_count = 5 is set quite arbitrary, in case that we need for storage, we have to reduce this number
+
+  if(restart_count_ == 5)
+  {
+    if(myrank_ == 0) IO::cout << "\t... Clear MapCache after " << restart_count_ << " written restarts." << IO::endl;
+
+    output_->ClearMapCache(); // clear the output's map-cache
+    restart_count_ = 0;
+  }
+
 
   // embedded fluid output
   if (write_visualization_data)

@@ -4900,7 +4900,6 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &xfluid_general);
 
   IntParameter("DISP_FUNCT_NO",-1,"funct number for interface displacement",&xfluid_general);
-  IntParameter("DISP_CURVE_NO",-1,"curve number for interface displacement",&xfluid_general);
 
   IntParameter("VEL_FUNCT_NO",-1,"funct number for WDBC or Neumann Condition at embedded boundary/interface",&xfluid_general);
   IntParameter("VEL_INIT_FUNCT_NO",-1,"funct number for initial interface velocity",&xfluid_general);

@@ -16,7 +16,7 @@ DIM                             3
 MATERIALS                       5
 NUMDF                           6
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_XFEM2
+PROBLEMTYP                      Fluid_XFEM
 NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
@@ -89,7 +89,6 @@ INTERFACE_VEL                   interface_vel_by_funct
 VEL_FUNCT_NO                    2
 INTERFACE_DISP                  interface_disp_by_funct
 DISP_FUNCT_NO                   3
-DISP_CURVE_NO                   1
 ------------------------------------------------XFLUID DYNAMIC/STABILIZATION
 EMBEDDED_BOUNDARY               BoundaryTypeSigma               // "BoundaryTypeTauPressure" "BoundaryTypeNitsche" "BoundaryTypeNeumann" // Which Boundary method shall be used to enforce interface conditions?
 --------------------------------------------------------------------SOLVER 1
@@ -101,8 +100,6 @@ MAT 1 MAT_fluid DYNVISCOSITY 0.1 DENSITY 1.0 GAMMA 1.0
 //                              MAT_Struct_StVenantKirchhoff
 MAT 2 MAT_Struct_StVenantKirchhoff YOUNG 1.0 NUE 0.0 DENS 1.0 THEXPANS 0.0
 ----------------------------------------------------------------------CURVE1
-//CURVE1 on EXPR FUNC 0.5*(sin((t*pi/1)-(pi/2)))+0.5 t1 0.0 t2 1.0
-CURVE1 on EXPR FUNC -0.038*t t1 0.0 t2 1.0
 ----------------------------------------------------------------------CURVE2
 ----------------------------------------------------------------------CURVE3
 ----------------------------------------------------------------------CURVE4
@@ -118,7 +115,7 @@ FUNCT2 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT2 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure
 ---------------------------------------------FUNCT3 // displacement function
-FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0
+FUNCT3 COMPONENT 0 EXPR 0 0.0 0 FUNCTION 1.0*(-0.038*t)
 FUNCT3 COMPONENT 1 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT3 COMPONENT 2 EXPR 0 0.0 0 FUNCTION 0.0
 FUNCT3 COMPONENT 3 EXPR 0 0.0 0 FUNCTION 0.0 // pressure

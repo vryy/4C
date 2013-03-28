@@ -535,6 +535,12 @@ namespace FLD
     // output vector for bg-fluid field (velocity and pressure)
     Teuchos::RCP<Epetra_Vector> outvec_fluid_;
 
+    // flag whether this output step is the first one (restarted or not)
+    bool firstoutputofrun_;
+
+    // counter for number of written restarts, used to decide when we have to clear the MapStack (explanation see Output() )
+    int restart_count_;
+
     /// ALE dof map
     LINALG::MapExtractor        meshmap_;
 

@@ -124,7 +124,7 @@ public:
       const int                                  nds_old,            /// nodal dofset at t^n
       std::vector<RCP<Epetra_Vector> >&          newRowStateVectors, /// row map based state vectors at t^(n+1)
       std::vector<RCP<const Epetra_Vector> >&    oldRowStateVectors, /// row map based state vectors at t^n
-      Teuchos::RCP<std::set<int> >               dbcgids
+      Teuchos::RCP<std::set<int> >               dbcgids             /// set of DBC global ids
   );
 
   /// mark nodal dofs of vector w.r.t new interface position for reconstruction
@@ -140,7 +140,7 @@ public:
   void SetReconstrMethod(
       DRT::Node*                     node,                 /// drt node
       const int                      nds_new,              /// nodal dofset at t^(n+1)
-      INPAR::XFEM::XFluidTimeInt     method
+      INPAR::XFEM::XFluidTimeInt     method                /// which type of reconstruction method
   );
 
   /// find the standard dofset, return the dofset number of std dofset

@@ -12,7 +12,7 @@ instationary 2D kimmoin flow (3 time-steps), convection-dominated with 1e-004
 //NODES       1718
 DIM           3
 -----------------------------------------------------------------PROBLEM TYP
-PROBLEMTYP                      Fluid_XFEM2
+PROBLEMTYP                      Fluid_XFEM
 NUMFIELD                        2
 RESTART                         0
 --------------------------------------------------------------DISCRETISATION
