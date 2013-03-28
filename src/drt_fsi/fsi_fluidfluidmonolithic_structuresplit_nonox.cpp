@@ -263,7 +263,6 @@ void FSI::FluidFluidMonolithicStructureSplitNoNOX::SetupRHS(Epetra_Vector& f, bo
     const double ftiparam = FluidField().TimIntParam();
 
     // some scaling factors for fluid
-    const double timescale = FluidField().TimeScaling();
     const double scale     = FluidField().ResidualScaling();
     const double dt        = FluidField().Dt();
 
