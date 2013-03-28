@@ -1,140 +1,240 @@
- reset
+reset
 
-$=======================Define parameters
-# {Depth=0.05}
-# {Width=1.0}
-# {BottomHeight=0.002}
-# {CavityHeight=1.0}
-# {InflowHeight=0.1}
-# {MeshDepth=1}
-# {MeshWidth=32}
-# {MeshBottomHeight=1}
-# {MeshCavityHeight=32}
-# {MeshInflowHeight=7}
+$$==================== Define parameters
+$ Geometry
+# {MyDepth=0.05}          $ Depth of pseudo-2D problem
+# {MyWidth=1.0}           $ Width in x-direction
+# {BottomHeight=0.002}    $ Thickness of structural membrane
+# {CavityHeight=1.0}      $ Height of cavity
+# {InflowHeight=0.1}      $ Height of inflow region
 
-$$GEOMETRY
-$=====================Create Bottom
-brick x {Width} y {BottomHeight} z {Depth}
-volume 1 move x {Width/2} y {-BottomHeight/2} z {-Depth/2}
-$=====================Create Fluid Part
-$ cavity + inflow
-brick  x {Width} y {CavityHeight+InflowHeight} z {Depth}
+$ Mesh
+# {MeshDepth=1}           $ Number of elements in z-direction
+# {MeshWidthFluid=32}     $ Number of elements in x-direction
+# {MeshWidthStruct=32}    $ Number of elements in x-direction
+# {MeshBottomHeight=1}    $ Number of elements in y-direction for structure
+# {MeshCavityHeight=32}   $ Number of elements in y-direction for fluid cavity
+# {MeshInflowHeight=4}    $ Number of elements in y-direction for fluid inflow
+
+$ Other
+# {EPS=0.000001}
+
+$$==================== GEOMETRY
+$===================== Create structure volume
+brick x {MyWidth} y {BottomHeight} z {MyDepth}
+volume 1 move x {MyWidth/2} y {-BottomHeight/2} z {-MyDepth/2}
+
+$===================== Create fluid volume
+$ create cavity and inflow
+brick x {MyWidth} y {CavityHeight+InflowHeight} z {MyDepth}
 align volume 2 surface 9 with surface 5
-$ divide cavity and inflow region
-webcut volume 2 with plane yplane offset {CavityHeight} imprint merge
+$ divide cavity and inflow region into two separate volumes 
+webcut volume 2 with plane yplane offset {CavityHeight} noimprint nomerge
 
-$$MESHING
-$=======================Mesh Bottom
-curve 3 interval {MeshBottomHeight}
-curve 3 scheme equal
-mesh curve 3
-curve 2 interval {MeshWidth}
-curve 2 scheme equal
-mesh curve 2
-curve 11 interval {MeshDepth}
-curve 11 scheme equal
-mesh curve 11
-mesh volume 1
-$=======================Mesh Cavity
-curve 29 interval {MeshCavityHeight}
-curve 29 scheme equal
-mesh curve 29
-curve 16 interval {MeshWidth}
-curve 16 scheme equal
-mesh curve 16
-curve 21 interval {MeshDepth}
-curve 21 scheme equal
-mesh curve 21
-mesh volume 2
-$=======================Mesh Inflow
-curve 40 interval {MeshInflowHeight}
-curve 40 scheme equal
-mesh curve 40
-mesh volume 3
+$$==================== GROUPS
+$$ volume groups for structure, cavity, inflow and fluid  
+$ structural volume
+group "structure_vol" add volume with y_coord<{BottomHeight}  
+$ entire fluid volume
+group "fluid_vol" add volume with y_coord>{BottomHeight}      
+$ inflow fluid volume
+group "inflow_vol" add volume with y_coord>{CavityHeight}     
+$ cavity fluid volume
+group "cavity_vol" add volume in group fluid_vol              
+cavity_vol remove volume in group inflow_vol                  
 
-$$EXODUS - definitions
-$=======================Structure
-block 1 volume 1
-block 1 name "flexible bottom"
-nodeset 1 surface 4
-nodeset 1 name "structure surface left"
-nodeset 2 surface 6
-nodeset 2 name "structure surface right"
-nodeset 3 surface 1
-nodeset 3 name "structure surface front"
-nodeset 4 surface 2
-nodeset 4 name "structure surface back"
-nodeset 5 surface 5
-nodeset 5 name "structure coupling surface"
-nodeset 6 curve 3
-nodeset 6 name "structure edge front left"
-nodeset 7 curve 7
-nodeset 7 name "structure edge back left"
-nodeset 8 curve 5
-nodeset 8 name "structure edge back right"
-nodeset 9 curve 1
-nodeset 9 name "structure edge front right"
-$=======================Fluid
-block 2 volume 2 3
+$$ surface groups for structure
+$ front surface
+group "structure_surf_front" add surface with z_coord>{-MyDepth/2} in volume in group structure_vol
+
+$$ surface groups for entire fluid volume
+$ front fluid surface
+group "fluid_surf_front" add surface with z_coord>{-MyDepth/2} in volume in group fluid_vol
+
+$$ surface groups for cavity fluid volume
+$ front cavity surface
+group "cavity_surf_front" add surface in group fluid_surf_front
+cavity_surf_front remove surface in volume in group inflow_vol
+
+$$ surface groups for inflow fluid volume
+$ front inflow surface
+group "inflow_surf_front" add surface in group fluid_surf_front
+inflow_surf_front remove surface in volume in group cavity_vol
+
+$$ curve groups for structure volume
+$ curves in x-direction
+group "structure_xcurves" add curve in surface in structure_surf_front
+structure_xcurves remove curve with x_coord<{EPS}
+structure_xcurves remove curve with x_coord>{MyWidth-EPS}
+$ curves in y-direction
+group "structure_ycurves" add curve in surface in structure_surf_front
+structure_ycurves remove curve in structure_xcurves
+
+$$ curve groups for entire fluid volume
+$ curves in x-direction
+group "fluid_xcurves" add curve with x_coord>0.001 in surface in fluid_surf_front
+fluid_xcurves remove curve with x_coord<{EPS}
+ fluid_xcurves remove curve with x_coord>{MyWidth-EPS}
+$ curves in y-direction
+group "fluid_ycurves" add curve with y_coord>{CavityHeight/4} in surface in fluid_surf_front
+fluid_ycurves remove curve in group fluid_xcurves
+
+$$ curve groups for fluid inflow volume
+$ curves in x-direction
+group "inflow_vol_xcurves" add curve in surface in inflow_surf_front
+inflow_vol_xcurves remove curve with x_coord<{EPS}
+inflow_vol_xcurves remove curve with x_coord>{MyWidth-EPS}
+$ curves in y-direction
+group "inflow_vol_ycurves" add curve in surface in inflow_surf_front
+inflow_vol_ycurves remove curve in inflow_vol_xcurves
+$ curves in x-direction on top
+group "inflow_vol_xcurves_top" add curve in group inflow_vol_xcurves
+inflow_vol_xcurves_top remove curve with y_coord<{CavityHeight+0.5*InflowHeight}
+
+$$ curve groups for fluid cavity volume
+$ curves in x-direction
+group "cavity_xcurves" add curve in group fluid_xcurves
+cavity_xcurves remove curve in group inflow_vol_xcurves
+$ curves in y-direction
+group "cavity_ycurves" add curve in group fluid_ycurves
+cavity_ycurves remove curve in group inflow_vol_ycurves
+
+$$ curve groups for fluid inflow area
+$ curves in y-direction
+group "inflow_ycurves" add curve in group inflow_vol_ycurves
+inflow_ycurves remove curve with x_coord>{EPS}
+
+$$ curve groups for fluid outflow area
+$ curves in y-direction
+group "outflow_ycurves" add curve in group inflow_vol_ycurves
+outflow_ycurves remove curve with x_coord<{MyWidth-EPS}
+
+$$ curve groups for fluid fsi surface
+$ curves in x-direction
+group "cavity_fsi_xcurves" add curve in group cavity_xcurves
+cavity_fsi_xcurves remove curve with y_coord>{EPS}
+
+$$ curve groups for structure fsi surface
+$ curves in x-direction
+group "structure_fsi_xcurves" add curve in group structure_xcurves
+structure_fsi_xcurves remove curve with y_coord<{-EPS}
+
+$$ vertex group of structure
+group "structure_vertex" add vertex in curve in surface in structure_surf_front
+
+$$ vertex group of structural nodes on fsi surface
+group "structure_vertex_fsi" add vertex in curve in structure_fsi_xcurves
+
+$$ vertex group for entire fluid
+group "fluid_vertex" add vertex in curve in surface in fluid_surf_front
+
+$$ vertex group for inflow fluid
+$ all vertices
+group "inflow_vertex" add vertex in curve in surface in inflow_surf_front
+$ only vertices on top
+group "inflow_vertex_top" add vertex in group inflow_vertex
+group inflow_vertex_top remove vertex with y_coord<{CavityHeight+0.5*InflowHeight}
+
+$$ vertex group for cavity fluid
+group "cavity_vertex" add vertex in curve in surface in cavity_surf_front
+
+$$ vertex group of fluid nodes on fsi surface
+group "fluid_vertex_fsi" add vertex in cavity_vertex
+fluid_vertex_fsi remove vertex with y_coord>{EPS}
+
+$$==================== MERGING
+merge volume in fluid_vol
+
+$$==================== MESHING
+$===================== Mesh bottom structure
+$ meshing schemes
+structure_xcurves scheme equal
+structure_ycurves scheme equal
+structure_surf_front scheme map
+
+$ meshing intervals
+structure_xcurves interval {MeshWidthStruct}
+structure_ycurves interval {MeshBottomHeight}
+
+$ do the actual meshing
+mesh structure_xcurves
+mesh structure_ycurves
+mesh structure_surf_front
+
+$======================= Mesh cavity volume
+$ meshing schemes
+cavity_xcurves scheme equal
+cavity_ycurves scheme equal
+cavity_surf_front scheme map
+
+$ meshing intervals
+cavity_xcurves interval {MeshWidthFluid}
+cavity_ycurves interval {MeshCavityHeight}
+
+$ do the actual meshing
+mesh cavity_xcurves
+mesh cavity_ycurves
+mesh cavity_surf_front
+
+$======================= Mesh inflow volume
+$ meshing schemes
+inflow_vol_xcurves scheme equal
+inflow_vol_ycurves scheme equal
+inflow_surf_front scheme map
+
+$ meshing intervals
+inflow_vol_xcurves interval {MeshWidthFluid}
+inflow_vol_ycurves interval {MeshInflowHeight}
+
+$ do the actual meshing
+mesh inflow_vol_xcurves
+mesh inflow_vol_ycurves
+mesh inflow_surf_front
+
+$$==================== NODESET DEFINITIONS
+$===================== Structure
+$ surfaces
+block 1 surface in structure_surf_front
+block 1 name "flexible_bottom"
+
+$ curves
+nodeset 1 curve in structure_ycurves
+nodeset 1 name "structure clamping curves"
+nodeset 2 curve in group structure_fsi_xcurves
+nodeset 2 name "structure fsi curve"
+
+$ vertices
+nodeset 3 vertex in group structure_vertex
+nodeset 3 name "structure vertices"
+nodeset 4 vertex in group structure_vertex_fsi
+nodeset 4 name "structure fsi vertices"
+
+$======================= Fluid
+$ surfaces
+block 2 surface in fluid_surf_front
 block 2 name "fluid"
-nodeset 10 surface 15
-nodeset 10 name "cavity wall left"
-nodeset 11 surface 17
-nodeset 11 name "cavity wall right"
-nodeset 12 surface 14 21
-nodeset 12 name "fluid wall front"
-nodeset 13 surface 16 20
-nodeset 13 name "fluid wall back"
-nodeset 14 surface 9
-nodeset 14 name "fluid coupling surface"
-nodeset 15 surface 11
-nodeset 15 name "lid"
-nodeset 16 surface 22
-nodeset 16 name "inflow"
-nodeset 17 curve 29
-nodeset 17 name "cavity edge front left"
-nodeset 18 curve 31
-nodeset 18 name "cavity edge back left"
-nodeset 19 curve 32
-nodeset 19 name "cavity edge back right"
-nodeset 20 curve 30
-nodeset 20 name "cavity edge front right"
-nodeset 21 curve 16
-nodeset 21 name "cavity edge front bottom"
-nodeset 22 curve 18
-nodeset 22 name "cavity edge back bottom"
-nodeset 23 curve 21
-nodeset 23 name "cavity edge left bottom"
-nodeset 24 curve 22
-nodeset 24 name "cavity edge right bottom"
-nodeset 25 curve 26
-nodeset 25 name "cavity-inflow edge"
-nodeset 26 curve 40
-nodeset 26 name "inflow edge front"
-nodeset 27 curve 39
-nodeset 27 name "inflow edge back"
-nodeset 28 curve 23
-nodeset 28 name "lid edge left"
-nodeset 29 curve 14
-nodeset 29 name "lid edge front"
-nodeset 30 curve 20
-nodeset 30 name "lid edge back"
-nodeset 31 vertex 12
-nodeset 31 name "cavity vertex front left bottom"
-nodeset 32 vertex 15
-nodeset 32 name "cavity vertex back left bottom"
-nodeset 33 vertex 14
-nodeset 33 name "cavity vertex back right bottom"
-nodeset 34 vertex 9
-nodeset 34 name "cavity vertex front right bottom"
-nodeset 35 vertex 19
-nodeset 35 name "cavity-inflow vertex front 1"
-nodeset 36 vertex 17
-nodeset 36 name "cavity-inflow vertex front 2"
-nodeset 37 vertex 11
-nodeset 37 name "lid vertex front left"
-nodeset 38 vertex 16
-nodeset 38 name "lid vertex back left"
+
+$ curves
+nodeset 5 curve in group cavity_ycurves
+nodeset 5 name "cavity wall curves"
+nodeset 6 curve in group inflow_vol_xcurves_top
+nodeset 6 name "inflow volume curve top"
+nodeset 7 curve in group inflow_ycurves
+nodeset 7 name "inflow area curve"
+nodeset 8 curve in group fluid_ycurves
+nodeset 8 name "fluid curves in y-direction"
+nodeset 9 curve in group cavity_fsi_xcurves
+nodeset 9 name "fluid fsi curve"
+
+$ vertices
+nodeset 10 vertex in group inflow_vertex_top
+nodeset 10 name "inflow vertices top"
+nodeset 11 vertex in group cavity_vertex
+nodeset 11 name "cavity vertices"
+nodeset 12 vertex in group fluid_vertex_fsi
+nodeset 12 name "fluid fsi vertices"
+nodeset 13 vertex in group fluid_vertex
+nodeset 13 name "fluid vertices all"
 
 $======================= export mesh
-export mesh "xxx_tutorial_fsi.e" block all overwrite
+export mesh "xxx_tutorial_fsi.e" block all dimension 2 overwrite
