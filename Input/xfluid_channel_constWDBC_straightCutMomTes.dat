@@ -1,7 +1,7 @@
 //
 // Maintainer: Sudhakar Yogaray
 //
-// necessary defines: D_FLUID3 D_SOLID3 BINIO QHULL
+// necessary defines: D_FLUID3 D_SOLID3 BINIO
 //
 // Volumecell Gauss points by MomentFitting and boundarycell by Tessellation
 ==================================================================

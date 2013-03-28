@@ -46,10 +46,6 @@
 #cmakedefine BINIO
 #endif
 
-#ifndef QHULL
-#cmakedefine QHULL
-#endif
-
 #ifndef PRESTRESS
 #cmakedefine PRESTRESS
 #endif

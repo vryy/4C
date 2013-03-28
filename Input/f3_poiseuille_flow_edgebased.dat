@@ -1,7 +1,7 @@
 //
 // Maintainer: Benedikt Schott
 //
-// necessary defines: D_FLUID3 D_SOLID3 BINIO QHULL
+// necessary defines: D_FLUID3 D_SOLID3 BINIO
 //
 // This is a simple testcase to test the edge-based fluid stabilization
 // for standard fluid problems. Poiseuille flow shall be nodal-wise exact

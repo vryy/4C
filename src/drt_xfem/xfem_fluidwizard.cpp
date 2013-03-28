@@ -38,7 +38,6 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
                               bool positions                  //!< set inside and outside point, facet and volumecell positions
                               )
 {
-#ifdef QHULL
   TEUCHOS_FUNC_TIME_MONITOR( "XFEM::FluidWizard::Cut" );
 
   if ( backdis_.Comm().MyPID() == 0 )
@@ -153,9 +152,6 @@ void XFEM::FluidWizard::Cut(  bool include_inner,             //!< perform cut w
     cw.DumpGmshVolumeCells( include_inner );
   }
 
-#else
-  dserror( "QHULL needs to be defined to cut elements" );
-#endif
 }
 
 /*-------------------------------------------------------------*

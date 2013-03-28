@@ -6,11 +6,9 @@
 #include "cut_levelsetside.H"
 #include "cut_volumecell.H"
 
-#ifdef QHULL
 extern "C" {
 #include <qhull/qhull_a.h>
 }
-#endif
 
 namespace GEO
 {
@@ -285,8 +283,6 @@ void GEO::CUT::TetMesh::CallQHull( const std::vector<Point*> & points,
                                    std::vector<std::vector<int> > & tets,
                                    bool project )
 {
-#ifdef QHULL
-
   const int dim = 3;
   const int n = points.size();
 
@@ -504,10 +500,6 @@ void GEO::CUT::TetMesh::CallQHull( const std::vector<Point*> & points,
 #endif
 
   throw std::runtime_error( "qhull failed: Maybe the wrong version is used. Check your installation." );
-
-#else
-  throw std::runtime_error( "qhull not available" );
-#endif
 }
 
 bool GEO::CUT::TetMesh::IsValidTet( const std::vector<Point*> & t )

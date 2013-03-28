@@ -2,7 +2,7 @@
 // Maintainer: Benedikt Schott
 //
 //
-// necessary defines: D_FLUID3 D_SOLID3 BINIO QHULL
+// necessary defines: D_FLUID3 D_SOLID3 BINIO
 //
 // flow around two obstacles, edge-oriented stabilization on the whole element for cut elements
 // should be stable for Sigma and Nitsche with ~1/h and ~|Gamma|/|Omega|

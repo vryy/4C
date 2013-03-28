@@ -96,7 +96,6 @@ def getSymbols(fname,build_type):
     # flags that are set in CMakeLists.txt
     symbollist.add("PARALLEL")
     symbollist.add("PARMETIS")
-    symbollist.add("QHULL")
     symbollist.add("BINIO")
     symbollist.add("HAVE_FFTW")
     symbollist.add("D_SHELL8")

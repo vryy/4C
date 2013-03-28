@@ -154,8 +154,6 @@ if (NOT QHULL_FOUND)
    MESSAGE(FATAL_ERROR "QHull not found")
 endif ()
 
-add_definitions("-DQHULL")
-
 #   tools
 
 option (PERF "detailed time measurement" OFF)

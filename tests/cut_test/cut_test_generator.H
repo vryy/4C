@@ -11,9 +11,7 @@ public:
 
   OutputGenerator() : counter_( 0 ) {}
 
-#ifdef QHULL
   virtual void Generate( GEO::CUT::Element* element, const tetgenio & out );
-#endif
 
 private:
   int counter_;
