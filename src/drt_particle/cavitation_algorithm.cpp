@@ -642,7 +642,7 @@ void CAVITATION::Algorithm::CreateBins()
   for (int dim = 0; dim < 3; dim++)
   {
     // std::floor leads to bins that are at least of size cutoff_radius
-    bin_per_dir_[dim] = (int)((XAABB_(dim,1)-XAABB_(dim,0))/cutoff_radius_);
+    bin_per_dir_[dim] = std::max(1, (int)((XAABB_(dim,1)-XAABB_(dim,0))/cutoff_radius_));
     bin_size_[dim] = (XAABB_(dim,1)-XAABB_(dim,0))/bin_per_dir_[dim];
   }
 

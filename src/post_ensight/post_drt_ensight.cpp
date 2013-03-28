@@ -177,7 +177,7 @@ int main(
     {
       PostField* particlefield = problem.get_discretization(0);
       ParticleEnsightWriter  particlewriter(particlefield, problem.outname());
-      particlewriter.WriteFilesChangingGeom();
+      particlewriter.WriteFiles();
 
       PostField* particlewallfield = problem.get_discretization(1);
       StructureEnsightWriter writer(particlewallfield, problem.outname(), problem.stresstype(), problem.straintype());
@@ -192,7 +192,7 @@ int main(
 
       PostField* particlefield = problem.get_discretization(1);
       ParticleEnsightWriter  particlewriter(particlefield, problem.outname());
-      particlewriter.WriteFilesChangingGeom();
+      particlewriter.WriteFiles();
       break;
     }
     case prb_redairways_tissue:

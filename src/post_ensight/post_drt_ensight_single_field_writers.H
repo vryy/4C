@@ -269,12 +269,7 @@ public:
 
 protected:
 
-  virtual void WriteAllResults(
-          PostField* field){ dserror("not needed due to changing geometry"); }
-
-  virtual void WriteAllResultsOneTimeStep(
-          PostResult& result,
-          bool laststep);
+  virtual void WriteAllResults(PostField* field);
 
   virtual void WriteCells(
     std::ofstream& geofile,

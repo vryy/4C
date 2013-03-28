@@ -227,7 +227,7 @@ void PARTICLE::TimIntCentrDiff::DetermineMassDampConsistAccel()
 
 
 /*----------------------------------------------------------------------*/
-/* Write restart which is equivalent to standard output for particles */
+/* Write restart output for particles                                   */
 void PARTICLE::TimIntCentrDiff::OutputRestart
 (
   bool& datawritten
@@ -236,9 +236,8 @@ void PARTICLE::TimIntCentrDiff::OutputRestart
   // Yes, we are going to write...
    datawritten = true;
 
-   // write restart output, please
-
-   output_->WriteNodesOnly(step_, (*time_)[0]);
+   // mesh is written to disc
+   output_->ParticleOutput(step_, (*time_)[0], true);
    output_->NewStep(step_, (*time_)[0]);
    output_->WriteVector("displacement", (*dis_)(0));
    output_->WriteVector("velocity", (*vel_)(0));
@@ -267,6 +266,33 @@ void PARTICLE::TimIntCentrDiff::OutputRestart
    // we will say what we did
    return;
 
+}
+
+
+/*----------------------------------------------------------------------*/
+/* output displacements, velocities, accelerations and radius           */
+void PARTICLE::TimIntCentrDiff::OutputState
+(
+  bool& datawritten
+)
+{
+  // Yes, we are going to write...
+  datawritten = true;
+
+  // mesh is not written to disc, only maximum node id is important for output
+  output_->ParticleOutput(step_, (*time_)[0], false);
+  output_->NewStep(step_, (*time_)[0]);
+  output_->WriteVector("displacement", (*dis_)(0));
+  output_->WriteVector("velocity", (*vel_)(0));
+  output_->WriteVector("acceleration", (*acc_)(0));
+  output_->WriteVector("radius", radiusn_, output_->nodevector);
+
+  // maps are rebuild in every step so that reuse is not possible
+  // keeps memory usage bounded
+  output_->ClearMapCache();
+
+  // leave for good
+  return;
 }
 
 

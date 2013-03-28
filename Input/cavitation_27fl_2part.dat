@@ -41,7 +41,7 @@ ASSIGNFLUIDELETOBIN             Exact //Fast
 GRAVITY_ACCELERATION            0.0 0.0 -9.81
 MAXTIME                         0.5 
 NUMSTEP                         5   
-RESTARTEVRY                     1
+RESTARTEVRY                     3
 TIMESTEP                        5.0e-3
 UPRES                           1
 ----------------------------------------------------------STRUCTURAL DYNAMIC

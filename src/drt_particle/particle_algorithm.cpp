@@ -53,14 +53,6 @@ PARTICLE::Algorithm::Algorithm(
   wall_output_(Teuchos::null),
   myrank_(comm.MyPID())
 {
-  // INFO regarding output: Bins are not written to file because they cannot be post-processed
-  // anyway (no nodes and connectivity available)
-  // check whether output frequency is written correctly
-  if(params.getEntryPtr("UPRES") != NULL and params.get<int>("UPRES") != params.get<int>("RESTARTEVRY"))
-    dserror("For particle output RESTARTEVRY must be equal UPRES (=normal output frequency)!");
-  if(params.getEntryPtr("RESULTSEVRY") != NULL and params.get<int>("RESULTSEVRY") != params.get<int>("RESTARTEVRY"))
-    dserror("For particle output RESTARTEVRY must be equal to RESTARTEVRY (=normal output frequency)!");
-
   const Teuchos::ParameterList& meshfreeparams = DRT::Problem::Instance()->MeshfreeParams();
   // safety check
   INPAR::MESHFREE::meshfreetype meshfreetype = DRT::INPUT::IntegralValue<INPAR::MESHFREE::meshfreetype>(meshfreeparams,"TYPE");
@@ -373,7 +365,7 @@ void PARTICLE::Algorithm::CreateBins()
   for (int dim = 0; dim < 3; dim++)
   {
     // std::floor leads to bins that are at least of size cutoff_radius
-    bin_per_dir_[dim] = (int)((XAABB_(dim,1)-XAABB_(dim,0))/cutoff_radius_);
+    bin_per_dir_[dim] = std::max(1, (int)((XAABB_(dim,1)-XAABB_(dim,0))/cutoff_radius_));
     bin_size_[dim] = (XAABB_(dim,1)-XAABB_(dim,0))/bin_per_dir_[dim];
   }
 
@@ -1191,6 +1183,8 @@ void PARTICLE::Algorithm::TestResults(const Epetra_Comm& comm)
  *----------------------------------------------------------------------*/
 void PARTICLE::Algorithm::Output()
 {
+  // INFO regarding output: Bins are not written to file because they cannot
+  // be post-processed anyway (no nodes and connectivity available)
   particles_->Output();
 
   // so far: fixed walls

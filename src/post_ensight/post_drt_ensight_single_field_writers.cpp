@@ -377,16 +377,16 @@ void ThermoEnsightWriter::WriteAllResults(PostField* field)
 
 } // ThermoEnsightWriter::WriteAllResults
 
-
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void ParticleEnsightWriter::WriteAllResultsOneTimeStep(PostResult& result, bool laststep)
+void ParticleEnsightWriter::WriteAllResults(PostField* field)
 {
-  EnsightWriter::WriteResultOneTimeStep(result, "velocity", "velocity", dofbased, result.field()->problem()->num_dim(), laststep);
-  EnsightWriter::WriteResultOneTimeStep(result, "acceleration", "acceleration", dofbased, result.field()->problem()->num_dim(), laststep);
-  EnsightWriter::WriteResultOneTimeStep(result, "radius", "radius", nodebased, 1, laststep);
+  bool fillzeros = true;
+  EnsightWriter::WriteResult("displacement", "displacement", dofbased, field->problem()->num_dim(), 0, fillzeros);
+  EnsightWriter::WriteResult("velocity", "velocity", dofbased, field->problem()->num_dim(), 0, fillzeros);
+  EnsightWriter::WriteResult("acceleration", "acceleration", dofbased, field->problem()->num_dim(), 0, fillzeros);
+  EnsightWriter::WriteResult("radius", "radius", nodebased, 1);
 }
-
 
 /*----------------------------------------------------------------------*
   | write particles as points                               ghamm 02/13 |

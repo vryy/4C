@@ -974,6 +974,8 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
         dserror("Failed to create dataset in HDF-meshfile on proc %d which does not have row nodes", dis_->Comm().MyPID());
     }
 
+    int max_nodeid = dis_->NodeRowMap()->MaxAllGID();
+
     // ... write other mesh informations
     if (dis_->Comm().MyPID() == 0)
     {
@@ -983,6 +985,7 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
         << "    time = " << time << "\n"
         << "    step = " << step << "\n\n"
         << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
+        << "    max_nodeid = " << max_nodeid << "\n"
         << "    num_ele = " << dis_->NumGlobalElements() << "\n"
         << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements() << "\n\n"
         ;
@@ -1027,7 +1030,9 @@ void IO::DiscretizationWriter::WriteMesh(const int step, const double time)
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
-void IO::DiscretizationWriter::WriteNodesOnly(const int step, const double time)
+void IO::DiscretizationWriter::ParticleOutput(const int step,
+                                              const double time,
+                                              const bool writerestart)
 {
 
   if(binio_)
@@ -1043,38 +1048,45 @@ void IO::DiscretizationWriter::WriteNodesOnly(const int step, const double time)
     if (meshgroup_ < 0)
       dserror("Failed to write group in HDF-meshfile");
 
-    // only procs with row nodes need to write data
-    Teuchos::RCP<std::vector<char> > nodedata = dis_->PackMyNodes();
-    hsize_t dim = static_cast<hsize_t>(nodedata->size());
-    if (dim != 0)
+    if(writerestart)
     {
-      const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",1,&dim,&((*nodedata)[0]));
-      if (node_status < 0)
-        dserror("Failed to create dataset in HDF-meshfile");
+      // only for restart: procs with row nodes need to write data
+      Teuchos::RCP<std::vector<char> > nodedata = dis_->PackMyNodes();
+      hsize_t dim = static_cast<hsize_t>(nodedata->size());
+      if (dim != 0)
+      {
+        const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",1,&dim,&((*nodedata)[0]));
+        if (node_status < 0)
+          dserror("Failed to create dataset in HDF-meshfile");
+      }
+      else
+      {
+        const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",0,&dim,&((*nodedata)[0]));
+        if (node_status < 0)
+          dserror("Failed to create dataset in HDF-meshfile on proc %d which does not have row nodes", dis_->Comm().MyPID());
+      }
     }
-    else
-    {
-      const herr_t node_status = H5LTmake_dataset_char(meshgroup_,"nodes",0,&dim,&((*nodedata)[0]));
-      if (node_status < 0)
-        dserror("Failed to create dataset in HDF-meshfile on proc %d which does not have row nodes", dis_->Comm().MyPID());
-    }
+
+    // nodes do not have to be written for standard output; only number of nodes is important
+    // more exactly: the maximum nodal id is used to determine number of particles during output
+    // unused particles are located at the origin and are waiting for activation
+    int max_nodeid = dis_->NodeRowMap()->MaxAllGID();
 
     // ... write other mesh informations
     if (dis_->Comm().MyPID() == 0)
     {
-      // number of elements is set to zero
+      // number of nodes and elements is set to zero to suppress reading of nodes during post-processing
+      // only maxnodeid is important
       output_->ControlFile()
         << "field:\n"
         << "    field = \"" << dis_->Name() << "\"\n"
         << "    time = " << time << "\n"
         << "    step = " << step << "\n\n"
-        << "    num_nd = " << dis_->NumGlobalNodes() << "\n"
+        << "    num_nd = " << 0 << "\n"
+        << "    max_nodeid = " << max_nodeid << "\n"
         << "    num_ele = " << 0 << "\n"
         << "    num_dof = " << dis_->DofRowMap(0)->NumGlobalElements() << "\n\n"
         ;
-
-//      WriteCondition("SurfacePeriodic");
-//      WriteCondition("LinePeriodic");
 
       // name of the output file must be specified for changing geometries in each time step
       if (dis_->Comm().NumProc() > 1)

@@ -301,7 +301,6 @@ public:
   */
   virtual DiscretizationType Shape() const
   {
-      dserror("MeshfreeBin has no shape!");
       return DRT::Element::dis_none;
   };
 

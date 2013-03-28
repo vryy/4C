@@ -102,17 +102,10 @@ public:
     //! write the whole thing
     void WriteFiles();
 
-    //! write the whole thing for changing geometries
-    void WriteFilesChangingGeom();
-
-
 protected:
 
     //! look for problem dependent result entries and write them
     virtual void WriteAllResults(PostField* field) = 0;
-
-    //! look for problem dependent result entries and write them for one time step
-    virtual void WriteAllResultsOneTimeStep(PostResult& result, bool laststep) {dserror("not implemented"); }
 
     /// write all element based results
     /*!
@@ -160,36 +153,8 @@ protected:
             const std::string name, ///< name of the result to be written
             const ResultType restype, ///< type of the result to be written (nodal-/element-based)
             const int numdf, ///< number of dofs per node to this result
-            const int from=0 ///< start position of values in nodes
-            );
-
-    /*!
-     \brief write all time steps of a result in one time step
-
-     Write nodal results. The results are taken from a reconstructed
-     Epetra_Vector. In many cases this vector will contain just one
-     variable (displacements) and thus is easy to write as a whole. At
-     other times, however, there is more than one result (velocity,
-     pressure) and we want to write just one part of it. So we have to
-     specify which part. Currently file continuation is not supported
-     because Paraview is not able to load it due to some weird wild card
-     issue.
-
-      originally
-     \author u.kue
-     \date 03/07
-     adapted
-     \author ghamm
-     \date 03/13
-     */
-    void WriteResultOneTimeStep(
-            PostResult& result,   ///< result group in the control file
-            const std::string groupname, ///< name of the result group in the control file
-            const std::string name, ///< name of the result to be written
-            const ResultType restype, ///< type of the result to be written (nodal-/element-based)
-            const int numdf, ///< number of dofs per node to this result
-            bool laststep, ///< bool whether this is the last time step
-            const int from=0 ///< start position of values in nodes
+            const int from=0, ///< start position of values in nodes
+            const bool fillzeros=false ///< zeros are filled to ensight file when no data is available
             );
 
     template<class T> void Write(
@@ -351,7 +316,8 @@ protected:
             const std::string groupname,
             const std::string name,
             const int numdf,
-            const int from) const;
+            const int from,
+            const bool fillzeros) const;
 
 
   /*! \brief Write the results for a NURBS discretisation
@@ -539,8 +505,6 @@ protected:
 
     std::map<std::string,int> timesetnumbermap_;
     std::map<std::string,int> filesetnumbermap_;
-
-    std::map<std::string, std::vector<std::ofstream::pos_type> > resultfilepos_;
 
     //! maps a distype to the corresponding Ensight cell type
     std::map<DRT::Element::DiscretizationType, std::string> distype2ensightstring_;

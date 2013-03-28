@@ -357,7 +357,7 @@ namespace STR
     //! Output displacements, velocities and accelerations
     //! and more system vectors
     //! \author mwgee (originally) \date 03/07
-    void OutputState
+    virtual void OutputState
     (
       bool& datawritten  //!< (in/out) read and append if
                          //!< it was written at this time step

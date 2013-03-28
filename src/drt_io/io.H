@@ -265,7 +265,7 @@ public:
   // for MLMC purposes do not write new meshfile but write name of base mesh file to controlfile
   virtual void WriteMesh(const int step, const double time, std::string name_base_file );
   // for particle simulations: write only nodes in new "field" group to control file
-  virtual void WriteNodesOnly(const int step, const double time);
+  virtual void ParticleOutput(const int step, const double time, const bool writerestart);
 
   //! write element data to file
   virtual void WriteElementData(bool writeowner);

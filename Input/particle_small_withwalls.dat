@@ -54,7 +54,7 @@ GRAVITY_ACCELERATION            0.0 0.0 -9.81
 ----------------------------------------------------------STRUCTURAL DYNAMIC
 DYNAMICTYP                      ParticleCentrDiff
 RESULTSEVRY                     1
-RESTARTEVRY                     1
+RESTARTEVRY                     3
 TIMESTEP                        0.05
 NUMSTEP                         8
 MAXTIME                         0.5

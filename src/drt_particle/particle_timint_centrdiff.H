@@ -85,6 +85,9 @@ namespace PARTICLE
     //! Write restart which is equivalent to standard output for particles
     virtual void OutputRestart(bool& datawritten);
 
+    //! output displacements, velocities and accelerations
+    virtual void OutputState(bool& datawritten);
+
     //! Read and set restart state
     virtual void ReadRestartState();
 

@@ -115,6 +115,9 @@ public:
 
   int num_output_procs() const;
 
+  //! get the maximum node id over the total simulation for a given fieldname
+  int get_max_nodeid(const std::string& fieldname);
+
   //! returns the first step in the range, that the user specified
   int start() const { return start_; }
 
@@ -148,9 +151,6 @@ public:
   std::string tempgradtype() { return tempgradtype_; }
 
   //@}
-
-  //! read in new mesh for given step and field
-  void re_read_mesh(int fieldpos, std::string fieldname, int step);
 
 private:
 
@@ -276,6 +276,9 @@ public:
   //! returns the number of nodes
   int num_nodes() const { return numnd_; }
 
+  //! set the number of nodes
+  void set_num_nodes(int nodenumber) { numnd_ = nodenumber; }
+
   //! returns the number of elements
   int num_elements() const { return numele_; }
 
@@ -321,11 +324,6 @@ public:
   //
   // \returns vector with timesteps when the specific solution was written
   std::vector<double> get_result_times(const std::string& fieldname, const std::string& groupname);
-
-  //! get result times and steps for a given fieldname
-  //
-  // fills vector with times and steps when the solution was written
-  void get_result_timesandsteps(const std::string& fieldname, std::vector<double>& times, std::vector<int>& steps);
 
   //! goes to the next result block in the slice
   //
