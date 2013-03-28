@@ -3,6 +3,7 @@ src/welcome/welcome.tex
 src/beginner/beginner.tex
 src/tut_fluid_preexo/tut_fluid_preexo.tex
 src/tut_fsi_preexo/tut_fsi_preexo.tex
+src/tut_fsi_preexo/tut_fsi_preexo_2d.tex
 \part{Reference guide}
 src/inparams/inparams.tex
 src/fluid_input_details/fluid_input_details.tex
