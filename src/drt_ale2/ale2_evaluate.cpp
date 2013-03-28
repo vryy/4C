@@ -15,6 +15,7 @@
 #include "../drt_lib/drt_discret.H"
 #include "../drt_nurbs_discret/drt_nurbs_discret.H"
 #include "../drt_fem_general/drt_utils_fem_shapefunctions.H"
+#include "../drt_fem_general/drt_utils_nurbs_shapefunctions.H"
 #include "../drt_lib/drt_exporter.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_utils.H"
@@ -56,47 +57,50 @@ int DRT::ELEMENTS::Ale2::Evaluate(Teuchos::ParameterList&   params,
 
   switch (act)
   {
-  case calc_ale_lin_stiff:
-  {
-    //RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-    //vector<double> my_dispnp(lm.size());
-    //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+    case calc_ale_lin_stiff:
+    {
+      //RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      //vector<double> my_dispnp(lm.size());
+      //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-    static_ke(discretization,lm,&elemat1,&elevec1,mat,params);
+      static_ke(discretization,lm,&elemat1,&elevec1,mat,params);
 
-    break;
-  }
-  case calc_ale_laplace:
-  {
-    //RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
-    //vector<double> my_dispnp(lm.size());
-    //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+      break;
+    }
+    case calc_ale_laplace:
+    {
+      //RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp");
+      //vector<double> my_dispnp(lm.size());
+      //DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-    static_ke_laplace(discretization,lm,&elemat1,&elevec1,mat,params);
+      static_ke_laplace(discretization,lm,&elemat1,&elevec1,mat,params);
 
-    break;
-  }
-  case calc_ale_spring:
-  {
-    Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp"); // get the displacements
-    std::vector<double> my_dispnp(lm.size());
-    DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
+      break;
+    }
+    case calc_ale_spring:
+    {
+      Teuchos::RCP<const Epetra_Vector> dispnp = discretization.GetState("dispnp"); // get the displacements
+      std::vector<double> my_dispnp(lm.size());
+      DRT::UTILS::ExtractMyValues(*dispnp,my_dispnp,lm);
 
-    static_ke_spring(&elemat1,my_dispnp);
+      static_ke_spring(&elemat1,my_dispnp);
 
-    break;
-  }
-  case calc_ale_spring_fixed_ref:
-  {
-    // same as calc_ale_spring, however, no displ. and hence initial/reference configuration
-    // is used for stiffness matrix computation
-    std::vector<double> my_dispnp(lm.size(),0.0);
-    static_ke_spring(&elemat1,my_dispnp);
+      break;
+    }
+    case calc_ale_spring_fixed_ref:
+    {
+      // same as calc_ale_spring, however, no displ. and hence initial/reference configuration
+      // is used for stiffness matrix computation
+      std::vector<double> my_dispnp(lm.size(),0.0);
+      static_ke_spring(&elemat1,my_dispnp);
 
-    break;
-  }
-  default:
-    dserror("Unknown type of action for Ale2");
+      break;
+    }
+    default:
+    {
+      dserror("Unknown type of action for Ale2");
+      break;
+    }
   }
 
   return 0;
@@ -354,6 +358,7 @@ void DRT::ELEMENTS::Ale2::static_ke_spring(Epetra_SerialDenseMatrix* sys_mat,
   default:
     numcnd = 0;
     dserror("distype unkown");
+    break;
   }
 
   //Actual element coordinates

@@ -21,10 +21,10 @@ Maintainer: Matthias Mayr
 #include <map>
 #include <string>
 
-// foreward declarations
+// forward declarations
 namespace DRT
 {
-class Element;
+ class Element;
 }
 
 // the actual classes
