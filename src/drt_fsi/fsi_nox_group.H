@@ -4,38 +4,43 @@
 #define FSI_NOX_GROUP_H
 
 #include <NOX_Epetra_Group.H>
-#include "fsi_monolithicinterface.H"
+
+// forward declarations
+namespace FSI
+{
+  class MonolithicInterface;
+}
 
 namespace NOX
 {
-namespace FSI
-{
-
-  /// Special NOX group that always sets Jacobian and RHS at the same time.
-  class Group : public NOX::Epetra::Group
+  namespace FSI
   {
-  public:
 
-    Group(::FSI::MonolithicInterface& mfsi,
-          Teuchos::ParameterList& printParams,
-          const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
-          const NOX::Epetra::Vector& x,
-          const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys);
+    /// Special NOX group that always sets Jacobian and RHS at the same time.
+    class Group : public NOX::Epetra::Group
+    {
+    public:
 
-    /// fetch the known Jacobian and RHS from the field solvers
-    void CaptureSystemState();
+      Group(::FSI::MonolithicInterface& mfsi,
+            Teuchos::ParameterList& printParams,
+            const Teuchos::RCP<NOX::Epetra::Interface::Required>& i,
+            const NOX::Epetra::Vector& x,
+            const Teuchos::RCP<NOX::Epetra::LinearSystem>& linSys);
 
-    virtual NOX::Abstract::Group::ReturnType computeF();
+      /// fetch the known Jacobian and RHS from the field solvers
+      void CaptureSystemState();
 
-    virtual NOX::Abstract::Group::ReturnType computeJacobian();
+      virtual NOX::Abstract::Group::ReturnType computeF();
 
-    NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p);
+      virtual NOX::Abstract::Group::ReturnType computeJacobian();
 
-  private:
+      NOX::Abstract::Group::ReturnType computeNewton(Teuchos::ParameterList& p);
 
-    ::FSI::MonolithicInterface& mfsi_;
-  };
-}
+    private:
+
+      ::FSI::MonolithicInterface& mfsi_;
+    };
+  }
 }
 
 #endif
