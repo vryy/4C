@@ -24,6 +24,8 @@
 
 #include "../drt_fsi/fsi_matrixtransform.H"
 
+#include "../drt_fluid/fluid_utils_mapextractor.H"
+
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_poro.H"
 

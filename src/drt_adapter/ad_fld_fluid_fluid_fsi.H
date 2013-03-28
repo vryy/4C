@@ -18,7 +18,6 @@ Maintainer:
 #include "ad_fld_wrapper.H"
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_inpar/inpar_xfem.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 
 #include <Teuchos_RCP.hpp>

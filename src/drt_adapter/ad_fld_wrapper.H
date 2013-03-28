@@ -2,7 +2,6 @@
 #define ADAPTER_FLUID_WRAPPER_H
 
 #include "ad_fld_fluid.H"
-#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 namespace ADAPTER
 {

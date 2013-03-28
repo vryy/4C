@@ -25,6 +25,7 @@
 #include "../drt_fsi/fsi_overlapprec_fsiamg.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "../drt_adapter/ad_fld_poro.H"
+#include "../drt_fluid/fluid_utils_mapextractor.H"
 
 #include "../drt_structure/stru_aux.H"
 
