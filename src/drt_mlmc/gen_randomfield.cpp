@@ -211,7 +211,7 @@ GenRandomField::GenRandomField(unsigned int  seed,Teuchos::RCP<DRT::Discretizati
       dserror("Dimension of random field must be 2 or 3, fix your input file");
       break;
     }
-    WriteRandomFieldToFile();
+    //WriteRandomFieldToFile();
     if(UseFFT_)
       TranslateToNonGaussian();
 
@@ -281,7 +281,7 @@ void GenRandomField::CreateNewPhaseAngles(unsigned int seed)
     dserror("Dimension of random field must be 2 or 3, fix your input file");
     break;
   }
-  if (myrank_ == 0)
+/*  if (myrank_ == 0)
    {
      std::ofstream File;
      File.open("Phi.txt",std::ios::out);
@@ -291,7 +291,7 @@ void GenRandomField::CreateNewPhaseAngles(unsigned int seed)
        File << std::setprecision(15) << Phi_0_[i]<< endl;
      }
      File.close();
-   }
+   }*/
 
 }
 
@@ -317,7 +317,7 @@ void GenRandomField::CalcDiscretePSD()
     }
   }
   // Write to file
-  if (myrank_ == 0)
+/*  if (myrank_ == 0)
     {
       std::ofstream File;
       File.open("DiscretePSD.txt",std::ios::out);
@@ -327,7 +327,7 @@ void GenRandomField::CalcDiscretePSD()
         File << discrete_PSD_[i]<< endl;
       }
       File.close();
-    }
+    }*/
 
   if(marginal_pdf_!=normal)
   {
