@@ -7,6 +7,7 @@
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_lib/drt_dserror.H"
 #include "../drt_lib/drt_exporter.H"
+#include "../linalg/linalg_blocksparsematrix.H"
 
 
 /*----------------------------------------------------------------------*/

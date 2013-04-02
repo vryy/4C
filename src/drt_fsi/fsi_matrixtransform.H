@@ -4,8 +4,6 @@
 #ifndef FSI_MATRIXTRANSFORM_H
 #define FSI_MATRIXTRANSFORM_H
 
-#include "../linalg/linalg_blocksparsematrix.H"
-
 #include <map>
 
 #include <Teuchos_RCP.hpp>
@@ -14,13 +12,16 @@
 #include <Epetra_CrsMatrix.h>
 
 // forward declarations
-
 namespace ADAPTER
 {
   class Coupling;
   class CouplingConverter;
 }
 
+namespace LINALG
+{
+  class SparseMatrix;
+}
 
 namespace FSI
 {
