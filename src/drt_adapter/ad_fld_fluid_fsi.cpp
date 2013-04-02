@@ -1,4 +1,19 @@
 /*----------------------------------------------------------------------*/
+/*!
+\file ad_fld_fluid_fsi.cpp
+
+\brief Fluid field adapter for fsi
+
+Can only be used in conjunction with fluidimplicittimeint!
+
+<pre>
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
+</pre>
+*/
+/*----------------------------------------------------------------------*/
 #include "ad_fld_fluid_fsi.H"
 
 #include "../drt_adapter/ad_fld_fluid.H"

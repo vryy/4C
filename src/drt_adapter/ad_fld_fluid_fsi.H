@@ -1,13 +1,16 @@
 /*----------------------------------------------------------------------*/
 /*!
-\file ad_fld_fsi.H
+\file ad_fld_fluid_fsi.H
 
 \brief Fluid field adapter for fsi
 
 Can only be used in conjunction with fluidimplicittimeint!
 
 <pre>
-Maintainer:
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -20,7 +23,6 @@ Maintainer:
 #include <Epetra_Map.h>
 
 #include "ad_fld_wrapper.H"
-#include "../linalg/linalg_mapextractor.H"
 
 namespace DRT
 {
