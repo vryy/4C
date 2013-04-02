@@ -4745,29 +4745,45 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   // monolithic preconditioner parameter
 
   setNumericStringParameter("STRUCTPCOMEGA","1.0 1.0 1.0 1.0",
-                  "Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner",
+                  "Relaxation factor for Richardson iteration on structural block in MFSI block preconditioner\n"
+                  "FSIAMG: each number belongs to a level\n"
+                  "PreconditiondKrylov: only first number is used for finest level",
                   &fsidyn);
   setNumericStringParameter("STRUCTPCITER","1 1 1 1",
-               "Number of Richardson iterations on structural block in MFSI block preconditioner",
+               "Number of Richardson iterations on structural block in MFSI block preconditioner\n"
+               "FSIAMG: each number belongs to a level\n"
+               "PreconditiondKrylov: only first number is used for finest level",
                &fsidyn);
   setNumericStringParameter("FLUIDPCOMEGA","1.0 1.0 1.0 1.0",
-                  "Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner",
+                  "Relaxation factor for Richardson iteration on fluid block in MFSI block preconditioner\n"
+                  "FSIAMG: each number belongs to a level\n"
+                  "PreconditiondKrylov: only first number is used for finest level",
                   &fsidyn);
   setNumericStringParameter("FLUIDPCITER","1 1 1 1",
-               "Number of Richardson iterations on fluid block in MFSI block preconditioner",
+               "Number of Richardson iterations on fluid block in MFSI block preconditioner\n"
+               "FSIAMG: each number belongs to a level\n"
+               "PreconditiondKrylov: only first number is used for finest level",
                &fsidyn);
   setNumericStringParameter("ALEPCOMEGA","1.0 1.0 1.0 1.0",
-                  "Relaxation factor for Richardson iteration on ale block in MFSI block preconditioner",
+                  "Relaxation factor for Richardson iteration on ale block in MFSI block preconditioner\n"
+                  "FSIAMG: each number belongs to a level\n"
+                  "PreconditiondKrylov: only first number is used for finest level",
                   &fsidyn);
   setNumericStringParameter("ALEPCITER","1 1 1 1",
-               "Number of Richardson iterations on ale block in MFSI block preconditioner",
+               "Number of Richardson iterations on ale block in MFSI block preconditioner\n"
+               "FSIAMG: each number belongs to a level\n"
+               "PreconditiondKrylov: only first number is used for finest level",
                &fsidyn);
 
   setNumericStringParameter("PCOMEGA","1.0 1.0 1.0",
-                            "Relaxation factor for Richardson iteration on whole MFSI block preconditioner",
+                            "Relaxation factor for Richardson iteration on whole MFSI block preconditioner\n"
+                            "FSIAMG: each number belongs to a level\n"
+                            "PreconditiondKrylov: only first number is used for finest level",
                             &fsidyn);
   setNumericStringParameter("PCITER","1 1 1",
-                            "Number of Richardson iterations on whole MFSI block preconditioner",
+                            "Number of Richardson iterations on whole MFSI block preconditioner\n"
+                            "FSIAMG: each number belongs to a level\n"
+                            "PreconditiondKrylov: only first number is used for finest level",
                             &fsidyn);
 
   StringParameter("BLOCKSMOOTHER","BGS BGS BGS",
