@@ -189,11 +189,9 @@ int NOX::FSI::LinearSystemGCR::SolveGCR(const NOX::Epetra::Vector &b,
   std::vector<Teuchos::RCP< NOX::Epetra::Vector > >& u = u_;
   std::vector<Teuchos::RCP< NOX::Epetra::Vector > >& c = c_;
 
-#if 1
   // reset krylov space
   u.clear();
   c.clear();
-#endif
 
   int k = static_cast<int>(u.size());
 
