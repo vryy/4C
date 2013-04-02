@@ -257,11 +257,9 @@ void ADAPTER::Coupling::MatchNodes(const DRT::Discretization& masterdis,
   std::map<int,std::pair<int,double> > coupling;
   tree.FindMatch(slavedis, slavenodes, coupling);
 
-#if 1
   if (masternodes.size() != coupling.size() and matchall)
     dserror("Did not get 1:1 correspondence. \nmasternodes.size()=%d (%s), coupling.size()=%d (%s)",
             masternodes.size(),masterdis.Name().c_str(), coupling.size(),slavedis.Name().c_str());
-#endif
 
   // extract permutation
 
