@@ -507,7 +507,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcSubgrDiff(
           //    that tau has to be computed after the subgrid-scale velocity has been calcuated since, for this calculation
           //    tau is overwritten by its value in the fluid field. Note that similar considerations may also hold for
           //    the methods by do Carmo and Almeida.
-	  
+
           // get norm of velocity vector b_h^par
           const double vel_norm_bhpar = abs(conv_phi_[k]/grad_norm);
 
@@ -1317,7 +1317,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcDissipation(
 
   if (scatratype == INPAR::SCATRA::scatratype_loma)
   {
+    thermpressnp_ = params.get<double>("thermodynamic pressure");
     thermpressdt_ = params.get<double>("time derivative of thermodynamic pressure");
+    if (is_genalpha_)
+      thermpressam_ = params.get<double>("thermodynamic pressure at n+alpha_M");
 
     // update material with subgrid-scale scalar
     update_mat_ = params.get<bool>("update material");
@@ -1462,7 +1465,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcDissipation(
       Csgs_sgvel = mfslist.get<double>("CSGS");
       if (mfslist.get<std::string>("SCALE_SEPARATION") == "algebraic_multigrid_operator")
        alpha = 3.0;
-      else dserror("Scale-Separtion method not supported!");
+      else dserror("Scale-separation method not supported!");
       calc_N = DRT::INPUT::IntegralValue<int>(mfslist,"CALC_N");
       N_vel = mfslist.get<double>("N");
       if (mfslist.get<std::string>("REF_VELOCITY") == "strainrate")
@@ -1921,6 +1924,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalcDissipation(
 //      std::cout << "sgdiff_[0] " << sgdiff_[0] << std::endl;
 //      std::cout << "fsgradphi_ " << fsgradphi_ << std::endl;
 //      std::cout << "diffus_[0] " << diffus_[0] << std::endl;
+//      std::cout << "tau_[0] " << tau_[0] << std::endl;
+//      std::cout << "scatrares_[0] " << scatrares_[0] << std::endl;
 //    }
 
     //---------------------------------------------------------------

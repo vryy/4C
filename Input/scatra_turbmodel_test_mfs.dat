@@ -66,9 +66,9 @@ PHYSICAL_MODEL                  Multifractal_Subgrid_Scales
 CANONICAL_FLOW                  scatra_channel_flow_of_height_2
 CHAN_AMPL_INIT_DIST             0.3
 HOMDIR                          xz
-SAMPLING_START                  5001
-SAMPLING_STOP                   10000
-DUMPING_PERIOD                  500
+SAMPLING_START                  1
+SAMPLING_STOP                   8
+DUMPING_PERIOD                  1
 FSSUGRVISC                      No
 SUBGRID_DISSIPATION             Yes
 ---------------------------------------------FLUID DYNAMIC/SUBGRID VISCOSITY

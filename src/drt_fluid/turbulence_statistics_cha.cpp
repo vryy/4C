@@ -3198,6 +3198,9 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
      //         may slightly change
      //         however, the error is expected to be small
      scatraeleparams_.set<double>("time derivative of thermodynamic pressure",thermpressdtaf);
+     scatraeleparams_.set<double>("thermodynamic pressure",thermpressaf);
+     scatraeleparams_.set<double>("thermodynamic pressure at n+alpha_M",thermpressam);
+
      // add convective velocity field
      for(std::map<std::string,RCP<Epetra_MultiVector> >::iterator field =scatrafieldvecs.begin();
                                                         field!=scatrafieldvecs.end()  ;
@@ -3791,22 +3794,22 @@ void FLD::TurbulenceStatisticsCha::EvaluateResiduals(
 
 
       // reset working arrays
-      local_scatra_vol               = Teuchos::rcp(new std::vector<double> (presize,0.0));
+      local_scatra_vol               = Teuchos::rcp(new std::vector<double> (phisize,0.0));
 
-      local_scatra_incrtauS          = Teuchos::rcp(new std::vector<double> (presize,0.0));
-      local_scatra_incrresS          = Teuchos::rcp(new std::vector<double> (presize,0.0));
-      local_scatra_incrresS_sq       = Teuchos::rcp(new std::vector<double> (presize,0.0));
+      local_scatra_incrtauS          = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      local_scatra_incrresS          = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      local_scatra_incrresS_sq       = Teuchos::rcp(new std::vector<double> (phisize,0.0));
 
-      local_scatra_incr_eps_supg     = Teuchos::rcp(new std::vector<double> (presize,0.0));
-      local_scatra_incr_eps_cross    = Teuchos::rcp(new std::vector<double> (presize,0.0));
-      local_scatra_incr_eps_rey      = Teuchos::rcp(new std::vector<double> (presize,0.0));
-      local_scatra_incr_eps_eddyvisc = Teuchos::rcp(new std::vector<double> (presize,0.0));
-      local_scatra_incr_eps_visc     = Teuchos::rcp(new std::vector<double> (presize,0.0));
-      local_scatra_incr_eps_conv     = Teuchos::rcp(new std::vector<double> (presize,0.0));
-      local_scatra_incr_eps_avm3     = Teuchos::rcp(new std::vector<double> (presize,0.0));
-      local_scatra_incr_eps_mfs      = Teuchos::rcp(new std::vector<double> (presize,0.0));
-      local_scatra_incr_eps_mfscross = Teuchos::rcp(new std::vector<double> (presize,0.0));
-      local_scatra_incr_eps_mfsrey   = Teuchos::rcp(new std::vector<double> (presize,0.0));
+      local_scatra_incr_eps_supg     = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      local_scatra_incr_eps_cross    = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      local_scatra_incr_eps_rey      = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      local_scatra_incr_eps_eddyvisc = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      local_scatra_incr_eps_visc     = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      local_scatra_incr_eps_conv     = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      local_scatra_incr_eps_avm3     = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      local_scatra_incr_eps_mfs      = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      local_scatra_incr_eps_mfscross = Teuchos::rcp(new std::vector<double> (phisize,0.0));
+      local_scatra_incr_eps_mfsrey   = Teuchos::rcp(new std::vector<double> (phisize,0.0));
 
       scatraeleparams_.set<Teuchos::RCP<std::vector<double> > >("incrvol"          ,local_scatra_vol              );
 

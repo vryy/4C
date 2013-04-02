@@ -734,7 +734,6 @@ void FLD::FluidImplicitTimeInt::Integrate()
       cout <<  "                             " << "VSTAB           = " << stabparams->get<string>("VSTAB")          <<"\n";
       cout <<  "                             " << "RSTAB           = " << stabparams->get<string>("RSTAB")          <<"\n";
       cout <<  "                             " << "TRANSIENT       = " << stabparams->get<string>("TRANSIENT")      <<"\n";
-      cout <<  "                             " << "Evaluation Mat  = " << stabparams->get<string>("EVALUATION_MAT") <<"\n";
       cout << "\n";
       cout << endl;
     }
