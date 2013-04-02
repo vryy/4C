@@ -5452,6 +5452,12 @@ void FLD::FluidImplicitTimeInt::ApplyScaleSeparationForLES()
       else
         Sep_->Multiply(false,*velnp_,*fsvelaf_);
 
+      // set fine-scale velocity for parallel nigthly tests
+      // separation matrix depends on the number of proc here
+      if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales and
+          (DRT::INPUT::IntegralValue<int>(params_->sublist("MULTIFRACTAL SUBGRID SCALES"),"SET_FINE_SCALE_VEL")))
+        fsvelaf_->PutScalar(0.01);
+
       break;
     }
     case INPAR::FLUID::geometric_multigrid_operator:
@@ -6273,6 +6279,8 @@ void FLD::FluidImplicitTimeInt::PrintTurbulenceModel()
           cout << "- beta:              " << modelparams->get<double>("BETA") << "\n";
           cout << "- evaluation B:      " << modelparams->get<std::string>("EVALUATION_B") << "\n";
           cout << "- conservative:      " << modelparams->get<std::string>("CONVFORM") << "\n";
+          if ((DRT::INPUT::IntegralValue<int>(*modelparams,"SET_FINE_SCALE_VEL")))
+              cout << "WARNING: fine-scale velocity is set for nightly tests!" << "\n";
           cout << &endl;
         }
       }

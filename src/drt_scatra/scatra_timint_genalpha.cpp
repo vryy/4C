@@ -220,6 +220,12 @@ void SCATRA::TimIntGenAlpha::AVM3Separation()
   // AVM3 separation
   Sep_->Multiply(false,*phiaf_,*fsphiaf_);
 
+  // set fine-scale velocity for parallel nigthly tests
+  // separation matrix depends on the number of proc here
+  if (turbmodel_==INPAR::FLUID::multifractal_subgrid_scales and
+      (DRT::INPUT::IntegralValue<int>(extraparams_->sublist("MULTIFRACTAL SUBGRID SCALES"),"SET_FINE_SCALE_VEL")))
+      fsphiaf_->PutScalar(0.01);
+
   // set fine-scale vector
   discret_->SetState("fsphinp",fsphiaf_);
 

@@ -85,6 +85,7 @@ C_NU                            0.1
 NEAR_WALL_LIMIT                 yes
 EVALUATION_B                    element_center
 BETA                            0.0
+ADAPT_CSGS_PHI                  yes
 CSGS_PHI                        0.15
 C_DIFF                          0.1
 ----------------------------------------------------SCALAR TRANSPORT DYNAMIC

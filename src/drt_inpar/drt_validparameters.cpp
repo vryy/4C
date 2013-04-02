@@ -3271,6 +3271,8 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
     "Proportionality constant between Re*Pr and ratio dissipative scale to element length. Usually equal cnu.",
     &fdyn_turbmfs);
 
+  BoolParameter("SET_FINE_SCALE_VEL","No","Flag to set fine-scale velocity for parallel nightly tests.",&fdyn_turbmfs);
+
   // activate cross- and Reynolds-stress terms in loma continuity equation
   BoolParameter("LOMA_CONTI","No","Flag to (de)activate cross- and Reynolds-stress terms in loma continuity equation.",&fdyn_turbmfs);
 

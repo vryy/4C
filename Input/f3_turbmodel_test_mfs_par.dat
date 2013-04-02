@@ -16,6 +16,10 @@ handled by baci, that is, all necessary quantities and parameters
 are transferred to the element routine. It does not check the model
 itself, that is, it ability to deal with turbulent flows.
 here:                           mfs
+note: Due to scale sepation based on lever-transfer operators from
+      plain-aggregation algebraic multigrid methods, the separation
+      matrix depends on the number of procs. To perform a parallel
+      test, a fixed given fine-scale field is set.
 ----------------------------------------------------------------PROBLEM SIZE
 ELEMENTS                        320
 NODES                           125
@@ -42,9 +46,9 @@ ALPHA_M                         1.0
 GAMMA                           0.66
 CONVCHECK                       L_2_norm
 CONVFORM convective //conservative
-CONVTOL                         1e-06
+CONVTOL                         1e-12
 GRIDVEL                         1
-ITEMAX                          2
+ITEMAX                          10
 MAXTIME                         0.1
 NONLINITER Newton //fixed_point_like
 NUMSTEP                         4
@@ -69,8 +73,6 @@ STABTYPE                        residual_based
 SUPG                            yes
 TDS                             quasistatic
 TRANSIENT                       no_transient
-VSTAB                           vstab_usfem
-EVALUATION_TAU                  integration_point
 ----------------------------------------------FLUID DYNAMIC/TURBULENCE MODEL
 PHYSICAL_MODEL                  Multifractal_Subgrid_Scales
 TURBULENCE_APPROACH             CLASSICAL_LES
@@ -86,6 +88,7 @@ C_NU                            0.05
 NEAR_WALL_LIMIT                 no
 EVALUATION_B                    element_center
 BETA                            0.0
+SET_FINE_SCALE_VEL              yes
 -----------------------------------------------------------------FSI DYNAMIC
 -----------------------------------------------------------------ALE DYNAMIC
 --------------------------------------------------------------------SOLVER 1
@@ -99,7 +102,7 @@ AZDROP                          0.0                             // drop toleranc
 IFPACKFILL                      1.0
 IFPACKGFILL                     0
 IFPACKOVERLAP                   0
-AZTOL                           1.0E-9                          // tolerance in (un)scaled residual
+AZTOL                           1.0E-14                          // tolerance in (un)scaled residual
 AZCONV                          AZ_r0                           // AZ_r0 AZ_rhs AZ_Anorm AZ_sol AZ_weighted AZ_expected_values AZ_noscaled AZTECOO_conv_test AZ_inf_noscaled
 AZITER                          1000                            // max iterations
 AZSUB                           1000                            // size of krylov space for gmres
@@ -133,22 +136,18 @@ CURVE2 on Explicit FUNC BELTRAMI c1 2.0 c2 1.0
 FUNCT1                          BELTRAMI
 ----------------------------------------------------------------------FUNCT2
 ----------------------------------------------------------RESULT DESCRIPTION
-FLUID DIS fluid NODE 12 QUANTITY velx VALUE 1.41896408597790402e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 12 QUANTITY vely VALUE -1.19463579450312829e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 12 QUANTITY velz VALUE 8.35880664176818500e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 12 QUANTITY pressure VALUE -3.65560933295668911e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 365 QUANTITY velx VALUE -7.90295964248365568e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 365 QUANTITY vely VALUE -7.93439628816446474e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 365 QUANTITY velz VALUE -7.79707638916902979e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 365 QUANTITY pressure VALUE -8.50615807192096951e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 453 QUANTITY velx VALUE -1.76921302592646201e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 453 QUANTITY vely VALUE -1.20831929939972027e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 453 QUANTITY velz VALUE -1.32848749780982889e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 453 QUANTITY pressure VALUE -3.21799681908015867e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 637 QUANTITY velx VALUE 3.86696994875793176e-01 TOLERANCE 1e-9
-FLUID DIS fluid NODE 637 QUANTITY vely VALUE -2.38882329189773746e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 637 QUANTITY velz VALUE -1.53442300205563620e+00 TOLERANCE 1e-9
-FLUID DIS fluid NODE 637 QUANTITY pressure VALUE -4.10510837372810489e+00 TOLERANCE 1e-9
+FLUID DIS fluid NODE 12 QUANTITY velx VALUE 1.43157677975649461e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12 QUANTITY vely VALUE -1.18119994344905235e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12 QUANTITY velz VALUE 8.33723578704940516e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 12 QUANTITY pressure VALUE -3.87690758298172455e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY velx VALUE -7.84887341802485983e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY vely VALUE -7.84887341802486205e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY velz VALUE -7.84887341802486094e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 365 QUANTITY pressure VALUE -9.27630141667432850e-01 TOLERANCE 1e-10
+FLUID DIS fluid NODE 453 QUANTITY velx VALUE -1.76145948034197630e+00 TOLERANCE 1e-10
+FLUID DIS fluid NODE 453 QUANTITY vely VALUE -1.20654563958577232e+00 TOLERANCE 1e-10
+FLUID DIS fluid NODE 453 QUANTITY velz VALUE -1.32168291616905331e+00 TOLERANCE 1e-10
+FLUID DIS fluid NODE 453 QUANTITY pressure VALUE -3.17308613398010841e+00 TOLERANCE 1e-10
 ----------------------------------------------------------DESIGN DESCRIPTION
 NDPOINT                         1
 NDLINE                          0
