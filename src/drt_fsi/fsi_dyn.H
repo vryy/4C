@@ -1,4 +1,19 @@
 
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_dyn.H
+
+\brief Entry routines for FSI problems and some other problem types as well
+
+<pre>
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
+</pre>
+*/
+
+/*----------------------------------------------------------------------*/
 
 #ifndef FSI_DYN_H
 #define FSI_DYN_H

@@ -1,5 +1,18 @@
+/*----------------------------------------------------------------------*/
+/*!
+\file fsi_dyn.cpp
 
+\brief Entry routines for FSI problems and some other problem types as well
 
+<pre>
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
+</pre>
+*/
+
+/*----------------------------------------------------------------------*/
 
 #include <string>
 #include <vector>
@@ -111,11 +124,7 @@ void fluid_ale_drt()
 /*----------------------------------------------------------------------*/
 void fluid_xfem_drt()
 {
-#ifdef PARALLEL
   const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
-#else
-  Epetra_SerialComm comm;
-#endif
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -192,11 +201,7 @@ void fluid_fluid_ale_drt()
   DRT::Problem* problem = DRT::Problem::Instance();
 
   // create a communicator
-  #ifdef PARALLEL
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(problem->GetDis("fluid")->Comm().Clone());
-  #else
-    Epetra_SerialComm comm;
-  #endif
 
   Teuchos::RCP<DRT::Discretization> bgfluiddis = problem->GetDis("fluid");
   bgfluiddis->FillComplete();
@@ -295,7 +300,6 @@ void fluid_fluid_ale_drt()
   bgfluiddis->ReplaceDofSet(maxdofset,true);
   bgfluiddis->FillComplete();
 
-#if defined(PARALLEL)
   std::vector<int> bgeleids;          // ele ids
   for (int i=0; i<bgfluiddis->NumMyRowElements(); ++i)
   {
@@ -324,7 +328,6 @@ void fluid_fluid_ale_drt()
   bgfluiddis->ExportColumnElements(*bgnewcoleles);
 
   bgfluiddis->FillComplete();
-#endif
   //-------------------------------------------------------------------------
 
   // ----------------------------------------------------------------------------
@@ -345,7 +348,6 @@ void fluid_fluid_ale_drt()
   embfluiddis->FillComplete();
 
 
-#if defined(PARALLEL)
   std::vector<int> eleids;          // ele ids
   for (int i=0; i<embfluiddis->NumMyRowElements(); ++i)
   {
@@ -374,7 +376,6 @@ void fluid_fluid_ale_drt()
   embfluiddis->ExportColumnElements(*embnewcoleles);
 
   embfluiddis->FillComplete();
-#endif
   //------------------------------------------------------------------------------
 
   Teuchos::RCP<DRT::Discretization> aledis = problem->GetDis("ale");
@@ -408,12 +409,8 @@ void fluid_fluid_ale_drt()
 /*----------------------------------------------------------------------*/
 void fluid_fluid_fsi_drt()
 {
- // create a communicator
-  #ifdef PARALLEL
+  // create a communicator
   Teuchos::RCP<Epetra_Comm> comm = Teuchos::rcp(DRT::Problem::Instance()->GetDis("fluid")->Comm().Clone());
-  #else
-    Epetra_SerialComm comm;
-  #endif
 
   /* |--str dofs--|--bgfluid dofs--|--embfluid dofs--|--ale dofs--|-> */
 
@@ -518,7 +515,6 @@ void fluid_fluid_fsi_drt()
   bgfluiddis->ReplaceDofSet(maxdofset,true);
   bgfluiddis->FillComplete();
 
-#if defined(PARALLEL)
   std::vector<int> bgeleids;          // ele ids
   for (int i=0; i<bgfluiddis->NumMyRowElements(); ++i)
   {
@@ -546,8 +542,7 @@ void fluid_fluid_fsi_drt()
   bgfluiddis->ExportColumnNodes(*bgcolnodes);
   bgfluiddis->ExportColumnElements(*bgnewcoleles);
 
-#endif
-   bgfluiddis->FillComplete();
+  bgfluiddis->FillComplete();
 
   //-------------------------------------------------------------------------
 
@@ -568,7 +563,6 @@ void fluid_fluid_fsi_drt()
   embfluiddis->ReplaceDofSet(newdofset,true);
   embfluiddis->FillComplete();
 
-#if defined(PARALLEL)
   std::vector<int> eleids;          // ele ids
   for (int i=0; i<embfluiddis->NumMyRowElements(); ++i)
   {
@@ -596,7 +590,6 @@ void fluid_fluid_fsi_drt()
   embfluiddis->ExportColumnNodes(*embcolnodes);
   embfluiddis->ExportColumnElements(*embnewcoleles);
   embfluiddis->FillComplete();
-#endif
 
   embfluiddis->FillComplete();
 
@@ -687,12 +680,7 @@ void fluid_fluid_fsi_drt()
 /*----------------------------------------------------------------------*/
 void fluid_freesurf_drt()
 {
-#ifdef PARALLEL
   const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("fluid")->Comm();
-#else
-  Epetra_SerialComm comm;
-#endif
-
 
   DRT::Problem* problem = DRT::Problem::Instance();
 
@@ -780,11 +768,7 @@ void fsi_ale_drt()
 {
   DRT::Problem* problem = DRT::Problem::Instance();
 
-  #ifdef PARALLEL
   const Epetra_Comm& comm = problem->GetDis("structure")->Comm();
-#else
-  Epetra_SerialComm comm;
-#endif
 
   // make sure the three discretizations are filled in the right order
   // this creates dof numbers with
@@ -967,11 +951,7 @@ void fsi_ale_drt()
 /*----------------------------------------------------------------------*/
 void xfsi_drt()
 {
-#ifdef PARALLEL
   const Epetra_Comm& comm = DRT::Problem::Instance()->GetDis("structure")->Comm();
-#else
-  Epetra_SerialComm comm;
-#endif
 
   if (comm.MyPID() == 0)
   {
