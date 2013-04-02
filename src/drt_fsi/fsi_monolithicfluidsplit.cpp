@@ -35,6 +35,7 @@ Maintainer: Matthias Mayr
 #include "../linalg/linalg_utils.H"
 #include "../linalg/linalg_solver.H"
 #include "../drt_ale/ale_utils_mapextractor.H"
+#include "../drt_ale/ale.H"
 
 #include "fsi_nox_group.H"
 

@@ -9,6 +9,7 @@
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_ale/ale_utils_mapextractor.H"
+#include "../drt_ale/ale.H"
 #include "../drt_io/io_control.H"
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_inpar/inpar_fsi.H"

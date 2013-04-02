@@ -22,22 +22,38 @@ Maintainer: Matthias Mayr
 #include <NOX_Epetra_Interface_Jacobian.H>
 
 #include "../drt_adapter/ad_fld_base_algorithm.H"
-#include "../drt_ale/ale.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
 
 #include "fsi_monolithicinterface.H"
 #include "../linalg/linalg_mapextractor.H"
 
-namespace LINALG
-{
-  class SparseMatrix;
-  class MapExtractor;
-}
-
+/// forward declarations
 namespace ADAPTER
 {
   class Coupling;
   class FSIStructureWrapper;
+}
+
+namespace ALE
+{
+  class Ale;
+}
+
+namespace FSI
+{
+  class FSIResultTest;
+
+  namespace UTILS
+  {
+    class DebugWriter;
+    class MonolithicDebugWriter;
+  }
+}
+
+namespace LINALG
+{
+  class SparseMatrix;
+  class MapExtractor;
 }
 
 namespace NOX
@@ -46,18 +62,6 @@ namespace NOX
   {
     class AdaptiveNewtonNormF;
     class Group;
-  }
-}
-
-namespace FSI
-{
-
-  class FSIResultTest;
-
-  namespace UTILS
-  {
-    class DebugWriter;
-    class MonolithicDebugWriter;
   }
 }
 

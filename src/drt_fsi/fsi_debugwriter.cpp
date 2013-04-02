@@ -7,6 +7,8 @@
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 #include "fsi_monolithic.H"
 
+#include "../drt_ale/ale.H"
+
 #include "../drt_lib/drt_condition_utils.H"
 #include "../drt_lib/drt_discret.H"
 

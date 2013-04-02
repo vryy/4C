@@ -30,6 +30,8 @@ Maintainer: Matthias Mayr
 #include "../drt_inpar/drt_validparameters.H"
 #include "../linalg/linalg_blocksparsematrix.H"
 
+#include "../drt_ale/ale.H"
+
 #include "../drt_adapter/adapter_coupling.H"
 #include "../drt_adapter/ad_str_fsiwrapper.H"
 

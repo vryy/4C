@@ -17,6 +17,7 @@
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
 #include "../drt_ale/ale_utils_mapextractor.H"
+#include "../drt_ale/ale.H"
 
 #define FLUIDSPLITAMG
 
