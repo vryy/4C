@@ -4614,7 +4614,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fsidyn);
 
   setStringToIntegralParameter<int>("COUPMETHOD","conforming",
-                               "Coupling Method Mortar (mtr) or conforming nodes at interface",
+                               "Coupling Method Mortar (mtr) or conforming nodes at interface in case of partitioned scheme",
                                tuple<std::string>(
                                  "MTR",
                                  "Mtr",
@@ -4625,7 +4625,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                &fsidyn);
 
   setStringToIntegralParameter<int>("SECONDORDER","No",
-                               "Second order coupling at the interface.",
+                               "Second order displacement-velocity conversion at the interface.",
                                yesnotuple,yesnovalue,&fsidyn);
 
   setStringToIntegralParameter<int>("SHAPEDERIVATIVES","No",
@@ -4666,7 +4666,7 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
   DoubleParameter("TIMESTEP",0.1,"Time increment dt",&fsidyn);
   DoubleParameter("MAXTIME",1000.0,"Total simulation time",&fsidyn);
   DoubleParameter("RELAX",1.0,"fixed relaxation parameter for partitioned FSI solvers",&fsidyn);
-  DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields",&fsidyn);
+  DoubleParameter("CONVTOL",1e-6,"Tolerance for iteration over fields in case of partitioned scheme",&fsidyn);
   DoubleParameter("MAXOMEGA",0.0,"largest omega allowed for Aitken relaxation (0.0 means no constraint)",&fsidyn);
 
   DoubleParameter("BASETOL",1e-3,
