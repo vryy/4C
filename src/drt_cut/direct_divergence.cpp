@@ -72,7 +72,6 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
   // check whether all facets of this vc are oriented in a plane
   // if not then some sides are warped
   // we need to generate quadrature rules in global coordinates
-  bool inGlobal = false;
   for(plain_facet_set::const_iterator i=facete.begin();i!=facete.end();i++)
   {
     Facet *fe = *i;
@@ -81,7 +80,6 @@ void GEO::CUT::DirectDivergence::ListFacets( std::vector<plain_facet_set::const_
 
     if ( isPlanar == false )
     {
-      inGlobal = true;
       warpFac.push_back(i);
       std::cout<<"encountered a WARPED side\n";
     }
@@ -302,7 +300,8 @@ void GEO::CUT::DirectDivergence::DivengenceCellsGMSH( const DRT::UTILS::GaussInt
 *---------------------------------------------------------------------------------------------------------------*/
 void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration & gpv,
                                               const std::vector<double> &RefPlaneEqn,
-                                              const std::vector<DRT::UTILS::GaussIntegration> intGRule )
+                                              const std::vector<DRT::UTILS::GaussIntegration> intGRule,
+                                              bool& isNeg )
 {
 
   int numint=0;
@@ -356,6 +355,13 @@ void GEO::CUT::DirectDivergence::DebugVolume( const DRT::UTILS::GaussIntegration
 
   if( volGlobal<0.0 || TotalInteg<0.0 )
   {
+    if( fabs(TotalInteg) < REF_VOL_DIRDIV )
+    {
+      isNeg = true;
+      volcell_->SetVolume(0.0);
+      std::cout<<"----WARNING:::negligible volumecell---------------\n";
+      return;
+    }
     std::cout<<"volume in local coordinates = "<<TotalInteg<<"\t volume in global coordinates = "<<volGlobal<<"\n";
     dserror("negative volume predicted by the DirectDivergence integration rule");
   }

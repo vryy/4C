@@ -46,4 +46,9 @@
 // chosen as reference plane to avoid a large number (and hence large error)
 #define REF_PLANE_DIRDIV 1e-3
 
+// We may get volumecells with all facets on a plane
+// in such case directdivergence may produce negative volume, because it works only for closed geometries
+// if volume of cell is less than this, we do not generate gauss rules
+#define REF_VOL_DIRDIV 1e-6
+
 #endif

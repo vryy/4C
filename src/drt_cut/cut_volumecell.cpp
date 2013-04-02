@@ -1060,6 +1060,9 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
   if(posi == Point::inside && include_inner==false)
     return;
 
+  if( Facets().size() < 4 )
+    return;
+
   DirectDivergence dd(this,elem,posi,mesh);
 
   RefEqnPlane_.reserve(4);                   //it has to store a,b,c,d in ax+by+cz=d
@@ -1069,8 +1072,16 @@ void GEO::CUT::VolumeCell::DirectDivergenceGaussRule( Element *elem,
 
   // compute volume of this cell
   // also check whether generated gauss rule predicts volume accurately
+  // also check this vc can be eliminated due to its very small volume
   DRT::UTILS::GaussIntegration gpi(gp_);
-  dd.DebugVolume( gpi, RefEqnPlane_, intGP_ );
+  bool isNegVol = false;
+  dd.DebugVolume( gpi, RefEqnPlane_, intGP_, isNegVol );
+
+  // then this vol is extremely small that we erase the gauss points
+  if( isNegVol )
+  {
+    gp_.reset();
+  }
 
 #if 0 // integrate a predefined function
   dd.IntegrateSpecificFuntions( gpi, RefEqnPlane_, intGP_ );
@@ -1116,3 +1127,4 @@ std::set<int> GEO::CUT::VolumeCell::VolumeCellPointIds()
 
   return vcpoints_ids_;
 }
+
