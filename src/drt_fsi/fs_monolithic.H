@@ -7,6 +7,7 @@
 
 #include "../drt_adapter/ad_fld_base_algorithm.H"
 #include "../drt_adapter/adapter_algorithmbase.H"
+#include "../drt_ale/ale.H"
 
 #include <NOX.H>
 #include <NOX_Epetra.H>

@@ -3,6 +3,8 @@
 #include "fsi_statustest.H"
 #include "fsi_monolithic_linearsystem.H"
 
+#include "../drt_adapter/ad_str_fsiwrapper.H"
+
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_ale/ale_utils_mapextractor.H"
 #include "../drt_structure/stru_aux.H"
@@ -332,6 +334,7 @@ FSI::ConstrMonolithic::CreateLinearSystem(ParameterList& nlParams,
   case INPAR::FSI::FSIAMG:
   default:
     dserror("Chosen FSI does not work with FSIAMG due to additional constraints!");
+    break;
   }
 
   return linSys;

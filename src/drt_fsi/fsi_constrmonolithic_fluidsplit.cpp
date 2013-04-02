@@ -2,8 +2,10 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_constrmonolithic_fluidsplit.H"
-#include "../drt_adapter/adapter_coupling.H"
 #include "fsi_matrixtransform.H"
+
+#include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 
 #include "../drt_fluid/fluid_utils_mapextractor.H"
 #include "../drt_ale/ale_utils_mapextractor.H"

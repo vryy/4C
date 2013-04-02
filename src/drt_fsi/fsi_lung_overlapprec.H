@@ -23,6 +23,12 @@ Maintainer: Lena Yoshihara
 // and use the fluid solver to solve for it
 //#define BLOCKMATRIXMERGE
 
+/// forward declarations
+namespace LINALG
+{
+  class Solver;
+}
+
 namespace FSI
 {
   /// this helper class is needed to save the graph of a temporary matrix and the

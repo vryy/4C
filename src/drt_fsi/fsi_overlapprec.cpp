@@ -1,10 +1,14 @@
 
+#include <Epetra_Time.h>
 
 #include "fsi_overlapprec.H"
 #include "fsi_debugwriter.H"
-#include <Epetra_Time.h>
+
+#include "../drt_ale/ale.H"
 
 #include "../drt_adapter/ad_fld_fluid.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
+
 #include "../drt_lib/drt_discret.H"
 
 #include "../linalg/linalg_precond.H"

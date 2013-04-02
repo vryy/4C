@@ -5,8 +5,6 @@
 
 #include "../linalg/linalg_blocksparsematrix.H"
 
-#include "../drt_adapter/ad_str_fsiwrapper.H"
-#include "../drt_ale/ale.H"
 #include "../drt_inpar/inpar_fsi.H"
 
 
@@ -14,9 +12,16 @@
 // and use the fluid solver to solve for it
 //#define BLOCKMATRIXMERGE
 
+/// forward declarations
 namespace ADAPTER
 {
   class Fluid;
+  class FSIStructureWrapper;
+}
+
+namespace ALE
+{
+  class Ale;
 }
 
 namespace FSI
@@ -25,6 +30,11 @@ namespace FSI
   {
     class MonolithicDebugWriter;
   }
+}
+
+namespace LINALG
+{
+  class Preconditioner;
 }
 
 namespace FSI

@@ -5,6 +5,7 @@
 
 #include "../drt_adapter/ad_str_structure.H"
 #include "../drt_adapter/ad_fld_fluid.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 
 #include "../drt_structure/stru_aux.H"
 

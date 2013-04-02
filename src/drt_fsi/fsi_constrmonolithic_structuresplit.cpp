@@ -1,8 +1,10 @@
 #include <Teuchos_TimeMonitor.hpp>
 
 #include "fsi_constrmonolithic_structuresplit.H"
-#include "../drt_adapter/adapter_coupling.H"
 #include "fsi_matrixtransform.H"
+
+#include "../drt_adapter/adapter_coupling.H"
+#include "../drt_adapter/ad_str_fsiwrapper.H"
 
 #include "../drt_lib/drt_globalproblem.H"
 #include "../drt_lib/drt_discret.H"
