@@ -4,10 +4,10 @@
 \brief Partitioned FSI base
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -23,7 +23,7 @@ Maintainer: Ulrich Kuettler
 #include <AztecOO.h>
 #include <Epetra_CrsGraph.h>
 #include <Epetra_CrsMatrix.h>
-#include <Epetra_Import.h>
+#include <Epetra_Vector.h>
 #include <Epetra_LinearProblem.h>
 #include <Epetra_Map.h>
 #include <Epetra_RowMatrix.h>
@@ -32,8 +32,6 @@ Maintainer: Ulrich Kuettler
 #include <NOX_Epetra.H>
 #include <NOX_Epetra_Interface_Required.H>
 #include <NOX_Epetra_LinearSystem_AztecOO.H>
-
-#include <vector>
 
 #include "fsi_algorithm.H"
 

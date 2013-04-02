@@ -4,10 +4,10 @@
 \brief Partitioned FSI base
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
 </pre>
 */
 /*----------------------------------------------------------------------*/
@@ -109,182 +109,185 @@ void FSI::Partitioned::SetDefaultParameters(const Teuchos::ParameterList& fsidyn
 
   switch (DRT::INPUT::IntegralValue<int>(fsidyn,"COUPALGO"))
   {
-  case fsi_iter_stagg_fixed_rel_param:
-  {
-    // fixed-point solver with fixed relaxation parameter
-    SetMethod("ITERATIVE STAGGERED SCHEME WITH FIXED RELAXATION PARAMETER");
+    case fsi_iter_stagg_fixed_rel_param:
+    {
+      // fixed-point solver with fixed relaxation parameter
+      SetMethod("ITERATIVE STAGGERED SCHEME WITH FIXED RELAXATION PARAMETER");
 
-    nlParams.set("Jacobian", "None");
+      nlParams.set("Jacobian", "None");
 
-    dirParams.set("Method","User Defined");
-    Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
-      Teuchos::rcp(new NOX::FSI::FixPointFactory());
-    dirParams.set("User Defined Direction Factory",fixpointfactory);
+      dirParams.set("Method","User Defined");
+      Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
+        Teuchos::rcp(new NOX::FSI::FixPointFactory());
+      dirParams.set("User Defined Direction Factory",fixpointfactory);
 
-    //Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
-    //lsParams.set("Preconditioner","None");
+      //Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+      //lsParams.set("Preconditioner","None");
 
-    lineSearchParams.set("Method", "Full Step");
-    lineSearchParams.sublist("Full Step").set("Full Step", fsidyn.get<double>("RELAX"));
-    break;
-  }
-  case fsi_iter_stagg_AITKEN_rel_param:
-  {
-    // fixed-point solver with Aitken relaxation parameter
-    SetMethod("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA AITKEN ITERATION");
+      lineSearchParams.set("Method", "Full Step");
+      lineSearchParams.sublist("Full Step").set("Full Step", fsidyn.get<double>("RELAX"));
+      break;
+    }
+    case fsi_iter_stagg_AITKEN_rel_param:
+    {
+      // fixed-point solver with Aitken relaxation parameter
+      SetMethod("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA AITKEN ITERATION");
 
-    nlParams.set("Jacobian", "None");
+      nlParams.set("Jacobian", "None");
 
-    dirParams.set("Method","User Defined");
-    Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
-      Teuchos::rcp(new NOX::FSI::FixPointFactory());
-    dirParams.set("User Defined Direction Factory",fixpointfactory);
+      dirParams.set("Method","User Defined");
+      Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
+        Teuchos::rcp(new NOX::FSI::FixPointFactory());
+      dirParams.set("User Defined Direction Factory",fixpointfactory);
 
-    Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> aitkenfactory =
-      Teuchos::rcp(new NOX::FSI::AitkenFactory());
-    lineSearchParams.set("Method","User Defined");
-    lineSearchParams.set("User Defined Line Search Factory", aitkenfactory);
+      Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> aitkenfactory =
+        Teuchos::rcp(new NOX::FSI::AitkenFactory());
+      lineSearchParams.set("Method","User Defined");
+      lineSearchParams.set("User Defined Line Search Factory", aitkenfactory);
 
-    lineSearchParams.sublist("Aitken").set("max step size", fsidyn.get<double>("MAXOMEGA"));
-    break;
-  }
-  case fsi_iter_stagg_steep_desc:
-  {
-    // fixed-point solver with steepest descent relaxation parameter
-    SetMethod("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA STEEPEST DESCENT METHOD");
+      lineSearchParams.sublist("Aitken").set("max step size", fsidyn.get<double>("MAXOMEGA"));
+      break;
+    }
+    case fsi_iter_stagg_steep_desc:
+    {
+      // fixed-point solver with steepest descent relaxation parameter
+      SetMethod("ITERATIVE STAGGERED SCHEME WITH RELAXATION PARAMETER VIA STEEPEST DESCENT METHOD");
 
-    nlParams.set("Jacobian", "None");
+      nlParams.set("Jacobian", "None");
 
-    dirParams.set("Method","User Defined");
-    Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
-      Teuchos::rcp(new NOX::FSI::FixPointFactory());
-    dirParams.set("User Defined Direction Factory",fixpointfactory);
+      dirParams.set("Method","User Defined");
+      Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
+        Teuchos::rcp(new NOX::FSI::FixPointFactory());
+      dirParams.set("User Defined Direction Factory",fixpointfactory);
 
-    Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> sdfactory =
-      Teuchos::rcp(new NOX::FSI::SDFactory());
-    lineSearchParams.set("Method","User Defined");
-    lineSearchParams.set("User Defined Line Search Factory", sdfactory);
-    break;
-  }
-  case fsi_iter_stagg_NLCG:
-  {
-    // nonlinear CG solver (pretty much steepest descent with finite
-    // difference Jacobian)
-    SetMethod("ITERATIVE STAGGERED SCHEME WITH NONLINEAR CG SOLVER");
+      Teuchos::RCP<NOX::LineSearch::UserDefinedFactory> sdfactory =
+        Teuchos::rcp(new NOX::FSI::SDFactory());
+      lineSearchParams.set("Method","User Defined");
+      lineSearchParams.set("User Defined Line Search Factory", sdfactory);
+      break;
+    }
+    case fsi_iter_stagg_NLCG:
+    {
+      // nonlinear CG solver (pretty much steepest descent with finite
+      // difference Jacobian)
+      SetMethod("ITERATIVE STAGGERED SCHEME WITH NONLINEAR CG SOLVER");
 
-    nlParams.set("Jacobian", "None");
-    dirParams.set("Method", "NonlinearCG");
-    lineSearchParams.set("Method", "NonlinearCG");
-    break;
-  }
-  case fsi_iter_stagg_MFNK_FD:
-  {
-    // matrix free Newton Krylov with finite difference Jacobian
-    SetMethod("MATRIX FREE NEWTON KRYLOV SOLVER BASED ON FINITE DIFFERENCES");
+      nlParams.set("Jacobian", "None");
+      dirParams.set("Method", "NonlinearCG");
+      lineSearchParams.set("Method", "NonlinearCG");
+      break;
+    }
+    case fsi_iter_stagg_MFNK_FD:
+    {
+      // matrix free Newton Krylov with finite difference Jacobian
+      SetMethod("MATRIX FREE NEWTON KRYLOV SOLVER BASED ON FINITE DIFFERENCES");
 
-    nlParams.set("Jacobian", "Matrix Free");
+      nlParams.set("Jacobian", "Matrix Free");
 
-    Teuchos::ParameterList& mfParams = nlParams.sublist("Matrix Free");
-    mfParams.set("lambda", 1.0e-4);
-    mfParams.set("itemax", 1);
-    mfParams.set("Kelley Perturbation", false);
+      Teuchos::ParameterList& mfParams = nlParams.sublist("Matrix Free");
+      mfParams.set("lambda", 1.0e-4);
+      mfParams.set("itemax", 1);
+      mfParams.set("Kelley Perturbation", false);
 
-    lineSearchParams.set("Method", "Full Step");
-    lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
+      lineSearchParams.set("Method", "Full Step");
+      lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
 
-    Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-    Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
-    Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+      Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+      Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+      Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
-    lsParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
+      lsParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
 
-    break;
-  }
-  case fsi_iter_stagg_MFNK_FSI:
-  {
-    // matrix free Newton Krylov with FSI specific Jacobian
-    SetMethod("MATRIX FREE NEWTON KRYLOV SOLVER BASED ON FSI SPECIFIC JACOBIAN APPROXIMATION");
+      break;
+    }
+    case fsi_iter_stagg_MFNK_FSI:
+    {
+      // matrix free Newton Krylov with FSI specific Jacobian
+      SetMethod("MATRIX FREE NEWTON KRYLOV SOLVER BASED ON FSI SPECIFIC JACOBIAN APPROXIMATION");
 
-    nlParams.set("Jacobian", "FSI Matrix Free");
+      nlParams.set("Jacobian", "FSI Matrix Free");
 
-    lineSearchParams.set("Method", "Full Step");
-    lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
+      lineSearchParams.set("Method", "Full Step");
+      lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
 
-    Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
-    Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
-    Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
+      Teuchos::ParameterList& dirParams = nlParams.sublist("Direction");
+      Teuchos::ParameterList& newtonParams = dirParams.sublist(dirParams.get("Method","Newton"));
+      Teuchos::ParameterList& lsParams = newtonParams.sublist("Linear Solver");
 
-    lsParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
+      lsParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
 
-    break;
-  }
-  case fsi_iter_stagg_MPE:
-  {
-    // minimal polynomial extrapolation
-    SetMethod("ITERATIVE STAGGERED SCHEME WITH MINIMAL POLYNOMIAL EXTRAPOLATION");
+      break;
+    }
+    case fsi_iter_stagg_MPE:
+    {
+      // minimal polynomial extrapolation
+      SetMethod("ITERATIVE STAGGERED SCHEME WITH MINIMAL POLYNOMIAL EXTRAPOLATION");
 
-    nlParams.set("Jacobian", "None");
-    dirParams.set("Method","User Defined");
+      nlParams.set("Jacobian", "None");
+      dirParams.set("Method","User Defined");
 
-    Teuchos::RCP<NOX::Direction::UserDefinedFactory> factory =
-      Teuchos::rcp(new NOX::FSI::MinimalPolynomialFactory());
-    dirParams.set("User Defined Direction Factory",factory);
+      Teuchos::RCP<NOX::Direction::UserDefinedFactory> factory =
+        Teuchos::rcp(new NOX::FSI::MinimalPolynomialFactory());
+      dirParams.set("User Defined Direction Factory",factory);
 
-    Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
-    exParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
-    exParams.set("omega", fsidyn.get<double>("RELAX"));
-    exParams.set("kmax", 25);
-    exParams.set("Method", "MPE");
+      Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
+      exParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
+      exParams.set("omega", fsidyn.get<double>("RELAX"));
+      exParams.set("kmax", 25);
+      exParams.set("Method", "MPE");
 
-    //lsParams.set("Preconditioner","None");
+      //lsParams.set("Preconditioner","None");
 
-    lineSearchParams.set("Method", "Full Step");
-    lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
-    break;
-  }
-  case fsi_iter_stagg_RRE:
-  {
-    // reduced rank extrapolation
-    SetMethod("ITERATIVE STAGGERED SCHEME WITH REDUCED RANK EXTRAPOLATION");
+      lineSearchParams.set("Method", "Full Step");
+      lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
+      break;
+    }
+    case fsi_iter_stagg_RRE:
+    {
+      // reduced rank extrapolation
+      SetMethod("ITERATIVE STAGGERED SCHEME WITH REDUCED RANK EXTRAPOLATION");
 
-    nlParams.set("Jacobian", "None");
-    dirParams.set("Method","User Defined");
+      nlParams.set("Jacobian", "None");
+      dirParams.set("Method","User Defined");
 
-    Teuchos::RCP<NOX::Direction::UserDefinedFactory> factory =
-      Teuchos::rcp(new NOX::FSI::MinimalPolynomialFactory());
-    dirParams.set("User Defined Direction Factory",factory);
+      Teuchos::RCP<NOX::Direction::UserDefinedFactory> factory =
+        Teuchos::rcp(new NOX::FSI::MinimalPolynomialFactory());
+      dirParams.set("User Defined Direction Factory",factory);
 
-    Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
-    exParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
-    exParams.set("omega", fsidyn.get<double>("RELAX"));
-    exParams.set("kmax", 25);
-    exParams.set("Method", "RRE");
+      Teuchos::ParameterList& exParams = dirParams.sublist("Extrapolation");
+      exParams.set("Tolerance", fsidyn.get<double>("BASETOL"));
+      exParams.set("omega", fsidyn.get<double>("RELAX"));
+      exParams.set("kmax", 25);
+      exParams.set("Method", "RRE");
 
-    //lsParams.set("Preconditioner","None");
+      //lsParams.set("Preconditioner","None");
 
-    lineSearchParams.set("Method", "Full Step");
-    lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
-    break;
-  }
-  case fsi_basic_sequ_stagg:
-  {
-    // sequential coupling (no iteration!)
-    SetMethod("BASIC SEQUENTIAL STAGGERED SCHEME");
+      lineSearchParams.set("Method", "Full Step");
+      lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
+      break;
+    }
+    case fsi_basic_sequ_stagg:
+    {
+      // sequential coupling (no iteration!)
+      SetMethod("BASIC SEQUENTIAL STAGGERED SCHEME");
 
-    nlParams.set("Jacobian", "None");
-    nlParams.set("Max Iterations", 1);
+      nlParams.set("Jacobian", "None");
+      nlParams.set("Max Iterations", 1);
 
-    dirParams.set("Method","User Defined");
-    Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
-      Teuchos::rcp(new NOX::FSI::FixPointFactory());
-    dirParams.set("User Defined Direction Factory",fixpointfactory);
+      dirParams.set("Method","User Defined");
+      Teuchos::RCP<NOX::Direction::UserDefinedFactory> fixpointfactory =
+        Teuchos::rcp(new NOX::FSI::FixPointFactory());
+      dirParams.set("User Defined Direction Factory",fixpointfactory);
 
-    lineSearchParams.set("Method", "Full Step");
-    lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
-    break;
-  }
-  default:
-    dserror("coupling method type '%s' unsupported", fsidyn.get<std::string>("COUPALGO").c_str());
+      lineSearchParams.set("Method", "Full Step");
+      lineSearchParams.sublist("Full Step").set("Full Step", 1.0);
+      break;
+    }
+    default:
+    {
+      dserror("coupling method type '%s' unsupported", fsidyn.get<std::string>("COUPALGO").c_str());
+      break;
+    }
   }
 
   Teuchos::ParameterList& printParams = nlParams.sublist("Printing");
@@ -737,7 +740,7 @@ bool FSI::Partitioned::computeF(const Epetra_Vector &x, Epetra_Vector &F, const 
 
   const double endTime = timer.WallTime();
   if (Comm().MyPID()==0)
-    utils_->out() << "\nTime for residual calculation: " << endTime-startTime << "\n\n";
+    utils_->out() << "\nTime for residual calculation: " << endTime-startTime << " secs\n\n";
   return true;
 }
 
