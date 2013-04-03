@@ -154,6 +154,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     Teuchos::RCP<Epetra_Map> epInnerDofMap = Teuchos::null;
     Teuchos::RCP<Map> xSingleNodeAggMap = Teuchos::null;
     Teuchos::RCP<Map> xNearZeroDiagMap = Teuchos::null;
+    bool bIsMeshtying = false; // assume a contact problem
     if(mllist_.isSublist("Linear System properties")) {
       const Teuchos::ParameterList & linSystemProps = mllist_.sublist("Linear System properties");
       // extract information provided by solver (e.g. PermutedAztecSolver)
@@ -165,6 +166,8 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
         xSingleNodeAggMap = linSystemProps.get<Teuchos::RCP<Map> > ("non diagonal-dominant row map");
       if(linSystemProps.isParameter("near-zero diagonal row map"))
         xNearZeroDiagMap  = linSystemProps.get<Teuchos::RCP<Map> > ("near-zero diagonal row map");
+      if(linSystemProps.isParameter("ProblemType") && linSystemProps.get<std::string>("ProblemType") == "meshtying")
+        bIsMeshtying = true;
     }
 
     // transform epetra to xpetra
@@ -188,7 +191,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     Teuchos::RCP<Xpetra::StridedEpetraMap> strMap1 = Teuchos::rcp(new Xpetra::StridedEpetraMap(Teuchos::rcpFromRef(A->Matrix(0,0).EpetraMatrix()->RowMap()), stridingInfo1, -1 /* stridedBlock */, 0 /*globalOffset*/));
     std::vector<size_t> stridingInfo2;
     stridingInfo2.push_back(numdf); // we have numdf Lagrange multipliers per node at the contact interface!
-    Teuchos::RCP<Xpetra::StridedEpetraMap> strMap2 = Teuchos::rcp(new Xpetra::StridedEpetraMap(Teuchos::rcpFromRef(A->Matrix(1,1).EpetraMatrix()->RowMap()), stridingInfo2, -1 /* stridedBlock */, 0 /*globalOffset*/));
+    Teuchos::RCP<Xpetra::StridedEpetraMap> strMap2 = Teuchos::rcp(new Xpetra::StridedEpetraMap(Teuchos::rcpFromRef(A->Matrix(1,1).EpetraMatrix()->RowMap()), stridingInfo2, -1 /* stridedBlock */, 0 /*0*/ /*globalOffset*/));
 
     // build map extractor
     std::vector<Teuchos::RCP<const Map> > xmaps;
@@ -249,7 +252,6 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     //H->GetLevel(0)->Set("MasterDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xMasterDofMap));  // set map with active dofs
     H->GetLevel(0)->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xSlaveDofMap));  // set map with active dofs
 
-
     Teuchos::RCP<SubBlockAFactory> A11Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 0, 0));
     Teuchos::RCP<SubBlockAFactory> A22Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 1, 1));
 
@@ -265,6 +267,7 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     UCAggFact11->SetParameter("MaxNeighAlreadySelected",Teuchos::ParameterEntry(maxNbrAlreadySelected));
     UCAggFact11->SetParameter("MinNodesPerAggregate",Teuchos::ParameterEntry(minPerAgg));
     UCAggFact11->SetParameter("Ordering",Teuchos::ParameterEntry(MueLu::AggOptions::GRAPH));
+    UCAggFact11->SetParameter("UseIsolatedNodeAggregationAlgorithm",Teuchos::ParameterEntry(false));
 
 
     Teuchos::RCP<TentativePFactory> Ptent11Fact = Teuchos::rcp(new TentativePFactory());
@@ -321,9 +324,12 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     Teuchos::RCP<MueLu::ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > UCAggFact22 = Teuchos::rcp(new MueLu::ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>(UCAggFact11, amalgFact11));
 
 
-    // TODO switch between contact and meshtying
-    //Teuchos::RCP<AmalgamationFactory> amalgFact22 = Teuchos::rcp(new AmalgamationFactory(/*A22Fact*/));
-    Teuchos::RCP<MueLu::MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps> > amalgFact22 = Teuchos::rcp(new MueLu::MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>());
+    // create amalgamation factory for (1,1) block depending on problem type (contact/meshtying)
+    Teuchos::RCP<Factory> amalgFact22 = Teuchos::null;
+    if(!bIsMeshtying) // contact problem with (1,1) a non zero block
+      amalgFact22 = Teuchos::rcp(new AmalgamationFactory());
+    else // meshtying problem with zero (1,1) block
+      amalgFact22 = Teuchos::rcp(new MueLu::MeshtyingSPAmalgamationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, LocalMatOps>());
     amalgFact22->SetFactory("A", A22Fact); // just to be sure, seems not to use factory from M22?
 
     // use tentative prolongation operator (prolongation operator smoothing doesn't make sense since
