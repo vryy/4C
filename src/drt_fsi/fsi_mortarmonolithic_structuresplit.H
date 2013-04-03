@@ -18,8 +18,8 @@ Maintainer: Matthias Mayr
 #ifndef FSI_MORTARMONOLITHICSTRUCTURESPLIT_H
 #define FSI_MORTARMONOLITHICSTRUCTURESPLIT_H
 
-#include "../drt_inpar/inpar_fsi.H"
 #include "fsi_monolithic.H"
+#include "../drt_inpar/inpar_fsi.H"
 
 // forward declarations
 namespace ADAPTER
