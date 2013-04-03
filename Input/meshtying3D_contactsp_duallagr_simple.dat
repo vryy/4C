@@ -125,7 +125,7 @@ IFPACKCOMBINE                   Add
 AZSCAL                          none                            // none sym infnorm scaling of the system
 ML_PRINT                        10                               // ML print-out level (0-10)
 ML_MAXCOARSESIZE                100
-ML_MAXLEVEL                     3
+ML_MAXLEVEL                     2 //3
 ML_COARSEN                      UC                              // UC MIS METIS VBMETIS
 ML_AGG_SIZE                     6 //12
 ML_PROLONG_SMO                  0.0
