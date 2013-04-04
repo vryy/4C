@@ -2,7 +2,7 @@
 /*!
 \file fsi_statustest.H
 
-\brief NOX Thyra group enhancement
+\brief Test routines for monolithic FSI convergence test
 
 <pre>
 Maintainer: Matthias Mayr
@@ -17,13 +17,8 @@ Maintainer: Matthias Mayr
 #define FSI_STATUSTEST_H
 
 #include <NOX_StatusTest_Generic.H>
-#include <NOX_Abstract_Vector.H>
 #include <NOX_Abstract_Group.H>
 #include <NOX_Utils.H>
-
-#include <Epetra_Map.h>
-#include <Epetra_Import.h>
-#include <Epetra_Vector.h>
 
 #include "../linalg/linalg_mapextractor.H"
 

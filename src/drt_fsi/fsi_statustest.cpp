@@ -2,7 +2,7 @@
 /*!
 \file fsi_statustest.cpp
 
-\brief NOX Thyra group enhancement
+\brief Test routines for monolithic FSI convergence test
 
 <pre>
 Maintainer: Matthias Mayr
@@ -15,19 +15,14 @@ Maintainer: Matthias Mayr
 
 #include "fsi_statustest.H"
 #include "fsi_nox_newton.H"
-#include "../drt_lib/drt_dserror.H"
-#include "fsi_dirichletneumann.H"
 
-#include <NOX_Common.H>
+#include "../drt_adapter/adapter_coupling.H"
+#include "../drt_lib/drt_dserror.H"
+
 #include <NOX_Abstract_Vector.H>
 #include <NOX_Abstract_Group.H>
-#include <NOX_Solver_Generic.H>
-#include <NOX_Utils.H>
-
 #include <NOX_Epetra_Vector.H>
-
-#include "../linalg/linalg_utils.H"
-#include "../drt_adapter/adapter_coupling.H"
+#include <NOX_Solver_Generic.H>
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -79,7 +74,7 @@ double NOX::FSI::GenericNormF::computeNorm(const Epetra_Vector& v)
     if (err!=0)
       dserror("norm failed");
     if (scaleType_ == Scaled)
-      norm /= n;
+      dserror("It does not make sense to scale a MaxNorm by the vector length.");
     break;
 
   default:
@@ -391,7 +386,7 @@ double NOX::FSI::GenericNormUpdate::computeNorm(const Epetra_Vector& v)
   case NOX::Abstract::Vector::MaxNorm:
     normUpdate_ = vec.norm(normType_);
     if (scaleType_ == Scaled)
-      normUpdate_ /= n;
+      dserror("It does not make sense to scale a MaxNorm by the vector length.");
     break;
 
   default:
