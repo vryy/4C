@@ -5,14 +5,13 @@
 \brief NOX Thyra group enhancement
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
 
 #include "fsi_statustest.H"
 #include "fsi_nox_newton.H"
@@ -29,8 +28,6 @@ Maintainer: Ulrich Kuettler
 
 #include "../linalg/linalg_utils.H"
 #include "../drt_adapter/adapter_coupling.H"
-
-
 
 /*----------------------------------------------------------------------*/
 /*----------------------------------------------------------------------*/
@@ -153,44 +150,8 @@ std::ostream& NOX::FSI::GenericNormF::print(std::ostream& stream, int indent) co
          << " < " << NOX::Utils::sciformat(trueTolerance_, 3)
          << "\n";
 
-//  for (int j = 0; j < indent; j ++)
-//    stream << ' ';
-//
-//  stream << status_
-//         << name_ << "-Norm = " << NOX::Utils::sciformat(normF_,3)
-//         << " < " << NOX::Utils::sciformat(trueTolerance_, 3)
-//         << "\n";
-//
-//  for (int j = 0; j < indent; j ++)
-//    stream << ' ';
-//
-//  stream << std::setw(13) << " (";
-//
-//  if (scaleType_ == Scaled)
-//    stream << "Length-Scaled";
-//  else
-//    stream << "Unscaled";
-//
-//  stream << " ";
-//
-//  if (normType_ == NOX::Abstract::Vector::TwoNorm)
-//    stream << "Two-Norm";
-//  else if (normType_ == NOX::Abstract::Vector::OneNorm)
-//    stream << "One-Norm";
-//  else if (normType_ == NOX::Abstract::Vector::MaxNorm)
-//    stream << "Max-Norm";
-//
-//  // we do not have to print this, sinve we know, that in the nonlinear solver
-//  // all tolerances are absolute tolerances
-//  //                                                          mayt.mt 01/2012
-////  stream << ", ";
-////
-////  if (toleranceType_ == Absolute)
-////    stream << "Absolute Tolerance";
-////  else
-////    stream << "Relative Tolerance";
-//
-//  stream << ")\n";
+  // Note: All norms are hard-coded absolute norms. So, we do not neet to print
+  // this.                                                      mayt.mt 01/2012
 
   return stream;
 }
@@ -421,10 +382,20 @@ double NOX::FSI::GenericNormUpdate::computeNorm(const Epetra_Vector& v)
       normUpdate_ /= sqrt(1.0 * n);
     break;
 
-  default:
+  case NOX::Abstract::Vector::OneNorm:
     normUpdate_ = vec.norm(normType_);
     if (scaleType_ == Scaled)
       normUpdate_ /= n;
+    break;
+
+  case NOX::Abstract::Vector::MaxNorm:
+    normUpdate_ = vec.norm(normType_);
+    if (scaleType_ == Scaled)
+      normUpdate_ /= n;
+    break;
+
+  default:
+    dserror("norm type confusion");
     break;
   }
 
@@ -444,64 +415,28 @@ NOX::StatusTest::StatusType NOX::FSI::GenericNormUpdate::getStatus() const
 /*----------------------------------------------------------------------*/
 std::ostream& NOX::FSI::GenericNormUpdate::print(std::ostream& stream, int indent) const
 {
-    for (int j = 0; j < indent; j ++)
-      stream << ' ';
+  for (int j = 0; j < indent; j ++)
+    stream << ' ';
 
-    stream << status_ // test status
-           << name_   // what is tested?
-           << " ";
+  stream << status_ // test status
+         << name_   // what is tested?
+         << " ";
 
-    // check which norm is used and print its name
-    if (normType_ == NOX::Abstract::Vector::TwoNorm)
-      stream << "Two-Norm";
-    else if (normType_ == NOX::Abstract::Vector::OneNorm)
-      stream << "One-Norm";
-    else if (normType_ == NOX::Abstract::Vector::MaxNorm)
-      stream << "Max-Norm";
+  // check which norm is used and print its name
+  if (normType_ == NOX::Abstract::Vector::TwoNorm)
+    stream << "Two-Norm";
+  else if (normType_ == NOX::Abstract::Vector::OneNorm)
+    stream << "One-Norm";
+  else if (normType_ == NOX::Abstract::Vector::MaxNorm)
+    stream << "Max-Norm";
 
-    // print current value of norm and given tolerance
-    stream << " = " << NOX::Utils::sciformat(normUpdate_, 3)
-           << " < " << NOX::Utils::sciformat(tolerance_, 3)
-           << "\n";
+  // print current value of norm and given tolerance
+  stream << " = " << NOX::Utils::sciformat(normUpdate_, 3)
+         << " < " << NOX::Utils::sciformat(tolerance_, 3)
+         << "\n";
 
-
-//  for (int j = 0; j < indent; j ++)
-//    stream << ' ';
-//  stream << status_
-//         << name_ << "-Norm = " << NOX::Utils::sciformat(normUpdate_, 3)
-//	       << " < " << NOX::Utils::sciformat(tolerance_, 3)
-//         << "\n";
-//
-////  for (int j = 0; j < indent; j ++)
-////    stream << ' ';
-////
-////  stream << std::setw(13) << " (";
-//
-//  if (scaleType_ == Scaled)
-////    stream << "Length-Scaled";
-//  else
-//    dserror("Use length-scaled norm!"); //stream << "Unscaled";
-//
-//  stream << " ";
-//
-//  if (normType_ == NOX::Abstract::Vector::TwoNorm)
-//    stream << "Two-Norm";
-//  else if (normType_ == NOX::Abstract::Vector::OneNorm)
-//    stream << "One-Norm";
-//  else if (normType_ == NOX::Abstract::Vector::MaxNorm)
-//    stream << "Max-Norm";
-//
-//  // we do not have to print this, sinve we know, that in the nonlinear solver
-//  // all tolerances are absolute tolerances
-//  //                                                          mayt.mt 01/2012
-////  stream << ", ";
-////
-////  if (toleranceType_ == Absolute)
-////    stream << "Absolute Tolerance";
-////  else
-////    stream << "Relative Tolerance";
-//
-//  stream << ")\n";
+  // Note: All norms are hard-coded absolute norms. So, we do not neet to print
+  // this.                                                      mayt.mt 01/2012
 
   return stream;
 }

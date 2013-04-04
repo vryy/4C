@@ -5,15 +5,13 @@
 \brief NOX Thyra group enhancement
 
 <pre>
-Maintainer: Ulrich Kuettler
-            kuettler@lnm.mw.tum.de
-            http://www.lnm.mw.tum.de
-            089 - 289-15238
+Maintainer: Matthias Mayr
+            mayr@lnm.mw.tum.de
+            http://www.mhpc.mw.tum.de
+            089 - 289-15262
 </pre>
 */
 /*----------------------------------------------------------------------*/
-
-
 
 #ifndef FSI_STATUSTEST_H
 #define FSI_STATUSTEST_H
