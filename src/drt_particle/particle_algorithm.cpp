@@ -492,7 +492,8 @@ void PARTICLE::Algorithm::FillParticlesIntoBins(std::set<Teuchos::RCP<DRT::Node>
     particledis_->Comm().Barrier(); // I feel better this way ;-)
   } // end for irobin
 
-  std::cout << " There are " << homelessparticles.size() << " particles which have left the computational domain on rank " << myrank << std::endl;
+  if(homelessparticles.size())
+    std::cout << " There are " << homelessparticles.size() << " particles which have left the computational domain on rank " << myrank << std::endl;
   // erase everything that is left
   homelessparticles.clear();
 
@@ -742,7 +743,8 @@ void PARTICLE::Algorithm::TransferParticles()
 
   } // end for ibin
 
-  cout << "There are " << homelessparticles.size() << " homeless particles on proc" << myrank_ << endl;
+  if(homelessparticles.size())
+    cout << "There are " << homelessparticles.size() << " homeless particles on proc" << myrank_ << endl;
 
   // homeless particles are sent to their new processors where they are inserted into their correct bin
   FillParticlesIntoBins(homelessparticles);

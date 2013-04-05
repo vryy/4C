@@ -575,6 +575,9 @@ public:
       );
   //@}
 
+  /// apply external forces to the fluid
+  void ApplyExternalForces(Teuchos::RCP<Epetra_Vector> fext);
+
   /// create field test
   Teuchos::RCP<DRT::ResultTest> CreateFieldTest();
 
@@ -745,6 +748,9 @@ protected:
 
   /// the vector containing body and surface forces
   Teuchos::RCP<Epetra_Vector>    neumann_loads_;
+
+  /// the vector containing external loads
+  Teuchos::RCP<Epetra_Vector>    external_loads_;
 
   /// the vector containing potential Neumann-type outflow terms
 //  Teuchos::RCP<Epetra_Vector>    outflow_;

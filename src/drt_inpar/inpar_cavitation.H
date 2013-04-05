@@ -32,6 +32,14 @@ namespace INPAR
       AssignFluidEleToBinExact
     };
 
+    /// Type of coupling strategy for cavitation problems
+    enum CouplingStrategyOverFields
+    {
+      OneWay,
+      TwoWayMomentum,
+      TwoWayFull
+    };
+
 
   }  // namespace CAVITATION
 

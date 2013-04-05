@@ -105,6 +105,7 @@ FLD::FluidImplicitTimeInt::FluidImplicitTimeInt(
   dtele_(0.0),
   dtfilter_(0.0),
   dtsolve_(0.0),
+  external_loads_(Teuchos::null),
   surfacesplitter_(NULL),
   inrelaxation_(false),
   msht_(INPAR::FLUID::no_meshtying),
@@ -2319,6 +2320,10 @@ void FLD::FluidImplicitTimeInt::AssembleMatAndRHS()
 
   // add Neumann loads
   residual_->Update(1.0,*neumann_loads_,0.0);
+
+  // add external loads
+  if(external_loads_ != Teuchos::null)
+    residual_->Update(1.0/ResidualScaling(),*external_loads_,1.0);
 
   // update impedance boundary condition
   impedancebc_->UpdateResidual(residual_);
@@ -6416,6 +6421,22 @@ Teuchos::RCP<Epetra_Vector> FLD::FluidImplicitTimeInt::ExtrapolateEndPoint
     vecnp->Update((alphaF_-1.0)/alphaF_,*vecn,1.0/alphaF_);
 
   return vecnp;
+}
+
+
+// -------------------------------------------------------------------
+// apply external forces to the fluid                    ghamm 03/2013
+// -------------------------------------------------------------------
+void FLD::FluidImplicitTimeInt::ApplyExternalForces
+(
+  Teuchos::RCP<Epetra_Vector> fext
+)
+{
+  if(external_loads_ == Teuchos::null)
+    external_loads_ = LINALG::CreateVector(*discret_->DofRowMap(),true);
+
+  external_loads_->Update(1.0, *fext, 0.0);
+  return;
 }
 
 

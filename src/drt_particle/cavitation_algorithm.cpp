@@ -49,6 +49,7 @@ CAVITATION::Algorithm::Algorithm(
   const Epetra_Comm& comm,
   const Teuchos::ParameterList& params
   ) : PARTICLE::Algorithm(comm,params),
+  coupalgo_(DRT::INPUT::IntegralValue<INPAR::CAVITATION::CouplingStrategyOverFields>(params,"COUPALGO")),
   fluiddis_(Teuchos::null)
 {
   // setup fluid time integrator
@@ -232,7 +233,7 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
 
   if(fluiddis_->NumMyColElements() <= 0)
     dserror("there is no fluid element to ask for material parameters");
-  Teuchos::RCP<MAT::NewtonianFluid> actmat = rcp_dynamic_cast<MAT::NewtonianFluid>(fluiddis_->lColElement(0)->Material());
+  Teuchos::RCP<MAT::NewtonianFluid> actmat = Teuchos::rcp_dynamic_cast<MAT::NewtonianFluid>(fluiddis_->lColElement(0)->Material());
   if(actmat == Teuchos::null)
     dserror("type cast of fluid material failed");
 
@@ -468,6 +469,12 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
       std::vector<int> lmowner_b(lm_b.size(), myrank_);
       LINALG::Assemble(*bubbleforces,forcecurrbubble,lm_b,lmowner_b);
 
+      // coupling forces between fluid and particle only include interface forces
+      // due to the implicit last step the resulting force needs to be reduced by body forces
+      //// coupling force = forcecurrbubble - buoyancy - gravity forces
+      for(int dim=0; dim<3; dim++)
+        forcecurrbubble[dim] -= gravityforce(dim);
+
       // assemble of fluid forces can only be done on row elements (all bubbles in this element must be considered: ghost near boundary)
       const int numnode = targetfluidele->NumNode();
       Epetra_SerialDenseVector funct(numnode);
@@ -494,6 +501,9 @@ void CAVITATION::Algorithm::CalculateAndApplyForcesToParticles()
   // 4th step: apply forces to bubbles and fluid field
   //--------------------------------------------------------------------
   particledis_->SetState("particleforces", bubbleforces);
+
+  if(coupalgo_ != INPAR::CAVITATION::OneWay)
+    fluid_->ApplyExternalForces(fluidforces);
 
   return;
 }

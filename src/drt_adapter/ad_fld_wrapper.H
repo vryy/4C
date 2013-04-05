@@ -91,6 +91,8 @@ namespace ADAPTER
     { dserror("not implemented"); }
     virtual void SetInitialPorosityField(const INPAR::POROELAST::InitialField initfield,const int startfuncno)
     { return fluid_->SetInitialPorosityField(initfield, startfuncno); };
+    virtual void ApplyExternalForces(Teuchos::RCP<Epetra_Vector> fext)
+    { return fluid_->ApplyExternalForces(fext); };
     virtual void UpdateNewton(Teuchos::RCP<const Epetra_Vector> vel)
     { return fluid_->UpdateNewton(vel); };
     virtual void SetIterLomaFields(Teuchos::RCP<const Epetra_Vector> scalaraf,

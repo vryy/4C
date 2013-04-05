@@ -5050,6 +5050,21 @@ Teuchos::RCP<const Teuchos::ParameterList> DRT::INPUT::ValidParameters()
                                      INPAR::CAVITATION::AssignFluidEleToBinFast,
                                      INPAR::CAVITATION::AssignFluidEleToBinExact),
                                  &cavitationdyn);
+  // Coupling strategy
+  setStringToIntegralParameter<int>(
+                              "COUPALGO","cavitation_twowaymomentum",
+                              "Coupling strategies for cavitation problems",
+                              tuple<std::string>(
+                                "cavitation_oneway",
+                                "cavitation_twowaymomentum",
+                                "cavitation_twowayfull"
+                                ),
+                              tuple<int>(
+                                INPAR::CAVITATION::OneWay,
+                                INPAR::CAVITATION::TwoWayMomentum,
+                                INPAR::CAVITATION::TwoWayFull
+                                ),
+                              &cavitationdyn);
 
 
   /*----------------------------------------------------------------------*/

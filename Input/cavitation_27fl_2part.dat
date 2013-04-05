@@ -38,6 +38,7 @@ CUTOFF_RADIUS                   0.2 //0.2 // 0.4
 BOUNDINGBOX                     -1.000001 -1.000001 -1.100001 1.100001 1.100001 1.00012999
 ----------------------------------------------------------CAVITATION DYNAMIC
 ASSIGNFLUIDELETOBIN             Exact //Fast
+COUPALGO                        cavitation_oneway //cavitation_twowaymomentum
 GRAVITY_ACCELERATION            0.0 0.0 -9.81
 MAXTIME                         0.5 
 NUMSTEP                         5   

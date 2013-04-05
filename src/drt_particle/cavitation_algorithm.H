@@ -22,6 +22,7 @@ Maintainer: Georg Hammerl
  | headers                                                  ghamm 11/12 |
  *----------------------------------------------------------------------*/
 #include "particle_algorithm.H"
+#include "../drt_inpar/inpar_cavitation.H"
 
 #include "Epetra_MpiComm.h"
 #include <Teuchos_RCP.hpp>
@@ -120,6 +121,13 @@ namespace CAVITATION
 
 
   private:
+    //! @name cavitation related stuff
+    //@{
+
+    INPAR::CAVITATION::CouplingStrategyOverFields coupalgo_;
+
+    //@}
+
     //! @name fluid related stuff
     //@{
 
