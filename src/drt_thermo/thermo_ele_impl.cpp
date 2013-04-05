@@ -2627,7 +2627,7 @@ void DRT::ELEMENTS::TemperImpl<distype>::EvalShapeFuncAndDerivsAtIntPoint(
   // J = (N_rst * X)^T (6.24 NiliFEM)
   const double det = xij_.Invert(xjm_);
 
-  if (det < 1E-16)
+  if (det < 1e-16)
     dserror("GLOBAL ELEMENT NO.%i\nZERO OR NEGATIVE JACOBIAN DETERMINANT: %f", eleid, det);
 
   // set integration factor: fac = Gauss weight * det(J)

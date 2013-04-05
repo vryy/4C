@@ -23,6 +23,7 @@ Maintainer: Caroline Danowski
 //#define MonTSIwithoutTHR       /* flag to comment out all coupling terms in STR field */
 //#define MonTSIwithoutSTR       /* flag to comment out all coupling terms in THR field */
 //#define TFSI                   /* flag to reduce the output to screen */
+//#define TSI_DEBUG              /* output to screen information */
 
 
 /************************************************************************/

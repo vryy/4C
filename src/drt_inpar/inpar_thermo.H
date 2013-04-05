@@ -42,7 +42,6 @@ namespace THR
     dyna_undefined,  //!< undefined integrator (sth like a default)
     dyna_statics,  //!< static analysis
     dyna_onesteptheta,  //!< one-step-theta time integrator (implicit)
-    dyna_gemm,  //!< generalised energy-momementum method (implicit)
     dyna_genalpha,  //!< generalised-alpha time integrator (implicit)
     dyna_expleuler  //!< forward Euler (explicit)
   };
@@ -62,9 +61,6 @@ namespace THR
       break;
     case dyna_onesteptheta :
       return "OneStepTheta";
-      break;
-    case dyna_gemm :
-      return "GEMM";
       break;
     case dyna_genalpha :
       return "GenAlpha";

@@ -27,6 +27,7 @@ Maintainer: Caroline Danowski
 #include "tsi_algorithm.H"
 #include "../drt_inpar/inpar_tsi.H"
 #include "../drt_inpar/inpar_structure.H"
+#include "../drt_inpar/inpar_thermo.H"
 
 
 /*----------------------------------------------------------------------*
@@ -191,7 +192,7 @@ namespace TSI
 
     //! is convergence reached of iterative solution technique?
     //! keep your fingers crossed...
-    //! \author lw  \date 12/07
+    //! \author lw (originally in STR) \date 12/07
     bool Converged();
 
     //! outer iteration loop
@@ -200,11 +201,11 @@ namespace TSI
     //! @name Output
 
     //! print to screen information about residual forces and displacements
-    //! \author lw (originally) \date 12/07
+    //! \author lw (originally in STR) \date 12/07
     void PrintNewtonIter();
 
     //! contains text to PrintNewtonIter
-    //! \author lw (originally) \date 12/07
+    //! \author lw (originally in STR) \date 12/07
     void PrintNewtonIterText(
       FILE* ofile  //!< output file handle
       );
@@ -218,15 +219,23 @@ namespace TSI
     //! print statistics of converged Newton-Raphson iteration
     void PrintNewtonConv();
 
+    //! Determine norm of force residual
+    double CalculateVectorNorm(
+      const enum INPAR::TSI::VectorNorm norm,  //!< norm to use
+      const Teuchos::RCP<Epetra_Vector> vect  //!< the vector of interest
+      );
+
     //@}
 
-
-    /// apply infnorm scaling to linear block system
+    //! apply infnorm scaling to linear block system
     virtual void ScaleSystem(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& b);
 
-    /// undo infnorm scaling from scaled solution
-    virtual void UnscaleSolution(LINALG::BlockSparseMatrixBase& mat, Epetra_Vector& x, Epetra_Vector& b);
-
+    //! undo infnorm scaling from scaled solution
+    virtual void UnscaleSolution(
+      LINALG::BlockSparseMatrixBase& mat,
+      Epetra_Vector& x,
+      Epetra_Vector& b
+      );
 
   protected:
 
@@ -273,6 +282,9 @@ namespace TSI
     //! extractor to communicate between full monolithic map and block maps
     Teuchos::RCP<LINALG::MultiMapExtractor> Extractor() const { return blockrowdofmap_; }
 
+    //! setup list with default parameters
+    void SetDefaultParameters();
+
     //! apply contact to off diagonal block k_st
     /*!
     Within the condensation process of Lagrange multipliers, the structural
@@ -293,8 +305,10 @@ namespace TSI
 
     //! entries from linearized mortar matrices D and M in energy
     //! equation (with respect to displacements)
-    void AssembleLinDM(LINALG::SparseMatrix& lindglobal,
-                       LINALG::SparseMatrix& linmglobal);
+    void AssembleLinDM(
+      LINALG::SparseMatrix& lindglobal,
+      LINALG::SparseMatrix& linmglobal
+      );
 
     //! entries from linearized thermal contact condition
     //! (with respect to displacements)
@@ -340,7 +354,7 @@ namespace TSI
 
     //! build block vector from field vectors, e.g. rhs, increment vector
     void SetupVector(
-      Epetra_Vector &f,  //!< vector of length of all dofs
+      Epetra_Vector& f,  //!< vector of length of all dofs
       Teuchos::RCP<const Epetra_Vector> sv,  //!< vector containing only structural dofs
       Teuchos::RCP<const Epetra_Vector> tv  //!< vector containing only thermal dofs
       );
@@ -348,25 +362,45 @@ namespace TSI
     //! block systemmatrix
     Teuchos::RCP<LINALG::BlockSparseMatrixBase> systemmatrix_;
 
-    //! @name Iterative solution technique
+    //! @name iterative solution technique
 
-    enum INPAR::TSI::ConvNorm normtypeinc_;  //!< convergence check for residual temperatures
-    enum INPAR::TSI::ConvNorm normtypefres_;  //!< convergence check for residual forces
-    enum INPAR::TSI::BinaryOp combincfres_;  //!< binary operator to combine temperatures and forces
+    enum INPAR::TSI::ConvNorm normtypeinc_;  //!< convergence check for increments
+    enum INPAR::TSI::ConvNorm normtyperhs_;  //!< convergence check for residual forces
+    enum INPAR::STR::ConvNorm normtypedisi_;  //!< convergence check for residual displacements
+    enum INPAR::STR::ConvNorm normtypestrrhs_;  //!< convergence check for residual forces
+    enum INPAR::THR::ConvNorm normtypetempi_;  //!< convergence check for residual temperatures
+    enum INPAR::THR::ConvNorm normtypethrrhs_;  //!< convergence check for residual thermal forces
 
-    double tolinc_;  //!< tolerance residual temperatures
-    double tolfres_;  //!< tolerance force residual
+    enum INPAR::TSI::BinaryOp combincrhs_;  //!< binary operator to combine increments and forces
+
+    enum INPAR::TSI::VectorNorm iternorm_;  //!< vector norm to check TSI values with
+    enum INPAR::TSI::VectorNorm iternormstr_;  //!< vector norm to check structural values with
+    enum INPAR::TSI::VectorNorm iternormthr_;  //!< vector norm to check thermal values with
+
+    double tolinc_;  //!< tolerance for increment
+    double tolrhs_;  //!< tolerance for rhs
+    double toldisi_;  //!< tolerance for displacement increments
+    double tolstrrhs_;  //!< tolerance for structural rhs
+    double toltempi_;  //!< tolerance for temperature increments
+    double tolthrrhs_;  //!< tolerance for thermal rhs
+    
+    double normrhs_;  //!< norm of residual forces
+    double normrhsiter0_; //!< norm of residual force of 1st iteration
+    double norminc_;  //!< norm of residual unknowns
+    double norminciter0_;  //!< norm of residual unknowns of 1st iteration
+    double normdisi_;  //!< norm of residual displacements
+    double normdisiiter0_;  //!< norm of residual displacements of 1st iteration
+    double normstrrhs_;  //!< norm of structural residual forces
+    double normstrrhsiter0_;  //!< norm of structural residual forces of 1st iteration
+    double normtempi_;  //!< norm of residual temperatures
+    double normtempiiter0_;  //!< norm of residual temperatures of 1st iteration
+    double normthrrhs_;  //!< norm of thermal residual forces
+    double normthrrhsiter0_;  //!< norm of thermal residual forces of 1st iteration
+
     int iter_;  //!< iteration step
     int itermax_;  //!< maximally permitted iterations
     int itermin_;  //!< minimally requested iteration
-    double normrhsiter0_; //!< norm of residual force of first iteration
-    double normrhs_;  //!< norm of residual forces
-    double normstrrhs_;  //!< norm of structural residual forces
-    double normthrrhs_;  //!< norm of thermal residual forces
-    double norminc_;  //!< norm of residual unknowns
-    int ns_;  //!< length of structural residual forces
-    int nt_;  //!< length of thermal residual forces
-    int ntsi_;  //!< length of TSI residual forces
+
     const Teuchos::ParameterList& sdyn_;  //!< structural dynamic parameter list
 
     //@}
@@ -374,7 +408,6 @@ namespace TSI
     //! @name Various global forces
 
     Teuchos::RCP<Epetra_Vector> rhs_;  //!< rhs of TSI system
-    Teuchos::RCP<Epetra_Vector> freact_;  //!< reaction force
     Teuchos::RCP<Epetra_Vector> iterinc_;  //!< increment between Newton steps k and k+1
                                            //!< \f$\Delta{x}^{<k>}_{n+1}\f$
     Teuchos::RCP<Epetra_Vector> veln_;  //!< global velocities
@@ -384,6 +417,10 @@ namespace TSI
     //! Dirichlet BCs with local co-ordinate system
     Teuchos::RCP<DRT::UTILS::LocsysManager> locsysman_;
 
+    //@}
+
+    //! @name contact
+
     // contact manager
     Teuchos::RCP<MORTAR::ManagerBase> cmtman_;
 
@@ -392,22 +429,21 @@ namespace TSI
 
     Teuchos::RCP<Epetra_Vector> zstruct_ ;
     Teuchos::RCP<Epetra_Vector> ztherm_;
-    Teuchos::RCP<LINALG::SparseMatrix> kst_;  // stiffness block K_ss (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> invd_;  // stiffness block K_ss (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> kts_;  // stiffness block K_ss (needed for LM)
-    Teuchos::RCP<LINALG::SparseMatrix> invdtherm_;  // stiffness block K_ss (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> kst_;  //!< stiffness block K_ss (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> invd_;  //!< stiffness block K_ss (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> kts_;  //!< stiffness block K_ss (needed for LM)
+    Teuchos::RCP<LINALG::SparseMatrix> invdtherm_;  //!< stiffness block K_ss (needed for LM)
 
     //@}
 
-    /// @name infnorm scaling
+    //! @name infnorm scaling
 
-    Teuchos::RCP<Epetra_Vector> srowsum_;
-    Teuchos::RCP<Epetra_Vector> scolsum_;
-    Teuchos::RCP<Epetra_Vector> trowsum_;
-    Teuchos::RCP<Epetra_Vector> tcolsum_;
+    Teuchos::RCP<Epetra_Vector> srowsum_;  //!< sum of absolute values of the rows of the structura block
+    Teuchos::RCP<Epetra_Vector> scolsum_;  //!< sum of absolute values of the column of the structural block
+    Teuchos::RCP<Epetra_Vector> trowsum_;  //!< sum of absolute values of the rows of the thermal block
+    Teuchos::RCP<Epetra_Vector> tcolsum_;  //!< sum of absolute values of the column of the thermal block
 
     //@}
-
 
   }; // Monolithic
 

@@ -398,22 +398,6 @@ bool THR::TimIntImpl::Converged()
   bool convtemp = false;
   bool convfres = false;
 
-  // residual temperature
-  switch (normtypetempi_)
-  {
-  case INPAR::THR::convnorm_abs:
-    convtemp = normtempi_ < toltempi_;
-    break;
-  case INPAR::THR::convnorm_rel:
-    convtemp = normtempi_/normchartemp_ < toltempi_;
-    break;
-  case INPAR::THR::convnorm_mix:
-    convtemp = ( (normtempi_ < toltempi_) or (normtempi_/normchartemp_ < toltempi_) );
-    break;
-  default:
-    dserror("Cannot check for convergence of residual temperatures!");
-  }
-
   // residual forces
   switch (normtypefres_)
   {
@@ -421,13 +405,29 @@ bool THR::TimIntImpl::Converged()
     convfres = normfres_ < tolfres_;
     break;
   case INPAR::THR::convnorm_rel:
-    convfres = normfres_/normcharforce_ < tolfres_;
+    convfres = normfres_ < std::max(normcharforce_*tolfres_,1e-15);
     break;
   case INPAR::THR::convnorm_mix:
-    convfres = ( (normfres_ < tolfres_) or (normfres_/normcharforce_ < tolfres_) );
+    convfres = ( (normfres_ < tolfres_) or (normfres_ < std::max(normcharforce_*tolfres_,1e-15)) );
     break;
   default:
     dserror("Cannot check for convergence of residual forces!");
+  }
+
+  // residual temperature
+  switch (normtypetempi_)
+  {
+  case INPAR::THR::convnorm_abs:
+    convtemp = normtempi_ < toltempi_;
+    break;
+  case INPAR::THR::convnorm_rel:
+    convtemp = normtempi_ < std::max(normchartemp_*toltempi_,1e-15);
+    break;
+  case INPAR::THR::convnorm_mix:
+    convtemp = ( (normtempi_ < toltempi_) or (normtempi_ < std::max(normchartemp_*toltempi_,1e-15)) );
+    break;
+  default:
+    dserror("Cannot check for convergence of residual temperatures!");
   }
 
   // combine temperature-like and force-like residuals
@@ -674,21 +674,21 @@ void THR::TimIntImpl::PrintPredictor()
   if ( (myrank_ == 0) and printscreen_ and (GetStep()%printscreen_==0))
   {
     // relative check of force residual
-    if ( normtypefres_ == INPAR::THR::convnorm_rel )
+    if (normtypefres_ == INPAR::THR::convnorm_rel)
     {
       std::cout << "Predictor thermo scaled res-norm "
                 << normfres_/normcharforce_
                 << std::endl;
     }
     // absolute check of force residual
-    else if ( normtypefres_ == INPAR::THR::convnorm_abs )
+    else if (normtypefres_ == INPAR::THR::convnorm_abs)
     {
       std::cout << "Predictor thermo absolute res-norm "
                 << normfres_
                 << std::endl;
     }
     // mixed absolute-relative check of force residual
-    else if ( normtypefres_ == INPAR::THR::convnorm_mix )
+    else if (normtypefres_ == INPAR::THR::convnorm_mix)
     {
       std::cout << "Predictor thermo mixed res-norm "
                 << std::min(normfres_, normfres_/normcharforce_)
@@ -748,38 +748,38 @@ void THR::TimIntImpl::PrintNewtonIterHeader(FILE* ofile)
 
   // different style due relative or absolute error checking
   // temperature
-  switch ( normtypefres_ )
+  switch (normtypefres_)
   {
   case INPAR::THR::convnorm_rel:
-    oss <<std::setw(18)<< "rel-res-norm";
+    oss << std::setw(18) << "rel-res-norm";
     break;
   case INPAR::THR::convnorm_abs :
-    oss <<std::setw(18)<< "abs-res-norm";
+    oss << std::setw(18) << "abs-res-norm";
     break;
   case INPAR::THR::convnorm_mix :
-    oss <<std::setw(18)<< "mix-res-norm";
+    oss << std::setw(18) << "mix-res-norm";
     break;
   default:
     dserror("You should not turn up here.");
   }
 
-  switch ( normtypetempi_ )
+  switch (normtypetempi_)
   {
   case INPAR::THR::convnorm_rel:
-    oss <<std::setw(18)<< "rel-temp-norm";
+    oss << std::setw(18) << "rel-temp-norm";
     break;
   case INPAR::THR::convnorm_abs :
-    oss <<std::setw(18)<< "abs-temp-norm";
+    oss << std::setw(18) << "abs-temp-norm";
     break;
   case INPAR::THR::convnorm_mix :
-    oss <<std::setw(18)<< "mix-temp-norm";
+    oss << std::setw(18) << "mix-temp-norm";
     break;
   default:
     dserror("You should not turn up here.");
   }
 
   // add solution time
-  oss << std::setw(14)<< "wct";
+  oss << std::setw(14) << "wct";
 
   // finish oss
   oss << std::ends;
@@ -805,13 +805,13 @@ void THR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
   std::ostringstream oss;
 
   // enter converged state etc
-  oss << std::setw(7)<< iter_;
+  oss << std::setw(7) << iter_;
 
   // different style due relative or absolute error checking
   // temperature
-  switch ( normtypefres_ )
+  switch (normtypefres_)
   {
-  case INPAR::THR::convnorm_rel:
+  case INPAR::THR::convnorm_rel :
     oss << std::setw(18) << std::setprecision(5) << std::scientific << normfres_/normcharforce_;
     break;
   case INPAR::THR::convnorm_abs :
@@ -824,9 +824,9 @@ void THR::TimIntImpl::PrintNewtonIterText(FILE* ofile)
     dserror("You should not turn up here.");
   }
 
-  switch ( normtypetempi_ )
+  switch (normtypetempi_)
   {
-  case INPAR::THR::convnorm_rel:
+  case INPAR::THR::convnorm_rel :
     oss << std::setw(18) << std::setprecision(5) << std::scientific << normtempi_/normchartemp_;
     break;
   case INPAR::THR::convnorm_abs :

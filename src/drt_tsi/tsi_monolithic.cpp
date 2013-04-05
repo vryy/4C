@@ -73,6 +73,7 @@ TSI::Monolithic::Monolithic(
   strmethodname_(DRT::INPUT::IntegralValue<INPAR::STR::DynamicType>(sdynparams,"DYNAMICTYP")),
   blockrowdofmap_(Teuchos::null),
   systemmatrix_(Teuchos::null),
+  iternorm_(DRT::INPUT::IntegralValue<INPAR::TSI::VectorNorm>(DRT::Problem::Instance()->TSIDynamicParams(),"ITERNORM")),
   iter_(0),
   sdyn_(sdynparams),
   veln_(Teuchos::null)
@@ -369,46 +370,20 @@ void TSI::Monolithic::TimeLoop()
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::NewtonFull()
 {
-#ifndef TFSI
+#ifdef TSI_DEBUG
+  #ifndef TFSI
   if (Comm().MyPID() == 0)
     std::cout << "TSI::Monolithic::NewtonFull()" << std::endl;
-#endif
+  #endif  // TFSI
+#endif  // TSI_DEBUG
 
   // we do a Newton-Raphson iteration here.
   // the specific time integration has set the following
   // --> On #rhs_ is the positive force residuum
   // --> On #systemmatrix_ is the effective dynamic tangent matrix
 
-  // time parameters
-  // call the TSI parameter list
-  const Teuchos::ParameterList& tsidyn
-    = DRT::Problem::Instance()->TSIDynamicParams();
-  // Get the parameters for the Newton iteration
-  itermax_ = tsidyn.get<int>("ITEMAX");
-  itermin_ = tsidyn.get<int>("ITEMIN");
-  normtypeinc_
-    = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn,"NORM_INC");
-  normtypefres_
-    = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn,"NORM_RESF");
-  combincfres_
-    = DRT::INPUT::IntegralValue<INPAR::TSI::BinaryOp>(tsidyn,"NORMCOMBI_RESFINC");
-
-  // FIRST STEP: to test the residual and the increments use the same tolerance
-  tolinc_ =  tsidyn.get<double>("CONVTOL");
-  tolfres_ = tsidyn.get<double>("CONVTOL");
-
   // initialise equilibrium loop
   iter_ = 1;
-  normrhs_ = 0.0;
-  normrhsiter0_ = 0.0;
-  normstrrhs_ = 0.0;
-  normthrrhs_ = 0.0;
-  norminc_ = 0.0;
-  // get length of the structural and thermal vector
-  ns_ = (*(StructureField()->RHS())).GlobalLength();
-  nt_ = (*(ThermoField()->RHS())).GlobalLength();
-  // get length of all TSI dofs
-  ntsi_ = ns_ + nt_;
 
   Epetra_Time timerthermo(Comm());
   timerthermo.ResetStartTime();
@@ -420,7 +395,7 @@ void TSI::Monolithic::NewtonFull()
   zeros_ = LINALG::CreateVector(*DofRowMap(), true);
   zeros_->PutScalar(0.0);
 
-  //---------------------------------------------- iteration loop
+  //------------------------------------------------------ iteration loop
 
   // equilibrium iteration loop (loop over k)
   while ( ( (not Converged()) and (iter_ <= itermax_) ) or (iter_ <= itermin_) )
@@ -459,17 +434,40 @@ void TSI::Monolithic::NewtonFull()
 
     // reset solver tolerance
     solver_->ResetTolerance();
+    // --------------------------------------------- build residual norms
+    // here the new convergence test stuff has to be included
+    normrhs_ = CalculateVectorNorm(iternorm_, rhs_);
+    // vector of displacement and temperature residual
+    Teuchos::RCP<Epetra_Vector> strrhs;
+    Teuchos::RCP<Epetra_Vector> thrrhs;
+    // extract field vectors
+    ExtractFieldVectors(rhs_,strrhs,thrrhs);
+    normstrrhs_ = CalculateVectorNorm(iternormstr_, strrhs);
+    normthrrhs_ = CalculateVectorNorm(iternormthr_, thrrhs);
 
-    // build residual force norm
-    // for now use for simplicity only L2/Euclidian norm
-    rhs_->Norm2(&normrhs_);
+    // --------------------------------- build residual incremental norms
+    // vector of displacement and temperature increments
+    Teuchos::RCP<Epetra_Vector> sx;
+    Teuchos::RCP<Epetra_Vector> tx;
+    // extract field vectors
+    ExtractFieldVectors(iterinc_,sx,tx);
+    norminc_ = CalculateVectorNorm(iternorm_, iterinc_);
+    normdisi_ = CalculateVectorNorm(iternormstr_, sx);
+    normtempi_ = CalculateVectorNorm(iternormthr_, tx);
+
+    // in case of 'Mix'-convergence criterion: save the norm of the 1st
+    // iteration in norm*iter0_
     if (iter_ == 1)
+    {
+      // set residuals
       normrhsiter0_ = normrhs_;
-    StructureField()->RHS()->Norm2(&normstrrhs_);
-    ThermoField()->RHS()->Norm2(&normthrrhs_);
-
-    // build residual increment norm
-    iterinc_->Norm2(&norminc_);
+      normstrrhsiter0_ = normstrrhs_;
+      normthrrhsiter0_ = normthrrhs_;
+      // set increments
+      norminciter0_ = norminc_;
+      normdisiiter0_ = normdisi_;
+      normtempiiter0_ = normtempi_;
+    }
 
     // print stuff
     PrintNewtonIter();
@@ -479,7 +477,7 @@ void TSI::Monolithic::NewtonFull()
 
   }  // end equilibrium loop
 
-  //---------------------------------------------- iteration loop
+  // ----------------------------------------------------- iteration loop
 
   // correct iteration counter
   iter_ -= 1;
@@ -502,10 +500,13 @@ void TSI::Monolithic::NewtonFull()
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
 {
-#ifndef TFSI
+#ifdef TSI_DEBUG
+  #ifndef TFSI
   if (Comm().MyPID() == 0)
     std::cout << "\n TSI::Monolithic::Evaluate()" << std::endl;
-#endif
+  #endif  // TFSI
+#endif  // TSI_DEBUG
+
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::Evaluate");
 
   // displacement and temperature incremental vector
@@ -575,12 +576,14 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   //     Be AWARE: ApplyDirichlettoSystem has to be called with rotated stiff_!
   StructureField()->Evaluate(sx);
   
-#ifndef TFSI
+#ifdef TSI_DEBUG
+  #ifndef TFSI
   std::cout << "  structure time for calling Evaluate: " << timerstructure.ElapsedTime() << "\n";
-#endif
+  #endif  // TFSI
+#endif  // TSI_DEBUG
 
 #ifdef TSIMONOLITHASOUTPUT
-  std::cout << "STR fres_" << *StructureField()->RHS() <<  std::endl;
+  std::cout << "STR rhs_" << *StructureField()->RHS() <<  std::endl;
 #endif // TSIMONOLITHASOUTPUT
 
   /// thermal field
@@ -613,9 +616,11 @@ void TSI::Monolithic::Evaluate(Teuchos::RCP<Epetra_Vector> x)
   //   EvaluateRhsTangResidual() and
   //   PrepareSystemForNewtonSolve()
   ThermoField()->Evaluate();
-#ifndef TFSI
+#ifdef TSI_DEBUG
+  #ifndef TFSI
   std::cout << "  thermo time for calling Evaluate: " << timerthermo.ElapsedTime() << "\n";
-#endif
+  #endif  // TFSI
+#endif  // TSI_DEBUG
 
 }  // Evaluate()
 
@@ -654,10 +659,15 @@ Teuchos::RCP<const Epetra_Map> TSI::Monolithic::DofRowMap() const
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::SetupSystem()
 {
-#ifndef TFSI
+#ifdef TSI_DEBUG
+  #ifndef TFSI
   if (Comm().MyPID() == 0)
     std::cout << " TSI::Monolithic::SetupSystem()" <<  std::endl;
-#endif
+  #endif  // TFSI
+#endif  // TSI_DEBUG
+
+  // set parameters that remain the same in the whole calculation
+  SetDefaultParameters();
 
   // create combined map
   std::vector<Teuchos::RCP<const Epetra_Map> > vecSpaces;
@@ -704,10 +714,12 @@ void TSI::Monolithic::SetDofRowMaps(
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::SetupSystemMatrix()
 {
-#ifndef TFSI
+#ifdef TSI_DEBUG
+  #ifndef TFSI
   if (Comm().MyPID() == 0)
     std::cout << " TSI::Monolithic::SetupSystemMatrix()" <<  std::endl;
-#endif
+  #endif  // TFSI
+#endif  // TSI_DEBUG
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupSystemMatrix");
 
   /*----------------------------------------------------------------------*/
@@ -877,10 +889,13 @@ void TSI::Monolithic::SetupSystemMatrix()
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::SetupRHS()
 {
-#ifndef TFSI
+#ifdef TSI_DEBUG
+  #ifndef TFSI
   if (Comm().MyPID() == 0)
     std::cout << " TSI::Monolithic::SetupRHS()" <<  std::endl;
-#endif
+  #endif  // TFSI
+#endif  // TSI_DEBUG
+
   TEUCHOS_FUNC_TIME_MONITOR("TSI::Monolithic::SetupRHS");
 
   // create full monolithic rhs vector
@@ -901,10 +916,12 @@ void TSI::Monolithic::SetupRHS()
  *----------------------------------------------------------------------*/
 void TSI::Monolithic::LinearSolve()
 {
-#ifndef TFSI
+#ifdef TSI_DEBUG
+  #ifndef TFSI
   if (Comm().MyPID() == 0)
     std::cout << " TSI::Monolithic::LinearSolve()" <<  std::endl;
-#endif
+  #endif  // TFSI
+#endif  // TSI_DEBUG
 
   // Solve for inc_ = [disi_,tempi_]
   // Solve K_Teffdyn . IncX = -R  ===>  IncX_{n+1} with X=[d,T]
@@ -912,7 +929,7 @@ void TSI::Monolithic::LinearSolve()
   if (solveradapttol_ and (iter_ > 1))
   {
     double worst = normrhs_;
-    double wanted = tolfres_;
+    double wanted = tolrhs_;
     solver_->AdaptTolerance(wanted, worst, solveradaptolbetter_);
   }
 
@@ -928,9 +945,11 @@ void TSI::Monolithic::LinearSolve()
   // merge blockmatrix to SparseMatrix and solve
   Teuchos::RCP<LINALG::SparseMatrix> sparse = systemmatrix_->Merge();
 
-#ifndef TFSI
+#ifdef TSI_DEBUG
+  #ifndef TFSI
   if (Comm().MyPID() == 0) { std::cout << " DBC applied to TSI system" <<  std::endl; }
-#endif
+  #endif  // TFSI
+#endif  // TSI_DEBUG
 
   // standard solver call
   solver_->Solve(
@@ -941,19 +960,26 @@ void TSI::Monolithic::LinearSolve()
              iter_==1
              );
 
-#ifndef TFSI
+#ifdef TSI_DEBUG
+  #ifndef TFSI
   if (Comm().MyPID() == 0) { std::cout << " Solved" <<  std::endl; }
-#endif
+  #endif  // TFSI
+#endif  // TSI_DEBUG
 
 #else // use bgs2x2_operator
 
-#ifndef TFSI
+#ifdef TSI_DEBUG
+  #ifndef TFSI
   if (Comm().MyPID() == 0)
-  { std::cout << " DBC applied to TSI system on proc" << Comm().MyPID() <<  std::endl; }
-#endif
-
+  {
+    std::cout << " DBC applied to TSI system on proc" << Comm().MyPID() <<  std::endl;
+  }
+  #endif  // TFSI
+#endif  // TSI_DEBUG
+  // Infnormscaling: scale system before solving
   ScaleSystem(*systemmatrix_,*rhs_);
 
+  // solve the problem, work is done here!
   solver_->Solve(
              systemmatrix_->EpetraOperator(),
              iterinc_,
@@ -962,11 +988,14 @@ void TSI::Monolithic::LinearSolve()
              iter_==1
              );
 
+  // Infnormscaling: unscale system after solving
   UnscaleSolution(*systemmatrix_,*iterinc_,*rhs_);
 
-#ifndef TFSI
+#ifdef TSI_DEBUG
+  #ifndef TFSI
   if (Comm().MyPID() == 0) { std::cout << " Solved" <<  std::endl; }
-#endif
+  #endif  // TFSI
+#endif  // TSI_DEBUG
 
 #endif  // TSIBLOCKMATRIXMERGE
 
@@ -1015,48 +1044,136 @@ void TSI::Monolithic::SetupVector(
 bool TSI::Monolithic::Converged()
 {
   // check for single norms
+  bool convrhs = false;
   bool convinc = false;
-  bool convfres = false;
+  bool convstrrhs = false;
+  bool convdisp = false;
+  bool convthrrhs = false;
+  bool convtemp = false;
 
-  // residual increments
-  switch (normtypeinc_)
-  {
-    case INPAR::TSI::convnorm_abs:
-      convinc = norminc_ < tolinc_;
-      break;
-    default:
-      dserror("Cannot check for convergence of increments!");
-  }
-
-  // structural and thermal residual forces
-  switch (normtypefres_)
+  // ----------------------------------------------------------- TSI test
+  // residual TSI forces
+  switch (normtyperhs_)
   {
   case INPAR::TSI::convnorm_abs:
-    convfres = (normrhs_/ntsi_) < tolfres_;
+    convrhs = normrhs_ < tolrhs_;
     break;
   case INPAR::TSI::convnorm_rel:
-    convfres = ( ((normstrrhs_/ns_) < tolfres_) and ((normthrrhs_/nt_) < tolfres_) );
-    break;
-  case INPAR::TSI::convnorm_reliter0:
-    // when Converged() is called the first time, normrhsiter0_ is not filled
-    // with the norm includes its initial value, i.e. 0.0 used in the denominator
-    // in convfres leading to infinity
-    // convfres := normrhs_/normrhsiter0_ < tolfres_
-    convfres = (normrhs_ < (tolfres_ * normrhsiter0_ ));
+    convrhs = normrhs_ < std::max(tolrhs_*normrhsiter0_, 1e-15);
     break;
   case INPAR::TSI::convnorm_mix:
-    convfres = ( (normstrrhs_ < tolfres_) and (normthrrhs_ < tolfres_) );
+    convrhs = ( (normrhs_ < tolrhs_) and (normrhs_ < std::max(normrhsiter0_*tolrhs_, 1e-15)) );
     break;
   default:
     dserror("Cannot check for convergence of residual forces!");
   }
 
-  // combine temperature-like and force-like residuals
+  // residual TSI increments
+  switch (normtypeinc_)
+  {
+  case INPAR::TSI::convnorm_abs:
+    convinc = norminc_ < tolinc_;
+    break;
+  case INPAR::TSI::convnorm_rel:
+    convinc = norminc_ < std::max(norminciter0_*tolinc_,1e-15);
+    break;
+  case INPAR::TSI::convnorm_mix:
+    convinc = norminc_ < std::max(norminciter0_*tolinc_,1e-15);
+    break;
+  default:
+    dserror("Cannot check for convergence of increments!");
+  }
+
+  // -------------------------------------------------- single field test
+  // ---------------------------------------------------------- structure
+  // structural residual forces
+  switch (normtypestrrhs_)
+  {
+  case INPAR::STR::convnorm_abs:
+    convstrrhs = normstrrhs_ < tolstrrhs_;
+    break;
+  case INPAR::STR::convnorm_rel:
+    convstrrhs = normstrrhs_ < std::max(normstrrhsiter0_*tolstrrhs_,1e-15);
+    break;
+  case INPAR::STR::convnorm_mix:
+    convstrrhs = ( (normstrrhs_ < tolstrrhs_) or
+                   (normstrrhs_ < std::max(normstrrhsiter0_*tolstrrhs_,1e-15))
+                 );
+    break;
+  default:
+    dserror("Cannot check for convergence of residual forces!");
+    break;
+  }
+  // residual displacements
+  switch (normtypedisi_)
+  {
+  case INPAR::STR::convnorm_abs:
+    convdisp = normdisi_ < toldisi_;
+    break;
+  case INPAR::STR::convnorm_rel:
+    convdisp = normdisi_ < std::max(normdisiiter0_*toldisi_,1e-15);
+    break;
+  case INPAR::STR::convnorm_mix:
+    convdisp = ( (normdisi_ < toldisi_) or
+                 (normdisi_ < std::max(normdisiiter0_*toldisi_,1e-15))
+               );
+    break;
+  default:
+    dserror("Cannot check for convergence of displacements!");
+  }
+
+  // ------------------------------------------------------------- thermo
+  // thermal residual forces
+  switch (normtypethrrhs_)
+  {
+  case INPAR::THR::convnorm_abs:
+    convthrrhs = normthrrhs_ < tolthrrhs_;
+    break;
+  case INPAR::THR::convnorm_rel:
+    convthrrhs = normthrrhs_ < normthrrhsiter0_*tolthrrhs_;
+    break;
+  case INPAR::THR::convnorm_mix:
+    convthrrhs = ( (normthrrhs_ < tolthrrhs_) or (normthrrhs_ < normthrrhsiter0_*tolthrrhs_) );
+    break;
+  default:
+    dserror("Cannot check for convergence of residual forces!");
+  }
+  // residual temperatures
+  switch (normtypetempi_)
+  {
+  case INPAR::THR::convnorm_abs:
+    convtemp = normtempi_ < toltempi_;
+    break;
+  case INPAR::THR::convnorm_rel:
+    convtemp = normtempi_ < normtempiiter0_*toltempi_;
+    break;
+  case INPAR::THR::convnorm_mix:
+    convtemp = ( (normtempi_ < toltempi_) or (normtempi_ < normtempiiter0_*toltempi_) );
+    break;
+  default:
+    dserror("Cannot check for convergence of temperatures!");
+  }
+
+  // -------------------------------------------------------- convergence
+  // combine increment-like and force-like residuals, combine TSI and single
+  // field values
   bool conv = false;
-  if (combincfres_ == INPAR::TSI::bop_and)
-    conv = convinc and convfres;
+  if (combincrhs_ == INPAR::TSI::bop_and)
+    conv = convinc and convrhs;
+  else if (combincrhs_ == INPAR::TSI::bop_or)
+    conv = convinc or convrhs;
+  else if (combincrhs_ == INPAR::TSI::bop_coupl_and_singl)
+    conv = convinc and convrhs and convdisp and convstrrhs and convtemp and convthrrhs;
+  else if (combincrhs_ == INPAR::TSI::bop_coupl_or_singl)
+    conv = (convinc and convrhs) or (convdisp and convstrrhs and convtemp and convthrrhs);
+  else if (combincrhs_ == INPAR::TSI::bop_and_singl)
+    conv = convdisp and convstrrhs and convtemp and convthrrhs;
+  else if (combincrhs_ == INPAR::TSI::bop_or_singl)
+    conv = (convdisp or convstrrhs or convtemp or convthrrhs);
   else
+  {
     dserror("Something went terribly wrong with binary operator!");
+  }
 
   // return things
   return conv;
@@ -1106,21 +1223,19 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   // enter converged state etc
   oss << std::setw(6)<< "numiter";
 
+  // ---------------------------------------------------------------- TSI
   // different style due relative or absolute error checking
   // displacement
-  switch (normtypefres_)
+  switch (normtyperhs_)
   {
   case INPAR::TSI::convnorm_abs :
-    oss <<std::setw(18)<< "abs-res-norm";
+    oss <<std::setw(15)<< "abs-res-norm";
     break;
   case INPAR::TSI::convnorm_rel :
-    oss <<std::setw(18)<< "rel-res-norm";
-    break;
-  case INPAR::TSI::convnorm_reliter0 :
-    oss <<std::setw(18)<< "reliter0-res-norm";
+    oss <<std::setw(15)<< "rel-res-norm";
     break;
   case INPAR::TSI::convnorm_mix :
-    oss <<std::setw(18)<< "mix-res-norm";
+    oss << std::setw(15)<< "mix-res-norm";
     break;
   default:
     dserror("You should not turn up here.");
@@ -1129,14 +1244,83 @@ void TSI::Monolithic::PrintNewtonIterHeader(FILE* ofile)
   switch (normtypeinc_)
   {
   case INPAR::TSI::convnorm_abs :
-    oss <<std::setw(18)<< "abs-inc-norm";
+    oss << std::setw(15)<< "abs-inc-norm";
+    break;
+  case INPAR::TSI::convnorm_rel :
+    oss << std::setw(15)<< "rel-inc-norm";
     break;
   default:
     dserror("You should not turn up here.");
   }
 
+  // -------------------------------------------------- single field test
+  // ---------------------------------------------------------- structure
+  switch (normtypestrrhs_)
+  {
+  case INPAR::STR::convnorm_rel:
+    oss << std::setw(18)<< "rel-str-res-norm";
+    break;
+  case INPAR::STR::convnorm_abs :
+    oss << std::setw(18)<< "abs-str-res-norm";
+    break;
+  case INPAR::STR::convnorm_mix :
+    oss << std::setw(18)<< "mix-str-res-norm";
+    break;
+  default:
+    dserror("You should not turn up here.");
+    break;
+  }
+
+  switch (normtypedisi_)
+  {
+  case INPAR::STR::convnorm_rel:
+    oss << std::setw(16)<< "rel-dis-norm";
+    break;
+  case INPAR::STR::convnorm_abs :
+    oss << std::setw(16)<< "abs-dis-norm";
+    break;
+  case INPAR::STR::convnorm_mix :
+    oss << std::setw(16)<< "mix-dis-norm";
+    break;
+  default:
+    dserror("You should not turn up here.");
+    break;
+  }
+
+  // ------------------------------------------------------------- thermo
+  switch (normtypethrrhs_)
+  {
+  case INPAR::THR::convnorm_rel:
+    oss << std::setw(18)<< "rel-thr-res-norm";
+    break;
+  case INPAR::THR::convnorm_abs :
+    oss << std::setw(18)<< "abs-thr-res-norm";
+    break;
+  case INPAR::THR::convnorm_mix :
+    oss << std::setw(18)<< "mix-thr-res-norm";
+    break;
+  default:
+    dserror("You should not turn up here.");
+  }
+
+  switch (normtypetempi_)
+  {
+  case INPAR::THR::convnorm_rel:
+    oss << std::setw(16)<< "rel-temp-norm";
+    break;
+  case INPAR::THR::convnorm_abs :
+    oss << std::setw(16)<< "abs-temp-norm";
+    break;
+  case INPAR::THR::convnorm_mix :
+    oss << std::setw(16)<< "mix-temp-norm";
+    break;
+  default:
+    dserror("You should not turn up here.");
+  }
+
+
   // add solution time
-  oss << std::setw(14)<< "wct";
+  oss << std::setw(12)<< "wct";
 
   // finish oss
   oss << std::ends;
@@ -1167,20 +1351,18 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   oss << std::setw(7)<< iter_;
 
   // different style due relative or absolute error checking
-  // displacement
-  switch (normtypefres_)
+
+  // ----------------------------------------------- test coupled problem
+  switch (normtyperhs_)
   {
   case INPAR::TSI::convnorm_abs :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << normrhs_/ntsi_;
+    oss << std::setw(15) << std::setprecision(5) << std::scientific << normrhs_;
     break;
   case INPAR::TSI::convnorm_rel :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << std::max( (normstrrhs_/ns_), (normthrrhs_/nt_) );
-    break;
-  case INPAR::TSI::convnorm_reliter0 :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << (normrhs_/normrhsiter0_);
+    oss << std::setw(15) << std::setprecision(5) << std::scientific << normrhs_/normrhsiter0_;
     break;
   case INPAR::TSI::convnorm_mix :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << std::max( (normstrrhs_), (normthrrhs_) );
+    oss << std::setw(15) << std::setprecision(5) << std::scientific << std::min(normrhs_, normrhs_/normrhsiter0_);
     break;
   default:
     dserror("You should not turn up here.");
@@ -1189,16 +1371,88 @@ void TSI::Monolithic::PrintNewtonIterText(FILE* ofile)
   switch (normtypeinc_)
   {
   case INPAR::TSI::convnorm_abs :
-    oss << std::setw(18) << std::setprecision(5) << std::scientific << norminc_;
+    oss << std::setw(15) << std::setprecision(5) << std::scientific << norminc_;
+    break;
+  case INPAR::TSI::convnorm_rel :
+    oss << std::setw(15) << std::setprecision(5) << std::scientific << norminc_/norminciter0_;
+    break;
+  case INPAR::TSI::convnorm_mix :
+    oss << std::setw(15) << std::setprecision(5) << std::scientific << std::min(norminc_, norminc_/norminciter0_);
     break;
   default:
     dserror("You should not turn up here.");
   }
 
-  // TODO: 26.11.10 double declaration for the timer (first in Evaluate for thermal field)
-  Epetra_Time timerthermo(Comm());
-  // add solution time
-  oss << std::setw(14) << std::setprecision(2) << std::scientific << timerthermo.ElapsedTime();
+  // ------------------------------------------------- test single fields
+  // ---------------------------------------------------------- structure
+  // different style due relative or absolute error checking
+  // displacement
+  switch (normtypestrrhs_)
+  {
+  case INPAR::STR::convnorm_abs :
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << normstrrhs_;
+    break;
+  case INPAR::STR::convnorm_rel:
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << normstrrhs_/normstrrhsiter0_;
+    break;
+  case INPAR::STR::convnorm_mix :
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << min(normstrrhs_, normstrrhs_/normstrrhsiter0_);
+    break;
+  default:
+    dserror("You should not turn up here.");
+    break;
+  }
+
+  switch (normtypedisi_)
+  {
+  case INPAR::STR::convnorm_abs :
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_;
+    break;
+  case INPAR::STR::convnorm_rel:
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << normdisi_/normdisiiter0_;
+    break;
+  case INPAR::STR::convnorm_mix :
+   oss << std::setw(16) << std::setprecision(5) << std::scientific << min(normdisi_, normdisi_/normdisiiter0_);
+    break;
+  default:
+    dserror("You should not turn up here.");
+    break;
+  }
+
+  // ------------------------------------------------------------- thermo
+  switch (normtypethrrhs_)
+  {
+  case INPAR::THR::convnorm_abs :
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << normthrrhs_;
+    break;
+  case INPAR::THR::convnorm_rel:
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << normthrrhs_/normthrrhsiter0_;
+    break;
+  case INPAR::THR::convnorm_mix :
+    oss << std::setw(18) << std::setprecision(5) << std::scientific << std::min(normthrrhs_, normthrrhs_/normthrrhsiter0_);
+    break;
+  default:
+    dserror("You should not turn up here.");
+  }
+
+  switch (normtypetempi_)
+  {
+  case INPAR::THR::convnorm_abs :
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << normtempi_;
+    break;
+  case INPAR::THR::convnorm_rel:
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << normtempi_/normtempiiter0_;
+    break;
+  case INPAR::THR::convnorm_mix :
+    oss << std::setw(16) << std::setprecision(5) << std::scientific << std::min(normtempi_, normtempi_/normtempiiter0_);
+    break;
+  default:
+    dserror("You should not turn up here.");
+  }
+
+  // add solution time of to print to screen
+  Epetra_Time timer(Comm());
+  oss << std::setw(12) << std::setprecision(2) << std::scientific << timer.ElapsedTime();
 
   // finish oss
   oss << std::ends;
@@ -1235,10 +1489,12 @@ void TSI::Monolithic::ApplyStrCouplMatrix(
   Teuchos::RCP<LINALG::SparseMatrix> k_st  //!< off-diagonal tangent matrix term
   )
 {
-#ifndef TFSI
+#ifdef TSI_DEBUG
+  #ifndef TFSI
   if (Comm().MyPID() == 0)
     std::cout << " TSI::Monolithic::ApplyStrCouplMatrix()" <<  std::endl;
-#endif
+  #endif  // TFSI
+#endif  // TSI_DEBUG
 
   // create the parameters for the discretization
   Teuchos::ParameterList sparams;
@@ -1310,10 +1566,12 @@ void TSI::Monolithic::ApplyThrCouplMatrix(
   Teuchos::RCP<LINALG::SparseMatrix> k_ts  //!< off-diagonal tangent matrix term
   )
 {
-#ifndef TFSI
+#ifdef TSI_DEBUG
+  #ifndef TFSI
   if (Comm().MyPID() == 0)
     std::cout << " TSI::Monolithic::ApplyThrCouplMatrix()" <<  std::endl;
-#endif
+  #endif  // TFSI
+#endif  // TSI_DEBUG
 
   // create the parameters for the discretization
   Teuchos::ParameterList tparams;
@@ -1401,10 +1659,12 @@ void TSI::Monolithic::ApplyThrCouplMatrix_ConvBC(
   Teuchos::RCP<LINALG::SparseMatrix> k_ts  //!< off-diagonal tangent matrix term
   )
 {
-#ifndef TFSI
+#ifdef TSI_DEBUG
+  #ifndef TFSI
   if (Comm().MyPID() == 0)
     std::cout << " TSI::Monolithic::ApplyThrCouplMatrix_ConvBC()" <<  std::endl;
-#endif
+  #endif  // TFSI
+#endif  // TSI_DEBUG
 
   std::vector<DRT::Condition*> cond;
   std::string condstring("ThermoConvections");
@@ -2396,6 +2656,219 @@ void TSI::Monolithic::UnscaleSolution(
   }  // if (scaling_infnorm)
 
 }  // UnscaleSolution()
+
+
+/*----------------------------------------------------------------------*
+ | calculate vector norm                                     dano 04/13 |
+ *----------------------------------------------------------------------*/
+double TSI::Monolithic::CalculateVectorNorm(
+  const enum INPAR::TSI::VectorNorm norm,
+  const Teuchos::RCP<Epetra_Vector> vect
+  )
+{
+  // L1 norm
+  // norm = sum_0^i vect[i]
+  if (norm == INPAR::TSI::norm_l1)
+  {
+    double vectnorm;
+    vect->Norm1(&vectnorm);
+    return vectnorm;
+  }
+  // L2/Euclidian norm
+  // norm = sqrt{sum_0^i vect[i]^2 }
+  else if (norm == INPAR::TSI::norm_l2)
+  {
+    double vectnorm;
+    vect->Norm2(&vectnorm);
+    return vectnorm;
+  }
+  // RMS norm
+  // norm = sqrt{sum_0^i vect[i]^2 }/ sqrt{length_vect}
+  else if (norm == INPAR::TSI::norm_rms)
+  {
+    double vectnorm;
+    vect->Norm2(&vectnorm);
+    return vectnorm/sqrt((double) vect->GlobalLength());
+  }
+  // infinity/maximum norm
+  // norm = max( vect[i] )
+  else if (norm == INPAR::TSI::norm_inf)
+  {
+    double vectnorm;
+    vect->NormInf(&vectnorm);
+    return vectnorm;
+  }
+  // norm = sum_0^i vect[i]/length_vect
+  else if (norm == INPAR::TSI::norm_l1_scaled)
+  {
+    double vectnorm;
+    vect->Norm1(&vectnorm);
+    return vectnorm/((double) vect->GlobalLength());
+  }
+  else
+  {
+    dserror("Cannot handle vector norm");
+    return 0;
+  }
+}  // CalculateVectorNorm()
+
+
+/*----------------------------------------------------------------------*
+ | set parameters for TSI remaining constant over whole      dano 04/13 |
+ | simulation                                                           |
+ *----------------------------------------------------------------------*/
+void TSI::Monolithic::SetDefaultParameters()
+{
+  // time parameters
+  // call the TSI parameter list
+  const Teuchos::ParameterList& tsidyn
+    = DRT::Problem::Instance()->TSIDynamicParams();
+  // call the TSI parameter list
+  const Teuchos::ParameterList& tdyn
+    = DRT::Problem::Instance()->ThermalDynamicParams();
+
+  // get the parameters for the Newton iteration
+  itermax_ = tsidyn.get<int>("ITEMAX");
+  itermin_ = tsidyn.get<int>("ITEMIN");
+
+  // what kind of norm do we wanna test for coupled TSI problem
+  normtypeinc_
+    = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn,"NORM_INC");
+  normtyperhs_
+    = DRT::INPUT::IntegralValue<INPAR::TSI::ConvNorm>(tsidyn,"NORM_RESF");
+  // what kind of norm do we wanna test for the single fields
+  normtypedisi_
+    = DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdyn_,"NORM_DISP");
+  normtypestrrhs_
+    = DRT::INPUT::IntegralValue<INPAR::STR::ConvNorm>(sdyn_,"NORM_RESF");
+  enum INPAR::STR::VectorNorm striternorm
+    = DRT::INPUT::IntegralValue<INPAR::STR::VectorNorm>(sdyn_,"ITERNORM");
+  normtypetempi_
+    = DRT::INPUT::IntegralValue<INPAR::THR::ConvNorm>(tdyn,"NORM_TEMP");
+  normtypethrrhs_
+    = DRT::INPUT::IntegralValue<INPAR::THR::ConvNorm>(tdyn,"NORM_RESF");
+  enum INPAR::THR::VectorNorm thriternorm
+    = DRT::INPUT::IntegralValue<INPAR::THR::VectorNorm>(tdyn,"ITERNORM");
+  // in total when do we reach a converged state for complete problem
+  combincrhs_
+    = DRT::INPUT::IntegralValue<INPAR::TSI::BinaryOp>(tsidyn,"NORMCOMBI_RESFINC");
+
+#ifndef TFSI
+  switch (combincrhs_)
+  {
+  case INPAR::TSI::bop_and :
+    if (Comm().MyPID() == 0)
+      std::cout << "Convergence test of TSI:\n res, inc with 'AND'." << std::endl;
+    break;
+  case INPAR::TSI::bop_or :
+    if (Comm().MyPID() == 0)
+      std::cout << "Convergence test of TSI:\n res, inc with 'OR'." << std::endl;
+    break;
+  case INPAR::TSI::bop_coupl_and_singl :
+    if (Comm().MyPID() == 0)
+      std::cout << "Convergence test of TSI:\n res, inc, str-res, thr-res, dis, temp with 'AND'." << std::endl;
+    break;
+  case INPAR::TSI::bop_coupl_or_singl :
+    if (Comm().MyPID() == 0)
+      std::cout << "Convergence test of TSI:\n (res, inc) or (str-res, thr-res, dis, temp)." << std::endl;
+    break;
+  case INPAR::TSI::bop_and_singl :
+    if (Comm().MyPID() == 0)
+      std::cout << "Convergence test of TSI:\n str-res, thr-res, dis, temp with 'AND'." << std::endl;
+    break;
+  case INPAR::TSI::bop_or_singl :
+    if (Comm().MyPID() == 0)
+      std::cout << "Convergence test of TSI:\n str-res, thr-res, dis, temp with 'OR'." << std::endl;
+    break;
+  default :
+    dserror("Something went terribly wrong with binary operator!");
+    break;
+  }
+#endif
+
+  // convert the single field norms to be used within TSI
+  // what norm is used for structure
+  switch (striternorm)
+  {
+  case INPAR::STR::norm_l1 :
+    iternormstr_ = INPAR::TSI::norm_l1;
+    break;
+  case INPAR::STR::norm_l2 :
+    iternormstr_ = INPAR::TSI::norm_l2;
+    break;
+  case INPAR::STR::norm_rms :
+    iternormstr_ = INPAR::TSI::norm_rms;
+    break;
+  case INPAR::STR::norm_inf :
+    iternormstr_ = INPAR::TSI::norm_inf;
+    break;
+  case INPAR::STR::norm_vague :
+  default :
+    dserror("STR norm is not determined");
+    break;
+  }
+
+  // what norm is used for thermo
+  switch (thriternorm)
+  {
+  case INPAR::THR::norm_l1 :
+    iternormthr_ = INPAR::TSI::norm_l1;
+    break;
+  case INPAR::THR::norm_l2 :
+    iternormthr_ = INPAR::TSI::norm_l2;
+    break;
+  case INPAR::THR::norm_rms :
+    iternormthr_ = INPAR::TSI::norm_rms;
+    break;
+  case INPAR::THR::norm_inf :
+    iternormthr_ = INPAR::TSI::norm_inf;
+    break;
+  case INPAR::THR::norm_vague :
+  default :
+    dserror("THR norm is not determined.");
+    break;
+  }
+
+  // if scaled L1-norm is wished to be used
+  if ( (iternorm_ == INPAR::TSI::norm_l1_scaled) and
+       ( (combincrhs_ == INPAR::TSI::bop_coupl_and_singl) or
+         (combincrhs_ == INPAR::TSI::bop_coupl_or_singl)
+       )
+     )
+  {
+    std::cout << "in section TSI DYANMIC: 'ITERNORM == L1_Scaled' and test of single field,"
+      "--> scale the norm of the single fields, too!" << std::endl;
+    iternormstr_ = INPAR::TSI::norm_l1_scaled;
+    iternormthr_ = INPAR::TSI::norm_l1_scaled;
+  }
+
+  // test the TSI-residual and the TSI-increment
+  tolinc_ = tsidyn.get<double>("TOLINC");
+  tolrhs_ = tsidyn.get<double>("CONVTOL");
+
+  // get the single field tolerances from this field itselves
+  toldisi_ = sdyn_.get<double>("TOLDISP");
+  tolstrrhs_ = sdyn_.get<double>("TOLRES");
+  toltempi_ = tdyn.get<double>("TOLTEMP");
+  tolthrrhs_ = tdyn.get<double>("TOLRES");
+
+  // initialise norms for coupled TSI problem
+  normrhs_ = 0.0;
+  normrhsiter0_ = 0.0;
+  norminc_ = 0.0;
+  norminciter0_ = 0.0;
+
+  // initialise norms for single field tests
+  normdisi_ = 0.0;
+  normstrrhs_ = 0.0;
+  normstrrhsiter0_ = 0.0;
+  normtempi_ = 0.0;
+  normthrrhs_ = 0.0;
+  normthrrhsiter0_ = 0.0;
+
+  return;
+
+}  // SetDefaultParameter()
 
 
 /*----------------------------------------------------------------------*/

@@ -1479,6 +1479,7 @@ bool TSI::Partitioned::ConvergenceCheck(
     }  // INPAR::TSI::convnorm_rel
     break;
 
+    case INPAR::TSI::convnorm_mix:
     default:
       dserror("Cannot check for convergence of residual values!");
   }

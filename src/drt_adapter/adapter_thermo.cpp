@@ -69,7 +69,6 @@ void ADAPTER::ThermoBaseAlgorithm::SetupThermo(const Teuchos::ParameterList& prb
   {
   case INPAR::THR::dyna_statics :
   case INPAR::THR::dyna_onesteptheta :
-  case INPAR::THR::dyna_gemm :
   case INPAR::THR::dyna_genalpha :
   case INPAR::THR::dyna_expleuler :
     SetupTimInt(prbdyn, timinttype);   // <-- here is the show
