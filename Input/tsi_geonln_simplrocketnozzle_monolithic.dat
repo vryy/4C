@@ -31,6 +31,10 @@ at the surrounding surface of the body, such that q = 0 W/m2.
 
 discretisation: circumferential x radial(Cu) x radial(Ni) x depth = 100x10x10x2
 
+// 2013-04-05
+// changed convergence criterion from RelIter0 to Rel using new framwork
+
+
 ----------------------------------------------------------------PROBLEM SIZE
 //ELEMENTS                      4000
 //NODES                         8442
@@ -43,21 +47,14 @@ NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
-ALE_DISP                        No
 FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FLUID_WALL_SHEAR_STRESS         No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
 OUTPUT_OUT                      No
 STRUCT_DISP                     Yes  // Yes,No,yes,no,YES,NO
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   GL  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
 STRUCT_STRESS                   2PK  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
 STRUCT_COUPLING_STRESS          2PK  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  Current  // None,No,NO,no,Current,Initial
 THERM_TEMPERATURE               Yes  // Yes,No,yes,no,YES,NO
 THERM_TEMPGRAD                  Current  // None,No,NO,no,Current,Initial
@@ -70,49 +67,26 @@ SHAPEFCT                        Polynomial
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 ADAPTERDRIVE                    No
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
-DAMPING                         No
-DIVERCONT                       No
 DYNAMICTYP                      OneStepTheta  // ExplicitEuler,Centr_Diff,Gen_EMM,Gen_Alfa,Static,OneStepTheta,GenAlpha,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch,
-EIGEN                           0
-ITERNORM                        L2
-ITWANT                          0
-K_DAMP                          0.5
+ITERNORM                        L2  // L1,Rms,Inf
 LINEAR_SOLVER                   2
-LOADLIN                         no
 MAXDT                           0
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
-M_DAMP                          0.5
 NLNSOL                          fullnewton  // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
-NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
-NORMCOMBI_RESFINCO              And
-NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
-NORM_RESF                       Abs
+NORM_DISP                       Abs  // Rel,Abs,Mix
+NORM_RESF                       Abs  // Rel,Abs,Mix
 NUMSTEP                         200
 PREDICT                         ConstDis  // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
 RESEVRYERGY                     0
 RESTARTEVRY                     1
 RESULTDT                        0
 RESULTSEVRY                     1
-STC_LAYER                       1
-STC_SCALING                     no
-TIMEADAPT                       0
 TIMESTEP                        0.05
-TOLCONSTR                       1e-08
-TOLDISP                         1e-10
-TOLINCO                         1e-08
-TOLPRE                          1e-08
-TOLRES                          1e-08
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
+TOLDISP                         1e-08
+TOLRES                          2e-04 // 1e-06
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -------------------------------------------------------------THERMAL DYNAMIC
@@ -122,35 +96,38 @@ DIVERCONT                       No
 DYNAMICTYP                      OneStepTheta  // ExplicitEuler,Statics
 INITFUNCNO                      1  // use FUNCT 1
 INITIALFIELD                    field_by_function  // zero_field,field_by_function,field_by_condition
-ITERNORM                        L2
+ITERNORM                        L2  // L1,Rms,Inf
 LINEAR_SOLVER                   1
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
 NLNSOL                          fullnewton  // vague,fullnewton
 NORMCOMBI_RESFTEMP              And
-NORM_RESF                       Abs
-NORM_TEMP                       Abs
+NORM_RESF                       Abs  // Rel,Abs,Mix
+NORM_TEMP                       Abs  // Rel,Abs,Mix
 NUMSTEP                         200
 PREDICT                         ConstTemp
 RESEVRYGLOB                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.05
-TOLRES                          1e-08
-TOLTEMP                         1e-10
+TOLRES                          1e-05
+TOLTEMP                         1e-08
 ------------------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 -----------------------------------------------------------------TSI DYNAMIC
 CONVTOL                         1e-06
+TOLINC                          1e-07
 COUPALGO                        tsi_monolithic
 COUPVARIABLE                    Displacement
+INFNORMSCALING                  Yes
 ITEMAX                          15
 ITEMIN                          1
+ITERNORM                        Rms  // Rms,L2,Inf,L1_Scaled
 LINEAR_SOLVER                   3
 MAXTIME                         50  // 1000
-NORMCOMBI_RESFINC               And
-NORM_INC                        Abs
-NORM_RESF                       RelIter0  // Abs,Rel
+NORMCOMBI_RESFINC               Coupl_And_Singl // And,Or,Coupl_Or_Singl,And_Singl,Or_Singl
+NORM_INC                        Abs  // Abs,Rel,Mix
+NORM_RESF                       Rel  // Abs,Rel,Mix
 NUMSTEP                         4  //200000
 RESTARTEVRY                     50
 TIMESTEP                        0.05

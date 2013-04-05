@@ -30,20 +30,10 @@ NUMTHERMDIS                     1
 OUTPUT_OUT                      No
 OUTPUT_GID                      No
 OUTPUT_BIN                      Yes
-STRUCT_DISP                     No
-STRUCT_STRESS                   No
-STRUCT_STRAIN                   No
-STRUCT_SM_DISP                  No
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
-ALE_DISP                        No
 THERM_HEATFLUX                  Initial  // None, Current, Initial
 THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Initial  // None, Current, Initial
 FILESTEPS                       1000
-----------------------------------------------------------STRUCTURAL DYNAMIC
------------------------------------------------------------------TSI DYNAMIC
 -------------------------------------------------------------THERMAL DYNAMIC
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1

@@ -33,20 +33,14 @@ NUMFLUIDDIS                     0
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
-ALE_DISP                        No
 FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
 OUTPUT_OUT                      No
 STRUCT_DISP                     Yes  // Yes,No,yes,no,YES,NO
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   GL  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
 STRUCT_STRESS                   2PK  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
 STRUCT_COUPLING_STRESS          2PK  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  Current  // None,No,NO,no,Current,Initial
 THERM_TEMPERATURE               Yes  // Yes,No,yes,no,YES,NO
 THERM_TEMPGRAD                  Current  // None,No,NO,no,Current,Initial
@@ -59,48 +53,25 @@ SHAPEFCT                        Polynomial
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 ADAPTERDRIVE                    No
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
-DAMPING                         No
 DIVERCONT                       No  // Yes,No,yes,no,YES,NO: Go on with time integration even if Newton-Raphson iteration failed
 DYNAMICTYP                      Statics  // Centr_Diff,Gen_EMM,Gen_Alfa,Static,Statics,GenAlpha,OneStepTheta,GEMM,AdamsBashforth2,EulerMaruyama,EulerImpStoch
-EIGEN                           0
 ITERNORM                        L2
-ITWANT                          0
-K_DAMP                          0.5
 LINEAR_SOLVER                   2
-LOADLIN                         no
-MAXDT                           0
 MAXITER                         50
 MAXTIME                         1
 MINITER                         0
-M_DAMP                          0.5
 NLNSOL                          fullnewton  // vague,fullnewton,lsnewton,oppnewton,modnewton,nlncg,ptc,newtonlinuzawa,augmentedlagrange,NoxNewtonLineSearch,noxgeneral
-NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
-NORMCOMBI_RESFINCO              And
 NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         200
 PREDICT                         ConstDis  // Vague,ConstDis,ConstDisVelAcc,TangDis,ConstDisPres,ConstDisVelAccPres
 RESULTSEVRY                     1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
-RESULTDT                        0
-STC_SCALING                     no
-TIMEADAPT                       0
 TIMESTEP                        1
-TOLCONSTR                       1e-08
 TOLDISP                         1e-10
-TOLINCO                         1e-08
-TOLPRE                          1e-08
 TOLRES                          1e-04
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
 ---------------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           1.0  // 0.5
 -------------------------------------------------------------THERMAL DYNAMIC

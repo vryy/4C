@@ -22,6 +22,9 @@ the beginning, the body contracts
 
 material parameters of copper
 
+// 2013-04-05
+// changed convergence criterion from RelIter0 to Rel using new framwork
+
 ------------------------------------------------------PROBLEM SIZE
 //ELEMENTS    2
 //NODES       12
@@ -34,12 +37,7 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 -----------------------------------------------------------------IO
-ALE_DISP                        No
 FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FLUID_WALL_SHEAR_STRESS         No
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
@@ -48,12 +46,9 @@ PREFIX_GROUP_ID                 No
 STDOUTEVRY                      1
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           No
-STRUCT_SE                       No
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   EA  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
 STRUCT_COUPLING_STRESS          Cauchy  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
 STRUCT_STRESS                   Cauchy  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  Current  // None,No,NO,no,Current,Initial
 THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Current  // None,No,NO,no,Current,Initial
@@ -69,54 +64,25 @@ SHAPEFCT                        Polynomial
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 ADAPTERDRIVE                    No
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
-DAMPING                         No
 DIVERCONT                       No
 DYNAMICTYP                      OneStepTheta // GenAlpha
-EIGEN                           0
 ITERNORM                        L2
-ITWANT                          0
-K_DAMP                          0.5
 LINEAR_SOLVER                   1
-LOADLIN                         no
-LUMPMASS                        No
-MAXDT                           0
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
-MODIFIEDEXPLEULER               Yes
-M_DAMP                          0.5
 NLNSOL                          fullnewton
-NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
-NORMCOMBI_RESFINCO              And
 NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
 NORM_RESF                       Abs
 NUMSTEP                         200
 PREDICT                         ConstDis
-PRESTRESS                       none
-PRESTRESSTIME                   0
-PTCDT                           0.1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
-RESULTDT                        0
 RESULTSEVRY                     1
-STC_LAYER                       1
-STC_SCALING                     no
-TIMEADAPT                       0
 TIMESTEP                        0.05
-TOLCONSTR                       1e-08
 TOLDISP                         1e-10
-TOLINCO                         1e-08
-TOLPRE                          1e-08
 TOLRES                          1e-08
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
 YOUNG_IS_TEMP_DEPENDENT         No
 ------------------------------------STRUCTURAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66  // 0.5
@@ -191,8 +157,8 @@ RESEVRYERGY                     0
 RESEVRYGLOB                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.05
-TOLRES                          1e-07  // 1e-08
-TOLTEMP                         1e-10
+TOLRES                          1e-06
+TOLTEMP                         1e-09
 ---------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.66  // 0.5
 -----------------------------------------------------------SOLVER 2
@@ -245,17 +211,19 @@ STRATIMIKOS_XMLFILE             none
 VERBOSITY                       0
 --------------------------------------------------------TSI DYNAMIC
 CONVTOL                         1e-06
+TOLINC                          1e-06
 COUPALGO                        tsi_monolithic  // tsi_{oneway,sequstagg,iterstagg_{aitken,aitkenirons,fixedrelax},monolithic}
 COUPVARIABLE                    Displacement
 FIXEDOMEGA                      1
 ITEMAX                          10
 ITEMIN                          1
+ITERNORM                        Rms  // Rms,L2,Inf,L1_Scaled
 LINEAR_SOLVER                   3
 MAXOMEGA                        0
 MAXTIME                         5
-NORMCOMBI_RESFINC               And
+NORMCOMBI_RESFINC               Coupl_And_Singl // And,Or,Coupl_Or_Singl,{And,Or}_Singl
 NORM_INC                        Abs
-NORM_RESF                       RelIter0 // Abs
+NORM_RESF                       Rel  // Abs,Rel,Mix
 NUMSTEP                         10
 RESTARTEVRY                     1
 TIMESTEP                        0.05
@@ -405,7 +373,7 @@ NODE 12  COORD 2.0000000000000000e+00 0.0000000000000000e+00 5.5000000000000000e
 -------------------------------------------------RESULT DESCRIPTION
 STRUCTURE DIS structure NODE 9 QUANTITY dispx VALUE -1.93645859082224615e-05 TOLERANCE 1.0e-09 NAME ux_in
 STRUCTURE DIS structure NODE 10 QUANTITY dispx VALUE -3.85582997290207768e-05 TOLERANCE 1.0e-09 NAME ux_out
-THERMAL DIS thermo NODE 9 QUANTITY temp VALUE 292.277488496818023 TOLERANCE 1.0e-09 NAME T_in 
-THERMAL DIS thermo NODE 10 QUANTITY temp VALUE 292.298309458913252 TOLERANCE 1.0e-09 NAME T_out 
+THERMAL DIS thermo NODE 9 QUANTITY temp VALUE 292.277488670978869 TOLERANCE 1.0e-09 NAME T_in 
+THERMAL DIS thermo NODE 10 QUANTITY temp VALUE 292.298309633050906 TOLERANCE 1.0e-09 NAME T_out 
 ---------------------------------------------------------------END
 // END

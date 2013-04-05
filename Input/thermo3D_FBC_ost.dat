@@ -26,19 +26,10 @@ NUMFLUIDDIS                     0
 NUMSTRUCDIS                     0
 NUMTHERMDIS                     1
 --------------------------------------------------------------------------IO
-ALE_DISP                        No
 FILESTEPS                       1000
-FLUID_SOL                       No
-FLUID_STRESS                    No
-FLUID_VIS                       No
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
 OUTPUT_OUT                      No
-STRUCT_DISP                     Yes
-STRUCT_SM_DISP                  No
-STRUCT_STRAIN                   No
-STRUCT_STRESS                   No
-STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  Initial  // None, Current
 THERM_TEMPERATURE               Yes
 THERM_TEMPGRAD                  Initial  // None, Current

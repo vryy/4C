@@ -39,12 +39,7 @@ NUMFLUIDDIS                     1
 NUMSTRUCDIS                     1
 NUMTHERMDIS                     1
 -----------------------------------------------------------------IO
-ALE_DISP                        No
 FILESTEPS                       1000
-FLUID_SOL                       Yes
-FLUID_STRESS                    No
-FLUID_VIS                       No
-FLUID_WALL_SHEAR_STRESS         No
 LIMIT_OUTP_TO_PROC              -1
 OUTPUT_BIN                      Yes
 OUTPUT_GID                      No
@@ -53,12 +48,9 @@ PREFIX_GROUP_ID                 No
 STDOUTEVRY                      1
 STRUCT_DISP                     Yes
 STRUCT_PLASTIC_STRAIN           no  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
-STRUCT_SE                       No
-STRUCT_SM_DISP                  No
 STRUCT_STRAIN                   EA  // No,no,NO,Yes,yes,YES,EA,ea,GL,gl
 STRUCT_STRESS                   Cauchy  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
 STRUCT_COUPLING_STRESS          Cauchy  // No,no,NO,Yes,yes,YES,Cauchy,cauchy,2PK,2pk
-STRUCT_SURFACTANT               No
 THERM_HEATFLUX                  Current  // None,No,NO,no,Current,Initial
 THERM_TEMPERATURE               Yes  // Yes,No,yes,no,YES,NO
 THERM_TEMPGRAD                  Current  // None,No,NO,no,Current,Initial
@@ -73,54 +65,25 @@ SHAPEFCT                        Polynomial
 ADAPTCONV                       No
 ADAPTCONV_BETTER                0.1
 ADAPTERDRIVE                    No
-CONTROLNODE                     -1 -1 -1
-CONTROLTYPE                     load
-DAMPING                         No
 DIVERCONT                       No
 DYNAMICTYP                      Statics  // GenAlpha,OneStepTheta,GEMM,ExplicitEuler,CentrDiff,AdamsBashforth2,EulerMaruyama,EulerImpStoch,StatMech
-EIGEN                           0
 ITERNORM                        L2
-ITWANT                          0
-K_DAMP                          0.5
 LINEAR_SOLVER                   1
-LOADLIN                         no
-LUMPMASS                        No
-MAXDT                           0
 MAXITER                         50
 MAXTIME                         5
 MINITER                         0
-MODIFIEDEXPLEULER               Yes
-M_DAMP                          0.5
 NLNSOL                          fullnewton
-NORMCOMBI_DISPPRES              And
 NORMCOMBI_RESFDISP              And
-NORMCOMBI_RESFINCO              And
 NORM_DISP                       Abs
-NORM_INCO                       Abs
-NORM_PRES                       Abs
 NORM_RESF                       Abs  // Abs,Rel,Mix
 NUMSTEP                         200
 PREDICT                         ConstDis  // Vague,ConstDis,ConstVel,ConstAcc,ConstDisVelAcc,TangDis,ConstDisPres
-PRESTRESS                       none
-PRESTRESSTIME                   0
-PTCDT                           0.1
 RESEVRYERGY                     0
 RESTARTEVRY                     1
-RESULTDT                        0
 RESULTSEVRY                     1
-STC_LAYER                       1
-STC_SCALING                     no
-TIMEADAPT                       0
 TIMESTEP                        0.05
-TOLCONSTR                       1e-08
-TOLDISP                         1e-10
-TOLINCO                         1e-08
-TOLPRE                          1e-08
-TOLRES                          1e-08
-UZAWAALGO                       direct
-UZAWAMAXITER                    50
-UZAWAPARAM                      1
-UZAWATOL                        1e-08
+TOLDISP                         1e-07
+TOLRES                          1e-06
 YOUNG_IS_TEMP_DEPENDENT         Yes // No
 ----------------------------------------STRUCTURAL DYNAMIC/GENALPHA
 ALPHA_F                         0.5
@@ -145,29 +108,31 @@ MAXTIME                         5
 MINITER                         0
 NLNSOL                          fullnewton
 NORMCOMBI_RESFTEMP              And
-NORM_RESF                       Abs  // Abs,Mix
-NORM_TEMP                       Abs
+NORM_RESF                       Abs  // Rel,Abs,Mix
+NORM_TEMP                       Abs  // Rel,Abs,Mix
 NUMSTEP                         200
 PREDICT                         ConstTemp  // Vague,ConstTemp,ConstTempRate,TangTemp
 RESEVRYERGY                     0
 RESEVRYGLOB                     1
 RESTARTEVRY                     1
 TIMESTEP                        0.05
-TOLRES                          1e-08
-TOLTEMP                         1e-10
+TOLRES                          1e-06
+TOLTEMP                         1e-06
 ---------------------------------------THERMAL DYNAMIC/ONESTEPTHETA
 THETA                           0.5
 --------------------------------------------------------TSI DYNAMIC
 CONVTOL                         1e-06
+TOLINC                          1e-07
 COUPALGO                        tsi_monolithic  // tsi_(oneway,sequstagg,iterstagg,iterstagg_aitken,iterstagg_aitkenirons)
 COUPVARIABLE                    Temperature // Displacement
 ITEMAX                          10
 ITEMIN                          1
+ITERNORM                        Rms  // Rms,L2,Inf,L1_Scaled
 LINEAR_SOLVER                   3
 MAXTIME                         5.0  // 1000
-NORMCOMBI_RESFINC               And
-NORM_INC                        Abs  // iterstagg: Rel
-NORM_RESF                       Rel  // Abs,Rel,RelIter0,Mix
+NORMCOMBI_RESFINC               Coupl_And_Singl  // And ,Rel,{And,Or}_Singl
+NORM_INC                        Abs  // Rel,Mix
+NORM_RESF                       Rel  // Rel,Mix
 NUMSTEP                         200
 RESTARTEVRY                     1
 TIMESTEP                        1.0
