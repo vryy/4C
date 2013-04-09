@@ -396,6 +396,7 @@ Teuchos::RCP<Epetra_MultiVector> SCATRA::ScaTraTimIntImpl::CalcFluxAtBoundary(
       discret_->EvaluateCondition(params,integratedshapefunc,condnames[i],condid);
       discret_->ClearState();
 
+      //TODO: generate also output for current flux (particalarly important for Nernst BC)
       std::vector<double> normfluxintegral(numscal_);
 
       // insert values into final flux vector for visualization
@@ -574,6 +575,9 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     p.set("isale",isale_);
     if (isale_)
       AddMultiVectorToParameterList(p,"dispnp",dispnp_);
+    // parameters for Elch/DiffCond formulation
+    if(IsElch(scatratype_))
+      p.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
 
     // set vector values needed by elements
     discret_->ClearState();
@@ -585,9 +589,22 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
     discret_->EvaluateScalars(p, errors);
     discret_->ClearState();
 
+    double conerr1 = 0.0;
+    double conerr2 = 0.0;
     // for the L2 norm, we need the square root
-    double conerr1 = sqrt((*errors)[0]);
-    double conerr2 = sqrt((*errors)[1]);
+    if(numscal_==2)
+    {
+      conerr1 = sqrt((*errors)[0]);
+      conerr2 = sqrt((*errors)[1]);
+    }
+    else if(numscal_==1)
+    {
+      conerr1 = sqrt((*errors)[0]);
+      conerr2 = 0.0;
+    }
+    else
+      dserror("The analytical solution of Kwok and Wu is only defined for two species");
+
     double poterr  = sqrt((*errors)[2]);
 
     if (myrank_ == 0)
@@ -596,6 +613,45 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
       printf(" concentration1 %15.8e\n concentration2 %15.8e\n potential      %15.8e\n\n",
              conerr1,conerr2,poterr);
     }
+#if 0
+    if (myrank_ == 0)
+    {
+      // append error of the last time step to the error file
+      if ((step_==stepmax_) or (time_==maxtime_))// write results to file
+      {
+        ostringstream temp;
+        const std::string simulation = DRT::Problem::Instance()->OutputControlFile()->FileName();
+        //const std::string fname = simulation+".relerror";
+        const std::string fname = "XXX_kwok_xele.relerror";
+
+        double elelength=0.0;
+        if(simulation.find("5x5")!=string::npos)
+          elelength=0.2;
+        else if(simulation.find("10x10")!=string::npos)
+          elelength=0.1;
+        else if(simulation.find("20x20")!=string::npos)
+          elelength=0.05;
+        else if(simulation.find("40x40")!=string::npos)
+          elelength=0.025;
+        else if(simulation.find("50x50")!=string::npos)
+          elelength=0.02;
+        else if(simulation.find("80x80")!=string::npos)
+          elelength=0.0125;
+        else cout << "Warning: file name did not allow a evaluation of the element size!!!" << endl;
+
+        std::ofstream f;
+        f.precision(12);
+        f.open(fname.c_str(),std::fstream::ate | std::fstream::app);
+        f << "#| " << simulation << "\n";
+        //f << "#| Step | Time | rel. L2-error velocity mag |  rel. L2-error pressure  |\n";
+        f << "#| Step | Time | c1 abs. error L2 | c2 abs. error L2 | phi abs. error L2 |  element length  |\n";
+        //f << step_ << " " << time_ << " " << velerr/velint << " " << preerr/pint << " "<<"\n";
+        f << step_ << " " << time_ << " " << conerr1 << " " << conerr2 << " " <<  poterr << " "<< elelength << "" << "\n";
+        f.flush();
+        f.close();
+      }
+    }
+#endif
   }
   break;
   case INPAR::SCATRA::calcerror_cylinder:
@@ -687,6 +743,11 @@ void SCATRA::ScaTraTimIntImpl::EvaluateErrorComparedToAnalyticalSol()
  *----------------------------------------------------------------------*/
 void SCATRA::ScaTraTimIntImpl::CalcInitialPhidt()
 {
+  // TODO
+  // Calculation of initial derivative yields in different results for the uncharged particle and
+  // the binary electrolyte solution
+  // -> Check calculation procedure of the method
+
   // assemble system: M phidt^0 = f^n - K\phi^n - C(u_n)\phi^n
   CalcInitialPhidtAssemble();
   // solve for phidt_0
@@ -722,6 +783,7 @@ void SCATRA::ScaTraTimIntImpl::CalcInitialPhidtAssemble()
   ApplyDirichletBC(time_,phin_,Teuchos::null);
 
   {
+    // TODO: Add coupling condition to potential
     // evaluate Neumann boundary conditions at time t=0
     neumann_loads_->PutScalar(0.0);
     Teuchos::ParameterList p;
@@ -1265,9 +1327,6 @@ void SCATRA::ScaTraTimIntImpl::ValidParameterDiffCond()
     if(DRT::INPUT::IntegralValue<int>(elchparams,"NATURAL_CONVECTION"))
       dserror("Natural convection is not supported in the ELCH diffusion-conduction framework!!");
 
-    if(DRT::INPUT::IntegralValue<int>(elchparams,"GALVANOSTATIC"))
-      dserror("Galvanostatic simulations are not supported in the ELCH diffusion-conduction framework!!");
-
     if((elchparams.get<int>("MAGNETICFIELD_FUNCNO"))>0)
       dserror("Simulations including a magnetic field are not supported in the ELCH diffusion-conduction framework!!");
 
@@ -1277,18 +1336,15 @@ void SCATRA::ScaTraTimIntImpl::ValidParameterDiffCond()
     if((DRT::INPUT::IntegralValue<INPAR::SCATRA::SolverType>(scatraparams,"SOLVERTYPE"))!= INPAR::SCATRA::solvertype_nonlinear)
       dserror("The only solvertype supported by the ELCH diffusion-conduction framework is the non-linar solver!!");
 
-    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::TimeIntegrationScheme>(scatraparams,"TIMEINTEGR"))!= INPAR::SCATRA::timeint_one_step_theta)
-      dserror("The only time-integration scheme supported by the ELCH diffusion-conduction framework "
-          "is the one-step-theta time integration scheme!!");
-
     if((DRT::INPUT::IntegralValue<INPAR::SCATRA::VelocityField>(scatraparams,"VELOCITYFIELD"))!= INPAR::SCATRA::velocity_zero)
       dserror("Convective ion transport is neglected so far!!");
 
-    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::CalcError>(scatraparams,"CALCERROR"))!= INPAR::SCATRA::calcerror_no)
-      dserror("Think about analytical solutions and error estimations!!");
-
-    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(scatraparams,"WRITEFLUX"))!= INPAR::SCATRA::flux_no)
+    if((DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(scatraparams,"WRITEFLUX"))== INPAR::SCATRA::flux_diffusive_domain or
+       (DRT::INPUT::IntegralValue<INPAR::SCATRA::FluxType>(scatraparams,"WRITEFLUX"))== INPAR::SCATRA::flux_total_domain)
       dserror("This feature is needed -> Think about!!");
+
+    if((DRT::INPUT::IntegralValue<int>(scatraparams,"SKIPINITDER"))!= true)
+       std::cout << "Initial phidt - What is it doing in case of diffcond??" << std::endl;
 
     if((DRT::INPUT::IntegralValue<INPAR::SCATRA::ConvForm>(scatraparams,"CONVFORM"))!= INPAR::SCATRA::convform_convective)
       dserror("Only the convective formulation is supported so far!!");
@@ -2282,6 +2338,10 @@ Epetra_SerialDenseVector SCATRA::ScaTraTimIntImpl::ComputeConductivity()
   p.set<int>("scatratype",scatratype_);
   p.set("frt",frt_);
 
+  // parameters for Elch/DiffCond formulation
+  if(IsElch(scatratype_))
+    p.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
+
   //provide displacement field in case of ALE
   p.set("isale",isale_);
   if (isale_)
@@ -2574,6 +2634,43 @@ void SCATRA::ScaTraTimIntImpl::EvaluateElectrodeKinetics(
   std::string condstring("ElectrodeKinetics");
   // evaluate ElectrodeKinetics conditions at time t_{n+1} or t_{n+alpha_F}
   discret_->EvaluateCondition(condparams,matrix,Teuchos::null,rhs,Teuchos::null,Teuchos::null,condstring);
+  discret_->ClearState();
+
+  return;
+} // ScaTraTimIntImpl::EvaluateElectrodeKinetics
+
+/*----------------------------------------------------------------------*
+ | Nernst BC                                                 ehrl 03/13 |
+ *----------------------------------------------------------------------*/
+void SCATRA::ScaTraTimIntImpl::AdaptDC(
+    Teuchos::RCP<LINALG::SparseOperator> matrix,
+    RCP<Epetra_Vector>          residual,
+    RCP<Epetra_Vector>          phinp
+)
+{
+  discret_->ClearState();
+
+  // create an parameter list
+  Teuchos::ParameterList condparams;
+
+  // action for elements
+  condparams.set<int>("action",SCATRA::bd_calc_elch_adapt_DC);
+  condparams.set<int>("scatratype",scatratype_);
+  condparams.set("frt",frt_); // factor F/RT
+  condparams.set("isale",isale_);
+
+  // parameters for Elch/DiffCond formulation
+  if(IsElch(scatratype_))
+    condparams.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
+
+  // add element parameters and set state vectors according to time-integration scheme
+  // we need here concentration at t+np
+  discret_->SetState("phinp",phinp_);
+
+  std::string condstring("ElectrodeKinetics");
+  // evaluate ElectrodeKinetics conditions at time t_{n+1} or t_{n+alpha_F}
+  // phinp (view to phinp)
+  discret_->EvaluateCondition(condparams,matrix,Teuchos::null,residual,phinp,Teuchos::null,condstring);
   discret_->ClearState();
 
   return;

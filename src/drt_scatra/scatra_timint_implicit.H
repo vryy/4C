@@ -725,6 +725,14 @@ protected:
     Teuchos::RCP<Epetra_Vector>          rhs     //!< rhs vector
   );
 
+  //! compute contribution of electrode kinetics to eq. system
+  void AdaptDC(
+    Teuchos::RCP<LINALG::SparseOperator> matrix, //!< system matrix
+    Teuchos::RCP<Epetra_Vector>          residual,
+    Teuchos::RCP<Epetra_Vector>          phinp     //!< rhs vector
+  );
+
+
   //! update time-dependent electrode state variables at the end of an time step
   virtual void ElectrodeKineticsTimeUpdate(
     const bool init = false  //!< initialization flag
@@ -1156,6 +1164,9 @@ protected:
 
   //! flag for printing out integral values of reaction
   const bool outintegrreac_;
+
+  //! Activate/Deactivate diffcond formulation on time integration level
+  bool diffcond_;
 
 //  std::vector<double> reacintegral_;
 

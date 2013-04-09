@@ -674,6 +674,11 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   {
     // if initial velocity field has not been set here, the initial time derivative of phi will be
     // calculated wrongly for some time integration schemes
+
+    // TODO (ehrl):
+    // Calculation of initial derivative yields in different results for the uncharged particle and
+    // the binary electrolyte solution
+    // -> Check calculation procedure of the method (genalpha)
     if (initialvelset_) PrepareFirstTimeStep();
     else if (reinitswitch_){}
     else dserror("Initial velocity field has not been set");
@@ -694,6 +699,10 @@ void SCATRA::ScaTraTimIntImpl::PrepareTimeStep()
   // -------------------------------------------------------------------
   ApplyDirichletBC(time_,phinp_,Teuchos::null);
   ApplyNeumannBC(time_,phinp_,neumann_loads_);
+
+  //TODO (ehrl): experimental boundary condition
+  // Manipulate DC in case of a Nernst BC
+  //AdaptDC(sysmat_, residual_, phinp_);
 
   // -------------------------------------------------------------------
   //     update velocity field if given by function AND time curve
@@ -2327,6 +2336,11 @@ void SCATRA::ScaTraTimIntImpl::ApplyNeumannBC
   SetTimeForNeumannEvaluation(p);
   p.set<int>("scatratype",scatratype_);
   p.set("isale",isale_);
+
+  // parameters for Elch/DiffCond formulation
+  if(IsElch(scatratype_))
+    p.sublist("DIFFCOND") = extraparams_->sublist("ELCH CONTROL").sublist("DIFFCOND");
+
   // provide displacement field in case of ALE
   if (isale_) AddMultiVectorToParameterList(p,"dispnp",dispnp_);
 

@@ -65,6 +65,9 @@ SCATRA::TimIntGenAlpha::TimIntGenAlpha(
   if (alphaM_ < EPS12) dserror("factor alpha_M lower than or equal zero");
   genalphafac_ = gamma_/alphaM_;
 
+
+  //TODO (ehrl): Start step for genalpha
+  //      Disable calculation of Initial  PhiDt
   // fine-scale vector at time n+alpha_F
   if (fssgd_ != INPAR::SCATRA::fssugrdiff_no or turbmodel_ == INPAR::FLUID::multifractal_subgrid_scales)
     fsphiaf_ = LINALG::CreateVector(*dofrowmap,true);
@@ -445,6 +448,9 @@ void SCATRA::TimIntGenAlpha::Update(const int num)
   {
     if (DoOutput() or DoBoundaryFluxStatistics())
       flux_ = CalcFlux(true, num);
+    //else
+      // necessary to print statistical values after each time step but the solution only
+      //flux_ = CalcFlux(true);
   }
 
   // compute time derivative at time n+1

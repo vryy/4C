@@ -62,6 +62,7 @@ enum BoundaryAction {
   bd_add_convective_mass_flux,      //add_convective_mass_flux
   bd_calc_convective_heat_transfer, //calc_convective_heat_transfer,
   bd_calc_elch_electrode_kinetics,  //calc_elch_electrode_kinetics,
+  bd_calc_elch_adapt_DC,  //calc_elch_electrode_kinetics,
   bd_calc_loma_therm_press,         //calc_therm_press,
   bd_calc_surface_permeability,     //calc_surface_permeability,
   bd_calc_TG_outflow,               //levelset_TaylorGalerkin_boundary,
