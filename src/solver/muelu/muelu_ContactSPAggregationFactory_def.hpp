@@ -245,6 +245,9 @@ void ContactSPAggregationFactory<Scalar, LocalOrdinal, GlobalOrdinal, Node, Loca
 
   aggregates->SetNumAggregates(nLocalAggregates);
 
+  // TODO think about this. probably not necessary...
+  //aggregates->AggregatesCrossProcessors(true);  // force TentativePFactory to build a column map
+
   //aggregates->GetVertex2AggId()->describe(*fos,Teuchos::VERB_EXTREME);
   //aggregates->GetProcWinner()->describe(*fos,Teuchos::VERB_EXTREME);
 
