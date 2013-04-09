@@ -232,11 +232,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::GetMaterialParamsDiffCond(
       cond_[iphase] = actsinglemat->ComputeConductivity(conint_[0]);
       condderiv_[iphase] = actsinglemat->ComputeFirstDerivCond(conint_[0]);
       eps_[iphase] = actsinglemat->Epsilon();
+      tort_[iphase] = actsinglemat->Tortuosity();
+      epstort_[iphase]=eps_[iphase]*tort_[iphase];
 
       if(constparams_==false and materialNewman == false)
       {
         cond_[0] = 0.0;
-        const double faraday = 96485.3399;
+        const double faraday = INPAR::SCATRA::faraday_const;
         for(int ispec = 0;ispec<numscal_;++ispec)
         {
          cond_[0] += frt_*faraday*valence_[ispec]*valence_[ispec]*diffus_[ispec]*conint_[ispec];
@@ -276,13 +278,22 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
   const enum INPAR::SCATRA::ScaTraType  scatratype
   )
 {
-  const double faraday = 96485.3399;
+  const double faraday = INPAR::SCATRA::faraday_const;
 
   // get gradient of electric potential at integration point
   gradpot_.Multiply(derxy_,epotnp_);
 
   // current density at Gauss point
   curint_.Multiply(ecurnp_,funct_);
+
+#if 0
+  // derivation of current density at Gauss point
+  LINALG::Matrix<nsd_,nsd_> iderxy(true);
+  iderxy.MultiplyNT(ecurnp_,derxy_);
+  double divi = 0.0;
+  for (int idim=0;idim<nsd_;++idim)
+    divi += iderxy(idim,idim);
+#endif
 
   // migration term (convective part without z_k D_k): -F/RT\grad{\Phi}\grad
   migconv_.MultiplyTN(1.0,derxy_,gradpot_);
@@ -396,7 +407,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
 
         // rhs contribution due to incremental formulation (phidtam)
         // Standard Galerkin term
-        const double vtrans = rhsfac*hist_[k];
+        const double vtrans = rhsfac*eps_[0]*hist_[k];
         for (int vi=0; vi<nen_; ++vi)
         {
           const int fvi = vi*numdofpernode_+k;
@@ -406,7 +417,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
       }
       else
       {
-        rhsint = hist_[k] + (rhs_[k]*timefac); // contributions from t_n and \theta*dt*bodyforce(t_{n+1})
+        rhsint = eps_[0]*hist_[k] + (rhs_[k]*timefac); // contributions from t_n and \theta*dt*bodyforce(t_{n+1})
         //residual  = conint_[k] + timefac*(conv_ephinp_k - diff_ephinp_k) - rhsint;
 
         // rhs contribution due to incremental formulation (phinp)
@@ -444,7 +455,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
 
           /* Standard Galerkin term: */
           // (w, c)
-          emat(fvi, fui) += fac_funct_vi*funct_(ui) ;
+          emat(fvi, fui) += fac_funct_vi*eps_[0]*funct_(ui) ;
 
         } // for ui
       } // for vi
@@ -485,7 +496,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
         //
         // (w, u grad Dc)
         //
-        matvalconc += timefacfac_funct_vi*conv_(ui) ;
+        matvalconc += timefacfac_funct_vi*eps_[0]*conv_(ui) ;
 
         // ionic diffusive term (transport equation)
         //
@@ -493,7 +504,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
         //
         double laplawf(0.0);
         GetLaplacianWeakForm(laplawf, derxy_,ui,vi); // compute once, reuse below!
-        matvalconc += timefacfac*diffus_[k]*laplawf;
+        matvalconc += timefacfac*epstort_[0]*diffus_[k]*laplawf;
 
         // try to access the element matrix not too often. Can be costly
         emat(fvi,fui)                        += matvalconc;
@@ -514,10 +525,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
           for (int ui=0; ui<nen_; ++ui)
           {
             double laplawf=0.0;
-            GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
+            GetLaplacianWeakFormRHS(laplawf,derxy_,gradphicoupling_[k],vi);
 
             emat(vi*numdofpernode_+k,ui*numdofpernode_+k)
-              += timefacfac*diffusderiv_[k]*laplawf*funct_(ui);
+              += timefacfac*epstort_[0]*diffusderiv_[k]*laplawf*funct_(ui);
           }
         }
       }
@@ -547,7 +558,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
               // (grad w, sum(D_i grad Dc))
               //
               emat(vi*numdofpernode_+k,ui*numdofpernode_+iscal)
-                += -timefacfac*trans_[k]/valence_[k]*valence_[iscal]*diffus_[iscal]*laplawf;
+                += -timefacfac*epstort_[0]*trans_[k]/valence_[k]*valence_[iscal]*diffus_[iscal]*laplawf;
 
               // formulation b):  plain ionic diffusion coefficients simplified by ENC
 
@@ -563,7 +574,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
                   GetLaplacianWeakFormRHS(laplawf2,derxy_,gradphicoupling_[iscal2],vi);
 
                   emat(vi*numdofpernode_+k,ui*numdofpernode_+iscal)
-                    += -timefacfac*((transderiv_[k])[iscal])*funct_(ui)*valence_[iscal2]/valence_[k]*diffus_[iscal2]*laplawf2;
+                    += -timefacfac*epstort_[0]*((transderiv_[k])[iscal])*funct_(ui)*valence_[iscal2]/valence_[k]*diffus_[iscal2]*laplawf2;
                 } // for(iscal2)
               } // if(constparams_)
             } // for(iscal)
@@ -624,7 +635,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
           // (grad w, t_k kappa/(F z_k) D(grad phi))
           //
           emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) +=
-            timefacfac*trans_[k]*cond_[0]/faraday/valence_[k]*laplawf;
+            timefacfac*epstort_[0]*trans_[k]*cond_[0]/faraday/valence_[k]*laplawf;
 
           if(constparams_==false)
           {
@@ -633,21 +644,21 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
 
             for(int iscal=0; iscal<numscal_;++iscal)
             {
-              //Todo: Convergence in the first two steps is quite bad (no current, ENC)
+              //Todo (ehrl): Convergence in the first two steps is quite bad (no current, ENC)
 
               //linearization of the conductivity in the conduction term (transport equation)
               //
               // (grad w, t_k D(kappa(c))/(F z_k) grad phi)
               //
               emat(vi*numdofpernode_+k,ui*numdofpernode_+iscal)
-                 += timefacfac*trans_[k]/faraday/valence_[k]*condderiv_[iscal]*funct_(ui)*laplawf2;
+                 += timefacfac*epstort_[0]*trans_[k]/faraday/valence_[k]*condderiv_[iscal]*funct_(ui)*laplawf2;
 
               //linearization of the transference number in the conduction term (transport equation)
               //
               // (grad w, D(t_k(c)) kappa/(F z_k) grad phi)
               //
               emat(vi*numdofpernode_+k,ui*numdofpernode_+iscal)
-                 += timefacfac*((transderiv_[k])[iscal])*funct_(ui)/faraday/valence_[k]*cond_[0]*laplawf2;
+                 += timefacfac*epstort_[0]*((transderiv_[k])[iscal])*funct_(ui)/faraday/valence_[k]*cond_[0]*laplawf2;
             }
           }
 
@@ -660,7 +671,30 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
             for(int iscal=0;iscal<numscal_;++iscal)
             {
               emat(vi*numdofpernode_+k,ui*numdofpernode_+iscal)
-                += timefacfac/frt_/faraday/valence_[k]*trans_[k]*cond_[0]*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*laplawf;
+                += timefacfac*epstort_[0]/frt_/faraday/valence_[k]*trans_[k]*cond_[0]*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*laplawf;
+
+              //TODO (ehrl): Linearization only for one species (otherwise you need two for-dim loops)
+              {
+                double laplawf2(0.0);
+                GetLaplacianWeakFormRHS(laplawf2,derxy_,gradphicoupling_[iscal],vi);
+
+                // Linearization wrt ln c
+                emat(vi*numdofpernode_+k,ui*numdofpernode_+iscal)
+                  += -timefacfac*epstort_[0]/frt_/faraday/valence_[k]*trans_[k]*cond_[0]*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]/conint_[iscal]*laplawf2*funct_(ui);
+
+                // Linearization wrt kappa
+                emat(vi*numdofpernode_+k,ui*numdofpernode_+iscal)
+                  += timefacfac*epstort_[0]/frt_/faraday/valence_[k]*trans_[k]*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]*laplawf2*condderiv_[iscal]*funct_(ui);
+
+                // Linearization wrt transference number
+                emat(vi*numdofpernode_+k,ui*numdofpernode_+iscal)
+                  += timefacfac*epstort_[0]/frt_/faraday/valence_[k]*cond_[0]/c_/conint_[iscal]*laplawf2*(a_+b_*trans_[iscal])*(transderiv_[iscal])[iscal]*funct_(ui);
+
+                // Linearization wrt transference number
+                emat(vi*numdofpernode_+k,ui*numdofpernode_+iscal)
+                  += timefacfac*epstort_[0]/frt_/faraday/valence_[k]*cond_[0]/c_/conint_[iscal]*laplawf2*trans_[iscal]*b_*(transderiv_[iscal])[iscal]*funct_(ui);
+              }
+
             }
           }
 
@@ -672,7 +706,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
             for(int iscal=0;iscal<numscal_;++iscal)
             {
               emat(vi*numdofpernode_+k,ui*numdofpernode_+iscal)
-                += timefacfac/frt_/faraday/valence_[k]*trans_[k]*cond_[0]*trans_[iscal]/valence_[iscal]/conint_[iscal]*laplawf;
+                += timefacfac*epstort_[0]/frt_/faraday/valence_[k]*trans_[k]*cond_[0]*trans_[iscal]/valence_[iscal]/conint_[iscal]*laplawf;
             }
           }
         } // for ui
@@ -716,24 +750,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
       const int fvi = vi*numdofpernode_+k;
 
       // RHS source term (contains old part of rhs for OST / BDF2)
-      erhs[fvi] += fac*funct_(vi)*rhsint ;
+      erhs[fvi] += fac*eps_[0]*funct_(vi)*rhsint ;
 
       // convective term
-      erhs[fvi] -= rhsfac*funct_(vi)*conv_ephinp_k;
-
-      // addition to convective term for conservative form
-      // (not included in residual)
-      if (is_conservative_)
-      {
-        // convective term in conservative form
-        erhs[fvi] -= rhsfac*funct_(vi)*conint_[k]*vdiv_;
-      }
+      erhs[fvi] -= rhsfac*eps_[0]*funct_(vi)*conv_ephinp_k;
 
       {
         // diffusive term
         double laplawf(0.0);
-        GetLaplacianWeakFormRHS(laplawf,derxy_,gradphi_,vi);
-        erhs[fvi] -= rhsfac*diffus_[k]*laplawf;
+        GetLaplacianWeakFormRHS(laplawf,derxy_,gradphicoupling_[k],vi);
+        erhs[fvi] -= rhsfac*epstort_[0]*diffus_[k]*laplawf;
       }
 
       if(chemdiffcoupltransp_==true)
@@ -747,7 +773,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
           //this term cancel out if current is not a solution variable
           if(cursolvar_==true)
           {
-            erhs[fvi] -= - rhsfac*trans_[k]*valence_[iscal]/valence_[k]*diffus_[iscal]*laplawf;
+            erhs[fvi] -= - rhsfac*epstort_[0]*trans_[k]*valence_[iscal]/valence_[k]*diffus_[iscal]*laplawf;
           }
         }
       }
@@ -766,7 +792,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
         // diffusive term
         double laplawf=0.0;
         GetLaplacianWeakFormRHS(laplawf,derxy_,gradpot_,vi);
-        erhs[fvi]-= rhsfac*trans_[k]*cond_[0]/faraday/valence_[k]*laplawf;
+        erhs[fvi]-= rhsfac*epstort_[0]*trans_[k]*cond_[0]/faraday/valence_[k]*laplawf;
 
         if(newman_==true)
         {
@@ -777,7 +803,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
             GetLaplacianWeakFormRHS(laplawf2,derxy_,gradphicoupling_[iscal],vi); // compute once, reuse below!
 
             erhs[fvi]
-              -= rhsfac/frt_/faraday/valence_[k]*trans_[k]*cond_[0]*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*laplawf2;
+              -= rhsfac*epstort_[0]/frt_/faraday/valence_[k]*trans_[k]*cond_[0]*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*laplawf2;
           }
         }
 
@@ -790,7 +816,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
             GetLaplacianWeakFormRHS(laplawf2,derxy_,gradphicoupling_[iscal],vi); // compute once, reuse below!
 
             erhs[fvi]
-              -= rhsfac/frt_/faraday/valence_[k]*trans_[k]*cond_[0]*trans_[iscal]/valence_[iscal]/conint_[iscal]*laplawf2;
+              -= rhsfac*epstort_[0]/frt_/faraday/valence_[k]*trans_[k]*cond_[0]*trans_[iscal]/valence_[iscal]/conint_[iscal]*laplawf2;
            }
          }
       }
@@ -828,7 +854,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
           const int fvi = vi*numdofpernode_+(numscal_+1)+idim;
           const int fui = ui*numdofpernode_+(numscal_+1)+idim;
 
-          emat(fvi,fui) += timefacfac*funct_(vi)*funct_(ui);
+          emat(fvi,fui) += timefacfac/faraday*funct_(vi)*funct_(ui);
         }
       }
     }
@@ -843,7 +869,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
           const int fvi = vi*numdofpernode_+(numscal_+1)+idim;
           const int fui = ui*numdofpernode_+numscal_;
 
-          emat(fvi,fui) += timefacfac*funct_(vi)*cond_[0]*derxy_(idim,ui);
+          emat(fvi,fui) += timefacfac/faraday*epstort_[0]*funct_(vi)*cond_[0]*derxy_(idim,ui);
 
           //linearization of conductivity in the ohmic resistance term (current equation)
           //
@@ -852,7 +878,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
           if(constparams_==false)
           {
             for(int k=0;k<numscal_;++k)
-              emat(fvi,ui*numdofpernode_+k) += timefacfac*funct_(vi)*condderiv_[k]*funct_(ui)*gradpot_(idim);
+              emat(fvi,ui*numdofpernode_+k) += timefacfac/faraday*epstort_[0]*funct_(vi)*condderiv_[k]*funct_(ui)*gradpot_(idim);
           }
         }
       }
@@ -875,15 +901,15 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
               {
                 if(diffbased_==true)
                   emat(vi*numdofpernode_+(numscal_+1)+idim,ui*numdofpernode_+iscal)
-                    += timefacfac*funct_(vi)*faraday*valence_[iscal]*diffus_[iscal]*derxy_(idim,ui);
+                    += timefacfac/faraday*epstort_[0]*funct_(vi)*faraday*valence_[iscal]*diffus_[iscal]*derxy_(idim,ui);
                 else
                   emat(vi*numdofpernode_+(numscal_+1)+idim,ui*numdofpernode_+iscal)
-                    += timefacfac*funct_(vi)/frt_*cond_[0]*trans_[iscal]/valence_[iscal]/conint_[iscal]*derxy_(idim,ui);
+                    += timefacfac/faraday*epstort_[0]*funct_(vi)/frt_*cond_[0]*trans_[iscal]/valence_[iscal]/conint_[iscal]*derxy_(idim,ui);
               }
               else
               {
                 emat(vi*numdofpernode_+(numscal_+1)+idim,ui*numdofpernode_+iscal)
-                  += timefacfac*funct_(vi)/frt_*cond_[0]*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*derxy_(idim,ui);
+                  += timefacfac/faraday*epstort_[0]*funct_(vi)/frt_*cond_[0]*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*derxy_(idim,ui);
 
 // linearization of coupling term in the current equation??
 #if 0
@@ -942,7 +968,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
                  |                 |
                   \               /
              */
-             emat(fvi,fui) -= timefacfac*derxy_(idim,vi)*funct_(ui);
+             // version a: (grad phi,  Di)
+             emat(fvi,fui) -= timefacfac/faraday*derxy_(idim,vi)*funct_(ui);
+             // version b: (phi, div Di) -> not partially integrated
+             //emat(fvi,fui) += timefacfac*funct_(vi)*derxy_(idim,ui);
            } // end for(idim)
          } // end for(ui)
        } // end for(vi)
@@ -962,7 +991,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
           double laplawf(0.0);
           GetLaplacianWeakForm(laplawf, derxy_,ui,vi); // compute once, reuse below!
 
-          emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+numscal_) += timefacfac*cond_[0]*laplawf;
+          emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+numscal_) += timefacfac*epstort_[0]/faraday*cond_[0]*laplawf;
 
           if(constparams_==false)
           {
@@ -972,7 +1001,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
             for(int iscal=0;iscal<numscal_;++iscal)
             {
               emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+iscal)
-                += timefacfac*condderiv_[iscal]*funct_(ui)*laplawf2;
+                += timefacfac*epstort_[0]/faraday*condderiv_[iscal]*funct_(ui)*laplawf2;
             }
           }
 
@@ -982,24 +1011,33 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
             {
               if(diffbased_==true)
                 emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+iscal)
-                  += timefacfac*faraday*valence_[iscal]*diffus_[iscal]*laplawf;
+                  += timefacfac/faraday*epstort_[0]*faraday*valence_[iscal]*diffus_[iscal]*laplawf;
               else
                 emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+iscal)
-                  += timefacfac/frt_*cond_[0]*trans_[iscal]/valence_[iscal]/conint_[iscal]*laplawf;
+                  += timefacfac/faraday*epstort_[0]/frt_*cond_[0]*trans_[iscal]/valence_[iscal]/conint_[iscal]*laplawf;
             }
             else
             {
               emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+iscal)
-                += timefacfac/frt_*cond_[0]*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*laplawf;
+                += timefacfac*epstort_[0]/faraday/frt_*cond_[0]*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]*laplawf;
 
-// linearization of coupling term in the current equation??
-#if 0
-              double laplawf2(0.0);
-              GetLaplacianWeakFormRHS(laplawf2,derxy_,gradphicoupling_[iscal],vi);
+              //TODO (ehrl): Linearization only for one species (otherwise you need two for-dim loops)
+              {
+                double laplawf2(0.0);
+                GetLaplacianWeakFormRHS(laplawf2,derxy_,gradphicoupling_[iscal],vi);
 
-              emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+iscal)
-                += timefacfac/frt_*cond_[0]*trans_[iscal]/valence_[iscal]/((-1)*conint_[iscal]*conint_[iscal])*funct_(ui)*laplawf2;
-#endif
+                // Linearization wrt ln c
+                emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+iscal)
+                  += -timefacfac*epstort_[0]/faraday/frt_*cond_[0]*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]/conint_[iscal]*laplawf2*funct_(ui);
+
+                // Linearization wrt kappa
+                emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+iscal)
+                  += timefacfac*epstort_[0]/faraday/frt_*(a_+(b_*trans_[iscal]))/c_/conint_[iscal]*laplawf2*condderiv_[iscal]*funct_(ui);
+
+                // Linearization wrt transference number
+                emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+iscal)
+                  += timefacfac*epstort_[0]/faraday/frt_*cond_[0]/c_/conint_[iscal]*laplawf2*b_*(transderiv_[iscal])[iscal]*funct_(ui);
+              }
             }
           }
         } // for ui
@@ -1014,7 +1052,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
           double laplawf(0.0);
           GetLaplacianWeakFormRHS(laplawf, derxy_,gradpot_,vi); // compute once, reuse below!
 
-          erhs[vi*numdofpernode_+numscal_] -= rhsfac*cond_[0]*laplawf;
+          erhs[vi*numdofpernode_+numscal_] -= rhsfac*epstort_[0]/faraday*cond_[0]*laplawf;
         }
 
         for (int iscal=0; iscal < numscal_; ++iscal)
@@ -1026,9 +1064,9 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
             GetLaplacianWeakFormRHS(laplawf2,derxy_,gradphicoupling_[iscal],vi); // compute once, reuse below!
 
             if(diffbased_==true)
-              erhs[vi*numdofpernode_+numscal_] -= rhsfac*faraday*valence_[iscal]*diffus_[iscal]*laplawf2;
+              erhs[vi*numdofpernode_+numscal_] -= rhsfac/faraday*epstort_[0]*faraday*valence_[iscal]*diffus_[iscal]*laplawf2;
             else
-              erhs[vi*numdofpernode_+numscal_] -= rhsfac/frt_*cond_[0]*trans_[iscal]/valence_[iscal]/conint_[iscal]*laplawf2;
+              erhs[vi*numdofpernode_+numscal_] -= rhsfac/faraday*epstort_[0]/frt_*cond_[0]*trans_[iscal]/valence_[iscal]/conint_[iscal]*laplawf2;
           }
           else
           {
@@ -1037,7 +1075,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
             GetLaplacianWeakFormRHS(laplawf2,derxy_,gradphicoupling_[iscal],vi); // compute once, reuse below!
 
             erhs[vi*numdofpernode_+numscal_]
-              -= rhsfac/frt_*cond_[0]*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*laplawf2;
+              -= rhsfac*epstort_[0]/faraday/frt_*cond_[0]*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*laplawf2;
           }
         }
       }
@@ -1061,22 +1099,10 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
       for (int idim = 0; idim <nsd_; ++idim)
       {
         // (v, i)
-        erhs[vi*numdofpernode_+(numscal_+1)+idim]-=rhsfac*funct_(vi)*curint_(idim);
+        erhs[vi*numdofpernode_+(numscal_+1)+idim]-=rhsfac/faraday*funct_(vi)*curint_(idim);
 
         // (v, kappa grad phi)
-        erhs[vi*numdofpernode_+(numscal_+1)+idim]-=rhsfac*funct_(vi)*cond_[0]*gradpot_(idim);
-
-        //linearization of conductivity in the ohmic resistance term (current equation)
-        //
-        // (w, D(kappa(c)) grad phi)
-        //
-#if 0
-        if(constparams_==false)
-        {
-          for(int k=0;k<numscal_;++k)
-            erhs[vi*numdofpernode_+(numscal_+1)+idim] -= rhsfac*funct_(vi)*(condderiv_[k])*gradpot_(idim);
-        }
-#endif
+        erhs[vi*numdofpernode_+(numscal_+1)+idim]-=rhsfac/faraday*epstort_[0]*funct_(vi)*cond_[0]*gradpot_(idim);
       }
 
       if(equpot_==INPAR::ELCH::equpot_divi)
@@ -1085,8 +1111,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
         //erhs[vi*numdofpernode_+(numdofpernode_-1)]-=rhsfac*funct_(vi)*curdiv_;
         {
           double laplawf=0.0;
+          // version a: (grad phi,  Di)
           GetLaplacianWeakFormRHS(laplawf,derxy_,curint_,vi);
-          erhs[vi*numdofpernode_+numscal_]-= -rhsfac*laplawf;
+          erhs[vi*numdofpernode_+numscal_]-= -rhsfac/faraday*laplawf;
+          // version b: (phi, div Di) -> not partially integrated
+          //erhs[vi*numdofpernode_+numscal_] -= rhsfac*funct_(vi)*divi;
         }
       }
 
@@ -1102,17 +1131,19 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
             if(newman_== false)
             {
               if(diffbased_==true)
-                erhs[vi*numdofpernode_+(numscal_+1)+idim] -= rhsfac*funct_(vi)*faraday*valence_[iscal]*diffus_[iscal]*gradphicoupling_[iscal](idim);
+                erhs[vi*numdofpernode_+(numscal_+1)+idim] -= rhsfac/faraday*epstort_[0]*funct_(vi)*faraday*valence_[iscal]*diffus_[iscal]*gradphicoupling_[iscal](idim);
               else
               {
                 erhs[vi*numdofpernode_+(numscal_+1)+idim]
-                     -= rhsfac*funct_(vi)/frt_*cond_[0]*trans_[iscal]/valence_[iscal]/conint_[iscal]*gradphicoupling_[iscal](idim);
+                     -= rhsfac/faraday*epstort_[0]*funct_(vi)/frt_*cond_[0]*trans_[iscal]/valence_[iscal]/conint_[iscal]*gradphicoupling_[iscal](idim);
               }
             }
             else
             {
               erhs[vi*numdofpernode_+(numscal_+1)+idim]
-                -= rhsfac*funct_(vi)/frt_*cond_[0]*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*gradphicoupling_[iscal](idim);
+                -= rhsfac/faraday*epstort_[0]*funct_(vi)/frt_*cond_[0]*((a_+(b_*trans_[iscal]))/c_)/conint_[iscal]*gradphicoupling_[iscal](idim);
+              //erhs[vi*numdofpernode_+(numscal_+1)+idim]
+              //  -= rhsfac*funct_(vi)*faraday*(2.0e-5-4.0e-5)*gradphicoupling_[iscal](idim);
             }
           }
         }
@@ -1123,8 +1154,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElchBat(
   //----------------------------------------------------------------
   // 3c) rhs: governing equation for potential
   //----------------------------------------------------------------
-
-  //PrintEleMatToExcel(emat,erhs);
+  //if(eid_==1)
+    //PrintEleMatToExcel(emat,erhs);
   //---------------------------------------------------------------
   // 3d) rhs: Stabilization terms
   //----------------------------------------------------------------
@@ -1141,9 +1172,13 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::PrintEleMatToExcel(
     Epetra_SerialDenseVector&             erhs
   )
 {
+  std::ostringstream oss;
+  oss << eid_;
+  std::string value = oss.str();
+  //ostringstream temp;
+
   {
-    //ostringstream temp;
-    const std::string output = "Matrix.csv";
+    const std::string output = "Matrix"+value+".csv";
 
     std::ofstream f;
     f.open(output.c_str());
@@ -1177,7 +1212,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::PrintEleMatToExcel(
 
   {
     //ostringstream temp;
-    const std::string output = "residual.csv";
+    const std::string output = "residual"+value+".csv";
 
     std::ofstream f;
     f.open(output.c_str());
@@ -1196,8 +1231,8 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::PrintEleMatToExcel(
     f.flush();
     f.close();
   }
-
-  dserror("element matrix was printed to a csv file");
+  if(eid_==9)
+    //dserror("element matrix was printed to a csv file");
   return;
 }
 
