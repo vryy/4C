@@ -52,6 +52,7 @@ Maintainer: Alexander Popp
 /************************************************************************/
 
 // GENERAL DEBUGGING OPTIONS
+//#define CONTACTEXPORT             /* flag for export of inttime, active set... to textfiles. USE WITH CONTACTASOUTPUT AND CONTACTFORCEOUTPUT */
 //#define CONTACTASOUTPUT           /* flag for detailed active set output */
 //#define CONTACTFORCEOUTPUT        /* flag for output of contact forces */
 //#define CONTACTTIME               /* flag for contact time measurement */

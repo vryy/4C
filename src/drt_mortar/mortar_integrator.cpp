@@ -157,6 +157,21 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
             mygaussrule = DRT::UTILS::intrule_line_10point;
             break;
           }
+          case 16:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_16point;
+            break;
+          }
+          case 20:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_20point;
+            break;
+          }
+          case 32:
+          {
+            mygaussrule = DRT::UTILS::intrule_line_32point;
+            break;
+          }
           default:
           {
             dserror("Requested GP-Number is not implemented!");
@@ -186,7 +201,7 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
     DRT::UTILS::GaussRule2D mygaussrule=DRT::UTILS::intrule_tri_7point;
 
     // GP switch if non-zero value provided by user
-    if(integrationtype==INPAR::MORTAR::inttype_fast ||integrationtype==INPAR::MORTAR::inttype_fast_BS)
+    if(integrationtype==INPAR::MORTAR::inttype_fast)// ||integrationtype==INPAR::MORTAR::inttype_fast_BS)
     {
       if (numgp>0)
       {
@@ -328,9 +343,19 @@ void MORTAR::MortarIntegrator::InitializeGP(DRT::Element::DiscretizationType ele
             mygaussrule = DRT::UTILS::intrule_quad_100point;
             break;
           }
+          case 16:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_256point;
+            break;
+          }
           case 20:
           {
             mygaussrule = DRT::UTILS::intrule_quad_400point;
+            break;
+          }
+          case 32:
+          {
+            mygaussrule = DRT::UTILS::intrule_quad_1024point;
             break;
           }
           default:

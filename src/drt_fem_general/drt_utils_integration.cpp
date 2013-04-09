@@ -73,8 +73,8 @@ namespace internal
     // compute 2D quadrature weights and points from a tensor product of the
     // 1D quadrature formula
     void fillquadrature (const DRT::UTILS::GaussRule1D gaussrule,
-                         double (&qxg)[400][2],
-                         double (&qwgt)[400],
+                         double (&qxg)[1024][2],
+                         double (&qwgt)[1024],
                          int    &nquad)
     {
       nquad = 0;
@@ -3496,11 +3496,6 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
     internal::fillquadrature(intrule_line_8point,qxg,qwgt,nquad);
     break;
   }
-  case intrule_quad_400point:
-  {
-    internal::fillquadrature(intrule_line_20point,qxg,qwgt,nquad);
-    break;
-  }
   case intrule_quad_81point:
   {
     internal::fillquadrature(intrule_line_9point,qxg,qwgt,nquad);
@@ -3509,6 +3504,21 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
   case intrule_quad_100point:
   {
     internal::fillquadrature(intrule_line_10point,qxg,qwgt,nquad);
+    break;
+  }
+  case intrule_quad_256point:
+  {
+    internal::fillquadrature(intrule_line_16point,qxg,qwgt,nquad);
+    break;
+  }
+  case intrule_quad_400point:
+  {
+    internal::fillquadrature(intrule_line_20point,qxg,qwgt,nquad);
+    break;
+  }
+  case intrule_quad_1024point:
+  {
+    internal::fillquadrature(intrule_line_32point,qxg,qwgt,nquad);
     break;
   }
   case intrule_quad_lobatto25point:

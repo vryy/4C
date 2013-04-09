@@ -53,7 +53,7 @@ Maintainer: Alexander Popp
 #include "../drt_inpar/inpar_contact.H"
 #include "../drt_inpar/inpar_mortar.H"
 #include "../drt_inpar/drt_validparameters.H"
-
+#include "../drt_io/io_control.H"
 
 /*----------------------------------------------------------------------*
  |  ctor (public)                                             popp 03/08|
@@ -818,6 +818,7 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   GetStrategy().MMatrix()->Multiply(true, *normalstresses, *fcmasternor);
   GetStrategy().MMatrix()->Multiply(true, *tangentialstresses, *fcmastertan);
 
+
 #ifdef MASTERNODESINCONTACT
   //BEGIN: to output the global ID's of the master nodes in contact - devaal 02.2011
   
@@ -883,6 +884,36 @@ void CONTACT::CoManager::PostprocessTractions(IO::DiscretizationWriter& output)
   output.WriteVector("tanslaveforce",fcslavetanexp);
   output.WriteVector("normasterforce",fcmasternorexp);
   output.WriteVector("tanmasterforce",fcmastertanexp);
+
+#ifdef CONTACTEXPORT
+  // export averaged node forces to xxx.force
+  double resultnor[fcslavenor->NumVectors()];
+  double resulttan[fcslavetan->NumVectors()];
+  fcslavenor->Norm2(resultnor);
+  fcslavetan->Norm2(resulttan);
+
+  if(Comm().MyPID()==0)
+  {
+    cout << "resultnor= " << resultnor[0] << endl;
+    cout << "resulttan= " << resulttan[0] << endl;
+
+    FILE* MyFile = NULL;
+    std::ostringstream filename;
+    const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+    filename << filebase << ".force";
+    MyFile = fopen(filename.str().c_str(), "at+");
+    if (MyFile)
+    {
+      //fprintf(MyFile,valuename.c_str());
+      fprintf(MyFile, "%g\t",resultnor[0]);
+      fprintf(MyFile, "%g\n",resulttan[0]);
+      fclose(MyFile);
+    }
+    else
+      dserror("ERROR: File for Output could not be opened.");
+  }
+#endif //CONTACTEXPORT
+
 #endif //CONTACTFORCEOUTPUT
  
  

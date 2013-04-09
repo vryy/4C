@@ -1024,10 +1024,11 @@ namespace STR
 
     //! @name Time measurement
     //@{
-    RCP<Epetra_Time>  timer_;    //!< timer for solution technique
-    double            dtsolve_;  //!< linear solver time
-    double            dtele_;    //!< element evaluation time
-    double            dtcmt_;    //!< contact / meshtying evaluation time
+    RCP<Epetra_Time>  timer_;           //!< timer for solution technique
+    double            dtsolve_;         //!< linear solver time
+    double            dtele_;           //!< element evaluation time
+    double            dtcmt_;           //!< contact / meshtying evaluation time
+    double            inttime_global_;  //!< global integration time for contact evaluation
     //@}
 
     //! @name volume coupling specific stuff

@@ -664,6 +664,12 @@ public:
   */
   virtual void DetectTiedSlaveNodes(int& founduntied);
 
+  /*!
+  \brief return integration time for current interface
+
+  */
+  virtual double Inttime(){return inttime_interface_;};
+
   //@}
 
   //! @name Visualization and Debugging methods
@@ -727,6 +733,8 @@ protected:
   int                                maxdofglobal_;  // maximum dof ID in global discretization
   
   Teuchos::RCP<MORTAR::BinaryTree>   binarytree_;    // binary searchtree
+
+  double                             inttime_interface_;// integration time
 
 }; // class MortarInterface
 } // namespace MORTAR

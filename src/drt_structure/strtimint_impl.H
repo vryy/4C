@@ -554,6 +554,9 @@ namespace STR
       FILE* ofile  //!< output file handle
     );
 
+    // export contact integration time and active set into textfiles
+    // xxx.time and xxx.active
+    void ExportContactQuantities();
     //@}
 
     //! @name Attribute access functions

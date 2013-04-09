@@ -203,6 +203,19 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     */
     Teuchos::RCP<Epetra_Vector> ContactWear() { return wearoutput_; }
 
+
+    /*!
+    \brief Return required Integration time
+
+    */
+    double Inttime() {return inttime_;};
+
+    /*!
+    \brief Set integration time to zero
+
+    */
+    void Inttime_init(){inttime_=0.0;};
+
     /*!
     \brief Return current global contact status
 
@@ -665,41 +678,41 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
 
     std::vector<Teuchos::RCP<CONTACT::CoInterface> > interface_;  // contact interfaces
 
-    std::vector<double>      tunbalance_;    // parallel unbalance factors (time) for current timestep
-    std::vector<int>         eunbalance_;    // parallel unbalance factors (eles) for current timestep
+    std::vector<double>      tunbalance_;           // parallel unbalance factors (time) for current timestep
+    std::vector<int>         eunbalance_;           // parallel unbalance factors (eles) for current timestep
 
-    Teuchos::RCP<Epetra_Map> glmdofrowmap_;  // global Lagrange mult. dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gsnoderowmap_;  // global slave node row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gmnoderowmap_;  // global master node row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gsdofrowmap_;   // global slave dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gmdofrowmap_;   // global master dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gndofrowmap_;   // global internal dof row map
-    Teuchos::RCP<Epetra_Map> gsmdofrowmap_;  // global slave and master dof row map (s+m map)
-    Teuchos::RCP<Epetra_Map> gdisprowmap_;   // global displacement dof row map (s+m+n map)
+    Teuchos::RCP<Epetra_Map> glmdofrowmap_;         // global Lagrange mult. dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gsnoderowmap_;         // global slave node row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gmnoderowmap_;         // global master node row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gsdofrowmap_;          // global slave dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gmdofrowmap_;          // global master dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gndofrowmap_;          // global internal dof row map
+    Teuchos::RCP<Epetra_Map> gsmdofrowmap_;         // global slave and master dof row map (s+m map)
+    Teuchos::RCP<Epetra_Map> gdisprowmap_;          // global displacement dof row map (s+m+n map)
 
-    Teuchos::RCP<Epetra_Map> gactivenodes_;  // global active slave node row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gactivedofs_;   // global active slave dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gactiven_;      // global row map of matrix N (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gactivet_;      // global row map of matrix T (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gslipnodes_;    // global slip slave node row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gslipdofs_;     // global slip slave dof row map (of all interfaces)
-    Teuchos::RCP<Epetra_Map> gslipt_;        // global row map of matrix T for slip dofs (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gactivenodes_;         // global active slave node row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gactivedofs_;          // global active slave dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gactiven_;             // global row map of matrix N (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gactivet_;             // global row map of matrix T (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gslipnodes_;           // global slip slave node row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gslipdofs_;            // global slip slave dof row map (of all interfaces)
+    Teuchos::RCP<Epetra_Map> gslipt_;               // global row map of matrix T for slip dofs (of all interfaces)
 
-    Teuchos::RCP<Epetra_Map> pglmdofrowmap_; // global LM dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> pgsdofrowmap_;  // global slave dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> pgmdofrowmap_;  // global master dof row map (before parallel redistribution)
-    Teuchos::RCP<Epetra_Map> pgsmdofrowmap_; // global slave and master dof row map (before parallel redistribution)
+    Teuchos::RCP<Epetra_Map> pglmdofrowmap_;        // global LM dof row map (before parallel redistribution)
+    Teuchos::RCP<Epetra_Map> pgsdofrowmap_;         // global slave dof row map (before parallel redistribution)
+    Teuchos::RCP<Epetra_Map> pgmdofrowmap_;         // global master dof row map (before parallel redistribution)
+    Teuchos::RCP<Epetra_Map> pgsmdofrowmap_;        // global slave and master dof row map (before parallel redistribution)
 
-    Teuchos::RCP<LINALG::SparseMatrix> dmatrix_; // global Mortar matrix D
-    Teuchos::RCP<LINALG::SparseMatrix> mmatrix_; // global Mortar matrix M
-    Teuchos::RCP<Epetra_Vector> g_;              // global weighted gap vector g
-    Teuchos::RCP<Epetra_Vector> wearvector_;     // global weighted wear vector w   
+    Teuchos::RCP<LINALG::SparseMatrix> dmatrix_;    // global Mortar matrix D
+    Teuchos::RCP<LINALG::SparseMatrix> mmatrix_;    // global Mortar matrix M
+    Teuchos::RCP<Epetra_Vector> g_;                 // global weighted gap vector g
+    Teuchos::RCP<Epetra_Vector> wearvector_;        // global weighted wear vector w
 
     Teuchos::RCP<LINALG::SparseMatrix> lindmatrix_; // global Matrix LinD containing slave fc derivatives
     Teuchos::RCP<LINALG::SparseMatrix> linmmatrix_; // global Matrix LinM containing master fc derivatives
 
-    Teuchos::RCP<LINALG::SparseMatrix> dold_; // global Mortar matrix D (last end-point t_n)
-    Teuchos::RCP<LINALG::SparseMatrix> mold_; // global Mortar matrix D (last end-point t_n)
+    Teuchos::RCP<LINALG::SparseMatrix> dold_;       // global Mortar matrix D (last end-point t_n)
+    Teuchos::RCP<LINALG::SparseMatrix> mold_;       // global Mortar matrix D (last end-point t_n)
 
     Teuchos::RCP<Epetra_Vector> z_;                 // current vector of Lagrange multipliers at t_n+1
     Teuchos::RCP<Epetra_Vector> zold_;              // old vector of Lagrange multipliers at t_n
@@ -723,13 +736,14 @@ class CoAbstractStrategy : public MORTAR::StrategyBase
     Teuchos::RCP<LINALG::SparseMatrix>  doldmod_;         // modified global Mortar matrix Dold
     
     // thero-structure-interaction with contact
-    bool tsi_;                                      // flag for thermo-structure interaction with contact
-    Teuchos::RCP<LINALG::SparseMatrix>  amatrix_;   // global matrix A
+    bool tsi_;                                            // flag for thermo-structure interaction with contact
+    Teuchos::RCP<LINALG::SparseMatrix>  amatrix_;         // global matrix A
     
     // contact with wear
-    bool wear_;                                // flag for contact with wear
-    Teuchos::RCP<Epetra_Vector> wearoutput_;   // vector of wear at t_n+1   
-    
+    bool wear_;                                           // flag for contact with wear
+    Teuchos::RCP<Epetra_Vector> wearoutput_;              // vector of wear at t_n+1
+    double inttime_;                                      // integration time
+
 }; // class CoAbstractStrategy
 } // namespace CONTACT
 

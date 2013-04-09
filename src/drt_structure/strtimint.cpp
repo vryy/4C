@@ -613,6 +613,9 @@ void STR::TimInt::PrepareStepContact()
   // just do something here if contact is present
   if (HaveContactMeshtying())
   {
+    // set inttime_ to zero
+    cmtman_->GetStrategy().Inttime_init();
+
     // dynamic parallel redistribution of interfaces
     cmtman_->GetStrategy().RedistributeContact((*dis_)(0));
 

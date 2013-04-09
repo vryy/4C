@@ -415,6 +415,8 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     void InitEvalInterface() {}
     void InitEvalMortar() {}
     void Initialize() {}
+    double Inttime() {return inttime_;};
+    void Inttime_init(){inttime_=0.0;};
     const int NumberOfActiveNodes() {return 0;}
     const int NumberOfSlipNodes() {return 0;}
     void OutputStresses() {}
@@ -467,6 +469,7 @@ class MtAbstractStrategy : public MORTAR::StrategyBase
     bool                      dualquadslave3d_;     // flag indicating whether trafo should be applied
     Teuchos::RCP<LINALG::SparseMatrix> trafo_;      // transformation matrix T for dual quad 3D case
     Teuchos::RCP<LINALG::SparseMatrix> invtrafo_;   // inverse trafo matrix T^(-1) for dual quad 3D case
+    double inttime_;                                // Integration time
 
 }; // class MtAbstractStrategy
 } // namespace CONTACT

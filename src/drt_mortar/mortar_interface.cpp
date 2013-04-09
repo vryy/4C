@@ -1480,6 +1480,9 @@ void MORTAR::MortarInterface::Evaluate()
 
   // loop over proc's slave elements of the interface for integration
   // use standard column map to include processor's ghosted elements
+  Comm().Barrier();
+  const double t_start = Teuchos::Time::wallTime();
+
   for (int i=0; i<selecolmap_->NumMyElements();++i)
   {
     int gid1 = selecolmap_->GID(i);
@@ -1508,6 +1511,12 @@ void MORTAR::MortarInterface::Evaluate()
     //********************************************************************
     IntegrateCoupling(selement,melements);
   }
+
+  Comm().Barrier();
+  const double inttime = Teuchos::Time::wallTime()-t_start;
+
+  //store integrationtime
+  inttime_interface_=inttime;
 
 #ifdef MORTARGMSHCELLS
   // finish integration cell GMSH files

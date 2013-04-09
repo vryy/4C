@@ -43,7 +43,7 @@ Maintainer: Alexander Popp
 #include "../linalg/linalg_mapextractor.H"
 #include "../drt_patspec/patspec.H"
 #include "../drt_io/io_pstream.H"
-
+#include "../drt_io/io_control.H"
 /*----------------------------------------------------------------------*/
 /* constructor */
 STR::TimIntImpl::TimIntImpl
@@ -2316,11 +2316,72 @@ void STR::TimIntImpl::PrintNewtonIterText
 
 }
 
+/*----------------------------------------------------------------------*/
+/* Export active set and characteristic calculation times into text files */
+void STR::TimIntImpl::ExportContactQuantities()
+{
+  //add integration time contribution from every newton step
+  inttime_global_+=cmtman_->GetStrategy().Inttime();
+
+  double iteration=(double)iter_+1.0;
+  double curinttime=(cmtman_->GetStrategy().Inttime())/(iteration);
+
+  cout << "*** averaged inttime per newton step =  " << curinttime << endl;
+  cout << "*** total inttime per time step= " << curinttime*iteration << endl;
+
+  // write number of active nodes for converged newton in textfile xxx.active
+  FILE* MyFile = NULL;
+  std::ostringstream filename;
+  const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  filename << filebase <<".active";
+  MyFile = fopen(filename.str().c_str(), "at+");
+
+  // store active set
+  if (MyFile)
+  {
+    fprintf(MyFile, "%d\t", cmtman_->GetStrategy().NumberOfActiveNodes());
+    fprintf(MyFile, "%d\n", cmtman_->GetStrategy().NumberOfSlipNodes());
+    fclose(MyFile);
+  }
+  else
+    dserror("ERROR: File could not be opened.");
+
+
+  //write required time
+  FILE* MyFile2 = NULL;
+  std::ostringstream filename2;
+  const std::string filebase2 = DRT::Problem::Instance()->OutputControlFile()->FileName();
+  filename2 << filebase2 <<".time";
+  MyFile2 = fopen(filename2.str().c_str(), "at+");
+
+  // store characteristic times
+  if (MyFile2)
+  {
+    fprintf(MyFile2, "%g\t", dtsolve_);
+    fprintf(MyFile2, "%g\t", dtele_);
+    fprintf(MyFile2, "%g\t", dtcmt_);
+    fprintf(MyFile2, "%g\t", curinttime);
+    fprintf(MyFile2, "%g\n", curinttime*iteration);
+    fclose(MyFile2);
+  }
+  else
+    dserror("ERROR: File could not be opened.");
+
+  return;
+}
 
 /*----------------------------------------------------------------------*/
 /* print statistics of converged NRI */
 void STR::TimIntImpl::PrintNewtonConv()
 {
+#ifdef CONTACTEXPORT
+  // output integration time for contact and more...
+  if (HaveContactMeshtying())
+  {
+    ExportContactQuantities();
+  }
+#endif
+
   // print constraint manager's lore
   if (conman_->HaveMonitor())
   {

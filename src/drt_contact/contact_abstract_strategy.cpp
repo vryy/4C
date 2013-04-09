@@ -656,6 +656,9 @@ void CONTACT::CoAbstractStrategy::InitEvalInterface()
     // initialize / reset interfaces
     interface_[i]->Initialize();
 
+    //store required integration time
+    inttime_+=interface_[i]->Inttime();
+
     // evaluate interfaces
     interface_[i]->Evaluate();
   }
@@ -2427,6 +2430,13 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
     //--------------------------------------------------------------------
     else
     {
+#ifdef CONTACTEXPORT
+      // export variables
+      double sum_jumpx=0.0;
+      double sum_jumpe=0.0;
+      double sum_jumpall=0.0;
+#endif
+
       // loop over all nodes
       for (int k=0;k<(int)gnid.size();++k)
       {
@@ -2435,6 +2445,12 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         {
           printf("SLIP:  %d \t lm_n: % e \t lm_t: % e \t jump1: % e \t jump2: % e \t wear: % e \n",gnid[k],glmn[k],glmt[k],gjtx[k],gjte[k],gwear[k]);
           fflush(stdout);
+#ifdef CONTACTEXPORT
+          // preparation for output
+          sum_jumpx+=gjtx[k];
+          sum_jumpe+=gjte[k];
+          sum_jumpall+=sqrt(gjtx[k]*gjtx[k] + gjte[k]*gjte[k]);
+#endif
         }
 
         // print nodes of stick set *************************************
@@ -2453,6 +2469,30 @@ void CONTACT::CoAbstractStrategy::PrintActiveSet()
         // invalid status **************************************************
         else dserror("ERROR: Invalid node status %i for frictional case",gsta[k]);
       }
+
+#ifdef CONTACTEXPORT
+      // export averaged slip increments to xxx.jump
+      double sum_jumpx_final=sum_jumpx/((double)gnid.size());
+      double sum_jumpe_final=sum_jumpe/((double)gnid.size());
+      double sum_jumpall_final=sum_jumpall/((double)gnid.size());
+
+      FILE* MyFile = NULL;
+      std::ostringstream filename;
+      const std::string filebase = DRT::Problem::Instance()->OutputControlFile()->FileName();
+      filename << filebase << ".jump";
+      MyFile = fopen(filename.str().c_str(), "at+");
+      if (MyFile)
+      {
+        //fprintf(MyFile,valuename.c_str());
+        fprintf(MyFile, "%g\t",sum_jumpx_final);
+        fprintf(MyFile, "%g\t",sum_jumpe_final);
+        fprintf(MyFile, "%g\n",sum_jumpall_final);
+        fclose(MyFile);
+      }
+      else
+        dserror("ERROR: File for Output could not be opened.");
+#endif
+
     }
   }
 

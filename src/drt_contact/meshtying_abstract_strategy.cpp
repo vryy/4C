@@ -1201,10 +1201,26 @@ void CONTACT::MtAbstractStrategy::PrintActiveSet()
     for (int k=0;k<(int)gnid.size();++k)
     {
       // print nodes of active set *************************************
-      printf("ACTIVE: %d \t lm[0]: % e \t lm[1]: % e \t lm[2]: % e \n",gnid[k],glmx[k],glmy[k],glmz[k]);
+      //printf("ACTIVE: %d \t lm[0]: % e \t lm[1]: % e \t lm[2]: % e \n",gnid[k],glmx[k],glmy[k],glmz[k]);
 
+//      if (Xposg[k]==2.5 && Yposg[k]==-2.5)
+//      {
+//        printf("1  %d \t lm: % e \n",gnid[k],glmz[k]);
+//      }
+//      if (Xposg[k]==(10.0/12.0) && Yposg[k]==(-10.0/12.0))
+//      {
+//        printf("2  %d \t lm: % e \n",gnid[k],glmz[k]);
+//      }
+//      if (Xposg[k]==(-10.0/12.0) && Yposg[k]==(10.0/12.0))
+//      {
+//        printf("3  %d \t lm: % e \n",gnid[k],glmz[k]);
+//      }
+//      if (Xposg[k]==-2.5 && Yposg[k]==2.5)
+//      {
+//        printf("4  %d \t lm: % e \n",gnid[k],glmz[k]);
+//      }
       // alternative output: with additional slave node coordinates in reference configuration
-      //printf("ACTIVE: %d \t lm[0]: % e \t lm[1]: % e \t lm[2]: % e \t Xref: % e \t Yref: % e \t Zref: % e \n",gnid[k],glmx[k],glmy[k],glmz[k],Xposg[k],Yposg[k],Zposg[k]);
+      printf("ACTIVE: %d \t lm[0]: % e \t lm[1]: % e \t lm[2]: % e \t Xref: % e \t Yref: % e \t Zref: % e \n",gnid[k],glmx[k],glmy[k],glmz[k],Xposg[k],Yposg[k],Zposg[k]);
     }
     fflush(stdout);
   }

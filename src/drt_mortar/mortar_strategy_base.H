@@ -200,6 +200,8 @@ class StrategyBase
     virtual void InitializeUzawa(Teuchos::RCP<LINALG::SparseOperator>& kteff, Teuchos::RCP<Epetra_Vector>& feff) = 0;
     virtual double InitialPenalty() = 0;
     virtual void InterfaceForces(bool output = false) = 0;
+    virtual double Inttime() = 0;
+    virtual void Inttime_init()=0;
     virtual bool IsInContact() = 0;
     virtual Teuchos::RCP<Epetra_Vector> LagrMult() = 0;
     virtual Teuchos::RCP<Epetra_Vector> LagrMultOld() = 0;
