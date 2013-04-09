@@ -145,6 +145,7 @@ namespace SCATRA
       break;
     default:
       dserror("Element shape not supported.");
+      break;
     }
     return -1.0;
   }
