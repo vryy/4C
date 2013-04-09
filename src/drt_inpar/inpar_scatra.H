@@ -239,6 +239,7 @@ namespace INPAR
       linear,
       butler_volmer_newman,
       butler_volmer_bard,
+      nernst,
       zero
     };
 

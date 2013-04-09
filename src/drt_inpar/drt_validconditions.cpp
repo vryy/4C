@@ -2202,6 +2202,18 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
                                                               bvbard,
                                                               INPAR::SCATRA::butler_volmer_bard)));
 
+    // Nernst  equation:
+    std::vector<Teuchos::RCP<ConditionComponent> > nernst;
+    nernst.push_back(Teuchos::rcp(new SeparatorConditionComponent("e0")));
+    nernst.push_back(Teuchos::rcp(new RealConditionComponent("e0")));
+    nernst.push_back(Teuchos::rcp(new SeparatorConditionComponent("c0")));
+    nernst.push_back(Teuchos::rcp(new RealConditionComponent("c0")));
+    nernst.push_back(Teuchos::rcp(new SeparatorConditionComponent("dlcap")));
+    nernst.push_back(Teuchos::rcp(new RealConditionComponent("dlcap")));
+    reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("Nernst",
+                                                              nernst,
+                                                              INPAR::SCATRA::nernst)));
+
     // do-nothing
     std::vector<Teuchos::RCP<ConditionComponent> > zero;
     reactionmodel.push_back(Teuchos::rcp(new CondCompBundle("zero",
@@ -2245,13 +2257,14 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::ConditionDefinition> > > DRT::
            "kinetic model",
            "Butler-Volmer",
            Teuchos::tuple<std::string>("Butler-Volmer","Butler-Volmer-Yang1997","Tafel","linear",
-                                       "Butler-Volmer-Newman","Butler-Volmer-Bard","zero"),
+                                       "Butler-Volmer-Newman","Butler-Volmer-Bard","Nernst","zero"),
            Teuchos::tuple<int>(INPAR::SCATRA::butler_volmer,
                                INPAR::SCATRA::butler_volmer_yang1997,
                                INPAR::SCATRA::tafel,
                                INPAR::SCATRA::linear,
                                INPAR::SCATRA::butler_volmer_newman,
                                INPAR::SCATRA::butler_volmer_bard,
+                               INPAR::SCATRA::nernst,
                                INPAR::SCATRA::zero))),
         reactionmodel)));
 
