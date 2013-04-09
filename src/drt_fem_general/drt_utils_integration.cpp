@@ -3370,6 +3370,7 @@ DRT::UTILS::IntegrationPoints3D::IntegrationPoints3D(const GaussRule3D gaussrule
 
   default:
     dserror("unknown 3D integration rule");
+    break;
   }
   dsassert(max_nquad >= nquad,"increase size of double array in IntegationPoints class");
 }
@@ -3974,6 +3975,7 @@ DRT::UTILS::IntegrationPoints2D::IntegrationPoints2D(const GaussRule2D gaussrule
   }
   default:
     dserror("unknown 2D integration rule, GaussRule2D: %d",gaussrule);
+    break;
   }
   dsassert(max_nquad >= nquad,"increase size of double array in IntegationPoints class");
 }
@@ -4333,6 +4335,7 @@ DRT::UTILS::IntegrationPoints1D::IntegrationPoints1D(const GaussRule1D gaussrule
   }
   default:
     dserror("unknown 1D integration rule");
+    break;
   }
   dsassert(max_nquad >= nquad,"increase size of double array in IntegationPoints class");
 }
