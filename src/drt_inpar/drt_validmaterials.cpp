@@ -448,6 +448,7 @@ Teuchos::RCP<std::vector<Teuchos::RCP<DRT::INPUT::MaterialDefinition> > > DRT::I
                                             INPAR::MAT::m_elchphase));
 
     AddNamedReal(m,"EPSILON","porousity of the phase");
+    AddNamedReal(m,"TORTUOSITY","porousity of the phase");
     AddNamedReal(m,"CONDUCTIVITY","conductivity");
     AddNamedInt(m,"NR","conductivity depending on concentration: number of curve",0,true);
 

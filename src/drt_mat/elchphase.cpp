@@ -25,6 +25,7 @@ MAT::PAR::ElchPhase::ElchPhase(
   )
 : Parameter(matdata),
   epsilon_(matdata->GetDouble("EPSILON")),
+  tortuosity_(matdata->GetDouble("TORTUOSITY")),
   conductivity_(matdata->GetDouble("CONDUCTIVITY")),
   condcurvenr_(matdata->GetInt("NR"))
 {

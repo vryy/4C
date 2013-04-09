@@ -44,6 +44,7 @@ namespace MAT
 
       /// valence (= charge number)
       const double epsilon_;
+      const double tortuosity_;
       /// diffusivity coefficient
       const double conductivity_;
 
@@ -131,6 +132,7 @@ private:
 
     /// valence (= charge number)
     double Epsilon() const { return params_->epsilon_; }
+    double Tortuosity() const { return params_->tortuosity_; }
     double Conductivity() const { return params_->conductivity_; }
     /// valence (= charge number)
     double CondCurveNr() const { return params_->condcurvenr_; }
