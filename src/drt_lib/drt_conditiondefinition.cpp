@@ -559,6 +559,8 @@ Teuchos::RCP<std::stringstream> DRT::INPUT::DirichletNeumannBundle::Read(Conditi
 /*----------------------------------------------------------------------*
  | IntRealBundle::Constructor()                               ehrl 09/12|
  *----------------------------------------------------------------------*/
+//TODO: More general formulation possible (A. Ehrl)
+//      DirichleNeumannBundle can be replaced by a more general IntRealBundle
 DRT::INPUT::IntRealBundle::IntRealBundle
 (
   std::string name,
@@ -897,6 +899,7 @@ void DRT::INPUT::ConditionDefinition::Read(const Problem& problem,
     case DRT::Condition::Volume:  success = dobj=="DVOL";   break;
     default:
       dserror("geometry type unspecified");
+      break;
     }
 
     if (not success)
@@ -991,6 +994,7 @@ std::ostream& DRT::INPUT::ConditionDefinition::Print(std::ostream& stream,
   case DRT::Condition::Volume:  name = "DVOL";   break;
   default:
     dserror("geometry type unspecified");
+    break;
   }
 
   int count = 0;
