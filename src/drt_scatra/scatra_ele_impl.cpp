@@ -49,6 +49,7 @@
 #include "../drt_mat/structporo.H"
 #include "../drt_mat/newtonianfluid.H"
 #include "../drt_mat/elchmat.H"
+#include "../drt_mat/elchphase.H"
 
 // activate debug screen output
 //#define PRINT_ELCH_DEBUG
@@ -331,6 +332,8 @@ DRT::ELEMENTS::ScaTraImpl<distype>::ScaTraImpl(const int numdofpernode, const in
     diffuselimderiv_(numscal_,0.0),
     diffuselim_(0.0),
     eps_(1,1.0),
+    tort_(1,1.0),
+    epstort_(1,1.0),
     a_(0.0),
     b_(0.0),
     c_(0.0),
@@ -1193,6 +1196,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
     // check if length suffices
     if (elevec1_epetra.Length() < 1) dserror("Result vector too short");
 
+    // set specific parameter used in diffusion conduction formulation
+    // this method need to be located inside ELCH
+    DiffCondParams(ele, params);
+
     // need current solution
     Teuchos::RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
     if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
@@ -1225,6 +1232,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
   {
     if(is_elch_)
     {
+      // set specific parameter used in diffusion conduction formulation
+      // this method need to be located inside ELCH
+      DiffCondParams(ele, params);
+
       // calculate conductivity of electrolyte solution
       const double frt = params.get<double>("frt");
       // extract local values from the global vector
@@ -1241,6 +1252,10 @@ int DRT::ELEMENTS::ScaTraImpl<distype>::Evaluate(
           ephinp_[k](i,0) = myphinp[k+(i*numdofpernode_)];
         }
       } // for i
+
+      // global element of processor 0 is printed to the screen
+      if(discretization.Comm().MyPID()==0)
+        std::cout << "Electrolyte conductivity evaluated at global element " << ele->Id() << ":" << std::endl;
 
       CalculateConductivity(ele,frt,scatratype,elevec1_epetra);
     }
@@ -2163,11 +2178,83 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::Sysmat(
         } // if Dirichlet at node vi
       } // for vi
     }  // elim
-  } // is_elch_
 
+    // usually, we are done here, but
+    // for concentrated solution theory (using div i as closing term for the potential)
+    // additional flux terms / currents across Dirichlet boundaries
+    if(diffcond_==true and newman_==true and equpot_==INPAR::ELCH::equpot_divi)
+    {
+      //const double faraday = INPAR::SCATRA::faraday_const;
+      double val(0.0);
+      const DRT::Node* const* nodes = ele->Nodes();
+      string condname = "Dirichlet";
+
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        std::vector<DRT::Condition*> dirichcond0;
+        nodes[vi]->GetCondition(condname,dirichcond0);
+
+        // there is at least one Dirichlet condition on this node
+        if (dirichcond0.size() > 0)
+        {
+          //cout<<"Ele Id = "<<ele->Id()<<"  Found one Dirichlet node for vi="<<vi<<endl;
+          const std::vector<int>*    onoff = dirichcond0[0]->Get<std::vector<int> >   ("onoff");
+          for (int k=0; k<numscal_; ++k)
+          {
+            if ((*onoff)[k])
+            {
+              //cout<<"Dirichlet is on for k="<<k<<endl;
+              //cout<<"k="<<k<<"  val="<<val<<" valence_k="<<valence_[k]<<endl;
+              const int fvi = vi*numdofpernode_+k;
+              // We use the fact, that the rhs vector value for boundary nodes
+              // is equivalent to the integrated negative normal flux
+              // due to diffusion and migration
+
+              // scaling of div i results in a matrix with better condition number
+              val = erhs[fvi];
+              erhs[vi*numdofpernode_+numscal_] += valence_[k]*(-val);
+              // corresponding linearization
+              for (int ui=0; ui<nen_; ++ui)
+              {
+                val = emat(vi*numdofpernode_+k,ui*numdofpernode_+k);
+                emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+k)+=valence_[k]*(-val);
+                val = emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_);
+                emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+numscal_)+=valence_[k]*(-val);
+              }
+            }
+          } // for k
+          // dirichlet condition for potential
+          if ((*onoff)[numscal_])
+          {
+            //reacting species 0
+            int k =0;
+
+            //cout<<"Dirichlet is on for k="<<k<<endl;
+            //cout<<"k="<<k<<"  val="<<val<<" valence_k="<<valence_[k]<<endl;
+            const int fvi = vi*numdofpernode_+numscal_;
+            // We use the fact, that the rhs vector value for boundary nodes
+            // is equivalent to the integrated negative normal flux
+            // due to diffusion and migration
+
+            // scaling of div i results in a matrix with better condition number
+            val = erhs[fvi];
+            erhs[vi*numdofpernode_+k] += 1.0/valence_[k]*(-val);
+            // corresponding linearization
+            for (int ui=0; ui<nen_; ++ui)
+            {
+              val = emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+k);
+              emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += 1.0/valence_[k]*(-val);
+              val = emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+numscal_);
+              emat(vi*numdofpernode_+k,ui*numdofpernode_+numscal_) +=1.0/valence_[k]*(-val);
+            }
+          }
+        } // if Dirichlet at node vi
+      } // for vi
+    }
+    //PrintEleMatToExcel(emat,erhs);
+  } // is_elch_
   return;
 }
-
 
 /*----------------------------------------------------------------------*
   |  get the body force  (private)                              gjb 06/08|
@@ -3615,6 +3702,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::IntegrateShapeFunctions(
   if (dofids.M() < numdofpernode_)
     dserror("Dofids vector is too short. Received not enough flags");
 
+  // TODO (ehrl): order is not effective since integrating shape functions result always in the same result
   // loop over integration points
   for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
   {
@@ -4158,6 +4246,17 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalErrorComparedToAnalytSolution(
   // get material constants
   GetMaterialParams(ele,scatratype,0.0); // use dt=0.0 dymmy value
 
+  if(diffcond_==true)
+  {
+    dserror("Analytical solution for Kwok and Wu is only valid for dilute electrolyte solutions!!\n"
+            "Compute corresponding transport properties on your on and activate it here");
+
+    diffus_[0] = 2.0e-3;
+    diffus_[1] = 4.0e-3;
+    valence_[0] = 1.0;
+    valence_[1] = -2.0;
+  }
+
   // integrations points and weights
   // more GP than usual due to (possible) cos/exp fcts in analytical solutions
   DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToGaussRuleForExactSol<distype>::rule);
@@ -4671,7 +4770,7 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
           epotnp_(nn)+=epsilon;
         }
       }
-      //TODO: current only for 2D
+      //TODO (ehrl): current only for 2D
       // perturbation of the current
       else if(cursolvar_==true and (rr==(numscal_+1)+0))
       {
@@ -4743,15 +4842,16 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::FDcheck(
         turbmodel,
         Cs,
         tpn,
-        0., // Dummy
+        0.0, // Dummy
         false, // Dummy
-        0., // Dummy
+        0.0, // Dummy
         INPAR::FLUID::strainrate, // Dummy
         INPAR::FLUID::cube_edge, // Dummy
-        0., // Dummy
+        0.0, // Dummy
+        false,
         false, // Dummy
-        0., // Dummy
-        0., // Dummy
+        0.0, // Dummy
+        0.0, // Dummy
         false, // Dummy
         frt,
         scatratype);
@@ -6146,6 +6246,11 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalMatElch(
         matvalpot += frt*timefacfac*diffus_valence_k*conint_[k]*laplawf;
 
 
+        // TODO (ehrl)
+        // Including stabilization yields in different results for the uncharged particle and
+        // the binary electrolyte solution
+        // -> Check calculation procedure of the method
+
         //----------------------------------------------------------------
         // Stabilization terms
         //----------------------------------------------------------------
@@ -6576,16 +6681,43 @@ void DRT::ELEMENTS::ScaTraImpl<distype>::CalculateConductivity(
   double sigma_all(0.0);
   const double factor = frt*INPAR::SCATRA::faraday_const; // = F^2/RT
 
-  for(int k=0; k < numscal_; k++)
+  // Dilute solution theory:
+  // Conductivity is computed by
+  // sigma = F^2/RT*Sum(z_k^2 D_k c_k)
+  if(not diffcond_)
   {
-    double sigma_k = factor*valence_[k]*diffusvalence_[k]*conint_[k];
-    sigma[k] += sigma_k; // insert value for this ionic species
-    sigma_all += sigma_k;
-
-    // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
-    if(scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+    for(int k=0; k < numscal_; k++)
     {
-      sigma_all += factor*diffusvalence_[numscal_]*valence_[k]*(-conint_[k]);
+      double sigma_k = factor*valence_[k]*diffusvalence_[k]*conint_[k];
+      sigma[k] += sigma_k; // insert value for this ionic species
+      sigma_all += sigma_k;
+
+      // effect of eliminated species c_m has to be added (c_m = - 1/z_m \sum_{k=1}^{m-1} z_k c_k)
+      if(scatratype==INPAR::SCATRA::scatratype_elch_enc_pde_elim)
+      {
+        sigma_all += factor*diffusvalence_[numscal_]*valence_[k]*(-conint_[k]);
+      }
+    }
+  }
+  // Concentrated solution theory:
+  // Conductivity given by a function is evaluated at bulk concentration
+  else
+  {
+    Teuchos::RCP<MAT::Material> material = ele->Material();
+    const Teuchos::RCP<const MAT::ElchMat>& actmat = Teuchos::rcp_dynamic_cast<const MAT::ElchMat>(material);
+    // loop over single phases
+    for (int iphase=0; iphase < actmat->NumPhase();++iphase)
+    {
+      const int phaseid = actmat->PhaseID(iphase);
+      Teuchos::RCP<const MAT::Material> singlemat = actmat->PhaseById(phaseid);
+
+      if(singlemat->MaterialType() == INPAR::MAT::m_elchphase)
+      {
+        const MAT::ElchPhase* actsinglemat = static_cast<const MAT::ElchPhase*>(singlemat.get());
+        sigma_all = actsinglemat->ComputeConductivity(conint_[0]);
+      }
+      else
+        dserror("Conductivity has to be defined in m_elchphase! There is no material m_elchphase");
     }
   }
   // conductivity based on ALL ionic species (even eliminated ones!)

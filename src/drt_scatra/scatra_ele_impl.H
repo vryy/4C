@@ -921,6 +921,8 @@ private:
   std::vector<double> diffuselimderiv_;
   double diffuselim_;
   std::vector<double> eps_;
+  std::vector<double> tort_;
+  std::vector<double> epstort_;
 
   /// dilute solution theory (diffusion potential in current equation):
   ///    a          b
