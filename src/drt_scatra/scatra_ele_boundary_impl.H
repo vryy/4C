@@ -401,6 +401,9 @@ public:
     double thermpress_;
 
     enum INPAR::ELCH::EquPot equpot_;
+    double eps_;
+    double tort_;
+    double epstort_;
   };
 
 }

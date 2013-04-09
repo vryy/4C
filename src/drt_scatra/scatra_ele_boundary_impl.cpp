@@ -53,6 +53,7 @@ Maintainer: Georg Bauer
 #include "../drt_mat/elchmat.H"
 #include "../drt_mat/diffcond.H"
 #include "../drt_mat/newman.H"
+#include "../drt_mat/elchphase.H"
 
 //#define DEBUG_BATTERY
 
@@ -206,7 +207,10 @@ DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ScaTraBoundaryImpl
     velint_(true),
     metrictensor_(true),
     thermpress_(0.0),
-    equpot_(INPAR::ELCH::equpot_enc)
+    equpot_(INPAR::ELCH::equpot_enc),
+    eps_(1.0),
+    tort_(1.0),
+    epstort_(1.0)
     {
         return;
     }
@@ -370,6 +374,32 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
       pot0 *= curvefac;
     }
 
+    if (iselch) // this is not necessary for secondary current distributions
+    {
+      if (mat->MaterialType() == INPAR::MAT::m_elchmat)
+      {
+        const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(mat.get());
+
+        for (int iphase=0; iphase < actmat->NumPhase();++iphase)
+        {
+          const int phaseid = actmat->PhaseID(iphase);
+          Teuchos::RCP<const MAT::Material> singlemat = actmat->PhaseById(phaseid);
+
+          if(singlemat->MaterialType() == INPAR::MAT::m_elchphase)
+          {
+            const MAT::ElchPhase* actsinglemat = static_cast<const MAT::ElchPhase*>(singlemat.get());
+
+            eps_ = actsinglemat->Epsilon();
+            tort_ = actsinglemat->Tortuosity();
+            epstort_ =eps_*tort_;
+
+            if(eps_ != 1.0 or tort_!=1.0)
+              dserror("It is not clear what happens with the BV condition in case of homogenization");
+          }
+        }
+      }
+    }
+
     const bool calc_status = params.get<bool>("calc_status",false);
     if (!calc_status)
     {
@@ -449,6 +479,115 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::Evaluate(
             frt,
             iselch,
             timefac);
+      }
+    }
+    break;
+  }
+  case SCATRA::bd_calc_elch_adapt_DC:
+  {
+    // get current condition
+    Teuchos::RCP<DRT::Condition> cond = params.get<Teuchos::RCP<DRT::Condition> >("condition");
+    if (cond == Teuchos::null) dserror("Cannot access condition 'ElectrodeKinetics'");
+
+    const int    kinetics = cond->GetInt("kinetic model");
+
+    if(kinetics == INPAR::SCATRA::nernst)
+    {
+      if (mat->MaterialType() == INPAR::MAT::m_elchmat)
+      {
+        Teuchos::ParameterList& diffcondparams_ = params.sublist("DIFFCOND");
+        equpot_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams_,"EQUPOT");
+      }
+
+      // get actual values of transported scalars
+      RCP<const Epetra_Vector> phinp = discretization.GetState("phinp");
+      if (phinp==Teuchos::null) dserror("Cannot get state vector 'phinp'");
+
+      // extract local values from the global vector
+      std::vector<double> ephinp(lm.size());
+      DRT::UTILS::ExtractMyValues(*phinp,ephinp,lm);
+
+      // access parameters of the condition
+      double       pot0 = cond->GetDouble("pot");
+      const int    curvenum = cond->GetInt("curve");
+      const int    nume = cond->GetInt("e-");
+      const double e0 = cond->GetDouble("e0");
+      const double c0 = cond->GetDouble("c0");
+
+      if(nume < 0)
+        dserror("The convention for electrochemical reactions at the electrodes does not allow \n"
+            "a negative number of transfered electrones");
+
+      const std::vector<int>*   stoich = cond->GetMutable<std::vector<int> >("stoich");
+      if((unsigned int)numscal_ != (*stoich).size())
+        dserror("Electrode kinetics: number of stoichiometry coefficients %u does not match"
+                " the number of ionic species %d", (*stoich).size(), numscal_);
+
+      // access input parameter
+      const double frt = params.get<double>("frt"); // = F/RT
+      if (frt<0.0)
+        dserror("A negative factor frt is not possible by definition");
+
+      const double time = params.get<double>("total time");
+
+      // get control parameter from parameter list
+      if (not SCATRA::IsElchProblem(scatratype))
+        dserror("Only available ELCH");
+
+      if (curvenum>=0)
+      {
+        const double curvefac = DRT::Problem::Instance()->Curve(curvenum).f(time);
+        // adjust potential at metal side accordingly
+        pot0 *= curvefac;
+      }
+
+      // concentration values of reactive species at element nodes
+      LINALG::Matrix<nen_,1> conc(true);
+
+      int onespecies = 0;
+
+      for(int k=0; k<numscal_; ++k)
+      {
+        // only the first oxidized species O is considered for statistics
+        // statistics of other species result directly from the oxidized species (current density, ...)
+        // or need to be implemented (surface concentration, OCV, ...)
+        if((*stoich)[k]==0)
+          continue;
+
+        if(onespecies!=0)
+          dserror("More than one reacting species");
+
+        onespecies +=1;
+
+        double conint = 0.0;
+        double equpot = 0.0;
+        double area = 0.0;
+
+        for (int inode=0; inode< nen_;++inode)
+        {
+          conc(inode) = ephinp[inode*numdofpernode_+k];
+        }
+
+        // integrations points and weights
+        DRT::UTILS::IntPointsAndWeights<nsd_> intpoints(SCATRA::DisTypeToOptGaussRule<distype>::rule);
+
+        // loop over integration points
+        for (int gpid=0; gpid<intpoints.IP().nquad; gpid++)
+        {
+          const double fac = EvalShapeFuncAndIntFac(intpoints,gpid,ele->Id());
+
+          // elch-specific values at integration point:
+          conint += funct_.Dot(conc)*fac;
+          area += fac;
+
+        }
+
+        equpot = e0 + (log(conint/area/c0))/(frt*nume);
+
+        for (int vi=0; vi<nen_; ++vi)
+          elevec2_epetra[vi*numdofpernode_+numscal_] = pot0 - equpot;
+
+        std::cout << "applied pot.: " << pot0 << "  conc: " << conint/area << "  Nernst pot.: " << equpot << "  new pot.: " << elevec2_epetra[0+numscal_] << std::endl;
       }
     }
     break;
@@ -1070,6 +1209,58 @@ int DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateNeumann(
     } // loop over scalars
   }
 
+  // get the parent element including its material
+  DRT::ELEMENTS::Transport* parentele = ele->ParentElement();
+  Teuchos::RCP<MAT::Material> mat = parentele->Material();
+
+  if (mat->MaterialType() == INPAR::MAT::m_elchmat)
+  {
+    Teuchos::ParameterList& diffcondparams_ = params.sublist("DIFFCOND");
+    equpot_ = DRT::INPUT::IntegralValue<INPAR::ELCH::EquPot>(diffcondparams_,"EQUPOT");
+  }
+
+  // the same procedure is also necessary for the concentrated solution theory based on div i
+  if(equpot_==INPAR::ELCH::equpot_divi)
+  {
+    for (int k = 0; k < numscal_; k++)
+    {
+      // get valence
+      double valence_k(0.0);
+      if (mat->MaterialType() == INPAR::MAT::m_elchmat)
+      {
+        const MAT::ElchMat* actmat = static_cast<const MAT::ElchMat*>(mat.get());
+
+        const int specid = actmat->SpecID(k);
+        Teuchos::RCP<const MAT::Material> singlemat = actmat->SpecById(specid);
+        if (singlemat->MaterialType() == INPAR::MAT::m_diffcond)
+        {
+          const MAT::DiffCond* actsinglemat = static_cast<const MAT::DiffCond*>(singlemat.get());
+          valence_k = actsinglemat->Valence();
+          if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
+        }
+        else if  (singlemat->MaterialType() == INPAR::MAT::m_newman)
+        {
+          const MAT::Newman* actsinglemat = static_cast<const MAT::Newman*>(singlemat.get());
+          valence_k = actsinglemat->Valence();
+          if (abs(valence_k)< EPS14) dserror ("division by zero charge number");
+        }
+        else
+          dserror("");
+      }
+      else
+        dserror("material type is not a 'matlist' material");
+
+      // get corresponding Neumann values, multiply with z_k and add to
+      // the row of the electric potential equation
+      double val(0.0);
+      for (int vi=0; vi<nen_; ++vi)
+      {
+        val = elevec1[vi*numdofpernode_+k];
+        elevec1[vi*numdofpernode_+numscal_] += valence_k*val;
+      }
+    } // loop over scalars
+  }
+
   return 0;
 }
 
@@ -1671,8 +1862,8 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 
           for (int vi=0; vi<nen_; ++vi)
           {
-            fac_fns_i0_funct_vi = fac*fns*i0*funct_(vi);
-            double fac_i0_funct_vi = fac*i0*funct_(vi);
+            fac_fns_i0_funct_vi = fac*fns*i0*funct_(vi)*epstort_;
+            //double fac_i0_funct_vi = fac*i0*funct_(vi);
             // ------matrix: d(R_k)/d(x) = (theta*dt*(-1)*(w_k,j_k)
             for (int ui=0; ui<nen_; ++ui)
             {
@@ -1681,15 +1872,16 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
 
               if(equpot_==INPAR::ELCH::equpot_divi)
               {
-                emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+k) += -fac_i0_funct_vi*concterm*funct_(ui)*expterm;
-                emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+numscal_) += -fac_i0_funct_vi*pow_conint_gamma_k*(((-alphaa)*frt*exp(alphaa*frt*eta))+((-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
+                // equation for potential is scaled with inverse of Faraday constant
+                emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+k) += -fac_fns_i0_funct_vi*concterm*funct_(ui)*expterm;
+                emat(vi*numdofpernode_+numscal_,ui*numdofpernode_+numscal_) += -fac_fns_i0_funct_vi*pow_conint_gamma_k*(((-alphaa)*frt*exp(alphaa*frt*eta))+((-alphac)*frt*exp((-alphac)*frt*eta)))*funct_(ui);
               }
             }
             // -----right-hand-side: -R_k = -(theta*dt*(-1)*(w_k,j_k)
             erhs[vi*numdofpernode_+k] -= -fac_fns_i0_funct_vi*pow_conint_gamma_k*expterm;
 
             if(equpot_==INPAR::ELCH::equpot_divi)
-              erhs[vi*numdofpernode_+numscal_] -= -fac_i0_funct_vi*pow_conint_gamma_k*expterm;
+              erhs[vi*numdofpernode_+numscal_] -= -fac_fns_i0_funct_vi*pow_conint_gamma_k*expterm;
           }
 
         } // end if(kinetics=="Butler-Volmer")
@@ -2049,6 +2241,20 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
       }
       case INPAR::SCATRA::zero:
         break;
+      case INPAR::SCATRA::nernst:
+      {
+#if 0
+        for (int vi=0; vi<nen_; ++vi)
+        {
+          for (int ui=0; ui<nen_; ++ui)
+          {
+            emat(vi*numdofpernode_+k,ui*numdofpernode_+k) += -fac*funct_(vi)/conint[k]*funct_(ui);
+          }
+          erhs[vi*numdofpernode_+k] -= -fac*funct_(vi)/frt/conint[k];
+        }
+#endif
+        break;
+      }
       default:
         dserror("Kinetic model not implemented");
         break;
@@ -2181,7 +2387,7 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::EvaluateElectrodeKinetics(
     } // if iselch
   } // end of loop over integration points gpid
 
-  // TODO: Is it ok to use nume instead of valence?
+  // TODO (ehrl): Is it ok to use nume instead of valence?
   if (iselch)
   {
     if ((scatratype==INPAR::SCATRA::scatratype_elch_enc_pde) or
@@ -2242,8 +2448,12 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
   double currderiv         = params.get<double>("currentderiv");
   double currentresidual   = params.get<double>("currentresidual");
 
-  const double dlcapacitance = cond->GetDouble("dlcap");
-  if (dlcapacitance < -EPS12) dserror("double-layer capacitance is negative: %f",dlcapacitance);
+  double dlcapacitance = 0.0;
+  if(kinetics != INPAR::SCATRA::zero)
+  {
+    dlcapacitance = cond->GetDouble("dlcap");
+    if (dlcapacitance < -EPS12) dserror("double-layer capacitance is negative: %f",dlcapacitance);
+  }
 
   double pot0hist(0.0);
   // access history of electrode potential
@@ -2717,6 +2927,14 @@ void DRT::ELEMENTS::ScaTraBoundaryImpl<distype>::ElectrodeStatus(
 
         // compute integrals
         overpotentialint -= eta * fac;
+        boundaryint += fac;
+        concentrationint += conint[k]*fac;
+        break;
+      }
+      case INPAR::SCATRA::nernst: // zero
+      {
+        // compute integrals
+        overpotentialint += potint * fac;
         boundaryint += fac;
         concentrationint += conint[k]*fac;
         break;
