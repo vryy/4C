@@ -56,9 +56,11 @@
 #include <MueLu_SchurComplementFactory.hpp>
 #include <MueLu_BraessSarazinSmoother.hpp>
 #include <MueLu_SimpleSmoother.hpp>
+#include <MueLu_PermutingSmoother.hpp>
 #include <MueLu_CoarseMapFactory.hpp>
 #include <MueLu_MapTransferFactory.hpp>
 #include <MueLu_BlockedCoarseMapFactory.hpp>
+#include <MueLu_PermutationFactory.hpp>
 
 #include <MueLu_MLParameterListInterpreter.hpp>
 
@@ -560,13 +562,30 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(sweeps,omega)); // append SC smoother information
 
   // define SchurComplement solver
-  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
   const Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
-  Teuchos::RCP<SmootherFactory> SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,SFact);
+  std::string permstrategy = SchurCompList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
 
+  // define SchurComplement smoother and
   // setup local factory manager for SchurComplementFactory
+  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
+  Teuchos::RCP<SmootherFactory> SmooSCFact = Teuchos::null;
   Teuchos::RCP<FactoryManager> MB = Teuchos::rcp(new FactoryManager());
-  MB->SetFactory("A", SFact);              // SchurCompFactory as generating factory for SchurComp equation
+  if(permstrategy == "none") {
+    SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,SFact);
+    MB->SetFactory("A", SFact);              // SchurCompFactory as generating factory for SchurComp equation
+  } else {
+    // define permutation factory for SchurComplement equation
+    Teuchos::RCP<PermutationFactory> PermFact = Teuchos::rcp(new PermutationFactory());
+    PermFact->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("")));
+    PermFact->SetFactory("PermutationRowMapFactory", Teuchos::null);
+    PermFact->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Local"))); // TODO Local + stridedMaps!!!
+    PermFact->SetFactory("A", SFact); // use SchurComplement matrix as input for A
+
+    SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,PermFact); // with permutation (use permuted A)
+    MB->SetFactory("A", PermFact); // with permutation (use permuted SchurComplement matrix as A)
+  }
+
+  // share common code
   MB->SetFactory("Smoother", SmooSCFact);  // solver for SchurComplement equation
   MB->SetIgnoreUserData(true);
   smootherPrototype->SetFactoryManager(MB);  // add SC smoother information
@@ -686,16 +705,33 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   SFact->SetParameter("omega", Teuchos::ParameterEntry(omega));
   SFact->SetParameter("lumping", Teuchos::ParameterEntry(false));
   SFact->SetFactory("A",MueLu::NoFactory::getRCP());
+
   Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(sweeps,omega)); // append SC smoother information
 
-  // define SchurComplement solver
-  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
+  // check whether SchurComplement equation shall be permuted
   const Teuchos::ParameterList& SchurCompList = paramList.sublist("coarse: SchurComp list");
-  Teuchos::RCP<SmootherFactory> SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,SFact);
+  std::string permstrategy = SchurCompList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
 
+  // define SchurComplement solver and
   // setup local factory manager for SchurComplementFactory
+  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
+  Teuchos::RCP<SmootherFactory>   SmooSCFact = Teuchos::null;
   Teuchos::RCP<FactoryManager> MB = Teuchos::rcp(new FactoryManager());
-  MB->SetFactory("A", SFact);              // SchurCompFactory as generating factory for SchurComp equation
+  if(permstrategy == "none") { // no permutation
+    SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,SFact);
+    MB->SetFactory("A", SFact);              // SchurCompFactory as generating factory for SchurComp equation
+  } else {
+    // define permutation factory for SchurComplement equation
+    Teuchos::RCP<PermutationFactory> PermFact = Teuchos::rcp(new PermutationFactory());
+    PermFact->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("")));
+    PermFact->SetFactory("PermutationRowMapFactory", Teuchos::null);
+    PermFact->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Local"))); // TODO Local + stridedMaps!!!
+    PermFact->SetFactory("A", SFact); // use SchurComplement matrix as input for A
+
+    SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,PermFact); // with permutation (use permuted A)
+    MB->SetFactory("A", PermFact); // with permutation (use permuted SchurComplement matrix as A)
+  }
+  // share common code
   MB->SetFactory("Smoother", SmooSCFact);  // solver for SchurComplement equation
   MB->SetIgnoreUserData(true);
   smootherPrototype->SetFactoryManager(MB);  // add SC smoother information
@@ -727,14 +763,29 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     smoProtoSC = Teuchos::rcp( new DirectSolver("Klu" /*"Umfpack"*/,Teuchos::ParameterList()) );
   } else if(type == "aztec") {
     std::string prectype = paramList.sublist("Aztec Parameters").get<std::string>("Preconditioner Type");
-    if(prectype == "ILU") {
-      Teuchos::ParameterList SCList;
-      SCList.set<int>("fact: level-of-fill", 0);
-      smoProtoSC = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("ILU", SCList,0,AFact);
-    } else if (prectype == "point relaxation") {
-      const Teuchos::ParameterList & ifpackParameters =  paramList.sublist("IFPACK Parameters");
-      smoProtoSC = Teuchos::rcp(new TrilinosSmoother("RELAXATION",ifpackParameters,0,AFact));
-    } else TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: unknown type for SchurComplement smoother (IFPACK based)");
+    std::string permstrategy = paramList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
+    std::cout << "PermStrategy is " << permstrategy << std::endl;
+    if(permstrategy == "none") {
+      // no permutation strategy: build plain smoothers
+      if(prectype == "ILU") {
+        Teuchos::ParameterList SCList;
+        SCList.set<int>("fact: level-of-fill", 0);
+        smoProtoSC = MueLu::GetIfpackSmoother<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps>("ILU", SCList,0,AFact);
+      } else if (prectype == "point relaxation") {
+        const Teuchos::ParameterList & ifpackParameters =  paramList.sublist("IFPACK Parameters");
+        smoProtoSC = Teuchos::rcp(new TrilinosSmoother("RELAXATION",ifpackParameters,0,AFact));
+      } else TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: unknown type for SchurComplement smoother (IFPACK based)");
+    } else {
+      // use PermutingSmoother
+      std::cout << "Use Permuting smoother " << prectype << std::endl;
+      if(prectype == "ILU") {
+        const Teuchos::ParameterList & ifpackParameters =  paramList.sublist("IFPACK Parameters");
+        smoProtoSC = Teuchos::rcp(new PermutingSmoother("",Teuchos::null,"ILU",ifpackParameters,0,AFact));
+      } else if (prectype == "point relaxation") {
+        const Teuchos::ParameterList & ifpackParameters =  paramList.sublist("IFPACK Parameters");
+        smoProtoSC = Teuchos::rcp(new PermutingSmoother("",Teuchos::null,"RELAXATION",ifpackParameters,0,AFact));
+      } else TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: unknown type for SchurComplement smoother (IFPACK based)");
+    }
 
   } else {
     TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: unknown type for SchurComplement solver/smoother");
