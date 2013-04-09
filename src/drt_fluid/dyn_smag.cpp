@@ -1377,7 +1377,7 @@ void FLD::DynSmagFilter::ApplyBoxFilter(
         {
           is_dirichlet_node++;
           double vel_i = (*velocity)[lid];
-          if (abs(vel_i) < 1e-14)
+          if (abs(vel_i) < 1e-12)
           {
             is_no_slip_node++;
           }
@@ -1915,7 +1915,7 @@ void FLD::DynSmagFilter::ApplyBoxFilterScatra(
         for (int idim=0; idim<numdim; idim++)
         {
           double vel_i = ((*((*velocity)(idim)))[lnodeid]);
-          if (abs(vel_i) < 1e-14)
+          if (abs(vel_i) < 1e-12)
             no_slip_node++;
         }
 
