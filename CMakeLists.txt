@@ -104,7 +104,7 @@ endif (HAVE_MueLu)
 
 option (HAVE_Trilinos_Q1_2013 "Turn on experimental code which is available with Q1/2013 or later" OFF)
 if (HAVE_Trilinos_Q1_2013)
-  MESSAGE("II Turn on support for MueLu (experimental code)")
+  MESSAGE("II Enable experimental features from Trilinos Q1/2013 and later")
   add_definitions("-DHAVE_MueLu")
   add_definitions("-DHAVE_Trilinos_Q1_2013")
 endif (HAVE_Trilinos_Q1_2013)
