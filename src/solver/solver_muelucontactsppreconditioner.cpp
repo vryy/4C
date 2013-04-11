@@ -464,9 +464,11 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   const Teuchos::ParameterList smolevelsublist = paramList.sublist("smoother: list " + levelstr);
 
   if (type == "SIMPLE" || type == "SIMPLEC") {
-    return GetSIMPLESmootherFactory(paramList, level, AFact);
+    //return GetSIMPLESmootherFactory(paramList, level, AFact);
+    return GetSIMPLESmootherFactory(smolevelsublist, AFact);
   } else if(type == "Braess-Sarazin") {
-    return GetBraessSarazinSmootherFactory(paramList, level, AFact);
+    //return GetBraessSarazinSmootherFactory(paramList, level, AFact);
+    return GetBraessSarazinSmootherFactory(smolevelsublist, AFact);
   } else {
     TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: Please set the ML_SMOOTHERMED and ML_SMOOTHERFINE parameters to SIMPLE(C) or BS in your dat file. Other smoother options are not accepted. \n Note: In fact we're using only the ML_DAMPFINE, ML_DAMPMED, ML_DAMPCOARSE as well as the ML_SMOTIMES parameters for Braess-Sarazin.");
   }
@@ -475,21 +477,39 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetSIMPLESmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact) {
-  char levelchar[11];
-  sprintf(levelchar,"(level %d)",level);
-  std::string levelstr(levelchar);
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetCoarsestBlockSmootherFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact) {
+  std::string type = paramList.get<std::string>("coarse: type");
+  TEUCHOS_TEST_FOR_EXCEPTION(type.empty(), MueLu::Exceptions::RuntimeError, "MueLu::ContactSpPreconditioner: no ML smoother type for coarsest level. error.");
 
-  const Teuchos::ParameterList smolevelsublist = paramList.sublist("smoother: list " + levelstr);
+  if (type == "SIMPLE" || type == "SIMPLEC") {
+    //return GetCoarsestSIMPLESmootherFactory(paramList, AFact);
+    return GetSIMPLESmootherFactory(paramList, AFact, true); // build coarsest smoother
+  } else if(type == "Braess-Sarazin") {
+    //return GetCoarsestBraessSarazinSmootherFactory(paramList, AFact);
+    return GetBraessSarazinSmootherFactory(paramList, AFact, true);  // build coarsest smoother
+  } else {
+    TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: Please set the ML_SMOOTHERCOARSE parameter to SIMPLE(C) or BS in your dat file. Other smoother options are not accepted. \n Note: In fact we're using only the ML_DAMPFINE, ML_DAMPMED, ML_DAMPCOARSE as well as the ML_SMOTIMES parameters for Braess-Sarazin.");
+  }
+  return Teuchos::null;
+}
+
+//----------------------------------------------------------------------------------
+//----------------------------------------------------------------------------------
+// new version
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetSIMPLESmootherFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact, bool bCoarse) {
+
+  std::string strCoarse = "coarse";
+  if(bCoarse == false)
+    strCoarse = "smoother";
 
   // check whether to use SIMPLEC or SIMPLE
-  std::string type = paramList.sublist("smoother: list " + levelstr).get<std::string>("smoother: type");
   bool bSimpleC = false;
+  std::string type = paramList.get<std::string>(strCoarse + ": type");
   if(type=="SIMPLEC") bSimpleC = true;
 
   // extract parameters for SIMPLE/C
-  Scalar omega = smolevelsublist.get<double>("smoother: damping factor");
-  int sweeps   = smolevelsublist.get<int>("smoother: sweeps");
+  Scalar omega = paramList.get<double>(strCoarse + ": damping factor");
+  int sweeps   = paramList.get<int>(strCoarse + ": sweeps");
 
   // define SIMPLE smoother
   Teuchos::RCP<SimpleSmoother> smootherPrototype = Teuchos::rcp(new SimpleSmoother(sweeps,omega,bSimpleC));
@@ -497,7 +517,8 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   // define prediction smoother/solver
   Teuchos::RCP<SubBlockAFactory> A00Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 0, 0));
   Teuchos::RCP<SmootherPrototype> smoProtoPred = Teuchos::null;
-  const Teuchos::ParameterList& PredList = smolevelsublist.sublist("smoother: Predictor list");
+
+  const Teuchos::ParameterList& PredList = paramList.sublist(strCoarse + ": Predictor list");
   std::string PredPermstrategy = "none";
   if(PredList.isSublist("Aztec Parameters") && PredList.sublist("Aztec Parameters").isParameter("permutation strategy"))
     PredPermstrategy = PredList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
@@ -529,7 +550,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 
   // define SchurComplement solver
   Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
-  const Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
+  const Teuchos::ParameterList& SchurCompList = paramList.sublist(strCoarse + ": SchurComp list");
   std::string SchurCompPermstrategy = "none";
   if(SchurCompList.isSublist("Aztec Parameters") && SchurCompList.sublist("Aztec Parameters").isParameter("permutation strategy"))
     SchurCompPermstrategy = SchurCompList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
@@ -562,7 +583,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 
   // check if pre- and postsmoothing is set
   std::string preorpost = "both";
-  if(smolevelsublist.isParameter("smoother: pre or post")) preorpost = smolevelsublist.get<std::string>("smoother: pre or post");
+  if(paramList.isParameter(strCoarse + ": pre or post")) preorpost = paramList.get<std::string>(strCoarse + ": pre or post");
 
   if (preorpost == "pre") {
     SmooFact->SetSmootherPrototypes(smootherPrototype, Teuchos::null);
@@ -573,30 +594,25 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   return SmooFact;
 }
 
-
 //----------------------------------------------------------------------------------
 //----------------------------------------------------------------------------------
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetBraessSarazinSmootherFactory(const Teuchos::ParameterList & paramList, int level, const Teuchos::RCP<FactoryBase> & AFact) {
-  char levelchar[11];
-  sprintf(levelchar,"(level %d)",level);
-  std::string levelstr(levelchar);
+// new version
+Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetBraessSarazinSmootherFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact, bool bCoarse) {
 
-  if(paramList.isSublist("smoother: list " + levelstr)==false)
-    return Teuchos::null;
-  TEUCHOS_TEST_FOR_EXCEPTION(paramList.isSublist("smoother: list " + levelstr)==false, MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: no ML smoother parameter list for level. error.");
+  std::string strCoarse = "coarse";
+  if(bCoarse == false)
+    strCoarse = "smoother";
 
-  std::string type = paramList.sublist("smoother: list " + levelstr).get<std::string>("smoother: type");
+  std::string type = paramList.get<std::string>(strCoarse + ": type");
   TEUCHOS_TEST_FOR_EXCEPTION(type.empty(), MueLu::Exceptions::RuntimeError, "MueLu::Interpreter: no ML smoother type for level. error.");
-
-  const Teuchos::ParameterList smolevelsublist = paramList.sublist("smoother: list " + levelstr);
 
   if (type != "Braess-Sarazin") {
     TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: Please set the ML_SMOOTHERCOARSE, ML_SMOOTHERMED and ML_SMOOTHERFINE parameters to BS in your dat file. Other smoother options are not accepted. \n Note: In fact we're using only the ML_DAMPFINE, ML_DAMPMED, ML_DAMPCOARSE as well as the ML_SMOTIMES parameters for Braess-Sarazin.");
   }
 
   // extract parameters for Braess-Sarazin smoother
-  Scalar omega = smolevelsublist.get<double>("smoother: damping factor");   // Braess-Sarazin damping/scaling factor
-  int sweeps   = smolevelsublist.get<int>("smoother: sweeps");
+  Scalar omega = paramList.get<double>(strCoarse + ": damping factor");   // Braess-Sarazin damping/scaling factor
+  int sweeps   = paramList.get<int>(strCoarse + ": sweeps");
 
   // create SchurComp factory (SchurComplement smoother is provided by local FactoryManager)
   Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory());
@@ -606,7 +622,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(sweeps,omega)); // append SC smoother information
 
   // define SchurComplement solver
-  const Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
+  const Teuchos::ParameterList& SchurCompList = paramList.sublist(strCoarse + ": SchurComp list");
   std::string permstrategy = "none";
   if(SchurCompList.isSublist("Aztec Parameters") && SchurCompList.sublist("Aztec Parameters").isParameter("permutation strategy"))
     permstrategy = SchurCompList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
@@ -642,189 +658,7 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 
   // check if pre- and postsmoothing is set
   std::string preorpost = "both";
-  if(smolevelsublist.isParameter("smoother: pre or post")) preorpost = smolevelsublist.get<std::string>("smoother: pre or post");
-
-  if (preorpost == "pre") {
-    SmooFact->SetSmootherPrototypes(smootherPrototype, Teuchos::null);
-  } else if(preorpost == "post") {
-    SmooFact->SetSmootherPrototypes(Teuchos::null, smootherPrototype);
-  }
-
-  return SmooFact;
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetCoarsestBlockSmootherFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact) {
-  std::string type = paramList.get<std::string>("coarse: type");
-  TEUCHOS_TEST_FOR_EXCEPTION(type.empty(), MueLu::Exceptions::RuntimeError, "MueLu::ContactSpPreconditioner: no ML smoother type for coarsest level. error.");
-
-  if (type == "SIMPLE" || type == "SIMPLEC") {
-    return GetCoarsestSIMPLESmootherFactory(paramList, AFact);
-  } else if(type == "Braess-Sarazin") {
-    return GetCoarsestBraessSarazinSmootherFactory(paramList, AFact);
-  } else {
-    TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: Please set the ML_SMOOTHERCOARSE parameter to SIMPLE(C) or BS in your dat file. Other smoother options are not accepted. \n Note: In fact we're using only the ML_DAMPFINE, ML_DAMPMED, ML_DAMPCOARSE as well as the ML_SMOTIMES parameters for Braess-Sarazin.");
-  }
-  return Teuchos::null;
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetCoarsestSIMPLESmootherFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact) {
-  std::string type = paramList.get<std::string>("coarse: type");
-  TEUCHOS_TEST_FOR_EXCEPTION(type.empty(), MueLu::Exceptions::RuntimeError, "MueLu::ContactSpPreconditioner: no ML smoother type for coarsest level. error.");
-
-  // check whether to use SIMPLEC or SIMPLE
-  bool bSimpleC = false;
-  if(type=="SIMPLEC") bSimpleC = true;
-
-  // extract parameters for SIMPLE/C
-  Scalar omega = paramList.get<double>("coarse: damping factor");   // SIMPLE damping factor
-  int sweeps   = paramList.get<int>("coarse: sweeps");
-
-  Teuchos::RCP<SimpleSmoother> smootherPrototype = Teuchos::rcp(new SimpleSmoother(sweeps,omega,bSimpleC));
-
-  // define prediction smoother/solver
-  Teuchos::RCP<SubBlockAFactory> A00Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 0, 0));
-  Teuchos::RCP<SmootherPrototype> smoProtoPred = Teuchos::null;
-  const Teuchos::ParameterList& PredList = paramList.sublist("coarse: Predictor list");
-  std::string PredPermstrategy = "none";
-  if(PredList.isSublist("Aztec Parameters") && PredList.sublist("Aztec Parameters").isParameter("permutation strategy"))
-    PredPermstrategy = PredList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
-
-  Teuchos::RCP<FactoryManager> MBpred = Teuchos::rcp(new FactoryManager());
-  Teuchos::RCP<SmootherFactory> SmooPredFact = Teuchos::null;
-  if(PredPermstrategy == "none") {
-    SmooPredFact = InterpretBACIList2MueLuSmoother(PredList,A00Fact);
-    MBpred->SetFactory("A", A00Fact);
-  } else {
-    // define permutation factory for SchurComplement equation
-    Teuchos::RCP<PermutationFactory> PermFact = Teuchos::rcp(new PermutationFactory());
-    PermFact->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("")));
-    PermFact->SetFactory("PermutationRowMapFactory", Teuchos::null);
-    PermFact->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Local"))); // TODO Local + stridedMaps!!!
-    PermFact->SetFactory("A", A00Fact); // use (0,0) block matrix as input for A
-
-    SmooPredFact = InterpretBACIList2MueLuSmoother(PredList,PermFact);
-    MBpred->SetFactory("A", PermFact);
-  }
-
-  MBpred->SetFactory("Smoother", SmooPredFact);  // solver for SchurComplement equation
-  MBpred->SetIgnoreUserData(true);
-  smootherPrototype->SetVelocityPredictionFactoryManager(MBpred);
-
-  // create SchurComp factory (SchurComplement smoother is provided by local FactoryManager)
-  Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory());
-  SFact->SetParameter("omega", Teuchos::ParameterEntry(omega));
-  SFact->SetParameter("lumping", Teuchos::ParameterEntry(bSimpleC));
-  SFact->SetFactory("A",MueLu::NoFactory::getRCP());
-
-  // define SchurComplement solver
-  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
-  const Teuchos::ParameterList& SchurCompList = paramList.sublist("coarse: SchurComp list");
-  std::string SchurCompPermstrategy = "none";
-  if(SchurCompList.isSublist("Aztec Parameters") && SchurCompList.sublist("Aztec Parameters").isParameter("permutation strategy"))
-    SchurCompPermstrategy = SchurCompList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
-
-  // setup local factory manager for SchurComplementFactory
-  Teuchos::RCP<FactoryManager> MB = Teuchos::rcp(new FactoryManager());
-  Teuchos::RCP<SmootherFactory> SmooSCFact = Teuchos::null;
-  if(SchurCompPermstrategy == "none") {
-    SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,SFact);
-    MB->SetFactory("A", SFact);              // SchurCompFactory as generating factory for SchurComp equation
-  } else {
-    // define permutation factory for SchurComplement equation
-    Teuchos::RCP<PermutationFactory> PermFact = Teuchos::rcp(new PermutationFactory());
-    PermFact->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("")));
-    PermFact->SetFactory("PermutationRowMapFactory", Teuchos::null);
-    PermFact->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Local"))); // TODO Local + stridedMaps!!!
-    PermFact->SetFactory("A", SFact); // use SchurComplement matrix as input for A
-
-    SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,PermFact); // with permutation (use permuted A)
-    MB->SetFactory("A", PermFact); // with permutation (use permuted SchurComplement matrix as A)
-  }
-
-  MB->SetFactory("Smoother", SmooSCFact);  // solver for SchurComplement equation
-  MB->SetIgnoreUserData(true);
-  smootherPrototype->SetSchurCompFactoryManager(MB);  // add SC smoother information
-
-  // create smoother factory
-  Teuchos::RCP<SmootherFactory>   SmooFact;
-  SmooFact = Teuchos::rcp( new SmootherFactory(smootherPrototype) );
-
-  // check if pre- and postsmoothing is set
-  std::string preorpost = "both";
-  if(paramList.isParameter("smoother: pre or post")) preorpost = paramList.get<std::string>("smoother: pre or post");
-
-  if (preorpost == "pre") {
-    SmooFact->SetSmootherPrototypes(smootherPrototype, Teuchos::null);
-  } else if(preorpost == "post") {
-    SmooFact->SetSmootherPrototypes(Teuchos::null, smootherPrototype);
-  }
-
-  return SmooFact;
-}
-
-//----------------------------------------------------------------------------------
-//----------------------------------------------------------------------------------
-Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,LocalMatOps> > LINALG::SOLVER::MueLuContactSpPreconditioner::GetCoarsestBraessSarazinSmootherFactory(const Teuchos::ParameterList & paramList, const Teuchos::RCP<FactoryBase> & AFact) {
-
-  std::string type = paramList.get<std::string>("coarse: type");
-  TEUCHOS_TEST_FOR_EXCEPTION(type.empty(), MueLu::Exceptions::RuntimeError, "MueLu::ContactSpPreconditioner: no ML smoother type for coarsest level. error.");
-
-  if (type != "Braess-Sarazin") {
-    TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: Please set the ML_SMOOTHERCOARSE, ML_SMOOTHERMED and ML_SMOOTHERFINE parameters to BS in your dat file. Other smoother options are not accepted. \n Note: In fact we're using only the ML_DAMPFINE, ML_DAMPMED, ML_DAMPCOARSE as well as the ML_SMOTIMES parameters for Braess-Sarazin.");
-  }
-
-  Scalar omega = paramList.get<double>("coarse: damping factor");   // Braess-Sarazin damping/scaling factor
-  int sweeps   = paramList.get<int>("coarse: sweeps");
-
-  // create SchurComp factory (SchurComplement smoother is provided by local FactoryManager)
-  Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory());
-  SFact->SetParameter("omega", Teuchos::ParameterEntry(omega));
-  SFact->SetParameter("lumping", Teuchos::ParameterEntry(false));
-  SFact->SetFactory("A",MueLu::NoFactory::getRCP());
-
-  Teuchos::RCP<BraessSarazinSmoother> smootherPrototype = Teuchos::rcp(new BraessSarazinSmoother(sweeps,omega)); // append SC smoother information
-
-  // check whether SchurComplement equation shall be permuted
-  const Teuchos::ParameterList& SchurCompList = paramList.sublist("coarse: SchurComp list");
-  std::string permstrategy = "none";
-  if(SchurCompList.isSublist("Aztec Parameters") && SchurCompList.sublist("Aztec Parameters").isParameter("permutation strategy"))
-    permstrategy = SchurCompList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
-
-  // define SchurComplement solver and
-  // setup local factory manager for SchurComplementFactory
-  //Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
-  Teuchos::RCP<SmootherFactory>   SmooSCFact = Teuchos::null;
-  Teuchos::RCP<FactoryManager> MB = Teuchos::rcp(new FactoryManager());
-  if(permstrategy == "none") { // no permutation
-    SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,SFact);
-    MB->SetFactory("A", SFact);              // SchurCompFactory as generating factory for SchurComp equation
-  } else {
-    // define permutation factory for SchurComplement equation
-    Teuchos::RCP<PermutationFactory> PermFact = Teuchos::rcp(new PermutationFactory());
-    PermFact->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("")));
-    PermFact->SetFactory("PermutationRowMapFactory", Teuchos::null);
-    PermFact->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Local"))); // TODO Local + stridedMaps!!!
-    PermFact->SetFactory("A", SFact); // use SchurComplement matrix as input for A
-
-    SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,PermFact); // with permutation (use permuted A)
-    MB->SetFactory("A", PermFact); // with permutation (use permuted SchurComplement matrix as A)
-  }
-  // share common code
-  MB->SetFactory("Smoother", SmooSCFact);  // solver for SchurComplement equation
-  MB->SetIgnoreUserData(true);
-  smootherPrototype->SetFactoryManager(MB);  // add SC smoother information
-
-  // create smoother factory
-  Teuchos::RCP<SmootherFactory>   SmooFact;
-  SmooFact = Teuchos::rcp( new SmootherFactory(smootherPrototype) );
-
-  // check if pre- and postsmoothing is set
-  std::string preorpost = "both";
-  if(paramList.isParameter("smoother: pre or post")) preorpost = paramList.get<std::string>("smoother: pre or post");
+  if(paramList.isParameter(strCoarse + ": pre or post")) preorpost = paramList.get<std::string>(strCoarse + ": pre or post");
 
   if (preorpost == "pre") {
     SmooFact->SetSmootherPrototypes(smootherPrototype, Teuchos::null);
@@ -848,7 +682,6 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     std::string permstrategy = "none";
     if(paramList.isSublist("Aztec Parameters") && paramList.sublist("Aztec Parameters").isParameter("permutation strategy"))
       permstrategy = paramList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
-    std::cout << "PermStrategy is " << permstrategy << std::endl;
     if(permstrategy == "none") {
       // no permutation strategy: build plain smoothers
       if(prectype == "ILU") {
@@ -861,7 +694,6 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
       } else TEUCHOS_TEST_FOR_EXCEPTION(true, MueLu::Exceptions::RuntimeError, "MueLu::ContactSPPreconditioner: unknown type for SchurComplement smoother (IFPACK based)");
     } else {
       // use PermutingSmoother
-      std::cout << "Use Permuting smoother " << prectype << std::endl;
       if(prectype == "ILU") {
         const Teuchos::ParameterList & ifpackParameters =  paramList.sublist("IFPACK Parameters");
         smoProtoSC = Teuchos::rcp(new PermutingSmoother("",Teuchos::null,"ILU",ifpackParameters,0,AFact));
