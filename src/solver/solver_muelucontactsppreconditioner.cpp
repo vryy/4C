@@ -251,7 +251,6 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
     H->GetLevel(0)->Set("A",Teuchos::rcp_dynamic_cast<Matrix>(bOp));
     H->GetLevel(0)->Set("Nullspace1",nspVector11);
     H->GetLevel(0)->Set("coarseAggStat",aggStat);
-    //H->GetLevel(0)->Set("MasterDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xMasterDofMap));  // set map with active dofs
     H->GetLevel(0)->Set("SlaveDofMap", Teuchos::rcp_dynamic_cast<const Xpetra::Map<LO,GO,Node> >(xSlaveDofMap));  // set map with active dofs
 
     Teuchos::RCP<SubBlockAFactory> A11Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 0, 0));
@@ -430,6 +429,19 @@ void LINALG::SOLVER::MueLuContactSpPreconditioner::Setup( bool create,
        }
     }
 
+#if 0
+    { // some debug output
+      // print out content of levels
+      std::cout << "FINAL CONTENT of multigrid levels" << std::endl;
+      Teuchos::RCP<Teuchos::FancyOStream> out = Teuchos::fancyOStream(Teuchos::rcpFromRef(std::cout));
+      for(LO l = 0; l < H->GetNumLevels(); l++) {
+        Teuchos::RCP<Level> coarseLevel = H->GetLevel(l);
+        coarseLevel->print(*out);
+      }
+      std::cout << "END FINAL CONTENT of multigrid levels" << std::endl;
+    } // end debug output
+#endif
+
     // set multigrid preconditioner
     P_ = Teuchos::rcp(new MueLu::EpetraOperator(H));
   }
@@ -486,10 +498,26 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   Teuchos::RCP<SubBlockAFactory> A00Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 0, 0));
   Teuchos::RCP<SmootherPrototype> smoProtoPred = Teuchos::null;
   const Teuchos::ParameterList& PredList = smolevelsublist.sublist("smoother: Predictor list");
-  Teuchos::RCP<SmootherFactory> SmooPredFact = InterpretBACIList2MueLuSmoother(PredList,A00Fact);
-
+  std::string PredPermstrategy = "none";
+  if(PredList.isSublist("Aztec Parameters") && PredList.sublist("Aztec Parameters").isParameter("permutation strategy"))
+    PredPermstrategy = PredList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
   Teuchos::RCP<FactoryManager> MBpred = Teuchos::rcp(new FactoryManager());
-  MBpred->SetFactory("A", A00Fact);              // SchurCompFactory as generating factory for SchurComp equation
+  Teuchos::RCP<SmootherFactory> SmooPredFact = Teuchos::null;
+  if(PredPermstrategy == "none") {
+    SmooPredFact = InterpretBACIList2MueLuSmoother(PredList,A00Fact);
+    MBpred->SetFactory("A", A00Fact);
+  } else {
+    // define permutation factory for SchurComplement equation
+    Teuchos::RCP<PermutationFactory> PermFact = Teuchos::rcp(new PermutationFactory());
+    PermFact->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("")));
+    PermFact->SetFactory("PermutationRowMapFactory", Teuchos::null);
+    PermFact->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Local"))); // TODO Local + stridedMaps!!!
+    PermFact->SetFactory("A", A00Fact); // use (0,0) block matrix as input for A
+
+    SmooPredFact = InterpretBACIList2MueLuSmoother(PredList,PermFact);
+    MBpred->SetFactory("A", PermFact);
+  }
+
   MBpred->SetFactory("Smoother", SmooPredFact);  // solver for SchurComplement equation
   MBpred->SetIgnoreUserData(true);
   smootherPrototype->SetVelocityPredictionFactoryManager(MBpred);
@@ -498,16 +526,32 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   Teuchos::RCP<SchurComplementFactory> SFact = Teuchos::rcp(new SchurComplementFactory());
   SFact->SetParameter("omega", Teuchos::ParameterEntry(omega));
   SFact->SetParameter("lumping", Teuchos::ParameterEntry(bSimpleC));
-  SFact->SetFactory("A",MueLu::NoFactory::getRCP());
 
   // define SchurComplement solver
   Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
   const Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
-  Teuchos::RCP<SmootherFactory> SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,SFact);
+  std::string SchurCompPermstrategy = "none";
+  if(SchurCompList.isSublist("Aztec Parameters") && SchurCompList.sublist("Aztec Parameters").isParameter("permutation strategy"))
+    SchurCompPermstrategy = SchurCompList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
 
   // setup local factory manager for SchurComplementFactory
   Teuchos::RCP<FactoryManager> MB = Teuchos::rcp(new FactoryManager());
-  MB->SetFactory("A", SFact);              // SchurCompFactory as generating factory for SchurComp equation
+  Teuchos::RCP<SmootherFactory> SmooSCFact = Teuchos::null;
+  if(SchurCompPermstrategy == "none") {
+    SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,SFact);
+    MB->SetFactory("A", SFact);              // SchurCompFactory as generating factory for SchurComp equation
+  } else {
+    // define permutation factory for SchurComplement equation
+    Teuchos::RCP<PermutationFactory> PermFact = Teuchos::rcp(new PermutationFactory());
+    PermFact->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("")));
+    PermFact->SetFactory("PermutationRowMapFactory", Teuchos::null);
+    PermFact->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Local"))); // TODO Local + stridedMaps!!!
+    PermFact->SetFactory("A", SFact); // use SchurComplement matrix as input for A
+
+    SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,PermFact); // with permutation (use permuted A)
+    MB->SetFactory("A", PermFact); // with permutation (use permuted SchurComplement matrix as A)
+  }
+
   MB->SetFactory("Smoother", SmooSCFact);  // solver for SchurComplement equation
   MB->SetIgnoreUserData(true);
   smootherPrototype->SetSchurCompFactoryManager(MB);  // add SC smoother information
@@ -563,11 +607,13 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 
   // define SchurComplement solver
   const Teuchos::ParameterList& SchurCompList = smolevelsublist.sublist("smoother: SchurComp list");
-  std::string permstrategy = SchurCompList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
+  std::string permstrategy = "none";
+  if(SchurCompList.isSublist("Aztec Parameters") && SchurCompList.sublist("Aztec Parameters").isParameter("permutation strategy"))
+    permstrategy = SchurCompList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
+
 
   // define SchurComplement smoother and
   // setup local factory manager for SchurComplementFactory
-  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
   Teuchos::RCP<SmootherFactory> SmooSCFact = Teuchos::null;
   Teuchos::RCP<FactoryManager> MB = Teuchos::rcp(new FactoryManager());
   if(permstrategy == "none") {
@@ -643,10 +689,27 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   Teuchos::RCP<SubBlockAFactory> A00Fact = Teuchos::rcp(new SubBlockAFactory(MueLu::NoFactory::getRCP(), 0, 0));
   Teuchos::RCP<SmootherPrototype> smoProtoPred = Teuchos::null;
   const Teuchos::ParameterList& PredList = paramList.sublist("coarse: Predictor list");
-  Teuchos::RCP<SmootherFactory> SmooPredFact = InterpretBACIList2MueLuSmoother(PredList,A00Fact);
+  std::string PredPermstrategy = "none";
+  if(PredList.isSublist("Aztec Parameters") && PredList.sublist("Aztec Parameters").isParameter("permutation strategy"))
+    PredPermstrategy = PredList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
 
   Teuchos::RCP<FactoryManager> MBpred = Teuchos::rcp(new FactoryManager());
-  MBpred->SetFactory("A", A00Fact);              // SchurCompFactory as generating factory for SchurComp equation
+  Teuchos::RCP<SmootherFactory> SmooPredFact = Teuchos::null;
+  if(PredPermstrategy == "none") {
+    SmooPredFact = InterpretBACIList2MueLuSmoother(PredList,A00Fact);
+    MBpred->SetFactory("A", A00Fact);
+  } else {
+    // define permutation factory for SchurComplement equation
+    Teuchos::RCP<PermutationFactory> PermFact = Teuchos::rcp(new PermutationFactory());
+    PermFact->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("")));
+    PermFact->SetFactory("PermutationRowMapFactory", Teuchos::null);
+    PermFact->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Local"))); // TODO Local + stridedMaps!!!
+    PermFact->SetFactory("A", A00Fact); // use (0,0) block matrix as input for A
+
+    SmooPredFact = InterpretBACIList2MueLuSmoother(PredList,PermFact);
+    MBpred->SetFactory("A", PermFact);
+  }
+
   MBpred->SetFactory("Smoother", SmooPredFact);  // solver for SchurComplement equation
   MBpred->SetIgnoreUserData(true);
   smootherPrototype->SetVelocityPredictionFactoryManager(MBpred);
@@ -660,11 +723,28 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
   // define SchurComplement solver
   Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
   const Teuchos::ParameterList& SchurCompList = paramList.sublist("coarse: SchurComp list");
-  Teuchos::RCP<SmootherFactory> SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,SFact);
+  std::string SchurCompPermstrategy = "none";
+  if(SchurCompList.isSublist("Aztec Parameters") && SchurCompList.sublist("Aztec Parameters").isParameter("permutation strategy"))
+    SchurCompPermstrategy = SchurCompList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
 
   // setup local factory manager for SchurComplementFactory
   Teuchos::RCP<FactoryManager> MB = Teuchos::rcp(new FactoryManager());
-  MB->SetFactory("A", SFact);              // SchurCompFactory as generating factory for SchurComp equation
+  Teuchos::RCP<SmootherFactory> SmooSCFact = Teuchos::null;
+  if(SchurCompPermstrategy == "none") {
+    SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,SFact);
+    MB->SetFactory("A", SFact);              // SchurCompFactory as generating factory for SchurComp equation
+  } else {
+    // define permutation factory for SchurComplement equation
+    Teuchos::RCP<PermutationFactory> PermFact = Teuchos::rcp(new PermutationFactory());
+    PermFact->SetParameter("PermutationRowMapName",Teuchos::ParameterEntry(std::string("")));
+    PermFact->SetFactory("PermutationRowMapFactory", Teuchos::null);
+    PermFact->SetParameter("PermutationStrategy", Teuchos::ParameterEntry(std::string("Local"))); // TODO Local + stridedMaps!!!
+    PermFact->SetFactory("A", SFact); // use SchurComplement matrix as input for A
+
+    SmooSCFact = InterpretBACIList2MueLuSmoother(SchurCompList,PermFact); // with permutation (use permuted A)
+    MB->SetFactory("A", PermFact); // with permutation (use permuted SchurComplement matrix as A)
+  }
+
   MB->SetFactory("Smoother", SmooSCFact);  // solver for SchurComplement equation
   MB->SetIgnoreUserData(true);
   smootherPrototype->SetSchurCompFactoryManager(MB);  // add SC smoother information
@@ -710,11 +790,13 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
 
   // check whether SchurComplement equation shall be permuted
   const Teuchos::ParameterList& SchurCompList = paramList.sublist("coarse: SchurComp list");
-  std::string permstrategy = SchurCompList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
+  std::string permstrategy = "none";
+  if(SchurCompList.isSublist("Aztec Parameters") && SchurCompList.sublist("Aztec Parameters").isParameter("permutation strategy"))
+    permstrategy = SchurCompList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
 
   // define SchurComplement solver and
   // setup local factory manager for SchurComplementFactory
-  Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
+  //Teuchos::RCP<SmootherPrototype> smoProtoSC = Teuchos::null;
   Teuchos::RCP<SmootherFactory>   SmooSCFact = Teuchos::null;
   Teuchos::RCP<FactoryManager> MB = Teuchos::rcp(new FactoryManager());
   if(permstrategy == "none") { // no permutation
@@ -763,7 +845,9 @@ Teuchos::RCP<MueLu::SmootherFactory<Scalar,LocalOrdinal,GlobalOrdinal,Node,Local
     smoProtoSC = Teuchos::rcp( new DirectSolver("Klu" /*"Umfpack"*/,Teuchos::ParameterList()) );
   } else if(type == "aztec") {
     std::string prectype = paramList.sublist("Aztec Parameters").get<std::string>("Preconditioner Type");
-    std::string permstrategy = paramList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
+    std::string permstrategy = "none";
+    if(paramList.isSublist("Aztec Parameters") && paramList.sublist("Aztec Parameters").isParameter("permutation strategy"))
+      permstrategy = paramList.sublist("Aztec Parameters").get<std::string>("permutation strategy");
     std::cout << "PermStrategy is " << permstrategy << std::endl;
     if(permstrategy == "none") {
       // no permutation strategy: build plain smoothers
